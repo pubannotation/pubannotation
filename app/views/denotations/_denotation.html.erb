@@ -1,7 +1,19 @@
 <% collection_size = local_assigns[:size].present? ? local_assigns[:size] : @denotations.size-%>
 
+<h2><%= project.name -%></h2>
+
+<%
+  if params[:div_id].present?
+    @textae_json_url = spans_annotations_project_sourcedb_sourceid_divs_docs_url(project.name, params[:sourcedb], params[:sourceid], params[:div_id], params[:begin], params[:end])
+  else
+    @textae_json_url = spans_annotations_project_sourcedb_sourceid_docs_url(project.name, params[:sourcedb], params[:sourceid], params[:begin], params[:end])
+  end
+  @textae_json_url += '.json'
+-%>
+<%= render partial: 'shared/textae_div', locals: {target_json_url: @textae_json_url} -%>
+
 <% if denotation_counter == 0 -%>
-  <h2><%= t('activerecord.models.denotation') %></h2>
+  <strong><%= t('activerecord.models.denotation') %></strong>
   <table class="ann">
     <tr>
       <% if local_assigns[:project].present? -%>

@@ -1,22 +1,8 @@
 <%= render :partial => 'docs/path' -%>
 
-<% content_for :css do
-    stylesheet_link_tag "//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css",
-    "http://bionlp.dbcls.jp/textae/lib/css/textae-4.0.3.min.css"
-end
--%>
+<%= render :partial => 'shared/textae_css_js'-%>
 
-<% content_for :javascript do
-    javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js",
-    "//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js",
-    "//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js",
-    "http://bionlp.dbcls.jp/textae/vender/jquery.jsPlumb-1.5.2-min.js",
-    "http://bionlp.dbcls.jp/textae/lib/textae-4.0.3.min.js"
-  end
--%>
-
-<div id="css_area"></div>
-<div class="textae-editor" config="demo-config.json" target="<%= request.url -%>.json"></div>
+<%= render :partial => 'shared/textae_div', locals:{target_json_url: "#{request.url}.json" } -%>
 
 <% if @denotations.present? -%>
 	<table>
