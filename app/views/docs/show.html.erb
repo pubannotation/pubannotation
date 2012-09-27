@@ -1,0 +1,35 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Body:</b>
+  <%= @doc.body %>
+</p>
+
+<p>
+  <b>Source:</b>
+  <%= @doc.source %>
+</p>
+
+<p>
+  <b>Sourcedb:</b>
+  <%= @doc.sourcedb %>
+</p>
+
+<p>
+  <b>Sourceid:</b>
+  <%= @doc.sourceid %>
+</p>
+
+<p>
+  <b>Serial:</b>
+  <%= @doc.serial %>
+</p>
+
+<p>
+  <b>Section:</b>
+  <%= @doc.section %>
+</p>
+
+
+<%= link_to 'Edit', edit_doc_path(@doc) %> |
+<%= link_to 'Back', docs_path %>

@@ -1,0 +1,33 @@
+<h1>Listing docs</h1>
+
+<table>
+  <tr>
+    <th>Body</th>
+    <th>Source</th>
+    <th>Sourcedb</th>
+    <th>Sourceid</th>
+    <th>Serial</th>
+    <th>Section</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @docs.each do |doc| %>
+  <tr>
+    <td><%= doc.body %></td>
+    <td><%= doc.source %></td>
+    <td><%= doc.sourcedb %></td>
+    <td><%= doc.sourceid %></td>
+    <td><%= doc.serial %></td>
+    <td><%= doc.section %></td>
+    <td><%= link_to 'Show', doc %></td>
+    <td><%= link_to 'Edit', edit_doc_path(doc) %></td>
+    <td><%= link_to 'Destroy', doc, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Doc', new_doc_path %>

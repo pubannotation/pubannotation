@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  body: MyText
+  source: MyString
+  sourcedb: MyString
+  sourceid: MyString
+  serial: 1
+  section: MyString
+
+two:
+  body: MyText
+  source: MyString
+  sourcedb: MyString
+  sourceid: MyString
+  serial: 1
+  section: MyString

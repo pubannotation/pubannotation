@@ -1,0 +1,37 @@
+<%= form_for(@relann) do |f| %>
+  <% if @relann.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@relann.errors.count, "error") %> prohibited this relann from being saved:</h2>
+
+      <ul>
+      <% @relann.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :hid %><br />
+    <%= f.text_field :hid %>
+  </div>
+  <div class="field">
+    <%= f.label :subject %><br />
+    <%= f.text_field :subject %>
+  </div>
+  <div class="field">
+    <%= f.label :object %><br />
+    <%= f.text_field :object %>
+  </div>
+  <div class="field">
+    <%= f.label :relation %><br />
+    <%= f.text_field :relation %>
+  </div>
+  <div class="field">
+    <%= f.label :annset %><br />
+    <%= f.text_field :annset %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

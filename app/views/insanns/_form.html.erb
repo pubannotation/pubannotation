@@ -1,0 +1,29 @@
+<%= form_for(@insann) do |f| %>
+  <% if @insann.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@insann.errors.count, "error") %> prohibited this insann from being saved:</h2>
+
+      <ul>
+      <% @insann.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :hid %><br />
+    <%= f.text_field :hid %>
+  </div>
+  <div class="field">
+    <%= f.label :type %><br />
+    <%= f.text_field :type %>
+  </div>
+  <div class="field">
+    <%= f.label :annset %><br />
+    <%= f.text_field :annset %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

@@ -1,0 +1,27 @@
+<h1>Listing insanns</h1>
+
+<table>
+  <tr>
+    <th>Hid</th>
+    <th>Type</th>
+    <th>Annset</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @insanns.each do |insann| %>
+  <tr>
+    <td><%= insann.hid %></td>
+    <td><%= insann.type.hid %></td>
+    <td><%= insann.annset.name %></td>
+    <td><%= link_to 'Show', insann %></td>
+    <td><%= link_to 'Edit', edit_insann_path(insann) %></td>
+    <td><%= link_to 'Destroy', insann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Insann', new_insann_path %>

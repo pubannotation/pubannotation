@@ -1,0 +1,34 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Hid:</b>
+  <%= @catann.hid %>
+</p>
+
+<p>
+  <b>Doc:</b>
+  <%= @catann.doc.sourceid %>
+</p>
+
+<p>
+  <b>Begin:</b>
+  <%= @catann.begin %>
+</p>
+
+<p>
+  <b>End:</b>
+  <%= @catann.end %>
+</p>
+
+<p>
+  <b>Category:</b>
+  <%= @catann.category %>
+</p>
+
+<p>
+  <b>Annset:</b>
+  <%= @catann.annset.name %>
+</p>
+
+
+<%= link_to 'Back', catanns_path %>

@@ -1,0 +1,32 @@
+<h1>Listing catanns</h1>
+
+<table>
+  <tr>
+    <th>Hid</th>
+    <th>Doc</th>
+    <th>Begin</th>
+    <th>End</th>
+    <th>Category</th>
+    <th>Annset</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @catanns.each do |catann| %>
+  <tr>
+    <td><%= catann.hid %></td>
+    <td><%= catann.doc.sourceid %></td>
+    <td><%= catann.begin %></td>
+    <td><%= catann.end %></td>
+    <td><%= catann.category %></td>
+    <td><%= catann.annset.name %></td>
+    <td><%= link_to 'Show', catann %></td>
+    <td><%= link_to 'Destroy', catann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'Home', home_path %>

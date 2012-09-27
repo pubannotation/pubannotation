@@ -1,0 +1,35 @@
+<h1>PubAnnotation</h1>
+<p style="font-style:italic">"A scalable and sharable storage of text annotations."</p>
+
+<table class="frame">
+<tr><th>Navigate</th></tr>
+</table>
+<ul>
+	<li><%= link_to "Documents", pmdocs_path %></li>
+	<li><%= link_to "Annotation sets", annsets_path %></li>
+	<li><%= link_to "Category annotations", catanns_path %></li>
+	<li><%= link_to "Relation annotations", relanns_path %></li>
+	<li><%= link_to "Instance annotations", insanns_path %></li>
+</ul>
+
+<table class="frame">
+<tr><th>RESTfull interface</th></tr>
+</table>
+
+<ul>
+<li><a href="http://pubannotation.dbcls.jp/pmdocs">http://pubannotation.dbcls.jp/pmdocs</a></li>
+<dd>to get the list of all the pubmed texts stored in PubAnnotation.</dd>
+<li><a href="http://pubannotation.dbcls.jp/pmdocs/9880555">http://pubannotation.dbcls.jp/pmdocs/9880555</a></li>
+<dd>to get the text of PMID:9880555.</dd>
+<li><a href="http://pubannotation.dbcls.jp/annsets">http://pubannotation.dbcls.jp/annsets</a></li>
+<dd>to get the list of all the annotation sets.</dd>
+<li><a href="http://pubannotation.dbcls.jp/annsets/genia-ggp">http://pubannotation.dbcls.jp/annsets/genia-ggp</a></li>
+<dd>to get the desciption of the annotation set, "genia-ggp".</dd>
+<li><a href="http://pubannotation.dbcls.jp/pmdocs/9880555/annsets">http://pubannotation.dbcls.jp/pmdocs/9880555/annsets</a></li>
+<dd>to get the list of annotation sets made to the text of PMID:9880555.</dd>
+<li><a href="http://pubannotation.dbcls.jp/pmdocs/9880555/annsets/genia-ggp">http://pubannotation.dbcls.jp/pmdocs/9880555/annsets/genia-ggp</a></li>
+<dd>to get the desciption of the annotation set, "genia-ggp".</dd>
+<li><a href="http://pubannotation.dbcls.jp/pmdocs/9880555/annsets/genia-ggp/catanns">http://pubannotation.dbcls.jp/pmdocs/9880555/annsets/genia-ggp/catanns</a></li>
+<dd>to get all the category annotations that belong to the annotation set, "genia-ggp", and that made to the text of PMID:9880555.</dd>
+<li><a href="http://pubannotation.dbcls.jp/pmdocs/9880555/annsets/genia-ggp/catanns.json">http://pubannotation.dbcls.jp/pmdocs/9880555/annsets/genia-ggp/catanns.json</a></li>
+<dd>to get the annotations in json, prefix the URL with ".json".</dd>
