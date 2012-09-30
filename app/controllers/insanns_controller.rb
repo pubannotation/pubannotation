@@ -2,25 +2,17 @@ class InsannsController < ApplicationController
   # GET /insanns
   # GET /insanns.json
   def index
-    @insanns = []
-
-    if params[:pmdoc_id] and @doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:pmdoc_id])
-      
-      if params[:annset_id] and @annset = @doc.annsets.find_by_name(params[:annset_id])
-        @insanns = @doc.insanns.where("insanns.annset_id = ?", @annset.id)
-      else
-        @insanns = @doc.insanns
-      end
-
-    else
-
-      if params[:annset_id] and @annset = Annset.find_by_name(params[:annset_id])
-        @insanns = @annset.insanns
-      else
-        @insanns = Insann.all
-      end
-
+    if params[:pmdoc_id]
+      sourcedb = 'PubMed'
+      sourceid = params[:pmdoc_id]
     end
+
+    if params[:pmcdoc_id]
+      sourcedb = 'PMC'
+      sourceid = params[:pmcdoc_id]
+    end
+
+    @insanns = get_insanns_simple(sourcedb, sourceid, params[:annset_id])
 
     respond_to do |format|
       format.html # index.html.erb
@@ -67,14 +59,6 @@ class InsannsController < ApplicationController
     @insann = []
 
     if doc and annset
-#      catanns = doc.catanns
-#      oldanns = doc.catanns.insanns.where("insanns.annset_id = ?", annset.id)
-#      catanns.each do |ca|
-#        oldanns = ca.insanns.where("insanns.annset_id = ?", annset.id)
-#        oldanns.destroy_all
-#      end
-#      oldanns = doc.insanns.find_by_annset_id(annset.id)
-
       params[:insanns].each do |a|
         ia           = Insann.new
         ia.hid       = a[:hid]

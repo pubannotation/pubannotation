@@ -1,0 +1,29 @@
+<h1>Listing modanns</h1>
+
+<table>
+  <tr>
+    <th>Hid</th>
+    <th>Modtype</th>
+    <th>Modobj</th>
+    <th>Annset</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @modanns.each do |modann| %>
+  <tr>
+    <td><%= modann.hid %></td>
+    <td><%= modann.modtype %></td>
+    <td><%= modann.modobj %></td>
+    <td><%= modann.annset %></td>
+    <td><%= link_to 'Show', modann %></td>
+    <td><%= link_to 'Edit', edit_modann_path(modann) %></td>
+    <td><%= link_to 'Destroy', modann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Modann', new_modann_path %>

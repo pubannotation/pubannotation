@@ -7,12 +7,7 @@
 
 <p>
   <b>Subject:</b>
-  <%= @relann.subject %>
-</p>
-
-<p>
-  <b>Object:</b>
-  <%= @relann.object %>
+  <%= @relann.subject.hid %>
 </p>
 
 <p>
@@ -21,10 +16,14 @@
 </p>
 
 <p>
+  <b>Object:</b>
+  <%= @relann.object.hid %>
+</p>
+
+<p>
   <b>Annset:</b>
-  <%= @relann.annset %>
+  <%= @relann.annset.name %>
 </p>
 
 
-<%= link_to 'Edit', edit_relann_path(@relann) %> |
 <%= link_to 'Back', relanns_path %>

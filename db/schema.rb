@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120927031610) do
+ActiveRecord::Schema.define(:version => 20120929134417) do
 
   create_table "annsets", :force => true do |t|
     t.string   "name"
@@ -61,6 +61,18 @@ ActiveRecord::Schema.define(:version => 20120927031610) do
 
   add_index "insanns", ["annset_id"], :name => "index_insanns_on_annset_id"
   add_index "insanns", ["type_id"], :name => "index_insanns_on_type_id"
+
+  create_table "modanns", :force => true do |t|
+    t.string   "hid"
+    t.string   "modtype"
+    t.integer  "modobj_id"
+    t.integer  "annset_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "modanns", ["annset_id"], :name => "index_modanns_on_annset_id"
+  add_index "modanns", ["modobj_id"], :name => "index_modanns_on_modobj_id"
 
   create_table "relanns", :force => true do |t|
     t.string   "hid"

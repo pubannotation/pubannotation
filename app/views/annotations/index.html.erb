@@ -1,0 +1,88 @@
+<h1>Listing annotations</h1>
+
+<h2>Caterogy annotations</h2>
+<table>
+  <tr>
+    <th>Hid</th>
+    <th>Doc</th>
+    <th>Begin</th>
+    <th>End</th>
+    <th>Category</th>
+    <th>Annset</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @catanns.each do |catann| %>
+  <tr>
+    <td><%= catann.hid %></td>
+    <td><%= catann.doc.sourceid %></td>
+    <td><%= catann.begin %></td>
+    <td><%= catann.end %></td>
+    <td><%= catann.category %></td>
+    <td><%= catann.annset.name %></td>
+    <td><%= link_to 'Show', catann %></td>
+    <td><%= link_to 'Destroy', catann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+
+<h2>Instance annotations</h2>
+
+<table>
+  <tr>
+    <th>Hid</th>
+    <th>Type</th>
+    <th>Annset</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @insanns.each do |insann| %>
+  <tr>
+    <td><%= insann.hid %></td>
+    <td><%= insann.type.hid %></td>
+    <td><%= insann.annset.name %></td>
+    <td><%= link_to 'Show', insann %></td>
+    <td><%= link_to 'Destroy', insann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+
+<h2>Relation annotations</h2>
+
+<table>
+  <tr>
+    <th>Hid</th>
+    <th>Subject</th>
+    <th>Relation</th>
+    <th>Object</th>
+    <th>Annset</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @relanns.each do |relann| %>
+  <tr>
+    <td><%= relann.hid %></td>
+    <td><%= relann.subject.hid %></td>
+    <td><%= relann.relation %></td>
+    <td><%= relann.object.hid %></td>
+    <td><%= relann.annset.name %></td>
+    <td><%= link_to 'Show', relann %></td>
+    <td><%= link_to 'Destroy', relann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+<%= link_to 'Home', home_path %>

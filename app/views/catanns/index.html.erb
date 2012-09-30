@@ -2,27 +2,24 @@
 
 <table>
   <tr>
-    <th>Hid</th>
-    <th>Doc</th>
+    <th>Annotation set</th>
+    <th>Doc DB</th>
+    <th>Doc Id</th>
+    <th>Id</th>
     <th>Begin</th>
     <th>End</th>
     <th>Category</th>
-    <th>Annset</th>
-    <th></th>
-    <th></th>
-    <th></th>
   </tr>
 
 <% @catanns.each do |catann| %>
   <tr>
+    <td><%= catann.annset_name %></td>
+    <td><%= catann.sourcedb %></td>
+    <td><%= catann.sourceid %></td>
     <td><%= catann.hid %></td>
-    <td><%= catann.doc.sourceid %></td>
     <td><%= catann.begin %></td>
     <td><%= catann.end %></td>
     <td><%= catann.category %></td>
-    <td><%= catann.annset.name %></td>
-    <td><%= link_to 'Show', catann %></td>
-    <td><%= link_to 'Destroy', catann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
   </tr>
 <% end %>
 </table>

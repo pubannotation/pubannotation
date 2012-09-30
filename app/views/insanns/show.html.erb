@@ -7,14 +7,13 @@
 
 <p>
   <b>Type:</b>
-  <%= @insann.type %>
+  <%= @insann.type.hid %>
 </p>
 
 <p>
   <b>Annset:</b>
-  <%= @insann.annset %>
+  <%= @insann.annset.name %>
 </p>
 
 
-<%= link_to 'Edit', edit_insann_path(@insann) %> |
 <%= link_to 'Back', insanns_path %>

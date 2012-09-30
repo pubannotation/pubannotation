@@ -12,12 +12,9 @@
 
 <% @insanns.each do |insann| %>
   <tr>
+    <td><%= insann.annset_name %></td>
     <td><%= insann.hid %></td>
-    <td><%= insann.type.hid %></td>
-    <td><%= insann.annset.name %></td>
-    <td><%= link_to 'Show', insann %></td>
-    <td><%= link_to 'Edit', edit_insann_path(insann) %></td>
-    <td><%= link_to 'Destroy', insann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+    <td><%= insann.type %></td>
   </tr>
 <% end %>
 </table>

@@ -1,4 +1,10 @@
 Pubann::Application.routes.draw do
+  resources :modanns
+
+  get "annotations/index"
+
+  get "annotations/create"
+
   resources :insanns
 
   get "home/index"
@@ -8,16 +14,16 @@ Pubann::Application.routes.draw do
   resources :relanns
 
   resources :annsets do
-    resources :catanns, :relanns, :insanns
+    resources :catanns, :insanns, :relanns, :modanns
   end
 
   resources :pmdocs do
-    resources :catanns, :relanns, :insanns
+    resources :catanns, :insanns, :relanns, :modanns
   end
 
   resources :pmdocs do
     resources :annsets do
-      resources :catanns, :relanns, :insanns
+      resources :catanns, :insanns, :relanns, :modanns, :annotations
     end
   end
 

@@ -2,25 +2,17 @@ class RelannsController < ApplicationController
   # GET /relanns
   # GET /relanns.json
   def index
-    @relanns = []
-
-    if params[:pmdoc_id] and @doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:pmdoc_id])
-      
-      if params[:annset_id] and @annset = @doc.annsets.find_by_name(params[:annset_id])
-        @relanns = @doc.relanns.where("relanns.annset_id = ?", @annset.id)
-      else
-        @relanns = @doc.relanns
-      end
-
-    else
-
-      if params[:annset_id] and @annset = Annset.find_by_name(params[:annset_id])
-        @relanns = @annset.relanns
-      else
-        @relanns = Relann.all
-      end
-
+    if params[:pmdoc_id]
+      sourcedb = 'PubMed'
+      sourceid = params[:pmdoc_id]
     end
+
+    if params[:pmcdoc_id]
+      sourcedb = 'PMC'
+      sourceid = params[:pmcdoc_id]
+    end
+
+    @relanns = get_relanns_simple(sourcedb, sourceid, params[:annset_id])
 
     respond_to do |format|
       format.html # index.html.erb
@@ -71,13 +63,18 @@ class RelannsController < ApplicationController
       params[:relanns].each do |a|
         ra           = Relann.new
         ra.hid       = a[:hid]
-        subj         = Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:subject])
-        subj         = Insann.find_by_annset_id_and_hid(annset.id, a[:subject]) unless subj
-        obj          = Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:object])
-        obj          = Insann.find_by_annset_id_and_hid(annset.id, a[:object]) unless obj
-        ra.subject   = subj
+
+        ra.subject   = case a[:subject]
+          when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:subject])
+          else doc.insanns.find_by_annset_id_and_hid(annset.id, a[:subject])
+        end
+
+        ra.object    = case a[:object]
+          when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:object])
+          else doc.insanns.find_by_annset_id_and_hid(annset.id, a[:object])
+        end
+
         ra.relation  = a[:relation]
-        ra.object    = obj
         ra.annset_id = annset.id
         ra.save
         @relann      = ra
