@@ -1,34 +1,8 @@
 <p id="notice"><%= notice %></p>
 
-<p>
-  <b>Body:</b>
-  <%= @doc.body %>
-</p>
-
-<p>
-  <b>Source:</b>
-  <%= @doc.source %>
-</p>
-
-<p>
-  <b>Sourcedb:</b>
-  <%= @doc.sourcedb %>
-</p>
-
-<p>
-  <b>Sourceid:</b>
-  <%= @doc.sourceid %>
-</p>
-
-<p>
-  <b>Serial:</b>
-  <%= @doc.serial %>
-</p>
-
-<p>
-  <b>Section:</b>
-  <%= @doc.section %>
-</p>
-
+<table>
+<tr><th><%= @doc.sourcedb %>:<a href="<%= @doc.source %>"><%= @doc.sourceid %></a> (<%= @doc.serial %> - <%= @doc.section %>)</th></tr>
+<tr><td><%= @doc.body %></td><tr>
+</table>
 
 <%= link_to 'Back', pmdocs_path %>

@@ -4,8 +4,8 @@
   <tr>
     <th>Annset</th>
     <th>Hid</th>
+    <th>Relation type</th>
     <th>Subject</th>
-    <th>Relation</th>
     <th>Object</th>
   </tr>
 
@@ -13,9 +13,9 @@
   <tr>
     <td><%= relann.annset_name %></td>
     <td><%= relann.hid %></td>
-    <td><%= relann.subject_hid %></td>
-    <td><%= relann.relation %></td>
-    <td><%= relann.object_hid %></td>
+    <td><%= relann.reltype %></td>
+    <td><%= relann.relsub_hid %></td>
+    <td><%= relann.relobj_hid %></td>
   </tr>
 <% end %>
 </table>

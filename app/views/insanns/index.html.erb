@@ -2,10 +2,10 @@
 
 <table>
   <tr>
-    <th>Hid</th>
-    <th>Type</th>
     <th>Annset</th>
-    <th></th>
+    <th>Hid</th>
+    <th>Type of instantiation</th>
+    <th>Object of instantiation</th>
     <th></th>
     <th></th>
   </tr>
@@ -14,11 +14,8 @@
   <tr>
     <td><%= insann.annset_name %></td>
     <td><%= insann.hid %></td>
-    <td><%= insann.type %></td>
+    <td><%= insann.instype %></td>
+    <td><%= insann.insobj_hid %></td>
   </tr>
 <% end %>
 </table>
-
-<br />
-
-<%= link_to 'New Insann', new_insann_path %>

@@ -56,22 +56,19 @@ class ModannsController < ApplicationController
     doc = Doc.find_by_sourceid(params[:pmdoc_id])
     annset = Annset.find_by_name(params[:annset_id])
     
-    @modann = []
-
     if doc and annset
       params[:modanns].each do |a|
         ma           = Modann.new
-        ma.hid       = a[:hid]
-        ma.modtype   = a[:objtype]
-        if a[:modobj] =~ /^R/
-          obj = doc.relann.find_by_annset_id_and_hid(annset.id, a[:modobj])
-        else
-          obj = doc.insann.find_by_annset_id_and_hid(annset.id, a[:modobj])
+
+        ma.modtype   = a[:modtype]
+        ma.modobj    = case a[:modobj]
+          when /^R/ then doc.relanns.find_by_annset_id_and_hid(annset.id, a[:modobj])
+          else           doc.insanns.find_by_annset_id_and_hid(annset.id, a[:modobj])
         end
-        ma.modobj    = obj
+
+        ma.hid       = a[:hid]
         ma.annset_id = annset.id
         ma.save
-        @modann = ma
       end
     end
 

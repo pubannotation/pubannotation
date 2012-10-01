@@ -2,8 +2,8 @@ class CreateModanns < ActiveRecord::Migration
   def change
     create_table :modanns do |t|
       t.string :hid
-      t.string :modtype, :polymorphic => true
-      t.references :modobj
+      t.references :modobj, :polymorphic => true
+      t.string :modtype
       t.references :annset
 
       t.timestamps

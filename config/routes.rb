@@ -27,6 +27,13 @@ Pubann::Application.routes.draw do
     end
   end
 
+  resources :annsets do
+    resources :pmdocs do
+      resources :catanns, :insanns, :relanns, :modanns, :annotations
+    end
+  end
+
+
 #  resources :pmdocs do
 #    resource :annsets do
 #      resources :relanns

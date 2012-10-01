@@ -3,6 +3,6 @@ class Doc < ActiveRecord::Base
   has_many :catanns
   has_many :insanns, :through => :catanns
   has_many :relanns, :through => :catanns
-  has_many :modanns, :through => :catanns
+  has_many :modanns, :through => :insanns
   has_many :annsets, :through => :catanns
 end

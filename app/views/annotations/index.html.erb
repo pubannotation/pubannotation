@@ -1,29 +1,24 @@
 <h1>Listing annotations</h1>
 
+<p>to <%= @catanns.first.sourcedb %>:<%= @catanns.first.sourceid %></p>
+
 <h2>Caterogy annotations</h2>
 <table>
   <tr>
+    <th>Annset</th>
     <th>Hid</th>
-    <th>Doc</th>
     <th>Begin</th>
     <th>End</th>
     <th>Category</th>
-    <th>Annset</th>
-    <th></th>
-    <th></th>
-    <th></th>
   </tr>
 
 <% @catanns.each do |catann| %>
   <tr>
+    <td><%= catann.annset_name %></td>
     <td><%= catann.hid %></td>
-    <td><%= catann.doc.sourceid %></td>
     <td><%= catann.begin %></td>
     <td><%= catann.end %></td>
     <td><%= catann.category %></td>
-    <td><%= catann.annset.name %></td>
-    <td><%= link_to 'Show', catann %></td>
-    <td><%= link_to 'Destroy', catann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
   </tr>
 <% end %>
 </table>
@@ -35,21 +30,18 @@
 
 <table>
   <tr>
-    <th>Hid</th>
-    <th>Type</th>
     <th>Annset</th>
-    <th></th>
-    <th></th>
-    <th></th>
+    <th>Hid</th>
+    <th>Ins. type</th>
+    <th>Ins. object</th>
   </tr>
 
 <% @insanns.each do |insann| %>
   <tr>
+    <td><%= insann.annset_name %></td>
     <td><%= insann.hid %></td>
-    <td><%= insann.type.hid %></td>
-    <td><%= insann.annset.name %></td>
-    <td><%= link_to 'Show', insann %></td>
-    <td><%= link_to 'Destroy', insann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+    <td><%= insann.instype %></td>
+    <td><%= insann.insobj_hid %></td>
   </tr>
 <% end %>
 </table>
@@ -61,28 +53,44 @@
 
 <table>
   <tr>
-    <th>Hid</th>
-    <th>Subject</th>
-    <th>Relation</th>
-    <th>Object</th>
     <th>Annset</th>
-    <th></th>
-    <th></th>
-    <th></th>
+    <th>Hid</th>
+    <th>Relation type</th>
+    <th>Subject</th>
+    <th>Object</th>
   </tr>
 
 <% @relanns.each do |relann| %>
   <tr>
+    <td><%= relann.annset_name %></td>
     <td><%= relann.hid %></td>
-    <td><%= relann.subject.hid %></td>
-    <td><%= relann.relation %></td>
-    <td><%= relann.object.hid %></td>
-    <td><%= relann.annset.name %></td>
-    <td><%= link_to 'Show', relann %></td>
-    <td><%= link_to 'Destroy', relann, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+    <td><%= relann.reltype %></td>
+    <td><%= relann.relsub_hid %></td>
+    <td><%= relann.relobj_hid %></td>
   </tr>
 <% end %>
 </table>
-
 <br />
+
+<h2>Modification annotations</h2>
+
+<table>
+  <tr>
+    <th>Annset</th>
+    <th>Hid</th>
+    <th>Mod. type</th>
+    <th>Mod. object</th>
+  </tr>
+
+<% @modanns.each do |modann| %>
+  <tr>
+    <td><%= modann.annset_name %></td>
+    <td><%= modann.hid %></td>
+    <td><%= modann.modtype %></td>
+    <td><%= modann.modobj_hid %></td>
+  </tr>
+<% end %>
+</table>
+<br />
+
 <%= link_to 'Home', home_path %>

@@ -52,23 +52,25 @@ ActiveRecord::Schema.define(:version => 20120929134417) do
 
   create_table "insanns", :force => true do |t|
     t.string   "hid"
-    t.integer  "type_id"
-    t.string   "type_type"
+    t.integer  "insobj_id"
+    t.string   "insobj_type"
+    t.string   "instype"
     t.integer  "annset_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
   end
 
   add_index "insanns", ["annset_id"], :name => "index_insanns_on_annset_id"
-  add_index "insanns", ["type_id"], :name => "index_insanns_on_type_id"
+  add_index "insanns", ["insobj_id"], :name => "index_insanns_on_insobj_id"
 
   create_table "modanns", :force => true do |t|
     t.string   "hid"
-    t.string   "modtype"
     t.integer  "modobj_id"
+    t.string   "modobj_type"
+    t.string   "modtype"
     t.integer  "annset_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
   end
 
   add_index "modanns", ["annset_id"], :name => "index_modanns_on_annset_id"
@@ -76,18 +78,18 @@ ActiveRecord::Schema.define(:version => 20120929134417) do
 
   create_table "relanns", :force => true do |t|
     t.string   "hid"
-    t.integer  "subject_id"
-    t.string   "subject_type"
-    t.integer  "object_id"
-    t.string   "object_type"
-    t.string   "relation"
+    t.integer  "relsub_id"
+    t.string   "relsub_type"
+    t.integer  "relobj_id"
+    t.string   "relobj_type"
+    t.string   "reltype"
     t.integer  "annset_id"
-    t.datetime "created_at",   :null => false
-    t.datetime "updated_at",   :null => false
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
   end
 
   add_index "relanns", ["annset_id"], :name => "index_relanns_on_annset_id"
-  add_index "relanns", ["object_id"], :name => "index_relanns_on_object_id"
-  add_index "relanns", ["subject_id"], :name => "index_relanns_on_subject_id"
+  add_index "relanns", ["relobj_id"], :name => "index_relanns_on_relobj_id"
+  add_index "relanns", ["relsub_id"], :name => "index_relanns_on_relsub_id"
 
 end

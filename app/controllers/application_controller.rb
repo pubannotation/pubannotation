@@ -80,9 +80,9 @@ class ApplicationController < ActionController::Base
   end
 
   class Insann_s
-    attr :annset_name, :hid, :type
+    attr :annset_name, :hid, :instype, :insobj_hid
     def initialize (ia)
-      @annset_name, @hid, @type = ia.annset.name, ia.hid, ia.type.hid
+      @annset_name, @hid, @instype, @insobj_hid = ia.annset.name, ia.hid, ia.instype, ia.insobj.hid
     end
   end
 
@@ -120,9 +120,9 @@ class ApplicationController < ActionController::Base
   end
 
   class Relann_s
-    attr :annset_name, :hid, :subject_hid, :relation, :object_hid
+    attr :annset_name, :hid, :relsub_hid, :reltype, :relobj_hid
     def initialize (ra)
-      @annset_name, @hid, @subject_hid, @relation, @object_hid = ra.annset.name, ra.hid, ra.subject.hid, ra.relation, ra.object.hid
+      @annset_name, @hid, @relsub_hid, @reltype, @relobj_hid = ra.annset.name, ra.hid, ra.relsub.hid, ra.reltype, ra.relobj.hid
     end
   end
 
@@ -134,10 +134,15 @@ end
     modanns = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+      p doc
+      puts "-----"
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
         modanns = doc.modanns.where("modanns.annset_id = ?", annset.id)
       else
         modanns = doc.modanns
+        p modanns
+        puts "-----"
+        p doc.insanns
       end
     else
       if annset_name and annset = Annset.find_by_name(annset_name)
@@ -162,7 +167,7 @@ end
   end
 
   class Modann_s
-    attr :annset_name, :hid, :modtype, :modobj
+    attr :annset_name, :hid, :modtype, :modobj_hid
     def initialize (ma)
       @annset_name, @hid, @modtype, @modobj_hid = ma.annset.name, ma.hid, ma.modtype, ma.modobj.hid
     end

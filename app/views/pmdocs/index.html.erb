@@ -2,10 +2,9 @@
 
 <table>
   <tr>
-    <th>Body</th>
-    <th>Source</th>
-    <th>Sourcedb</th>
-    <th>Sourceid</th>
+    <th>Source DB</th>
+    <th>Source Id</th>
+    <th>Text</th>
     <th>Serial</th>
     <th>Section</th>
     <th></th>
@@ -15,10 +14,9 @@
 
 <% @docs.each do |doc| %>
   <tr>
-    <td><%= doc.body %></td>
-    <td><%= doc.source %></td>
     <td><%= doc.sourcedb %></td>
-    <td><%= doc.sourceid %></td>
+    <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
+    <td><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
     <td><%= doc.serial %></td>
     <td><%= doc.section %></td>
     <td><%= link_to 'Show', pmdoc_path(doc.sourceid) %></td>

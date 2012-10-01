@@ -91,7 +91,6 @@ class CatannsController < ApplicationController
 
       params[:catanns].each do |a|
         ca           = Catann.new(a)
-#        ca.hid       = "#{doc.sourceid}-#{annset.name}-#{a[:hid]}"
         ca.begin     = position_map[ca.begin]
         ca.end       = position_map[ca.end]
         ca.doc_id    = doc.id

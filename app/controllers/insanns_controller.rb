@@ -56,19 +56,17 @@ class InsannsController < ApplicationController
     doc = Doc.find_by_sourceid(params[:pmdoc_id])
     annset = Annset.find_by_name(params[:annset_id])
     
-    @insann = []
-
     if doc and annset
       params[:insanns].each do |a|
         ia           = Insann.new
+
+        ia.instype   = a[:instype]
+        ia.insobj    = Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:insobj])
+
         ia.hid       = a[:hid]
-        ca           = Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:type])
-        ia.type      = ca
         ia.annset_id = annset.id
         ia.save
-        @insann = ia
       end
-      
     end
 
     respond_to do |format|

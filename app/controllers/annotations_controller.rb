@@ -14,11 +14,12 @@ class AnnotationsController < ApplicationController
     @catanns = get_catanns_simple(sourcedb, sourceid, params[:annset_id])
     @insanns = get_insanns_simple(sourcedb, sourceid, params[:annset_id])
     @relanns = get_relanns_simple(sourcedb, sourceid, params[:annset_id])
+    @modanns = get_modanns_simple(sourcedb, sourceid, params[:annset_id])
 
     respond_to do |format|
       format.html # index.html.erb
       format.json {
-        @standoff = {:text => @text, :catanns => @catanns, :insanns => @insanns, :relanns => @relanns}
+        @standoff = {:text => @text, :catanns => @catanns, :insanns => @insanns, :relanns => @relanns, :modanns => @modanns}
         render :json => @standoff, :callback => params[:callback]
       }
     end

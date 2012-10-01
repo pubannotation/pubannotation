@@ -56,28 +56,23 @@ class RelannsController < ApplicationController
     doc = Doc.find_by_sourceid(params[:pmdoc_id])
     annset = Annset.find_by_name(params[:annset_id])
     
-    @relann = []
-
     if doc and annset
-
       params[:relanns].each do |a|
         ra           = Relann.new
+
+        ra.relsub    = case a[:relsub]
+          when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:relsub])
+          else           doc.insanns.find_by_annset_id_and_hid(annset.id, a[:relsub])
+        end
+        ra.relobj    = case a[:relobj]
+          when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:relobj])
+          else           doc.insanns.find_by_annset_id_and_hid(annset.id, a[:relobj])
+        end
+        ra.reltype   = a[:reltype]
+
         ra.hid       = a[:hid]
-
-        ra.subject   = case a[:subject]
-          when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:subject])
-          else doc.insanns.find_by_annset_id_and_hid(annset.id, a[:subject])
-        end
-
-        ra.object    = case a[:object]
-          when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:object])
-          else doc.insanns.find_by_annset_id_and_hid(annset.id, a[:object])
-        end
-
-        ra.relation  = a[:relation]
         ra.annset_id = annset.id
         ra.save
-        @relann      = ra
       end
       
     end
