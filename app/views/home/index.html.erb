@@ -4,16 +4,18 @@
 
 <h2>Contents navigation</h2>
 <ul>
-	<li><%= link_to "Documents", pmdocs_path %></li>
+	<li><%= link_to "Documents", docs_path %></li>
 	<ul>
 		<li><%= link_to "PubMed documents", pmdocs_path %></li>
 		<li><%= link_to "PMC documents", pmcdocs_path %></li>
 	</ul>
 	<li><%= link_to "Annotation sets", annsets_path %></li>
-	<li><%= link_to "Category annotations", catanns_path %></li>
-	<li><%= link_to "Instance annotations", insanns_path %></li>
-	<li><%= link_to "Relation annotations", relanns_path %></li>
-	<li><%= link_to "Modification annotations", modanns_path %></li>
+	<ul>
+		<li><%= link_to "Category annotations", catanns_path %></li>
+		<li><%= link_to "Instance annotations", insanns_path %></li>
+		<li><%= link_to "Relation annotations", relanns_path %></li>
+		<li><%= link_to "Modification annotations", modanns_path %></li>
+	</ul>
 </ul>
 
 <h2>RESTfull interface</h2>

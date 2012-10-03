@@ -145,12 +145,12 @@ class ApplicationController < ActionController::Base
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
-        relanns = doc.subcatrels.where("relanns.annset_id = ?", annset.id)
+        relanns  = doc.subcatrels.where("relanns.annset_id = ?", annset.id)
         relanns += doc.subinsrels.where("relanns.annset_id = ?", annset.id)
 #        relanns += doc.objcatrels.where("relanns.annset_id = ?", annset.id)
 #        relanns += doc.objinsrels.where("relanns.annset_id = ?", annset.id)
       else
-        relanns = doc.relanns
+        relanns = doc.relanns unless doc.catanns.empty?
       end
     else
       if annset_name and annset = Annset.find_by_name(annset_name)
@@ -194,10 +194,7 @@ end
         modanns += doc.subcatrelmods.where("modanns.annset_id = ?", annset.id)
         modanns += doc.subinsrelmods.where("modanns.annset_id = ?", annset.id)
       else
-        modanns = doc.modanns
-        p modanns
-        puts "-----"
-        p doc.insanns
+        modanns = doc.modanns unless doc.catanns.empty?
       end
     else
       if annset_name and annset = Annset.find_by_name(annset_name)

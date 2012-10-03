@@ -2,17 +2,7 @@ class ModannsController < ApplicationController
   # GET /modanns
   # GET /modanns.json
   def index
-    if params[:pmdoc_id]
-      sourcedb = 'PubMed'
-      sourceid = params[:pmdoc_id]
-      serial   = 0
-    end
-
-    if params[:pmcdoc_id]
-      sourcedb = 'PMC'
-      sourceid = params[:pmcdoc_id]
-      serial   = params[:div_id]
-    end
+    sourcedb, sourceid, serial = get_docspec(params)
 
     @modanns = get_modanns_simple(params[:annset_id], sourcedb, sourceid, serial)
 
@@ -55,17 +45,7 @@ class ModannsController < ApplicationController
   # POST /modanns
   # POST /modanns.json
   def create
-    if params[:pmdoc_id]
-      sourcedb = 'PubMed'
-      sourceid = params[:pmdoc_id]
-      serial   = 0
-    end
-
-    if params[:pmcdoc_id]
-      sourcedb = 'PMC'
-      sourceid = params[:pmcdoc_id]
-      serial   = params[:div_id]
-    end
+    sourcedb, sourceid, serial = get_docspec(params)
 
     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     annset = Annset.find_by_name(params[:annset_id])

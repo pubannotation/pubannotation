@@ -1,16 +1,6 @@
 class AnnotationsController < ApplicationController
   def index
-    if params[:pmdoc_id]
-      sourcedb = 'PubMed'
-      sourceid = params[:pmdoc_id]
-      serial    = 0
-    end
-
-    if params[:pmcdoc_id]
-      sourcedb = 'PMC'
-      sourceid = params[:pmcdoc_id]
-      serial   = params[:div_id]
-    end
+    sourcedb, sourceid, serial = get_docspec(params)
 
     @text = get_doctext(sourcedb, sourceid, serial)
     @catanns = get_catanns_simple(params[:annset_id], sourcedb, sourceid, serial)
