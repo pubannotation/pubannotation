@@ -1,0 +1,19 @@
+<h1>PMC documents</h1>
+
+<table>
+  <tr>
+    <th>Source DB</th>
+    <th>Source Id</th>
+    <th>Text</th>
+    <th></th>
+  </tr>
+
+<% @docs.each do |doc| %>
+  <tr>
+    <td><%= doc.sourcedb %></td>
+    <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
+    <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
+    <td><%= link_to 'Show divisions', pmcdoc_path(doc.sourceid) %></td>
+  </tr>
+<% end %>
+</table>

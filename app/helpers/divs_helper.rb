@@ -1,0 +1,2 @@
+module DivsHelper
+end
