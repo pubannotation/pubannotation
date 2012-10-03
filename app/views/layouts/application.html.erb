@@ -1,14 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Pubann</title>
+  <title>PubAnnotation</title>
   <%= stylesheet_link_tag    "application", :media => "all" %>
   <%= javascript_include_tag "application" %>
   <%= csrf_meta_tags %>
 </head>
 <body>
-
+<div id="header">
+	<span id="title">PubAnnotation</span>
+	<span id="slogan">"A scalable and sharable storage of text annotations."</span>
+</div>
+<div id="main">
 <%= yield %>
+</div>
+
+<div id="footer">
+<table class="nav">
+<tr>
+<th>Go </th>
+<td><%= link_to 'Back', :back %></td>
+<td><%= link_to 'Home', home_path %></td>
+</tr>
+<table>
+</div>
 
 </body>
 </html>

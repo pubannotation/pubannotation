@@ -6,8 +6,8 @@
     <th>Description</th>
     <th>Annotator</th>
     <th></th>
-    <th></th>
-    <th></th>
+    <!--th></th>
+    <th></th-->
   </tr>
 
 <% @annsets.each do |annset| %>
@@ -16,14 +16,11 @@
     <td><%= annset.description %></td>
     <td><%= annset.annotator %></td>
     <td><%= link_to 'Show', annset_path(annset.name) %></td>
-    <td><%= link_to 'Edit', edit_annset_path(annset.name) %></td>
-    <td><%= link_to 'Destroy', annset_path(annset.name), method: :delete, data: { confirm: 'Are you sure? The annotations that belong to it will be all deleted.' } %></td>
+    <!--td><%= link_to 'Edit', edit_annset_path(annset.name) %></td>
+    <td><%= link_to 'Destroy', annset_path(annset.name), method: :delete, data: { confirm: 'Are you sure? The annotations that belong to it will be all deleted.' } %></td-->
   </tr>
 <% end %>
 </table>
 
-<br />
-
-<%= link_to 'New Annset', new_annset_path %>
-<%= link_to 'Home', home_path %>
+<!--%= link_to 'New Annset', new_annset_path %-->
 

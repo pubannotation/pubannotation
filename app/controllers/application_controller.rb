@@ -1,17 +1,62 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
+  def get_docspec(params)
+    if params[:pmdoc_id]
+      sourcedb = 'PubMed'
+      sourceid = params[:pmdoc_id]
+      serial   = 0
+    elsif params[:pmcdoc_id]
+      sourcedb = 'PMC'
+      sourceid = params[:pmcdoc_id]
+      serial   = params[:div_id]
+    else
+      sourcedb = nil
+      sourceid = nil
+      serial   = nil
+    end
+
+    return sourcedb, sourceid, serial
+  end
+
+
   ## get doctext
-  def get_doctext (sourcedb, sourceid)
-    doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid) #if sourcedb and sourceid
+  def get_doctext (sourcedb, sourceid, serial = 0)
+    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial) #if sourcedb and sourceid
     doc.body if doc
   end
 
+
+  ## get a pmdoc from pubmed
+  def get_pmdoc (pmid)
+    RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=#{pmid}" do |response, request, result|
+      case response.code
+      when 200
+        parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
+        doc = parser.parse
+        title    = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/ArticleTitle').content
+        abstract = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText').content
+
+        doc = Doc.new
+        doc.body = title + "\n" + abstract + "\n"
+        doc.source = 'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid
+        doc.sourcedb = 'PubMed'
+        doc.sourceid = pmid
+        doc.serial = 0
+        doc.section = 'TIAB'
+        return doc
+      else
+        return nil
+      end
+    end
+  end
+
+
   ## get catanns
-  def get_catanns (sourcedb, sourceid, annset_name)
+  def get_catanns (annset_name, sourcedb, sourceid, serial = 0)
     catanns = []
 
-    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
         catanns = doc.catanns.where("annset_id = ?", annset.id)
       else
@@ -30,28 +75,35 @@ class ApplicationController < ActionController::Base
 
 
   # get simplified catanns
-  def get_catanns_simple (sourcedb, sourceid, annset_name)
+  def get_catanns_simple (annset_name, sourcedb, sourceid, serial = 0)
     catanns_s = []
 
-  	catanns = get_catanns(sourcedb, sourceid, annset_name)
+  	catanns = get_catanns(annset_name, sourcedb, sourceid, serial)
     catanns_s = catanns.collect {|ca| Catann_s.new(ca)}
 
     catanns_s
   end
 
   class Catann_s
-    attr :annset_name, :sourcedb, :sourceid, :hid, :begin, :end, :category
+    attr :annset_name, :hid, :begin, :end, :category
     def initialize (ca)
-      @annset_name, @sourcedb, @sourceid, @hid, @begin, @end, @category = ca.annset.name, ca.doc.sourcedb, ca.doc.sourceid, ca.hid, ca.begin, ca.end, ca.category
+      @annset_name, @hid, @begin, @end, @category = ca.annset.name, ca.hid, ca.begin, ca.end, ca.category
     end
   end
 
+#  class Catann_s
+#    attr :annset_name, :doc_sourcedb, :doc_sourceid, :doc_serial, :hid, :begin, :end, :category
+#    def initialize (ca)
+#      @annset_name, @doc_sourcedb, @doc_sourceid, @doc_serial, @hid, @begin, @end, @category = ca.annset.name, ca.doc.sourcedb, ca.doc.sourceid, ca.doc.serial, ca.hid, ca.begin, ca.end, ca.category
+#    end
+#  end
+
 
   ## get insanns
-  def get_insanns (sourcedb, sourceid, annset_name)
+  def get_insanns (annset_name, sourcedb, sourceid, serial = 0)
     insanns = []
 
-    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
         insanns = doc.insanns.where("insanns.annset_id = ?", annset.id)
       else
@@ -70,10 +122,10 @@ class ApplicationController < ActionController::Base
 
 
   # get simplified catanns
-  def get_insanns_simple (sourcedb, sourceid, annset_name)
+  def get_insanns_simple (annset_name, sourcedb, sourceid, serial = 0)
     insanns_s = []
 
-    insanns = get_insanns(sourcedb, sourceid, annset_name)
+    insanns = get_insanns(annset_name, sourcedb, sourceid, serial)
     insanns_s = insanns.collect {|ia| Insann_s.new(ia)}
 
     insanns_s
@@ -88,12 +140,15 @@ class ApplicationController < ActionController::Base
 
 
   ## get relanns
-  def get_relanns (sourcedb, sourceid, annset_name)
+  def get_relanns (annset_name, sourcedb, sourceid, serial = 0)
     relanns = []
 
-    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
-        relanns = doc.relanns.where("relanns.annset_id = ?", annset.id)
+        relanns = doc.subcatrels.where("relanns.annset_id = ?", annset.id)
+        relanns += doc.subinsrels.where("relanns.annset_id = ?", annset.id)
+#        relanns += doc.objcatrels.where("relanns.annset_id = ?", annset.id)
+#        relanns += doc.objinsrels.where("relanns.annset_id = ?", annset.id)
       else
         relanns = doc.relanns
       end
@@ -110,10 +165,10 @@ class ApplicationController < ActionController::Base
 
 
   # get simplified catanns
-  def get_relanns_simple (sourcedb, sourceid, annset_name)
+  def get_relanns_simple (annset_name, sourcedb, sourceid, serial = 0)
     relanns_s = []
 
-    relanns = get_relanns(sourcedb, sourceid, annset_name)
+    relanns = get_relanns(annset_name, sourcedb, sourceid, serial)
     relanns_s = relanns.collect {|ra| Relann_s.new(ra)}
 
     relanns_s
@@ -130,14 +185,14 @@ end
 
 
   ## get modanns
-  def get_modanns (sourcedb, sourceid, annset_name)
+  def get_modanns (annset_name, sourcedb, sourceid, serial = 0)
     modanns = []
 
-    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
-      p doc
-      puts "-----"
+    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
-        modanns = doc.modanns.where("modanns.annset_id = ?", annset.id)
+        modanns = doc.insmods.where("modanns.annset_id = ?", annset.id)
+        modanns += doc.subcatrelmods.where("modanns.annset_id = ?", annset.id)
+        modanns += doc.subinsrelmods.where("modanns.annset_id = ?", annset.id)
       else
         modanns = doc.modanns
         p modanns
@@ -157,10 +212,10 @@ end
 
 
   # get simplified catanns
-  def get_modanns_simple (sourcedb, sourceid, annset_name)
+  def get_modanns_simple (annset_name, sourcedb, sourceid, serial = 0)
     modanns_s = []
 
-    modanns = get_modanns(sourcedb, sourceid, annset_name)
+    modanns = get_modanns(annset_name, sourcedb, sourceid, serial)
     modanns_s = modanns.collect {|ma| Modann_s.new(ma)}
 
     modanns_s

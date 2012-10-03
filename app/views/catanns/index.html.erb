@@ -1,10 +1,11 @@
-<h1>Listing catanns</h1>
+<h1>Category annotations</h1>
 
-<table>
+<table class="ann">
   <tr>
     <th>Annotation set</th>
-    <th>Doc DB</th>
+    <!--th>Doc DB</th>
     <th>Doc Id</th>
+    <th>Division</th-->
     <th>Id</th>
     <th>Begin</th>
     <th>End</th>
@@ -14,8 +15,9 @@
 <% @catanns.each do |catann| %>
   <tr>
     <td><%= catann.annset_name %></td>
-    <td><%= catann.sourcedb %></td>
-    <td><%= catann.sourceid %></td>
+    <!--td><= catann.doc_sourcedb %></td>
+    <td><= catann.doc_sourceid %></td>
+    <td><= catann.doc_serial %></td-->
     <td><%= catann.hid %></td>
     <td><%= catann.begin %></td>
     <td><%= catann.end %></td>
@@ -23,7 +25,3 @@
   </tr>
 <% end %>
 </table>
-
-<br />
-
-<%= link_to 'Home', home_path %>

@@ -1,11 +1,11 @@
-<h1>Listing relanns</h1>
+<h1>Relation annotations</h1>
 
-<table>
+<table class="ann">
   <tr>
     <th>Annset</th>
     <th>Hid</th>
-    <th>Relation type</th>
     <th>Subject</th>
+    <th>Relation type</th>
     <th>Object</th>
   </tr>
 
@@ -13,8 +13,8 @@
   <tr>
     <td><%= relann.annset_name %></td>
     <td><%= relann.hid %></td>
-    <td><%= relann.reltype %></td>
     <td><%= relann.relsub_hid %></td>
+    <td><%= relann.reltype %></td>
     <td><%= relann.relobj_hid %></td>
   </tr>
 <% end %>

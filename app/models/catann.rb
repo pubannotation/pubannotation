@@ -1,10 +1,15 @@
 class Catann < ActiveRecord::Base
   belongs_to :doc
   belongs_to :annset
-  has_many :insanns, :as => :insobj, :dependent => :destroy
-  has_many :relanns, :as => :relsub, :dependent => :destroy
-  has_many :relanns, :as => :relobj, :dependent => :destroy
-  has_many :modanns, :through => :insanns
+
+  has_many :insanns, :foreign_key => "insobj_id", :dependent => :destroy
+
+  has_many :subrels, :class_name => 'Relann', :as => :relsub, :dependent => :destroy
+  has_many :objrels, :class_name => 'Relann', :as => :relobj, :dependent => :destroy
+
+  has_many :insmods, :class_name => 'Modann', :through => :insanns
+  has_many :relmods, :class_name => 'Modann', :through => :relanns
+
 
   attr_accessible :begin, :category, :end, :hid
 

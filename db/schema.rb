@@ -48,16 +48,15 @@ ActiveRecord::Schema.define(:version => 20120929134417) do
     t.datetime "updated_at", :null => false
   end
 
-  add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid", :unique => true
+  add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
 
   create_table "insanns", :force => true do |t|
     t.string   "hid"
     t.integer  "insobj_id"
-    t.string   "insobj_type"
     t.string   "instype"
     t.integer  "annset_id"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   add_index "insanns", ["annset_id"], :name => "index_insanns_on_annset_id"

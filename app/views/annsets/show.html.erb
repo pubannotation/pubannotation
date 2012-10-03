@@ -1,20 +1,31 @@
+<h1>Annotation set description</h1>
 <p id="notice"><%= notice %></p>
 
-<p>
-  <b>Name:</b>
-  <%= @annset.name %>
-</p>
+<table>
+<tr>
+<th>Name</th>
+<td><%= @annset.name %></td>
+</tr>
+<tr>
+<th>Description</th>
+<td><%= @annset.description %></td>
+</tr>
+<tr>
+<th>Annotator</th>
+<td><%= @annset.annotator %></td>
+</tr>
+</table>
 
-<p>
-  <b>Description:</b>
-  <%= @annset.description %>
-</p>
+<h2>Annotations in the set</h2>
+<ul>
+<li><%= link_to "All annotations", pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name) %></li>
+<ul>
+<li><%= link_to "Category annotations", pmcdoc_div_annset_catanns_url(@sourceid, @serial, @annset.name) %></li>
+<li><%= link_to "Instance annotations", pmcdoc_div_annset_insanns_url(@sourceid, @serial, @annset.name) %></li>
+<li><%= link_to "Relation annotations", pmcdoc_div_annset_relanns_url(@sourceid, @serial, @annset.name) %></li>
+<li><%= link_to "Modification annotations", pmcdoc_div_annset_modanns_url(@sourceid, @serial, @annset.name) %></li>
+</ul>
+</ul>
 
-<p>
-  <b>Annotator:</b>
-  <%= @annset.annotator %>
-</p>
-
-
-<%= link_to 'Edit', edit_annset_path(@annset.name) %> |
-<%= link_to 'Back', annsets_path %>
+<!--%= link_to 'Edit', edit_annset_path(@annset.name) %> |
+<%= link_to 'Back', annsets_path %-->

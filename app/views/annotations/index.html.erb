@@ -1,9 +1,9 @@
-<h1>Listing annotations</h1>
+<h1>Annotations</h1>
 
-<p>to <%= @catanns.first.sourcedb %>:<%= @catanns.first.sourceid %></p>
+<!--p>to <= @catanns.first.doc_sourcedb %>:<= @catanns.first.doc_sourceid %></p-->
 
 <h2>Caterogy annotations</h2>
-<table>
+<table class="ann">
   <tr>
     <th>Annset</th>
     <th>Hid</th>
@@ -28,7 +28,7 @@
 
 <h2>Instance annotations</h2>
 
-<table>
+<table class="ann">
   <tr>
     <th>Annset</th>
     <th>Hid</th>
@@ -51,7 +51,7 @@
 
 <h2>Relation annotations</h2>
 
-<table>
+<table class="ann">
   <tr>
     <th>Annset</th>
     <th>Hid</th>
@@ -74,7 +74,7 @@
 
 <h2>Modification annotations</h2>
 
-<table>
+<table class="ann">
   <tr>
     <th>Annset</th>
     <th>Hid</th>
@@ -91,6 +91,3 @@
   </tr>
 <% end %>
 </table>
-<br />
-
-<%= link_to 'Home', home_path %>

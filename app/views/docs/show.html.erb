@@ -1,35 +1,14 @@
+<h1>Document content</h1>
 <p id="notice"><%= notice %></p>
 
-<p>
-  <b>Body:</b>
-  <%= @doc.body %>
-</p>
+<table>
+<tr><th><%= @doc.sourcedb %>:<a href="<%= @doc.source %>"><%= @doc.sourceid %></a> (<%= @doc.serial %> - <%= @doc.section %>)</th></tr>
+<tr><td class="text"><%= @doc.body %></td><tr>
+</table>
 
-<p>
-  <b>Source:</b>
-  <%= @doc.source %>
-</p>
-
-<p>
-  <b>Sourcedb:</b>
-  <%= @doc.sourcedb %>
-</p>
-
-<p>
-  <b>Sourceid:</b>
-  <%= @doc.sourceid %>
-</p>
-
-<p>
-  <b>Serial:</b>
-  <%= @doc.serial %>
-</p>
-
-<p>
-  <b>Section:</b>
-  <%= @doc.section %>
-</p>
-
-
-<%= link_to 'Edit', edit_doc_path(@doc) %> |
-<%= link_to 'Back', docs_path %>
+<h2>Annotation sets</h2>
+<ul>
+<% @annsets.each do |s| %>
+<li><%= link_to s.name, pmcdoc_div_annset_path(@doc.sourceid, @doc.serial, s.name) %></li>
+<% end %>
+</ul>

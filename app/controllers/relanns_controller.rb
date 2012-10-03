@@ -5,14 +5,16 @@ class RelannsController < ApplicationController
     if params[:pmdoc_id]
       sourcedb = 'PubMed'
       sourceid = params[:pmdoc_id]
+      serial   = 0
     end
 
     if params[:pmcdoc_id]
       sourcedb = 'PMC'
       sourceid = params[:pmcdoc_id]
+      serial   = params[:div_id]
     end
 
-    @relanns = get_relanns_simple(sourcedb, sourceid, params[:annset_id])
+    @relanns = get_relanns_simple(params[:annset_id], sourcedb, sourceid, serial)
 
     respond_to do |format|
       format.html # index.html.erb
@@ -53,7 +55,19 @@ class RelannsController < ApplicationController
   # POST /relanns
   # POST /relanns.json
   def create
-    doc = Doc.find_by_sourceid(params[:pmdoc_id])
+    if params[:pmdoc_id]
+      sourcedb = 'PubMed'
+      sourceid = params[:pmdoc_id]
+      serial   = 0
+    end
+
+    if params[:pmcdoc_id]
+      sourcedb = 'PMC'
+      sourceid = params[:pmcdoc_id]
+      serial   = params[:div_id]
+    end
+
+    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     annset = Annset.find_by_name(params[:annset_id])
     
     if doc and annset

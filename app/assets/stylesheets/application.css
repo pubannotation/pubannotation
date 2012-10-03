@@ -20,25 +20,70 @@
 body {
     margin:0px;
     padding:0px;
-    font-family:Arial, Helvetica, sans-serif;
+#    font-family:Arial, Helvetica, sans-serif;
+    font-family: Verdana, Geneva, sans-serif;
+#    font-family: "Comic Sans MS", cursive, sans-serif;
     font-size:12px;
 }
 
-#contents{
-    margin:0 20px;
-    padding-top:60px;
+#header {
+    margin:5px;
+    margin-bottom:20px;
+}
+#main {
+    margin:5px;
+}
+#footer {
+    margin:5px;
+    margin-top:20px;
+}
+
+#title {
+    display: block;
+    margin: 0px;
+    margin-bottom: 0px;
+/*    font-family: Gill-Sans-Bold, fantasy, sans-serif;*/
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    font-weight: bold;
+    font-size: xx-large;
+    color: #119911;
+}
+
+#slogan {
+    display: block;
+    font-family: Gill-Sans-Bold, fantasy, sans-serif;
+    font-size: large;
+    font-style: italic;
+    color: #33ee33;
 }
 
 h1 {
-    font-family: Gill-Sans-Bold, fantasy, sans-serif;
-    font-size: xx-large;
-    margin: 0px;
-    margin-bottom: 0px;
+    font-size:large;
 }
 
 h2 {
-    font-size: x-large;
-    text-decoration: underline;
+    font-size: small;
+    font-weight: bold;
+    padding:2px;
+    width:400px;
+
+    /* fallback (Opera) */
+    background: #EECCCC;
+    /* Mozilla: */
+    background: -moz-linear-gradient(left, #00FF00, #FFFFFF);
+    /* Chrome, Safari:*/
+    background: -webkit-gradient(linear,  left top, right top, from(#00FF00), to(#FFFFFF));
+    /* MSIE */
+    filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#00FF00', EndColorStr='#FFFFFF', GradientType=1);
+}
+
+h3 {
+    font-size:small;
+    font-weight:bold;
+}
+
+p.note {
+    font-style:italic;
 }
 
 a {
@@ -50,99 +95,66 @@ a:hover {
     color:#0071ff;
 }
 
-#buttons {
-    text-align:right;
-    margin:5px;
-    padding:5px
-}
-
-#content {
-    margin:5px;
-    padding:5px
-}
-
-#pages {
-    text-align:center;
-    margin:5px;
-    padding:5px
-}
-
-table.data {
+table {
+/*    width: 90%;*/
     border-collapse:collapse;
-    border-width:1px solid #C1DAD7;
-    text-align:center;
-    width: 100%;            /* added */
-    table-layout: fixed;    /* added */
-    background:#fff;
-    margin-bottom:30px;
-}
-
-.data th {
-    border-collapse:collapse;
-    border:1px solid #C1DAD7;
-    padding:5px;
+    border-width:1px;
+    border-style:solid;
+    border-color:#C1DAD7;
     text-align:center;
     vertical-align: top;
-    font-weight:bold;
-    background-color:#E2EBF0;
-    width: 100px;    /* added */
+    background:#fff;
+    margin-top:5px;
+    margin-bottom:5px;
 }
 
-.data td {
+tr {
+    border-collapse:collapse;
+    border-width:1px;
+    border-style:solid;
+    border-color:#C1DAD7;
+}
+
+
+th {
     border-collapse:collapse;
     border-width:1px;
     border-style:solid;
     border-color:#C1DAD7;
     padding:5px;
-    vertical-align: top;
+    font-weight:bold;
+    background-color:#E2EBF0;
 }
 
-.datum {
-	display:block;
-	border:1px solid #c7dce7;
-	margin-bottom:2px;
-	padding:2px;
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #c5dbe7), color-stop(0.00, #e2ebf0));
-	background: -webkit-linear-gradient(top, #e2ebf0 0%, #c5dbe7 100%);
-	background: -moz-linear-gradient(top, #e2ebf0 0%, #c5dbe7 100%);
-	background: -o-linear-gradient(top, #e2ebf0 0%, #c5dbe7 100%);
-	background: -ms-linear-gradient(top, #e2ebf0 0%, #c5dbe7 100%);
-	background: linear-gradient(top, #e2ebf0 0%, #c5dbe7 100%);
-	-pie-background: linear-gradient(#e2ebf0, #c5dbe7);
-	text-align:center;
-	text-decoration:none;
-	width: 86px;
-	vertical-align: bottom;
-	border-radius: 3px; 
-    -webkit-border-radius: 3px; 
-    -moz-border-radius: 3px;
-	position:relative;
-	
-	behavior: url(css/PIE.htc);
+td {
+    border-collapse:collapse;
+    border-width:1px;
+    border-style:solid;
+    border-color:#C1DAD7;
+    padding:5px;
 }
 
-.datum:hover{
-    cursor:url(../images/cursor_drag.gif);
+td.text {
+    text-align:left;
 }
 
-/* 行の１列目 */
-.data td.termColumn{
-    vertical-align:top;
-/*height:100%;*/
+
+.ann th {
+    width: 100px;    /* added */
 }
 
-.data td.termColumn div.term {
-    height: 100%;
-    position: relative;
+table.nav {
+    width:auto;
+    padding:5px;
 }
 
-.datum th {
-    border-width:0px;
+.nav th {
+    background-color:#F0C2CB;
 }
 
-.datum td {
-    text-align:center;
-    border-width:0px;
+.nav td {
+    padding:5px;
+
 }
 
 table.frame {
@@ -151,7 +163,15 @@ table.frame {
     text-align:left
 }
 
-.frame th, td {
+.frame tr {
+    border-width:0px;
+}
+
+.frame th {
+    border-width:0px;
+}
+
+.frame td {
     border-width:0px;
 }
 
@@ -185,12 +205,6 @@ table.frame {
     filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#00FF00', EndColorStr='#FFFFFF', GradientType=1);
 }
 
-#config {
-    background-color: #EEEEEE
-}
-
-
 li {
     margin-top:5px;
- 
 }
