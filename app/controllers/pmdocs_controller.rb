@@ -1,5 +1,3 @@
-require 'pubmed_get_text'
-
 class PmdocsController < ApplicationController
   # GET /pmdocs
   # GET /pmdocs.json
@@ -16,9 +14,9 @@ class PmdocsController < ApplicationController
   # GET /pmdocs/:pmid.json
   def show
     @doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
+
     if !@doc
-      @pubmed = PubMed.new unless @pubmed
-      @doc = @pubmed.get_pmdoc(params[:id])
+      doc = get_pmdoc(sourceid) 
       @doc.save if @doc
     end
 
