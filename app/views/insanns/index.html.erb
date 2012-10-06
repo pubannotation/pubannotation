@@ -4,16 +4,16 @@
   <tr>
     <th>Annset</th>
     <th>Id</th>
-    <th>Type of instantiation</th>
-    <th>Object of instantiation</th>
+    <th>Type</th>
+    <th>Object</th>
   </tr>
 
 <% @insanns.each do |insann| %>
   <tr>
-    <td><%= insann.annset_name %></td>
-    <td><%= insann.hid %></td>
-    <td><%= insann.instype %></td>
-    <td><%= insann.insobj_hid %></td>
+    <td><%= insann.annset %></td>
+    <td><%= insann.id %></td>
+    <td><%= insann.type %></td>
+    <td><%= insann.object %></td>
   </tr>
 <% end %>
 </table>

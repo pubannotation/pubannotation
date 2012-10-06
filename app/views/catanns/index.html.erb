@@ -7,20 +7,24 @@
     <th>Doc Id</th>
     <th>Division</th-->
     <th>Id</th>
-    <th>Begin</th>
-    <th>End</th>
+    <th>Span (begin:end)</th>
     <th>Category</th>
   </tr>
 
 <% @catanns.each do |catann| %>
   <tr>
-    <td><%= catann.annset_name %></td>
+    <td><%= catann.annset %></td>
     <!--td><= catann.doc_sourcedb %></td>
     <td><= catann.doc_sourceid %></td>
     <td><= catann.doc_serial %></td-->
-    <td><%= catann.hid %></td>
-    <td><%= catann.begin %></td>
-    <td><%= catann.end %></td>
+    <td><%= catann.id %></td>
+    <td>
+      <% unless catann.span.respond_to?(:keys) %>
+        <% catann.span.each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+      <% else %>
+        <%= catann.span[:begin] %>:<%= catann.span[:end] %>
+      <% end %>
+    </td>
     <td><%= catann.category %></td>
   </tr>
 <% end %>

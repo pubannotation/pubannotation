@@ -14,6 +14,7 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs/:divid.json
   def show
     @doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PMC', params[:pmcdoc_id], params[:id])
+
     @annsets = @doc.annsets.uniq
 
     respond_to do |format|
@@ -22,7 +23,7 @@ class DivsController < ApplicationController
         format.json { render json: @doc }
       else 
         format.html { redirect_to pmcdocs_url}
-        format.json { render json: @doc.errors, status: :unprocessable_entity }
+        format.json { render json: @doc}
       end
     end
   end

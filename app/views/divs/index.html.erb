@@ -11,17 +11,19 @@
     <th></th>
   </tr>
 
-<% @docs.each do |doc| %>
+<% @docs.each_with_index do |doc, i| %>
   <tr>
     <td><%= doc.sourcedb %></td>
     <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
     <td><%= doc.serial %></td>
     <td><%= doc.section %></td>
     <td class="text"><%= (doc.body.length < 52)? doc.body : doc.body[0, 50] + ' ...' %></td>
-    <td>bionlp-st-2013-ge [
+    <td style="text-align:right">bionlp-st-2013-ge [
       <%= link_to "table", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-2013-ge") %> |
-      <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-2013-ge", :format => :json) %>
-      ]</td>
+      <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-2013-ge", :format => :json) %> ]<% if i==0 %><br/>
+      discon-sample [
+      <%= link_to "table", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "discon-sample") %> |
+      <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "discon-sample", :format => :json) %> ]<% end %></td>
     <td><%= link_to 'Detail', pmcdoc_div_path(doc.sourceid, doc.serial) %></td>
 
   </tr>

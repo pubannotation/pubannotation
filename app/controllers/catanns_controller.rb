@@ -5,13 +5,26 @@ class CatannsController < ApplicationController
     sourcedb, sourceid, serial = get_docspec(params)
 
     @catanns = get_catanns_simple(params[:annset_id], sourcedb, sourceid, serial)
+    @relanns = get_relanns_simple(params[:annset_id], sourcedb, sourceid, serial)
+    @relanns.delete_if{|ra| ra.type != 'lexChain'}
     @text = get_doctext(sourcedb, sourceid, serial)
+
+    if (params[:encoding] == 'ascii')
+      asciitext = get_ascii_text(@text)
+      @catanns = adjust_catanns(@catanns, @text, asciitext)
+      @text = asciitext
+    end
+
+    unless (params[:discontinuous_annotation] == 'chain')
+      @catanns, @relanns = bag_catanns(@catanns, @relanns)
+    end
 
     respond_to do |format|
       format.html # index.html.erb
       format.json {
-        @standoff = {:text => @text, :catanns => @catanns}
-        render :json => @standoff, :callback => params[:callback]
+        standoff = {:text => @text, :catanns => @catanns}
+        standoff[:relanns] = @relanns unless @relanns.empty?
+        render :json => standoff, :callback => params[:callback]
       }
     end
   end

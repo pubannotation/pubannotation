@@ -8,6 +8,17 @@ class AnnotationsController < ApplicationController
     @relanns = get_relanns_simple(params[:annset_id], sourcedb, sourceid, serial)
     @modanns = get_modanns_simple(params[:annset_id], sourcedb, sourceid, serial)
 
+    if (params[:encoding] == 'ascii')
+      asciitext = get_ascii_text(@text)
+      @catanns = adjust_catanns(@catanns, @text, asciitext)
+      @text = asciitext
+    end
+
+    unless (params[:discontinuous_annotation] == 'chain')
+      @catanns, @relanns = bag_catanns(@catanns, @relanns)
+    end
+
+
     respond_to do |format|
       format.html # index.html.erb
       format.json {

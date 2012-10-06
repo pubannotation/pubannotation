@@ -85,11 +85,53 @@ class ApplicationController < ActionController::Base
   end
 
   class Catann_s
-    attr :annset_name, :hid, :begin, :end, :category
+    attr_accessor :annset, :id, :span, :category
     def initialize (ca)
-      @annset_name, @hid, @begin, @end, @category = ca.annset.name, ca.hid, ca.begin, ca.end, ca.category
+      @annset, @id, @span, @category = ca.annset.name, ca.hid, {:begin => ca.begin, :end => ca.end}, ca.category
     end
   end
+
+
+  def chain_catanns (catanns_s)
+    mid = 0
+    catanns_s.each do |ca|
+      if (cid = a.hid[1..-1].to_i) > mid 
+        mid = cid
+      end
+    end
+  end
+
+  def bag_catanns (catanns, relanns)
+    tomerge = Hash.new
+
+    new_relanns = Array.new
+    relanns.each do |ra|
+      if ra.type == 'lexChain'
+        tomerge[ra.object] = ra.subject
+      else
+        new_relanns << ra
+      end
+    end
+    p tomerge
+    puts '-=-=-==-=-=-=-=-'
+    idx = Hash.new
+    catanns.each_with_index {|ca, i| idx[ca.id] = i}
+
+    mergedto = Hash.new
+    tomerge.each do |from, to|
+      to = mergedto[to] if mergedto.has_key?(to)
+      p idx[from]
+      fca = catanns[idx[from]]
+      tca = catanns[idx[to]]
+      tca.span = [tca.span] unless tca.span.respond_to?('push')
+      tca.span.push (fca.span)
+      catanns.delete_at(idx[from])
+      mergedto[from] = to
+    end
+
+    return catanns, new_relanns
+  end
+
 
 #  class Catann_s
 #    attr :annset_name, :doc_sourcedb, :doc_sourceid, :doc_serial, :hid, :begin, :end, :category
@@ -132,9 +174,9 @@ class ApplicationController < ActionController::Base
   end
 
   class Insann_s
-    attr :annset_name, :hid, :instype, :insobj_hid
+    attr :annset, :id, :type, :object
     def initialize (ia)
-      @annset_name, @hid, @instype, @insobj_hid = ia.annset.name, ia.hid, ia.instype, ia.insobj.hid
+      @annset, @id, @type, @object = ia.annset.name, ia.hid, ia.instype, ia.insobj.hid
     end
   end
 
@@ -175,9 +217,9 @@ class ApplicationController < ActionController::Base
   end
 
   class Relann_s
-    attr :annset_name, :hid, :relsub_hid, :reltype, :relobj_hid
+    attr :annset, :id, :type, :subject, :object
     def initialize (ra)
-      @annset_name, @hid, @relsub_hid, @reltype, @relobj_hid = ra.annset.name, ra.hid, ra.relsub.hid, ra.reltype, ra.relobj.hid
+      @annset, @id, @type, @subject, @object = ra.annset.name, ra.hid, ra.reltype, ra.relsub.hid, ra.relobj.hid
     end
   end
 
@@ -219,8 +261,72 @@ end
   end
 
   class Modann_s
-    attr :annset_name, :hid, :modtype, :modobj_hid
+    attr :annset, :id, :type, :object
     def initialize (ma)
-      @annset_name, @hid, @modtype, @modobj_hid = ma.annset.name, ma.hid, ma.modtype, ma.modobj.hid
+      @annset, @id, @type, @object = ma.annset.name, ma.hid, ma.modtype, ma.modobj.hid
     end
+  end
+
+
+  def get_ascii_text(text)
+    # escape non-ascii characters
+    coder = HTMLEntities.new
+    asciitext = coder.encode(text, :named)
+
+    # restore back
+    asciitext.gsub!('&apos;', "'")
+
+    # change escape characters
+    #asciitext.gsub!(/&([a-zA-Z]{1,10});/, '==\1==')
+
+    asciitext
+  end
+
+
+  # annotation boundary adjustment
+  def get_position_adjustment (from_text, to_text)
+    position_map = Hash.new
+    numchar, numdiff = 0, 0
+    Diff::LCS.sdiff(from_text, to_text) do |h|
+      position_map[h.old_position] = h.new_position
+      numchar += 1
+      numdiff += 1 if h.old_position != h.new_position
+    end
+     
+    if (numdiff.to_f / numchar) > 0.5
+      warn "text different too much: (#{numdiff.to_f/numchar})\n#{@doc.body}\n---\n#{params[:text]}"
+    end
+  end
+
+  def adjust_catanns (catanns, from_text, to_text)
+    position_map = Hash.new
+    numchar, numdiff = 0, 0
+    Diff::LCS.sdiff(from_text, to_text) do |h|
+      position_map[h.old_position] = h.new_position
+      numchar += 1
+      numdiff += 1 if h.old_position != h.new_position
+    end
+     
+    if (numdiff.to_f / numchar) > 0.5
+      warn "text different too much: (#{numdiff.to_f/numchar})\n#{@doc.body}\n---\n#{params[:text]}"
+    end
+
+    new_catanns = Array.new
+    catanns.each do |ca|
+      new_catanns << ca
+      span = new_catanns.last::span
+      p span
+      puts "-=-=-=-=-=-=-"
+      if span.respond_to?(:keys)
+        span[:begin] = position_map[span[:begin]]
+        span[:end]   = position_map[span[:end]]
+      else
+        span.each do |s|
+          s[:begin] = position_map[s[:begin]]
+          s[:end]   = position_map[s[:end]]
+        end
+      end
+    end
+
+    new_catanns
   end

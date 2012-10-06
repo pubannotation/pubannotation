@@ -5,17 +5,17 @@
     <th>Annset</th>
     <th>Id</th>
     <th>Subject</th>
-    <th>Relation type</th>
+    <th>Type</th>
     <th>Object</th>
   </tr>
 
 <% @relanns.each do |relann| %>
   <tr>
-    <td><%= relann.annset_name %></td>
-    <td><%= relann.hid %></td>
-    <td><%= relann.relsub_hid %></td>
-    <td><%= relann.reltype %></td>
-    <td><%= relann.relobj_hid %></td>
+    <td><%= relann.annset %></td>
+    <td><%= relann.id %></td>
+    <td><%= relann.subject %></td>
+    <td><%= relann.type %></td>
+    <td><%= relann.object %></td>
   </tr>
 <% end %>
 </table>

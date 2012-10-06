@@ -7,17 +7,21 @@
   <tr>
     <th>Annset</th>
     <th>Id</th>
-    <th>Begin</th>
-    <th>End</th>
+    <th>Span (begin:end)</th>
     <th>Category</th>
   </tr>
 
 <% @catanns.each do |catann| %>
   <tr>
-    <td><%= catann.annset_name %></td>
-    <td><%= catann.hid %></td>
-    <td><%= catann.begin %></td>
-    <td><%= catann.end %></td>
+    <td><%= catann.annset %></td>
+    <td><%= catann.id %></td>
+    <td>
+      <% unless catann.span.respond_to?(:keys) %>
+        <% catann.span.each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+      <% else %>
+        <%= catann.span[:begin] %>:<%= catann.span[:end] %>
+      <% end %>
+    </td>
     <td><%= catann.category %></td>
   </tr>
 <% end %>
@@ -38,10 +42,10 @@
 
 <% @insanns.each do |insann| %>
   <tr>
-    <td><%= insann.annset_name %></td>
-    <td><%= insann.hid %></td>
-    <td><%= insann.instype %></td>
-    <td><%= insann.insobj_hid %></td>
+    <td><%= insann.annset %></td>
+    <td><%= insann.id %></td>
+    <td><%= insann.type %></td>
+    <td><%= insann.object %></td>
   </tr>
 <% end %>
 </table>
@@ -62,11 +66,11 @@
 
 <% @relanns.each do |relann| %>
   <tr>
-    <td><%= relann.annset_name %></td>
-    <td><%= relann.hid %></td>
-    <td><%= relann.reltype %></td>
-    <td><%= relann.relsub_hid %></td>
-    <td><%= relann.relobj_hid %></td>
+    <td><%= relann.annset %></td>
+    <td><%= relann.id %></td>
+    <td><%= relann.type %></td>
+    <td><%= relann.subject %></td>
+    <td><%= relann.object %></td>
   </tr>
 <% end %>
 </table>
@@ -84,10 +88,10 @@
 
 <% @modanns.each do |modann| %>
   <tr>
-    <td><%= modann.annset_name %></td>
-    <td><%= modann.hid %></td>
-    <td><%= modann.modtype %></td>
-    <td><%= modann.modobj_hid %></td>
+    <td><%= modann.annset %></td>
+    <td><%= modann.id %></td>
+    <td><%= modann.type %></td>
+    <td><%= modann.object %></td>
   </tr>
 <% end %>
 </table>

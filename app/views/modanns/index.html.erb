@@ -4,16 +4,16 @@
   <tr>
     <th>Annset</th>
     <th>Id</th>
-    <th>Type of modification</th>
-    <th>Object of modification</th>
+    <th>Type</th>
+    <th>Object</th>
   </tr>
 
 <% @modanns.each do |modann| %>
   <tr>
-    <td><%= modann.annset_name %></td>
-    <td><%= modann.hid %></td>
-    <td><%= modann.modtype %></td>
-    <td><%= modann.modobj_hid %></td>
+    <td><%= modann.annset %></td>
+    <td><%= modann.id %></td>
+    <td><%= modann.type %></td>
+    <td><%= modann.object %></td>
   </tr>
 <% end %>
 </table>

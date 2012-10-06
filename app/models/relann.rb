@@ -7,6 +7,8 @@ class Relann < ActiveRecord::Base
 
   attr_accessible :hid, :reltype
 
-  validates :hid,     :presence => true
-  validates :reltype, :presence => true
+  validates :hid,       :presence => true
+  validates :reltype,   :presence => true
+  validates :relsub_id, :presence => true
+  validates :relobj_id, :presence => true
 end
