@@ -20,10 +20,30 @@ class ApplicationController < ActionController::Base
   end
 
 
+  ## get docuri
+  def get_docuri (sourcedb, sourceid)
+    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, 0)
+    doc.source if doc
+  end
+
+
   ## get doctext
   def get_doctext (sourcedb, sourceid, serial = 0)
-    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial) #if sourcedb and sourceid
+    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     doc.body if doc
+  end
+
+
+  ## get texturi
+  def get_texturi (sourcedb, sourceid, serial = 0)
+    if params[:pmdoc_id]
+      texturi = "http://pubannotation/pmdocs/#{sourceid}"
+    elsif params[:pmcdoc_id]
+      texturi = "http://pubannotation/pmcdocs/#{sourceid}/divs/#{serial}"
+    else
+      texturi = nil
+    end
+    texturi
   end
 
 
@@ -112,8 +132,6 @@ class ApplicationController < ActionController::Base
         new_relanns << ra
       end
     end
-    p tomerge
-    puts '-=-=-==-=-=-=-=-'
     idx = Hash.new
     catanns.each_with_index {|ca, i| idx[ca.id] = i}
 

@@ -37,6 +37,14 @@ class AnnotationsController < ApplicationController
 
         render :json => standoff, :callback => params[:callback]
       }
+      format.ttl {
+        @docuri = get_docuri(sourcedb, sourceid)
+        @texturi = get_texturi(sourcedb, sourceid, serial)
+        @catidx = Hash.new
+        @catanns.each {|ca| @catidx[ca.id] = ca.category}
+        render :file => "annotations/index.ttl", :type => :erb
+      }
+
     end
   end
 
