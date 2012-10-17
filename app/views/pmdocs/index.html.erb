@@ -1,12 +1,10 @@
-<h1>PubMed documents</h1>
+<h1>PubMed documents (title + abstract)</h1>
 
 <table>
   <tr>
     <th>Source DB</th>
     <th>Source Id</th>
     <th>Text</th>
-    <th>Serial</th>
-    <th>Section</th>
     <th></th>
   </tr>
 
@@ -15,8 +13,6 @@
     <td><%= doc.sourcedb %></td>
     <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
     <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
-    <td><%= doc.serial %></td>
-    <td><%= doc.section %></td>
     <td><%= link_to 'Show', pmdoc_path(doc.sourceid) %></td>
   </tr>
 <% end %>

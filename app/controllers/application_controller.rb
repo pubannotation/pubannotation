@@ -80,7 +80,7 @@ class ApplicationController < ActionController::Base
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
-        catanns = doc.catanns.where("annset_id = ?", annset.id)
+        catanns = doc.catanns.where("annset_id = ?", annset.id).order('begin ASC')
       else
         catanns = doc.catanns
       end
@@ -168,6 +168,7 @@ class ApplicationController < ActionController::Base
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
         insanns = doc.insanns.where("insanns.annset_id = ?", annset.id)
+        insanns.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
       else
         insanns = doc.insanns
       end
@@ -209,6 +210,7 @@ class ApplicationController < ActionController::Base
       if annset_name and annset = doc.annsets.find_by_name(annset_name)
         relanns  = doc.subcatrels.where("relanns.annset_id = ?", annset.id)
         relanns += doc.subinsrels.where("relanns.annset_id = ?", annset.id)
+        relanns.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
 #        relanns += doc.objcatrels.where("relanns.annset_id = ?", annset.id)
 #        relanns += doc.objinsrels.where("relanns.annset_id = ?", annset.id)
       else
@@ -255,6 +257,7 @@ end
         modanns = doc.insmods.where("modanns.annset_id = ?", annset.id)
         modanns += doc.subcatrelmods.where("modanns.annset_id = ?", annset.id)
         modanns += doc.subinsrelmods.where("modanns.annset_id = ?", annset.id)
+        modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       else
         modanns = doc.modanns unless doc.catanns.empty?
       end

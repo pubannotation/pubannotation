@@ -17,6 +17,18 @@
 </table>
 
 <h2>Annotations in the set</h2>
+<% if @sourcedb == 'PubMed' %>
+<ul>
+<li><%= link_to "All annotations", pmdoc_annset_annotations_url(@sourceid, @annset.name) %></li>
+<ul>
+<li><%= link_to "Category annotations", pmdoc_annset_catanns_url(@sourceid, @annset.name) %></li>
+<li><%= link_to "Instance annotations", pmdoc_annset_insanns_url(@sourceid, @annset.name) %></li>
+<li><%= link_to "Relation annotations", pmdoc_annset_relanns_url(@sourceid, @annset.name) %></li>
+<li><%= link_to "Modification annotations", pmdoc_annset_modanns_url(@sourceid, @annset.name) %></li>
+</ul>
+</ul>
+<% end %>
+<% if @sourcedb == 'PMC' %>
 <ul>
 <li><%= link_to "All annotations", pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name) %></li>
 <ul>
@@ -26,6 +38,8 @@
 <li><%= link_to "Modification annotations", pmcdoc_div_annset_modanns_url(@sourceid, @serial, @annset.name) %></li>
 </ul>
 </ul>
+<% end %>
+
 
 <!--%= link_to 'Edit', edit_annset_path(@annset.name) %> |
 <%= link_to 'Back', annsets_path %-->

@@ -9,6 +9,7 @@
 <h2>Annotation sets</h2>
 <ul>
 <% @annsets.each do |s| %>
-<li><%= link_to s.name, pmcdoc_div_annset_path(@doc.sourceid, @doc.serial, s.name) %></li>
+<% if @doc.sourcedb == 'PubMed' %><li><%= link_to s.name, pmdoc_annset_path(@doc.sourceid, s.name) %></li><% end %>
+<% if @doc.sourcedb == 'PMC' %><li><%= link_to s.name, pmcdoc_div_annset_path(@doc.sourceid, @doc.serial, s.name) %></li><% end %>
 <% end %>
 </ul>
