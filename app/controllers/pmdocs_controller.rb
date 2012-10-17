@@ -3,6 +3,9 @@ class PmdocsController < ApplicationController
   # GET /pmdocs.json
   def index
     @docs = Doc.find_all_by_sourcedb('PubMed')
+    sourcedb, sourceid, serial = get_docspec(params)
+    @text = get_doctext(sourcedb, sourceid, serial)
+
 
     respond_to do |format|
       format.html # index.html.erb
@@ -16,7 +19,7 @@ class PmdocsController < ApplicationController
     @doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
 
     if !@doc
-      doc = get_pmdoc(sourceid) 
+      @doc = get_pmdoc(params[:id]) 
       @doc.save if @doc
     end
 

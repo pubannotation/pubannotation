@@ -22,7 +22,15 @@ class CatannsController < ApplicationController
     respond_to do |format|
       format.html # index.html.erb
       format.json {
-        standoff = {:text => @text, :catanns => @catanns}
+        standoff = Hash.new
+        if sourcedb == 'PudMed'
+          standoff[:pmdoc_id] = sourceid
+        elsif sourcedb == 'PMC'
+          standoff[:pmcdoc_id] = sourceid
+          standoff[:div_id] = serial
+        end
+        standoff[:text] = @text
+        standoff[:catanns] = @catanns
         standoff[:relanns] = @relanns unless @relanns.empty?
         render :json => standoff, :callback => params[:callback]
       }

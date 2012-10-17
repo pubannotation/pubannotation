@@ -1,3 +1,5 @@
+require 'xml'
+
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
@@ -295,7 +297,7 @@ end
     asciitext.gsub!('&apos;', "'")
 
     # change escape characters
-    #asciitext.gsub!(/&([a-zA-Z]{1,10});/, '==\1==')
+    asciitext.gsub!(/&([a-zA-Z]{1,10});/, '==\1==')
 
     asciitext
   end
@@ -316,6 +318,7 @@ end
     end
   end
 
+
   def adjust_catanns (catanns, from_text, to_text)
     position_map = Hash.new
     numchar, numdiff = 0, 0
@@ -333,8 +336,6 @@ end
     catanns.each do |ca|
       new_catanns << ca
       span = new_catanns.last::span
-      p span
-      puts "-=-=-=-=-=-=-"
       if span.respond_to?(:keys)
         span[:begin] = position_map[span[:begin]]
         span[:end]   = position_map[span[:end]]

@@ -13,14 +13,32 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs/:divid
   # GET /pmcdocs/:pmcid/divs/:divid.json
   def show
-    @doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PMC', params[:pmcdoc_id], params[:id])
+    params[:div_id] = params[:id]
+    sourcedb, sourceid, serial = get_docspec(params)
+    @text = get_doctext(sourcedb, sourceid, serial)
 
+    if (params[:encoding] == 'ascii')
+      asciitext = get_ascii_text(@text)
+      @text = asciitext
+    end
+
+    @doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PMC', params[:pmcdoc_id], params[:id])
     @annsets = @doc.annsets.uniq
 
     respond_to do |format|
       if @doc
         format.html { render 'docs/show' } # show.html.erb
-        format.json { render json: @doc }
+        format.json {
+          standoff = Hash.new
+          if sourcedb == 'PudMed'
+            standoff[:pmdoc_id] = sourceid
+          elsif sourcedb == 'PMC'
+            standoff[:pmcdoc_id] = sourceid
+            standoff[:div_id] = serial
+          end
+          standoff[:text] = @text
+          render :json => standoff, :callback => params[:callback]
+        }
       else 
         format.html { redirect_to pmcdocs_url}
         format.json { render json: @doc}
