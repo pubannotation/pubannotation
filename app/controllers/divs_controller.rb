@@ -2,7 +2,7 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs
   # GET /pmcdocs/:pmcid/divs.json
   def index
-    @docs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:pmcdoc_id])
+    @docs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:pmcdoc_id], :order => 'serial ASC')
 
     respond_to do |format|
       format.html # index.html.erb

@@ -4,7 +4,7 @@
   <tr>
     <th>Source DB</th>
     <th>Source Id</th>
-    <th>Serial</th>
+    <th>Division</th>
     <th>Section</th>
     <th>Text</th>
     <th>Annotation</th>
@@ -20,10 +20,7 @@
     <td class="text"><%= (doc.body.length < 52)? doc.body : doc.body[0, 50] + ' ...' %></td>
     <td style="text-align:right">bionlp-st-2013-ge [
       <%= link_to "table", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-2013-ge") %> |
-      <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-2013-ge", :format => :json) %> ]<% if i==0 %><br/>
-      discon-sample [
-      <%= link_to "table", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "discon-sample") %> |
-      <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "discon-sample", :format => :json) %> ]<% end %></td>
+      <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-2013-ge", :format => :json) %> ]</td>
     <td><%= link_to 'Detail', pmcdoc_div_path(doc.sourceid, doc.serial) %></td>
 
   </tr>
