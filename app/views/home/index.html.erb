@@ -1,9 +1,4 @@
-<% host = 'http://pubannotation.dbcls.jp' %>
-<!--% host = 'http://localhost:3000' %-->
-<% doc = 'pmcdocs/2626671' %>
-<% annset = 'bionlp-st-2013-ge' %>
-
-<h2>Contents navigation</h2>
+<h2>Contents</h2>
 <ul>
 	<li><%= link_to "Documents", docs_path %></li>
 	<ul>
@@ -11,49 +6,10 @@
 		<li><%= link_to "PMC documents", pmcdocs_path %></li>
 	</ul>
 	<li><%= link_to "Annotation sets", annsets_path %></li>
-	<ul>
-		<li><%= link_to "Category annotations", catanns_path %></li>
-		<li><%= link_to "Instance annotations", insanns_path %></li>
-		<li><%= link_to "Relation annotations", relanns_path %></li>
-		<li><%= link_to "Modification annotations", modanns_path %></li>
-	</ul>
 </ul>
-
-<h2>RESTfull interface</h2>
-<p class="note">Below are just some examples.</p>
-<h3>access to the documents</h3>
+<h2>Documentation</h2>
 <ul>
-<li><a href="<%= host %>/docs"><%= host %>/<u>docs</u></a></li>
-<dd>to get the list of <b>all the documents</b> stored in PubAnnotation.</dd>
-<li><a href="<%= host %>/pmdocs"><%= host %>/<u>pmdocs</u></a></li>
-<dd>to get the list of all the <b>pubmed</b> documents stored in PubAnnotation.</dd>
-<li><a href="<%= host %>/pmcdocs"><%= host %>/<u>pmcdocs</u></a></li>
-<dd>to get the list of all the <b>PMC</b> documents stored in PubAnnotation.</dd>
-<li><a href="<%= host %>/<%= doc %>"><%= host %>/<%= doc %></a> or
-    <a href="<%= host %>/<%= doc %>/divs"><%= host %>/<%= doc %>/divs</a></li>
-<dd>to access the document, <i>PMC:2626671</i>.</dd>
-<dd>As a full paper is divided into several divisions, it will show you the divisions.</dd>
-<li><a href="<%= host %>/<%= doc %>/divs/0"><%= host %>/<%= doc %>/divs/0</a></li>
-<dd>to get the first division of the article, <i>PMC:2626671</i>.</dd>
+	<li><a href="http://bionlp.dbcls.jp/redmine/projects/pubann">Overview</a></li>
+	<li><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features">Features</a></li>
+	<li><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format">Format</a></li>
 </ul>
-
-<h3>access to the annotation sets</h3>
-<ul>
-<li><a href="<%= host %>/annsets"><%= host %>/annsets</a></li>
-<dd>to get the list of <b>all the annotation sets</b>.</dd>
-<li><a href="<%= host %>/<%= doc %>/divs/0/annsets"><%= host %>/<%= doc %>/divs/0/annsets</a></li>
-<dd>to get the list of the annotation sets attached to the document, <i>PMC:2626671</i>.</dd>
-<li><a href="<%= host %>/annsets/<%= annset %>"><%= host %>/annsets/<%= annset %></a></li>
-<dd>to get the desciption of the annotation set, <i><%= annset %></i>.</dd>
-</ul>
-
-<h3>access to the annotations</h3>
-<ul>
-<li><a href="<%= host %>/<%= doc %>/divs/0/annsets/<%= annset %>/annotations"><%= host %>/<%= doc %>/divs/0/annsets/<%= annset %>/<u>annotations</u></a></li>
-<dd>to get <b>all the annotations</b> that belong to the annotation set, <i>genia-ggp</i>, and that made to the text of <i>PMC:2626671</i>.</dd>
-<li><a href="<%= host %>/<%= doc %>/divs/0/annsets/<%= annset %>/catanns"><%= host %>/<%= doc %>/divs/0/annsets/<%= annset %>/<u>catanns</u></a></li>
-<dd>to get all the <b>category annotations</b> ...</dd>
-<li><a href="<%= host %>/<%= doc %>/divs/0/annsets/<%= annset %>/relanns"><%= host %>/<%= doc %>/divs/0/annsets/<%= annset %>/<u>relanns</u></a></li>
-<dd>to get all the <b>relation annotations</b> ...</dd>
-<li><a href="<%= host %>/<%= doc %>/divs/0/annsets/<%= annset %>/annotations.json"><%= host %>/divs/0/<%= doc %>/annsets/<%= annset %>/annotations.<u>json</u></a></li>
-<dd>to get the annotations in <b>json</b>.</dd>
