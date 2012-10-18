@@ -4,20 +4,22 @@
   <tr>
     <th>Source DB</th>
     <th>Source Id</th>
-    <th>Division</th>
-    <th>Section</th>
     <th>Text</th>
     <th></th>
   </tr>
 
 <% @docs.each do |doc| %>
+  <% next unless doc.serial == 0 %>
   <tr>
     <td><%= doc.sourcedb %></td>
     <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
-    <td><%= doc.serial %></td>
-    <td><%= doc.section %></td>
     <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
-    <td><%= link_to 'Show', doc_path(doc.id) %></td>
+    <% if doc.sourcedb == 'PubMed' %>
+      <td><%= link_to 'Show', pmdoc_path(doc.sourceid) %></td>
+    <% end %>
+    <% if doc.sourcedb == 'PMC' %>
+      <td><%= link_to 'Show', pmcdoc_path(doc.sourceid) %></td>
+    <% end %>
   </tr>
 <% end %>
 </table>
