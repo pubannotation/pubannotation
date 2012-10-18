@@ -2,10 +2,8 @@ class PmdocsController < ApplicationController
   # GET /pmdocs
   # GET /pmdocs.json
   def index
-    @docs = Doc.find_all_by_sourcedb('PubMed')
-    sourcedb, sourceid, serial = get_docspec(params)
-    @text = get_doctext(sourcedb, sourceid, serial)
-
+#    @docs = Doc.find_all_by_sourcedb('PubMed')
+    @docs = Doc.where(:sourcedb => 'PubMed').paginate(:page => params[:page])
 
     respond_to do |format|
       format.html # index.html.erb

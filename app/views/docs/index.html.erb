@@ -9,7 +9,6 @@
   </tr>
 
 <% @docs.each do |doc| %>
-  <% next unless doc.serial == 0 %>
   <tr>
     <td><%= doc.sourcedb %></td>
     <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
@@ -24,5 +23,4 @@
 <% end %>
 </table>
 
-<br />
-<%= link_to 'Home', home_path %>
+<%= will_paginate @docs %>

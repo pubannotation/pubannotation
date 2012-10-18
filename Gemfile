@@ -26,6 +26,7 @@ gem 'rest-client'
 gem 'htmlentities'
 gem 'libxml-ruby'
 gem 'diff-lcs'
+gem 'will_paginate'
 gem 'thin'
 
 # To use ActiveModel has_secure_password
