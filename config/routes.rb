@@ -22,7 +22,7 @@ Pubann::Application.routes.draw do
   end
 
   resources :annsets do
-    resources :pmdocs do
+    resources :docs, :pmdocs, :pmcdocs do
       resources :catanns, :insanns, :relanns, :modanns, :annotations
     end
   end

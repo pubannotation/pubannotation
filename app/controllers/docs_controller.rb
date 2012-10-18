@@ -2,7 +2,11 @@ class DocsController < ApplicationController
   # GET /docs
   # GET /docs.json
   def index
-    @docs = Doc.all
+    if params[:annset_id] and annset = Annset.find_by_name(params[:annset_id])
+      @docs = annset.docs.uniq
+    else
+      @docs = Doc.all
+    end
 
     respond_to do |format|
       format.html # index.html.erb
