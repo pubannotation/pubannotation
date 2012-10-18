@@ -50,7 +50,8 @@ body {
 }
 
 #slogan {
-    display: block;
+    display:block;
+    margin-bottom:20px;
     font-family: Gill-Sans-Bold, fantasy, sans-serif;
     font-size: large;
     font-style: italic;
@@ -149,12 +150,54 @@ table.nav {
 }
 
 .nav th {
-    background-color:#F0C2CB;
+    background-color:#AAFFAA;
 }
 
 .nav td {
     padding:5px;
+    color:red;
+}
 
+table.notice {
+    width:auto;
+    border-width:0px;
+    padding:5px;
+    text-align:center;
+    font-style:italic;
+}
+
+.notice tr {
+    border-width:0px;
+}
+
+.notice th {
+    border-width:0px;
+    background-color:#FFFFFF;
+}
+
+.notice td {
+    border-width:0px;
+}
+
+table.menu {
+    width:auto;
+    padding:0px;
+    border-width:0px;
+}
+
+.menu tr {
+    border-width:0px;
+}
+
+.menu th {
+    background-color:#F0C2CB;
+    border-width:0px;
+}
+
+.menu td {
+    padding:5px;
+    border-width:5px;
+    color:#FF0000;
 }
 
 table.frame {

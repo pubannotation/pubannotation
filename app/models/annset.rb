@@ -1,5 +1,5 @@
 class Annset < ActiveRecord::Base
-  attr_accessible :annotator, :description, :name
+  attr_accessible :name, :description, :author, :license, :uploader, :reference
   has_many :catanns, :dependent => :destroy
   has_many :relanns, :dependent => :destroy
   has_many :insanns, :dependent => :destroy

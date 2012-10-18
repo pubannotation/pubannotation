@@ -11,14 +11,17 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120929134417) do
+ActiveRecord::Schema.define(:version => 20121018141253) do
 
   create_table "annsets", :force => true do |t|
     t.string   "name"
     t.text     "description"
-    t.string   "annotator"
+    t.string   "author"
     t.datetime "created_at",  :null => false
     t.datetime "updated_at",  :null => false
+    t.string   "license"
+    t.string   "uploader"
+    t.string   "reference"
   end
 
   add_index "annsets", ["name"], :name => "index_annsets_on_name", :unique => true
@@ -48,6 +51,8 @@ ActiveRecord::Schema.define(:version => 20120929134417) do
     t.datetime "updated_at", :null => false
   end
 
+  add_index "docs", ["serial"], :name => "index_docs_on_serial"
+  add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
   add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
 
   create_table "insanns", :force => true do |t|

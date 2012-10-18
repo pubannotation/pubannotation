@@ -3,9 +3,10 @@ class DocsController < ApplicationController
   # GET /docs.json
   def index
     if params[:annset_id] and annset = Annset.find_by_name(params[:annset_id])
-      docs = annset.docs.where("serial = ?", 0).uniq
+      docs = annset.docs.uniq.keep_if{|d| d.serial == 0}
+#      docs = annset.docs.where(:serial => 0).uniq
     else
-      docs = Doc.where("serial = ?", 0)
+      docs = Doc.where(:serial => 0)
     end
 
     @docs = docs.paginate(:page => params[:page])

@@ -8,8 +8,8 @@
 </head>
 <body>
 <div id="header">
-	<span id="title">PubAnnotation</span>
-	<span id="slogan">"A scalable and sharable storage of text annotations."</span>
+<span id="title">PubAnnotation</span>
+<span id="slogan">"A scalable and sharable storage of text annotations."</span>
 </div>
 <div id="main">
 <%= yield %>
@@ -18,11 +18,32 @@
 <div id="footer">
 <table class="nav">
 <tr>
-<th>Go </th>
+<th>Go</th>
 <td><%= link_to 'Back', :back %></td>
 <td><%= link_to 'Home', home_path %></td>
 </tr>
-<table>
+</table>
+
+<br/>
+
+<table class='notice'>
+<tr>
+<td>
+<table class="menu" align='center'>
+<tr>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann">Overview</a></td>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features">Features</a></td>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format">Formats</a></td>
+</tr>
+</table>
+</td>
+</tr>
+<tr><th>presented by <a href="http://dbcls.rois.ac.jp">DBCLS</a></th></tr>
+<tr><td>Currently, it is a pre-alpha service for proof-of-concept, and should be treated as such.<br/>
+Your notification about any problem with the service will be highly appreciated.<br/>
+Contact: jdkim at dbcls dot rois dot ac dot jp</td></tr>
+</table>
+
 </div>
 
 </body>

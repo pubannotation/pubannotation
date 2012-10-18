@@ -2,13 +2,13 @@ class AnnsetsController < ApplicationController
   # GET /annsets
   # GET /annsets.json
   def index
-    sourcedb, sourceid, serial = get_docspec(params)
+    @sourcedb, @sourceid, @serial = get_docspec(params)
 
-    if sourceid
-      if serial
-        @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
+    if @sourceid
+      if @serial
+        @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(@sourcedb, @sourceid, @serial)
       else
-        @doc = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+        @doc = Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @sourceid)
       end
 
       if @doc
@@ -30,9 +30,14 @@ class AnnsetsController < ApplicationController
   # GET /annsets/:name.json
   def show
     @sourcedb, @sourceid, @serial = get_docspec(params)
-
     @annset = Annset.find_by_name(params[:id])
 
+    unless @sourceid
+      docs = @annset.docs.uniq.keep_if{|d| d.serial == 0}
+      @docs_num = docs.length
+      @pmdocs_num = docs.select{|d| d.sourcedb == 'PubMed'}.length
+      @pmcdocs_num = docs.select{|d| d.sourcedb == 'PMC'}.length
+    end
 
     respond_to do |format|
       format.html # show.html.erb

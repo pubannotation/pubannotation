@@ -11,13 +11,36 @@
 <td><%= @annset.description %></td>
 </tr>
 <tr>
-<th>Annotator</th>
-<td><%= @annset.annotator %></td>
+<th>Author</th>
+<td><%= @annset.author %></td>
+</tr>
+<tr>
+<th>License</th>
+<td><%= @annset.license %></td>
+</tr>
+<tr>
+<th>Uploader</th>
+<td><%= @annset.uploader %></td>
+</tr>
+<tr>
+<th>Reference</th>
+<td><a href="<%= @annset.reference %>"><%= @annset.reference %></a></td>
 </tr>
 </table>
 
-<h2>Annotations in the set</h2>
+<% unless @sourcedb %>
+<h2>See the documents with the annotation</h2>
+<ul>
+	<li><%= link_to "Documents", annset_docs_url(@annset.name) %> (<%= @docs_num %>)</li>
+	<ul>
+		<li><%= link_to "PubMed documents", annset_pmdocs_url(@annset.name) %> (<%= @pmdocs_num %>)</li>
+		<li><%= link_to "PMC documents", annset_pmcdocs_url(@annset.name) %> (<%= @pmcdocs_num %>)</li>
+	</ul>
+</ul>
+<% end %>
+
 <% if @sourcedb == 'PubMed' %>
+<h2>Annotations in the set</h2>
 <ul>
 <li><%= link_to "All annotations", pmdoc_annset_annotations_url(@sourceid, @annset.name) %></li>
 <ul>
@@ -29,6 +52,7 @@
 </ul>
 <% end %>
 <% if @sourcedb == 'PMC' %>
+<h2>See the annotations in the set</h2>
 <ul>
 <li><%= link_to "All annotations", pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name) %></li>
 <ul>
@@ -39,7 +63,3 @@
 </ul>
 </ul>
 <% end %>
-
-
-<!--%= link_to 'Edit', edit_annset_path(@annset.name) %> |
-<%= link_to 'Back', annsets_path %-->

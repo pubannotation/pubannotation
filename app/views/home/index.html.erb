@@ -1,15 +1,9 @@
 <h2>Contents</h2>
 <ul>
-	<li><%= link_to "Documents", docs_path %></li>
+	<li><%= link_to "Documents", docs_path %> (<%= @docs_num %>)</li>
 	<ul>
-		<li><%= link_to "PubMed documents", pmdocs_path %></li>
-		<li><%= link_to "PMC documents", pmcdocs_path %></li>
+		<li><%= link_to "PubMed documents", pmdocs_path %> (<%= @pmdocs_num %>)</li>
+		<li><%= link_to "PMC documents", pmcdocs_path %> (<%= @pmcdocs_num %>)</li>
 	</ul>
-	<li><%= link_to "Annotation sets", annsets_path %></li>
-</ul>
-<h2>Documentation</h2>
-<ul>
-	<li><a href="http://bionlp.dbcls.jp/redmine/projects/pubann">Overview</a></li>
-	<li><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features">Features</a></li>
-	<li><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format">Format</a></li>
+	<li><%= link_to "Annotation sets", annsets_path %> (<%= @annsets_num %>)</li>
 </ul>
