@@ -17,7 +17,7 @@ class AnnsetsController < ApplicationController
         @annsets = []
       end
     else
-      @annsets = Annset.all
+      @annsets = Annset.order('name ASC').all
     end
 
     respond_to do |format|
