@@ -21,7 +21,9 @@
     <td style="text-align:right">bionlp-st-2013-ge [
       <%= link_to "table", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample") %> |
       <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :json) %> |
-      <%= link_to "rdf", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :ttl) %> ]</td>
+      <%= link_to "rdf", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :ttl) %> |
+      <a href="http://bionlp-st.dbcls.jp/brat/index.xhtml#/bionlp-st-ge-2013_sample/PMC-2626671-<%= "%02d" % doc.serial.to_i %>">view</a>
+      ]</td>
     <td><%= link_to 'Detail', pmcdoc_div_path(doc.sourceid, doc.serial) %></td>
   </tr>
 <% end %>
