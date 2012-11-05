@@ -214,7 +214,7 @@ class ApplicationController < ActionController::Base
 #        relanns += doc.objcatrels.where("relanns.annset_id = ?", annset.id)
 #        relanns += doc.objinsrels.where("relanns.annset_id = ?", annset.id)
       else
-        relanns = doc.relanns unless doc.catanns.empty?
+        relanns = doc.subcatrels + doc.subinsrels unless doc.catanns.empty?
       end
     else
       if annset_name and annset = Annset.find_by_name(annset_name)
@@ -259,7 +259,11 @@ end
         modanns += doc.subinsrelmods.where("modanns.annset_id = ?", annset.id)
         modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       else
-        modanns = doc.modanns unless doc.catanns.empty?
+        #modanns = doc.modanns unless doc.catanns.empty?
+        modanns = doc.insmods
+        modanns += doc.subcatrelmods
+        modanns += doc.subinsrelmods
+        modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       end
     else
       if annset_name and annset = Annset.find_by_name(annset_name)

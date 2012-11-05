@@ -56,8 +56,11 @@ class ModannsController < ApplicationController
 
         ma.modtype   = a[:modtype]
         ma.modobj    = case a[:modobj]
-          when /^R/ then doc.relanns.find_by_annset_id_and_hid(annset.id, a[:modobj])
-          else           doc.insanns.find_by_annset_id_and_hid(annset.id, a[:modobj])
+          when /^R/
+            #doc.subcatrels.find_by_annset_id_and_hid(annset.id, a[:modobj])
+            doc.subinsrels.find_by_annset_id_and_hid(annset.id, a[:modobj])
+          else
+            doc.insanns.find_by_annset_id_and_hid(annset.id, a[:modobj])
         end
 
         ma.hid       = a[:hid]
