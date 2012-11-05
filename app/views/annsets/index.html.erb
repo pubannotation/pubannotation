@@ -16,8 +16,8 @@
     <td class="text"><%= (annset.description.length < 64)? annset.description : annset.description[0, 62] + ' ...' %></td>
     <td><%= annset.author %></td>
     <td><%= link_to 'Show', annset_path(annset.name) %></td>
-    <!--td><%= link_to 'Edit', edit_annset_path(annset.name) %></td>
-    <td><%= link_to 'Destroy', annset_path(annset.name), method: :delete, data: { confirm: 'Are you sure? The annotations that belong to it will be all deleted.' } %></td-->
+    <td><%= link_to 'Edit', edit_annset_path(annset.name) %></td>
+    <td><%= link_to 'Destroy', annset_path(annset.name), method: :delete, data: { confirm: 'Are you sure? The annotations that belong to it will be all deleted.' } %></td>
   </tr>
 <% end %>
 </table>
