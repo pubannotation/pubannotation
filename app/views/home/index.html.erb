@@ -1,9 +1,10 @@
-<h2>Contents</h2>
+<h2>Documents stored in PubAnnotation</h2>
 <ul>
-	<li><%= link_to "Documents", docs_path %> (<%= @docs_num %>)</li>
-	<ul>
-		<li><%= link_to "PubMed documents", pmdocs_path %> (<%= @pmdocs_num %>)</li>
-		<li><%= link_to "PMC documents", pmcdocs_path %> (<%= @pmcdocs_num %>)</li>
-	</ul>
+	<li><%= link_to "PubMed documents", pmdocs_path %> (<%= @pmdocs_num %>)</li>
+	<li><%= link_to "PMC documents", pmcdocs_path %> (<%= @pmcdocs_num %>)</li>
+</ul>
+
+<h2>Annotation sets stored in PubAnnotation</h2>
+<ul>
 	<li><%= link_to "Annotation sets", annsets_path %> (<%= @annsets_num %>)</li>
 </ul>

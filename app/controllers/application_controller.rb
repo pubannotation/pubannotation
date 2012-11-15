@@ -1,4 +1,5 @@
 require 'xml'
+require 'pmcdoc'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
@@ -72,6 +73,31 @@ class ApplicationController < ActionController::Base
       end
     end
   end
+
+
+  ## get a pmcdoc from pubmed central
+  def get_pmcdoc (pmcid)
+    pmcdoc = PMCDoc.new(pmcid)
+    divs = pmcdoc.get_divs
+
+    div0 = nil
+    divs.each_with_index do |l, c, i|
+      doc = Doc.new
+      doc.body = c
+      doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + pmcid
+      doc.sourcedb = 'PMC'
+      doc.sourceid = pmcid
+      doc.serial = i
+      doc.section = l
+      doc.save
+      if i == 0
+        div0 = doc
+      end
+    end
+
+    return div0
+  end
+
 
 
   ## get catanns

@@ -17,6 +17,17 @@ class PmcdocsController < ApplicationController
   # GET /pmcdocs/:pmcdoc_id
   # GET /pmcdocs/:pmcdoc_id.json
   def show
-    redirect_to pmcdoc_divs_path(params[:id])
+    @doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PMC', params[:id], 0)
+    unless @doc
+      @doc = get_pmcdoc(params[:id]) 
+    end
+
+    if @doc
+      notice = "The proxy document is successfully created."
+    else
+      notice = "The document processing was not successful. It should be improved soon. We are sorry for the inconvenience."
+    end
+
+    redirect_to pmcdoc_divs_path(params[:id]), :notice => notice
   end
 end
