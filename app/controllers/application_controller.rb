@@ -55,12 +55,11 @@ class ApplicationController < ActionController::Base
     RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=#{pmid}" do |response, request, result|
       case response.code
       when 200
-        parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
-        doc = parser.parse
+        parser   = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
+        doc      = parser.parse
         title    = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/ArticleTitle').content
         abstract = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText').content
-
-        doc = Doc.new
+        doc      = Doc.new
         doc.body = title + "\n" + abstract + "\n"
         doc.source = 'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid
         doc.sourcedb = 'PubMed'
@@ -78,26 +77,27 @@ class ApplicationController < ActionController::Base
   ## get a pmcdoc from pubmed central
   def get_pmcdoc (pmcid)
     pmcdoc = PMCDoc.new(pmcid)
-    divs = pmcdoc.get_divs
 
-    div0 = nil
-    divs.each_with_index do |l, c, i|
-      doc = Doc.new
-      doc.body = c
-      doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + pmcid
-      doc.sourcedb = 'PMC'
-      doc.sourceid = pmcid
-      doc.serial = i
-      doc.section = l
-      doc.save
-      if i == 0
-        div0 = doc
+    if pmcdoc.empty?
+      return nil
+    else
+      div0 = nil
+      divs.each_with_index do |div, i|
+        doc = Doc.new
+        doc.body = div[1]
+        doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + pmcid
+        doc.sourcedb = 'PMC'
+        doc.sourceid = pmcid
+        doc.serial = i
+        doc.section = div[0]
+        doc.save
+        if i == 0
+          div0 = doc
+        end
       end
+      return div0
     end
-
-    return div0
   end
-
 
 
   ## get catanns

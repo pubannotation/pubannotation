@@ -1,50 +1,35 @@
 Pubann::Application.routes.draw do
+  devise_for :users
+
   get "home/index"
-
-  resources :docs
-  resources :modanns
-  resources :insanns
-  resources :catanns
-  resources :relanns
-
-  resources :annsets do
-    resources :catanns, :insanns, :relanns, :modanns
-  end
-
-  resources :pmdocs do
-    resources :catanns, :insanns, :relanns, :modanns
-  end
 
   resources :pmdocs do
     resources :annsets do
-      resources :catanns, :insanns, :relanns, :modanns, :annotations
-    end
-  end
-
-  resources :annsets do
-    resources :docs, :pmdocs, :pmcdocs do
-      resources :catanns, :insanns, :relanns, :modanns, :annotations
+      resources :annotations
     end
   end
 
   resources :pmcdocs do
     resources :divs do
       resources :annsets do
-        resources :catanns, :insanns, :relanns, :modanns, :annotations
+        resources :annotations
       end
     end
   end
 
-#resources :pmcdocs do
-#  resources :annsets
-#end
-  
+  resources :annsets do
+    resources :pmdocs do
+      resources :annotations
+    end
+  end
 
-#  resources :pmdocs do
-#    resource :annsets do
-#      resources :relanns
-#    end
-#  end
+  resources :annsets do
+    resources :pmcdocs do
+      resources :divs do
+        resources :annotations
+      end
+    end
+  end
 
 
   # The priority is based upon order of creation:

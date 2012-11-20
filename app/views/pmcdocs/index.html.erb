@@ -1,4 +1,13 @@
-<h1>PMC documents</h1>
+<h1>
+PMC documents
+<span class="meta">
+<% if @annset %>
+that belong to the annotation set, <span class="pname"><%= @annset.name %></span>
+<% else %>
+stored in <span class="pname">PubAnnotation</span>
+<% end %>
+</span>
+</h1>
 
 <table>
   <tr>
@@ -13,7 +22,11 @@
     <td><%= doc.sourcedb %></td>
     <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
     <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
-    <td><%= link_to 'Show divisions', pmcdoc_path(doc.sourceid) %></td>
+    <% if @annset %>
+      <td><%= link_to 'Show divisions', annset_pmcdoc_url(@annset.name, doc.sourceid) %></td>
+    <% else %>
+      <td><%= link_to 'Show divisions', pmcdoc_path(doc.sourceid) %></td>
+    <% end %>
   </tr>
 <% end %>
 </table>

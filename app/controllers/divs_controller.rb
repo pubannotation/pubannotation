@@ -4,6 +4,10 @@ class DivsController < ApplicationController
   def index
     @docs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:pmcdoc_id], :order => 'serial ASC')
 
+    if params[:annset_id]
+      @annset_name = params[:annset_id]
+    end
+
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @docs }
@@ -23,7 +27,12 @@ class DivsController < ApplicationController
     end
 
     @doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PMC', params[:pmcdoc_id], params[:id])
-    @annsets = @doc.annsets.uniq
+
+    if params[:annset_id] 
+      @annset = Annset.find_by_name(params[:annset_id])
+    else
+      @annsets = @doc.annsets.uniq
+    end
 
     respond_to do |format|
       if @doc

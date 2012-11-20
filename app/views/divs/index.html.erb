@@ -1,4 +1,9 @@
-<h1>Divisions</h1>
+<h1>
+Divisions
+<span class="meta">
+of the document, <span class="pname"><%= @docs.first.sourcedb %>:<%= @docs.first.sourceid %></span>
+</span>
+</h1>
 
 <table>
   <tr>
@@ -7,24 +12,27 @@
     <th>Div.</th>
     <th>Section</th>
     <th>Text</th>
-    <th>Annotation</th>
     <th></th>
   </tr>
 
 <% @docs.each_with_index do |doc, i| %>
   <tr>
-    <td><%= doc.sourcedb %></td>
-    <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
-    <td><%= doc.serial %></td>
-    <td><%= doc.section %></td>
-    <td class="text"><%= (doc.body.length < 32)? doc.body : doc.body[0, 30] + ' ...' %></td>
-    <td style="text-align:right">bionlp-st-2013-ge [
+    <td style="text-align:center"><%= doc.sourcedb %></td>
+    <td style="text-align:center"><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
+    <td style="text-align:center"><%= doc.serial %></td>
+    <td style="text-align:center"><%= doc.section %></td>
+    <td style="text-align:left"><%= (doc.body.length < 42)? doc.body : doc.body[0, 40] + ' ...' %></td>
+    <!--td style="text-align:right">bionlp-st-2013-ge [
       <%= link_to "table", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample") %> |
       <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :json) %> |
       <%= link_to "rdf", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :ttl) %> |
       <a href="http://bionlp-st.dbcls.jp/textav/textav.html?target=<%= pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :json) %>">view</a>
-      ]</td>
-    <td><%= link_to 'Detail', pmcdoc_div_path(doc.sourceid, doc.serial) %></td>
+      ]</td-->
+    <% if @annset_name %>
+    <td><%= link_to 'Show', annset_pmcdoc_div_path(@annset_name, doc.sourceid, doc.serial) %></td>
+    <% else %>    
+    <td><%= link_to 'Show', pmcdoc_div_path(doc.sourceid, doc.serial) %></td>
+    <% end %>
   </tr>
 <% end %>
 </table>

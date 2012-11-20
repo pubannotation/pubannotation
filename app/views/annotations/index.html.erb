@@ -3,6 +3,10 @@
 <!--p>to <= @catanns.first.doc_sourcedb %>:<= @catanns.first.doc_sourceid %></p-->
 
 <h2>Caterogy annotations</h2>
+
+<% if @catanns.empty? %>
+none
+<% else %>
 <table class="ann">
   <tr>
     <th>Annset</th>
@@ -26,12 +30,14 @@
   </tr>
 <% end %>
 </table>
-
-<br />
+<% end %>
 
 
 <h2>Instance annotations</h2>
 
+<% if @insanns.empty? %>
+none
+<% else %>
 <table class="ann">
   <tr>
     <th>Annset</th>
@@ -49,12 +55,14 @@
   </tr>
 <% end %>
 </table>
-
-<br />
+<% end %>
 
 
 <h2>Relation annotations</h2>
 
+<% if @relanns.empty? %>
+none
+<% else %>
 <table class="ann">
   <tr>
     <th>Annset</th>
@@ -74,10 +82,13 @@
   </tr>
 <% end %>
 </table>
-<br />
+<% end %>
 
 <h2>Modification annotations</h2>
 
+<% if @modanns.empty? %>
+none
+<% else %>
 <table class="ann">
   <tr>
     <th>Annset</th>
@@ -95,3 +106,4 @@
   </tr>
 <% end %>
 </table>
+<% end %>

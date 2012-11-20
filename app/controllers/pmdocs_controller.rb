@@ -2,8 +2,8 @@ class PmdocsController < ApplicationController
   # GET /pmdocs
   # GET /pmdocs.json
   def index
-    if params[:annset_id] and annset = Annset.find_by_name(params[:annset_id])
-      @docs = annset.docs.uniq.keep_if{|d| d.sourcedb == 'PubMed' and d.serial == 0}.paginate(:page => params[:page])
+    if params[:annset_id] and @annset = Annset.find_by_name(params[:annset_id])
+      @docs = @annset.docs.uniq.keep_if{|d| d.sourcedb == 'PubMed' and d.serial == 0}.paginate(:page => params[:page])
 #      @docs = annset.docs.where(:sourcedb => 'PubMed', :serial => 0).uniq.paginate(:page => params[:page])
     else
       @docs = Doc.where(:sourcedb => 'PubMed', :serial => 0).paginate(:page => params[:page])
@@ -19,6 +19,10 @@ class PmdocsController < ApplicationController
   # GET /pmdocs/:pmid.json
   def show
     @doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
+    if params[:annset_id] 
+      @annset = Annset.find_by_name(params[:annset_id])
+    end
+
     if !@doc
       @doc = get_pmdoc(params[:id]) 
       @doc.save if @doc

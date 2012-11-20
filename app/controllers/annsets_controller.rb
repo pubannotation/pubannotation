@@ -1,4 +1,6 @@
 class AnnsetsController < ApplicationController
+  before_filter :authenticate_user!, :except => [:index, :show]
+
   # GET /annsets
   # GET /annsets.json
   def index
@@ -49,6 +51,7 @@ class AnnsetsController < ApplicationController
   # GET /annsets/new.json
   def new
     @annset = Annset.new
+    @annset.uploader = current_user.email
 
     respond_to do |format|
       format.html # new.html.erb
@@ -65,6 +68,7 @@ class AnnsetsController < ApplicationController
   # POST /annsets.json
   def create
     @annset = Annset.new(params[:annset])
+    
     respond_to do |format|
       if @annset.save
         format.html { redirect_to annset_path(@annset.name), notice: 'Annset was successfully created.' }

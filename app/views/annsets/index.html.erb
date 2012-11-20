@@ -1,4 +1,19 @@
-<h1>Listing annsets</h1>
+<h1>
+  Annotation sets
+  <% if @sourcedb == 'PubMed' %>
+    <span class='meta'>
+    made to <span class='pname'><%= @sourcedb %>:<%= @sourceid %></span>
+    </span>
+  <% elsif @sourcedb == 'PMC' %>
+    <span class='meta'>
+    made to <%= @serial %>'th divition of <span class='pname'><%= @sourcedb %>:<%= @sourceid %></span>
+    </span>
+  <% else %>
+    <span class='meta'>
+    stored in PubAnnotation
+    </span>
+  <% end %>  
+</h1>
 
 <table>
   <tr>
@@ -6,8 +21,6 @@
     <th>Description</th>
     <th>Author</th>
     <th></th>
-    <!--th></th>
-    <th></th-->
   </tr>
 
 <% @annsets.each do |annset| %>
@@ -16,11 +29,11 @@
     <td class="text"><%= (annset.description.length < 64)? annset.description : annset.description[0, 62] + ' ...' %></td>
     <td><%= annset.author %></td>
     <td><%= link_to 'Show', annset_path(annset.name) %></td>
-    <td><%= link_to 'Edit', edit_annset_path(annset.name) %></td>
-    <td><%= link_to 'Destroy', annset_path(annset.name), method: :delete, data: { confirm: 'Are you sure? The annotations that belong to it will be all deleted.' } %></td>
   </tr>
 <% end %>
 </table>
 
-<!--%= link_to 'New Annset', new_annset_path %-->
+<% if user_signed_in? %>
+<span class="button"><%= link_to 'Create new annotation set', new_annset_path %></span>
+<% end %>
 

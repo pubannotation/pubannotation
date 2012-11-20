@@ -10,40 +10,40 @@
 <div id="header">
 <span id="title">PubAnnotation</span>
 <span id="slogan">"A scalable and sharable storage of text annotations."</span>
+
+
+<div id="account">
+[<%= render 'devise/menu/registration_items' %>|<%= render 'devise/menu/login_items' %>]
 </div>
+
+<table class="menu">
+<tr>
+<td><%= link_to 'Home', home_path %></td>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann">Overview</a></td>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features">Features</a></td>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format">Formats</a></td>
+<td><a href="http://dbcls.rois.ac.jp">DBCLS</a></td>
+</tr>
+</table>
+
+</div>
+
+<div id="notice">
+<%= notice %>
+<%= alert %>
+</div>
+
 <div id="main">
 <%= yield %>
 </div>
 
 <div id="footer">
-<table class="nav">
-<tr>
-<th>Go</th>
-<td><%= link_to 'Back', :back %></td>
-<td><%= link_to 'Home', home_path %></td>
-</tr>
-</table>
-
-<br/>
-
-<table class='notice'>
-<tr>
-<td>
-<table class="menu" align='center'>
-<tr>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann">Overview</a></td>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features">Features</a></td>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format">Formats</a></td>
-</tr>
-</table>
-</td>
-</tr>
-<tr><th>presented by <a href="http://dbcls.rois.ac.jp">DBCLS</a></th></tr>
-<tr><td>Currently, it is a pre-alpha service for proof-of-concept, and should be treated as such.<br/>
-Your notification about any problem with the service will be highly appreciated.<br/>
-Contact: jdkim at dbcls dot rois dot ac dot jp</td></tr>
-</table>
-
+<div class='credit'>
+Currently, it is in its alpha version and there are many incomplete features.</br>
+The reason of making it publicaly available at the current stage is to seek your comments.</br>
+Your any comment about any feature of the service will be highly appreciated.<br/>
+Contact: jdkim at dbcls dot rois dot ac dot jp
+</div>
 </div>
 
 </body>
