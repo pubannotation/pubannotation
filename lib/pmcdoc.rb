@@ -8,16 +8,26 @@ require 'xml'
 
 class PMCDoc
 
-  def initialize(pmcid)
-    RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{pmcid}" do |response, request, result|
-      case response.code
-      when 200
-        if response.index ("PMC#{pmcid} not found")
-          @doc = nil
+  def initialize(pmcid, filename=nil)
+    if pmcid
+      RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{pmcid}" do |response, request, result|
+        case response.code
+        when 200
+          if response.index ("PMC#{pmcid} not found")
+            @doc = nil
+          else
+            parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
+            @doc = parser.parse
+          end
         else
-          parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
-          @doc = parser.parse
+          @doc = nil
         end
+      end
+    elsif filename
+      file = File.read(filename)
+      if file
+        parser = XML::Parser.string(file, :encoding => XML::Encoding::UTF_8)
+        @doc = parser.parse
       else
         @doc = nil
       end
@@ -63,7 +73,7 @@ class PMCDoc
 
       divs = Array.new
 
-      divs << ['TIAB', title.content.strip + "\n" + abstract.content.strip]
+      divs << ['TIAB', get_text(title) + "\n" + get_text(abstract)]
 
       secs.each do |sec|
         stitle  = sec.find_first('./title')
@@ -289,41 +299,80 @@ class PMCDoc
 
   def get_text (node)
     text = ''
-    node.each_element do |e|
-      case e.name
-      when 'title'
-        text += e.content.strip + "\n"
-      when 'p'
-        text += e.content.strip + "\n"
+    node.each do |e|
+      if e.node_type_name == 'element' and e.name == 'sec'
+        text += get_text(e)
+      else
+        text += e.content.strip.gsub(/\n/, ' ').gsub(/ +/, ' ')
       end
+      text += "\n" if e.node_type_name == 'element' and (e.name == 'sec' or e.name == 'title' or e.name == 'p')
     end
-    text
+    text.strip
   end
 
 end
 
 if __FILE__ == $0
+  source = 'n'
+  output = nil
 
-  pmc = PMC.new
+  require 'optparse'
+  optparse = OptionParser.new do |opts|
+    opts.banner = "Usage: pmcdoc.rb [options]"
+
+    opts.on('-f', '--fileread', 'tells it to read the documents from files.') do
+      source = 'f'
+    end
+
+    opts.on('-x', '--save_to_xml', 'tells it to save the documents to xml files.') do
+      output = 'xml'
+    end
+
+    opts.on('-h', '--help', 'displays this screen') do
+      puts opts
+      exit
+    end
+  end
+
+  optparse.parse!
 
   normal = 0
   abnormal = 0
-  ARGV.each do |fn|
-    fn =~ /([0-9]+)/
-    pmcid = $1
-    pmc.get_doc_from_file(fn)
-    puts "[#{pmcid}] ========================"
-    if divs = pmc.get_divs
-      normal += 1
-#      p divs
-#      pmc.output_structure_sec
+
+  ARGV.each do |p|
+
+    if source == "n"
+      pmcdoc = PMCDoc.new(p)
+      pmcid = p
     else
-      abnormal += 1
+      pmcdoc = PMCDoc.new(nil, p)
+      p =~ /([0-9]+)/
+      pmcid = $1
     end
 
-#    pmc.output_overview
-#    pmc.output_structure_p
-#    puts '-=-=-=-=-=-=-=-=-=-=-=-'
+    if divs = pmcdoc.get_divs
+      normal += 1
+      puts "#{pmcid}\t:good"
+      if output == 'xml'
+        divs.each_with_index do |d, i|
+
+          doc = XML::Document.new()
+          doc.root = XML::Node.new('clipSet')
+          root = doc.root
+          root << clip = XML::Node.new('clip')
+          d[1].each_line do |l|
+            clip << p = XML::Node.new('p')
+            p << l.chomp
+          end
+          outfilename = "PMC-#{pmcid}-%02d-#{d[0].gsub(/ /, '_')}.xml" % i
+          doc.save(outfilename, :encoding => XML::Encoding::UTF_8)
+        end
+      end
+    else
+      abnormal += 1
+      puts "#{pmcid}\t:bad"
+    end
+
   end
 
   puts

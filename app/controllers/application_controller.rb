@@ -57,15 +57,20 @@ class ApplicationController < ActionController::Base
       when 200
         parser   = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
         doc      = parser.parse
-        title    = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/ArticleTitle').content
-        abstract = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText').content
+        result   = doc.find_first('/PubmedArticleSet').content.strip
+        return nil if result.empty?
+        title    = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/ArticleTitle')
+        abstract = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText')
         doc      = Doc.new
-        doc.body = title + "\n" + abstract + "\n"
+        doc.body = ""
+        doc.body += title.content.strip if title
+        doc.body += "\n" + abstract.content.strip if abstract
         doc.source = 'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid
         doc.sourcedb = 'PubMed'
         doc.sourceid = pmid
         doc.serial = 0
         doc.section = 'TIAB'
+        doc.save
         return doc
       else
         return nil
@@ -81,6 +86,7 @@ class ApplicationController < ActionController::Base
     if pmcdoc.empty?
       return nil
     else
+      divs = pmcdoc.get_divs
       div0 = nil
       divs.each_with_index do |div, i|
         doc = Doc.new

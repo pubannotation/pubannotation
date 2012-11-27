@@ -8,7 +8,7 @@
 	(<%= @doc.serial %> - <%= @doc.section %>)
 	<% end %>
 </th></tr>
-<tr><td class="text"><%= @text %></td><tr>
+<tr><td class="text"><%= raw @text.gsub(/\n/, "<br>") %></td><tr>
 </table>
 
 
@@ -49,7 +49,7 @@
 	</table>
 <% else %>
 	<h2>Annotation sets <span class="meta">made to this document</span></h2>
-	<% if @annsets.empty? %>
+	<% if !@annsets || @annsets.empty? %>
 		none
 	<% else %>
 		<ul>
