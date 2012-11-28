@@ -11,4 +11,12 @@ class Insann < ActiveRecord::Base
 
   validates :hid,     :presence => true
   validates :instype, :presence => true
+
+  def get_hash
+    hinsann = Hash.new
+    hinsann[:id]    = @hid
+    hinsann[:type]   = @instype
+    hinsann[:object] = @insobj.hid
+    hinsann
+  end
 end

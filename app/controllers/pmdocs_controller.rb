@@ -2,9 +2,15 @@ class PmdocsController < ApplicationController
   # GET /pmdocs
   # GET /pmdocs.json
   def index
-    if params[:annset_id] and @annset = Annset.find_by_name(params[:annset_id])
-      @docs = @annset.docs.uniq.keep_if{|d| d.sourcedb == 'PubMed' and d.serial == 0}.paginate(:page => params[:page])
-#      @docs = annset.docs.where(:sourcedb => 'PubMed', :serial => 0).uniq.paginate(:page => params[:page])
+    if params[:annset_id]
+      @annset = Annset.find_by_name(params[:annset_id])
+      if @annset
+        @docs = @annset.docs.keep_if{|d| d.sourcedb == 'PubMed' and d.serial == 0}.paginate(:page => params[:page])
+        #@docs = annset.docs.where(:sourcedb => 'PubMed', :serial => 0).uniq.paginate(:page => params[:page])
+      else
+        notice = "The annotation set, #{params[:annset_id]}, does not exist."
+        @doc = nil
+      end
     else
       @docs = Doc.where(:sourcedb => 'PubMed', :serial => 0).paginate(:page => params[:page])
     end
@@ -18,20 +24,23 @@ class PmdocsController < ApplicationController
   # GET /pmdocs/:pmid
   # GET /pmdocs/:pmid.json
   def show
-
-    if params[:annset_id] 
+    if params[:annset_id]
       @annset = Annset.find_by_name(params[:annset_id])
       if @annset
         @doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
         if @doc
-          annsets = @doc.annsets.uniq
-          unless annsets.include?(@annset)
-            notice = "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@annset.name}."
-            @doc = nil
+          unless @doc.annsets.include?(@annset)
+            @annset.docs << @doc
+            notice = "The document, #{@doc.sourcedb}:#{@doc.sourceid}, was added to the annotation set, #{@annset.name}."
           end
         else
-          notice = "The annotation set, #{params[:annset_id]}, does not have an annotation to the document, PubMed:#{params[:id]}."
-          @doc = nil
+          @doc = get_pmdoc(params[:id])
+          if @doc
+            @annset.docs << @doc
+            notice = "The document, PubMed:#{params[:id]}, was created in the annotation set, #{params[:annset_id]}."
+          else
+            notice = "The document, PubMed:#{params[:id]}, could not be created." 
+          end
         end
       else
         notice = "The annotation set, #{params[:annset_id]}, does not exist."
@@ -40,10 +49,12 @@ class PmdocsController < ApplicationController
     else
       @doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
       if @doc
-        @annsets = @doc.annsets.uniq
+        @annsets = @doc.annsets
       else
         @doc = get_pmdoc(params[:id])
-        unless @doc
+        if @doc
+          notice = "The document, PubMed:#{params[:id]}, was created." 
+        else
           notice = "The document, PubMed:#{params[:id]}, could not be created." 
         end
       end
@@ -55,10 +66,13 @@ class PmdocsController < ApplicationController
         @text = @doc.body
         if (params[:encoding] == 'ascii')
           asciitext = get_ascii_text(@text)
-            @text = asciitext
+          @text = asciitext
         end
 
-        format.html { render 'docs/show' } # show.html.erb
+        format.html {
+          flash[:notice] = notice
+          render 'docs/show'
+        }
         format.json { render json: @doc }
       else 
         format.html { redirect_to pmdocs_url, notice: notice}
@@ -68,18 +82,106 @@ class PmdocsController < ApplicationController
   end
 
 
-  def create
-    @doc = get_pmdoc(params[:id]) 
-    
-    respond_to do |format|
-      if @doc
-        format.html { redirect_to pmdoc_path(params[:id]), notice: 'Pubmed document was successfully created.' }
-        format.json { render json: @doc, status: :created, location: @doc }
+  # PUT /pmdocs/:pmid
+  # PUT /pmdocs/:pmid.json
+  def update
+    doc    = nil
+    annset = nil
+
+    if params[:annset_id]
+      annset = Annset.find_by_name(params[:annset_id])
+      if annset
+        doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
+        if doc
+          unless doc.annsets.include?(annset)
+            doc.annsets << annset
+            annset.docs << doc
+            notice = "The document, #{@doc.sourcedb}:#{@doc.sourceid}, was added to the annotation set, #{annset.name}."
+          end
+        else
+          doc = get_pmdoc(params[:id])
+          if doc
+            doc.annsets << annset
+            annset.docs << doc
+            notice = "The document, #{@doc.sourcedb}:#{@doc.sourceid}, was created in the annotation set, #{annset.name}."
+          else
+            notice = "The document, PubMed:#{params[:id]}, could not be created." 
+          end
+        end
       else
-        format.html { redirect_to pmdocs_path, notice: 'Pubmed document could not be created.' }
-        format.json { render json: @doc.errors, status: :unprocessable_entity }
+        notice = "The annotation set, #{params[:annset_id]}, does not exist."
+        doc = nil
+      end
+    else
+      doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
+      unless doc
+        doc = get_pmdoc(params[:id])
+        if doc
+          notice = "The document, PubMed:#{params[:id]}, was successfuly created." 
+        else
+          notice = "The document, PubMed:#{params[:id]}, could not be created." 
+        end
+      end
+    end
+
+    respond_to do |format|
+      if doc
+        if annset
+          format.html { redirect_to annset_pmdoc_path(annset.name, doc.sourceid), notice: notice }
+          format.json { head :no_content }
+        else
+          format.html { redirect_to pmdoc_path(doc.sourceid), notice: notice }
+          format.json { head :no_content }
+        end
+      else
+        if annset
+          format.html { redirect_to annset_path(annset.name), notice: notice }
+          format.json { render json: @annset.errors, status: :unprocessable_entity }
+        else
+          format.html { redirect_to home_path, notice: notice }
+          format.json { render json: @annset.errors, status: :unprocessable_entity }
+        end
+      end
+    end
+  end
+
+  # DELETE /pmdocs/:pmid
+  # DELETE /pmdocs/:pmid.json
+  def destroy
+    annset = nil
+
+    if params[:annset_id]
+      annset = Annset.find_by_name(params[:annset_id])
+      if annset
+        doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
+        if doc
+          if doc.annsets.include?(annset)
+            annset.docs.delete(doc)
+            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was removed from the annotation set, #{annset.name}."
+          else
+            notice = "the annotation set, #{annset.name} does not include the document, #{doc.sourcedb}:#{doc.sourceid}."
+          end
+        else
+          notice = "The document, PubMed:#{params[:id]}, does not exist in PubAnnotation." 
+        end
+      else
+        notice = "The annotation set, #{params[:annset_id]}, does not exist."
+      end
+    else
+      doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
+      doc.destroy
+    end
+
+    respond_to do |format|
+      if annset
+        format.html { redirect_to annset_pmdocs_path(annset.name), notice: notice }
+        format.json { head :no_content }
+      else
+        format.html { redirect_to pmdocs_path, notice: notice }
+        format.json { head :no_content }
       end
     end
   end
 
 end
+

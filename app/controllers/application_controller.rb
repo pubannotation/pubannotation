@@ -128,20 +128,24 @@ class ApplicationController < ActionController::Base
   end
 
 
-  # get simplified catanns
-  def get_catanns_simple (annset_name, sourcedb, sourceid, serial = 0)
-    catanns_s = []
-
-  	catanns = get_catanns(annset_name, sourcedb, sourceid, serial)
-    catanns_s = catanns.collect {|ca| Catann_s.new(ca)}
-
-    catanns_s
+  # get catanns (hash version)
+  def get_hcatanns (annset_name, sourcedb, sourceid, serial = 0)
+    catanns = get_catanns(annset_name, sourcedb, sourceid, serial)
+    hcatanns = catanns.collect {|ca| ca.get_hash}
+    hcatanns
   end
 
-  class Catann_s
-    attr_accessor :annset, :id, :span, :category
-    def initialize (ca)
-      @annset, @id, @span, @category = ca.annset.name, ca.hid, {:begin => ca.begin, :end => ca.end}, ca.category
+
+  def save_hcatanns (hcatanns, annset, doc)
+    hcatanns.each do |a|
+      ca           = Catann.new
+      ca.hid       = a[:id]
+      ca.begin     = a[:span][:begin]
+      ca.end       = a[:span][:end]
+      ca.category  = a[:category]
+      ca.annset_id = annset.id
+      ca.doc_id    = doc.id
+      ca.save
     end
   end
 
@@ -154,6 +158,7 @@ class ApplicationController < ActionController::Base
       end
     end
   end
+
 
   def bag_catanns (catanns, relanns)
     tomerge = Hash.new
@@ -216,20 +221,21 @@ class ApplicationController < ActionController::Base
   end
 
 
-  # get simplified catanns
-  def get_insanns_simple (annset_name, sourcedb, sourceid, serial = 0)
-    insanns_s = []
-
+  # get insanns (hash version)
+  def get_hinsanns (annset_name, sourcedb, sourceid, serial = 0)
     insanns = get_insanns(annset_name, sourcedb, sourceid, serial)
-    insanns_s = insanns.collect {|ia| Insann_s.new(ia)}
-
-    insanns_s
+    hinsanns = insanns.collect {|ia| ia.get_hash}
   end
 
-  class Insann_s
-    attr :annset, :id, :type, :object
-    def initialize (ia)
-      @annset, @id, @type, @object = ia.annset.name, ia.hid, ia.instype, ia.insobj.hid
+
+  def save_hinsanns (hinsanns, annset, doc)
+    hinsanns.each do |a|
+      ia           = Insann.new
+      ia.hid       = a[:id]
+      ia.instype   = a[:type]
+      ia.insobj    = Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:object])
+      ia.annset_id = annset.id
+      ia.save
     end
   end
 
@@ -260,24 +266,30 @@ class ApplicationController < ActionController::Base
   end
 
 
-  # get simplified catanns
-  def get_relanns_simple (annset_name, sourcedb, sourceid, serial = 0)
-    relanns_s = []
-
+  # get relanns (hash version)
+  def get_hrelanns (annset_name, sourcedb, sourceid, serial = 0)
     relanns = get_relanns(annset_name, sourcedb, sourceid, serial)
-    relanns_s = relanns.collect {|ra| Relann_s.new(ra)}
-
-    relanns_s
+    hrelanns = relanns.collect {|ra| ra.get_hash}
   end
 
-  class Relann_s
-    attr :annset, :id, :type, :subject, :object
-    def initialize (ra)
-      @annset, @id, @type, @subject, @object = ra.annset.name, ra.hid, ra.reltype, ra.relsub.hid, ra.relobj.hid
+
+  def save_hrelanns (hrelanns, annset, doc)
+    hrelanns.each do |a|
+      ra           = Relann.new
+      ra.hid       = a[:id]
+      ra.reltype   = a[:type]
+      ra.relsub    = case a[:subject]
+        when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:subject])
+        else           doc.insanns.find_by_annset_id_and_hid(annset.id, a[:subject])
+      end
+      ra.relobj    = case a[:object]
+        when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:object])
+        else           doc.insanns.find_by_annset_id_and_hid(annset.id, a[:object])
+      end
+      ra.annset_id = annset.id
+      ra.save
     end
   end
-
-end
 
 
   ## get modanns
@@ -309,20 +321,27 @@ end
   end
 
 
-  # get simplified catanns
-  def get_modanns_simple (annset_name, sourcedb, sourceid, serial = 0)
-    modanns_s = []
-
+  # get modanns (hash version)
+  def get_hmodanns (annset_name, sourcedb, sourceid, serial = 0)
     modanns = get_modanns(annset_name, sourcedb, sourceid, serial)
-    modanns_s = modanns.collect {|ma| Modann_s.new(ma)}
-
-    modanns_s
+    hmodanns = modanns.collect {|ma| ma.get_hash}
   end
 
-  class Modann_s
-    attr :annset, :id, :type, :object
-    def initialize (ma)
-      @annset, @id, @type, @object = ma.annset.name, ma.hid, ma.modtype, ma.modobj.hid
+
+  def save_hmodanns (hmodanns, annset, doc)
+    hmodanns.each do |a|
+      ma           = Modann.new
+      ma.hid       = a[:id]
+      ma.modtype   = a[:type]
+      ma.modobj    = case a[:object]
+        when /^R/
+          #doc.subcatrels.find_by_annset_id_and_hid(annset.id, a[:object])
+          doc.subinsrels.find_by_annset_id_and_hid(annset.id, a[:object])
+        else
+          doc.insanns.find_by_annset_id_and_hid(annset.id, a[:object])
+      end
+      ma.annset_id = annset.id
+      ma.save
     end
   end
 
@@ -342,22 +361,8 @@ end
   end
 
 
-  # annotation boundary adjustment
-  def get_position_adjustment (from_text, to_text)
-    position_map = Hash.new
-    numchar, numdiff = 0, 0
-    Diff::LCS.sdiff(from_text, to_text) do |h|
-      position_map[h.old_position] = h.new_position
-      numchar += 1
-      numdiff += 1 if h.old_position != h.new_position
-    end
-     
-    if (numdiff.to_f / numchar) > 0.5
-      warn "text different too much: (#{numdiff.to_f/numchar})\n#{@doc.body}\n---\n#{params[:text]}"
-    end
-  end
-
-
+  # to work on the hash representation of catanns
+  # to assume that there is no bag representation to this method
   def adjust_catanns (catanns, from_text, to_text)
     position_map = Hash.new
     numchar, numdiff = 0, 0
@@ -366,25 +371,20 @@ end
       numchar += 1
       numdiff += 1 if h.old_position != h.new_position
     end
-     
-    if (numdiff.to_f / numchar) > 0.5
-      warn "text different too much: (#{numdiff.to_f/numchar})\n#{@doc.body}\n---\n#{params[:text]}"
+
+    # TODO
+    # if (numdiff.to_f / numchar) > 2
+    #   return nil, "The text is too much different from PubMed. The mapping could not be calculated.: #{numdiff}/#{numchar}"
+    # else
+
+    catanns_new = Array.new(catanns)
+
+    (0...catanns.length).each do |i|
+      catanns_new[i][:span][:begin] = position_map[catanns[i][:span][:begin]]
+      catanns_new[i][:span][:end]   = position_map[catanns[i][:span][:end]]
     end
 
-    new_catanns = Array.new
-    catanns.each do |ca|
-      new_catanns << ca
-      span = new_catanns.last::span
-      if span.respond_to?(:keys)
-        span[:begin] = position_map[span[:begin]]
-        span[:end]   = position_map[span[:end]]
-      else
-        span.each do |s|
-          s[:begin] = position_map[s[:begin]]
-          s[:end]   = position_map[s[:end]]
-        end
-      end
-    end
-
-    new_catanns
+    [catanns_new, nil]
   end
+
+end

@@ -9,26 +9,37 @@ stored in <span class="pname">PubAnnotation</span>
 </span>
 </h1>
 
-<table>
-  <tr>
-    <th>Source DB</th>
-    <th>Source Id</th>
-    <th>Text</th>
-    <th></th>
-  </tr>
+<% if @docs.empty? %>
+  none
+<% else %>
+  <table>
+    <tr>
+      <th>Source DB</th>
+      <th>Source Id</th>
+      <th>Text</th>
+      <th></th>
+    </tr>
 
-<% @docs.each do |doc| %>
-  <tr>
-    <td><%= doc.sourcedb %></td>
-    <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
-    <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
-    <% if @annset %>
-    <td><%= link_to 'Show', annset_pmdoc_url(@annset.name, doc.sourceid) %></td>
-    <% else %>
-    <td><%= link_to 'Show', pmdoc_path(doc.sourceid) %></td>
-    <% end %>
-  </tr>
+  <% @docs.each do |doc| %>
+    <tr>
+      <td><%= doc.sourcedb %></td>
+      <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
+      <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
+      <td>
+        <% if @annset %>
+          <span class="button"><%= link_to 'Show', annset_pmdoc_path(@annset.name, doc.sourceid) %></span>
+          <% if user_signed_in? and current_user.email == @annset.uploader%>
+            <span class="button"><%= link_to 'Remove', annset_pmdoc_path(@annset.name, doc.sourceid), method: :delete, data: { confirm: 'Are you sure? All the annotations to this document that belong to the annotation set will be deleted.' } %></span>
+          <% end %>
+        <% else %>
+          <span class="button"><%= link_to 'Show', pmdoc_path(doc.sourceid) %></span>
+        <% end %>
+      </td>
+
+    </tr>
+  <% end %>
+  </table>
 <% end %>
-</table>
+
 
 <%= will_paginate @docs %>

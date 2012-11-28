@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121117082819) do
+ActiveRecord::Schema.define(:version => 20121128135129) do
 
   create_table "annsets", :force => true do |t|
     t.string   "name"
@@ -22,9 +22,17 @@ ActiveRecord::Schema.define(:version => 20121117082819) do
     t.string   "license"
     t.string   "uploader"
     t.string   "reference"
+    t.string   "editor"
   end
 
   add_index "annsets", ["name"], :name => "index_annsets_on_name", :unique => true
+
+  create_table "annsets_docs", :id => false, :force => true do |t|
+    t.integer "annset_id"
+    t.integer "doc_id"
+  end
+
+  add_index "annsets_docs", ["annset_id", "doc_id"], :name => "index_annsets_docs_on_annset_id_and_doc_id", :unique => true
 
   create_table "catanns", :force => true do |t|
     t.string   "hid"

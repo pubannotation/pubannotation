@@ -72,7 +72,6 @@ class CatannsController < ApplicationController
     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     if !doc and sourcedb == 'PubMed'
       doc = get_pmdoc(sourceid) 
-      doc.save if doc
     end
 
     annset = Annset.find_by_name(params[:annset_id])

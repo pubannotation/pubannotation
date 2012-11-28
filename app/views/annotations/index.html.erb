@@ -2,108 +2,93 @@
 
 <!--p>to <= @catanns.first.doc_sourcedb %>:<= @catanns.first.doc_sourceid %></p-->
 
-<h2>Caterogy annotations</h2>
+<% if @catanns and !@catanns.empty? %>
+  <h2>Caterogy annotations</h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Span (begin:end)</th>
+      <th>Category</th>
+    </tr>
 
-<% if @catanns.empty? %>
-none
-<% else %>
-<table class="ann">
-  <tr>
-    <th>Annset</th>
-    <th>Id</th>
-    <th>Span (begin:end)</th>
-    <th>Category</th>
-  </tr>
-
-<% @catanns.each do |catann| %>
-  <tr>
-    <td><%= catann.annset %></td>
-    <td><%= catann.id %></td>
-    <td>
-      <% unless catann.span.respond_to?(:keys) %>
-        <% catann.span.each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
-      <% else %>
-        <%= catann.span[:begin] %>:<%= catann.span[:end] %>
-      <% end %>
-    </td>
-    <td><%= catann.category %></td>
-  </tr>
-<% end %>
-</table>
+  <% @catanns.each do |catann| %>
+    <tr>
+      <td><%= catann[:id] %></td>
+      <td>
+        <% unless catann[:span].respond_to?(:keys) %>
+          <% catann[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+        <% else %>
+          <%= catann[:span][:begin] %>:<%= catann[:span][:end] %>
+        <% end %>
+      </td>
+      <td><%= catann[:category] %></td>
+      <td style="text-align:left; font-style:italic; color:#888888; border-color:white"><%= @text[catann[:span][:begin]...catann[:span][:end]] %></td>
+    </tr>
+  <% end %>
+  </table>
 <% end %>
 
 
-<h2>Instance annotations</h2>
+<% if @insanns and !@insanns.empty? %>
+  <h2>Instance annotations</h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Ins. type</th>
+      <th>Ins. object</th>
+    </tr>
 
-<% if @insanns.empty? %>
-none
-<% else %>
-<table class="ann">
-  <tr>
-    <th>Annset</th>
-    <th>Id</th>
-    <th>Ins. type</th>
-    <th>Ins. object</th>
-  </tr>
-
-<% @insanns.each do |insann| %>
-  <tr>
-    <td><%= insann.annset %></td>
-    <td><%= insann.id %></td>
-    <td><%= insann.type %></td>
-    <td><%= insann.object %></td>
-  </tr>
-<% end %>
-</table>
+  <% @insanns.each do |insann| %>
+    <tr>
+      <td><%= insann[:id] %></td>
+      <td><%= insann[:type] %></td>
+      <td><%= insann[:object] %></td>
+    </tr>
+  <% end %>
+  </table>
 <% end %>
 
 
-<h2>Relation annotations</h2>
+<% if @relanns and !@relanns.empty? %>
+  <h2>Relation annotations</h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Relation type</th>
+      <th>Subject</th>
+      <th>Object</th>
+    </tr>
 
-<% if @relanns.empty? %>
-none
-<% else %>
-<table class="ann">
-  <tr>
-    <th>Annset</th>
-    <th>Id</th>
-    <th>Relation type</th>
-    <th>Subject</th>
-    <th>Object</th>
-  </tr>
-
-<% @relanns.each do |relann| %>
-  <tr>
-    <td><%= relann.annset %></td>
-    <td><%= relann.id %></td>
-    <td><%= relann.type %></td>
-    <td><%= relann.subject %></td>
-    <td><%= relann.object %></td>
-  </tr>
-<% end %>
-</table>
+  <% @relanns.each do |relann| %>
+    <tr>
+      <td><%= relann[:id] %></td>
+      <td><%= relann[:type] %></td>
+      <td><%= relann[:subject] %></td>
+      <td><%= relann[:object] %></td>
+    </tr>
+  <% end %>
+  </table>
 <% end %>
 
-<h2>Modification annotations</h2>
+<% if @modanns and !@modanns.empty? %>
+  <h2>Modification annotations</h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Mod. type</th>
+      <th>Mod. object</th>
+    </tr>
 
-<% if @modanns.empty? %>
-none
-<% else %>
-<table class="ann">
-  <tr>
-    <th>Annset</th>
-    <th>Id</th>
-    <th>Mod. type</th>
-    <th>Mod. object</th>
-  </tr>
-
-<% @modanns.each do |modann| %>
-  <tr>
-    <td><%= modann.annset %></td>
-    <td><%= modann.id %></td>
-    <td><%= modann.type %></td>
-    <td><%= modann.object %></td>
-  </tr>
+  <% @modanns.each do |modann| %>
+    <tr>
+      <td><%= modann[:id] %></td>
+      <td><%= modann[:type] %></td>
+      <td><%= modann[:object] %></td>
+    </tr>
+  <% end %>
+  </table>
 <% end %>
-</table>
+
+<% if (!@catanns or @catanns.empty?) and (!@insanns or @insanns.empty?) and (!@relanns or @relanns.empty?) and (!@modanns or @modanns.empty?) %>
+<p>none</p>
 <% end %>

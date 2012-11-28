@@ -12,5 +12,5 @@ class Doc < ActiveRecord::Base
   has_many :subcatrelmods, :class_name => 'Modann', :through => :subcatrels, :source => :modanns
   has_many :subinsrelmods, :class_name => 'Modann', :through => :subinsrels, :source => :modanns
 
-  has_many :annsets, :through => :catanns
+  has_and_belongs_to_many :annsets
 end

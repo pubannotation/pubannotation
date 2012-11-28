@@ -1,76 +1,82 @@
 <h1>Annotation set description</h1>
 
-<table>
-<tr>
-<th>Name</th>
-<td><%= @annset.name %></td>
-</tr>
-<tr>
-<th>Description</th>
-<td><%= @annset.description %></td>
-</tr>
-<tr>
-<th>Author</th>
-<td><%= @annset.author %></td>
-</tr>
-<tr>
-<th>License</th>
-<td><%= @annset.license %></td>
-</tr>
-<tr>
-<th>Uploader</th>
-<td><%= @annset.uploader %></td>
-</tr>
-<tr>
-<th>Reference</th>
-<td><a href="<%= @annset.reference %>"><%= @annset.reference %></a></td>
-</tr>
-</table>
-<% if user_signed_in? %>
-<span class="button"><%= link_to 'Edit', edit_annset_path(@annset.name) %></span>
-<span class="button"><%= link_to 'Destroy', annset_path(@annset.name), method: :delete, data: { confirm: 'Are you sure? The annotations that belong to it will be all deleted.' } %></span>
-<% end %>
-
-
-<% if @sourcedb %>
-	<h2>Annotations
-		<span class="meta">to the document, <span class="pname"><%=@sourcedb%>:<%=@sourceid%></span>,
-		within this annotation set</span></span>
-	</h2>
-	<table style="border-color:#FFFFFF">
+<% if @annset %>
+	<table>
 	<tr>
-	<td>See</td>
-	<td>in the format,
-	<% if @sourcedb == 'PubMed' %>
-		[<%= link_to "Table", pmdoc_annset_annotations_url(@sourceid, @annset.name) %>],
-		[<%= link_to "JSON",  pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :json) %>], or
-		[<%= link_to "RDF",   pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :ttl) %>],
-		</td>
-		</tr>
-		<tr>
-		<td></td>
-		<td>
-		or in the annotation viewer,
-		[<a href="http://bionlp.dbcls.jp/textav/textav.html?target=<%= pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :json) %>">TextAV</a>].
-	<% elsif @sourcedb == 'PMC' %>
-		[<%= link_to "Table", pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name) %>],
-		[<%= link_to "JSON",  pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :json) %>], or
-		[<%= link_to "RDF",   pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :ttl) %>],
-		</td>
-		</tr>
-		<tr>
-		<td></td>
-		<td>
-		or in the annotation viewer,
-		[<a href="http://bionlp.dbcls.jp/textav/textav.html?target=<%= pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :json) %>">TextAV</a>].
-	<% end %>
-	</td>
+	<th>Name</th>
+	<td><%= @annset.name %></td>
 	</tr>
+	<tr>
+	<th>Description</th>
+	<td><%= @annset.description %></td>
+	</tr>
+	<tr>
+	<th>Author</th>
+	<td><%= @annset.author %></td>
+	</tr>
+	<tr>
+	<th>License</th>
+	<td><%= @annset.license %></td>
+	</tr>
+	<tr>
+	<th>Uploader</th>
+	<td><%= @annset.uploader %></td>
+	</tr>
+	<tr>
+	<th>Reference</th>
+	<td><a href="<%= @annset.reference %>"><%= @annset.reference %></a></td>
+	</tr>
+	<th>Editor</th>
+	<td><a href="<%= @annset.editor %>"><%= @annset.editor %></a></td>
+	</tr>
+
 	</table>
-<% else %>
-	<h2>Documents <span class="meta">that belong to this annotation set</span></h2>
-	<ul>
-		<li><%= link_to "PubMed documents", annset_pmdocs_url(@annset.name) %> (<%= @pmdocs_num %>)</li>
-		<li><%= link_to "PMC documents", annset_pmcdocs_url(@annset.name) %> (<%= @pmcdocs_num %>)</li>
-	</ul>
+	<% if user_signed_in? %>
+	<span class="button"><%= link_to 'Edit', edit_annset_path(@annset.name) %></span>
+	<span class="button"><%= link_to 'Destroy', annset_path(@annset.name), method: :delete, data: { confirm: 'Are you sure? The annotations that belong to it will be all deleted.' } %></span>
+	<% end %>
+
+
+	<% if @sourcedb %>
+		<h2>Annotations
+			<span class="meta">to the document, <span class="pname"><%=@sourcedb%>:<%=@sourceid%></span>,
+			within this annotation set</span></span>
+		</h2>
+		<table style="border-color:#FFFFFF">
+		<tr>
+		<td>See</td>
+		<td>in the format,
+		<% if @sourcedb == 'PubMed' %>
+			[<%= link_to "Table", pmdoc_annset_annotations_url(@sourceid, @annset.name) %>],
+			[<%= link_to "JSON",  pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :json) %>], or
+			[<%= link_to "RDF",   pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :ttl) %>],
+			</td>
+			</tr>
+			<tr>
+			<td></td>
+			<td>
+			or in the annotation viewer,
+			[<a href="http://bionlp.dbcls.jp/textav/textav.html?target=<%= pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :json) %>">TextAV</a>].
+		<% elsif @sourcedb == 'PMC' %>
+			[<%= link_to "Table", pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name) %>],
+			[<%= link_to "JSON",  pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :json) %>], or
+			[<%= link_to "RDF",   pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :ttl) %>],
+			</td>
+			</tr>
+			<tr>
+			<td></td>
+			<td>
+			or in the annotation viewer,
+			[<a href="http://bionlp.dbcls.jp/textav/textav.html?target=<%= pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :json) %>">TextAV</a>].
+		<% end %>
+		</td>
+		</tr>
+		</table>
+	<% else %>
+		<h2>Documents <span class="meta">that belong to this annotation set</span></h2>
+		<ul>
+			<li><%= link_to "PubMed documents", annset_pmdocs_url(@annset.name) %> (<%= @pmdocs_num %>)</li>
+			<li><%= link_to "PMC documents", annset_pmcdocs_url(@annset.name) %> (<%= @pmcdocs_num %>)</li>
+		</ul>
+	<% end %>
 <% end %>

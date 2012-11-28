@@ -31,18 +31,22 @@ class AnnsetsController < ApplicationController
   # GET /annsets/:name
   # GET /annsets/:name.json
   def show
-    @sourcedb, @sourceid, @serial = get_docspec(params)
     @annset = Annset.find_by_name(params[:id])
+    if @annset
+      @sourcedb, @sourceid, @serial = get_docspec(params)
 
-    unless @sourceid
-      docs = @annset.docs.uniq.keep_if{|d| d.serial == 0}
-      @docs_num = docs.length
-      @pmdocs_num = docs.select{|d| d.sourcedb == 'PubMed'}.length
-      @pmcdocs_num = docs.select{|d| d.sourcedb == 'PMC'}.length
+      unless @sourceid
+        docs = @annset.docs.uniq.keep_if{|d| d.serial == 0}
+        @docs_num = docs.length
+        @pmdocs_num = docs.select{|d| d.sourcedb == 'PubMed'}.length
+        @pmcdocs_num = docs.select{|d| d.sourcedb == 'PMC'}.length
+      end
+    else
+      notice = "The annotation set, #{params[:id]}, does not exist."
     end
 
     respond_to do |format|
-      format.html # show.html.erb
+      format.html {flash[:notice] = notice }
       format.json { render json: @annset }
     end
   end
@@ -71,7 +75,7 @@ class AnnsetsController < ApplicationController
     
     respond_to do |format|
       if @annset.save
-        format.html { redirect_to annset_path(@annset.name), notice: 'Annset was successfully created.' }
+        format.html { redirect_to annset_path(@annset.name), notice: 'Annotation set was successfully created.' }
         format.json { render json: @annset, status: :created, location: @annset }
       else
         format.html { render action: "new" }
@@ -87,7 +91,7 @@ class AnnsetsController < ApplicationController
 
     respond_to do |format|
       if @annset.update_attributes(params[:annset])
-        format.html { redirect_to annset_path(@annset.name), notice: 'Annset was successfully updated.' }
+        format.html { redirect_to annset_path(@annset.name), notice: 'Annotation set was successfully updated.' }
         format.json { head :no_content }
       else
         format.html { render action: "edit" }

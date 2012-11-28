@@ -1,5 +1,4 @@
 <h1>Document content</h1>
-<p id="notice"><%= notice %></p>
 
 <table>
 <tr><th style="text-align:left">
@@ -30,8 +29,8 @@
 		<tr>
 		<td></td>
 		<td>
-		or in the annotation viewer,
-		[<a href="http://bionlp.dbcls.jp/textav/textav.html?target=<%= annset_pmdoc_annotations_url(@annset.name, @doc.sourceid, :format => :json) %>">TextAV</a>].
+		or in the annotation editor,
+		[<a href="<%= @annset.editor %>?target=<%= annset_pmdoc_annotations_url(@annset.name, @doc.sourceid, :format => :json) %>">TextAE</a>].
 	<% elsif @doc.sourcedb == 'PMC' %>
 		[<%= link_to "Table", annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial) %>],
 		[<%= link_to "JSON",  annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial, :format => :json) %>], or

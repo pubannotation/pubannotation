@@ -1,26 +1,30 @@
 <h1>Documents</h1>
 
-<table>
-  <tr>
-    <th>Source DB</th>
-    <th>Source Id</th>
-    <th>Text</th>
-    <th></th>
-  </tr>
+<% if @docs.empty? %>
+  none
+<% else %>
+  <table>
+    <tr>
+      <th>Source DB</th>
+      <th>Source Id</th>
+      <th>Text</th>
+      <th></th>
+    </tr>
 
-<% @docs.each do |doc| %>
-  <tr>
-    <td><%= doc.sourcedb %></td>
-    <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
-    <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
+  <% @docs.each do |doc| %>
+    <tr>
+      <td><%= doc.sourcedb %></td>
+      <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
+      <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
     <% if doc.sourcedb == 'PubMed' %>
       <td><%= link_to 'Show', pmdoc_path(doc.sourceid) %></td>
     <% end %>
     <% if doc.sourcedb == 'PMC' %>
       <td><%= link_to 'Show', pmcdoc_path(doc.sourceid) %></td>
     <% end %>
-  </tr>
+    </tr>
+  <% end %>
+  </table>
 <% end %>
-</table>
 
 <%= will_paginate @docs %>

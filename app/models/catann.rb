@@ -1,6 +1,6 @@
 class Catann < ActiveRecord::Base
-  belongs_to :doc
   belongs_to :annset
+  belongs_to :doc
 
   has_many :insanns, :foreign_key => "insobj_id", :dependent => :destroy
 
@@ -11,11 +11,20 @@ class Catann < ActiveRecord::Base
   has_many :relmods, :class_name => 'Modann', :through => :relanns
 
 
-  attr_accessible :begin, :category, :end, :hid
+  attr_accessible :hid, :begin, :end, :category
 
   validates :hid,       :presence => true
-  validates :category,  :presence => true
   validates :begin,     :presence => true
   validates :end,       :presence => true
-  validates :annset_id, :presence => true 
+  validates :category,  :presence => true
+  validates :annset_id, :presence => true
+  validates :doc_id,    :presence => true
+
+  def get_hash
+    hcatann = Hash.new
+    hcatann[:id]      = hid
+    hcatann[:span]     = {:begin => self.begin, :end => self.end}
+    hcatann[:category] = category
+    hcatann
+  end
 end
