@@ -31,6 +31,7 @@ Pubann::Application.routes.draw do
     end
   end
 
+  #match '/annsets/:annset_id/pmdocs/:pmdoc_id/annotations' => 'annotations#index', :via => ["OPTIONS"]
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

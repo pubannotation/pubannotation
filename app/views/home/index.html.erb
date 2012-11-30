@@ -1,3 +1,7 @@
+<% content_for :path do %>
+> home
+<% end %>
+
 <h1>Documents <span class="meta">stored in <span class="pname">PubAnnotation</span></span></h1>
 <ul>
 	<li><%= link_to "PubMed documents", pmdocs_path %> (<%= @pmdocs_num %>)</li>

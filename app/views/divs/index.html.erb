@@ -1,3 +1,17 @@
+<% content_for :path do %>
+  > <%= link_to "home", home_path %>
+  <% if @annset_name %>
+    > <%= link_to "annsets", annsets_path %>
+    > <%= link_to @annset_name, annset_path(@annset_name) %>
+    > <%= link_to "pmcdocs", annset_pmcdocs_path(@annset_name) %>
+    > <%= link_to @docs.first.sourceid, annset_pmcdoc_path(@annset_name, @docs.first.sourceid) %>
+  <% else %>
+    > <%= link_to "pmcdocs", pmcdocs_path %>
+    > <%= link_to @docs.first.sourceid, pmcdoc_path(@docs.first.sourceid) %>
+  <% end %>
+  > divs
+<% end %>
+
 <h1>
 Divisions
 <span class="meta">

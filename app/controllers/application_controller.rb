@@ -87,7 +87,7 @@ class ApplicationController < ActionController::Base
       return nil
     else
       divs = pmcdoc.get_divs
-      div0 = nil
+      docs = []
       divs.each_with_index do |div, i|
         doc = Doc.new
         doc.body = div[1]
@@ -97,11 +97,9 @@ class ApplicationController < ActionController::Base
         doc.serial = i
         doc.section = div[0]
         doc.save
-        if i == 0
-          div0 = doc
-        end
+        docs << doc
       end
-      return div0
+      return docs
     end
   end
 
@@ -133,6 +131,19 @@ class ApplicationController < ActionController::Base
     catanns = get_catanns(annset_name, sourcedb, sourceid, serial)
     hcatanns = catanns.collect {|ca| ca.get_hash}
     hcatanns
+  end
+
+
+  def clean_hcatanns (catanns)
+    catanns = catanns.values if catanns.respond_to?(:values)
+
+    catanns.each do |a|
+      return nil, "format error" unless a[:id] and a[:span] and a[:span][:begin] and a[:span][:end] and a[:category]
+      a[:span][:begin] = a[:span][:begin].to_i
+      a[:span][:end]   = a[:span][:end].to_i
+    end
+
+    [catanns, nil]
   end
 
 
@@ -188,14 +199,6 @@ class ApplicationController < ActionController::Base
 
     return catanns, new_relanns
   end
-
-
-#  class Catann_s
-#    attr :annset_name, :doc_sourcedb, :doc_sourceid, :doc_serial, :hid, :begin, :end, :category
-#    def initialize (ca)
-#      @annset_name, @doc_sourcedb, @doc_sourceid, @doc_serial, @hid, @begin, @end, @category = ca.annset.name, ca.doc.sourcedb, ca.doc.sourceid, ca.doc.serial, ca.hid, ca.begin, ca.end, ca.category
-#    end
-#  end
 
 
   ## get insanns

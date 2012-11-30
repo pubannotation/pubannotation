@@ -8,8 +8,8 @@ class PmdocsController < ApplicationController
         @docs = @annset.docs.keep_if{|d| d.sourcedb == 'PubMed' and d.serial == 0}.paginate(:page => params[:page])
         #@docs = annset.docs.where(:sourcedb => 'PubMed', :serial => 0).uniq.paginate(:page => params[:page])
       else
-        notice = "The annotation set, #{params[:annset_id]}, does not exist."
         @doc = nil
+        notice = "The annotation set, #{params[:annset_id]}, does not exist."
       end
     else
       @docs = Doc.where(:sourcedb => 'PubMed', :serial => 0).paginate(:page => params[:page])
@@ -37,7 +37,7 @@ class PmdocsController < ApplicationController
           @doc = get_pmdoc(params[:id])
           if @doc
             @annset.docs << @doc
-            notice = "The document, PubMed:#{params[:id]}, was created in the annotation set, #{params[:annset_id]}."
+            notice = "The document, PubMed:#{params[:id]}, was created and added to the annotation set, #{params[:annset_id]}."
           else
             notice = "The document, PubMed:#{params[:id]}, could not be created." 
           end
@@ -125,23 +125,21 @@ class PmdocsController < ApplicationController
     end
 
     respond_to do |format|
-      if doc
+      format.html {
         if annset
-          format.html { redirect_to annset_pmdoc_path(annset.name, doc.sourceid), notice: notice }
-          format.json { head :no_content }
+          redirect_to annset_pmdocs_path(annset.name), notice: notice
         else
-          format.html { redirect_to pmdoc_path(doc.sourceid), notice: notice }
-          format.json { head :no_content }
+          redirect_to pmdocs_path, notice: notice
         end
-      else
-        if annset
-          format.html { redirect_to annset_path(annset.name), notice: notice }
-          format.json { render json: @annset.errors, status: :unprocessable_entity }
+      }
+
+      format.json {
+        if doc and (annset or !params[:annset_id])
+          head :no_content
         else
-          format.html { redirect_to home_path, notice: notice }
-          format.json { render json: @annset.errors, status: :unprocessable_entity }
+          head :unprocessable_entity
         end
-      end
+      }
     end
   end
 

@@ -7,30 +7,32 @@
   <%= csrf_meta_tags %>
 </head>
 <body>
-<div id="header">
-<span id="title">PubAnnotation</span>
-<span id="slogan">"A scalable and sharable storage of text annotations."</span>
 
+<div id="header">
+<div id="title">PubAnnotation</div>
+<div id="slogan">"A scalable and sharable storage of text annotations."</div>
 
 <div id="account">
-[<%= render 'devise/menu/registration_items' %>|<%= render 'devise/menu/login_items' %>]
+[<%= render 'devise/menu/login_items' %>|<%= render 'devise/menu/registration_items' %>]
 </div>
 
 <table class="menu">
 <tr>
-<td><%= link_to 'Home', home_path %></td>
 <td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann">Overview</a></td>
 <td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features">Features</a></td>
 <td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format">Formats</a></td>
 <td><a href="http://dbcls.rois.ac.jp">DBCLS</a></td>
 </tr>
 </table>
+</div>
 
+<div id="path">
+	<%= yield :path %>
 </div>
 
 <div id="notice">
-<%= notice %>
-<%= alert %>
+	<%= notice %>
+	<%= alert %>
 </div>
 
 <div id="main">

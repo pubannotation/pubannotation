@@ -1,3 +1,15 @@
+<% content_for :path do %>
+  > <%= link_to "home", home_path %>
+  <% if @annset %>
+    > <%= link_to "annsets", annsets_path %>
+    > <%= link_to @annset.name, annset_path(@annset.name) %>
+	> <%= link_to "pmdocs", annset_pmdocs_path(@annset.name) %>
+  <% else %>
+	> <%= link_to "pmdocs", pmdocs_path %>
+  <% end %>
+  > <%= @doc.sourceid %>
+<% end %>
+
 <h1>Document content</h1>
 
 <table>
@@ -21,27 +33,27 @@
 	<td>See</td>
 	<td>in the format,
 	<% if @doc.sourcedb == 'PubMed' %>
-		[<%= link_to "Table", annset_pmdoc_annotations_url(@annset.name, @doc.sourceid) %>],
-		[<%= link_to "JSON",  annset_pmdoc_annotations_url(@annset.name, @doc.sourceid, :format => :json) %>], or
-		[<%= link_to "RDF",   annset_pmdoc_annotations_url(@annset.name, @doc.sourceid, :format => :ttl) %>],
-		</td>
-		</tr>
-		<tr>
-		<td></td>
-		<td>
-		or in the annotation editor,
-		[<a href="<%= @annset.editor %>?target=<%= annset_pmdoc_annotations_url(@annset.name, @doc.sourceid, :format => :json) %>">TextAE</a>].
-	<% elsif @doc.sourcedb == 'PMC' %>
-		[<%= link_to "Table", annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial) %>],
-		[<%= link_to "JSON",  annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial, :format => :json) %>], or
-		[<%= link_to "RDF",   annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial, :format => :ttl) %>],
+		[<%= link_to "Table", annset_pmdoc_annotations_path(@annset.name, @doc.sourceid) %>],
+		[<%= link_to "JSON",  annset_pmdoc_annotations_path(@annset.name, @doc.sourceid, :format => :json) %>], or
+		[<%= link_to "RDF",   annset_pmdoc_annotations_path(@annset.name, @doc.sourceid, :format => :ttl) %>],
 		</td>
 		</tr>
 		<tr>
 		<td></td>
 		<td>
 		or in the annotation viewer,
-		[<a href="http://bionlp.dbcls.jp/textav/textav.html?target=<%= annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial, :format => :json) %>">TextAV</a>].
+		[<a href="<%= @annset.editor %>?target=<%= annset_pmdoc_annotations_url(@annset.name, @doc.sourceid, :format => :json) %>">TextAE</a>].
+	<% elsif @doc.sourcedb == 'PMC' %>
+		[<%= link_to "Table", annset_pmcdoc_div_annotations_path(@annset.name, @doc.sourceid, @doc.serial) %>],
+		[<%= link_to "JSON",  annset_pmcdoc_div_annotations_path(@annset.name, @doc.sourceid, @doc.serial, :format => :json) %>], or
+		[<%= link_to "RDF",   annset_pmcdoc_div_annotations_path(@annset.name, @doc.sourceid, @doc.serial, :format => :ttl) %>],
+		</td>
+		</tr>
+		<tr>
+		<td></td>
+		<td>
+		or in the annotation viewer,
+		[<a href="<%= @annset.editor %>?target=<%= annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial, :format => :json) %>">TextAE</a>].
 	<% end %>
 	</td>
 	</tr>

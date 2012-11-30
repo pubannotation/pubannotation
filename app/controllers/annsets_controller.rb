@@ -75,7 +75,7 @@ class AnnsetsController < ApplicationController
     
     respond_to do |format|
       if @annset.save
-        format.html { redirect_to annset_path(@annset.name), notice: 'Annotation set was successfully created.' }
+        format.html { redirect_to annset_path(@annset.name), :notice => 'Annotation set was successfully created.' }
         format.json { render json: @annset, status: :created, location: @annset }
       else
         format.html { render action: "new" }
@@ -91,7 +91,7 @@ class AnnsetsController < ApplicationController
 
     respond_to do |format|
       if @annset.update_attributes(params[:annset])
-        format.html { redirect_to annset_path(@annset.name), notice: 'Annotation set was successfully updated.' }
+        format.html { redirect_to annset_path(@annset.name), :notice => 'Annotation set was successfully updated.' }
         format.json { head :no_content }
       else
         format.html { render action: "edit" }
@@ -107,7 +107,7 @@ class AnnsetsController < ApplicationController
     @annset.destroy
 
     respond_to do |format|
-      format.html { redirect_to annsets_url }
+      format.html { redirect_to annsets_path, notice: "The annotation set, #{params[:id]}, was deleted." }
       format.json { head :no_content }
     end
   end

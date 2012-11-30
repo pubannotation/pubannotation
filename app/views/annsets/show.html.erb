@@ -1,3 +1,18 @@
+<% content_for :path do %>
+	> <%= link_to "home", home_path %>
+	<% if @sourcedb == 'PubMed' %>
+		> <%= link_to "pmdocs", pmdocs_path %>
+		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
+	 	> <%= link_to "annsets", pmdoc_annsets_path(@sourceid) %>
+	<% elsif @sourcedb == 'PMC' %>
+		> <%= link_to "pmcdocs", pmdocs_path %>
+		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
+	 	> <%= link_to "annsets", pmdoc_div_annsets_path(@sourceid, @serial) %>
+	<% end %>
+ 	> <%= link_to "annsets", annsets_path %>
+ 	> <%= @annset.name %>
+<% end %>
+
 <h1>Annotation set description</h1>
 
 <% if @annset %>
@@ -33,9 +48,8 @@
 	</table>
 	<% if user_signed_in? %>
 	<span class="button"><%= link_to 'Edit', edit_annset_path(@annset.name) %></span>
-	<span class="button"><%= link_to 'Destroy', annset_path(@annset.name), method: :delete, data: { confirm: 'Are you sure? The annotations that belong to it will be all deleted.' } %></span>
+	<span class="button"><%= link_to 'Delete', @annset.name, :method => :delete, :confirm => 'Are you sure? All the annotations that belong to this annotation set will be deleted.' %></span>
 	<% end %>
-
 
 	<% if @sourcedb %>
 		<h2>Annotations
@@ -47,16 +61,16 @@
 		<td>See</td>
 		<td>in the format,
 		<% if @sourcedb == 'PubMed' %>
-			[<%= link_to "Table", pmdoc_annset_annotations_url(@sourceid, @annset.name) %>],
-			[<%= link_to "JSON",  pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :json) %>], or
-			[<%= link_to "RDF",   pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :ttl) %>],
+			[<%= link_to "Table", pmdoc_annset_annotations_path(@sourceid, @annset.name) %>],
+			[<%= link_to "JSON",  pmdoc_annset_annotations_path(@sourceid, @annset.name, :format => :json) %>], or
+			[<%= link_to "RDF",   pmdoc_annset_annotations_path(@sourceid, @annset.name, :format => :ttl) %>],
 			</td>
 			</tr>
 			<tr>
 			<td></td>
 			<td>
 			or in the annotation viewer,
-			[<a href="http://bionlp.dbcls.jp/textav/textav.html?target=<%= pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :json) %>">TextAV</a>].
+			[<a href="<%= @annset.editor %>?target=<%= pmdoc_annset_annotations_url(@sourceid, @annset.name, :format => :json) %>">TextAE</a>].
 		<% elsif @sourcedb == 'PMC' %>
 			[<%= link_to "Table", pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name) %>],
 			[<%= link_to "JSON",  pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :json) %>], or
@@ -67,7 +81,7 @@
 			<td></td>
 			<td>
 			or in the annotation viewer,
-			[<a href="http://bionlp.dbcls.jp/textav/textav.html?target=<%= pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :json) %>">TextAV</a>].
+			[<a href="<%= @annset.editor %>?target=<%= pmcdoc_div_annset_annotations_url(@sourceid, @serial, @annset.name, :format => :json) %>">TextAE</a>].
 		<% end %>
 		</td>
 		</tr>
