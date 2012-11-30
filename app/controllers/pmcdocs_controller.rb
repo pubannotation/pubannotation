@@ -26,11 +26,11 @@ class PmcdocsController < ApplicationController
     if params[:annset_id]
       annset = Annset.find_by_name(params[:annset_id])
       if annset
-        doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PMC', params[:id], 0)
-        if doc
-          unless doc.annsets.include?(annset)
-            annset.docs << doc
-            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was added to the annotation set, #{annset.name}."
+        docs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:id])
+        if docs
+          unless docs.first.annsets.include?(annset)
+            docs.each {|doc| annset.docs << doc}
+            notice = "The document, PMC::#{params[:id]}, was added to the annotation set, #{annset.name}."
           end
           redirect_to annset_pmcdoc_divs_path(params[:annset_id], params[:id]), :notice => notice
         else
