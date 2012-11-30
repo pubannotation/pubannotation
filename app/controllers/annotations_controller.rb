@@ -58,7 +58,7 @@ class AnnotationsController < ApplicationController
           @docuri = get_docuri(sourcedb, sourceid)
           @texturi = get_texturi(sourcedb, sourceid, serial)
           @catidx = Hash.new
-          @catanns.each {|ca| @catidx[ca.id] = ca.category}
+          @catanns.each {|ca| @catidx[ca[:id]] = ca[:category]}
           render :file => "annotations/index.ttl", :type => :erb
         else
           head :unprocessable_entity
