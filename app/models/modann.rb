@@ -9,9 +9,9 @@ class Modann < ActiveRecord::Base
 
   def get_hash
     hmodann = Hash.new
-    hmodann[:id]    = @hid
-    hmodann[:type]   = @modtype
-    hmodann[:object] = @modobj.hid
+    hmodann[:id]    = hid
+    hmodann[:type]   = modtype
+    hmodann[:object] = modobj.hid
     hmodann
   end
 end

@@ -14,9 +14,9 @@ class Insann < ActiveRecord::Base
 
   def get_hash
     hinsann = Hash.new
-    hinsann[:id]    = @hid
-    hinsann[:type]   = @instype
-    hinsann[:object] = @insobj.hid
+    hinsann[:id]    = hid
+    hinsann[:type]   = instype
+    hinsann[:object] = insobj.hid
     hinsann
   end
 end
