@@ -44,11 +44,32 @@ stored in <span class="pname">PubAnnotation</span>
           <span class="button"><%= link_to 'Show', pmdoc_path(doc.sourceid) %></span>
         <% end %>
       </td>
-
     </tr>
   <% end %>
   </table>
 <% end %>
 
-
 <%= will_paginate @docs %>
+
+<% if @annset and user_signed_in? and current_user.email == @annset.uploader %>
+<div class="note">
+<ul>
+<li>To add a PubMed document to this annotation set,</li>
+<ul>
+  <li>prefix the current URL in the address bar with the PubMed ID and open the page.</li>
+  <li>e.g., opening the URL,<br/>
+      <%= "#{request.protocol}#{request.host_with_port}#{request.fullpath}" %>/123456<br/>
+      will add the PubMeD document 123456 to the annotation set, <%= @annset.name %>.</li>
+</ul>
+</ul>
+</div>
+<!--
+  <script type="text/javascript">
+    function setquery(query) {
+      document.getElementById("query").value = query;
+    }
+  </script>
+  <input id="pmid" type="text" size="10" placeholder="PubMed ID" />
+  <span class="button"><%= link_to 'Add to the set', annset_pmdoc_path(@annset.name, 9990060), :method => :put %></span>
+-->
+<% end %>

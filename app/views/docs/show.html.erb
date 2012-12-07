@@ -1,13 +1,27 @@
 <% content_for :path do %>
-  > <%= link_to "home", home_path %>
-  <% if @annset %>
-    > <%= link_to "annsets", annsets_path %>
-    > <%= link_to @annset.name, annset_path(@annset.name) %>
-	> <%= link_to "pmdocs", annset_pmdocs_path(@annset.name) %>
-  <% else %>
-	> <%= link_to "pmdocs", pmdocs_path %>
+	> <%= link_to "home", home_path %>
+	<% if @annset %>
+		> <%= link_to "annsets", annsets_path %>
+		> <%= link_to @annset.name, annset_path(@annset.name) %>
+		<% if @doc.sourcedb == 'PubMed' %>
+		    > <%= link_to "pmdocs", annset_pmdocs_path(@annset.name) %>
+		<% elsif @doc.sourcedb == 'PMC' %>
+		    > <%= link_to "pmcdocs", annset_pmcdocs_path(@annset.name) %>
+		    > <%= link_to @doc.sourceid, annset_pmcdoc_path(@annset.name, @doc.sourceid) %>
+		    > <%= link_to "divs", annset_pmcdoc_divs_path(@annset.name, @doc.sourceid) %>
+		    > <%= @doc.serial %>
+		<% end %>
+	<% else %>
+		<% if @doc.sourcedb == 'PubMed' %>
+		    > <%= link_to "pmdocs", pmdocs_path %>
+			> <%= @doc.sourceid %>
+		<% elsif @doc.sourcedb == 'PMC' %>
+		    > <%= link_to "pmcdocs", pmcdocs_path %>
+		    > <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
+		    > <%= link_to "divs", pmcdoc_divs_path(@doc.sourceid) %>
+		    > <%= @doc.serial %>
+		<% end %>
   <% end %>
-  > <%= @doc.sourceid %>
 <% end %>
 
 <h1>Document content</h1>

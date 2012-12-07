@@ -4,8 +4,10 @@
     > <%= link_to "pmdocs", pmdocs_path %>
     > <%= link_to @sourceid, pmdoc_path(@sourceid) %>
   <% elsif @sourcedb == 'PMC' %>
-    > <%= link_to "pmcdocs", pmdocs_path %>
-    > <%= link_to @sourceid, pmdoc_path(@sourceid) %>
+    > <%= link_to "pmcdocs", pmcdocs_path %>
+    > <%= link_to @sourceid, pmcdoc_path(@sourceid) %>
+    > <%= link_to "divs",    pmcdoc_divs_path(@sourceid) %>
+    > <%= link_to @serial,   pmcdoc_div_path(@sourceid, @serial) %>
   <% end %>
   > annsets
 <% end %>

@@ -5,11 +5,14 @@
 		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
 	 	> <%= link_to "annsets", pmdoc_annsets_path(@sourceid) %>
 	<% elsif @sourcedb == 'PMC' %>
-		> <%= link_to "pmcdocs", pmdocs_path %>
-		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
-	 	> <%= link_to "annsets", pmdoc_div_annsets_path(@sourceid, @serial) %>
-	<% end %>
- 	> <%= link_to "annsets", annsets_path %>
+		> <%= link_to "pmcdocs", pmcdocs_path %>
+		> <%= link_to @sourceid, pmcdoc_path(@sourceid) %>
+		> <%= link_to "divs",    pmcdoc_divs_path(@sourceid) %>
+		> <%= link_to @serial,   pmcdoc_div_path(@sourceid, @serial) %>
+	 	> <%= link_to "annsets", pmcdoc_div_annsets_path(@sourceid, @serial) %>
+	<% else %>
+ 		> <%= link_to "annsets", annsets_path %>
+ 	<% end %>
  	> <%= @annset.name %>
 <% end %>
 

@@ -94,14 +94,12 @@ class PmdocsController < ApplicationController
         doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
         if doc
           unless doc.annsets.include?(annset)
-            doc.annsets << annset
             annset.docs << doc
             notice = "The document, #{@doc.sourcedb}:#{@doc.sourceid}, was added to the annotation set, #{annset.name}."
           end
         else
           doc = get_pmdoc(params[:id])
           if doc
-            doc.annsets << annset
             annset.docs << doc
             notice = "The document, #{@doc.sourcedb}:#{@doc.sourceid}, was created in the annotation set, #{annset.name}."
           else
@@ -171,15 +169,15 @@ class PmdocsController < ApplicationController
     end
 
     respond_to do |format|
-      if annset
-        format.html { redirect_to annset_pmdocs_path(annset.name), notice: notice }
-        format.json { head :no_content }
-      else
-        format.html { redirect_to pmdocs_path, notice: notice }
-        format.json { head :no_content }
-      end
+      format.html {
+        if annset
+          redirect_to annset_pmdocs_path(annset.name), notice: notice
+        else
+          redirect_to pmdocs_path, notice: notice
+        end
+      }
+      format.json { head :no_content }
     end
   end
 
 end
-

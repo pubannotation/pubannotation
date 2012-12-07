@@ -4,11 +4,10 @@
     > <%= link_to "annsets", annsets_path %>
     > <%= link_to @annset_name, annset_path(@annset_name) %>
     > <%= link_to "pmcdocs", annset_pmcdocs_path(@annset_name) %>
-    > <%= link_to @docs.first.sourceid, annset_pmcdoc_path(@annset_name, @docs.first.sourceid) %>
   <% else %>
     > <%= link_to "pmcdocs", pmcdocs_path %>
-    > <%= link_to @docs.first.sourceid, pmcdoc_path(@docs.first.sourceid) %>
   <% end %>
+  > <%= @docs.first.sourceid %>
   > divs
 <% end %>
 
@@ -36,12 +35,6 @@ of the document, <span class="pname"><%= @docs.first.sourcedb %>:<%= @docs.first
     <td style="text-align:center"><%= doc.serial %></td>
     <td style="text-align:center"><%= doc.section %></td>
     <td style="text-align:left"><%= (doc.body.length < 42)? doc.body : doc.body[0, 40] + ' ...' %></td>
-    <!--td style="text-align:right">bionlp-st-2013-ge [
-      <%= link_to "table", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample") %> |
-      <%= link_to "json", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :json) %> |
-      <%= link_to "rdf", pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :ttl) %> |
-      <a href="http://bionlp-st.dbcls.jp/textav/textav.html?target=<%= pmcdoc_div_annset_annotations_url(doc.sourceid, doc.serial, "bionlp-st-ge-2013-sample", :format => :json) %>">view</a>
-      ]</td-->
     <% if @annset_name %>
     <td><%= link_to 'Show', annset_pmcdoc_div_path(@annset_name, doc.sourceid, doc.serial) %></td>
     <% else %>    
