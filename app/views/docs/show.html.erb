@@ -68,7 +68,7 @@
 		<% end %>
 	</tr>
 	<% if user_signed_in? and current_user == @annset.user %>
-		<% unless @annset.viewer.empty? %>
+		<% unless @annset.editor.empty? %>
 			<tr>
 				<th>Edit</th>
 				<td>in</td>
