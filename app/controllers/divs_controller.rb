@@ -17,21 +17,20 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs/:divid
   # GET /pmcdocs/:pmcid/divs/:divid.json
   def show
-    params[:div_id] = params[:id]
-    sourcedb, sourceid, serial = get_docspec(params)
-    @text = get_doctext(sourcedb, sourceid, serial)
-
-    if (params[:encoding] == 'ascii')
-      asciitext = get_ascii_text(@text)
-      @text = asciitext
-    end
-
     @doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PMC', params[:pmcdoc_id], params[:id])
+    if @doc
+      @text = get_doctext('PMC', params[:pmcdoc_id], params[:id])
 
-    if params[:annset_id] 
-      @annset = Annset.find_by_name(params[:annset_id])
-    else
-      @annsets = @doc.annsets.uniq
+      if (params[:encoding] == 'ascii')
+        asciitext = get_ascii_text(@text)
+        @text = asciitext
+      end
+
+      if params[:annset_id] 
+        @annset = Annset.find_by_name(params[:annset_id])
+      else
+        @annsets = @doc.annsets
+      end
     end
 
     respond_to do |format|
@@ -39,12 +38,8 @@ class DivsController < ApplicationController
         format.html { render 'docs/show' } # show.html.erb
         format.json {
           standoff = Hash.new
-          if sourcedb == 'PudMed'
-            standoff[:pmdoc_id] = sourceid
-          elsif sourcedb == 'PMC'
-            standoff[:pmcdoc_id] = sourceid
-            standoff[:div_id] = serial
-          end
+          standoff[:pmcdoc_id] = params[:pmcdoc_id]
+          standoff[:div_id] = params[:id]
           standoff[:text] = @text
           render :json => standoff, :callback => params[:callback]
         }
@@ -84,16 +79,19 @@ class DivsController < ApplicationController
     @doc.serial   = params[:div_id]
     @doc.section  = params[:section]
     @doc.body     = params[:text]
+    @doc.save
 
     if (params[:annset_id])
-      annset = Annset.find_by_name(annset_name)
+      annset = Annset.find_by_name(params[:annset_id])
+      p annset
+      puts "-=-=-=-=-=-=-"
       annset.docs << @doc if annset
     end
 
     respond_to do |format|
-      if @doc.save
+      if @doc
         format.html { redirect_to @doc, notice: 'Doc was successfully created.' }
-        format.json { render json: @doc, status: :created, location: @doc }
+        format.json { head :no_content }
       else
         format.html { render action: "new" }
         format.json { render json: @doc.errors, status: :unprocessable_entity }

@@ -78,7 +78,7 @@ class PmcdocsController < ApplicationController
       if annset
         pmcids = params[:pmcids].split(/[ ,"':|\t\n]+/)
         pmcids.each do |sourceid|
-          divs = Doc.find_all_by_sourcedb_and_sourceid_and_serial('PMC', sourceid, 0)
+          divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
           if divs and !divs.empty?
             unless annset.docs.include?(divs.first)
               divs.each {|div| annset.docs << div}
