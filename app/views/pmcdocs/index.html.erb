@@ -45,3 +45,13 @@ stored in <span class="pname">PubAnnotation</span>
 <% end %>
 
 <%= will_paginate @docs %>
+
+<% if @annset and user_signed_in? and current_user == @annset.user %>
+  <%= form_tag("/annsets/#{@annset.name}/pmcdocs/", :method => "post") do %>
+  <table>
+    <tr><th><%= label_tag(:pmcids, "Add PMC documents") %><br/></th></tr>
+    <tr><td><%= text_area_tag(:pmcids, nil, :placeholder => "PMC IDs", :required => true) %></td></tr>
+    <tr><th><%= submit_tag("Add to the set") %></th></tr>
+  </table>
+  <% end %>
+<% end %>

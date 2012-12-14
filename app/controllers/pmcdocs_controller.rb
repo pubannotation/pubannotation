@@ -66,4 +66,49 @@ class PmcdocsController < ApplicationController
       }
     end
   end
+
+
+  # POST /pmcdocs
+  # POST /pmcdocs.json
+  def create
+    num_created, num_added, num_failed = 0, 0, 0
+
+    if (params[:annset_id])
+      annset, notice = find_annset(params[:annset_id])
+      if annset
+        pmcids = params[:pmcids].split(/[ ,"':|\t\n]+/)
+        pmcids.each do |sourceid|
+          divs = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
+          if divs and !divs.empty?
+            unless annset.docs.include?(divs.first)
+              divs.each {|div| annset.docs << div}
+              num_added += 1
+            end
+          else
+            divs = get_pmcdoc(sourceid)
+            if divs
+              divs.each {|div| annset.docs << div}
+              num_added += 1
+            else
+              num_failed += 1
+            end
+          end
+        end
+        notice = "#{num_added} documents were added to the document set, #{annset.name}."
+      end
+    else
+      notice = "Annotation set is not specified."
+    end
+
+    respond_to do |format|
+      if num_created + num_added + num_failed > 0
+        format.html { redirect_to annset_pmcdocs_path(annset.name), :notice => notice }
+        format.json { render status: :created, location: annset_pmcdocs_path(annset.name) }
+      else
+        format.html { redirect_to home_path, :notice => notice }
+        format.json { head :unprocessable_entity }
+      end
+    end
+  end
+
 end
