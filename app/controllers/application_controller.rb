@@ -104,6 +104,142 @@ class ApplicationController < ActionController::Base
   end
 
 
+  def find_annsets (doc = nil)
+    annsets = (doc)? doc.annsets : Annset.all
+    annsets.sort!{|x, y| x.name <=> y.name}
+    annsets = annsets.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
+  end
+
+
+  def find_annset (annset_name)
+    annset = Annset.find_by_name(annset_name)
+    if annset
+      if (annset.accessibility == 1 or (user_signed_in? and annset.user == current_user))
+        return annset, nil
+      else
+        return nil, "The annotation set, #{annset_name}, is specified as private."
+      end
+    else
+      return nil, "The annotation set, #{annset_name}, does not exist."
+    end
+  end
+
+
+  def find_doc (sourcedb, sourceid, serial, annset = nil)
+    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
+    if doc
+      if annset and !doc.annsets.include?(annset)
+        doc = nil
+        notice = "The document, #{sourcedb}:#{sourceid}, does not belong to the annotation set, #{annset.name}."
+      end
+    else
+      notice = "No annotation to the document, #{sourcedb}:#{sourceid}, exists in PubAnnotation." 
+    end
+
+    return doc, notice
+  end
+
+
+  def find_pmdoc (sourceid, annset = nil)
+    doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
+    if doc
+      if annset and !doc.annsets.include?(annset)
+        doc = nil
+        notice = "The document, PubMed:#{sourceid}, does not belong to the annotation set, #{annset.name}."
+      end
+    else
+      notice = "No annotation to the document, PubMed:#{sourceid}, exists in PubAnnotation." 
+    end
+
+    return doc, notice
+  end
+
+
+  def find_pmcdoc (sourceid, annset = nil)
+    divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
+    if divs and !divs.empty?
+      if annset and !divs.first.annsets.include?(annset)
+        divs = nil
+        notice = "The document, PMC::#{sourceid}, does not belong to the annotation set, #{annset.name}."
+      end
+    else
+      divs = nil
+      notice = "No annotation to the document, PMC:#{sourceid}, exists in PubAnnotation." 
+    end
+
+    return [divs, notice]
+  end
+
+
+  def find_or_add_pmdoc (sourceid, annset = nil)
+    if annset
+      if user_signed_in? and annset.user = current_user
+        doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
+        if doc
+          unless doc.annsets.include?(annset)
+            annset.docs << doc
+            notice = "The document, PubMed:#{sourceid}, was added to the annotation set, #{annset.name}."
+          end
+        else
+          doc = get_pmdoc(sourceid)
+          if doc
+            annset.docs << doc
+            notice = "The document, PubMed:#{sourceid}, was created and added to the annotation set, #{params[:annset_id]}."
+          else
+            notice = "The document, PubMed:#{sourceid}, could not be created." 
+          end
+        end
+      else
+        notice = "Only the creator of the annotation set can add or delete documents to or from an annotation set."
+      end
+    else
+      doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
+      unless doc
+        doc = get_pmdoc(pmid)
+        if doc
+          notice = "The document, PubMed:#{sourceid}, was created in PubAnnotation." 
+        else
+          notice = "The document, PubMed:#{sourceid}, could not be created." 
+        end
+      end
+    end
+
+    return doc, notice
+  end
+
+
+  def find_or_get_pmcdoc (sourceid, annset = nil)
+    divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
+    if annset
+      if divs and !divs.empty?
+        unless divs.first.annsets.include?(annset)
+          divs.each {|div| annset.docs << div}
+          notice = "The document, PMC::#{sourceid}, was added to the annotation set, #{annset.name}."
+        end
+      else
+        divs = get_pmcdoc(sourceid)
+        if divs
+          divs.each {|div| annset.docs << div}
+          notice = "The document, PMC:#{sourceid}, was created and added to the annotation set, #{annset.name}."
+        else
+          notice = "The document, PMC:#{sourceid}, is not in the annotation set, #{annset.name}."
+        end
+      end
+    else
+      unless divs
+        divs = get_pmcdoc(sourceid)
+        if divs
+          notice = "The document, PMC:#{sourceid}, was created in PubAnnotation." 
+        else
+          notice = "The document, PMC:#{sourceid}, could not be created." 
+        end
+      end
+    end
+
+    return [divs, notice]
+  end
+
+
   ## get catanns
   def get_catanns (annset_name, sourcedb, sourceid, serial = 0)
     catanns = []

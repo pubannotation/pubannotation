@@ -1,26 +1,26 @@
 <% content_for :path do %>
   > <%= link_to "home", home_path %>
-  <% if @sourcedb == 'PubMed' %>
+  <% if @doc and @doc.sourcedb == 'PubMed' %>
     > <%= link_to "pmdocs", pmdocs_path %>
-    > <%= link_to @sourceid, pmdoc_path(@sourceid) %>
-  <% elsif @sourcedb == 'PMC' %>
+    > <%= link_to @doc.sourceid, pmdoc_path(@doc.sourceid) %>
+  <% elsif @doc and @doc.sourcedb == 'PMC' %>
     > <%= link_to "pmcdocs", pmcdocs_path %>
-    > <%= link_to @sourceid, pmcdoc_path(@sourceid) %>
-    > <%= link_to "divs",    pmcdoc_divs_path(@sourceid) %>
-    > <%= link_to @serial,   pmcdoc_div_path(@sourceid, @serial) %>
+    > <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
+    > <%= link_to "divs",    pmcdoc_divs_path(@doc.sourceid) %>
+    > <%= link_to @doc.serial,   pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
   <% end %>
   > annsets
 <% end %>
 
 <h1>
   Annotation sets
-  <% if @sourcedb == 'PubMed' %>
+  <% if @doc and @doc.sourcedb == 'PubMed' %>
     <span class='meta'>
-    made to <span class='pname'><%= @sourcedb %>:<%= @sourceid %></span>
+    made to <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
     </span>
-  <% elsif @sourcedb == 'PMC' %>
+  <% elsif @doc and @doc.doc.sourcedb == 'PMC' %>
     <span class='meta'>
-    made to <%= @serial %>'th divition of <span class='pname'><%= @sourcedb %>:<%= @sourceid %></span>
+    made to <%= @doc.serial %>'th divition of <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
     </span>
   <% else %>
     <span class='meta'>
@@ -37,6 +37,7 @@
       <th>Name</th>
       <th>Description</th>
       <th>Author</th>
+      <th>Uploader</th>
       <th></th>
     </tr>
 
@@ -45,10 +46,11 @@
       <td><%= annset.name %></td>
       <td class="text"><%= (annset.description.length < 64)? annset.description : annset.description[0, 62] + ' ...' %></td>
       <td><%= annset.author %></td>
-      <% if @sourcedb == "PubMed" %>
-        <td><%= link_to 'Show', pmdoc_annset_path(@sourceid, annset.name) %></td>
-      <% elsif @sourcedb == "PMC" %>
-        <td><%= link_to 'Show', pmcdoc_div_annset_path(@sourceid, @serial, annset.name) %></td>
+      <td><%= annset.user.username %></td>
+      <% if @doc and @doc.sourcedb == "PubMed" %>
+        <td><%= link_to 'Show', pmdoc_annset_path(@doc.sourceid, annset.name) %></td>
+      <% elsif @doc and @doc.sourcedb == "PMC" %>
+        <td><%= link_to 'Show', pmcdoc_div_annset_path(@doc.sourceid, @doc.serial, annset.name) %></td>
       <% else %>
         <td><%= link_to 'Show', annset_path(annset.name) %></td>
       <% end %>

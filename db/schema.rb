@@ -11,18 +11,22 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121128135129) do
+ActiveRecord::Schema.define(:version => 20121213071210) do
 
   create_table "annsets", :force => true do |t|
     t.string   "name"
     t.text     "description"
     t.string   "author"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
     t.string   "license"
-    t.string   "uploader"
     t.string   "reference"
     t.string   "editor"
+    t.integer  "accessibility"
+    t.integer  "status"
+    t.integer  "user_id"
+    t.string   "viewer"
+    t.string   "rdfwriter"
   end
 
   add_index "annsets", ["name"], :name => "index_annsets_on_name", :unique => true

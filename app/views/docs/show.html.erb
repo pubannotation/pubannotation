@@ -3,9 +3,10 @@
 	<% if @annset %>
 		> <%= link_to "annsets", annsets_path %>
 		> <%= link_to @annset.name, annset_path(@annset.name) %>
-		<% if @doc.sourcedb == 'PubMed' %>
+		<% if @doc and @doc.sourcedb == 'PubMed' %>
 		    > <%= link_to "pmdocs", annset_pmdocs_path(@annset.name) %>
-		<% elsif @doc.sourcedb == 'PMC' %>
+		    > <%= @doc.sourceid %>
+		<% elsif @doc and @doc.sourcedb == 'PMC' %>
 		    > <%= link_to "pmcdocs", annset_pmcdocs_path(@annset.name) %>
 		    > <%= link_to @doc.sourceid, annset_pmcdoc_path(@annset.name, @doc.sourceid) %>
 		    > <%= link_to "divs", annset_pmcdoc_divs_path(@annset.name, @doc.sourceid) %>
@@ -38,40 +39,45 @@
 
 
 <% if @annset %>
+	<% if @doc.sourcedb == 'PubMed' %>
+		<% annotation_url = annset_pmdoc_annotations_url(@annset.name, @doc.sourceid) %>
+	<% else %>
+		<% annotation_url = annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial) %>
+	<% end %>
+
 	<h2>Annotations
 		<span class="meta"> made to this document</span>
 		<span class="meta">within <span class="pname"><%=@annset.name%></span></span>
 	</h2>
+
 	<table style="border-color:#FFFFFF">
 	<tr>
-	<td>See</td>
-	<td>in the format,
-	<% if @doc.sourcedb == 'PubMed' %>
-		[<%= link_to "Table", annset_pmdoc_annotations_path(@annset.name, @doc.sourceid) %>],
-		[<%= link_to "JSON",  annset_pmdoc_annotations_path(@annset.name, @doc.sourceid, :format => :json) %>], or
-		[<%= link_to "RDF",   annset_pmdoc_annotations_path(@annset.name, @doc.sourceid, :format => :ttl) %>],
-		</td>
-		</tr>
-		<tr>
-		<td></td>
-		<td>
-		or in the annotation viewer,
-		[<a href="<%= @annset.editor %>?target=<%= annset_pmdoc_annotations_url(@annset.name, @doc.sourceid, :format => :json) %>">TextAE</a>].
-	<% elsif @doc.sourcedb == 'PMC' %>
-		[<%= link_to "Table", annset_pmcdoc_div_annotations_path(@annset.name, @doc.sourceid, @doc.serial) %>],
-		[<%= link_to "JSON",  annset_pmcdoc_div_annotations_path(@annset.name, @doc.sourceid, @doc.serial, :format => :json) %>], or
-		[<%= link_to "RDF",   annset_pmcdoc_div_annotations_path(@annset.name, @doc.sourceid, @doc.serial, :format => :ttl) %>],
-		</td>
-		</tr>
-		<tr>
-		<td></td>
-		<td>
-		or in the annotation viewer,
-		[<a href="<%= @annset.editor %>?target=<%= annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial, :format => :json) %>">TextAE</a>].
-	<% end %>
-	</td>
+		<th>See</th>
+		<td>in</td>
+		<td>[<%= link_to "Table", annotation_url %>]</td>
+		<% unless @annset.viewer.empty? %>
+		<td>[<a href="<%= @annset.viewer %>?target=<%= annotation_url + '.json' %>">Viewer</a>]</td>
+		<% end %>
 	</tr>
+	<tr>
+		<th>Get</th>
+		<td>in</td>
+		<td>[<%= link_to "JSON",  annotation_url + '.json' %>]</td>
+		<% unless @annset.rdfwriter.empty? %>
+			<td>[<%= link_to "RDF",   annotation_url + '.ttl' %>]</td>
+		<% end %>
+	</tr>
+	<% if user_signed_in? and current_user == @annset.user %>
+		<% unless @annset.viewer.empty? %>
+			<tr>
+				<th>Edit</th>
+				<td>in</td>
+				<td>[<a href="<%= @annset.editor %>?target=<%= annotation_url + '.json' %>">Editor</a>]</td>
+			</tr>
+		<% end %>
+	<% end %>
 	</table>
+
 <% else %>
 	<h2>Annotation sets <span class="meta">made to this document</span></h2>
 	<% if !@annsets || @annsets.empty? %>
@@ -79,8 +85,8 @@
 	<% else %>
 		<ul>
 		<% @annsets.each do |s| %>
-		<% if @doc.sourcedb == 'PubMed' %><li><%= link_to s.name, pmdoc_annset_path(@doc.sourceid, s.name) %></li><% end %>
-		<% if @doc.sourcedb == 'PMC' %><li><%= link_to s.name, pmcdoc_div_annset_path(@doc.sourceid, @doc.serial, s.name) %></li><% end %>
+		<% if @doc and @doc.sourcedb == 'PubMed' %><li><%= link_to s.name, pmdoc_annset_path(@doc.sourceid, s.name) %></li><% end %>
+		<% if @doc and @doc.sourcedb == 'PMC' %><li><%= link_to s.name, pmcdoc_div_annset_path(@doc.sourceid, @doc.serial, s.name) %></li><% end %>
 		<% end %>
 		</ul>
 	<% end %>

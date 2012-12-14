@@ -25,6 +25,7 @@ of the document, <span class="pname"><%= @docs.first.sourcedb %>:<%= @docs.first
     <th>Div.</th>
     <th>Section</th>
     <th>Text</th>
+    <th>Size</th>
     <th></th>
   </tr>
 
@@ -35,6 +36,11 @@ of the document, <span class="pname"><%= @docs.first.sourcedb %>:<%= @docs.first
     <td style="text-align:center"><%= doc.serial %></td>
     <td style="text-align:center"><%= doc.section %></td>
     <td style="text-align:left"><%= (doc.body.length < 42)? doc.body : doc.body[0, 40] + ' ...' %></td>
+    <% if doc.body.length > 5000 %>
+      <td style="text-align:right;color:red"><%= doc.body.length %></td>
+    <% else %>    
+      <td style="text-align:right"><%= doc.body.length %></td>
+    <% end %>
     <% if @annset_name %>
     <td><%= link_to 'Show', annset_pmcdoc_div_path(@annset_name, doc.sourceid, doc.serial) %></td>
     <% else %>    
