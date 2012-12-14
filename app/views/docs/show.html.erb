@@ -50,33 +50,7 @@
 		<span class="meta">within <span class="pname"><%=@annset.name%></span></span>
 	</h2>
 
-	<table style="border-color:#FFFFFF">
-	<tr>
-		<th>See</th>
-		<td>in</td>
-		<td>[<%= link_to "Table", annotation_url %>]</td>
-		<% unless @annset.viewer.empty? %>
-		<td>[<a href="<%= @annset.viewer %>?target=<%= annotation_url + '.json' %>">Viewer</a>]</td>
-		<% end %>
-	</tr>
-	<tr>
-		<th>Get</th>
-		<td>in</td>
-		<td>[<%= link_to "JSON",  annotation_url + '.json' %>]</td>
-		<% unless @annset.rdfwriter.empty? %>
-			<td>[<%= link_to "RDF",   annotation_url + '.ttl' %>]</td>
-		<% end %>
-	</tr>
-	<% if user_signed_in? and current_user == @annset.user %>
-		<% unless @annset.editor.empty? %>
-			<tr>
-				<th>Edit</th>
-				<td>in</td>
-				<td>[<a href="<%= @annset.editor %>?target=<%= annotation_url + '.json' %>">Editor</a>]</td>
-			</tr>
-		<% end %>
-	<% end %>
-	</table>
+	<%= render :partial => "annotations/options", :locals => {:annotation_url => annotation_url, :annset => @annset } %>
 
 <% else %>
 	<h2>Annotation sets <span class="meta">made to this document</span></h2>

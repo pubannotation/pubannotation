@@ -134,7 +134,7 @@ class AnnotationsController < ApplicationController
 
       format.json {
         if doc and annset and catanns
-          render :json => catanns, :status => :created
+          head :no_content
         else
           head :unprocessable_entity
         end
