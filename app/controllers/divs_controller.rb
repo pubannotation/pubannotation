@@ -77,7 +77,6 @@ class DivsController < ApplicationController
   # POST /pmcdocs/:pmcid/divs
   # POST /pmcdocs/:pmcid/divs.json
   def create
-
     @doc = Doc.new(params[:doc])
     @doc.sourcedb = 'PMC'
     @doc.sourceid = params[:pmcdoc_id]
@@ -85,6 +84,11 @@ class DivsController < ApplicationController
     @doc.serial   = params[:div_id]
     @doc.section  = params[:section]
     @doc.body     = params[:text]
+
+    if (params[:annset_id])
+      annset = Annset.find_by_name(annset_name)
+      annset.docs << @doc if annset
+    end
 
     respond_to do |format|
       if @doc.save
