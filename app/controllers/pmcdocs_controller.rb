@@ -85,7 +85,7 @@ class PmcdocsController < ApplicationController
               num_added += 1
             end
           else
-            divs = get_pmcdoc(sourceid)
+            divs, message = get_pmcdoc(sourceid)
             if divs
               divs.each {|div| annset.docs << div}
               num_added += 1

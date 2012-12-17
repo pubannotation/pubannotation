@@ -7,20 +7,23 @@ require 'rest_client'
 require 'xml'
 
 class PMCDoc
+  attr_reader :doc, :message
 
   def initialize(pmcid, filename=nil)
     if pmcid
       RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{pmcid}" do |response, request, result|
         case response.code
         when 200
-          if response.index ("PMC#{pmcid} not found")
+          if response.index("PMC#{pmcid} not found")
             @doc = nil
+            @message = "#{pmcid} is a non-existence article ID."
           else
             parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
             @doc = parser.parse
           end
         else
           @doc = nil
+          @message = "PubMed Central unreachable."
         end
       end
     elsif filename
@@ -30,6 +33,7 @@ class PMCDoc
         @doc = parser.parse
       else
         @doc = nil
+        @message = "File not found"
       end
     end
   end
@@ -152,38 +156,40 @@ class PMCDoc
 
 
   def get_secs
-    secs = Array.new
-
     body = @doc.find_first('/pmc-articleset/article/body')
 
-    # check body
-    body.each_element do |e|
-      case e.name
-      when 'sec'
-        title = e.find_first('title').content.strip.downcase
-        case title
-        # filtering by title
-        when /contributions$/, /supplementary/, /abbreviations/, 'competing interests', 'supporting information', 'additional information', 'funding'
-        else
-          if check_sec(e)
-            secs << e
-          else
-            return nil
-          end
-        end
-      when 'supplementary-material'
-      else
-        warn "element out of sec: #{e.name}"
-        return nil
-      end
-    end
+    if body
+      secs = Array.new
 
-    if secs.empty?
-      warn "no section in body."
+      body.each_element do |e|
+        case e.name
+        when 'sec'
+          title = e.find_first('title').content.strip.downcase
+          case title
+          # filtering by title
+          when /contributions$/, /supplementary/, /abbreviations/, 'competing interests', 'supporting information', 'additional information', 'funding'
+          else
+            if check_sec(e)
+              secs << e
+            else
+              return nil
+            end
+          end
+        when 'supplementary-material'
+        else
+          warn "element out of sec: #{e.name}"
+          return nil
+        end
+      end
+
+      if secs.empty?
+        return nil
+      else
+        return secs
+      end
+    else
       return nil
     end
-
-    secs
   end
 
 
@@ -261,8 +267,9 @@ class PMCDoc
   def check_p(node)
     node.each_element do |e|
       case e.name
-      when 'italic', 'bold', 'sup', 'sub', 'underline'
+      when 'italic', 'bold', 'sup', 'sub', 'underline', 'sc'
       when 'xref', 'ext-link', 'named-content'
+      when 'fig', 'table-wrap'
       else
         return false
       end
@@ -348,6 +355,11 @@ if __FILE__ == $0
       pmcdoc = PMCDoc.new(nil, p)
       p =~ /([0-9]+)/
       pmcid = $1
+    end
+
+    unless pmcdoc.doc
+      puts pmcdoc.message
+      exit
     end
 
     if divs = pmcdoc.get_divs

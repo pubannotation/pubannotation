@@ -83,23 +83,27 @@ class ApplicationController < ActionController::Base
   def get_pmcdoc (pmcid)
     pmcdoc = PMCDoc.new(pmcid)
 
-    if pmcdoc.empty?
-      return nil
-    else
+    if pmcdoc.doc
       divs = pmcdoc.get_divs
-      docs = []
-      divs.each_with_index do |div, i|
-        doc = Doc.new
-        doc.body = div[1]
-        doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + pmcid
-        doc.sourcedb = 'PMC'
-        doc.sourceid = pmcid
-        doc.serial = i
-        doc.section = div[0]
-        doc.save
-        docs << doc
+      if divs
+        docs = []
+        divs.each_with_index do |div, i|
+          doc = Doc.new
+          doc.body = div[1]
+          doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + pmcid
+          doc.sourcedb = 'PMC'
+          doc.sourceid = pmcid
+          doc.serial = i
+          doc.section = div[0]
+          doc.save
+          docs << doc
+        end
+        return [docs, nil]
+      else
+        return [nil, "no body in the document."]
       end
-      return docs
+    else
+      return [nil, pmcdoc.message]
     end
   end
 
