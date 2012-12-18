@@ -29,43 +29,45 @@ class AnnotationsController < ApplicationController
       notice = "The annotation set, #{params[:annset_id]}, does not exist."
     end
 
+    if @annset and @text
+      standoff = Hash.new
+      if sourcedb == 'PudMed'
+        standoff[:pmdoc_id] = sourceid
+      elsif sourcedb == 'PMC'
+        standoff[:pmcdoc_id] = sourceid
+        standoff[:div_id] = serial
+      end
+      standoff[:text] = @text
+      standoff[:catanns] = @catanns if @catanns
+      standoff[:insanns] = @insanns if @insanns
+      standoff[:relanns] = @relanns if @relanns
+      standoff[:modanns] = @modanns if @modanns
+    end
+
+
     respond_to do |format|
-      format.html { flash[:notice] = notice }
-
-      format.json {
-        if @annset and @text
-          standoff = Hash.new
-          if sourcedb == 'PudMed'
-            standoff[:pmdoc_id] = sourceid
-          elsif sourcedb == 'PMC'
-            standoff[:pmcdoc_id] = sourceid
-            standoff[:div_id] = serial
+      if @annset and @text
+        format.html { flash[:notice] = notice }
+        format.json { render :json => standoff, :callback => params[:callback] }
+        format.ttl  {
+          if @annset.rdfwriter.empty?
+            head :unprocessable_entity
+          else
+            render :text => get_conversion(standoff.to_json, @annset.rdfwriter, serial), :content_type => 'application/x-turtle'
           end
-          standoff[:text] = @text
-          standoff[:catanns] = @catanns if @catanns
-          standoff[:insanns] = @insanns if @insanns
-          standoff[:relanns] = @relanns if @relanns
-          standoff[:modanns] = @modanns if @modanns
-
-          render :json => standoff, :callback => params[:callback]
-        else
-          head :unprocessable_entity
-        end
-      }
-
-      format.ttl {
-        if @annset and @text
-          @docuri = get_docuri(sourcedb, sourceid)
-          @texturi = get_texturi(sourcedb, sourceid, serial)
-          @catidx = Hash.new
-          @catanns.each {|ca| @catidx[ca[:id]] = ca[:category]}
-          render :file => "annotations/index.ttl", :type => :erb
-        else
-          head :unprocessable_entity
-        end
-      }
-
-      format.js { head :no_content }
+        }
+        format.xml  {
+          if @annset.xmlwriter.empty?
+            head :unprocessable_entity
+          else
+            render :text => get_conversion(standoff.to_json, @annset.xmlwriter, serial), :content_type => 'application/xml;charset=urf-8'
+          end
+        }
+      else
+        format.html { flash[:notice] = notice }
+        format.json { head :unprocessable_entity }
+        format.ttl  { head :unprocessable_entity }
+      end
     end
   end
 

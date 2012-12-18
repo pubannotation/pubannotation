@@ -107,10 +107,21 @@ class ApplicationController < ActionController::Base
   end
 
 
-  ## TODO
   def archive_annotation (annset_name, format = 'json')
     annset = Annset.find_by_name(annset_name)
     annset.docs.each do |d|
+    end
+  end
+
+
+  def get_conversion (data, converter, identifier = nil)
+    RestClient.post converter, {:data => data, :identifier => identifier}, :content_type => 'multipart/form-data' do |response, request, result|
+      case response.code
+      when 200
+        response
+      else
+        nil
+      end
     end
   end
 
