@@ -76,6 +76,7 @@ class AnnsetsController < ApplicationController
 
   # GET /annsets/1/edit
   def edit
+    @sourcedb, @sourceid, @serial = get_docspec(params)
     @annset = Annset.find_by_name(params[:id])
   end
 

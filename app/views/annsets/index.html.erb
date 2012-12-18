@@ -18,7 +18,7 @@
     <span class='meta'>
     made to <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
     </span>
-  <% elsif @doc and @doc.doc.sourcedb == 'PMC' %>
+  <% elsif @doc and @doc.sourcedb == 'PMC' %>
     <span class='meta'>
     made to <%= @doc.serial %>'th divition of <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
     </span>

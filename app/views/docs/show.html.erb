@@ -50,7 +50,7 @@
 		<span class="meta">within <span class="pname"><%=@annset.name%></span></span>
 	</h2>
 
-	<%= render :partial => "annotations/options", :locals => {:annotation_url => annotation_url, :annset => @annset } %>
+	<%= render :partial => "annotations/options", :locals => {:annset => @annset, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 
 <% else %>
 	<h2>Annotation sets <span class="meta">made to this document</span></h2>

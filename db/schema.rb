@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121213071210) do
+ActiveRecord::Schema.define(:version => 20121218073414) do
 
   create_table "annsets", :force => true do |t|
     t.string   "name"
@@ -27,6 +27,8 @@ ActiveRecord::Schema.define(:version => 20121213071210) do
     t.integer  "user_id"
     t.string   "viewer"
     t.string   "rdfwriter"
+    t.string   "xmlwriter"
+    t.string   "bionlpwriter"
   end
 
   add_index "annsets", ["name"], :name => "index_annsets_on_name", :unique => true

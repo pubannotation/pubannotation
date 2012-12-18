@@ -4,19 +4,21 @@
 		> <%= link_to "pmdocs", pmdocs_path %>
 		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
 	 	> <%= link_to "annsets", pmdoc_annsets_path(@sourceid) %>
+	 	> <%= link_to @annset.name, pmdoc_annset_path(@sourceid, @annset.name) %>
 	<% elsif @sourcedb == 'PMC' %>
-		> <%= link_to "pmcdocs", pmdocs_path %>
-		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
-	 	> <%= link_to "annsets", pmdoc_div_annsets_path(@sourceid, @serial) %>
-	<% end %>
- 	> <%= link_to "annsets", annsets_path %>
- 	> <%= @annset.name %>
+		> <%= link_to "pmcdocs", pmcdocs_path %>
+		> <%= link_to @sourceid, pmcdoc_path(@sourceid) %>
+	 	> <%= link_to "divs",    pmcdoc_divs_path(@sourceid) %>
+	 	> <%= link_to @serial,   pmcdoc_div_path(@sourceid, @serial) %>
+	 	> <%= link_to "annsets", pmcdoc_div_annsets_path(@sourceid, @serial) %>
+	 	> <%= link_to @annset.name, pmcdoc_div_annset_path(@sourceid, @serial, @annset.name) %>
+	<% else %>
+	 	> <%= link_to "annsets", annsets_path %>
+	 	> <%= link_to @annset.name, annset_path(@annset.name) %>
+ 	<% end %>
  	> edit
 <% end %>
 
 <h1>Editing annset</h1>
 
 <%= render 'form' %>
-
-<%= link_to 'Show', annset_path(@annset.name) %> |
-<%= link_to 'Back', annsets_path %>

@@ -22,7 +22,6 @@ class ApplicationController < ActionController::Base
     return sourcedb, sourceid, serial
   end
 
-
   ## get docuri
   def get_docuri (sourcedb, sourceid)
     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, 0)
@@ -104,6 +103,14 @@ class ApplicationController < ActionController::Base
       end
     else
       return [nil, pmcdoc.message]
+    end
+  end
+
+
+  ## TODO
+  def archive_annotation (annset_name, format = 'json')
+    annset = Annset.find_by_name(annset_name)
+    annset.docs.each do |d|
     end
   end
 

@@ -67,11 +67,27 @@
 	<td><a href="<%= @annset.viewer %>"><%= @annset.viewer %></a></td>
 	</tr>
 	<% if user_signed_in? and current_user == @annset.user %>
-		<th>Editor</th>
-		<td><a href="<%= @annset.editor %>"><%= @annset.editor %></a></td>
+		<tr>
+			<th>Editor</th>
+			<td><a href="<%= @annset.editor %>"><%= @annset.editor %></a></td>
 		</tr>
-		<th>RDF writer</th>
-		<td><a href="<%= @annset.rdfwriter %>"><%= @annset.rdfwriter %></a></td>
+	<% end %>
+	<% if @annset.rdfwriter %>
+		<tr>
+			<th>RDF writer</th>
+			<td><a href="<%= @annset.rdfwriter %>"><%= @annset.rdfwriter %></a></td>
+		</tr>
+	<% end %>
+	<% if @annset.xmlwriter %>
+		<tr>
+			<th>XML writer</th>
+			<td><a href="<%= @annset.xmlwriter %>"><%= @annset.xmlwriter %></a></td>
+		</tr>
+	<% end %>
+	<% if @annset.bionlpwriter %>
+		<tr>
+			<th>BioNLP-ST writer</th>
+			<td><a href="<%= @annset.bionlpwriter %>"><%= @annset.bionlpwriter %></a></td>
 		</tr>
 	<% end %>
 	</table>
@@ -92,7 +108,7 @@
 			<span class="meta">to the document, <span class="pname"><%=@doc.sourcedb%>:<%=@doc.sourceid%></span>,
 			within this annotation set</span></span>
 		</h2>
-		<%= render :partial => "annotations/options", :locals => {:annotation_url => annotation_url, :annset => @annset } %>
+		<%= render :partial => "annotations/options", :locals => {:annset => @annset, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 	<% else %>
 		<h2>Documents <span class="meta">that belong to this annotation set</span></h2>
 		<ul>
