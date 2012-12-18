@@ -39,9 +39,9 @@ class ApplicationController < ActionController::Base
 
   ## get texturi
   def get_texturi (sourcedb, sourceid, serial = 0)
-    if params[:pmdoc_id]
+    if sourcedb == 'PubMed'
       texturi = "http://pubannotation/pmdocs/#{sourceid}"
-    elsif params[:pmcdoc_id]
+    elsif sourcedb == 'PMC'
       texturi = "http://pubannotation/pmcdocs/#{sourceid}/divs/#{serial}"
     else
       texturi = nil
