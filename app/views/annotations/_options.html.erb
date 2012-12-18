@@ -27,7 +27,7 @@
 		<td>
 			<%= form_tag(annset.rdfwriter, :method => "post", :id => "getrdf") do %>
 				<%= hidden_field_tag(:identifier, identifier) %>
-				<%= hidden_field_tag(:annotation, "") %>
+				<%= hidden_field_tag(:data, "") %>
 				[<a onclick="getconversion('getrdf')" href="#">RDF</a>]
 			<% end %>
 		</td>
@@ -37,7 +37,7 @@
 		<td>
 			<%= form_tag(annset.xmlwriter, :method => "post", :id => "getxml") do %>
 				<%= hidden_field_tag(:identifier, identifier) %>
-				<%= hidden_field_tag(:annotation, "") %>
+				<%= hidden_field_tag(:data, "") %>
 				[<a onclick="getconversion('getxml')" href="#">XML</a>]
 			<% end %>
 		</td>
@@ -47,7 +47,7 @@
 		<td>
 			<%= form_tag(annset.bionlpwriter, :method => "post", :id => "getbionlp") do %>
 				<%= hidden_field_tag(:identifier, identifier) %>
-				<%= hidden_field_tag(:annotation, "") %>
+				<%= hidden_field_tag(:data, "") %>
 				[<a onclick="getconversion('getbionlp')" href="#">BioNLP-ST</a>]
 			<% end %>
 		</td>
