@@ -72,19 +72,19 @@
 			<td><a href="<%= @annset.editor %>"><%= @annset.editor %></a></td>
 		</tr>
 	<% end %>
-	<% if @annset.rdfwriter %>
+	<% unless @annset.rdfwriter.empty? %>
 		<tr>
 			<th>RDF writer</th>
 			<td><a href="<%= @annset.rdfwriter %>"><%= @annset.rdfwriter %></a></td>
 		</tr>
 	<% end %>
-	<% if @annset.xmlwriter %>
+	<% unless @annset.xmlwriter.empty? %>
 		<tr>
 			<th>XML writer</th>
 			<td><a href="<%= @annset.xmlwriter %>"><%= @annset.xmlwriter %></a></td>
 		</tr>
 	<% end %>
-	<% if @annset.bionlpwriter %>
+	<% unless @annset.bionlpwriter.empty? %>
 		<tr>
 			<th>BioNLP-ST writer</th>
 			<td><a href="<%= @annset.bionlpwriter %>"><%= @annset.bionlpwriter %></a></td>
