@@ -93,6 +93,7 @@ GEM
       json (~> 1.4)
     rest-client (1.6.7)
       mime-types (>= 1.16)
+    rubyzip (0.9.9)
     sass (3.2.1)
     sass-rails (3.2.5)
       railties (~> 3.2.0)
@@ -132,6 +133,7 @@ DEPENDENCIES
   libxml-ruby
   rails (= 3.2.8)
   rest-client
+  rubyzip
   sass-rails (~> 3.2.3)
   sqlite3
   thin

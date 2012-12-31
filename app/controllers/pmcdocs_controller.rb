@@ -3,7 +3,7 @@ class PmcdocsController < ApplicationController
   # GET /pmcdocs.json
   def index
     if params[:annset_id]
-      @annset, notice = find_annset(params[:annset_id])
+      @annset, notice = get_annset(params[:annset_id])
       if @annset
         @docs = @annset.docs.where(:sourcedb => 'PMC', :serial => 0)
       else
@@ -31,14 +31,14 @@ class PmcdocsController < ApplicationController
   # GET /pmcdocs/:pmcdoc_id.json
   def show
     if (params[:annset_id])
-      annset, notice = find_annset(params[:annset_id])
+      annset, notice = get_annset(params[:annset_id])
       if annset
-        divs, notice = find_pmcdoc(params[:id], annset)
+        divs, notice = get_divs(params[:id], annset)
       else
         divs = nil
       end
     else
-      divs, notice = find_pmcdoc(params[:id])
+      divs, notice = get_divs(params[:id])
     end
 
     respond_to do |format|
@@ -74,9 +74,9 @@ class PmcdocsController < ApplicationController
     num_created, num_added, num_failed = 0, 0, 0
 
     if (params[:annset_id])
-      annset, notice = find_annset(params[:annset_id])
+      annset, notice = get_annset(params[:annset_id])
       if annset
-        pmcids = params[:pmcids].split(/[ ,"':|\t\n]+/)
+        pmcids = params[:pmcids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
         pmcids.each do |sourceid|
           divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
           if divs and !divs.empty?
@@ -85,7 +85,7 @@ class PmcdocsController < ApplicationController
               num_added += 1
             end
           else
-            divs, message = get_pmcdoc(sourceid)
+            divs, message = gen_pmcdoc(sourceid)
             if divs
               divs.each {|div| annset.docs << div}
               num_added += 1

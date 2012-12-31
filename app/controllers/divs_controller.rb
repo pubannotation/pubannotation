@@ -17,35 +17,44 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs/:divid
   # GET /pmcdocs/:pmcid/divs/:divid.json
   def show
-    @doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PMC', params[:pmcdoc_id], params[:id])
-    if @doc
-      @text = get_doctext('PMC', params[:pmcdoc_id], params[:id])
+    if (params[:annset_id])
+      @annset, notice = get_annset(params[:annset_id])
+      if @annset
+        @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id], @annset)
+      else
+        @doc = nil
+      end
+    else
+      @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
+      @annsets = get_annsets(@doc)
+    end
 
+    if @doc
+      @text = @doc.body
       if (params[:encoding] == 'ascii')
         asciitext = get_ascii_text(@text)
         @text = asciitext
-      end
-
-      if params[:annset_id] 
-        @annset = Annset.find_by_name(params[:annset_id])
-      else
-        @annsets = @doc.annsets
       end
     end
 
     respond_to do |format|
       if @doc
-        format.html { render 'docs/show' } # show.html.erb
+        format.html {
+          flash[:notice] = notice
+          render 'docs/show'
+        }
         format.json {
           standoff = Hash.new
           standoff[:pmcdoc_id] = params[:pmcdoc_id]
           standoff[:div_id] = params[:id]
           standoff[:text] = @text
-          render :json => standoff, :callback => params[:callback]
+          render :json => standoff #, :callback => params[:callback]
         }
+        format.txt  { render :text => @text }
       else 
-        format.html { redirect_to pmcdocs_url}
-        format.json { render json: @doc}
+        format.html { redirect_to pmcdocs_path, notice: notice}
+        format.json { head :unprocessable_entity }
+        format.txt  { head :unprocessable_entity }
       end
     end
   end
@@ -83,8 +92,6 @@ class DivsController < ApplicationController
 
     if (params[:annset_id])
       annset = Annset.find_by_name(params[:annset_id])
-      p annset
-      puts "-=-=-=-=-=-=-"
       annset.docs << @doc if annset
     end
 

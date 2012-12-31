@@ -3,7 +3,7 @@ class PmdocsController < ApplicationController
   # GET /pmdocs.json
   def index
     if params[:annset_id]
-      @annset, notice = find_annset(params[:annset_id])
+      @annset, notice = get_annset(params[:annset_id])
       if @annset
         @docs = @annset.docs.where(:sourcedb => 'PubMed', :serial => 0)
       else
@@ -14,12 +14,12 @@ class PmdocsController < ApplicationController
     end
 
     @docs = @docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
-    @docs = @docs.paginate(:page => params[:page])
 
     respond_to do |format|
       if @docs
-        format.html
+        format.html { @docs = @docs.paginate(:page => params[:page]) }
         format.json { render json: @docs }
+        format.txt  { render }
       else
         format.html { flash[:notice] = notice }
         format.json { head :unprocessable_entity }
@@ -31,34 +31,42 @@ class PmdocsController < ApplicationController
   # GET /pmdocs/:pmid.json
   def show
     if (params[:annset_id])
-      @annset, notice = find_annset(params[:annset_id])
+      @annset, notice = get_annset(params[:annset_id])
       if @annset
-        @doc, notice = find_pmdoc(params[:id], @annset)
+        @doc, notice = get_doc('PubMed', params[:id], 0, @annset)
       else
         @doc = nil
       end
     else
-      @doc, notice = find_pmdoc(params[:id])
-      @annsets = find_annsets(@doc)
+      @doc, notice = get_doc('PubMed', params[:id])
+      @annsets = get_annsets(@doc)
+    end
+
+    if @doc
+      @text = @doc.body
+      if (params[:encoding] == 'ascii')
+        asciitext = get_ascii_text(@text)
+        @text = asciitext
+      end
     end
 
     respond_to do |format|
       if @doc
-
-        @text = @doc.body
-        if (params[:encoding] == 'ascii')
-          asciitext = get_ascii_text(@text)
-          @text = asciitext
-        end
-
         format.html {
           flash[:notice] = notice
           render 'docs/show'
         }
-        format.json { render json: @doc }
+        format.json {
+          standoff = Hash.new
+          standoff[:pmdoc_id] = params[:id]
+          standoff[:text] = @text
+          render :json => standoff #, :callback => params[:callback]
+        }
+        format.txt  { render :text => @text }
       else 
-        format.html { redirect_to pmdocs_url, notice: notice}
+        format.html { redirect_to pmdocs_path, notice: notice}
         format.json { head :unprocessable_entity }
+        format.txt  { head :unprocessable_entity }
       end
     end
   end
@@ -70,9 +78,9 @@ class PmdocsController < ApplicationController
     num_created, num_added, num_failed = 0, 0, 0
 
     if (params[:annset_id])
-      annset, notice = find_annset(params[:annset_id])
+      annset, notice = get_annset(params[:annset_id])
       if annset
-        pmids = params[:pmids].split(/[ ,"':|\t\n]+/)
+        pmids = params[:pmids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
         pmids.each do |sourceid|
           doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
           if doc
@@ -81,7 +89,7 @@ class PmdocsController < ApplicationController
               num_added += 1
             end
           else
-            doc = get_pmdoc(sourceid)
+            doc = gen_pmdoc(sourceid)
             if doc
               annset.docs << doc
               num_added += 1
@@ -124,7 +132,7 @@ class PmdocsController < ApplicationController
             notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was added to the annotation set, #{annset.name}."
           end
         else
-          doc = get_pmdoc(params[:id])
+          doc = gen_pmdoc(params[:id])
           if doc
             annset.docs << doc
             notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was created in the annotation set, #{annset.name}."
@@ -139,7 +147,7 @@ class PmdocsController < ApplicationController
     else
       doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
       unless doc
-        doc = get_pmdoc(params[:id])
+        doc = gen_pmdoc(params[:id])
         if doc
           notice = "The document, PubMed:#{params[:id]}, was successfuly created." 
         else

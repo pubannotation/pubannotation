@@ -30,6 +30,7 @@ gem 'diff-lcs'
 gem 'will_paginate'
 gem 'thin'
 gem 'devise'
+gem 'rubyzip'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

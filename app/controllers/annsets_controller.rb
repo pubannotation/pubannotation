@@ -8,13 +8,13 @@ class AnnsetsController < ApplicationController
     if sourcedb
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if @doc
-        @annsets = find_annsets(@doc)
+        @annsets = get_annsets(@doc)
       else
         @annsets = nil
         notice = "The document, #{sourcedb}:#{sourceid}, does not exist in PubAnnotation."
       end
     else
-      @annsets = find_annsets()
+      @annsets = get_annsets()
     end
 
     respond_to do |format|
@@ -30,11 +30,11 @@ class AnnsetsController < ApplicationController
   # GET /annsets/:name
   # GET /annsets/:name.json
   def show
-    @annset, notice = find_annset(params[:id])
+    @annset, notice = get_annset(params[:id])
     if @annset
       sourcedb, sourceid, serial = get_docspec(params)
       if sourceid
-        @doc, notice = find_doc(sourcedb, sourceid, serial, @annset)
+        @doc, notice = get_doc(sourcedb, sourceid, serial, @annset)
       else
         docs = @annset.docs
         @pmdocs_num = docs.select{|d| d.sourcedb == 'PubMed'}.length

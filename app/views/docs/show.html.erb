@@ -52,6 +52,29 @@
 
 	<%= render :partial => "annotations/options", :locals => {:annset => @annset, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 
+	<!-- automatic annotation -->
+	<!--script type="text/javascript">
+	  // function getannotation() {
+	  //   var annserver = document.getElementById("annserver").value;
+	  //   var target = '<%= annotation_url %>' + 'json'
+
+	  //   xmlhttp = new XMLHttpRequest();
+	  //   xmlhttp.open('POST', annserver, false);
+	  //   xmlhttp.onreadystatechange = function() {
+	  //     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+	  //       document.getElementById("result").value = xmlhttp.responseText;
+	  //     }
+	  //   }
+
+	  //   xmlhttp.send("target=" + target);
+	  // }
+	</script-->
+	<%= form_tag annotation_url, :method => "post" do %>
+		<%= text_field_tag :annotation_server, nil, :placeholder=>"URL of annotation server" %>
+		<%= submit_tag("Get annotations") %>
+	<% end %>
+	<span id="result"></span>
+
 <% else %>
 	<h2>Annotation sets <span class="meta">made to this document</span></h2>
 	<% if !@annsets || @annsets.empty? %>

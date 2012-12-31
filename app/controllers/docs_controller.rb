@@ -1,21 +1,55 @@
+require 'zip/zip'
+
 class DocsController < ApplicationController
   # GET /docs
   # GET /docs.json
   def index
-    if params[:annset_id] and annset = Annset.find_by_name(params[:annset_id])
-      docs = annset.docs.keep_if{|d| d.serial == 0}
-#      docs = annset.docs.where(:serial => 0)
+    if params[:annset_id]
+      @annset, notice = get_annset(params[:annset_id])
+      if @annset
+        @docs = @annset.docs
+      else
+        @docs = nil
+      end
     else
-      docs = Doc.where(:serial => 0)
+      @docs = Doc.all
     end
 
-    @docs = docs.paginate(:page => params[:page])
+    @docs = @docs.sort{|a, b| [b.sourcedb, a.sourceid.to_i, a.serial.to_i] <=> [a.sourcedb, b.sourceid.to_i, b.serial.to_i]}
+
+    rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
 
     respond_to do |format|
-      format.html # index.html.erb
-      format.json { render json: @docs }
+      if @docs
+        format.html { @docs = @docs.paginate(:page => params[:page]) }
+        format.json { render json: @docs }
+        format.txt  {
+          file_name = (@annset)? @annset.name + ".zip" : "docs.zip"
+          t = Tempfile.new("pubann-temp-filename-#{Time.now}")
+          Zip::ZipOutputStream.open(t.path) do |z|
+            @docs.each do |doc|
+              title = "#{doc.sourcedb}-#{doc.sourceid}-#{doc.serial}-#{doc.section}.txt"
+              puts title + "<=============="
+              z.put_next_entry(title)
+              z.print doc.body
+            end
+          end
+          send_file t.path, :type => 'application/zip',
+                            :disposition => 'attachment',
+                            :filename => file_name
+          t.close
+
+#          texts = @docs.collect{|doc| doc.body}
+#          render text: texts.join("\n----------\n")
+        }
+      else
+        format.html { flash[:notice] = notice }
+        format.json { head :unprocessable_entity }
+        format.txt  { head :unprocessable_entity }
+      end
     end
   end
+
 
   # GET /docs/1
   # GET /docs/1.json

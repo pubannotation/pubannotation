@@ -1,8 +1,15 @@
-require 'xml'
 require 'pmcdoc'
+require 'utfrewrite'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
+
+  # def after_sign_in_path_for(resource)
+  # end
+
+  def after_sign_out_path_for(resource_or_scope)
+    request.referrer
+  end
 
   def get_docspec(params)
     if params[:pmdoc_id]
@@ -22,35 +29,69 @@ class ApplicationController < ActionController::Base
     return sourcedb, sourceid, serial
   end
 
-  ## get docuri
-  def get_docuri (sourcedb, sourceid)
-    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, 0)
-    doc.source if doc
-  end
 
-
-  ## get doctext
-  def get_doctext (sourcedb, sourceid, serial = 0)
-    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-    doc.body if doc
-  end
-
-
-  ## get texturi
-  def get_texturi (sourcedb, sourceid, serial = 0)
-    if sourcedb == 'PubMed'
-      texturi = "http://pubannotation/pmdocs/#{sourceid}"
-    elsif sourcedb == 'PMC'
-      texturi = "http://pubannotation/pmcdocs/#{sourceid}/divs/#{serial}"
+  def get_annset (annset_name)
+    annset = Annset.find_by_name(annset_name)
+    if annset
+      if (annset.accessibility == 1 or (user_signed_in? and annset.user == current_user))
+        return annset, nil
+      else
+        return nil, "The annotation set, #{annset_name}, is specified as private."
+      end
     else
-      texturi = nil
+      return nil, "The annotation set, #{annset_name}, does not exist."
     end
-    texturi
+  end
+
+
+  def get_annsets (doc = nil)
+    annsets = (doc)? doc.annsets : Annset.all
+    annsets.sort!{|x, y| x.name <=> y.name}
+    annsets = annsets.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
+  end
+
+
+  def get_doc (sourcedb, sourceid, serial = 0, annset = nil)
+    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
+    if doc
+      if annset and !doc.annsets.include?(annset)
+        doc = nil
+        notice = "The document, #{sourcedb}:#{sourceid}, does not belong to the annotation set, #{annset.name}."
+      end
+    else
+      notice = "No annotation to the document, #{sourcedb}:#{sourceid}, exists in PubAnnotation." 
+    end
+
+    return doc, notice
+  end
+
+
+  def get_divs (sourceid, annset = nil)
+    divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
+    if divs and !divs.empty?
+      if annset and !divs.first.annsets.include?(annset)
+        divs = nil
+        notice = "The document, PMC::#{sourceid}, does not belong to the annotation set, #{annset.name}."
+      end
+    else
+      divs = nil
+      notice = "No annotation to the document, PMC:#{sourceid}, exists in PubAnnotation." 
+    end
+
+    return [divs, notice]
+  end
+
+
+  def rewrite_ascii (docs)
+    docs.each do |doc|
+      doc.body = get_ascii_text(doc.body)
+    end
+    docs
   end
 
 
   ## get a pmdoc from pubmed
-  def get_pmdoc (pmid)
+  def gen_pmdoc (pmid)
     RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=#{pmid}" do |response, request, result|
       case response.code
       when 200
@@ -79,7 +120,7 @@ class ApplicationController < ActionController::Base
 
 
   ## get a pmcdoc from pubmed central
-  def get_pmcdoc (pmcid)
+  def gen_pmcdoc (pmcid)
     pmcdoc = PMCDoc.new(pmcid)
 
     if pmcdoc.doc
@@ -107,6 +148,26 @@ class ApplicationController < ActionController::Base
   end
 
 
+  def archive_texts (docs)
+    unless docs.empty
+      file_name = "docs.zip"
+      t = Tempfile.new("my-temp-filename-#{Time.now}")
+      Zip::ZipOutputStream.open(t.path) do |z|
+        docs.each do |doc|
+          title = "#{doc.sourcedb}-#{doc.sourceid}-#{doc.serial}-#{doc.section}"
+          title += ".txt" unless title.end_with?(".txt")
+          z.put_next_entry(title)
+          z.print doc.body
+        end
+      end
+      send_file t.path, :type => 'application/zip',
+                             :disposition => 'attachment',
+                             :filename => file_name
+      t.close
+    end
+  end
+
+
   def archive_annotation (annset_name, format = 'json')
     annset = Annset.find_by_name(annset_name)
     annset.docs.each do |d|
@@ -126,139 +187,92 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def find_annsets (doc = nil)
-    annsets = (doc)? doc.annsets : Annset.all
-    annsets.sort!{|x, y| x.name <=> y.name}
-    annsets = annsets.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
-  end
-
-
-  def find_annset (annset_name)
-    annset = Annset.find_by_name(annset_name)
-    if annset
-      if (annset.accessibility == 1 or (user_signed_in? and annset.user == current_user))
-        return annset, nil
+  def gen_annotations (data, annserver, identifier = nil)
+    RestClient.post annserver, {:data => data.to_json}, :content_type => :json, :accept => :json do |response, request, result|
+      case response.code
+      when 200
+        annotations = JSON.parse response, :symbolize_names => true
       else
-        return nil, "The annotation set, #{annset_name}, is specified as private."
+        nil
       end
-    else
-      return nil, "The annotation set, #{annset_name}, does not exist."
     end
   end
 
 
-  def find_doc (sourcedb, sourceid, serial, annset = nil)
-    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-    if doc
-      if annset and !doc.annsets.include?(annset)
-        doc = nil
-        notice = "The document, #{sourcedb}:#{sourceid}, does not belong to the annotation set, #{annset.name}."
-      end
-    else
-      notice = "No annotation to the document, #{sourcedb}:#{sourceid}, exists in PubAnnotation." 
-    end
+  def get_annotations (annset, doc)
+    if annset and doc
+      catanns = doc.catanns.where("annset_id = ?", annset.id).order('begin ASC')
+      hcatanns = catanns.collect {|ca| ca.get_hash} unless catanns.empty?
 
-    return doc, notice
+      insanns = doc.insanns.where("insanns.annset_id = ?", annset.id)
+      insanns.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
+      hinsanns = insanns.collect {|ia| ia.get_hash} unless insanns.empty?
+
+      relanns  = doc.subcatrels.where("relanns.annset_id = ?", annset.id)
+      relanns += doc.subinsrels.where("relanns.annset_id = ?", annset.id)
+      relanns.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
+      hrelanns = relanns.collect {|ra| ra.get_hash} unless relanns.empty?
+
+      modanns = doc.insmods.where("modanns.annset_id = ?", annset.id)
+      modanns += doc.subcatrelmods.where("modanns.annset_id = ?", annset.id)
+      modanns += doc.subinsrelmods.where("modanns.annset_id = ?", annset.id)
+      modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
+      hmodanns = modanns.collect {|ma| ma.get_hash} unless modanns.empty?
+
+      annotations = Hash.new
+      if doc.sourcedb == 'PudMed'
+        annotations[:pmdoc_id] = doc.sourceid
+      elsif doc.sourcedb == 'PMC'
+        annotations[:pmcdoc_id] = doc.sourceid
+        annotations[:div_id] = doc.serial
+      end
+      annotations[:text] = doc.body
+      annotations[:catanns] = hcatanns if hcatanns
+      annotations[:insanns] = hinsanns if hinsanns
+      annotations[:relanns] = hrelanns if hrelanns
+      annotations[:modanns] = hmodanns if hmodanns
+      annotations
+    else
+      nil
+    end
   end
 
 
-  def find_pmdoc (sourceid, annset = nil)
-    doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
-    if doc
-      if annset and !doc.annsets.include?(annset)
-        doc = nil
-        notice = "The document, PubMed:#{sourceid}, does not belong to the annotation set, #{annset.name}."
-      end
-    else
-      notice = "No annotation to the document, PubMed:#{sourceid}, exists in PubAnnotation." 
-    end
+  def save_annotations (annotations, annset, doc)
+    catanns, notice = clean_hcatanns(annotations[:catanns])
 
-    return doc, notice
-  end
+    if catanns
+      catanns, notice = adjust_catanns(catanns, annotations[:text], doc.body)
 
+      if catanns
+        catanns_old = doc.catanns.where("annset_id = ?", annset.id)
+        catanns_old.destroy_all
+      
+        save_hcatanns(catanns, annset, doc)
 
-  def find_pmcdoc (sourceid, annset = nil)
-    divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
-    if divs and !divs.empty?
-      if annset and !divs.first.annsets.include?(annset)
-        divs = nil
-        notice = "The document, PMC::#{sourceid}, does not belong to the annotation set, #{annset.name}."
-      end
-    else
-      divs = nil
-      notice = "No annotation to the document, PMC:#{sourceid}, exists in PubAnnotation." 
-    end
-
-    return [divs, notice]
-  end
-
-
-  def find_or_add_pmdoc (sourceid, annset = nil)
-    if annset
-      if user_signed_in? and annset.user = current_user
-        doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
-        if doc
-          unless doc.annsets.include?(annset)
-            annset.docs << doc
-            notice = "The document, PubMed:#{sourceid}, was added to the annotation set, #{annset.name}."
-          end
-        else
-          doc = get_pmdoc(sourceid)
-          if doc
-            annset.docs << doc
-            notice = "The document, PubMed:#{sourceid}, was created and added to the annotation set, #{params[:annset_id]}."
-          else
-            notice = "The document, PubMed:#{sourceid}, could not be created." 
-          end
+        if annotations[:insanns] and !annotations[:insanns].empty?
+          insanns = annotations[:insanns]
+          insanns = insanns.values if insanns.respond_to?(:values)
+          save_hinsanns(insanns, annset, doc)
         end
-      else
-        notice = "Only the creator of the annotation set can add or delete documents to or from an annotation set."
-      end
-    else
-      doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
-      unless doc
-        doc = get_pmdoc(pmid)
-        if doc
-          notice = "The document, PubMed:#{sourceid}, was created in PubAnnotation." 
-        else
-          notice = "The document, PubMed:#{sourceid}, could not be created." 
+
+        if annotations[:relanns] and !annotations[:relanns].empty?
+          relanns = annotations[:relanns]
+          relanns = relanns.values if relanns.respond_to?(:values)
+          save_hrelanns(relanns, annset, doc)
         end
+
+        if annotations[:modanns] and !annotations[:modanns].empty?
+          modanns = annotations[:modanns]
+          modanns = modanns.values if modanns.respond_to?(:values)
+          save_hmodanns(modanns, annset, doc)
+        end
+
+        notice = 'Annotations were successfully created/updated.'
       end
     end
 
-    return doc, notice
-  end
-
-
-  def find_or_get_pmcdoc (sourceid, annset = nil)
-    divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
-    if annset
-      if divs and !divs.empty?
-        unless divs.first.annsets.include?(annset)
-          divs.each {|div| annset.docs << div}
-          notice = "The document, PMC::#{sourceid}, was added to the annotation set, #{annset.name}."
-        end
-      else
-        divs = get_pmcdoc(sourceid)
-        if divs
-          divs.each {|div| annset.docs << div}
-          notice = "The document, PMC:#{sourceid}, was created and added to the annotation set, #{annset.name}."
-        else
-          notice = "The document, PMC:#{sourceid}, is not in the annotation set, #{annset.name}."
-        end
-      end
-    else
-      unless divs
-        divs = get_pmcdoc(sourceid)
-        if divs
-          notice = "The document, PMC:#{sourceid}, was created in PubAnnotation." 
-        else
-          notice = "The document, PMC:#{sourceid}, could not be created." 
-        end
-      end
-    end
-
-    return [divs, notice]
+    notice
   end
 
 
@@ -294,11 +308,27 @@ class ApplicationController < ActionController::Base
 
   def clean_hcatanns (catanns)
     catanns = catanns.values if catanns.respond_to?(:values)
+    ids = catanns.collect {|a| a[:id] or a["id"]}
+    ids.compact!
 
+    idnum = 1
     catanns.each do |a|
-      return nil, "format error" unless a[:id] and a[:span] and a[:span][:begin] and a[:span][:end] and a[:category]
-      a[:span][:begin] = a[:span][:begin].to_i
-      a[:span][:end]   = a[:span][:end].to_i
+      return nil, "format error" unless (a[:span] or (a[:begin] and a[:end])) and a[:category]
+
+      unless a[:id]
+        idnum += 1 until !ids.include?('T' + idnum.to_s)
+        a[:id] = 'T' + idnum.to_s
+        idnum += 1
+      end
+
+      if a[:span]
+        a[:span][:begin] = a[:span][:begin].to_i
+        a[:span][:end]   = a[:span][:end].to_i
+      else
+        a[:span] = Hash.new
+        a[:span][:begin] = a.delete(:begin).to_i
+        a[:span][:end]   = a.delete(:end).to_i
+      end
     end
 
     [catanns, nil]
@@ -508,9 +538,12 @@ class ApplicationController < ActionController::Base
 
 
   def get_ascii_text(text)
+    rewritetext = Utfrewrite.utf8_to_ascii(text)
+    #rewritetext = text
+
     # escape non-ascii characters
     coder = HTMLEntities.new
-    asciitext = coder.encode(text, :named)
+    asciitext = coder.encode(rewritetext, :named)
 
     # restore back
     asciitext.gsub!('&apos;', "'")
@@ -526,12 +559,18 @@ class ApplicationController < ActionController::Base
   # to assume that there is no bag representation to this method
   def adjust_catanns (catanns, from_text, to_text)
     position_map = Hash.new
-    numchar, numdiff = 0, 0
+    numchar, numdiff, diff = 0, 0, 0
+
     Diff::LCS.sdiff(from_text, to_text) do |h|
       position_map[h.old_position] = h.new_position
       numchar += 1
-      numdiff += 1 if h.old_position != h.new_position
+      if (h.new_position - h.old_position) != diff
+        numdiff +=1
+        diff = h.new_position - h.old_position
+      end
     end
+    last = from_text.length
+    position_map[last] = position_map[last - 1] + 1
 
     # TODO
     # if (numdiff.to_f / numchar) > 2

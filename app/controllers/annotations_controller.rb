@@ -1,12 +1,13 @@
 class AnnotationsController < ApplicationController
-  def index
-    @annset = Annset.find_by_name(params[:annset_id])
+  before_filter :authenticate_user!, :except => [:index, :show]
 
+  def index
+    @annset, notice = get_annset(params[:annset_id])
     if @annset
       sourcedb, sourceid, serial = get_docspec(params)
-      @text = get_doctext(sourcedb, sourceid, serial)
-
-      if @text
+      @doc, notice = get_doc(sourcedb, sourceid, serial, @annset)
+      if @doc
+        @text = @doc.body
         @catanns = get_hcatanns(@annset.name, sourcedb, sourceid, serial)
         @insanns = get_hinsanns(@annset.name, sourcedb, sourceid, serial)
         @relanns = get_hrelanns(@annset.name, sourcedb, sourceid, serial)
@@ -22,11 +23,7 @@ class AnnotationsController < ApplicationController
           # TODO: convert to hash representation
           @catanns, @relanns = bag_catanns(@catanns, @relanns)
         end
-      else
-        notice = "The document, #{sourcedb}:#{sourceid}, does not exist."
       end
-    else
-      notice = "The annotation set, #{params[:annset_id]}, does not exist."
     end
 
     if @annset and @text
@@ -75,68 +72,47 @@ class AnnotationsController < ApplicationController
   # POST /annotations
   # POST /annotations.json
   def create
-    annset = Annset.find_by_name(params[:annset_id])
+    response.headers['Access-Control-Allow-Origin'] = "*"
+    response.headers['Access-Control-Allow-Headers'] = "POST, GET, OPTIONS"
 
-    if annset
-      sourcedb, sourceid, serial = get_docspec(params)
-      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if doc and doc.annsets.include?(annset)
-        if params[:catanns] and !params[:catanns].empty?
-          catanns, notice = clean_hcatanns(params[:catanns])
-          catanns, notice = adjust_catanns(catanns, params[:text], doc.body) if catanns
-          if catanns
-            catanns_old = doc.catanns.where("annset_id = ?", annset.id)
-            catanns_old.destroy_all
-          
-            save_hcatanns(catanns, annset, doc)
+    if params[:annotation_server] or (params[:annotations])
 
-            if params[:insanns] and !params[:insanns].empty?
-              insanns = params[:insanns]
-              insanns = insanns.values if insanns.respond_to?(:values)
-              save_hinsanns(insanns, annset, doc)
-            end
-
-            if params[:relanns] and !params[:relanns].empty?
-              relanns = params[:relanns]
-              relanns = relanns.values if relanns.respond_to?(:values)
-              save_hrelanns(relanns, annset, doc)
-            end
-
-            if params[:modanns] and !params[:modanns].empty?
-              modanns = params[:modanns]
-              modanns = modanns.values if modanns.respond_to?(:values)
-              save_hmodanns(modanns, annset, doc)
-            end
-
-            notice = 'Annotations were successfully created/updated.'
+      annset, notice = get_annset(params[:annset_id])
+      if annset
+        sourcedb, sourceid, serial = get_docspec(params)
+        doc, notice = get_doc(sourcedb, sourceid, serial, annset)
+        if doc
+          if params[:annotation_server]
+            annotations = get_annotations(annset, doc)
+            annotations = gen_annotations(annotations, params[:annotation_server])
+          else
+            annotations = JSON.parse params[:annotations], :symbolize_names => true
           end
+
+          notice = save_annotations(annotations, annset, doc)
         else
-          catanns_old = doc.catanns.where("annset_id = ?", annset.id)
-          catanns_old.destroy_all
-          notice = 'Annotations were all deleted.'
-          catanns = true
+          notice = "The annotation set, #{params[:annset_id]}, does not include the document, PubMed:#{sourceid}."
         end
-      else
-        notice = "The annotation set, #{params[:annset_id]}, does not include the document, PubMed:#{sourceid}."
       end
     else
-      notice = "The annotation set, #{params[:annset_id]}, does not exist."
+      notice = "No annotation found in the submission."
     end
 
     respond_to do |format|
       format.html {
         if doc and annset
-          redirect_to annset_pmdoc_path(annset.name, doc.name), notice: notice
+          redirect_to annset_pmdoc_path(annset.name, doc.sourceid), notice: notice if doc.sourcedb == 'PubMed'
+          redirect_to annset_pmcdoc_div_path(annset.name, doc.sourceid, doc.serial), notice: notice if doc.sourcedb == 'PMC'
         elsif annset
           redirect_to annset_path(annset.name), notice: notice
         else
-          redirect_to home_path(annset.name), notice: notice
+          redirect_to home_path, notice: notice
         end
       }
 
       format.json {
-        if doc and annset and catanns
-          head :no_content
+        if doc and annset and annotations
+          head :no_content, :content_type => ''
         else
           head :unprocessable_entity
         end

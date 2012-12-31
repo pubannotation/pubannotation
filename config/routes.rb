@@ -3,6 +3,10 @@ Pubann::Application.routes.draw do
 
   get "home/index"
 
+  resources :annsets do
+    resources :docs
+  end
+
   resources :pmdocs do
     resources :annsets do
       resources :annotations

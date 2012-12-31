@@ -38,23 +38,46 @@ class PMCDoc
     end
   end
 
+
   def empty?
-    if @doc
-      false
-    else
-      true
-    end
+    (@doc)? false : true
   end
+
 
   def get_divs
     title    = get_title
     abstract = get_abstract
     secs     = get_secs
+    psec     = (secs and secs[0].is_a?(Array))? secs.shift : nil 
 
     if title and abstract and secs
 
       # extract captions
       caps = Array.new
+
+      if psec
+        psec.each do |p|
+          figs = p.find('.//fig')
+          tbls = p.find('.//table-wrap')
+
+          figs.each do |f|
+            label   = f.find_first('./label').content.strip
+            caption = f.find_first('./caption')
+            caps << ['Caption-' + label, get_text(caption)]
+          end
+
+          tbls.each do |t|
+            label   = t.find_first('./label').content.strip
+            caption = t.find_first('./caption')
+            caps << ['Caption-' + label, get_text(caption)]
+          end
+
+          figs.each {|f| f.remove!}
+          tbls.each {|t| t.remove!}
+        end
+      end
+
+
       secs.each do |sec|
         figs = sec.find('.//fig')
         tbls = sec.find('.//table-wrap')
@@ -79,6 +102,12 @@ class PMCDoc
 
       divs << ['TIAB', get_text(title) + "\n" + get_text(abstract)]
 
+      if psec
+        text = ''
+        psec.each {|p| text += get_text(p)}
+        divs << ["INTRODUCTION", text]
+      end
+
       secs.each do |sec|
         stitle  = sec.find_first('./title')
         label   = stitle.content.strip
@@ -86,6 +115,12 @@ class PMCDoc
 
         ps      = sec.find('./p')
         subsecs = sec.find('./sec')
+
+        # remove dummy section
+        if subsecs.length == 1
+          subsubsecs = subsecs[0].find('./sec')
+          subsecs = subsubsecs
+        end
 
         if subsecs.length > 0 and ps.length > 0
           text = ''
@@ -119,11 +154,7 @@ class PMCDoc
     titles = @doc.find('/pmc-articleset/article/front/article-meta/title-group/article-title')
     if titles.length == 1
       title = titles.first
-      if check_title(title)
-        return title
-      else
-        return nil
-      end
+      return (check_title(title))? title : nil
     else
       warn "more than one titles."
       return nil
@@ -160,10 +191,20 @@ class PMCDoc
 
     if body
       secs = Array.new
+      psec = Array.new
 
       body.each_element do |e|
         case e.name
+        when 'p'
+          if secs.empty?
+            psec << e
+          else
+            warn "<p> element between <sec> elements"
+            return nil
+          end
         when 'sec'
+          secs << psec if secs.empty? and !psec.empty?
+
           title = e.find_first('title').content.strip.downcase
           case title
           # filtering by title
@@ -204,7 +245,7 @@ class PMCDoc
       when 'p'
         return false unless check_p(e)
       when 'sec'
-        return false unless check_subsec(e)
+        return false unless check_sec(e)
       when 'fig', 'table-wrap'
         return false unless check_float(e)
       else
@@ -238,6 +279,8 @@ class PMCDoc
   def check_abstract (node)
     node.each_element do |e|
       case e.name
+      when 'title'
+        return false unless check_title(e)
       when 'p'
         return false unless check_p(e)
       when 'sec'
