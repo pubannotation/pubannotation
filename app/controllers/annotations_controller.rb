@@ -1,5 +1,6 @@
 class AnnotationsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index, :show]
+  after_filter :set_access_control_headers
 
   def index
     @annset, notice = get_annset(params[:annset_id])
@@ -72,9 +73,6 @@ class AnnotationsController < ApplicationController
   # POST /annotations
   # POST /annotations.json
   def create
-    response.headers['Access-Control-Allow-Origin'] = "*"
-    response.headers['Access-Control-Allow-Headers'] = "POST, GET, OPTIONS"
-
     if params[:annotation_server] or (params[:annotations])
 
       annset, notice = get_annset(params[:annset_id])
@@ -119,6 +117,22 @@ class AnnotationsController < ApplicationController
       }
     end
 
+  end
+
+
+  private
+
+  def set_access_control_headers
+    allowed_origins = ["http://localhost", "http://bionlp.dbcls.jp"]
+    origin = request.env['HTTP_ORIGIN']
+    if allowed_origins.include?(origin)
+      headers['Access-Control-Allow-Origin'] = origin
+      headers['Access-Control-Expose-Headers'] = 'ETag'
+      headers['Access-Control-Allow-Methods'] = "GET, POST, OPTIONS"
+      headers['Access-Control-Allow-Headers'] = "Authorization, X-Requested-With"
+      headers['Access-Control-Allow-Credentials'] = "true"
+      headers['Access-Control-Max-Age'] = "1728000"
+    end
   end
 
 end
