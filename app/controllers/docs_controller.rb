@@ -28,8 +28,10 @@ class DocsController < ApplicationController
           t = Tempfile.new("pubann-temp-filename-#{Time.now}")
           Zip::ZipOutputStream.open(t.path) do |z|
             @docs.each do |doc|
-              title = "#{doc.sourcedb}-#{doc.sourceid}-#{doc.serial}-#{doc.section}.txt"
-              puts title + "<=============="
+              title = "%s-%s-%02d-%s" % [doc.sourcedb, doc.sourceid, doc.serial, doc.section]
+              title.sub!(/\.$/, '')
+              title.gsub!(' ', '_')
+              title += ".txt" unless title.end_with?(".txt")
               z.put_next_entry(title)
               z.print doc.body
             end

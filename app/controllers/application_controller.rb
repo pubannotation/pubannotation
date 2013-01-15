@@ -154,8 +154,14 @@ class ApplicationController < ActionController::Base
       t = Tempfile.new("my-temp-filename-#{Time.now}")
       Zip::ZipOutputStream.open(t.path) do |z|
         docs.each do |doc|
-          title = "#{doc.sourcedb}-#{doc.sourceid}-#{doc.serial}-#{doc.section}"
+          # title = "#{doc.sourcedb}-#{doc.sourceid}-%02d-#{doc.section}" % doc.serial
+          title = "%s-%s-%02d-%s" % [doc.sourcedb, doc.sourceid, doc.serial, doc.section]
+          title.sub!(/\.$/, '')
+          title.gsub!(' ', '_')
           title += ".txt" unless title.end_with?(".txt")
+          puts title
+          puts "%02d" % doc.serial
+          puts " <-=-=-=-=-=-=-=-=-=-"
           z.put_next_entry(title)
           z.print doc.body
         end
@@ -175,8 +181,8 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def get_conversion (data, converter, identifier = nil)
-    RestClient.post converter, {:data => data, :identifier => identifier}, :content_type => 'multipart/form-data' do |response, request, result|
+  def get_conversion (annotation, converter, identifier = nil)
+    RestClient.post converter, {:annotation => annotation.to_json}, :content_type => :json, :accept => :json do |response, request, result|
       case response.code
       when 200
         response
@@ -187,8 +193,8 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def gen_annotations (data, annserver, identifier = nil)
-    RestClient.post annserver, {:data => data.to_json}, :content_type => :json, :accept => :json do |response, request, result|
+  def gen_annotations (annotation, annserver, identifier = nil)
+    RestClient.post annserver, {:annotation => annotation.to_json}, :content_type => :json, :accept => :json do |response, request, result|
       case response.code
       when 200
         annotations = JSON.parse response, :symbolize_names => true
@@ -547,6 +553,7 @@ class ApplicationController < ActionController::Base
 
     # restore back
     asciitext.gsub!('&apos;', "'")
+    asciitext.gsub!('&lt;', "<")
 
     # change escape characters
     asciitext.gsub!(/&([a-zA-Z]{1,10});/, '==\1==')

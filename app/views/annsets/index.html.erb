@@ -43,10 +43,10 @@
 
   <% @annsets.each do |annset| %>
     <tr>
-      <td><%= annset.name %></td>
-      <td class="text"><%= (annset.description.length < 64)? annset.description : annset.description[0, 62] + ' ...' %></td>
-      <td><%= annset.author %></td>
-      <td><%= annset.user.username %></td>
+      <td style="white-space: nowrap"><%= annset.name %></td>
+      <td class="text"><%= (annset.description.length < 42)? annset.description : annset.description[0, 40] + ' ...' %></td>
+      <td style="white-space: nowrap"><%= annset.author %></td>
+      <td style="white-space: nowrap"><%= annset.user.username %></td>
       <% if @doc and @doc.sourcedb == "PubMed" %>
         <td><%= link_to 'Show', pmdoc_annset_path(@doc.sourceid, annset.name) %></td>
       <% elsif @doc and @doc.sourcedb == "PMC" %>
