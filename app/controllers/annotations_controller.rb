@@ -8,11 +8,12 @@ class AnnotationsController < ApplicationController
       sourcedb, sourceid, serial = get_docspec(params)
       @doc, notice = get_doc(sourcedb, sourceid, serial, @annset)
       if @doc
-        @text = @doc.body
-        @catanns = get_hcatanns(@annset.name, sourcedb, sourceid, serial)
-        @insanns = get_hinsanns(@annset.name, sourcedb, sourceid, serial)
-        @relanns = get_hrelanns(@annset.name, sourcedb, sourceid, serial)
-        @modanns = get_hmodanns(@annset.name, sourcedb, sourceid, serial)
+        annotations = get_annotations(@annset, @doc)
+        @text = annotations[:text]
+        @catanns = annotations[:catanns]
+        @insanns = annotations[:insanns]
+        @relanns = annotations[:relanns]
+        @modanns = annotations[:modanns]
 
         if (params[:encoding] == 'ascii')
           asciitext = get_ascii_text (@text)
@@ -27,38 +28,22 @@ class AnnotationsController < ApplicationController
       end
     end
 
-    if @annset and @text
-      standoff = Hash.new
-      if sourcedb == 'PudMed'
-        standoff[:pmdoc_id] = sourceid
-      elsif sourcedb == 'PMC'
-        standoff[:pmcdoc_id] = sourceid
-        standoff[:div_id] = serial
-      end
-      standoff[:text] = @text
-      standoff[:catanns] = @catanns if @catanns
-      standoff[:insanns] = @insanns if @insanns
-      standoff[:relanns] = @relanns if @relanns
-      standoff[:modanns] = @modanns if @modanns
-    end
-
-
     respond_to do |format|
       if @annset and @text
         format.html { flash[:notice] = notice }
-        format.json { render :json => standoff, :callback => params[:callback] }
+        format.json { render :json => annotations, :callback => params[:callback] }
         format.ttl  {
           if @annset.rdfwriter.empty?
             head :unprocessable_entity
           else
-            render :text => get_conversion(standoff.to_json, @annset.rdfwriter, serial), :content_type => 'application/x-turtle'
+            render :text => get_conversion(annotations, @annset.rdfwriter, serial), :content_type => 'application/x-turtle'
           end
         }
         format.xml  {
           if @annset.xmlwriter.empty?
             head :unprocessable_entity
           else
-            render :text => get_conversion(standoff.to_json, @annset.xmlwriter, serial), :content_type => 'application/xml;charset=urf-8'
+            render :text => get_conversion(annotations, @annset.xmlwriter, serial), :content_type => 'application/xml;charset=urf-8'
           end
         }
       else
