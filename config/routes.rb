@@ -5,6 +5,7 @@ Pubann::Application.routes.draw do
 
   resources :annsets do
     resources :docs
+    resources :annotations
   end
 
   resources :pmdocs do

@@ -5,31 +5,33 @@ class AnnotationsController < ApplicationController
   def index
     @annset, notice = get_annset(params[:annset_id])
     if @annset
-      sourcedb, sourceid, serial = get_docspec(params)
-      @doc, notice = get_doc(sourcedb, sourceid, serial, @annset)
-      if @doc
-        annotations = get_annotations(@annset, @doc)
-        @text = annotations[:text]
-        @catanns = annotations[:catanns]
-        @insanns = annotations[:insanns]
-        @relanns = annotations[:relanns]
-        @modanns = annotations[:modanns]
 
-        if (params[:encoding] == 'ascii')
-          asciitext = get_ascii_text (@text)
-          @catanns = adjust_catanns(@catanns, @text, asciitext)
-          @text = asciitext
+      if (params[:pmdoc_id] || params[:pmcdoc_id])
+
+        sourcedb, sourceid, serial = get_docspec(params)
+        @doc, notice = get_doc(sourcedb, sourceid, serial, @annset)
+        if @doc
+          annotations = get_annotations(@annset, @doc, :encoding => params[:encoding])
+          @text = annotations[:text]
+          @catanns = annotations[:catanns]
+          @insanns = annotations[:insanns]
+          @relanns = annotations[:relanns]
+          @modanns = annotations[:modanns]
         end
 
-        if (params[:discontinuous_annotation] == 'bag')
-          # TODO: convert to hash representation
-          @catanns, @relanns = bag_catanns(@catanns, @relanns)
+      else
+        # retrieve annotatons to all the documents
+        docs = @annset.docs
+        anncollection = Array.new
+        docs.each do |doc|
+          anncollection.push (get_annotations(@annset, doc, :encoding => params[:encoding]))
         end
       end
     end
 
     respond_to do |format|
       if @annset and @text
+
         format.html { flash[:notice] = notice }
         format.json { render :json => annotations, :callback => params[:callback] }
         format.ttl  {
@@ -46,12 +48,35 @@ class AnnotationsController < ApplicationController
             render :text => get_conversion(annotations, @annset.xmlwriter, serial), :content_type => 'application/xml;charset=urf-8'
           end
         }
+
+      elsif anncollection
+
+        format.json {
+          file_name = (@annset)? @annset.name + ".zip" : "annotations.zip"
+          t = Tempfile.new("pubann-temp-filename-#{Time.now}")
+          Zip::ZipOutputStream.open(t.path) do |z|
+            anncollection.each do |ann|
+              title = "%s-%s-%02d-%s" % [ann[:source_db], ann[:source_id], ann[:division_id], ann[:section]]
+              title.sub!(/\.$/, '')
+              title.gsub!(' ', '_')
+              title += ".json" unless title.end_with?(".json")
+              z.put_next_entry(title)
+              z.print ann.to_json
+            end
+          end
+          send_file t.path, :type => 'application/zip',
+                            :disposition => 'attachment',
+                            :filename => file_name
+          t.close
+        }
+
       else
         format.html { flash[:notice] = notice }
         format.json { head :unprocessable_entity }
         format.ttl  { head :unprocessable_entity }
       end
     end
+
   end
 
 

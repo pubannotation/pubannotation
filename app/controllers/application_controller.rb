@@ -202,7 +202,7 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def get_annotations (annset, doc)
+  def get_annotations (annset, doc, options = {})
     if annset and doc
       catanns = doc.catanns.where("annset_id = ?", annset.id).order('begin ASC')
       hcatanns = catanns.collect {|ca| ca.get_hash} unless catanns.empty?
@@ -222,14 +222,30 @@ class ApplicationController < ActionController::Base
       modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       hmodanns = modanns.collect {|ma| ma.get_hash} unless modanns.empty?
 
-      annotations = Hash.new
-      if doc.sourcedb == 'PudMed'
-        annotations[:pmdoc_id] = doc.sourceid
-      elsif doc.sourcedb == 'PMC'
-        annotations[:pmcdoc_id] = doc.sourceid
-        annotations[:div_id] = doc.serial
+      text = doc.body
+      if (options[:encoding] == 'ascii')
+        asciitext = get_ascii_text (text)
+        hcatanns = adjust_catanns(hcatanns, text, asciitext)
+        text = asciitext
       end
-      annotations[:text] = doc.body
+
+      if (options[:discontinuous_annotation] == 'bag')
+        # TODO: convert to hash representation
+        hcatanns, hrelanns = bag_catanns(hcatanns, hrelanns)
+      end
+
+      annotations = Hash.new
+      # if doc.sourcedb == 'PudMed'
+      #   annotations[:pmdoc_id] = doc.sourceid
+      # elsif doc.sourcedb == 'PMC'
+      #   annotations[:pmcdoc_id] = doc.sourceid
+      #   annotations[:div_id] = doc.serial
+      # end
+      annotations[:source_db] = doc.sourcedb
+      annotations[:source_id] = doc.sourceid
+      annotations[:division_id] = doc.serial
+      annotations[:section] = doc.section
+      annotations[:text] = text
       annotations[:catanns] = hcatanns if hcatanns
       annotations[:insanns] = hinsanns if hinsanns
       annotations[:relanns] = hrelanns if hrelanns
@@ -595,6 +611,8 @@ class ApplicationController < ActionController::Base
   # to work on the hash representation of catanns
   # to assume that there is no bag representation to this method
   def adjust_catanns (catanns, from_text, to_text)
+    return nil if catanns == nil
+
     position_map = Hash.new
     numchar, numdiff, diff = 0, 0, 0
 
@@ -621,7 +639,7 @@ class ApplicationController < ActionController::Base
       catanns_new[i][:span][:end]   = position_map[catanns[i][:span][:end]]
     end
 
-    [catanns_new, nil]
+    catanns_new
   end
 
 

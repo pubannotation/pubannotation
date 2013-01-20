@@ -22,7 +22,7 @@ class Catann < ActiveRecord::Base
 
   def get_hash
     hcatann = Hash.new
-    hcatann[:id]      = hid
+    hcatann[:id]       = hid
     hcatann[:span]     = {:begin => self.begin, :end => self.end}
     hcatann[:category] = category
     hcatann
