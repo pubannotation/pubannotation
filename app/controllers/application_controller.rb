@@ -259,9 +259,8 @@ class ApplicationController < ActionController::Base
 
   def save_annotations (annotations, annset, doc)
     catanns, notice = clean_hcatanns(annotations[:catanns])
-
     if catanns
-      catanns, notice = adjust_catanns(catanns, annotations[:text], doc.body)
+      catanns = adjust_catanns(catanns, annotations[:text], doc.body)
 
       if catanns
         catanns_old = doc.catanns.where("annset_id = ?", annset.id)
