@@ -1,3 +1,5 @@
+require 'zip/zip'
+
 class AnnotationsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index, :show]
   after_filter :set_access_control_headers
@@ -38,7 +40,7 @@ class AnnotationsController < ApplicationController
           if @annset.rdfwriter.empty?
             head :unprocessable_entity
           else
-            render :text => get_conversion(annotations, @annset.rdfwriter, serial), :content_type => 'application/x-turtle'
+            render :text => get_conversion(annotations, @annset.rdfwriter), :content_type => 'application/x-turtle'
           end
         }
         format.xml  {
@@ -68,6 +70,14 @@ class AnnotationsController < ApplicationController
                             :disposition => 'attachment',
                             :filename => file_name
           t.close
+        }
+        format.ttl {
+          ttl = ''
+          anncollection.each_with_index do |ann, i|
+            if i == 0 then ttl = get_conversion(ann, @annset.rdfwriter).split("\n")[0..8].join("\n") end
+            ttl += "\n" + get_conversion(ann, @annset.rdfwriter).split("\n")[9..-1].join("\n")
+          end
+          render :text => ttl, :content_type => 'application/x-turtle', :filename => @annset.name
         }
 
       else
