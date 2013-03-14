@@ -225,7 +225,8 @@ class ApplicationController < ActionController::Base
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
-        hcatanns = adjust_catanns(hcatanns, text, asciitext)
+        hcatanns = realign_catanns(hcatanns, text, asciitext)
+        hcatanns = adjust_catanns(hcatanns, asciitext)
         text = asciitext
       end
 
@@ -260,7 +261,7 @@ class ApplicationController < ActionController::Base
   def save_annotations (annotations, annset, doc)
     catanns, notice = clean_hcatanns(annotations[:catanns])
     if catanns
-      catanns = adjust_catanns(catanns, annotations[:text], doc.body)
+      catanns = realign_catanns(catanns, annotations[:text], doc.body)
 
       if catanns
         catanns_old = doc.catanns.where("annset_id = ?", annset.id)
@@ -609,7 +610,7 @@ class ApplicationController < ActionController::Base
 
   # to work on the hash representation of catanns
   # to assume that there is no bag representation to this method
-  def adjust_catanns (catanns, from_text, to_text)
+  def realign_catanns (catanns, from_text, to_text)
     return nil if catanns == nil
 
     position_map = Hash.new
@@ -636,6 +637,46 @@ class ApplicationController < ActionController::Base
     (0...catanns.length).each do |i|
       catanns_new[i][:span][:begin] = position_map[catanns[i][:span][:begin]]
       catanns_new[i][:span][:end]   = position_map[catanns[i][:span][:end]]
+    end
+
+    catanns_new
+  end
+
+  def adjust_catanns (catanns, text)
+    delimiter_characters = [
+          " ",
+          ".",
+          "!",
+          "?",
+          ",",
+          ":",
+          ";",
+          "+",
+          "-",
+          "/",
+          "&",
+          "(",
+          ")",
+          "{",
+          "}",
+          "[",
+          "]",
+          "\\",
+          "\"",
+          "'",
+          "\n"
+      ]
+
+    catanns_new = Array.new(catanns)
+
+    catanns_new.each do |c|
+      while c[:span][:begin] > 0 and !delimiter_characters.include?(text[c[:span][:begin] - 1])
+        c[:span][:begin] -= 1
+      end
+
+      while c[:span][:end] < text.length and !delimiter_characters.include?(text[c[:span][:end]])
+        c[:span][:end] += 1
+      end
     end
 
     catanns_new
