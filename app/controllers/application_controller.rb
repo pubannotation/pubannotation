@@ -1,5 +1,6 @@
 require 'pmcdoc'
 require 'utfrewrite'
+require 'aligner'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
@@ -225,8 +226,9 @@ class ApplicationController < ActionController::Base
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
-        hcatanns = realign_catanns(hcatanns, text, asciitext)
-        hcatanns = adjust_catanns(hcatanns, asciitext)
+        aligner = Aligner.new(text, asciitext)
+        hcatanns = aligner.transform_catanns(hcatanns)
+        # hcatanns = adjust_catanns(hcatanns, asciitext)
         text = asciitext
       end
 
@@ -643,6 +645,8 @@ class ApplicationController < ActionController::Base
   end
 
   def adjust_catanns (catanns, text)
+    return nil if catanns == nil
+
     delimiter_characters = [
           " ",
           ".",
