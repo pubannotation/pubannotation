@@ -99,6 +99,7 @@ class DocsController < ApplicationController
   # PUT /docs/1
   # PUT /docs/1.json
   def update
+    params[:doc][:body].gsub!(/\r\n/, "\n")
     @doc = Doc.find(params[:id])
 
     respond_to do |format|
