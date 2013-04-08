@@ -41,8 +41,8 @@ class DocsController < ApplicationController
                             :filename => file_name
           t.close
 
-#          texts = @docs.collect{|doc| doc.body}
-#          render text: texts.join("\n----------\n")
+          # texts = @docs.collect{|doc| doc.body}
+          # render text: texts.join("\n----------\n")
         }
       else
         format.html { flash[:notice] = notice }

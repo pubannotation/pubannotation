@@ -5,63 +5,68 @@ Encoding.default_internal="UTF-8"
 
 require 'json'
 require 'diff-lcs'
+require 'glcs'
 
 class Aligner
 
   # to work on the hash representation of catanns
   # to assume that there is no bag representation to this method
-  def initialize(from_text, to_text)
-    position_map = Hash.new
-    numchar, numdiff, diff = 0, 0, 0
+  def initialize(from_text, to_text, dictionary = nil)
+    posmap = Hash.new
 
-    posmap_beg = Hash.new
-    posmap_end = Hash.new
+    sdiff = Diff::LCS.sdiff(from_text, to_text)
 
-    numadd, numdel = 0, 0
-    Diff::LCS.sdiff(from_text, to_text) do |h|
-      if h.action == '='
-        if numadd + numdel > 0
-          range = case numadd
-          when 0
-            h.new_position
-          when 1
-            h.new_position - 1
-          else
-            # h.new_position - numadd .. h.new_position - 1
-            h.new_position - 1
+    addition = []
+    deletion = []
+
+    sdiff.each do |h|
+      case h.action
+      when '='
+
+        case deletion.length
+        when 0
+        when 1
+          posmap[deletion[0]] = addition[0]
+        else
+          gdiff = GLCS.new(from_text[deletion[0]..deletion[-1]], to_text[addition[0]..addition[-1]], dictionary).sdiff
+
+          new_position = 0
+          state = '='
+          gdiff.each_with_index do |g, i|
+            if g[:action] ==  '+'
+              new_position = g[:new_position] unless state == '+'
+              state = '+'
+            end
+
+            if g[:action] == '-'
+              posmap[g[:old_position] + deletion[0]] = new_position + addition[0]
+              state = '-'
+            end
           end
-
-          (1 ... numdel + 1).each do |i|
-            posmap_beg[h.old_position - i] = range
-            posmap_end[h.old_position - i] = range
-          end
-
-          posmap_beg[h.old_position - numdel] = h.new_position - numadd
-          posmap_end[h.old_position - 1] = (numadd == 0)? h.new_position : h.new_position - 1 if h.old_position > 0
-          numadd, numdel = 0, 0
         end
 
-        posmap_beg[h.old_position] = h.new_position
-        posmap_end[h.old_position] = h.new_position
-      else
-        numadd += 1 and numdel += 1 if h.action == '!'
-        numadd += 1 if h.action == '+'
-        numdel += 1 if h.action == '-'
+        addition.clear
+        deletion.clear
+
+        posmap[h.old_position] = h.new_position
+      when '!'
+        deletion << h.old_position
+        addition << h.new_position
+      when '-'
+        deletion << h.old_position
+      when '+'
+        addition << h.new_position
       end
     end
 
     last = from_text.length
-    posmap_beg[last] = posmap_beg[last - 1] + 1
-    posmap_end[last] = posmap_end[last - 1] + 1
+    posmap[last] = posmap[last - 1] + 1
 
-    @posmap_beg, @posmap_end = posmap_beg, posmap_end
+    @posmap = posmap
   end
 
   def show_alignment
-    puts "[alignment for begins]-----"
-    (0...@posmap_beg.size).each {|i| puts "#{i}\t#{@posmap_beg[i]}"}
-    puts "[alignment for ends]-------"
-    (0...@posmap_end.size).each {|i| puts "#{i}\t#{@posmap_end[i]}"}
+    (0...@posmap.size).each {|i| puts "#{i}\t#{@posmap[i]}"}
   end
 
   def transform_catanns(catanns)
@@ -70,8 +75,8 @@ class Aligner
     catanns_new = Array.new(catanns)
 
     (0...catanns.length).each do |i|
-      catanns_new[i][:span][:begin] = @posmap_beg[catanns[i][:span][:begin]]
-      catanns_new[i][:span][:end]   = @posmap_beg[catanns[i][:span][:end]]
+      catanns_new[i][:span][:begin] = @posmap[catanns[i][:span][:begin]]
+      catanns_new[i][:span][:end]   = @posmap[catanns[i][:span][:end]]
     end
 
     catanns_new
@@ -105,11 +110,31 @@ if __FILE__ == $0
   # from_text = "TGF-β–β induced"
   # to_text = "TGF-beta-beta induced"
 
-  anns1 = JSON.parse File.read(ARGV[0]), :symbolize_names => true
-  anns2 = JSON.parse File.read(ARGV[1]), :symbolize_names => true
+  # from_text = "-βκ-"
+  # to_text = "-betakappa-"
 
-  aligner = Aligner.new(anns1[:text], anns2[:text])
-  catanns = aligner.transform_catanns(anns1[:catanns])
+  from_text = "-betakappa-beta-z"
+  to_text = "-βκ-β–z"
+
+  # from_text = "TGF-β–induced"
+  # to_text = "TGF-beta-induced"
+
+  # anns1 = JSON.parse File.read(ARGV[0]), :symbolize_names => true
+  # anns2 = JSON.parse File.read(ARGV[1]), :symbolize_names => true
+
+  # aligner = Aligner.new(anns1[:text], anns2[:text], [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"]])
+  # catanns = aligner.transform_catanns(anns1[:catanns])
+
+  catanns_s = <<-'ANN'
+  [{"id":"T0","span":{"begin":1,"end":2},"category":"Protein"}]
+  ANN
+
+  catanns = JSON.parse catanns_s, :symbolize_names => true
+
+  aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["κ", "kappa"]])
+  # aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["β", "beta"]])
+  aligner.show_alignment
+  catanns = aligner.transform_catanns(catanns)
 
   p catanns
 end

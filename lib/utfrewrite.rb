@@ -235,6 +235,7 @@ module Utfrewrite
 		0x005C => "\\",
 		0x2015 => "-",
 		0x00AE => "(R)",
+		0x025B => "epsilon",
         0x25AA => "==blacksquare, square, filled==",
         0x00B5 => "micro",
         0x2126 => "==ohm==",

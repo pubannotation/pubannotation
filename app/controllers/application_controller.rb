@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'pmcdoc'
 require 'utfrewrite'
 require 'aligner'
@@ -226,7 +227,8 @@ class ApplicationController < ActionController::Base
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
-        aligner = Aligner.new(text, asciitext)
+        aligner = Aligner.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"]])
+        # aligner = Aligner.new(text, asciitext)
         hcatanns = aligner.transform_catanns(hcatanns)
         # hcatanns = adjust_catanns(hcatanns, asciitext)
         text = asciitext

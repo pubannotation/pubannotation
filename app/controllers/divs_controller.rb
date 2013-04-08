@@ -75,7 +75,8 @@ class DivsController < ApplicationController
 
   # GET /pmcdocs/:pmcid/divs/:divid/edit
   def edit
-    @doc = Doc.find(params[:id])
+    # @doc = Doc.find(params[:id])
+    @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
   end
 
   # POST /pmcdocs/:pmcid/divs
