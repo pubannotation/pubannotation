@@ -14,8 +14,8 @@ class GLCS
       end
     end
 
-    @x = '-' + string1
-    @y = '-' + string2
+    @x = '_' + string1
+    @y = '_' + string2
 
     m = @x.length
     n = @y.length
@@ -111,7 +111,7 @@ class GLCS
     j = @y.length - 1
 
     begin
-      if @x[i] == @y[j]
+      if i > 0 and j > 0 and @x[i] == @y[j]
         @sdiff.unshift({:action => '=', :old_position => i-1, :old_character => @x[i], :new_position => j-1, :new_character => @y[j]})
         i -= 1; j -= 1
       elsif key = suffixEq(@x[0..i], @y[0..j])

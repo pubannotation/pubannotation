@@ -227,7 +227,7 @@ class ApplicationController < ActionController::Base
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
-        aligner = Aligner.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["’", "'"]])
+        aligner = Aligner.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
         # aligner = Aligner.new(text, asciitext)
         hcatanns = aligner.transform_catanns(hcatanns)
         # hcatanns = adjust_catanns(hcatanns, asciitext)

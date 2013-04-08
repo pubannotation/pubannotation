@@ -26,6 +26,7 @@ class AnnotationsController < ApplicationController
         docs = @annset.docs
         anncollection = Array.new
         docs.each do |doc|
+          # puts "#{doc.sourceid}:#{doc.serial} <======="
           anncollection.push (get_annotations(@annset, doc, :encoding => params[:encoding]))
         end
       end

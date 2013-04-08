@@ -11,10 +11,17 @@ class Aligner
 
   # to work on the hash representation of catanns
   # to assume that there is no bag representation to this method
-  def initialize(from_text, to_text, dictionary = nil)
+  def initialize(string1, string2, dictionary = nil)
     posmap = Hash.new
 
+    from_text = string1.tr(" −–", " -")
+    to_text   = string2.tr(" −–", " -")
+
     sdiff = Diff::LCS.sdiff(from_text, to_text)
+    # sdiff.each_with_index do |h, i|
+    #   p h
+    #   break if i > 1100
+    # end
 
     addition = []
     deletion = []
@@ -33,6 +40,7 @@ class Aligner
           # gdiff.each do |gg|
           #   p gg
           # end
+          # puts "-------------"
 
           new_position = 0
           state = '='
@@ -117,11 +125,20 @@ if __FILE__ == $0
   # from_text = "-βκ-"
   # to_text = "-betakappa-"
 
-  from_text = "-betakappa-beta-z"
-  to_text = "-βκ-β–z"
+  # from_text = "-betakappa-beta-z"
+  # to_text = "-βκ-β–z"
 
-  from_text = "affect C/EBP-β’s ability"
-  to_text = "affect C/EBP-beta's ability"
+  # from_text = "affect C/EBP-β’s ability"
+  # to_text = "affect C/EBP-beta's ability"
+
+  from_text = "12 ± 34"
+  to_text = "12 +/- 34"
+
+  from_text = "TGF-β–treated"
+  to_text = "TGF-beta-treated"
+
+  from_text = "in TGF-β–treated cells"
+  to_text   = "in TGF-beta-treated cells"
 
   # from_text = "TGF-β–induced"
   # to_text = "TGF-beta-induced"
