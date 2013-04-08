@@ -30,6 +30,10 @@ class Aligner
         else
           gdiff = GLCS.new(from_text[deletion[0]..deletion[-1]], to_text[addition[0]..addition[-1]], dictionary).sdiff
 
+          # gdiff.each do |gg|
+          #   p gg
+          # end
+
           new_position = 0
           state = '='
           gdiff.each_with_index do |g, i|
@@ -116,6 +120,9 @@ if __FILE__ == $0
   from_text = "-betakappa-beta-z"
   to_text = "-βκ-β–z"
 
+  from_text = "affect C/EBP-β’s ability"
+  to_text = "affect C/EBP-beta's ability"
+
   # from_text = "TGF-β–induced"
   # to_text = "TGF-beta-induced"
 
@@ -131,7 +138,7 @@ if __FILE__ == $0
 
   catanns = JSON.parse catanns_s, :symbolize_names => true
 
-  aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["κ", "kappa"]])
+  aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["’", "'"]])
   # aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["β", "beta"]])
   aligner.show_alignment
   catanns = aligner.transform_catanns(catanns)
