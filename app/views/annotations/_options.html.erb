@@ -53,7 +53,11 @@
 		<tr>
 			<th>Edit</th>
 			<td>in</td>
-			<td>[<a href="<%= @annset.editor %>?target=<%= annotation_url + '.json' %>">Editor</a>]</td>
+			<% if @annset.editor.include?('?') %>
+				<td>[<a href="<%= @annset.editor %>&target=<%= annotation_url + '.json' %>">Editor</a>]</td>
+			<% else %>
+				<td>[<a href="<%= @annset.editor %>?target=<%= annotation_url + '.json' %>">Editor</a>]</td>
+			<% end %>
 		</tr>
 	<% end %>
 <% end %>
