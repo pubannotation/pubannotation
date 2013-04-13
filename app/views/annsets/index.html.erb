@@ -13,7 +13,7 @@
 <% end %>
 
 <h1>
-  Annotation sets
+  Annotation sets/projects
   <% if @doc and @doc.sourcedb == 'PubMed' %>
     <span class='meta'>
     made to <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
@@ -61,5 +61,7 @@
 
 <% if user_signed_in? %>
 <span class="button"><%= link_to 'Create new annotation set', new_annset_path %></span>
+<% else %>
+<span class="button"><%= link_to 'Sign in to create your annotation set/project', new_user_session_path %></span>
 <% end %>
 

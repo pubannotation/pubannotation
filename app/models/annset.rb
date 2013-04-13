@@ -8,5 +8,5 @@ class Annset < ActiveRecord::Base
   has_many :insanns, :dependent => :destroy
   has_many :modanns, :dependent => :destroy
 
-  validates :name, :presence => true, :length => {:minimum => 5}
+  validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
 end

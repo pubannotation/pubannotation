@@ -4,7 +4,11 @@
 	<td>in</td>
 	<td>[<%= link_to "Table", annotation_url %>]</td>
 	<% unless @annset.viewer.empty? %>
-	<td>[<a href="<%= @annset.viewer %>?target=<%= annotation_url + '.json' %>">Viewer</a>]</td>
+		<% if @annset.viewer.include?('?') %>
+			<td>[<a href="<%= @annset.viewer %>&target=<%= annotation_url + '.json' %>">Viewer</a>]</td>
+		<% else %>
+			<td>[<a href="<%= @annset.viewer %>?target=<%= annotation_url + '.json' %>">Viewer</a>]</td>
+		<% end %>
 	<% end %>
 </tr>
 <tr>

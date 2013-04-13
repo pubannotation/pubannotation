@@ -14,19 +14,26 @@
 <table>
   <tr>
     <th><%= f.label :name %></th>
-    <td><%= f.text_field :name %></td>
+    <td><%= f.text_field :name, :class => "input", :placeholder => "The name of this annotation set (up to 30 characters)" %></td>
   </tr>
   <tr>
     <th><%= f.label :description %></th>
-    <td><%= f.text_area :description, :rows => 5 %></td>
+    <td><%= f.text_area :description, :rows => 5, :class => "input" %></td>
   </tr>
   <tr>
     <th><%= f.label :author %></th>
-    <td><%= f.text_field :author %></td>
+    <td>
+      <%= f.text_field :author, :class => "input", :placeholder => "The name of author of this annotation set" %>
+      <%= image_tag("hint.png", :size => "16x16", :title => "specify the official author/project of this annotation set, in case you are uploading an annotation set produced by someone else") %>
+    </td>
   </tr>
   <tr>
     <th><%= f.label :license %></th>
-    <td><%= f.text_field :license %></td>
+    <td>
+      <%= f.text_field :license, :value => "Creative Commons Attribution 3.0 Unported License", :class => "input" %>
+      <%= image_tag("hint.png", :size => "16x16", :title => "'CC-BY' is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.") %>
+    </td>
+
   </tr>
   <tr>
     <th><%= f.label :status %></th>
@@ -42,27 +49,36 @@
   </tr>
   <tr>
     <th><%= f.label :reference %></th>
-    <td><%= f.text_field :reference, :placeholder => 'URL' %></td>
+    <td>
+      <%= f.text_field :reference, :class => "input", :placeholder => 'URL to a page that describes this annotation set/project ' %>
+      <%= image_tag("hint.png", :size => "16x16", :title => "While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation set that provides a comprehensive description of it.") %>
+
+    </td>
   </tr>
-  <tr>
+  <tr><td style="border:none"></td></tr>
+<!--   <tr>
     <th><%= f.label :viewer %></th>
-    <td><%= f.text_field :viewer, :placeholder => 'URL' %></td>
-  </tr>
+    <td><%= f.text_field :viewer, :class => "input", :placeholder => 'URL' %></td>
+  </tr> -->
   <tr>
     <th><%= f.label :editor %></th>
-    <td><%= f.text_field :editor, :placeholder => 'URL' %></td>
+    <td>
+      <%= f.text_field :editor, :class => "input", :placeholder => 'URL' %>
+      <%= image_tag("hint.png", :size => "16x16", :title => "Specify URL of the annotation editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.") %><br/>
+      <span class="note">If you don't have one, try with <a href="http://bionlp.dbcls.jp/textae/">TextAE</a></span>.
+    </td>
   </tr>
   <tr>
     <th><%= f.label :RDF_Writer %></th>
-    <td><%= f.text_field :rdfwriter, :placeholder => 'URL' %></td>
+    <td><%= f.text_field :rdfwriter, :class => "input", :placeholder => 'URL' %></td>
   </tr>
   <tr>
     <th><%= f.label 'XML writer' %></th>
-    <td><%= f.text_field :xmlwriter, :placeholder => 'URL' %></td>
+    <td><%= f.text_field :xmlwriter, :class => "input", :placeholder => 'URL' %></td>
   </tr>
   <tr>
     <th><%= f.label 'BioNLP-ST_writer' %></th>
-    <td><%= f.text_field :bionlpwriter, :placeholder => 'URL' %></td>
+    <td><%= f.text_field :bionlpwriter, :class => "input", :placeholder => 'URL' %></td>
   </tr>
   <tr>
     <th colspan="2"><%= f.submit %></th>

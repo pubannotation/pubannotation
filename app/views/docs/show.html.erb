@@ -45,10 +45,10 @@
 		<% annotation_url = annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial) %>
 	<% end %>
 
-	<h2>Annotations
+	<h1>Annotations
 		<span class="meta"> made to this document</span>
 		<span class="meta">within <span class="pname"><%=@annset.name%></span></span>
-	</h2>
+	</h1>
 
 	<%= render :partial => "annotations/options", :locals => {:annset => @annset, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 
