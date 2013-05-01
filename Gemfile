@@ -24,6 +24,7 @@ group :test do
   gem 'rspec'
   gem 'spork-rails'
   gem 'factory_girl_rails'
+  gem 'simplecov', :require => false
 end
 
 group :test, :development do
