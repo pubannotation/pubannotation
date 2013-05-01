@@ -52,7 +52,7 @@ class AnnotationsController < ApplicationController
           end
         }
 
-      elsif anncollection
+      elsif anncollection && anncollection[0].class == Hash
 
         format.json {
           file_name = (@annset)? @annset.name + ".zip" : "annotations.zip"
