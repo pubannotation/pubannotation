@@ -188,4 +188,170 @@ describe AnnotationsController do
       end
     end
   end
+  
+  describe 'create' do
+    before do
+      @user = FactoryGirl.create(:user)
+      @annset = FactoryGirl.create(:annset, :user => @user, :name => 'annset name')
+      controller.class.skip_before_filter :authenticate_user!
+    end
+    
+    context 'when annotation_server or annotations exists' do
+      before do
+        controller.stub(:get_annset).and_return(@annset, 'notice')  
+      end
+      
+      context 'and when doc exists' do
+        context 'and when params annotation_server exists' do
+          before do
+            controller.stub(:get_annotations).and_return('get annotations')  
+            controller.stub(:gen_annotations).and_return('gen annotations')  
+            controller.stub(:save_annotations).and_return('save annotations') 
+          end
+          
+          context 'when format is html' do
+            context 'when doc.sourcedb == PubMed' do
+              before do
+                @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
+                controller.stub(:get_doc).and_return(@doc, 'notice')  
+                post :create, :annset_id => 2, :annotation_server => 'annotation server'
+              end
+              
+              it 'should redirect to annset_pmdoc_path' do
+                response.should redirect_to(annset_pmdoc_path(@annset.name, @doc.sourceid))
+              end      
+            end
+            
+            context 'when doc.sourcedb == PubMed' do
+              before do
+                @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
+                controller.stub(:get_doc).and_return(@doc, 'notice')  
+                post :create, :annset_id => 2, :annotation_server => 'annotation server'
+              end
+              
+              it 'should redirect to annset_pmdoc_path' do
+                response.should redirect_to(annset_pmcdoc_div_path(@annset.name, @doc.sourceid, @doc.serial))
+              end      
+            end
+          end
+          
+          context 'when format is json' do
+            context 'when annotations exists' do
+              before do
+                @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
+                controller.stub(:get_doc).and_return(@doc, 'notice')  
+                post :create, :annset_id => 2, :annotation_server => 'annotation server', :annotations => {:id => 1}.to_json, :format => 'json'
+              end
+              
+              it 'should return blank response header' do
+                response.header.should be_blank
+              end
+            end
+
+            context 'when annotations does not exists' do
+              before do
+                @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
+                controller.stub(:get_doc).and_return(nil, 'notice')  
+                post :create, :annset_id => 2, :annotation_server => 'annotation server', :format => 'json'
+              end
+              
+              it 'should return status 422' do
+                response.status.should eql(422)
+              end
+            end
+          end
+        end
+
+        context 'and when params annotation_server does not exists' do
+          before do
+            controller.stub(:save_annotations).and_return('save annotations') 
+          end
+          
+          context 'when doc.sourcedb == PubMed' do
+            before do
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
+              controller.stub(:get_doc).and_return(@doc, 'notice')
+              annotations = {:id => 1}.to_json  
+              post :create, :annset_id => 2, :annotations => annotations
+            end
+            
+            it 'should redirect to annset_pmdoc_path' do
+              response.should redirect_to(annset_pmdoc_path(@annset.name, @doc.sourceid))
+            end      
+          end
+          
+          context 'when doc.sourcedb == PubMed' do
+            before do
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
+              controller.stub(:get_doc).and_return(@doc, 'notice')  
+              annotations = {:id => 1}.to_json  
+              post :create, :annset_id => 2, :annotations => annotations
+            end
+            
+            it 'should redirect to annset_pmdoc_path' do
+              response.should redirect_to(annset_pmcdoc_div_path(@annset.name, @doc.sourceid, @doc.serial))
+            end      
+          end
+        end
+      end      
+      
+      context 'and when doc does not exists' do
+        before do
+          controller.stub(:get_doc).and_return(nil, 'notice')  
+          post :create, :annset_id => 2, :annotation_server => 'annotation server'
+        end
+        
+        it 'should redirect to annset_path' do
+          response.should redirect_to(annset_path(@annset.name))
+        end      
+      end      
+    end
+
+    context 'when annotation_server and annotations exists' do
+      before do
+        post :create, :annset_id => 2
+      end
+      
+      it 'should redirect to home_path' do
+        should redirect_to(home_path)
+      end
+    end
+  end
+  
+  describe 'set_access_control_headers' do
+    context 'when HTTP_ORIGIN includes allowed_origins' do
+      before do
+        @controller = AnnotationsController.new
+        @http_origin = 'http://bionlp.dbcls.jp'
+        @controller.stub(:request).and_return(double(:env => {'HTTP_ORIGIN' => 'http://bionlp.dbcls.jp'}))
+        @headers = Hash.new
+        @controller.stub(:headers).and_return(@headers)
+        @controller.instance_eval{ set_access_control_headers }
+      end
+      
+      it 'shoule set headers Access-Control-Allow-Origin' do
+        @headers['Access-Control-Allow-Origin'].should eql(@http_origin)
+      end
+      
+      it 'shoule set headers Access-Control-Expose-Headers' do
+        @headers['Access-Control-Expose-Headers'].should eql('ETag')
+      end
+      
+      it 'shoule set headers Access-Control-Allow-Methods' do
+        @headers['Access-Control-Allow-Methods'].should eql('GET, POST, OPTIONS')
+      end
+      
+      it 'shoule set headers Access-Control-Allow-Headers' do
+        @headers['Access-Control-Allow-Headers'].should eql('Authorization, X-Requested-With')
+      end
+      
+      it 'shoule set headers Access-Control-Allow-Credentials' do
+        @headers['Access-Control-Allow-Credentials'].should eql('true')
+      end
+      
+      it 'shoule set headers Access-Control-Max-Age' do
+        @headers['Access-Control-Max-Age'].should eql('1728000')
+      end
+    end
+  end
 end 

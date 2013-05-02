@@ -25,6 +25,8 @@ group :test do
   gem 'spork-rails'
   gem 'factory_girl_rails'
   gem 'simplecov', :require => false
+  gem 'vcr'
+  gem 'webmock', '< 1.10.0'
 end
 
 group :test, :development do
