@@ -48,15 +48,7 @@ class AnnsetsController < ApplicationController
         format.json { render json: @annset }
       else
         format.html {
-          if @doc
-            if @doc.sourcedb == 'PubMed'
-              redirect_to pmdoc_path(sourceid), :notice => notice
-            else
-              redirect_to pmcdoc_div_path(sourceid, serial), :notice => notice
-            end
-          else
-            redirect_to home_path, :notice => notice
-          end
+          redirect_to home_path, :notice => notice
         }
         format.json { head :unprocessable_entity }
       end

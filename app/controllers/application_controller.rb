@@ -151,7 +151,7 @@ class ApplicationController < ActionController::Base
 
 
   def archive_texts (docs)
-    unless docs.empty
+    unless docs.empty?
       file_name = "docs.zip"
       t = Tempfile.new("my-temp-filename-#{Time.now}")
       Zip::ZipOutputStream.open(t.path) do |z|
@@ -373,9 +373,11 @@ class ApplicationController < ActionController::Base
 
 
   def chain_catanns (catanns_s)
+    # This method is not called anywhere.
+    # And just returns catanns_s array.
     mid = 0
     catanns_s.each do |ca|
-      if (cid = a.hid[1..-1].to_i) > mid 
+      if (cid = ca.hid[1..-1].to_i) > mid 
         mid = cid
       end
     end
@@ -387,14 +389,14 @@ class ApplicationController < ActionController::Base
 
     new_relanns = Array.new
     relanns.each do |ra|
-      if ra.type == 'lexChain'
-        tomerge[ra.object] = ra.subject
+      if ra[:type] == 'lexChain'
+        tomerge[ra[:object]] = ra[:subject]
       else
         new_relanns << ra
       end
     end
     idx = Hash.new
-    catanns.each_with_index {|ca, i| idx[ca.id] = i}
+    catanns.each_with_index {|ca, i| idx[ca[:id]] = i}
 
     mergedto = Hash.new
     tomerge.each do |from, to|
@@ -402,8 +404,8 @@ class ApplicationController < ActionController::Base
       p idx[from]
       fca = catanns[idx[from]]
       tca = catanns[idx[to]]
-      tca.span = [tca.span] unless tca.span.respond_to?('push')
-      tca.span.push (fca.span)
+      tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
+      tca[:span].push (fca[:span])
       catanns.delete_at(idx[from])
       mergedto[from] = to
     end
@@ -567,7 +569,6 @@ class ApplicationController < ActionController::Base
     # escape non-ascii characters
     coder = HTMLEntities.new
     asciitext = coder.encode(rewritetext, :named)
-
     # restore back
     # greek letters
     asciitext.gsub!(/&[Aa]lpha;/, "alpha")
