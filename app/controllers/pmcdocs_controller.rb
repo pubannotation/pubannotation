@@ -13,9 +13,11 @@ class PmcdocsController < ApplicationController
       @docs = Doc.where(:sourcedb => 'PMC', :serial => 0)
     end
 
-    @docs = @docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
-    @docs = @docs.paginate(:page => params[:page])
-
+    if @docs
+      @docs = @docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
+      @docs = @docs.paginate(:page => params[:page])
+    end
+    
     respond_to do |format|
       if @docs
         format.html
@@ -103,7 +105,7 @@ class PmcdocsController < ApplicationController
     respond_to do |format|
       if num_created + num_added + num_failed > 0
         format.html { redirect_to annset_pmcdocs_path(annset.name), :notice => notice }
-        format.json { render status: :created, location: annset_pmcdocs_path(annset.name) }
+        format.json { render :json => nil, status: :created, location: annset_pmcdocs_path(annset.name) }
       else
         format.html { redirect_to home_path, :notice => notice }
         format.json { head :unprocessable_entity }

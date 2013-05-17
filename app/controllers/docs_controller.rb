@@ -15,8 +15,10 @@ class DocsController < ApplicationController
       @docs = Doc.all
     end
 
-    @docs = @docs.sort{|a, b| [b.sourcedb, a.sourceid.to_i, a.serial.to_i] <=> [a.sourcedb, b.sourceid.to_i, b.serial.to_i]}
-
+    if @docs
+      @docs = @docs.sort{|a, b| [b.sourcedb, a.sourceid.to_i, a.serial.to_i] <=> [a.sourcedb, b.sourceid.to_i, b.serial.to_i]}
+    end
+    
     rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
 
     respond_to do |format|

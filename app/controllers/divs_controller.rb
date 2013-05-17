@@ -97,7 +97,7 @@ class DivsController < ApplicationController
     end
 
     respond_to do |format|
-      if @doc
+      unless @doc.new_record?
         format.html { redirect_to @doc, notice: 'Doc was successfully created.' }
         format.json { head :no_content }
       else
