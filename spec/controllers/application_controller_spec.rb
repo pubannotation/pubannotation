@@ -359,8 +359,15 @@ describe ApplicationController do
   
   describe 'gen_annotations' do
     context 'when response.code is 200' do
-      pending 'function not yet' do
-        
+      before do
+        @annotation = {:text => 'text', :others => 'others'}
+        VCR.use_cassette 'controllers/application/gen_annotation/response_200' do
+          @result = controller.gen_annotations(@annotation, 'http://nlp.dbcls.jp/biosentencer/')
+        end
+      end
+      
+      it 'should return response' do
+        @result.should be_present
       end
     end
     
