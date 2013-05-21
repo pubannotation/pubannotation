@@ -3,15 +3,15 @@ require 'spec_helper'
 describe Relann do
   describe 'get_hash' do
     before do
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @catann_sub = FactoryGirl.create(:catann, :id => 1, :hid => 'catann sub hid', :annset => @annset, :doc => @doc)
-      @catann_relobj = FactoryGirl.create(:catann, :id => 2, :hid => 'catann rel hid', :annset => @annset, :doc => @doc)
+      @catann_sub = FactoryGirl.create(:catann, :id => 1, :hid => 'catann sub hid', :project => @project, :doc => @doc)
+      @catann_relobj = FactoryGirl.create(:catann, :id => 2, :hid => 'catann rel hid', :project => @project, :doc => @doc)
       @relann = FactoryGirl.create(:relann, 
       :hid => 'hid',
       :reltype => 'lexChain', 
       :relobj => @catann_relobj, 
-      :annset => @annset)
+      :project => @project)
       @get_hash = @relann.get_hash
     end
     

@@ -9,7 +9,7 @@
     > <%= link_to "divs",    pmcdoc_divs_path(@doc.sourceid) %>
     > <%= link_to @doc.serial,   pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
   <% end %>
-  > annsets
+  > projects
 <% end %>
 
 <h1>
@@ -29,7 +29,7 @@
   <% end %>  
 </h1>
 
-<% if @annsets.empty? %>
+<% if @projects.empty? %>
   <p>none</p>
 <% else %>
   <table>
@@ -41,18 +41,18 @@
       <th></th>
     </tr>
 
-  <% @annsets.each do |annset| %>
+  <% @projects.each do |project| %>
     <tr>
-      <td style="white-space: nowrap"><%= annset.name %></td>
-      <td class="text"><%= (annset.description.length < 42)? annset.description : annset.description[0, 40] + ' ...' %></td>
-      <td style="white-space: nowrap"><%= annset.author %></td>
-      <td style="white-space: nowrap"><%= annset.user.username %></td>
+      <td style="white-space: nowrap"><%= project.name %></td>
+      <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>
+      <td style="white-space: nowrap"><%= project.author %></td>
+      <td style="white-space: nowrap"><%= project.user.username %></td>
       <% if @doc and @doc.sourcedb == "PubMed" %>
-        <td><%= link_to 'Show', pmdoc_annset_path(@doc.sourceid, annset.name) %></td>
+        <td><%= link_to 'Show', pmdoc_project_path(@doc.sourceid, project.name) %></td>
       <% elsif @doc and @doc.sourcedb == "PMC" %>
-        <td><%= link_to 'Show', pmcdoc_div_annset_path(@doc.sourceid, @doc.serial, annset.name) %></td>
+        <td><%= link_to 'Show', pmcdoc_div_project_path(@doc.sourceid, @doc.serial, project.name) %></td>
       <% else %>
-        <td><%= link_to 'Show', annset_path(annset.name) %></td>
+        <td><%= link_to 'Show', project_path(project.name) %></td>
       <% end %>
     </tr>
   <% end %>
@@ -60,7 +60,7 @@
 <% end %>
 
 <% if user_signed_in? %>
-<span class="button"><%= link_to 'Create new annotation set', new_annset_path %></span>
+<span class="button"><%= link_to 'Create new annotation set', new_project_path %></span>
 <% else %>
 <span class="button"><%= link_to 'Sign in to create your annotation set/project', new_user_session_path %></span>
 <% end %>

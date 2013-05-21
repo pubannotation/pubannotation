@@ -1,5 +1,5 @@
 class Modann < ActiveRecord::Base
-  belongs_to :annset
+  belongs_to :project
   belongs_to :modobj, :polymorphic => true
 
   attr_accessible :hid, :modtype

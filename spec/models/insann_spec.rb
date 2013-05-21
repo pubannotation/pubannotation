@@ -3,14 +3,14 @@ require 'spec_helper'
 describe Insann do
   describe 'get_hash' do
     before do
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
+      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
       @insann = FactoryGirl.create(:insann,
         :hid => 'hid',
         :instype => 'instype',
         :insobj => @catann,
-        :annset => @annset
+        :project => @project
       )
       @get_hash = @insann.get_hash
     end

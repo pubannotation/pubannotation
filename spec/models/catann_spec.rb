@@ -8,7 +8,7 @@ describe Catann do
         :begin => 1,
         :end => 5,
         :category => 'category',
-        :annset_id => 'annset_id',
+        :project_id => 'project_id',
         :doc_id => 3
       )
       @get_hash = @catann.get_hash

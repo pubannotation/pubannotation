@@ -6,31 +6,31 @@
 	<td>[<%= link_to "JSON",  annotation_url + '.json' %>]</td>
 </tr>
 
-<% unless @annset.editor.empty? %>
+<% unless @project.editor.empty? %>
 	<tr>
 		<th>Open</th>
 		<td>in</td>
-		<% if @annset.editor.include?('?') %>
-			<td>[<a href="<%= @annset.editor %>&target=<%= annotation_url + '.json' %>">Editor</a>]</td>
+		<% if @project.editor.include?('?') %>
+			<td>[<a href="<%= @project.editor %>&target=<%= annotation_url + '.json' %>">Editor</a>]</td>
 		<% else %>
-			<td>[<a href="<%= @annset.editor %>?target=<%= annotation_url + '.json' %>">Editor</a>]</td>
+			<td>[<a href="<%= @project.editor %>?target=<%= annotation_url + '.json' %>">Editor</a>]</td>
 		<% end %>
 	</tr>
 <% end %>
 
-<% unless @annset.rdfwriter.empty? and @annset.xmlwriter.empty? and @annset.bionlpwriter.empty? %>
+<% unless @project.rdfwriter.empty? and @project.xmlwriter.empty? and @project.bionlpwriter.empty? %>
 	<tr>
 		<th>Get</th>
 		<td>in</td>
-		<% unless @annset.rdfwriter.empty? %>
+		<% unless @project.rdfwriter.empty? %>
 			<td>[<%= link_to "RDF",  annotation_url + '.ttl' %>]</td>
 		<% end %>
 
-		<% unless @annset.xmlwriter.empty? %>
+		<% unless @project.xmlwriter.empty? %>
 			<td>[<%= link_to "RDF",  annotation_url + '.xml' %>]</td>
 		<% end %>
 
-		<% unless @annset.bionlpwriter.empty? %>
+		<% unless @project.bionlpwriter.empty? %>
 
 			<!--script type="text/javascript">
 				// function getconversion(name) {
@@ -44,7 +44,7 @@
 			</script>
 
 	 		<td>
-				<%= form_tag(annset.bionlpwriter, :method => "post", :id => "getbionlp") do %>
+				<%= form_tag(project.bionlpwriter, :method => "post", :id => "getbionlp") do %>
 					<%= hidden_field_tag(:identifier, identifier) %>
 					<%= hidden_field_tag(:data, "") %>
 					[<a onclick="getconversion('getbionlp')" href="#">BioNLP-ST</a>]

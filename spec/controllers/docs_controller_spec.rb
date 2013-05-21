@@ -7,17 +7,17 @@ describe DocsController do
       @doc = FactoryGirl.create(:doc, :sourceid => 'sourceid', :serial => 1, :section => 'section')
     end
     
-    context 'when params[:annset_id] exists' do
+    context 'when params[:project_id] exists' do
       before do
-        @annset = FactoryGirl.create(:annset)
-        @annset_id = 'annset id'
-        @get_annset_notice = 'get annset notice'
+        @project = FactoryGirl.create(:project)
+        @project_id = 'project id'
+        @get_project_notice = 'get project notice'
       end
       
-      context 'when get_annset returns annset' do
+      context 'when get_project returns project' do
         before do
-          controller.stub(:get_annset).and_return([@annset, @get_annset_notice])
-          get :index, :annset_id => @annset_id
+          controller.stub(:get_project).and_return([@project, @get_project_notice])
+          get :index, :project_id => @project_id
         end
         
         it 'should render template' do
@@ -25,28 +25,28 @@ describe DocsController do
         end
       end
 
-      context 'when get_annset does not returns annset' do
+      context 'when get_project does not returns project' do
         before do
-          controller.stub(:get_annset).and_return([nil, @get_annset_notice])
+          controller.stub(:get_project).and_return([nil, @get_project_notice])
         end
         
         context 'when format html' do
           before do
-            get :index, :annset_id => @annset_id
+            get :index, :project_id => @project_id
           end
           
           it 'should render template' do
             response.should render_template('index')
           end
           
-          it 'set get_annset notice as flash[:notice]' do
-            flash[:notice].should eql(@get_annset_notice)
+          it 'set get_project notice as flash[:notice]' do
+            flash[:notice].should eql(@get_project_notice)
           end
         end
         
         context 'when format json' do
           before do
-            get :index, :format => 'json', :annset_id => @annset_id
+            get :index, :format => 'json', :project_id => @project_id
           end
           
           it 'should return status 422' do
@@ -56,7 +56,7 @@ describe DocsController do
         
         context 'when format text' do
           before do
-            get :index, :format => 'txt', :annset_id => @annset_id
+            get :index, :format => 'txt', :project_id => @project_id
           end
           
           it 'should return status 422' do
@@ -66,7 +66,7 @@ describe DocsController do
       end
     end
 
-    context 'when params[:annset_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       context 'when format html' do
         before do
           get :index

@@ -2,10 +2,10 @@ class PmdocsController < ApplicationController
   # GET /pmdocs
   # GET /pmdocs.json
   def index
-    if params[:annset_id]
-      @annset, notice = get_annset(params[:annset_id])
-      if @annset
-        @docs = @annset.docs.where(:sourcedb => 'PubMed', :serial => 0)
+    if params[:project_id]
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @docs = @project.docs.where(:sourcedb => 'PubMed', :serial => 0)
       else
         @docs = nil
       end
@@ -31,16 +31,16 @@ class PmdocsController < ApplicationController
   # GET /pmdocs/:pmid
   # GET /pmdocs/:pmid.json
   def show
-    if (params[:annset_id])
-      @annset, notice = get_annset(params[:annset_id])
-      if @annset
-        @doc, notice = get_doc('PubMed', params[:id], 0, @annset)
+    if (params[:project_id])
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @doc, notice = get_doc('PubMed', params[:id], 0, @project)
       else
         @doc = nil
       end
     else
       @doc, notice = get_doc('PubMed', params[:id])
-      @annsets = get_annsets(@doc)
+      @projects = get_projects(@doc)
     end
 
     if @doc
@@ -78,28 +78,28 @@ class PmdocsController < ApplicationController
   def create
     num_created, num_added, num_failed = 0, 0, 0
 
-    if (params[:annset_id])
-      annset, notice = get_annset(params[:annset_id])
-      if annset
+    if (params[:project_id])
+      project, notice = get_project(params[:project_id])
+      if project
         pmids = params[:pmids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
         pmids.each do |sourceid|
           doc = Doc.find_by_sourcedb_and_sourceid_and_serial('PubMed', sourceid, 0)
           if doc
-            unless annset.docs.include?(doc)
-              annset.docs << doc
+            unless project.docs.include?(doc)
+              project.docs << doc
               num_added += 1
             end
           else
             doc = gen_pmdoc(sourceid)
             if doc
-              annset.docs << doc
+              project.docs << doc
               num_added += 1
             else
               num_failed += 1
             end
           end
         end
-        notice = "#{num_added} documents were added to the document set, #{annset.name}."
+        notice = "#{num_added} documents were added to the document set, #{project.name}."
       end
     else
       notice = "Annotation set is not specified."
@@ -107,8 +107,8 @@ class PmdocsController < ApplicationController
 
     respond_to do |format|
       if num_created + num_added + num_failed > 0
-        format.html { redirect_to annset_pmdocs_path(annset.name), :notice => notice }
-        format.json { render :json => nil, status: :created, location: annset_pmdocs_path(annset.name) }
+        format.html { redirect_to project_pmdocs_path(project.name), :notice => notice }
+        format.json { render :json => nil, status: :created, location: project_pmdocs_path(project.name) }
       else
         format.html { redirect_to home_path, :notice => notice }
         format.json { head :unprocessable_entity }
@@ -121,28 +121,28 @@ class PmdocsController < ApplicationController
   # PUT /pmdocs/:pmid.json
   def update
     doc    = nil
-    annset = nil
+    project = nil
 
-    if params[:annset_id]
-      annset = Annset.find_by_name(params[:annset_id])
-      if annset
+    if params[:project_id]
+      project = Project.find_by_name(params[:project_id])
+      if project
         doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
         if doc
-          unless doc.annsets.include?(annset)
-            annset.docs << doc
-            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was added to the annotation set, #{annset.name}."
+          unless doc.projects.include?(project)
+            project.docs << doc
+            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was added to the annotation set, #{project.name}."
           end
         else
           doc = gen_pmdoc(params[:id])
           if doc
-            annset.docs << doc
-            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was created in the annotation set, #{annset.name}."
+            project.docs << doc
+            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was created in the annotation set, #{project.name}."
           else
             notice = "The document, PubMed:#{params[:id]}, could not be created." 
           end
         end
       else
-        notice = "The annotation set, #{params[:annset_id]}, does not exist."
+        notice = "The annotation set, #{params[:project_id]}, does not exist."
         doc = nil
       end
     else
@@ -159,15 +159,15 @@ class PmdocsController < ApplicationController
 
     respond_to do |format|
       format.html {
-        if annset
-          redirect_to annset_pmdocs_path(annset.name), :notice => notice, :method => :get
+        if project
+          redirect_to project_pmdocs_path(project.name), :notice => notice, :method => :get
         else
           redirect_to pmdocs_path, notice: notice
         end
       }
 
       format.json {
-        if doc and (annset or !params[:annset_id])
+        if doc and (project or !params[:project_id])
           head :no_content
         else
           head :unprocessable_entity
@@ -179,24 +179,24 @@ class PmdocsController < ApplicationController
   # DELETE /pmdocs/:pmid
   # DELETE /pmdocs/:pmid.json
   def destroy
-    annset = nil
+    project = nil
 
-    if params[:annset_id]
-      annset = Annset.find_by_name(params[:annset_id])
-      if annset
+    if params[:project_id]
+      project = Project.find_by_name(params[:project_id])
+      if project
         doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
         if doc
-          if doc.annsets.include?(annset)
-            annset.docs.delete(doc)
-            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was removed from the annotation set, #{annset.name}."
+          if doc.projects.include?(project)
+            project.docs.delete(doc)
+            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was removed from the annotation set, #{project.name}."
           else
-            notice = "the annotation set, #{annset.name} does not include the document, #{doc.sourcedb}:#{doc.sourceid}."
+            notice = "the annotation set, #{project.name} does not include the document, #{doc.sourcedb}:#{doc.sourceid}."
           end
         else
           notice = "The document, PubMed:#{params[:id]}, does not exist in PubAnnotation." 
         end
       else
-        notice = "The annotation set, #{params[:annset_id]}, does not exist."
+        notice = "The annotation set, #{params[:project_id]}, does not exist."
       end
     else
       doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
@@ -205,8 +205,8 @@ class PmdocsController < ApplicationController
 
     respond_to do |format|
       format.html {
-        if annset
-          redirect_to annset_pmdocs_path(annset.name), :notice => notice
+        if project
+          redirect_to project_pmdocs_path(project.name), :notice => notice
         else
           redirect_to pmdocs_path, notice: notice
         end

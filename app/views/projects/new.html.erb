@@ -3,13 +3,13 @@
 	<% if @sourcedb == 'PubMed' %>
 		> <%= link_to "pmdocs", pmdocs_path %>
 		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
-	 	> <%= link_to "annsets", pmdoc_annsets_path(@sourceid) %>
+	 	> <%= link_to "projects", pmdoc_projects_path(@sourceid) %>
 	<% elsif @sourcedb == 'PMC' %>
 		> <%= link_to "pmcdocs", pmdocs_path %>
 		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
-	 	> <%= link_to "annsets", pmdoc_div_annsets_path(@sourceid, @serial) %>
+	 	> <%= link_to "projects", pmdoc_div_projects_path(@sourceid, @serial) %>
 	<% end %>
- 	> <%= link_to "annsets", annsets_path %>
+ 	> <%= link_to "projects", projects_path %>
  	> new
 <% end %>
 

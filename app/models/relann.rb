@@ -1,5 +1,5 @@
 class Relann < ActiveRecord::Base
-  belongs_to :annset
+  belongs_to :project
   belongs_to :relsub, :polymorphic => true
   belongs_to :relobj, :polymorphic => true
 

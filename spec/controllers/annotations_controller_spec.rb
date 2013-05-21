@@ -3,17 +3,17 @@ require 'spec_helper'
 
 describe AnnotationsController do
   describe 'index' do
-    context 'when annset exists' do
+    context 'when project exists' do
       before do
         @user = FactoryGirl.create(:user)
-        @annset = FactoryGirl.create(:annset, 
+        @project = FactoryGirl.create(:project, 
           :user => @user, 
           :name => 'test_name',
           :rdfwriter => '',
           :xmlwriter => '',
         )
-        @annset.docs << FactoryGirl.create(:doc)
-        controller.stub(:get_annset).and_return(@annset)
+        @project.docs << FactoryGirl.create(:doc)
+        controller.stub(:get_project).and_return(@project)
         controller.stub(:get_docspec).and_return(nil)
         controller.stub(:get_doc).and_return('doc')
         @annotations = {
@@ -30,7 +30,7 @@ describe AnnotationsController do
         
         context 'and when format is html' do
           before do
-            get :index, :format => 'html', :annset_id => @annset.name, :pmdoc_id => 5
+            get :index, :format => 'html', :project_id => @project.name, :pmdoc_id => 5
           end
 
           it 'should render html template' do
@@ -40,7 +40,7 @@ describe AnnotationsController do
         
         context 'and when format is json' do
           before do
-            get :index, :format => 'json', :annset_id => @annset.name, :pmdoc_id => 5
+            get :index, :format => 'json', :project_id => @project.name, :pmdoc_id => 5
           end
 
           it 'should render annotations as json' do
@@ -49,9 +49,9 @@ describe AnnotationsController do
         end
         
         context 'and when format is ttl' do
-          context 'and when annset.rdfwriter is empty' do
+          context 'and when project.rdfwriter is empty' do
             before do
-              get :index, :format => 'ttl', :annset_id => @annset.name, :pmdoc_id => 5
+              get :index, :format => 'ttl', :project_id => @project.name, :pmdoc_id => 5
             end
   
             it 'should return error 422' do
@@ -59,17 +59,17 @@ describe AnnotationsController do
             end
           end
 
-          context 'and when annset.rdfwriter is not empty' do
+          context 'and when project.rdfwriter is not empty' do
             before do            
-              @annset = FactoryGirl.create(:annset, 
+              @project = FactoryGirl.create(:project, 
                 :user => @user, 
                 :name => 'test_name2',
                 :rdfwriter => 'rdfwriter'
               )
-              controller.stub(:get_annset).and_return(@annset)
+              controller.stub(:get_project).and_return(@project)
               @get_conversion_text = 'rendered text'
               controller.stub(:get_conversion).and_return(@get_conversion_text)
-              get :index, :format => 'ttl', :annset_id => @annset.name, :pmdoc_id => 5
+              get :index, :format => 'ttl', :project_id => @project.name, :pmdoc_id => 5
             end
 
             it 'should return get_conversion text' do
@@ -79,9 +79,9 @@ describe AnnotationsController do
         end
         
         context 'and when format is xml' do
-          context 'and when annset.rdfwriter is empty' do
+          context 'and when project.rdfwriter is empty' do
             before do
-              get :index, :format => 'xml', :annset_id => @annset.name, :pmdoc_id => 5
+              get :index, :format => 'xml', :project_id => @project.name, :pmdoc_id => 5
             end
   
             it 'should return error 422' do
@@ -89,17 +89,17 @@ describe AnnotationsController do
             end
           end
 
-          context 'and when annset.rdfwriter is not empty' do
+          context 'and when project.rdfwriter is not empty' do
             before do
-              @annset = FactoryGirl.create(:annset, 
+              @project = FactoryGirl.create(:project, 
                 :user => @user, 
                 :name => 'test_name3',
                 :xmlwriter => 'xmlwriter'
               )
-              controller.stub(:get_annset).and_return(@annset)
+              controller.stub(:get_project).and_return(@project)
               @get_conversion_text = 'rendered text'
               controller.stub(:get_conversion).and_return(@get_conversion_text)
-              get :index, :format => 'xml', :annset_id => @annset.name, :pmdoc_id => 5
+              get :index, :format => 'xml', :project_id => @project.name, :pmdoc_id => 5
             end
   
             it 'should return get_conversion text' do
@@ -120,7 +120,7 @@ describe AnnotationsController do
                 :division_id => 1,
                 :section => 'section',
                })
-              get :index, :format => 'json', :annset_id => @annset.name
+              get :index, :format => 'json', :project_id => @project.name
             end
             
             it 'should returns zip' do
@@ -141,7 +141,7 @@ describe AnnotationsController do
               line8
               line9
               ')
-              get :index, :format => 'ttl', :annset_id => @annset.name
+              get :index, :format => 'ttl', :project_id => @project.name
             end
             
             it 'should returns x-turtle' do
@@ -157,7 +157,7 @@ describe AnnotationsController do
           
           context 'and whern format html' do
             before do
-              get :index, :format => 'html', :annset_id => @annset.name
+              get :index, :format => 'html', :project_id => @project.name
             end
             
             it 'should render template' do
@@ -167,7 +167,7 @@ describe AnnotationsController do
           
           context 'and whern format json' do
             before do
-              get :index, :format => 'json', :annset_id => @annset.name
+              get :index, :format => 'json', :project_id => @project.name
             end
             
             it 'should return error 422' do
@@ -177,7 +177,7 @@ describe AnnotationsController do
           
           context 'and whern format ttl' do
             before do
-              get :index, :format => 'ttl', :annset_id => @annset.name
+              get :index, :format => 'ttl', :project_id => @project.name
             end
             
             it 'should return error 422' do
@@ -192,13 +192,13 @@ describe AnnotationsController do
   describe 'create' do
     before do
       @user = FactoryGirl.create(:user)
-      @annset = FactoryGirl.create(:annset, :user => @user, :name => 'annset name')
+      @project = FactoryGirl.create(:project, :user => @user, :name => 'project name')
       controller.class.skip_before_filter :authenticate_user!
     end
     
     context 'when annotation_server or annotations exists' do
       before do
-        controller.stub(:get_annset).and_return(@annset, 'notice')  
+        controller.stub(:get_project).and_return(@project, 'notice')  
       end
       
       context 'and when doc exists' do
@@ -214,11 +214,11 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :annset_id => 2, :annotation_server => 'annotation server'
+                post :create, :project_id => 2, :annotation_server => 'annotation server'
               end
               
-              it 'should redirect to annset_pmdoc_path' do
-                response.should redirect_to(annset_pmdoc_path(@annset.name, @doc.sourceid))
+              it 'should redirect to project_pmdoc_path' do
+                response.should redirect_to(project_pmdoc_path(@project.name, @doc.sourceid))
               end      
             end
             
@@ -226,11 +226,11 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :annset_id => 2, :annotation_server => 'annotation server'
+                post :create, :project_id => 2, :annotation_server => 'annotation server'
               end
               
-              it 'should redirect to annset_pmdoc_path' do
-                response.should redirect_to(annset_pmcdoc_div_path(@annset.name, @doc.sourceid, @doc.serial))
+              it 'should redirect to project_pmdoc_path' do
+                response.should redirect_to(project_pmcdoc_div_path(@project.name, @doc.sourceid, @doc.serial))
               end      
             end
           end
@@ -240,7 +240,7 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :annset_id => 2, :annotation_server => 'annotation server', :annotations => {:id => 1}.to_json, :format => 'json'
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :annotations => {:id => 1}.to_json, :format => 'json'
               end
               
               it 'should return blank response header' do
@@ -252,7 +252,7 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
                 controller.stub(:get_doc).and_return(nil, 'notice')  
-                post :create, :annset_id => 2, :annotation_server => 'annotation server', :format => 'json'
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :format => 'json'
               end
               
               it 'should return status 422' do
@@ -272,11 +272,11 @@ describe AnnotationsController do
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
               controller.stub(:get_doc).and_return(@doc, 'notice')
               annotations = {:id => 1}.to_json  
-              post :create, :annset_id => 2, :annotations => annotations
+              post :create, :project_id => 2, :annotations => annotations
             end
             
-            it 'should redirect to annset_pmdoc_path' do
-              response.should redirect_to(annset_pmdoc_path(@annset.name, @doc.sourceid))
+            it 'should redirect to project_pmdoc_path' do
+              response.should redirect_to(project_pmdoc_path(@project.name, @doc.sourceid))
             end      
           end
           
@@ -285,11 +285,11 @@ describe AnnotationsController do
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
               controller.stub(:get_doc).and_return(@doc, 'notice')  
               annotations = {:id => 1}.to_json  
-              post :create, :annset_id => 2, :annotations => annotations
+              post :create, :project_id => 2, :annotations => annotations
             end
             
-            it 'should redirect to annset_pmdoc_path' do
-              response.should redirect_to(annset_pmcdoc_div_path(@annset.name, @doc.sourceid, @doc.serial))
+            it 'should redirect to project_pmdoc_path' do
+              response.should redirect_to(project_pmcdoc_div_path(@project.name, @doc.sourceid, @doc.serial))
             end      
           end
         end
@@ -298,18 +298,18 @@ describe AnnotationsController do
       context 'and when doc does not exists' do
         before do
           controller.stub(:get_doc).and_return(nil, 'notice')  
-          post :create, :annset_id => 2, :annotation_server => 'annotation server'
+          post :create, :project_id => 2, :annotation_server => 'annotation server'
         end
         
-        it 'should redirect to annset_path' do
-          response.should redirect_to(annset_path(@annset.name))
+        it 'should redirect to project_path' do
+          response.should redirect_to(project_path(@project.name))
         end      
       end      
     end
 
     context 'when annotation_server and annotations exists' do
       before do
-        post :create, :annset_id => 2
+        post :create, :project_id => 2
       end
       
       it 'should redirect to home_path' do

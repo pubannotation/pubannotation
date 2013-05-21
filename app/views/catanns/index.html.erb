@@ -13,7 +13,7 @@
 
 <% @catanns.each do |catann| %>
   <tr>
-    <td><%= catann.annset %></td>
+    <td><%= catann.project %></td>
     <!--td><= catann.doc_sourcedb %></td>
     <td><= catann.doc_sourceid %></td>
     <td><= catann.doc_serial %></td-->
@@ -35,7 +35,7 @@
 
 <table class="ann">
   <tr>
-    <th>Annset</th>
+    <th>Project</th>
     <th>Id</th>
     <th>Subject</th>
     <th>Type</th>
@@ -44,7 +44,7 @@
 
 <% @relanns.each do |relann| %>
   <tr>
-    <td><%= relann.annset %></td>
+    <td><%= relann.project %></td>
     <td><%= relann.id %></td>
     <td><%= relann.subject %></td>
     <td><%= relann.type %></td>

@@ -16,8 +16,8 @@ describe HomeController do
       @pmcdocs_num.times do
         FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
       end
-      @get_annsets = [1, 2, 3]
-      controller.stub(:get_annsets).and_return(@get_annsets)
+      @get_projects = [1, 2, 3]
+      controller.stub(:get_projects).and_return(@get_projects)
       get :index
     end
     
@@ -29,8 +29,8 @@ describe HomeController do
       assigns[:pmdocs_num].should eql(@pmdocs_num)
     end
     
-    it '@annsets_num should eql get_annsets.length' do
-      assigns[:annsets_num].should eql(@get_annsets.length)
+    it '@projects_num should eql get_projects.length' do
+      assigns[:projects_num].should eql(@get_projects.length)
     end
   end
 end

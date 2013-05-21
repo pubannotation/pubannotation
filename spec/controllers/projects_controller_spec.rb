@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'spec_helper'
 
-describe AnnsetsController do
+describe ProjectsController do
   before do
     controller.class.skip_before_filter :authenticate_user!
   end
@@ -9,12 +9,12 @@ describe AnnsetsController do
   describe 'index' do
     context 'when sourcedb exists' do
       context 'and when doc exists' do
-        context 'and when annsets exists' do
+        context 'and when projects exists' do
           before do
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1)
             controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, @doc.serial])
-            @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
-            controller.stub(:get_annsets).and_return([@annset])
+            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+            controller.stub(:get_projects).and_return([@project])
           end
           
           context 'and when format html' do
@@ -28,12 +28,12 @@ describe AnnsetsController do
           end
         end
         
-        context 'and when annsets does not exist' do
+        context 'and when projects does not exist' do
           before do
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1)
             controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, @doc.serial])
-            @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
-            controller.stub(:get_annsets).and_return(nil)
+            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+            controller.stub(:get_projects).and_return(nil)
             get :index
           end
           
@@ -47,8 +47,8 @@ describe AnnsetsController do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1)
           controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, nil])
-          @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
-          controller.stub(:get_annsets).and_return([@annset])
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+          controller.stub(:get_projects).and_return([@project])
         end
         
         context 'and when format html' do
@@ -67,7 +67,7 @@ describe AnnsetsController do
       before do
         @user = FactoryGirl.create(:user)
         current_user_stub(@user)
-        @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         get :index
       end
       
@@ -78,22 +78,22 @@ describe AnnsetsController do
     
     context 'when format is json' do
       before do
-        @annsets = {:a => 'a', :b => 'b'}
-        controller.stub(:get_annsets).and_return(@annsets)
+        @projects = {:a => 'a', :b => 'b'}
+        controller.stub(:get_projects).and_return(@projects)
         get :index, :format => 'json'
       end
       
       it 'should render json' do
-        response.body.should eql(@annsets.to_json)
+        response.body.should eql(@projects.to_json)
       end
     end
   end
   
   describe 'show' do
-    context 'when annset exists' do
+    context 'when project exists' do
       before do
-        @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
-        controller.stub(:get_annset).and_return(@annset)  
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        controller.stub(:get_project).and_return(@project)  
       end
       
       context 'when sourceid exists' do
@@ -101,7 +101,7 @@ describe AnnsetsController do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 'serial')
           controller.stub(:get_docspec).and_return(['', 'sourdeid', ''])
           controller.stub(:get_doc).and_return(@doc, 'notice')
-          get :show, :id => @annset.id
+          get :show, :id => @project.id
         end
         
         it 'should render template' do
@@ -114,7 +114,7 @@ describe AnnsetsController do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 'serial')
           controller.stub(:get_docspec).and_return(['', nil, ''])
           controller.stub(:get_doc).and_return(@doc, 'notice')
-          get :show, :id => @annset.id
+          get :show, :id => @project.id
         end
         
         it 'should render template' do
@@ -123,7 +123,7 @@ describe AnnsetsController do
       end
     end
 
-    context 'when annset does not exists' do
+    context 'when project does not exists' do
       context 'and when doc does not exists' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 'sourceid', :serial => 'serial')
@@ -149,7 +149,7 @@ describe AnnsetsController do
       end
       
       it 'should set new record' do
-        assigns[:annset].new_record?.should be_true
+        assigns[:project].new_record?.should be_true
       end
     end
 
@@ -159,21 +159,21 @@ describe AnnsetsController do
       end
       
       it 'should render json' do
-        response.body.should eql(assigns[:annset].to_json)
+        response.body.should eql(assigns[:project].to_json)
       end
       
       it 'should set new record' do
-        assigns[:annset].new_record?.should be_true
+        assigns[:project].new_record?.should be_true
       end
     end
   end
   
   describe 'edit' do
     before do
-      @annset = FactoryGirl.create(:annset, :name => 'annset name', :user => FactoryGirl.create(:user))
+      @project = FactoryGirl.create(:project, :name => 'project name', :user => FactoryGirl.create(:user))
       @get_docspec = ['sourcedb', 'sourceid', 'serial']
       controller.stub(:get_docspec).and_return(@get_docspec)
-      get :edit, :id => @annset.name
+      get :edit, :id => @project.name
     end
     
     it 'should render template' do
@@ -192,8 +192,8 @@ describe AnnsetsController do
       assigns[:serial].should eql(@get_docspec[2])
     end
     
-    it 'should assign annset' do
-      assigns[:annset].should eql(@annset)
+    it 'should assign project' do
+      assigns[:project].should eql(@project)
     end
   end
   
@@ -204,34 +204,34 @@ describe AnnsetsController do
     
     context 'when saved successfully' do
       before do
-        @annset_name = 'ansnet name'
+        @project_name = 'ansnet name'
       end
 
       context 'when format html' do
         before do
-          post :create, :annset => {:name => 'ansnet name'}
+          post :create, :project => {:name => 'ansnet name'}
         end
         
-        it 'should redirect to annset_path' do
-          response.should redirect_to(annset_path('ansnet name'))
+        it 'should redirect to project_path' do
+          response.should redirect_to(project_path('ansnet name'))
         end
       end
 
       context 'when format json' do
         before do
-          post :create, :format => 'json', :annset => {:name => 'ansnet name'}
+          post :create, :format => 'json', :project => {:name => 'ansnet name'}
         end
         
         it 'should render json' do
-          response.body.should eql(assigns[:annset].to_json)
+          response.body.should eql(assigns[:project].to_json)
         end
 
         it 'should return http response created as status' do
           response.status.should eql(201)
         end
 
-        it 'should return annset path as location' do
-          response.location.should eql("http://#{request.env['HTTP_HOST']}#{annset_path(assigns[:annset].id)}")
+        it 'should return project path as location' do
+          response.location.should eql("http://#{request.env['HTTP_HOST']}#{project_path(assigns[:project].id)}")
         end
       end
     end
@@ -239,7 +239,7 @@ describe AnnsetsController do
     context 'when saved unsuccessfully' do
       context 'when format html' do      
         before do
-          post :create, :annset => {:name => nil}
+          post :create, :project => {:name => nil}
         end
         
         it 'should render new template' do
@@ -249,11 +249,11 @@ describe AnnsetsController do
       
       context 'when format html' do      
         before do
-          post :create, :format => 'json', :annset => {:name => nil}
+          post :create, :format => 'json', :project => {:name => nil}
         end
         
         it 'should render json' do
-          response.body.should eql(assigns[:annset].errors.to_json)
+          response.body.should eql(assigns[:project].errors.to_json)
         end
         
         it 'should return status 422' do
@@ -265,27 +265,27 @@ describe AnnsetsController do
   
   describe 'update' do
     before do
-      @annset = FactoryGirl.create(:annset, :name => 'annset_name')  
+      @project = FactoryGirl.create(:project, :name => 'project_name')  
     end
     
     context 'when update successfully' do
       before do
-        @params_annset = {:name => 'new_annset_name'}  
+        @params_project = {:name => 'new_project_name'}  
       end
       
       context 'and when format html' do
         before do
-          post :update, :id => @annset.id, :annset => @params_annset          
+          post :update, :id => @project.id, :project => @params_project          
         end
         
-        it 'should redirect to annset_path' do
-          response.should redirect_to(annset_path(@params_annset[:name]))
+        it 'should redirect to project_path' do
+          response.should redirect_to(project_path(@params_project[:name]))
         end
       end
 
       context 'and when format json' do
         before do
-          post :update, :id => @annset.id, :format => 'json', :annset => @params_annset          
+          post :update, :id => @project.id, :format => 'json', :project => @params_project          
         end
         
         it 'should return response blank header' do
@@ -296,12 +296,12 @@ describe AnnsetsController do
 
     context 'when update unsuccessfully' do
       before do
-        @params_annset = {:name => nil}  
+        @params_project = {:name => nil}  
       end
       
       context 'and when format html' do
         before do
-          post :update, :id => @annset.id, :annset => @params_annset          
+          post :update, :id => @project.id, :project => @params_project          
         end
         
         it 'should render edit template' do
@@ -311,11 +311,11 @@ describe AnnsetsController do
 
       context 'and when format json' do
         before do
-          post :update, :id => @annset.id, :format => 'json', :annset => @params_annset          
+          post :update, :id => @project.id, :format => 'json', :project => @params_project          
         end
         
         it 'should return response blank header' do
-          response.body.should eql(assigns[:annset].errors.to_json)
+          response.body.should eql(assigns[:project].errors.to_json)
         end
         
         it 'should return resposne 422' do
@@ -327,22 +327,22 @@ describe AnnsetsController do
   
   describe 'destroy' do
     before do
-      @annset = FactoryGirl.create(:annset, :name => 'annset_name')  
+      @project = FactoryGirl.create(:project, :name => 'project_name')  
     end
     
     context 'format html' do
       before do
-        delete :destroy, :id => @annset.name   
+        delete :destroy, :id => @project.name   
       end
       
-      it 'should redirect to annsets_path' do
-        response.should redirect_to annsets_path
+      it 'should redirect to projects_path' do
+        response.should redirect_to projects_path
       end
     end
     
     context 'format html' do
       before do
-        delete :destroy, :format => 'json', :id => @annset.name   
+        delete :destroy, :format => 'json', :id => @project.name   
       end
       
       it 'should return response blank header' do

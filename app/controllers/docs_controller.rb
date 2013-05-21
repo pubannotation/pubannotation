@@ -4,10 +4,10 @@ class DocsController < ApplicationController
   # GET /docs
   # GET /docs.json
   def index
-    if params[:annset_id]
-      @annset, notice = get_annset(params[:annset_id])
-      if @annset
-        @docs = @annset.docs
+    if params[:project_id]
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @docs = @project.docs
       else
         @docs = nil
       end
@@ -26,7 +26,7 @@ class DocsController < ApplicationController
         format.html { @docs = @docs.paginate(:page => params[:page]) }
         format.json { render json: @docs }
         format.txt  {
-          file_name = (@annset)? @annset.name + ".zip" : "docs.zip"
+          file_name = (@project)? @project.name + ".zip" : "docs.zip"
           t = Tempfile.new("pubann-temp-filename-#{Time.now}")
           Zip::ZipOutputStream.open(t.path) do |z|
             @docs.each do |doc|

@@ -1,8 +1,8 @@
 <% content_for :path do %>
   > <%= link_to "home", home_path %>
-  <% if @annset %>
-    > <%= link_to "annsets", annsets_path %>
-    > <%= link_to @annset.name, annset_path(@annset.name) %>
+  <% if @project %>
+    > <%= link_to "projects", projects_path %>
+    > <%= link_to @project.name, project_path(@project.name) %>
   <% end %>
   > pmdocs
 <% end %>
@@ -10,8 +10,8 @@
 <h1>
 PubMed documents
 <span class="meta">
-<% if @annset %>
-that belong to the annotation set, <span class="pname"><%= @annset.name %></span>
+<% if @project %>
+that belong to the annotation set, <span class="pname"><%= @project.name %></span>
 <% else %>
 stored in <span class="pname">PubAnnotation</span>
 <% end %>
@@ -35,10 +35,10 @@ stored in <span class="pname">PubAnnotation</span>
       <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
       <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
       <td>
-        <% if @annset %>
-          <span class="button"><%= link_to 'Show', annset_pmdoc_path(@annset.name, doc.sourceid) %></span>
-          <% if user_signed_in? and current_user == @annset.user %>
-            <span class="button"><%= link_to 'Remove', annset_pmdoc_path(@annset.name, doc.sourceid), method: :delete, data: { confirm: 'Are you sure? All the annotations to this document that belong to the annotation set will be deleted.' } %></span>
+        <% if @project %>
+          <span class="button"><%= link_to 'Show', project_pmdoc_path(@project.name, doc.sourceid) %></span>
+          <% if user_signed_in? and current_user == @project.user %>
+            <span class="button"><%= link_to 'Remove', project_pmdoc_path(@project.name, doc.sourceid), method: :delete, data: { confirm: 'Are you sure? All the annotations to this document that belong to the annotation set will be deleted.' } %></span>
           <% end %>
         <% else %>
           <span class="button"><%= link_to 'Show', pmdoc_path(doc.sourceid) %></span>
@@ -51,9 +51,9 @@ stored in <span class="pname">PubAnnotation</span>
 
 <%= will_paginate @docs %>
 
-<% if @annset and user_signed_in? and current_user == @annset.user %>
+<% if @project and user_signed_in? and current_user == @project.user %>
 
-<%= form_tag("/annsets/#{@annset.name}/pmdocs/", :method => "post") do %>
+<%= form_tag("/projects/#{@project.name}/pmdocs/", :method => "post") do %>
 <table>
   <tr><th><%= label_tag(:pmids, "Add PubMed documents") %><br/></th></tr>
   <tr><td><%= text_area_tag(:pmids, nil, :placeholder => "PubMed IDs", :required => true) %></td></tr>
@@ -63,9 +63,9 @@ stored in <span class="pname">PubAnnotation</span>
 
 
 <!--script type="text/javascript">
-  function putDocToAnnset() {
+  function putDocToProject() {
     var pmid = document.getElementById("pmid").value;
-    var url = "<%=request.protocol%>" + "<%=request.host_with_port%>" + "<%= annset_pmdocs_path(@annset.name) %>" + "/" + pmid;
+    var url = "<%=request.protocol%>" + "<%=request.host_with_port%>" + "<%= project_pmdocs_path(@project.name) %>" + "/" + pmid;
 
     xmlhttp = new XMLHttpRequest();
     xmlhttp.open('PUT', url, true);
@@ -79,7 +79,7 @@ stored in <span class="pname">PubAnnotation</span>
   }
 </script>
 <input id="pmid" type="text" size="10" placeholder="PubMed ID" />
-<span class="button"><a onclick="putDocToAnnset()">Add to the set</a></span>
+<span class="button"><a onclick="putDocToProject()">Add to the set</a></span>
 
 <div class="note">
 <ul>
@@ -88,7 +88,7 @@ stored in <span class="pname">PubAnnotation</span>
   <li>prefix the current URL in the address bar with the PubMed ID and open the page.</li>
   <li>e.g., opening the URL,<br/>
       <%= "#{request.protocol}#{request.host_with_port}#{request.fullpath}" %>/123456<br/>
-      will add the PubMeD document 123456 to the annotation set, <%= @annset.name %>.</li>
+      will add the PubMeD document 123456 to the annotation set, <%= @project.name %>.</li>
 </ul>
 </ul>
 </div-->

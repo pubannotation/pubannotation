@@ -11,9 +11,70 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121218073414) do
+ActiveRecord::Schema.define(:version => 20130521022506) do
 
-  create_table "annsets", :force => true do |t|
+  create_table "catanns", :force => true do |t|
+    t.string   "hid"
+    t.integer  "doc_id"
+    t.integer  "begin"
+    t.integer  "end"
+    t.string   "category"
+    t.integer  "project_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "catanns", ["doc_id"], :name => "index_catanns_on_doc_id"
+  add_index "catanns", ["project_id"], :name => "index_catanns_on_project_id"
+
+  create_table "docs", :force => true do |t|
+    t.text     "body"
+    t.string   "source"
+    t.string   "sourcedb"
+    t.string   "sourceid"
+    t.integer  "serial"
+    t.string   "section"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "docs", ["serial"], :name => "index_docs_on_serial"
+  add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
+  add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
+
+  create_table "docs_projects", :id => false, :force => true do |t|
+    t.integer "project_id"
+    t.integer "doc_id"
+  end
+
+  add_index "docs_projects", ["project_id", "doc_id"], :name => "index_docs_projects_on_project_id_and_doc_id", :unique => true
+
+  create_table "insanns", :force => true do |t|
+    t.string   "hid"
+    t.integer  "insobj_id"
+    t.string   "instype"
+    t.integer  "project_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "insanns", ["insobj_id"], :name => "index_insanns_on_insobj_id"
+  add_index "insanns", ["project_id"], :name => "index_insanns_on_project_id"
+
+  create_table "modanns", :force => true do |t|
+    t.string   "hid"
+    t.integer  "modobj_id"
+    t.string   "modobj_type"
+    t.string   "modtype"
+    t.integer  "project_id"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
+
+  add_index "modanns", ["modobj_id"], :name => "index_modanns_on_modobj_id"
+  add_index "modanns", ["project_id"], :name => "index_modanns_on_project_id"
+
+  create_table "projects", :force => true do |t|
     t.string   "name"
     t.text     "description"
     t.string   "author"
@@ -31,68 +92,8 @@ ActiveRecord::Schema.define(:version => 20121218073414) do
     t.string   "bionlpwriter"
   end
 
-  add_index "annsets", ["name"], :name => "index_annsets_on_name", :unique => true
-
-  create_table "annsets_docs", :id => false, :force => true do |t|
-    t.integer "annset_id"
-    t.integer "doc_id"
-  end
-
-  add_index "annsets_docs", ["annset_id", "doc_id"], :name => "index_annsets_docs_on_annset_id_and_doc_id", :unique => true
-
-  create_table "catanns", :force => true do |t|
-    t.string   "hid"
-    t.integer  "doc_id"
-    t.integer  "begin"
-    t.integer  "end"
-    t.string   "category"
-    t.integer  "annset_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
-  end
-
-  add_index "catanns", ["annset_id"], :name => "index_catanns_on_annset_id"
-  add_index "catanns", ["doc_id"], :name => "index_catanns_on_doc_id"
-
-  create_table "docs", :force => true do |t|
-    t.text     "body"
-    t.string   "source"
-    t.string   "sourcedb"
-    t.string   "sourceid"
-    t.integer  "serial"
-    t.string   "section"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
-  end
-
-  add_index "docs", ["serial"], :name => "index_docs_on_serial"
-  add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
-  add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
-
-  create_table "insanns", :force => true do |t|
-    t.string   "hid"
-    t.integer  "insobj_id"
-    t.string   "instype"
-    t.integer  "annset_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
-  end
-
-  add_index "insanns", ["annset_id"], :name => "index_insanns_on_annset_id"
-  add_index "insanns", ["insobj_id"], :name => "index_insanns_on_insobj_id"
-
-  create_table "modanns", :force => true do |t|
-    t.string   "hid"
-    t.integer  "modobj_id"
-    t.string   "modobj_type"
-    t.string   "modtype"
-    t.integer  "annset_id"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
-  end
-
-  add_index "modanns", ["annset_id"], :name => "index_modanns_on_annset_id"
-  add_index "modanns", ["modobj_id"], :name => "index_modanns_on_modobj_id"
+  add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true
+  add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true
 
   create_table "relanns", :force => true do |t|
     t.string   "hid"
@@ -101,12 +102,12 @@ ActiveRecord::Schema.define(:version => 20121218073414) do
     t.integer  "relobj_id"
     t.string   "relobj_type"
     t.string   "reltype"
-    t.integer  "annset_id"
+    t.integer  "project_id"
     t.datetime "created_at",  :null => false
     t.datetime "updated_at",  :null => false
   end
 
-  add_index "relanns", ["annset_id"], :name => "index_relanns_on_annset_id"
+  add_index "relanns", ["project_id"], :name => "index_relanns_on_project_id"
   add_index "relanns", ["relobj_id"], :name => "index_relanns_on_relobj_id"
   add_index "relanns", ["relsub_id"], :name => "index_relanns_on_relsub_id"
 

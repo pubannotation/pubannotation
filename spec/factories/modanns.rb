@@ -4,6 +4,6 @@ FactoryGirl.define do
     c.modobj_id {|modann| modann.association(:modobj)}
     c.modobj_type 'type'
     c.modtype 'Negation'
-    c.annset_id {|modann| modann.association(:annset)}
+    c.project_id {|modann| modann.association(:project)}
   end
 end

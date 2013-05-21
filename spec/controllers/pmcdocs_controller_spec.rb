@@ -5,23 +5,23 @@ describe PmcdocsController do
   describe 'index' do
     before do
       @user = FactoryGirl.create(:user)  
-      @annset = FactoryGirl.create(:annset, :user => @user)
+      @project = FactoryGirl.create(:project, :user => @user)
       @doc_pmc_0 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
       @doc_pmc_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
     end
     
-    context 'when params[:annset_id] exists' do
-      context 'and when annset exists' do
+    context 'when params[:project_id] exists' do
+      context 'and when project exists' do
         before do
-          @annsets = [@annset]
-          @annset.docs << @doc_pmc_0
-          @annset.docs << @doc_pmc_1
-          controller.stub(:get_annset).and_return([@annset, 'notice'])
+          @projects = [@project]
+          @project.docs << @doc_pmc_0
+          @project.docs << @doc_pmc_1
+          controller.stub(:get_project).and_return([@project, 'notice'])
         end
         
         context 'when format html' do
           before do
-            get :index, :annset_id => 1
+            get :index, :project_id => 1
           end
           
           it '@docs should include only which sourcedb == PMC and serial == 0' do
@@ -36,7 +36,7 @@ describe PmcdocsController do
         
         context 'when format json' do
           before do
-            get :index, :annset_id => 1, :format => 'json'
+            get :index, :project_id => 1, :format => 'json'
           end
           
           it 'should render json' do
@@ -45,15 +45,15 @@ describe PmcdocsController do
         end
       end
 
-      context 'and when annset does not exists' do
+      context 'and when project does not exists' do
         before do
           @notice = 'notice'
-          controller.stub(:get_annset).and_return([nil, @notice])
+          controller.stub(:get_project).and_return([nil, @notice])
         end
         
         context 'when format html' do
           before do
-            get :index, :annset_id => 1
+            get :index, :project_id => 1
           end
           
           it '@docs should be nil' do
@@ -64,14 +64,14 @@ describe PmcdocsController do
             response.should render_template('index')
           end
           
-          it 'should set get_annset notice as flash[:notice]' do
+          it 'should set get_project notice as flash[:notice]' do
             flash[:notice].should eql(@notice)
           end
         end
 
         context 'when format json' do
           before do
-            get :index, :format => 'json', :annset_id => 1
+            get :index, :format => 'json', :project_id => 1
           end
           
           it 'should return status 422' do
@@ -81,7 +81,7 @@ describe PmcdocsController do
       end
     end
       
-    context 'when params[:annset_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       before do
         get :index
       end
@@ -95,28 +95,28 @@ describe PmcdocsController do
   
   describe 'show' do
     before do
-      @get_annset_notice = 'annset notice'
-      @get_divs_notice = 'annset notice'
+      @get_project_notice = 'project notice'
+      @get_divs_notice = 'project notice'
       @user = FactoryGirl.create(:user)  
-      @annset = FactoryGirl.create(:annset, :user => @user)
+      @project = FactoryGirl.create(:project, :user => @user)
       @div = FactoryGirl.create(:doc, :sourcedb => 'PMC')
       @divs = [@div]
     end
     
-    context 'when params[:annset_id] exists' do
-      context 'and when annset exists' do
+    context 'when params[:project_id] exists' do
+      context 'and when project exists' do
         before do
-          controller.stub(:get_annset).and_return([@annset, @get_annset_notice])
+          controller.stub(:get_project).and_return([@project, @get_project_notice])
         end
         
         context 'and when divs exists' do
           before do
             controller.stub(:get_divs).and_return([@divs, @get_divs_notice])
-            get :show, :annset_id => 1, :id => 1
+            get :show, :project_id => 1, :id => 1
           end
           
-          it 'should redirect to annset_pmcdoc_divs_path' do
-            response.should redirect_to(annset_pmcdoc_divs_path(1, 1))
+          it 'should redirect to project_pmcdoc_divs_path' do
+            response.should redirect_to(project_pmcdoc_divs_path(1, 1))
           end
         end
 
@@ -127,17 +127,17 @@ describe PmcdocsController do
           
           context 'and when format html' do
             before do
-              get :show, :annset_id => 1, :id => 1
+              get :show, :project_id => 1, :id => 1
             end
             
-            it 'should redirect to annset_pmcdoc_divs_path' do
-              response.should redirect_to(annset_pmcdocs_path(1))
+            it 'should redirect to project_pmcdoc_divs_path' do
+              response.should redirect_to(project_pmcdocs_path(1))
             end
           end
           
           context 'and when format json' do
             before do
-              get :show, :format => 'json', :annset_id => 1, :id => 1
+              get :show, :format => 'json', :project_id => 1, :id => 1
             end
             
             it 'should return status 422' do
@@ -147,11 +147,11 @@ describe PmcdocsController do
         end
       end
 
-      context 'and when annset does not exists' do
+      context 'and when project does not exists' do
         before do
-          controller.stub(:get_annset).and_return([nil, @get_annset_notice])
+          controller.stub(:get_project).and_return([nil, @get_project_notice])
           controller.stub(:get_divs).and_return([@divs, @get_divs_notice])
-          get :show, :annset_id => 1, :id => 1
+          get :show, :project_id => 1, :id => 1
         end
         
         it 'should redirect to pmcdocs_path' do
@@ -160,7 +160,7 @@ describe PmcdocsController do
       end
     end
     
-    context 'when params[:annset_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       context 'and when divs exists' do
         before do
           controller.stub(:get_divs).and_return([@divs, @get_divs_notice])
@@ -190,11 +190,11 @@ describe PmcdocsController do
   end
   
   describe 'create' do
-    context 'when params[:annset_id] exists' do
-      context 'and when annset exists' do
+    context 'when params[:project_id] exists' do
+      context 'and when project exists' do
         before do
-          @annset = FactoryGirl.create(:annset, :user => @user)
-          controller.stub(:get_annset).and_return([@annset, 'notice'])
+          @project = FactoryGirl.create(:project, :user => @user)
+          controller.stub(:get_project).and_return([@project, 'notice'])
         end
         
         context 'and when divs found by sourcedb and sourceid' do
@@ -204,20 +204,20 @@ describe PmcdocsController do
             @div = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)            
           end
           
-          context 'and when annset.docs does not include divs.first' do
+          context 'and when project.docs does not include divs.first' do
             context 'and when format html' do
               before do
-                post :create, :annset_id => 1, :pmcids => @sourceid
+                post :create, :project_id => 1, :pmcids => @sourceid
               end
               
-              it 'should redirect_to annset_pmcdocs_path' do
-                response.should redirect_to(annset_pmcdocs_path(@annset.name))
+              it 'should redirect_to project_pmcdocs_path' do
+                response.should redirect_to(project_pmcdocs_path(@project.name))
               end
             end
 
             context 'and when format json' do
               before do
-                post :create, :format => 'json', :annset_id => 1, :pmcids => @sourceid
+                post :create, :format => 'json', :project_id => 1, :pmcids => @sourceid
               end
               
               it 'should return status 201' do
@@ -225,7 +225,7 @@ describe PmcdocsController do
               end
               
               it 'should return location' do
-                response.location.should eql(annset_pmcdocs_path(@annset.name))
+                response.location.should eql(project_pmcdocs_path(@project.name))
               end
             end
           end
@@ -236,7 +236,7 @@ describe PmcdocsController do
             before do
               @div = FactoryGirl.create(:doc, :id => 2, :sourcedb => 'sourcedb', :sourceid => 'sourceid')
               controller.stub(:gen_pmcdoc).and_return([[@div], 'message'])            
-              post :create, :annset_id => 1, :pmcids => 'abcd'
+              post :create, :project_id => 1, :pmcids => 'abcd'
             end
             
             it '' do
@@ -248,18 +248,18 @@ describe PmcdocsController do
             before do
               @div = FactoryGirl.create(:doc, :id => 2, :sourcedb => 'sourcedb', :sourceid => 'sourceid')
               controller.stub(:gen_pmcdoc).and_return([nil, 'message'])            
-              post :create, :annset_id => 1, :pmcids => 'abcd,cdef'
+              post :create, :project_id => 1, :pmcids => 'abcd,cdef'
             end
             
-            it 'should redirect to annset_pmcdocs_path' do
-              response.should redirect_to(annset_pmcdocs_path(@annset.name))
+            it 'should redirect to project_pmcdocs_path' do
+              response.should redirect_to(project_pmcdocs_path(@project.name))
             end
           end
         end
       end
     end
 
-    context 'when params[:annset_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       context 'and when format html' do
         before do
           post :create

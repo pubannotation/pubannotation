@@ -1,0 +1,119 @@
+<% content_for :path do %>
+	> <%= link_to "home", home_path %>
+	<% if @doc and @doc.sourcedb == 'PubMed' %>
+		> <%= link_to "pmdocs", pmdocs_path %>
+		> <%= link_to @doc.sourceid, pmdoc_path(@doc.sourceid) %>
+	 	> <%= link_to "projects", pmdoc_projects_path(@doc.sourceid) %>
+	<% elsif @doc and @doc.sourcedb == 'PMC' %>
+		> <%= link_to "pmcdocs", pmcdocs_path %>
+		> <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
+		> <%= link_to "divs",    pmcdoc_divs_path(@doc.sourceid) %>
+		> <%= link_to @doc.serial,   pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
+	 	> <%= link_to "projects", pmcdoc_div_projects_path(@doc.sourceid, @doc.serial) %>
+	<% else %>
+ 		> <%= link_to "projects", projects_path %>
+ 	<% end %>
+ 	> <%= @project.name %>
+<% end %>
+
+<h1>Annotation set description</h1>
+
+<% if @project %>
+	<table>
+	<tr>
+	<th>Name</th>
+	<td><%= @project.name %></td>
+	</tr>
+	<tr>
+	<th>Description</th>
+	<td><%= @project.description %></td>
+	</tr>
+	<tr>
+	<th>Author</th>
+	<td><%= @project.author %></td>
+	</tr>
+	<tr>
+	<th>License</th>
+	<td><%= @project.license %></td>
+	</tr>
+	<tr>
+	<th>Status</th>
+	<td><%=
+		case @project.status
+		when 1 then :Released
+		when 2 then :Beta
+		when 3 then :Developing
+		end
+	%></td>
+	</tr>
+	<tr>
+	<th>Accessibility</th>
+	<td><%=
+		case @project.accessibility
+		when 1 then :Public
+		when 2 then :Private
+		end
+	%></td>
+	</tr>
+	<tr>
+	<th>Uploader</th>
+	<td><%= @project.user.username %></td>
+	</tr>
+	<tr>
+	<th>Reference</th>
+	<td><a href="<%= @project.reference %>"><%= @project.reference %></a></td>
+	</tr>
+	<th>Viewer</th>
+	<td><a href="<%= @project.viewer %>"><%= @project.viewer %></a></td>
+	</tr>
+	<% if user_signed_in? and current_user == @project.user %>
+		<tr>
+			<th>Editor</th>
+			<td><a href="<%= @project.editor %>"><%= @project.editor %></a></td>
+		</tr>
+	<% end %>
+	<% unless @project.rdfwriter.empty? %>
+		<tr>
+			<th>RDF writer</th>
+			<td><a href="<%= @project.rdfwriter %>"><%= @project.rdfwriter %></a></td>
+		</tr>
+	<% end %>
+	<% unless @project.xmlwriter.empty? %>
+		<tr>
+			<th>XML writer</th>
+			<td><a href="<%= @project.xmlwriter %>"><%= @project.xmlwriter %></a></td>
+		</tr>
+	<% end %>
+	<% unless @project.bionlpwriter.empty? %>
+		<tr>
+			<th>BioNLP-ST writer</th>
+			<td><a href="<%= @project.bionlpwriter %>"><%= @project.bionlpwriter %></a></td>
+		</tr>
+	<% end %>
+	</table>
+
+	<% if user_signed_in? and current_user == @project.user %>
+		<span class="button"><%= link_to 'Edit', edit_project_path(@project.name) %></span>
+		<span class="button"><%= link_to 'Delete', @project.name, :method => :delete, :confirm => 'Are you sure? All the annotations that belong to this annotation set will be deleted.' %></span>
+	<% end %>
+
+	<% if @doc %>
+		<% if @doc.sourcedb == 'PubMed' %>
+			<% annotation_url = pmdoc_project_annotations_url(@doc.sourceid, @project.name) %>
+		<% else %>
+			<% annotation_url = pmcdoc_div_project_annotations_url(@doc.sourceid, @doc.serial, @project.name) %>
+		<% end %>
+
+		<h2>Annotations
+			<span class="meta">to the document, <span class="pname"><%=@doc.sourcedb%>:<%=@doc.sourceid%></span>,
+			within this annotation set</span></span>
+		</h2>
+		<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
+	<% else %>
+		<h2>Documents <span class="meta">that belong to this annotation set</span></h2>
+		<ul>
+			<li><%= link_to "PubMed documents", project_pmdocs_url(@project.name) %> (<%= @pmdocs_num %>)</li>
+			<li><%= link_to "PMC documents", project_pmcdocs_url(@project.name) %> (<%= @pmcdocs_num %>)</li>
+		</ul>
+	<% end %>
+<% end %>

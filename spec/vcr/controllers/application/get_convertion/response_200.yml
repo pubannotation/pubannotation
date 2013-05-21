@@ -5,7 +5,7 @@ http_interactions:
     uri: http://bionlp.dbcls.jp/ge2rdf
     body:
       encoding: US-ASCII
-      string: annotation=%7B%22accessibility%22%3Anull%2C%22author%22%3Anull%2C%22bionlpwriter%22%3Anull%2C%22created_at%22%3A%222013-05-08T02%3A34%3A49Z%22%2C%22description%22%3A%22This%20is%20annset%20description%22%2C%22editor%22%3Anull%2C%22id%22%3A1%2C%22license%22%3Anull%2C%22name%22%3A%22Annset%20Name%22%2C%22rdfwriter%22%3Anull%2C%22reference%22%3Anull%2C%22status%22%3Anull%2C%22updated_at%22%3A%222013-05-08T02%3A34%3A49Z%22%2C%22user_id%22%3A1%2C%22viewer%22%3Anull%2C%22xmlwriter%22%3Anull%7D
+      string: annotation=%7B%22accessibility%22%3Anull%2C%22author%22%3Anull%2C%22bionlpwriter%22%3Anull%2C%22created_at%22%3A%222013-05-08T02%3A34%3A49Z%22%2C%22description%22%3A%22This%20is%20annset%20description%22%2C%22editor%22%3Anull%2C%22id%22%3A1%2C%22license%22%3Anull%2C%22name%22%3A%22Project%20Name%22%2C%22rdfwriter%22%3Anull%2C%22reference%22%3Anull%2C%22status%22%3Anull%2C%22updated_at%22%3A%222013-05-08T02%3A34%3A49Z%22%2C%22user_id%22%3A1%2C%22viewer%22%3Anull%2C%22xmlwriter%22%3Anull%7D
     headers:
       Accept:
       - application/json

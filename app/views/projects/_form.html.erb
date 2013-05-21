@@ -1,10 +1,10 @@
-<%= form_for(@annset) do |f| %>
-  <% if @annset.errors.any? %>
+<%= form_for(@project) do |f| %>
+  <% if @project.errors.any? %>
     <div id="error_explanation">
-      <h2><%= pluralize(@annset.errors.count, "error") %> prohibited this annset from being saved:</h2>
+      <h2><%= pluralize(@project.errors.count, "error") %> prohibited this project from being saved:</h2>
 
       <ul>
-      <% @annset.errors.full_messages.each do |msg| %>
+      <% @project.errors.full_messages.each do |msg| %>
         <li><%= msg %></li>
       <% end %>
       </ul>

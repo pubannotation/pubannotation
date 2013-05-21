@@ -1,5 +1,5 @@
 class Catann < ActiveRecord::Base
-  belongs_to :annset
+  belongs_to :project
   belongs_to :doc
 
   has_many :insanns, :foreign_key => "insobj_id", :dependent => :destroy
@@ -17,7 +17,7 @@ class Catann < ActiveRecord::Base
   validates :begin,     :presence => true
   validates :end,       :presence => true
   validates :category,  :presence => true
-  validates :annset_id, :presence => true
+  validates :project_id, :presence => true
   validates :doc_id,    :presence => true
 
   def get_hash

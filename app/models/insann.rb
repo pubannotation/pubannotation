@@ -1,5 +1,5 @@
 class Insann < ActiveRecord::Base
-  belongs_to :annset
+  belongs_to :project
   belongs_to :insobj, :class_name => 'Catann'
 
   has_many :subrels, :class_name => 'Relann', :as => :relsub, :dependent => :destroy

@@ -1,9 +1,9 @@
 <% content_for :path do %>
   > <%= link_to "home", home_path %>
-  <% if @annset_name %>
-    > <%= link_to "annsets", annsets_path %>
-    > <%= link_to @annset_name, annset_path(@annset_name) %>
-    > <%= link_to "pmcdocs", annset_pmcdocs_path(@annset_name) %>
+  <% if @project_name %>
+    > <%= link_to "projects", projects_path %>
+    > <%= link_to @project_name, project_path(@project_name) %>
+    > <%= link_to "pmcdocs", project_pmcdocs_path(@project_name) %>
   <% else %>
     > <%= link_to "pmcdocs", pmcdocs_path %>
   <% end %>
@@ -41,8 +41,8 @@ of the document, <span class="pname"><%= @docs.first.sourcedb %>:<%= @docs.first
     <% else %>    
       <td style="text-align:right"><%= doc.body.length %></td>
     <% end %>
-    <% if @annset_name %>
-    <td><%= link_to 'Show', annset_pmcdoc_div_path(@annset_name, doc.sourceid, doc.serial) %></td>
+    <% if @project_name %>
+    <td><%= link_to 'Show', project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></td>
     <% else %>    
     <td><%= link_to 'Show', pmcdoc_div_path(doc.sourceid, doc.serial) %></td>
     <% end %>

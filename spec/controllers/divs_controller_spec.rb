@@ -7,12 +7,12 @@ describe DivsController do
       @pmcdoc_id = 'sourceid'
       @doc_pmc_sourceid = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => @pmcdoc_id)
       @doc_not_pmc = FactoryGirl.create(:doc, :sourcedb => 'AAA', :sourceid => @pmcdoc_id)
-      @annset_id = 'annset id'
+      @project_id = 'project id'
     end
     
     context 'when format html' do
       before do
-        get :index, :pmcdoc_id => @pmcdoc_id, :annset_id => @annset_id
+        get :index, :pmcdoc_id => @pmcdoc_id, :project_id => @project_id
       end
       
       it '@docs should include only sourcede == PMC and sourceid == params[:pmcdoc_id]' do
@@ -20,8 +20,8 @@ describe DivsController do
         assigns[:docs].should_not include(@doc_not_pmc) 
       end
       
-      it '@annset_name should be same as params[:annset_id]' do
-        assigns[:annset_name].should eql(@annset_id)
+      it '@project_name should be same as params[:project_id]' do
+        assigns[:project_name].should eql(@project_id)
       end
       
       it 'should render template' do
@@ -31,7 +31,7 @@ describe DivsController do
 
     context 'when format json' do
       before do
-        get :index, :format => 'json', :pmcdoc_id => @pmcdoc_id, :annset_id => @annset_id
+        get :index, :format => 'json', :pmcdoc_id => @pmcdoc_id, :project_id => @project_id
       end
       
       it 'should render json' do
@@ -46,16 +46,16 @@ describe DivsController do
       @pmcdoc_id = 'pmc doc id'
       @asciitext = 'aschii text'
       @doc = FactoryGirl.create(:doc)
-      @annset = FactoryGirl.create(:annset)
+      @project = FactoryGirl.create(:project)
       @get_doc_notice = 'get doc notice'
     end
     
-    context 'when params[:annset_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       context 'when encoding ascii' do
         before do
           controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
-          @get_annsets_notice = 'get annsets notice'
-          controller.stub(:get_annsets).and_return([@annset, @get_annsets_notice])
+          @get_projects_notice = 'get projects notice'
+          controller.stub(:get_projects).and_return([@project, @get_projects_notice])
           controller.stub(:get_ascii_text).and_return(@asciitext)
         end
         context 'when format html' do
@@ -63,7 +63,7 @@ describe DivsController do
             get :show, :encoding => 'ascii', :pmcdoc_id => @pmcdoc_id, :id => @id
           end
           
-          it 'should set get_annsets_notice as flash[:notice]' do
+          it 'should set get_projects_notice as flash[:notice]' do
             flash[:notice].should eql(@get_doc_notice)  
           end
           
@@ -99,21 +99,21 @@ describe DivsController do
       end
     end
     
-    context 'when params[:annset_id] exists' do
+    context 'when params[:project_id] exists' do
       before do
-        @annset_id = 'annset id'
-        @get_annset_notice = 'get annset notice'
+        @project_id = 'project id'
+        @get_project_notice = 'get project notice'
       end
       
-      context 'when get_annset returns annset' do
+      context 'when get_project returns project' do
         before do
-          controller.stub(:get_annset).and_return([@annset, @get_annset_notice])
+          controller.stub(:get_project).and_return([@project, @get_project_notice])
         end
         
         context 'get_doc return doc' do
           before do
             controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
-            get :show, :annset_id => @annset_id, :pmcdoc_id => @pmcdoc_id, :id => @id
+            get :show, :project_id => @project_id, :pmcdoc_id => @pmcdoc_id, :id => @id
           end
           
           it '@text should same as @doc.body' do
@@ -130,14 +130,14 @@ describe DivsController do
         end     
       end
       
-      context 'when get_annset does not returns annset' do
+      context 'when get_project does not returns project' do
         before do
-          controller.stub(:get_annset).and_return([nil, @get_annset_notice])
+          controller.stub(:get_project).and_return([nil, @get_project_notice])
         end
         
         context 'when format html' do
           before do
-            get :show, :annset_id => @annset_id, :pmcdoc_id => @pmcdoc_id, :id => @id
+            get :show, :project_id => @project_id, :pmcdoc_id => @pmcdoc_id, :id => @id
           end
 
           it '@doc should be nil' do
@@ -149,13 +149,13 @@ describe DivsController do
           end
           
           it 'should set flash[:notice]' do
-            flash[:notice].should eql(@get_annset_notice)
+            flash[:notice].should eql(@get_project_notice)
           end
         end  
         
         context 'when format json' do
           before do
-            get :show, :format => 'json', :annset_id => @annset_id, :pmcdoc_id => @pmcdoc_id, :id => @id
+            get :show, :format => 'json', :project_id => @project_id, :pmcdoc_id => @pmcdoc_id, :id => @id
           end
 
           it 'should returns status 422' do
@@ -165,7 +165,7 @@ describe DivsController do
         
         context 'when format json' do
           before do
-            get :show, :format => 'txt', :annset_id => @annset_id, :pmcdoc_id => @pmcdoc_id, :id => @id
+            get :show, :format => 'txt', :project_id => @project_id, :pmcdoc_id => @pmcdoc_id, :id => @id
           end
 
           it 'should returns status 422' do
@@ -229,13 +229,13 @@ describe DivsController do
       @div_id = 1
       @section = 'section'
       @text = 'text'
-      @annset = FactoryGirl.create(:annset)
+      @project = FactoryGirl.create(:project)
     end  
 
     context 'when @doc exists' do
       context 'when format html' do
         before do
-          post :create, :pmcdoc_id => @pmcdoc_id, :annset_id => @annset.id, :div_id => @div_id, :section => @section, :text => @text
+          post :create, :pmcdoc_id => @pmcdoc_id, :project_id => @project.id, :div_id => @div_id, :section => @section, :text => @text
         end
         
         it 'should redirect to doc_path' do
@@ -245,7 +245,7 @@ describe DivsController do
 
       context 'when format json' do
         before do
-          post :create, :format => 'json', :pmcdoc_id => @pmcdoc_id, :annset_id => @annset.id 
+          post :create, :format => 'json', :pmcdoc_id => @pmcdoc_id, :project_id => @project.id 
         end
         
         it 'should return blank header' do
@@ -258,7 +258,7 @@ describe DivsController do
       context 'when format html' do
         before do
           Doc.any_instance.stub(:save).and_return(false)
-          post :create, :pmcdoc_id => @pmcdoc_id, :annset_id => @annset.id, :div_id => 'div', :section => @section, :text => @text
+          post :create, :pmcdoc_id => @pmcdoc_id, :project_id => @project.id, :div_id => 'div', :section => @section, :text => @text
         end
 
         it 'should redirect to doc_path' do
@@ -269,7 +269,7 @@ describe DivsController do
       context 'when format json' do
         before do
           Doc.any_instance.stub(:save).and_return(false)
-          post :create, :format => 'json', :pmcdoc_id => @pmcdoc_id, :annset_id => @annset.id, :div_id => 'div', :section => @section, :text => @text
+          post :create, :format => 'json', :pmcdoc_id => @pmcdoc_id, :project_id => @project.id, :div_id => 'div', :section => @section, :text => @text
         end
 
         it 'should return status 422' do

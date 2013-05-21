@@ -55,55 +55,55 @@ describe ApplicationController do
     end
   end
   
-  describe 'get_annset' do
+  describe 'get_project' do
     before do
       @user = FactoryGirl.create(:user)
     end
 
     context 'when ansset exists' do
-      context 'and when annset.accessibility == 1' do
+      context 'and when project.accessibility == 1' do
         before do
           @current_user = FactoryGirl.create(:user)
           controller.stub(:user_signed_in?).and_return(false)
-          @annset = FactoryGirl.create(:annset, :accessibility => 1, :user => @user, :name => 'Annset Name')  
-          @result = controller.get_annset(@annset.name)
+          @project = FactoryGirl.create(:project, :accessibility => 1, :user => @user, :name => 'Project Name')  
+          @result = controller.get_project(@project.name)
         end
         
-        it 'should returs annset and nil' do
-          @result.should eql([@annset, nil])
+        it 'should returs project and nil' do
+          @result.should eql([@project, nil])
         end
       end
 
-      context 'and when annset.accessibility !=1 and annset.user == current_user' do
+      context 'and when project.accessibility !=1 and project.user == current_user' do
         before do
           @current_user = FactoryGirl.create(:user)
           current_user_stub(@current_user)
-          @annset = FactoryGirl.create(:annset, :accessibility => 2, :user => @current_user, :name => 'Annset Name')  
-          @result = controller.get_annset(@annset.name)
+          @project = FactoryGirl.create(:project, :accessibility => 2, :user => @current_user, :name => 'Project Name')  
+          @result = controller.get_project(@project.name)
         end
         
-        it 'should returs annset and nil' do
-          @result.should eql([@annset, nil])
+        it 'should returs project and nil' do
+          @result.should eql([@project, nil])
         end
       end
 
-      context 'and when annset.accessibility !=1 and annset.user != current_user' do
+      context 'and when project.accessibility !=1 and project.user != current_user' do
         before do
           @current_user = FactoryGirl.create(:user)
           current_user_stub(@current_user)
-          @annset = FactoryGirl.create(:annset, :accessibility => 2, :user => @user, :name => 'Annset Name')  
-          @result = controller.get_annset(@annset.name)
+          @project = FactoryGirl.create(:project, :accessibility => 2, :user => @user, :name => 'Project Name')  
+          @result = controller.get_project(@project.name)
         end
         
         it 'should returs nil and message which notice annotationset is private' do
-          @result.should eql([nil, "The annotation set, #{@annset.name}, is specified as private."])
+          @result.should eql([nil, "The annotation set, #{@project.name}, is specified as private."])
         end
       end
     end
     
     context 'when ansset does not exists' do
       before do
-        @result = controller.get_annset('')
+        @result = controller.get_project('')
       end
       
       it 'returns nil and message notice annotasion set does not exist' do
@@ -112,32 +112,32 @@ describe ApplicationController do
     end
   end
   
-  describe 'get_annsets' do
+  describe 'get_projects' do
     before do
       @another_user = FactoryGirl.create(:user)
       @current_user = FactoryGirl.create(:user)
-      @annset_accessibility_1_and_another_user_annset = FactoryGirl.create(:annset, :user => @another_user, :accessibility => 1) 
-      @annset_accessibility_not_1_and_another_user_annset = FactoryGirl.create(:annset, :user => @another_user, :accessibility => 2) 
-      @annset_accessibility_1_and_current_user_annset = FactoryGirl.create(:annset, :user => @current_user, :accessibility => 1) 
-      @annset_accessibility_not_1_and_current_user_annset = FactoryGirl.create(:annset, :user => @current_user, :accessibility => 2) 
+      @project_accessibility_1_and_another_user_project = FactoryGirl.create(:project, :user => @another_user, :accessibility => 1) 
+      @project_accessibility_not_1_and_another_user_project = FactoryGirl.create(:project, :user => @another_user, :accessibility => 2) 
+      @project_accessibility_1_and_current_user_project = FactoryGirl.create(:project, :user => @current_user, :accessibility => 1) 
+      @project_accessibility_not_1_and_current_user_project = FactoryGirl.create(:project, :user => @current_user, :accessibility => 2) 
       current_user_stub(@current_user)
-      @result = controller.get_annsets()
+      @result = controller.get_projects()
     end
     
-    it 'should include accessibility = 1 and another users annset' do
-      @result.should include(@annset_accessibility_1_and_another_user_annset)
+    it 'should include accessibility = 1 and another users project' do
+      @result.should include(@project_accessibility_1_and_another_user_project)
     end
     
-    it 'should not include accessibility != 1 and another users annset' do
-      @result.should_not include(@annset_accessibility_not_1_and_another_user_annset)
+    it 'should not include accessibility != 1 and another users project' do
+      @result.should_not include(@project_accessibility_not_1_and_another_user_project)
     end
     
-    it 'should include accessibility = 1 and current users annset' do
-      @result.should include(@annset_accessibility_1_and_current_user_annset)
+    it 'should include accessibility = 1 and current users project' do
+      @result.should include(@project_accessibility_1_and_current_user_project)
     end
     
-    it 'should include accessibility != 1 and current users annset' do
-      @result.should include(@annset_accessibility_not_1_and_current_user_annset)
+    it 'should include accessibility != 1 and current users project' do
+      @result.should include(@project_accessibility_not_1_and_current_user_project)
     end
   end
   
@@ -147,18 +147,18 @@ describe ApplicationController do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1)
       end
 
-      context 'and when annset passed and doc.annsets does not include annset' do
+      context 'and when project passed and doc.projects does not include project' do
         before do
-          @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid, @doc.serial, @annset)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid, @doc.serial, @project)
         end
         
         it 'should return nil and message that doc does not belongs to the annotasion set' do
-          @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@annset.name}."])
+          @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
         end
       end
       
-      context 'and when annset does not passed' do
+      context 'and when project does not passed' do
         before do
           @result = controller.get_doc(@doc.sourcedb, @doc.sourceid, @doc.serial, nil)
         end
@@ -182,19 +182,19 @@ describe ApplicationController do
   
   describe 'get_divs' do
     context 'when divs present' do
-      context 'and when annset passed and divs.first.annsets exclude annset' do
+      context 'and when project passed and divs.first.projects exclude project' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1)
-          @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
-          @result = controller.get_divs(@doc.sourceid, @annset)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+          @result = controller.get_divs(@doc.sourceid, @project)
         end
         
         it 'should return nil and message doc does not belongs to the annotation' do
-          @result.should eql([nil, "The document, PMC::#{@doc.sourceid}, does not belong to the annotation set, #{@annset.name}."])
+          @result.should eql([nil, "The document, PMC::#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
         end
       end
 
-      context 'and when annset does not passed' do
+      context 'and when project does not passed' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1)
           @result = controller.get_divs(@doc.sourceid, nil)
@@ -314,15 +314,15 @@ describe ApplicationController do
   
   describe 'archive_annotation' do
     before do
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc_1 = FactoryGirl.create(:doc)
-      @annset.docs << @doc_1 
+      @project.docs << @doc_1 
       @doc_2 = FactoryGirl.create(:doc)
-      @annset.docs << @doc_2 
-      @result = controller.archive_annotation(@annset.name)
+      @project.docs << @doc_2 
+      @result = controller.archive_annotation(@project.name)
     end
     
-    it 'should returns all of annset docs in array' do
+    it 'should returns all of project docs in array' do
       (@result - [@doc_1, @doc_2]).should be_blank
     end
   end
@@ -330,12 +330,12 @@ describe ApplicationController do
   describe 'get_conversion' do
     context 'when response.code is 200' do
       before do
-        @annset = FactoryGirl.create(:annset,
-         :name => 'Annset Name',
-         :description => 'This is annset description',
+        @project = FactoryGirl.create(:project,
+         :name => 'Project Name',
+         :description => 'This is project description',
          :user => FactoryGirl.create(:user))
         VCR.use_cassette 'controllers/application/get_convertion/response_200' do
-          @result = controller.get_conversion(@annset, 'http://bionlp.dbcls.jp/ge2rdf')
+          @result = controller.get_conversion(@project, 'http://bionlp.dbcls.jp/ge2rdf')
         end
       end
       
@@ -347,7 +347,7 @@ describe ApplicationController do
     context 'when response.code is not 200' do
      before do
         VCR.use_cassette 'controllers/application/get_convertion/response_not_200' do
-          @result = controller.get_conversion(@annset, 'http://localhost:3000')
+          @result = controller.get_conversion(@project, 'http://localhost:3000')
         end
       end
       
@@ -374,7 +374,7 @@ describe ApplicationController do
     context 'when response.code is not 200' do
      before do
         VCR.use_cassette 'controllers/application/gen_annotations/response_not_200' do
-          @result = controller.gen_annotations(@annset, 'http://localhost:3000')
+          @result = controller.gen_annotations(@project, 'http://localhost:3000')
         end
       end
       
@@ -385,13 +385,13 @@ describe ApplicationController do
   end
   
   describe 'get_annotations' do
-    context 'when annset annd doc exists' do
+    context 'when project annd doc exists' do
       context 'when options nothing' do
         context 'when hcatanns, hinsanns, hrelanns, hmodanns does not exists' do
           before do
-            @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-            @result = controller.get_annotations(@annset, @doc)
+            @result = controller.get_annotations(@project, @doc)
           end
           
           it 'should returns doc params' do
@@ -407,13 +407,13 @@ describe ApplicationController do
       
         context 'when hcatanns, hinsanns, hrelanns, hmodanns exists' do
           before do
-            @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-            @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
-            @insann = FactoryGirl.create(:insann, :annset => @annset, :insobj => @catann)
-            @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :annset => @annset)
-            @insmod = FactoryGirl.create(:modann, :modobj => @insann, :annset => @annset)
-            @result = controller.get_annotations(@annset, @doc)
+            @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+            @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
+            @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
+            @insmod = FactoryGirl.create(:modann, :modobj => @insann, :project => @project)
+            @result = controller.get_annotations(@project, @doc)
           end
           
           it 'should returns doc params, catanns, insanns, relanns and modanns' do
@@ -434,11 +434,11 @@ describe ApplicationController do
 
       context 'when option encoding ascii exist' do
         before do
-          @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
           @get_ascii_text = 'DOC body'
           controller.stub(:get_ascii_text).and_return(@get_ascii_text)
-          @result = controller.get_annotations(@annset, @doc, :encoding => 'ascii')
+          @result = controller.get_annotations(@project, @doc, :encoding => 'ascii')
         end
         
         it 'should return doc params and ascii encoded text' do
@@ -453,13 +453,13 @@ describe ApplicationController do
 
       context 'when option :discontinuous_annotation exist' do
         before do
-          @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
           @get_ascii_text = 'DOC body'
           @hcatanns = 'hcatanns'
           @hrelanns = 'hrelanns'
           controller.stub(:bag_catanns).and_return([@hcatanns, @hrelanns])
-          @result = controller.get_annotations(@annset, @doc, :discontinuous_annotation => 'bag')
+          @result = controller.get_annotations(@project, @doc, :discontinuous_annotation => 'bag')
         end
         
         it 'should return doc params' do
@@ -490,7 +490,7 @@ describe ApplicationController do
   describe 'save annotations' do
     context 'when catanns exists' do
       before do
-        @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
         @annotations = {:catanns => 'catanns', :insanns => ['insann'], :relanns => ['relann'], :modanns => ['modann']}
         controller.stub(:clean_hcatanns).and_return('clean_hcatanns')
@@ -499,7 +499,7 @@ describe ApplicationController do
         controller.stub(:save_hinsanns).and_return('save_hinsanns')
         controller.stub(:save_hrelanns).and_return('save_hrelanns')
         controller.stub(:save_hmodanns).and_return('save_hmodanns')
-        @result = controller.save_annotations(@annotations, @annset, @doc)
+        @result = controller.save_annotations(@annotations, @project, @doc)
       end
       
       it 'should return notice message' do
@@ -523,32 +523,32 @@ describe ApplicationController do
   describe 'get_catanns' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
     end
     
     context 'when doc find_by_sourcedb_and_sourceid_and_serial exist' do
       before do
-        @doc.annsets << @annset
+        @doc.projects << @project
       end
       
-      context 'when doc.annset.find_by_name(annset_name) exists' do
+      context 'when doc.project.find_by_name(project_name) exists' do
         before do
-          @annset_another = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
-          @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
-          @catann_another = FactoryGirl.create(:catann, :annset => @annset_another, :doc => @doc)
-          @catanns = controller.get_catanns(@annset.name, @doc.sourcedb, @doc.sourceid, @doc.serial)       
+          @project_another = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+          @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+          @catann_another = FactoryGirl.create(:catann, :project => @project_another, :doc => @doc)
+          @catanns = controller.get_catanns(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)       
         end
         
-        it 'should returns doc.catanns where annset_id = annset.id' do
+        it 'should returns doc.catanns where project_id = project.id' do
           (@catanns - [@catann]).should be_blank
         end
       end
       
       
-      context 'when doc.annset.find_by_name(annset_name) does not exists' do
+      context 'when doc.project.find_by_name(project_name) does not exists' do
         before do
-          @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
-          @catanns = controller.get_catanns('none annset name', @doc.sourcedb, @doc.sourceid, @doc.serial)       
+          @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+          @catanns = controller.get_catanns('none project name', @doc.sourcedb, @doc.sourceid, @doc.serial)       
         end
         
         it 'should return doc.catanns' do
@@ -559,20 +559,20 @@ describe ApplicationController do
 
     context 'when doc find_by_sourcedb_and_sourceid_and_serial does not exist' do
       before do
-        @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
+        @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
       end
       
-      context 'when annset find_by_name exist' do
+      context 'when project find_by_name exist' do
         before do
-          @catanns = controller.get_catanns(@annset.name, 'nil', 'nil', 'nil')       
+          @catanns = controller.get_catanns(@project.name, 'nil', 'nil', 'nil')       
         end
         
-        it 'should return annset.catanns' do
-          (@catanns - @annset.catanns).should be_blank
+        it 'should return project.catanns' do
+          (@catanns - @project.catanns).should be_blank
         end
       end
       
-      context 'when annset find_by_name does not exist' do
+      context 'when project find_by_name does not exist' do
         before do
           @catanns = controller.get_catanns('', 'nil', 'nil', 'nil')       
         end
@@ -587,8 +587,8 @@ describe ApplicationController do
   describe 'get_hcatanns' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
-      @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
       controller.stub(:get_cattanns).and_return([@catann])
       @get_hash = 'get hash'
       Catann.any_instance.stub(:get_hash).and_return(@get_hash)
@@ -677,11 +677,11 @@ describe ApplicationController do
   describe 'save_hcatanns' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @hcatann = {:id => 'hid', :span => {:begin => 1, :end => 10}, :category => 'Category'}
       @hcatanns = Array.new
       @hcatanns << @hcatann
-      @result = controller.save_hcatanns(@hcatanns, @annset, @doc) 
+      @result = controller.save_hcatanns(@hcatanns, @project, @doc) 
       @catann = Catann.find_by_hid(@hcatann[:id])
     end
     
@@ -705,8 +705,8 @@ describe ApplicationController do
       @catann.category.should eql(@hcatann[:category])
     end
 
-    it 'should save annset.id as annset_id' do
-      @catann.annset_id.should eql(@annset.id)
+    it 'should save project.id as project_id' do
+      @catann.project_id.should eql(@project.id)
     end
 
     it 'should save doc.id as doc_id' do
@@ -716,11 +716,11 @@ describe ApplicationController do
   
   describe 'chain_catanns' do
     before do
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user))
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @catann_1 = FactoryGirl.create(:catann, :hid => 'A1', :annset => @annset, :doc => @doc)
-      @catann_2 = FactoryGirl.create(:catann, :hid => 'A2', :annset => @annset, :doc => @doc)
-      @catann_3 = FactoryGirl.create(:catann, :hid => 'A3', :annset => @annset, :doc => @doc)
+      @catann_1 = FactoryGirl.create(:catann, :hid => 'A1', :project => @project, :doc => @doc)
+      @catann_2 = FactoryGirl.create(:catann, :hid => 'A2', :project => @project, :doc => @doc)
+      @catann_3 = FactoryGirl.create(:catann, :hid => 'A3', :project => @project, :doc => @doc)
       @catanns_s = [@catann_1, @catann_2, @catann_3]
       @result = controller.chain_catanns(@catanns_s)
     end
@@ -735,11 +735,11 @@ describe ApplicationController do
       context 'when relann type = lexChain' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-          @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
-          @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+          @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
           @catanns = Array.new
           @catanns << @catann.get_hash
-          @relann = FactoryGirl.create(:relann, :reltype => 'lexChain', :relobj => @catann, :annset => @annset)
+          @relann = FactoryGirl.create(:relann, :reltype => 'lexChain', :relobj => @catann, :project => @project)
           @relanns = Array.new
           @relanns << @relann.get_hash
           @result = controller.bag_catanns(@catanns, @relanns)
@@ -757,11 +757,11 @@ describe ApplicationController do
       context 'when relann type not = lexChain' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-          @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
-          @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+          @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
           @catanns = Array.new
           @catanns << @catann.get_hash
-          @relann = FactoryGirl.create(:relann, :reltype => 'NotlexChain', :relobj => @catann, :annset => @annset)
+          @relann = FactoryGirl.create(:relann, :reltype => 'NotlexChain', :relobj => @catann, :project => @project)
           @relanns = Array.new
           @relanns << @relann.get_hash
           @result = controller.bag_catanns(@catanns, @relanns)
@@ -781,32 +781,32 @@ describe ApplicationController do
   describe 'get_insanns' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
-      @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
 
-      @insann = FactoryGirl.create(:insann, :annset => @annset, :insobj => @catann)
+      @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
     end
     
     context 'when Doc find_by_sourcedb_and_sourceid_and_serial exists' do
       
-      context 'when doc.annsets.find_by_name exists' do
+      context 'when doc.projects.find_by_name exists' do
         before do
-          @doc.annsets << @annset
-          @insanns = controller.get_insanns(@annset.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @doc.projects << @project
+          @insanns = controller.get_insanns(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
         end
         
         it 'should not return empty array' do
           @insanns.should be_present
         end
         
-        it 'should return doc.insanns where annset_id = annset.id' do
-          (@insanns - @doc.insanns.where("insanns.annset_id = ?", @annset.id)).should be_blank
+        it 'should return doc.insanns where project_id = project.id' do
+          (@insanns - @doc.insanns.where("insanns.project_id = ?", @project.id)).should be_blank
         end
       end
       
-      context 'when doc.annsets.find_by_name does not exists' do
+      context 'when doc.projects.find_by_name does not exists' do
         before do
-          @insanns = controller.get_insanns(@annset.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @insanns = controller.get_insanns(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
         end
         
         it 'should not return empty array' do
@@ -820,24 +820,24 @@ describe ApplicationController do
     end
 
     context 'when Doc find_by_sourcedb_and_sourceid_and_serial does not exists' do
-      context 'when Annsetfind by annset_name exists' do
+      context 'when Projectfind by project_name exists' do
         before do
-          @insanns = controller.get_insanns(@annset.name, '', '', '')
+          @insanns = controller.get_insanns(@project.name, '', '', '')
         end
         
         it 'should not return empty array' do
           @insanns.should be_present
         end
         
-        it 'should return annset.insanns' do
-          (@insanns - @annset.insanns).should be_blank
+        it 'should return project.insanns' do
+          (@insanns - @project.insanns).should be_blank
         end
       end
 
-      context 'when Annsetfind by annset_name  does not exists' do
+      context 'when Projectfind by project_name  does not exists' do
         before do
           5.times do |i|
-            @insann = FactoryGirl.create(:insann, :annset_id => i, :insobj_id => i)
+            @insann = FactoryGirl.create(:insann, :project_id => i, :insobj_id => i)
           end
           @insanns = controller.get_insanns('', '', '', '')
         end
@@ -855,7 +855,7 @@ describe ApplicationController do
   
   describe 'get_hinsanns' do
     before do
-      @insann = FactoryGirl.create(:insann, :annset_id => 1, :insobj_id => 1)
+      @insann = FactoryGirl.create(:insann, :project_id => 1, :insobj_id => 1)
       controller.stub(:get_insanns).and_return([@insann])
       @get_hash = 'get hash'
       Insann.any_instance.stub(:get_hash).and_return(@get_hash)
@@ -873,9 +873,9 @@ describe ApplicationController do
       @hinsanns = Array.new
       @hinsanns << @hinsann
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
-      @catann = FactoryGirl.create(:catann, :id => 90, :annset => @annset, :doc => @doc, :hid => @hinsann[:object])
-      @result = controller.save_hinsanns(@hinsanns, @annset, @doc) 
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+      @catann = FactoryGirl.create(:catann, :id => 90, :project => @project, :doc => @doc, :hid => @hinsann[:object])
+      @result = controller.save_hinsanns(@hinsanns, @project, @doc) 
     end
     
     it 'should returns saved successfully' do
@@ -883,35 +883,35 @@ describe ApplicationController do
     end
     
     it 'should save Insann from args' do
-      Insann.find_by_hid_and_instype_and_insobj_id_and_annset_id(@hinsann[:id], @hinsann[:type], @catann.id, @annset.id).should be_present
+      Insann.find_by_hid_and_instype_and_insobj_id_and_project_id(@hinsann[:id], @hinsann[:type], @catann.id, @project.id).should be_present
     end
   end
   
   describe 'get_relanns' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
-      @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
-      @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :annset => @annset)
-      @insann = FactoryGirl.create(:insann, :annset => @annset, :insobj => @catann)
-      @subinsrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :annset => @annset)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+      @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
+      @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
+      @subinsrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
     end
 
     context 'when doc find by sourcedb and source id and serial exists' do
-      context 'when doc.annsets.find by annset name exists' do
+      context 'when doc.projects.find by project name exists' do
         before do
-          @doc.annsets << @annset
-          @relanns = controller.get_relanns(@annset.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @doc.projects << @project
+          @relanns = controller.get_relanns(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
         end
         
-        it 'should return doc.subcatrels and doc.subinsrels wose annset_id = annset.id ' do
+        it 'should return doc.subcatrels and doc.subinsrels wose project_id = project.id ' do
           (@relanns - [@subcatrel, @subinsrel]).should be_blank
         end
       end
 
-      context 'when doc.annsets.find by annset name exists' do
+      context 'when doc.projects.find by project name exists' do
         before do
-          @doc.annsets << @annset
+          @doc.projects << @project
           @relanns = controller.get_relanns('', @doc.sourcedb, @doc.sourceid, @doc.serial)
         end
         
@@ -922,24 +922,24 @@ describe ApplicationController do
     end
     
     context 'when doc find by sourcedb and source id and serial does not exists' do
-      context 'when Annset.find_by_name(annset_name) exists' do
+      context 'when Project.find_by_name(project_name) exists' do
         before do
-          @doc.annsets << @annset
-          @relanns = controller.get_relanns(@annset.name, 'non existant source db', @doc.sourceid, @doc.serial)
+          @doc.projects << @project
+          @relanns = controller.get_relanns(@project.name, 'non existant source db', @doc.sourceid, @doc.serial)
         end
         
-        it 'should return annset.relanns' do
-          (@relanns - @annset.relanns).should be_blank
+        it 'should return project.relanns' do
+          (@relanns - @project.relanns).should be_blank
         end
       end
 
-      context 'when Annset.find_by_name(annset_name) does not exists' do
+      context 'when Project.find_by_name(project_name) does not exists' do
         before do
-          @doc.annsets << @annset
+          @doc.projects << @project
           5.times do
-            FactoryGirl.create(:relann, :relobj => @catann, :annset => @annset)
+            FactoryGirl.create(:relann, :relobj => @catann, :project => @project)
           end
-          @relanns = controller.get_relanns('non existant annset name', 'non existant source db', @doc.sourceid, @doc.serial)
+          @relanns = controller.get_relanns('non existant project name', 'non existant source db', @doc.sourceid, @doc.serial)
         end
         
         it 'should return Rellann.all' do
@@ -951,7 +951,7 @@ describe ApplicationController do
   
   describe 'get_hrelanns' do
     before do
-      @subcatrel = FactoryGirl.create(:subcatrel, :relobj_id => 1, :annset_id => 1)
+      @subcatrel = FactoryGirl.create(:subcatrel, :relobj_id => 1, :project_id => 1)
       controller.stub(:get_relanns).and_return([@subcatrel])
       Relann.any_instance.stub(:get_hash).and_return(@subcatrel.id)
       @hrelanns = controller.get_hrelanns('', '', '', '')
@@ -965,8 +965,8 @@ describe ApplicationController do
   describe 'save_hrelanns' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
-      @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
       @hrelanns = Array.new
     end
     
@@ -974,14 +974,14 @@ describe ApplicationController do
       before do
         @hrelann = {:id => 'hid', :type => 'reltype', :subject => 'T1', :object => 'T1'}
         @hrelanns << @hrelann
-        @result = controller.save_hrelanns(@hrelanns, @annset, @doc)
+        @result = controller.save_hrelanns(@hrelanns, @project, @doc)
       end
       
       it 'should save new Relann successfully' do
         @result.should be_true
       end
       
-      it 'should save from hrelanns params and annset, and relsub and relobj should be catann' do
+      it 'should save from hrelanns params and project, and relsub and relobj should be catann' do
         Relann.where(
           :hid => @hrelann[:id], 
           :reltype => @hrelann[:type], 
@@ -989,7 +989,7 @@ describe ApplicationController do
           :relsub_type => @catann.class, 
           :relobj_id => @catann.id, 
           :relobj_type => @catann.class, 
-          :annset_id => @annset.id
+          :project_id => @project.id
         ).should be_present
       end
     end
@@ -998,15 +998,15 @@ describe ApplicationController do
       before do
         @hrelann = {:id => 'hid', :type => 'reltype', :subject => 'M1', :object => 'M1'}
         @hrelanns << @hrelann
-        @insann = FactoryGirl.create(:insann, :annset => @annset, :insobj => @catann, :hid => @hrelann[:subject])
-        @result = controller.save_hrelanns(@hrelanns, @annset, @doc)
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann, :hid => @hrelann[:subject])
+        @result = controller.save_hrelanns(@hrelanns, @project, @doc)
       end
       
       it 'should save new Relann successfully' do
         @result.should be_true
       end
       
-      it 'should save from hrelanns params and annset, and relsub and relobj should be insann' do
+      it 'should save from hrelanns params and project, and relsub and relobj should be insann' do
         Relann.where(
           :hid => @hrelann[:id], 
           :reltype => @hrelann[:type], 
@@ -1014,7 +1014,7 @@ describe ApplicationController do
           :relsub_type => @insann.class, 
           :relobj_id => @insann.id, 
           :relobj_type => @insann.class, 
-          :annset_id => @annset.id
+          :project_id => @project.id
         ).should be_present
       end
     end
@@ -1024,34 +1024,34 @@ describe ApplicationController do
     context 'when Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial) exists' do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-        @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
-        @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
-        @insann = FactoryGirl.create(:insann, :annset => @annset, :insobj => @catann)
-        @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :annset => @annset)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+        @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
+        @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
       end
       
-      context 'and when doc.annsets.find_by_name(annset_name) exists' do
+      context 'and when doc.projects.find_by_name(project_name) exists' do
         before do
-          @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :annset => @annset)
-          @modann = FactoryGirl.create(:modann, :modobj => @insann, :annset => @annset)
-          @subcatrelmod = FactoryGirl.create(:modann, :modobj => @subcatrel, :annset => @annset)
-          @subinsrelmod = FactoryGirl.create(:modann, :modobj => @subinsrel, :annset => @annset)
-          @doc.annsets << @annset
-          @modanns = controller.get_modanns(@annset.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :project => @project)
+          @modann = FactoryGirl.create(:modann, :modobj => @insann, :project => @project)
+          @subcatrelmod = FactoryGirl.create(:modann, :modobj => @subcatrel, :project => @project)
+          @subinsrelmod = FactoryGirl.create(:modann, :modobj => @subinsrel, :project => @project)
+          @doc.projects << @project
+          @modanns = controller.get_modanns(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
         end
         
-        it 'should return doc.insmods, doc.subcatrelmods, subinsrelmods where annset_id = annset.id' do
+        it 'should return doc.insmods, doc.subcatrelmods, subinsrelmods where project_id = project.id' do
           (@modanns - [@modann, @subcatrelmod, @subinsrelmod]).should be_blank
         end
       end
       
-      context 'and when doc.annsets.find_by_name(annset_name) does not exists' do
+      context 'and when doc.projects.find_by_name(project_name) does not exists' do
         before do
-          @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :annset => @annset)
-          @modann = FactoryGirl.create(:modann, :modobj => @insann, :annset_id => 70)
-          @subcatrelmod = FactoryGirl.create(:modann, :modobj => @subcatrel, :annset_id => 80)
-          @subinsrelmod = FactoryGirl.create(:modann, :modobj => @subinsrel, :annset_id => 90)
-          @doc.annsets << @annset
+          @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :project => @project)
+          @modann = FactoryGirl.create(:modann, :modobj => @insann, :project_id => 70)
+          @subcatrelmod = FactoryGirl.create(:modann, :modobj => @subcatrel, :project_id => 80)
+          @subinsrelmod = FactoryGirl.create(:modann, :modobj => @subinsrel, :project_id => 90)
+          @doc.projects << @project
           @modanns = controller.get_modanns('', @doc.sourcedb, @doc.sourceid, @doc.serial)
         end
         
@@ -1063,24 +1063,24 @@ describe ApplicationController do
 
     context 'when Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial) does not exists' do
       before do
-        @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       end
       
-      context 'Annset.find_by_name(annset_name) exists' do
+      context 'Project.find_by_name(project_name) exists' do
         before do
-          @modann = FactoryGirl.create(:modann, :modobj => @insann, :annset => @annset)
-          @modanns = controller.get_modanns(@annset.name, '', '', '')
+          @modann = FactoryGirl.create(:modann, :modobj => @insann, :project => @project)
+          @modanns = controller.get_modanns(@project.name, '', '', '')
         end
         
-        it 'should return annset.modanns' do
+        it 'should return project.modanns' do
           (@modanns - [@modann]).should be_blank
         end
       end
       
-      context 'Annset.find_by_name(annset_name) does not exists' do
+      context 'Project.find_by_name(project_name) does not exists' do
         before do
           5.times do |i|
-            @modann = FactoryGirl.create(:modann, :modobj => @insann, :annset_id => i)
+            @modann = FactoryGirl.create(:modann, :modobj => @insann, :project_id => i)
           end
           @modanns = controller.get_modanns('', '', '', '')
         end
@@ -1094,7 +1094,7 @@ describe ApplicationController do
   
   describe 'get_hmodanns' do
     before do
-      @modann = FactoryGirl.create(:modann, :modobj_id => 1, :modobj_type => '', :annset_id => 1)
+      @modann = FactoryGirl.create(:modann, :modobj_id => 1, :modobj_type => '', :project_id => 1)
       controller.stub(:get_modanns).and_return([@modann])
       Modann.any_instance.stub(:get_hash).and_return(@modann.id)
       @hmodanns = controller.get_hmodanns('', '', '')
@@ -1108,18 +1108,18 @@ describe ApplicationController do
   describe 'save_hmodanns' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @annset = FactoryGirl.create(:annset, :user => FactoryGirl.create(:user), :name => "annset_name")
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
     end
     
     context 'when hmodanns[:object] match /^R/' do
       before do
-        @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
-        @insann = FactoryGirl.create(:insann, :annset => @annset, :insobj => @catann)
-        @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :annset => @annset)
+        @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
+        @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :project => @project)
         @hmodann = {:id => 'hid', :type => 'type', :object => 'R1'}
         @hmodanns = Array.new
         @hmodanns << @hmodann
-        @result = controller.save_hmodanns(@hmodanns, @annset, @doc)
+        @result = controller.save_hmodanns(@hmodanns, @project, @doc)
       end
       
       it 'should save successfully' do
@@ -1138,13 +1138,13 @@ describe ApplicationController do
     
     context 'when hmodanns[:object] does not match /^R/' do
       before do
-        @catann = FactoryGirl.create(:catann, :annset => @annset, :doc => @doc)
-        @insann = FactoryGirl.create(:insann, :annset => @annset, :insobj => @catann)
-        @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :annset => @annset)
+        @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
+        @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :project => @project)
         @hmodann = {:id => 'hid', :type => 'type', :object => @insann.hid}
         @hmodanns = Array.new
         @hmodanns << @hmodann
-        @result = controller.save_hmodanns(@hmodanns, @annset, @doc)
+        @result = controller.save_hmodanns(@hmodanns, @project, @doc)
       end
       
       it 'should save successfully' do

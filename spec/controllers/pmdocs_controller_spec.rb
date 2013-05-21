@@ -3,18 +3,18 @@ require 'spec_helper'
 
 describe PmdocsController do
   describe 'index' do
-    context 'when params[:annset_id] exists' do
+    context 'when params[:project_id] exists' do
       context 'and when @ansnet exists' do
         before do
-          @annset = FactoryGirl.create(:annset)
+          @project = FactoryGirl.create(:project)
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0)
-          @annset.docs << @doc
-          controller.stub(:get_annset).and_return([@annset, 'notice'])
+          @project.docs << @doc
+          controller.stub(:get_project).and_return([@project, 'notice'])
         end
         
         context 'and when format html' do
           before do
-            get :index, :annset_id => @annset.id
+            get :index, :project_id => @project.id
           end
           
           it 'should render template' do
@@ -24,11 +24,11 @@ describe PmdocsController do
         
         context 'and when format json' do
           before do
-            get :index, :format => 'json', :annset_id => @annset.id
+            get :index, :format => 'json', :project_id => @project.id
           end
           
           it 'should render json' do
-            response.body.should eql(@annset.docs.to_json)
+            response.body.should eql(@project.docs.to_json)
           end
         end
       end
@@ -36,12 +36,12 @@ describe PmdocsController do
       context 'and when @ansnet does not exists' do
         before do
           @notice = 'notice'
-          controller.stub(:get_annset).and_return([nil, @notice])
+          controller.stub(:get_project).and_return([nil, @notice])
         end
         
         context 'and when format html' do
           before do
-            get :index, :annset_id => 1
+            get :index, :project_id => 1
           end
           
           it 'should render template' do
@@ -55,7 +55,7 @@ describe PmdocsController do
       end
     end
 
-    context 'when params[:annset_id] exists' do
+    context 'when params[:project_id] exists' do
       before do
         get :index
       end      
@@ -67,20 +67,20 @@ describe PmdocsController do
   end
   
   describe 'show' do
-    context 'when params[:annset_id] exists' do
+    context 'when params[:project_id] exists' do
       context 'and when @ansnet exists' do
         context 'and when get_doc returns @doc' do
           before do
-            @annset = FactoryGirl.create(:annset)
+            @project = FactoryGirl.create(:project)
             @doc = FactoryGirl.create(:doc, :body => 'doc body')
-            controller.stub(:get_annset).and_return([@annset, ''])
+            controller.stub(:get_project).and_return([@project, ''])
             @get_doc_notice = 'get doc notice'
             controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
           end
           
           context 'and when format html' do
             before do
-              get :show, :id => @doc.id, :annset_id => @annset.id, :encoding => 'ascii'
+              get :show, :id => @doc.id, :project_id => @project.id, :encoding => 'ascii'
             end
             
             it 'should render template' do
@@ -90,7 +90,7 @@ describe PmdocsController do
           
           context 'and when format json' do
             before do
-              get :show, :format => 'json', :id => @doc.id, :annset_id => @annset.id
+              get :show, :format => 'json', :id => @doc.id, :project_id => @project.id
             end
             
             it 'should render json' do
@@ -100,7 +100,7 @@ describe PmdocsController do
           
           context 'and when format json' do
             before do
-              get :show, :format => 'txt', :id => @doc.id, :annset_id => @annset.id
+              get :show, :format => 'txt', :id => @doc.id, :project_id => @project.id
             end
             
             it 'should render text' do
@@ -112,12 +112,12 @@ describe PmdocsController do
 
       context 'and when @ansnet does not exists' do
         before do
-          controller.stub(:get_annset).and_return([nil, ''])
+          controller.stub(:get_project).and_return([nil, ''])
         end
         
         context 'and when format html' do
           before do
-            get :show, :id => 1, :annset_id => 1
+            get :show, :id => 1, :project_id => 1
           end
           
           it 'should redirect to pmdocs_path' do
@@ -127,7 +127,7 @@ describe PmdocsController do
         
         context 'and when format json' do
           before do
-            get :show, :format => 'json', :id => 1, :annset_id => 1
+            get :show, :format => 'json', :id => 1, :project_id => 1
           end
           
           it 'should return status 422' do
@@ -137,7 +137,7 @@ describe PmdocsController do
         
         context 'and when format json' do
           before do
-            get :show, :format => 'txt', :id => 1, :annset_id => 1
+            get :show, :format => 'txt', :id => 1, :project_id => 1
           end
           
           it 'should return status 422' do
@@ -147,7 +147,7 @@ describe PmdocsController do
       end
     end
     
-    context 'when params[:annset_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       before do
         get :show, :id => 1
       end      
@@ -159,7 +159,7 @@ describe PmdocsController do
   end
   
   describe 'create' do
-    context 'when params[:annset_id] exists' do
+    context 'when params[:project_id] exists' do
       context 'and when format html' do
         before do
           post :create, :pmids => 'pmids'
@@ -181,13 +181,13 @@ describe PmdocsController do
       end
     end
     
-    context 'when params[:annset_id] exists' do
-      context 'and when annset exists' do
+    context 'when params[:project_id] exists' do
+      context 'and when project exists' do
         before do
-          @annset = FactoryGirl.create(:annset)
+          @project = FactoryGirl.create(:project)
           @sourceid = 'sourdeid'
-          #@annset.docs << @doc
-          controller.stub(:get_annset).and_return([@annset, 'notice'])        
+          #@project.docs << @doc
+          controller.stub(:get_project).and_return([@project, 'notice'])        
         end
         
         context 'and when doc found by sourcedb and sourceid and serial' do
@@ -197,17 +197,17 @@ describe PmdocsController do
           
           context 'and when format html' do
             before do
-              post :create, :annset_id => 1, :pmids => @sourceid
+              post :create, :project_id => 1, :pmids => @sourceid
             end
             
-            it 'should redirect to annset_pmdocs_path' do
-              response.should redirect_to(annset_pmdocs_path(@annset.name))
+            it 'should redirect to project_pmdocs_path' do
+              response.should redirect_to(project_pmdocs_path(@project.name))
             end
           end
           
           context 'and when format json' do
             before do
-              post :create, :format => 'json', :annset_id => 1, :pmids => @sourceid
+              post :create, :format => 'json', :project_id => 1, :pmids => @sourceid
             end
             
             it 'should return status created' do
@@ -215,7 +215,7 @@ describe PmdocsController do
             end
             
             it 'should return location' do
-              response.location.should eql(annset_pmdocs_path(@annset.name))
+              response.location.should eql(project_pmdocs_path(@project.name))
             end
           end
         end
@@ -225,11 +225,11 @@ describe PmdocsController do
             before do
               @doc = FactoryGirl.create(:doc, :sourceid => @sourceid, :sourcedb => 'PM', :serial => 0)
               controller.stub(:gen_pmdoc).and_return(@doc)
-              post :create, :annset_id => 1, :pmids => @sourceid
+              post :create, :project_id => 1, :pmids => @sourceid
             end
             
-            it 'should redirect to annset_pmdocs_path' do
-              response.should redirect_to(annset_pmdocs_path(@annset.name))
+            it 'should redirect to project_pmdocs_path' do
+              response.should redirect_to(project_pmdocs_path(@project.name))
             end
           end
 
@@ -237,11 +237,11 @@ describe PmdocsController do
             before do
               @doc = FactoryGirl.create(:doc, :sourceid => @sourceid, :sourcedb => 'PM', :serial => 0)
               controller.stub(:gen_pmdoc).and_return(nil)
-              post :create, :annset_id => 1, :pmids => @sourceid
+              post :create, :project_id => 1, :pmids => @sourceid
             end
             
-            it 'should redirect to annset_pmdocs_path' do
-              response.should redirect_to(annset_pmdocs_path(@annset.name))
+            it 'should redirect to project_pmdocs_path' do
+              response.should redirect_to(project_pmdocs_path(@project.name))
             end
           end
         end
@@ -250,29 +250,29 @@ describe PmdocsController do
   end
   
   describe 'update' do
-    context 'when params[:annset_id] exists' do
-      context 'and when annset found by name' do
+    context 'when params[:project_id] exists' do
+      context 'and when project found by name' do
         context 'and when doc found by sourcedb and sourceid' do
-          context 'and when doc.annsets does not include annset' do
+          context 'and when doc.projects does not include project' do
             before do
-              @annset = FactoryGirl.create(:annset)
+              @project = FactoryGirl.create(:project)
               @id = 'sourceid'
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
             end
             
             context 'and when format html' do
               before do
-                post :update, :annset_id => @annset.name, :id => @id
+                post :update, :project_id => @project.name, :id => @id
               end
               
-              it 'should redirect to annset_pmdocs_path' do
-                response.should redirect_to(annset_pmdocs_path(@annset.name))
+              it 'should redirect to project_pmdocs_path' do
+                response.should redirect_to(project_pmdocs_path(@project.name))
               end
             end
             
             context 'and when format json' do
               before do
-                post :update, :format => 'json', :annset_id => @annset.name, :id => @id
+                post :update, :format => 'json', :project_id => @project.name, :id => @id
               end
               
               it 'return blank header' do
@@ -285,32 +285,32 @@ describe PmdocsController do
         context 'and when doc not found by sourcedb and sourceid' do
           context 'and when gen_pmdoc return doc' do
             before do
-              @annset = FactoryGirl.create(:annset)
+              @project = FactoryGirl.create(:project)
               @id = 'sourceid'
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PM', :sourceid => @id)
               controller.stub(:gen_pmdoc).and_return(@doc)
-              post :update, :annset_id => @annset.name, :id => @id
+              post :update, :project_id => @project.name, :id => @id
             end
 
-            it 'should redirect to annset_pmdocs_path' do
-              response.should redirect_to(annset_pmdocs_path(@annset.name))
+            it 'should redirect to project_pmdocs_path' do
+              response.should redirect_to(project_pmdocs_path(@project.name))
             end
             
             it 'should set flash[:notice]' do
-              flash[:notice].should eql("The document, #{@doc.sourcedb}:#{@doc.sourceid}, was created in the annotation set, #{@annset.name}.")
+              flash[:notice].should eql("The document, #{@doc.sourcedb}:#{@doc.sourceid}, was created in the annotation set, #{@project.name}.")
             end
           end
           
           context 'and when gen_pmdoc does not return doc' do
             before do
-              @annset = FactoryGirl.create(:annset)
+              @project = FactoryGirl.create(:project)
               @id = 'sourceid'
               controller.stub(:gen_pmdoc).and_return(nil)
-              post :update, :annset_id => @annset.name, :id => @id
+              post :update, :project_id => @project.name, :id => @id
             end
 
-            it 'should redirect to annset_pmdocs_path' do
-              response.should redirect_to(annset_pmdocs_path(@annset.name))
+            it 'should redirect to project_pmdocs_path' do
+              response.should redirect_to(project_pmdocs_path(@project.name))
             end
             
             it 'should set flash[:notice]' do
@@ -320,13 +320,13 @@ describe PmdocsController do
         end
       end
 
-      context 'and when annset not found by name' do
+      context 'and when project not found by name' do
         before do
-          @annset = FactoryGirl.create(:annset)
+          @project = FactoryGirl.create(:project)
           @id = 'sourceid'
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
-          @annset_id = 'annset id'
-          post :update, :annset_id => @annset_id, :id => @id
+          @project_id = 'project id'
+          post :update, :project_id => @project_id, :id => @id
         end
         
         it 'should redirect to pmdocs_path' do
@@ -334,12 +334,12 @@ describe PmdocsController do
         end
 
         it 'should set flash[:notice]' do
-          flash[:notice].should eql("The annotation set, #{@annset_id}, does not exist.")
+          flash[:notice].should eql("The annotation set, #{@project_id}, does not exist.")
         end
       end
     end
 
-    context 'when params[:annset_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       context 'and when gen_pmdoc returns doc' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
@@ -396,7 +396,7 @@ describe PmdocsController do
       @id = 'sourceid'
     end
     
-    context 'when params[:annset_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)  
         delete :destroy, :id => @id
@@ -415,44 +415,44 @@ describe PmdocsController do
       end
     end
     
-    context 'when params[:annset_id] exists' do
+    context 'when params[:project_id] exists' do
       before do
-        @annset_id = 'annset id'
+        @project_id = 'project id'
       end
       
-      context 'when annset found by nanme' do
+      context 'when project found by nanme' do
         before do
-          @annset = FactoryGirl.create(:annset, :name => @annset_id)  
+          @project = FactoryGirl.create(:project, :name => @project_id)  
         end
         
-        context 'when annset found by nanme' do
+        context 'when project found by nanme' do
           context 'when doc found by sourcedb and source id' do
             before do
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)  
             end
             
-            context 'when doc.annsets include annset' do
+            context 'when doc.projects include project' do
               before do
-                @doc.annsets << @annset
+                @doc.projects << @project
               end
               
               context 'when format html' do
                 before do
-                  delete :destroy, :annset_id => @annset_id, :id => @id
+                  delete :destroy, :project_id => @project_id, :id => @id
                 end
                 
-                it 'should redirect to annset_pmdocs_path(annset.name)' do
-                  response.should redirect_to(annset_pmdocs_path(@annset.name))
+                it 'should redirect to project_pmdocs_path(project.name)' do
+                  response.should redirect_to(project_pmdocs_path(@project.name))
                 end
                 
                 it 'should set flash[:notice]' do
-                  flash[:notice].should eql("The document, #{@doc.sourcedb}:#{@doc.sourceid}, was removed from the annotation set, #{@annset.name}.")
+                  flash[:notice].should eql("The document, #{@doc.sourcedb}:#{@doc.sourceid}, was removed from the annotation set, #{@project.name}.")
                 end
               end
               
               context 'when format json' do
                 before do
-                  delete :destroy, :format => 'json', :annset_id => @annset_id, :id => @id
+                  delete :destroy, :format => 'json', :project_id => @project_id, :id => @id
                 end
                 
                 it 'should return blank header' do
@@ -461,29 +461,29 @@ describe PmdocsController do
               end
             end
             
-            context 'when doc.annsets does not include annset' do
+            context 'when doc.projects does not include project' do
               before do
-                delete :destroy, :annset_id => @annset_id, :id => @id
+                delete :destroy, :project_id => @project_id, :id => @id
               end
               
-              it 'should redirect to annset_pmdocs_path(annset.name)' do
-                response.should redirect_to(annset_pmdocs_path(@annset.name))
+              it 'should redirect to project_pmdocs_path(project.name)' do
+                response.should redirect_to(project_pmdocs_path(@project.name))
               end
               
               it 'should set flash[:notice]' do
-                flash[:notice].should eql("the annotation set, #{@annset.name} does not include the document, #{@doc.sourcedb}:#{@doc.sourceid}.")
+                flash[:notice].should eql("the annotation set, #{@project.name} does not include the document, #{@doc.sourcedb}:#{@doc.sourceid}.")
               end
             end
           end
 
           context 'when doc not found by sourcedb and source id' do
             before do
-              delete :destroy, :annset_id => @annset_id, :id => @id
+              delete :destroy, :project_id => @project_id, :id => @id
             end
             
             
-            it 'should redirect to annset_pmdocs_path(annset.name)' do
-              response.should redirect_to(annset_pmdocs_path(@annset.name))
+            it 'should redirect to project_pmdocs_path(project.name)' do
+              response.should redirect_to(project_pmdocs_path(@project.name))
             end
             
             it 'should set flash[:notice]' do
@@ -493,9 +493,9 @@ describe PmdocsController do
         end
       end      
 
-      context 'when annset not found by nanme' do
+      context 'when project not found by nanme' do
         before do
-          delete :destroy, :annset_id => @annset_id, :id => ''
+          delete :destroy, :project_id => @project_id, :id => ''
         end
         
         it 'should redirect_to pmdocs_path' do
@@ -503,7 +503,7 @@ describe PmdocsController do
         end
 
         it 'should not set flash[:notice]' do
-          flash[:notice].should eql("The annotation set, #{@annset_id}, does not exist.")
+          flash[:notice].should eql("The annotation set, #{@project_id}, does not exist.")
         end
       end
     end

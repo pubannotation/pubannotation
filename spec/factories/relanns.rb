@@ -6,7 +6,7 @@ FactoryGirl.define do
     c.relobj_id {|relann| relann.association(:relobj)}
     c.relobj_type 'Catann'
     c.reltype 'coreferenceOf'
-    c.annset_id {|relann| relann.association(:annset)}
+    c.project_id {|relann| relann.association(:project)}
     c.created_at 1.hour.ago
     c.updated_at 1.hour.ago
   end
