@@ -1,6 +1,6 @@
 class Insann < ActiveRecord::Base
   belongs_to :project
-  belongs_to :insobj, :class_name => 'Catann'
+  belongs_to :insobj, :class_name => 'Span'
 
   has_many :subrels, :class_name => 'Relann', :as => :relsub, :dependent => :destroy
   has_many :objrels, :class_name => 'Relann', :as => :relobj, :dependent => :destroy

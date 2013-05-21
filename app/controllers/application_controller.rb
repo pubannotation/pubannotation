@@ -206,8 +206,8 @@ class ApplicationController < ActionController::Base
 
   def get_annotations (project, doc, options = {})
     if project and doc
-      catanns = doc.catanns.where("project_id = ?", project.id).order('begin ASC')
-      hcatanns = catanns.collect {|ca| ca.get_hash} unless catanns.empty?
+      spans = doc.spans.where("project_id = ?", project.id).order('begin ASC')
+      hspans = spans.collect {|ca| ca.get_hash} unless spans.empty?
 
       insanns = doc.insanns.where("insanns.project_id = ?", project.id)
       insanns.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
@@ -229,14 +229,14 @@ class ApplicationController < ActionController::Base
         asciitext = get_ascii_text (text)
         aligner = Aligner.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
         # aligner = Aligner.new(text, asciitext)
-        hcatanns = aligner.transform_catanns(hcatanns)
-        # hcatanns = adjust_catanns(hcatanns, asciitext)
+        hspans = aligner.transform_spans(hspans)
+        # hspans = adjust_spans(hspans, asciitext)
         text = asciitext
       end
 
       if (options[:discontinuous_annotation] == 'bag')
         # TODO: convert to hash representation
-        hcatanns, hrelanns = bag_catanns(hcatanns, hrelanns)
+        hspans, hrelanns = bag_spans(hspans, hrelanns)
       end
 
       annotations = Hash.new
@@ -251,7 +251,7 @@ class ApplicationController < ActionController::Base
       annotations[:division_id] = doc.serial
       annotations[:section] = doc.section
       annotations[:text] = text
-      annotations[:catanns] = hcatanns if hcatanns
+      annotations[:spans] = hspans if hspans
       annotations[:insanns] = hinsanns if hinsanns
       annotations[:relanns] = hrelanns if hrelanns
       annotations[:modanns] = hmodanns if hmodanns
@@ -263,15 +263,15 @@ class ApplicationController < ActionController::Base
 
 
   def save_annotations (annotations, project, doc)
-    catanns, notice = clean_hcatanns(annotations[:catanns])
-    if catanns
-      catanns = realign_catanns(catanns, annotations[:text], doc.body)
+    spans, notice = clean_hspans(annotations[:spans])
+    if spans
+      spans = realign_spans(spans, annotations[:text], doc.body)
 
-      if catanns
-        catanns_old = doc.catanns.where("project_id = ?", project.id)
-        catanns_old.destroy_all
+      if spans
+        spans_old = doc.spans.where("project_id = ?", project.id)
+        spans_old.destroy_all
       
-        save_hcatanns(catanns, project, doc)
+        save_hspans(spans, project, doc)
 
         if annotations[:insanns] and !annotations[:insanns].empty?
           insanns = annotations[:insanns]
@@ -299,43 +299,43 @@ class ApplicationController < ActionController::Base
   end
 
 
-  ## get catanns
-  def get_catanns (project_name, sourcedb, sourceid, serial = 0)
-    catanns = []
+  ## get spans
+  def get_spans (project_name, sourcedb, sourceid, serial = 0)
+    spans = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if project_name and project = doc.projects.find_by_name(project_name)
-        catanns = doc.catanns.where("project_id = ?", project.id).order('begin ASC')
+        spans = doc.spans.where("project_id = ?", project.id).order('begin ASC')
       else
-        catanns = doc.catanns
+        spans = doc.spans
       end
     else
       if project_name and project = Project.find_by_name(project_name)
-        catanns = project.catanns
+        spans = project.spans
       else
-        catanns = Catann.all
+        spans = Span.all
       end
     end
 
-    catanns
+    spans
   end
 
 
-  # get catanns (hash version)
-  def get_hcatanns (project_name, sourcedb, sourceid, serial = 0)
-    catanns = get_catanns(project_name, sourcedb, sourceid, serial)
-    hcatanns = catanns.collect {|ca| ca.get_hash}
-    hcatanns
+  # get spans (hash version)
+  def get_hspans (project_name, sourcedb, sourceid, serial = 0)
+    spans = get_spans(project_name, sourcedb, sourceid, serial)
+    hspans = spans.collect {|ca| ca.get_hash}
+    hspans
   end
 
 
-  def clean_hcatanns (catanns)
-    catanns = catanns.values if catanns.respond_to?(:values)
-    ids = catanns.collect {|a| a[:id] or a["id"]}
+  def clean_hspans (spans)
+    spans = spans.values if spans.respond_to?(:values)
+    ids = spans.collect {|a| a[:id] or a["id"]}
     ids.compact!
 
     idnum = 1
-    catanns.each do |a|
+    spans.each do |a|
       return nil, "format error" unless (a[:span] or (a[:begin] and a[:end])) and a[:category]
 
       unless a[:id]
@@ -354,13 +354,13 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    [catanns, nil]
+    [spans, nil]
   end
 
 
-  def save_hcatanns (hcatanns, project, doc)
-    hcatanns.each do |a|
-      ca           = Catann.new
+  def save_hspans (hspans, project, doc)
+    hspans.each do |a|
+      ca           = Span.new
       ca.hid       = a[:id]
       ca.begin     = a[:span][:begin]
       ca.end       = a[:span][:end]
@@ -372,11 +372,11 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def chain_catanns (catanns_s)
+  def chain_spans (spans_s)
     # This method is not called anywhere.
-    # And just returns catanns_s array.
+    # And just returns spans_s array.
     mid = 0
-    catanns_s.each do |ca|
+    spans_s.each do |ca|
       if (cid = ca.hid[1..-1].to_i) > mid 
         mid = cid
       end
@@ -384,7 +384,7 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def bag_catanns (catanns, relanns)
+  def bag_spans (spans, relanns)
     tomerge = Hash.new
 
     new_relanns = Array.new
@@ -396,21 +396,21 @@ class ApplicationController < ActionController::Base
       end
     end
     idx = Hash.new
-    catanns.each_with_index {|ca, i| idx[ca[:id]] = i}
+    spans.each_with_index {|ca, i| idx[ca[:id]] = i}
 
     mergedto = Hash.new
     tomerge.each do |from, to|
       to = mergedto[to] if mergedto.has_key?(to)
       p idx[from]
-      fca = catanns[idx[from]]
-      tca = catanns[idx[to]]
+      fca = spans[idx[from]]
+      tca = spans[idx[to]]
       tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
       tca[:span].push (fca[:span])
-      catanns.delete_at(idx[from])
+      spans.delete_at(idx[from])
       mergedto[from] = to
     end
 
-    return catanns, new_relanns
+    return spans, new_relanns
   end
 
 
@@ -449,7 +449,7 @@ class ApplicationController < ActionController::Base
       ia           = Insann.new
       ia.hid       = a[:id]
       ia.instype   = a[:type]
-      ia.insobj    = Catann.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
+      ia.insobj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
       ia.project_id = project.id
       ia.save
     end
@@ -468,7 +468,7 @@ class ApplicationController < ActionController::Base
 #        relanns += doc.objcatrels.where("relanns.project_id = ?", project.id)
 #        relanns += doc.objinsrels.where("relanns.project_id = ?", project.id)
       else
-        relanns = doc.subcatrels + doc.subinsrels unless doc.catanns.empty?
+        relanns = doc.subcatrels + doc.subinsrels unless doc.spans.empty?
       end
     else
       if project_name and project = Project.find_by_name(project_name)
@@ -495,11 +495,11 @@ class ApplicationController < ActionController::Base
       ra.hid       = a[:id]
       ra.reltype   = a[:type]
       ra.relsub    = case a[:subject]
-        when /^T/ then Catann.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
+        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
         else           doc.insanns.find_by_project_id_and_hid(project.id, a[:subject])
       end
       ra.relobj    = case a[:object]
-        when /^T/ then Catann.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
+        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
         else           doc.insanns.find_by_project_id_and_hid(project.id, a[:object])
       end
       ra.project_id = project.id
@@ -519,7 +519,7 @@ class ApplicationController < ActionController::Base
         modanns += doc.subinsrelmods.where("modanns.project_id = ?", project.id)
         modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       else
-        #modanns = doc.modanns unless doc.catanns.empty?
+        #modanns = doc.modanns unless doc.spans.empty?
         modanns = doc.insmods
         modanns += doc.subcatrelmods
         modanns += doc.subinsrelmods
@@ -613,10 +613,10 @@ class ApplicationController < ActionController::Base
   end
 
 
-  # to work on the hash representation of catanns
+  # to work on the hash representation of spans
   # to assume that there is no bag representation to this method
-  def realign_catanns (catanns, from_text, to_text)
-    return nil if catanns == nil
+  def realign_spans (spans, from_text, to_text)
+    return nil if spans == nil
 
     position_map = Hash.new
     numchar, numdiff, diff = 0, 0, 0
@@ -637,18 +637,18 @@ class ApplicationController < ActionController::Base
     #   return nil, "The text is too much different from PubMed. The mapping could not be calculated.: #{numdiff}/#{numchar}"
     # else
 
-    catanns_new = Array.new(catanns)
+    spans_new = Array.new(spans)
 
-    (0...catanns.length).each do |i|
-      catanns_new[i][:span][:begin] = position_map[catanns[i][:span][:begin]]
-      catanns_new[i][:span][:end]   = position_map[catanns[i][:span][:end]]
+    (0...spans.length).each do |i|
+      spans_new[i][:span][:begin] = position_map[spans[i][:span][:begin]]
+      spans_new[i][:span][:end]   = position_map[spans[i][:span][:end]]
     end
 
-    catanns_new
+    spans_new
   end
 
-  def adjust_catanns (catanns, text)
-    return nil if catanns == nil
+  def adjust_spans (spans, text)
+    return nil if spans == nil
 
     delimiter_characters = [
           " ",
@@ -674,9 +674,9 @@ class ApplicationController < ActionController::Base
           "\n"
       ]
 
-    catanns_new = Array.new(catanns)
+    spans_new = Array.new(spans)
 
-    catanns_new.each do |c|
+    spans_new.each do |c|
       while c[:span][:begin] > 0 and !delimiter_characters.include?(text[c[:span][:begin] - 1])
         c[:span][:begin] -= 1
       end
@@ -686,7 +686,7 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    catanns_new
+    spans_new
   end
 
 

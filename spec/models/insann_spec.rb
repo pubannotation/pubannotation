@@ -5,11 +5,11 @@ describe Insann do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       @insann = FactoryGirl.create(:insann,
         :hid => 'hid',
         :instype => 'instype',
-        :insobj => @catann,
+        :insobj => @span,
         :project => @project
       )
       @get_hash = @insann.get_hash
@@ -24,7 +24,7 @@ describe Insann do
     end
     
     it 'should set hid as object' do
-      @get_hash[:object].should eql(@catann[:hid])
+      @get_hash[:object].should eql(@span[:hid])
     end
   end
 end

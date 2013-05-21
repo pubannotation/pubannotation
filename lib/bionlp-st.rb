@@ -13,13 +13,13 @@ class Annotation
   def get_ann
     # index
     text = @annotation[:text]
-    catanns = @annotation[:catanns]
+    spans = @annotation[:spans]
     insanns = @annotation[:insanns]
     relanns = @annotation[:relanns]
     modanns = @annotation[:modanns]
 
     spans = Hash.new;
-    catanns.each {|c| spans[c[:id]] = c} if catanns
+    spans.each {|c| spans[c[:id]] = c} if spans
 
     events = Hash.new;
     insanns.each {|i| events[i[:id]] = {:tid => i[:object]}} if insanns
@@ -152,8 +152,8 @@ class Annotation
 
     a1 = ''
 
-    if catanns
-      catanns.each do |c|
+    if spans
+      spans.each do |c|
         if c[:category] == 'Protein'
           b = c[:span][:begin]
           e = c[:span][:end]
@@ -167,8 +167,8 @@ class Annotation
       a2 += "*\tEquiv #{k} #{equivs[k].join(' ')}\n"
     end
 
-    if catanns
-      catanns.each do |c|
+    if spans
+      spans.each do |c|
         unless c[:category] == 'Protein'
           b = c[:span][:begin]
           e = c[:span][:end]

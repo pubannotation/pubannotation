@@ -1,0 +1,41 @@
+<%= form_for(@catann) do |f| %>
+  <% if @catann.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@catann.errors.count, "error") %> prohibited this catann from being saved:</h2>
+
+      <ul>
+      <% @catann.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :hid %><br />
+    <%= f.text_field :hid %>
+  </div>
+  <div class="field">
+    <%= f.label :doc_id %><br />
+    <%= f.text_field :doc_id %>
+  </div>
+  <div class="field">
+    <%= f.label :begin %><br />
+    <%= f.number_field :begin %>
+  </div>
+  <div class="field">
+    <%= f.label :end %><br />
+    <%= f.number_field :end %>
+  </div>
+  <div class="field">
+    <%= f.label :category %><br />
+    <%= f.text_field :category %>
+  </div>
+  <div class="field">
+    <%= f.label :project_id %><br />
+    <%= f.text_field :project_id %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

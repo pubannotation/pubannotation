@@ -387,7 +387,7 @@ describe ApplicationController do
   describe 'get_annotations' do
     context 'when project annd doc exists' do
       context 'when options nothing' do
-        context 'when hcatanns, hinsanns, hrelanns, hmodanns does not exists' do
+        context 'when hspans, hinsanns, hrelanns, hmodanns does not exists' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
@@ -405,25 +405,25 @@ describe ApplicationController do
           end
         end
       
-        context 'when hcatanns, hinsanns, hrelanns, hmodanns exists' do
+        context 'when hspans, hinsanns, hrelanns, hmodanns exists' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-            @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-            @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
-            @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
+            @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+            @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span)
+            @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
             @insmod = FactoryGirl.create(:modann, :modobj => @insann, :project => @project)
             @result = controller.get_annotations(@project, @doc)
           end
           
-          it 'should returns doc params, catanns, insanns, relanns and modanns' do
+          it 'should returns doc params, spans, insanns, relanns and modanns' do
             @result.should eql({
               :source_db => @doc.sourcedb, 
               :source_id => @doc.sourceid, 
               :division_id => @doc.serial, 
               :section => @doc.section, 
               :text => @doc.body,
-              :catanns => [{:id => @catann.hid, :span => {:begin => @catann.begin, :end => @catann.end}, :category => @catann.category}],
+              :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
               :insanns => [{:id => @insann.hid, :type => @insann.instype, :object => @insann.insobj.hid}],
               :relanns => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.relobj.hid}],
               :modanns => [{:id => @insmod.hid, :type => @insmod.modtype, :object => @insmod.modobj.hid}]
@@ -456,9 +456,9 @@ describe ApplicationController do
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
           @get_ascii_text = 'DOC body'
-          @hcatanns = 'hcatanns'
+          @hspans = 'hspans'
           @hrelanns = 'hrelanns'
-          controller.stub(:bag_catanns).and_return([@hcatanns, @hrelanns])
+          controller.stub(:bag_spans).and_return([@hspans, @hrelanns])
           @result = controller.get_annotations(@project, @doc, :discontinuous_annotation => 'bag')
         end
         
@@ -469,7 +469,7 @@ describe ApplicationController do
             :division_id => @doc.serial, 
             :section => @doc.section, 
             :text => @doc.body,
-            :catanns => @hcatanns,
+            :spans => @hspans,
             :relanns => @hrelanns
             })
         end
@@ -488,14 +488,14 @@ describe ApplicationController do
   end
   
   describe 'save annotations' do
-    context 'when catanns exists' do
+    context 'when spans exists' do
       before do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-        @annotations = {:catanns => 'catanns', :insanns => ['insann'], :relanns => ['relann'], :modanns => ['modann']}
-        controller.stub(:clean_hcatanns).and_return('clean_hcatanns')
-        controller.stub(:realign_catanns).and_return('realign_catanns')
-        controller.stub(:save_hcatanns).and_return('save_hcatanns')
+        @annotations = {:spans => 'spans', :insanns => ['insann'], :relanns => ['relann'], :modanns => ['modann']}
+        controller.stub(:clean_hspans).and_return('clean_hspans')
+        controller.stub(:realign_spans).and_return('realign_spans')
+        controller.stub(:save_hspans).and_return('save_hspans')
         controller.stub(:save_hinsanns).and_return('save_hinsanns')
         controller.stub(:save_hrelanns).and_return('save_hrelanns')
         controller.stub(:save_hmodanns).and_return('save_hmodanns')
@@ -507,10 +507,10 @@ describe ApplicationController do
       end
     end
     
-    context 'catanns does not exists' do
+    context 'spans does not exists' do
       before do
-        @annotations = {:catanns => 'catanns', :insanns => ['insann'], :relanns => ['relann'], :modanns => ['modann']}
-        controller.stub(:clean_hcatanns).and_return(nil)
+        @annotations = {:spans => 'spans', :insanns => ['insann'], :relanns => ['relann'], :modanns => ['modann']}
+        controller.stub(:clean_hspans).and_return(nil)
         @result = controller.save_annotations(@annotations, nil, nil)
       end
       
@@ -520,7 +520,7 @@ describe ApplicationController do
     end
   end
   
-  describe 'get_catanns' do
+  describe 'get_spans' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
@@ -534,80 +534,80 @@ describe ApplicationController do
       context 'when doc.project.find_by_name(project_name) exists' do
         before do
           @project_another = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-          @catann_another = FactoryGirl.create(:catann, :project => @project_another, :doc => @doc)
-          @catanns = controller.get_catanns(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)       
+          @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+          @span_another = FactoryGirl.create(:span, :project => @project_another, :doc => @doc)
+          @spans = controller.get_spans(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)       
         end
         
-        it 'should returns doc.catanns where project_id = project.id' do
-          (@catanns - [@catann]).should be_blank
+        it 'should returns doc.spans where project_id = project.id' do
+          (@spans - [@span]).should be_blank
         end
       end
       
       
       context 'when doc.project.find_by_name(project_name) does not exists' do
         before do
-          @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-          @catanns = controller.get_catanns('none project name', @doc.sourcedb, @doc.sourceid, @doc.serial)       
+          @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+          @spans = controller.get_spans('none project name', @doc.sourcedb, @doc.sourceid, @doc.serial)       
         end
         
-        it 'should return doc.catanns' do
-          (@catanns - @doc.catanns).should be_blank
+        it 'should return doc.spans' do
+          (@spans - @doc.spans).should be_blank
         end
       end
     end
 
     context 'when doc find_by_sourcedb_and_sourceid_and_serial does not exist' do
       before do
-        @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       end
       
       context 'when project find_by_name exist' do
         before do
-          @catanns = controller.get_catanns(@project.name, 'nil', 'nil', 'nil')       
+          @spans = controller.get_spans(@project.name, 'nil', 'nil', 'nil')       
         end
         
-        it 'should return project.catanns' do
-          (@catanns - @project.catanns).should be_blank
+        it 'should return project.spans' do
+          (@spans - @project.spans).should be_blank
         end
       end
       
       context 'when project find_by_name does not exist' do
         before do
-          @catanns = controller.get_catanns('', 'nil', 'nil', 'nil')       
+          @spans = controller.get_spans('', 'nil', 'nil', 'nil')       
         end
         
-        it 'should return all catanns' do
-          (Catann.all - @catanns).should be_blank
+        it 'should return all spans' do
+          (Span.all - @spans).should be_blank
         end
       end
     end
   end
   
-  describe 'get_hcatanns' do
+  describe 'get_hspans' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-      controller.stub(:get_cattanns).and_return([@catann])
+      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      controller.stub(:get_cattanns).and_return([@span])
       @get_hash = 'get hash'
-      Catann.any_instance.stub(:get_hash).and_return(@get_hash)
-      @hcatanns = controller.get_hcatanns('', '', '')
+      Span.any_instance.stub(:get_hash).and_return(@get_hash)
+      @hspans = controller.get_hspans('', '', '')
     end
     
-    it 'should return array catann.get_hash' do
-      @hcatanns.should eql([@get_hash])
+    it 'should return array span.get_hash' do
+      @hspans.should eql([@get_hash])
     end
   end
   
-  describe 'clean_hcatanns' do
+  describe 'clean_hspans' do
     context 'when format error' do
       context 'when span and begin does not present' do
         before do
-          @catann = {:id => 'id', :end => '5', :category => 'Category'}
-          @catanns = Array.new
-          @catanns << @catann
-          @result = controller.clean_hcatanns(@catanns)
+          @span = {:id => 'id', :end => '5', :category => 'Category'}
+          @spans = Array.new
+          @spans << @span
+          @result = controller.clean_hspans(@spans)
         end
         
         it 'should return nil and format error' do
@@ -617,10 +617,10 @@ describe ApplicationController do
   
       context 'when category does not present' do
         before do
-          @catann = {:id => 'id', :begin => '`1', :end => '5', :category => nil}
-          @catanns = Array.new
-          @catanns << @catann
-          @result = controller.clean_hcatanns(@catanns)
+          @span = {:id => 'id', :begin => '`1', :end => '5', :category => nil}
+          @spans = Array.new
+          @spans << @span
+          @result = controller.clean_hspans(@spans)
         end
         
         it 'should return nil and format error' do
@@ -633,14 +633,14 @@ describe ApplicationController do
       before do
         @begin = '1'
         @end = '5'
-        @catanns = Array.new
+        @spans = Array.new
       end
 
       context 'when id is nil' do
         before do
-          @catann = {:id => nil, :span => {:begin => @begin, :end => @end}, :category => 'Category'}
-          @catanns << @catann
-          @result = controller.clean_hcatanns(@catanns)
+          @span = {:id => nil, :span => {:begin => @begin, :end => @end}, :category => 'Category'}
+          @spans << @span
+          @result = controller.clean_hspans(@spans)
         end
         
         it 'should return T + num id' do
@@ -650,106 +650,106 @@ describe ApplicationController do
 
       context 'when span exists' do
         before do
-          @catann = {:id => 'id', :span => {:begin => @begin, :end => @end}, :category => 'Category'}
-          @catanns << @catann
-          @result = controller.clean_hcatanns(@catanns)
+          @span = {:id => 'id', :span => {:begin => @begin, :end => @end}, :category => 'Category'}
+          @spans << @span
+          @result = controller.clean_hspans(@spans)
         end
         
         it 'should return ' do
-          @result.should eql([[{:id => @catann[:id], :category => @catann[:category], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+          @result.should eql([[{:id => @span[:id], :category => @span[:category], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
         end
       end
 
       context 'when span does not exists' do
         before do
-          @catann = {:id => 'id', :begin => @begin, :end => @end, :category => 'Category'}
-          @catanns << @catann
-          @result = controller.clean_hcatanns(@catanns)
+          @span = {:id => 'id', :begin => @begin, :end => @end, :category => 'Category'}
+          @spans << @span
+          @result = controller.clean_hspans(@spans)
         end
         
         it 'should return with span' do
-          @result.should eql([[{:id => @catann[:id], :category => @catann[:category], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+          @result.should eql([[{:id => @span[:id], :category => @span[:category], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
         end
       end
     end
   end
   
-  describe 'save_hcatanns' do
+  describe 'save_hspans' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @hcatann = {:id => 'hid', :span => {:begin => 1, :end => 10}, :category => 'Category'}
-      @hcatanns = Array.new
-      @hcatanns << @hcatann
-      @result = controller.save_hcatanns(@hcatanns, @project, @doc) 
-      @catann = Catann.find_by_hid(@hcatann[:id])
+      @hspan = {:id => 'hid', :span => {:begin => 1, :end => 10}, :category => 'Category'}
+      @hspans = Array.new
+      @hspans << @hspan
+      @result = controller.save_hspans(@hspans, @project, @doc) 
+      @span = Span.find_by_hid(@hspan[:id])
     end
     
     it 'should save successfully' do
       @result.should be_true
     end
     
-    it 'should save hcatann[:id] as hid' do
-      @catann.hid.should eql(@hcatann[:id])
+    it 'should save hspan[:id] as hid' do
+      @span.hid.should eql(@hspan[:id])
     end
     
-    it 'should save hcatann[:span][:begin] as begin' do
-      @catann.begin.should eql(@hcatann[:span][:begin])
+    it 'should save hspan[:span][:begin] as begin' do
+      @span.begin.should eql(@hspan[:span][:begin])
     end
     
-    it 'should save hcatann[:span][:end] as end' do
-      @catann.end.should eql(@hcatann[:span][:end])
+    it 'should save hspan[:span][:end] as end' do
+      @span.end.should eql(@hspan[:span][:end])
     end
     
-    it 'should save hcatann[:category] as category' do
-      @catann.category.should eql(@hcatann[:category])
+    it 'should save hspan[:category] as category' do
+      @span.category.should eql(@hspan[:category])
     end
 
     it 'should save project.id as project_id' do
-      @catann.project_id.should eql(@project.id)
+      @span.project_id.should eql(@project.id)
     end
 
     it 'should save doc.id as doc_id' do
-      @catann.doc_id.should eql(@doc.id)
+      @span.doc_id.should eql(@doc.id)
     end
   end
   
-  describe 'chain_catanns' do
+  describe 'chain_spans' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @catann_1 = FactoryGirl.create(:catann, :hid => 'A1', :project => @project, :doc => @doc)
-      @catann_2 = FactoryGirl.create(:catann, :hid => 'A2', :project => @project, :doc => @doc)
-      @catann_3 = FactoryGirl.create(:catann, :hid => 'A3', :project => @project, :doc => @doc)
-      @catanns_s = [@catann_1, @catann_2, @catann_3]
-      @result = controller.chain_catanns(@catanns_s)
+      @span_1 = FactoryGirl.create(:span, :hid => 'A1', :project => @project, :doc => @doc)
+      @span_2 = FactoryGirl.create(:span, :hid => 'A2', :project => @project, :doc => @doc)
+      @span_3 = FactoryGirl.create(:span, :hid => 'A3', :project => @project, :doc => @doc)
+      @spans_s = [@span_1, @span_2, @span_3]
+      @result = controller.chain_spans(@spans_s)
     end
     
-    it 'shoulr return catanns_s' do
-      @result.should eql(@catanns_s)
+    it 'shoulr return spans_s' do
+      @result.should eql(@spans_s)
     end
   end
   
-  describe 'bag_catanns' do
+  describe 'bag_spans' do
   #  pending 'because object.property should be symbol' do
       context 'when relann type = lexChain' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-          @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-          @catanns = Array.new
-          @catanns << @catann.get_hash
-          @relann = FactoryGirl.create(:relann, :reltype => 'lexChain', :relobj => @catann, :project => @project)
+          @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+          @spans = Array.new
+          @spans << @span.get_hash
+          @relann = FactoryGirl.create(:relann, :reltype => 'lexChain', :relobj => @span, :project => @project)
           @relanns = Array.new
           @relanns << @relann.get_hash
-          @result = controller.bag_catanns(@catanns, @relanns)
+          @result = controller.bag_spans(@spans, @relanns)
         end
         
-        it 'catanns should be_blank' do
+        it 'spans should be_blank' do
           @result[0].should be_blank
         end
 
-        it 'catanns should be_blank' do
+        it 'spans should be_blank' do
           @result[1].should be_blank
         end
       end
@@ -758,16 +758,16 @@ describe ApplicationController do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-          @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-          @catanns = Array.new
-          @catanns << @catann.get_hash
-          @relann = FactoryGirl.create(:relann, :reltype => 'NotlexChain', :relobj => @catann, :project => @project)
+          @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+          @spans = Array.new
+          @spans << @span.get_hash
+          @relann = FactoryGirl.create(:relann, :reltype => 'NotlexChain', :relobj => @span, :project => @project)
           @relanns = Array.new
           @relanns << @relann.get_hash
-          @result = controller.bag_catanns(@catanns, @relanns)
+          @result = controller.bag_spans(@spans, @relanns)
         end
         
-        it 'catanns should be_blank' do
+        it 'spans should be_blank' do
           @result[0][0].should eql({:id => "T1", :span => {:begin => 1 , :end => 5}, :category => "Protein"})
         end
         
@@ -782,9 +782,9 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
 
-      @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
+      @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span)
     end
     
     context 'when Doc find_by_sourcedb_and_sourceid_and_serial exists' do
@@ -874,7 +874,7 @@ describe ApplicationController do
       @hinsanns << @hinsann
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @catann = FactoryGirl.create(:catann, :id => 90, :project => @project, :doc => @doc, :hid => @hinsann[:object])
+      @span = FactoryGirl.create(:span, :id => 90, :project => @project, :doc => @doc, :hid => @hinsann[:object])
       @result = controller.save_hinsanns(@hinsanns, @project, @doc) 
     end
     
@@ -883,7 +883,7 @@ describe ApplicationController do
     end
     
     it 'should save Insann from args' do
-      Insann.find_by_hid_and_instype_and_insobj_id_and_project_id(@hinsann[:id], @hinsann[:type], @catann.id, @project.id).should be_present
+      Insann.find_by_hid_and_instype_and_insobj_id_and_project_id(@hinsann[:id], @hinsann[:type], @span.id, @project.id).should be_present
     end
   end
   
@@ -891,10 +891,10 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-      @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
-      @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
-      @subinsrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
+      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
+      @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span)
+      @subinsrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
     end
 
     context 'when doc find by sourcedb and source id and serial exists' do
@@ -937,7 +937,7 @@ describe ApplicationController do
         before do
           @doc.projects << @project
           5.times do
-            FactoryGirl.create(:relann, :relobj => @catann, :project => @project)
+            FactoryGirl.create(:relann, :relobj => @span, :project => @project)
           end
           @relanns = controller.get_relanns('non existant project name', 'non existant source db', @doc.sourceid, @doc.serial)
         end
@@ -966,7 +966,7 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
+      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       @hrelanns = Array.new
     end
     
@@ -981,14 +981,14 @@ describe ApplicationController do
         @result.should be_true
       end
       
-      it 'should save from hrelanns params and project, and relsub and relobj should be catann' do
+      it 'should save from hrelanns params and project, and relsub and relobj should be span' do
         Relann.where(
           :hid => @hrelann[:id], 
           :reltype => @hrelann[:type], 
-          :relsub_id => @catann.id, 
-          :relsub_type => @catann.class, 
-          :relobj_id => @catann.id, 
-          :relobj_type => @catann.class, 
+          :relsub_id => @span.id, 
+          :relsub_type => @span.class, 
+          :relobj_id => @span.id, 
+          :relobj_type => @span.class, 
           :project_id => @project.id
         ).should be_present
       end
@@ -998,7 +998,7 @@ describe ApplicationController do
       before do
         @hrelann = {:id => 'hid', :type => 'reltype', :subject => 'M1', :object => 'M1'}
         @hrelanns << @hrelann
-        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann, :hid => @hrelann[:subject])
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span, :hid => @hrelann[:subject])
         @result = controller.save_hrelanns(@hrelanns, @project, @doc)
       end
       
@@ -1025,9 +1025,9 @@ describe ApplicationController do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-        @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
-        @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
+        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span)
+        @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
       end
       
       context 'and when doc.projects.find_by_name(project_name) exists' do
@@ -1113,8 +1113,8 @@ describe ApplicationController do
     
     context 'when hmodanns[:object] match /^R/' do
       before do
-        @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
+        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span)
         @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :project => @project)
         @hmodann = {:id => 'hid', :type => 'type', :object => 'R1'}
         @hmodanns = Array.new
@@ -1138,8 +1138,8 @@ describe ApplicationController do
     
     context 'when hmodanns[:object] does not match /^R/' do
       before do
-        @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @catann)
+        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span)
         @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @insann, :project => @project)
         @hmodann = {:id => 'hid', :type => 'type', :object => @insann.hid}
         @hmodanns = Array.new
@@ -1173,10 +1173,10 @@ describe ApplicationController do
     end
   end
   
-  describe 'realign_catanns' do
-    context 'when catanns is nil' do
+  describe 'realign_spans' do
+    context 'when spans is nil' do
       before do
-        @result = controller.realign_catanns(nil, '', '')
+        @result = controller.realign_spans(nil, '', '')
       end
       
       it 'should return nil' do
@@ -1188,10 +1188,10 @@ describe ApplicationController do
       before do
         @begin = 1
         @end = 5
-        @catann = {:span => {:begin => @begin, :end => @end}}
-        @catanns = Array.new
-        @catanns << @catann
-        @result = controller.realign_catanns(@catanns, 'from text', 'end of text')
+        @span = {:span => {:begin => @begin, :end => @end}}
+        @spans = Array.new
+        @spans << @span
+        @result = controller.realign_spans(@spans, 'from text', 'end of text')
       end
       
       it 'should change positions' do
@@ -1200,10 +1200,10 @@ describe ApplicationController do
     end
   end
   
-  describe 'adjust_catanns' do
-    context 'when catanns is nil' do
+  describe 'adjust_spans' do
+    context 'when spans is nil' do
       before do
-        @result = controller.adjust_catanns(nil, '')
+        @result = controller.adjust_spans(nil, '')
       end
 
       it 'should return nil' do
@@ -1211,14 +1211,14 @@ describe ApplicationController do
       end
     end
 
-    context 'when catanns exists' do
+    context 'when spans exists' do
       before do
         @begin = 1
         @end = 5
-        @catann = {:span => {:begin => @begin, :end => @end}}
-        @catanns = Array.new
-        @catanns << @catann
-        @result = controller.adjust_catanns(@catanns, 'this is an text')
+        @span = {:span => {:begin => @begin, :end => @end}}
+        @spans = Array.new
+        @spans << @span
+        @result = controller.adjust_spans(@spans, 'this is an text')
       end
 
       it 'should change positions' do

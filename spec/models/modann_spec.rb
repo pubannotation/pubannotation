@@ -5,9 +5,9 @@ describe Relann do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @catann = FactoryGirl.create(:catann, :project => @project, :doc => @doc)
-      @insann = FactoryGirl.create(:insann, :hid => 'insann hid', :project => @project, :insobj => @catann)
-      @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @catann, :project => @project)
+      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @insann = FactoryGirl.create(:insann, :hid => 'insann hid', :project => @project, :insobj => @span)
+      @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
       @insmod = FactoryGirl.create(:modann, 
         :hid => 'modann hid',
         :modtype => 'modtype',

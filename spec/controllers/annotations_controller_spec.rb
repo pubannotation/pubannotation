@@ -18,7 +18,7 @@ describe AnnotationsController do
         controller.stub(:get_doc).and_return('doc')
         @annotations = {
             :text => 'text val',
-            :catanns => 'catanns val',
+            :spans => 'spans val',
             :insanns => 'insanns val',
             :insanns => 'relanns val',
             :insanns => 'insanns val'

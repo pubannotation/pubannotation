@@ -15,7 +15,7 @@ class AnnotationsController < ApplicationController
         if @doc
           annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
           @text = annotations[:text]
-          @catanns = annotations[:catanns]
+          @spans = annotations[:spans]
           @insanns = annotations[:insanns]
           @relanns = annotations[:relanns]
           @modanns = annotations[:modanns]

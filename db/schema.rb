@@ -11,21 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130521022506) do
-
-  create_table "catanns", :force => true do |t|
-    t.string   "hid"
-    t.integer  "doc_id"
-    t.integer  "begin"
-    t.integer  "end"
-    t.string   "category"
-    t.integer  "project_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
-  end
-
-  add_index "catanns", ["doc_id"], :name => "index_catanns_on_doc_id"
-  add_index "catanns", ["project_id"], :name => "index_catanns_on_project_id"
+ActiveRecord::Schema.define(:version => 20130521075634) do
 
   create_table "docs", :force => true do |t|
     t.text     "body"
@@ -110,6 +96,20 @@ ActiveRecord::Schema.define(:version => 20130521022506) do
   add_index "relanns", ["project_id"], :name => "index_relanns_on_project_id"
   add_index "relanns", ["relobj_id"], :name => "index_relanns_on_relobj_id"
   add_index "relanns", ["relsub_id"], :name => "index_relanns_on_relsub_id"
+
+  create_table "spans", :force => true do |t|
+    t.string   "hid"
+    t.integer  "doc_id"
+    t.integer  "begin"
+    t.integer  "end"
+    t.string   "category"
+    t.integer  "project_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "spans", ["doc_id"], :name => "index_spans_on_doc_id"
+  add_index "spans", ["project_id"], :name => "index_spans_on_project_id"
 
   create_table "users", :force => true do |t|
     t.string   "email",                  :default => "", :null => false
