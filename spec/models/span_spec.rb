@@ -1,6 +1,105 @@
 require 'spec_helper'
 
 describe Span do
+  describe 'belongs_to project' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @span = FactoryGirl.create(:span, :project => @project, :doc => FactoryGirl.create(:doc))
+    end
+    
+    it 'span.should belongs to project' do
+      @span.project.should eql(@project)
+    end
+  end
+  
+  describe 'belongs_to doc' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @span = FactoryGirl.create(:span, :doc => @doc)
+    end
+    
+    it 'span should belongs to doc' do
+      @span.doc.should eql(@doc)
+    end  
+  end
+  
+  describe 'has_many insanns' do
+    pending 'insanns should be changed'
+  end
+  
+  describe 'has_many subrels' do
+    before do
+      @span = FactoryGirl.create(:span, :doc_id => 1)
+      @relation = FactoryGirl.create(:relation,
+        :relsub_id => @span.id, 
+        :relsub_type => @span.class.to_s,
+        :relobj_id => 50, 
+        :project_id => 1
+      )
+    end
+    
+    it 'span.resmods should preset' do
+      @span.subrels.should be_present 
+    end
+    
+    it 'span.resmods should include relation' do
+      (@span.subrels - [@relation]).should be_blank 
+    end
+  end
+  
+  describe 'has_many objrels' do
+    before do
+      @span = FactoryGirl.create(:span, :doc_id => 1)
+      @relation = FactoryGirl.create(:relation,
+        :relsub_id => 1, 
+        :relsub_type => 'Insann',
+        :relobj => @span, 
+        :project_id => 1
+      )
+    end
+    
+    it 'span.objrels should preset' do
+      @span.objrels.should be_present 
+    end
+    
+    it 'span.resmods should include relation' do
+      (@span.objrels - [@relation]).should be_blank 
+    end
+  end
+  
+  describe 'has_many insmods' do
+    before do
+      @span = FactoryGirl.create(:span, :doc_id => 1)
+      @insann = FactoryGirl.create(:insann, :insobj => @span, :project_id => 5)
+      @modification = FactoryGirl.create(:modification,
+      :modobj => @insann,
+      :modobj_type => @insann.class.to_s
+      )
+    end
+    
+    it 'span.insmods should present' do
+      @span.insmods.should be_present
+    end
+  end
+  
+  describe 'has_many relmods' do
+    before do
+      @span = FactoryGirl.create(:span, :doc_id => 1)
+      @relation = FactoryGirl.create(:relation,
+        :relobj_id => 1, 
+        :project_id => 1
+      )
+      @modification = FactoryGirl.create(:modification,
+      :modobj => @relation,
+      :modobj_type => @relation.class.to_s
+      )
+    end
+    
+    it 'span.insmods should present' do
+      pending 'relation something wrong'
+    end
+  end
+  
   describe 'get_hash' do
     before do
       @span = FactoryGirl.create(:span,

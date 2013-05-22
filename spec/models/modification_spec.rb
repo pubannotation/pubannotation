@@ -1,6 +1,31 @@
 require 'spec_helper'
 
 describe Relation do
+  describe 'belongs_to project' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @modification = FactoryGirl.create(:modification, :modobj_id => 1, :project => @project)
+    end
+    
+    it 'modification should belongs to project' do
+      @modification.project.should eql(@project)
+    end
+  end
+
+  describe 'belongs_to modobj' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @insann = FactoryGirl.create(:insann, :hid => 'insann hid', :project => @project, :insobj => @span)
+      @modification = FactoryGirl.create(:modification, :modobj => @insann, :project => @project)
+    end
+    
+    it 'modification should belongs to modobj' do
+      @modification.modobj.should eql(@insann)
+    end
+  end
+  
   describe 'get_hash' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))

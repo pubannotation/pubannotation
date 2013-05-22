@@ -1,6 +1,96 @@
 require 'spec_helper'
 
 describe Relation do
+  describe 'belongs_to project' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @relation = FactoryGirl.create(:relation, :relobj_id => 10, :project => @project)
+    end
+    
+    it 'relation belongs to project' do
+      @relation.project.should eql(@project)
+    end
+  end
+  
+  describe 'belongs_to relsub polymorphic true' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @relobj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+    end
+    
+    context 'Span' do
+      before do
+        @relsub = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @relation = FactoryGirl.create(:relation, :relsub_id => @relsub.id, :relsub_type => @relsub.class.to_s, :relobj => @relobj, :project => @project)
+      end
+      
+      it 'relation.relsub should equal Span' do
+        @relation.relsub.should eql(@relsub)
+      end
+    end
+
+    context 'Insaan' do
+      before do
+        @relsub = FactoryGirl.create(:insann, :project => @project, :insobj_id => 1)
+        @relation = FactoryGirl.create(:relation, :relsub_id => @relsub.id, :relsub_type => @relsub.class.to_s, :relobj => @relobj, :project => @project)
+      end
+      
+      it 'relation.relsub should equal Insann' do
+        @relation.relsub.should eql(@relsub)
+      end
+    end
+  end
+  
+  describe 'belongs_to relobj polymorphic true' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @relsub = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+    end
+    
+    context 'Span' do
+      before do
+        @relobj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @relation = FactoryGirl.create(:relation, :relsub => @relsub, :relobj => @relobj, :relobj_type => @relobj.class.to_s, :project => @project)
+      end
+      
+      it 'relation.relobj should equal Span' do
+        @relation.relobj.should eql(@relobj)
+      end
+    end
+
+    context 'Insaan' do
+      before do
+        @relobj = FactoryGirl.create(:insann, :project => @project, :insobj_id => 1)
+        @relation = FactoryGirl.create(:relation, :relsub => @relsub, :relobj => @relobj, :relobj_type => @relobj.class.to_s, :project => @project)
+      end
+      
+      it 'relation.relsub should equal Insann' do
+        @relation.relobj.should eql(@relobj)
+      end
+    end
+  end
+  
+  describe 'has_many modifications' do
+    before do
+      @relation = FactoryGirl.create(:relation, :relsub_id => 1, :relobj_id => 2, :project_id => 1)
+      @modification = FactoryGirl.create(:modification, :modobj => @relation, :project_id => 1)
+    end
+    
+    it 'relation.modifications should be present' do
+      @relation.modifications.should be_present
+    end
+    
+    it 'relation.modifications should include related modifications' do
+      (@relation.modifications - [@modification]).should be_blank
+    end
+    
+    it 'modification should belongs to relation' do
+      @modification.modobj.should eql(@relation)
+    end
+  end
+  
   describe 'get_hash' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
