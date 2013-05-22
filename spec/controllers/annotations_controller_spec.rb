@@ -20,8 +20,8 @@ describe AnnotationsController do
             :text => 'text val',
             :spans => 'spans val',
             :insanns => 'insanns val',
-            :insanns => 'relanns val',
-            :insanns => 'insanns val'
+            :relations => 'relations val',
+            :modanns => 'modanns val'
           }
         controller.stub(:get_annotations).and_return(@annotations)
       end

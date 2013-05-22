@@ -3,10 +3,10 @@ class Doc < ActiveRecord::Base
   has_many :spans
   has_many :insanns, :through => :spans
 
-  has_many :subcatrels, :class_name => 'Relann', :through => :spans, :source => :subrels
-  has_many :subinsrels, :class_name => 'Relann', :through => :insanns, :source => :subrels
-  #has_many :objcatrels, :class_name => 'Relann', :through => :spans, :source => :objrels
-  #has_many :objinsrels, :class_name => 'Relann', :through => :insanns, :source => :objrels
+  has_many :subcatrels, :class_name => 'Relation', :through => :spans, :source => :subrels
+  has_many :subinsrels, :class_name => 'Relation', :through => :insanns, :source => :subrels
+  #has_many :objcatrels, :class_name => 'Relation', :through => :spans, :source => :objrels
+  #has_many :objinsrels, :class_name => 'Relation', :through => :insanns, :source => :objrels
 
   has_many :insmods, :class_name => 'Modann', :through => :insanns, :source => :modanns
   has_many :subcatrelmods, :class_name => 'Modann', :through => :subcatrels, :source => :modanns

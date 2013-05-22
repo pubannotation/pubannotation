@@ -213,10 +213,10 @@ class ApplicationController < ActionController::Base
       insanns.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
       hinsanns = insanns.collect {|ia| ia.get_hash} unless insanns.empty?
 
-      relanns  = doc.subcatrels.where("relanns.project_id = ?", project.id)
-      relanns += doc.subinsrels.where("relanns.project_id = ?", project.id)
-      relanns.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
-      hrelanns = relanns.collect {|ra| ra.get_hash} unless relanns.empty?
+      relations  = doc.subcatrels.where("relations.project_id = ?", project.id)
+      relations += doc.subinsrels.where("relations.project_id = ?", project.id)
+      relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
+      hrelations = relations.collect {|ra| ra.get_hash} unless relations.empty?
 
       modanns = doc.insmods.where("modanns.project_id = ?", project.id)
       modanns += doc.subcatrelmods.where("modanns.project_id = ?", project.id)
@@ -236,7 +236,7 @@ class ApplicationController < ActionController::Base
 
       if (options[:discontinuous_annotation] == 'bag')
         # TODO: convert to hash representation
-        hspans, hrelanns = bag_spans(hspans, hrelanns)
+        hspans, hrelations = bag_spans(hspans, hrelations)
       end
 
       annotations = Hash.new
@@ -253,7 +253,7 @@ class ApplicationController < ActionController::Base
       annotations[:text] = text
       annotations[:spans] = hspans if hspans
       annotations[:insanns] = hinsanns if hinsanns
-      annotations[:relanns] = hrelanns if hrelanns
+      annotations[:relations] = hrelations if hrelations
       annotations[:modanns] = hmodanns if hmodanns
       annotations
     else
@@ -279,10 +279,10 @@ class ApplicationController < ActionController::Base
           save_hinsanns(insanns, project, doc)
         end
 
-        if annotations[:relanns] and !annotations[:relanns].empty?
-          relanns = annotations[:relanns]
-          relanns = relanns.values if relanns.respond_to?(:values)
-          save_hrelanns(relanns, project, doc)
+        if annotations[:relations] and !annotations[:relations].empty?
+          relations = annotations[:relations]
+          relations = relations.values if relations.respond_to?(:values)
+          save_hrelations(relations, project, doc)
         end
 
         if annotations[:modanns] and !annotations[:modanns].empty?
@@ -384,15 +384,15 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def bag_spans (spans, relanns)
+  def bag_spans (spans, relations)
     tomerge = Hash.new
 
-    new_relanns = Array.new
-    relanns.each do |ra|
+    new_relations = Array.new
+    relations.each do |ra|
       if ra[:type] == 'lexChain'
         tomerge[ra[:object]] = ra[:subject]
       else
-        new_relanns << ra
+        new_relations << ra
       end
     end
     idx = Hash.new
@@ -410,7 +410,7 @@ class ApplicationController < ActionController::Base
       mergedto[from] = to
     end
 
-    return spans, new_relanns
+    return spans, new_relations
   end
 
 
@@ -456,42 +456,42 @@ class ApplicationController < ActionController::Base
   end
 
 
-  ## get relanns
-  def get_relanns (project_name, sourcedb, sourceid, serial = 0)
-    relanns = []
+  ## get relations
+  def get_relations (project_name, sourcedb, sourceid, serial = 0)
+    relations = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if project_name and project = doc.projects.find_by_name(project_name)
-        relanns  = doc.subcatrels.where("relanns.project_id = ?", project.id)
-        relanns += doc.subinsrels.where("relanns.project_id = ?", project.id)
-        relanns.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
-#        relanns += doc.objcatrels.where("relanns.project_id = ?", project.id)
-#        relanns += doc.objinsrels.where("relanns.project_id = ?", project.id)
+        relations  = doc.subcatrels.where("relations.project_id = ?", project.id)
+        relations += doc.subinsrels.where("relations.project_id = ?", project.id)
+        relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
+#        relations += doc.objcatrels.where("relations.project_id = ?", project.id)
+#        relations += doc.objinsrels.where("relations.project_id = ?", project.id)
       else
-        relanns = doc.subcatrels + doc.subinsrels unless doc.spans.empty?
+        relations = doc.subcatrels + doc.subinsrels unless doc.spans.empty?
       end
     else
       if project_name and project = Project.find_by_name(project_name)
-        relanns = project.relanns
+        relations = project.relations
       else
-        relanns = Relann.all
+        relations = Relation.all
       end
     end
 
-    relanns
+    relations
   end
 
 
-  # get relanns (hash version)
-  def get_hrelanns (project_name, sourcedb, sourceid, serial = 0)
-    relanns = get_relanns(project_name, sourcedb, sourceid, serial)
-    hrelanns = relanns.collect {|ra| ra.get_hash}
+  # get relations (hash version)
+  def get_hrelations (project_name, sourcedb, sourceid, serial = 0)
+    relations = get_relations(project_name, sourcedb, sourceid, serial)
+    hrelations = relations.collect {|ra| ra.get_hash}
   end
 
 
-  def save_hrelanns (hrelanns, project, doc)
-    hrelanns.each do |a|
-      ra           = Relann.new
+  def save_hrelations (hrelations, project, doc)
+    hrelations.each do |a|
+      ra           = Relation.new
       ra.hid       = a[:id]
       ra.reltype   = a[:type]
       ra.relsub    = case a[:subject]

@@ -30,7 +30,7 @@
 <% end %>
 </table>
 
-<% unless @relanns.empty? %>
+<% unless @relations.empty? %>
 <h2>Chain annotations</h1>
 
 <table class="ann">
@@ -42,13 +42,13 @@
     <th>Object</th>
   </tr>
 
-<% @relanns.each do |relann| %>
+<% @relations.each do |relation| %>
   <tr>
-    <td><%= relann.project %></td>
-    <td><%= relann.id %></td>
-    <td><%= relann.subject %></td>
-    <td><%= relann.type %></td>
-    <td><%= relann.object %></td>
+    <td><%= relation.project %></td>
+    <td><%= relation.id %></td>
+    <td><%= relation.subject %></td>
+    <td><%= relation.type %></td>
+    <td><%= relation.object %></td>
   </tr>
 <% end %>
 </table>

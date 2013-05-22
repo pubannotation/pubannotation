@@ -4,11 +4,11 @@ class Span < ActiveRecord::Base
 
   has_many :insanns, :foreign_key => "insobj_id", :dependent => :destroy
 
-  has_many :subrels, :class_name => 'Relann', :as => :relsub, :dependent => :destroy
-  has_many :objrels, :class_name => 'Relann', :as => :relobj, :dependent => :destroy
+  has_many :subrels, :class_name => 'Relation', :as => :relsub, :dependent => :destroy
+  has_many :objrels, :class_name => 'Relation', :as => :relobj, :dependent => :destroy
 
   has_many :insmods, :class_name => 'Modann', :through => :insanns
-  has_many :relmods, :class_name => 'Modann', :through => :relanns
+  has_many :relmods, :class_name => 'Modann', :through => :relantions
 
 
   attr_accessible :hid, :begin, :end, :category

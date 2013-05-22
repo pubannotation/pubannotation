@@ -387,7 +387,7 @@ describe ApplicationController do
   describe 'get_annotations' do
     context 'when project annd doc exists' do
       context 'when options nothing' do
-        context 'when hspans, hinsanns, hrelanns, hmodanns does not exists' do
+        context 'when hspans, hinsanns, hrelations, hmodanns does not exists' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
@@ -405,7 +405,7 @@ describe ApplicationController do
           end
         end
       
-        context 'when hspans, hinsanns, hrelanns, hmodanns exists' do
+        context 'when hspans, hinsanns, hrelations, hmodanns exists' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
@@ -416,7 +416,7 @@ describe ApplicationController do
             @result = controller.get_annotations(@project, @doc)
           end
           
-          it 'should returns doc params, spans, insanns, relanns and modanns' do
+          it 'should returns doc params, spans, insanns, relations and modanns' do
             @result.should eql({
               :source_db => @doc.sourcedb, 
               :source_id => @doc.sourceid, 
@@ -425,7 +425,7 @@ describe ApplicationController do
               :text => @doc.body,
               :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
               :insanns => [{:id => @insann.hid, :type => @insann.instype, :object => @insann.insobj.hid}],
-              :relanns => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.relobj.hid}],
+              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.relobj.hid}],
               :modanns => [{:id => @insmod.hid, :type => @insmod.modtype, :object => @insmod.modobj.hid}]
               })
           end
@@ -457,8 +457,8 @@ describe ApplicationController do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
           @get_ascii_text = 'DOC body'
           @hspans = 'hspans'
-          @hrelanns = 'hrelanns'
-          controller.stub(:bag_spans).and_return([@hspans, @hrelanns])
+          @hrelations = 'hrelations'
+          controller.stub(:bag_spans).and_return([@hspans, @hrelations])
           @result = controller.get_annotations(@project, @doc, :discontinuous_annotation => 'bag')
         end
         
@@ -470,7 +470,7 @@ describe ApplicationController do
             :section => @doc.section, 
             :text => @doc.body,
             :spans => @hspans,
-            :relanns => @hrelanns
+            :relations => @hrelations
             })
         end
       end
@@ -492,12 +492,12 @@ describe ApplicationController do
       before do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-        @annotations = {:spans => 'spans', :insanns => ['insann'], :relanns => ['relann'], :modanns => ['modann']}
+        @annotations = {:spans => 'spans', :insanns => ['insann'], :relations => ['relation'], :modanns => ['modann']}
         controller.stub(:clean_hspans).and_return('clean_hspans')
         controller.stub(:realign_spans).and_return('realign_spans')
         controller.stub(:save_hspans).and_return('save_hspans')
         controller.stub(:save_hinsanns).and_return('save_hinsanns')
-        controller.stub(:save_hrelanns).and_return('save_hrelanns')
+        controller.stub(:save_hrelations).and_return('save_hrelations')
         controller.stub(:save_hmodanns).and_return('save_hmodanns')
         @result = controller.save_annotations(@annotations, @project, @doc)
       end
@@ -509,7 +509,7 @@ describe ApplicationController do
     
     context 'spans does not exists' do
       before do
-        @annotations = {:spans => 'spans', :insanns => ['insann'], :relanns => ['relann'], :modanns => ['modann']}
+        @annotations = {:spans => 'spans', :insanns => ['insann'], :relations => ['relation'], :modanns => ['modann']}
         controller.stub(:clean_hspans).and_return(nil)
         @result = controller.save_annotations(@annotations, nil, nil)
       end
@@ -732,17 +732,17 @@ describe ApplicationController do
   
   describe 'bag_spans' do
   #  pending 'because object.property should be symbol' do
-      context 'when relann type = lexChain' do
+      context 'when relation type = lexChain' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
           @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
           @spans = Array.new
           @spans << @span.get_hash
-          @relann = FactoryGirl.create(:relann, :reltype => 'lexChain', :relobj => @span, :project => @project)
-          @relanns = Array.new
-          @relanns << @relann.get_hash
-          @result = controller.bag_spans(@spans, @relanns)
+          @relation = FactoryGirl.create(:relation, :reltype => 'lexChain', :relobj => @span, :project => @project)
+          @relations = Array.new
+          @relations << @relation.get_hash
+          @result = controller.bag_spans(@spans, @relations)
         end
         
         it 'spans should be_blank' do
@@ -754,17 +754,17 @@ describe ApplicationController do
         end
       end
       
-      context 'when relann type not = lexChain' do
+      context 'when relation type not = lexChain' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
           @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
           @spans = Array.new
           @spans << @span.get_hash
-          @relann = FactoryGirl.create(:relann, :reltype => 'NotlexChain', :relobj => @span, :project => @project)
-          @relanns = Array.new
-          @relanns << @relann.get_hash
-          @result = controller.bag_spans(@spans, @relanns)
+          @relation = FactoryGirl.create(:relation, :reltype => 'NotlexChain', :relobj => @span, :project => @project)
+          @relations = Array.new
+          @relations << @relation.get_hash
+          @result = controller.bag_spans(@spans, @relations)
         end
         
         it 'spans should be_blank' do
@@ -772,7 +772,7 @@ describe ApplicationController do
         end
         
         it '' do
-          @result[1][0].should eql(@relann.get_hash)
+          @result[1][0].should eql(@relation.get_hash)
         end
       end
 #    end
@@ -887,7 +887,7 @@ describe ApplicationController do
     end
   end
   
-  describe 'get_relanns' do
+  describe 'get_relations' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
@@ -901,22 +901,22 @@ describe ApplicationController do
       context 'when doc.projects.find by project name exists' do
         before do
           @doc.projects << @project
-          @relanns = controller.get_relanns(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @relations = controller.get_relations(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
         end
         
         it 'should return doc.subcatrels and doc.subinsrels wose project_id = project.id ' do
-          (@relanns - [@subcatrel, @subinsrel]).should be_blank
+          (@relations - [@subcatrel, @subinsrel]).should be_blank
         end
       end
 
       context 'when doc.projects.find by project name exists' do
         before do
           @doc.projects << @project
-          @relanns = controller.get_relanns('', @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @relations = controller.get_relations('', @doc.sourcedb, @doc.sourceid, @doc.serial)
         end
         
         it 'should return doc.subcatrels and doc.subinsrels' do
-          (@relanns - [@subcatrel, @subinsrel]).should be_blank
+          (@relations - [@subcatrel, @subinsrel]).should be_blank
         end
       end
     end
@@ -925,11 +925,11 @@ describe ApplicationController do
       context 'when Project.find_by_name(project_name) exists' do
         before do
           @doc.projects << @project
-          @relanns = controller.get_relanns(@project.name, 'non existant source db', @doc.sourceid, @doc.serial)
+          @relations = controller.get_relations(@project.name, 'non existant source db', @doc.sourceid, @doc.serial)
         end
         
-        it 'should return project.relanns' do
-          (@relanns - @project.relanns).should be_blank
+        it 'should return project.relations' do
+          (@relations - @project.relations).should be_blank
         end
       end
 
@@ -937,54 +937,54 @@ describe ApplicationController do
         before do
           @doc.projects << @project
           5.times do
-            FactoryGirl.create(:relann, :relobj => @span, :project => @project)
+            FactoryGirl.create(:relation, :relobj => @span, :project => @project)
           end
-          @relanns = controller.get_relanns('non existant project name', 'non existant source db', @doc.sourceid, @doc.serial)
+          @relations = controller.get_relations('non existant project name', 'non existant source db', @doc.sourceid, @doc.serial)
         end
         
         it 'should return Rellann.all' do
-          (Relann.all - @relanns).should be_blank
+          (Relation.all - @relations).should be_blank
         end
       end
     end
   end
   
-  describe 'get_hrelanns' do
+  describe 'get_hrelations' do
     before do
       @subcatrel = FactoryGirl.create(:subcatrel, :relobj_id => 1, :project_id => 1)
-      controller.stub(:get_relanns).and_return([@subcatrel])
-      Relann.any_instance.stub(:get_hash).and_return(@subcatrel.id)
-      @hrelanns = controller.get_hrelanns('', '', '', '')
+      controller.stub(:get_relations).and_return([@subcatrel])
+      Relation.any_instance.stub(:get_hash).and_return(@subcatrel.id)
+      @hrelations = controller.get_hrelations('', '', '', '')
     end
     
-    it 'should return array relanns.get_hash got by get_relanns' do
-      @hrelanns.should eql([@subcatrel.get_hash])
+    it 'should return array relations.get_hash got by get_relations' do
+      @hrelations.should eql([@subcatrel.get_hash])
     end
   end
   
-  describe 'save_hrelanns' do
+  describe 'save_hrelations' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @hrelanns = Array.new
+      @hrelations = Array.new
     end
     
-    context 'hrelanns subject and object match /^T/' do
+    context 'hrelations subject and object match /^T/' do
       before do
-        @hrelann = {:id => 'hid', :type => 'reltype', :subject => 'T1', :object => 'T1'}
-        @hrelanns << @hrelann
-        @result = controller.save_hrelanns(@hrelanns, @project, @doc)
+        @hrelation = {:id => 'hid', :type => 'reltype', :subject => 'T1', :object => 'T1'}
+        @hrelations << @hrelation
+        @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
       
-      it 'should save new Relann successfully' do
+      it 'should save new Relation successfully' do
         @result.should be_true
       end
       
-      it 'should save from hrelanns params and project, and relsub and relobj should be span' do
-        Relann.where(
-          :hid => @hrelann[:id], 
-          :reltype => @hrelann[:type], 
+      it 'should save from hrelations params and project, and relsub and relobj should be span' do
+        Relation.where(
+          :hid => @hrelation[:id], 
+          :reltype => @hrelation[:type], 
           :relsub_id => @span.id, 
           :relsub_type => @span.class, 
           :relobj_id => @span.id, 
@@ -994,22 +994,22 @@ describe ApplicationController do
       end
     end
 
-    context 'hrelanns subject and object does not match /^T/' do
+    context 'hrelations subject and object does not match /^T/' do
       before do
-        @hrelann = {:id => 'hid', :type => 'reltype', :subject => 'M1', :object => 'M1'}
-        @hrelanns << @hrelann
-        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span, :hid => @hrelann[:subject])
-        @result = controller.save_hrelanns(@hrelanns, @project, @doc)
+        @hrelation = {:id => 'hid', :type => 'reltype', :subject => 'M1', :object => 'M1'}
+        @hrelations << @hrelation
+        @insann = FactoryGirl.create(:insann, :project => @project, :insobj => @span, :hid => @hrelation[:subject])
+        @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
       
-      it 'should save new Relann successfully' do
+      it 'should save new Relation successfully' do
         @result.should be_true
       end
       
-      it 'should save from hrelanns params and project, and relsub and relobj should be insann' do
-        Relann.where(
-          :hid => @hrelann[:id], 
-          :reltype => @hrelann[:type], 
+      it 'should save from hrelations params and project, and relsub and relobj should be insann' do
+        Relation.where(
+          :hid => @hrelation[:id], 
+          :reltype => @hrelation[:type], 
           :relsub_id => @insann.id, 
           :relsub_type => @insann.class, 
           :relobj_id => @insann.id, 

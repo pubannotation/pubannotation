@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130521075634) do
+ActiveRecord::Schema.define(:version => 20130522012358) do
 
   create_table "docs", :force => true do |t|
     t.text     "body"
@@ -81,7 +81,7 @@ ActiveRecord::Schema.define(:version => 20130521075634) do
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true
 
-  create_table "relanns", :force => true do |t|
+  create_table "relations", :force => true do |t|
     t.string   "hid"
     t.integer  "relsub_id"
     t.string   "relsub_type"
@@ -93,9 +93,9 @@ ActiveRecord::Schema.define(:version => 20130521075634) do
     t.datetime "updated_at",  :null => false
   end
 
-  add_index "relanns", ["project_id"], :name => "index_relanns_on_project_id"
-  add_index "relanns", ["relobj_id"], :name => "index_relanns_on_relobj_id"
-  add_index "relanns", ["relsub_id"], :name => "index_relanns_on_relsub_id"
+  add_index "relations", ["project_id"], :name => "index_relations_on_project_id"
+  add_index "relations", ["relobj_id"], :name => "index_relations_on_relobj_id"
+  add_index "relations", ["relsub_id"], :name => "index_relations_on_relsub_id"
 
   create_table "spans", :force => true do |t|
     t.string   "hid"

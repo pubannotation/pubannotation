@@ -4,7 +4,7 @@ class Project < ActiveRecord::Base
 
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter
   has_many :spans, :dependent => :destroy
-  has_many :relanns, :dependent => :destroy
+  has_many :relations, :dependent => :destroy
   has_many :insanns, :dependent => :destroy
   has_many :modanns, :dependent => :destroy
 

@@ -15,7 +15,7 @@ class Annotation
     text = @annotation[:text]
     spans = @annotation[:spans]
     insanns = @annotation[:insanns]
-    relanns = @annotation[:relanns]
+    relations = @annotation[:relations]
     modanns = @annotation[:modanns]
 
     spans = Hash.new;
@@ -28,9 +28,9 @@ class Annotation
     wholeof   = Hash.new;
     equivs    = Hash.new;
 
-    if relanns
+    if relations
 
-      relanns.each do |r|
+      relations.each do |r|
         if (r[:object][0] == 'E')
 
           type = r[:type][0...-2]

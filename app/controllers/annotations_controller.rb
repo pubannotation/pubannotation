@@ -17,7 +17,7 @@ class AnnotationsController < ApplicationController
           @text = annotations[:text]
           @spans = annotations[:spans]
           @insanns = annotations[:insanns]
-          @relanns = annotations[:relanns]
+          @relations = annotations[:relations]
           @modanns = annotations[:modanns]
         end
 

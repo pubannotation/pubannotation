@@ -1,0 +1,21 @@
+<h1>Relation annotations</h1>
+
+<table class="ann">
+  <tr>
+    <th>Project</th>
+    <th>Id</th>
+    <th>Subject</th>
+    <th>Type</th>
+    <th>Object</th>
+  </tr>
+
+<% @relations.each do |relation| %>
+  <tr>
+    <td><%= relation.project %></td>
+    <td><%= relation.id %></td>
+    <td><%= relation.subject %></td>
+    <td><%= relation.type %></td>
+    <td><%= relation.object %></td>
+  </tr>
+<% end %>
+</table>

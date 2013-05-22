@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Relann do
+describe Relation do
   describe 'get_hash' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))

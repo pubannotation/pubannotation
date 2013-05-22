@@ -49,7 +49,7 @@
 <% end %>
 
 
-<% if @relanns and !@relanns.empty? %>
+<% if @relations and !@relations.empty? %>
   <h2>Relation annotations</h2>
   <table class="ann">
     <tr>
@@ -59,12 +59,12 @@
       <th>Object</th>
     </tr>
 
-  <% @relanns.each do |relann| %>
+  <% @relations.each do |relation| %>
     <tr>
-      <td><%= relann[:id] %></td>
-      <td><%= relann[:type] %></td>
-      <td><%= relann[:subject] %></td>
-      <td><%= relann[:object] %></td>
+      <td><%= relation[:id] %></td>
+      <td><%= relation[:type] %></td>
+      <td><%= relation[:subject] %></td>
+      <td><%= relation[:object] %></td>
     </tr>
   <% end %>
   </table>
@@ -89,6 +89,6 @@
   </table>
 <% end %>
 
-<% if (!@catanns or @catanns.empty?) and (!@insanns or @insanns.empty?) and (!@relanns or @relanns.empty?) and (!@modanns or @modanns.empty?) %>
+<% if (!@catanns or @catanns.empty?) and (!@insanns or @insanns.empty?) and (!@relations or @relations.empty?) and (!@modanns or @modanns.empty?) %>
 <p>none</p>
 <% end %>
