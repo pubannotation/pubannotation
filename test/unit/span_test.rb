@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CatannTest < ActiveSupport::TestCase
+class SpanTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

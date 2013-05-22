@@ -11,21 +11,21 @@
     <th>Category</th>
   </tr>
 
-<% @catanns.each do |catann| %>
+<% @spans.each do |span| %>
   <tr>
-    <td><%= catann.project %></td>
-    <!--td><= catann.doc_sourcedb %></td>
-    <td><= catann.doc_sourceid %></td>
-    <td><= catann.doc_serial %></td-->
-    <td><%= catann.id %></td>
+    <td><%= span.project %></td>
+    <!--td><= span.doc_sourcedb %></td>
+    <td><= span.doc_sourceid %></td>
+    <td><= span.doc_serial %></td-->
+    <td><%= span.id %></td>
     <td>
-      <% unless catann.span.respond_to?(:keys) %>
-        <% catann.span.each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+      <% unless span.span.respond_to?(:keys) %>
+        <% span.span.each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
       <% else %>
-        <%= catann.span[:begin] %>:<%= catann.span[:end] %>
+        <%= span.span[:begin] %>:<%= span.span[:end] %>
       <% end %>
     </td>
-    <td><%= catann.category %></td>
+    <td><%= span.category %></td>
   </tr>
 <% end %>
 </table>

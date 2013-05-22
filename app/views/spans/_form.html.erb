@@ -1,10 +1,10 @@
-<%= form_for(@catann) do |f| %>
-  <% if @catann.errors.any? %>
+<%= form_for(@span) do |f| %>
+  <% if @span.errors.any? %>
     <div id="error_explanation">
-      <h2><%= pluralize(@catann.errors.count, "error") %> prohibited this catann from being saved:</h2>
+      <h2><%= pluralize(@span.errors.count, "error") %> prohibited this span from being saved:</h2>
 
       <ul>
-      <% @catann.errors.full_messages.each do |msg| %>
+      <% @span.errors.full_messages.each do |msg| %>
         <li><%= msg %></li>
       <% end %>
       </ul>

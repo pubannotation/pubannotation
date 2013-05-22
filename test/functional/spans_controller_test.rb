@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CatannsControllerTest < ActionController::TestCase
+class spansControllerTest < ActionController::TestCase
   setup do
     @span = spans(:one)
   end
@@ -17,7 +17,7 @@ class CatannsControllerTest < ActionController::TestCase
   end
 
   test "should create span" do
-    assert_difference('Catann.count') do
+    assert_difference('Span.count') do
       post :create, span: { begin: @span.begin, category: @span.category, end: @span.end, hid: @span.hid }
     end
 
@@ -40,7 +40,7 @@ class CatannsControllerTest < ActionController::TestCase
   end
 
   test "should destroy span" do
-    assert_difference('Catann.count', -1) do
+    assert_difference('Span.count', -1) do
       delete :destroy, id: @span
     end
 
