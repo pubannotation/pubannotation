@@ -8,9 +8,9 @@ class Doc < ActiveRecord::Base
   #has_many :objcatrels, :class_name => 'Relation', :through => :spans, :source => :objrels
   #has_many :objinsrels, :class_name => 'Relation', :through => :insanns, :source => :objrels
 
-  has_many :insmods, :class_name => 'Modann', :through => :insanns, :source => :modanns
-  has_many :subcatrelmods, :class_name => 'Modann', :through => :subcatrels, :source => :modanns
-  has_many :subinsrelmods, :class_name => 'Modann', :through => :subinsrels, :source => :modanns
+  has_many :insmods, :class_name => 'Modification', :through => :insanns, :source => :modifications
+  has_many :subcatrelmods, :class_name => 'Modification', :through => :subcatrels, :source => :modifications
+  has_many :subinsrelmods, :class_name => 'Modification', :through => :subinsrels, :source => :modifications
 
   has_and_belongs_to_many :projects
 end

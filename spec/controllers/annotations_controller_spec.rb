@@ -21,7 +21,7 @@ describe AnnotationsController do
             :spans => 'spans val',
             :insanns => 'insanns val',
             :relations => 'relations val',
-            :modanns => 'modanns val'
+            :modifications => 'modifications val'
           }
         controller.stub(:get_annotations).and_return(@annotations)
       end

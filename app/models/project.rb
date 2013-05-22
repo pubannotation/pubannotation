@@ -6,7 +6,7 @@ class Project < ActiveRecord::Base
   has_many :spans, :dependent => :destroy
   has_many :relations, :dependent => :destroy
   has_many :insanns, :dependent => :destroy
-  has_many :modanns, :dependent => :destroy
+  has_many :modifications, :dependent => :destroy
 
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
 end

@@ -70,7 +70,7 @@
   </table>
 <% end %>
 
-<% if @modanns and !@modanns.empty? %>
+<% if @modifications and !@modifications.empty? %>
   <h2>Modification annotations</h2>
   <table class="ann">
     <tr>
@@ -79,16 +79,16 @@
       <th>Mod. object</th>
     </tr>
 
-  <% @modanns.each do |modann| %>
+  <% @modifications.each do |modification| %>
     <tr>
-      <td><%= modann[:id] %></td>
-      <td><%= modann[:type] %></td>
-      <td><%= modann[:object] %></td>
+      <td><%= modification[:id] %></td>
+      <td><%= modification[:type] %></td>
+      <td><%= modification[:object] %></td>
     </tr>
   <% end %>
   </table>
 <% end %>
 
-<% if (!@spans or @spans.empty?) and (!@insanns or @insanns.empty?) and (!@relations or @relations.empty?) and (!@modanns or @modanns.empty?) %>
+<% if (!@spans or @spans.empty?) and (!@insanns or @insanns.empty?) and (!@relations or @relations.empty?) and (!@modifications or @modifications.empty?) %>
 <p>none</p>
 <% end %>

@@ -1,0 +1,25 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Hid:</b>
+  <%= @modification.hid %>
+</p>
+
+<p>
+  <b>Modtype:</b>
+  <%= @modification.modtype %>
+</p>
+
+<p>
+  <b>Modobj:</b>
+  <%= @modification.modobj %>
+</p>
+
+<p>
+  <b>Project:</b>
+  <%= @modification.project %>
+</p>
+
+
+<%= link_to 'Edit', edit_modification_path(@modification) %> |
+<%= link_to 'Back', modifications_path %>

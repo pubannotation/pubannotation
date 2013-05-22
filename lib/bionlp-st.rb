@@ -16,7 +16,7 @@ class Annotation
     spans = @annotation[:spans]
     insanns = @annotation[:insanns]
     relations = @annotation[:relations]
-    modanns = @annotation[:modanns]
+    modifications = @annotation[:modifications]
 
     spans = Hash.new;
     spans.each {|c| spans[c[:id]] = c} if spans
@@ -217,8 +217,8 @@ class Annotation
 
     end
 
-    if modanns
-      modanns.each do |m|
+    if modifications
+      modifications.each do |m|
         a2 += "#{m[:id]}\t#{m[:type]} #{m[:object]}\n"
       end
     end

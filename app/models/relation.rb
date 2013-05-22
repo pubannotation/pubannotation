@@ -3,7 +3,7 @@ class Relation < ActiveRecord::Base
   belongs_to :relsub, :polymorphic => true
   belongs_to :relobj, :polymorphic => true
 
-  has_many :modanns, :as => :modobj, :dependent => :destroy
+  has_many :modifications, :as => :modobj, :dependent => :destroy
 
   attr_accessible :hid, :reltype
 

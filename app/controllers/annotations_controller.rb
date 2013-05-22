@@ -18,7 +18,7 @@ class AnnotationsController < ApplicationController
           @spans = annotations[:spans]
           @insanns = annotations[:insanns]
           @relations = annotations[:relations]
-          @modanns = annotations[:modanns]
+          @modifications = annotations[:modifications]
         end
 
       else

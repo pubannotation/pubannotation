@@ -218,11 +218,11 @@ class ApplicationController < ActionController::Base
       relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
       hrelations = relations.collect {|ra| ra.get_hash} unless relations.empty?
 
-      modanns = doc.insmods.where("modanns.project_id = ?", project.id)
-      modanns += doc.subcatrelmods.where("modanns.project_id = ?", project.id)
-      modanns += doc.subinsrelmods.where("modanns.project_id = ?", project.id)
-      modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
-      hmodanns = modanns.collect {|ma| ma.get_hash} unless modanns.empty?
+      modifications = doc.insmods.where("modifications.project_id = ?", project.id)
+      modifications += doc.subcatrelmods.where("modifications.project_id = ?", project.id)
+      modifications += doc.subinsrelmods.where("modifications.project_id = ?", project.id)
+      modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
+      hmodifications = modifications.collect {|ma| ma.get_hash} unless modifications.empty?
 
       text = doc.body
       if (options[:encoding] == 'ascii')
@@ -254,7 +254,7 @@ class ApplicationController < ActionController::Base
       annotations[:spans] = hspans if hspans
       annotations[:insanns] = hinsanns if hinsanns
       annotations[:relations] = hrelations if hrelations
-      annotations[:modanns] = hmodanns if hmodanns
+      annotations[:modifications] = hmodifications if hmodifications
       annotations
     else
       nil
@@ -285,10 +285,10 @@ class ApplicationController < ActionController::Base
           save_hrelations(relations, project, doc)
         end
 
-        if annotations[:modanns] and !annotations[:modanns].empty?
-          modanns = annotations[:modanns]
-          modanns = modanns.values if modanns.respond_to?(:values)
-          save_hmodanns(modanns, project, doc)
+        if annotations[:modifications] and !annotations[:modifications].empty?
+          modifications = annotations[:modifications]
+          modifications = modifications.values if modifications.respond_to?(:values)
+          save_hmodifications(modifications, project, doc)
         end
 
         notice = 'Annotations were successfully created/updated.'
@@ -508,45 +508,45 @@ class ApplicationController < ActionController::Base
   end
 
 
-  ## get modanns
-  def get_modanns (project_name, sourcedb, sourceid, serial = 0)
-    modanns = []
+  ## get modifications
+  def get_modifications (project_name, sourcedb, sourceid, serial = 0)
+    modifications = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if project_name and project = doc.projects.find_by_name(project_name)
-        modanns = doc.insmods.where("modanns.project_id = ?", project.id)
-        modanns += doc.subcatrelmods.where("modanns.project_id = ?", project.id)
-        modanns += doc.subinsrelmods.where("modanns.project_id = ?", project.id)
-        modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
+        modifications = doc.insmods.where("modifications.project_id = ?", project.id)
+        modifications += doc.subcatrelmods.where("modifications.project_id = ?", project.id)
+        modifications += doc.subinsrelmods.where("modifications.project_id = ?", project.id)
+        modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       else
-        #modanns = doc.modanns unless doc.spans.empty?
-        modanns = doc.insmods
-        modanns += doc.subcatrelmods
-        modanns += doc.subinsrelmods
-        modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
+        #modifications = doc.modifications unless doc.spans.empty?
+        modifications = doc.insmods
+        modifications += doc.subcatrelmods
+        modifications += doc.subinsrelmods
+        modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       end
     else
       if project_name and project = Project.find_by_name(project_name)
-        modanns = project.modanns
+        modifications = project.modifications
       else
-        modanns = Modann.all
+        modifications = Modification.all
       end
     end
 
-    modanns
+    modifications
   end
 
 
-  # get modanns (hash version)
-  def get_hmodanns (project_name, sourcedb, sourceid, serial = 0)
-    modanns = get_modanns(project_name, sourcedb, sourceid, serial)
-    hmodanns = modanns.collect {|ma| ma.get_hash}
+  # get modifications (hash version)
+  def get_hmodifications (project_name, sourcedb, sourceid, serial = 0)
+    modifications = get_modifications(project_name, sourcedb, sourceid, serial)
+    hmodifications = modifications.collect {|ma| ma.get_hash}
   end
 
 
-  def save_hmodanns (hmodanns, project, doc)
-    hmodanns.each do |a|
-      ma           = Modann.new
+  def save_hmodifications (hmodifications, project, doc)
+    hmodifications.each do |a|
+      ma           = Modification.new
       ma.hid       = a[:id]
       ma.modtype   = a[:type]
       ma.modobj    = case a[:object]

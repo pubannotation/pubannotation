@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  hid: MyString
+  modtype: MyString
+  modobj: 
+  annset: 
+
+two:
+  hid: MyString
+  modtype: MyString
+  modobj: 
+  annset: 
