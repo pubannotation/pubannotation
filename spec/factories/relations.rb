@@ -12,7 +12,6 @@ FactoryGirl.define do
   end
   
   factory :subcatrel, :parent => :relation do |c|
-    c.relsub_type 'Span' 
     c.relobj_id {|relobj| relobj.association(:relobj)}
     c.relobj_type 'Span'
     c.reltype 'coreferenceOf'
