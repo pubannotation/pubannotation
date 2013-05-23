@@ -7,8 +7,8 @@ class Span < ActiveRecord::Base
   has_many :subrels, :class_name => 'Relation', :as => :relsub, :dependent => :destroy
   has_many :objrels, :class_name => 'Relation', :as => :relobj, :dependent => :destroy
 
-  has_many :insmods, :class_name => 'Modification', :through => :instances
-  has_many :relmods, :class_name => 'Modification', :through => :relantions
+  has_many :insmods, :class_name => 'Modification', :through => :insanns, :source => :modifications
+  has_many :relmods, :class_name => 'Modification', :through => :relations
 
 
   attr_accessible :hid, :begin, :end, :category
