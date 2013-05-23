@@ -24,7 +24,18 @@ describe Span do
   end
   
   describe 'has_many instances' do
-    pending 'instances should be changed'
+    before do
+      @span = FactoryGirl.create(:span, :project_id => 10, :doc_id => 20)
+      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 10) 
+    end
+    
+    it 'span.instances should present' do
+      @span.instances.should be_present
+    end
+    
+    it 'span.instances should present' do
+      (@span.instances - [@instance]).should be_blank
+    end
   end
   
   describe 'has_many subrels' do

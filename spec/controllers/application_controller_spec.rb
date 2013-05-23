@@ -731,51 +731,49 @@ describe ApplicationController do
   end
   
   describe 'bag_spans' do
-  #  pending 'because object.property should be symbol' do
-      context 'when relation type = lexChain' do
-        before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-          @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-          @spans = Array.new
-          @spans << @span.get_hash
-          @relation = FactoryGirl.create(:relation, :reltype => 'lexChain', :relobj => @span, :project => @project)
-          @relations = Array.new
-          @relations << @relation.get_hash
-          @result = controller.bag_spans(@spans, @relations)
-        end
-        
-        it 'spans should be_blank' do
-          @result[0].should be_blank
-        end
-
-        it 'spans should be_blank' do
-          @result[1].should be_blank
-        end
+    context 'when relation type = lexChain' do
+      before do
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @spans = Array.new
+        @spans << @span.get_hash
+        @relation = FactoryGirl.create(:relation, :reltype => 'lexChain', :relobj => @span, :project => @project)
+        @relations = Array.new
+        @relations << @relation.get_hash
+        @result = controller.bag_spans(@spans, @relations)
       end
       
-      context 'when relation type not = lexChain' do
-        before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-          @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-          @spans = Array.new
-          @spans << @span.get_hash
-          @relation = FactoryGirl.create(:relation, :reltype => 'NotlexChain', :relobj => @span, :project => @project)
-          @relations = Array.new
-          @relations << @relation.get_hash
-          @result = controller.bag_spans(@spans, @relations)
-        end
-        
-        it 'spans should be_blank' do
-          @result[0][0].should eql({:id => "T1", :span => {:begin => 1 , :end => 5}, :category => "Protein"})
-        end
-        
-        it '' do
-          @result[1][0].should eql(@relation.get_hash)
-        end
+      it 'spans should be_blank' do
+        @result[0].should be_blank
       end
-#    end
+
+      it 'spans should be_blank' do
+        @result[1].should be_blank
+      end
+    end
+    
+    context 'when relation type not = lexChain' do
+      before do
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @spans = Array.new
+        @spans << @span.get_hash
+        @relation = FactoryGirl.create(:relation, :reltype => 'NotlexChain', :relobj => @span, :project => @project)
+        @relations = Array.new
+        @relations << @relation.get_hash
+        @result = controller.bag_spans(@spans, @relations)
+      end
+      
+      it 'spans should be_blank' do
+        @result[0][0].should eql({:id => "T1", :span => {:begin => 1 , :end => 5}, :category => "Protein"})
+      end
+      
+      it '' do
+        @result[1][0].should eql(@relation.get_hash)
+      end
+    end
   end
   
   describe 'get_instances' do

@@ -19,7 +19,19 @@ describe Doc do
   end
   
   describe 'has_many instances' do
-    pending 'instance will be changed'
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @span = FactoryGirl.create(:span, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
+    end
+    
+    it 'span.instances should present' do
+      @span.instances.should be_present
+    end
+    
+    it 'span.instances should include instance through spans' do
+      (@span.instances - [@instance]).should be_blank
+    end
   end
   
   describe 'has_many :subcatrels' do
@@ -41,11 +53,42 @@ describe Doc do
   end
   
   describe 'has_many subinsrels' do
-    pending 'instance will be changed'
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @span = FactoryGirl.create(:span, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
+      @subinsrel = FactoryGirl.create(:relation,
+        :relsub_id => @instance,
+        :relsub_type => @instance.class.to_s,
+        :relobj_id => 20,
+        :project_id => 30
+      ) 
+    end
+    
+    it 'doc.subinsrels should present' do
+      @doc.subinsrels.should be_present
+    end
+    
+    it 'doc.subinsrels include Relation thrhou instances' do
+      (@doc.subinsrels - [@subinsrel]).should be_blank
+    end
   end
 
   describe 'has_many insmods' do
-    pending 'instance will be changed'
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @span = FactoryGirl.create(:span, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
+      @insmod = FactoryGirl.create(:modification, :modobj => @instance, :project_id => 5)
+    end
+    
+    it 'doc.insmods should present' do
+      @doc.insmods.should be_present
+    end
+    
+    it 'doc.insmods should present' do
+      (@doc.insmods - [@insmod]).should be_blank
+    end
   end
   
   describe 'has_many subcatrelmods' do
@@ -58,17 +101,39 @@ describe Doc do
       @subcatrelmod = FactoryGirl.create(:modification, :modobj => @subcatrel, :project => @project)
     end
     
-    it 'doc.subcatrelmods should' do
-      @doc.subcatrels.should include(@subcatrel)
+    it 'doc.subcatrelmods should present' do
+      @doc.subcatrels.should be_present
     end
     
-    it 'doc.subcatrelmods should' do
-      @doc.subcatrelmods.should include(@subcatrelmod)
+    it 'doc.subcatrelmods should inclde modification through subcatrels' do
+      (@doc.subcatrelmods - [@subcatrelmod]).should be_blank
     end
   end
 
   describe 'has_many :subinsrelmods' do
-    pending 'instance will be changed'
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @span = FactoryGirl.create(:span, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
+      @subinsrel = FactoryGirl.create(:relation,
+        :relsub_id => @instance,
+        :relsub_type => @instance.class.to_s,
+        :relobj_id => 20,
+        :project_id => 30
+      )
+      @subinsrelmod = FactoryGirl.create(:modification,
+        :modobj => @subinsrel,
+        :project_id => 30
+      )
+    end
+    
+    it 'doc.subinsrelmods should present' do
+      @doc.subinsrelmods.should be_present
+    end
+    
+    it 'doc.subinsrelmods should inclde modification through subcatrels' do
+      (@doc.subinsrelmods - [@subinsrelmod]).should be_blank
+    end
   end
   
   

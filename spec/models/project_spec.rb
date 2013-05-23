@@ -71,7 +71,18 @@ describe Project do
   end
   
   describe 'has_many instances' do
-    pending 'instances will be changed'
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @instance = FactoryGirl.create(:instance, :insobj_id => 10, :project => @project)
+    end
+    
+    it 'project.instances should present' do
+      @project.instances.should be_present
+    end
+    
+    it 'project.instances should include related instance' do
+      (@project.instances - [@instance]).should be_blank
+    end
   end
   
   describe 'has_many modifications' do
