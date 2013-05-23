@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130522023425) do
+ActiveRecord::Schema.define(:version => 20130523014143) do
 
   create_table "docs", :force => true do |t|
     t.text     "body"
@@ -35,7 +35,7 @@ ActiveRecord::Schema.define(:version => 20130522023425) do
 
   add_index "docs_projects", ["project_id", "doc_id"], :name => "index_docs_projects_on_project_id_and_doc_id", :unique => true
 
-  create_table "insanns", :force => true do |t|
+  create_table "instances", :force => true do |t|
     t.string   "hid"
     t.integer  "insobj_id"
     t.string   "instype"
@@ -44,8 +44,8 @@ ActiveRecord::Schema.define(:version => 20130522023425) do
     t.datetime "updated_at", :null => false
   end
 
-  add_index "insanns", ["insobj_id"], :name => "index_insanns_on_insobj_id"
-  add_index "insanns", ["project_id"], :name => "index_insanns_on_project_id"
+  add_index "instances", ["insobj_id"], :name => "index_instances_on_insobj_id"
+  add_index "instances", ["project_id"], :name => "index_instances_on_project_id"
 
   create_table "modifications", :force => true do |t|
     t.string   "hid"
