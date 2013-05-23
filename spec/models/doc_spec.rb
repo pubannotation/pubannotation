@@ -58,7 +58,7 @@ describe Doc do
       @span = FactoryGirl.create(:span, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
-        :relsub_id => @instance,
+        :relsub_id => @instance.id,
         :relsub_type => @instance.class.to_s,
         :relobj_id => 20,
         :project_id => 30
@@ -116,7 +116,7 @@ describe Doc do
       @span = FactoryGirl.create(:span, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
-        :relsub_id => @instance,
+        :relsub_id => @instance.id,
         :relsub_type => @instance.class.to_s,
         :relobj_id => 20,
         :project_id => 30

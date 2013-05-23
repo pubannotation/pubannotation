@@ -144,13 +144,13 @@ describe ApplicationController do
   describe 'get_doc' do
     context 'when doc exists' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1)
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
       end
 
       context 'and when project passed and doc.projects does not include project' do
         before do
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid, @doc.serial, @project)
+          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
         end
         
         it 'should return nil and message that doc does not belongs to the annotasion set' do
@@ -160,7 +160,7 @@ describe ApplicationController do
       
       context 'and when project does not passed' do
         before do
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid, @doc.serial, nil)
+          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, nil)
         end
         
         it 'should return doc and nil' do
@@ -184,9 +184,9 @@ describe ApplicationController do
     context 'when divs present' do
       context 'and when project passed and divs.first.projects exclude project' do
         before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1)
+          @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '1')
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @result = controller.get_divs(@doc.sourceid, @project)
+          @result = controller.get_divs(@doc.sourceid.to_s, @project)
         end
         
         it 'should return nil and message doc does not belongs to the annotation' do
@@ -196,8 +196,8 @@ describe ApplicationController do
 
       context 'and when project does not passed' do
         before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1)
-          @result = controller.get_divs(@doc.sourceid, nil)
+          @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '1')
+          @result = controller.get_divs(@doc.sourceid.to_s, nil)
         end
         
         it 'should return docs and nil' do
@@ -390,7 +390,7 @@ describe ApplicationController do
         context 'when hspans, hinstances, hrelations, hmodifications does not exists' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-            @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+            @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
             @result = controller.get_annotations(@project, @doc)
           end
           
@@ -408,10 +408,10 @@ describe ApplicationController do
         context 'when hspans, hinstances, hrelations, hmodifications exists' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-            @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+            @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
             @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
             @instance = FactoryGirl.create(:instance, :project => @project, :insobj => @span)
-            @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
+            @subcatrel = FactoryGirl.create(:subcatrel,:relsub_id => @span.id, :relobj => @span, :project => @project)
             @insmod = FactoryGirl.create(:modification, :modobj => @instance, :project => @project)
             @result = controller.get_annotations(@project, @doc)
           end
@@ -435,7 +435,7 @@ describe ApplicationController do
       context 'when option encoding ascii exist' do
         before do
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
           @get_ascii_text = 'DOC body'
           controller.stub(:get_ascii_text).and_return(@get_ascii_text)
           @result = controller.get_annotations(@project, @doc, :encoding => 'ascii')
@@ -454,7 +454,7 @@ describe ApplicationController do
       context 'when option :discontinuous_annotation exist' do
         before do
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
           @get_ascii_text = 'DOC body'
           @hspans = 'hspans'
           @hrelations = 'hrelations'
@@ -491,7 +491,7 @@ describe ApplicationController do
     context 'when spans exists' do
       before do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
         @annotations = {:spans => 'spans', :instances => ['instance'], :relations => ['relation'], :modifications => ['modification']}
         controller.stub(:clean_hspans).and_return('clean_hspans')
         controller.stub(:realign_spans).and_return('realign_spans')
@@ -522,7 +522,7 @@ describe ApplicationController do
   
   describe 'get_spans' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
     end
     
@@ -536,7 +536,7 @@ describe ApplicationController do
           @project_another = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
           @span_another = FactoryGirl.create(:span, :project => @project_another, :doc => @doc)
-          @spans = controller.get_spans(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)       
+          @spans = controller.get_spans(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)       
         end
         
         it 'should returns doc.spans where project_id = project.id' do
@@ -548,7 +548,7 @@ describe ApplicationController do
       context 'when doc.project.find_by_name(project_name) does not exists' do
         before do
           @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-          @spans = controller.get_spans('none project name', @doc.sourcedb, @doc.sourceid, @doc.serial)       
+          @spans = controller.get_spans('none project name', @doc.sourcedb.to_s, @doc.sourceid.to_s, @doc.serial)       
         end
         
         it 'should return doc.spans' do
@@ -586,7 +586,7 @@ describe ApplicationController do
   
   describe 'get_hspans' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       controller.stub(:get_cattanns).and_return([@span])
@@ -676,7 +676,7 @@ describe ApplicationController do
   
   describe 'save_hspans' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @hspan = {:id => 'hid', :span => {:begin => 1, :end => 10}, :category => 'Category'}
       @hspans = Array.new
@@ -717,7 +717,7 @@ describe ApplicationController do
   describe 'chain_spans' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @span_1 = FactoryGirl.create(:span, :hid => 'A1', :project => @project, :doc => @doc)
       @span_2 = FactoryGirl.create(:span, :hid => 'A2', :project => @project, :doc => @doc)
       @span_3 = FactoryGirl.create(:span, :hid => 'A3', :project => @project, :doc => @doc)
@@ -733,12 +733,16 @@ describe ApplicationController do
   describe 'bag_spans' do
     context 'when relation type = lexChain' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @spans = Array.new
         @spans << @span.get_hash
-        @relation = FactoryGirl.create(:relation, :reltype => 'lexChain', :relobj => @span, :project => @project)
+        @relation = FactoryGirl.create(:relation, 
+        :reltype => 'lexChain', 
+        :relobj => @span, 
+        :project => @project,
+        :relsub_id => @span.id)
         @relations = Array.new
         @relations << @relation.get_hash
         @result = controller.bag_spans(@spans, @relations)
@@ -755,12 +759,17 @@ describe ApplicationController do
     
     context 'when relation type not = lexChain' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @spans = Array.new
         @spans << @span.get_hash
-        @relation = FactoryGirl.create(:relation, :reltype => 'NotlexChain', :relobj => @span, :project => @project)
+        @relation = FactoryGirl.create(:relation, 
+          :reltype => 'NotlexChain',
+          :relobj => @span, 
+          :project => @project,
+          :relsub_id => @span.id
+        )
         @relations = Array.new
         @relations << @relation.get_hash
         @result = controller.bag_spans(@spans, @relations)
@@ -778,7 +787,7 @@ describe ApplicationController do
   
   describe 'get_instances' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
 
@@ -790,7 +799,7 @@ describe ApplicationController do
       context 'when doc.projects.find_by_name exists' do
         before do
           @doc.projects << @project
-          @instances = controller.get_instances(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @instances = controller.get_instances(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
         
         it 'should not return empty array' do
@@ -804,7 +813,7 @@ describe ApplicationController do
       
       context 'when doc.projects.find_by_name does not exists' do
         before do
-          @instances = controller.get_instances(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @instances = controller.get_instances(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
         
         it 'should not return empty array' do
@@ -870,7 +879,7 @@ describe ApplicationController do
       @hinstance = {:id => 'hid', :type => 'type', :object => 'object'}
       @hinstances = Array.new
       @hinstances << @hinstance
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @span = FactoryGirl.create(:span, :id => 90, :project => @project, :doc => @doc, :hid => @hinstance[:object])
       @result = controller.save_hinstances(@hinstances, @project, @doc) 
@@ -887,7 +896,7 @@ describe ApplicationController do
   
   describe 'get_relations' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
@@ -899,7 +908,7 @@ describe ApplicationController do
       context 'when doc.projects.find by project name exists' do
         before do
           @doc.projects << @project
-          @relations = controller.get_relations(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @relations = controller.get_relations(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
         
         it 'should return doc.subcatrels and doc.subinsrels wose project_id = project.id ' do
@@ -910,7 +919,7 @@ describe ApplicationController do
       context 'when doc.projects.find by project name exists' do
         before do
           @doc.projects << @project
-          @relations = controller.get_relations('', @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @relations = controller.get_relations('', @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
         
         it 'should return doc.subcatrels and doc.subinsrels' do
@@ -923,7 +932,7 @@ describe ApplicationController do
       context 'when Project.find_by_name(project_name) exists' do
         before do
           @doc.projects << @project
-          @relations = controller.get_relations(@project.name, 'non existant source db', @doc.sourceid, @doc.serial)
+          @relations = controller.get_relations(@project.name, 'non existant source db', @doc.sourceid.to_s, @doc.serial)
         end
         
         it 'should return project.relations' do
@@ -937,7 +946,7 @@ describe ApplicationController do
           5.times do
             FactoryGirl.create(:relation, :relobj => @span, :project => @project)
           end
-          @relations = controller.get_relations('non existant project name', 'non existant source db', @doc.sourceid, @doc.serial)
+          @relations = controller.get_relations('non existant project name', 'non existant source db', @doc.sourceid.to_s, @doc.serial)
         end
         
         it 'should return Rellann.all' do
@@ -962,7 +971,7 @@ describe ApplicationController do
   
   describe 'save_hrelations' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       @hrelations = Array.new
@@ -1021,7 +1030,7 @@ describe ApplicationController do
   describe 'get_modifications' do
     context 'when Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial) exists' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :insobj => @span)
@@ -1035,7 +1044,7 @@ describe ApplicationController do
           @subcatrelmod = FactoryGirl.create(:modification, :modobj => @subcatrel, :project => @project)
           @subinsrelmod = FactoryGirl.create(:modification, :modobj => @subinsrel, :project => @project)
           @doc.projects << @project
-          @modifications = controller.get_modifications(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @modifications = controller.get_modifications(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
         
         it 'should return doc.insmods, doc.subcatrelmods, subinsrelmods where project_id = project.id' do
@@ -1050,7 +1059,7 @@ describe ApplicationController do
           @subcatrelmod = FactoryGirl.create(:modification, :modobj => @subcatrel, :project_id => 80)
           @subinsrelmod = FactoryGirl.create(:modification, :modobj => @subinsrel, :project_id => 90)
           @doc.projects << @project
-          @modifications = controller.get_modifications('', @doc.sourcedb, @doc.sourceid, @doc.serial)
+          @modifications = controller.get_modifications('', @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
         
         it 'should return doc.insmodsd, doc.subcatrelmods and doc.subinsrelmods' do
@@ -1105,7 +1114,7 @@ describe ApplicationController do
   
   describe 'save_hmodifications' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
     end
     
@@ -1113,7 +1122,7 @@ describe ApplicationController do
       before do
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :insobj => @span)
-        @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @instance, :project => @project)
+        @subinsrel = FactoryGirl.create(:subinsrel, :relsub_id => @instance.id, :relobj => @instance, :project => @project)
         @hmodification = {:id => 'hid', :type => 'type', :object => 'R1'}
         @hmodifications = Array.new
         @hmodifications << @hmodification
