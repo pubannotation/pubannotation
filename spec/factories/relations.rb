@@ -19,9 +19,9 @@ FactoryGirl.define do
   end
   
   factory :subinsrel, :parent => :relation do |c|
-    c.relsub_type 'Insann' 
+    c.relsub_type 'Instance' 
     c.relobj_id {|relobj| relobj.association(:relobj)}
-    c.relobj_type 'Insann'
+    c.relobj_type 'Instance'
     c.reltype 'coreferenceOf'
   end
 end

@@ -2,12 +2,12 @@ class Span < ActiveRecord::Base
   belongs_to :project
   belongs_to :doc
 
-  has_many :insanns, :foreign_key => "insobj_id", :dependent => :destroy
+  has_many :instances, :foreign_key => "insobj_id", :dependent => :destroy
 
   has_many :subrels, :class_name => 'Relation', :as => :relsub, :dependent => :destroy
   has_many :objrels, :class_name => 'Relation', :as => :relobj, :dependent => :destroy
 
-  has_many :insmods, :class_name => 'Modification', :through => :insanns
+  has_many :insmods, :class_name => 'Modification', :through => :instances
   has_many :relmods, :class_name => 'Modification', :through => :relantions
 
 

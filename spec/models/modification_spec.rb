@@ -6,12 +6,12 @@ describe Relation do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @insann = FactoryGirl.create(:insann, :hid => 'insann hid', :project => @project, :insobj => @span)
+      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :insobj => @span)
       @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
       @insmod = FactoryGirl.create(:modification, 
         :hid => 'modification hid',
         :modtype => 'modtype',
-        :modobj => @insann, 
+        :modobj => @instance, 
         :project => @project
       )
       @get_hash = @insmod.get_hash
@@ -26,7 +26,7 @@ describe Relation do
     end
     
     it 'should set end as span:end' do
-      @get_hash[:object].should eql(@insann[:hid])
+      @get_hash[:object].should eql(@instance[:hid])
     end
   end
 end

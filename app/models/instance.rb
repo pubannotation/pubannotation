@@ -1,4 +1,4 @@
-class Insann < ActiveRecord::Base
+class Instance < ActiveRecord::Base
   belongs_to :project
   belongs_to :insobj, :class_name => 'Span'
 
@@ -13,10 +13,10 @@ class Insann < ActiveRecord::Base
   validates :instype, :presence => true
 
   def get_hash
-    hinsann = Hash.new
-    hinsann[:id]    = hid
-    hinsann[:type]   = instype
-    hinsann[:object] = insobj.hid
-    hinsann
+    hinstance = Hash.new
+    hinstance[:id]    = hid
+    hinstance[:type]   = instype
+    hinstance[:object] = insobj.hid
+    hinstance
   end
 end

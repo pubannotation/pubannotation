@@ -14,7 +14,7 @@ class Annotation
     # index
     text = @annotation[:text]
     spans = @annotation[:spans]
-    insanns = @annotation[:insanns]
+    instances = @annotation[:instances]
     relations = @annotation[:relations]
     modifications = @annotation[:modifications]
 
@@ -22,7 +22,7 @@ class Annotation
     spans.each {|c| spans[c[:id]] = c} if spans
 
     events = Hash.new;
-    insanns.each {|i| events[i[:id]] = {:tid => i[:object]}} if insanns
+    instances.each {|i| events[i[:id]] = {:tid => i[:object]}} if instances
 
     relations = Array.new
     wholeof   = Hash.new;

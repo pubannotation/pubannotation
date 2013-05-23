@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :insann do |c|
+  factory :instance do |c|
     c.hid 'E1'
     c.instype 'instanceOf'
     c.insobj_id {|insobj| doc.association(:insobj)}

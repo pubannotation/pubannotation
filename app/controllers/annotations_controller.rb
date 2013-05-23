@@ -16,7 +16,7 @@ class AnnotationsController < ApplicationController
           annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
           @text = annotations[:text]
           @spans = annotations[:spans]
-          @insanns = annotations[:insanns]
+          @instances = annotations[:instances]
           @relations = annotations[:relations]
           @modifications = annotations[:modifications]
         end

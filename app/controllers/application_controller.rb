@@ -209,9 +209,9 @@ class ApplicationController < ActionController::Base
       spans = doc.spans.where("project_id = ?", project.id).order('begin ASC')
       hspans = spans.collect {|ca| ca.get_hash} unless spans.empty?
 
-      insanns = doc.insanns.where("insanns.project_id = ?", project.id)
-      insanns.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
-      hinsanns = insanns.collect {|ia| ia.get_hash} unless insanns.empty?
+      instances = doc.instances.where("instances.project_id = ?", project.id)
+      instances.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
+      hinstances = instances.collect {|ia| ia.get_hash} unless instances.empty?
 
       relations  = doc.subcatrels.where("relations.project_id = ?", project.id)
       relations += doc.subinsrels.where("relations.project_id = ?", project.id)
@@ -252,7 +252,7 @@ class ApplicationController < ActionController::Base
       annotations[:section] = doc.section
       annotations[:text] = text
       annotations[:spans] = hspans if hspans
-      annotations[:insanns] = hinsanns if hinsanns
+      annotations[:instances] = hinstances if hinstances
       annotations[:relations] = hrelations if hrelations
       annotations[:modifications] = hmodifications if hmodifications
       annotations
@@ -273,10 +273,10 @@ class ApplicationController < ActionController::Base
       
         save_hspans(spans, project, doc)
 
-        if annotations[:insanns] and !annotations[:insanns].empty?
-          insanns = annotations[:insanns]
-          insanns = insanns.values if insanns.respond_to?(:values)
-          save_hinsanns(insanns, project, doc)
+        if annotations[:instances] and !annotations[:instances].empty?
+          instances = annotations[:instances]
+          instances = instances.values if instances.respond_to?(:values)
+          save_hinstances(instances, project, doc)
         end
 
         if annotations[:relations] and !annotations[:relations].empty?
@@ -414,39 +414,39 @@ class ApplicationController < ActionController::Base
   end
 
 
-  ## get insanns
-  def get_insanns (project_name, sourcedb, sourceid, serial = 0)
-    insanns = []
+  ## get instances
+  def get_instances (project_name, sourcedb, sourceid, serial = 0)
+    instances = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if project_name and project = doc.projects.find_by_name(project_name)
-        insanns = doc.insanns.where("insanns.project_id = ?", project.id)
-        insanns.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
+        instances = doc.instances.where("instances.project_id = ?", project.id)
+        instances.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
       else
-        insanns = doc.insanns
+        instances = doc.instances
       end
     else
       if project_name and project = Project.find_by_name(project_name)
-        insanns = project.insanns
+        instances = project.instances
       else
-        insanns = Insann.all
+        instances = Instance.all
       end
     end
 
-    insanns
+    instances
   end
 
 
-  # get insanns (hash version)
-  def get_hinsanns (project_name, sourcedb, sourceid, serial = 0)
-    insanns = get_insanns(project_name, sourcedb, sourceid, serial)
-    hinsanns = insanns.collect {|ia| ia.get_hash}
+  # get instances (hash version)
+  def get_hinstances (project_name, sourcedb, sourceid, serial = 0)
+    instances = get_instances(project_name, sourcedb, sourceid, serial)
+    hinstances = instances.collect {|ia| ia.get_hash}
   end
 
 
-  def save_hinsanns (hinsanns, project, doc)
-    hinsanns.each do |a|
-      ia           = Insann.new
+  def save_hinstances (hinstances, project, doc)
+    hinstances.each do |a|
+      ia           = Instance.new
       ia.hid       = a[:id]
       ia.instype   = a[:type]
       ia.insobj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
@@ -496,11 +496,11 @@ class ApplicationController < ActionController::Base
       ra.reltype   = a[:type]
       ra.relsub    = case a[:subject]
         when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
-        else           doc.insanns.find_by_project_id_and_hid(project.id, a[:subject])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subject])
       end
       ra.relobj    = case a[:object]
         when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
-        else           doc.insanns.find_by_project_id_and_hid(project.id, a[:object])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:object])
       end
       ra.project_id = project.id
       ra.save
@@ -554,7 +554,7 @@ class ApplicationController < ActionController::Base
           #doc.subcatrels.find_by_project_id_and_hid(project.id, a[:object])
           doc.subinsrels.find_by_project_id_and_hid(project.id, a[:object])
         else
-          doc.insanns.find_by_project_id_and_hid(project.id, a[:object])
+          doc.instances.find_by_project_id_and_hid(project.id, a[:object])
       end
       ma.project_id = project.id
       ma.save

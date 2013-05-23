@@ -19,7 +19,7 @@ describe AnnotationsController do
         @annotations = {
             :text => 'text val',
             :spans => 'spans val',
-            :insanns => 'insanns val',
+            :instances => 'instances val',
             :relations => 'relations val',
             :modifications => 'modifications val'
           }

@@ -8,12 +8,12 @@
     <th>Object</th>
   </tr>
 
-<% @insanns.each do |insann| %>
+<% @instances.each do |instance| %>
   <tr>
-    <td><%= insann.project %></td>
-    <td><%= insann.id %></td>
-    <td><%= insann.type %></td>
-    <td><%= insann.object %></td>
+    <td><%= instance.project %></td>
+    <td><%= instance.id %></td>
+    <td><%= instance.type %></td>
+    <td><%= instance.object %></td>
   </tr>
 <% end %>
 </table>
