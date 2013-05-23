@@ -70,8 +70,8 @@ describe Project do
     end
   end
   
-  describe 'has_many insanns' do
-    pending 'insanns will be changed'
+  describe 'has_many instances' do
+    pending 'instances will be changed'
   end
   
   describe 'has_many modifications' do

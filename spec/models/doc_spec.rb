@@ -18,8 +18,8 @@ describe Doc do
     end
   end
   
-  describe 'has_many insanns' do
-    pending 'insann will be changed'
+  describe 'has_many instances' do
+    pending 'instance will be changed'
   end
   
   describe 'has_many :subcatrels' do
@@ -41,11 +41,11 @@ describe Doc do
   end
   
   describe 'has_many subinsrels' do
-    pending 'insann will be changed'
+    pending 'instance will be changed'
   end
 
   describe 'has_many insmods' do
-    pending 'insann will be changed'
+    pending 'instance will be changed'
   end
   
   describe 'has_many subcatrelmods' do
@@ -68,7 +68,7 @@ describe Doc do
   end
 
   describe 'has_many :subinsrelmods' do
-    pending 'insann will be changed'
+    pending 'instance will be changed'
   end
   
   

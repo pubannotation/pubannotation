@@ -23,8 +23,8 @@ describe Span do
     end  
   end
   
-  describe 'has_many insanns' do
-    pending 'insanns should be changed'
+  describe 'has_many instances' do
+    pending 'instances should be changed'
   end
   
   describe 'has_many subrels' do
@@ -52,7 +52,7 @@ describe Span do
       @span = FactoryGirl.create(:span, :doc_id => 1)
       @relation = FactoryGirl.create(:relation,
         :relsub_id => 1, 
-        :relsub_type => 'Insann',
+        :relsub_type => 'Instance',
         :relobj => @span, 
         :project_id => 1
       )
@@ -70,10 +70,10 @@ describe Span do
   describe 'has_many insmods' do
     before do
       @span = FactoryGirl.create(:span, :doc_id => 1)
-      @insann = FactoryGirl.create(:insann, :insobj => @span, :project_id => 5)
+      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 5)
       @modification = FactoryGirl.create(:modification,
-      :modobj => @insann,
-      :modobj_type => @insann.class.to_s
+      :modobj => @instance,
+      :modobj_type => @instance.class.to_s
       )
     end
     

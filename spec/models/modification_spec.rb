@@ -17,12 +17,12 @@ describe Relation do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @insann = FactoryGirl.create(:insann, :hid => 'insann hid', :project => @project, :insobj => @span)
-      @modification = FactoryGirl.create(:modification, :modobj => @insann, :project => @project)
+      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :insobj => @span)
+      @modification = FactoryGirl.create(:modification, :modobj => @instance, :project => @project)
     end
     
     it 'modification should belongs to modobj' do
-      @modification.modobj.should eql(@insann)
+      @modification.modobj.should eql(@instance)
     end
   end
   
