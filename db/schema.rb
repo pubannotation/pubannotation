@@ -11,7 +11,21 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130523014143) do
+ActiveRecord::Schema.define(:version => 20130523020316) do
+
+  create_table "blocks", :force => true do |t|
+    t.string   "hid"
+    t.integer  "doc_id"
+    t.integer  "begin"
+    t.integer  "end"
+    t.string   "category"
+    t.integer  "project_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "blocks", ["doc_id"], :name => "index_blocks_on_doc_id"
+  add_index "blocks", ["project_id"], :name => "index_blocks_on_project_id"
 
   create_table "docs", :force => true do |t|
     t.text     "body"
