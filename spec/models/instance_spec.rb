@@ -89,7 +89,7 @@ describe Instance do
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       @instance = FactoryGirl.create(:instance,
         :hid => 'hid',
-        :instype => 'instype',
+        :pred => 'pred',
         :obj => @span,
         :project => @project
       )
@@ -100,8 +100,8 @@ describe Instance do
       @get_hash[:id].should eql(@instance[:hid])
     end
     
-    it 'should set instype as type' do
-      @get_hash[:type].should eql(@instance[:instype])
+    it 'should set pred as type' do
+      @get_hash[:type].should eql(@instance[:pred])
     end
     
     it 'should set hid as object' do

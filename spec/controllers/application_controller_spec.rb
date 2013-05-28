@@ -424,7 +424,7 @@ describe ApplicationController do
               :section => @doc.section, 
               :text => @doc.body,
               :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
-              :instances => [{:id => @instance.hid, :type => @instance.instype, :object => @instance.obj.hid}],
+              :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
               :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.relobj.hid}],
               :modifications => [{:id => @insmod.hid, :type => @insmod.modtype, :object => @insmod.modobj.hid}]
               })
@@ -890,7 +890,7 @@ describe ApplicationController do
     end
     
     it 'should save Instance from args' do
-      Instance.find_by_hid_and_instype_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:type], @span.id, @project.id).should be_present
+      Instance.find_by_hid_and_pred_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:type], @span.id, @project.id).should be_present
     end
   end
   

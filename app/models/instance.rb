@@ -7,15 +7,15 @@ class Instance < ActiveRecord::Base
 
   has_many :modifications, :as => :modobj, :dependent => :destroy
 
-  attr_accessible :hid, :instype
+  attr_accessible :hid, :pred
 
   validates :hid,     :presence => true
-  validates :instype, :presence => true
+  validates :pred, :presence => true
 
   def get_hash
     hinstance = Hash.new
     hinstance[:id]    = hid
-    hinstance[:type]   = instype
+    hinstance[:type]   = pred
     hinstance[:object] = obj.hid
     hinstance
   end

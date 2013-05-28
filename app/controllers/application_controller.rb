@@ -448,7 +448,7 @@ class ApplicationController < ActionController::Base
     hinstances.each do |a|
       ia           = Instance.new
       ia.hid       = a[:id]
-      ia.instype   = a[:type]
+      ia.pred   = a[:type]
       ia.obj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
       ia.project_id = project.id
       ia.save
