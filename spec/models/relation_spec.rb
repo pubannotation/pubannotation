@@ -32,7 +32,7 @@ describe Relation do
 
     context 'Insaan' do
       before do
-        @relsub = FactoryGirl.create(:instance, :project => @project, :insobj_id => 1)
+        @relsub = FactoryGirl.create(:instance, :project => @project, :obj_id => 1)
         @relation = FactoryGirl.create(:relation, :relsub_id => @relsub.id, :relsub_type => @relsub.class.to_s, :relobj => @relobj, :project => @project)
       end
       
@@ -62,7 +62,7 @@ describe Relation do
 
     context 'Insaan' do
       before do
-        @relobj = FactoryGirl.create(:instance, :project => @project, :insobj_id => 1)
+        @relobj = FactoryGirl.create(:instance, :project => @project, :obj_id => 1)
         @relation = FactoryGirl.create(:relation, :relsub => @relsub, :relobj => @relobj, :relobj_type => @relobj.class.to_s, :project => @project)
       end
       

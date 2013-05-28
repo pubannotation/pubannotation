@@ -22,7 +22,7 @@ describe Doc do
     before do
       @doc = FactoryGirl.create(:doc)
       @span = FactoryGirl.create(:span, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
+      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
     end
     
     it 'span.instances should present' do
@@ -56,7 +56,7 @@ describe Doc do
     before do
       @doc = FactoryGirl.create(:doc)
       @span = FactoryGirl.create(:span, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
+      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
         :relsub_id => @instance.id,
         :relsub_type => @instance.class.to_s,
@@ -78,7 +78,7 @@ describe Doc do
     before do
       @doc = FactoryGirl.create(:doc)
       @span = FactoryGirl.create(:span, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
+      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
       @insmod = FactoryGirl.create(:modification, :modobj => @instance, :project_id => 5)
     end
     
@@ -114,7 +114,7 @@ describe Doc do
     before do
       @doc = FactoryGirl.create(:doc)
       @span = FactoryGirl.create(:span, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 1)
+      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
         :relsub_id => @instance.id,
         :relsub_type => @instance.class.to_s,

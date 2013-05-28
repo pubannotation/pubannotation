@@ -2,7 +2,7 @@ class Span < ActiveRecord::Base
   belongs_to :project
   belongs_to :doc
 
-  has_many :instances, :foreign_key => "insobj_id", :dependent => :destroy
+  has_many :instances, :foreign_key => "obj_id", :dependent => :destroy
 
   has_many :subrels, :class_name => 'Relation', :as => :relsub, :dependent => :destroy
   has_many :objrels, :class_name => 'Relation', :as => :relobj, :dependent => :destroy

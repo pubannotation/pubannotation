@@ -17,7 +17,7 @@ describe Relation do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :insobj => @span)
+      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @span)
       @modification = FactoryGirl.create(:modification, :modobj => @instance, :project => @project)
     end
     
@@ -31,7 +31,7 @@ describe Relation do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :insobj => @span)
+      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @span)
       @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
       @insmod = FactoryGirl.create(:modification, 
         :hid => 'modification hid',

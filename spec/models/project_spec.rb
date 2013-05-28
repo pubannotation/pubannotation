@@ -73,7 +73,7 @@ describe Project do
   describe 'has_many instances' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @instance = FactoryGirl.create(:instance, :insobj_id => 10, :project => @project)
+      @instance = FactoryGirl.create(:instance, :obj_id => 10, :project => @project)
     end
     
     it 'project.instances should present' do

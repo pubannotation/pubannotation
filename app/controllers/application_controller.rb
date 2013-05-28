@@ -449,7 +449,7 @@ class ApplicationController < ActionController::Base
       ia           = Instance.new
       ia.hid       = a[:id]
       ia.instype   = a[:type]
-      ia.insobj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
+      ia.obj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
       ia.project_id = project.id
       ia.save
     end

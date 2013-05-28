@@ -26,7 +26,7 @@ describe Span do
   describe 'has_many instances' do
     before do
       @span = FactoryGirl.create(:span, :project_id => 10, :doc_id => 20)
-      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 10) 
+      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 10) 
     end
     
     it 'span.instances should present' do
@@ -81,7 +81,7 @@ describe Span do
   describe 'has_many insmods' do
     before do
       @span = FactoryGirl.create(:span, :doc_id => 1)
-      @instance = FactoryGirl.create(:instance, :insobj => @span, :project_id => 5)
+      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 5)
       @modification = FactoryGirl.create(:modification,
       :modobj => @instance,
       :modobj_type => @instance.class.to_s
