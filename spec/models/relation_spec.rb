@@ -99,7 +99,7 @@ describe Relation do
       @span_obj = FactoryGirl.create(:span, :id => 2, :hid => 'span rel hid', :project => @project, :doc => @doc)
       @relation = FactoryGirl.create(:relation, 
       :hid => 'hid',
-      :reltype => 'lexChain', 
+      :pred => 'lexChain', 
       :obj => @span_obj, 
       :project => @project)
       @get_hash = @relation.get_hash
@@ -109,8 +109,8 @@ describe Relation do
       @get_hash[:id].should eql(@relation[:hid])
     end
     
-    it 'should set reltype as type' do
-      @get_hash[:type].should eql(@relation[:reltype])
+    it 'should set pred as type' do
+      @get_hash[:type].should eql(@relation[:pred])
     end
     
     it 'should set end as span:end' do

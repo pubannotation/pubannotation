@@ -12,7 +12,7 @@ describe Relation do
     end
   end
 
-  describe 'belongs_to modobj' do
+  describe 'belongs_to obj' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
@@ -21,7 +21,7 @@ describe Relation do
       @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
     end
     
-    it 'modification should belongs to modobj' do
+    it 'modification should belongs to obj' do
       @modification.obj.should eql(@instance)
     end
   end

@@ -3,11 +3,11 @@
 one:
   hid: MyString
   pred: MyString
-  modobj: 
+  obj: 
   annset: 
 
 two:
   hid: MyString
   pred: MyString
-  modobj: 
+  obj: 
   annset: 

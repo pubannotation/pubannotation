@@ -5,7 +5,7 @@ FactoryGirl.define do
     c.subj_type 'Span' 
     c.obj_id {|relation| relation.association(:obj)}
     c.obj_type 'Span'
-    c.reltype 'coreferenceOf'
+    c.pred 'coreferenceOf'
     c.project_id {|relation| relation.association(:project)}
     c.created_at 1.hour.ago
     c.updated_at 1.hour.ago
@@ -14,13 +14,13 @@ FactoryGirl.define do
   factory :subcatrel, :parent => :relation do |c|
     c.obj_id {|obj| obj.association(:obj)}
     c.obj_type 'Span'
-    c.reltype 'coreferenceOf'
+    c.pred 'coreferenceOf'
   end
   
   factory :subinsrel, :parent => :relation do |c|
     c.subj_type 'Instance' 
     c.obj_id {|obj| obj.association(:obj)}
     c.obj_type 'Instance'
-    c.reltype 'coreferenceOf'
+    c.pred 'coreferenceOf'
   end
 end

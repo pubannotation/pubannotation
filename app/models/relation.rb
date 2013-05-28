@@ -5,17 +5,17 @@ class Relation < ActiveRecord::Base
 
   has_many :modifications, :as => :obj, :dependent => :destroy
 
-  attr_accessible :hid, :reltype
+  attr_accessible :hid, :pred
 
   validates :hid,       :presence => true
-  validates :reltype,   :presence => true
+  validates :pred,   :presence => true
   validates :subj_id, :presence => true
   validates :obj_id, :presence => true
 
   def get_hash
     hrelation = Hash.new
     hrelation[:id]     = hid
-    hrelation[:type]    = reltype
+    hrelation[:type]    = pred
     hrelation[:subject] = subj.hid
     hrelation[:object]  = obj.hid
     hrelation

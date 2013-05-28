@@ -493,7 +493,7 @@ class ApplicationController < ActionController::Base
     hrelations.each do |a|
       ra           = Relation.new
       ra.hid       = a[:id]
-      ra.reltype   = a[:type]
+      ra.pred   = a[:type]
       ra.subj    = case a[:subject]
         when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
         else           doc.instances.find_by_project_id_and_hid(project.id, a[:subject])

@@ -425,7 +425,7 @@ describe ApplicationController do
               :text => @doc.body,
               :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
               :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
-              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.subj.hid, :object => @subcatrel.obj.hid}],
+              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.pred, :subject => @subcatrel.subj.hid, :object => @subcatrel.obj.hid}],
               :modifications => [{:id => @insmod.hid, :type => @insmod.pred, :object => @insmod.obj.hid}]
               })
           end
@@ -739,7 +739,7 @@ describe ApplicationController do
         @spans = Array.new
         @spans << @span.get_hash
         @relation = FactoryGirl.create(:relation, 
-        :reltype => 'lexChain', 
+        :pred => 'lexChain', 
         :obj => @span, 
         :project => @project,
         :subj_id => @span.id)
@@ -765,7 +765,7 @@ describe ApplicationController do
         @spans = Array.new
         @spans << @span.get_hash
         @relation = FactoryGirl.create(:relation, 
-          :reltype => 'NotlexChain',
+          :pred => 'NotlexChain',
           :obj => @span, 
           :project => @project,
           :subj_id => @span.id
@@ -979,7 +979,7 @@ describe ApplicationController do
     
     context 'hrelations subject and object match /^T/' do
       before do
-        @hrelation = {:id => 'hid', :type => 'reltype', :subject => 'T1', :object => 'T1'}
+        @hrelation = {:id => 'hid', :type => 'pred', :subject => 'T1', :object => 'T1'}
         @hrelations << @hrelation
         @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
@@ -991,7 +991,7 @@ describe ApplicationController do
       it 'should save from hrelations params and project, and subj and obj should be span' do
         Relation.where(
           :hid => @hrelation[:id], 
-          :reltype => @hrelation[:type], 
+          :pred => @hrelation[:type], 
           :subj_id => @span.id, 
           :subj_type => @span.class, 
           :obj_id => @span.id, 
@@ -1003,7 +1003,7 @@ describe ApplicationController do
 
     context 'hrelations subject and object does not match /^T/' do
       before do
-        @hrelation = {:id => 'hid', :type => 'reltype', :subject => 'M1', :object => 'M1'}
+        @hrelation = {:id => 'hid', :type => 'pred', :subject => 'M1', :object => 'M1'}
         @hrelations << @hrelation
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span, :hid => @hrelation[:subject])
         @result = controller.save_hrelations(@hrelations, @project, @doc)
@@ -1016,7 +1016,7 @@ describe ApplicationController do
       it 'should save from hrelations params and project, and subj and obj should be instance' do
         Relation.where(
           :hid => @hrelation[:id], 
-          :reltype => @hrelation[:type], 
+          :pred => @hrelation[:type], 
           :subj_id => @instance.id, 
           :subj_type => @instance.class, 
           :obj_id => @instance.id, 
