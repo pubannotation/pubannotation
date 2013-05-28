@@ -4,7 +4,7 @@ describe Relation do
   describe 'belongs_to project' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @modification = FactoryGirl.create(:modification, :modobj_id => 1, :project => @project)
+      @modification = FactoryGirl.create(:modification, :obj_id => 1, :project => @project)
     end
     
     it 'modification should belongs to project' do
@@ -18,11 +18,11 @@ describe Relation do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @span)
-      @modification = FactoryGirl.create(:modification, :modobj => @instance, :project => @project)
+      @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
     end
     
     it 'modification should belongs to modobj' do
-      @modification.modobj.should eql(@instance)
+      @modification.obj.should eql(@instance)
     end
   end
   
@@ -36,7 +36,7 @@ describe Relation do
       @insmod = FactoryGirl.create(:modification, 
         :hid => 'modification hid',
         :modtype => 'modtype',
-        :modobj => @instance, 
+        :obj => @instance, 
         :project => @project
       )
       @get_hash = @insmod.get_hash

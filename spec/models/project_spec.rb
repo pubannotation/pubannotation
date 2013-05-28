@@ -88,7 +88,7 @@ describe Project do
   describe 'has_many modifications' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @modification = FactoryGirl.create(:modification, :modobj_id => 1, :project => @project)      
+      @modification = FactoryGirl.create(:modification, :obj_id => 1, :project => @project)      
     end
     
     it 'project.modifications should be present' do

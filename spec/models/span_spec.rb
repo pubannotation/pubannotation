@@ -83,8 +83,8 @@ describe Span do
       @span = FactoryGirl.create(:span, :doc_id => 1)
       @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 5)
       @modification = FactoryGirl.create(:modification,
-      :modobj => @instance,
-      :modobj_type => @instance.class.to_s
+      :obj => @instance,
+      :obj_type => @instance.class.to_s
       )
     end
     
@@ -101,8 +101,8 @@ describe Span do
         :project_id => 1
       )
       @modification = FactoryGirl.create(:modification,
-      :modobj => @relation,
-      :modobj_type => @relation.class.to_s
+      :obj => @relation,
+      :obj_type => @relation.class.to_s
       )
     end
     

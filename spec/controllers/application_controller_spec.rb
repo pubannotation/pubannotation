@@ -412,7 +412,7 @@ describe ApplicationController do
             @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
             @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
             @subcatrel = FactoryGirl.create(:subcatrel,:relsub_id => @span.id, :relobj => @span, :project => @project)
-            @insmod = FactoryGirl.create(:modification, :modobj => @instance, :project => @project)
+            @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
             @result = controller.get_annotations(@project, @doc)
           end
           
@@ -426,7 +426,7 @@ describe ApplicationController do
               :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
               :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
               :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.relobj.hid}],
-              :modifications => [{:id => @insmod.hid, :type => @insmod.modtype, :object => @insmod.modobj.hid}]
+              :modifications => [{:id => @insmod.hid, :type => @insmod.modtype, :object => @insmod.obj.hid}]
               })
           end
         end
@@ -1040,9 +1040,9 @@ describe ApplicationController do
       context 'and when doc.projects.find_by_name(project_name) exists' do
         before do
           @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @instance, :project => @project)
-          @modification = FactoryGirl.create(:modification, :modobj => @instance, :project => @project)
-          @subcatrelmod = FactoryGirl.create(:modification, :modobj => @subcatrel, :project => @project)
-          @subinsrelmod = FactoryGirl.create(:modification, :modobj => @subinsrel, :project => @project)
+          @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
+          @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project)
+          @subinsrelmod = FactoryGirl.create(:modification, :obj => @subinsrel, :project => @project)
           @doc.projects << @project
           @modifications = controller.get_modifications(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
@@ -1055,9 +1055,9 @@ describe ApplicationController do
       context 'and when doc.projects.find_by_name(project_name) does not exists' do
         before do
           @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @instance, :project => @project)
-          @modification = FactoryGirl.create(:modification, :modobj => @instance, :project_id => 70)
-          @subcatrelmod = FactoryGirl.create(:modification, :modobj => @subcatrel, :project_id => 80)
-          @subinsrelmod = FactoryGirl.create(:modification, :modobj => @subinsrel, :project_id => 90)
+          @modification = FactoryGirl.create(:modification, :obj => @instance, :project_id => 70)
+          @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project_id => 80)
+          @subinsrelmod = FactoryGirl.create(:modification, :obj => @subinsrel, :project_id => 90)
           @doc.projects << @project
           @modifications = controller.get_modifications('', @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
@@ -1075,7 +1075,7 @@ describe ApplicationController do
       
       context 'Project.find_by_name(project_name) exists' do
         before do
-          @modification = FactoryGirl.create(:modification, :modobj => @instance, :project => @project)
+          @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
           @modifications = controller.get_modifications(@project.name, '', '', '')
         end
         
@@ -1087,7 +1087,7 @@ describe ApplicationController do
       context 'Project.find_by_name(project_name) does not exists' do
         before do
           5.times do |i|
-            @modification = FactoryGirl.create(:modification, :modobj => @instance, :project_id => i)
+            @modification = FactoryGirl.create(:modification, :obj => @instance, :project_id => i)
           end
           @modifications = controller.get_modifications('', '', '', '')
         end
@@ -1101,7 +1101,7 @@ describe ApplicationController do
   
   describe 'get_hmodifications' do
     before do
-      @modification = FactoryGirl.create(:modification, :modobj_id => 1, :modobj_type => '', :project_id => 1)
+      @modification = FactoryGirl.create(:modification, :obj_id => 1, :obj_type => '', :project_id => 1)
       controller.stub(:get_modifications).and_return([@modification])
       Modification.any_instance.stub(:get_hash).and_return(@modification.id)
       @hmodifications = controller.get_hmodifications('', '', '')
@@ -1137,8 +1137,8 @@ describe ApplicationController do
         Modification.where(
           :hid => @hmodification[:id],
           :modtype => @hmodification[:type],
-          :modobj_id => @subinsrel.id,
-          :modobj_type => @subinsrel.class
+          :obj_id => @subinsrel.id,
+          :obj_type => @subinsrel.class
         ).should be_present
       end
     end
@@ -1162,8 +1162,8 @@ describe ApplicationController do
         Modification.where(
           :hid => @hmodification[:id],
           :modtype => @hmodification[:type],
-          :modobj_id => @instance.id,
-          :modobj_type => @instance.class
+          :obj_id => @instance.id,
+          :obj_type => @instance.class
         ).should be_present
       end
     end

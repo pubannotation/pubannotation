@@ -79,7 +79,7 @@ describe Doc do
       @doc = FactoryGirl.create(:doc)
       @span = FactoryGirl.create(:span, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
-      @insmod = FactoryGirl.create(:modification, :modobj => @instance, :project_id => 5)
+      @insmod = FactoryGirl.create(:modification, :obj => @instance, :project_id => 5)
     end
     
     it 'doc.insmods should present' do
@@ -98,7 +98,7 @@ describe Doc do
       @relsub = FactoryGirl.create(:span, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @subcatrel = FactoryGirl.create(:subcatrel, :relsub_id => @relsub.id , :id => 4, :relobj => @span)
-      @subcatrelmod = FactoryGirl.create(:modification, :modobj => @subcatrel, :project => @project)
+      @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project)
     end
     
     it 'doc.subcatrelmods should present' do
@@ -122,7 +122,7 @@ describe Doc do
         :project_id => 30
       )
       @subinsrelmod = FactoryGirl.create(:modification,
-        :modobj => @subinsrel,
+        :obj => @subinsrel,
         :project_id => 30
       )
     end

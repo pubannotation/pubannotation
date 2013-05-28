@@ -75,7 +75,7 @@ describe Relation do
   describe 'has_many modifications' do
     before do
       @relation = FactoryGirl.create(:relation, :relsub_id => 1, :relobj_id => 2, :project_id => 1)
-      @modification = FactoryGirl.create(:modification, :modobj => @relation, :project_id => 1)
+      @modification = FactoryGirl.create(:modification, :obj => @relation, :project_id => 1)
     end
     
     it 'relation.modifications should be present' do
@@ -87,7 +87,7 @@ describe Relation do
     end
     
     it 'modification should belongs to relation' do
-      @modification.modobj.should eql(@relation)
+      @modification.obj.should eql(@relation)
     end
   end
   

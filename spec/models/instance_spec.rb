@@ -69,8 +69,8 @@ describe Instance do
     before do
       @instance = FactoryGirl.create(:instance, :project => FactoryGirl.create(:project), :obj => FactoryGirl.create(:span))
       @instance_2 = FactoryGirl.create(:instance, :project => FactoryGirl.create(:project), :obj => FactoryGirl.create(:span))
-      @modification = FactoryGirl.create(:modification, :modobj => @instance, :project => FactoryGirl.create(:project))
-      FactoryGirl.create(:modification, :modobj => @instance_2, :project => FactoryGirl.create(:project))
+      @modification = FactoryGirl.create(:modification, :obj => @instance, :project => FactoryGirl.create(:project))
+      FactoryGirl.create(:modification, :obj => @instance_2, :project => FactoryGirl.create(:project))
     end
     
     it 'instance should have modifications' do

@@ -549,7 +549,7 @@ class ApplicationController < ActionController::Base
       ma           = Modification.new
       ma.hid       = a[:id]
       ma.modtype   = a[:type]
-      ma.modobj    = case a[:object]
+      ma.obj    = case a[:object]
         when /^R/
           #doc.subcatrels.find_by_project_id_and_hid(project.id, a[:object])
           doc.subinsrels.find_by_project_id_and_hid(project.id, a[:object])

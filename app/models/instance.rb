@@ -5,7 +5,7 @@ class Instance < ActiveRecord::Base
   has_many :subrels, :class_name => 'Relation', :as => :relsub, :dependent => :destroy
   has_many :objrels, :class_name => 'Relation', :as => :relobj, :dependent => :destroy
 
-  has_many :modifications, :as => :modobj, :dependent => :destroy
+  has_many :modifications, :as => :obj, :dependent => :destroy
 
   attr_accessible :hid, :pred
 
