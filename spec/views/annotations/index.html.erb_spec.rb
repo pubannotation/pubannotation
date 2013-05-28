@@ -9,7 +9,7 @@ describe "annotations/index.html.erb" do
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       @relation = FactoryGirl.create(:relation,
         :id => 123,
-        :relobj => @span, 
+        :obj => @span, 
         :project => @project        
       )
       assign :relations, [@relation]

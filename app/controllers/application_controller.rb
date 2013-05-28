@@ -498,7 +498,7 @@ class ApplicationController < ActionController::Base
         when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
         else           doc.instances.find_by_project_id_and_hid(project.id, a[:subject])
       end
-      ra.relobj    = case a[:object]
+      ra.obj    = case a[:object]
         when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
         else           doc.instances.find_by_project_id_and_hid(project.id, a[:object])
       end

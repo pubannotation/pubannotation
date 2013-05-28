@@ -58,7 +58,7 @@ describe Project do
   describe 'has_many relations' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @relation = FactoryGirl.create(:relation, :project => @project, :relobj_id => 5)
+      @relation = FactoryGirl.create(:relation, :project => @project, :obj_id => 5)
     end
     
     it 'project.relations should be present' do

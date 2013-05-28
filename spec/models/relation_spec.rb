@@ -4,7 +4,7 @@ describe Relation do
   describe 'belongs_to project' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @relation = FactoryGirl.create(:relation, :relobj_id => 10, :project => @project)
+      @relation = FactoryGirl.create(:relation, :obj_id => 10, :project => @project)
     end
     
     it 'relation belongs to project' do
@@ -16,13 +16,13 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @relobj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @obj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
     end
     
     context 'Span' do
       before do
         @relsub = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-        @relation = FactoryGirl.create(:relation, :relsub_id => @relsub.id, :relsub_type => @relsub.class.to_s, :relobj => @relobj, :project => @project)
+        @relation = FactoryGirl.create(:relation, :relsub_id => @relsub.id, :relsub_type => @relsub.class.to_s, :obj => @obj, :project => @project)
       end
       
       it 'relation.relsub should equal Span' do
@@ -33,7 +33,7 @@ describe Relation do
     context 'Insaan' do
       before do
         @relsub = FactoryGirl.create(:instance, :project => @project, :obj_id => 1)
-        @relation = FactoryGirl.create(:relation, :relsub_id => @relsub.id, :relsub_type => @relsub.class.to_s, :relobj => @relobj, :project => @project)
+        @relation = FactoryGirl.create(:relation, :relsub_id => @relsub.id, :relsub_type => @relsub.class.to_s, :obj => @obj, :project => @project)
       end
       
       it 'relation.relsub should equal Instance' do
@@ -42,7 +42,7 @@ describe Relation do
     end
   end
   
-  describe 'belongs_to relobj polymorphic true' do
+  describe 'belongs_to obj polymorphic true' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
@@ -51,30 +51,30 @@ describe Relation do
     
     context 'Span' do
       before do
-        @relobj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-        @relation = FactoryGirl.create(:relation, :relsub => @relsub, :relobj => @relobj, :relobj_type => @relobj.class.to_s, :project => @project)
+        @obj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @relation = FactoryGirl.create(:relation, :relsub => @relsub, :obj => @obj, :obj_type => @obj.class.to_s, :project => @project)
       end
       
-      it 'relation.relobj should equal Span' do
-        @relation.relobj.should eql(@relobj)
+      it 'relation.obj should equal Span' do
+        @relation.obj.should eql(@obj)
       end
     end
 
     context 'Insaan' do
       before do
-        @relobj = FactoryGirl.create(:instance, :project => @project, :obj_id => 1)
-        @relation = FactoryGirl.create(:relation, :relsub => @relsub, :relobj => @relobj, :relobj_type => @relobj.class.to_s, :project => @project)
+        @obj = FactoryGirl.create(:instance, :project => @project, :obj_id => 1)
+        @relation = FactoryGirl.create(:relation, :relsub => @relsub, :obj => @obj, :obj_type => @obj.class.to_s, :project => @project)
       end
       
       it 'relation.relsub should equal Instance' do
-        @relation.relobj.should eql(@relobj)
+        @relation.obj.should eql(@obj)
       end
     end
   end
   
   describe 'has_many modifications' do
     before do
-      @relation = FactoryGirl.create(:relation, :relsub_id => 1, :relobj_id => 2, :project_id => 1)
+      @relation = FactoryGirl.create(:relation, :relsub_id => 1, :obj_id => 2, :project_id => 1)
       @modification = FactoryGirl.create(:modification, :obj => @relation, :project_id => 1)
     end
     
@@ -96,11 +96,11 @@ describe Relation do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @span_sub = FactoryGirl.create(:span, :id => 1, :hid => 'span sub hid', :project => @project, :doc => @doc)
-      @span_relobj = FactoryGirl.create(:span, :id => 2, :hid => 'span rel hid', :project => @project, :doc => @doc)
+      @span_obj = FactoryGirl.create(:span, :id => 2, :hid => 'span rel hid', :project => @project, :doc => @doc)
       @relation = FactoryGirl.create(:relation, 
       :hid => 'hid',
       :reltype => 'lexChain', 
-      :relobj => @span_relobj, 
+      :obj => @span_obj, 
       :project => @project)
       @get_hash = @relation.get_hash
     end
@@ -118,7 +118,7 @@ describe Relation do
     end
     
     it 'should set end as span:end' do
-      @get_hash[:object].should eql(@span_relobj[:hid])
+      @get_hash[:object].should eql(@span_obj[:hid])
     end
   end
 end

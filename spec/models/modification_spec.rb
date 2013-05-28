@@ -32,7 +32,7 @@ describe Relation do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @span)
-      @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @span, :project => @project)
       @insmod = FactoryGirl.create(:modification, 
         :hid => 'modification hid',
         :pred => 'pred',

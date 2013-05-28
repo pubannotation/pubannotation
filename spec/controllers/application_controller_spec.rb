@@ -411,7 +411,7 @@ describe ApplicationController do
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
             @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
             @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-            @subcatrel = FactoryGirl.create(:subcatrel,:relsub_id => @span.id, :relobj => @span, :project => @project)
+            @subcatrel = FactoryGirl.create(:subcatrel,:relsub_id => @span.id, :obj => @span, :project => @project)
             @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
             @result = controller.get_annotations(@project, @doc)
           end
@@ -425,7 +425,7 @@ describe ApplicationController do
               :text => @doc.body,
               :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
               :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
-              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.relobj.hid}],
+              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.obj.hid}],
               :modifications => [{:id => @insmod.hid, :type => @insmod.pred, :object => @insmod.obj.hid}]
               })
           end
@@ -740,7 +740,7 @@ describe ApplicationController do
         @spans << @span.get_hash
         @relation = FactoryGirl.create(:relation, 
         :reltype => 'lexChain', 
-        :relobj => @span, 
+        :obj => @span, 
         :project => @project,
         :relsub_id => @span.id)
         @relations = Array.new
@@ -766,7 +766,7 @@ describe ApplicationController do
         @spans << @span.get_hash
         @relation = FactoryGirl.create(:relation, 
           :reltype => 'NotlexChain',
-          :relobj => @span, 
+          :obj => @span, 
           :project => @project,
           :relsub_id => @span.id
         )
@@ -899,9 +899,9 @@ describe ApplicationController do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @span, :project => @project)
       @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-      @subinsrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
+      @subinsrel = FactoryGirl.create(:subcatrel, :obj => @span, :project => @project)
     end
 
     context 'when doc find by sourcedb and source id and serial exists' do
@@ -944,7 +944,7 @@ describe ApplicationController do
         before do
           @doc.projects << @project
           5.times do
-            FactoryGirl.create(:relation, :relobj => @span, :project => @project)
+            FactoryGirl.create(:relation, :obj => @span, :project => @project)
           end
           @relations = controller.get_relations('non existant project name', 'non existant source db', @doc.sourceid.to_s, @doc.serial)
         end
@@ -958,7 +958,7 @@ describe ApplicationController do
   
   describe 'get_hrelations' do
     before do
-      @subcatrel = FactoryGirl.create(:subcatrel, :relobj_id => 1, :project_id => 1)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj_id => 1, :project_id => 1)
       controller.stub(:get_relations).and_return([@subcatrel])
       Relation.any_instance.stub(:get_hash).and_return(@subcatrel.id)
       @hrelations = controller.get_hrelations('', '', '', '')
@@ -988,14 +988,14 @@ describe ApplicationController do
         @result.should be_true
       end
       
-      it 'should save from hrelations params and project, and relsub and relobj should be span' do
+      it 'should save from hrelations params and project, and relsub and obj should be span' do
         Relation.where(
           :hid => @hrelation[:id], 
           :reltype => @hrelation[:type], 
           :relsub_id => @span.id, 
           :relsub_type => @span.class, 
-          :relobj_id => @span.id, 
-          :relobj_type => @span.class, 
+          :obj_id => @span.id, 
+          :obj_type => @span.class, 
           :project_id => @project.id
         ).should be_present
       end
@@ -1013,14 +1013,14 @@ describe ApplicationController do
         @result.should be_true
       end
       
-      it 'should save from hrelations params and project, and relsub and relobj should be instance' do
+      it 'should save from hrelations params and project, and relsub and obj should be instance' do
         Relation.where(
           :hid => @hrelation[:id], 
           :reltype => @hrelation[:type], 
           :relsub_id => @instance.id, 
           :relsub_type => @instance.class, 
-          :relobj_id => @instance.id, 
-          :relobj_type => @instance.class, 
+          :obj_id => @instance.id, 
+          :obj_type => @instance.class, 
           :project_id => @project.id
         ).should be_present
       end
@@ -1034,12 +1034,12 @@ describe ApplicationController do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-        @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @span, :project => @project)
       end
       
       context 'and when doc.projects.find_by_name(project_name) exists' do
         before do
-          @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @instance, :project => @project)
+          @subinsrel = FactoryGirl.create(:subinsrel, :obj => @instance, :project => @project)
           @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
           @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project)
           @subinsrelmod = FactoryGirl.create(:modification, :obj => @subinsrel, :project => @project)
@@ -1054,7 +1054,7 @@ describe ApplicationController do
       
       context 'and when doc.projects.find_by_name(project_name) does not exists' do
         before do
-          @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @instance, :project => @project)
+          @subinsrel = FactoryGirl.create(:subinsrel, :obj => @instance, :project => @project)
           @modification = FactoryGirl.create(:modification, :obj => @instance, :project_id => 70)
           @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project_id => 80)
           @subinsrelmod = FactoryGirl.create(:modification, :obj => @subinsrel, :project_id => 90)
@@ -1122,7 +1122,7 @@ describe ApplicationController do
       before do
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-        @subinsrel = FactoryGirl.create(:subinsrel, :relsub_id => @instance.id, :relobj => @instance, :project => @project)
+        @subinsrel = FactoryGirl.create(:subinsrel, :relsub_id => @instance.id, :obj => @instance, :project => @project)
         @hmodification = {:id => 'hid', :type => 'type', :object => 'R1'}
         @hmodifications = Array.new
         @hmodifications << @hmodification
@@ -1147,7 +1147,7 @@ describe ApplicationController do
       before do
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-        @subinsrel = FactoryGirl.create(:subinsrel, :relobj => @instance, :project => @project)
+        @subinsrel = FactoryGirl.create(:subinsrel, :obj => @instance, :project => @project)
         @hmodification = {:id => 'hid', :type => 'type', :object => @instance.hid}
         @hmodifications = Array.new
         @hmodifications << @hmodification
