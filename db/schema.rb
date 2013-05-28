@@ -58,7 +58,7 @@ ActiveRecord::Schema.define(:version => 20130528025619) do
     t.datetime "updated_at", :null => false
   end
 
-  add_index "instances", ["obj_id"], :name => "index_instances_on_insobj_id"
+  add_index "instances", ["obj_id"], :name => "index_instances_on_obj_id"
   add_index "instances", ["project_id"], :name => "index_instances_on_project_id"
 
   create_table "modifications", :force => true do |t|
