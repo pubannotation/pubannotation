@@ -2,12 +2,12 @@
 
 one:
   hid: MyString
-  modtype: MyString
+  pred: MyString
   modobj: 
   annset: 
 
 two:
   hid: MyString
-  modtype: MyString
+  pred: MyString
   modobj: 
   annset: 

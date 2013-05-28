@@ -426,7 +426,7 @@ describe ApplicationController do
               :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
               :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
               :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.relobj.hid}],
-              :modifications => [{:id => @insmod.hid, :type => @insmod.modtype, :object => @insmod.obj.hid}]
+              :modifications => [{:id => @insmod.hid, :type => @insmod.pred, :object => @insmod.obj.hid}]
               })
           end
         end
@@ -1136,7 +1136,7 @@ describe ApplicationController do
       it 'should save Modification from hmodifications params and doc.subinsrels' do
         Modification.where(
           :hid => @hmodification[:id],
-          :modtype => @hmodification[:type],
+          :pred => @hmodification[:type],
           :obj_id => @subinsrel.id,
           :obj_type => @subinsrel.class
         ).should be_present
@@ -1161,7 +1161,7 @@ describe ApplicationController do
       it 'should save Modification from hmodifications params and doc.instances' do
         Modification.where(
           :hid => @hmodification[:id],
-          :modtype => @hmodification[:type],
+          :pred => @hmodification[:type],
           :obj_id => @instance.id,
           :obj_type => @instance.class
         ).should be_present

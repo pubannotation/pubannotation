@@ -35,7 +35,7 @@ describe Relation do
       @subcatrel = FactoryGirl.create(:subcatrel, :relobj => @span, :project => @project)
       @insmod = FactoryGirl.create(:modification, 
         :hid => 'modification hid',
-        :modtype => 'modtype',
+        :pred => 'pred',
         :obj => @instance, 
         :project => @project
       )
@@ -46,8 +46,8 @@ describe Relation do
       @get_hash[:id].should eql(@insmod[:hid])
     end
     
-    it 'should set modtype as type' do
-      @get_hash[:type].should eql(@insmod[:modtype])
+    it 'should set pred as type' do
+      @get_hash[:type].should eql(@insmod[:pred])
     end
     
     it 'should set end as span:end' do

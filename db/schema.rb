@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130528052337) do
+ActiveRecord::Schema.define(:version => 20130528055345) do
 
   create_table "blocks", :force => true do |t|
     t.string   "hid"
@@ -65,7 +65,7 @@ ActiveRecord::Schema.define(:version => 20130528052337) do
     t.string   "hid"
     t.integer  "obj_id"
     t.string   "obj_type"
-    t.string   "modtype"
+    t.string   "pred"
     t.integer  "project_id"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false

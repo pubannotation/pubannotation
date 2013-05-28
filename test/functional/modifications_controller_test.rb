@@ -18,7 +18,7 @@ class ModificationsControllerTest < ActionController::TestCase
 
   test "should create modification" do
     assert_difference('Modification.count') do
-      post :create, modification: { hid: @modification.hid, modtype: @modification.modtype }
+      post :create, modification: { hid: @modification.hid, pred: @modification.pred }
     end
 
     assert_redirected_to modification_path(assigns(:modification))
@@ -35,7 +35,7 @@ class ModificationsControllerTest < ActionController::TestCase
   end
 
   test "should update modification" do
-    put :update, id: @modification, modification: { hid: @modification.hid, modtype: @modification.modtype }
+    put :update, id: @modification, modification: { hid: @modification.hid, pred: @modification.pred }
     assert_redirected_to modification_path(assigns(:modification))
   end
 
