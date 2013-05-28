@@ -30,8 +30,8 @@ describe Instance do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @span = FactoryGirl.create(:span, :project => @project, :doc => FactoryGirl.create(:doc))
       @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-      @relation = FactoryGirl.create(:relation, :relsub_id => @instance.id, :relsub_type => @instance.class.to_s, :obj => @span, :project => @project)
-      FactoryGirl.create(:relation, :relsub_id => 20, :relsub_type => @instance.class.to_s, :obj => @span, :project => @project)
+      @relation = FactoryGirl.create(:relation, :subj_id => @instance.id, :subj_type => @instance.class.to_s, :obj => @span, :project => @project)
+      FactoryGirl.create(:relation, :subj_id => 20, :subj_type => @instance.class.to_s, :obj => @span, :project => @project)
     end
     
     it 'instance has subrels' do
@@ -52,8 +52,8 @@ describe Instance do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @span = FactoryGirl.create(:span, :project => @project, :doc => FactoryGirl.create(:doc))
       @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-      @relation = FactoryGirl.create(:relation, :relsub_id => @span.id, :relsub_type => @span.class.to_s, :obj => @instance, :obj_type => @instance.class.to_s, :project => @project)
-      FactoryGirl.create(:relation, :relsub_id => @span.id, :relsub_type => @span.class.to_s, :obj => @span, :obj_type => @span.class.to_s, :project => @project)
+      @relation = FactoryGirl.create(:relation, :subj_id => @span.id, :subj_type => @span.class.to_s, :obj => @instance, :obj_type => @instance.class.to_s, :project => @project)
+      FactoryGirl.create(:relation, :subj_id => @span.id, :subj_type => @span.class.to_s, :obj => @span, :obj_type => @span.class.to_s, :project => @project)
     end
     
     it 'instance should have objrels' do

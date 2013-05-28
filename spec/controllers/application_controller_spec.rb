@@ -411,7 +411,7 @@ describe ApplicationController do
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
             @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
             @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-            @subcatrel = FactoryGirl.create(:subcatrel,:relsub_id => @span.id, :obj => @span, :project => @project)
+            @subcatrel = FactoryGirl.create(:subcatrel,:subj_id => @span.id, :obj => @span, :project => @project)
             @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
             @result = controller.get_annotations(@project, @doc)
           end
@@ -425,7 +425,7 @@ describe ApplicationController do
               :text => @doc.body,
               :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
               :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
-              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.relsub.hid, :object => @subcatrel.obj.hid}],
+              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.reltype, :subject => @subcatrel.subj.hid, :object => @subcatrel.obj.hid}],
               :modifications => [{:id => @insmod.hid, :type => @insmod.pred, :object => @insmod.obj.hid}]
               })
           end
@@ -742,7 +742,7 @@ describe ApplicationController do
         :reltype => 'lexChain', 
         :obj => @span, 
         :project => @project,
-        :relsub_id => @span.id)
+        :subj_id => @span.id)
         @relations = Array.new
         @relations << @relation.get_hash
         @result = controller.bag_spans(@spans, @relations)
@@ -768,7 +768,7 @@ describe ApplicationController do
           :reltype => 'NotlexChain',
           :obj => @span, 
           :project => @project,
-          :relsub_id => @span.id
+          :subj_id => @span.id
         )
         @relations = Array.new
         @relations << @relation.get_hash
@@ -988,12 +988,12 @@ describe ApplicationController do
         @result.should be_true
       end
       
-      it 'should save from hrelations params and project, and relsub and obj should be span' do
+      it 'should save from hrelations params and project, and subj and obj should be span' do
         Relation.where(
           :hid => @hrelation[:id], 
           :reltype => @hrelation[:type], 
-          :relsub_id => @span.id, 
-          :relsub_type => @span.class, 
+          :subj_id => @span.id, 
+          :subj_type => @span.class, 
           :obj_id => @span.id, 
           :obj_type => @span.class, 
           :project_id => @project.id
@@ -1013,12 +1013,12 @@ describe ApplicationController do
         @result.should be_true
       end
       
-      it 'should save from hrelations params and project, and relsub and obj should be instance' do
+      it 'should save from hrelations params and project, and subj and obj should be instance' do
         Relation.where(
           :hid => @hrelation[:id], 
           :reltype => @hrelation[:type], 
-          :relsub_id => @instance.id, 
-          :relsub_type => @instance.class, 
+          :subj_id => @instance.id, 
+          :subj_type => @instance.class, 
           :obj_id => @instance.id, 
           :obj_type => @instance.class, 
           :project_id => @project.id
@@ -1122,7 +1122,7 @@ describe ApplicationController do
       before do
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-        @subinsrel = FactoryGirl.create(:subinsrel, :relsub_id => @instance.id, :obj => @instance, :project => @project)
+        @subinsrel = FactoryGirl.create(:subinsrel, :subj_id => @instance.id, :obj => @instance, :project => @project)
         @hmodification = {:id => 'hid', :type => 'type', :object => 'R1'}
         @hmodifications = Array.new
         @hmodifications << @hmodification

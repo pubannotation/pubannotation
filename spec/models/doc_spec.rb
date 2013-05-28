@@ -38,9 +38,9 @@ describe Doc do
     before do
       @doc = FactoryGirl.create(:doc, :id => 2)
       @span = FactoryGirl.create(:span, :doc => @doc, :id => 3)
-      @relsub = FactoryGirl.create(:span, :doc => @doc, :id => 4)
+      @subj = FactoryGirl.create(:span, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @subcatrel = FactoryGirl.create(:subcatrel, :relsub_id => @relsub.id , :id => 4, :obj => @span)
+      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @span)
     end
     
     it 'doc.spans should include related span' do
@@ -58,8 +58,8 @@ describe Doc do
       @span = FactoryGirl.create(:span, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
-        :relsub_id => @instance.id,
-        :relsub_type => @instance.class.to_s,
+        :subj_id => @instance.id,
+        :subj_type => @instance.class.to_s,
         :obj_id => 20,
         :project_id => 30
       ) 
@@ -95,9 +95,9 @@ describe Doc do
     before do
       @doc = FactoryGirl.create(:doc, :id => 2)
       @span = FactoryGirl.create(:span, :doc => @doc, :id => 3)
-      @relsub = FactoryGirl.create(:span, :doc => @doc, :id => 4)
+      @subj = FactoryGirl.create(:span, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @subcatrel = FactoryGirl.create(:subcatrel, :relsub_id => @relsub.id , :id => 4, :obj => @span)
+      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @span)
       @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project)
     end
     
@@ -116,8 +116,8 @@ describe Doc do
       @span = FactoryGirl.create(:span, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
-        :relsub_id => @instance.id,
-        :relsub_type => @instance.class.to_s,
+        :subj_id => @instance.id,
+        :subj_type => @instance.class.to_s,
         :obj_id => 20,
         :project_id => 30
       )

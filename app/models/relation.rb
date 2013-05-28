@@ -1,6 +1,6 @@
 class Relation < ActiveRecord::Base
   belongs_to :project
-  belongs_to :relsub, :polymorphic => true
+  belongs_to :subj, :polymorphic => true
   belongs_to :obj, :polymorphic => true
 
   has_many :modifications, :as => :obj, :dependent => :destroy
@@ -9,14 +9,14 @@ class Relation < ActiveRecord::Base
 
   validates :hid,       :presence => true
   validates :reltype,   :presence => true
-  validates :relsub_id, :presence => true
+  validates :subj_id, :presence => true
   validates :obj_id, :presence => true
 
   def get_hash
     hrelation = Hash.new
     hrelation[:id]     = hid
     hrelation[:type]    = reltype
-    hrelation[:subject] = relsub.hid
+    hrelation[:subject] = subj.hid
     hrelation[:object]  = obj.hid
     hrelation
   end

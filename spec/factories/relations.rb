@@ -1,8 +1,8 @@
 FactoryGirl.define do
   factory :relation do |c|
     c.hid 'R1'
-    c.relsub_id 1
-    c.relsub_type 'Span' 
+    c.subj_id 1
+    c.subj_type 'Span' 
     c.obj_id {|relation| relation.association(:obj)}
     c.obj_type 'Span'
     c.reltype 'coreferenceOf'
@@ -18,7 +18,7 @@ FactoryGirl.define do
   end
   
   factory :subinsrel, :parent => :relation do |c|
-    c.relsub_type 'Instance' 
+    c.subj_type 'Instance' 
     c.obj_id {|obj| obj.association(:obj)}
     c.obj_type 'Instance'
     c.reltype 'coreferenceOf'

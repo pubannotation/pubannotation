@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130528060956) do
+ActiveRecord::Schema.define(:version => 20130528063335) do
 
   create_table "blocks", :force => true do |t|
     t.string   "hid"
@@ -97,19 +97,19 @@ ActiveRecord::Schema.define(:version => 20130528060956) do
 
   create_table "relations", :force => true do |t|
     t.string   "hid"
-    t.integer  "relsub_id"
-    t.string   "relsub_type"
+    t.integer  "subj_id"
+    t.string   "subj_type"
     t.integer  "obj_id"
     t.string   "obj_type"
     t.string   "reltype"
     t.integer  "project_id"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   add_index "relations", ["obj_id"], :name => "index_relations_on_obj_id"
   add_index "relations", ["project_id"], :name => "index_relations_on_project_id"
-  add_index "relations", ["relsub_id"], :name => "index_relations_on_relsub_id"
+  add_index "relations", ["subj_id"], :name => "index_relations_on_subj_id"
 
   create_table "spans", :force => true do |t|
     t.string   "hid"

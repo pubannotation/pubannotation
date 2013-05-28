@@ -42,8 +42,8 @@ describe Span do
     before do
       @span = FactoryGirl.create(:span, :doc_id => 1)
       @relation = FactoryGirl.create(:relation,
-        :relsub_id => @span.id, 
-        :relsub_type => @span.class.to_s,
+        :subj_id => @span.id, 
+        :subj_type => @span.class.to_s,
         :obj_id => 50, 
         :project_id => 1
       )
@@ -62,8 +62,8 @@ describe Span do
     before do
       @span = FactoryGirl.create(:span, :doc_id => 1)
       @relation = FactoryGirl.create(:relation,
-        :relsub_id => 1, 
-        :relsub_type => 'Instance',
+        :subj_id => 1, 
+        :subj_type => 'Instance',
         :obj => @span, 
         :project_id => 1
       )

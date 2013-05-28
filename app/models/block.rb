@@ -4,7 +4,7 @@ class Block < ActiveRecord::Base
 
   has_many :instances, :foreign_key => "obj_id", :dependent => :destroy
 
-  has_many :subrels, :class_name => 'Relation', :as => :relsub, :dependent => :destroy
+  has_many :subrels, :class_name => 'Relation', :as => :subj, :dependent => :destroy
   has_many :objrels, :class_name => 'Relation', :as => :obj, :dependent => :destroy
 
   has_many :insmods, :class_name => 'Modification', :through => :instances
