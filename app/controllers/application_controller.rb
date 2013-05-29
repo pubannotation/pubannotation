@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   after_filter :store_location
 
   def store_location
-    if request.fullpath != new_user_session_path 
+    if request.fullpath != new_user_session_path && request.fullpath != new_user_registration_path && request.method == 'GET'
       session[:after_sign_in_path] = request.fullpath
     end
   end

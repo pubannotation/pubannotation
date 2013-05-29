@@ -11,13 +11,16 @@ describe ApplicationController do
   describe 'store_location' do
     before do
       @user_sign_in_path = '/users/sign_in'
+      @user_sign_up_path = '/users/sign_up'
       @request_full_path = '/last/request'
+      @post_request_full_path = '/last/post'
       controller.stub(:new_user_session_path).and_return(@user_sign_in_path)
+      controller.stub(:new_user_registration_path).and_return(@user_sign_up_path)
     end  
 
-    context 'when request.fullpath is not user_sign_path' do
+    context 'when request.fullpath is not user sign in path and user signup path' do
       before do
-        controller.stub(:request).and_return(double(:fullpath => @request_full_path))
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
         controller.store_location
       end
       
@@ -26,11 +29,37 @@ describe ApplicationController do
       end
     end
 
-    context 'when request.fullpath is user_sign_path' do
+    context 'when request.fullpath is POST method' do
       before do
-        controller.stub(:request).and_return(double(:fullpath => @request_full_path))
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
         controller.store_location
-        controller.stub(:request).and_return(double(:fullpath => @user_sign_in_path))
+        controller.stub(:request).and_return(double(:fullpath => @post_request_full_path, :method => 'POST'))
+        controller.store_location
+      end
+      
+      it 'POST request.fullpath should not stored as redirect_path' do
+        session[:after_sign_in_path].should eql(@request_full_path)
+      end
+    end
+
+    context 'when request.fullpath is user_sign_in_path' do
+      before do
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
+        controller.store_location
+        controller.stub(:request).and_return(double(:fullpath => @user_sign_in_path, :method => 'GET'))
+        controller.store_location
+      end
+      
+      it 'request.fullpath should not stored as redirect_path and previous fullpath should be stored' do
+        session[:after_sign_in_path].should eql(@request_full_path)
+      end
+    end
+
+    context 'when request.fullpath is user_sign_up_path' do
+      before do
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
+        controller.store_location
+        controller.stub(:request).and_return(double(:fullpath => @user_sign_up_path, :method => 'GET'))
         controller.store_location
       end
       
