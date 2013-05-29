@@ -121,4 +121,149 @@ describe Relation do
       @get_hash[:object].should eql(@span_obj[:hid])
     end
   end
+  
+  describe 'validate' do
+    context 'when subj == Span and obj == Instance' do
+      before do
+        @subj = FactoryGirl.create(:span,
+          :project_id => 1,
+          :doc_id => 2
+        )
+        @obj = FactoryGirl.create(:instance,
+          :project_id => 1,
+          :obj_id => 2
+        )
+        @subrel = FactoryGirl.create(:relation,
+          :subj_id => @subj.id,
+          :subj_type => @subj.class.name,
+          :obj => @obj,
+          :obj_type => @obj.class.to_s,
+          :project_id => 2
+        )
+      end
+      
+      it 'relation.subj should equal Span' do
+        @subrel.subj.should eql(@subj)
+      end
+      
+      it 'relation.obj should equal Instance' do
+        @subrel.obj.should eql(@obj)
+      end
+    end    
+
+    context 'when subj == Instance and obj == Span' do
+      before do
+        @subj = FactoryGirl.create(:instance,
+          :project_id => 1,
+          :obj_id => 2
+        )
+        @obj = FactoryGirl.create(:span,
+          :project_id => 1,
+          :doc_id => 2
+        )
+        @subrel = FactoryGirl.create(:relation,
+          :subj_id => @subj.id,
+          :subj_type => @subj.class.name,
+          :obj => @obj,
+          :obj_type => @obj.class.to_s,
+          :project_id => 2
+        )
+      end
+      
+      it 'relation.subj should equal Instance' do
+        @subrel.subj.should eql(@subj)
+      end
+      
+      it 'relation.subj should equal Span' do
+        @subrel.obj.should eql(@obj)
+      end
+    end    
+
+    context 'when subj and obj == Block' do
+      before do
+        @subj = FactoryGirl.create(:block,
+          :project_id => 1,
+          :doc_id => 2
+        )
+        @obj = FactoryGirl.create(:block,
+          :project_id => 1,
+          :doc_id => 2
+        )
+        @subrel = FactoryGirl.create(:relation,
+          :subj_id => @subj.id,
+          :subj_type => @subj.class.name,
+          :obj => @obj,
+          :obj_type => @obj.class.to_s,
+          :project_id => 2
+        )
+        FactoryGirl.create(:relation, :subj_id => 10, :subj_type => @subj.class.name, :obj_id => 1, :project_id => 2)
+      end
+      
+      it 'block should have subrels' do
+        @subj.subrels.should be_present
+      end
+      
+      it 'block.subrels should have related relations' do
+        (@subj.subrels - [@subrel]).should be_blank
+      end
+      
+      it 'block should have objrels' do
+        @obj.objrels.should be_present
+      end
+      
+      it 'block.subrels should have related relations' do
+        (@obj.objrels - [@subrel]).should be_blank
+      end
+    end
+
+    context 'when subj == Block subj != Block' do
+      before do
+        @subj = FactoryGirl.create(:block,
+          :project_id => 1,
+          :doc_id => 2
+        )
+        @obj = FactoryGirl.create(:span,
+          :project_id => 1,
+          :doc_id => 2
+        )
+      end
+      
+      it 'should raise error' do
+        lambda { 
+          FactoryGirl.create(:relation,
+            :subj_id => @subj.id,
+            :subj_type => @subj.class.name,
+            :obj => @obj,
+            :obj_type => @obj.class.to_s,
+            :project_id => 2
+          )
+        }.should raise_error
+      end
+    end
+
+    context 'when subj != Block obj == Block' do
+      before do
+        @subj = FactoryGirl.create(:span,
+          :project_id => 1,
+          :doc_id => 2
+        )
+        @obj = FactoryGirl.create(:block,
+          :project_id => 1,
+          :doc_id => 2
+        )
+      end
+      
+      it 'should raise error' do
+        lambda { 
+          FactoryGirl.create(:relation,
+            :subj_id => @subj.id,
+            :subj_type => @subj.class.name,
+            :obj => @obj,
+            :obj_type => @obj.class.to_s,
+            :project_id => 2
+          )
+        }.should raise_error
+      end
+    end
+  end
 end

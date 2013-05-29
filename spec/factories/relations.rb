@@ -23,4 +23,11 @@ FactoryGirl.define do
     c.obj_type 'Instance'
     c.pred 'coreferenceOf'
   end
+  
+  factory :block_relation, :parent => :relation do |c|
+    c.subj_id {|subj| subj.association(:subj)}
+    c.subj_type 'Block' 
+    c.obj_id {|obj| obj.association(:obj)}
+    c.obj_type 'Block' 
+  end
 end

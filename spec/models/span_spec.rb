@@ -93,24 +93,6 @@ describe Span do
     end
   end
   
-  describe 'has_many relmods' do
-    before do
-      @span = FactoryGirl.create(:span, :doc_id => 1)
-      @relation = FactoryGirl.create(:relation,
-        :obj_id => 1, 
-        :project_id => 1
-      )
-      @modification = FactoryGirl.create(:modification,
-      :obj => @relation,
-      :obj_type => @relation.class.to_s
-      )
-    end
-    
-    it 'span.insmods should present' do
-      pending 'relation something wrong'
-    end
-  end
-  
   describe 'get_hash' do
     before do
       @span = FactoryGirl.create(:span,

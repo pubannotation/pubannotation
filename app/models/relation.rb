@@ -11,6 +11,7 @@ class Relation < ActiveRecord::Base
   validates :pred,   :presence => true
   validates :subj_id, :presence => true
   validates :obj_id, :presence => true
+  validate :validate
 
   def get_hash
     hrelation = Hash.new
@@ -19,5 +20,15 @@ class Relation < ActiveRecord::Base
     hrelation[:subject] = subj.hid
     hrelation[:object]  = obj.hid
     hrelation
+  end
+  
+  def validate
+    if obj.class == Block  || subj.class == Block
+      if subj.class != Block
+        errors.add(:subj_type, 'subj should be a Block when obj is a Block')
+      elsif obj.class != Block
+        errors.add(:obj_type, 'obj should be a Block when subj is a Block')
+      end
+    end
   end
 end
