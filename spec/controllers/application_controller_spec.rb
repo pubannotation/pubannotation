@@ -8,6 +8,67 @@ describe ApplicationController do
     end
   end
   
+  describe 'store_location' do
+    before do
+      @user_sign_in_path = '/users/sign_in'
+      @request_full_path = '/last/request'
+      controller.stub(:new_user_session_path).and_return(@user_sign_in_path)
+    end  
+
+    context 'when request.fullpath is not user_sign_path' do
+      before do
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path))
+        controller.store_location
+      end
+      
+      it 'request.fullpath should stored as redirect_path' do
+        session[:after_sign_in_path].should eql(@request_full_path)
+      end
+    end
+
+    context 'when request.fullpath is user_sign_path' do
+      before do
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path))
+        controller.store_location
+        controller.stub(:request).and_return(double(:fullpath => @user_sign_in_path))
+        controller.store_location
+      end
+      
+      it 'request.fullpath should not stored as redirect_path and previous fullpath should be stored' do
+        session[:after_sign_in_path].should eql(@request_full_path)
+      end
+    end
+  end
+  
+  describe 'after_sign_in_path_for' do
+    before do
+      @root_path = '/'
+      controller.stub(:root_path).and_return(@root_path)  
+    end
+    
+    context 'when session[:after_sign_in_path] exists' do
+      before do
+        @after_sign_in_path = 'after_sign_in_path'
+        session[:after_sign_in_path] = @after_sign_in_path
+      end
+      
+      it 'should return session[:after_sign_in_path]' do
+        controller.after_sign_in_path_for(nil).should eql(@after_sign_in_path)
+      end
+    end
+
+    context 'when session[:after_sign_in_path] does not exists' do
+      before do
+        @after_sign_in_path = 'after_sign_in_path'
+        session[:after_sign_in_path] = nil
+      end
+      
+      it 'should return root_path' do
+        controller.after_sign_in_path_for(nil).should eql(@root_path)
+      end
+    end
+  end
+  
   describe 'after_sign_out_path' do
     before do
       @user = FactoryGirl.create(:user)

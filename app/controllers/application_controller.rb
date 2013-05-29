@@ -5,9 +5,17 @@ require 'aligner'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
+  after_filter :store_location
 
-  # def after_sign_in_path_for(resource)
-  # end
+  def store_location
+    if request.fullpath != new_user_session_path 
+      session[:after_sign_in_path] = request.fullpath
+    end
+  end
+  
+  def after_sign_in_path_for(resource)
+    session[:after_sign_in_path] ||= root_path
+  end
 
   def after_sign_out_path_for(resource_or_scope)
     request.referrer
