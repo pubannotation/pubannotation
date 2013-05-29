@@ -29,6 +29,11 @@ group :test do
   gem 'webmock', '< 1.10.0'
 end
 
+group :development do
+  gem 'guard'
+  gem 'guard-livereload'
+end
+
 group :test, :development do
   gem 'rspec-rails', '~> 2.0'
 end
