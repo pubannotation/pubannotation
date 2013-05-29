@@ -13,3 +13,8 @@
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
+/coverage
+
+# Ignore all files for rvm
+.ruby-version
+.ruby-gemset

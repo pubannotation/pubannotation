@@ -1,15 +1,15 @@
 <% content_for :path do %>
 	> <%= link_to "home", home_path %>
-	<% if @annset %>
-		> <%= link_to "annsets", annsets_path %>
-		> <%= link_to @annset.name, annset_path(@annset.name) %>
+	<% if @project %>
+		> <%= link_to "projects", projects_path %>
+		> <%= link_to @project.name, project_path(@project.name) %>
 		<% if @doc and @doc.sourcedb == 'PubMed' %>
-		    > <%= link_to "pmdocs", annset_pmdocs_path(@annset.name) %>
+		    > <%= link_to "pmdocs", project_pmdocs_path(@project.name) %>
 		    > <%= @doc.sourceid %>
 		<% elsif @doc and @doc.sourcedb == 'PMC' %>
-		    > <%= link_to "pmcdocs", annset_pmcdocs_path(@annset.name) %>
-		    > <%= link_to @doc.sourceid, annset_pmcdoc_path(@annset.name, @doc.sourceid) %>
-		    > <%= link_to "divs", annset_pmcdoc_divs_path(@annset.name, @doc.sourceid) %>
+		    > <%= link_to "pmcdocs", project_pmcdocs_path(@project.name) %>
+		    > <%= link_to @doc.sourceid, project_pmcdoc_path(@project.name, @doc.sourceid) %>
+		    > <%= link_to "divs", project_pmcdoc_divs_path(@project.name, @doc.sourceid) %>
 		    > <%= @doc.serial %>
 		<% end %>
 	<% else %>
@@ -38,19 +38,19 @@
 </table>
 
 
-<% if @annset %>
+<% if @project %>
 	<% if @doc.sourcedb == 'PubMed' %>
-		<% annotation_url = annset_pmdoc_annotations_url(@annset.name, @doc.sourceid) %>
+		<% annotation_url = project_pmdoc_annotations_url(@project.name, @doc.sourceid) %>
 	<% else %>
-		<% annotation_url = annset_pmcdoc_div_annotations_url(@annset.name, @doc.sourceid, @doc.serial) %>
+		<% annotation_url = project_pmcdoc_div_annotations_url(@project.name, @doc.sourceid, @doc.serial) %>
 	<% end %>
 
 	<h1>Annotations
 		<span class="meta"> made to this document</span>
-		<span class="meta">within <span class="pname"><%=@annset.name%></span></span>
+		<span class="meta">within <span class="pname"><%=@project.name%></span></span>
 	</h1>
 
-	<%= render :partial => "annotations/options", :locals => {:annset => @annset, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
+	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 
 	<!-- automatic annotation -->
 	<!--script type="text/javascript">
@@ -77,13 +77,13 @@
 
 <% else %>
 	<h2>Annotation sets <span class="meta">made to this document</span></h2>
-	<% if !@annsets || @annsets.empty? %>
+	<% if !@projects || @projects.empty? %>
 		none
 	<% else %>
 		<ul>
-		<% @annsets.each do |s| %>
-		<% if @doc and @doc.sourcedb == 'PubMed' %><li><%= link_to s.name, pmdoc_annset_path(@doc.sourceid, s.name) %></li><% end %>
-		<% if @doc and @doc.sourcedb == 'PMC' %><li><%= link_to s.name, pmcdoc_div_annset_path(@doc.sourceid, @doc.serial, s.name) %></li><% end %>
+		<% @projects.each do |s| %>
+		<% if @doc and @doc.sourcedb == 'PubMed' %><li><%= link_to s.name, pmdoc_project_path(@doc.sourceid, s.name) %></li><% end %>
+		<% if @doc and @doc.sourcedb == 'PMC' %><li><%= link_to s.name, pmcdoc_div_project_path(@doc.sourceid, @doc.serial, s.name) %></li><% end %>
 		<% end %>
 		</ul>
 	<% end %>

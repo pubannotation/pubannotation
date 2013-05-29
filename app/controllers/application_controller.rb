@@ -5,9 +5,17 @@ require 'aligner'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
+  after_filter :store_location
 
-  # def after_sign_in_path_for(resource)
-  # end
+  def store_location
+    if request.fullpath != new_user_session_path 
+      session[:after_sign_in_path] = request.fullpath
+    end
+  end
+  
+  def after_sign_in_path_for(resource)
+    session[:after_sign_in_path] ||= root_path
+  end
 
   def after_sign_out_path_for(resource_or_scope)
     request.referrer
@@ -32,33 +40,33 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def get_annset (annset_name)
-    annset = Annset.find_by_name(annset_name)
-    if annset
-      if (annset.accessibility == 1 or (user_signed_in? and annset.user == current_user))
-        return annset, nil
+  def get_project (project_name)
+    project = Project.find_by_name(project_name)
+    if project
+      if (project.accessibility == 1 or (user_signed_in? and project.user == current_user))
+        return project, nil
       else
-        return nil, "The annotation set, #{annset_name}, is specified as private."
+        return nil, "The annotation set, #{project_name}, is specified as private."
       end
     else
-      return nil, "The annotation set, #{annset_name}, does not exist."
+      return nil, "The annotation set, #{project_name}, does not exist."
     end
   end
 
 
-  def get_annsets (doc = nil)
-    annsets = (doc)? doc.annsets : Annset.all
-    annsets.sort!{|x, y| x.name <=> y.name}
-    annsets = annsets.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
+  def get_projects (doc = nil)
+    projects = (doc)? doc.projects : Project.all
+    projects.sort!{|x, y| x.name <=> y.name}
+    projects = projects.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
   end
 
 
-  def get_doc (sourcedb, sourceid, serial = 0, annset = nil)
+  def get_doc (sourcedb, sourceid, serial = 0, project = nil)
     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     if doc
-      if annset and !doc.annsets.include?(annset)
+      if project and !doc.projects.include?(project)
         doc = nil
-        notice = "The document, #{sourcedb}:#{sourceid}, does not belong to the annotation set, #{annset.name}."
+        notice = "The document, #{sourcedb}:#{sourceid}, does not belong to the annotation set, #{project.name}."
       end
     else
       notice = "No annotation to the document, #{sourcedb}:#{sourceid}, exists in PubAnnotation." 
@@ -68,12 +76,12 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def get_divs (sourceid, annset = nil)
+  def get_divs (sourceid, project = nil)
     divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
     if divs and !divs.empty?
-      if annset and !divs.first.annsets.include?(annset)
+      if project and !divs.first.projects.include?(project)
         divs = nil
-        notice = "The document, PMC::#{sourceid}, does not belong to the annotation set, #{annset.name}."
+        notice = "The document, PMC::#{sourceid}, does not belong to the annotation set, #{project.name}."
       end
     else
       divs = nil
@@ -151,7 +159,7 @@ class ApplicationController < ActionController::Base
 
 
   def archive_texts (docs)
-    unless docs.empty
+    unless docs.empty?
       file_name = "docs.zip"
       t = Tempfile.new("my-temp-filename-#{Time.now}")
       Zip::ZipOutputStream.open(t.path) do |z|
@@ -173,9 +181,9 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def archive_annotation (annset_name, format = 'json')
-    annset = Annset.find_by_name(annset_name)
-    annset.docs.each do |d|
+  def archive_annotation (project_name, format = 'json')
+    project = Project.find_by_name(project_name)
+    project.docs.each do |d|
     end
   end
 
@@ -204,39 +212,39 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def get_annotations (annset, doc, options = {})
-    if annset and doc
-      catanns = doc.catanns.where("annset_id = ?", annset.id).order('begin ASC')
-      hcatanns = catanns.collect {|ca| ca.get_hash} unless catanns.empty?
+  def get_annotations (project, doc, options = {})
+    if project and doc
+      spans = doc.spans.where("project_id = ?", project.id).order('begin ASC')
+      hspans = spans.collect {|ca| ca.get_hash} unless spans.empty?
 
-      insanns = doc.insanns.where("insanns.annset_id = ?", annset.id)
-      insanns.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
-      hinsanns = insanns.collect {|ia| ia.get_hash} unless insanns.empty?
+      instances = doc.instances.where("instances.project_id = ?", project.id)
+      instances.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
+      hinstances = instances.collect {|ia| ia.get_hash} unless instances.empty?
 
-      relanns  = doc.subcatrels.where("relanns.annset_id = ?", annset.id)
-      relanns += doc.subinsrels.where("relanns.annset_id = ?", annset.id)
-      relanns.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
-      hrelanns = relanns.collect {|ra| ra.get_hash} unless relanns.empty?
+      relations  = doc.subcatrels.where("relations.project_id = ?", project.id)
+      relations += doc.subinsrels.where("relations.project_id = ?", project.id)
+      relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
+      hrelations = relations.collect {|ra| ra.get_hash} unless relations.empty?
 
-      modanns = doc.insmods.where("modanns.annset_id = ?", annset.id)
-      modanns += doc.subcatrelmods.where("modanns.annset_id = ?", annset.id)
-      modanns += doc.subinsrelmods.where("modanns.annset_id = ?", annset.id)
-      modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
-      hmodanns = modanns.collect {|ma| ma.get_hash} unless modanns.empty?
+      modifications = doc.insmods.where("modifications.project_id = ?", project.id)
+      modifications += doc.subcatrelmods.where("modifications.project_id = ?", project.id)
+      modifications += doc.subinsrelmods.where("modifications.project_id = ?", project.id)
+      modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
+      hmodifications = modifications.collect {|ma| ma.get_hash} unless modifications.empty?
 
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
         aligner = Aligner.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
         # aligner = Aligner.new(text, asciitext)
-        hcatanns = aligner.transform_catanns(hcatanns)
-        # hcatanns = adjust_catanns(hcatanns, asciitext)
+        hspans = aligner.transform_spans(hspans)
+        # hspans = adjust_spans(hspans, asciitext)
         text = asciitext
       end
 
       if (options[:discontinuous_annotation] == 'bag')
         # TODO: convert to hash representation
-        hcatanns, hrelanns = bag_catanns(hcatanns, hrelanns)
+        hspans, hrelations = bag_spans(hspans, hrelations)
       end
 
       annotations = Hash.new
@@ -251,10 +259,10 @@ class ApplicationController < ActionController::Base
       annotations[:division_id] = doc.serial
       annotations[:section] = doc.section
       annotations[:text] = text
-      annotations[:catanns] = hcatanns if hcatanns
-      annotations[:insanns] = hinsanns if hinsanns
-      annotations[:relanns] = hrelanns if hrelanns
-      annotations[:modanns] = hmodanns if hmodanns
+      annotations[:spans] = hspans if hspans
+      annotations[:instances] = hinstances if hinstances
+      annotations[:relations] = hrelations if hrelations
+      annotations[:modifications] = hmodifications if hmodifications
       annotations
     else
       nil
@@ -262,33 +270,33 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def save_annotations (annotations, annset, doc)
-    catanns, notice = clean_hcatanns(annotations[:catanns])
-    if catanns
-      catanns = realign_catanns(catanns, annotations[:text], doc.body)
+  def save_annotations (annotations, project, doc)
+    spans, notice = clean_hspans(annotations[:spans])
+    if spans
+      spans = realign_spans(spans, annotations[:text], doc.body)
 
-      if catanns
-        catanns_old = doc.catanns.where("annset_id = ?", annset.id)
-        catanns_old.destroy_all
+      if spans
+        spans_old = doc.spans.where("project_id = ?", project.id)
+        spans_old.destroy_all
       
-        save_hcatanns(catanns, annset, doc)
+        save_hspans(spans, project, doc)
 
-        if annotations[:insanns] and !annotations[:insanns].empty?
-          insanns = annotations[:insanns]
-          insanns = insanns.values if insanns.respond_to?(:values)
-          save_hinsanns(insanns, annset, doc)
+        if annotations[:instances] and !annotations[:instances].empty?
+          instances = annotations[:instances]
+          instances = instances.values if instances.respond_to?(:values)
+          save_hinstances(instances, project, doc)
         end
 
-        if annotations[:relanns] and !annotations[:relanns].empty?
-          relanns = annotations[:relanns]
-          relanns = relanns.values if relanns.respond_to?(:values)
-          save_hrelanns(relanns, annset, doc)
+        if annotations[:relations] and !annotations[:relations].empty?
+          relations = annotations[:relations]
+          relations = relations.values if relations.respond_to?(:values)
+          save_hrelations(relations, project, doc)
         end
 
-        if annotations[:modanns] and !annotations[:modanns].empty?
-          modanns = annotations[:modanns]
-          modanns = modanns.values if modanns.respond_to?(:values)
-          save_hmodanns(modanns, annset, doc)
+        if annotations[:modifications] and !annotations[:modifications].empty?
+          modifications = annotations[:modifications]
+          modifications = modifications.values if modifications.respond_to?(:values)
+          save_hmodifications(modifications, project, doc)
         end
 
         notice = 'Annotations were successfully created/updated.'
@@ -299,43 +307,43 @@ class ApplicationController < ActionController::Base
   end
 
 
-  ## get catanns
-  def get_catanns (annset_name, sourcedb, sourceid, serial = 0)
-    catanns = []
+  ## get spans
+  def get_spans (project_name, sourcedb, sourceid, serial = 0)
+    spans = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if annset_name and annset = doc.annsets.find_by_name(annset_name)
-        catanns = doc.catanns.where("annset_id = ?", annset.id).order('begin ASC')
+      if project_name and project = doc.projects.find_by_name(project_name)
+        spans = doc.spans.where("project_id = ?", project.id).order('begin ASC')
       else
-        catanns = doc.catanns
+        spans = doc.spans
       end
     else
-      if annset_name and annset = Annset.find_by_name(annset_name)
-        catanns = annset.catanns
+      if project_name and project = Project.find_by_name(project_name)
+        spans = project.spans
       else
-        catanns = Catann.all
+        spans = Span.all
       end
     end
 
-    catanns
+    spans
   end
 
 
-  # get catanns (hash version)
-  def get_hcatanns (annset_name, sourcedb, sourceid, serial = 0)
-    catanns = get_catanns(annset_name, sourcedb, sourceid, serial)
-    hcatanns = catanns.collect {|ca| ca.get_hash}
-    hcatanns
+  # get spans (hash version)
+  def get_hspans (project_name, sourcedb, sourceid, serial = 0)
+    spans = get_spans(project_name, sourcedb, sourceid, serial)
+    hspans = spans.collect {|ca| ca.get_hash}
+    hspans
   end
 
 
-  def clean_hcatanns (catanns)
-    catanns = catanns.values if catanns.respond_to?(:values)
-    ids = catanns.collect {|a| a[:id] or a["id"]}
+  def clean_hspans (spans)
+    spans = spans.values if spans.respond_to?(:values)
+    ids = spans.collect {|a| a[:id] or a["id"]}
     ids.compact!
 
     idnum = 1
-    catanns.each do |a|
+    spans.each do |a|
       return nil, "format error" unless (a[:span] or (a[:begin] and a[:end])) and a[:category]
 
       unless a[:id]
@@ -354,207 +362,209 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    [catanns, nil]
+    [spans, nil]
   end
 
 
-  def save_hcatanns (hcatanns, annset, doc)
-    hcatanns.each do |a|
-      ca           = Catann.new
+  def save_hspans (hspans, project, doc)
+    hspans.each do |a|
+      ca           = Span.new
       ca.hid       = a[:id]
       ca.begin     = a[:span][:begin]
       ca.end       = a[:span][:end]
       ca.category  = a[:category]
-      ca.annset_id = annset.id
+      ca.project_id = project.id
       ca.doc_id    = doc.id
       ca.save
     end
   end
 
 
-  def chain_catanns (catanns_s)
+  def chain_spans (spans_s)
+    # This method is not called anywhere.
+    # And just returns spans_s array.
     mid = 0
-    catanns_s.each do |ca|
-      if (cid = a.hid[1..-1].to_i) > mid 
+    spans_s.each do |ca|
+      if (cid = ca.hid[1..-1].to_i) > mid 
         mid = cid
       end
     end
   end
 
 
-  def bag_catanns (catanns, relanns)
+  def bag_spans (spans, relations)
     tomerge = Hash.new
 
-    new_relanns = Array.new
-    relanns.each do |ra|
-      if ra.type == 'lexChain'
-        tomerge[ra.object] = ra.subject
+    new_relations = Array.new
+    relations.each do |ra|
+      if ra[:type] == 'lexChain'
+        tomerge[ra[:object]] = ra[:subject]
       else
-        new_relanns << ra
+        new_relations << ra
       end
     end
     idx = Hash.new
-    catanns.each_with_index {|ca, i| idx[ca.id] = i}
+    spans.each_with_index {|ca, i| idx[ca[:id]] = i}
 
     mergedto = Hash.new
     tomerge.each do |from, to|
       to = mergedto[to] if mergedto.has_key?(to)
       p idx[from]
-      fca = catanns[idx[from]]
-      tca = catanns[idx[to]]
-      tca.span = [tca.span] unless tca.span.respond_to?('push')
-      tca.span.push (fca.span)
-      catanns.delete_at(idx[from])
+      fca = spans[idx[from]]
+      tca = spans[idx[to]]
+      tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
+      tca[:span].push (fca[:span])
+      spans.delete_at(idx[from])
       mergedto[from] = to
     end
 
-    return catanns, new_relanns
+    return spans, new_relations
   end
 
 
-  ## get insanns
-  def get_insanns (annset_name, sourcedb, sourceid, serial = 0)
-    insanns = []
+  ## get instances
+  def get_instances (project_name, sourcedb, sourceid, serial = 0)
+    instances = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if annset_name and annset = doc.annsets.find_by_name(annset_name)
-        insanns = doc.insanns.where("insanns.annset_id = ?", annset.id)
-        insanns.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
+      if project_name and project = doc.projects.find_by_name(project_name)
+        instances = doc.instances.where("instances.project_id = ?", project.id)
+        instances.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
       else
-        insanns = doc.insanns
+        instances = doc.instances
       end
     else
-      if annset_name and annset = Annset.find_by_name(annset_name)
-        insanns = annset.insanns
+      if project_name and project = Project.find_by_name(project_name)
+        instances = project.instances
       else
-        insanns = Insann.all
+        instances = Instance.all
       end
     end
 
-    insanns
+    instances
   end
 
 
-  # get insanns (hash version)
-  def get_hinsanns (annset_name, sourcedb, sourceid, serial = 0)
-    insanns = get_insanns(annset_name, sourcedb, sourceid, serial)
-    hinsanns = insanns.collect {|ia| ia.get_hash}
+  # get instances (hash version)
+  def get_hinstances (project_name, sourcedb, sourceid, serial = 0)
+    instances = get_instances(project_name, sourcedb, sourceid, serial)
+    hinstances = instances.collect {|ia| ia.get_hash}
   end
 
 
-  def save_hinsanns (hinsanns, annset, doc)
-    hinsanns.each do |a|
-      ia           = Insann.new
+  def save_hinstances (hinstances, project, doc)
+    hinstances.each do |a|
+      ia           = Instance.new
       ia.hid       = a[:id]
-      ia.instype   = a[:type]
-      ia.insobj    = Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:object])
-      ia.annset_id = annset.id
+      ia.pred   = a[:type]
+      ia.obj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
+      ia.project_id = project.id
       ia.save
     end
   end
 
 
-  ## get relanns
-  def get_relanns (annset_name, sourcedb, sourceid, serial = 0)
-    relanns = []
+  ## get relations
+  def get_relations (project_name, sourcedb, sourceid, serial = 0)
+    relations = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if annset_name and annset = doc.annsets.find_by_name(annset_name)
-        relanns  = doc.subcatrels.where("relanns.annset_id = ?", annset.id)
-        relanns += doc.subinsrels.where("relanns.annset_id = ?", annset.id)
-        relanns.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
-#        relanns += doc.objcatrels.where("relanns.annset_id = ?", annset.id)
-#        relanns += doc.objinsrels.where("relanns.annset_id = ?", annset.id)
+      if project_name and project = doc.projects.find_by_name(project_name)
+        relations  = doc.subcatrels.where("relations.project_id = ?", project.id)
+        relations += doc.subinsrels.where("relations.project_id = ?", project.id)
+        relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
+#        relations += doc.objcatrels.where("relations.project_id = ?", project.id)
+#        relations += doc.objinsrels.where("relations.project_id = ?", project.id)
       else
-        relanns = doc.subcatrels + doc.subinsrels unless doc.catanns.empty?
+        relations = doc.subcatrels + doc.subinsrels unless doc.spans.empty?
       end
     else
-      if annset_name and annset = Annset.find_by_name(annset_name)
-        relanns = annset.relanns
+      if project_name and project = Project.find_by_name(project_name)
+        relations = project.relations
       else
-        relanns = Relann.all
+        relations = Relation.all
       end
     end
 
-    relanns
+    relations
   end
 
 
-  # get relanns (hash version)
-  def get_hrelanns (annset_name, sourcedb, sourceid, serial = 0)
-    relanns = get_relanns(annset_name, sourcedb, sourceid, serial)
-    hrelanns = relanns.collect {|ra| ra.get_hash}
+  # get relations (hash version)
+  def get_hrelations (project_name, sourcedb, sourceid, serial = 0)
+    relations = get_relations(project_name, sourcedb, sourceid, serial)
+    hrelations = relations.collect {|ra| ra.get_hash}
   end
 
 
-  def save_hrelanns (hrelanns, annset, doc)
-    hrelanns.each do |a|
-      ra           = Relann.new
+  def save_hrelations (hrelations, project, doc)
+    hrelations.each do |a|
+      ra           = Relation.new
       ra.hid       = a[:id]
-      ra.reltype   = a[:type]
-      ra.relsub    = case a[:subject]
-        when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:subject])
-        else           doc.insanns.find_by_annset_id_and_hid(annset.id, a[:subject])
+      ra.pred   = a[:type]
+      ra.subj    = case a[:subject]
+        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subject])
       end
-      ra.relobj    = case a[:object]
-        when /^T/ then Catann.find_by_doc_id_and_annset_id_and_hid(doc.id, annset.id, a[:object])
-        else           doc.insanns.find_by_annset_id_and_hid(annset.id, a[:object])
+      ra.obj    = case a[:object]
+        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:object])
       end
-      ra.annset_id = annset.id
+      ra.project_id = project.id
       ra.save
     end
   end
 
 
-  ## get modanns
-  def get_modanns (annset_name, sourcedb, sourceid, serial = 0)
-    modanns = []
+  ## get modifications
+  def get_modifications (project_name, sourcedb, sourceid, serial = 0)
+    modifications = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if annset_name and annset = doc.annsets.find_by_name(annset_name)
-        modanns = doc.insmods.where("modanns.annset_id = ?", annset.id)
-        modanns += doc.subcatrelmods.where("modanns.annset_id = ?", annset.id)
-        modanns += doc.subinsrelmods.where("modanns.annset_id = ?", annset.id)
-        modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
+      if project_name and project = doc.projects.find_by_name(project_name)
+        modifications = doc.insmods.where("modifications.project_id = ?", project.id)
+        modifications += doc.subcatrelmods.where("modifications.project_id = ?", project.id)
+        modifications += doc.subinsrelmods.where("modifications.project_id = ?", project.id)
+        modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       else
-        #modanns = doc.modanns unless doc.catanns.empty?
-        modanns = doc.insmods
-        modanns += doc.subcatrelmods
-        modanns += doc.subinsrelmods
-        modanns.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
+        #modifications = doc.modifications unless doc.spans.empty?
+        modifications = doc.insmods
+        modifications += doc.subcatrelmods
+        modifications += doc.subinsrelmods
+        modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       end
     else
-      if annset_name and annset = Annset.find_by_name(annset_name)
-        modanns = annset.modanns
+      if project_name and project = Project.find_by_name(project_name)
+        modifications = project.modifications
       else
-        modanns = Modann.all
+        modifications = Modification.all
       end
     end
 
-    modanns
+    modifications
   end
 
 
-  # get modanns (hash version)
-  def get_hmodanns (annset_name, sourcedb, sourceid, serial = 0)
-    modanns = get_modanns(annset_name, sourcedb, sourceid, serial)
-    hmodanns = modanns.collect {|ma| ma.get_hash}
+  # get modifications (hash version)
+  def get_hmodifications (project_name, sourcedb, sourceid, serial = 0)
+    modifications = get_modifications(project_name, sourcedb, sourceid, serial)
+    hmodifications = modifications.collect {|ma| ma.get_hash}
   end
 
 
-  def save_hmodanns (hmodanns, annset, doc)
-    hmodanns.each do |a|
-      ma           = Modann.new
+  def save_hmodifications (hmodifications, project, doc)
+    hmodifications.each do |a|
+      ma           = Modification.new
       ma.hid       = a[:id]
-      ma.modtype   = a[:type]
-      ma.modobj    = case a[:object]
+      ma.pred   = a[:type]
+      ma.obj    = case a[:object]
         when /^R/
-          #doc.subcatrels.find_by_annset_id_and_hid(annset.id, a[:object])
-          doc.subinsrels.find_by_annset_id_and_hid(annset.id, a[:object])
+          #doc.subcatrels.find_by_project_id_and_hid(project.id, a[:object])
+          doc.subinsrels.find_by_project_id_and_hid(project.id, a[:object])
         else
-          doc.insanns.find_by_annset_id_and_hid(annset.id, a[:object])
+          doc.instances.find_by_project_id_and_hid(project.id, a[:object])
       end
-      ma.annset_id = annset.id
+      ma.project_id = project.id
       ma.save
     end
   end
@@ -567,7 +577,6 @@ class ApplicationController < ActionController::Base
     # escape non-ascii characters
     coder = HTMLEntities.new
     asciitext = coder.encode(rewritetext, :named)
-
     # restore back
     # greek letters
     asciitext.gsub!(/&[Aa]lpha;/, "alpha")
@@ -612,10 +621,10 @@ class ApplicationController < ActionController::Base
   end
 
 
-  # to work on the hash representation of catanns
+  # to work on the hash representation of spans
   # to assume that there is no bag representation to this method
-  def realign_catanns (catanns, from_text, to_text)
-    return nil if catanns == nil
+  def realign_spans (spans, from_text, to_text)
+    return nil if spans == nil
 
     position_map = Hash.new
     numchar, numdiff, diff = 0, 0, 0
@@ -636,18 +645,18 @@ class ApplicationController < ActionController::Base
     #   return nil, "The text is too much different from PubMed. The mapping could not be calculated.: #{numdiff}/#{numchar}"
     # else
 
-    catanns_new = Array.new(catanns)
+    spans_new = Array.new(spans)
 
-    (0...catanns.length).each do |i|
-      catanns_new[i][:span][:begin] = position_map[catanns[i][:span][:begin]]
-      catanns_new[i][:span][:end]   = position_map[catanns[i][:span][:end]]
+    (0...spans.length).each do |i|
+      spans_new[i][:span][:begin] = position_map[spans[i][:span][:begin]]
+      spans_new[i][:span][:end]   = position_map[spans[i][:span][:end]]
     end
 
-    catanns_new
+    spans_new
   end
 
-  def adjust_catanns (catanns, text)
-    return nil if catanns == nil
+  def adjust_spans (spans, text)
+    return nil if spans == nil
 
     delimiter_characters = [
           " ",
@@ -673,9 +682,9 @@ class ApplicationController < ActionController::Base
           "\n"
       ]
 
-    catanns_new = Array.new(catanns)
+    spans_new = Array.new(spans)
 
-    catanns_new.each do |c|
+    spans_new.each do |c|
       while c[:span][:begin] > 0 and !delimiter_characters.include?(text[c[:span][:begin] - 1])
         c[:span][:begin] -= 1
       end
@@ -685,7 +694,7 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    catanns_new
+    spans_new
   end
 
 

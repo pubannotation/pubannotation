@@ -1,8 +1,8 @@
 <% content_for :path do %>
   > <%= link_to "home", home_path %>
-  <% if @annset %>
-    > <%= link_to "annsets", annsets_path %>
-    > <%= link_to @annset.name, annset_path(@annset.name) %>
+  <% if @project %>
+    > <%= link_to "projects", projects_path %>
+    > <%= link_to @project.name, project_path(@project.name) %>
   <% end %>
   > pmcdocs
 <% end %>
@@ -10,8 +10,8 @@
 <h1>
 PMC documents
 <span class="meta">
-<% if @annset %>
-that belong to the annotation set, <span class="pname"><%= @annset.name %></span>
+<% if @project %>
+that belong to the annotation set, <span class="pname"><%= @project.name %></span>
 <% else %>
 stored in <span class="pname">PubAnnotation</span>
 <% end %>
@@ -34,8 +34,8 @@ stored in <span class="pname">PubAnnotation</span>
       <td><%= doc.sourcedb %></td>
       <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
       <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
-      <% if @annset %>
-        <td><%= link_to 'Show divisions', annset_pmcdoc_url(@annset.name, doc.sourceid) %></td>
+      <% if @project %>
+        <td><%= link_to 'Show divisions', project_pmcdoc_url(@project.name, doc.sourceid) %></td>
       <% else %>
         <td><%= link_to 'Show divisions', pmcdoc_path(doc.sourceid) %></td>
       <% end %>
@@ -46,8 +46,8 @@ stored in <span class="pname">PubAnnotation</span>
 
 <%= will_paginate @docs %>
 
-<% if @annset and user_signed_in? and current_user == @annset.user %>
-  <%= form_tag("/annsets/#{@annset.name}/pmcdocs/", :method => "post") do %>
+<% if @project and user_signed_in? and current_user == @project.user %>
+  <%= form_tag("/projects/#{@project.name}/pmcdocs/", :method => "post") do %>
   <table>
     <tr><th><%= label_tag(:pmcids, "Add PMC documents") %><br/></th></tr>
     <tr><td><%= text_area_tag(:pmcids, nil, :placeholder => "PMC IDs", :required => true) %></td></tr>

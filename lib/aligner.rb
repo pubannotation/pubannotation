@@ -9,7 +9,7 @@ require 'glcs'
 
 class Aligner
 
-  # to work on the hash representation of catanns
+  # to work on the hash representation of spans
   # to assume that there is no bag representation to this method
   def initialize(string1, string2, dictionary = nil)
     posmap = Hash.new
@@ -81,17 +81,17 @@ class Aligner
     (0...@posmap.size).each {|i| puts "#{i}\t#{@posmap[i]}"}
   end
 
-  def transform_catanns(catanns)
-    return nil if catanns == nil
+  def transform_spans(spans)
+    return nil if spans == nil
 
-    catanns_new = Array.new(catanns)
+    spans_new = Array.new(spans)
 
-    (0...catanns.length).each do |i|
-      catanns_new[i][:span][:begin] = @posmap[catanns[i][:span][:begin]]
-      catanns_new[i][:span][:end]   = @posmap[catanns[i][:span][:end]]
+    (0...spans.length).each do |i|
+      spans_new[i][:span][:begin] = @posmap[spans[i][:span][:begin]]
+      spans_new[i][:span][:end]   = @posmap[spans[i][:span][:end]]
     end
 
-    catanns_new
+    spans_new
   end
 
 end
@@ -147,18 +147,18 @@ if __FILE__ == $0
   # anns2 = JSON.parse File.read(ARGV[1]), :symbolize_names => true
 
   # aligner = Aligner.new(anns1[:text], anns2[:text], [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"]])
-  # catanns = aligner.transform_catanns(anns1[:catanns])
+  # spans = aligner.transform_spans(anns1[:spans])
 
-  catanns_s = <<-'ANN'
+  spans_s = <<-'ANN'
   [{"id":"T0","span":{"begin":1,"end":2},"category":"Protein"}]
   ANN
 
-  catanns = JSON.parse catanns_s, :symbolize_names => true
+  spans = JSON.parse spans_s, :symbolize_names => true
 
   aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["’", "'"]])
   # aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["β", "beta"]])
   aligner.show_alignment
-  catanns = aligner.transform_catanns(catanns)
+  spans = aligner.transform_spans(spans)
 
-  p catanns
+  p spans
 end

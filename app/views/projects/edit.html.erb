@@ -1,0 +1,24 @@
+<% content_for :path do %>
+	> <%= link_to "home", home_path %>
+	<% if @sourcedb == 'PubMed' %>
+		> <%= link_to "pmdocs", pmdocs_path %>
+		> <%= link_to @sourceid, pmdoc_path(@sourceid) %>
+	 	> <%= link_to "projects", pmdoc_projects_path(@sourceid) %>
+	 	> <%= link_to @project.name, pmdoc_project_path(@sourceid, @project.name) %>
+	<% elsif @sourcedb == 'PMC' %>
+		> <%= link_to "pmcdocs", pmcdocs_path %>
+		> <%= link_to @sourceid, pmcdoc_path(@sourceid) %>
+	 	> <%= link_to "divs",    pmcdoc_divs_path(@sourceid) %>
+	 	> <%= link_to @serial,   pmcdoc_div_path(@sourceid, @serial) %>
+	 	> <%= link_to "projects", pmcdoc_div_projects_path(@sourceid, @serial) %>
+	 	> <%= link_to @project.name, pmcdoc_div_project_path(@sourceid, @serial, @project.name) %>
+	<% else %>
+	 	> <%= link_to "projects", projects_path %>
+	 	> <%= link_to @project.name, project_path(@project.name) %>
+ 	<% end %>
+ 	> edit
+<% end %>
+
+<h1>Editing annotation set/project</h1>
+
+<%= render 'form' %>

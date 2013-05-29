@@ -5,32 +5,32 @@ Pubann::Application.routes.draw do
 
   resources :docs
 
-  resources :annsets do
+  resources :projects do
     resources :docs
     resources :annotations
   end
 
   resources :pmdocs do
-    resources :annsets do
+    resources :projects do
       resources :annotations
     end
   end
 
   resources :pmcdocs do
     resources :divs do
-      resources :annsets do
+      resources :projects do
         resources :annotations
       end
     end
   end
 
-  resources :annsets do
+  resources :projects do
     resources :pmdocs do
       resources :annotations
     end
   end
 
-  resources :annsets do
+  resources :projects do
     resources :pmcdocs do
       resources :divs do
         resources :annotations
@@ -38,7 +38,7 @@ Pubann::Application.routes.draw do
     end
   end
 
-  #match '/annsets/:annset_id/pmdocs/:pmdoc_id/annotations' => 'annotations#index', :via => ["OPTIONS"]
+  #match '/projects/:project_id/pmdocs/:pmdoc_id/annotations' => 'annotations#index', :via => ["OPTIONS"]
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

@@ -1,0 +1,45 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&id=2626671&retmode=xml
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept:
+      - ! '*/*; q=0.5, application/xml'
+      Accept-Encoding:
+      - gzip, deflate
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 08 May 2013 08:11:12 GMT
+      Server:
+      - Apache
+      Access-Control-Allow-Origin:
+      - ! '*'
+      Cache-Control:
+      - private
+      Ncbi-Sid:
+      - 73BF605B18A08A01_0586SID
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Set-Cookie:
+      - ncbi_sid=73BF605B18A08A01_0586SID; domain=.nih.gov; path=/; expires=Thu, 08
+        May 2014 08:11:12 GMT
+      Transfer-Encoding:
+      - chunked
+    body:
+      encoding: US-ASCII
+      string: ! "<?xml version=\"1.0\"?>\n<!DOCTYPE pmc-articleset PUBLIC \"-//NLM//DTD
+        ARTICLE SET 2.0//EN\" \"http://dtd.nlm.nih.gov/ncbi/pmc/articleset/nlm-articleset-2.0.dtd\">\n<pmc-articleset><error>\n\t<Code>backend-exception</Code>\n\t<Message>Exception
+        from Backend: bePMCXML (%23PmcXmlSrv): The+read+request+has+timed+out.</Message>\n</error>\n</pmc-articleset>\n"
+    http_version: 
+  recorded_at: Wed, 08 May 2013 08:11:35 GMT
+recorded_with: VCR 2.4.0

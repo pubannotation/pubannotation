@@ -1,8 +1,8 @@
 <h1>Annotations</h1>
 
-<!--p>to <= @catanns.first.doc_sourcedb %>:<= @catanns.first.doc_sourceid %></p-->
+<!--p>to <= @spans.first.doc_sourcedb %>:<= @spans.first.doc_sourceid %></p-->
 
-<% if @catanns and !@catanns.empty? %>
+<% if @spans and !@spans.empty? %>
   <h2>Caterogy annotations</h2>
   <table class="ann">
     <tr>
@@ -11,25 +11,25 @@
       <th>Category</th>
     </tr>
 
-  <% @catanns.each do |catann| %>
+  <% @spans.each do |span| %>
     <tr>
-      <td><%= catann[:id] %></td>
+      <td><%= span[:id] %></td>
       <td>
-        <% unless catann[:span].respond_to?(:keys) %>
-          <% catann[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+        <% unless span[:span].respond_to?(:keys) %>
+          <% span[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
         <% else %>
-          <%= catann[:span][:begin] %>:<%= catann[:span][:end] %>
+          <%= span[:span][:begin] %>:<%= span[:span][:end] %>
         <% end %>
       </td>
-      <td><%= catann[:category] %></td>
-      <td style="text-align:left; font-style:italic; color:#888888; border-color:white"><%= @text[catann[:span][:begin]...catann[:span][:end]] %></td>
+      <td><%= span[:category] %></td>
+      <td style="text-align:left; font-style:italic; color:#888888; border-color:white"><%= @text[span[:span][:begin]...span[:span][:end]] %></td>
     </tr>
   <% end %>
   </table>
 <% end %>
 
 
-<% if @insanns and !@insanns.empty? %>
+<% if @instances and !@instances.empty? %>
   <h2>Instance annotations</h2>
   <table class="ann">
     <tr>
@@ -38,18 +38,18 @@
       <th>Ins. object</th>
     </tr>
 
-  <% @insanns.each do |insann| %>
+  <% @instances.each do |instance| %>
     <tr>
-      <td><%= insann[:id] %></td>
-      <td><%= insann[:type] %></td>
-      <td><%= insann[:object] %></td>
+      <td><%= instance[:id] %></td>
+      <td><%= instance[:type] %></td>
+      <td><%= instance[:object] %></td>
     </tr>
   <% end %>
   </table>
 <% end %>
 
 
-<% if @relanns and !@relanns.empty? %>
+<% if @relations and !@relations.empty? %>
   <h2>Relation annotations</h2>
   <table class="ann">
     <tr>
@@ -59,18 +59,18 @@
       <th>Object</th>
     </tr>
 
-  <% @relanns.each do |relann| %>
+  <% @relations.each do |relation| %>
     <tr>
-      <td><%= relann[:id] %></td>
-      <td><%= relann[:type] %></td>
-      <td><%= relann[:subject] %></td>
-      <td><%= relann[:object] %></td>
+      <td><%= relation[:id] %></td>
+      <td><%= relation[:type] %></td>
+      <td><%= relation[:subject] %></td>
+      <td><%= relation[:object] %></td>
     </tr>
   <% end %>
   </table>
 <% end %>
 
-<% if @modanns and !@modanns.empty? %>
+<% if @modifications and !@modifications.empty? %>
   <h2>Modification annotations</h2>
   <table class="ann">
     <tr>
@@ -79,16 +79,16 @@
       <th>Mod. object</th>
     </tr>
 
-  <% @modanns.each do |modann| %>
+  <% @modifications.each do |modification| %>
     <tr>
-      <td><%= modann[:id] %></td>
-      <td><%= modann[:type] %></td>
-      <td><%= modann[:object] %></td>
+      <td><%= modification[:id] %></td>
+      <td><%= modification[:type] %></td>
+      <td><%= modification[:object] %></td>
     </tr>
   <% end %>
   </table>
 <% end %>
 
-<% if (!@catanns or @catanns.empty?) and (!@insanns or @insanns.empty?) and (!@relanns or @relanns.empty?) and (!@modanns or @modanns.empty?) %>
+<% if (!@spans or @spans.empty?) and (!@instances or @instances.empty?) and (!@relations or @relations.empty?) and (!@modifications or @modifications.empty?) %>
 <p>none</p>
 <% end %>

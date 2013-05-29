@@ -1,0 +1,19 @@
+<h1>Instance annotations</h1>
+
+<table class="ann">
+  <tr>
+    <th>Project</th>
+    <th>Id</th>
+    <th>Type</th>
+    <th>Object</th>
+  </tr>
+
+<% @instances.each do |instance| %>
+  <tr>
+    <td><%= instance.project %></td>
+    <td><%= instance.id %></td>
+    <td><%= instance.type %></td>
+    <td><%= instance.object %></td>
+  </tr>
+<% end %>
+</table>

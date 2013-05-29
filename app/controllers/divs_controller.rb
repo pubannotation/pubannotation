@@ -4,8 +4,8 @@ class DivsController < ApplicationController
   def index
     @docs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:pmcdoc_id], :order => 'serial ASC')
 
-    if params[:annset_id]
-      @annset_name = params[:annset_id]
+    if params[:project_id]
+      @project_name = params[:project_id]
     end
 
     respond_to do |format|
@@ -17,16 +17,16 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs/:divid
   # GET /pmcdocs/:pmcid/divs/:divid.json
   def show
-    if (params[:annset_id])
-      @annset, notice = get_annset(params[:annset_id])
-      if @annset
-        @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id], @annset)
+    if (params[:project_id])
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id], @project)
       else
         @doc = nil
       end
     else
       @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
-      @annsets = get_annsets(@doc)
+      @projects = get_projects(@doc)
     end
 
     if @doc
@@ -91,13 +91,13 @@ class DivsController < ApplicationController
     @doc.body     = params[:text]
     @doc.save
 
-    if (params[:annset_id])
-      annset = Annset.find_by_name(params[:annset_id])
-      annset.docs << @doc if annset
+    if (params[:project_id])
+      project = Project.find_by_name(params[:project_id])
+      project.docs << @doc if project
     end
 
     respond_to do |format|
-      if @doc
+      unless @doc.new_record?
         format.html { redirect_to @doc, notice: 'Doc was successfully created.' }
         format.json { head :no_content }
       else

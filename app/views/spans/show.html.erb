@@ -1,0 +1,34 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Hid:</b>
+  <%= @span.hid %>
+</p>
+
+<p>
+  <b>Doc:</b>
+  <%= @span.doc.sourceid %>
+</p>
+
+<p>
+  <b>Begin:</b>
+  <%= @span.begin %>
+</p>
+
+<p>
+  <b>End:</b>
+  <%= @span.end %>
+</p>
+
+<p>
+  <b>Category:</b>
+  <%= @span.category %>
+</p>
+
+<p>
+  <b>Project:</b>
+  <%= @span.project.name %>
+</p>
+
+
+<%= link_to 'Back', spans_path %>

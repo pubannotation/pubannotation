@@ -2,10 +2,10 @@ class PmcdocsController < ApplicationController
   # GET /pmcdocs
   # GET /pmcdocs.json
   def index
-    if params[:annset_id]
-      @annset, notice = get_annset(params[:annset_id])
-      if @annset
-        @docs = @annset.docs.where(:sourcedb => 'PMC', :serial => 0)
+    if params[:project_id]
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @docs = @project.docs.where(:sourcedb => 'PMC', :serial => 0)
       else
         @doc = nil
       end
@@ -13,9 +13,11 @@ class PmcdocsController < ApplicationController
       @docs = Doc.where(:sourcedb => 'PMC', :serial => 0)
     end
 
-    @docs = @docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
-    @docs = @docs.paginate(:page => params[:page])
-
+    if @docs
+      @docs = @docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
+      @docs = @docs.paginate(:page => params[:page])
+    end
+    
     respond_to do |format|
       if @docs
         format.html
@@ -30,10 +32,10 @@ class PmcdocsController < ApplicationController
   # GET /pmcdocs/:pmcdoc_id
   # GET /pmcdocs/:pmcdoc_id.json
   def show
-    if (params[:annset_id])
-      annset, notice = get_annset(params[:annset_id])
-      if annset
-        divs, notice = get_divs(params[:id], annset)
+    if (params[:project_id])
+      project, notice = get_project(params[:project_id])
+      if project
+        divs, notice = get_divs(params[:id], project)
       else
         divs = nil
       end
@@ -44,14 +46,14 @@ class PmcdocsController < ApplicationController
     respond_to do |format|
       format.html {
         if divs
-          if annset
-            redirect_to annset_pmcdoc_divs_path(params[:annset_id], params[:id]), :notice => notice
+          if project
+            redirect_to project_pmcdoc_divs_path(params[:project_id], params[:id]), :notice => notice
           else
             redirect_to pmcdoc_divs_path(params[:id]), :notice => notice
           end
         else
-          if annset
-            redirect_to annset_pmcdocs_path(params[:annset_id]), :notice => notice
+          if project
+            redirect_to project_pmcdocs_path(params[:project_id]), :notice => notice
           else
             redirect_to pmcdocs_path, :notice => notice
           end
@@ -73,28 +75,28 @@ class PmcdocsController < ApplicationController
   def create
     num_created, num_added, num_failed = 0, 0, 0
 
-    if (params[:annset_id])
-      annset, notice = get_annset(params[:annset_id])
-      if annset
+    if (params[:project_id])
+      project, notice = get_project(params[:project_id])
+      if project
         pmcids = params[:pmcids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
         pmcids.each do |sourceid|
           divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
           if divs and !divs.empty?
-            unless annset.docs.include?(divs.first)
-              divs.each {|div| annset.docs << div}
+            unless project.docs.include?(divs.first)
+              divs.each {|div| project.docs << div}
               num_added += 1
             end
           else
             divs, message = gen_pmcdoc(sourceid)
             if divs
-              divs.each {|div| annset.docs << div}
+              divs.each {|div| project.docs << div}
               num_added += 1
             else
               num_failed += 1
             end
           end
         end
-        notice = "#{num_added} documents were added to the document set, #{annset.name}."
+        notice = "#{num_added} documents were added to the document set, #{project.name}."
       end
     else
       notice = "Annotation set is not specified."
@@ -102,8 +104,8 @@ class PmcdocsController < ApplicationController
 
     respond_to do |format|
       if num_created + num_added + num_failed > 0
-        format.html { redirect_to annset_pmcdocs_path(annset.name), :notice => notice }
-        format.json { render status: :created, location: annset_pmcdocs_path(annset.name) }
+        format.html { redirect_to project_pmcdocs_path(project.name), :notice => notice }
+        format.json { render :json => nil, status: :created, location: project_pmcdocs_path(project.name) }
       else
         format.html { redirect_to home_path, :notice => notice }
         format.json { head :unprocessable_entity }

@@ -1,0 +1,65 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: http://bionlp.dbcls.jp/ge2rdf
+    body:
+      encoding: US-ASCII
+      string: annotation=%7B%22accessibility%22%3Anull%2C%22author%22%3Anull%2C%22bionlpwriter%22%3Anull%2C%22created_at%22%3A%222013-05-08T02%3A34%3A49Z%22%2C%22description%22%3A%22This%20is%20annset%20description%22%2C%22editor%22%3Anull%2C%22id%22%3A1%2C%22license%22%3Anull%2C%22name%22%3A%22Project%20Name%22%2C%22rdfwriter%22%3Anull%2C%22reference%22%3Anull%2C%22status%22%3Anull%2C%22updated_at%22%3A%222013-05-08T02%3A34%3A49Z%22%2C%22user_id%22%3A1%2C%22viewer%22%3Anull%2C%22xmlwriter%22%3Anull%7D
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Content-Type:
+      - application/x-www-form-urlencoded
+      Content-Length:
+      - '492'
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 08 May 2013 02:34:50 GMT
+      Server:
+      - Apache/2.2.3 (CentOS)
+      X-Powered-By:
+      - Phusion Passenger (mod_rails/mod_rack) 3.0.18
+      X-Content-Type-Options:
+      - nosniff
+      Content-Length:
+      - '498'
+      Status:
+      - '200'
+      Content-Type:
+      - application/x-turtle
+    body:
+      encoding: US-ASCII
+      string: ! '@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+        @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+        @prefix ao: <http://purl.org/ao/> .
+
+        @prefix aof: <http://purl.org/ao/foaf/> .
+
+        @prefix aot: <http://purl.org/ao/types/> .
+
+        @prefix sio: <http://semanticscience.org/ontology/sio.owl#> .
+
+        @prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .
+
+        @prefix geo: <http://bionlp.dbcls.jp/ontology/geo.owl#> .
+
+        @base <http://pubannotation.org/annset/bionlp-st-ge-2013-training/>.
+
+
+
+
+'
+    http_version: 
+  recorded_at: Wed, 08 May 2013 02:34:49 GMT
+recorded_with: VCR 2.4.0

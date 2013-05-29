@@ -1,0 +1,19 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Hid:</b>
+  <%= @instance.hid %>
+</p>
+
+<p>
+  <b>Type:</b>
+  <%= @instance.type.hid %>
+</p>
+
+<p>
+  <b>Project:</b>
+  <%= @instance.project.name %>
+</p>
+
+
+<%= link_to 'Back', instances_path %>

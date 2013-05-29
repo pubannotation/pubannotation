@@ -1,0 +1,67 @@
+<% content_for :path do %>
+  > <%= link_to "home", home_path %>
+  <% if @doc and @doc.sourcedb == 'PubMed' %>
+    > <%= link_to "pmdocs", pmdocs_path %>
+    > <%= link_to @doc.sourceid, pmdoc_path(@doc.sourceid) %>
+  <% elsif @doc and @doc.sourcedb == 'PMC' %>
+    > <%= link_to "pmcdocs", pmcdocs_path %>
+    > <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
+    > <%= link_to "divs",    pmcdoc_divs_path(@doc.sourceid) %>
+    > <%= link_to @doc.serial,   pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
+  <% end %>
+  > projects
+<% end %>
+
+<h1>
+  Annotation sets/projects
+  <% if @doc and @doc.sourcedb == 'PubMed' %>
+    <span class='meta'>
+    made to <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
+    </span>
+  <% elsif @doc and @doc.sourcedb == 'PMC' %>
+    <span class='meta'>
+    made to <%= @doc.serial %>'th divition of <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
+    </span>
+  <% else %>
+    <span class='meta'>
+    stored in PubAnnotation
+    </span>
+  <% end %>  
+</h1>
+
+<% if @projects.empty? %>
+  <p>none</p>
+<% else %>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Author</th>
+      <th>Uploader</th>
+      <th></th>
+    </tr>
+
+  <% @projects.each do |project| %>
+    <tr>
+      <td style="white-space: nowrap"><%= project.name %></td>
+      <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>
+      <td style="white-space: nowrap"><%= project.author %></td>
+      <td style="white-space: nowrap"><%= project.user.username %></td>
+      <% if @doc and @doc.sourcedb == "PubMed" %>
+        <td><%= link_to 'Show', pmdoc_project_path(@doc.sourceid, project.name) %></td>
+      <% elsif @doc and @doc.sourcedb == "PMC" %>
+        <td><%= link_to 'Show', pmcdoc_div_project_path(@doc.sourceid, @doc.serial, project.name) %></td>
+      <% else %>
+        <td><%= link_to 'Show', project_path(project.name) %></td>
+      <% end %>
+    </tr>
+  <% end %>
+  </table>
+<% end %>
+
+<% if user_signed_in? %>
+<span class="button"><%= link_to 'Create new annotation set', new_project_path %></span>
+<% else %>
+<span class="button"><%= link_to 'Sign in to create your annotation set/project', new_user_session_path %></span>
+<% end %>
+

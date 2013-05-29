@@ -1,0 +1,55 @@
+<h1>Category annotations</h1>
+
+<table class="ann">
+  <tr>
+    <th>Annotation set</th>
+    <!--th>Doc DB</th>
+    <th>Doc Id</th>
+    <th>Division</th-->
+    <th>Id</th>
+    <th>Span (begin:end)</th>
+    <th>Category</th>
+  </tr>
+
+<% @spans.each do |span| %>
+  <tr>
+    <td><%= span.project %></td>
+    <!--td><= span.doc_sourcedb %></td>
+    <td><= span.doc_sourceid %></td>
+    <td><= span.doc_serial %></td-->
+    <td><%= span.id %></td>
+    <td>
+      <% unless span.span.respond_to?(:keys) %>
+        <% span.span.each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+      <% else %>
+        <%= span.span[:begin] %>:<%= span.span[:end] %>
+      <% end %>
+    </td>
+    <td><%= span.category %></td>
+  </tr>
+<% end %>
+</table>
+
+<% unless @relations.empty? %>
+<h2>Chain annotations</h1>
+
+<table class="ann">
+  <tr>
+    <th>Project</th>
+    <th>Id</th>
+    <th>Subject</th>
+    <th>Type</th>
+    <th>Object</th>
+  </tr>
+
+<% @relations.each do |relation| %>
+  <tr>
+    <td><%= relation.project %></td>
+    <td><%= relation.id %></td>
+    <td><%= relation.subject %></td>
+    <td><%= relation.type %></td>
+    <td><%= relation.object %></td>
+  </tr>
+<% end %>
+</table>
+<% end %>
