@@ -1,5 +1,5 @@
 <% content_for :path do %>
-  > <%= link_to "home", home_path %>
+  > <%= link_to t('views.paths.home'), home_path %>
   <% if @project %>
     > <%= link_to "projects", projects_path %>
     > <%= link_to @project.name, project_path(@project.name) %>
@@ -8,24 +8,24 @@
 <% end %>
 
 <h1>
-PMC documents
-<span class="meta">
 <% if @project %>
-that belong to the annotation set, <span class="pname"><%= @project.name %></span>
+<!-- I18n
+	PMC documents
+	that belong to the annotation set, <span class="pname"><%= @project.name %></span>
+-->
 <% else %>
-stored in <span class="pname">PubAnnotation</span>
+<%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => "PMC #{t('activerecord.models.doc').pluralize}").html_safe %>
 <% end %>
-</span>
 </h1>
 
 <% if @docs.empty? %>
   none
 <% else %>
   <table>
-    <tr>
-      <th>Source DB</th>
-      <th>Source Id</th>
-      <th>Text</th>
+    <tr class="capitalize">
+      <th><%= t('activerecord.attributes.doc.sourcedb') %></th>
+      <th><%= t('activerecord.attributes.doc.sourceid') %></th>
+      <th><%= t('activerecord.attributes.doc.body') %></th>
       <th></th>
     </tr>
 
@@ -34,11 +34,13 @@ stored in <span class="pname">PubAnnotation</span>
       <td><%= doc.sourcedb %></td>
       <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
       <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
+	  <td>
       <% if @project %>
-        <td><%= link_to 'Show divisions', project_pmcdoc_url(@project.name, doc.sourceid) %></td>
+    	<%= link_to t('views.shared.show_divisions'), project_pmcdoc_url(@project.name, doc.sourceid) %>
       <% else %>
-        <td><%= link_to 'Show divisions', pmcdoc_path(doc.sourceid) %></td>
+        <%= link_to t('views.shared.show_divisions'), pmcdoc_path(doc.sourceid) %>
       <% end %>
+	  </td>
     </tr>
   <% end %>
   </table>

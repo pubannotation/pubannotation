@@ -1,5 +1,5 @@
 <% content_for :path do %>
-  > <%= link_to "home", home_path %>
+  > <%= link_to t('views.paths.home'), home_path %>
   <% if @project %>
     > <%= link_to "projects", projects_path %>
     > <%= link_to @project.name, project_path(@project.name) %>
@@ -8,24 +8,21 @@
 <% end %>
 
 <h1>
-PubMed documents
-<span class="meta">
 <% if @project %>
-that belong to the annotation set, <span class="pname"><%= @project.name %></span>
+	<%= t('views.shared.belongs_to', :parent => t('views.service.title'), :pname => @project.name, :content => "PubMed #{t('activerecord.models.doc').pluralize}").html_safe %>
 <% else %>
-stored in <span class="pname">PubAnnotation</span>
+	<%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => "PubMed #{t('activerecord.models.doc').pluralize}").html_safe %>
 <% end %>
-</span>
 </h1>
 
 <% if @docs.empty? %>
   none
 <% else %>
   <table>
-    <tr>
-      <th>Source DB</th>
-      <th>Source Id</th>
-      <th>Text</th>
+    <tr class="capitalize">
+      <th><%= t('activerecord.attributes.doc.sourcedb') %></th>
+      <th><%= t('activerecord.attributes.doc.sourceid') %></th>
+      <th><%= t('activerecord.attributes.doc.body') %></th>
       <th></th>
     </tr>
 
@@ -36,12 +33,12 @@ stored in <span class="pname">PubAnnotation</span>
       <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
       <td>
         <% if @project %>
-          <span class="button"><%= link_to 'Show', project_pmdoc_path(@project.name, doc.sourceid) %></span>
+          <span class="button"><%= link_to t('views.shared.show'), project_pmdoc_path(@project.name, doc.sourceid) %></span>
           <% if user_signed_in? and current_user == @project.user %>
             <span class="button"><%= link_to 'Remove', project_pmdoc_path(@project.name, doc.sourceid), method: :delete, data: { confirm: 'Are you sure? All the annotations to this document that belong to the annotation set will be deleted.' } %></span>
           <% end %>
         <% else %>
-          <span class="button"><%= link_to 'Show', pmdoc_path(doc.sourceid) %></span>
+          <span class="button"><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) %></span>
         <% end %>
       </td>
     </tr>

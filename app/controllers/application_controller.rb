@@ -5,8 +5,15 @@ require 'aligner'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
+  before_filter :set_locale
   after_filter :store_location
-
+  
+  def set_locale
+    if request.env['HTTP_ACCEPT_LANGUAGE']
+      I18n.locale =  request.env['HTTP_ACCEPT_LANGUAGE'].scan(/^[a-z]{2}/).first
+    end
+  end
+  
   def store_location
     if request.fullpath != new_user_session_path && request.fullpath != new_user_registration_path && request.method == 'GET'
       session[:after_sign_in_path] = request.fullpath

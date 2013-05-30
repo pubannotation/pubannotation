@@ -131,7 +131,12 @@ table.menu {
     font-style:italic;
     text-align:center;
 }
-
+.capitalize{
+	text-transform:capitalize;
+}
+.capitalize_first:first-letter{
+	text-transform:capitalize;
+}
 h1 {
     width:40em;
     border-style:solid;
@@ -322,4 +327,8 @@ li {
 
 .input {
     width:360px;
+}
+
+#path{
+	text-transform: lowercase;
 }

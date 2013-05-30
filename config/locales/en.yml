@@ -201,5 +201,70 @@ en:
     errors:
       <<: *errors
   activerecord:
+    models:
+      doc: document
+      project: project
+    attributes:
+      doc:
+        sourcedb: source DB
+        sourceid: source id
+        body: text
+      project:
+        rdfwriter: RDF writer
+        xmlwriter: XML writer
+        bionlpwriter: BioNLP-ST_writer
+      user:
+        email: E-mail
+        login: login id
+        password: password
+        password_confirmation: password confirmation
+        remember_me: remember me
+        username: Username (your full name)
+    placeholder:
+      project:
+        name: The name of this project (up to 30 characters)
+        author: The name of author of this project
+        reference: URL to a page that describes this project 
     errors:
       <<: *errors
+  views:
+    service:
+      title: PubAnnotation
+      slogan: A scalable and sharable storage of text annotations.
+      credit: "Currently, it is in its alpha version and there are many incomplete features.<br />The reason of making it publicaly available at the current stage is to seek your comments.<br />Your any comment about any feature of the service will be highly appreciated.<br />Contact: jdkim at dbcls dot rois dot ac dot jp"
+    menus:
+      overview: overview
+      features: features
+      formats: formats
+    paths:
+      home: home
+    project:
+      try_textae: "If you don't have one, try with" 
+    hint:
+      project:
+        author: specify the official author/project of this project, in case you are uploading a project produced by someone else
+        license: \'CC-BY\' is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.
+        reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation set that provides a comprehensive description of it.
+        editor: Specify URL of the annotation editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
+    user:
+      forgot_password: reset password
+      sign_in: sign in
+      sign_in_to_create_model: Sign in to create your %{model}
+      sign_up: sign up
+      sign_out: sign out
+      send_reset_password_instructions: Send me reset password instructions
+    shared:
+      new_model: New %{model}
+      create_model: Create new %{model}
+      show: show
+      show_divisions: Show divisions
+      uploader: uploader
+      pubmed: PubMed
+      pmdocs: pmdocs
+      pmcdocs: pmcdocs
+      divs: divs
+      annotation_sets: annotation sets
+      stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
+      belongs_to: "%{content} that belong to the %{parent}, <span class='pname'>%{pname}</span>"
+      made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"
+      made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"

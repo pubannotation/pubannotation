@@ -1,14 +1,14 @@
 <% content_for :path do %>
-  > <%= link_to "home", home_path %>
+  > <%= link_to t('views.paths.home'), home_path %>
   <% if @project_name %>
     > <%= link_to "projects", projects_path %>
     > <%= link_to @project_name, project_path(@project_name) %>
-    > <%= link_to "pmcdocs", project_pmcdocs_path(@project_name) %>
+    > <%= link_to t('views.shared.pmcdocs'), project_pmcdocs_path(@project_name) %>
   <% else %>
-    > <%= link_to "pmcdocs", pmcdocs_path %>
+    > <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
   <% end %>
   > <%= @docs.first.sourceid %>
-  > divs
+  > <%= t('views.shared.divs') %>
 <% end %>
 
 <h1>
@@ -42,9 +42,9 @@ of the document, <span class="pname"><%= @docs.first.sourcedb %>:<%= @docs.first
       <td style="text-align:right"><%= doc.body.length %></td>
     <% end %>
     <% if @project_name %>
-    <td><%= link_to 'Show', project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></td>
+    <td><%= link_to t('views.shared.show'), project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></td>
     <% else %>    
-    <td><%= link_to 'Show', pmcdoc_div_path(doc.sourceid, doc.serial) %></td>
+    <td><%= link_to t('views.shared.show'), pmcdoc_div_path(doc.sourceid, doc.serial) %></td>
     <% end %>
   </tr>
 <% end %>

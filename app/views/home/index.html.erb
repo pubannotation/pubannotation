@@ -1,14 +1,17 @@
 <% content_for :path do %>
-> home
+> <%= t('views.paths.home') %>
 <% end %>
-
-<h1>Documents <span class="meta">stored in <span class="pname">PubAnnotation</span></span></h1>
+<h1>
+	<span class="capitalize_first"><%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => t('activerecord.models.doc').pluralize).html_safe %></span>
+</h1>
 <ul>
-	<li><%= link_to "PubMed documents", pmdocs_path %> (<%= @pmdocs_num %>)</li>
-	<li><%= link_to "PMC documents", pmcdocs_path %> (<%= @pmcdocs_num %>)</li>
+	<li><%= link_to "PubMed #{t('activerecord.models.doc').pluralize}", pmdocs_path %> (<%= @pmdocs_num %>)</li>
+	<li><%= link_to "PMC #{t('activerecord.models.doc').pluralize}", pmcdocs_path %> (<%= @pmcdocs_num %>)</li>
 </ul>
 
-<h1>Annotation sets <span class="meta">stored in <span class="pname">PubAnnotation</span></span></h1>
+<h1>
+	<%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => t('views.shared.annotation_sets').pluralize).html_safe %>
+</h1>
 <ul>
-	<li><%= link_to "Annotation sets", projects_path %> (<%= @projects_num %>)</li>
+	<li><%= link_to t('views.shared.annotation_sets').pluralize, projects_path, :class => 'capitalize_first' %> (<%= @projects_num %>)</li>
 </ul>

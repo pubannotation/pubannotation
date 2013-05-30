@@ -1,25 +1,25 @@
 <% content_for :path do %>
-	> <%= link_to "home", home_path %>
+	> <%= link_to t('views.paths.home'), home_path %>
 	<% if @project %>
 		> <%= link_to "projects", projects_path %>
 		> <%= link_to @project.name, project_path(@project.name) %>
 		<% if @doc and @doc.sourcedb == 'PubMed' %>
-		    > <%= link_to "pmdocs", project_pmdocs_path(@project.name) %>
+		    > <%= link_to t('views.shared.pmdocs'), project_pmdocs_path(@project.name) %>
 		    > <%= @doc.sourceid %>
 		<% elsif @doc and @doc.sourcedb == 'PMC' %>
-		    > <%= link_to "pmcdocs", project_pmcdocs_path(@project.name) %>
+		    > <%= link_to t('views.shared.pmcdocs'), project_pmcdocs_path(@project.name) %>
 		    > <%= link_to @doc.sourceid, project_pmcdoc_path(@project.name, @doc.sourceid) %>
-		    > <%= link_to "divs", project_pmcdoc_divs_path(@project.name, @doc.sourceid) %>
+		    > <%= link_to t('views.shared.divs'), project_pmcdoc_divs_path(@project.name, @doc.sourceid) %>
 		    > <%= @doc.serial %>
 		<% end %>
 	<% else %>
 		<% if @doc.sourcedb == 'PubMed' %>
-		    > <%= link_to "pmdocs", pmdocs_path %>
+		    > <%= link_to t('views.shared.pmdocs'), pmdocs_path %>
 			> <%= @doc.sourceid %>
 		<% elsif @doc.sourcedb == 'PMC' %>
-		    > <%= link_to "pmcdocs", pmcdocs_path %>
+		    > <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
 		    > <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
-		    > <%= link_to "divs", pmcdoc_divs_path(@doc.sourceid) %>
+		    > <%= link_to t('views.shared.divs'), pmcdoc_divs_path(@doc.sourceid) %>
 		    > <%= @doc.serial %>
 		<% end %>
   <% end %>

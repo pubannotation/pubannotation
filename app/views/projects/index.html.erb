@@ -1,31 +1,30 @@
 <% content_for :path do %>
-  > <%= link_to "home", home_path %>
+  > <%= link_to t('views.paths.home'), home_path %>
   <% if @doc and @doc.sourcedb == 'PubMed' %>
-    > <%= link_to "pmdocs", pmdocs_path %>
+    > <%= link_to t('views.shared.pmdocs'), pmdocs_path %>
     > <%= link_to @doc.sourceid, pmdoc_path(@doc.sourceid) %>
   <% elsif @doc and @doc.sourcedb == 'PMC' %>
-    > <%= link_to "pmcdocs", pmcdocs_path %>
+    > <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
     > <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
-    > <%= link_to "divs",    pmcdoc_divs_path(@doc.sourceid) %>
+    > <%= link_to t('views.shared.divs'),    pmcdoc_divs_path(@doc.sourceid) %>
     > <%= link_to @doc.serial,   pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
   <% end %>
-  > projects
+  > <%= t('activerecord.models.project').pluralize %>
 <% end %>
 
-<h1>
-  Annotation sets/projects
+<h1 class="capitalize_first">
+  <% @doc = Doc.last %>
   <% if @doc and @doc.sourcedb == 'PubMed' %>
+  	<%= t('views.shared.made_to', :pname => "#{@doc.sourcedb}:#{@doc.sourceid}", :content => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}").html_safe %>
+	<!-- I18n
     <span class='meta'>
     made to <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
     </span>
+    -->
   <% elsif @doc and @doc.sourcedb == 'PMC' %>
-    <span class='meta'>
-    made to <%= @doc.serial %>'th divition of <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
-    </span>
+  	<%= t('views.shared.made_to_division', :serial => @doc.serial, :pname => "#{@doc.sourcedb}:#{@doc.sourceid}", :content => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}").html_safe %>
   <% else %>
-    <span class='meta'>
-    stored in PubAnnotation
-    </span>
+    <%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}").html_safe %>
   <% end %>  
 </h1>
 
@@ -33,11 +32,11 @@
   <p>none</p>
 <% else %>
   <table>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Author</th>
-      <th>Uploader</th>
+    <tr class="capitalize">
+      <th><%= t('activerecord.attributes.project.name') %></th>
+      <th><%= t('activerecord.attributes.project.description') %></th>
+      <th><%= t('activerecord.attributes.project.author') %></th>
+      <th><%= t('views.shared.uploader') %></th>
       <th></th>
     </tr>
 
@@ -48,20 +47,23 @@
       <td style="white-space: nowrap"><%= project.author %></td>
       <td style="white-space: nowrap"><%= project.user.username %></td>
       <% if @doc and @doc.sourcedb == "PubMed" %>
-        <td><%= link_to 'Show', pmdoc_project_path(@doc.sourceid, project.name) %></td>
+        <td><%= link_to t('views.shared.show'), pmdoc_project_path(@doc.sourceid, project.name) %></td>
       <% elsif @doc and @doc.sourcedb == "PMC" %>
-        <td><%= link_to 'Show', pmcdoc_div_project_path(@doc.sourceid, @doc.serial, project.name) %></td>
+        <td><%= link_to t('views.shared.show'), pmcdoc_div_project_path(@doc.sourceid, @doc.serial, project.name) %></td>
       <% else %>
-        <td><%= link_to 'Show', project_path(project.name) %></td>
+        <td><%= link_to t('views.shared.show'), project_path(project.name) %></td>
       <% end %>
     </tr>
   <% end %>
   </table>
 <% end %>
 
+	
+<span class="button">
 <% if user_signed_in? %>
-<span class="button"><%= link_to 'Create new annotation set', new_project_path %></span>
+	<%= link_to t('views.shared.create_model', :model => t('activerecord.models.project')), new_project_path %>
 <% else %>
-<span class="button"><%= link_to 'Sign in to create your annotation set/project', new_user_session_path %></span>
+	<%= link_to t('views.user.sign_in_to_create_model', :model => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}"), new_user_session_path %>
 <% end %>
+</span>
 

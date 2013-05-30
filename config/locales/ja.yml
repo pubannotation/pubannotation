@@ -193,5 +193,93 @@ ja:
     errors:
       <<: *errors
   activerecord:
+    models:
+      doc: ドキュメント
+      project: プロジェクト
+      user: ユーザー
+    attributes:
+      doc:
+        sourcedb: ソースDB
+        sourceid: ソースID
+        body: テキスト
+      project:
+        name: 名前
+        description: 説明
+        author: 著者
+        license: ライセンス
+        status: ステータス
+        accessibility: 公開範囲
+        uploader: アップロードユーザー
+        reference: 参照
+        editor: エディター
+        rdfwriter: RDFライター
+        xmlwriter: XMLライター
+        bionlpwriter: BioNLP-STライター
+      user:
+        email: メールアドレス
+        login: ログインID
+        password: パスワード
+        password_confirmation: パスワードの確認
+        remember_me: 記憶する
+        username: 名前（フルネーム）
+    placeholder:
+      project:
+        name: プロジェクト名(30文字以内)
+        author: プロジェクトの著者名
+        reference: このプロジェクトの参照URL
+    options:
+      project:
+        status:
+          released: 公開中
+          beta: ベータ
+          developing: 開発中
+        accessibility:
+          public: 公開
+          private: プライベート
     errors:
       <<: *errors
+  will_paginate:
+    previous_label: 前のページ
+    next_label: 次のページ
+  views:
+    service:
+      title: パブアノテーション
+      slogan: スケーラブルかつ共有可能なテキストアノテーションストレージ
+      credit: "アルファバージョンのため機能が不完全な場合がありますが、ご意見を頂戴するため公開しております。<br />ご意見をぜひお寄せください。<br />連絡先: jdkim アット dbcls ドット rois ドット ac ドット jp"
+    menus:
+      overview: 概要
+      features: 特徴
+      formats: フォーマット
+    paths:
+      home: ホーム
+      new: 新規作成
+    project:
+      try_textae: お持ちでない場合はこちらをお試し下さい
+    hint:
+      project:
+        author: 他社が作成したプロジェクトをアップロードする場合は、このプロジェクトの公式の著者を記載
+        license: CC-BYが推奨デフォルト値ですが、その他の値も入力可能
+        reference: パブアノテーションはプロジェクトのストレージは提供しますが、プロジェクト用のホームページは別途必要です
+        editor: プロジェクトの編集に利用するアノテーションエディターのURLを指定してください。エディタがパブアノテーションでサポートされていない場合はご連絡下さい。
+    user:
+      forgot_password: パスワードのリセット
+      sign_in: ログイン
+      sign_in_to_create_model: ログインして%{model}を作成
+      sign_up: 新規登録
+      sign_out: ログアウト
+      send_reset_password_instructions: パスワードのリセット用メールを送信
+    shared:
+      new_model: 新規%{model}の作成
+      create_model: 新規%{model}を作成
+      show: 表示
+      show_divisions: ディビジョンを表示
+      uploader:  アップローダー
+      pubmed: PubMed
+      pmdocs: pmdocs
+      pmcdocs: pmcdocs
+      divs: divs
+      annotation_sets: アノテーションセット
+      stored_in: "<span class='meta'><span>%{pname}</span>内の</span>%{content}"   
+      belongs_to: "%{parent}<span class='pname'>%{pname}</span>に属する、%{content} "
+      made_to: "<span class='meta'><span class='pname'>%{pname}</span>用の</span>%{content}"
+      made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"      

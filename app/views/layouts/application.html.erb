@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>PubAnnotation</title>
+  <title><%= I18n.t('views.service.title') %></title>
   <%= stylesheet_link_tag    "application", :media => "all" %>
   <%= javascript_include_tag "application" %>
   <%= csrf_meta_tags %>
@@ -9,8 +9,8 @@
 <body>
 
 <div id="header">
-<div id="title">PubAnnotation</div>
-<div id="slogan">"A scalable and sharable storage of text annotations."</div>
+<div id="title"><%= I18n.t('views.service.title') %></div>
+<div id="slogan"><%= I18n.t('views.service.slogan') %></div>
 
 <div id="account">
 [<%= render 'devise/menu/registration_items' %>|<%= render 'devise/menu/login_items' %>]
@@ -18,9 +18,9 @@
 
 <table class="menu">
 <tr>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Overview">Overview</a></td>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features">Features</a></td>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format">Formats</a></td>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Overview" class="capitalize"><%= t('views.menus.overview') %></a></td>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features" class="capitalize"><%= t('views.menus.features') %></a></td>
+<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format" class="capitalize"><%= t('views.menus.formats') %></a></td>
 <td><a href="http://dbcls.rois.ac.jp">DBCLS</a></td>
 </tr>
 </table>
@@ -41,10 +41,7 @@
 
 <div id="footer">
 <div class='credit'>
-Currently, it is in its alpha version and there are many incomplete features.</br>
-The reason of making it publicaly available at the current stage is to seek your comments.</br>
-Your any comment about any feature of the service will be highly appreciated.<br/>
-Contact: jdkim at dbcls dot rois dot ac dot jp
+<%= t('views.service.credit').html_safe %>
 </div>
 </div>
 
