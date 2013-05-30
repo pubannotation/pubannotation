@@ -2,52 +2,52 @@
 require 'spec_helper'
 
 describe Doc do
-  describe 'has_many spans' do
+  describe 'has_many denotations' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @doc_span = FactoryGirl.create(:span, :doc => @doc)
-      @another_span = FactoryGirl.create(:span, :doc => FactoryGirl.create(:doc))
+      @doc_denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @another_denotation = FactoryGirl.create(:denotation, :doc => FactoryGirl.create(:doc))
     end
     
-    it 'doc.spans should include related span' do
-      @doc.spans.should include(@doc_span)
+    it 'doc.denotations should include related denotation' do
+      @doc.denotations.should include(@doc_denotation)
     end
     
-    it 'doc.spans should not include unrelated span' do
-      @doc.spans.should_not include(@another_span)
+    it 'doc.denotations should not include unrelated denotation' do
+      @doc.denotations.should_not include(@another_denotation)
     end
   end
   
   describe 'has_many instances' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @span = FactoryGirl.create(:span, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
     end
     
-    it 'span.instances should present' do
-      @span.instances.should be_present
+    it 'denotation.instances should present' do
+      @denotation.instances.should be_present
     end
     
-    it 'span.instances should include instance through spans' do
-      (@span.instances - [@instance]).should be_blank
+    it 'denotation.instances should include instance through denotations' do
+      (@denotation.instances - [@instance]).should be_blank
     end
   end
   
   describe 'has_many :subcatrels' do
     before do
       @doc = FactoryGirl.create(:doc, :id => 2)
-      @span = FactoryGirl.create(:span, :doc => @doc, :id => 3)
-      @subj = FactoryGirl.create(:span, :doc => @doc, :id => 4)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3)
+      @subj = FactoryGirl.create(:denotation, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @span)
+      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation)
     end
     
-    it 'doc.spans should include related span' do
-      @doc.spans.should include(@span)
+    it 'doc.denotations should include related denotation' do
+      @doc.denotations.should include(@denotation)
     end
 
-    it 'doc.subcatrels should include Relation which belongs_to @doc.span' do
+    it 'doc.subcatrels should include Relation which belongs_to @doc.denotation' do
       @doc.subcatrels.should include(@subcatrel)
     end
   end
@@ -55,8 +55,8 @@ describe Doc do
   describe 'has_many subinsrels' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @span = FactoryGirl.create(:span, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
         :subj_id => @instance.id,
         :subj_type => @instance.class.to_s,
@@ -77,8 +77,8 @@ describe Doc do
   describe 'has_many insmods' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @span = FactoryGirl.create(:span, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
       @insmod = FactoryGirl.create(:modification, :obj => @instance, :project_id => 5)
     end
     
@@ -94,10 +94,10 @@ describe Doc do
   describe 'has_many subcatrelmods' do
     before do
       @doc = FactoryGirl.create(:doc, :id => 2)
-      @span = FactoryGirl.create(:span, :doc => @doc, :id => 3)
-      @subj = FactoryGirl.create(:span, :doc => @doc, :id => 4)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3)
+      @subj = FactoryGirl.create(:denotation, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @span)
+      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation)
       @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project)
     end
     
@@ -113,8 +113,8 @@ describe Doc do
   describe 'has_many :subinsrelmods' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @span = FactoryGirl.create(:span, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :obj => @span, :project_id => 1)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
         :subj_id => @instance.id,
         :subj_type => @instance.class.to_s,

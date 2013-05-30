@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130528065534) do
+ActiveRecord::Schema.define(:version => 20130530054825) do
 
   create_table "blocks", :force => true do |t|
     t.string   "hid"
@@ -26,6 +26,20 @@ ActiveRecord::Schema.define(:version => 20130528065534) do
 
   add_index "blocks", ["doc_id"], :name => "index_blocks_on_doc_id"
   add_index "blocks", ["project_id"], :name => "index_blocks_on_project_id"
+
+  create_table "denotations", :force => true do |t|
+    t.string   "hid"
+    t.integer  "doc_id"
+    t.integer  "begin"
+    t.integer  "end"
+    t.string   "obj"
+    t.integer  "project_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "denotations", ["doc_id"], :name => "index_spans_on_doc_id"
+  add_index "denotations", ["project_id"], :name => "index_spans_on_project_id"
 
   create_table "docs", :force => true do |t|
     t.text     "body"
@@ -110,20 +124,6 @@ ActiveRecord::Schema.define(:version => 20130528065534) do
   add_index "relations", ["obj_id"], :name => "index_relations_on_obj_id"
   add_index "relations", ["project_id"], :name => "index_relations_on_project_id"
   add_index "relations", ["subj_id"], :name => "index_relations_on_subj_id"
-
-  create_table "spans", :force => true do |t|
-    t.string   "hid"
-    t.integer  "doc_id"
-    t.integer  "begin"
-    t.integer  "end"
-    t.string   "category"
-    t.integer  "project_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
-  end
-
-  add_index "spans", ["doc_id"], :name => "index_spans_on_doc_id"
-  add_index "spans", ["project_id"], :name => "index_spans_on_project_id"
 
   create_table "users", :force => true do |t|
     t.string   "email",                  :default => "", :null => false

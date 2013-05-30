@@ -9,7 +9,7 @@ require 'glcs'
 
 class Aligner
 
-  # to work on the hash representation of spans
+  # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method
   def initialize(string1, string2, dictionary = nil)
     posmap = Hash.new
@@ -81,17 +81,17 @@ class Aligner
     (0...@posmap.size).each {|i| puts "#{i}\t#{@posmap[i]}"}
   end
 
-  def transform_spans(spans)
-    return nil if spans == nil
+  def transform_denotations(denotations)
+    return nil if denotations == nil
 
-    spans_new = Array.new(spans)
+    denotations_new = Array.new(denotations)
 
-    (0...spans.length).each do |i|
-      spans_new[i][:span][:begin] = @posmap[spans[i][:span][:begin]]
-      spans_new[i][:span][:end]   = @posmap[spans[i][:span][:end]]
+    (0...denotations.length).each do |i|
+      denotations_new[i][:denotation][:begin] = @posmap[denotations[i][:denotation][:begin]]
+      denotations_new[i][:denotation][:end]   = @posmap[denotations[i][:denotation][:end]]
     end
 
-    spans_new
+    denotations_new
   end
 
 end
@@ -147,18 +147,18 @@ if __FILE__ == $0
   # anns2 = JSON.parse File.read(ARGV[1]), :symbolize_names => true
 
   # aligner = Aligner.new(anns1[:text], anns2[:text], [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"]])
-  # spans = aligner.transform_spans(anns1[:spans])
+  # denotations = aligner.transform_denotations(anns1[:denotations])
 
-  spans_s = <<-'ANN'
-  [{"id":"T0","span":{"begin":1,"end":2},"category":"Protein"}]
+  denotations_s = <<-'ANN'
+  [{"id":"T0","denotation":{"begin":1,"end":2},"category":"Protein"}]
   ANN
 
-  spans = JSON.parse spans_s, :symbolize_names => true
+  denotations = JSON.parse denotations_s, :symbolize_names => true
 
   aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["’", "'"]])
   # aligner = Aligner.new(from_text, to_text, [["Δ", "delta"], [" ", " "], ["–", "-"], ["′", "'"], ["β", "beta"]])
   aligner.show_alignment
-  spans = aligner.transform_spans(spans)
+  denotations = aligner.transform_denotations(denotations)
 
-  p spans
+  p denotations
 end

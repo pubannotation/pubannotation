@@ -6,10 +6,10 @@ describe "annotations/index.html.erb" do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
       @relation = FactoryGirl.create(:relation,
         :id => 123,
-        :obj => @span, 
+        :obj => @denotation, 
         :project => @project        
       )
       assign :relations, [@relation]
