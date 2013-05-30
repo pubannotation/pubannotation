@@ -368,14 +368,14 @@ class ApplicationController < ActionController::Base
 
   def save_hspans (hspans, project, doc)
     hspans.each do |a|
-      ca           = Span.new
-      ca.hid       = a[:id]
-      ca.begin     = a[:span][:begin]
-      ca.end       = a[:span][:end]
-      ca.category  = a[:category]
-      ca.project_id = project.id
-      ca.doc_id    = doc.id
-      ca.save
+      sa            = Span.new
+      sa.hid        = a[:id]
+      sa.begin      = a[:span][:begin]
+      sa.end        = a[:span][:end]
+      sa.category   = a[:category]
+      sa.project_id = project.id
+      sa.doc_id     = doc.id
+      sa.save
     end
   end
 
@@ -397,8 +397,8 @@ class ApplicationController < ActionController::Base
 
     new_relations = Array.new
     relations.each do |ra|
-      if ra[:type] == 'lexChain'
-        tomerge[ra[:object]] = ra[:subject]
+      if ra[:pred] == '_lexChain'
+        tomerge[ra[:obj]] = ra[:subj]
       else
         new_relations << ra
       end
@@ -409,7 +409,6 @@ class ApplicationController < ActionController::Base
     mergedto = Hash.new
     tomerge.each do |from, to|
       to = mergedto[to] if mergedto.has_key?(to)
-      p idx[from]
       fca = spans[idx[from]]
       tca = spans[idx[to]]
       tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
@@ -454,10 +453,10 @@ class ApplicationController < ActionController::Base
 
   def save_hinstances (hinstances, project, doc)
     hinstances.each do |a|
-      ia           = Instance.new
-      ia.hid       = a[:id]
-      ia.pred   = a[:type]
-      ia.obj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
+      ia        = Instance.new
+      ia.hid    = a[:id]
+      ia.pred   = a[:pred]
+      ia.obj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
       ia.project_id = project.id
       ia.save
     end
@@ -499,16 +498,16 @@ class ApplicationController < ActionController::Base
 
   def save_hrelations (hrelations, project, doc)
     hrelations.each do |a|
-      ra           = Relation.new
-      ra.hid       = a[:id]
-      ra.pred   = a[:type]
-      ra.subj    = case a[:subject]
-        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subject])
+      ra        = Relation.new
+      ra.hid    = a[:id]
+      ra.pred   = a[:pred]
+      ra.subj   = case a[:subj]
+        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subj])
       end
-      ra.obj    = case a[:object]
-        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:object])
+      ra.obj    = case a[:obj]
+        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
       end
       ra.project_id = project.id
       ra.save
@@ -554,15 +553,15 @@ class ApplicationController < ActionController::Base
 
   def save_hmodifications (hmodifications, project, doc)
     hmodifications.each do |a|
-      ma           = Modification.new
-      ma.hid       = a[:id]
-      ma.pred   = a[:type]
-      ma.obj    = case a[:object]
+      ma        = Modification.new
+      ma.hid    = a[:id]
+      ma.pred   = a[:pred]
+      ma.obj    = case a[:obj]
         when /^R/
-          #doc.subcatrels.find_by_project_id_and_hid(project.id, a[:object])
-          doc.subinsrels.find_by_project_id_and_hid(project.id, a[:object])
+          #doc.subcatrels.find_by_project_id_and_hid(project.id, a[:obj])
+          doc.subinsrels.find_by_project_id_and_hid(project.id, a[:obj])
         else
-          doc.instances.find_by_project_id_and_hid(project.id, a[:object])
+          doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
       end
       ma.project_id = project.id
       ma.save

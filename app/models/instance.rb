@@ -14,9 +14,9 @@ class Instance < ActiveRecord::Base
 
   def get_hash
     hinstance = Hash.new
-    hinstance[:id]    = hid
-    hinstance[:type]   = pred
-    hinstance[:object] = obj.hid
+    hinstance[:id]     = hid
+    hinstance[:pred]   = pred
+    hinstance[:obj] = obj.hid
     hinstance
   end
 end

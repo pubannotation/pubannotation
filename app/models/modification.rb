@@ -10,8 +10,8 @@ class Modification < ActiveRecord::Base
   def get_hash
     hmodification = Hash.new
     hmodification[:id]    = hid
-    hmodification[:type]   = pred
-    hmodification[:object] = obj.hid
+    hmodification[:pred]   = pred
+    hmodification[:obj] = obj.hid
     hmodification
   end
 end

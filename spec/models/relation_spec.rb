@@ -110,15 +110,15 @@ describe Relation do
     end
     
     it 'should set pred as type' do
-      @get_hash[:type].should eql(@relation[:pred])
+      @get_hash[:pred].should eql(@relation[:pred])
     end
     
     it 'should set end as span:end' do
-      @get_hash[:subject].should eql(@span_sub[:hid])
+      @get_hash[:subj].should eql(@span_sub[:hid])
     end
     
     it 'should set end as span:end' do
-      @get_hash[:object].should eql(@span_obj[:hid])
+      @get_hash[:obj].should eql(@span_obj[:hid])
     end
   end
   

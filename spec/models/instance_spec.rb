@@ -101,11 +101,11 @@ describe Instance do
     end
     
     it 'should set pred as type' do
-      @get_hash[:type].should eql(@instance[:pred])
+      @get_hash[:pred].should eql(@instance[:pred])
     end
     
     it 'should set hid as object' do
-      @get_hash[:object].should eql(@span[:hid])
+      @get_hash[:obj].should eql(@span[:hid])
     end
   end
 end

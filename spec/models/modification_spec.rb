@@ -47,11 +47,11 @@ describe Relation do
     end
     
     it 'should set pred as type' do
-      @get_hash[:type].should eql(@insmod[:pred])
+      @get_hash[:pred].should eql(@insmod[:pred])
     end
     
     it 'should set end as span:end' do
-      @get_hash[:object].should eql(@instance[:hid])
+      @get_hash[:obj].should eql(@instance[:hid])
     end
   end
 end

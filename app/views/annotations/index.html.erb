@@ -41,8 +41,8 @@
   <% @instances.each do |instance| %>
     <tr>
       <td><%= instance[:id] %></td>
-      <td><%= instance[:type] %></td>
-      <td><%= instance[:object] %></td>
+      <td><%= instance[:pred] %></td>
+      <td><%= instance[:obj] %></td>
     </tr>
   <% end %>
   </table>
@@ -62,9 +62,9 @@
   <% @relations.each do |relation| %>
     <tr>
       <td><%= relation[:id] %></td>
-      <td><%= relation[:type] %></td>
-      <td><%= relation[:subject] %></td>
-      <td><%= relation[:object] %></td>
+      <td><%= relation[:pred] %></td>
+      <td><%= relation[:subj] %></td>
+      <td><%= relation[:obj] %></td>
     </tr>
   <% end %>
   </table>
@@ -82,8 +82,8 @@
   <% @modifications.each do |modification| %>
     <tr>
       <td><%= modification[:id] %></td>
-      <td><%= modification[:type] %></td>
-      <td><%= modification[:object] %></td>
+      <td><%= modification[:pred] %></td>
+      <td><%= modification[:obj] %></td>
     </tr>
   <% end %>
   </table>

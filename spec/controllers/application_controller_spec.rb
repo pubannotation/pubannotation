@@ -485,9 +485,9 @@ describe ApplicationController do
               :section => @doc.section, 
               :text => @doc.body,
               :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
-              :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
-              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.pred, :subject => @subcatrel.subj.hid, :object => @subcatrel.obj.hid}],
-              :modifications => [{:id => @insmod.hid, :type => @insmod.pred, :object => @insmod.obj.hid}]
+              :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
+              :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
+              :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
               })
           end
         end
@@ -794,27 +794,28 @@ describe ApplicationController do
   describe 'bag_spans' do
     context 'when relation type = lexChain' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-        @spans = Array.new
-        @spans << @span.get_hash
-        @relation = FactoryGirl.create(:relation, 
-        :pred => 'lexChain', 
-        :obj => @span, 
-        :project => @project,
-        :subj_id => @span.id)
-        @relations = Array.new
-        @relations << @relation.get_hash
-        @result = controller.bag_spans(@spans, @relations)
+        doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+        project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+        span1 = FactoryGirl.create(:span, :project => project, :doc => doc)
+        span2 = FactoryGirl.create(:span, :project => project, :doc => doc)
+        spans = Array.new
+        spans << span1.get_hash << span2.get_hash
+        relation = FactoryGirl.create(:relation, 
+          :pred => '_lexChain', 
+          :obj_id => span1.id, 
+          :project => project,
+          :subj_id => span2.id)
+        relations = Array.new
+        relations << relation.get_hash
+        @newspans, @newrelations = controller.bag_spans(spans, relations)
       end
       
       it 'spans should be_blank' do
-        @result[0].should be_blank
+        @newrelations[0].should be_blank
       end
 
       it 'spans should be_blank' do
-        @result[1].should be_blank
+        @newrelations[1].should be_blank
       end
     end
     
@@ -937,13 +938,13 @@ describe ApplicationController do
   
   describe 'save_hinstances' do
     before do
-      @hinstance = {:id => 'hid', :type => 'type', :object => 'object'}
+      @hinstance = {:id => 'hid', :pred => 'type', :obj => 'object'}
       @hinstances = Array.new
       @hinstances << @hinstance
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @span = FactoryGirl.create(:span, :id => 90, :project => @project, :doc => @doc, :hid => @hinstance[:object])
-      @result = controller.save_hinstances(@hinstances, @project, @doc) 
+      @span = FactoryGirl.create(:span, :id => 90, :project => @project, :doc => @doc, :hid => @hinstance[:obj])
+      @result = controller.save_hinstances(@hinstances, @project, @doc)
     end
     
     it 'should returns saved successfully' do
@@ -951,7 +952,7 @@ describe ApplicationController do
     end
     
     it 'should save Instance from args' do
-      Instance.find_by_hid_and_pred_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:type], @span.id, @project.id).should be_present
+      Instance.find_by_hid_and_pred_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:pred], @span.id, @project.id).should be_present
     end
   end
   
@@ -1040,7 +1041,7 @@ describe ApplicationController do
     
     context 'hrelations subject and object match /^T/' do
       before do
-        @hrelation = {:id => 'hid', :type => 'pred', :subject => 'T1', :object => 'T1'}
+        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'T1', :obj => 'T1'}
         @hrelations << @hrelation
         @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
@@ -1052,7 +1053,7 @@ describe ApplicationController do
       it 'should save from hrelations params and project, and subj and obj should be span' do
         Relation.where(
           :hid => @hrelation[:id], 
-          :pred => @hrelation[:type], 
+          :pred => @hrelation[:pred], 
           :subj_id => @span.id, 
           :subj_type => @span.class, 
           :obj_id => @span.id, 
@@ -1064,9 +1065,9 @@ describe ApplicationController do
 
     context 'hrelations subject and object does not match /^T/' do
       before do
-        @hrelation = {:id => 'hid', :type => 'pred', :subject => 'M1', :object => 'M1'}
+        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'M1', :obj => 'M1'}
         @hrelations << @hrelation
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span, :hid => @hrelation[:subject])
+        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span, :hid => @hrelation[:subj])
         @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
       
@@ -1077,7 +1078,7 @@ describe ApplicationController do
       it 'should save from hrelations params and project, and subj and obj should be instance' do
         Relation.where(
           :hid => @hrelation[:id], 
-          :pred => @hrelation[:type], 
+          :pred => @hrelation[:pred], 
           :subj_id => @instance.id, 
           :subj_type => @instance.class, 
           :obj_id => @instance.id, 
@@ -1179,12 +1180,12 @@ describe ApplicationController do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
     end
     
-    context 'when hmodifications[:object] match /^R/' do
+    context 'when hmodifications[:obj] match /^R/' do
       before do
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
         @subinsrel = FactoryGirl.create(:subinsrel, :subj_id => @instance.id, :obj => @instance, :project => @project)
-        @hmodification = {:id => 'hid', :type => 'type', :object => 'R1'}
+        @hmodification = {:id => 'hid', :pred => 'type', :obj => 'R1'}
         @hmodifications = Array.new
         @hmodifications << @hmodification
         @result = controller.save_hmodifications(@hmodifications, @project, @doc)
@@ -1197,19 +1198,19 @@ describe ApplicationController do
       it 'should save Modification from hmodifications params and doc.subinsrels' do
         Modification.where(
           :hid => @hmodification[:id],
-          :pred => @hmodification[:type],
+          :pred => @hmodification[:pred],
           :obj_id => @subinsrel.id,
           :obj_type => @subinsrel.class
         ).should be_present
       end
     end
     
-    context 'when hmodifications[:object] does not match /^R/' do
+    context 'when hmodifications[:obj] does not match /^R/' do
       before do
         @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
         @subinsrel = FactoryGirl.create(:subinsrel, :obj => @instance, :project => @project)
-        @hmodification = {:id => 'hid', :type => 'type', :object => @instance.hid}
+        @hmodification = {:id => 'hid', :pred => 'type', :obj => @instance.hid}
         @hmodifications = Array.new
         @hmodifications << @hmodification
         @result = controller.save_hmodifications(@hmodifications, @project, @doc)
@@ -1222,7 +1223,7 @@ describe ApplicationController do
       it 'should save Modification from hmodifications params and doc.instances' do
         Modification.where(
           :hid => @hmodification[:id],
-          :pred => @hmodification[:type],
+          :pred => @hmodification[:pred],
           :obj_id => @instance.id,
           :obj_type => @instance.class
         ).should be_present

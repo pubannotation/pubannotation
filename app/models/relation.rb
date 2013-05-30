@@ -15,10 +15,10 @@ class Relation < ActiveRecord::Base
 
   def get_hash
     hrelation = Hash.new
-    hrelation[:id]     = hid
-    hrelation[:type]    = pred
-    hrelation[:subject] = subj.hid
-    hrelation[:object]  = obj.hid
+    hrelation[:id]   = hid
+    hrelation[:pred] = pred
+    hrelation[:subj] = subj.hid
+    hrelation[:obj]  = obj.hid
     hrelation
   end
   
