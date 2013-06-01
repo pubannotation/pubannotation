@@ -40,18 +40,18 @@ describe Project do
     end
   end
   
-  describe 'has_many spans' do
+  describe 'has_many denotations' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @span = FactoryGirl.create(:span, :project => @project, :doc => FactoryGirl.create(:doc))
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => FactoryGirl.create(:doc))
     end
     
-    it 'project.spans should be present' do
-      @project.spans.should be_present
+    it 'project.denotations should be present' do
+      @project.denotations.should be_present
     end
     
-    it 'project.spans should include related span' do
-      (@project.spans - [@span]).should be_blank
+    it 'project.denotations should include related denotation' do
+      (@project.denotations - [@denotation]).should be_blank
     end
   end
   

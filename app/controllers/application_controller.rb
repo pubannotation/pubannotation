@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   after_filter :store_location
 
   def store_location
-    if request.fullpath != new_user_session_path 
+    if request.fullpath != new_user_session_path && request.fullpath != new_user_registration_path && request.method == 'GET'
       session[:after_sign_in_path] = request.fullpath
     end
   end
@@ -214,8 +214,8 @@ class ApplicationController < ActionController::Base
 
   def get_annotations (project, doc, options = {})
     if project and doc
-      spans = doc.spans.where("project_id = ?", project.id).order('begin ASC')
-      hspans = spans.collect {|ca| ca.get_hash} unless spans.empty?
+      denotations = doc.denotations.where("project_id = ?", project.id).order('begin ASC')
+      hdenotations = denotations.collect {|ca| ca.get_hash} unless denotations.empty?
 
       instances = doc.instances.where("instances.project_id = ?", project.id)
       instances.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
@@ -237,14 +237,14 @@ class ApplicationController < ActionController::Base
         asciitext = get_ascii_text (text)
         aligner = Aligner.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
         # aligner = Aligner.new(text, asciitext)
-        hspans = aligner.transform_spans(hspans)
-        # hspans = adjust_spans(hspans, asciitext)
+        hdenotations = aligner.transform_denotations(hdenotations)
+        # hdenotations = adjust_denotations(hdenotations, asciitext)
         text = asciitext
       end
 
       if (options[:discontinuous_annotation] == 'bag')
         # TODO: convert to hash representation
-        hspans, hrelations = bag_spans(hspans, hrelations)
+        hdenotations, hrelations = bag_denotations(hdenotations, hrelations)
       end
 
       annotations = Hash.new
@@ -259,7 +259,7 @@ class ApplicationController < ActionController::Base
       annotations[:division_id] = doc.serial
       annotations[:section] = doc.section
       annotations[:text] = text
-      annotations[:spans] = hspans if hspans
+      annotations[:denotations] = hdenotations if hdenotations
       annotations[:instances] = hinstances if hinstances
       annotations[:relations] = hrelations if hrelations
       annotations[:modifications] = hmodifications if hmodifications
@@ -271,15 +271,15 @@ class ApplicationController < ActionController::Base
 
 
   def save_annotations (annotations, project, doc)
-    spans, notice = clean_hspans(annotations[:spans])
-    if spans
-      spans = realign_spans(spans, annotations[:text], doc.body)
+    denotations, notice = clean_hdenotations(annotations[:denotations])
+    if denotations
+      denotations = realign_denotations(denotations, annotations[:text], doc.body)
 
-      if spans
-        spans_old = doc.spans.where("project_id = ?", project.id)
-        spans_old.destroy_all
+      if denotations
+        denotations_old = doc.denotations.where("project_id = ?", project.id)
+        denotations_old.destroy_all
       
-        save_hspans(spans, project, doc)
+        save_hdenotations(denotations, project, doc)
 
         if annotations[:instances] and !annotations[:instances].empty?
           instances = annotations[:instances]
@@ -307,44 +307,44 @@ class ApplicationController < ActionController::Base
   end
 
 
-  ## get spans
-  def get_spans (project_name, sourcedb, sourceid, serial = 0)
-    spans = []
+  ## get denotations
+  def get_denotations (project_name, sourcedb, sourceid, serial = 0)
+    denotations = []
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if project_name and project = doc.projects.find_by_name(project_name)
-        spans = doc.spans.where("project_id = ?", project.id).order('begin ASC')
+        denotations = doc.denotations.where("project_id = ?", project.id).order('begin ASC')
       else
-        spans = doc.spans
+        denotations = doc.denotations
       end
     else
       if project_name and project = Project.find_by_name(project_name)
-        spans = project.spans
+        denotations = project.denotations
       else
-        spans = Span.all
+        denotations = Denotation.all
       end
     end
 
-    spans
+    denotations
   end
 
 
-  # get spans (hash version)
-  def get_hspans (project_name, sourcedb, sourceid, serial = 0)
-    spans = get_spans(project_name, sourcedb, sourceid, serial)
-    hspans = spans.collect {|ca| ca.get_hash}
-    hspans
+  # get denotations (hash version)
+  def get_hdenotations (project_name, sourcedb, sourceid, serial = 0)
+    denotations = get_denotations(project_name, sourcedb, sourceid, serial)
+    hdenotations = denotations.collect {|ca| ca.get_hash}
+    hdenotations
   end
 
 
-  def clean_hspans (spans)
-    spans = spans.values if spans.respond_to?(:values)
-    ids = spans.collect {|a| a[:id] or a["id"]}
+  def clean_hdenotations (denotations)
+    denotations = denotations.values if denotations.respond_to?(:values)
+    ids = denotations.collect {|a| a[:id] or a["id"]}
     ids.compact!
 
     idnum = 1
-    spans.each do |a|
-      return nil, "format error" unless (a[:span] or (a[:begin] and a[:end])) and a[:category]
+    denotations.each do |a|
+      return nil, "format error" unless (a[:denotation] or (a[:begin] and a[:end])) and a[:obj]
 
       unless a[:id]
         idnum += 1 until !ids.include?('T' + idnum.to_s)
@@ -352,39 +352,39 @@ class ApplicationController < ActionController::Base
         idnum += 1
       end
 
-      if a[:span]
-        a[:span][:begin] = a[:span][:begin].to_i
-        a[:span][:end]   = a[:span][:end].to_i
+      if a[:denotation]
+        a[:denotation][:begin] = a[:denotation][:begin].to_i
+        a[:denotation][:end]   = a[:denotation][:end].to_i
       else
-        a[:span] = Hash.new
-        a[:span][:begin] = a.delete(:begin).to_i
-        a[:span][:end]   = a.delete(:end).to_i
+        a[:denotation] = Hash.new
+        a[:denotation][:begin] = a.delete(:begin).to_i
+        a[:denotation][:end]   = a.delete(:end).to_i
       end
     end
 
-    [spans, nil]
+    [denotations, nil]
   end
 
 
-  def save_hspans (hspans, project, doc)
-    hspans.each do |a|
-      sa            = Span.new
-      sa.hid        = a[:id]
-      sa.begin      = a[:span][:begin]
-      sa.end        = a[:span][:end]
-      sa.category   = a[:category]
-      sa.project_id = project.id
-      sa.doc_id     = doc.id
-      sa.save
+  def save_hdenotations (hdenotations, project, doc)
+    hdenotations.each do |a|
+      ca           = Denotation.new
+      ca.hid       = a[:id]
+      ca.begin     = a[:denotation][:begin]
+      ca.end       = a[:denotation][:end]
+      ca.obj  = a[:obj]
+      ca.project_id = project.id
+      ca.doc_id    = doc.id
+      ca.save
     end
   end
 
 
-  def chain_spans (spans_s)
+  def chain_denotations (denotations_s)
     # This method is not called anywhere.
-    # And just returns spans_s array.
+    # And just returns denotations_s array.
     mid = 0
-    spans_s.each do |ca|
+    denotations_s.each do |ca|
       if (cid = ca.hid[1..-1].to_i) > mid 
         mid = cid
       end
@@ -392,7 +392,7 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def bag_spans (spans, relations)
+  def bag_denotations (denotations, relations)
     tomerge = Hash.new
 
     new_relations = Array.new
@@ -404,20 +404,20 @@ class ApplicationController < ActionController::Base
       end
     end
     idx = Hash.new
-    spans.each_with_index {|ca, i| idx[ca[:id]] = i}
+    denotations.each_with_index {|ca, i| idx[ca[:id]] = i}
 
     mergedto = Hash.new
     tomerge.each do |from, to|
       to = mergedto[to] if mergedto.has_key?(to)
-      fca = spans[idx[from]]
-      tca = spans[idx[to]]
-      tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
-      tca[:span].push (fca[:span])
-      spans.delete_at(idx[from])
+      fca = denotations[idx[from]]
+      tca = denotations[idx[to]]
+      tca[:denotation] = [tca[:denotation]] unless tca[:denotation].respond_to?('push')
+      tca[:denotation].push (fca[:denotation])
+      denotations.delete_at(idx[from])
       mergedto[from] = to
     end
 
-    return spans, new_relations
+    return denotations, new_relations
   end
 
 
@@ -453,10 +453,10 @@ class ApplicationController < ActionController::Base
 
   def save_hinstances (hinstances, project, doc)
     hinstances.each do |a|
-      ia        = Instance.new
-      ia.hid    = a[:id]
+      ia           = Instance.new
+      ia.hid       = a[:id]
       ia.pred   = a[:pred]
-      ia.obj    = Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
+      ia.obj    = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
       ia.project_id = project.id
       ia.save
     end
@@ -475,7 +475,7 @@ class ApplicationController < ActionController::Base
 #        relations += doc.objcatrels.where("relations.project_id = ?", project.id)
 #        relations += doc.objinsrels.where("relations.project_id = ?", project.id)
       else
-        relations = doc.subcatrels + doc.subinsrels unless doc.spans.empty?
+        relations = doc.subcatrels + doc.subinsrels unless doc.denotations.empty?
       end
     else
       if project_name and project = Project.find_by_name(project_name)
@@ -498,16 +498,16 @@ class ApplicationController < ActionController::Base
 
   def save_hrelations (hrelations, project, doc)
     hrelations.each do |a|
-      ra        = Relation.new
-      ra.hid    = a[:id]
+      ra           = Relation.new
+      ra.hid       = a[:id]
       ra.pred   = a[:pred]
-      ra.subj   = case a[:subj]
-        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subj])
+      ra.subj    = case a[:subj]
+        when /^T/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subject])
       end
       ra.obj    = case a[:obj]
-        when /^T/ then Span.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
+        when /^T/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:object])
       end
       ra.project_id = project.id
       ra.save
@@ -526,7 +526,7 @@ class ApplicationController < ActionController::Base
         modifications += doc.subinsrelmods.where("modifications.project_id = ?", project.id)
         modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       else
-        #modifications = doc.modifications unless doc.spans.empty?
+        #modifications = doc.modifications unless doc.denotations.empty?
         modifications = doc.insmods
         modifications += doc.subcatrelmods
         modifications += doc.subinsrelmods
@@ -620,10 +620,10 @@ class ApplicationController < ActionController::Base
   end
 
 
-  # to work on the hash representation of spans
+  # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method
-  def realign_spans (spans, from_text, to_text)
-    return nil if spans == nil
+  def realign_denotations (denotations, from_text, to_text)
+    return nil if denotations == nil
 
     position_map = Hash.new
     numchar, numdiff, diff = 0, 0, 0
@@ -644,18 +644,18 @@ class ApplicationController < ActionController::Base
     #   return nil, "The text is too much different from PubMed. The mapping could not be calculated.: #{numdiff}/#{numchar}"
     # else
 
-    spans_new = Array.new(spans)
+    denotations_new = Array.new(denotations)
 
-    (0...spans.length).each do |i|
-      spans_new[i][:span][:begin] = position_map[spans[i][:span][:begin]]
-      spans_new[i][:span][:end]   = position_map[spans[i][:span][:end]]
+    (0...denotations.length).each do |i|
+      denotations_new[i][:denotation][:begin] = position_map[denotations[i][:denotation][:begin]]
+      denotations_new[i][:denotation][:end]   = position_map[denotations[i][:denotation][:end]]
     end
 
-    spans_new
+    denotations_new
   end
 
-  def adjust_spans (spans, text)
-    return nil if spans == nil
+  def adjust_denotations (denotations, text)
+    return nil if denotations == nil
 
     delimiter_characters = [
           " ",
@@ -681,7 +681,7 @@ class ApplicationController < ActionController::Base
           "\n"
       ]
 
-    spans_new = Array.new(spans)
+    denotations_new = Array.new(denotations)
 
     spans_new.each do |c|
       while c[:span][:begin] > 0 and !delimiter_characters.include?(text[c[:span][:begin] - 1])
@@ -693,7 +693,7 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    spans_new
+    denotations_new
   end
 
 

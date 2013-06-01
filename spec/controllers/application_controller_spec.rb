@@ -11,13 +11,16 @@ describe ApplicationController do
   describe 'store_location' do
     before do
       @user_sign_in_path = '/users/sign_in'
+      @user_sign_up_path = '/users/sign_up'
       @request_full_path = '/last/request'
+      @post_request_full_path = '/last/post'
       controller.stub(:new_user_session_path).and_return(@user_sign_in_path)
+      controller.stub(:new_user_registration_path).and_return(@user_sign_up_path)
     end  
 
-    context 'when request.fullpath is not user_sign_path' do
+    context 'when request.fullpath is not user sign in path and user signup path' do
       before do
-        controller.stub(:request).and_return(double(:fullpath => @request_full_path))
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
         controller.store_location
       end
       
@@ -26,11 +29,37 @@ describe ApplicationController do
       end
     end
 
-    context 'when request.fullpath is user_sign_path' do
+    context 'when request.fullpath is POST method' do
       before do
-        controller.stub(:request).and_return(double(:fullpath => @request_full_path))
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
         controller.store_location
-        controller.stub(:request).and_return(double(:fullpath => @user_sign_in_path))
+        controller.stub(:request).and_return(double(:fullpath => @post_request_full_path, :method => 'POST'))
+        controller.store_location
+      end
+      
+      it 'POST request.fullpath should not stored as redirect_path' do
+        session[:after_sign_in_path].should eql(@request_full_path)
+      end
+    end
+
+    context 'when request.fullpath is user_sign_in_path' do
+      before do
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
+        controller.store_location
+        controller.stub(:request).and_return(double(:fullpath => @user_sign_in_path, :method => 'GET'))
+        controller.store_location
+      end
+      
+      it 'request.fullpath should not stored as redirect_path and previous fullpath should be stored' do
+        session[:after_sign_in_path].should eql(@request_full_path)
+      end
+    end
+
+    context 'when request.fullpath is user_sign_up_path' do
+      before do
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
+        controller.store_location
+        controller.stub(:request).and_return(double(:fullpath => @user_sign_up_path, :method => 'GET'))
         controller.store_location
       end
       
@@ -448,7 +477,7 @@ describe ApplicationController do
   describe 'get_annotations' do
     context 'when project annd doc exists' do
       context 'when options nothing' do
-        context 'when hspans, hinstances, hrelations, hmodifications does not exists' do
+        context 'when hdenotations, hinstances, hrelations, hmodifications does not exists' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
@@ -466,28 +495,28 @@ describe ApplicationController do
           end
         end
       
-        context 'when hspans, hinstances, hrelations, hmodifications exists' do
+        context 'when hdenotations, hinstances, hrelations, hmodifications exists' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-            @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-            @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-            @subcatrel = FactoryGirl.create(:subcatrel,:subj_id => @span.id, :obj => @span, :project => @project)
+            @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+            @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
+            @subcatrel = FactoryGirl.create(:subcatrel,:subj_id => @denotation.id, :obj => @denotation, :project => @project)
             @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
             @result = controller.get_annotations(@project, @doc)
           end
           
-          it 'should returns doc params, spans, instances, relations and modifications' do
+          it 'should returns doc params, denotations, instances, relations and modifications' do
             @result.should eql({
               :source_db => @doc.sourcedb, 
               :source_id => @doc.sourceid, 
               :division_id => @doc.serial, 
               :section => @doc.section, 
               :text => @doc.body,
-              :spans => [{:id => @span.hid, :span => {:begin => @span.begin, :end => @span.end}, :category => @span.category}],
-              :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
-              :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
-              :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
+              :denotations => [{:id => @denotation.hid, :denotation => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
+              :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
+              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.pred, :subject => @subcatrel.subj.hid, :object => @subcatrel.obj.hid}],
+              :modifications => [{:id => @insmod.hid, :type => @insmod.pred, :object => @insmod.obj.hid}]
               })
           end
         end
@@ -517,9 +546,9 @@ describe ApplicationController do
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
           @get_ascii_text = 'DOC body'
-          @hspans = 'hspans'
+          @hdenotations = 'hdenotations'
           @hrelations = 'hrelations'
-          controller.stub(:bag_spans).and_return([@hspans, @hrelations])
+          controller.stub(:bag_denotations).and_return([@hdenotations, @hrelations])
           @result = controller.get_annotations(@project, @doc, :discontinuous_annotation => 'bag')
         end
         
@@ -530,7 +559,7 @@ describe ApplicationController do
             :division_id => @doc.serial, 
             :section => @doc.section, 
             :text => @doc.body,
-            :spans => @hspans,
+            :denotations => @hdenotations,
             :relations => @hrelations
             })
         end
@@ -549,14 +578,14 @@ describe ApplicationController do
   end
   
   describe 'save annotations' do
-    context 'when spans exists' do
+    context 'when denotations exists' do
       before do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-        @annotations = {:spans => 'spans', :instances => ['instance'], :relations => ['relation'], :modifications => ['modification']}
-        controller.stub(:clean_hspans).and_return('clean_hspans')
-        controller.stub(:realign_spans).and_return('realign_spans')
-        controller.stub(:save_hspans).and_return('save_hspans')
+        @annotations = {:denotations => 'denotations', :instances => ['instance'], :relations => ['relation'], :modifications => ['modification']}
+        controller.stub(:clean_hdenotations).and_return('clean_hdenotations')
+        controller.stub(:realign_denotations).and_return('realign_denotations')
+        controller.stub(:save_hdenotations).and_return('save_hdenotations')
         controller.stub(:save_hinstances).and_return('save_hinstances')
         controller.stub(:save_hrelations).and_return('save_hrelations')
         controller.stub(:save_hmodifications).and_return('save_hmodifications')
@@ -568,10 +597,10 @@ describe ApplicationController do
       end
     end
     
-    context 'spans does not exists' do
+    context 'denotations does not exists' do
       before do
-        @annotations = {:spans => 'spans', :instances => ['instance'], :relations => ['relation'], :modifications => ['modification']}
-        controller.stub(:clean_hspans).and_return(nil)
+        @annotations = {:denotations => 'denotations', :instances => ['instance'], :relations => ['relation'], :modifications => ['modification']}
+        controller.stub(:clean_hdenotations).and_return(nil)
         @result = controller.save_annotations(@annotations, nil, nil)
       end
       
@@ -581,7 +610,7 @@ describe ApplicationController do
     end
   end
   
-  describe 'get_spans' do
+  describe 'get_denotations' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
@@ -595,80 +624,80 @@ describe ApplicationController do
       context 'when doc.project.find_by_name(project_name) exists' do
         before do
           @project_another = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-          @span_another = FactoryGirl.create(:span, :project => @project_another, :doc => @doc)
-          @spans = controller.get_spans(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)       
+          @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+          @denotation_another = FactoryGirl.create(:denotation, :project => @project_another, :doc => @doc)
+          @denotations = controller.get_denotations(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)       
         end
         
-        it 'should returns doc.spans where project_id = project.id' do
-          (@spans - [@span]).should be_blank
+        it 'should returns doc.denotations where project_id = project.id' do
+          (@denotations - [@denotation]).should be_blank
         end
       end
       
       
       context 'when doc.project.find_by_name(project_name) does not exists' do
         before do
-          @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-          @spans = controller.get_spans('none project name', @doc.sourcedb.to_s, @doc.sourceid.to_s, @doc.serial)       
+          @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+          @denotations = controller.get_denotations('none project name', @doc.sourcedb.to_s, @doc.sourceid.to_s, @doc.serial)       
         end
         
-        it 'should return doc.spans' do
-          (@spans - @doc.spans).should be_blank
+        it 'should return doc.denotations' do
+          (@denotations - @doc.denotations).should be_blank
         end
       end
     end
 
     context 'when doc find_by_sourcedb_and_sourceid_and_serial does not exist' do
       before do
-        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
       end
       
       context 'when project find_by_name exist' do
         before do
-          @spans = controller.get_spans(@project.name, 'nil', 'nil', 'nil')       
+          @denotations = controller.get_denotations(@project.name, 'nil', 'nil', 'nil')       
         end
         
-        it 'should return project.spans' do
-          (@spans - @project.spans).should be_blank
+        it 'should return project.denotations' do
+          (@denotations - @project.denotations).should be_blank
         end
       end
       
       context 'when project find_by_name does not exist' do
         before do
-          @spans = controller.get_spans('', 'nil', 'nil', 'nil')       
+          @denotations = controller.get_denotations('', 'nil', 'nil', 'nil')       
         end
         
-        it 'should return all spans' do
-          (Span.all - @spans).should be_blank
+        it 'should return all denotations' do
+          (Denotation.all - @denotations).should be_blank
         end
       end
     end
   end
   
-  describe 'get_hspans' do
+  describe 'get_hdenotations' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      controller.stub(:get_cattanns).and_return([@span])
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      controller.stub(:get_cattanns).and_return([@denotation])
       @get_hash = 'get hash'
-      Span.any_instance.stub(:get_hash).and_return(@get_hash)
-      @hspans = controller.get_hspans('', '', '')
+      Denotation.any_instance.stub(:get_hash).and_return(@get_hash)
+      @hdenotations = controller.get_hdenotations('', '', '')
     end
     
-    it 'should return array span.get_hash' do
-      @hspans.should eql([@get_hash])
+    it 'should return array denotation.get_hash' do
+      @hdenotations.should eql([@get_hash])
     end
   end
   
-  describe 'clean_hspans' do
+  describe 'clean_hdenotations' do
     context 'when format error' do
-      context 'when span and begin does not present' do
+      context 'when denotation and begin does not present' do
         before do
-          @span = {:id => 'id', :end => '5', :category => 'Category'}
-          @spans = Array.new
-          @spans << @span
-          @result = controller.clean_hspans(@spans)
+          @denotation = {:id => 'id', :end => '5', :obj => 'Category'}
+          @denotations = Array.new
+          @denotations << @denotation
+          @result = controller.clean_hdenotations(@denotations)
         end
         
         it 'should return nil and format error' do
@@ -676,12 +705,12 @@ describe ApplicationController do
         end
       end
   
-      context 'when category does not present' do
+      context 'when obj does not present' do
         before do
-          @span = {:id => 'id', :begin => '`1', :end => '5', :category => nil}
-          @spans = Array.new
-          @spans << @span
-          @result = controller.clean_hspans(@spans)
+          @denotation = {:id => 'id', :begin => '`1', :end => '5', :obj => nil}
+          @denotations = Array.new
+          @denotations << @denotation
+          @result = controller.clean_hdenotations(@denotations)
         end
         
         it 'should return nil and format error' do
@@ -694,14 +723,14 @@ describe ApplicationController do
       before do
         @begin = '1'
         @end = '5'
-        @spans = Array.new
+        @denotations = Array.new
       end
 
       context 'when id is nil' do
         before do
-          @span = {:id => nil, :span => {:begin => @begin, :end => @end}, :category => 'Category'}
-          @spans << @span
-          @result = controller.clean_hspans(@spans)
+          @denotation = {:id => nil, :denotation => {:begin => @begin, :end => @end}, :obj => 'Category'}
+          @denotations << @denotation
+          @result = controller.clean_hdenotations(@denotations)
         end
         
         it 'should return T + num id' do
@@ -709,113 +738,112 @@ describe ApplicationController do
         end
       end
 
-      context 'when span exists' do
+      context 'when denotation exists' do
         before do
-          @span = {:id => 'id', :span => {:begin => @begin, :end => @end}, :category => 'Category'}
-          @spans << @span
-          @result = controller.clean_hspans(@spans)
+          @denotation = {:id => 'id', :denotation => {:begin => @begin, :end => @end}, :obj => 'Category'}
+          @denotations << @denotation
+          @result = controller.clean_hdenotations(@denotations)
         end
         
         it 'should return ' do
-          @result.should eql([[{:id => @span[:id], :category => @span[:category], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+          @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :denotation => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
         end
       end
 
-      context 'when span does not exists' do
+      context 'when denotation does not exists' do
         before do
-          @span = {:id => 'id', :begin => @begin, :end => @end, :category => 'Category'}
-          @spans << @span
-          @result = controller.clean_hspans(@spans)
+          @denotation = {:id => 'id', :begin => @begin, :end => @end, :obj => 'Category'}
+          @denotations << @denotation
+          @result = controller.clean_hdenotations(@denotations)
         end
         
-        it 'should return with span' do
-          @result.should eql([[{:id => @span[:id], :category => @span[:category], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+        it 'should return with denotation' do
+          @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :denotation => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
         end
       end
     end
   end
   
-  describe 'save_hspans' do
+  describe 'save_hdenotations' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @hspan = {:id => 'hid', :span => {:begin => 1, :end => 10}, :category => 'Category'}
-      @hspans = Array.new
-      @hspans << @hspan
-      @result = controller.save_hspans(@hspans, @project, @doc) 
-      @span = Span.find_by_hid(@hspan[:id])
+      @hdenotation = {:id => 'hid', :denotation => {:begin => 1, :end => 10}, :obj => 'Category'}
+      @hdenotations = Array.new
+      @hdenotations << @hdenotation
+      @result = controller.save_hdenotations(@hdenotations, @project, @doc) 
+      @denotation = Denotation.find_by_hid(@hdenotation[:id])
     end
     
     it 'should save successfully' do
       @result.should be_true
     end
     
-    it 'should save hspan[:id] as hid' do
-      @span.hid.should eql(@hspan[:id])
+    it 'should save hdenotation[:id] as hid' do
+      @denotation.hid.should eql(@hdenotation[:id])
     end
     
-    it 'should save hspan[:span][:begin] as begin' do
-      @span.begin.should eql(@hspan[:span][:begin])
+    it 'should save hdenotation[:denotation][:begin] as begin' do
+      @denotation.begin.should eql(@hdenotation[:denotation][:begin])
     end
     
-    it 'should save hspan[:span][:end] as end' do
-      @span.end.should eql(@hspan[:span][:end])
+    it 'should save hdenotation[:denotation][:end] as end' do
+      @denotation.end.should eql(@hdenotation[:denotation][:end])
     end
     
-    it 'should save hspan[:category] as category' do
-      @span.category.should eql(@hspan[:category])
+    it 'should save hdenotation[:obj] as obj' do
+      @denotation.obj.should eql(@hdenotation[:obj])
     end
 
     it 'should save project.id as project_id' do
-      @span.project_id.should eql(@project.id)
+      @denotation.project_id.should eql(@project.id)
     end
 
     it 'should save doc.id as doc_id' do
-      @span.doc_id.should eql(@doc.id)
+      @denotation.doc_id.should eql(@doc.id)
     end
   end
   
-  describe 'chain_spans' do
+  describe 'chain_denotations' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @span_1 = FactoryGirl.create(:span, :hid => 'A1', :project => @project, :doc => @doc)
-      @span_2 = FactoryGirl.create(:span, :hid => 'A2', :project => @project, :doc => @doc)
-      @span_3 = FactoryGirl.create(:span, :hid => 'A3', :project => @project, :doc => @doc)
-      @spans_s = [@span_1, @span_2, @span_3]
-      @result = controller.chain_spans(@spans_s)
+      @denotation_1 = FactoryGirl.create(:denotation, :hid => 'A1', :project => @project, :doc => @doc)
+      @denotation_2 = FactoryGirl.create(:denotation, :hid => 'A2', :project => @project, :doc => @doc)
+      @denotation_3 = FactoryGirl.create(:denotation, :hid => 'A3', :project => @project, :doc => @doc)
+      @denotations_s = [@denotation_1, @denotation_2, @denotation_3]
+      @result = controller.chain_denotations(@denotations_s)
     end
     
-    it 'shoulr return spans_s' do
-      @result.should eql(@spans_s)
+    it 'shoulr return denotations_s' do
+      @result.should eql(@denotations_s)
     end
   end
   
-  describe 'bag_spans' do
+  describe 'bag_denotations' do
     context 'when relation type = lexChain' do
       before do
-        doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-        project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-        span1 = FactoryGirl.create(:span, :project => project, :doc => doc)
-        span2 = FactoryGirl.create(:span, :project => project, :doc => doc)
-        spans = Array.new
-        spans << span1.get_hash << span2.get_hash
-        relation = FactoryGirl.create(:relation, 
-          :pred => '_lexChain', 
-          :obj_id => span1.id, 
-          :project => project,
-          :subj_id => span2.id)
-        relations = Array.new
-        relations << relation.get_hash
-        @newspans, @newrelations = controller.bag_spans(spans, relations)
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @denotations = Array.new
+        @denotations << @denotation.get_hash
+        @relation = FactoryGirl.create(:relation, 
+        :pred => 'lexChain', 
+        :obj => @denotation, 
+        :project => @project,
+        :subj_id => @denotation.id)
+        @relations = Array.new
+        @relations << @relation.get_hash
+        @result = controller.bag_denotations(@denotations, @relations)
       end
       
-      it 'spans should be_blank' do
-        @newrelations[0].should be_blank
+      it 'denotations should be_blank' do
+        @result[0].should be_blank
       end
 
-      it 'spans should be_blank' do
-        @newrelations[1].should be_blank
+      it 'denotations should be_blank' do
+        @result[1].should be_blank
       end
     end
     
@@ -823,22 +851,22 @@ describe ApplicationController do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-        @spans = Array.new
-        @spans << @span.get_hash
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @denotations = Array.new
+        @denotations << @denotation.get_hash
         @relation = FactoryGirl.create(:relation, 
           :pred => 'NotlexChain',
-          :obj => @span, 
+          :obj => @denotation, 
           :project => @project,
-          :subj_id => @span.id
+          :subj_id => @denotation.id
         )
         @relations = Array.new
         @relations << @relation.get_hash
-        @result = controller.bag_spans(@spans, @relations)
+        @result = controller.bag_denotations(@denotations, @relations)
       end
       
-      it 'spans should be_blank' do
-        @result[0][0].should eql({:id => "T1", :span => {:begin => 1 , :end => 5}, :category => "Protein"})
+      it 'denotations should be_blank' do
+        @result[0][0].should eql({:id => "T1", :denotation => {:begin => 1 , :end => 5}, :obj => "Protein"})
       end
       
       it '' do
@@ -851,9 +879,9 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
 
-      @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
+      @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
     end
     
     context 'when Doc find_by_sourcedb_and_sourceid_and_serial exists' do
@@ -938,13 +966,13 @@ describe ApplicationController do
   
   describe 'save_hinstances' do
     before do
-      @hinstance = {:id => 'hid', :pred => 'type', :obj => 'object'}
+      @hinstance = {:id => 'hid', :type => 'type', :object => 'object'}
       @hinstances = Array.new
       @hinstances << @hinstance
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @span = FactoryGirl.create(:span, :id => 90, :project => @project, :doc => @doc, :hid => @hinstance[:obj])
-      @result = controller.save_hinstances(@hinstances, @project, @doc)
+      @denotation = FactoryGirl.create(:denotation, :id => 90, :project => @project, :doc => @doc, :hid => @hinstance[:object])
+      @result = controller.save_hinstances(@hinstances, @project, @doc) 
     end
     
     it 'should returns saved successfully' do
@@ -952,7 +980,7 @@ describe ApplicationController do
     end
     
     it 'should save Instance from args' do
-      Instance.find_by_hid_and_pred_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:pred], @span.id, @project.id).should be_present
+      Instance.find_by_hid_and_pred_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:type], @denotation.id, @project.id).should be_present
     end
   end
   
@@ -960,10 +988,10 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @span, :project => @project)
-      @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-      @subinsrel = FactoryGirl.create(:subcatrel, :obj => @span, :project => @project)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+      @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
+      @subinsrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
     end
 
     context 'when doc find by sourcedb and source id and serial exists' do
@@ -1006,7 +1034,7 @@ describe ApplicationController do
         before do
           @doc.projects << @project
           5.times do
-            FactoryGirl.create(:relation, :obj => @span, :project => @project)
+            FactoryGirl.create(:relation, :obj => @denotation, :project => @project)
           end
           @relations = controller.get_relations('non existant project name', 'non existant source db', @doc.sourceid.to_s, @doc.serial)
         end
@@ -1035,13 +1063,13 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
       @hrelations = Array.new
     end
     
     context 'hrelations subject and object match /^T/' do
       before do
-        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'T1', :obj => 'T1'}
+        @hrelation = {:id => 'hid', :type => 'pred', :subject => 'T1', :object => 'T1'}
         @hrelations << @hrelation
         @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
@@ -1050,14 +1078,14 @@ describe ApplicationController do
         @result.should be_true
       end
       
-      it 'should save from hrelations params and project, and subj and obj should be span' do
+      it 'should save from hrelations params and project, and subj and obj should be denotation' do
         Relation.where(
           :hid => @hrelation[:id], 
-          :pred => @hrelation[:pred], 
-          :subj_id => @span.id, 
-          :subj_type => @span.class, 
-          :obj_id => @span.id, 
-          :obj_type => @span.class, 
+          :pred => @hrelation[:type], 
+          :subj_id => @denotation.id, 
+          :subj_type => @denotation.class, 
+          :obj_id => @denotation.id, 
+          :obj_type => @denotation.class, 
           :project_id => @project.id
         ).should be_present
       end
@@ -1065,9 +1093,9 @@ describe ApplicationController do
 
     context 'hrelations subject and object does not match /^T/' do
       before do
-        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'M1', :obj => 'M1'}
+        @hrelation = {:id => 'hid', :type => 'pred', :subject => 'M1', :object => 'M1'}
         @hrelations << @hrelation
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span, :hid => @hrelation[:subj])
+        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation, :hid => @hrelation[:subject])
         @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
       
@@ -1078,7 +1106,7 @@ describe ApplicationController do
       it 'should save from hrelations params and project, and subj and obj should be instance' do
         Relation.where(
           :hid => @hrelation[:id], 
-          :pred => @hrelation[:pred], 
+          :pred => @hrelation[:type], 
           :subj_id => @instance.id, 
           :subj_type => @instance.class, 
           :obj_id => @instance.id, 
@@ -1094,9 +1122,9 @@ describe ApplicationController do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
-        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @span, :project => @project)
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
       end
       
       context 'and when doc.projects.find_by_name(project_name) exists' do
@@ -1180,12 +1208,12 @@ describe ApplicationController do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
     end
     
-    context 'when hmodifications[:obj] match /^R/' do
+    context 'when hmodifications[:object] match /^R/' do
       before do
-        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
         @subinsrel = FactoryGirl.create(:subinsrel, :subj_id => @instance.id, :obj => @instance, :project => @project)
-        @hmodification = {:id => 'hid', :pred => 'type', :obj => 'R1'}
+        @hmodification = {:id => 'hid', :type => 'type', :object => 'R1'}
         @hmodifications = Array.new
         @hmodifications << @hmodification
         @result = controller.save_hmodifications(@hmodifications, @project, @doc)
@@ -1198,17 +1226,17 @@ describe ApplicationController do
       it 'should save Modification from hmodifications params and doc.subinsrels' do
         Modification.where(
           :hid => @hmodification[:id],
-          :pred => @hmodification[:pred],
+          :pred => @hmodification[:type],
           :obj_id => @subinsrel.id,
           :obj_type => @subinsrel.class
         ).should be_present
       end
     end
     
-    context 'when hmodifications[:obj] does not match /^R/' do
+    context 'when hmodifications[:object] does not match /^R/' do
       before do
-        @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @span)
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
         @subinsrel = FactoryGirl.create(:subinsrel, :obj => @instance, :project => @project)
         @hmodification = {:id => 'hid', :pred => 'type', :obj => @instance.hid}
         @hmodifications = Array.new
@@ -1242,10 +1270,10 @@ describe ApplicationController do
     end
   end
   
-  describe 'realign_spans' do
-    context 'when spans is nil' do
+  describe 'realign_denotations' do
+    context 'when denotations is nil' do
       before do
-        @result = controller.realign_spans(nil, '', '')
+        @result = controller.realign_denotations(nil, '', '')
       end
       
       it 'should return nil' do
@@ -1257,22 +1285,22 @@ describe ApplicationController do
       before do
         @begin = 1
         @end = 5
-        @span = {:span => {:begin => @begin, :end => @end}}
-        @spans = Array.new
-        @spans << @span
-        @result = controller.realign_spans(@spans, 'from text', 'end of text')
+        @denotation = {:denotation => {:begin => @begin, :end => @end}}
+        @denotations = Array.new
+        @denotations << @denotation
+        @result = controller.realign_denotations(@denotations, 'from text', 'end of text')
       end
       
       it 'should change positions' do
-        (@result[0][:span][:begin] == @begin && @result[0][:span][:end] == @end).should be_false
+        (@result[0][:denotation][:begin] == @begin && @result[0][:denotation][:end] == @end).should be_false
       end
     end
   end
   
-  describe 'adjust_spans' do
-    context 'when spans is nil' do
+  describe 'adjust_denotations' do
+    context 'when denotations is nil' do
       before do
-        @result = controller.adjust_spans(nil, '')
+        @result = controller.adjust_denotations(nil, '')
       end
 
       it 'should return nil' do
@@ -1280,18 +1308,18 @@ describe ApplicationController do
       end
     end
 
-    context 'when spans exists' do
+    context 'when denotations exists' do
       before do
         @begin = 1
         @end = 5
-        @span = {:span => {:begin => @begin, :end => @end}}
-        @spans = Array.new
-        @spans << @span
-        @result = controller.adjust_spans(@spans, 'this is an text')
+        @denotation = {:denotation => {:begin => @begin, :end => @end}}
+        @denotations = Array.new
+        @denotations << @denotation
+        @result = controller.adjust_denotations(@denotations, 'this is an text')
       end
 
       it 'should change positions' do
-        (@result[0][:span][:begin] == @begin && @result[0][:span][:end] == @end).should be_false
+        (@result[0][:denotation][:begin] == @begin && @result[0][:denotation][:end] == @end).should be_false
       end
     end
   end

@@ -16,16 +16,16 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @obj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @obj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
     end
     
-    context 'Span' do
+    context 'Denotation' do
       before do
-        @subj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @subj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
         @relation = FactoryGirl.create(:relation, :subj_id => @subj.id, :subj_type => @subj.class.to_s, :obj => @obj, :project => @project)
       end
       
-      it 'relation.subj should equal Span' do
+      it 'relation.subj should equal Denotation' do
         @relation.subj.should eql(@subj)
       end
     end
@@ -46,16 +46,16 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @subj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+      @subj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
     end
     
-    context 'Span' do
+    context 'Denotation' do
       before do
-        @obj = FactoryGirl.create(:span, :project => @project, :doc => @doc)
+        @obj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
         @relation = FactoryGirl.create(:relation, :subj => @subj, :obj => @obj, :obj_type => @obj.class.to_s, :project => @project)
       end
       
-      it 'relation.obj should equal Span' do
+      it 'relation.obj should equal Denotation' do
         @relation.obj.should eql(@obj)
       end
     end
@@ -95,12 +95,12 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @span_sub = FactoryGirl.create(:span, :id => 1, :hid => 'span sub hid', :project => @project, :doc => @doc)
-      @span_obj = FactoryGirl.create(:span, :id => 2, :hid => 'span rel hid', :project => @project, :doc => @doc)
+      @denotation_sub = FactoryGirl.create(:denotation, :id => 1, :hid => 'denotation sub hid', :project => @project, :doc => @doc)
+      @denotation_obj = FactoryGirl.create(:denotation, :id => 2, :hid => 'denotation rel hid', :project => @project, :doc => @doc)
       @relation = FactoryGirl.create(:relation, 
       :hid => 'hid',
       :pred => 'lexChain', 
-      :obj => @span_obj, 
+      :obj => @denotation_obj, 
       :project => @project)
       @get_hash = @relation.get_hash
     end
@@ -113,19 +113,19 @@ describe Relation do
       @get_hash[:pred].should eql(@relation[:pred])
     end
     
-    it 'should set end as span:end' do
-      @get_hash[:subj].should eql(@span_sub[:hid])
+    it 'should set end as denotation:end' do
+      @get_hash[:subject].should eql(@denotation_sub[:hid])
     end
     
-    it 'should set end as span:end' do
-      @get_hash[:obj].should eql(@span_obj[:hid])
+    it 'should set end as denotation:end' do
+      @get_hash[:object].should eql(@denotation_obj[:hid])
     end
   end
   
   describe 'validate' do
-    context 'when subj == Span and obj == Instance' do
+    context 'when subj == Denotation and obj == Instance' do
       before do
-        @subj = FactoryGirl.create(:span,
+        @subj = FactoryGirl.create(:denotation,
           :project_id => 1,
           :doc_id => 2
         )
@@ -142,7 +142,7 @@ describe Relation do
         )
       end
       
-      it 'relation.subj should equal Span' do
+      it 'relation.subj should equal Denotation' do
         @subrel.subj.should eql(@subj)
       end
       
@@ -151,13 +151,13 @@ describe Relation do
       end
     end    
 
-    context 'when subj == Instance and obj == Span' do
+    context 'when subj == Instance and obj == Denotation' do
       before do
         @subj = FactoryGirl.create(:instance,
           :project_id => 1,
           :obj_id => 2
         )
-        @obj = FactoryGirl.create(:span,
+        @obj = FactoryGirl.create(:denotation,
           :project_id => 1,
           :doc_id => 2
         )
@@ -174,7 +174,7 @@ describe Relation do
         @subrel.subj.should eql(@subj)
       end
       
-      it 'relation.subj should equal Span' do
+      it 'relation.subj should equal Denotation' do
         @subrel.obj.should eql(@obj)
       end
     end    
@@ -222,7 +222,7 @@ describe Relation do
           :project_id => 1,
           :doc_id => 2
         )
-        @obj = FactoryGirl.create(:span,
+        @obj = FactoryGirl.create(:denotation,
           :project_id => 1,
           :doc_id => 2
         )
@@ -243,7 +243,7 @@ describe Relation do
 
     context 'when subj != Block obj == Block' do
       before do
-        @subj = FactoryGirl.create(:span,
+        @subj = FactoryGirl.create(:denotation,
           :project_id => 1,
           :doc_id => 2
         )

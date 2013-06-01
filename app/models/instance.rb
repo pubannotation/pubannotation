@@ -1,6 +1,6 @@
 class Instance < ActiveRecord::Base
   belongs_to :project
-  belongs_to :obj, :class_name => 'Span'
+  belongs_to :obj, :class_name => 'Denotation'
 
   has_many :subrels, :class_name => 'Relation', :as => :subj, :dependent => :destroy
   has_many :objrels, :class_name => 'Relation', :as => :obj, :dependent => :destroy
