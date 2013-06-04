@@ -15,7 +15,7 @@ class AnnotationsController < ApplicationController
         if @doc
           annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
           @text = annotations[:text]
-          @spans = annotations[:spans]
+          @denotations = annotations[:denotations]
           @instances = annotations[:instances]
           @relations = annotations[:relations]
           @modifications = annotations[:modifications]
@@ -107,7 +107,6 @@ class AnnotationsController < ApplicationController
           else
             annotations = JSON.parse params[:annotations], :symbolize_names => true
           end
-
           notice = save_annotations(annotations, project, doc)
         else
           notice = "The annotation set, #{params[:project_id]}, does not include the document, PubMed:#{sourceid}."

@@ -127,13 +127,7 @@ class GLCS
         @sdiff.unshift({:action => '+', :old_position => nil, :old_character => nil, :new_position => j-1, :new_character => @y[j]})
         j -= 1
       elsif i > 0 and (j == 0 or @c[i][j-1] <= @c[i-1][j])
-        # if @sdiff[0][:action] == '+'
-        #   @sdiff[0][:action] = '!'
-        #   @sdiff[0][:old_position] = i-1
-        #   @sdiff[0][:old_character] = @x[i]
-        # else
-          @sdiff.unshift({:action => '-', :old_position => i-1, :old_character => @x[i], :new_position => nil, :new_character => nil})
-        # end
+        @sdiff.unshift({:action => '-', :old_position => i-1, :old_character => @x[i], :new_position => nil, :new_character => nil})
         i -= 1
       end
     end until i ==0 and j == 0

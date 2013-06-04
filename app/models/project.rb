@@ -3,7 +3,7 @@ class Project < ActiveRecord::Base
   has_and_belongs_to_many :docs
 
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter
-  has_many :spans, :dependent => :destroy
+  has_many :denotations, :dependent => :destroy
   has_many :relations, :dependent => :destroy
   has_many :instances, :dependent => :destroy
   has_many :modifications, :dependent => :destroy

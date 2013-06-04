@@ -7,25 +7,25 @@
     <th>Doc Id</th>
     <th>Division</th-->
     <th>Id</th>
-    <th>Span (begin:end)</th>
+    <th>Denotation (begin:end)</th>
     <th>Category</th>
   </tr>
 
-<% @spans.each do |span| %>
+<% @denotations.each do |denotation| %>
   <tr>
-    <td><%= span.project %></td>
-    <!--td><= span.doc_sourcedb %></td>
-    <td><= span.doc_sourceid %></td>
-    <td><= span.doc_serial %></td-->
-    <td><%= span.id %></td>
+    <td><%= denotation.project %></td>
+    <!--td><= denotation.doc_sourcedb %></td>
+    <td><= denotation.doc_sourceid %></td>
+    <td><= denotation.doc_serial %></td-->
+    <td><%= denotation.id %></td>
     <td>
-      <% unless span.span.respond_to?(:keys) %>
-        <% span.span.each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+      <% unless denotation.denotation.respond_to?(:keys) %>
+        <% denotation.denotation.each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
       <% else %>
-        <%= span.span[:begin] %>:<%= span.span[:end] %>
+        <%= denotation.denotation[:begin] %>:<%= denotation.denotation[:end] %>
       <% end %>
     </td>
-    <td><%= span.category %></td>
+    <td><%= denotation.category %></td>
   </tr>
 <% end %>
 </table>

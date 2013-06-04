@@ -104,12 +104,12 @@ describe Block do
       @get_hash[:id].should eql(@block[:hid])
     end
     
-    it 'should set begin as span:begin' do
-      @get_hash[:span][:begin].should eql(@block[:begin])
+    it 'should set begin as denotation:begin' do
+      @get_hash[:begin].should eql(@block[:begin])
     end
     
-    it 'should set end as span:end' do
-      @get_hash[:span][:end].should eql(@block[:end])
+    it 'should set end as denotation:end' do
+      @get_hash[:end].should eql(@block[:end])
     end
     
     it 'category as category' do

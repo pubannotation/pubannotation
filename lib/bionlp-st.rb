@@ -13,13 +13,13 @@ class Annotation
   def get_ann
     # index
     text = @annotation[:text]
-    spans = @annotation[:spans]
+    denotations = @annotation[:denotations]
     instances = @annotation[:instances]
     relations = @annotation[:relations]
     modifications = @annotation[:modifications]
 
-    spans = Hash.new;
-    spans.each {|c| spans[c[:id]] = c} if spans
+    denotations = Hash.new;
+    denotations.each {|c| denotations[c[:id]] = c} if denotations
 
     events = Hash.new;
     instances.each {|i| events[i[:id]] = {:tid => i[:object]}} if instances
@@ -152,12 +152,12 @@ class Annotation
 
     a1 = ''
 
-    if spans
-      spans.each do |c|
-        if c[:category] == 'Protein'
-          b = c[:span][:begin]
-          e = c[:span][:end]
-          a1 += "#{c[:id]}\t#{c[:category]} #{c[:span][:begin]} #{c[:span][:end]}\t#{text[b...e]}\n"
+    if denotations
+      denotations.each do |c|
+        if c[:obj] == 'Protein'
+          b = c[:denotation][:begin]
+          e = c[:denotation][:end]
+          a1 += "#{c[:id]}\t#{c[:obj]} #{c[:denotation][:begin]} #{c[:denotation][:end]}\t#{text[b...e]}\n"
         end
       end
     end
@@ -167,12 +167,12 @@ class Annotation
       a2 += "*\tEquiv #{k} #{equivs[k].join(' ')}\n"
     end
 
-    if spans
-      spans.each do |c|
-        unless c[:category] == 'Protein'
-          b = c[:span][:begin]
-          e = c[:span][:end]
-          a2 += "#{c[:id]}\t#{c[:category]} #{c[:span][:begin]} #{c[:span][:end]}\t#{text[b...e]}\n"
+    if denotations
+      denotations.each do |c|
+        unless c[:obj] == 'Protein'
+          b = c[:denotation][:begin]
+          e = c[:denotation][:end]
+          a2 += "#{c[:id]}\t#{c[:obj]} #{c[:denotation][:begin]} #{c[:denotation][:end]}\t#{text[b...e]}\n"
         end
       end
     end
@@ -184,7 +184,7 @@ class Annotation
     events.each_key do |id|
       tid = events[id][:tid]
       a2 += "#{id}" # id
-      a2 += "\t#{spans[tid][:category]}:#{tid}" # trigger
+      a2 += "\t#{denotations[tid][:obj]}:#{tid}" # trigger
 
       if (events[id]['theme'])
         events[id]['theme'].each_with_index do |t, i|

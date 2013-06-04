@@ -16,8 +16,8 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @span)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
       @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
     end
     
@@ -30,9 +30,9 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
-      @span = FactoryGirl.create(:span, :project => @project, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @span)
-      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @span, :project => @project)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
       @insmod = FactoryGirl.create(:modification, 
         :hid => 'modification hid',
         :pred => 'pred',
@@ -47,11 +47,11 @@ describe Relation do
     end
     
     it 'should set pred as type' do
-      @get_hash[:type].should eql(@insmod[:pred])
+      @get_hash[:pred].should eql(@insmod[:pred])
     end
     
-    it 'should set end as span:end' do
-      @get_hash[:object].should eql(@instance[:hid])
+    it 'should set end as denotation:end' do
+      @get_hash[:obj].should eql(@instance[:hid])
     end
   end
 end
