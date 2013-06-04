@@ -3,26 +3,28 @@
 <!--p>to <= @denotations.first.doc_sourcedb %>:<= @denotations.first.doc_sourceid %></p-->
 
 <% if @denotations and !@denotations.empty? %>
-  <h2>Caterogy annotations</h2>
+  <h2>Denotations</h2>
   <table class="ann">
     <tr>
       <th>Id</th>
-      <th>Denotation (begin:end)</th>
-      <th>Category</th>
+      <th>Span (begin:end)</th>
+      <th>Predicate</th>
+      <th>Object</th>
     </tr>
 
   <% @denotations.each do |denotation| %>
     <tr>
       <td><%= denotation[:id] %></td>
       <td>
-        <% unless denotation[:denotation].respond_to?(:keys) %>
-          <% denotation[:denotation].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+        <% unless denotation[:span].respond_to?(:keys) %>
+          <% denotation[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
         <% else %>
-          <%= denotation[:denotation][:begin] %>:<%= denotation[:denotation][:end] %>
+          <%= denotation[:span][:begin] %>:<%= denotation[:span][:end] %>
         <% end %>
       </td>
+      <td>denote</td>
       <td><%= denotation[:obj] %></td>
-      <td style="text-align:left; font-style:italic; color:#888888; border-color:white"><%= @text[denotation[:denotation][:begin]...denotation[:denotation][:end]] %></td>
+      <td style="text-align:left; font-style:italic; color:#888888; border-color:white"><%= @text[denotation[:span][:begin]...denotation[:span][:end]] %></td>
     </tr>
   <% end %>
   </table>
@@ -30,12 +32,12 @@
 
 
 <% if @instances and !@instances.empty? %>
-  <h2>Instance annotations</h2>
+  <h2>Instances</h2>
   <table class="ann">
     <tr>
       <th>Id</th>
-      <th>Ins. type</th>
-      <th>Ins. object</th>
+      <th>Predicate</th>
+      <th>Object</th>
     </tr>
 
   <% @instances.each do |instance| %>
@@ -50,11 +52,11 @@
 
 
 <% if @relations and !@relations.empty? %>
-  <h2>Relation annotations</h2>
+  <h2>Relations</h2>
   <table class="ann">
     <tr>
       <th>Id</th>
-      <th>Relation type</th>
+      <th>Predicate</th>
       <th>Subject</th>
       <th>Object</th>
     </tr>
@@ -71,12 +73,12 @@
 <% end %>
 
 <% if @modifications and !@modifications.empty? %>
-  <h2>Modification annotations</h2>
+  <h2>Modifications</h2>
   <table class="ann">
     <tr>
       <th>Id</th>
-      <th>Mod. type</th>
-      <th>Mod. object</th>
+      <th>Predicate</th>
+      <th>Object</th>
     </tr>
 
   <% @modifications.each do |modification| %>

@@ -30,7 +30,7 @@ describe Relation do
       end
     end
 
-    context 'Insaan' do
+    context 'Instance' do
       before do
         @subj = FactoryGirl.create(:instance, :project => @project, :obj_id => 1)
         @relation = FactoryGirl.create(:relation, :subj_id => @subj.id, :subj_type => @subj.class.to_s, :obj => @obj, :project => @project)
@@ -99,7 +99,7 @@ describe Relation do
       @denotation_obj = FactoryGirl.create(:denotation, :id => 2, :hid => 'denotation rel hid', :project => @project, :doc => @doc)
       @relation = FactoryGirl.create(:relation, 
       :hid => 'hid',
-      :pred => 'lexChain', 
+      :pred => '_lexChain', 
       :obj => @denotation_obj, 
       :project => @project)
       @get_hash = @relation.get_hash
@@ -114,11 +114,11 @@ describe Relation do
     end
     
     it 'should set end as denotation:end' do
-      @get_hash[:subject].should eql(@denotation_sub[:hid])
+      @get_hash[:subj].should eql(@denotation_sub[:hid])
     end
     
     it 'should set end as denotation:end' do
-      @get_hash[:object].should eql(@denotation_obj[:hid])
+      @get_hash[:obj].should eql(@denotation_obj[:hid])
     end
   end
   

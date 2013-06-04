@@ -111,11 +111,11 @@ describe Denotation do
     end
     
     it 'should set begin as denotation:begin' do
-      @get_hash[:denotation][:begin].should eql(@denotation[:begin])
+      @get_hash[:span][:begin].should eql(@denotation[:begin])
     end
     
     it 'should set end as denotation:end' do
-      @get_hash[:denotation][:end].should eql(@denotation[:end])
+      @get_hash[:span][:end].should eql(@denotation[:end])
     end
     
     it 'obj as obj' do

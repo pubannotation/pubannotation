@@ -107,7 +107,6 @@ class AnnotationsController < ApplicationController
           else
             annotations = JSON.parse params[:annotations], :symbolize_names => true
           end
-
           notice = save_annotations(annotations, project, doc)
         else
           notice = "The annotation set, #{params[:project_id]}, does not include the document, PubMed:#{sourceid}."

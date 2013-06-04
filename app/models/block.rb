@@ -15,10 +15,11 @@ class Block < ActiveRecord::Base
   validates :doc_id,    :presence => true
 
   def get_hash
-    hdenotation = Hash.new
-    hdenotation[:id]       = hid
-    hdenotation[:denotation]     = {:begin => self.begin, :end => self.end}
-    hdenotation[:category] = category
-    hdenotation
+    hblock = Hash.new
+    hblock[:id]       = hid
+    hblock[:begin]    = self.begin
+    hblock[:end]      = self.end
+    hblock[:category] = category
+    hblock
   end
 end

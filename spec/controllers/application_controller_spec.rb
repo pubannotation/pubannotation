@@ -513,10 +513,10 @@ describe ApplicationController do
               :division_id => @doc.serial, 
               :section => @doc.section, 
               :text => @doc.body,
-              :denotations => [{:id => @denotation.hid, :denotation => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
-              :instances => [{:id => @instance.hid, :type => @instance.pred, :object => @instance.obj.hid}],
-              :relations => [{:id => @subcatrel.hid, :type => @subcatrel.pred, :subject => @subcatrel.subj.hid, :object => @subcatrel.obj.hid}],
-              :modifications => [{:id => @insmod.hid, :type => @insmod.pred, :object => @insmod.obj.hid}]
+              :denotations => [{:id => @denotation.hid, :span => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
+              :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
+              :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
+              :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
               })
           end
         end
@@ -694,10 +694,10 @@ describe ApplicationController do
     context 'when format error' do
       context 'when denotation and begin does not present' do
         before do
-          @denotation = {:id => 'id', :end => '5', :obj => 'Category'}
-          @denotations = Array.new
-          @denotations << @denotation
-          @result = controller.clean_hdenotations(@denotations)
+          denotation = {:id => 'id', :end => '5', :obj => 'Category'}
+          denotations = Array.new
+          denotations << denotation
+          @result = controller.clean_hdenotations(denotations)
         end
         
         it 'should return nil and format error' do
@@ -707,10 +707,10 @@ describe ApplicationController do
   
       context 'when obj does not present' do
         before do
-          @denotation = {:id => 'id', :begin => '`1', :end => '5', :obj => nil}
-          @denotations = Array.new
-          @denotations << @denotation
-          @result = controller.clean_hdenotations(@denotations)
+          denotation = {:id => 'id', :begin => '`1', :end => '5', :obj => nil}
+          denotations = Array.new
+          denotations << denotation
+          @result = controller.clean_hdenotations(denotations)
         end
         
         it 'should return nil and format error' do
@@ -728,7 +728,7 @@ describe ApplicationController do
 
       context 'when id is nil' do
         before do
-          @denotation = {:id => nil, :denotation => {:begin => @begin, :end => @end}, :obj => 'Category'}
+          @denotation = {:id => nil, :span => {:begin => @begin, :end => @end}, :obj => 'Category'}
           @denotations << @denotation
           @result = controller.clean_hdenotations(@denotations)
         end
@@ -740,13 +740,13 @@ describe ApplicationController do
 
       context 'when denotation exists' do
         before do
-          @denotation = {:id => 'id', :denotation => {:begin => @begin, :end => @end}, :obj => 'Category'}
+          @denotation = {:id => 'id', :span => {:begin => @begin, :end => @end}, :obj => 'Category'}
           @denotations << @denotation
           @result = controller.clean_hdenotations(@denotations)
         end
         
         it 'should return ' do
-          @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :denotation => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+          @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
         end
       end
 
@@ -758,7 +758,7 @@ describe ApplicationController do
         end
         
         it 'should return with denotation' do
-          @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :denotation => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+          @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
         end
       end
     end
@@ -768,7 +768,7 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @hdenotation = {:id => 'hid', :denotation => {:begin => 1, :end => 10}, :obj => 'Category'}
+      @hdenotation = {:id => 'hid', :span => {:begin => 1, :end => 10}, :obj => 'Category'}
       @hdenotations = Array.new
       @hdenotations << @hdenotation
       @result = controller.save_hdenotations(@hdenotations, @project, @doc) 
@@ -783,12 +783,12 @@ describe ApplicationController do
       @denotation.hid.should eql(@hdenotation[:id])
     end
     
-    it 'should save hdenotation[:denotation][:begin] as begin' do
-      @denotation.begin.should eql(@hdenotation[:denotation][:begin])
+    it 'should save hdenotation[:span][:begin] as begin' do
+      @denotation.begin.should eql(@hdenotation[:span][:begin])
     end
     
-    it 'should save hdenotation[:denotation][:end] as end' do
-      @denotation.end.should eql(@hdenotation[:denotation][:end])
+    it 'should save hdenotation[:span][:end] as end' do
+      @denotation.end.should eql(@hdenotation[:span][:end])
     end
     
     it 'should save hdenotation[:obj] as obj' do
@@ -823,27 +823,28 @@ describe ApplicationController do
   describe 'bag_denotations' do
     context 'when relation type = lexChain' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @denotations = Array.new
-        @denotations << @denotation.get_hash
-        @relation = FactoryGirl.create(:relation, 
-        :pred => 'lexChain', 
-        :obj => @denotation, 
-        :project => @project,
-        :subj_id => @denotation.id)
-        @relations = Array.new
-        @relations << @relation.get_hash
-        @result = controller.bag_denotations(@denotations, @relations)
+        doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+        project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+        denotation1 = FactoryGirl.create(:denotation, :project => project, :doc => doc)
+        denotation2 = FactoryGirl.create(:denotation, :project => project, :doc => doc)
+        denotations = Array.new
+        denotations << denotation1.get_hash << denotation2.get_hash
+        relation = FactoryGirl.create(:relation, 
+          :pred => '_lexChain',
+          :obj_id => denotation1.id,
+          :project => project,
+          :subj_id => denotation2.id)
+        relations = Array.new
+        relations << relation.get_hash
+        @new_denotations, @new_relations = controller.bag_denotations(denotations, relations)
       end
       
       it 'denotations should be_blank' do
-        @result[0].should be_blank
+        @new_denotations[1].should be_blank
       end
 
       it 'denotations should be_blank' do
-        @result[1].should be_blank
+        @new_relations[0].should be_blank
       end
     end
     
@@ -866,7 +867,7 @@ describe ApplicationController do
       end
       
       it 'denotations should be_blank' do
-        @result[0][0].should eql({:id => "T1", :denotation => {:begin => 1 , :end => 5}, :obj => "Protein"})
+        @result[0][0].should eql({:id => "T1", :span => {:begin => 1 , :end => 5}, :obj => "Protein"})
       end
       
       it '' do
@@ -966,12 +967,12 @@ describe ApplicationController do
   
   describe 'save_hinstances' do
     before do
-      @hinstance = {:id => 'hid', :type => 'type', :object => 'object'}
+      @hinstance = {:id => 'hid', :pred => 'type', :obj => 'object'}
       @hinstances = Array.new
       @hinstances << @hinstance
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @denotation = FactoryGirl.create(:denotation, :id => 90, :project => @project, :doc => @doc, :hid => @hinstance[:object])
+      @denotation = FactoryGirl.create(:denotation, :id => 90, :project => @project, :doc => @doc, :hid => @hinstance[:obj])
       @result = controller.save_hinstances(@hinstances, @project, @doc) 
     end
     
@@ -980,7 +981,7 @@ describe ApplicationController do
     end
     
     it 'should save Instance from args' do
-      Instance.find_by_hid_and_pred_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:type], @denotation.id, @project.id).should be_present
+      Instance.find_by_hid_and_pred_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:pred], @denotation.id, @project.id).should be_present
     end
   end
   
@@ -1069,7 +1070,7 @@ describe ApplicationController do
     
     context 'hrelations subject and object match /^T/' do
       before do
-        @hrelation = {:id => 'hid', :type => 'pred', :subject => 'T1', :object => 'T1'}
+        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'T1', :obj => 'T1'}
         @hrelations << @hrelation
         @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
@@ -1081,7 +1082,7 @@ describe ApplicationController do
       it 'should save from hrelations params and project, and subj and obj should be denotation' do
         Relation.where(
           :hid => @hrelation[:id], 
-          :pred => @hrelation[:type], 
+          :pred => @hrelation[:pred], 
           :subj_id => @denotation.id, 
           :subj_type => @denotation.class, 
           :obj_id => @denotation.id, 
@@ -1093,9 +1094,9 @@ describe ApplicationController do
 
     context 'hrelations subject and object does not match /^T/' do
       before do
-        @hrelation = {:id => 'hid', :type => 'pred', :subject => 'M1', :object => 'M1'}
+        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'M1', :obj => 'M1'}
         @hrelations << @hrelation
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation, :hid => @hrelation[:subject])
+        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation, :hid => @hrelation[:subj])
         @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
       
@@ -1106,7 +1107,7 @@ describe ApplicationController do
       it 'should save from hrelations params and project, and subj and obj should be instance' do
         Relation.where(
           :hid => @hrelation[:id], 
-          :pred => @hrelation[:type], 
+          :pred => @hrelation[:pred], 
           :subj_id => @instance.id, 
           :subj_type => @instance.class, 
           :obj_id => @instance.id, 
@@ -1208,12 +1209,12 @@ describe ApplicationController do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
     end
     
-    context 'when hmodifications[:object] match /^R/' do
+    context 'when hmodifications[:obj] match /^R/' do
       before do
         @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
         @subinsrel = FactoryGirl.create(:subinsrel, :subj_id => @instance.id, :obj => @instance, :project => @project)
-        @hmodification = {:id => 'hid', :type => 'type', :object => 'R1'}
+        @hmodification = {:id => 'hid', :pred => 'type', :obj => 'R1'}
         @hmodifications = Array.new
         @hmodifications << @hmodification
         @result = controller.save_hmodifications(@hmodifications, @project, @doc)
@@ -1226,14 +1227,14 @@ describe ApplicationController do
       it 'should save Modification from hmodifications params and doc.subinsrels' do
         Modification.where(
           :hid => @hmodification[:id],
-          :pred => @hmodification[:type],
+          :pred => @hmodification[:pred],
           :obj_id => @subinsrel.id,
           :obj_type => @subinsrel.class
         ).should be_present
       end
     end
     
-    context 'when hmodifications[:object] does not match /^R/' do
+    context 'when hmodifications[:obj] does not match /^R/' do
       before do
         @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
         @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
@@ -1285,14 +1286,14 @@ describe ApplicationController do
       before do
         @begin = 1
         @end = 5
-        @denotation = {:denotation => {:begin => @begin, :end => @end}}
+        @denotation = {:span => {:begin => @begin, :end => @end}}
         @denotations = Array.new
         @denotations << @denotation
         @result = controller.realign_denotations(@denotations, 'from text', 'end of text')
       end
       
       it 'should change positions' do
-        (@result[0][:denotation][:begin] == @begin && @result[0][:denotation][:end] == @end).should be_false
+        (@result[0][:span][:begin] == @begin && @result[0][:span][:end] == @end).should be_false
       end
     end
   end
@@ -1312,14 +1313,14 @@ describe ApplicationController do
       before do
         @begin = 1
         @end = 5
-        @denotation = {:denotation => {:begin => @begin, :end => @end}}
+        @denotation = {:span => {:begin => @begin, :end => @end}}
         @denotations = Array.new
         @denotations << @denotation
         @result = controller.adjust_denotations(@denotations, 'this is an text')
       end
 
       it 'should change positions' do
-        (@result[0][:denotation][:begin] == @begin && @result[0][:denotation][:end] == @end).should be_false
+        (@result[0][:span][:begin] == @begin && @result[0][:span][:end] == @end).should be_false
       end
     end
   end

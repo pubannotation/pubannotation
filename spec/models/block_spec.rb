@@ -105,11 +105,11 @@ describe Block do
     end
     
     it 'should set begin as denotation:begin' do
-      @get_hash[:denotation][:begin].should eql(@block[:begin])
+      @get_hash[:begin].should eql(@block[:begin])
     end
     
     it 'should set end as denotation:end' do
-      @get_hash[:denotation][:end].should eql(@block[:end])
+      @get_hash[:end].should eql(@block[:end])
     end
     
     it 'category as category' do

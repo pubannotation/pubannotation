@@ -51,7 +51,7 @@ describe Relation do
     end
     
     it 'should set end as denotation:end' do
-      @get_hash[:object].should eql(@instance[:hid])
+      @get_hash[:obj].should eql(@instance[:hid])
     end
   end
 end

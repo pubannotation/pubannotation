@@ -344,7 +344,7 @@ class ApplicationController < ActionController::Base
 
     idnum = 1
     denotations.each do |a|
-      return nil, "format error" unless (a[:denotation] or (a[:begin] and a[:end])) and a[:obj]
+      return nil, "format error" unless (a[:span] or (a[:begin] and a[:end])) and a[:obj]
 
       unless a[:id]
         idnum += 1 until !ids.include?('T' + idnum.to_s)
@@ -352,13 +352,13 @@ class ApplicationController < ActionController::Base
         idnum += 1
       end
 
-      if a[:denotation]
-        a[:denotation][:begin] = a[:denotation][:begin].to_i
-        a[:denotation][:end]   = a[:denotation][:end].to_i
+      if a[:span]
+        a[:span][:begin] = a[:span][:begin].to_i
+        a[:span][:end]   = a[:span][:end].to_i
       else
-        a[:denotation] = Hash.new
-        a[:denotation][:begin] = a.delete(:begin).to_i
-        a[:denotation][:end]   = a.delete(:end).to_i
+        a[:span] = Hash.new
+        a[:span][:begin] = a.delete(:begin).to_i
+        a[:span][:end]   = a.delete(:end).to_i
       end
     end
 
@@ -370,8 +370,8 @@ class ApplicationController < ActionController::Base
     hdenotations.each do |a|
       ca           = Denotation.new
       ca.hid       = a[:id]
-      ca.begin     = a[:denotation][:begin]
-      ca.end       = a[:denotation][:end]
+      ca.begin     = a[:span][:begin]
+      ca.end       = a[:span][:end]
       ca.obj  = a[:obj]
       ca.project_id = project.id
       ca.doc_id    = doc.id
@@ -411,8 +411,8 @@ class ApplicationController < ActionController::Base
       to = mergedto[to] if mergedto.has_key?(to)
       fca = denotations[idx[from]]
       tca = denotations[idx[to]]
-      tca[:denotation] = [tca[:denotation]] unless tca[:denotation].respond_to?('push')
-      tca[:denotation].push (fca[:denotation])
+      tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
+      tca[:span].push (fca[:span])
       denotations.delete_at(idx[from])
       mergedto[from] = to
     end
@@ -453,10 +453,10 @@ class ApplicationController < ActionController::Base
 
   def save_hinstances (hinstances, project, doc)
     hinstances.each do |a|
-      ia           = Instance.new
-      ia.hid       = a[:id]
-      ia.pred   = a[:pred]
-      ia.obj    = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
+      ia            = Instance.new
+      ia.hid        = a[:id]
+      ia.pred       = a[:pred]
+      ia.obj        = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
       ia.project_id = project.id
       ia.save
     end
@@ -502,12 +502,12 @@ class ApplicationController < ActionController::Base
       ra.hid       = a[:id]
       ra.pred   = a[:pred]
       ra.subj    = case a[:subj]
-        when /^T/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subject])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subject])
+        when /^T/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subj])
       end
       ra.obj    = case a[:obj]
-        when /^T/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:object])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:object])
+        when /^T/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
+        else           doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
       end
       ra.project_id = project.id
       ra.save
@@ -647,8 +647,8 @@ class ApplicationController < ActionController::Base
     denotations_new = Array.new(denotations)
 
     (0...denotations.length).each do |i|
-      denotations_new[i][:denotation][:begin] = position_map[denotations[i][:denotation][:begin]]
-      denotations_new[i][:denotation][:end]   = position_map[denotations[i][:denotation][:end]]
+      denotations_new[i][:span][:begin] = position_map[denotations[i][:span][:begin]]
+      denotations_new[i][:span][:end]   = position_map[denotations[i][:span][:end]]
     end
 
     denotations_new
@@ -683,7 +683,7 @@ class ApplicationController < ActionController::Base
 
     denotations_new = Array.new(denotations)
 
-    spans_new.each do |c|
+    denotations_new.each do |c|
       while c[:span][:begin] > 0 and !delimiter_characters.include?(text[c[:span][:begin] - 1])
         c[:span][:begin] -= 1
       end

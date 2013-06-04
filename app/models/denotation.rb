@@ -22,7 +22,7 @@ class Denotation < ActiveRecord::Base
   def get_hash
     hdenotation = Hash.new
     hdenotation[:id]       = hid
-    hdenotation[:denotation]     = {:begin => self.begin, :end => self.end}
+    hdenotation[:span]     = {:begin => self.begin, :end => self.end}
     hdenotation[:obj] = obj
     hdenotation
   end
