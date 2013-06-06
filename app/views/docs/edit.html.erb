@@ -1,6 +1,6 @@
-<h1>Editing doc</h1>
+<h1><%= t('views.shared.edit_model', :model => t('activerecord.models.doc')) %></h1>
 
 <%= render 'form' %>
 
 <%= link_to t('views.shared.show'), @doc %> |
-<%= link_to 'Back', docs_path %>
+<%= link_to t('views.shared.back'), docs_path %>

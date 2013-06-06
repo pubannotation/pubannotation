@@ -1,15 +1,15 @@
 <h1 class="capitalize_first"><%= t('activerecord.models.doc').pluralize %></h1>
 
 <% if @docs.empty? %>
-  none
+  <%= t('views.shared.none') %>
 <% else %>
   <table>
     <tr>
-      <th>Source DB</th>
-      <th>Source Id</th>
-      <th>Division</th>
-      <th>Section</th>
-      <th>Text</th>
+      <th><%= t('activerecord.attributes.doc.sourcedb')%></th>
+      <th><%= t('activerecord.attributes.doc.sourceid')%></th>
+	  <th><%= t('views.divs.div')%></th>
+      <th><%= t('activerecord.attributes.doc.section')%></th>
+      <th><%= t('activerecord.attributes.doc.body')%></th>
       <th></th>
     </tr>
 

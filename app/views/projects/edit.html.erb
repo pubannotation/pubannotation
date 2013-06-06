@@ -19,6 +19,8 @@
  	> edit
 <% end %>
 
-<h1>Editing annotation set/project</h1>
+<h1>
+	<%= t('views.shared.edit_model', :model => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}") %>
+</h1>
 
 <%= render 'form' %>

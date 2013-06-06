@@ -125,6 +125,7 @@ en:
       wrong_length:
         one: is the wrong length (should be 1 character)
         other: is the wrong length (should be %{count} characters)
+      save_prohibited: '%{error} prohibited this %{model} from being saved:'
     template:
       body: ! 'There were problems with the following fields:'
       header:
@@ -204,6 +205,7 @@ en:
     models:
       doc: document
       project: project
+      user: user
     attributes:
       doc:
         sourcedb: source DB
@@ -225,8 +227,26 @@ en:
         name: The name of this project (up to 30 characters)
         author: The name of author of this project
         reference: URL to a page that describes this project 
+        pmids: PubMed IDs
+      doc:
+        annotation_server: URL of annotation server
     errors:
       <<: *errors
+  controllers:
+    application:
+      get_project:
+        notice_private: The annotation set, %{project_name}, is specified as private.
+        notice_not_exist: The annotation set, %{project_name}, does not exist.        
+      get_doc:
+        notice_not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the annotation set, %{project_name}.
+        notice_no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
+      get_divs:
+        notice_not_belong_to: The document, PMC::%{sourceid}, does not belong to the annotation set, %{project_name}.
+        no_annotation: No annotation to the document, PMC:%{sourceid}, exists in PubAnnotation.
+      gen_pmcdoc:
+        no_body: no body in the document.
+      save_annotations:
+        successfully_saved: Annotations were successfully created/updated.
   views:
     service:
       title: PubAnnotation
@@ -236,13 +256,23 @@ en:
       overview: overview
       features: features
       formats: formats
+    divs:
+      document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
+      div: Div.
+    doc:
+      annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'>within <span class='pname'>%{project_name}</span></span>"
+      annsets_made_to_document: "Annotation sets <span class='meta'>made to this document</span>"
+      get_annotations: Get annotations
     paths:
       home: home
     project:
       try_textae: "If you don't have one, try with" 
+      annotation_set_description: Annotation set description
+      annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this annotation set</span></span>"
+      documents_belongs_to_annsets: "Documents <span class='meta'>that belong to this annotation set</span>"
     hint:
       project:
-        author: specify the official author/project of this project, in case you are uploading a project produced by someone else
+        author: specify the official author/project of this annotation set, in case you are uploading an annotation set produced by someone else
         license: \'CC-BY\' is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.
         reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation set that provides a comprehensive description of it.
         editor: Specify URL of the annotation editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
@@ -253,18 +283,30 @@ en:
       sign_up: sign up
       sign_out: sign out
       send_reset_password_instructions: Send me reset password instructions
+    pmdocs:
+      belongs_to: "%{content} that belong to the %{parent}, <span class='pname'>%{pname}</span>"
+      add_to_the_set: Add to the set
+    pmcdocs:
+      belongs_to_project_annset: "PMC documents that belong to the annotation set, <span class='pname'>%{project_name}</span>"
+      pmc_ids: PMC ids
     shared:
+      account: account
+      error: error
+      none: none
       new_model: New %{model}
       create_model: Create new %{model}
+      edit_model: Editing %{model}
+      add_model: Add %{model}
+      delete_model: Delete %{model}
       show: show
       show_divisions: Show divisions
       uploader: uploader
+      update: update
       pubmed: PubMed
       pmdocs: pmdocs
       pmcdocs: pmcdocs
       divs: divs
       annotation_sets: annotation sets
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
-      belongs_to: "%{content} that belong to the %{parent}, <span class='pname'>%{pname}</span>"
       made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"

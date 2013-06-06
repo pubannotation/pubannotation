@@ -1,29 +1,33 @@
-<h1>Edit <%= resource_name.to_s.humanize %></h1>
+<h1>
+	<%= t('views.shared.edit_model', :model => t('activerecord.models.user')) %>
+</h1>
 
 <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html => { :method => :put }) do |f| %>
   <%= devise_error_messages! %>
 
-  <div><%= f.label :username %> <span class="meta">(your full name)</span><br />
+  <div><%= f.label :username %> <span class="meta"><%= t('devise.registrations.full_name') %></span><br />
   <%= f.text_field :username %></div>
 
   <div><%= f.label :email %><br />
   <%= f.email_field :email %></div>
 
-  <div><%= f.label :password %> <span class="meta">(leave blank if you don't want to change it)</span><br />
+  <div><%= f.label :password %> <span class="meta"><%= t('devise.registrations.password_leave_blank') %></span><br />
   <%= f.password_field :password, :autocomplete => "off" %></div>
 
   <div><%= f.label :password_confirmation %><br />
   <%= f.password_field :password_confirmation %></div>
 
-  <div><%= f.label :current_password %> <span class="meta">(we need your current password to confirm your changes)</span><br />
+  <div><%= f.label :current_password %> <span class="meta"><%= t('devise.registrations.current_password') %></span><br />
   <%= f.password_field :current_password %></div>
 
-  <div><%= f.submit "Update" %></div>
+  <div><%= f.submit t('views.shared.update') %></div>
 <% end %>
 
-<h2>Delete account</h2>
+<h2><%= t('views.shared.delete_model', :model => t('views.shared.account')) %></h2>
 
-<p>[<%= link_to "Delete my account", registration_path(resource_name), :data => { :confirm => "Are you sure? All the data belong to you will be deleted." }, :method => :delete %>]
-  <span class="meta">(Be careful! All the data that belong to you will be deleted.)</span></p>
+<p>[<%= link_to t('devise.registrations.delete_my_account'), registration_path(resource_name), :data => { :confirm => "Are you sure? All the data belong to you will be deleted." }, :method => :delete %>]
+  <span class="meta">
+  	<%= t('devise.registrations.notice_before_delete') %>
+  </span></p>
 
-<%= link_to "Back", :back %>
+<%= link_to t('views.shared.back'), :back %>

@@ -1,9 +1,9 @@
-<h1>Annotations</h1>
+<h1 class="capitalize_first"><%= t('views.shared.annotation') %></h1>
 
 <!--p>to <= @denotations.first.doc_sourcedb %>:<= @denotations.first.doc_sourceid %></p-->
 
 <% if @denotations and !@denotations.empty? %>
-  <h2>Denotations</h2>
+  <h2><%= t('activerecord.models.denotation') %></h2>
   <table class="ann">
     <tr>
       <th>Id</th>
@@ -32,7 +32,7 @@
 
 
 <% if @instances and !@instances.empty? %>
-  <h2>Instances</h2>
+  <h2><%= t('activerecord.models.instance') %></h2>
   <table class="ann">
     <tr>
       <th>Id</th>
@@ -92,5 +92,5 @@
 <% end %>
 
 <% if (!@denotations or @denotations.empty?) and (!@instances or @instances.empty?) and (!@relations or @relations.empty?) and (!@modifications or @modifications.empty?) %>
-<p>none</p>
+<p><%= t('views.shared.none') %></p>
 <% end %>

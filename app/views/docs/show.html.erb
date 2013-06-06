@@ -25,7 +25,7 @@
   <% end %>
 <% end %>
 
-<h1>Document content</h1>
+<h1><%= t('views.doc.document_content') %></h1>
 
 <table>
 <tr><th style="text-align:left">
@@ -34,7 +34,7 @@
 	(<%= @doc.serial %> - <%= @doc.section %>)
 	<% end %>
 </th></tr>
-<tr><td class="text"><%= raw @text.gsub(/\n/, "<br>") %></td><tr>
+<tr><td class="text"><%#= raw @text.gsub(/\n/, "<br>") %></td><tr>
 </table>
 
 
@@ -45,9 +45,8 @@
 		<% annotation_url = project_pmcdoc_div_annotations_url(@project.name, @doc.sourceid, @doc.serial) %>
 	<% end %>
 
-	<h1>Annotations
-		<span class="meta"> made to this document</span>
-		<span class="meta">within <span class="pname"><%=@project.name%></span></span>
+	<h1>
+		<%= t('views.doc.annotation_within_project', :project_name => @project.name).html_safe %>
 	</h1>
 
 	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
@@ -70,15 +69,17 @@
 	  // }
 	</script-->
 	<%= form_tag annotation_url, :method => "post" do %>
-		<%= text_field_tag :annotation_server, nil, :placeholder=>"URL of annotation server" %>
-		<%= submit_tag("Get annotations") %>
+		<%= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholder.doc.annotation_server') %>
+		<%= submit_tag(t('views.doc.get_annotations')) %>
 	<% end %>
 	<span id="result"></span>
 
 <% else %>
-	<h2>Annotation sets <span class="meta">made to this document</span></h2>
+	<h2>
+		<%= t('views.doc.annsets_made_to_document').html_safe %>
+	</h2>
 	<% if !@projects || @projects.empty? %>
-		none
+		<%= t('views.shared.none') %>
 	<% else %>
 		<ul>
 		<% @projects.each do |s| %>

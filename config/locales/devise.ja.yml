@@ -2,12 +2,17 @@
 ja:
   errors:
     messages:
+      expired: "の期限が切れましたので、新しくリクエストしてください"
       not_found: "は見つかりませんでした"
-      already_confirmed: "は既に登録済みです"
+      already_confirmed: "は既に登録済みですのでログインしてください"
       not_locked: "は凍結されていません"
+      not_saved:
+        one: "1 つのエラーにより %{resource} は保存されませんでした:"
+        other: "%{count} つのエラーにより %{resource} は保存されませんでした:"
 
   devise:
     failure:
+      already_authenticated: '既にログインしています。'
       unauthenticated: 'ログインしてください。'
       unconfirmed: '本登録を行ってください。'
       locked: 'あなたのアカウントは凍結されています。'
@@ -25,13 +30,21 @@ ja:
       new_password: '新しいパスワード'
       confirm_new_password: '新しいパスワードの確認'
       change_my_password: 'パスワードの変更'
+      updated_not_active: 'パスワードが正しく変更されました。'
+      send_paranoid_instructions: "もしあなたのEメールアドレスが見つかった場合、パスワード復元用のメールが数分以内に送られます。"
+      no_token: "このページにはアクセスできません。パスワード復元メールのリンクをコピーした場合には、正しい URL かどうかをお確かめください。"
     confirmations:
       send_instructions: '登録方法を数分以内にメールでご連絡します。'
+      send_paranoid_instructions: 'もしあなたのEメールアドレスが見つかった場合、本人確認についてのメールが数分以内に送られます。'
       confirmed: 'アカウントを登録しました。'
       resend_confirmation_instructions: '登録方法の再送'
     registrations:
-      signed_up: 'アカウント登録を受け付けました。確認のメールをお送りします。'
-      updated: 'アカウントを更新しました。'
+      signed_up: 'ようこそ！ アカウント登録を受け付けました。'
+      signed_up_but_unconfirmed: '本人確認用のメールがあなたのEメールアドレスに送られました。メール内のリンクからアカウントを有効化さ>せてください。'
+      signed_up_but_inactive: 'アカウント登録を受け付けました。しかしまだ有効化されておらず、ログインできません。'
+      signed_up_but_locked: 'アカウント登録を受け付けました。しかし、アカウントが凍結されているためログインできません。'
+      updated: 'アカウント情報を変更しました。'
+      update_needs_confirmation: "アカウント情報を変更しましたが、Eメールアドレスの本人確認用Eメールをお送りしましたので、中のリンクをクリックして証明してください。"
       destroyed: 'アカウントを削除しました。またのご利用をお待ちしております。'
       full_name: '（フルネーム）'
       password_leave_blank: '(変更したくない場合は空欄)'
@@ -40,8 +53,11 @@ ja:
       notice_before_delete: '(注意：あなたのデータが全て削除されます)'
     unlocks:
       send_instructions: 'アカウントの凍結解除方法を数分以内にメールでご連絡します。'
-      unlocked: 'アカウントを凍結解除しました。'
-      resend_unlock_instructions: 'アカウント凍結解除方法の再送'
+      unlocked: 'アカウントを凍結解除しました。ログインしています。'
+      send_paranoid_instructions: 'アカウントが見つかった場合、アカウントの凍結解除方法を数分以内にメールでご連絡します。'
+    omniauth_callbacks:
+      success: '%{kind} アカウントによる個人認証に成功しました。'
+      failure: '%{kind} アカウントによる個人認証に失敗しました（%{reason}）。'
     mailer:
       confirmation_instructions:
         subject: 'アカウントの登録方法'

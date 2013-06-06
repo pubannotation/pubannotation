@@ -53,10 +53,10 @@ class ApplicationController < ActionController::Base
       if (project.accessibility == 1 or (user_signed_in? and project.user == current_user))
         return project, nil
       else
-        return nil, "The annotation set, #{project_name}, is specified as private."
+        return nil, I18n.t('controllers.application.get_project.notice_private', :project_name => project_name)
       end
     else
-      return nil, "The annotation set, #{project_name}, does not exist."
+      return nil, I18n.t('controllers.application.get_project.notice_not_exist', :project_name => project_name)
     end
   end
 
@@ -73,10 +73,10 @@ class ApplicationController < ActionController::Base
     if doc
       if project and !doc.projects.include?(project)
         doc = nil
-        notice = "The document, #{sourcedb}:#{sourceid}, does not belong to the annotation set, #{project.name}."
+        notice = I18n.t('controllers.application.get_doc.notice_not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
       end
     else
-      notice = "No annotation to the document, #{sourcedb}:#{sourceid}, exists in PubAnnotation." 
+      notice = I18n.t('controllers.application.get_doc.notice_no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
     end
 
     return doc, notice
@@ -88,11 +88,11 @@ class ApplicationController < ActionController::Base
     if divs and !divs.empty?
       if project and !divs.first.projects.include?(project)
         divs = nil
-        notice = "The document, PMC::#{sourceid}, does not belong to the annotation set, #{project.name}."
+        notice = I18n.t('controllers.application.get_divs.notice_not_belong_to', :sourceid => sourceid, :project_name => project.name)
       end
     else
       divs = nil
-      notice = "No annotation to the document, PMC:#{sourceid}, exists in PubAnnotation." 
+      notice = I18n.t('controllers.application.get_divs.no_annotation', :sourceid => sourceid) 
     end
 
     return [divs, notice]
@@ -157,7 +157,7 @@ class ApplicationController < ActionController::Base
         end
         return [docs, nil]
       else
-        return [nil, "no body in the document."]
+        return [nil, t('controllers.application.gen_pmcdoc.no_body')]
       end
     else
       return [nil, pmcdoc.message]
@@ -306,7 +306,7 @@ class ApplicationController < ActionController::Base
           save_hmodifications(modifications, project, doc)
         end
 
-        notice = 'Annotations were successfully created/updated.'
+        notice = I18n.t('controllers.application.save_annotations.successfully_saved')
       end
     end
 

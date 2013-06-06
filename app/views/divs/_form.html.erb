@@ -1,15 +1,5 @@
 <%= form_for(@doc) do |f| %>
-  <% if @doc.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@doc.errors.count, "error") %> prohibited this doc from being saved:</h2>
-
-      <ul>
-      <% @doc.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
+	<%= errors_helper(@doc) %>
 
   <div class="field">
     <%= f.label :body %><br />

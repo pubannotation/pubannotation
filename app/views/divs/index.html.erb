@@ -12,20 +12,17 @@
 <% end %>
 
 <h1>
-Divisions
-<span class="meta">
-of the document, <span class="pname"><%= @docs.first.sourcedb %>:<%= @docs.first.sourceid %></span>
-</span>
+	<%= t('views.divs.document_divs', :sourcedb => @docs.first.sourcedb, :sourceid => @docs.first.sourceid).html_safe %>
 </h1>
 
 <table>
   <tr>
-    <th>Source DB</th>
-    <th>Source Id</th>
-    <th>Div.</th>
-    <th>Section</th>
-    <th>Text</th>
-    <th>Size</th>
+    <th><%= t('activerecord.attributes.doc.sourcedb')%></th>
+    <th><%= t('activerecord.attributes.doc.sourceid')%></th>
+    <th><%= t('views.divs.div')%></th>
+    <th><%= t('activerecord.attributes.doc.section') %></th>
+    <th><%= t('activerecord.attributes.doc.body') %></th>
+    <th><%= t('views.shared.size') %></th>
     <th></th>
   </tr>
 

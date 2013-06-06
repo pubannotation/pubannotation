@@ -119,6 +119,7 @@ ja:
       too_long: は%{count}文字以内で入力してください。
       too_short: は%{count}文字以上で入力してください。
       wrong_length: は%{count}文字で入力してください。
+      save_prohibited: '%{model}に%{error}が発生しました。'
     template:
       body: 次の項目を確認してください。
       header:
@@ -195,13 +196,19 @@ ja:
   activerecord:
     models:
       doc: ドキュメント
+      denotation: デノテーション
+      instance: インスタンス
       project: プロジェクト
       user: ユーザー
+      span: スパン
     attributes:
       doc:
         sourcedb: ソースDB
         sourceid: ソースID
+        source: ソース
         body: テキスト
+        serial: シリアル
+        section: セクション
       project:
         name: 名前
         description: 説明
@@ -215,18 +222,23 @@ ja:
         rdfwriter: RDFライター
         xmlwriter: XMLライター
         bionlpwriter: BioNLP-STライター
+        viewer: ビューア
       user:
         email: メールアドレス
         login: ログインID
         password: パスワード
+        current_password: 現在のパスワード
         password_confirmation: パスワードの確認
         remember_me: 記憶する
-        username: 名前（フルネーム）
+        username: 名前
     placeholder:
       project:
         name: プロジェクト名(30文字以内)
         author: プロジェクトの著者名
         reference: このプロジェクトの参照URL
+        pmids: PubMedのID
+      doc:
+        annotation_server: アノテーションサーバーのURL
     options:
       project:
         status:
@@ -241,6 +253,22 @@ ja:
   will_paginate:
     previous_label: 前のページ
     next_label: 次のページ
+    page_gap: ...
+  controllers:
+    application:
+      get_project:
+        notice_private: アノテーションセット%{project_name}は非公開です
+        notice_not_exist: アノテーションセット%{project_name}は存在しません        
+      get_doc:
+        notice_not_belong_to: ドキュメント%{sourcedb}:%{sourceid}はアノテーションセット %{project_name}に属していません
+        notice_no_annotation: パブアノテーション内にドキュメント%{sourcedb}:%{sourceid}のアノテーションセットは存在しません
+      get_divs:
+        notice_not_belong_to: ドキュメントPMC::%{sourceid}はアノテーションセット%{project_name}に属していません
+        no_annotation: パブアノテーション内にドキュメントPMC:%{sourceid}のアノテーションセットは存在しません
+      gen_pmcdoc:
+        no_body: ドキュメントに本文がありません
+      save_annotations:
+        successfully_saved: アノテーションは正常に作成／更新されました
   views:
     service:
       title: パブアノテーション
@@ -250,17 +278,28 @@ ja:
       overview: 概要
       features: 特徴
       formats: フォーマット
+    divs:
+      document_divs: "<span class='meta'>ドキュメント、 <span class='pname'>%{sourcedb}:%{sourceid}</span>の</span>ディビジョン"
+      div: デイビジョン
+    doc:
+      annotation_within_project: "<span class='pname'>%{project_name}</span></span>内の<span class='meta'>このドキュメント</span>用アノテーションセット"
+      document_content: ドキュメントのコンテンツ
+      annsets_made_to_document: "<span class='meta'>このドキュメント用に作成された</span>アノテーションセット"
+      get_annotations: アノテーションの取得
     paths:
       home: ホーム
       new: 新規作成
     project:
       try_textae: お持ちでない場合はこちらをお試し下さい
+      annotation_set_description: アノテーションセットの説明
+      annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
+      documents_belongs_to_annsets: "<span class='meta'>このアノテーションセット内にある</span>ドキュメント"
     hint:
       project:
-        author: 他社が作成したプロジェクトをアップロードする場合は、このプロジェクトの公式の著者を記載
+        author: 他社が作成したアノテーションセットをアップロードする場合は、このアノテーションセットの公式の著者を記載
         license: CC-BYが推奨デフォルト値ですが、その他の値も入力可能
-        reference: パブアノテーションはプロジェクトのストレージは提供しますが、プロジェクト用のホームページは別途必要です
-        editor: プロジェクトの編集に利用するアノテーションエディターのURLを指定してください。エディタがパブアノテーションでサポートされていない場合はご連絡下さい。
+        reference: パブアノテーションはアノテーションのストレージは提供しますが、このアノテーションセットのホームページは別途必要です
+        editor: アノテーションセットの編集に利用するアノテーションエディターのURLを指定してください。エディタがパブアノテーションでサポートされていない場合はご連絡下さい。
     user:
       forgot_password: パスワードのリセット
       sign_in: ログイン
@@ -268,18 +307,39 @@ ja:
       sign_up: 新規登録
       sign_out: ログアウト
       send_reset_password_instructions: パスワードのリセット用メールを送信
+    pmdocs:
+      belongs_to: "%{parent}<span class='pname'>%{pname}</span>に属する、%{content} "
+    pmcdocs:
+      belongs_to_project_annset: "アノテーションセット、 <span class='pname'>%{project_name}</span>に属するPMCドキュメント"
+      pmc_ids: PMCのID
     shared:
+      add_to_the_set: セットに追加
+      account: アカウント
+      back: 戻る
+      category: カテゴリー
+      error: エラー
+      none: なし
       new_model: 新規%{model}の作成
       create_model: 新規%{model}を作成
+      edit_model: '%{model}の編集'
+      add_model: '%{model}の追加'
+      delete_model: '%{model}の削除'
+      section: セクション
+      size: サイズ
       show: 表示
       show_divisions: ディビジョンを表示
+      text: テキスト
       uploader:  アップローダー
+      update: 更新
       pubmed: PubMed
       pmdocs: pmdocs
       pmcdocs: pmcdocs
+      see: 表示
+      open: 開く
+      get: 取得
       divs: divs
+      annotation: アノテーション
       annotation_sets: アノテーションセット
       stored_in: "<span class='meta'><span>%{pname}</span>内の</span>%{content}"   
-      belongs_to: "%{parent}<span class='pname'>%{pname}</span>に属する、%{content} "
       made_to: "<span class='meta'><span class='pname'>%{pname}</span>用の</span>%{content}"
       made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"      

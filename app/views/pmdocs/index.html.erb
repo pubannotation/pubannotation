@@ -9,14 +9,14 @@
 
 <h1>
 <% if @project %>
-	<%= t('views.shared.belongs_to', :parent => t('views.service.title'), :pname => @project.name, :content => "PubMed #{t('activerecord.models.doc').pluralize}").html_safe %>
+	<%= t('views.pmdocs.belongs_to', :parent => t('views.service.title'), :pname => @project.name, :content => "PubMed #{t('activerecord.models.doc').pluralize}").html_safe %>
 <% else %>
 	<%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => "PubMed #{t('activerecord.models.doc').pluralize}").html_safe %>
 <% end %>
 </h1>
 
 <% if @docs.empty? %>
-  none
+  <%= t('views.shared.none') %>
 <% else %>
   <table>
     <tr class="capitalize">
@@ -52,9 +52,9 @@
 
 <%= form_tag("/projects/#{@project.name}/pmdocs/", :method => "post") do %>
 <table>
-  <tr><th><%= label_tag(:pmids, "Add PubMed documents") %><br/></th></tr>
-  <tr><td><%= text_area_tag(:pmids, nil, :placeholder => "PubMed IDs", :required => true) %></td></tr>
-  <tr><th><%= submit_tag("Add to the set") %></th></tr>
+  <tr><th><%= label_tag(:pmids, t('views.shared.add_model', :model => "#{t('views.shared.pubmed')}#{t('activerecord.models.doc')}")) %><br/></th></tr>
+  <tr><td><%= text_area_tag(:pmids, nil, :placeholder => t('activerecord.placeholder.project.pmids'), :required => true) %></td></tr>
+  <tr><th><%= submit_tag(t('views.shared.add_to_the_set')) %></th></tr>
 </table>
 <% end %>
 

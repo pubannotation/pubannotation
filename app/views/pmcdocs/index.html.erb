@@ -8,18 +8,16 @@
 <% end %>
 
 <h1>
+<% @project = Project.first %>
 <% if @project %>
-<!-- I18n
-	PMC documents
-	that belong to the annotation set, <span class="pname"><%= @project.name %></span>
--->
+	<%= t('views.pmcdocs.belongs_to_project_annset', :project_name => @project.name).html_safe %>
 <% else %>
-<%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => "PMC #{t('activerecord.models.doc').pluralize}").html_safe %>
+	<%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => "PMC #{t('activerecord.models.doc').pluralize}").html_safe %>
 <% end %>
 </h1>
 
 <% if @docs.empty? %>
-  none
+  <%= t('views.shared.none') %>
 <% else %>
   <table>
     <tr class="capitalize">
@@ -51,9 +49,9 @@
 <% if @project and user_signed_in? and current_user == @project.user %>
   <%= form_tag("/projects/#{@project.name}/pmcdocs/", :method => "post") do %>
   <table>
-    <tr><th><%= label_tag(:pmcids, "Add PMC documents") %><br/></th></tr>
-    <tr><td><%= text_area_tag(:pmcids, nil, :placeholder => "PMC IDs", :required => true) %></td></tr>
-    <tr><th><%= submit_tag("Add to the set") %></th></tr>
+    <tr><th><%= label_tag(:pmcids, t('views.shared.add_model', :model => "PMC #{t('activerecord.models.doc')}")) %><br/></th></tr>
+    <tr><td><%= text_area_tag(:pmcids, nil, :placeholder => t('views.pmcdocs.pmc_ids'), :required => true) %></td></tr>
+    <tr><th><%= submit_tag(t('views.shared.add_to_the_set')) %></th></tr>
   </table>
   <% end %>
 <% end %>

@@ -8,6 +8,30 @@ describe ApplicationController do
     end
   end
   
+  describe 'set_locale' do
+    context 'when locale == :ja' do
+      before do
+        controller.stub(:request).and_return(double(:request, :env => {'HTTP_ACCEPT_LANGUAGE'=> 'ja'}))
+        controller.set_locale
+      end
+      
+      it 'locale.should be :ja' do
+        I18n.locale.should eql(:ja)
+      end
+    end
+
+    context 'when locale == :en' do
+      before do
+        controller.stub(:request).and_return(double(:request, :env => {'HTTP_ACCEPT_LANGUAGE'=> 'en'}))
+        controller.set_locale
+      end
+      
+      it 'locale.should be :en' do
+        I18n.locale.should eql(:en)
+      end
+    end
+  end
+  
   describe 'store_location' do
     before do
       @user_sign_in_path = '/users/sign_in'
