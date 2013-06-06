@@ -233,6 +233,9 @@ en:
     errors:
       <<: *errors
   controllers:
+    shared:
+      successfully_created: '%{model} was successfully created.'
+      successfully_updated: '%{model} was successfully updated.'
     application:
       get_project:
         notice_private: The annotation set, %{project_name}, is specified as private.
@@ -247,6 +250,35 @@ en:
         no_body: no body in the document.
       save_annotations:
         successfully_saved: Annotations were successfully created/updated.
+    annotations:
+      create:
+        notice_does_not_include: The annotation set, %{project_id}, does not include the document, PubMed:%{sourceid}.
+        notice_no_annotation: No annotation found in the submission.
+    pmcdocs:
+      create:
+        notice_added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
+        notice_annotation_set_not_specified: Annotation set is not specified.
+    pmdocs:
+      create:
+        added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
+        annotation_set_not_specified: Annotation set is not specified.
+      update:
+        added_to_annotationset: The document, %{sourcedb}:%{sourceid}, was added to the annotation set, %{project_name}.
+        created_in_annotation_set: The document, %{sourcedb}:%{sourceid}, was created in the annotation set, %{project_name}.
+        not_created: The document, PubMed:%{id}, could not be created.
+        does_not_exist: The annotation set, %{project_id}, does not exist.
+        successfuly_created: The document, PubMed:%{id}, was successfuly created.
+        not_created: The document, PubMed:%{id}, could not be created.
+      destroy:
+        removed_from_annotation_set: The document, %{sourcedb}:%{sourceid}, was removed from the annotation set, %{project_name}.
+        does_not_include_document: the annotation set, %{project_name} does not include the document, %{sourcedb}:%{sourceid}.
+        does_not_exist_in_pubannotation: The document, PubMed:%{id}, does not exist in PubAnnotation.
+        does_not_exist: The annotation set, %{project_id}, does not exist.
+    projects:
+      index:
+        does_not_exist: The document, %{sourcedb}:%{sourceid}, does not exist in PubAnnotation.
+      destroy:
+        deleted: The annotation set, %{id}, was deleted.
   views:
     service:
       title: PubAnnotation

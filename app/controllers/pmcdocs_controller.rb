@@ -96,10 +96,10 @@ class PmcdocsController < ApplicationController
             end
           end
         end
-        notice = "#{num_added} documents were added to the document set, #{project.name}."
+        notice = t('controller.pmcdocs.create.notice_added_to_document_set', :num_added => num_added, :project_name => project.name)
       end
     else
-      notice = "Annotation set is not specified."
+      notice = t('controller.pmcdocs.create.notice_annotation_set_not_specified')
     end
 
     respond_to do |format|

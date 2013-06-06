@@ -109,11 +109,11 @@ class AnnotationsController < ApplicationController
           end
           notice = save_annotations(annotations, project, doc)
         else
-          notice = "The annotation set, #{params[:project_id]}, does not include the document, PubMed:#{sourceid}."
+          notice = t('controller.annotations.create.notice_does_not_include', :project_id => params[:project_id], :sourceid => sourceid)
         end
       end
     else
-      notice = "No annotation found in the submission."
+      notice = t('controller.annotations.create.notice_no_annotation')
     end
 
     respond_to do |format|

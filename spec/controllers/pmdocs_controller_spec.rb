@@ -285,7 +285,7 @@ describe PmdocsController do
         context 'and when doc not found by sourcedb and sourceid' do
           context 'and when gen_pmdoc return doc' do
             before do
-              @project = FactoryGirl.create(:project)
+              @project = FactoryGirl.create(:project, :name => 'project name')
               @id = 'sourceid'
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PM', :sourceid => @id)
               controller.stub(:gen_pmdoc).and_return(@doc)

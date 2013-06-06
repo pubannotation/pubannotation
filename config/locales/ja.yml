@@ -255,6 +255,9 @@ ja:
     next_label: 次のページ
     page_gap: ...
   controllers:
+    shared:
+      successfully_created: '%{model}を作成しました'
+      successfully_updated: '%{model}を更新しました'
     application:
       get_project:
         notice_private: アノテーションセット%{project_name}は非公開です
@@ -269,6 +272,35 @@ ja:
         no_body: ドキュメントに本文がありません
       save_annotations:
         successfully_saved: アノテーションは正常に作成／更新されました
+    annotations:
+      create:
+        notice_does_not_include: アノテーションセット%{project_id}は、ドキュメントPubMed:%{sourceid}を含んでいません
+        notice_no_annotation: アノテーションが含まれていません
+    pmcdocs:
+      create:
+        notice_added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
+        notice_annotation_set_not_specified: アノテーションセットが未指定です
+    pmdocs:
+      create:
+        added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
+        annotation_set_not_specified: アノテーションセットが未指定です
+      update:
+        added_to_annotationset: ドキュメント%{sourcedb}:%{sourceid}がアノテーションセット%{project_name}に追加されました
+        created_in_annotation_set: ドキュメント%{sourcedb}:%{sourceid},がアノテーションセット%{project_name}内に作成されました
+        not_created: ドキュメント PubMed:%{id}を作成できませんでした
+        not_exist: アノテーションセット%{project_id}は存在しません
+        successfuly_created: ドキュメントPubMed:%{id}は作成されました.
+        not_created: ドキュメントPubMed:%{id}を作成できませんでした
+      destroy:
+        removed_from_annotation_set: ドキュメント%{sourcedb}:%{sourceid}はアノテーションセット%{project_name}から外されました
+        does_not_include_document: アノテーションセット%{project_name}はドキュメント%{sourcedb}:%{sourceid}を含みません
+        does_not_exist_in_pubannotation: ドキュメントPubMed:%{id}はPubAnnotation内に作成されました
+        does_not_exist: アノテーションセット%{project_id}は存在しません
+    projects:
+      index:
+        does_not_exist: ドキュメント%{sourcedb}:%{sourceid}はパブアノテーション内に存在しません
+      destroy:
+        deleted: アノテーションセット%{id}を削除しました
   views:
     service:
       title: パブアノテーション

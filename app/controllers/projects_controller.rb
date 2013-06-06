@@ -11,7 +11,7 @@ class ProjectsController < ApplicationController
         @projects = get_projects(@doc)
       else
         @projects = nil
-        notice = "The document, #{sourcedb}:#{sourceid}, does not exist in PubAnnotation."
+        notice = t('controller.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
       end
     else
       @projects = get_projects()
@@ -80,7 +80,7 @@ class ProjectsController < ApplicationController
     
     respond_to do |format|
       if @project.save
-        format.html { redirect_to project_path(@project.name), :notice => 'Annotation set was successfully created.' }
+        format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_created', :model => t('views.shared.annotation_sets')) }
         format.json { render json: @project, status: :created, location: @project }
       else
         format.html { render action: "new" }
@@ -96,7 +96,7 @@ class ProjectsController < ApplicationController
 
     respond_to do |format|
       if @project.update_attributes(params[:project])
-        format.html { redirect_to project_path(@project.name), :notice => 'Annotation set was successfully updated.' }
+        format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
         format.json { head :no_content }
       else
         format.html { render action: "edit" }
@@ -112,7 +112,7 @@ class ProjectsController < ApplicationController
     @project.destroy
 
     respond_to do |format|
-      format.html { redirect_to projects_path, notice: "The annotation set, #{params[:id]}, was deleted." }
+      format.html { redirect_to projects_path, notice: t('controller.projects.destroy.deleted', :id => params[:id]) }
       format.json { head :no_content }
     end
   end

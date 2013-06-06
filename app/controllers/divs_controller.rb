@@ -98,7 +98,7 @@ class DivsController < ApplicationController
 
     respond_to do |format|
       unless @doc.new_record?
-        format.html { redirect_to @doc, notice: 'Doc was successfully created.' }
+        format.html { redirect_to @doc, notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc')) }
         format.json { head :no_content }
       else
         format.html { render action: "new" }
@@ -114,7 +114,7 @@ class DivsController < ApplicationController
 
     respond_to do |format|
       if @doc.update_attributes(params[:doc])
-        format.html { redirect_to @doc, notice: 'Doc was successfully updated.' }
+        format.html { redirect_to @doc, notice: t('controllers.shared.successfully_updated', :model => t('activerecord.models.doc')) }
         format.json { head :no_content }
       else
         format.html { render action: "edit" }

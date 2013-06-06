@@ -99,10 +99,11 @@ class PmdocsController < ApplicationController
             end
           end
         end
-        notice = "#{num_added} documents were added to the document set, #{project.name}."
+        notice = t('controllers.pmdocs.create.added_to_document_set', :num_added => num_added, :project_name => project.name)
+
       end
     else
-      notice = "Annotation set is not specified."
+      notice = t('controllers.pmdocs.create.annotation_set_not_specified')
     end
 
     respond_to do |format|
@@ -130,19 +131,19 @@ class PmdocsController < ApplicationController
         if doc
           unless doc.projects.include?(project)
             project.docs << doc
-            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was added to the annotation set, #{project.name}."
+            notice = t('controllers.pmdocs.update.added_to_annotationset', :sourcedb => doc.sourcedb, :sourceid => doc.sourceid, :project_name => project.name)
           end
         else
           doc = gen_pmdoc(params[:id])
           if doc
             project.docs << doc
-            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was created in the annotation set, #{project.name}."
+            notice = t('controllers.pmdocs.update.created_in_annotation_set', :sourcedb => doc.sourcedb, :sourceid => doc.sourceid, :project_name => project.name)
           else
-            notice = "The document, PubMed:#{params[:id]}, could not be created." 
+            notice = t('controllers.pmdocs.update.not_created', :id => params[:id])
           end
         end
       else
-        notice = "The annotation set, #{params[:project_id]}, does not exist."
+        notice = t('controllers.pmdocs.update.does_not_exist', :project_id => params[:project_id])
         doc = nil
       end
     else
@@ -150,9 +151,9 @@ class PmdocsController < ApplicationController
       unless doc
         doc = gen_pmdoc(params[:id])
         if doc
-          notice = "The document, PubMed:#{params[:id]}, was successfuly created." 
+          notice = t('controllers.pmdocs.update.successfuly_created', :id => params[:id]) 
         else
-          notice = "The document, PubMed:#{params[:id]}, could not be created." 
+          notice = t('controllers.pmdocs.update.not_created', :id => params[:id])
         end
       end
     end
@@ -188,15 +189,15 @@ class PmdocsController < ApplicationController
         if doc
           if doc.projects.include?(project)
             project.docs.delete(doc)
-            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was removed from the annotation set, #{project.name}."
+            notice = t('controllers.pmdocs.destroy.removed_from_annotation_set', :sourcedb => doc.sourcedb, :sourceid => doc.sourceid, :project_name => project.name)
           else
-            notice = "the annotation set, #{project.name} does not include the document, #{doc.sourcedb}:#{doc.sourceid}."
+            notice = t('controllers.pmdocs.destroy.does_not_include_document', :project_name => project.name, :sourcedb => doc.sourcedb, :sourceid => doc.sourceid)
           end
         else
-          notice = "The document, PubMed:#{params[:id]}, does not exist in PubAnnotation." 
+          notice = t('controllers.pmdocs.destroy.does_not_exist_in_pubannotation', :id => params[:id]) 
         end
       else
-        notice = "The annotation set, #{params[:project_id]}, does not exist."
+        notice = t('controllers.pmdocs.destroy.does_not_exist', :project_id => params[:project_id])
       end
     else
       doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
