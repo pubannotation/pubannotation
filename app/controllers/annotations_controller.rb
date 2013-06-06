@@ -109,11 +109,11 @@ class AnnotationsController < ApplicationController
           end
           notice = save_annotations(annotations, project, doc)
         else
-          notice = t('controller.annotations.create.notice_does_not_include', :project_id => params[:project_id], :sourceid => sourceid)
+          notice = t('controller.annotations.create.does_not_include', :project_id => params[:project_id], :sourceid => sourceid)
         end
       end
     else
-      notice = t('controller.annotations.create.notice_no_annotation')
+      notice = t('controller.annotations.create.no_annotation')
     end
 
     respond_to do |format|

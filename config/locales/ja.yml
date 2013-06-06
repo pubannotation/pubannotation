@@ -231,7 +231,7 @@ ja:
         password_confirmation: パスワードの確認
         remember_me: 記憶する
         username: 名前
-    placeholder:
+    placeholders:
       project:
         name: プロジェクト名(30文字以内)
         author: プロジェクトの著者名
@@ -260,13 +260,13 @@ ja:
       successfully_updated: '%{model}を更新しました'
     application:
       get_project:
-        notice_private: アノテーションセット%{project_name}は非公開です
-        notice_not_exist: アノテーションセット%{project_name}は存在しません        
+        private: アノテーションセット%{project_name}は非公開です
+        not_exist: アノテーションセット%{project_name}は存在しません        
       get_doc:
-        notice_not_belong_to: ドキュメント%{sourcedb}:%{sourceid}はアノテーションセット %{project_name}に属していません
-        notice_no_annotation: パブアノテーション内にドキュメント%{sourcedb}:%{sourceid}のアノテーションセットは存在しません
+        not_belong_to: ドキュメント%{sourcedb}:%{sourceid}はアノテーションセット %{project_name}に属していません
+        no_annotation: パブアノテーション内にドキュメント%{sourcedb}:%{sourceid}のアノテーションセットは存在しません
       get_divs:
-        notice_not_belong_to: ドキュメントPMC::%{sourceid}はアノテーションセット%{project_name}に属していません
+        not_belong_to: ドキュメントPMC::%{sourceid}はアノテーションセット%{project_name}に属していません
         no_annotation: パブアノテーション内にドキュメントPMC:%{sourceid}のアノテーションセットは存在しません
       gen_pmcdoc:
         no_body: ドキュメントに本文がありません
@@ -274,12 +274,12 @@ ja:
         successfully_saved: アノテーションは正常に作成／更新されました
     annotations:
       create:
-        notice_does_not_include: アノテーションセット%{project_id}は、ドキュメントPubMed:%{sourceid}を含んでいません
-        notice_no_annotation: アノテーションが含まれていません
+        does_not_include: アノテーションセット%{project_id}は、ドキュメントPubMed:%{sourceid}を含んでいません
+        no_annotation: アノテーションが含まれていません
     pmcdocs:
       create:
-        notice_added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
-        notice_annotation_set_not_specified: アノテーションセットが未指定です
+        added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
+        annotation_set_not_specified: アノテーションセットが未指定です
     pmdocs:
       create:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
@@ -313,7 +313,7 @@ ja:
     divs:
       document_divs: "<span class='meta'>ドキュメント、 <span class='pname'>%{sourcedb}:%{sourceid}</span>の</span>ディビジョン"
       div: デイビジョン
-    doc:
+    docs:
       annotation_within_project: "<span class='pname'>%{project_name}</span></span>内の<span class='meta'>このドキュメント</span>用アノテーションセット"
       document_content: ドキュメントのコンテンツ
       annsets_made_to_document: "<span class='meta'>このドキュメント用に作成された</span>アノテーションセット"
@@ -321,18 +321,18 @@ ja:
     paths:
       home: ホーム
       new: 新規作成
-    project:
+    projects:
       try_textae: お持ちでない場合はこちらをお試し下さい
       annotation_set_description: アノテーションセットの説明
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
       documents_belongs_to_annsets: "<span class='meta'>このアノテーションセット内にある</span>ドキュメント"
-    hint:
+    hints:
       project:
         author: 他社が作成したアノテーションセットをアップロードする場合は、このアノテーションセットの公式の著者を記載
         license: CC-BYが推奨デフォルト値ですが、その他の値も入力可能
         reference: パブアノテーションはアノテーションのストレージは提供しますが、このアノテーションセットのホームページは別途必要です
         editor: アノテーションセットの編集に利用するアノテーションエディターのURLを指定してください。エディタがパブアノテーションでサポートされていない場合はご連絡下さい。
-    user:
+    users:
       forgot_password: パスワードのリセット
       sign_in: ログイン
       sign_in_to_create_model: ログインして%{model}を作成

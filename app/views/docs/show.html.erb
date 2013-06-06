@@ -25,7 +25,7 @@
   <% end %>
 <% end %>
 
-<h1><%= t('views.doc.document_content') %></h1>
+<h1><%= t('views.docs.document_content') %></h1>
 
 <table>
 <tr><th style="text-align:left">
@@ -46,7 +46,7 @@
 	<% end %>
 
 	<h1>
-		<%= t('views.doc.annotation_within_project', :project_name => @project.name).html_safe %>
+		<%= t('views.docs.annotation_within_project', :project_name => @project.name).html_safe %>
 	</h1>
 
 	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
@@ -69,14 +69,14 @@
 	  // }
 	</script-->
 	<%= form_tag annotation_url, :method => "post" do %>
-		<%= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholder.doc.annotation_server') %>
-		<%= submit_tag(t('views.doc.get_annotations')) %>
+		<%= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholders.doc.annotation_server') %>
+		<%= submit_tag(t('views.docs.get_annotations')) %>
 	<% end %>
 	<span id="result"></span>
 
 <% else %>
 	<h2>
-		<%= t('views.doc.annsets_made_to_document').html_safe %>
+		<%= t('views.docs.annsets_made_to_document').html_safe %>
 	</h2>
 	<% if !@projects || @projects.empty? %>
 		<%= t('views.shared.none') %>

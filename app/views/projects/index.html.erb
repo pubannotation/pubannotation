@@ -63,7 +63,7 @@
 <% if user_signed_in? %>
 	<%= link_to t('views.shared.create_model', :model => t('activerecord.models.project')), new_project_path %>
 <% else %>
-	<%= link_to t('views.user.sign_in_to_create_model', :model => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}"), new_user_session_path %>
+	<%= link_to t('views.users.sign_in_to_create_model', :model => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}"), new_user_session_path %>
 <% end %>
 </span>
 

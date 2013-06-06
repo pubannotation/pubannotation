@@ -222,7 +222,7 @@ en:
         password_confirmation: password confirmation
         remember_me: remember me
         username: Username (your full name)
-    placeholder:
+    placeholders:
       project:
         name: The name of this project (up to 30 characters)
         author: The name of author of this project
@@ -238,13 +238,13 @@ en:
       successfully_updated: '%{model} was successfully updated.'
     application:
       get_project:
-        notice_private: The annotation set, %{project_name}, is specified as private.
-        notice_not_exist: The annotation set, %{project_name}, does not exist.        
+        private: The annotation set, %{project_name}, is specified as private.
+        not_exist: The annotation set, %{project_name}, does not exist.        
       get_doc:
-        notice_not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the annotation set, %{project_name}.
-        notice_no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
+        not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the annotation set, %{project_name}.
+        no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
       get_divs:
-        notice_not_belong_to: The document, PMC::%{sourceid}, does not belong to the annotation set, %{project_name}.
+        not_belong_to: The document, PMC::%{sourceid}, does not belong to the annotation set, %{project_name}.
         no_annotation: No annotation to the document, PMC:%{sourceid}, exists in PubAnnotation.
       gen_pmcdoc:
         no_body: no body in the document.
@@ -252,12 +252,12 @@ en:
         successfully_saved: Annotations were successfully created/updated.
     annotations:
       create:
-        notice_does_not_include: The annotation set, %{project_id}, does not include the document, PubMed:%{sourceid}.
-        notice_no_annotation: No annotation found in the submission.
+        does_not_include: The annotation set, %{project_id}, does not include the document, PubMed:%{sourceid}.
+        no_annotation: No annotation found in the submission.
     pmcdocs:
       create:
-        notice_added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
-        notice_annotation_set_not_specified: Annotation set is not specified.
+        added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
+        annotation_set_not_specified: Annotation set is not specified.
     pmdocs:
       create:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
@@ -291,24 +291,24 @@ en:
     divs:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
       div: Div.
-    doc:
+    docs:
       annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'>within <span class='pname'>%{project_name}</span></span>"
       annsets_made_to_document: "Annotation sets <span class='meta'>made to this document</span>"
       get_annotations: Get annotations
     paths:
       home: home
-    project:
+    projects:
       try_textae: "If you don't have one, try with" 
       annotation_set_description: Annotation set description
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this annotation set</span></span>"
       documents_belongs_to_annsets: "Documents <span class='meta'>that belong to this annotation set</span>"
-    hint:
+    hints:
       project:
         author: specify the official author/project of this annotation set, in case you are uploading an annotation set produced by someone else
         license: \'CC-BY\' is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.
         reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation set that provides a comprehensive description of it.
         editor: Specify URL of the annotation editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
-    user:
+    users:
       forgot_password: reset password
       sign_in: sign in
       sign_in_to_create_model: Sign in to create your %{model}

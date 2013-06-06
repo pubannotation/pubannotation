@@ -53,7 +53,7 @@
 <%= form_tag("/projects/#{@project.name}/pmdocs/", :method => "post") do %>
 <table>
   <tr><th><%= label_tag(:pmids, t('views.shared.add_model', :model => "#{t('views.shared.pubmed')}#{t('activerecord.models.doc')}")) %><br/></th></tr>
-  <tr><td><%= text_area_tag(:pmids, nil, :placeholder => t('activerecord.placeholder.project.pmids'), :required => true) %></td></tr>
+  <tr><td><%= text_area_tag(:pmids, nil, :placeholder => t('activerecord.placeholders.project.pmids'), :required => true) %></td></tr>
   <tr><th><%= submit_tag(t('views.shared.add_to_the_set')) %></th></tr>
 </table>
 <% end %>

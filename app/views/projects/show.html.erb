@@ -16,7 +16,7 @@
  	> <%= @project.name %>
 <% end %>
 
-<h1><%= t('views.project.annotation_set_description') %></h1>
+<h1><%= t('views.projects.annotation_set_description') %></h1>
 
 <% if @project %>
 	<table>
@@ -105,12 +105,12 @@
 		<% end %>
 
 		<h2>
-			<%= t('views.project.annotation_within_annotation_set', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+			<%= t('views.projects.annotation_within_annotation_set', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
 		</h2>
 		<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 	<% else %>
 		<h2 class="capitalize_first">
-			<%= t('views.project.documents_belongs_to_annsets', :content => t('activerecord.models.doc'), :pname => t('views.shared.annotation_sets'), :parent => '').html_safe %>
+			<%= t('views.projects.documents_belongs_to_annsets', :content => t('activerecord.models.doc'), :pname => t('views.shared.annotation_sets'), :parent => '').html_safe %>
 		</h2>
 		<ul>
 			<li><%= link_to "#{t('views.shared.pubmed')} #{t('activerecord.models.doc').pluralize}", project_pmdocs_url(@project.name) %> (<%= @pmdocs_num %>)</li>

@@ -53,10 +53,10 @@ class ApplicationController < ActionController::Base
       if (project.accessibility == 1 or (user_signed_in? and project.user == current_user))
         return project, nil
       else
-        return nil, I18n.t('controllers.application.get_project.notice_private', :project_name => project_name)
+        return nil, I18n.t('controllers.application.get_project.private', :project_name => project_name)
       end
     else
-      return nil, I18n.t('controllers.application.get_project.notice_not_exist', :project_name => project_name)
+      return nil, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name)
     end
   end
 
@@ -73,10 +73,10 @@ class ApplicationController < ActionController::Base
     if doc
       if project and !doc.projects.include?(project)
         doc = nil
-        notice = I18n.t('controllers.application.get_doc.notice_not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
+        notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
       end
     else
-      notice = I18n.t('controllers.application.get_doc.notice_no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
+      notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
     end
 
     return doc, notice
@@ -88,7 +88,7 @@ class ApplicationController < ActionController::Base
     if divs and !divs.empty?
       if project and !divs.first.projects.include?(project)
         divs = nil
-        notice = I18n.t('controllers.application.get_divs.notice_not_belong_to', :sourceid => sourceid, :project_name => project.name)
+        notice = I18n.t('controllers.application.get_divs.not_belong_to', :sourceid => sourceid, :project_name => project.name)
       end
     else
       divs = nil

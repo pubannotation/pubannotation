@@ -3,7 +3,7 @@ module ApplicationHelper
   def hint_helper(options = {})
     image_tag("hint.png",
       :size => "16x16",
-      :title => I18n.t("views.hint.#{options[:model]}.#{options[:column]}"))
+      :title => I18n.t("views.hints.#{options[:model]}.#{options[:column]}"))
   end
 
   def errors_helper(model)

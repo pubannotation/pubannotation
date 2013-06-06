@@ -1,5 +1,5 @@
 <% if user_signed_in? %>
   <%= link_to current_user.username, edit_user_registration_path %>
 <% else %>
-  <%= link_to t('views.user.sign_up'), new_user_registration_path, :class => 'capitalize_first' %>
+  <%= link_to t('views.users.sign_up'), new_user_registration_path, :class => 'capitalize_first' %>
 <% end %>

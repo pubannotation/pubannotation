@@ -4,7 +4,7 @@
 <table>
   <tr>
     <th><%= f.label :name %></th>
-    <td><%= f.text_field :name, :class => "input", :placeholder => t('activerecord.placeholder.project.name') %></td>
+    <td><%= f.text_field :name, :class => "input", :placeholder => t('activerecord.placeholders.project.name') %></td>
   </tr>
   <tr>
     <th><%= f.label :description %></th>
@@ -13,7 +13,7 @@
   <tr>
     <th><%= f.label :author %></th>
     <td>
-      <%= f.text_field :author, :class => "input", :placeholder => t('activerecord.placeholder.project.author') %>
+      <%= f.text_field :author, :class => "input", :placeholder => t('activerecord.placeholders.project.author') %>
       <%= hint_helper({:model => :project,  :column  => :author}) %>
     </td>
   </tr>
@@ -49,7 +49,7 @@
   <tr>
     <th><%= f.label :reference %></th>
     <td>
-      <%= f.text_field :reference, :class => "input", :placeholder => t('activerecord.placeholder.project.reference') %>
+      <%= f.text_field :reference, :class => "input", :placeholder => t('activerecord.placeholders.project.reference') %>
 	  <%= hint_helper({:model => :project, :column => :reference}) %>
     </td>
   </tr>
@@ -64,7 +64,7 @@
       <%= f.text_field :editor, :class => "input", :placeholder => 'URL' %>
       <%= hint_helper({:model => :project, :column => :editor})%>
       <br/>
-      <span class="note"><%= t('views.project.try_textae') %> <a href="http://bionlp.dbcls.jp/textae/">TextAE</a></span>.
+      <span class="note"><%= t('views.projects.try_textae') %> <a href="http://bionlp.dbcls.jp/textae/">TextAE</a></span>.
     </td>
   </tr>
   <tr>

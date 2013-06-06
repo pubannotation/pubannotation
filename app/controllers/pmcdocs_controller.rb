@@ -96,10 +96,10 @@ class PmcdocsController < ApplicationController
             end
           end
         end
-        notice = t('controller.pmcdocs.create.notice_added_to_document_set', :num_added => num_added, :project_name => project.name)
+        notice = t('controller.pmcdocs.create.added_to_document_set', :num_added => num_added, :project_name => project.name)
       end
     else
-      notice = t('controller.pmcdocs.create.notice_annotation_set_not_specified')
+      notice = t('controller.pmcdocs.create.annotation_set_not_specified')
     end
 
     respond_to do |format|

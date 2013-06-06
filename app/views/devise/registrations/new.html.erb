@@ -1,4 +1,4 @@
-<h2 class="capitalize_first"><%= t('views.user.sign_up') %></h2>
+<h2 class="capitalize_first"><%= t('views.users.sign_up') %></h2>
 
 <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name)) do |f| %>
   <%= devise_error_messages! %>
@@ -15,7 +15,7 @@
   <div><%= f.label :password_confirmation %><br />
   <%= f.password_field :password_confirmation %></div>
 
-  <div><%= f.submit t('views.user.sign_up'), :class => 'capitalize_first' %></div>
+  <div><%= f.submit t('views.users.sign_up'), :class => 'capitalize_first' %></div>
 <% end %>
 
 <%= render "devise/shared/links" %>
