@@ -16,8 +16,9 @@
  	> <%= @project.name %>
 <% end %>
 
-<h1>Annotation set description</h1>
-
+<div id="accordion">
+<h1>About the project, <span class="pname"><%= @project.name %></span></h1>
+<div>
 <% if @project %>
 	<table>
 	<tr>
@@ -96,24 +97,10 @@
 		<span class="button"><%= link_to 'Edit', edit_project_path(@project.name) %></span>
 		<span class="button"><%= link_to 'Delete', @project.name, :method => :delete, :confirm => 'Are you sure? All the annotations that belong to this annotation set will be deleted.' %></span>
 	<% end %>
-
-	<% if @doc %>
-		<% if @doc.sourcedb == 'PubMed' %>
-			<% annotation_url = pmdoc_project_annotations_url(@doc.sourceid, @project.name) %>
-		<% else %>
-			<% annotation_url = pmcdoc_div_project_annotations_url(@doc.sourceid, @doc.serial, @project.name) %>
-		<% end %>
-
-		<h2>Annotations
-			<span class="meta">to the document, <span class="pname"><%=@doc.sourcedb%>:<%=@doc.sourceid%></span>,
-			within this annotation set</span></span>
-		</h2>
-		<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
-	<% else %>
-		<h2>Documents <span class="meta">that belong to this annotation set</span></h2>
-		<ul>
-			<li><%= link_to "PubMed documents", project_pmdocs_url(@project.name) %> (<%= @pmdocs_num %>)</li>
-			<li><%= link_to "PMC documents", project_pmcdocs_url(@project.name) %> (<%= @pmcdocs_num %>)</li>
-		</ul>
-	<% end %>
 <% end %>
+</div>
+
+<%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project} %>
+<%= render :partial => "pmcdocs/list", :locals => {:docs => @pmcdocs, :project => @project} %>
+</div>
+<%= javascript_include_tag params[:controller] %>

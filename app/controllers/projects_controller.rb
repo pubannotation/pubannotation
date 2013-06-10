@@ -27,6 +27,7 @@ class ProjectsController < ApplicationController
     end
   end
 
+
   # GET /projects/:name
   # GET /projects/:name.json
   def show
@@ -37,8 +38,8 @@ class ProjectsController < ApplicationController
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
       else
         docs = @project.docs
-        @pmdocs_num = docs.select{|d| d.sourcedb == 'PubMed'}.length
-        @pmcdocs_num = docs.select{|d| d.sourcedb == 'PMC' and d.serial == 0}.length
+        @pmdocs = docs.select{|d| d.sourcedb == 'PubMed'}
+        @pmcdocs = docs.select{|d| d.sourcedb == 'PMC' and d.serial == 0}
       end
     end
 
@@ -54,6 +55,7 @@ class ProjectsController < ApplicationController
       end
     end
   end
+
 
   # GET /projects/new
   # GET /projects/new.json

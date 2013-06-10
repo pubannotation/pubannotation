@@ -4,11 +4,8 @@
 
 <h1>Documents <span class="meta">stored in <span class="pname">PubAnnotation</span></span></h1>
 <ul>
-	<li><%= link_to "PubMed documents", pmdocs_path %> (<%= @pmdocs_num %>)</li>
-	<li><%= link_to "PMC documents", pmcdocs_path %> (<%= @pmcdocs_num %>)</li>
+	<li><%= link_to "PubMed documents", pmdocs_path %> (<%= @pmdocs.length %>)</li>
+	<li><%= link_to "PMC documents", pmcdocs_path %> (<%= @pmcdocs.length %>)</li>
 </ul>
 
-<h1>Annotation sets <span class="meta">stored in <span class="pname">PubAnnotation</span></span></h1>
-<ul>
-	<li><%= link_to "Annotation sets", projects_path %> (<%= @projects_num %>)</li>
-</ul>
+<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects } %>
