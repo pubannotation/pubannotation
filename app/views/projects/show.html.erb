@@ -96,7 +96,6 @@
 		<span class="button"><%= link_to 'Edit', edit_project_path(@project.name) %></span>
 		<span class="button"><%= link_to 'Delete', @project.name, :method => :delete, :confirm => 'Are you sure? All the annotations that belong to this annotation set will be deleted.' %></span>
 	<% end %>
-	<% @doc = Doc.first %>
 	<% if @doc %>
 		<% if @doc.sourcedb == 'PubMed' %>
 			<% annotation_url = pmdoc_project_annotations_url(@doc.sourceid, @project.name) %>

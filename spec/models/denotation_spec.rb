@@ -15,7 +15,7 @@ describe Denotation do
   describe 'belongs_to doc' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
     end
     
     it 'denotation should belongs to doc' do
@@ -40,7 +40,7 @@ describe Denotation do
   
   describe 'has_many subrels' do
     before do
-      @denotation = FactoryGirl.create(:denotation, :doc_id => 1)
+      @denotation = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
       @relation = FactoryGirl.create(:relation,
         :subj_id => @denotation.id, 
         :subj_type => @denotation.class.to_s,
@@ -60,7 +60,7 @@ describe Denotation do
   
   describe 'has_many objrels' do
     before do
-      @denotation = FactoryGirl.create(:denotation, :doc_id => 1)
+      @denotation = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
       @relation = FactoryGirl.create(:relation,
         :subj_id => 1, 
         :subj_type => 'Instance',
@@ -80,7 +80,7 @@ describe Denotation do
   
   describe 'has_many insmods' do
     before do
-      @denotation = FactoryGirl.create(:denotation, :doc_id => 1)
+      @denotation = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
       @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 5)
       @modification = FactoryGirl.create(:modification,
       :obj => @instance,

@@ -13,7 +13,6 @@
 <% end %>
 
 <h1 class="capitalize_first">
-  <% @doc = Doc.last %>
   <% if @doc and @doc.sourcedb == 'PubMed' %>
   	<%= t('views.shared.made_to', :pname => "#{@doc.sourcedb}:#{@doc.sourceid}", :content => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}").html_safe %>
 	<!-- I18n

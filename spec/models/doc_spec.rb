@@ -5,7 +5,7 @@ describe Doc do
   describe 'has_many denotations' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @doc_denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @doc_denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
       @another_denotation = FactoryGirl.create(:denotation, :doc => FactoryGirl.create(:doc))
     end
     
@@ -21,7 +21,7 @@ describe Doc do
   describe 'has_many instances' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
       @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
     end
     
@@ -37,7 +37,7 @@ describe Doc do
   describe 'has_many :subcatrels' do
     before do
       @doc = FactoryGirl.create(:doc, :id => 2)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3, :project_id => 1)
       @subj = FactoryGirl.create(:denotation, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation)
@@ -77,7 +77,7 @@ describe Doc do
   describe 'has_many insmods' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
       @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
       @insmod = FactoryGirl.create(:modification, :obj => @instance, :project_id => 5)
     end
@@ -94,7 +94,7 @@ describe Doc do
   describe 'has_many subcatrelmods' do
     before do
       @doc = FactoryGirl.create(:doc, :id => 2)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3, :project_id => 1)
       @subj = FactoryGirl.create(:denotation, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation)
@@ -113,7 +113,7 @@ describe Doc do
   describe 'has_many :subinsrelmods' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
       @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
       @subinsrel = FactoryGirl.create(:relation,
         :subj_id => @instance.id,
