@@ -41,7 +41,7 @@
     </table>
   <% end %>
 
-  <!--%= will_paginate docs %-->
+  <%= will_paginate docs %>
 
   <% if project and user_signed_in? and current_user == project.user %>
     <%= form_tag("/projects/#{project.name}/pmdocs/", :method => "post") do %>

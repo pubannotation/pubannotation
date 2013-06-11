@@ -38,7 +38,7 @@ class ProjectsController < ApplicationController
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
       else
         docs = @project.docs
-        @pmdocs = docs.select{|d| d.sourcedb == 'PubMed'}
+        @pmdocs = docs.where(:sourcedb => 'PubMed').paginate(:page => params[:page])
         @pmcdocs = docs.select{|d| d.sourcedb == 'PMC' and d.serial == 0}
       end
     end

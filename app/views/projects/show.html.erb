@@ -101,11 +101,6 @@
 </div>
 
 <%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project} %>
+
 <%= render :partial => "pmcdocs/list", :locals => {:docs => @pmcdocs, :project => @project} %>
 </div>
-
-<script type="text/javascript">
-$(function() {
-    $( "#accordion" ).accordion();
-});
-</script>
