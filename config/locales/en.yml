@@ -230,6 +230,7 @@ en:
         pmids: PubMed IDs
       doc:
         annotation_server: URL of annotation server
+        pmcids: PMC IDs
     errors:
       <<: *errors
   controllers:
@@ -303,12 +304,16 @@ en:
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this annotation set</span></span>"
       documents_belongs_to_annsets: "Documents <span class='meta'>that belong to this annotation set</span>"
       about_the_project: "About the project, <span class='pname'>%{project_name}</span>"
+      made_to_source: "<a href='%{href}'>Annotations projects</a> made to <span class='pname'>%{sourcedb}:%{sourceid}</span>"
+      made_to_division: "<a href='%{href}'>Annotations projects</a> made to %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
+      in_pubapp: "<a href='%{href}'>Annotations projects</a> in PubAnnotation"
+      confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.
     hints:
       project:
         author: specify the official author/project of this annotation set, in case you are uploading an annotation set produced by someone else
         license: \'CC-BY\' is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.
         reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation set that provides a comprehensive description of it.
-        editor: Specify URL of the annotation editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
+        editor: Specify URL of the  editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
     users:
       forgot_password: reset password
       sign_in: sign in
@@ -318,13 +323,20 @@ en:
       send_reset_password_instructions: Send me reset password instructions
     pmdocs:
       belongs_to: "%{content} that belong to the %{parent}, <span class='pname'>%{pname}</span>"
-      add_to_the_set: Add to the set
+      pubmed_in_annotation_set: "PubMed documents <span class='meta'>in the annotation set, <span class='pname'>%{project_name}</span></span>"
+      pubmed_in_pub_annotation: "PubMed documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
     pmcdocs:
       belongs_to_project_annset: "PMC documents that belong to the annotation set, <span class='pname'>%{project_name}</span>"
       pmc_ids: PMC ids
+      pmc_documents_in_the_annotation_project: "PMC documents <span class='meta'>in the annotation project, <span class='pname'>%{project_name}</span>"
+      pmc_documents_in_pub_annotation: "PMC documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
+      add_pmc_documents: Add PMC documents
     shared:
+      add_to_the_set: Add to the set
       account: account
+      edit : edit
       error: error
+      delete: delete
       none: none
       new_model: New %{model}
       create_model: Create new %{model}
@@ -332,6 +344,7 @@ en:
       add_model: Add %{model}
       delete_model: Delete %{model}
       show: show
+      remove: remove
       show_divisions: Show divisions
       uploader: uploader
       update: update
@@ -339,6 +352,7 @@ en:
       pmdocs: pmdocs
       pmcdocs: pmcdocs
       divs: divs
+      annotation: annnotation
       annotation_sets: annotation sets
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
       made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"

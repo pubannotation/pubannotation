@@ -239,6 +239,7 @@ ja:
         pmids: PubMedのID
       doc:
         annotation_server: アノテーションサーバーのURL
+        pmcids: PMCのID
     options:
       project:
         status:
@@ -327,6 +328,10 @@ ja:
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
       documents_belongs_to_annsets: "<span class='meta'>このアノテーションセット内にある</span>ドキュメント"
       about_the_project: "<span class='pname'>%{project_name}</span>について"
+      made_to_source: "<span class='pname'>%{sourcedb}:%{sourceid}</span>用の<a href='%{href}'>アノテーションプロジェクト</a>"
+      made_to_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョン用の<a href='%{href}'>アノテーションプロジェクト</a>"
+      in_pubapp: "パブアノテーション内の<a href='%{href}'>アノテーションプロジェクト</a>"
+      confirm_delete: このアノテーションセットのアノテーションが全て削除されますがよろしいですか？
     hints:
       project:
         author: 他社が作成したアノテーションセットをアップロードする場合は、このアノテーションセットの公式の著者を記載
@@ -342,15 +347,21 @@ ja:
       send_reset_password_instructions: パスワードのリセット用メールを送信
     pmdocs:
       belongs_to: "%{parent}<span class='pname'>%{pname}</span>に属する、%{content} "
+      pubmed_in_annotation_set: "<span class='meta'>アノテーションセット<span class='pname'>%{project_name}</span></span>内のPubMedドキュメント"
+      pubmed_in_pub_annotation: "<span class='meta'><span class='pname'>パブアノテーション</span></span>内のPubMedドキュメント"
     pmcdocs:
       belongs_to_project_annset: "アノテーションセット、 <span class='pname'>%{project_name}</span>に属するPMCドキュメント"
-      pmc_ids: PMCのID
+      pmc_documents_in_the_annotation_project: "<span class='meta'>アノテーションプロジェクト<span class='pname'>%{project_name}</span></span>のPMCドキュメント"
+      pmc_documents_in_pub_annotation: "<span class='meta'><span class='pname'>パブアノテーション</span>内の</span>PMCドキュメント"
+      add_pmc_documents: PMCドキュメントを追加
     shared:
       add_to_the_set: セットに追加
       account: アカウント
       back: 戻る
       category: カテゴリー
+      edit: 編集
       error: エラー
+      delete: 削除
       none: なし
       new_model: 新規%{model}の作成
       create_model: 新規%{model}を作成
@@ -360,6 +371,7 @@ ja:
       section: セクション
       size: サイズ
       show: 表示
+      remove: 削除
       show_divisions: ディビジョンを表示
       text: テキスト
       uploader:  アップローダー

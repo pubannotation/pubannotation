@@ -94,8 +94,8 @@
 	</table>
 
 	<% if user_signed_in? and current_user == @project.user %>
-		<span class="button"><%= link_to 'Edit', edit_project_path(@project.name) %></span>
-		<span class="button"><%= link_to 'Delete', @project.name, :method => :delete, :confirm => 'Are you sure? All the annotations that belong to this annotation set will be deleted.' %></span>
+		<span class="button"><%= link_to t('views.shared.edit'), edit_project_path(@project.name), :class => 'capitalize_first' %></span>
+		<span class="button"><%= link_to t('views.shared.delete'), @project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
 	<% end %>
 <% end %>
 </div>

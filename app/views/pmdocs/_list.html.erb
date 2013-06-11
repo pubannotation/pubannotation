@@ -1,23 +1,20 @@
 <h1>
-  PubMed documents
-  <span class="meta">
   <% if project %>
-  in the annotation set, <span class="pname"><%= project.name %></span>
+  <%= t('views.pmdocs.pubmed_in_annotation_set', :project_name => project.name).html_safe %>
   <% else %>
-  in <span class="pname">PubAnnotation</span>
+  <%= t('views.pmdocs.pubmed_in_pub_annotation').html_safe %>
   <% end %>
-  </span>
   (<%= docs.length %>)
   </h1>
 <div>
   <% if docs.empty? %>
-    none
+    <%= t('views.shared.none') %>
   <% else %>
     <table>
       <tr>
-        <th>Source DB</th>
-        <th>Source Id</th>
-        <th>Text</th>
+        <th><%= t('activerecord.attributes.doc.sourcedb') %></th>
+        <th><%= t('activerecord.attributes.doc.sourceid') %></th>
+        <th><%= t('activerecord.attributes.doc.body') %></th>
         <th></th>
       </tr>
 
@@ -28,12 +25,12 @@
         <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
         <td>
           <% if project %>
-            <span class="button"><%= link_to 'Show', project_pmdoc_path(project.name, doc.sourceid) %></span>
+            <span class="button"><%= link_to t('views.shared.show'), project_pmdoc_path(project.name, doc.sourceid) %></span>
             <% if user_signed_in? and current_user == project.user %>
-              <span class="button"><%= link_to 'Remove', project_pmdoc_path(project.name, doc.sourceid), method: :delete, data: { confirm: 'Are you sure? All the annotations to this document that belong to the annotation set will be deleted.' } %></span>
+              <span class="button"><%= link_to t('views.shared.remove'), project_pmdoc_path(project.name, doc.sourceid), method: :delete, data: { confirm: 'Are you sure? All the annotations to this document that belong to the annotation set will be deleted.' } %></span>
             <% end %>
           <% else %>
-            <span class="button"><%= link_to 'Show', pmdoc_path(doc.sourceid) %></span>
+            <span class="button"><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) %></span>
           <% end %>
         </td>
       </tr>
@@ -46,9 +43,9 @@
   <% if project and user_signed_in? and current_user == project.user %>
     <%= form_tag("/projects/#{project.name}/pmdocs/", :method => "post") do %>
       <table>
-        <tr><th><%= label_tag(:pmids, "Add PubMed documents") %><br/></th></tr>
-        <tr><td><%= text_area_tag(:pmids, nil, :placeholder => "PubMed IDs", :required => true) %></td></tr>
-        <tr><th><%= submit_tag("Add to the set") %></th></tr>
+        <tr><th><%= label_tag(:pmids,  t('views.shared.add_model', :model => "#{t('views.shared.pubmed')} #{t('activerecord.models.doc').pluralize}")) %><br/></th></tr>
+        <tr><td><%= text_area_tag(:pmids, nil, :placeholder => t('activerecord.placeholders.project.pmids'), :required => true) %></td></tr>
+        <tr><th><%= submit_tag(t('views.shared.add_to_the_set')) %></th></tr>
       </table>
     <% end %>
   <% end %>

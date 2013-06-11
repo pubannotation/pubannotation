@@ -1,23 +1,17 @@
+
 <h1>
-  <%= link_to "Annotation projects", projects_path %>
   <% if @doc and @doc.sourcedb == 'PubMed' %>
-    <span class='meta'>
-    made to <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
-    </span>
+	<%= t('views.projects.made_to_source', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
   <% elsif @doc and @doc.sourcedb == 'PMC' %>
-    <span class='meta'>
-    made to <%= @doc.serial %>'th divition of <span class='pname'><%= @doc.sourcedb %>:<%= @doc.sourceid %></span>
-    </span>
+	<%= t('views.projects.made_to_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
   <% else %>
-    <span class='meta'>
-    in PubAnnotation
-    </span>
+	<%= t('views.projects.in_pubapp', :href => projects_path).html_safe %>
   <% end %>
   (<%= @projects.length %>)
   <% if user_signed_in? %>
-  <span class="button"><%= link_to 'Create', new_project_path %></span>
+  <span class="button"><%= link_to t('views.shared.create_model', :model => t('activerecord.models.project')), new_project_path %></span>
   <% else %>
-  <span class="button"><%= link_to 'Sign in to create', new_user_session_path %></span>
+  <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
   <% end %>
 </h1>
 
@@ -26,10 +20,10 @@
 <% else %>
   <table>
     <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Author</th>
-      <th>Uploader</th>
+      <th><%= t('activerecord.attributes.project.name') %></th>
+      <th><%= t('activerecord.attributes.project.description') %></th>
+      <th><%= t('activerecord.attributes.project.author') %></th>
+      <th><%= t('activerecord.attributes.project.uploader') %></th>
       <th></th>
     </tr>
 
@@ -40,11 +34,11 @@
       <td style="white-space: nowrap"><%= project.author %></td>
       <td style="white-space: nowrap"><%= project.user.username %></td>
       <% if @doc and @doc.sourcedb == "PubMed" %>
-        <td><%= link_to 'Show', pmdoc_project_path(@doc.sourceid, project.name) %></td>
+        <td><%= link_to t('views.shared.show'), pmdoc_project_path(@doc.sourceid, project.name) %></td>
       <% elsif @doc and @doc.sourcedb == "PMC" %>
-        <td><%= link_to 'Show', pmcdoc_div_project_path(@doc.sourceid, @doc.serial, project.name) %></td>
+        <td><%= link_to t('views.shared.show'), pmcdoc_div_project_path(@doc.sourceid, @doc.serial, project.name) %></td>
       <% else %>
-        <td><%= link_to 'Show', project_path(project.name) %></td>
+        <td><%= link_to t('views.shared.show'), project_path(project.name) %></td>
       <% end %>
     </tr>
   <% end %>
