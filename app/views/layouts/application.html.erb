@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title><%= I18n.t('views.service.title') %></title>
+  <title><%= t('views.service.title') %></title>
   <%= stylesheet_link_tag    "application", :media => "all" %>
   <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
   <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
@@ -17,7 +17,7 @@
 
 <div id="header">
 <div id="title"><%= link_to t('views.service.title'), home_path %></div>
-<div id="slogan"><%= I18n.t('views.service.slogan') %></div>
+<div id="slogan"><%= t('views.service.slogan') %></div>
 
 <div id="account">
 [<%= render 'devise/menu/registration_items' %>|<%= render 'devise/menu/login_items' %>]

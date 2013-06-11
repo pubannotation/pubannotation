@@ -4,33 +4,28 @@ require 'spec_helper'
 describe HomeController do
   describe 'index' do
     before do
-      @serial_0_length = 2
-      @serial_0_length.times do
-        FactoryGirl.create(:doc, :serial => 0)
-      end
-      @pmdocs_num = 3
-      @pmdocs_num.times do
-        FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0)
-      end
-      @pmcdocs_num = 4
-      @pmcdocs_num.times do
-        FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
-      end
-      @get_projects = [1, 2, 3]
+      @serial_0 = FactoryGirl.create(:doc, :serial => 0)
+      @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0)
+      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+      @get_projects = 'get projects'
       controller.stub(:get_projects).and_return(@get_projects)
       get :index
     end
     
-    it '@dosc_num should eql Doc.where serial == 0 count' do
-      assigns[:docs_num].should eql(@serial_0_length + @pmdocs_num + @pmcdocs_num)
+    it '@docs should eql Doc.where serial == 0' do
+      (assigns[:docs] - [@serial_0, @pmdoc, @pmcdoc]).should be_blank
     end
     
-    it '@pmdocs_num should eql Doc.where sourcedb == PubMed count' do
-      assigns[:pmdocs_num].should eql(@pmdocs_num)
+    it '@pmdocs should eql Doc.where sourcedb == PubMed' do
+      (assigns[:pmdocs] - [@pmdoc]).should be_blank
+    end
+    
+    it '@pmcdocs should eql Doc.where sourcedb == PubMed' do
+      (assigns[:pmcdocs] - [@pmcdoc]).should be_blank
     end
     
     it '@projects_num should eql get_projects.length' do
-      assigns[:projects_num].should eql(@get_projects.length)
+      assigns[:projects].should eql(@get_projects)
     end
   end
 end
