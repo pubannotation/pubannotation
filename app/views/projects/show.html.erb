@@ -16,8 +16,9 @@
  	> <%= @project.name %>
 <% end %>
 
-<h1><%= t('views.projects.annotation_set_description') %></h1>
-
+<div id="accordion">
+<h1><%= t('views.projects.about_the_project', :project_name => @project.name).html_safe %></h1>
+<div>
 <% if @project %>
 	<table>
 	<tr>
@@ -96,24 +97,10 @@
 		<span class="button"><%= link_to 'Edit', edit_project_path(@project.name) %></span>
 		<span class="button"><%= link_to 'Delete', @project.name, :method => :delete, :confirm => 'Are you sure? All the annotations that belong to this annotation set will be deleted.' %></span>
 	<% end %>
-	<% if @doc %>
-		<% if @doc.sourcedb == 'PubMed' %>
-			<% annotation_url = pmdoc_project_annotations_url(@doc.sourceid, @project.name) %>
-		<% else %>
-			<% annotation_url = pmcdoc_div_project_annotations_url(@doc.sourceid, @doc.serial, @project.name) %>
-		<% end %>
-
-		<h2>
-			<%= t('views.projects.annotation_within_annotation_set', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
-		</h2>
-		<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
-	<% else %>
-		<h2 class="capitalize_first">
-			<%= t('views.projects.documents_belongs_to_annsets', :content => t('activerecord.models.doc'), :pname => t('views.shared.annotation_sets'), :parent => '').html_safe %>
-		</h2>
-		<ul>
-			<li><%= link_to "#{t('views.shared.pubmed')} #{t('activerecord.models.doc').pluralize}", project_pmdocs_url(@project.name) %> (<%= @pmdocs_num %>)</li>
-			<li><%= link_to "PMC #{t('activerecord.models.doc').pluralize}", project_pmcdocs_url(@project.name) %> (<%= @pmcdocs_num %>)</li>
-		</ul>
-	<% end %>
 <% end %>
+</div>
+
+<%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project} %>
+
+<%= render :partial => "pmcdocs/list", :locals => {:docs => @pmcdocs, :project => @project} %>
+</div>

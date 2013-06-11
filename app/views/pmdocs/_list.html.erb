@@ -1,0 +1,55 @@
+<h1>
+  PubMed documents
+  <span class="meta">
+  <% if project %>
+  in the annotation set, <span class="pname"><%= project.name %></span>
+  <% else %>
+  in <span class="pname">PubAnnotation</span>
+  <% end %>
+  </span>
+  (<%= docs.length %>)
+  </h1>
+<div>
+  <% if docs.empty? %>
+    none
+  <% else %>
+    <table>
+      <tr>
+        <th>Source DB</th>
+        <th>Source Id</th>
+        <th>Text</th>
+        <th></th>
+      </tr>
+
+    <% docs.each do |doc| %>
+      <tr>
+        <td><%= doc.sourcedb %></td>
+        <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
+        <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
+        <td>
+          <% if project %>
+            <span class="button"><%= link_to 'Show', project_pmdoc_path(project.name, doc.sourceid) %></span>
+            <% if user_signed_in? and current_user == project.user %>
+              <span class="button"><%= link_to 'Remove', project_pmdoc_path(project.name, doc.sourceid), method: :delete, data: { confirm: 'Are you sure? All the annotations to this document that belong to the annotation set will be deleted.' } %></span>
+            <% end %>
+          <% else %>
+            <span class="button"><%= link_to 'Show', pmdoc_path(doc.sourceid) %></span>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+    </table>
+  <% end %>
+
+  <%= will_paginate docs %>
+
+  <% if project and user_signed_in? and current_user == project.user %>
+    <%= form_tag("/projects/#{project.name}/pmdocs/", :method => "post") do %>
+      <table>
+        <tr><th><%= label_tag(:pmids, "Add PubMed documents") %><br/></th></tr>
+        <tr><td><%= text_area_tag(:pmids, nil, :placeholder => "PubMed IDs", :required => true) %></td></tr>
+        <tr><th><%= submit_tag("Add to the set") %></th></tr>
+      </table>
+    <% end %>
+  <% end %>
+</div>

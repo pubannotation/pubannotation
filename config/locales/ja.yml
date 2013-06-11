@@ -326,6 +326,7 @@ ja:
       annotation_set_description: アノテーションセットの説明
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
       documents_belongs_to_annsets: "<span class='meta'>このアノテーションセット内にある</span>ドキュメント"
+      about_the_project: "<span class='pname'>%{project_name}</span>について"
     hints:
       project:
         author: 他社が作成したアノテーションセットをアップロードする場合は、このアノテーションセットの公式の著者を記載
