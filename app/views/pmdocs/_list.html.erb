@@ -2,7 +2,7 @@
   PubMed documents
   <span class="meta">
   <% if project %>
-  in the annotation set, <span class="pname"><%= project.name %></span>
+  in the project, <span class="pname"><%= project.name %></span>
   <% else %>
   in <span class="pname">PubAnnotation</span>
   <% end %>
@@ -30,7 +30,7 @@
           <% if project %>
             <span class="button"><%= link_to 'Show', project_pmdoc_path(project.name, doc.sourceid) %></span>
             <% if user_signed_in? and current_user == project.user %>
-              <span class="button"><%= link_to 'Remove', project_pmdoc_path(project.name, doc.sourceid), method: :delete, data: { confirm: 'Are you sure? All the annotations to this document that belong to the annotation set will be deleted.' } %></span>
+              <span class="button"><%= link_to 'Remove', project_pmdoc_path(project.name, doc.sourceid), :method => :delete, :confirm => 'Are you sure? All the annotations to this document in the project will be deleted.' %></span>
             <% end %>
           <% else %>
             <span class="button"><%= link_to 'Show', pmdoc_path(doc.sourceid) %></span>
@@ -46,9 +46,13 @@
   <% if project and user_signed_in? and current_user == project.user %>
     <%= form_tag("/projects/#{project.name}/pmdocs/", :method => "post") do %>
       <table>
-        <tr><th><%= label_tag(:pmids, "Add PubMed documents") %><br/></th></tr>
-        <tr><td><%= text_area_tag(:pmids, nil, :placeholder => "PubMed IDs", :required => true) %></td></tr>
-        <tr><th><%= submit_tag("Add to the set") %></th></tr>
+        <tr>
+          <th><%= label_tag(:pmids, "Add new PubMed documents") %><br/></th>
+          <td>
+            <%= text_area_tag(:pmids, nil, :placeholder => "PubMed IDs", :required => true) %>
+            <%= submit_tag("Add") %>
+          </td>
+        </tr>
       </table>
     <% end %>
   <% end %>

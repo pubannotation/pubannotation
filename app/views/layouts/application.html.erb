@@ -2,15 +2,17 @@
 <html>
 <head>
   <title>PubAnnotation</title>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
   <%= stylesheet_link_tag    "application", :media => "all" %>
-  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <%= javascript_include_tag "application" %>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
   <script>
-  $(function() {
-    $( "#accordion" ).accordion();
-  });
+    $(function() {
+      $( "#accordion" ).accordion({
+        heightStyle: "content",
+      });
+    });
   </script>
-  <!--%= javascript_include_tag "application" %-->
   <%= csrf_meta_tags %>
 </head>
 <body>

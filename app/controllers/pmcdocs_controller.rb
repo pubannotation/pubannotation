@@ -113,4 +113,44 @@ class PmcdocsController < ApplicationController
     end
   end
 
+
+  # DELETE /pmcdocs/:pmcid
+  # DELETE /pmcdocs/:pmcid.json
+  def destroy
+    project = nil
+
+    if params[:project_id]
+      project = Project.find_by_name(params[:project_id])
+      if project
+        doc = Doc.find_by_sourcedb_and_sourceid('PMC', params[:id])
+        if doc
+          if doc.projects.include?(project)
+            project.docs.delete(doc)
+            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was removed from the annotation set, #{project.name}."
+          else
+            notice = "the annotation set, #{project.name} does not include the document, #{doc.sourcedb}:#{doc.sourceid}."
+          end
+        else
+          notice = "The document, PMC:#{params[:id]}, does not exist in PubAnnotation." 
+        end
+      else
+        notice = "The annotation set, #{params[:project_id]}, does not exist."
+      end
+    else
+      doc = Doc.find_by_sourcedb_and_sourceid('PMC', params[:id])
+      doc.destroy
+    end
+
+    respond_to do |format|
+      format.html {
+        if project
+          redirect_to project_pmcdocs_path(project.name), :notice => notice
+        else
+          redirect_to pmcdocs_path, notice: notice
+        end
+      }
+      format.json { head :no_content }
+    end
+  end
+
 end

@@ -2,7 +2,7 @@
   PMC documents
   <span class="meta">
   <% if project %>
-  in the annotation project, <span class="pname"><%= project.name %></span>
+  in the project, <span class="pname"><%= project.name %></span>
   <% else %>
   in <span class="pname">PubAnnotation</span>
   <% end %>
@@ -26,24 +26,33 @@
         <td><%= doc.sourcedb %></td>
         <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
         <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
-        <% if project %>
-          <td><%= link_to 'Show divisions', project_pmcdoc_url(project.name, doc.sourceid) %></td>
-        <% else %>
-          <td><%= link_to 'Show divisions', pmcdoc_path(doc.sourceid) %></td>
-        <% end %>
+        <td>
+          <% if project %>
+            <span class="button"><%= link_to 'Show divisions', project_pmcdoc_url(project.name, doc.sourceid) %></span>
+            <% if user_signed_in? and current_user == project.user %>
+              <span class="button"><%= link_to 'Remove', project_pmcdoc_url(project.name, doc.sourceid), :method => :delete, :confirm => 'Are you sure? All the annotations to this document in the project will be deleted.' %></span>
+            <% end %>
+          <% else %>
+            <span class="button"><%= link_to 'Show divisions', pmcdoc_path(doc.sourceid) %></span>
+          <% end %>
+        </td>
       </tr>
     <% end %>
     </table>
   <% end %>
 
-  <!--%= will_paginate docs %-->
+  <%= will_paginate docs %>
 
   <% if project and user_signed_in? and current_user == project.user %>
     <%= form_tag("/projects/#{project.name}/pmcdocs/", :method => "post") do %>
       <table>
-        <tr><th><%= label_tag(:pmcids, "Add PMC documents") %><br/></th></tr>
-        <tr><td><%= text_area_tag(:pmcids, nil, :placeholder => "PMC IDs", :required => true) %></td></tr>
-        <tr><th><%= submit_tag("Add to the set") %></th></tr>
+        <tr>
+          <th><%= label_tag(:pmcids, "Add new PMC documents") %></th>
+          <td>
+            <%= text_area_tag(:pmcids, nil, :placeholder => "PMC IDs", :required => true) %>
+            <%= submit_tag("Add") %>
+          </td>
+        </tr>
       </table>
     <% end %>
   <% end %>
