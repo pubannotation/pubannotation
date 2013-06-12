@@ -2,6 +2,10 @@
 require 'spec_helper'
 
 describe ApplicationHelper do
+  before do
+    I18n.locale = :en
+  end
+  
   describe 'hint_helper' do
     before do
       @result = helper.hint_helper({:model => :project, :column => :author})
@@ -52,5 +56,32 @@ describe ApplicationHelper do
         @result.should include(I18n.t('errors.template.header.other', :model => @model_name.downcase, :count => @errors_count))
       end
     end
+  end
+  
+  describe 'language_switch_helper' do
+   context 'I18n.locale == en' do
+     before do
+       @url_for = 'url'
+       helper.stub(:url_for).and_return(@url_for)
+       @text = helper.language_switch_helper
+     end 
+     
+     it 'helper should show link for japanese' do
+       @text.should eql("[english | <a href=\"#{@url_for}\">日本語</a>]")
+     end
+   end 
+   
+   context 'I18n.locale == en' do
+     before do
+       @url_for = 'url'
+       helper.stub(:url_for).and_return(@url_for)
+       I18n.locale = :ja
+       @text = helper.language_switch_helper
+     end 
+     
+     it 'helper should show link for english' do
+       @text.should eql("[<a href=\"url\">english</a> | 日本語]")
+     end
+   end
   end
 end

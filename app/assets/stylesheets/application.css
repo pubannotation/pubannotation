@@ -57,15 +57,19 @@ body {
     color: #22dd22;
 }
 
-#account {
+#account, #language{
     position:absolute;
     bottom:8px;
-    left:340px;
-    /*right:3px;*/
     text-align:right;
     font-size:small;
 }
-
+#account {
+    left:340px;
+    /*right:3px;*/
+}
+#language{
+    right: 50px;
+}
 table.menu {
     margin:0px;
     border:5px solid #AAEEAA;

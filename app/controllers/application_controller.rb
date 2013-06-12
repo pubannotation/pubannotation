@@ -9,8 +9,22 @@ class ApplicationController < ActionController::Base
   after_filter :store_location
   
   def set_locale
-    if request.env['HTTP_ACCEPT_LANGUAGE']
-      I18n.locale =  request.env['HTTP_ACCEPT_LANGUAGE'].scan(/^[a-z]{2}/).first
+    accept_locale = ['en', 'ja']
+    if params[:locale].present? && accept_locale.include?(params[:locale])
+      session[:locale] = params[:locale]
+    end
+    
+    if session[:locale].blank?
+      accept_language = request.env['HTTP_ACCEPT_LANGUAGE'] ||= 'en'
+      locale_string = accept_language.scan(/^[a-z]{2}/).first
+      if accept_locale.include?(locale_string.to_s)
+        locale = locale_string
+      else
+        locale = :en
+      end
+      I18n.locale =  locale
+    else
+      I18n.locale = session[:locale]
     end
   end
   

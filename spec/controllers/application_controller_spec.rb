@@ -2,6 +2,10 @@
 require 'spec_helper'
 
 describe ApplicationController do
+  before do
+    I18n.locale = :en
+  end
+
   controller do
     def after_sign_in_path_for_test(resource_or_scope)
       after_sign_out_path_for(resource_or_scope)
@@ -9,26 +13,88 @@ describe ApplicationController do
   end
   
   describe 'set_locale' do
-    context 'when locale == :ja' do
-      before do
-        controller.stub(:request).and_return(double(:request, :env => {'HTTP_ACCEPT_LANGUAGE'=> 'ja'}))
-        controller.set_locale
+    context 'when session[:locale].blank' do
+      context 'when locale == :ja' do
+        before do
+          controller.stub(:request).and_return(double(:request, :env => {'HTTP_ACCEPT_LANGUAGE'=> 'ja'}))
+          controller.set_locale
+        end
+        
+        it 'locale.should be :ja' do
+          I18n.locale.should eql(:ja)
+        end
       end
-      
-      it 'locale.should be :ja' do
-        I18n.locale.should eql(:ja)
+  
+      context 'when locale == :en' do
+        before do
+          controller.stub(:request).and_return(double(:request, :env => {'HTTP_ACCEPT_LANGUAGE'=> 'en'}))
+          controller.set_locale
+        end
+        
+        it 'locale.should be :en' do
+          I18n.locale.should eql(:en)
+        end
+      end
+  
+      context 'when locale is not accepted' do
+        before do
+          controller.stub(:request).and_return(double(:request, :env => {'HTTP_ACCEPT_LANGUAGE'=> 'jj'}))
+          controller.set_locale
+        end
+        
+        it 'locale.should be :en' do
+          I18n.locale.should eql(:en)
+        end
       end
     end
+    
+    context 'when session[:locale] present' do
+      context 'when params[:locale] present' do
+        context 'when params[:locale] == en' do
+          before do
+            controller.stub(:params).and_return({:locale => 'en'})
+            controller.set_locale
+          end
+          
+          it 'session locale should be en' do
+            session[:locale].should eql('en')
+          end
+          
+          it 'I18n locale should be en' do
+            I18n.locale.should eql(:en)
+          end
+        end
 
-    context 'when locale == :en' do
-      before do
-        controller.stub(:request).and_return(double(:request, :env => {'HTTP_ACCEPT_LANGUAGE'=> 'en'}))
-        controller.set_locale
-      end
-      
-      it 'locale.should be :en' do
-        I18n.locale.should eql(:en)
-      end
+        context 'when params[:locale] == ja' do
+          before do
+            controller.stub(:params).and_return({:locale => 'ja'})
+            controller.set_locale
+          end
+          
+          it 'session locale should be ja' do
+            session[:locale].should eql('ja')
+          end
+          
+          it 'I18n locale should be ja' do
+            I18n.locale.should eql(:ja)
+          end
+        end
+
+        context 'when params[:locale] is not accepted' do
+          before do
+            controller.stub(:params).and_return({:locale => 'jj'})
+            controller.set_locale
+          end
+          
+          it 'session locale should be nil' do
+            session[:locale].should be_nil
+          end
+          
+          it 'I18n locale should be en' do
+            I18n.locale.should eql(:en)
+          end
+        end
+      end      
     end
   end
   

@@ -1,3 +1,4 @@
+# encoding: UTF-8
 module ApplicationHelper
   # render image tag and title attribute for hint
   def hint_helper(options = {})
@@ -16,5 +17,18 @@ module ApplicationHelper
       end
       render :partial => 'shared/errors', :locals => {:model => model, :errors_header => errors_header }
     end
+  end
+  
+  def language_switch_helper
+    requested_path = url_for(:only_path => false, :overwrite_params => nil)
+    en_text = 'english'
+    if I18n.locale != :en
+      en_text = link_to en_text, requested_path + '?locale=en'
+    end
+    ja_text = '日本語'
+    if I18n.locale != :ja
+      ja_text = link_to ja_text, requested_path + '?locale=ja'
+    end
+    "[#{en_text} | #{ja_text}]"
   end
 end
