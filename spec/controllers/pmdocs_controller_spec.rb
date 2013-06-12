@@ -508,4 +508,170 @@ describe PmdocsController do
       end
     end
   end
+  
+  describe 'search' do
+    context 'without pagination' do
+      before do
+        @pmc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234)
+        @selial_1 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 1, :sourceid => 123)
+        @sourceid_123 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 123)
+        @sourceid_1234 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1234)
+        @sourceid_1123 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1123)
+        @sourceid_234 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 234)
+      end
+      
+      context 'when params[:sourceid] and params[:body] is nil' do
+        before do
+          get :search
+        end  
+        
+        it 'should not include sourcedb is not PubMed' do
+          assigns[:docs].should_not include(@pmc)
+        end
+        
+        it 'should not include soucedb is PubMed and serial is not 0' do
+          assigns[:docs].should_not include(@selial_1)
+        end
+        
+        it 'should include soucedb is PubMed and serial is 0' do
+          assigns[:docs].should include(@sourceid_123)
+        end
+  
+        it 'should include soucedb is PubMed and serial is 0' do
+          assigns[:docs].should include(@sourceid_1234)
+        end
+  
+        it 'should include soucedb is PubMed and serial is 0' do
+          assigns[:docs].should include(@sourceid_1123)
+        end
+  
+        it 'should include soucedb is PubMed and serial is 0' do
+          assigns[:docs].should include(@sourceid_234)
+        end
+      end
+            
+      context 'when params[:sourceid] present' do
+        before do
+          get :search, :sourceid => '123'
+        end
+        
+        it 'should not include sourcedb is not PubMed' do
+          assigns[:docs].should_not include(@pmc)
+        end
+        
+        it 'should not include serial is not 0' do
+          assigns[:docs].should_not include(@selial_1)
+        end
+        
+        it 'should include sourceid include 123' do
+          assigns[:docs].should include(@sourceid_123)
+        end
+  
+        it 'should include sourceid include 123' do
+          assigns[:docs].should include(@sourceid_1234)
+        end
+  
+        it 'should include sourceid include 123' do
+          assigns[:docs].should include(@sourceid_1123)
+        end
+  
+        it 'should not include sourceid not include 123' do
+          assigns[:docs].should_not include(@sourceid_234)
+        end
+      end
+      
+      context 'when params[:body] present' do
+        before do
+          @sourceid_123_test = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 123, :body => 'test')
+          @sourceid_1234_test = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1234, :body => 'testmatch')
+          @sourceid_234_test = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 234, :body => 'matchtest')
+          @sourceid_123_est = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 123, :body => 'est')
+          get :search, :body => 'test'
+        end
+        
+        it 'should include  body contains body' do
+          assigns[:docs].should include(@sourceid_123_test)
+        end
+        
+        it 'should include body contains body' do
+          assigns[:docs].should include(@sourceid_1234_test)
+        end
+        
+        it 'should include body contains body' do
+          assigns[:docs].should include(@sourceid_234_test)
+        end
+        
+        it 'should include body contains body' do
+          assigns[:docs].should_not include(@sourceid_123_est)
+        end
+      end
+      
+      context 'when params[:sourceid] and params[:body] present' do
+        before do
+          @sourceid_1_body_test = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1, :body => 'test')
+          @sourceid_1_body_test_and = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1, :body => 'testand')
+          @sourceid_1_body_nil = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1, :body => nil)
+          @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 2, :body => 'test')
+          get :search, :sourceid => 1, :body => 'test'
+        end
+        
+        it 'should include sourceid and body matches' do
+          assigns[:docs].should include(@sourceid_1_body_test)
+        end
+        
+        it 'should include sourceid and body matches' do
+          assigns[:docs].should include(@sourceid_1_body_test_and)
+        end
+        
+        it 'should not include body does not match' do
+          assigns[:docs].should_not include(@sourceid_1_body_nil)
+        end
+        
+        it 'should not include sourceid does not match' do
+          assigns[:docs].should_not include(@sourceid_2_body_test)
+        end
+      end
+    end
+
+    
+    context 'with pagination' do
+      before do
+        @first_page = FactoryGirl.create(:doc, :id => 1, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1)
+        i = 2
+        WillPaginate.per_page.times do
+          FactoryGirl.create(:doc, :id => i, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1)
+          i += 1
+        end
+        @next_page = FactoryGirl.create(:doc, :id => i, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1)
+      end
+      
+      context 'when page = 1' do
+        before do
+          get :search, :sourceid => 1, :page => 1
+        end
+        
+        it '@docs should include first page record' do
+          assigns[:docs].should include(@first_page)        
+        end
+        
+        it '@docs should not include second page record' do
+          assigns[:docs].should_not include(@next_page)        
+        end
+      end
+      
+      context 'when page = 2' do
+        before do
+          get :search, :sourceid => 1, :page => 2
+        end
+        
+        it '@docs should not include first page record' do
+          assigns[:docs].should_not include(@first_page)        
+        end
+        
+        it '@docs should include second page record' do
+          assigns[:docs].should include(@next_page)        
+        end
+      end
+    end
+  end
 end

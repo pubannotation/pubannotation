@@ -11,12 +11,18 @@ Pubann::Application.routes.draw do
   end
 
   resources :pmdocs do
+    collection do
+      get :search
+    end
     resources :projects do
       resources :annotations
     end
   end
 
   resources :pmcdocs do
+    collection do
+      get :search
+    end
     resources :divs do
       resources :projects do
         resources :annotations

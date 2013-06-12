@@ -351,6 +351,7 @@ en:
       pubmed: PubMed
       pmdocs: pmdocs
       pmcdocs: pmcdocs
+      search: search
       divs: divs
       annotation: annnotation
       annotation_sets: annotation sets

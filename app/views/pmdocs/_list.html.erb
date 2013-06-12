@@ -5,7 +5,16 @@
   <%= t('views.pmdocs.pubmed_in_pub_annotation').html_safe %>
   <% end %>
   (<%= docs.length %>)
-  </h1>
+</h1>
+
+<%= form_tag(search_pmdocs_path, :method => :get)  do %>
+	<%= label_tag :sourceid, t('activerecord.attributes.doc.sourceid') %>
+	<%= text_field_tag :sourceid, params[:sourceid] %>
+	<%= label_tag :sourceid, t('activerecord.attributes.doc.body') %>
+	<%= text_field_tag :body, params[:body] %>
+	<%= submit_tag t('views.shared.search') %>
+<% end %>
+
 <div>
   <% if docs.empty? %>
     <%= t('views.shared.none') %>
