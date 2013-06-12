@@ -40,8 +40,12 @@
     <% end %>
     </table>
   <% end %>
-
-  <%= will_paginate docs %>
+  
+  <% if local_assigns[:accordion_id] %>
+	  <%= will_paginate docs, :params => {:accordion_id => accordion_id} %>
+  <% else %>
+	  <%= will_paginate docs %>
+  <% end %>
 
   <% if project and user_signed_in? and current_user == project.user %>
     <%= form_tag("/projects/#{project.name}/pmdocs/", :method => "post") do %>
