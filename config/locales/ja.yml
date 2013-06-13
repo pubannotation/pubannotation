@@ -351,6 +351,7 @@ ja:
       belongs_to: "%{parent}<span class='pname'>%{pname}</span>に属する、%{content} "
       pubmed_in_annotation_set: "<span class='meta'>アノテーションセット<span class='pname'>%{project_name}</span></span>内のPubMedドキュメント"
       pubmed_in_pub_annotation: "<span class='meta'><span class='pname'>パブアノテーション</span></span>内のPubMedドキュメント"
+      confirm_delete: このプロジェクト内のドキュメントのアノテーションが全て削除されますがよろしいですか？
     pmcdocs:
       belongs_to_project_annset: "アノテーションセット、 <span class='pname'>%{project_name}</span>に属するPMCドキュメント"
       pmc_documents_in_the_annotation_project: "<span class='meta'>アノテーションプロジェクト<span class='pname'>%{project_name}</span></span>のPMCドキュメント"

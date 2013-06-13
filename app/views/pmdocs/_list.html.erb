@@ -36,7 +36,7 @@
           <% if project %>
             <span class="button"><%= link_to t('views.shared.show'), project_pmdoc_path(project.name, doc.sourceid) %></span>
             <% if user_signed_in? and current_user == project.user %>
-              <span class="button"><%= link_to t('views.shared.remove'), project_pmdoc_path(project.name, doc.sourceid), :method => :delete, :confirm => 'Are you sure? All the annotations to this document in the project will be deleted.' %></span>
+              <span class="button"><%= link_to t('views.shared.remove'), project_pmdoc_path(project.name, doc.sourceid), :method => :delete, :confirm => t('views.pmdocs.confirm_delete') %></span>
             <% end %>
           <% else %>
             <span class="button"><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) %></span>
@@ -46,14 +46,18 @@
     <% end %>
     </table>
   <% end %>
-
-  <%= will_paginate docs %>
+  
+  <% if local_assigns[:accordion_id] %>
+	  <%= will_paginate docs, :params => {:accordion_id => accordion_id} %>
+  <% else %>
+	  <%= will_paginate docs %>
+  <% end %>
 
   <% if project and user_signed_in? and current_user == project.user %>
     <%= form_tag("/projects/#{project.name}/pmdocs/", :method => "post") do %>
       <table>
         <tr>
-          <th><%= label_tag(:pmids,  t('views.shared.add_model', :model => "#{t('views.shared.pubmed')} #{t('activerecord.models.doc').pluralize}")) %><br/></th></tr>
+          <th><%= label_tag(:pmids,  t('views.shared.add_model', :model => "#{t('views.shared.pubmed')} #{t('activerecord.models.doc').pluralize}")) %><br/></th>
           <td>
             <%= text_area_tag(:pmids, nil, :placeholder => t('activerecord.placeholders.doc.pmids'), :required => true) %>
             <%= submit_tag(t('views.shared.add')) %>

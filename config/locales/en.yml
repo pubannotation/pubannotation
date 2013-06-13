@@ -327,6 +327,7 @@ en:
       belongs_to: "%{content} that belong to the %{parent}, <span class='pname'>%{pname}</span>"
       pubmed_in_annotation_set: "PubMed documents <span class='meta'>in the annotation set, <span class='pname'>%{project_name}</span></span>"
       pubmed_in_pub_annotation: "PubMed documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
+      confirm_delete: Are you sure? All the annotations to this document in the project will be deleted.
     pmcdocs:
       belongs_to_project_annset: "PMC documents that belong to the annotation set, <span class='pname'>%{project_name}</span>"
       pmc_ids: PMC ids

@@ -101,7 +101,7 @@
 <% end %>
 </div>
 
-<%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project} %>
+<%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project, :accordion_id => 1} %>
 
-<%= render :partial => "pmcdocs/list", :locals => {:docs => @pmcdocs, :project => @project} %>
+<%= render :partial => "pmcdocs/list", :locals => {:docs => @pmcdocs, :project => @project, :accordion_id => 2} %>
 </div>

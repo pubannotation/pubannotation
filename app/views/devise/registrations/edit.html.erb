@@ -25,7 +25,7 @@
 
 <h2><%= t('views.shared.delete_model', :model => t('views.shared.account')) %></h2>
 
-<p>[<%= link_to t('devise.registrations.delete_my_account'), registration_path(resource_name), :data => { :confirm => "Are you sure? All the data belong to you will be deleted." }, :method => :delete %>]
+<p>[<%= link_to t('devise.registrations.delete_my_account'), registration_path(resource_name), :data => { :confirm => t('devise.registrations.notice_before_delete') }, :method => :delete %>]
   <span class="meta">
   	<%= t('devise.registrations.notice_before_delete') %>
   </span></p>
