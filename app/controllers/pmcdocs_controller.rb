@@ -1,5 +1,5 @@
 class PmcdocsController < ApplicationController
-  autocomplete :doc, :sourceid, :full => true, :scopes => [:pmcdocs]
+  autocomplete :doc, :sourceid, :scopes => [:pmcdocs]
 
   # GET /pmcdocs
   # GET /pmcdocs.json
