@@ -240,6 +240,7 @@ ja:
       doc:
         annotation_server: アノテーションサーバーのURL
         pmcids: PMCのID
+        pmids: PubMedのID
     options:
       project:
         status:
@@ -328,6 +329,7 @@ ja:
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
       documents_belongs_to_annsets: "<span class='meta'>このアノテーションセット内にある</span>ドキュメント"
       about_the_project: "<span class='pname'>%{project_name}</span>について"
+      project_details: プロジェクト詳細
       made_to_source: "<span class='pname'>%{sourcedb}:%{sourceid}</span>用の<a href='%{href}'>アノテーションプロジェクト</a>"
       made_to_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョン用の<a href='%{href}'>アノテーションプロジェクト</a>"
       in_pubapp: "パブアノテーション内の<a href='%{href}'>アノテーションプロジェクト</a>"
@@ -355,6 +357,7 @@ ja:
       pmc_documents_in_pub_annotation: "<span class='meta'><span class='pname'>パブアノテーション</span>内の</span>PMCドキュメント"
       add_pmc_documents: PMCドキュメントを追加
     shared:
+      add: 追加
       add_to_the_set: セットに追加
       account: アカウント
       back: 戻る

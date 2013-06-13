@@ -231,6 +231,7 @@ en:
       doc:
         annotation_server: URL of annotation server
         pmcids: PMC IDs
+        pmids: PubMed IDs
     errors:
       <<: *errors
   controllers:
@@ -304,6 +305,7 @@ en:
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this annotation set</span></span>"
       documents_belongs_to_annsets: "Documents <span class='meta'>that belong to this annotation set</span>"
       about_the_project: "About the project, <span class='pname'>%{project_name}</span>"
+      project_details: Project details
       made_to_source: "<a href='%{href}'>Annotations projects</a> made to <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       made_to_division: "<a href='%{href}'>Annotations projects</a> made to %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubapp: "<a href='%{href}'>Annotations projects</a> in PubAnnotation"
@@ -332,6 +334,7 @@ en:
       pmc_documents_in_pub_annotation: "PMC documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
       add_pmc_documents: Add PMC documents
     shared:
+      add: Add
       add_to_the_set: Add to the set
       account: account
       edit : edit

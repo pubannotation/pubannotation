@@ -15,9 +15,10 @@
  	<% end %>
  	> <%= @project.name %>
 <% end %>
+<h1>Project, <span class="pname"><%= @project.name %></span></h1>
 
 <div id="accordion">
-<h1><%= t('views.projects.about_the_project', :project_name => @project.name).html_safe %></h1>
+<h1><%= t('views.projects.project_details') %></h1>
 <div>
 <% if @project %>
 	<table>
