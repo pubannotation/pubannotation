@@ -1,4 +1,6 @@
 class PmcdocsController < ApplicationController
+  autocomplete :doc, :sourceid, :full => true, :scopes => [:pmcdocs]
+
   # GET /pmcdocs
   # GET /pmcdocs.json
   def index
@@ -115,8 +117,6 @@ class PmcdocsController < ApplicationController
 
   def search
     conditions_array = Array.new
-    conditions_array << ['sourcedb = ?', 'PMC']
-    conditions_array << ['serial = ?', 0]
     conditions_array << ['sourceid like ?', "%#{params[:sourceid]}%"] if params[:sourceid].present?
     conditions_array << ['body like ?', "%#{params[:body]}%"] if params[:body].present?
     
@@ -131,6 +131,6 @@ class PmcdocsController < ApplicationController
       i += 1
     end
     conditions.unshift(columns)
-    @docs = Doc.where(conditions).paginate(:page => params[:page])
+    @docs = Doc.pmcdocs.where(conditions).paginate(:page => params[:page])
   end
 end

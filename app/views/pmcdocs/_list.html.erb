@@ -11,7 +11,7 @@
 <div>
   <%= form_tag(search_pmcdocs_path, :method => :get)  do %>
 	<%= label_tag :sourceid, t('activerecord.attributes.doc.sourceid') %>
-	<%= text_field_tag :sourceid, params[:sourceid] %>
+    <%= autocomplete_field_tag 'sourceid', '', autocomplete_doc_sourceid_pmcdocs_path %>
 	<%= label_tag :sourceid, t('activerecord.attributes.doc.body') %>
 	<%= text_field_tag :body, params[:body] %>
 	<%= submit_tag t('views.shared.search') %>

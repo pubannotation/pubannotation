@@ -49,6 +49,7 @@ gem 'will_paginate'
 gem 'thin'
 gem 'devise'
 gem 'rubyzip'
+gem 'rails3-jquery-autocomplete'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

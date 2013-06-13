@@ -13,4 +13,7 @@ class Doc < ActiveRecord::Base
   has_many :subinsrelmods, :class_name => 'Modification', :through => :subinsrels, :source => :modifications
 
   has_and_belongs_to_many :projects
+  
+  scope :pmdocs, where(:sourcedb => 'PubMed', :serial => 0)
+  scope :pmcdocs, where(:sourcedb => 'PMC', :serial => 0)
 end

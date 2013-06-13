@@ -13,7 +13,9 @@ Pubann::Application.routes.draw do
   resources :pmdocs do
     collection do
       get :search
+      get :autocomplete_doc_sourceid
     end
+    
     resources :projects do
       resources :annotations
     end
@@ -22,7 +24,9 @@ Pubann::Application.routes.draw do
   resources :pmcdocs do
     collection do
       get :search
+      get :autocomplete_doc_sourceid
     end
+    
     resources :divs do
       resources :projects do
         resources :annotations
