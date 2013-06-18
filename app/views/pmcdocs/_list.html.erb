@@ -1,8 +1,8 @@
 <h1>
   <% if project %>
-  	<%= t('views.pmcdocs.pmc_documents_in_the_annotation_project', :project_name => project.name).html_safe %>
+  	<%= t('views.pmcdocs.pmcdocs_in_a_project', :project_name => project.name).html_safe %>
   <% else %>
-  	<%= t('views.pmcdocs.pmc_documents_in_pub_annotation').html_safe %>
+  	<%= t('views.pmcdocs.pmcdocs_in_pubannotation').html_safe %>
   <% end %>
   (<%= docs.length %>)
 </h1>

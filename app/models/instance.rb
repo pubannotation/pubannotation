@@ -9,7 +9,7 @@ class Instance < ActiveRecord::Base
 
   attr_accessible :hid, :pred
 
-  validates :hid,     :presence => true
+  validates :hid,  :presence => true
   validates :pred, :presence => true
 
   def get_hash

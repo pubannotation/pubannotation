@@ -1,3 +1,22 @@
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
+<script>
+$(function() {
+  $( "#accordion" ).accordion({
+    heightStyle: "content",
+    collapsible: true,
+    <% if params[:accordion_id].present? %>
+    	active: <%= params[:accordion_id] %>
+    <% elsif @pmdocs.length > 0 or @pmcdocs.length > 0 %>
+    	<% if @pmdocs.length >= @pmcdocs.length %>
+    		active: 1
+    	<% else %>
+    		active: 2
+    	<% end %>
+    <% end %>
+  });
+});
+</script>
+
 <% content_for :path do %>
 	> <%= link_to t('views.paths.home'), home_path %>
 	<% if @doc and @doc.sourcedb == 'PubMed' %>

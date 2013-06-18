@@ -140,6 +140,30 @@ class AnnotationsController < ApplicationController
   end
 
 
+  # DELETE /projects/:hid
+  # DELETE /projects/:hid.json
+  def destroy
+    @project, notice = get_project(params[:project_id])
+    if @project
+
+      if (params[:pmdoc_id] || params[:pmcdoc_id])
+
+        sourcedb, sourceid, serial = get_docspec(params)
+        @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
+        if @doc
+          annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
+        end
+      end
+    end
+    @annotations.destroy
+
+    respond_to do |format|
+      format.html { redirect_to projects_path, notice: t('controller.projects.destroy.deleted', :id => params[:id]) }
+      format.json { head :no_content }
+    end
+  end
+
+
   private
 
   def set_access_control_headers

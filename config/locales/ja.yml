@@ -263,13 +263,13 @@ ja:
     application:
       get_project:
         private: アノテーションセット%{project_name}は非公開です
-        not_exist: アノテーションセット%{project_name}は存在しません        
+        not_exist: アノテーションセット%{project_name}は存在しません
       get_doc:
         not_belong_to: ドキュメント%{sourcedb}:%{sourceid}はアノテーションセット %{project_name}に属していません
-        no_annotation: パブアノテーション内にドキュメント%{sourcedb}:%{sourceid}のアノテーションセットは存在しません
+        no_annotation: PubAnnotation内にドキュメント%{sourcedb}:%{sourceid}のアノテーションセットは存在しません
       get_divs:
         not_belong_to: ドキュメントPMC::%{sourceid}はアノテーションセット%{project_name}に属していません
-        no_annotation: パブアノテーション内にドキュメントPMC:%{sourceid}のアノテーションセットは存在しません
+        no_annotation: PubAnnotation内にドキュメントPMC:%{sourceid}のアノテーションセットは存在しません
       gen_pmcdoc:
         no_body: ドキュメントに本文がありません
       save_annotations:
@@ -300,14 +300,14 @@ ja:
         does_not_exist: アノテーションセット%{project_id}は存在しません
     projects:
       index:
-        does_not_exist: ドキュメント%{sourcedb}:%{sourceid}はパブアノテーション内に存在しません
+        does_not_exist: ドキュメント%{sourcedb}:%{sourceid}はPubAnnotation内に存在しません
       destroy:
         deleted: アノテーションセット%{id}を削除しました
   views:
     service:
-      title: パブアノテーション
+      title: PubAnnotation
       slogan: スケーラブルかつ共有可能なテキストアノテーションストレージ
-      credit: "アルファバージョンのため機能が不完全な場合がありますが、ご意見を頂戴するため公開しております。<br />ご意見をぜひお寄せください。<br />連絡先: jdkim アット dbcls ドット rois ドット ac ドット jp"
+      credit: "アルファバージョンのため機能が不完全な場合がありますが、ご意見を頂戴するため公開しております。<br />ご意見をぜひお寄せください。<br />連絡先: jdkim (at) dbcls (dot) rois (dot) ac (dot) jp"
     menus:
       overview: 概要
       features: 特徴
@@ -316,10 +316,10 @@ ja:
       document_divs: "<span class='meta'>ドキュメント、 <span class='pname'>%{sourcedb}:%{sourceid}</span>の</span>ディビジョン"
       div: デイビジョン
     docs:
-      annotation_within_project: "<span class='pname'>%{project_name}</span></span>内の<span class='meta'>このドキュメント</span>用アノテーションセット"
+      annotation_within_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクトでこのドキュメントに付けられた</span>アノテーション"
       document_content: ドキュメントのコンテンツ
       annsets_made_to_document: "<span class='meta'>このドキュメント用に作成された</span>アノテーションセット"
-      get_annotations: アノテーションの取得
+      get_annotations: 自動アノテーションの取得
     paths:
       home: ホーム
       new: 新規作成
@@ -332,14 +332,14 @@ ja:
       project_details: プロジェクト詳細
       made_to_source: "<span class='pname'>%{sourcedb}:%{sourceid}</span>用の<a href='%{href}'>アノテーションプロジェクト</a>"
       made_to_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョン用の<a href='%{href}'>アノテーションプロジェクト</a>"
-      in_pubapp: "パブアノテーション内の<a href='%{href}'>アノテーションプロジェクト</a>"
+      in_pubannotation: "<span class='meta'>PubAnnotation内の</span>アノテーションプロジェクト"
       confirm_delete: このアノテーションセットのアノテーションが全て削除されますがよろしいですか？
     hints:
       project:
         author: 他者が作成したアノテーションセットをアップロードする場合は、このアノテーションセットの公式の著者を記載
         license: CC-BYが推奨デフォルト値ですが、その他の値も入力可能
-        reference: パブアノテーションはアノテーションのストレージは提供しますが、このアノテーションセットのホームページは別途必要です
-        editor: アノテーションセットの編集に利用するアノテーションエディターのURLを指定してください。エディタがパブアノテーションでサポートされていない場合はご連絡下さい。
+        reference: PubAnnotationはアノテーションのストレージは提供しますが、このアノテーションセットのホームページは別途必要です
+        editor: アノテーションセットの編集に利用するアノテーションエディターのURLを指定してください。エディタがPubAnnotationでサポートされていない場合はご連絡下さい。
     users:
       forgot_password: パスワードのリセット
       sign_in: ログイン
@@ -348,14 +348,12 @@ ja:
       sign_out: ログアウト
       send_reset_password_instructions: パスワードのリセット用メールを送信
     pmdocs:
-      belongs_to: "%{parent}<span class='pname'>%{pname}</span>に属する、%{content} "
-      pubmed_in_annotation_set: "<span class='meta'>アノテーションセット<span class='pname'>%{project_name}</span></span>内のPubMedドキュメント"
-      pubmed_in_pub_annotation: "<span class='meta'><span class='pname'>パブアノテーション</span></span>内のPubMedドキュメント"
+      pmdocs_in_a_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクト内の</span>PubMedドキュメント"
+      pmdocs_in_pubannotation: "<span class='meta'><span class='pname'>PubAnnotation</span>内の</span>PubMedドキュメント"
       confirm_delete: このプロジェクト内のドキュメントのアノテーションが全て削除されますがよろしいですか？
     pmcdocs:
-      belongs_to_project_annset: "アノテーションセット、 <span class='pname'>%{project_name}</span>に属するPMCドキュメント"
-      pmc_documents_in_the_annotation_project: "<span class='meta'>アノテーションプロジェクト<span class='pname'>%{project_name}</span></span>のPMCドキュメント"
-      pmc_documents_in_pub_annotation: "<span class='meta'><span class='pname'>パブアノテーション</span>内の</span>PMCドキュメント"
+      pmcdocs_in_a_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクトの</span>PMCドキュメント"
+      pmcdocs_in_pubannotation: "<span class='meta'><span class='pname'>PubAnnotation</span>内の</span>PMCドキュメント"
       add_pmc_documents: PMCドキュメントを追加
     shared:
       add: 追加
@@ -381,6 +379,8 @@ ja:
       uploader:  アップローダー
       update: 更新
       pubmed: PubMed
+      a_pmdoc: PubMed:%{sourceid}
+      a_pmcdoc: PMC:%{sourceid}
       pmdocs: pmdocs
       pmcdocs: pmcdocs
       see: 表示

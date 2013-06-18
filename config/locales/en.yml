@@ -294,9 +294,9 @@ en:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
       div: Div.
     docs:
-      annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'>within <span class='pname'>%{project_name}</span></span>"
+      annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'> within <span class='pname'>%{project_name}</span></span>"
       annsets_made_to_document: "Annotation sets <span class='meta'>made to this document</span>"
-      get_annotations: Get annotations
+      get_annotations: Get automatic annotations
     paths:
       home: home
     projects:
@@ -308,7 +308,7 @@ en:
       project_details: Project details
       made_to_source: "<a href='%{href}'>Annotations projects</a> made to <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       made_to_division: "<a href='%{href}'>Annotations projects</a> made to %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
-      in_pubapp: "<a href='%{href}'>Annotations projects</a> in PubAnnotation"
+      in_pubannotation: "<a href='%{href}'>Annotations projects</a> in PubAnnotation"
       confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.
     hints:
       project:
@@ -324,15 +324,13 @@ en:
       sign_out: sign out
       send_reset_password_instructions: Send me reset password instructions
     pmdocs:
-      belongs_to: "%{content} that belong to the %{parent}, <span class='pname'>%{pname}</span>"
-      pubmed_in_annotation_set: "PubMed documents <span class='meta'>in the annotation set, <span class='pname'>%{project_name}</span></span>"
-      pubmed_in_pub_annotation: "PubMed documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
+      pmdocs_in_a_project: "PubMed documents <span class='meta'>in the project, <span class='pname'>%{project_name}</span></span>"
+      pmdocs_in_pubannotation: "PubMed documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
       confirm_delete: Are you sure? All the annotations to this document in the project will be deleted.
     pmcdocs:
-      belongs_to_project_annset: "PMC documents that belong to the annotation set, <span class='pname'>%{project_name}</span>"
       pmc_ids: PMC ids
-      pmc_documents_in_the_annotation_project: "PMC documents <span class='meta'>in the annotation project, <span class='pname'>%{project_name}</span>"
-      pmc_documents_in_pub_annotation: "PMC documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
+      pmcdocs_in_a_project: "PMC documents <span class='meta'>in the annotation project, <span class='pname'>%{project_name}</span>"
+      pmcdocs_in_pubannotation: "PMC documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
       add_pmc_documents: Add PMC documents
     shared:
       add: Add
@@ -353,9 +351,12 @@ en:
       uploader: uploader
       update: update
       pubmed: PubMed
+      a_pmdoc: PubMed:%{sourceid}
+      a_pmcdoc: PMC:%{sourceid}
       pmdocs: pmdocs
       pmcdocs: pmcdocs
       search: search
+      get: get
       divs: divs
       annotation: annnotation
       annotation_sets: annotation sets

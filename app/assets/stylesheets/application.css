@@ -52,32 +52,27 @@ body {
     margin-bottom:10px;
     font-family: Gill-Sans-Bold, fantasy, sans-serif;
     /*font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;*/
-    font-size: medium;
+    font-size: small;
     font-style: italic;
     color: #22dd22;
 }
 
-#account, #language{
+#account{
     position:absolute;
     bottom:8px;
     text-align:right;
     font-size:small;
+    right:3px;
 }
-#account {
-    left:340px;
-    /*right:3px;*/
-}
-#language{
-    right: 50px;
-}
+
 table.menu {
     margin:0px;
-    border:5px solid #AAEEAA;
+    border:3px solid #AAEEBB;
     font-size:small;
 }
 
 .menu td {
-    border:5px solid #AAEEAA;
+    border:3px solid #AAEEBB;
 }
 
 #path {
@@ -136,12 +131,15 @@ table.menu {
     font-style:italic;
     text-align:center;
 }
+
 .capitalize{
 	text-transform:capitalize;
 }
+
 .capitalize_first:first-letter{
 	text-transform:capitalize;
 }
+
 h1 {
     width:43em;
     border-style:solid;

@@ -521,13 +521,13 @@ class ApplicationController < ActionController::Base
     hrelations.each do |a|
       ra           = Relation.new
       ra.hid       = a[:id]
-      ra.pred   = a[:pred]
-      ra.subj    = case a[:subj]
-        when /^T/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
+      ra.pred      = a[:pred]
+      ra.subj      = case a[:subj]
+        when /^[T]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
         else           doc.instances.find_by_project_id_and_hid(project.id, a[:subj])
       end
-      ra.obj    = case a[:obj]
-        when /^T/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
+      ra.obj       = case a[:obj]
+        when /^[T]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
         else           doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
       end
       ra.project_id = project.id

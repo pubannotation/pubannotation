@@ -5,7 +5,7 @@
   <% elsif @doc and @doc.sourcedb == 'PMC' %>
 	<%= t('views.projects.made_to_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
   <% else %>
-	<%= t('views.projects.in_pubapp', :href => projects_path).html_safe %>
+	<%= t('views.projects.in_pubannotation').html_safe %>
   <% end %>
   (<%= @projects.length %>)
   <% if user_signed_in? %>

@@ -5,16 +5,6 @@
   <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
   <%= stylesheet_link_tag    "application", :media => "all" %>
   <%= javascript_include_tag "application" %>
-  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
-  <script>
-    $(function() {
-      $( "#accordion" ).accordion({
-        heightStyle: "content",
-        collapsible: true,
-        <%= "active:#{params[:accordion_id]}" if params[:accordion_id].present? %>
-      });
-    });
-  </script>
   <%= csrf_meta_tags %>
 </head>
 <body>
@@ -24,10 +14,12 @@
 <div id="slogan"><%= t('views.service.slogan') %></div>
 
 <div id="account">
-[<%= render 'devise/menu/registration_items' %>|<%= render 'devise/menu/login_items' %>]
-</div>
-<div id="language">
+<span id="language">
 <%= language_switch_helper.html_safe %>
+</span>
+<span id="login">
+[<%= render 'devise/menu/registration_items' %>|<%= render 'devise/menu/login_items' %>]
+</span>
 </div>
 
 <table class="menu">

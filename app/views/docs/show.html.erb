@@ -4,13 +4,10 @@
 		> <%= link_to "projects", projects_path %>
 		> <%= link_to @project.name, project_path(@project.name) %>
 		<% if @doc and @doc.sourcedb == 'PubMed' %>
-		    > <%= link_to t('views.shared.pmdocs'), project_pmdocs_path(@project.name) %>
-		    > <%= @doc.sourceid %>
+		    > <%= t('views.shared.a_pmdoc', :sourceid => @doc.sourceid) %>
 		<% elsif @doc and @doc.sourcedb == 'PMC' %>
-		    > <%= link_to t('views.shared.pmcdocs'), project_pmcdocs_path(@project.name) %>
-		    > <%= link_to @doc.sourceid, project_pmcdoc_path(@project.name, @doc.sourceid) %>
-		    > <%= link_to t('views.shared.divs'), project_pmcdoc_divs_path(@project.name, @doc.sourceid) %>
-		    > <%= @doc.serial %>
+		    > <%= link_to t('views.shared.a_pmcdoc', :sourceid => @doc.sourceid), project_pmcdoc_path(@project.name, @doc.sourceid) %>
+		    > <%= t('views.shared.divs') %>: <%= @doc.serial %>
 		<% end %>
 	<% else %>
 		<% if @doc.sourcedb == 'PubMed' %>
@@ -34,7 +31,7 @@
 	(<%= @doc.serial %> - <%= @doc.section %>)
 	<% end %>
 </th></tr>
-<tr><td class="text"><%#= raw @text.gsub(/\n/, "<br>") %></td><tr>
+<tr><td class="text"><%= raw @text.gsub(/\n/, "<br>") %></td><tr>
 </table>
 
 
@@ -52,27 +49,22 @@
 	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 
 	<!-- automatic annotation -->
-	<!--script type="text/javascript">
-	  // function getannotation() {
-	  //   var annserver = document.getElementById("annserver").value;
-	  //   var target = '<%= annotation_url %>' + 'json'
-
-	  //   xmlhttp = new XMLHttpRequest();
-	  //   xmlhttp.open('POST', annserver, false);
-	  //   xmlhttp.onreadystatechange = function() {
-	  //     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-	  //       document.getElementById("result").value = xmlhttp.responseText;
-	  //     }
-	  //   }
-
-	  //   xmlhttp.send("target=" + target);
-	  // }
-	</script-->
-	<%= form_tag annotation_url, :method => "post" do %>
-		<%= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholders.doc.annotation_server') %>
-		<%= submit_tag(t('views.docs.get_annotations')) %>
+	<% if @project and user_signed_in? and current_user == @project.user %>
+	 	<%= form_tag annotation_url, :method => "post" do %>
+	    	<table>
+		        <tr>
+		        	<th>
+		        		<%= t('views.docs.get_annotations') %>
+		        	</th>
+		        	<td>
+						<%= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholders.doc.annotation_server') %>
+						<%= submit_tag(t('views.shared.get')) %>
+					</td>
+				</tr>
+			</table>
+		<% end %>
+		<span id="result"></span>
 	<% end %>
-	<span id="result"></span>
 
 <% else %>
 	<h2>
