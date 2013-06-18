@@ -142,23 +142,28 @@ class PmcdocsController < ApplicationController
     if params[:project_id]
       project = Project.find_by_name(params[:project_id])
       if project
-        doc = Doc.find_by_sourcedb_and_sourceid('PMC', params[:id])
-        if doc
-          if doc.projects.include?(project)
-            project.docs.delete(doc)
-            notice = "The document, #{doc.sourcedb}:#{doc.sourceid}, was removed from the annotation set, #{project.name}."
-          else
-            notice = "the annotation set, #{project.name} does not include the document, #{doc.sourcedb}:#{doc.sourceid}."
+        divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:id])
+        if divs
+          divs.each do |div|
+            if div.projects.include?(project) then project.docs.delete(div) end
           end
+          notice = "The document, #{divs.first.sourcedb}:#{divs.first.sourceid}, was removed from the annotation set, #{project.name}."
         else
-          notice = "The document, PMC:#{params[:id]}, does not exist in PubAnnotation." 
+          notice = "the project, #{project.name} does not include the document, #{divs.first.sourcedb}:#{divs.first.sourceid}."
         end
       else
-        notice = "The annotation set, #{params[:project_id]}, does not exist."
+        notice = "The project, #{params[:project_id]} does not exist in PubAnnotation." 
       end
     else
-      doc = Doc.find_by_sourcedb_and_sourceid('PMC', params[:id])
-      doc.destroy
+      divs = Doc.find_by_sourcedb_and_sourceid('PMC', params[:id])
+      if divs
+        divs.each do |div|
+          div.destroy
+        end
+        notice = "The document, #{divs.first.sourcedb}:#{divs.first.sourceid}, was removed from PubAnnotation."
+      else
+        notice = "the document, PMC:params[:id], does not exist in PubAnnotation."
+      end
     end
 
     respond_to do |format|
