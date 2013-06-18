@@ -7,10 +7,10 @@ class Relation < ActiveRecord::Base
 
   attr_accessible :hid, :pred
 
-  validates :hid,       :presence => true
-  validates :pred,   :presence => true
+  validates :hid,     :presence => true
+  validates :pred,    :presence => true
   validates :subj_id, :presence => true
-  validates :obj_id, :presence => true
+  validates :obj_id,  :presence => true
   validate :validate
 
   def get_hash

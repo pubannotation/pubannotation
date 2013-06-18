@@ -2,7 +2,11 @@ class RenameCatannsToSpans < ActiveRecord::Migration
   def up
     remove_index :catanns, :doc_id
     remove_index :catanns, :project_id
-    rename_table  :catanns, :spans
+    rename_table :catanns, :spans
+
+    Relann.where(:relsub_type => 'Catann').update_all(:relsub_type =>'Span')
+    Relann.where(:relobj_type => 'Catann').update_all(:relobj_type =>'Span')
+
     add_index :spans, :doc_id
     add_index :spans, :project_id
   end
