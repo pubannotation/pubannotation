@@ -4,6 +4,8 @@ class RenameInsannsToInstances < ActiveRecord::Migration
     remove_index  :insanns, :project_id
     rename_table  :insanns, :instances
 
+    Relation.where(:relsub_type => 'Insann').update_all(:relsub_type =>'Instance')
+    Relation.where(:relobj_type => 'Insann').update_all(:relobj_type =>'Instance')
     Modification.where(:modobj_type => 'Insann').update_all(:modobj_type =>'Instance')
 
     add_index     :instances, :insobj_id
