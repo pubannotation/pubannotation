@@ -20,11 +20,10 @@ class RenameSpansToDenotations < ActiveRecord::Migration
     Relation.where(:subj_type => 'Denotation').update_all(:subj_type =>'Span')
     Relation.where(:obj_type => 'Denotation').update_all(:obj_type =>'Span')
 
-    rename_column :denotations, :obj, :category, 
+    rename_column :denotations, :obj, :category
     rename_table  :denotations, :spans
 
     add_index :spans, :doc_id
     add_index :spans, :project_id
   end
-
 end
