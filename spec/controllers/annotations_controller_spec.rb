@@ -354,4 +354,167 @@ describe AnnotationsController do
       end
     end
   end
+  
+  describe 'destroy_all' do
+    # destroy_all_project_pmdoc_annotations
+    #POST   /projects/:project_id/pmdocs/:pmdoc_id/annotations/destroy_all(.:format)
+    before do
+      controller.class.skip_before_filter :authenticate_user!
+      @project = FactoryGirl.create(:project)
+      controller.stub(:get_project).and_return([@project, nil])
+      @another_project = FactoryGirl.create(:project)
+      @referer_path = root_path
+      request.env["HTTP_REFERER"] = @referer_path
+    end
+    
+    context 'when pmdoc' do
+      before do
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 12345, :serial => 0) 
+        controller.stub(:get_doc).and_return([@doc, nil])
+        @doc_denotatons_count = 3
+        @doc_denotasions_related_model_count = 2
+        @doc_denotatons_count.times do
+          denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+          @doc_denotasions_related_model_count.times do
+            FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
+            FactoryGirl.create(:instance, :obj => denotation, :project => @project)
+          end
+        end
+        # another_project
+        denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @doc)
+        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
+        # another_doc
+        @another_doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123456, :serial => 0) 
+        denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @another_doc)
+        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
+        FactoryGirl.create(:instance, :obj => denotation, :project => @project)
+      end
+      
+      it 'denotations are present' do
+        Denotation.all.size.should eql(@doc_denotatons_count + 2)
+      end
+      
+      it 'relations are present' do
+        Relation.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+      end
+      
+      it 'relations are present' do
+        Instance.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+      end
+      
+      it 'denotations are present' do
+        @doc.denotations.where("project_id = ?", @project.id).size.should eql(@doc_denotatons_count)
+      end
+      
+      it 'denotation.instances, subrels, objrels should present' do
+        @doc.denotations.where("project_id = ?", @project.id).each do |denotation|
+          denotation.instances.should be_present
+          denotation.subrels.should be_present 
+          denotation.objrels.should be_present 
+        end
+      end
+            
+      describe 'post' do
+        before do
+          post :destroy_all, :project_id => @project.name, :pmdoc_id => @doc.sourceid
+        end
+        
+        it 'doc.denotations should be blank' do
+          @doc.denotations.where("project_id = ?", @project.id).should be_blank
+        end
+        
+        it 'relation count should reduced ' do
+          Relation.all.size.should eql(2)
+        end
+        
+        it 'relation count should reduced ' do
+          Instance.all.size.should eql(2)
+        end
+        
+        it 'denotation.instances, subrels, objrels should present' do
+          Denotation.all.size.should eql(2)
+        end
+        
+        it 'should redirect_to referer path' do
+          response.should redirect_to(@referer_path)
+        end
+      end
+    end
+    
+    context 'when pmcdoc' do
+      before do
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'PMCß', :sourceid => 12345, :serial => 0) 
+        controller.stub(:get_doc).and_return([@doc, nil])
+        @doc_denotatons_count = 3
+        @doc_denotasions_related_model_count = 2
+        @doc_denotatons_count.times do
+          denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+          @doc_denotasions_related_model_count.times do
+            FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
+            FactoryGirl.create(:instance, :obj => denotation, :project => @project)
+          end
+        end
+        # another_project
+        denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @doc)
+        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
+        # another_doc
+        @another_doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123456, :serial => 0) 
+        denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @another_doc)
+        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
+        FactoryGirl.create(:instance, :obj => denotation, :project => @project)
+      end
+      
+      it 'denotations are present' do
+        Denotation.all.size.should eql(@doc_denotatons_count + 2)
+      end
+      
+      it 'relations are present' do
+        Relation.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+      end
+      
+      it 'relations are present' do
+        Instance.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+      end
+      
+      it 'denotations are present' do
+        @doc.denotations.where("project_id = ?", @project.id).size.should eql(@doc_denotatons_count)
+      end
+      
+      it 'denotation.instances, subrels, objrels should present' do
+        @doc.denotations.where("project_id = ?", @project.id).each do |denotation|
+          denotation.instances.should be_present
+          denotation.subrels.should be_present 
+          denotation.objrels.should be_present 
+        end
+      end
+            
+      describe 'post' do
+        before do
+          post :destroy_all, :project_id => @project.name, :div_id => 0, :pmcdoc_id => @doc.sourceid
+        end
+        
+        it 'doc.denotations should be blank' do
+          @doc.denotations.where("project_id = ?", @project.id).should be_blank
+        end
+        
+        it 'relation count should reduced ' do
+          Relation.all.size.should eql(2)
+        end
+        
+        it 'relation count should reduced ' do
+          Instance.all.size.should eql(2)
+        end
+        
+        it 'denotation.instances, subrels, objrels should present' do
+          Denotation.all.size.should eql(2)
+        end
+        
+        it 'should redirect_to referer path' do
+          response.should redirect_to(@referer_path)
+        end
+      end
+    end
+  end
 end 

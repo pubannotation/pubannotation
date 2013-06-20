@@ -290,6 +290,9 @@ en:
       overview: overview
       features: features
       formats: formats
+    annotations:
+      index:
+        confirm_destroy_all: Are you sure? All the instances and relations that belong to this annotation set will be deleted.
     divs:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
       div: Div.

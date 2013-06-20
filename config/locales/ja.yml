@@ -312,6 +312,9 @@ ja:
       overview: 概要
       features: 特徴
       formats: フォーマット
+    annotations:
+      index:
+        confirm_destroy_all: "関連するインスタンス、リレーションも全て削除されますがよろしいですか？"
     divs:
       document_divs: "<span class='meta'>ドキュメント、 <span class='pname'>%{sourcedb}:%{sourceid}</span>の</span>ディビジョン"
       div: デイビジョン

@@ -36,14 +36,22 @@ Pubann::Application.routes.draw do
 
   resources :projects do
     resources :pmdocs do
-      resources :annotations
+      resources :annotations do
+        collection do
+          post :destroy_all
+        end
+      end
     end
   end
 
   resources :projects do
     resources :pmcdocs do
       resources :divs do
-        resources :annotations
+        resources :annotations do
+          collection do
+            post :destroy_all
+          end
+        end
       end
     end
   end
