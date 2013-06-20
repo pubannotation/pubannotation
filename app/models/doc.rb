@@ -14,6 +14,6 @@ class Doc < ActiveRecord::Base
 
   has_and_belongs_to_many :projects
   
-  scope :pmdocs, where(:sourcedb => 'PubMed', :serial => 0)
+  scope :pmdocs, where(:sourcedb => 'PubMed')
   scope :pmcdocs, where(:sourcedb => 'PMC', :serial => 0)
 end
