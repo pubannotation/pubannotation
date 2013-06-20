@@ -57,10 +57,11 @@
 		        		<%= t('views.docs.get_annotations') %>
 		        	</th>
 		        	<td>
-						<%= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholders.doc.annotation_server') %>
-						<%= text_field_tag :parameter, nil, :placeholder => "parameter, e.g., name of dictionary" %>
-						<%= submit_tag(t('views.shared.get')) %>
+		        		<%= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholders.doc.annotation_server') %><br/>
+						<%= text_field_tag :dictionary, nil, :placeholder => "(optional) dictionary name" %><br/>
+						<%= text_field_tag :tax_ids, nil, :placeholder => "(optional) tax ids (space-separated)" %>
 					</td>
+					<td><%= submit_tag(t('views.shared.get')) %></td>
 				</tr>
 			</table>
 		<% end %>

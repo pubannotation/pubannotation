@@ -367,6 +367,7 @@ ja:
       edit: 編集
       error: エラー
       delete: 削除
+      delete_all: 全部削除
       none: なし
       new_model: 新規%{model}の作成
       create_model: 新規%{model}を作成

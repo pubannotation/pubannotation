@@ -342,6 +342,7 @@ en:
       edit : edit
       error: error
       delete: delete
+      delete_all: delete all
       none: none
       new_model: New %{model}
       create_model: Create new %{model}

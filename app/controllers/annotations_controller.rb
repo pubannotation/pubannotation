@@ -103,7 +103,9 @@ class AnnotationsController < ApplicationController
         if doc
           if params[:annotation_server]
             annotations = get_annotations(project, doc)
-            annotations = gen_annotations(annotations, params[:annotation_server], params[:parameter])
+
+            options = [:db_name => params[:dictionary], :tax_ids => params[:tax_ids].split(/\s+/)]
+            annotations = gen_annotations(annotations, params[:annotation_server], options)
           else
             annotations = JSON.parse params[:annotations], :symbolize_names => true
           end
