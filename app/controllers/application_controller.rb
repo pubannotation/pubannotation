@@ -221,7 +221,8 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def gen_annotations (annotation, annserver, identifier = nil)
+  def gen_annotations (annotation, annserver, parameter = nil)
+    annotation[:db_name] = parameter
     RestClient.post annserver, {:annotation => annotation.to_json}, :content_type => :json, :accept => :json do |response, request, result|
       case response.code
       when 200

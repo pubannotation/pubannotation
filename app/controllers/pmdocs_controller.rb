@@ -110,8 +110,8 @@ class PmdocsController < ApplicationController
 
     respond_to do |format|
       if num_created + num_added + num_failed > 0
-        format.html { redirect_to project_pmdocs_path(project.name), :notice => notice }
-        format.json { render :json => nil, status: :created, location: project_pmdocs_path(project.name) }
+        format.html { redirect_to project_path(project.name, :accordion_id => 1), :notice => notice }
+        format.json { render :json => nil, status: :created, location: project_path(project.name, :accordion_id => 1) }
       else
         format.html { redirect_to home_path, :notice => notice }
         format.json { head :unprocessable_entity }
@@ -163,7 +163,7 @@ class PmdocsController < ApplicationController
     respond_to do |format|
       format.html {
         if project
-          redirect_to project_pmdocs_path(project.name), :notice => notice, :method => :get
+          redirect_to project_path(project.name, :accordion_id => 1), :notice => notice, :method => :get
         else
           redirect_to pmdocs_path, notice: notice
         end
@@ -209,7 +209,7 @@ class PmdocsController < ApplicationController
     respond_to do |format|
       format.html {
         if project
-          redirect_to project_pmdocs_path(project.name), :notice => notice
+          redirect_to project_path(project.name, :accordion_id => 1), :notice => notice
         else
           redirect_to pmdocs_path, notice: notice
         end
