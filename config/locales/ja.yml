@@ -392,6 +392,7 @@ ja:
       open: 開く
       get: 取得
       divs: divs
+      div: div:%{divid}
       annotation: アノテーション
       annotation_sets: アノテーションセット
       stored_in: "<span class='meta'><span>%{pname}</span>内の</span>%{content}"   

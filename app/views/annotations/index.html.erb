@@ -1,3 +1,19 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  <% if @project %>
+    > <%= link_to "projects", projects_path %>
+    > <%= link_to @project.name, project_path(@project.name) %>
+    <% if @doc and @doc.sourcedb == 'PubMed' %>
+        > <%= link_to t('views.shared.a_pmdoc', :sourceid => @doc.sourceid), project_pmdoc_path(@project.name, @doc.sourceid) %>
+    <% elsif @doc and @doc.sourcedb == 'PMC' %>
+        > <%= link_to t('views.shared.a_pmcdoc', :sourceid => @doc.sourceid), project_pmcdoc_path(@project.name, @doc.sourceid) %>
+        > <%= link_to t('views.shared.div', :divid => @doc.serial), project_pmcdoc_div_path(@project.name, @doc.sourceid, @doc.serial) %>
+    <% end %>
+    > annotations
+  <% else %>
+  <% end %>
+<% end %>
+
 <h1 class="capitalize_first">
 	<%= t('views.shared.annotation') %>
 	

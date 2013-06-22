@@ -297,8 +297,8 @@ en:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
       div: Div.
     docs:
-      annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'> within <span class='pname'>%{project_name}</span></span>"
-      annsets_made_to_document: "Annotation sets <span class='meta'>made to this document</span>"
+      annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'> within the project, <span class='pname'>%{project_name}</span></span>"
+      annsets_made_to_document: "Annotation projects <span class='meta'>including this document</span>"
       get_annotations: Get automatic annotations
     paths:
       home: home
@@ -362,6 +362,7 @@ en:
       search: search
       get: get
       divs: divs
+      div: div:%{divid}
       annotation: annnotation
       annotation_sets: annotation sets
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
