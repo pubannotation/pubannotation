@@ -8,6 +8,7 @@
 </h1>
 
 <div>
+<!--
   <%= form_tag(search_pmdocs_path, :method => :get)  do %>
   	<%= label_tag :sourceid, t('activerecord.attributes.doc.sourceid') %>
     <%= autocomplete_field_tag 'sourceid', '', autocomplete_doc_sourceid_pmdocs_path, :value => params[:sourceid] %>
@@ -15,7 +16,7 @@
   	<%= text_field_tag :body, params[:body], :value => params[:body] %>
   	<%= submit_tag t('views.shared.search') %>
   <% end %>
-
+ -->
   <% if docs.empty? %>
     <%= t('views.shared.none') %>
   <% else %>
