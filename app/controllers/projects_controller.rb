@@ -11,7 +11,7 @@ class ProjectsController < ApplicationController
         @projects = get_projects(@doc)
       else
         @projects = nil
-        notice = t('controller.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
+        notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
       end
     else
       @projects = get_projects()
@@ -115,7 +115,7 @@ class ProjectsController < ApplicationController
     @project.destroy
 
     respond_to do |format|
-      format.html { redirect_to projects_path, notice: t('controller.projects.destroy.deleted', :id => params[:id]) }
+      format.html { redirect_to projects_path, notice: t('controllers.projects.destroy.deleted', :id => params[:id]) }
       format.json { head :no_content }
     end
   end

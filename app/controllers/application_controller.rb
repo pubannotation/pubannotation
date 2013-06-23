@@ -275,6 +275,7 @@ class ApplicationController < ActionController::Base
       #   annotations[:pmcdoc_id] = doc.sourceid
       #   annotations[:div_id] = doc.serial
       # end
+      annotations[:project] = project[:name]
       annotations[:source_db] = doc.sourcedb
       annotations[:source_id] = doc.sourceid
       annotations[:division_id] = doc.serial

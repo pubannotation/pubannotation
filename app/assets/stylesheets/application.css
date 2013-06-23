@@ -12,13 +12,6 @@
  *=# require_tree .
  */
 
-@font-face {  
-  font-family: Gill-Sans-Bold;
-  src: url("/assets/Gill Sans Bold.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-}
-
 body {
     margin:0px;
 /*    font-family:Arial, Helvetica, sans-serif;*/
@@ -50,7 +43,7 @@ body {
 
 #slogan {
     margin-bottom:10px;
-    font-family: Gill-Sans-Bold, fantasy, sans-serif;
+    font-family: Gill Sans / Gill Sans MT, sans-serif;
     /*font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;*/
     font-size: small;
     font-style: italic;
@@ -156,7 +149,7 @@ h1 {
 }
 
 h2 {
-    width:37em;
+    width:40em;
 
     margin-top:25px;
     margin-bottom:10px;
