@@ -21,7 +21,7 @@ class DivsController < ApplicationController
       @project, notice = get_project(params[:project_id])
       if @project
         @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id], @project)
-        @annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
+        @annotations = get_annotations(@project, @doc)
       else
         @doc = nil
       end

@@ -37,6 +37,7 @@ class PmdocsController < ApplicationController
       @project, notice = get_project(params[:project_id])
       if @project
         @doc, notice = get_doc('PubMed', params[:id], 0, @project)
+        @annotations = get_annotations(@project, @doc)
       else
         @doc = nil
       end

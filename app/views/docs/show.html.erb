@@ -46,8 +46,8 @@
 		<%= t('views.docs.annotation_within_project', :project_name => @project.name).html_safe %>
 	</h2>
 	<ul>
-		<li>denotations: <%= (@annotations and @annotations[:denotations])? @annotations[:denotations].length : 0 %></li>
-		<li>relations: <%= (@annotations and @annotations[:relations])? @annotations[:relations].length : 0 %></li>
+		<li>denotations: <%= (@annotations[:denotations])? @annotations[:denotations].length : 0 %></li>
+		<li>relations: <%= (@annotations[:relations])? @annotations[:relations].length : 0 %></li>
 	</ul>
 
 	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
