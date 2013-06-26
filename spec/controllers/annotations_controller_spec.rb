@@ -214,7 +214,7 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server'
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
               end
               
               it 'should redirect to project_pmdoc_path' do
@@ -226,7 +226,7 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server'
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
               end
               
               it 'should redirect to project_pmdoc_path' do
@@ -240,7 +240,7 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server', :annotations => {:id => 1}.to_json, :format => 'json'
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :annotations => {:id => 1}.to_json, :format => 'json', :tax_ids => '1 2'
               end
               
               it 'should return blank response header' do

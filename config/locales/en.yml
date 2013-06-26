@@ -260,6 +260,12 @@ en:
       create:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
         annotation_set_not_specified: Annotation set is not specified.
+      destroy:
+        document_removed_from_annotation_set: "The document, %{sourcedb}:%{sourceid}, was removed from the annotation set, %{project_name}."
+        project_does_not_include_document: "the project, %{project_name} does not include the document, %{sourcedb}."
+        project_does_not_exist_in_pubannotation: "The project, %{project_id} does not exist in PubAnnotation." 
+        document_removed_from_pubannotation: "The document, %{sourcedb}:%{sourceid}, was removed from PubAnnotation."
+        document_does_not_exist_in_pubannotation: "the document, PMC:%{id}, does not exist in PubAnnotation." 
     pmdocs:
       create:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'

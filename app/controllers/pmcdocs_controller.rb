@@ -143,26 +143,30 @@ class PmcdocsController < ApplicationController
       project = Project.find_by_name(params[:project_id])
       if project
         divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:id])
-        if divs
+        if divs.present?
           divs.each do |div|
-            if div.projects.include?(project) then project.docs.delete(div) end
+            if div.projects.include?(project)
+              project.docs.delete(div) 
+            end
           end
-          notice = "The document, #{divs.first.sourcedb}:#{divs.first.sourceid}, was removed from the annotation set, #{project.name}."
+          notice = I18n.t('controllers.pmcdocs.destroy.document_removed_from_annotation_set', :sourcedb => divs.first.sourcedb, :sourceid => divs.first.sourceid,:project_name => project.name)
         else
-          notice = "the project, #{project.name} does not include the document, #{divs.first.sourcedb}:#{divs.first.sourceid}."
+          # TODO sourceid is not specified
+          #notice = "the project, #{project.name} does not include the document, #{divs.first.sourcedb}:#{divs.first.sourceid}."
+          notice = I18n.t('controllers.pmcdocs.destroy.project_does_not_include_document', :project_name => project.name, :sourcedb => params[:id])
         end
       else
-        notice = "The project, #{params[:project_id]} does not exist in PubAnnotation." 
+        notice = I18n.t('controllers.pmcdocs.destroy.project_does_not_exist_in_pubannotation', :project_id => params[:project_id]) 
       end
     else
-      divs = Doc.find_by_sourcedb_and_sourceid('PMC', params[:id])
-      if divs
+      divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:id])
+      if divs.present?
         divs.each do |div|
           div.destroy
         end
-        notice = "The document, #{divs.first.sourcedb}:#{divs.first.sourceid}, was removed from PubAnnotation."
+        notice = I18n.t('controllers.pmcdocs.destroy.document_removed_from_pubannotation', :sourcedb => divs.first.sourcedb, :sourceid => divs.first.sourceid)
       else
-        notice = "the document, PMC:params[:id], does not exist in PubAnnotation."
+        notice = I18n.t('controllers.pmcdocs.destroy.document_does_not_exist_in_pubannotation', :id => params[:id])
       end
     end
 

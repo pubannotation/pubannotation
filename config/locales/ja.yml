@@ -282,6 +282,12 @@ ja:
       create:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
         annotation_set_not_specified: アノテーションセットが未指定です
+      destroy:
+        document_removed_from_annotation_set: "ドキュメント %{sourcedb}:%{sourceid}はアノテーションセット%{project_name}から削除されました"
+        project_does_not_include_document: "プロジェクト %{project_name}はドキュメント%{sourcedb}を含んでいません"
+        project_does_not_exist_in_pubannotation: "プロジェクト %{project_id}はPubAnnotation内に存在しません" 
+        document_removed_from_pubannotation: "ドキュメント %{sourcedb}:%{sourceid}はPubAnnotationから削除されました"
+        document_does_not_exist_in_pubannotation: "ドキュメント PMC:%{id}はPubAnnotation内に存在しません" 
     pmdocs:
       create:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'

@@ -576,6 +576,7 @@ describe ApplicationController do
           
           it 'should returns doc params' do
             @result.should eql({
+            :project => @project.name,
               :source_db => @doc.sourcedb, 
               :source_id => @doc.sourceid, 
               :division_id => @doc.serial, 
@@ -598,6 +599,7 @@ describe ApplicationController do
           
           it 'should returns doc params, denotations, instances, relations and modifications' do
             @result.should eql({
+              :project => @project.name,
               :source_db => @doc.sourcedb, 
               :source_id => @doc.sourceid, 
               :division_id => @doc.serial, 
@@ -620,9 +622,10 @@ describe ApplicationController do
           controller.stub(:get_ascii_text).and_return(@get_ascii_text)
           @result = controller.get_annotations(@project, @doc, :encoding => 'ascii')
         end
-        
+
         it 'should return doc params and ascii encoded text' do
           @result.should eql({
+            :project => @project.name,
             :source_db => @doc.sourcedb, 
             :source_id => @doc.sourceid, 
             :division_id => @doc.serial, 
@@ -644,6 +647,7 @@ describe ApplicationController do
         
         it 'should return doc params' do
           @result.should eql({
+            :project => @project.name,
             :source_db => @doc.sourcedb, 
             :source_id => @doc.sourceid, 
             :division_id => @doc.serial, 
