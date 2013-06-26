@@ -16,8 +16,7 @@
 
 <h1 class="capitalize_first">
 	<%= t('views.shared.annotation') %>
-	
-	<% if user_signed_in? && @project.user == current_user && @denotations.present? %>
+	<% if @denotations.present? && user_signed_in? && @project.user == current_user %>
 		<% if params[:pmcdoc_id].present? %>
 			<% destroy_all_path = destroy_all_project_pmcdoc_div_annotations_path %>
 		<% else %>

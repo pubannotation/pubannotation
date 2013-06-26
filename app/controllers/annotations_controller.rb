@@ -172,7 +172,6 @@ class AnnotationsController < ApplicationController
     sourcedb, sourceid, serial = get_docspec(params)
     @doc = get_doc(sourcedb, sourceid, serial, @project)[0]
     if @doc
-      @doc.denotations
       annotations = @doc.denotations.where("project_id = ?", @project.id)
       
       ActiveRecord::Base.transaction do

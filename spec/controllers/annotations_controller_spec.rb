@@ -440,6 +440,30 @@ describe AnnotationsController do
           response.should redirect_to(@referer_path)
         end
       end
+      
+      describe 'transaction cause error' do
+        before do
+          ActiveRecord::Relation.any_instance.stub(:destroy_all).and_raise('ERROR')
+          #ActiveRecord::Relation.stub(:destroy_all).and_raise('ERROR')
+          post :destroy_all, :project_id => @project.name, :pmdoc_id => @doc.sourceid
+        end
+        
+        it 'should set flash[:notice]' do
+          flash[:notice].should be_present
+        end
+        
+        it 'denotations are not destroied' do
+          Denotation.all.size.should eql(@doc_denotatons_count + 2)
+        end
+        
+        it 'relations are not destroied' do
+          Relation.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+        end
+        
+        it 'relations are not destroied' do
+          Instance.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+        end        
+      end
     end
     
     context 'when pmcdoc' do
