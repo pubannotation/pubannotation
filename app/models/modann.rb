@@ -6,12 +6,4 @@ class Modann < ActiveRecord::Base
 
   validates :hid,     :presence => true
   validates :modtype, :presence => true
-
-  def get_hash
-    hmodann = Hash.new
-    hmodann[:id]    = hid
-    hmodann[:type]   = modtype
-    hmodann[:object] = modobj.hid
-    hmodann
-  end
 end

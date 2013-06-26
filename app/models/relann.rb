@@ -11,13 +11,4 @@ class Relann < ActiveRecord::Base
   validates :reltype,   :presence => true
   validates :relsub_id, :presence => true
   validates :relobj_id, :presence => true
-
-  def get_hash
-    hrelann = Hash.new
-    hrelann[:id]     = hid
-    hrelann[:type]    = reltype
-    hrelann[:subject] = relsub.hid
-    hrelann[:object]  = relobj.hid
-    hrelann
-  end
 end
