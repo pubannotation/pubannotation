@@ -87,8 +87,8 @@ class Aligner
     denotations_new = Array.new(denotations)
 
     (0...denotations.length).each do |i|
-      denotations_new[i][:denotation][:begin] = @posmap[denotations[i][:denotation][:begin]]
-      denotations_new[i][:denotation][:end]   = @posmap[denotations[i][:denotation][:end]]
+      denotations_new[i][:span][:begin] = @posmap[denotations[i][:span][:begin]]
+      denotations_new[i][:span][:end]   = @posmap[denotations[i][:span][:end]]
     end
 
     denotations_new
