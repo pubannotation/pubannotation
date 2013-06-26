@@ -163,4 +163,67 @@ describe Doc do
       @project_2.docs.should include(@doc_1)
     end
   end
+  
+  describe 'scope' do
+    describe 'pmdocs' do
+      before do
+        @pmdocs_count = 3
+        @pmdocs_count.times do
+          FactoryGirl.create(:doc, :sourcedb => 'PubMed')
+        end
+        @not_pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+        @pmdocs = Doc.pmdocs
+      end
+      
+      it 'should match doc where sourcedb == PubMed size' do
+        @pmdocs.size.should eql(@pmdocs_count)
+      end
+      
+      it 'should not include document where sourcedb != PubMed' do
+        @pmdocs.should_not include(@not_pmdoc)
+      end
+    end
+    
+    describe 'pmcdocs' do
+      before do
+        @pmcdocs_count = 3
+        @pmcdocs_count.times do
+          FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+        end
+        @not_pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
+        @serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
+        @pmcdocs = Doc.pmcdocs
+      end
+      
+      it 'should match doc where sourcedb == PMC size' do
+        @pmcdocs.size.should eql(@pmcdocs_count)
+      end
+      
+      it 'should not include document where sourcedb != PMC' do
+        @pmcdocs.should_not include(@not_pmcdoc)
+      end
+      
+      it 'should not include document where serial != 0' do
+        @pmcdocs.should_not include(@serial_1)
+      end
+    end
+    
+    describe 'project_name' do
+      before do
+        @project_1 = FactoryGirl.create(:project, :name => 'project_1')
+        @doc_1 = FactoryGirl.create(:doc)
+        FactoryGirl.create(:docs_project, :project_id => @project_1.id, :doc_id => @doc_1.id)
+        @doc_2 = FactoryGirl.create(:doc)
+        FactoryGirl.create(:docs_project, :project_id => @project_1.id, :doc_id => @doc_2.id)
+        @project_2 = FactoryGirl.create(:project, :name => 'project_2')
+        @doc_3 = FactoryGirl.create(:doc)
+        FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => @doc_3.id)
+        @project_name = Doc.project_name(@project_1.name)
+      end
+      
+      it '' do
+        @project_name.should =~ [@doc_1, @doc_2]
+      end
+    end
+  end
 end

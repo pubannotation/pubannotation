@@ -8,6 +8,15 @@ Pubann::Application.routes.draw do
   resources :projects do
     resources :docs
     resources :annotations
+    member do
+      get :search  
+    end
+    
+    collection do
+      # auto complete path which use scope and scope argument required :scope_argument param
+      get 'autocomplete_pmdoc_sourceid/:scope_argument'   => 'projects#autocomplete_pmdoc_sourceid',  :as => 'autocomplete_pmdoc_sourceid'
+      get 'autocomplete_pmcdoc_sourceid/:scope_argument'  => 'projects#autocomplete_pmcdoc_sourceid', :as => 'autocomplete_pmcdoc_sourceid'
+    end
   end
 
   resources :pmdocs do
