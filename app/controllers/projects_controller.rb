@@ -1,5 +1,7 @@
 class ProjectsController < ApplicationController
-  before_filter :authenticate_user!, :except => [:index, :show]
+  before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid]
+  autocomplete :pmdoc,  :sourceid, :class_name => :doc, :scopes => [:pmdocs,  :project_name => :project_name]
+  autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
 
   # GET /projects
   # GET /projects.json
@@ -117,6 +119,29 @@ class ProjectsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to projects_path, notice: t('controllers.projects.destroy.deleted', :id => params[:id]) }
       format.json { head :no_content }
+    end
+  end
+  
+  def search
+    @project, notice = get_project(params[:id])
+    if @project
+      docs = @project.docs
+      # PubMed
+      pmdocs = docs.where(:sourcedb => 'PubMed')
+      if params[:doc] == 'PubMed'
+        pmdocs = pmdocs.where('sourceid like ?', "%#{params[:sourceid]}%") if params[:sourceid].present?
+        pmdocs = pmdocs.where('body like ?', "%#{params[:body]}%") if params[:body].present?
+      end
+      @pmdocs = pmdocs.paginate(:page => params[:page])
+      # PMC
+      pmcdocs = docs.pmcdocs
+      if params[:doc] == 'PMC'
+        pmcdocs = pmcdocs.where('sourceid like ?', "%#{params[:sourceid]}%") if params[:sourceid].present?
+        pmcdocs = pmcdocs.where('body like ?', "%#{params[:body]}%") if params[:body].present?
+      end
+      @pmcdocs = pmcdocs.paginate(:page => params[:page])
+      flash[:notice] = notice
+      render :template => 'projects/show'
     end
   end
 end

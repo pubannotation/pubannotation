@@ -93,7 +93,7 @@ describe ProjectsController do
     context 'when project exists' do
       before do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        controller.stub(:get_project).and_return(@project)  
+        controller.stub(:get_project).and_return(@project)
       end
       
       context 'when sourceid exists' do
@@ -347,6 +347,288 @@ describe ProjectsController do
       
       it 'should return response blank header' do
         response.header.should be_blank
+      end
+    end
+  end
+  
+  describe 'search' do
+    before do
+      @project = FactoryGirl.create(:project, :name => 'project_name') 
+      controller.stub(:get_project).and_return(@project)
+      # PubMed
+      @PubMed_sourceid_123_body_abc_serial_0 =   FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => '123',   :body => 'abc', :serial => 0)
+      FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @PubMed_sourceid_123_body_abc_serial_0.id)
+      @PubMed_sourceid_223_body_abc_serial_0 =   FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => '223',   :body => 'abc', :serial => 0)
+      FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @PubMed_sourceid_223_body_abc_serial_0.id)
+      @PubMed_sourceid_1234_body_bbcd_serial_1 =  FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => '1234',  :body => 'bbcd', :serial => 1)
+      FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @PubMed_sourceid_1234_body_bbcd_serial_1.id)
+      @project_PubMed_docs = @project.docs.where(:sourcedb => 'PubMed')
+
+      # PMC
+      @PMC_sourceid_123_body_abc_serial_0 =      FactoryGirl.create(:doc, :sourcedb => 'PMC',    :sourceid => '123',   :body => 'abc', :serial => 0)
+      FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @PMC_sourceid_123_body_abc_serial_0.id)
+      @PMC_sourceid_223_body_abc_serial_0 =      FactoryGirl.create(:doc, :sourcedb => 'PMC',    :sourceid => '223',   :body => 'abc', :serial => 0)
+      FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @PMC_sourceid_223_body_abc_serial_0.id)
+      @PMC_sourceid_123_body_abc_serial_1 =      FactoryGirl.create(:doc, :sourcedb => 'PMC',    :sourceid => '123',   :body => 'abc', :serial => 1)
+      FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @PMC_sourceid_123_body_abc_serial_1.id)
+      @PMC_sourceid_1234_body_bbcd_serial_0 =     FactoryGirl.create(:doc, :sourcedb => 'PMC',    :sourceid => '1234',  :body => 'bbcd', :serial => 0)
+      FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @PMC_sourceid_1234_body_bbcd_serial_0.id)
+      @project_PMC_docs =  @project.docs.pmcdocs
+
+      # another projects
+      @PubMed_another_project =   FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => '123',   :body => 'abc', :serial => 0)
+      @PMC_another_project =  FactoryGirl.create(:doc, :sourcedb => 'PMC',    :sourceid => '1234',  :body => 'abcd', :serial => 0)
+    end
+    
+    context 'when params[:doc] is PMC' do
+      context 'when params[:sourceid] and params[:body] is blank' do
+        before do
+          get :search, :id => @project.name, :doc => 'PMC', :sourceid => nil, :body => nil
+        end  
+        
+        it 'should have PubMed documents' do
+          @project_PubMed_docs.should be_present
+        end
+        
+        it 'should include all PubMed documents in project' do
+          assigns[:pmdocs].should =~ @project_PubMed_docs
+        end
+        
+        it 'should have PMC documents' do
+          @project_PMC_docs.should be_present
+        end
+        
+        it 'should include all PMC documents in project' do
+          assigns[:pmcdocs].should =~ @project_PMC_docs
+        end
+
+        it 'should not include project.doc where serial is not 0' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_123_body_abc_serial_1)
+        end
+        
+        it 'should not include another project PubMed document' do
+          assigns[:pmdocs].should_not include(@PubMed_another_project)
+        end
+        
+        it 'should not include another project PMC document' do
+          assigns[:pmcdocs].should_not include(@PMC_another_project)
+        end
+      end
+      
+      context 'when params[:sourceid] present' do
+        before do
+          get :search, :id => @project.name, :doc => 'PMC', :sourceid => 123, :body => nil
+        end
+        
+        it 'should include project.doc where sourceid = PMC and sourceid like params[:sourceid]' do
+          assigns[:pmcdocs].should include(@PMC_sourceid_123_body_abc_serial_0)
+        end        
+        
+        it 'should not include project.doc where sourceid = PMC and sourceid is not like params[:sourceid]' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_223_body_abc_serial_0)
+        end        
+        
+        it 'should include project.doc where sourceid = PMC and sourceid is like params[:sourceid]' do
+          assigns[:pmcdocs].should include(@PMC_sourceid_1234_body_bbcd_serial_0)
+        end
+        
+        it 'should not include project.doc where serial is not 0' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_123_body_abc_serial_1)
+        end
+        
+        it 'should not include another project PubMed document' do
+          assigns[:pmdocs].should_not include(@PubMed_another_project)
+        end
+        
+        it 'should not include another project PMC document' do
+          assigns[:pmcdocs].should_not include(@PMC_another_project)
+        end
+      end  
+      
+      context 'when params[:body] present' do
+        before do
+          get :search, :id => @project.name, :doc => 'PMC', :sourceid => nil, :body => 'abc'
+        end
+        
+        it 'should include project.doc where sourceid = PMC and body like params[:body]' do
+          assigns[:pmcdocs].should include(@PMC_sourceid_123_body_abc_serial_0)
+        end        
+        
+        it 'should include project.doc where sourceid = PMC and body like params[:body]' do
+          assigns[:pmcdocs].should include(@PMC_sourceid_223_body_abc_serial_0)
+        end        
+        
+        it 'should not include project.doc where sourceid = PMC and body is not like params[:body]' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_1234_body_bbcd_serial_0)
+        end
+        
+        it 'should not include project.doc where serial is not 0' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_123_body_abc_serial_1)
+        end
+        
+        it 'should not include another project PubMed document' do
+          assigns[:pmdocs].should_not include(@PubMed_another_project)
+        end
+        
+        it 'should not include another project PMC document' do
+          assigns[:pmcdocs].should_not include(@PMC_another_project)
+        end
+      end  
+      
+      context 'when params[:sourceid] and params[:body] present' do
+        before do
+          get :search, :id => @project.name, :doc => 'PMC', :sourceid => nil, :body => 'abc'
+        end
+        
+        it 'should include project.doc where sourceid = PMC and body like params[:body]' do
+          assigns[:pmcdocs].should include(@PMC_sourceid_123_body_abc_serial_0)
+        end        
+        
+        it 'should include project.doc where sourceid = PMC and body like params[:body]' do
+          assigns[:pmcdocs].should include(@PMC_sourceid_223_body_abc_serial_0)
+        end        
+        
+        it 'should not include project.doc where sourceid = PMC and body is not like params[:body]' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_1234_body_bbcd_serial_0)
+        end
+        
+        it 'should not include project.doc where serial is not 0' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_123_body_abc_serial_1)
+        end
+        
+        it 'should not include another project PubMed document' do
+          assigns[:pmdocs].should_not include(@PubMed_another_project)
+        end
+        
+        it 'should not include another project PMC document' do
+          assigns[:pmcdocs].should_not include(@PMC_another_project)
+        end
+      end  
+    end
+    
+    context 'when params[:doc] is PubMed' do
+      context 'when params[:sourceid] and params[:body] is blank' do
+        before do
+          get :search, :id => @project.name, :doc => 'PubMed', :sourceid => nil, :body => nil
+        end
+        
+        it 'should have PubMed documents' do
+          @project_PubMed_docs.should be_present
+        end
+        
+        it 'should include all PubMed documents in project' do
+          assigns[:pmdocs].should =~ @project_PubMed_docs
+        end
+        
+        it 'should have PMC documents' do
+          @project_PMC_docs.should be_present
+        end
+        
+        it 'should include all PMC documents in project' do
+          assigns[:pmcdocs].should =~ @project_PMC_docs
+        end
+
+        it 'should not include project.doc where serial is not 0' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_123_body_abc_serial_1)
+        end
+        
+        it 'should not include another project PubMed document' do
+          assigns[:pmdocs].should_not include(@PubMed_another_project)
+        end
+        
+        it 'should not include another project PMC document' do
+          assigns[:pmcdocs].should_not include(@PMC_another_project)
+        end
+      end
+      
+      context 'when params[:sourceid] present' do
+        before do
+          get :search, :id => @project.name, :doc => 'PubMed', :sourceid => 123
+        end
+        
+        it 'should include project.doc where sourceid = PubMed and sourceid like params[:sourceid]' do
+          assigns[:pmdocs].should include(@PubMed_sourceid_123_body_abc_serial_0)
+        end
+        
+        it 'should include project.doc where sourceid = PubMed and sourceid like params[:sourceid]' do
+          assigns[:pmdocs].should include(@PubMed_sourceid_1234_body_bbcd_serial_1)
+        end
+        
+        it 'should not include project.doc where sourceid = PubMed and sourceid is not like params[:sourceid]' do
+          assigns[:pmdocs].should_not include(@PubMed_sourceid_223_body_abc_serial_0)
+        end
+
+        it 'should not include project.doc where serial is not 0' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_123_body_abc_serial_1)
+        end
+                
+        it 'should not include another project PubMed document' do
+          assigns[:pmdocs].should_not include(@PubMed_another_project)
+        end
+        
+        it 'should not include another project PMC document' do
+          assigns[:pmcdocs].should_not include(@PMC_another_project)
+        end
+      end
+      
+      context 'when params[:body] present' do
+        before do
+          get :search, :id => @project.name, :doc => 'PubMed', :sourceid => nil, :body => 'abc'
+        end
+        
+        it 'should include project.doc where sourceid = PubMed and body like params[:body]' do
+          assigns[:pmdocs].should include(@PubMed_sourceid_123_body_abc_serial_0)
+        end
+        
+        it 'should not include project.doc where sourceid = PubMed and body is not like params[:body]' do
+          assigns[:pmdocs].should_not include(@PubMed_sourceid_1234_body_bbcd_serial_1)
+        end
+        
+        it 'should include project.doc where sourceid = PubMed and body like params[:body]' do
+          assigns[:pmdocs].should include(@PubMed_sourceid_223_body_abc_serial_0)
+        end
+        
+        it 'should not include project.doc where serial is not 0' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_123_body_abc_serial_1)
+        end
+
+        it 'should not include another project PubMed document' do
+          assigns[:pmdocs].should_not include(@PubMed_another_project)
+        end
+        
+        it 'should not include another project PMC document' do
+          assigns[:pmcdocs].should_not include(@PMC_another_project)
+        end
+      end
+      
+      context 'when params[:sourceid] and params[:body] present' do
+        before do
+          get :search, :id => @project.name, :doc => 'PubMed', :sourceid => 123, :body => 'abc'
+        end
+        
+        it 'should include project.doc where sourceid = PubMed and body like params[:body]' do
+          assigns[:pmdocs].should include(@PubMed_sourceid_123_body_abc_serial_0)
+        end
+        
+        it 'should not include project.doc where sourceid = PubMed and body is not like params[:body]' do
+          assigns[:pmdocs].should_not include(@PubMed_sourceid_1234_body_bbcd_serial_1)
+        end
+        
+        it 'should not include project.doc where sourceid = PubMed and body is not like params[:sourceid]' do
+          assigns[:pmdocs].should_not include(@PubMed_sourceid_223_body_abc_serial_0)
+        end
+
+        it 'should not include project.doc where serial is not 0' do
+          assigns[:pmcdocs].should_not include(@PMC_sourceid_123_body_abc_serial_1)
+        end
+                
+        it 'should not include another project PubMed document' do
+          assigns[:pmdocs].should_not include(@PubMed_another_project)
+        end
+        
+        it 'should not include another project PMC document' do
+          assigns[:pmcdocs].should_not include(@PMC_another_project)
+        end
       end
     end
   end

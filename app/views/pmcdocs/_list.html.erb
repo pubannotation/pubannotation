@@ -8,15 +8,25 @@
 </h1>
 
 <div>
-<!-- 
-  <%= form_tag(search_pmcdocs_path, :method => :get) do %>
-	  <%= label_tag :sourceid, t('activerecord.attributes.doc.sourceid') %>
-    <%= autocomplete_field_tag 'sourceid', '', autocomplete_doc_sourceid_pmcdocs_path, :value => params[:sourceid] %>
-	  <%= label_tag :sourceid, t('activerecord.attributes.doc.body') %>
-	  <%= text_field_tag :body, params[:body], :value => params[:body] %>
-	  <%= submit_tag t('views.shared.search') %>
+
+	<% if @project.present? %>
+		<% search_path = search_project_path(@project.name) %>
+		<% auto_complete_path = "/projects/autocomplete_pmcdoc_sourceid/#{params[:id]}" %>
+		<% doc_tag = hidden_field_tag :doc, 'PMC' %>
+	<% else %>
+		<% search_path = search_pmcdocs_path %>
+		<% auto_complete_path = autocomplete_doc_sourceid_pmcdocs_path %>
+	<% end %>
+
+  <%= form_tag(search_path, :method => :get)  do %>
+	<%= doc_tag %>
+	<%= label_tag :sourceid, t('activerecord.attributes.doc.sourceid') %>
+    <%= autocomplete_field_tag 'sourceid', '', auto_complete_path, :value => params[:sourceid] %>
+	<%= label_tag :sourceid, t('activerecord.attributes.doc.body') %>
+	<%= text_field_tag :body, params[:body], :value => params[:body] %>
+	<%= submit_tag t('views.shared.search') %>
   <% end %>
- -->	
+	
   <% if docs.empty? %>
     none
     <%= t('views.shared.none') %>

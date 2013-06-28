@@ -513,7 +513,6 @@ describe PmdocsController do
     context 'without pagination' do
       before do
         @pmc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234)
-        @selial_1 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 1, :sourceid => 123)
         @sourceid_123 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 123)
         @sourceid_1234 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1234)
         @sourceid_1123 = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 1123)
@@ -529,23 +528,19 @@ describe PmdocsController do
           assigns[:docs].should_not include(@pmc)
         end
         
-        it 'should not include soucedb is PubMed and serial is not 0' do
-          assigns[:docs].should_not include(@selial_1)
-        end
-        
-        it 'should include soucedb is PubMed and serial is 0' do
+        it 'should include soucedb is PubMed' do
           assigns[:docs].should include(@sourceid_123)
         end
   
-        it 'should include soucedb is PubMed and serial is 0' do
+        it 'should include soucedb is PubMed' do
           assigns[:docs].should include(@sourceid_1234)
         end
   
-        it 'should include soucedb is PubMed and serial is 0' do
+        it 'should include soucedb is PubMed' do
           assigns[:docs].should include(@sourceid_1123)
         end
   
-        it 'should include soucedb is PubMed and serial is 0' do
+        it 'should include soucedb is PubMed' do
           assigns[:docs].should include(@sourceid_234)
         end
       end
@@ -557,10 +552,6 @@ describe PmdocsController do
         
         it 'should not include sourcedb is not PubMed' do
           assigns[:docs].should_not include(@pmc)
-        end
-        
-        it 'should not include serial is not 0' do
-          assigns[:docs].should_not include(@selial_1)
         end
         
         it 'should include sourceid include 123' do
