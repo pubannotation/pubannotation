@@ -214,7 +214,7 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server'
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
               end
               
               it 'should redirect to project_pmdoc_path' do
@@ -226,7 +226,7 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server'
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
               end
               
               it 'should redirect to project_pmdoc_path' do
@@ -240,7 +240,7 @@ describe AnnotationsController do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server', :annotations => {:id => 1}.to_json, :format => 'json'
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :annotations => {:id => 1}.to_json, :format => 'json', :tax_ids => '1 2'
               end
               
               it 'should return blank response header' do
@@ -439,6 +439,30 @@ describe AnnotationsController do
         it 'should redirect_to referer path' do
           response.should redirect_to(@referer_path)
         end
+      end
+      
+      describe 'transaction cause error' do
+        before do
+          ActiveRecord::Relation.any_instance.stub(:destroy_all).and_raise('ERROR')
+          #ActiveRecord::Relation.stub(:destroy_all).and_raise('ERROR')
+          post :destroy_all, :project_id => @project.name, :pmdoc_id => @doc.sourceid
+        end
+        
+        it 'should set flash[:notice]' do
+          flash[:notice].should be_present
+        end
+        
+        it 'denotations are not destroied' do
+          Denotation.all.size.should eql(@doc_denotatons_count + 2)
+        end
+        
+        it 'relations are not destroied' do
+          Relation.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+        end
+        
+        it 'relations are not destroied' do
+          Instance.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+        end        
       end
     end
     

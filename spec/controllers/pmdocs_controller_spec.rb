@@ -201,7 +201,7 @@ describe PmdocsController do
             end
             
             it 'should redirect to project_pmdocs_path' do
-              response.should redirect_to(project_pmdocs_path(@project.name))
+              response.should redirect_to(project_path(@project.name, :accordion_id => 1))
             end
           end
           
@@ -215,7 +215,7 @@ describe PmdocsController do
             end
             
             it 'should return location' do
-              response.location.should eql(project_pmdocs_path(@project.name))
+              response.location.should eql(project_path(@project.name, :accordion_id => 1))
             end
           end
         end
@@ -229,7 +229,7 @@ describe PmdocsController do
             end
             
             it 'should redirect to project_pmdocs_path' do
-              response.should redirect_to(project_pmdocs_path(@project.name))
+              response.should redirect_to(project_path(@project.name, :accordion_id => 1))
             end
           end
 
@@ -241,7 +241,7 @@ describe PmdocsController do
             end
             
             it 'should redirect to project_pmdocs_path' do
-              response.should redirect_to(project_pmdocs_path(@project.name))
+              response.should redirect_to(project_path(@project.name, :accordion_id => 1))
             end
           end
         end
@@ -266,7 +266,7 @@ describe PmdocsController do
               end
               
               it 'should redirect to project_pmdocs_path' do
-                response.should redirect_to(project_pmdocs_path(@project.name))
+                response.should redirect_to(project_path(@project.name, :accordion_id => 1))
               end
             end
             
@@ -293,7 +293,7 @@ describe PmdocsController do
             end
 
             it 'should redirect to project_pmdocs_path' do
-              response.should redirect_to(project_pmdocs_path(@project.name))
+              response.should redirect_to(project_path(@project.name, :accordion_id => 1))
             end
             
             it 'should set flash[:notice]' do
@@ -310,7 +310,7 @@ describe PmdocsController do
             end
 
             it 'should redirect to project_pmdocs_path' do
-              response.should redirect_to(project_pmdocs_path(@project.name))
+              response.should redirect_to(project_path(@project.name, :accordion_id => 1))
             end
             
             it 'should set flash[:notice]' do
@@ -442,7 +442,7 @@ describe PmdocsController do
                 end
                 
                 it 'should redirect to project_pmdocs_path(project.name)' do
-                  response.should redirect_to(project_pmdocs_path(@project.name))
+                  response.should redirect_to(project_path(@project.name, :accordion_id => 1))
                 end
                 
                 it 'should set flash[:notice]' do
@@ -467,7 +467,7 @@ describe PmdocsController do
               end
               
               it 'should redirect to project_pmdocs_path(project.name)' do
-                response.should redirect_to(project_pmdocs_path(@project.name))
+                response.should redirect_to(project_path(@project.name, :accordion_id => 1))
               end
               
               it 'should set flash[:notice]' do
@@ -483,7 +483,7 @@ describe PmdocsController do
             
             
             it 'should redirect to project_pmdocs_path(project.name)' do
-              response.should redirect_to(project_pmdocs_path(@project.name))
+              response.should redirect_to(project_path(@project.name, :accordion_id => 1))
             end
             
             it 'should set flash[:notice]' do

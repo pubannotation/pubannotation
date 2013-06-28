@@ -145,33 +145,33 @@ class AnnotationsController < ApplicationController
 
   # DELETE /projects/:hid
   # DELETE /projects/:hid.json
-  def destroy
-    @project, notice = get_project(params[:project_id])
-    if @project
-
-      if (params[:pmdoc_id] || params[:pmcdoc_id])
-
-        sourcedb, sourceid, serial = get_docspec(params)
-        @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
-        if @doc
-          annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
-        end
-      end
-    end
-    @annotations.destroy
-
-    respond_to do |format|
-      format.html { redirect_to projects_path, notice: t('controller.projects.destroy.deleted', :id => params[:id]) }
-      format.json { head :no_content }
-    end
-  end
+  # TODO this action doesn't seem to be used
+  # def destroy
+    # @project, notice = get_project(params[:project_id])
+    # if @project
+# 
+      # if (params[:pmdoc_id] || params[:pmcdoc_id])
+# 
+        # sourcedb, sourceid, serial = get_docspec(params)
+        # @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
+        # if @doc
+          # annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
+        # end
+      # end
+    # end
+    # @annotations.destroy
+# 
+    # respond_to do |format|
+      # format.html { redirect_to projects_path, notice: t('controller.projects.destroy.deleted', :id => params[:id]) }
+      # format.json { head :no_content }
+    # end
+  # end
 
   def destroy_all
     @project = get_project(params[:project_id])[0]
     sourcedb, sourceid, serial = get_docspec(params)
     @doc = get_doc(sourcedb, sourceid, serial, @project)[0]
     if @doc
-      @doc.denotations
       annotations = @doc.denotations.where("project_id = ?", @project.id)
       
       ActiveRecord::Base.transaction do

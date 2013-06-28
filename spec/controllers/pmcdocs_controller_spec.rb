@@ -211,7 +211,7 @@ describe PmcdocsController do
               end
               
               it 'should redirect_to project_pmcdocs_path' do
-                response.should redirect_to(project_pmcdocs_path(@project.name))
+                response.should redirect_to(project_path(@project.name, :accordion_id => 2))
               end
             end
 
@@ -225,7 +225,7 @@ describe PmcdocsController do
               end
               
               it 'should return location' do
-                response.location.should eql(project_pmcdocs_path(@project.name))
+                response.location.should eql(project_path(@project.name, :accordion_id => 2))
               end
             end
           end
@@ -252,7 +252,7 @@ describe PmcdocsController do
             end
             
             it 'should redirect to project_pmcdocs_path' do
-              response.should redirect_to(project_pmcdocs_path(@project.name))
+              response.should redirect_to(project_path(@project.name, :accordion_id => 2))
             end
           end
         end
@@ -442,6 +442,121 @@ describe PmcdocsController do
         
         it '@docs should include second page record' do
           assigns[:docs].should include(@next_page)        
+        end
+      end
+    end
+  end
+  
+  describe 'destroy' do
+    context 'when params[:project_id] does not present' do
+      before do
+        @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid')
+        @div_2 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid')
+        @div_3 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid_different')
+      end
+      
+      context 'when divs blank' do
+        before do
+          delete :destroy, :project_id => nil, :id => 'id'
+        end
+        
+        it 'docs where sourcedb = PMC size should be 3' do
+          Doc.where(:sourcedb => 'PMC').should =~ [@div, @div_2, @div_3]
+        end
+        
+        it 'should redirect_to pmcdocs path' do
+          response.should redirect_to(pmcdocs_path)
+        end
+        
+        it 'set project does not document_removed_from_pubannotation as flash[:notice]' do
+          flash[:notice].should eql(I18n.t('controllers.pmcdocs.destroy.document_does_not_exist_in_pubannotation', :id => 'id'))
+        end
+      end
+      
+      context 'when divs present' do
+        it 'docs where sourcedb = PMC size should be 3' do
+          Doc.where(:sourcedb => 'PMC').should =~ [@div, @div_2, @div_3]
+        end
+                
+        describe 'delete' do
+          before do
+            delete :destroy, :project_id => nil, :id => @div.sourceid
+          end
+          
+          it 'doc where sourcedb = PMC and sourceid is params[:id] should be deleted' do
+            Doc.where(:sourcedb => 'PMC').should =~ [@div_3]
+          end
+        end
+      end
+    end
+    
+    context 'when params[:project_id] present' do
+      context 'when project present' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @not_div = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 'sourceid')
+          FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @not_div.id)
+        end
+          
+        context 'when divs present' do
+          before do
+            @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid')
+            FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @div.id)
+          end
+          
+          it 'project.doc should include @div, @not_div' do
+            @project.docs.should =~ [@div, @not_div]  
+          end
+          
+          describe 'delete' do
+            before do
+              delete :destroy, :project_id => @project.name, :id => @div.sourceid
+            end
+            
+            it 'div should deleted from project.docs' do
+              @project.docs.should =~ [@not_div]
+            end
+            
+            it 'should redirect_to project path' do
+              response.should redirect_to(project_path(@project.name, :accordion_id => 2))
+            end
+            
+            it 'set document removed from annotation set as flash[:notice]' do
+              flash[:notice].should eql(I18n.t('controllers.pmcdocs.destroy.document_removed_from_annotation_set', :sourcedb => @div.sourcedb, :sourceid => @div.sourceid,:project_name => @project.name))
+            end
+          end
+        end
+
+        context 'when divs does not present' do
+          before do
+            delete :destroy, :project_id => @project.name, :id => 1
+          end
+          
+          it 'should redirect_to project path' do
+            response.should redirect_to(project_path(@project.name, :accordion_id => 2))
+          end
+          
+          it 'should set project does not include_document as flash[:notice]' do
+            flash[:notice].should eql(I18n.t('controllers.pmcdocs.destroy.project_does_not_include_document', :project_name => @project.name, :sourcedb => 1))
+          end
+        end
+      end
+
+      context 'when project blank' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @not_div = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 'sourceid')
+          FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @not_div.id)
+          @project_id = 'invalid project name'
+          delete :destroy, :project_id => @project_id, :id => 1
+        end
+        
+        it 'should redirect_to pmcdocs path' do
+          response.should redirect_to(pmcdocs_path)
+        end
+        
+        it 'set project does not exist_in_pubannotation as flash[:notice]' do
+          flash[:notice].should eql(I18n.t('controllers.pmcdocs.destroy.project_does_not_exist_in_pubannotation', :project_id => @project_id))
         end
       end
     end
