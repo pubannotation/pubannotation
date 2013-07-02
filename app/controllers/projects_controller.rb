@@ -131,6 +131,8 @@ class ProjectsController < ApplicationController
       if params[:doc] == 'PubMed'
         pmdocs = pmdocs.where('sourceid like ?', "%#{params[:sourceid]}%") if params[:sourceid].present?
         pmdocs = pmdocs.where('body like ?', "%#{params[:body]}%") if params[:body].present?
+        @pm_sourceid_value = params[:sourceid]
+        @pm_body_value = params[:body]
       end
       @pmdocs = pmdocs.paginate(:page => params[:page])
       # PMC
@@ -138,6 +140,8 @@ class ProjectsController < ApplicationController
       if params[:doc] == 'PMC'
         pmcdocs = pmcdocs.where('sourceid like ?', "%#{params[:sourceid]}%") if params[:sourceid].present?
         pmcdocs = pmcdocs.where('body like ?', "%#{params[:body]}%") if params[:body].present?
+        @pmc_sourceid_value = params[:sourceid]
+        @pmc_body_value = params[:body]
       end
       @pmcdocs = pmcdocs.paginate(:page => params[:page])
       flash[:notice] = notice

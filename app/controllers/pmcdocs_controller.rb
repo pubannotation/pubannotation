@@ -132,6 +132,8 @@ class PmcdocsController < ApplicationController
     end
     conditions.unshift(columns)
     @docs = Doc.pmcdocs.where(conditions).paginate(:page => params[:page])
+    @pmc_sourceid_value = params[:sourceid]
+    @pmc_body_value = params[:body]
   end
 
   # DELETE /pmcdocs/:pmcid

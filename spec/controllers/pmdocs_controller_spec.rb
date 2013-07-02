@@ -524,6 +524,14 @@ describe PmdocsController do
           get :search
         end  
         
+        it '@pm_sourceid_value shoould be nil' do
+          assigns[:pm_sourceid_value].should be_nil
+        end
+        
+        it '@pm_body_value shoould be nil' do
+          assigns[:pm_body_value].should be_nil
+        end
+                
         it 'should not include sourcedb is not PubMed' do
           assigns[:docs].should_not include(@pmc)
         end
@@ -550,6 +558,14 @@ describe PmdocsController do
           get :search, :sourceid => '123'
         end
         
+        it '@pm_sourceid_value shoould be == params[:sourceid]' do
+          assigns[:pm_sourceid_value].should be_eql('123')
+        end
+        
+        it '@pm_body_value shoould be nil' do
+          assigns[:pm_body_value].should be_nil
+        end
+                
         it 'should not include sourcedb is not PubMed' do
           assigns[:docs].should_not include(@pmc)
         end
@@ -580,6 +596,14 @@ describe PmdocsController do
           get :search, :body => 'test'
         end
         
+        it '@pm_sourceid_value shoould be nil' do
+          assigns[:pm_sourceid_value].should be_nil
+        end
+        
+        it '@pm_body_value shoould be == params[:body]' do
+          assigns[:pm_body_value].should be_eql('test')
+        end
+                
         it 'should include  body contains body' do
           assigns[:docs].should include(@sourceid_123_test)
         end
@@ -605,7 +629,15 @@ describe PmdocsController do
           @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 2, :body => 'test')
           get :search, :sourceid => 1, :body => 'test'
         end
+         
+        it '@pm_sourceid_value shoould be == params[:sourceid]' do
+          assigns[:pm_sourceid_value].should be_eql('1')
+        end
         
+        it '@pm_body_value shoould be == params[:body]' do
+          assigns[:pm_body_value].should be_eql('test')
+        end
+               
         it 'should include sourceid and body matches' do
           assigns[:docs].should include(@sourceid_1_body_test)
         end

@@ -386,6 +386,22 @@ describe ProjectsController do
           get :search, :id => @project.name, :doc => 'PMC', :sourceid => nil, :body => nil
         end  
         
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
+        
+        it '@pmc_body_value shoould be nil' do
+          assigns[:pmc_body_value].should be_nil
+        end
+        
+        it '@pm_sourceid_value shoould be nil' do
+          assigns[:pm_sourceid_value].should be_nil
+        end
+        
+        it '@pm_body_value shoould be nil' do
+          assigns[:pm_body_value].should be_nil
+        end
+        
         it 'should have PubMed documents' do
           @project_PubMed_docs.should be_present
         end
@@ -420,6 +436,22 @@ describe ProjectsController do
           get :search, :id => @project.name, :doc => 'PMC', :sourceid => 123, :body => nil
         end
         
+        it '@pmc_sourceid_value shoould be == params[:sourceid]' do
+          assigns[:pmc_sourceid_value].should eql('123')
+        end
+        
+        it '@pmc_body_value shoould be nil' do
+          assigns[:pmc_body_value].should be_nil
+        end
+        
+        it '@pm_sourceid_value shoould be nil' do
+          assigns[:pm_sourceid_value].should be_nil
+        end
+        
+        it '@pm_body_value shoould be nil' do
+          assigns[:pm_body_value].should be_nil
+        end
+                
         it 'should include project.doc where sourceid = PMC and sourceid like params[:sourceid]' do
           assigns[:pmcdocs].should include(@PMC_sourceid_123_body_abc_serial_0)
         end        
@@ -449,7 +481,23 @@ describe ProjectsController do
         before do
           get :search, :id => @project.name, :doc => 'PMC', :sourceid => nil, :body => 'abc'
         end
+          
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
         
+        it '@pmc_body_value shoould be == params[:body]' do
+          assigns[:pmc_body_value].should be_eql('abc')
+        end
+        
+        it '@pm_sourceid_value shoould be nil' do
+          assigns[:pm_sourceid_value].should be_nil
+        end
+        
+        it '@pm_body_value shoould be nil' do
+          assigns[:pm_body_value].should be_nil
+        end
+              
         it 'should include project.doc where sourceid = PMC and body like params[:body]' do
           assigns[:pmcdocs].should include(@PMC_sourceid_123_body_abc_serial_0)
         end        
@@ -475,11 +523,27 @@ describe ProjectsController do
         end
       end  
       
-      context 'when params[:sourceid] and params[:body] present' do
+      context 'when params[:sourceid] nil, params[:body] present' do
         before do
           get :search, :id => @project.name, :doc => 'PMC', :sourceid => nil, :body => 'abc'
         end
         
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
+        
+        it '@pmc_body_value shoould be == params[:body]' do
+          assigns[:pmc_body_value].should be_eql('abc')
+        end
+        
+        it '@pm_sourceid_value shoould be nil' do
+          assigns[:pm_sourceid_value].should be_nil
+        end
+        
+        it '@pm_body_value shoould be nil' do
+          assigns[:pm_body_value].should be_nil
+        end
+                
         it 'should include project.doc where sourceid = PMC and body like params[:body]' do
           assigns[:pmcdocs].should include(@PMC_sourceid_123_body_abc_serial_0)
         end        
@@ -511,7 +575,23 @@ describe ProjectsController do
         before do
           get :search, :id => @project.name, :doc => 'PubMed', :sourceid => nil, :body => nil
         end
+         
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
         
+        it '@pmc_body_value shoould be nil' do
+          assigns[:pmc_body_value].should be_nil
+        end
+        
+        it '@pm_sourceid_value shoould be nil' do
+          assigns[:pm_sourceid_value].should be_nil
+        end
+        
+        it '@pm_body_value shoould be nil' do
+          assigns[:pm_body_value].should be_nil
+        end
+               
         it 'should have PubMed documents' do
           @project_PubMed_docs.should be_present
         end
@@ -546,6 +626,22 @@ describe ProjectsController do
           get :search, :id => @project.name, :doc => 'PubMed', :sourceid => 123
         end
         
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
+        
+        it '@pmc_body_value shoould be nil' do
+          assigns[:pmc_body_value].should be_nil
+        end
+        
+        it '@pm_sourceid_value shoould be == params[:sourceid]' do
+          assigns[:pm_sourceid_value].should be_eql('123')
+        end
+        
+        it '@pm_body_value shoould be nil' do
+          assigns[:pm_body_value].should be_nil
+        end
+                
         it 'should include project.doc where sourceid = PubMed and sourceid like params[:sourceid]' do
           assigns[:pmdocs].should include(@PubMed_sourceid_123_body_abc_serial_0)
         end
@@ -576,6 +672,22 @@ describe ProjectsController do
           get :search, :id => @project.name, :doc => 'PubMed', :sourceid => nil, :body => 'abc'
         end
         
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
+        
+        it '@pmc_body_value shoould be nil' do
+          assigns[:pmc_body_value].should be_nil
+        end
+        
+        it '@pm_sourceid_value shoould be nil' do
+          assigns[:pm_sourceid_value].should be_nil
+        end
+        
+        it '@pm_body_value shoould be == params[:body]' do
+          assigns[:pm_body_value].should be_eql('abc')
+        end
+                
         it 'should include project.doc where sourceid = PubMed and body like params[:body]' do
           assigns[:pmdocs].should include(@PubMed_sourceid_123_body_abc_serial_0)
         end
@@ -606,6 +718,22 @@ describe ProjectsController do
           get :search, :id => @project.name, :doc => 'PubMed', :sourceid => 123, :body => 'abc'
         end
         
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
+        
+        it '@pmc_body_value shoould be nil' do
+          assigns[:pmc_body_value].should be_nil
+        end
+        
+        it '@pm_sourceid_value shoould be == params[:sourceid]' do
+          assigns[:pm_sourceid_value].should be_eql('123')
+        end
+        
+        it '@pm_body_value shoould be == params[:body]' do
+          assigns[:pm_body_value].should be_eql('abc')
+        end
+                
         it 'should include project.doc where sourceid = PubMed and body like params[:body]' do
           assigns[:pmdocs].should include(@PubMed_sourceid_123_body_abc_serial_0)
         end

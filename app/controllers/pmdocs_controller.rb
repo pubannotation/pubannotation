@@ -237,5 +237,7 @@ class PmdocsController < ApplicationController
     end
     conditions.unshift(columns)
     @docs = Doc.pmdocs.where(conditions).paginate(:page => params[:page])
+    @pm_sourceid_value = params[:sourceid]
+    @pm_body_value = params[:body]
   end
 end

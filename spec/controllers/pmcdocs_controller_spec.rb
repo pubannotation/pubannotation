@@ -298,6 +298,14 @@ describe PmcdocsController do
           get :search
         end  
         
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
+        
+        it '@pmc_body_value shoould be nil' do
+          assigns[:pmc_body_value].should be_nil
+        end
+                
         it 'should not include sourcedb is not PMC' do
           assigns[:docs].should_not include(@pubmed)
         end
@@ -326,6 +334,14 @@ describe PmcdocsController do
       context 'when params[:sourceid] present' do
         before do
           get :search, :sourceid => '123'
+        end
+        
+        it '@pmc_sourceid_value should be == parans[:sourceid]' do
+          assigns[:pmc_sourceid_value].should be_eql('123')
+        end
+        
+        it '@pmc_body_value should be nil' do
+          assigns[:pmc_body_value].should be_nil
         end
         
         it 'should not include sourcedb is not PMC' do
@@ -362,6 +378,14 @@ describe PmcdocsController do
           get :search, :body => 'test'
         end
         
+        it '@pmc_sourceid_value shoould be nil' do
+          assigns[:pmc_sourceid_value].should be_nil
+        end
+        
+        it '@pmc_body_value shoould be == params[:body]' do
+          assigns[:pmc_body_value].should be_eql('test')
+        end
+        
         it 'should include  body contains body' do
           assigns[:docs].should include(@sourceid_123_test)
         end
@@ -386,6 +410,14 @@ describe PmcdocsController do
           @sourceid_1_body_nil = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => nil)
           @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 2, :body => 'test')
           get :search, :sourceid => 1, :body => 'test'
+        end
+        
+        it '@pmc_sourceid_value shoould be == params[:sourceid]' do
+          assigns[:pmc_sourceid_value].should be_eql('1')
+        end
+        
+        it '@pmc_body_value shoould be == params[:body]' do
+          assigns[:pmc_body_value].should be_eql('test')
         end
         
         it 'should include sourceid and body matches' do

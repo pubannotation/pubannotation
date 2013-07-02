@@ -19,11 +19,12 @@
 	<% end %>
 		
   <%= form_tag(search_path, :method => :get)  do %>
-  	<%= hidden_field_tag :doc, 'PubMed' %>
+  	<%= doc_tag %>
+  	<%= hidden_field_tag :accordion_id, 1 %>
   	<%= label_tag :sourceid, t('activerecord.attributes.doc.sourceid') %>
-    <%= autocomplete_field_tag 'sourceid', '', auto_complete_path, :value => params[:sourceid] %>
+    <%= autocomplete_field_tag 'sourceid', '', auto_complete_path, :value => @pm_sourceid_value %>
   	<%= label_tag :sourceid, t('activerecord.attributes.doc.body') %>
-  	<%= text_field_tag :body, params[:body], :value => params[:body] %>
+  	<%= text_field_tag :body, params[:body], :value => @pm_body_value %>
   	<%= submit_tag t('views.shared.search') %>
   <% end %>
 
