@@ -21,4 +21,15 @@ class Doc < ActiveRecord::Base
      :conditions => ['projects.name =?', project_name]  
     }
    }
+
+  # returns relations count which belongs to project and doc
+  def project_relations_count(project_id)
+    count =   Relation.project_relations_count(project_id, subcatrels)
+    count +=  Relation.project_relations_count(project_id, subinsrels)
+  end
+  
+  # returns doc.relations count
+  def relations_count
+    subcatrels.size + subinsrels.size
+  end
 end

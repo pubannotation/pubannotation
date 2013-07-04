@@ -7,7 +7,8 @@ describe DivsController do
       @pmcdoc_id = 'sourceid'
       @doc_pmc_sourceid = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => @pmcdoc_id)
       @doc_not_pmc = FactoryGirl.create(:doc, :sourcedb => 'AAA', :sourceid => @pmcdoc_id)
-      @project_id = 'project id'
+      @project_id = 'project_id'
+      @project = FactoryGirl.create(:project, :name => @project_id)
     end
     
     context 'when format html' do
@@ -26,6 +27,10 @@ describe DivsController do
       
       it 'should render template' do
         response.should render_template('index')
+      end
+      
+      it 'should assign project' do
+        assigns[:project].should eql(@project)
       end
     end
 

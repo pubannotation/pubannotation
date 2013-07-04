@@ -122,4 +122,27 @@ describe Denotation do
       @get_hash[:obj].should eql(@denotation[:obj])
     end
   end
+  
+  describe 'self.project_denotations_count' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @another_project = FactoryGirl.create(:project)
+      @proejct_denotations_count = 2
+      @proejct_denotations_count.times do
+        FactoryGirl.create(:denotation, :project => @project, :doc => FactoryGirl.create(:doc))
+      end
+    end
+    
+    context 'when project have denotations' do
+      it 'should return denotations count' do
+        Denotation.project_denotations_count(@project.id, Denotation).should eql(@proejct_denotations_count)
+      end
+    end
+    
+    context 'when project does not have denotations' do
+      it 'should return denotations count' do
+        Denotation.project_denotations_count(@another_project.id, Denotation).should eql(0)
+      end
+    end
+  end
 end

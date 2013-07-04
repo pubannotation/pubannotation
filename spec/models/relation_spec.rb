@@ -266,4 +266,27 @@ describe Relation do
       end
     end
   end
+  
+  describe 'self.project_relations_count' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @project_relations_count = 2
+      @project_relations_count.times do
+        FactoryGirl.create(:relation, :project => @project, :obj_id => 1)
+      @another_project = FactoryGirl.create(:project)
+      end
+    end
+    
+    context 'when project have relations' do
+      it 'should return denotations count' do
+        Relation.project_relations_count(@project.id, Relation).should eql(@project_relations_count)
+      end
+    end
+    
+    context 'when project does not have relations' do
+      it 'should return denotations count' do
+        Relation.project_relations_count(@another_project.id, Relation).should eql(0)
+      end
+    end
+  end
 end
