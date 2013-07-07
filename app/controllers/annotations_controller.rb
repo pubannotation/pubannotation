@@ -102,7 +102,7 @@ class AnnotationsController < ApplicationController
         doc, notice = get_doc(sourcedb, sourceid, serial, project)
         if doc
           if params[:annotation_server]
-            annotations = get_annotations(project, doc)
+            annotations = get_annotations(project, doc, :encoding => params[:encoding])
 
             # options = [:db_name => params[:dictionary], :tax_ids => params[:tax_ids].split(/\s+/)]
             options = {:tax_ids => params[:tax_ids].split(/\s+/).collect {|id| id.to_i}}
