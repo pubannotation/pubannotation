@@ -10,18 +10,20 @@ class ProjectsController < ApplicationController
     if sourcedb
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if @doc
-        @projects = get_projects(@doc)
+        #@projects = get_projects(@doc)
+        @projects = Project.order_by(@doc.projects, params[:projects_order], current_user)
       else
         @projects = nil
         notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
       end
     else
-      @projects = get_projects()
+      #@projects = get_projects()
+      @projects = Project.order_by(Project, params[:projects_order], current_user)
     end
 
     respond_to do |format|
       format.html {
-        if @doc and @projects == nil
+        if @doc and @projects.blank?
           redirect_to home_path, :notice => notice
         end
       }

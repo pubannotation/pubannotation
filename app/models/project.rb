@@ -14,7 +14,7 @@ class Project < ActiveRecord::Base
   
   scope :accessible, lambda{|current_user|
     if current_user.present?
-      where(:user_id => current_user.id)
+      where('accessibility = ? OR user_id =?', 1, current_user.id)
     else
       where(:accessibility => 1)
     end
@@ -37,8 +37,22 @@ class Project < ActiveRecord::Base
     order("IFNULL(count(denotations.id), 0) DESC")
     
   scope :order_relations_count,
-    #joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
     includes(:relations).
     group('projects.id').
     order('IFNULL(count(relations.id), 0) DESC')
+
+  def self.order_by(projects, order, current_user)
+    case order
+    when 'pmdocs_count'
+      projects.accessible(current_user).order_pmdocs_count
+    when 'pmcdocs_count'
+      projects.accessible(current_user).order_pmcdocs_count
+    when 'denotations_count'
+      projects.accessible(current_user).order_denotations_count
+    when 'relations_count'
+      projects.accessible(current_user).order_relations_count
+    else
+      projects.accessible(current_user).order('name ASC')
+    end    
+  end
 end

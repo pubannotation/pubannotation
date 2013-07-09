@@ -7,6 +7,10 @@ describe ProjectsController do
   end
   
   describe 'index' do
+    before do
+      controller.stub(:current_user).and_return(nil)
+    end
+    
     context 'when sourcedb exists' do
       context 'and when doc exists' do
         context 'and when projects exists' do
@@ -14,7 +18,7 @@ describe ProjectsController do
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1)
             controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, @doc.serial])
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-            controller.stub(:get_projects).and_return([@project])
+            Project.stub(:order_by).and_return([@project])
           end
           
           context 'and when format html' do
@@ -33,7 +37,6 @@ describe ProjectsController do
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1)
             controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, @doc.serial])
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-            controller.stub(:get_projects).and_return(nil)
             get :index
           end
           
@@ -48,7 +51,6 @@ describe ProjectsController do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1)
           controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, nil])
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          controller.stub(:get_projects).and_return([@project])
         end
         
         context 'and when format html' do
@@ -79,7 +81,7 @@ describe ProjectsController do
     context 'when format is json' do
       before do
         @projects = {:a => 'a', :b => 'b'}
-        controller.stub(:get_projects).and_return(@projects)
+        Project.stub(:order_by).and_return(@projects)
         get :index, :format => 'json'
       end
       
