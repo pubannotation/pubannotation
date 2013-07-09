@@ -24,10 +24,10 @@
       <th><%= t('activerecord.attributes.project.description') %></th>
       <th><%= t('activerecord.attributes.project.author') %></th>
       <th><%= t('activerecord.attributes.project.uploader') %></th>
-      <th>PubMed</th>
-      <th>PMC</th>
-      <th><%= t('activerecord.models.denotation') %></th>
-      <th><%= t('activerecord.models.relation') %></th>
+      <th><%= link_to 'PubMed', url_for(:only_path => true, :projects_order => 'pmdocs_count') %></th>
+      <th><%= link_to 'PMC', url_for(:only_path => true, :projects_order => 'pmcdocs_count') %></th>
+      <th><%= link_to t('activerecord.models.denotation'), url_for(:only_path => true, :projects_order => 'denotations_count') %></th>
+      <th><%= link_to t('activerecord.models.relation'), url_for(:only_path => true, :projects_order => 'relations_count') %></th>
       <th></th>
     </tr>
 
