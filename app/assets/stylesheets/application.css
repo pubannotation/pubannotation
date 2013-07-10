@@ -362,6 +362,7 @@ li {
 .sortable-th{
 	padding-left:15px;
 	background: url(/assets/sort_asc.png) no-repeat 5px center #E2EBF0;
+	text-align :left;
 }
 .sortable-a,
 .sortable-a:visited{

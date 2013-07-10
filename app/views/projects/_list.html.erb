@@ -20,14 +20,14 @@
 <% else %>
   <table>
     <tr>
-      <th><%= t('activerecord.attributes.project.name') %></th>
+      <th class="sortable-th"><%= link_to_unless_current t('activerecord.attributes.project.name'), url_for(:only_path => true, :projects_order => 'name'), :class => 'sortable-a' %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
       <th><%= t('activerecord.attributes.project.author') %></th>
       <th><%= t('activerecord.attributes.project.uploader') %></th>
-      <th><%= link_to 'PubMed', url_for(:only_path => true, :projects_order => 'pmdocs_count') %></th>
-      <th><%= link_to 'PMC', url_for(:only_path => true, :projects_order => 'pmcdocs_count') %></th>
-      <th><%= link_to t('activerecord.models.denotation'), url_for(:only_path => true, :projects_order => 'denotations_count') %></th>
-      <th><%= link_to t('activerecord.models.relation'), url_for(:only_path => true, :projects_order => 'relations_count') %></th>
+      <th class="sortable-th"><%= link_to_unless_current 'PubMed', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>
+      <th class="sortable-th"><%= link_to_unless_current 'PMC', url_for(:only_path => true, :projects_order => 'pmcdocs_count'), :class => 'sortable-a' %></th>
+      <th class="sortable-th"><%= link_to_unless_current t('activerecord.models.denotation'), url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
+      <th class="sortable-th"><%= link_to_unless_current t('activerecord.models.relation'), url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
       <th></th>
     </tr>
 
