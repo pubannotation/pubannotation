@@ -7,16 +7,16 @@ class PmdocsController < ApplicationController
     if params[:project_id]
       @project, notice = get_project(params[:project_id])
       if @project
-        @docs = @project.docs.where(:sourcedb => 'PubMed', :serial => 0)
+        @docs = @project.docs.pmdocs
       else
         @docs = nil
       end
     else
-      @docs = Doc.where(:sourcedb => 'PubMed', :serial => 0)
+      @docs = Doc.pmdocs
     end
 
     if @docs
-      @docs = @docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
+      @docs = Doc.order_by(@docs, params[:docs_order])
     end
     
     respond_to do |format|

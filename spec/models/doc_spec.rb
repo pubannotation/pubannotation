@@ -227,6 +227,164 @@ describe Doc do
     end
   end
   
+  describe 'self.order_by' do
+    context 'denotations_count' do
+      before do
+        @project = FactoryGirl.create(:project)
+        @doc_denotations_3 = FactoryGirl.create(:doc, :id => 5)
+        FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_3.id, :project_id => @project.id)
+        3.times do
+          FactoryGirl.create(:denotation, :project => @project, :doc => @doc_denotations_3)
+        end
+        @doc_denotations_2 = FactoryGirl.create(:doc, :id => 4)
+        FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_2.id, :project_id => @project.id)
+        2.times do
+          FactoryGirl.create(:denotation, :project => @project, :doc => @doc_denotations_2)
+        end
+        @doc_denotations_1 = FactoryGirl.create(:doc, :id => 3)
+        FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_1.id, :project_id => @project.id)
+        FactoryGirl.create(:denotation, :project => @project, :doc => @doc_denotations_1)
+        @doc_denotations_0 = FactoryGirl.create(:doc, :id => 2)
+        @docs = Doc.order_by(Doc.all, 'denotations_count')
+      end
+      
+      it 'doc which has most denotations should be docs[0]' do
+        @docs[0].should eql(@doc_denotations_3)
+      end
+      
+      it 'doc which has second most denotations should be docs[1]' do
+        @docs[1].should eql(@doc_denotations_2)
+      end
+      
+      it 'doc which has third most denotations should be docs[2]' do
+        @docs[2].should eql(@doc_denotations_1)
+      end
+      
+      it 'doc which does not has denotations should be docs.last' do
+        @docs.last.should eql(@doc_denotations_0)
+      end
+      
+      
+    end
+      
+    context 'relations_count' do
+      before do
+        @doc_3relations = Doc.create(:id => 5)
+        3.times do
+          denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => @doc_3relations)
+          FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+        end
+        @doc_3relations.relations_count
+
+        @doc_2relations = Doc.create(:id => 4)
+        2.times do
+          denotation = FactoryGirl.create(:denotation, :project_id => 2, :doc => @doc_2relations)
+          FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+        end
+        @doc_2relations.relations_count
+        
+        @doc_1relations = Doc.create(:id => 3)
+        denotation = FactoryGirl.create(:denotation, :project_id => 3, :doc => @doc_1relations)
+        FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+        @doc_1relations.relations_count
+        
+        @doc_0relations = Doc.create(:id => 2)
+        @docs = Doc.order_by(Doc.all, 'relations_count')
+        @doc_0relations.relations_count
+      end
+      
+      it 'doc which has most relations should be docs[0]' do
+        @docs[0].should eql(@doc_3relations)
+      end
+      
+      it 'doc which has second most relations should be docs[0]' do
+        @docs[1].should eql(@doc_2relations)
+      end
+      
+      it 'doc which has third most relations should be docs[0]' do
+        @docs[2].should eql(@doc_1relations)
+      end
+      
+      it 'doc which does not has relations should be docs.last' do
+        @docs[3].should eql(@doc_0relations)
+      end
+    end
+    
+    context 'relations_count' do
+      before do
+        @doc_3relations = Doc.create(:id => 5)
+        3.times do
+          denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => @doc_3relations)
+          FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+        end
+        @doc_3relations.relations_count
+
+        @doc_2relations = Doc.create(:id => 4)
+        2.times do
+          denotation = FactoryGirl.create(:denotation, :project_id => 2, :doc => @doc_2relations)
+          FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+        end
+        @doc_2relations.relations_count
+        
+        @doc_1relations = Doc.create(:id => 3)
+        denotation = FactoryGirl.create(:denotation, :project_id => 3, :doc => @doc_1relations)
+        FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+        @doc_1relations.relations_count
+        
+        @doc_0relations = Doc.create(:id => 2)
+        @docs = Doc.order_by(Doc.all, 'relations_count')
+        @doc_0relations.relations_count
+      end
+      
+      it 'doc which has most relations should be docs[0]' do
+        @docs[0].should eql(@doc_3relations)
+      end
+      
+      it 'doc which has second most relations should be docs[0]' do
+        @docs[1].should eql(@doc_2relations)
+      end
+      
+      it 'doc which has third most relations should be docs[0]' do
+        @docs[2].should eql(@doc_1relations)
+      end
+      
+      it 'doc which does not has relations should be docs.last' do
+        @docs[3].should eql(@doc_0relations)
+      end
+    end
+    
+    context 'else' do
+      before do
+        @doc_111 = FactoryGirl.create(:doc, :sourceid => 111)
+        @doc_1111 = FactoryGirl.create(:doc, :sourceid => 1111)
+        @doc_1112 = FactoryGirl.create(:doc, :sourceid => 1112)
+        @doc_1211 = FactoryGirl.create(:doc, :sourceid => 1211)
+        @doc_11111 = FactoryGirl.create(:doc, :sourceid => 11111)
+        @docs = Doc.order_by(Doc.all, nil)
+      end
+      
+      it 'sourceid 111 should be @docs[0]' do
+        @docs[0].should eql(@doc_111)
+      end
+      
+      it 'sourceid 1111 should be @docs[1]' do
+        @docs[1].should eql(@doc_1111)
+      end
+      
+      it 'sourceid 1112 should be @docs[2]' do
+        @docs[2].should eql(@doc_1112)
+      end
+      
+      it 'sourceid 1211 should be @docs[3]' do
+        @docs[3].should eql(@doc_1211)
+      end
+      
+      it 'sourceid 11111 should be @docs[4]' do
+        @docs[4].should eql(@doc_11111)
+      end
+    end
+  end
+  
   describe 'project_relations_count' do
     before do
       @doc = FactoryGirl.create(:doc)

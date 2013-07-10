@@ -10,14 +10,12 @@ class ProjectsController < ApplicationController
     if sourcedb
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if @doc
-        #@projects = get_projects(@doc)
         @projects = Project.order_by(@doc.projects, params[:projects_order], current_user)
       else
         @projects = nil
         notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
       end
     else
-      #@projects = get_projects()
       @projects = Project.order_by(Project, params[:projects_order], current_user)
     end
 
@@ -42,8 +40,8 @@ class ProjectsController < ApplicationController
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
       else
         docs = @project.docs
-        @pmdocs = docs.pmdocs.paginate(:page => params[:page])
-        @pmcdocs = docs.pmcdocs.paginate(:page => params[:page])
+        @pmdocs = Doc.order_by(docs.pmdocs, params[:docs_order]).paginate(:page => params[:page])
+        @pmcdocs = Doc.order_by(docs.pmcdocs, params[:docs_order]).paginate(:page => params[:page])
         # @pmcdocs = docs.select{|d| d.sourcedb == 'PMC' and d.serial == 0}
       end
     end

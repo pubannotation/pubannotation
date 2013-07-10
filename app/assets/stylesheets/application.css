@@ -359,3 +359,14 @@ li {
 .ui-widget-content {
     border-width:0px 0px 0px 1px;
 }
+.sortable-th{
+	padding-left:15px;
+	background: url(/assets/sort_asc.png) no-repeat 5px center #E2EBF0;
+}
+.sortable-a,
+.sortable-a:visited{
+	margin-left:-15px;
+	padding-left:15px;
+	color:#234979 !important;
+	background: url(/assets/sort_asc_p.png) no-repeat 5px center #E2EBF0;
+}
