@@ -11,42 +11,69 @@
 	<%= t('views.divs.document_divs', :sourcedb => @docs.first.sourcedb, :sourceid => @docs.first.sourceid).html_safe %>
 </h1>
 
-<table>
-  <tr>
-    <th><%= t('activerecord.attributes.doc.sourcedb')%></th>
-    <th><%= t('activerecord.attributes.doc.sourceid')%></th>
-    <th><%= t('views.divs.div')%></th>
-    <th><%= t('activerecord.attributes.doc.section') %></th>
-    <th><%= t('activerecord.attributes.doc.body') %></th>
-    <th><%= t('views.shared.size') %></th>
-    <th><%= t('activerecord.models.denotation') %></th>
-    <th><%= t('activerecord.models.relation') %></th>
-    <th></th>
-  </tr>
-
-<% @docs.each_with_index do |doc, i| %>
-  <tr>
-    <td style="text-align:center"><%= doc.sourcedb %></td>
-    <td style="text-align:center"><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
-    <td style="text-align:center"><%= doc.serial %></td>
-    <td style="text-align:center"><%= doc.section %></td>
-    <td style="text-align:left"><%= (doc.body.length < 42)? doc.body : doc.body[0, 40] + ' ...' %></td>
-    <% if doc.body.length > 5000 %>
-      <td style="text-align:right;color:red"><%= doc.body.length %></td>
-    <% else %>    
-      <td style="text-align:right"><%= doc.body.length %></td>
-    <% end %>
-    <td>
-    	<%= denotations_count_helper(@project, doc) %>
-    </td>
-    <td>
-    	<%= relations_count_helper(@project, doc)%>
-    </td>
-    <% if @project_name %>
-    <td><span class="button"><%= link_to t('views.shared.show'), project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></span></td>
-    <% else %>    
-    <td><span class="button"><%= link_to t('views.shared.show'), pmcdoc_div_path(doc.sourceid, doc.serial) %></span></td>
-    <% end %>
-  </tr>
+<!-- tablesorter js -->
+<% content_for :javascript do %>
+	<%= javascript_include_tag "jquery.tablesorter" %>
+	<script type="text/javascript">
+		$(document).ready(function() 
+		    { 
+		        $("#divisions").tablesorter({
+		        	sortInitialOrder: 'desc',
+		        	// set sortable headers
+		        	headers: { 
+			            0: { sorter: false }, 
+			            1: { sorter: false }, 
+			            3: { sorter: false }, 
+			            4: { sorter: false }, 
+			            5: { sorter: false },
+			            8: { sorter: false }
+			        }
+		        });
+		    } 
+		); 	
+	</script>
 <% end %>
+
+<table id="divisions" class="tablesorter">
+	<thead>
+		<tr>
+			<th><%= t('activerecord.attributes.doc.sourcedb')%></th>
+			<th><%= t('activerecord.attributes.doc.sourceid')%></th>
+			<th class="sortable-th"><%= t('views.divs.div')%></th>
+			<th><%= t('activerecord.attributes.doc.section') %></th>
+			<th><%= t('activerecord.attributes.doc.body') %></th>
+			<th><%= t('views.shared.size') %></th>
+			<th class="sortable-th"><%= t('activerecord.models.denotation') %></th>
+			<th class="sortable-th"><%= t('activerecord.models.relation') %></th>
+			<th></th>
+		</tr>
+	</thead>
+
+	<tbody>
+		<% @docs.each_with_index do |doc, i| %>
+			<tr>
+			    <td style="text-align:center"><%= doc.sourcedb %></td>
+			    <td style="text-align:center"><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
+			    <td style="text-align:center"><%= doc.serial %></td>
+			    <td style="text-align:center"><%= doc.section %></td>
+			    <td style="text-align:left"><%= (doc.body.length < 42)? doc.body : doc.body[0, 40] + ' ...' %></td>
+			    <% if doc.body.length > 5000 %>
+			      <td style="text-align:right;color:red"><%= doc.body.length %></td>
+			    <% else %>    
+			      <td style="text-align:right"><%= doc.body.length %></td>
+			    <% end %>
+			    <td>
+			    	<%= denotations_count_helper(@project, doc) %>
+			    </td>
+			    <td>
+			    	<%= relations_count_helper(@project, doc)%>
+			    </td>
+			    <% if @project_name %>
+			    <td><span class="button"><%= link_to t('views.shared.show'), project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></span></td>
+			    <% else %>    
+			    <td><span class="button"><%= link_to t('views.shared.show'), pmcdoc_div_path(doc.sourceid, doc.serial) %></span></td>
+			    <% end %>
+		    </tr>
+		<% end %>
+	</tbody>
 </table>
