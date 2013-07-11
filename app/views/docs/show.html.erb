@@ -72,6 +72,7 @@
         		<tr><td style="text-align:center">
         		<%#= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholders.doc.annotation_server') %>
         		<%= hidden_field_tag :annotation_server, "http://nlp.dbcls.jp/db_app1/ss_pg/retrieve" %>
+        		<%= hidden_field_tag :encoding, 'ascii' %>
 				<%#= text_field_tag :dictionary, nil, :placeholder => "(optional) dictionary name" %>
 				<%= text_field_tag :tax_ids, nil, :placeholder => "Option: tax ids (space-separated)" %><br/>
 				<%= submit_tag(t('views.shared.get')) %>
