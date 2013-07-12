@@ -18,3 +18,6 @@
 # Ignore all files for rvm
 .ruby-version
 .ruby-gemset
+
+# Ignore asset pipline files
+/public/assets/*
