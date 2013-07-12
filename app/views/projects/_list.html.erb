@@ -24,6 +24,10 @@
       <th><%= t('activerecord.attributes.project.description') %></th>
       <th><%= t('activerecord.attributes.project.author') %></th>
       <th><%= t('activerecord.attributes.project.uploader') %></th>
+      <th>PubMed</th>
+      <th>PMC</th>
+      <th><%= t('activerecord.models.denotation') %></th>
+      <th><%= t('activerecord.models.relation') %></th>
       <th></th>
     </tr>
 
@@ -33,6 +37,18 @@
       <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>
       <td style="white-space: nowrap"><%= project.author %></td>
       <td style="white-space: nowrap"><%= project.user.username %></td>
+      <td>
+      	<%= project.docs.pmdocs.size %>
+      </td>
+      <td>
+      	<%= project.docs.pmcdocs.size %>
+      </td>
+      <td>
+    	<%= denotations_count_helper(project) %>      	
+      </td>
+      <td>
+    	<%= relations_count_helper(project) %>
+      </td>
       <% if @doc and @doc.sourcedb == "PubMed" %>
         <td><%= link_to t('views.shared.show'), pmdoc_project_path(@doc.sourceid, project.name) %></td>
       <% elsif @doc and @doc.sourcedb == "PMC" %>

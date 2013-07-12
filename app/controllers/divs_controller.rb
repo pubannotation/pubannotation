@@ -6,6 +6,7 @@ class DivsController < ApplicationController
 
     if params[:project_id]
       @project_name = params[:project_id]
+      @project = Project.find_by_name(@project_name)
     end
 
     respond_to do |format|

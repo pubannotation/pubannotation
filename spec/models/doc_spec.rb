@@ -226,4 +226,30 @@ describe Doc do
       end
     end
   end
+  
+  describe 'project_relations_count' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project_relations_count = 3
+      Relation.stub(:project_relations_count).and_return(@project_relations_count)
+    end
+    
+    it 'should return project_relations_count values' do
+      @doc.project_relations_count(nil).should eql(@project_relations_count * 2)
+    end
+  end
+  
+  describe 'relations_count' do
+    before do
+      @subcatrels_size = 1
+      @subinsrels_size = 2
+      Doc.any_instance.stub(:subcatrels).and_return(double({:size => @subcatrels_size}))
+      Doc.any_instance.stub(:subinsrels).and_return(double({:size => @subinsrels_size}))
+      @doc = FactoryGirl.create(:doc)
+    end
+    
+    it 'should return subcatrels.size and subinsrels.size' do
+      @doc.relations_count.should eql(@subcatrels_size + @subinsrels_size)
+    end
+  end
 end

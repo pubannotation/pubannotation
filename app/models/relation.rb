@@ -13,6 +13,8 @@ class Relation < ActiveRecord::Base
   validates :obj_id,  :presence => true
   validate :validate
 
+  scope :project_relations, select(:id).group("relations.project_id")
+  
   def get_hash
     hrelation = Hash.new
     hrelation[:id]   = hid
@@ -30,5 +32,9 @@ class Relation < ActiveRecord::Base
         errors.add(:obj_type, 'obj should be a Block when subj is a Block')
       end
     end
+  end
+  
+  def self.project_relations_count(project_id, relations)
+    relations.project_relations.count[project_id].to_i
   end
 end

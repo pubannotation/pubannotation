@@ -19,6 +19,8 @@ class Denotation < ActiveRecord::Base
   validates :project_id, :presence => true
   validates :doc_id,    :presence => true
 
+  scope :project_denotations, select(:id).group(:project_id)
+
   def get_hash
     hdenotation = Hash.new
     hdenotation[:id]       = hid
@@ -26,4 +28,9 @@ class Denotation < ActiveRecord::Base
     hdenotation[:obj] = obj
     hdenotation
   end
+
+  # returns denotations count which belongs to project and doc
+  def self.project_denotations_count(project_id, denotations)
+    denotations.project_denotations.count[project_id].to_i  
+  end  
 end

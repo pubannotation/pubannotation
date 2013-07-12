@@ -201,6 +201,7 @@ ja:
       project: プロジェクト
       user: ユーザー
       span: スパン
+      relation: リレーション
     attributes:
       doc:
         sourcedb: ソースDB

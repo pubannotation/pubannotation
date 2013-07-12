@@ -19,6 +19,8 @@
     <th><%= t('activerecord.attributes.doc.section') %></th>
     <th><%= t('activerecord.attributes.doc.body') %></th>
     <th><%= t('views.shared.size') %></th>
+    <th><%= t('activerecord.models.denotation') %></th>
+    <th><%= t('activerecord.models.relation') %></th>
     <th></th>
   </tr>
 
@@ -34,6 +36,12 @@
     <% else %>    
       <td style="text-align:right"><%= doc.body.length %></td>
     <% end %>
+    <td>
+    	<%= denotations_count_helper(@project, doc) %>
+    </td>
+    <td>
+    	<%= relations_count_helper(@project, doc)%>
+    </td>
     <% if @project_name %>
     <td><span class="button"><%= link_to t('views.shared.show'), project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></span></td>
     <% else %>    
