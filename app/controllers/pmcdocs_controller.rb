@@ -7,17 +7,16 @@ class PmcdocsController < ApplicationController
     if params[:project_id]
       @project, notice = get_project(params[:project_id])
       if @project
-        @docs = @project.docs.where(:sourcedb => 'PMC', :serial => 0)
+        @docs = @project.docs.pmcdocs
       else
-        @doc = nil
+        @docs = nil
       end
     else
-      @docs = Doc.where(:sourcedb => 'PMC', :serial => 0)
+      @docs = Doc.pmcdocs
     end
 
     if @docs
-      @docs = @docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
-      @docs = @docs.paginate(:page => params[:page])
+      @docs = Doc.order_by(@docs, params[:docs_order]).paginate(:page => params[:page])
     end
     
     respond_to do |format|

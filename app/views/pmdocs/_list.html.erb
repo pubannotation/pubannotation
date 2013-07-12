@@ -34,10 +34,10 @@
     <table>
       <tr>
         <th><%= t('activerecord.attributes.doc.sourcedb') %></th>
-        <th><%= t('activerecord.attributes.doc.sourceid') %></th>
+	    <th class="sortable-th"><%= link_to_unless_current t('activerecord.attributes.doc.sourceid'), url_for(:only_path => true, :docs_order => 'sourceid', :accordion_id => 1), :class => 'sortable-a' %></th>
         <th><%= t('activerecord.attributes.doc.body') %></th>
-    	<th><%= t('activerecord.models.denotation') %></th>
-    	<th><%= t('activerecord.models.relation') %></th>
+      	<th class="sortable-th"><%= link_to_unless_current t('activerecord.models.denotation'), url_for(:only_path => true, :docs_order => 'denotations_count', :accordion_id => 1), :class => 'sortable-a' %></th>
+	    <th class="sortable-th"><%= link_to_unless_current t('activerecord.models.relation'), url_for(:only_path => true, :docs_order => 'relations_count', :accordion_id => 1), :class => 'sortable-a' %></th>
         <th></th>
       </tr>
 

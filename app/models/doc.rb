@@ -21,7 +21,18 @@ class Doc < ActiveRecord::Base
      :conditions => ['projects.name =?', project_name]  
     }
    }
-
+   
+  def self.order_by(docs, order)
+    case order
+    when 'denotations_count'
+      docs.sort{|a, b| b.denotations.size <=> a.denotations.size}
+    when 'relations_count'
+      docs.sort{|a, b| b.relations_count <=> a.relations_count}
+    else
+      docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
+    end    
+  end    
+  
   # returns relations count which belongs to project and doc
   def project_relations_count(project_id)
     count =   Relation.project_relations_count(project_id, subcatrels)
