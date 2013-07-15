@@ -82,29 +82,5 @@
 	<% end %>
 
 <% else %>
-	<h2>
-		<%= t('views.docs.annsets_made_to_document').html_safe %>
-	</h2>
-	<% if !@projects || @projects.empty? %>
-		<%= t('views.shared.none') %>
-	<% else %>
-		<ul>
-		<% @projects.each do |s| %>
-			<li>
-				<% if @doc %>
-					<% if @doc.sourcedb == 'PubMed' %>
-						<%= link_to s.name, pmdoc_project_path(@doc.sourceid, s.name) %>
-					<% end %>
-					<% if @doc.sourcedb == 'PMC' %>
-						<%= link_to s.name, pmcdoc_div_project_path(@doc.sourceid, @doc.serial, s.name) %>
-					<% end %>
-					<%= t('activerecord.models.denotation') %>
-					<%= denotations_count_helper(s, @doc) %>
-					<%= t('activerecord.models.relation') %>
-					<%= relations_count_helper(s, @doc) %>
-				<% end %>
-			<% end %>
-			</li>
-		</ul>
-	<% end %>
+	<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects } %>
 <% end %>

@@ -196,12 +196,12 @@ ja:
   activerecord:
     models:
       doc: ドキュメント
-      denotation: デノテーション
-      instance: インスタンス
+      denotations: デノテーション
+      relations: リレーション
+      instances: インスタンス
       project: プロジェクト
       user: ユーザー
       span: スパン
-      relation: リレーション
     attributes:
       doc:
         sourcedb: ソースDB
@@ -217,7 +217,7 @@ ja:
         license: ライセンス
         status: ステータス
         accessibility: 公開範囲
-        uploader: アップロードユーザー
+        uploader: アップロード
         reference: 参照
         editor: エディター
         rdfwriter: RDFライター
@@ -328,20 +328,18 @@ ja:
     docs:
       annotation_within_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクトでこのドキュメントに付けられた</span>アノテーション"
       document_content: ドキュメントのコンテンツ
-      annsets_made_to_document: "<span class='meta'>このドキュメント用に作成された</span>アノテーションセット"
+      projects_made_to_document: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       get_annotations: 自動アノテーションの取得
     paths:
       home: ホーム
       new: 新規作成
     projects:
       try_textae: お持ちでない場合はこちらをお試し下さい
-      annotation_set_description: アノテーションセットの説明
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
-      documents_belongs_to_annsets: "<span class='meta'>このアノテーションセット内にある</span>ドキュメント"
       about_the_project: "<span class='pname'>%{project_name}</span>について"
       project_details: プロジェクト詳細
-      made_to_source: "<span class='pname'>%{sourcedb}:%{sourceid}</span>用の<a href='%{href}'>アノテーションプロジェクト</a>"
-      made_to_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョン用の<a href='%{href}'>アノテーションプロジェクト</a>"
+      that_annotate_a_pmdoc: "<span class='pname'>%{sourcedb}:%{sourceid}</span>用の<a href='%{href}'>アノテーションプロジェクト</a>"
+      that_annotate_a_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョンをアノテートする<a href='%{href}'>プロジェクト</a>"
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>アノテーションプロジェクト"
       confirm_delete: このアノテーションセットのアノテーションが全て削除されますがよろしいですか？
     hints:
@@ -385,7 +383,7 @@ ja:
       size: サイズ
       show: 表示
       remove: 削除
-      show_divisions: ディビジョンを表示
+      show_divisions: ディビジョン表示
       text: テキスト
       uploader:  アップローダー
       update: 更新
