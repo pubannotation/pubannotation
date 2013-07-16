@@ -4,6 +4,7 @@ require 'spec_helper'
 describe "pmdocs/_list.html.erb" do
   before do
     view.stub(:denotations_count_order).and_return(nil)
+    view.stub(:relations_count_order).and_return(nil)
   end
   
   describe 'search form' do

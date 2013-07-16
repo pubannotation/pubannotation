@@ -294,23 +294,19 @@ describe Doc do
           denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => @doc_3relations)
           FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
         end
-        @doc_3relations.relations_count
 
         @doc_2relations = Doc.create(:id => 4)
         2.times do
           denotation = FactoryGirl.create(:denotation, :project_id => 2, :doc => @doc_2relations)
           FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
         end
-        @doc_2relations.relations_count
         
         @doc_1relations = Doc.create(:id => 3)
         denotation = FactoryGirl.create(:denotation, :project_id => 3, :doc => @doc_1relations)
         FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
-        @doc_1relations.relations_count
         
         @doc_0relations = Doc.create(:id => 2)
         @docs = Doc.order_by(Doc.all, 'relations_count')
-        @doc_0relations.relations_count
       end
       
       it 'doc which has most relations should be docs[0]' do
@@ -330,46 +326,42 @@ describe Doc do
       end
     end
     
-    context 'relations_count' do
+    context 'same_sourceid_relations_count' do
+      def create_same_sourceid_relations(doc, relations_size, instances_size)
+        denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => doc)
+        relations_size.times do
+          FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => 'Denotation', :obj_id => denotation.id)
+        end
+        instances_size.times do |i|
+          FactoryGirl.create(:instance, :obj_id => denotation.id, :project_id => 1)
+        end
+      end
+      
       before do
-        @doc_3relations = Doc.create(:id => 5)
-        3.times do
-          denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => @doc_3relations)
-          FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
-        end
-        @doc_3relations.relations_count
-
-        @doc_2relations = Doc.create(:id => 4)
-        2.times do
-          denotation = FactoryGirl.create(:denotation, :project_id => 2, :doc => @doc_2relations)
-          FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
-        end
-        @doc_2relations.relations_count
-        
-        @doc_1relations = Doc.create(:id => 3)
-        denotation = FactoryGirl.create(:denotation, :project_id => 3, :doc => @doc_1relations)
-        FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
-        @doc_1relations.relations_count
-        
-        @doc_0relations = Doc.create(:id => 2)
-        @docs = Doc.order_by(Doc.all, 'relations_count')
-        @doc_0relations.relations_count
+        @relations_count2 = FactoryGirl.create(:doc,  :sourceid => 12345)
+        create_same_sourceid_relations(@relations_count2, 1, 1)
+        @relations_count3 = FactoryGirl.create(:doc,  :sourceid => 23456)
+        create_same_sourceid_relations(@relations_count3, 1, 2)
+        @relations_count4 = FactoryGirl.create(:doc,  :sourceid => 34567)
+        create_same_sourceid_relations(@relations_count4, 3, 1)
+        @relations_count0 = FactoryGirl.create(:doc,  :sourceid => 34567)
+        @docs = Doc.order_by(Doc.all, 'same_sourceid_relations_count')
       end
       
-      it 'doc which has most relations should be docs[0]' do
-        @docs[0].should eql(@doc_3relations)
+      it 'doc which has 4 relations(same sourceid) should be docs[0]' do
+        @docs[0].should eql(@relations_count0)
       end
       
-      it 'doc which has second most relations should be docs[0]' do
-        @docs[1].should eql(@doc_2relations)
+      it 'doc which has 4 relations should be docs[1]' do
+        @docs[1].should eql(@relations_count4)
       end
       
-      it 'doc which has third most relations should be docs[0]' do
-        @docs[2].should eql(@doc_1relations)
+      it 'doc which has 3 relations should be docs[2]' do
+        @docs[2].should eql(@relations_count3)
       end
       
-      it 'doc which does not has relations should be docs.last' do
-        @docs[3].should eql(@doc_0relations)
+      it 'doc which has 2 relations should be docs[3]' do
+        @docs[3].should eql(@relations_count2)
       end
     end
     
@@ -457,5 +449,32 @@ describe Doc do
     it 'should return docs which has samse sourceid denotations size' do
       @sourceid_4567_denotations_count.should eql(@sourceid_4567_doc_has_denotations_count)     
     end          
+  end
+  
+  describe 'same_sourceid_relations_count' do
+    before do
+      5.times do |i|
+        id = i + 1
+        doc = FactoryGirl.create(:doc, :id => id,  :sourceid => 123456)
+        FactoryGirl.create(:denotation, :id => id, :project_id => 1, :doc => doc)
+      end
+      @doc = FactoryGirl.create(:doc,  :sourceid => 123456)
+
+      @relations_size = 3
+      @relations_size.times do |i|
+        id = i + 1
+        FactoryGirl.create(:relation, :subj_id => id, :subj_type => 'Denotation', :obj_id => id)
+      end
+
+      @instances_size = 2
+      @instances_size.times do |i|
+        id = i + 1
+        FactoryGirl.create(:instance, :obj_id => id, :project_id => 1)
+      end
+    end
+    
+    it 'should returnarnersperspesazorder' do
+      @doc.same_sourceid_relations_count.should eql(@relations_size + @instances_size)
+    end
   end
 end

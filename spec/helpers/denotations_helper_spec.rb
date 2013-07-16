@@ -11,41 +11,44 @@ describe DenotationsHelper do
       @doc = FactoryGirl.create(:doc)
     end
     
-    context 'when sourceid present' do
-      before do
-        @same_sourceid_denotations_count = 'same_sourceid_denotations_count'
-        Doc.any_instance.stub(:same_sourceid_denotations_count).and_return(@same_sourceid_denotations_count)
-        @result = helper.denotations_count_helper(nil, @doc, 'sourceid')
-      end
-      
-      it 'should return doc.same_sourceid_denotations_count' do
-        @result.should eql(@same_sourceid_denotations_count)
-      end
-    end
     
     context 'when project present' do
-      before do
-        @doc_denotations = 'denotations'
-        Doc.any_instance.stub(:denotations).and_return(@doc_denotations)
+      context 'when sourceid present' do
+        before do
+          @same_sourceid_denotations_count = 'same_sourceid_denotations_count'
+          Doc.any_instance.stub(:same_sourceid_denotations_count).and_return(@same_sourceid_denotations_count)
+          @result = helper.denotations_count_helper(@project, @doc, 'sourceid')
+        end
+        
+        it 'should return doc.same_sourceid_denotations_count' do
+          @result.should eql(@same_sourceid_denotations_count)
+        end
       end
       
-      context 'when doc present' do
+      context 'when sourceid nil' do
         before do
-          @result = helper.denotations_count_helper(@project, @doc)
+          @doc_denotations = 'denotations'
+          Doc.any_instance.stub(:denotations).and_return(@doc_denotations)
         end
         
-        it 'denotations should be doc.denotations' do
-          @result[1].should eql(@doc_denotations)
+        context 'when doc present' do
+          before do
+            @result = helper.denotations_count_helper(@project, @doc)
+          end
+          
+          it 'denotations should be doc.denotations' do
+            @result[1].should eql(@doc_denotations)
+          end
         end
-      end
-
-      context 'when doc blank' do
-        before do
-          @result = helper.denotations_count_helper(@project)
-        end
-        
-        it 'denotations should be Denotation class' do
-          @result[1].should eql(Denotation)
+  
+        context 'when doc blank' do
+          before do
+            @result = helper.denotations_count_helper(@project)
+          end
+          
+          it 'denotations should be Denotation class' do
+            @result[1].should eql(Denotation)
+          end
         end
       end
     end

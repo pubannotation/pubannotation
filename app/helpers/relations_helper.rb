@@ -1,8 +1,12 @@
 module RelationsHelper
-  def relations_count_helper(project, doc = nil)
+  def relations_count_helper(project, doc = nil, sourceid = nil)
     if project.present?
       if doc.present?
-        doc.project_relations_count(project.id)
+        if sourceid.present?
+          doc.same_sourceid_relations_count
+        else
+          doc.project_relations_count(project.id)
+        end
       else  
         Relation.project_relations_count(project.id, Relation)
       end
