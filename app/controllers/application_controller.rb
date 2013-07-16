@@ -29,7 +29,8 @@ class ApplicationController < ActionController::Base
   end
   
   def store_location
-    if request.fullpath != new_user_session_path && request.fullpath != new_user_registration_path && request.method == 'GET'
+    requested_path = url_for(:only_path => true)
+    if requested_path != new_user_session_path && requested_path != new_user_registration_path && request.method == 'GET'
       session[:after_sign_in_path] = request.fullpath
     end
   end
