@@ -11,6 +11,18 @@ describe DenotationsHelper do
       @doc = FactoryGirl.create(:doc)
     end
     
+    context 'when sourceid present' do
+      before do
+        @same_sourceid_denotations_count = 'same_sourceid_denotations_count'
+        Doc.any_instance.stub(:same_sourceid_denotations_count).and_return(@same_sourceid_denotations_count)
+        @result = helper.denotations_count_helper(nil, @doc, 'sourceid')
+      end
+      
+      it 'should return doc.same_sourceid_denotations_count' do
+        @result.should eql(@same_sourceid_denotations_count)
+      end
+    end
+    
     context 'when project present' do
       before do
         @doc_denotations = 'denotations'

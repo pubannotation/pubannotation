@@ -119,7 +119,7 @@ $(function() {
 <% end %>
 </div>
 
-<%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project, :accordion_id => 1} %>
+<%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project, :accordion_id => 1, :denotations_count_order => 'same_sourceid_denotations_count'} %>
 
-<%= render :partial => "pmcdocs/list", :locals => {:docs => @pmcdocs, :project => @project, :accordion_id => 2} %>
+<%= render :partial => "pmcdocs/list", :locals => {:docs => @pmcdocs, :project => @project, :accordion_id => 2, :denotations_count_order => 'same_sourceid_denotations_count'} %>
 </div>

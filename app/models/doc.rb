@@ -26,6 +26,8 @@ class Doc < ActiveRecord::Base
     case order
     when 'denotations_count'
       docs.sort{|a, b| b.denotations.size <=> a.denotations.size}
+    when 'same_sourceid_denotations_count'
+      docs.sort{|a, b| b.same_sourceid_denotations_count <=> a.same_sourceid_denotations_count}
     when 'relations_count'
       docs.sort{|a, b| b.relations_count <=> a.relations_count}
     else
@@ -42,5 +44,10 @@ class Doc < ActiveRecord::Base
   # returns doc.relations count
   def relations_count
     subcatrels.size + subinsrels.size
+  end
+  
+  def same_sourceid_denotations_count
+    denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
+    Denotation.select('doc_id').where('doc_id IN (?)', denotation_doc_ids).size
   end
 end
