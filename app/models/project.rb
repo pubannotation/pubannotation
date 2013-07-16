@@ -24,22 +24,22 @@ class Project < ActiveRecord::Base
   scope :order_pmdocs_count, 
     includes(:pmdocs).
     group('projects.id').
-    order("IFNULL(count(docs.id), 0) DESC")
+    order("count(docs.id) DESC")
     
   scope :order_pmcdocs_count, 
     includes(:pmcdocs).
     group('projects.id').
-    order("IFNULL(count(docs.id), 0) DESC")
+    order("count(docs.id) DESC")
     
   scope :order_denotations_count, 
     includes(:denotations).
     group('projects.id').
-    order("IFNULL(count(denotations.id), 0) DESC")
+    order("count(denotations.id) DESC")
     
   scope :order_relations_count,
     includes(:relations).
     group('projects.id').
-    order('IFNULL(count(relations.id), 0) DESC')
+    order('count(relations.id) DESC')
 
   def self.order_by(projects, order, current_user)
     case order
