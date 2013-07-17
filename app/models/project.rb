@@ -22,22 +22,22 @@ class Project < ActiveRecord::Base
     
   # scopes for order
   scope :order_pmdocs_count, 
-    includes(:pmdocs).
+    joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PubMed'").
     group('projects.id').
     order("count(docs.id) DESC")
     
   scope :order_pmcdocs_count, 
-    includes(:pmcdocs).
+    joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PMC'").
     group('projects.id').
     order("count(docs.id) DESC")
     
   scope :order_denotations_count, 
-    includes(:denotations).
+    joins('LEFT OUTER JOIN denotations ON denotations.project_id = projects.id').
     group('projects.id').
     order("count(denotations.id) DESC")
     
   scope :order_relations_count,
-    includes(:relations).
+    joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
     group('projects.id').
     order('count(relations.id) DESC')
 
