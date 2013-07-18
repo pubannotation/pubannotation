@@ -106,11 +106,12 @@ describe ApplicationController do
       @post_request_full_path = '/last/post'
       controller.stub(:new_user_session_path).and_return(@user_sign_in_path)
       controller.stub(:new_user_registration_path).and_return(@user_sign_up_path)
+      controller.stub(:url_for).and_return(@request_full_path)
     end  
 
     context 'when request.fullpath is not user sign in path and user signup path' do
       before do
-        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET', :host => ''))
         controller.store_location
       end
       
@@ -136,6 +137,7 @@ describe ApplicationController do
       before do
         controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
         controller.store_location
+        controller.stub(:url_for).and_return(@user_sign_in_path)
         controller.stub(:request).and_return(double(:fullpath => @user_sign_in_path, :method => 'GET'))
         controller.store_location
       end
@@ -149,6 +151,7 @@ describe ApplicationController do
       before do
         controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
         controller.store_location
+        controller.stub(:url_for).and_return(@user_sign_up_path)
         controller.stub(:request).and_return(double(:fullpath => @user_sign_up_path, :method => 'GET'))
         controller.store_location
       end
