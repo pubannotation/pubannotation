@@ -338,13 +338,13 @@ describe Doc do
       end
       
       before do
-        @relations_count2 = FactoryGirl.create(:doc,  :sourceid => 12345)
+        @relations_count2 = FactoryGirl.create(:doc,  :sourceid => '12345')
         create_same_sourceid_relations(@relations_count2, 1, 1)
-        @relations_count3 = FactoryGirl.create(:doc,  :sourceid => 23456)
+        @relations_count3 = FactoryGirl.create(:doc,  :sourceid => '23456')
         create_same_sourceid_relations(@relations_count3, 1, 2)
-        @relations_count4 = FactoryGirl.create(:doc,  :sourceid => 34567)
+        @relations_count4 = FactoryGirl.create(:doc,  :sourceid => '34567')
         create_same_sourceid_relations(@relations_count4, 3, 1)
-        @relations_count0 = FactoryGirl.create(:doc,  :sourceid => 34567)
+        @relations_count0 = FactoryGirl.create(:doc,  :sourceid => '34567')
         @docs = Doc.order_by(Doc.all, 'same_sourceid_relations_count')
       end
       
@@ -367,11 +367,11 @@ describe Doc do
     
     context 'else' do
       before do
-        @doc_111 = FactoryGirl.create(:doc, :sourceid => 111)
-        @doc_1111 = FactoryGirl.create(:doc, :sourceid => 1111)
-        @doc_1112 = FactoryGirl.create(:doc, :sourceid => 1112)
-        @doc_1211 = FactoryGirl.create(:doc, :sourceid => 1211)
-        @doc_11111 = FactoryGirl.create(:doc, :sourceid => 11111)
+        @doc_111 = FactoryGirl.create(:doc, :sourceid => '111')
+        @doc_1111 = FactoryGirl.create(:doc, :sourceid => '1111')
+        @doc_1112 = FactoryGirl.create(:doc, :sourceid => '1112')
+        @doc_1211 = FactoryGirl.create(:doc, :sourceid => '1211')
+        @doc_11111 = FactoryGirl.create(:doc, :sourceid => '11111')
         @docs = Doc.order_by(Doc.all, nil)
       end
       
@@ -427,17 +427,17 @@ describe Doc do
     before do
       @sourceid_1234_doc_has_denotations_count = 3
       @sourceid_1234_doc_has_denotations_count.times do
-        doc = FactoryGirl.create(:doc, :sourceid => 1234)
+        doc = FactoryGirl.create(:doc, :sourceid => '1234')
         FactoryGirl.create(:denotation, :project_id => 1, :doc => doc)
       end
-      @sourceid_1234 = FactoryGirl.create(:doc, :sourceid => 1234)
+      @sourceid_1234 = FactoryGirl.create(:doc, :sourceid => '1234')
       
       @sourceid_4567_doc_has_denotations_count = 2
       @sourceid_4567_doc_has_denotations_count.times do
-        doc = FactoryGirl.create(:doc, :sourceid => 4567)
+        doc = FactoryGirl.create(:doc, :sourceid => '4567')
         FactoryGirl.create(:denotation, :project_id => 1, :doc => doc)
       end
-      @sourceid_4567 = FactoryGirl.create(:doc, :sourceid => 4567)
+      @sourceid_4567 = FactoryGirl.create(:doc, :sourceid => '4567')
       @sourceid_1234_denotations_count = @sourceid_1234.same_sourceid_denotations_count
       @sourceid_4567_denotations_count = @sourceid_4567.same_sourceid_denotations_count
     end
@@ -455,10 +455,10 @@ describe Doc do
     before do
       5.times do |i|
         id = i + 1
-        doc = FactoryGirl.create(:doc, :id => id,  :sourceid => 123456)
+        doc = FactoryGirl.create(:doc, :id => id,  :sourceid => '123456')
         FactoryGirl.create(:denotation, :id => id, :project_id => 1, :doc => doc)
       end
-      @doc = FactoryGirl.create(:doc,  :sourceid => 123456)
+      @doc = FactoryGirl.create(:doc,  :sourceid => '123456')
 
       @relations_size = 3
       @relations_size.times do |i|
