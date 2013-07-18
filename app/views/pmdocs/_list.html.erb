@@ -35,8 +35,8 @@
         <th><%= t('activerecord.attributes.doc.sourcedb') %></th>
 	    <th class="sortable-th"><%= link_to_unless_current t('activerecord.attributes.doc.sourceid'), url_for(:only_path => true, :docs_order => 'sourceid', :accordion_id => 1), :class => 'sortable-a' %></th>
         <th><%= t('activerecord.attributes.doc.body') %></th>
-      	<th class="sortable-th" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :docs_order => 'denotations_count', :accordion_id => 1), :class => 'sortable-a' %></th>
-	      <th class="sortable-th" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :docs_order => 'relations_count', :accordion_id => 1), :class => 'sortable-a' %></th>
+      	<th class="sortable-th" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :docs_order => denotations_count_order, :accordion_id => 1), :class => 'sortable-a' %></th>
+	      <th class="sortable-th" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :docs_order => relations_count_order, :accordion_id => 1), :class => 'sortable-a' %></th>
         <th></th>
       </tr>
 
@@ -47,11 +47,11 @@
         <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
         <td>
         	<!-- denotations count -->
-        	<%= denotations_count_helper(@project, doc) %>
+        	<%= denotations_count_helper(@project, doc, doc.sourceid) %>
         </td>
         <td>
         	<!-- relations count -->
-        	<%= relations_count_helper(@project, doc) %>
+        	<%= relations_count_helper(@project, doc, doc.sourceid) %>
         </td>
         <td>
           <% if project %>
