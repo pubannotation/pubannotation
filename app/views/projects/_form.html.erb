@@ -61,7 +61,8 @@
   <tr>
     <th><%= f.label :editor %></th>
     <td>
-      <%= f.text_field :editor, :class => "input", :value => 'http://bionlp.dbcls.jp/textae-term/', :placeholder => 'URL' %>
+      <!-- <%= f.text_field :editor, :class => "input", :value => 'http://bionlp.dbcls.jp/textae-term/', :placeholder => 'URL' %> -->
+      <%= f.text_field :editor, :class => "input", :placeholder => 'URL' %>
       <%= hint_helper({:model => :project, :column => :editor})%>
       <br/>
       <span class="note"><%= t('views.projects.try_textae') %> <a href="http://bionlp.dbcls.jp/textae/">TextAE</a></span>.
