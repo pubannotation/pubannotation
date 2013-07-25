@@ -74,6 +74,12 @@ class PmdocsController < ApplicationController
       end
     end
   end
+  
+  # GET /pmdocs/:begin/:end
+  def spans
+    @doc, notice = get_doc('PubMed', params[:id])
+    @spans = @doc.body[params[:begin].to_i...params[:end].to_i]
+  end
 
 
   # POST /pmdocs

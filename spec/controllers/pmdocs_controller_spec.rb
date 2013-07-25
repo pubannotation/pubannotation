@@ -158,6 +158,25 @@ describe PmdocsController do
     end
   end
   
+  describe 'spans' do
+    before do
+      @body = '123456789 0000000001'
+      @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
+      controller.stub(:get_doc).and_return([@doc, nil])
+      @begin = 10
+      @end = 20
+      get :spans, :id => '12345', :begin => @begin, :end => @end
+    end
+    
+    it 'should set @doc' do
+      assigns[:doc].should eql(@doc)
+    end
+     
+    it 'should set body[begin...end] as @spans' do
+      assigns[:spans].should eql(@body[@begin...@end])
+    end
+  end
+  
   describe 'create' do
     context 'when params[:project_id] exists' do
       context 'and when format html' do
