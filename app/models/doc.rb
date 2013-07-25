@@ -21,11 +21,15 @@ class Doc < ActiveRecord::Base
      :conditions => ['projects.name =?', project_name]  
     }
    }
-   
+  scope :denotations_count,
+    joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id").
+    group('docs.id').
+    order("count(denotations.id) DESC")
+  
   def self.order_by(docs, order)
     case order
     when 'denotations_count'
-      docs.sort{|a, b| b.denotations.size <=> a.denotations.size}
+      docs.denotations_count
     when 'same_sourceid_denotations_count'
       docs.sort{|a, b| b.same_sourceid_denotations_count <=> a.same_sourceid_denotations_count}
     when 'relations_count'

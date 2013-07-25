@@ -267,7 +267,7 @@ describe Doc do
         FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_1.id, :project_id => @project.id)
         FactoryGirl.create(:denotation, :project => @project, :doc => @doc_denotations_1)
         @doc_denotations_0 = FactoryGirl.create(:doc, :id => 2)
-        @docs = Doc.order_by(Doc.all, 'denotations_count')
+        @docs = Doc.order_by(Doc, 'denotations_count')
       end
       
       it 'doc which has most denotations should be docs[0]' do
