@@ -43,10 +43,10 @@
       	<%= project.docs.pmcdocs.size %>
       </td>
       <td style="text-align:right">
-    	<%= denotations_count_helper(project) %>      	
+    	<%= denotations_count_helper(project, doc) %>
       </td>
       <td style="text-align:right">
-    	<%= relations_count_helper(project) %>
+    	<%= relations_count_helper(project, doc) %>
       </td>
       <% if @doc and @doc.sourcedb == "PubMed" %>
         <td><%= link_to t('views.shared.show'), project_pmdoc_path(project.name, @doc.sourceid) %></td>

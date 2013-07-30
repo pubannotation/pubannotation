@@ -306,7 +306,7 @@ describe Doc do
         FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
         
         @doc_0relations = Doc.create(:id => 2)
-        @docs = Doc.order_by(Doc.all, 'relations_count')
+        @docs = Doc.order_by(Doc, 'relations_count')
       end
       
       it 'doc which has most relations should be docs[0]' do
