@@ -26,7 +26,7 @@ Pubann::Application.routes.draw do
     end
     
     member do
-      get 'spans/:begin/:end' => 'pmdocs#spans'
+      get 'spans/:begin-:end' => 'pmdocs#spans'
     end
     
     resources :projects do
