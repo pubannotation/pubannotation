@@ -419,7 +419,7 @@ describe Doc do
     end
     
     it 'should return subcatrels.size and subinsrels.size' do
-      @doc.relations_count.should eql(@subcatrels_size + @subinsrels_size)
+      @doc.relations_count.should eql(@subcatrels_size)
     end
   end
   
