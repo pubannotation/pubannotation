@@ -130,7 +130,7 @@ class PmcdocsController < ApplicationController
       i += 1
     end
     conditions.unshift(columns)
-    @docs = Doc.pmcdocs.where(conditions).paginate(:page => params[:page])
+    @docs = Doc.pmcdocs.where(conditions).order('id ASC').paginate(:page => params[:page])
     @pmc_sourceid_value = params[:sourceid]
     @pmc_body_value = params[:body]
   end

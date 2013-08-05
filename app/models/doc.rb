@@ -21,13 +21,30 @@ class Doc < ActiveRecord::Base
      :conditions => ['projects.name =?', project_name]  
     }
    }
-   
+  scope :denotations_count,
+    joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id").
+    group('docs.id').
+    order("count(denotations.id) DESC")
+
+  scope :relations_count,
+    # LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN instances ON instances.obj_id = denotations.id LEFT OUTER JOIN relations ON relations.subj_id = instances.id AND relations.subj_type = 'Instance'
+    #joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN instances ON instances.obj_id = denotations.id LEFT OUTER JOIN relations ON relations.subj_id = instances.id AND relations.subj_type = 'Instance' LEFT OUTER JOIN denotations denotations_docs_join ON denotations_docs_join.doc_id = docs.id LEFT OUTER JOIN relations subcatrels_docs ON subcatrels_docs.subj_id = denotations_docs_join.id AND subcatrels_docs.subj_type = 'Denotation'").
+    #joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
+    # order by subcatrels only
+    joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
+    .group('docs.id')
+    .order('count(relations.id) DESC')
+  
   def self.order_by(docs, order)
     case order
     when 'denotations_count'
-      docs.sort{|a, b| b.denotations.size <=> a.denotations.size}
+      docs.denotations_count
+    when 'same_sourceid_denotations_count'
+      docs.sort{|a, b| b.same_sourceid_denotations_count <=> a.same_sourceid_denotations_count}
     when 'relations_count'
-      docs.sort{|a, b| b.relations_count <=> a.relations_count}
+      docs.relations_count
+    when 'same_sourceid_relations_count'
+      docs.sort{|a, b| b.same_sourceid_relations_count <=> a.same_sourceid_relations_count}
     else
       docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
     end    
@@ -42,5 +59,18 @@ class Doc < ActiveRecord::Base
   # returns doc.relations count
   def relations_count
     subcatrels.size + subinsrels.size
+  end
+  
+  def same_sourceid_denotations_count
+    denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
+    Denotation.select('doc_id').where('doc_id IN (?)', denotation_doc_ids).size
+  end
+
+  def same_sourceid_relations_count
+    denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
+    denotations_ids = Denotation.select('id, doc_id').where('doc_id IN (?)', denotation_doc_ids).collect{|denotation| denotation.id}
+    relations_size = Relation.select('subj_id, subj_type').where(:subj_type => 'Denotation').where('subj_id IN(?)', denotations_ids).size
+    instances_size = Instance.select('obj_id').where('obj_id IN(?)', denotations_ids).size
+    relations_size + instances_size
   end
 end
