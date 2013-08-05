@@ -1,0 +1,20 @@
+<% content_for :path do %>
+	> <%= link_to t('views.paths.home'), home_path %>
+    > <%= link_to t('views.shared.pmdocs'), pmdocs_path %>
+	> <%= link_to @doc.sourceid, @doc.source %>
+	> <%= "spans #{params[:begin]} - #{params[:end]}" %>
+<% end %>
+
+<table>
+	<tr>
+		<th>
+			<%= @doc.sourcedb %>:<%= link_to @doc.sourceid, @doc.source %>
+			<%= params[:begin] %> - <%= params[:end] %>
+		</th>
+	</tr>
+	<tr>
+		<td>
+			<%= @spans %>
+		</td>
+	</tr>
+</table>

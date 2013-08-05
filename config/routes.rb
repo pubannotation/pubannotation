@@ -25,6 +25,10 @@ Pubann::Application.routes.draw do
       get :autocomplete_doc_sourceid
     end
     
+    member do
+      get 'spans/:begin-:end' => 'pmdocs#spans'
+    end
+    
     resources :projects do
       resources :annotations
     end
