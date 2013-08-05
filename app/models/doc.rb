@@ -58,7 +58,7 @@ class Doc < ActiveRecord::Base
   
   # returns doc.relations count
   def relations_count
-    subcatrels.size + subinsrels.size
+    subcatrels.size# + subinsrels.size
   end
   
   def same_sourceid_denotations_count
