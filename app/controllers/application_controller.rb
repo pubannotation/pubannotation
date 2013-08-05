@@ -1,7 +1,7 @@
 # encoding: UTF-8
 require 'pmcdoc'
 require 'utfrewrite'
-require 'aligner'
+require 'sequence_alignment'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
