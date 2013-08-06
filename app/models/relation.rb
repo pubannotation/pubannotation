@@ -15,6 +15,8 @@ class Relation < ActiveRecord::Base
 
   scope :project_relations, select(:id).group("relations.project_id")
   
+  after_save :increment_subcatrels_count
+  
   def get_hash
     hrelation = Hash.new
     hrelation[:id]   = hid
@@ -36,5 +38,11 @@ class Relation < ActiveRecord::Base
   
   def self.project_relations_count(project_id, relations)
     relations.project_relations.count[project_id].to_i
+  end
+  
+  def increment_subcatrels_count
+    if self.subj_type == 'Denotation'
+      Doc.increment_counter(:subcatrels_count, subj.doc_id)
+    end
   end
 end

@@ -36,18 +36,38 @@ class Doc < ActiveRecord::Base
     .order('count(relations.id) DESC')
   
   def self.order_by(docs, order)
-    case order
-    when 'denotations_count'
-      docs.denotations_count
-    when 'same_sourceid_denotations_count'
-      docs.sort{|a, b| b.same_sourceid_denotations_count <=> a.same_sourceid_denotations_count}
-    when 'relations_count'
-      docs.relations_count
-    when 'same_sourceid_relations_count'
-      docs.sort{|a, b| b.same_sourceid_relations_count <=> a.same_sourceid_relations_count}
+    if docs.present?
+      case order
+      when 'denotations_count'
+        docs.denotations_count
+      when 'same_sourceid_denotations_count'
+        # docs
+          # .select('docs.*, SUM(CASE WHEN docs.sourceid = docs.sourceid THEN denotations_count ELSE 0 END) AS denotations_count_sum')
+          # .group('docs.id')
+          # .order('denotations_count_sum DESC')
+        if docs.first.sourcedb == 'PubMed'
+          docs.order('denotations_count DESC')
+        else
+          docs.sort{|a, b| b.same_sourceid_denotations_count <=> a.same_sourceid_denotations_count}
+        end
+      when 'relations_count'
+        docs.relations_count
+      when 'same_sourceid_relations_count'
+        # docs
+          # .select('docs.*, CASE WHEN docs.sourceid = docs.sourceid THEN SUM(docs.subcatrels_count) ELSE 0 END AS subcatrels_count_sum')
+          # .group('docs.id')
+          # .order('subcatrels_count_sum DESC')
+        if docs.first.sourcedb == 'PubMed'
+          docs.order('subcatrels_count DESC')
+        else
+          docs.sort{|a, b| b.same_sourceid_relations_count <=> a.same_sourceid_relations_count}
+        end
+      else
+        docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
+      end
     else
-      docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
-    end    
+      docs
+    end
   end    
   
   # returns relations count which belongs to project and doc
@@ -58,19 +78,21 @@ class Doc < ActiveRecord::Base
   
   # returns doc.relations count
   def relations_count
-    subcatrels.size# + subinsrels.size
+    subcatrels.size # + subinsrels.size
   end
   
   def same_sourceid_denotations_count
-    denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
-    Denotation.select('doc_id').where('doc_id IN (?)', denotation_doc_ids).size
+    #denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
+    #Denotation.select('doc_id').where('doc_id IN (?)', denotation_doc_ids).size
+    Doc.where(:sourceid => self.sourceid).sum('denotations_count')
   end
 
   def same_sourceid_relations_count
-    denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
-    denotations_ids = Denotation.select('id, doc_id').where('doc_id IN (?)', denotation_doc_ids).collect{|denotation| denotation.id}
-    relations_size = Relation.select('subj_id, subj_type').where(:subj_type => 'Denotation').where('subj_id IN(?)', denotations_ids).size
-    instances_size = Instance.select('obj_id').where('obj_id IN(?)', denotations_ids).size
-    relations_size + instances_size
+    # denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
+    # denotations_ids = Denotation.select('id, doc_id').where('doc_id IN (?)', denotation_doc_ids).collect{|denotation| denotation.id}
+    # relations_size = Relation.select('subj_id, subj_type').where(:subj_type => 'Denotation').where('subj_id IN(?)', denotations_ids).size
+    # instances_size = Instance.select('obj_id').where('obj_id IN(?)', denotations_ids).size
+    # relations_size + instances_size
+    Doc.where(:sourceid => self.sourceid).sum('subcatrels_count')
   end
 end
