@@ -371,3 +371,7 @@ li {
 	color:#234979 !important;
 	background: url(/assets/sort_asc_p.png) no-repeat 5px center #E2EBF0;
 }
+.spans_prev, 
+.spans_next{
+	color: #7D7D7D;	
+}
