@@ -1,6 +1,6 @@
 class Denotation < ActiveRecord::Base
   belongs_to :project
-  belongs_to :doc
+  belongs_to :doc, :counter_cache => true
 
   has_many :instances, :foreign_key => "obj_id", :dependent => :destroy
 

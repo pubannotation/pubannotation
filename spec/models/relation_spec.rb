@@ -97,10 +97,12 @@ describe Relation do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
       @denotation_sub = FactoryGirl.create(:denotation, :id => 1, :hid => 'denotation sub hid', :project => @project, :doc => @doc)
       @denotation_obj = FactoryGirl.create(:denotation, :id => 2, :hid => 'denotation rel hid', :project => @project, :doc => @doc)
+      @instance_subj = FactoryGirl.create(:instance, :obj_id => 1, :project => @project)
       @relation = FactoryGirl.create(:relation, 
       :hid => 'hid',
       :pred => '_lexChain', 
-      :obj => @denotation_obj, 
+      :obj => @denotation_obj,
+      :subj => @instance_subj, 
       :project => @project)
       @get_hash = @relation.get_hash
     end
@@ -114,7 +116,7 @@ describe Relation do
     end
     
     it 'should set end as denotation:end' do
-      @get_hash[:subj].should eql(@denotation_sub[:hid])
+      @get_hash[:subj].should eql(@instance_subj[:hid])
     end
     
     it 'should set end as denotation:end' do
@@ -286,6 +288,41 @@ describe Relation do
     context 'when project does not have relations' do
       it 'should return denotations count' do
         Relation.project_relations_count(@another_project.id, Relation).should eql(0)
+      end
+    end
+  end
+  
+  describe 'increment_subcatrels_count' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
+      @subcatrels_count = 3
+    end
+    
+    context 'when subj == Denotations' do
+      before do
+        @subcatrels_count.times do
+          FactoryGirl.create(:subcatrel, :obj => @instance)
+        end
+        @doc.reload
+      end
+      
+      it 'should count up subcatrels_count' do
+        @doc.subcatrels_count.should eql(@subcatrels_count)
+      end
+    end
+    
+    context 'when subj != Denotations' do
+      before do
+        @subcatrels_count.times do
+          FactoryGirl.create(:relation, :project_id => 1, :obj => @instance)
+        end
+        @doc.reload
+      end
+      
+      it 'should not count up subcatrels_count' do
+        @doc.subcatrels_count.should eql(0)
       end
     end
   end

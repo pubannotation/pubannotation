@@ -2,7 +2,7 @@ FactoryGirl.define do
   factory :relation do |c|
     c.hid 'R1'
     c.subj_id 1
-    c.subj_type 'Denotation' 
+    c.subj_type 'Instance' 
     c.obj_id {|relation| relation.association(:obj)}
     c.obj_type 'Denotation'
     c.pred 'coreferenceOf'
@@ -13,6 +13,7 @@ FactoryGirl.define do
   
   factory :subcatrel, :parent => :relation do |c|
     c.obj_id {|obj| obj.association(:obj)}
+    c.subj_type 'Denotation'
     c.obj_type 'Denotation'
     c.pred 'coreferenceOf'
   end

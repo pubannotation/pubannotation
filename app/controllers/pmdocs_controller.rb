@@ -16,7 +16,7 @@ class PmdocsController < ApplicationController
     end
 
     if @docs
-      @docs = Doc.order_by(@docs, params[:docs_order])
+      @docs = Doc.pmdocs.order_by(@docs, params[:docs_order])
     end
     
     respond_to do |format|

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130530054825) do
+ActiveRecord::Schema.define(:version => 20130805055020) do
 
   create_table "blocks", :force => true do |t|
     t.string   "hid"
@@ -50,6 +50,8 @@ ActiveRecord::Schema.define(:version => 20130530054825) do
     t.string   "section"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+    t.integer  "denotations_count", :default => 0
+    t.integer  "subcatrels_count",  :default => 0
   end
 
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
