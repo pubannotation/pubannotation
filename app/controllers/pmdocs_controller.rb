@@ -90,10 +90,13 @@ class PmdocsController < ApplicationController
         prev_begin_pos = 0
       end
       @prev_text = body[prev_begin_pos...prev_end_pos] 
-
       next_begin_pos = end_pos
       next_end_pos = end_pos + context_window
       @next_text = body[next_begin_pos...next_end_pos] 
+      if params[:format] == 'txt'
+        @prev_text = "#{@prev_text}\t" if @prev_text.present?
+        @spans = "#{@spans}\t" if @next_text.present?
+      end
     end
     if params[:encoding] == 'ascii'
       @spans = get_ascii_text(@spans)

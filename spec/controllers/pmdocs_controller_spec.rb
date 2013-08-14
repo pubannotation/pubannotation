@@ -245,6 +245,26 @@ describe PmdocsController do
                 assigns[:next_text].should eql('')
               end
             end
+
+            context 'when format txt' do
+              before do
+                @begin = 6
+                @end = 10
+                get :spans, :id => @doc.sourceid, :format => 'txt', :context_window => 5, :begin => @begin, :end => @end
+              end
+              
+              it 'should set @prev_text includes tab' do
+                assigns[:prev_text].should eql("12345\t")
+              end
+               
+              it 'should set body[begin...end] as @spans includes tab' do
+                assigns[:spans].should eql("spans\t")
+              end
+              
+              it 'should set @next_text' do
+                assigns[:next_text].should eql('ABCDE')
+              end
+            end
           end
         end
       end
