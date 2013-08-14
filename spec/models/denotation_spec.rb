@@ -16,10 +16,15 @@ describe Denotation do
     before do
       @doc = FactoryGirl.create(:doc)
       @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
+      @doc.reload
     end
     
     it 'denotation should belongs to doc' do
       @denotation.doc.should eql(@doc)
+    end  
+    
+    it 'doc should count up doc.denotations_count' do
+      @doc.denotations_count.should eql(1)
     end  
   end
   

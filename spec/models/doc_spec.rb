@@ -229,24 +229,52 @@ describe Doc do
   
   describe 'self.order_by' do
     context 'same_sourceid_denotations_count' do
-      before do
-        @count_1 = double(:same_sourceid_denotations_count => 1)
-        @count_2 = double(:same_sourceid_denotations_count => 2)
-        @count_3 = double(:same_sourceid_denotations_count => 3)
-        docs = [@count_1, @count_2, @count_3]
-        @docs = Doc.order_by(docs, 'same_sourceid_denotations_count')
+      context 'when sourcedb = PubMed' do
+        before do
+          @count_1 = FactoryGirl.create(:doc, :sourceid => 1, :sourcedb => 'PubMed', :denotations_count => 1)
+          @count_2 = FactoryGirl.create(:doc, :sourceid => 2, :sourcedb => 'PubMed', :denotations_count => 2)
+          @count_3 = FactoryGirl.create(:doc, :sourceid => 3, :sourcedb => 'PubMed', :denotations_count => 3)
+          @count_0 = FactoryGirl.create(:doc, :sourceid => 1, :sourcedb => 'PubMed', :denotations_count => 0)
+          @docs = Doc.order_by(Doc.pmdocs, 'same_sourceid_denotations_count')
+        end
+        
+        it 'docs.first should most same_sourceid_denotations_count' do
+          @docs[0].should eql(@count_3)
+        end
+        
+        it 'docs.first should second most same_sourceid_denotations_count' do
+          @docs[1].should eql(@count_2)
+        end
+        
+        it 'docs.first should second most same_sourceid_denotations_count' do
+          @docs[2].should eql(@count_1)
+        end
+        
+        it 'docs.first should least same_sourceid_denotations_count' do
+          @docs.last.should eql(@count_0)
+        end
       end
       
-      it 'docs.first should most same_sourceid_denotations_count' do
-        @docs[0].should eql(@count_3)
-      end
-      
-      it 'docs.first should second most same_sourceid_denotations_count' do
-        @docs[1].should eql(@count_2)
-      end
-      
-      it 'docs.first should least same_sourceid_denotations_count' do
-        @docs.last.should eql(@count_1)
+      context 'when sourcedb = PMC' do
+        before do
+          @count_1 = double(:same_sourceid_denotations_count => 1, :sourcedb => 'PMC')
+          @count_2 = double(:same_sourceid_denotations_count => 2, :sourcedb => 'PMC')
+          @count_3 = double(:same_sourceid_denotations_count => 3, :sourcedb => 'PMC')
+          docs = [@count_1, @count_2, @count_3]
+          @docs = Doc.order_by(docs, 'same_sourceid_denotations_count')
+        end
+        
+        it 'docs.first should most same_sourceid_denotations_count' do
+          @docs[0].should eql(@count_3)
+        end
+        
+        it 'docs.first should second most same_sourceid_denotations_count' do
+          @docs[1].should eql(@count_2)
+        end
+        
+        it 'docs.first should least same_sourceid_denotations_count' do
+          @docs.last.should eql(@count_1)
+        end
       end
     end
     
@@ -327,52 +355,67 @@ describe Doc do
     end
     
     context 'same_sourceid_relations_count' do
-      def create_same_sourceid_relations(doc, relations_size, instances_size)
-        denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => doc)
-        relations_size.times do
-          FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => 'Denotation', :obj_id => denotation.id)
+      context 'when sourcedb == PubMed' do
+        before do
+          @relations_count2 = FactoryGirl.create(:doc,  :sourceid => '12345', :subcatrels_count => 2, :sourcedb => 'PubMed')
+          @relations_count3 = FactoryGirl.create(:doc,  :sourceid => '23456', :subcatrels_count => 3, :sourcedb => 'PubMed')
+          @relations_count4 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 4, :sourcedb => 'PubMed')
+          @relations_count0 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 0, :sourcedb => 'PubMed')
+          @docs = Doc.order_by(Doc.pmdocs, 'same_sourceid_relations_count')
         end
-        instances_size.times do |i|
-          FactoryGirl.create(:instance, :obj_id => denotation.id, :project_id => 1)
+        
+        it 'doc which has 4 relations(same sourceid) should be docs[0]' do
+          @docs[0].should eql(@relations_count4)
+        end
+        
+        it 'doc which has 4 relations should be docs[1]' do
+          @docs[1].should eql(@relations_count3)
+        end
+        
+        it 'doc which has 3 relations should be docs[2]' do
+          @docs[2].should eql(@relations_count2)
+        end
+        
+        it 'doc which has 2 relations should be docs[3]' do
+          @docs[3].should eql(@relations_count0)
         end
       end
       
-      before do
-        @relations_count2 = FactoryGirl.create(:doc,  :sourceid => '12345')
-        create_same_sourceid_relations(@relations_count2, 1, 1)
-        @relations_count3 = FactoryGirl.create(:doc,  :sourceid => '23456')
-        create_same_sourceid_relations(@relations_count3, 1, 2)
-        @relations_count4 = FactoryGirl.create(:doc,  :sourceid => '34567')
-        create_same_sourceid_relations(@relations_count4, 3, 1)
-        @relations_count0 = FactoryGirl.create(:doc,  :sourceid => '34567')
-        @docs = Doc.order_by(Doc.all, 'same_sourceid_relations_count')
-      end
-      
-      it 'doc which has 4 relations(same sourceid) should be docs[0]' do
-        @docs[0].should eql(@relations_count0)
-      end
-      
-      it 'doc which has 4 relations should be docs[1]' do
-        @docs[1].should eql(@relations_count4)
-      end
-      
-      it 'doc which has 3 relations should be docs[2]' do
-        @docs[2].should eql(@relations_count3)
-      end
-      
-      it 'doc which has 2 relations should be docs[3]' do
-        @docs[3].should eql(@relations_count2)
+      context 'when sourcedb == PMC' do
+        before do
+          @relations_count2 = FactoryGirl.create(:doc,  :sourceid => '12345', :subcatrels_count => 2, :sourcedb => 'PMC', :serial => 0)
+          @relations_count3 = FactoryGirl.create(:doc,  :sourceid => '23456', :subcatrels_count => 3, :sourcedb => 'PMC', :serial => 0)
+          @relations_count4 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 4, :sourcedb => 'PMC', :serial => 0)
+          @relations_count0 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 0, :sourcedb => 'PMC', :serial => 0)
+          @docs = Doc.order_by(Doc.pmcdocs, 'same_sourceid_relations_count')
+        end
+        
+        it 'doc which has 4 relations(same sourceid) should be docs[0]' do
+          @docs[0].should eql(@relations_count0)
+        end
+        
+        it 'doc which has 4 relations should be docs[1]' do
+          @docs[1].should eql(@relations_count4)
+        end
+        
+        it 'doc which has 3 relations should be docs[2]' do
+          @docs[2].should eql(@relations_count3)
+        end
+        
+        it 'doc which has 2 relations should be docs[3]' do
+          @docs[3].should eql(@relations_count2)
+        end
       end
     end
     
     context 'else' do
       before do
-        @doc_111 = FactoryGirl.create(:doc, :sourceid => '111')
-        @doc_1111 = FactoryGirl.create(:doc, :sourceid => '1111')
-        @doc_1112 = FactoryGirl.create(:doc, :sourceid => '1112')
-        @doc_1211 = FactoryGirl.create(:doc, :sourceid => '1211')
-        @doc_11111 = FactoryGirl.create(:doc, :sourceid => '11111')
-        @docs = Doc.order_by(Doc.all, nil)
+        @doc_111 = FactoryGirl.create(:doc, :sourceid => '111', :sourcedb => 'PubMed')
+        @doc_1111 = FactoryGirl.create(:doc, :sourceid => '1111', :sourcedb => 'PubMed')
+        @doc_1112 = FactoryGirl.create(:doc, :sourceid => '1112', :sourcedb => 'PubMed')
+        @doc_1211 = FactoryGirl.create(:doc, :sourceid => '1211', :sourcedb => 'PubMed')
+        @doc_11111 = FactoryGirl.create(:doc, :sourceid => '11111', :sourcedb => 'PubMed')
+        @docs = Doc.order_by(Doc.pmdocs, nil)
       end
       
       it 'sourceid 111 should be @docs[0]' do
@@ -444,7 +487,7 @@ describe Doc do
     
     it 'should return docs which has samse sourceid denotations size' do
       @sourceid_1234_denotations_count.should eql(@sourceid_1234_doc_has_denotations_count)     
-    end          
+    end      
     
     it 'should return docs which has samse sourceid denotations size' do
       @sourceid_4567_denotations_count.should eql(@sourceid_4567_doc_has_denotations_count)     
@@ -453,28 +496,24 @@ describe Doc do
   
   describe 'same_sourceid_relations_count' do
     before do
-      5.times do |i|
+      @same_sourceid_docs_count = 5
+      @relations_size = 3
+      # create documents
+      @same_sourceid_docs_count.times do |i|
         id = i + 1
         doc = FactoryGirl.create(:doc, :id => id,  :sourceid => '123456')
-        FactoryGirl.create(:denotation, :id => id, :project_id => 1, :doc => doc)
+        denotation = FactoryGirl.create(:denotation, :id => id, :project_id => 1, :doc => doc)
+        # create relations
+        @relations_size.times do |i|
+          id = i + 1
+          FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => 'Denotation', :obj_id => id)
+        end
       end
       @doc = FactoryGirl.create(:doc,  :sourceid => '123456')
-
-      @relations_size = 3
-      @relations_size.times do |i|
-        id = i + 1
-        FactoryGirl.create(:relation, :subj_id => id, :subj_type => 'Denotation', :obj_id => id)
-      end
-
-      @instances_size = 2
-      @instances_size.times do |i|
-        id = i + 1
-        FactoryGirl.create(:instance, :obj_id => id, :project_id => 1)
-      end
     end
     
-    it 'should returnarnersperspesazorder' do
-      @doc.same_sourceid_relations_count.should eql(@relations_size + @instances_size)
+    it 'should return sum of same sourceid docs subcatrels_count(= number of same sourceid docs and number of relations of those docs)' do
+      @doc.same_sourceid_relations_count.should eql(@same_sourceid_docs_count * @relations_size)
     end
   end
 end

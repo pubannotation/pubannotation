@@ -159,21 +159,253 @@ describe PmdocsController do
   end
   
   describe 'spans' do
-    before do
-      @body = '123456789 0000000001'
-      @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
-      controller.stub(:get_doc).and_return([@doc, nil])
-      @begin = 10
-      @end = 20
-      get :spans, :id => '12345', :begin => @begin, :end => @end
+    context 'when body not includes ascii text' do
+      before do
+        @body = '12345spansABCDE'
+        @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
+        controller.stub(:get_doc).and_return([@doc, nil])
+        @begin = 6
+        @end = 10
+      end
+      
+      context 'when encoding normal' do
+        context 'when context_window is nil' do
+          context 'when context is nil' do
+            before do
+              get :spans, :id => @doc.sourceid, :begin => @begin, :end => @end
+            end
+            
+            it 'should set @doc' do
+              assigns[:doc].should eql(@doc)
+            end
+             
+            it 'should set body[begin...end] as @spans' do
+              assigns[:spans].should eql('spans')
+            end
+          end
+          
+          context 'when context_window is present' do
+            context 'when begin of body' do
+              before do
+                @begin = 1
+                @end = 5
+                get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
+              end
+              
+              it 'should set @prev_text' do
+                assigns[:prev_text].should eql('')
+              end
+               
+              it 'should set body[begin...end] as @spans' do
+                assigns[:spans].should eql('12345')
+              end
+              
+              it 'should set @next_text' do
+                assigns[:next_text].should eql('spans')
+              end
+            end
+            
+            context 'when middle of body' do
+              before do
+                @begin = 6
+                @end = 10
+                get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
+              end
+              
+              it 'should set @prev_text' do
+                assigns[:prev_text].should eql('12345')
+              end
+               
+              it 'should set body[begin...end] as @spans' do
+                assigns[:spans].should eql('spans')
+              end
+              
+              it 'should set @next_text' do
+                assigns[:next_text].should eql('ABCDE')
+              end
+            end
+            
+            context 'when end of body' do
+              before do
+                # '12345spansABCDE'
+                @begin = 11
+                @end = 15
+                get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
+              end
+              
+              it 'should set @prev_text' do
+                assigns[:prev_text].should eql('spans')
+              end
+               
+              it 'should set body[begin...end] as @spans' do
+                assigns[:spans].should eql('ABCDE')
+              end
+              
+              it 'should set @next_text' do
+                assigns[:next_text].should eql('')
+              end
+            end
+
+            context 'when format txt' do
+              before do
+                @begin = 6
+                @end = 10
+                get :spans, :id => @doc.sourceid, :format => 'txt', :context_window => 5, :begin => @begin, :end => @end
+              end
+              
+              it 'should set @prev_text includes tab' do
+                assigns[:prev_text].should eql("12345\t")
+              end
+               
+              it 'should set body[begin...end] as @spans includes tab' do
+                assigns[:spans].should eql("spans\t")
+              end
+              
+              it 'should set @next_text' do
+                assigns[:next_text].should eql('ABCDE')
+              end
+            end
+          end
+        end
+      end
+
+      context 'when encoding is ascii' do
+        context 'when context_window is nil' do
+          context 'when middle of body' do
+            before do
+              @begin = 6
+              @end = 10
+              get :spans, :id => @doc.sourceid, :encoding => 'ascii', :begin => @begin, :end => @end
+            end
+            
+            it 'should set body[begin...end] as @spans' do
+              assigns[:spans].should eql('spans')
+            end
+          end
+        end
+        
+        context 'when context_window is present' do
+          context 'when middle of body' do
+            before do
+              @begin = 6
+              @end = 10
+              get :spans, :id => @doc.sourceid, :encoding => 'ascii', :context_window => 5, :begin => @begin, :end => @end
+            end
+            
+            it 'should set @prev_text' do
+              assigns[:prev_text].should eql('12345')
+            end
+             
+            it 'should set body[begin...end] as @spans' do
+              assigns[:spans].should eql('spans')
+            end
+            
+            it 'should set @next_text' do
+              assigns[:next_text].should eql('ABCDE')
+            end
+          end
+        end
+      end
     end
     
-    it 'should set @doc' do
-      assigns[:doc].should eql(@doc)
+    context 'when span includes ascii text' do
+      before do
+        @body = '12345Δ78901'
+        @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
+        controller.stub(:get_doc).and_return([@doc, nil])
+        @begin = 3
+        @end = 7
+      end
+      
+      context 'when encoding nil' do
+        context 'when context_window present' do
+          before do
+            get :spans, :id => @doc.sourceid, :context_window => 10, :begin => @begin, :end => @end
+          end
+          
+          it 'should set get_ascii_text[begin...end] as @spans' do
+            assigns[:spans].should eql('345Δ7')
+          end
+          
+          it 'should set prev_text' do
+            assigns[:prev_text].should eql('12')
+          end
+          
+          it 'should set next_text' do
+            assigns[:next_text].should eql('8901')
+          end
+        end
+      end
+      
+      context 'when encoding ascii' do
+        context 'when context_window present' do
+          before do
+            get :spans, :id => @doc.sourceid, :encoding => 'ascii', :context_window => 10, :begin => @begin, :end => @end
+          end
+          
+          it 'should set get_ascii_text[begin...end] as @spans' do
+            assigns[:spans].should eql('345delta7')
+          end
+          
+          it 'should set prev_text' do
+            assigns[:prev_text].should eql('12')
+          end
+          
+          it 'should set next_text' do
+            assigns[:next_text].should eql('8901')
+          end
+        end
+      end
     end
-     
-    it 'should set body[begin...end] as @spans' do
-      assigns[:spans].should eql(@body[@begin...@end])
+    
+    context 'when body includes ascii text' do
+      before do
+        @body = '->Δ123Δ567Δ<-'
+        @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
+        controller.stub(:get_doc).and_return([@doc, nil])
+        @begin = 4
+        @end = 10
+      end
+      
+      context 'when encoding nil' do
+        context 'when context_window present' do
+          before do
+            get :spans, :id => @doc.sourceid, :context_window => 3, :begin => @begin, :end => @end
+          end
+          
+          it 'should set get_ascii_text[begin...end] as @spans' do
+            assigns[:spans].should eql('123Δ567')
+          end
+          
+          it 'should set prev_text' do
+            assigns[:prev_text].should eql('->Δ')
+          end
+          
+          it 'should set next_text' do
+            assigns[:next_text].should eql('Δ<-')
+          end
+        end
+      end
+      
+      context 'when encoding ascii' do
+        context 'when context_window present' do
+          before do
+            get :spans, :id => @doc.sourceid, :encoding => 'ascii', :context_window => 3, :begin => @begin, :end => @end
+          end
+          
+          it 'should set get_ascii_text[begin...end] as @spans' do
+            assigns[:spans].should eql('123delta567')
+          end
+          
+          it 'should set prev_text' do
+            assigns[:prev_text].should eql('lta')
+          end
+          
+          it 'should set next_text' do
+            assigns[:next_text].should eql('del')
+          end
+        end
+      end
     end
   end
   

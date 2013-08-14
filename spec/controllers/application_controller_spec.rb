@@ -930,7 +930,8 @@ describe ApplicationController do
           :pred => '_lexChain',
           :obj_id => denotation1.id,
           :project => project,
-          :subj_id => denotation2.id)
+          :subj_id => denotation2.id,
+          :subj_type => 'Denotation')
         relations = Array.new
         relations << relation.get_hash
         @new_denotations, @new_relations = controller.bag_denotations(denotations, relations)
@@ -956,7 +957,8 @@ describe ApplicationController do
           :pred => 'NotlexChain',
           :obj => @denotation, 
           :project => @project,
-          :subj_id => @denotation.id
+          :subj_id => @denotation.id,
+          :subj_type => 'Denotation'
         )
         @relations = Array.new
         @relations << @relation.get_hash
@@ -1146,7 +1148,9 @@ describe ApplicationController do
   
   describe 'get_hrelations' do
     before do
-      @subcatrel = FactoryGirl.create(:subcatrel, :obj_id => 1, :project_id => 1)
+      doc = FactoryGirl.create(:doc)
+      denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => doc )
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj_id => 1, :project_id => 1, :subj_id => denotation.id)
       controller.stub(:get_relations).and_return([@subcatrel])
       Relation.any_instance.stub(:get_hash).and_return(@subcatrel.id)
       @hrelations = controller.get_hrelations('', '', '', '')

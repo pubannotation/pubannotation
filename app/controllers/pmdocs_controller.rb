@@ -78,7 +78,37 @@ class PmdocsController < ApplicationController
   # GET /pmdocs/:begin/:end
   def spans
     @doc, notice = get_doc('PubMed', params[:id])
-    @spans = @doc.body[params[:begin].to_i...params[:end].to_i]
+    begin_pos = (params[:begin].to_i) - 1 
+    end_pos = params[:end].to_i
+    context_window = params[:context_window].to_i
+    @spans = @doc.body[begin_pos...end_pos]
+    body = @doc.body
+    if params[:context_window].present?
+      prev_begin_pos = begin_pos - context_window
+      prev_end_pos = begin_pos
+      if prev_begin_pos < 0
+        prev_begin_pos = 0
+      end
+      @prev_text = body[prev_begin_pos...prev_end_pos] 
+      next_begin_pos = end_pos
+      next_end_pos = end_pos + context_window
+      @next_text = body[next_begin_pos...next_end_pos] 
+      if params[:format] == 'txt'
+        @prev_text = "#{@prev_text}\t" if @prev_text.present?
+        @spans = "#{@spans}\t" if @next_text.present?
+      end
+    end
+    if params[:encoding] == 'ascii'
+      @spans = get_ascii_text(@spans)
+      if params[:context_window].present?
+        @next_text = get_ascii_text(@next_text)[0...context_window]
+        ascii_prev_text = get_ascii_text(@prev_text) 
+        if context_window > ascii_prev_text.length
+          context_window = ascii_prev_text.length
+        end
+        @prev_text = ascii_prev_text[(context_window * -1)..-1]
+      end
+    end
   end
 
 
