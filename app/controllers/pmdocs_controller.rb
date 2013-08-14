@@ -78,7 +78,7 @@ class PmdocsController < ApplicationController
   # GET /pmdocs/:begin/:end
   def spans
     @doc, notice = get_doc('PubMed', params[:id])
-    begin_pos = (params[:begin].to_i) - 1 
+    begin_pos = params[:begin].to_i
     end_pos = params[:end].to_i
     context_window = params[:context_window].to_i
     @spans = @doc.body[begin_pos...end_pos]
