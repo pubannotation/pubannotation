@@ -41,6 +41,14 @@ class Project < ActiveRecord::Base
     joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
     group('projects.id').
     order('count(relations.id) DESC')
+    
+  scope :order_author,
+    order('author ASC')
+    
+  scope :order_maintainer,
+    joins('LEFT OUTER JOIN users ON users.id = projects.user_id').
+    group('projects.id').
+    order('users.username ASC')
 
   def self.order_by(projects, order, current_user)
     case order
@@ -52,6 +60,10 @@ class Project < ActiveRecord::Base
       projects.accessible(current_user).order_denotations_count
     when 'relations_count'
       projects.accessible(current_user).order_relations_count
+    when 'author'
+      projects.accessible(current_user).order_author
+    when 'maintainer'
+      projects.accessible(current_user).order_maintainer
     else
       projects.accessible(current_user).order('name ASC')
     end    

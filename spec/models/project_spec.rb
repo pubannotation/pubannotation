@@ -298,12 +298,60 @@ describe Project do
     end
   end
   
+  describe 'order_author' do
+    before do
+      @project_1 = FactoryGirl.create(:project, :author => 'A')
+      @project_2 = FactoryGirl.create(:project, :author => 'B')
+      @project_3 = FactoryGirl.create(:project, :author => 'C')
+      @projects = Project.order_maintainer
+    end
+    
+    it 'should order by author' do
+      @projects[0].should eql(@project_1)
+    end
+    
+    it 'should order by author' do
+      @projects[1].should eql(@project_2)
+    end
+    
+    it 'should order by author' do
+      @projects[2].should eql(@project_3)
+    end
+  end
+  
+  describe 'order_maintainer' do
+    before do
+      @project_1_user = FactoryGirl.create(:user, :username => 'AAA AAAA')
+      @project_1 = FactoryGirl.create(:project, :user => @project_1_user)
+      @project_2_user = FactoryGirl.create(:user, :username => 'AAA AAAB')
+      @project_2 = FactoryGirl.create(:project, :user => @project_2_user)
+      @project_3_user = FactoryGirl.create(:user, :username => 'AAA AAAc')
+      @project_3 = FactoryGirl.create(:project, :user => @project_3_user)
+      @projects = Project.order_maintainer
+    end
+    
+    it 'should order by author' do
+      @projects[0].should eql(@project_1)
+    end
+    
+    it 'should order by author' do
+      @projects[1].should eql(@project_2)
+    end
+    
+    it 'should order by author' do
+      @projects[2].should eql(@project_3)
+    end
+    
+  end
+  
   describe 'self.order_by' do
     before do
       @order_pmdocs_count = 'order_pmdocs_count'
       @order_pmcdocs_count = 'order_pmcdocs_count'
       @order_denotations_count = 'order_denotations_count'
       @order_relations_count = 'order_relations_count'
+      @order_author = 'order_author'
+      @order_maintainer = 'order_maintainer'
       @order_else = 'order_else'
       # stub scopes
       Project.stub(:accessible).and_return(double({
@@ -311,6 +359,8 @@ describe Project do
           :order_pmcdocs_count => @order_pmcdocs_count,
           :order_denotations_count => @order_denotations_count,
           :order_relations_count => @order_relations_count,
+          :order_author => @order_author,
+          :order_maintainer => @order_maintainer,
           :order => @order_else
         }))
     end
@@ -329,6 +379,14 @@ describe Project do
     
     it 'order by relations_count should return accessible and order_relations_count scope result' do
       Project.order_by(Project, 'relations_count', nil).should eql(@order_relations_count)
+    end
+    
+    it 'order by author should return accessible and order_author scope result' do
+      Project.order_by(Project, 'author', nil).should eql(@order_author)
+    end
+    
+    it 'order by maintainer should return accessible and order_maintainer scope result' do
+      Project.order_by(Project, 'maintainer', nil).should eql(@order_maintainer)
     end
     
     it 'order by else should return accessible and orde by name ASC' do
