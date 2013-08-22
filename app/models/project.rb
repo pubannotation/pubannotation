@@ -15,7 +15,7 @@ class Project < ActiveRecord::Base
   
   scope :accessible, lambda{|current_user|
     if current_user.present?
-      where('accessibility = ? OR user_id =?', 1, current_user.id)
+      where('accessibility = ? OR projects.user_id =?', 1, current_user.id)
     else
       where(:accessibility => 1)
     end

@@ -349,6 +349,8 @@ ja:
       that_annotate_a_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョンをアノテートする<a href='%{href}'>プロジェクト</a>"
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>アノテーションプロジェクト"
       confirm_delete: このアノテーションセットのアノテーションが全て削除されますがよろしいですか？
+      user_projects: 管理中のプロジェクト
+      associate_maintain_projects: 関係しているプロジェクト
     hints:
       project:
         author: 他者が作成したアノテーションセットをアップロードする場合は、このアノテーションセットの公式の著者を記載

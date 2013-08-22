@@ -1,20 +1,24 @@
 
 <h1>
-  <% if @doc and @doc.sourcedb == 'PubMed' %>
-  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
-  <% elsif @doc and @doc.sourcedb == 'PMC' %>
-  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
-  <% else %>
-    <%= t('views.projects.in_pubannotation').html_safe %>
-    <% if user_signed_in? %>
-      <span class="button"><%= link_to t('views.shared.create_model', :model => t('activerecord.models.project')), new_project_path %></span>
-    <% else %>
-      <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
-    <% end %>
+  <% if scope.present? -%>
+  	<%= t("views.projects.#{scope}") -%>
+  <% else -%>
+	  <% if @doc and @doc.sourcedb == 'PubMed' %>
+	  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+	  <% elsif @doc and @doc.sourcedb == 'PMC' %>
+	  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+	  <% else %>
+	    <%= t('views.projects.in_pubannotation').html_safe %>
+	    <% if user_signed_in? %>
+	      <span class="button"><%= link_to t('views.shared.create_model', :model => t('activerecord.models.project')), new_project_path %></span>
+	    <% else %>
+	      <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
+	    <% end %>
+	  <% end %>
   <% end %>
 </h1>
 
-<% if @projects.empty? %>
+<% if projects.empty? %>
   <p>none</p>
 <% else %>
   <table>
@@ -30,7 +34,7 @@
       <th></th>
     </tr>
 
-  <% @projects.each do |project| %>
+  <% projects.each do |project| %>
     <tr>
       <td style="white-space: nowrap"><%= project.name %></td>
       <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>
