@@ -1,7 +1,11 @@
 class ProjectsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :search]
+  before_filter :updatable?, :only => [:edit, :update]
+  before_filter :destroyable?, :only => :destroy
+  before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :search]
   autocomplete :pmdoc,  :sourceid, :class_name => :doc, :scopes => [:pmdocs,  :project_name => :project_name]
   autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
+  autocomplete :user, :username
 
   # GET /projects
   # GET /projects.json
@@ -74,7 +78,6 @@ class ProjectsController < ApplicationController
   # GET /projects/1/edit
   def edit
     @sourcedb, @sourceid, @serial = get_docspec(params)
-    @project = Project.find_by_name(params[:id])
   end
 
   # POST /projects
@@ -97,8 +100,6 @@ class ProjectsController < ApplicationController
   # PUT /projects/:name
   # PUT /projects/:name.json
   def update
-    @project = Project.find(params[:id])
-
     respond_to do |format|
       if @project.update_attributes(params[:project])
         format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
@@ -113,7 +114,6 @@ class ProjectsController < ApplicationController
   # DELETE /projects/:name
   # DELETE /projects/:name.json
   def destroy
-    @project = Project.find_by_name(params[:id])
     @project.destroy
 
     respond_to do |format|
@@ -147,5 +147,28 @@ class ProjectsController < ApplicationController
       flash[:notice] = notice
       render :template => 'projects/show'
     end
+  end
+  
+  def updatable?
+    case params[:action]
+    when 'edit'
+      @project = Project.find_by_name(params[:id])
+    when 'update'
+      @project = Project.find(params[:id])
+      if current_user == @project.user
+        # add associate maintainers
+        @project.build_associate_maintainers(params[:usernames])
+      end
+    end
+    unless @project.updatable_for?(current_user)
+      render_status_error(:forbidden)
+    end
+  end
+  
+  def destroyable?
+    @project = Project.find_by_name(params[:id])
+    unless @project.destroyable_for?(current_user)
+      render_status_error(:forbidden)
+    end  
   end
 end

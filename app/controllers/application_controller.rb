@@ -1,7 +1,7 @@
 # encoding: UTF-8
 require 'pmcdoc'
 require 'utfrewrite'
-require 'sequence_alignment'
+# require 'sequence_alignment'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
@@ -730,5 +730,10 @@ class ApplicationController < ActionController::Base
     end
     navigator
   end
-
+  
+  def render_status_error(status)
+    # translation required for each httpstatus eg: errors.statuses.forbidden
+    flash[:error] = t("errors.statuses.#{status}")
+    render 'shared/status_error', :status => status
+  end
 end

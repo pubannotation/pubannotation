@@ -97,6 +97,8 @@ ja:
       year: 年
   errors: &errors
     format: ! '%{attribute}%{message}'
+    statuses:
+      forbidden: 権限がありません
     messages:
       accepted: を受諾してください。
       blank: を入力してください。
@@ -202,6 +204,7 @@ ja:
       project: プロジェクト
       user: ユーザー
       span: スパン
+      associate_maintainer: 副管理者
     attributes:
       doc:
         sourcedb: ソースDB
@@ -218,6 +221,7 @@ ja:
         status: ステータス
         accessibility: 公開範囲
         uploader: アップロード
+        maintainer: 管理者
         reference: 参照
         editor: エディター
         rdfwriter: RDFライター
@@ -238,6 +242,7 @@ ja:
         author: プロジェクトの著者名
         reference: このプロジェクトの参照URL
         pmids: PubMedのID
+        username: 副管理者名
       doc:
         annotation_server: アノテーションサーバーのURL
         pmcids: PMCのID
@@ -261,6 +266,8 @@ ja:
     shared:
       successfully_created: '%{model}を作成しました'
       successfully_updated: '%{model}を更新しました'
+      successfully_destroyed: '%{model}を削除しました'
+      confirm_delete: 削除してよろしいですか？
     application:
       get_project:
         private: アノテーションセット%{project_name}は非公開です

@@ -1436,4 +1436,22 @@ describe ApplicationController do
       @navigator.should eql([["first", "/first"], ["second", "/first/second"]])
     end
   end
+  
+  describe 'render_status_error(status)' do
+    pending 'unknown erro caused' do
+    before do
+      controller.response.stub(:status).and_return({})
+      controller.render_status_error(:forbidden)
+      controller.stub!(:render).and_return(nil)
+    end
+    
+    it 'should set flash[:error]' do
+      flash[:error].should eql(I18n.t("errors.statuses.forbidden"))
+    end
+    
+    it 'should render template' do
+      response.should render_template('shared/status_erros')
+    end
+    end
+  end
 end

@@ -1,13 +1,17 @@
 Pubann::Application.routes.draw do
   devise_for :users
-
   get "home/index"
-
+  
+  resource :users do
+   get :autocomplete_username, :on => :collection
+  end
+  
   resources :docs
 
   resources :projects do
     resources :docs
     resources :annotations
+    resources :associate_maintainers, :only => [:destroy]
     member do
       get :search  
     end

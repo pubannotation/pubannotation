@@ -100,6 +100,33 @@ describe Project do
     end
   end
   
+  describe 'has_many associate_maintainers' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @user_1 = FactoryGirl.create(:user)
+      @associate_maintainer_1 = FactoryGirl.create(:associate_maintainer, 
+        :user => @user_1,
+        :project => @project)
+      @user_2 = FactoryGirl.create(:user)
+      @associate_maintainer_2 = FactoryGirl.create(:associate_maintainer, 
+        :user => @user_2,
+        :project => @project)
+    end
+    
+    it 'should prensent' do
+      @project.associate_maintainers.should be_present
+    end
+    
+    it 'should prensent' do
+      @project.associate_maintainers.should =~ [@associate_maintainer_1, @associate_maintainer_2]
+    end
+    
+    it 'should destoryed when project destroyed' do
+      @project.destroy
+      AssociateMaintainer.all.should be_blank
+    end
+  end
+  
   describe 'scope accessible' do
     before do
       @user_1 = FactoryGirl.create(:user)
@@ -307,5 +334,112 @@ describe Project do
     it 'order by else should return accessible and orde by name ASC' do
       Project.order_by(Project, nil, nil).should eql(@order_else)
     end
-  end 
+  end
+   
+  describe 'associate_maintaines_addable_for?' do
+    before do
+      @project_user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, :user => @project_user)
+      @associate_maintainer_user = FactoryGirl.create(:user)
+      FactoryGirl.create(:associate_maintainer, :project => @project, :user => @associate_maintainer_user)
+    end
+    
+    context 'when current_user is project.user' do
+      it 'should return true' do
+        @project.associate_maintaines_addable_for?(@project_user).should be_true
+      end
+    end
+    
+    context 'when current_user is not project.user' do
+      it 'should return false' do
+        @project.associate_maintaines_addable_for?(@associate_maintainer_user).should be_false
+      end
+    end
+  end
+  
+  describe 'updatable_for?' do
+    before do
+      @project_user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, :user => @project_user)
+      @associate_maintainer_user_1 = FactoryGirl.create(:user)
+      @project.associate_maintainers.create({:user_id => @associate_maintainer_user_1.id})
+      @associate_maintainer_user_2 = FactoryGirl.create(:user)
+      @project.associate_maintainers.create({:user_id => @associate_maintainer_user_2.id})
+    end
+    
+    context 'when current_user is project.user' do
+      it 'should return true' do
+        @project.updatable_for?(@project_user).should be_true
+      end
+    end
+    
+    context 'when current_user is project.associate_maintainer.user' do
+      it 'should return true' do
+        @project.updatable_for?(@associate_maintainer_user_1).should be_true
+      end
+    end
+    
+    context 'when current_user is project.associate_maintainer.user' do
+      it 'should return true' do
+        @project.updatable_for?(@associate_maintainer_user_2).should be_true
+      end
+    end
+    
+    context 'when current_user is not project.user nor project.associate_maintainer.user' do
+      it 'should return false' do
+        @project.updatable_for?(FactoryGirl.create(:user)).should be_false
+      end
+    end
+  end
+  
+  describe 'destroyable_for?' do
+    before do
+      @project_user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, :user => @project_user)
+      @associate_maintainer_user_1 = FactoryGirl.create(:user)
+      @project.associate_maintainers.create({:user_id => @associate_maintainer_user_1.id})
+      @associate_maintainer_user_2 = FactoryGirl.create(:user)
+      @project.associate_maintainers.create({:user_id => @associate_maintainer_user_2.id})
+    end
+    
+    context 'when current_user is project.user' do
+      it 'should return true' do
+        @project.destroyable_for?(@project_user).should be_true
+      end
+    end
+    
+    context 'when current_user is project.associate_maintainer.user' do
+      it 'should return false' do
+        @project.destroyable_for?(@associate_maintainer_user_1).should be_false
+      end
+    end
+    
+    context 'when current_user is project.associate_maintainer.user' do
+      it 'should return false' do
+        @project.destroyable_for?(@associate_maintainer_user_2).should be_false
+      end
+    end
+    
+    context 'when current_user is not project.user nor project.associate_maintainer.user' do
+      it 'should return false' do
+        @project.destroyable_for?(FactoryGirl.create(:user)).should be_false
+      end
+    end
+  end
+  
+  describe 'build_associate_maintainers' do
+    context 'when usernames present' do
+      before do
+        @project = FactoryGirl.create(:project)
+        @user_1 = FactoryGirl.create(:user, :username => 'Username 1')
+        @user_2 = FactoryGirl.create(:user, :username => 'Username 2')
+        @project.build_associate_maintainers([@user_1.username, @user_2.username])
+      end
+      
+      it 'should ass associate @project.maintainers' do
+       associate_maintainer_users = @project.associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
+       associate_maintainer_users.should =~ [@user_1, @user_2]
+      end
+    end
+  end
 end

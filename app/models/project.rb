@@ -9,6 +9,7 @@ class Project < ActiveRecord::Base
   has_many :relations, :dependent => :destroy
   has_many :instances, :dependent => :destroy
   has_many :modifications, :dependent => :destroy
+  has_many :associate_maintainers, :dependent => :destroy
 
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
   
@@ -54,5 +55,27 @@ class Project < ActiveRecord::Base
     else
       projects.accessible(current_user).order('name ASC')
     end    
+  end
+  
+  def associate_maintaines_addable_for?(current_user)
+    current_user == self.user
+  end
+  
+  def updatable_for?(current_user)
+    assiate_maintainer_users = associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
+    current_user == self.user || assiate_maintainer_users.include?(current_user)
+  end
+
+  def destroyable_for?(current_user)
+    current_user == user  
+  end
+    
+  def build_associate_maintainers(usernames)
+    if usernames.present?
+      usernames.each do |username|
+        user = User.where(:username => username).first
+        self.associate_maintainers.build({:user_id => user.id})
+      end
+    end
   end
 end
