@@ -47,7 +47,7 @@ class Project < ActiveRecord::Base
     
   scope :order_maintainer,
     joins('LEFT OUTER JOIN users ON users.id = projects.user_id').
-    group('projects.id').
+    group('projects.id, users.username').
     order('users.username ASC')
 
   def self.order_by(projects, order, current_user)
