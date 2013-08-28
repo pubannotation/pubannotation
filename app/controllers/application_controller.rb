@@ -730,5 +730,10 @@ class ApplicationController < ActionController::Base
     end
     navigator
   end
-
+  
+  def render_status_error(status)
+    # translation required for each httpstatus eg: errors.statuses.forbidden
+    flash[:error] = t("errors.statuses.#{status}")
+    render 'shared/status_error', :status => status
+  end
 end

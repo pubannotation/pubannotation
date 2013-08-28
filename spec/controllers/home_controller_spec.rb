@@ -9,7 +9,8 @@ describe HomeController do
       @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
       @get_projects = 'get projects'
       controller.stub(:get_projects).and_return(@get_projects)
-      controller.stub(:current_user).and_return(nil)
+      @current_user = FactoryGirl.create(:user)
+      current_user_stub(@current_user)
       @project_order_by = 'project_order_by'
       Project.stub(:order_by).and_return(@project_order_by)
       get :index
@@ -25,6 +26,14 @@ describe HomeController do
     
     it '@pmcdocs should eql Doc.where sourcedb == PubMed' do
       (assigns[:pmcdocs] - [@pmcdoc]).should be_blank
+    end
+    
+    it '@user_projects should eql Project.order_by' do
+      assigns[:user_projects].should eql(@project_order_by)
+    end
+    
+    it '@associate_maintaiain_projects should eql Project.order_by' do
+      assigns[:associate_maintaiain_projects].should eql(@project_order_by)
     end
     
     it '@projects should eql Project.order_by' do

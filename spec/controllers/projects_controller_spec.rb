@@ -171,31 +171,32 @@ describe ProjectsController do
   end
   
   describe 'edit' do
-    before do
-      @project = FactoryGirl.create(:project, :name => 'project name', :user => FactoryGirl.create(:user))
-      @get_docspec = ['sourcedb', 'sourceid', 'serial']
-      controller.stub(:get_docspec).and_return(@get_docspec)
-      get :edit, :id => @project.name
-    end
-    
-    it 'should render template' do
-      response.should render_template('edit')
-    end
-    
-    it 'should assing sourcedb' do
-      assigns[:sourcedb].should eql(@get_docspec[0])
-    end
-    
-    it 'should assing sourceid' do
-      assigns[:sourceid].should eql(@get_docspec[1])
-    end
-    
-    it 'should assing serial' do
-      assigns[:serial].should eql(@get_docspec[2])
-    end
-    
-    it 'should assign project' do
-      assigns[:project].should eql(@project)
+    context 'when updatable' do
+      before do
+        @project = FactoryGirl.create(:project, :name => 'project name', :user => FactoryGirl.create(:user))
+        @project.stub(:updatable_for?).and_return(true)
+        @get_docspec = ['sourcedb', 'sourceid', 'serial']
+        controller.stub(:get_docspec).and_return(@get_docspec)
+        controller.stub(:updatable?).and_return(true)
+        get :edit, :id => @project.name
+      end
+      
+      it 'should render template' do
+        response.should render_template('edit')
+      end
+      
+      it 'should assing sourcedb' do
+        assigns[:sourcedb].should eql(@get_docspec[0])
+      end
+      
+      it 'should assing sourceid' do
+        assigns[:sourceid].should eql(@get_docspec[1])
+      end
+      
+      it 'should assing serial' do
+        assigns[:serial].should eql(@get_docspec[2])
+      end
+      
     end
   end
   
@@ -266,89 +267,114 @@ describe ProjectsController do
   end
   
   describe 'update' do
-    before do
-      @project = FactoryGirl.create(:project, :name => 'project_name')  
-    end
+    context 'when updatable' do
+      before do
+        current_user = FactoryGirl.create(:user)
+        current_user_stub(current_user)
+        @project = FactoryGirl.create(:project, :name => 'project name', :user => current_user)
+        @project.stub(:updatable_for?).and_return(true)
+      end
+      
+      context 'when update successfully' do
+        context 'when usernames nil' do
+          before do
+            @params_project = {:name => 'new_project_name'}  
+          end
+          
+          context 'and when format html' do
+            before do
+              post :update, :id => @project.id, :project => @params_project          
+            end
+            
+            it 'should redirect to project_path' do
+              response.should redirect_to(project_path(@params_project[:name]))
+            end
+          end
     
-    context 'when update successfully' do
-      before do
-        @params_project = {:name => 'new_project_name'}  
+          context 'and when format json' do
+            before do
+              post :update, :id => @project.id, :format => 'json', :project => @params_project          
+            end
+            
+            it 'should return response blank header' do
+              response.header.should be_blank
+            end
+          end
+        end
+        
+        context 'when usernames present' do
+          before do
+            @associate_maintainer_user_1 = FactoryGirl.create(:user, :username => 'User1')
+            @associate_maintainer_user_2 = FactoryGirl.create(:user, :username => 'User2')
+            post :update, :id => @project.id, :project => @params_project,
+              :usernames => [@associate_maintainer_user_1.username, @associate_maintainer_user_2.username]         
+          end
+          
+          it 'should add associate_maintaines' do
+            associate_maintainer_users = @project.associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
+            associate_maintainer_users.should =~ [@associate_maintainer_user_1, @associate_maintainer_user_2]
+          end
+        end
       end
-      
-      context 'and when format html' do
+  
+      context 'when update unsuccessfully' do
         before do
-          post :update, :id => @project.id, :project => @params_project          
+          @params_project = {:name => nil}  
         end
         
-        it 'should redirect to project_path' do
-          response.should redirect_to(project_path(@params_project[:name]))
+        context 'and when format html' do
+          before do
+            post :update, :id => @project.id, :project => @params_project          
+          end
+          
+          it 'should render edit template' do
+            response.should render_template('edit')
+          end
         end
-      end
-
-      context 'and when format json' do
-        before do
-          post :update, :id => @project.id, :format => 'json', :project => @params_project          
-        end
-        
-        it 'should return response blank header' do
-          response.header.should be_blank
-        end
-      end
-    end
-
-    context 'when update unsuccessfully' do
-      before do
-        @params_project = {:name => nil}  
-      end
-      
-      context 'and when format html' do
-        before do
-          post :update, :id => @project.id, :project => @params_project          
-        end
-        
-        it 'should render edit template' do
-          response.should render_template('edit')
-        end
-      end
-
-      context 'and when format json' do
-        before do
-          post :update, :id => @project.id, :format => 'json', :project => @params_project          
-        end
-        
-        it 'should return response blank header' do
-          response.body.should eql(assigns[:project].errors.to_json)
-        end
-        
-        it 'should return resposne 422' do
-          response.status.should eql(422)
+  
+        context 'and when format json' do
+          before do
+            post :update, :id => @project.id, :format => 'json', :project => @params_project          
+          end
+          
+          it 'should return response blank header' do
+            response.body.should eql(assigns[:project].errors.to_json)
+          end
+          
+          it 'should return resposne 422' do
+            response.status.should eql(422)
+          end
         end
       end
     end
   end
   
   describe 'destroy' do
-    before do
-      @project = FactoryGirl.create(:project, :name => 'project_name')  
-    end
-    
-    context 'format html' do
+    context 'when destroyable' do
       before do
-        delete :destroy, :id => @project.name   
+        current_user = FactoryGirl.create(:user)
+        current_user_stub(current_user)
+        @project = FactoryGirl.create(:project, :name => 'project_name', :user => current_user)  
       end
       
-      it 'should redirect to projects_path' do
-        response.should redirect_to projects_path
-      end
-    end
-    
-    context 'format html' do
-      before do
-        delete :destroy, :format => 'json', :id => @project.name   
+      context 'format html' do
+        before do
+          delete :destroy, :id => @project.name   
+        end
+        
+        it 'should redirect to projects_path' do
+          response.should redirect_to projects_path
+        end
       end
       
-      it 'should return response blank header' do
-        response.header.should be_blank
+      context 'format html' do
+        before do
+          delete :destroy, :format => 'json', :id => @project.name   
+        end
+        
+        it 'should return response blank header' do
+          response.header.should be_blank
+        end
       end
     end
   end
@@ -759,6 +785,126 @@ describe ProjectsController do
         it 'should not include another project PMC document' do
           assigns[:pmcdocs].should_not include(@PMC_another_project)
         end
+      end
+    end
+  end
+  
+  describe 'updatable?' do
+    before do
+      @status_error = 'status error'
+      controller.stub(:render_status_error).and_return(@status_error)
+    end
+    
+    context 'when action edit' do
+      before do
+        @current_user = FactoryGirl.create(:user)
+        current_user_stub(@current_user)
+        @project = FactoryGirl.create(:project)
+        controller.stub(:params).and_return({:action => 'edit', :id => @project.name})
+      end
+      
+      context 'when updatable_for is true' do
+        before do
+          Project.any_instance.stub(:updatable_for?).and_return(true)
+          @result = controller.updatable?
+        end
+    
+        it 'should assign project' do
+          assigns[:project].should eql(@project)
+        end
+        
+        it 'should not raise render_status_error' do
+          @result.should be_nil
+        end
+      end
+      
+      context 'when updatable_for is false' do
+        before do
+          Project.any_instance.stub(:updatable_for?).and_return(false)
+          @result = controller.updatable?
+        end
+    
+        it 'should assign project' do
+          assigns[:project].should eql(@project)
+        end
+        
+        it 'should raise render_status_error' do
+          @result.should eql(@status_error)
+        end
+      end
+    end
+    
+    context 'when action update' do
+      before do
+        @project_user = FactoryGirl.create(:user)
+        @project = FactoryGirl.create(:project, :user => @project_user)
+        @user_1 = FactoryGirl.create(:user, :username => 'User 1')
+        @user_2 = FactoryGirl.create(:user, :username => 'User 2')
+        controller.stub(:params).and_return({:action => 'update', :id => @project.id, :usernames => [@user_1.username, @user_2.username]})
+        #Project.any_instance.stub(:build_associate_maintainers).and_return('build_associate_maintainers')
+      end
+      
+      context 'when current_user = project.user' do
+        before do
+          current_user_stub(@project_user)
+          @result = controller.updatable?
+        end
+          
+        it 'should build associate_maintaines' do
+          associate_maintainer_users = assigns[:project].associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
+          associate_maintainer_users.should =~ [@user_1, @user_2]
+        end
+      end
+      
+      context 'when current_user != project.user' do
+        before do
+          current_user_stub(FactoryGirl.create(:user))
+          @result = controller.updatable?
+        end
+          
+        it 'should not build associate_maintaines' do
+          assigns[:project].associate_maintainers.should be_blank
+        end
+      end
+    end
+  end
+  
+  describe 'destroyable?' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @render_status_error = 'render_status_error'
+      controller.stub(:render_status_error).and_return(@render_status_error)
+      controller.stub(:params).and_return({:id => @project.name})
+      current_user_stub(FactoryGirl.create(:user))
+    end
+    
+    context 'when destoryable_for true' do
+      before do
+        Project.any_instance.stub(:destroyable_for?).and_return(true)
+        @result = controller.destroyable?
+      end
+      
+      it 'should assign @project' do
+        assigns[:project].should eql(@project)  
+      end
+      
+      it '' do
+        @result.should be_nil
+      end
+    end
+    
+    context 'when destoryable_for false' do
+      before do
+        Project.any_instance.stub(:destroyable_for?).and_return(false)
+        @result = controller.destroyable?
+      end
+      
+      it 'should assign @project' do
+        assigns[:project].should eql(@project)  
+      end
+      
+      it 'should raise render_status_error' do
+        @result.should eql(@render_status_error)
       end
     end
   end

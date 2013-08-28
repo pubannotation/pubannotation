@@ -43,8 +43,38 @@
     		f.object.accessibility) %></td>
   </tr>
   <tr>
-    <th><%= f.label :uploader %></th>
+    <th><%= f.label :maintainer %></th>
     <td><%= current_user.username %></td>
+  </tr>
+  <tr>
+  	<th>
+  		<%= t('activerecord.models.associate_maintainer') -%>
+  	</th>
+  	<td>
+		<% @project.associate_maintainers.each do |associate_maintainer| -%>
+			<div>
+				<%= associate_maintainer.user.username -%>
+				<% if associate_maintainer.destroyable_for?(current_user) -%>
+					<%= link_to t('views.shared.delete'), project_associate_maintainer_path(@project, associate_maintainer), :method => :delete, :confirm => t('controllers.shared.confirm_delete') -%>
+				<% end -%>
+			</div>
+		<% end -%>
+		<!-- associate maintainer search and add field -->
+		<% if @project.associate_maintaines_addable_for?(current_user) -%>
+	  		<%= fields_for :associate_maintainer do -%>
+	  			<div id="associate_maintainers"></div>
+  				<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }?project_id=#{@project.id}", :placeholder => t('activerecord.placeholders.project.username')  -%>
+		  		<script type="text/javascript">
+			  		$('#username').bind('railsAutocomplete.select', function(event, data){
+			  			var userName = data.item.value;
+			  			// append associate maintainer username
+			  			$( "<div class='associate_username'>" + userName +"<input type='hidden' value='" + userName + "' id='usernames[]' name='usernames[]'> <a href='' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></a></div>" ).appendTo( "#associate_maintainers" );
+			  			$('#username').val('');
+					});
+		  		</script>
+			<% end -%>
+		<% end -%>
+  	</td>
   </tr>
   <tr>
     <th><%= f.label :reference %></th>
@@ -84,4 +114,5 @@
     <th colspan="2"><%= f.submit %></th>
   </tr>
 </table>
-<% end %>
+<% end %>		
+

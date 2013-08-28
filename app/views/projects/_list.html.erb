@@ -1,28 +1,32 @@
 
 <h1>
-  <% if @doc and @doc.sourcedb == 'PubMed' %>
-  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
-  <% elsif @doc and @doc.sourcedb == 'PMC' %>
-  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
-  <% else %>
-    <%= t('views.projects.in_pubannotation').html_safe %>
-    <% if user_signed_in? %>
-      <span class="button"><%= link_to t('views.shared.create_model', :model => t('activerecord.models.project')), new_project_path %></span>
-    <% else %>
-      <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
-    <% end %>
+  <% if scope.present? -%>
+  	<%= t("views.projects.#{scope}") -%>
+  <% else -%>
+	  <% if @doc and @doc.sourcedb == 'PubMed' %>
+	  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+	  <% elsif @doc and @doc.sourcedb == 'PMC' %>
+	  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+	  <% else %>
+	    <%= t('views.projects.in_pubannotation').html_safe %>
+	    <% if user_signed_in? %>
+	      <span class="button"><%= link_to t('views.shared.create_model', :model => t('activerecord.models.project')), new_project_path %></span>
+	    <% else %>
+	      <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
+	    <% end %>
+	  <% end %>
   <% end %>
 </h1>
 
-<% if @projects.empty? %>
+<% if projects.empty? %>
   <p>none</p>
 <% else %>
   <table>
     <tr>
       <th class="sortable-th"><%= link_to_unless_current t('activerecord.attributes.project.name'), url_for(:only_path => true, :projects_order => 'name'), :class => 'sortable-a' %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
-      <th><%= t('activerecord.attributes.project.author') %></th>
-      <th><%= t('activerecord.attributes.project.uploader') %></th>
+      <th><%= link_to_unless_current t('activerecord.attributes.project.author'), url_for(:only_path => true, :projects_order => 'author'), :class => 'sortable-a' %></th>
+      <th class="sortable-th" ><%= link_to_unless_current t('activerecord.attributes.project.maintainer'), url_for(:only_path => true, :projects_order => 'maintainer'), :class => 'sortable-a' %></th>
       <th class="sortable-th" title='PubMed abstracts'><%= link_to_unless_current 'P', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>
       <th class="sortable-th" title='PubMed Central documents'><%= link_to_unless_current 'C', url_for(:only_path => true, :projects_order => 'pmcdocs_count'), :class => 'sortable-a' %></th>
       <th class="sortable-th" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
@@ -30,7 +34,7 @@
       <th></th>
     </tr>
 
-  <% @projects.each do |project| %>
+  <% projects.each do |project| %>
     <tr>
       <td style="white-space: nowrap"><%= project.name %></td>
       <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>

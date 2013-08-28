@@ -1436,4 +1436,15 @@ describe ApplicationController do
       @navigator.should eql([["first", "/first"], ["second", "/first/second"]])
     end
   end
+  
+  describe 'render_status_error(status)' do
+    before do
+      controller.should_receive(:render).with("shared/status_error", {:status=>:forbidden}).and_return(true)
+      controller.render_status_error(:forbidden)
+    end
+    
+    it 'should set flash[:error]' do
+      flash[:error].should eql(I18n.t("errors.statuses.forbidden"))
+    end
+  end
 end

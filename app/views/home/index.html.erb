@@ -10,4 +10,6 @@
 	<li><%= link_to "PMC #{t('activerecord.models.doc').pluralize}", pmcdocs_path %> (<%= @pmcdocs.length %>)</li>
 </ul>
 
-<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects } %>
+<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @user_projects, :scope => 'user_projects' }  if @user_projects.present? -%>
+<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @associate_maintaiain_projects, :scope => 'associate_maintain_projects' } if @associate_maintaiain_projects.present? -%>
+<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects, :scope => nil } %>

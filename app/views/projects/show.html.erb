@@ -76,8 +76,18 @@ $(function() {
 	%></td>
 	</tr>
 	<tr>
-	<th><%= t('activerecord.attributes.project.uploader') %></th>
+	<th><%= t('activerecord.attributes.project.maintainer') %></th>
 	<td><%= @project.user.username %></td>
+	</tr>
+	<tr>
+	<th><%= t('activerecord.models.associate_maintainer') %></th>
+	<td>
+		<% @project.associate_maintainers.each do |associate_maintainer| -%>
+			<div>
+				<%= associate_maintainer.user.username -%>
+			</div>
+		<% end -%>
+	</td>
 	</tr>
 	<tr>
 	<th><%= t('activerecord.attributes.project.reference') %></th>
@@ -112,9 +122,13 @@ $(function() {
 	<% end %>
 	</table>
 
-	<% if user_signed_in? and current_user == @project.user %>
-		<span class="button"><%= link_to t('views.shared.edit'), edit_project_path(@project.name), :class => 'capitalize_first' %></span>
-		<span class="button"><%= link_to t('views.shared.delete'), @project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
+	<% if user_signed_in? -%>
+		<% if @project.updatable_for?(current_user) -%>
+			<span class="button"><%= link_to t('views.shared.edit'), edit_project_path(@project.name), :class => 'capitalize_first' %></span>
+		<% end -%>
+		<% if @project.destroyable_for?(current_user) -%>
+			<span class="button"><%= link_to t('views.shared.delete'), @project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
+		<% end -%>
 	<% end %>
 <% end %>
 </div>

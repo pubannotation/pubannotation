@@ -9,12 +9,13 @@ class Project < ActiveRecord::Base
   has_many :relations, :dependent => :destroy
   has_many :instances, :dependent => :destroy
   has_many :modifications, :dependent => :destroy
+  has_many :associate_maintainers, :dependent => :destroy
 
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
   
   scope :accessible, lambda{|current_user|
     if current_user.present?
-      where('accessibility = ? OR user_id =?', 1, current_user.id)
+      where('accessibility = ? OR projects.user_id =?', 1, current_user.id)
     else
       where(:accessibility => 1)
     end
@@ -40,6 +41,14 @@ class Project < ActiveRecord::Base
     joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
     group('projects.id').
     order('count(relations.id) DESC')
+    
+  scope :order_author,
+    order('author ASC')
+    
+  scope :order_maintainer,
+    joins('LEFT OUTER JOIN users ON users.id = projects.user_id').
+    group('projects.id, users.username').
+    order('users.username ASC')
 
   def self.order_by(projects, order, current_user)
     case order
@@ -51,8 +60,34 @@ class Project < ActiveRecord::Base
       projects.accessible(current_user).order_denotations_count
     when 'relations_count'
       projects.accessible(current_user).order_relations_count
+    when 'author'
+      projects.accessible(current_user).order_author
+    when 'maintainer'
+      projects.accessible(current_user).order_maintainer
     else
       projects.accessible(current_user).order('name ASC')
     end    
+  end
+  
+  def associate_maintaines_addable_for?(current_user)
+    current_user == self.user
+  end
+  
+  def updatable_for?(current_user)
+    assiate_maintainer_users = associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
+    current_user == self.user || assiate_maintainer_users.include?(current_user)
+  end
+
+  def destroyable_for?(current_user)
+    current_user == user  
+  end
+    
+  def build_associate_maintainers(usernames)
+    if usernames.present?
+      usernames.each do |username|
+        user = User.where(:username => username).first
+        self.associate_maintainers.build({:user_id => user.id})
+      end
+    end
   end
 end

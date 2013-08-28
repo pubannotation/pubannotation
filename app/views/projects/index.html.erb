@@ -12,5 +12,5 @@
   > <%= t('activerecord.models.project').pluralize %>
 <% end %>
 
-<%= render :partial => "list", :locals => {:doc => @doc, :projects => @projects } %>
+<%= render :partial => "list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
 

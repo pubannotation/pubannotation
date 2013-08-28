@@ -97,6 +97,8 @@ en:
       year: Year
   errors: &errors
     format: ! '%{attribute} %{message}'
+    statuses:
+      forbidden: You don't have permission to do this action.
     messages:
       accepted: must be accepted
       blank: can't be blank
@@ -209,6 +211,7 @@ en:
       instances: Instances
       project: project
       user: user
+      associate_maintainer: sub-maintainer
     attributes:
       doc:
         sourcedb: src DB
@@ -231,6 +234,7 @@ en:
         author: The name of author of this project
         reference: URL to a page that describes this project 
         pmids: PubMed IDs
+        username: sub-maintainers name
       doc:
         annotation_server: URL of annotation server
         pmcids: PMC IDs
@@ -241,6 +245,8 @@ en:
     shared:
       successfully_created: '%{model} was successfully created.'
       successfully_updated: '%{model} was successfully updated.'
+      successfully_destroyed: '%{model} was successfully deleted.'
+      confirm_delete: Are you sure to delete?
     application:
       get_project:
         private: The annotation set, %{project_name}, is specified as private.
@@ -320,6 +326,8 @@ en:
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubannotation: "<a href='%{href}'>Annotations projects</a> in PubAnnotation"
       confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.
+      user_projects: Your projects
+      associate_maintain_projects: Associated projects 
     hints:
       project:
         author: specify the official author/project of this annotation set, in case you are uploading an annotation set produced by someone else
@@ -360,6 +368,7 @@ en:
       remove: remove
       show_divisions: Show divisions
       uploader: uploader
+      maintainer: maintainer
       update: update
       pubmed: PubMed
       a_pmdoc: PubMed:%{sourceid}
