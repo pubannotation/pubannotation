@@ -164,7 +164,7 @@ describe PmdocsController do
         @body = '12345spansABCDE'
         @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
         controller.stub(:get_doc).and_return([@doc, nil])
-        @begin = 6
+        @begin = 5
         @end = 10
       end
       
@@ -187,7 +187,7 @@ describe PmdocsController do
           context 'when context_window is present' do
             context 'when begin of body' do
               before do
-                @begin = 1
+                @begin = 0
                 @end = 5
                 get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
               end
@@ -207,7 +207,7 @@ describe PmdocsController do
             
             context 'when middle of body' do
               before do
-                @begin = 6
+                @begin = 5
                 @end = 10
                 get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
               end
@@ -228,7 +228,7 @@ describe PmdocsController do
             context 'when end of body' do
               before do
                 # '12345spansABCDE'
-                @begin = 11
+                @begin = 10
                 @end = 15
                 get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
               end
@@ -248,7 +248,7 @@ describe PmdocsController do
 
             context 'when format txt' do
               before do
-                @begin = 6
+                @begin = 5
                 @end = 10
                 get :spans, :id => @doc.sourceid, :format => 'txt', :context_window => 5, :begin => @begin, :end => @end
               end
@@ -273,7 +273,7 @@ describe PmdocsController do
         context 'when context_window is nil' do
           context 'when middle of body' do
             before do
-              @begin = 6
+              @begin = 5
               @end = 10
               get :spans, :id => @doc.sourceid, :encoding => 'ascii', :begin => @begin, :end => @end
             end
@@ -287,7 +287,7 @@ describe PmdocsController do
         context 'when context_window is present' do
           context 'when middle of body' do
             before do
-              @begin = 6
+              @begin = 5
               @end = 10
               get :spans, :id => @doc.sourceid, :encoding => 'ascii', :context_window => 5, :begin => @begin, :end => @end
             end
@@ -313,7 +313,7 @@ describe PmdocsController do
         @body = '12345Δ78901'
         @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
         controller.stub(:get_doc).and_return([@doc, nil])
-        @begin = 3
+        @begin = 2
         @end = 7
       end
       
@@ -363,7 +363,7 @@ describe PmdocsController do
         @body = '->Δ123Δ567Δ<-'
         @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
         controller.stub(:get_doc).and_return([@doc, nil])
-        @begin = 4
+        @begin = 3
         @end = 10
       end
       
