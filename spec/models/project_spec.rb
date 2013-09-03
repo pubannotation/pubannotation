@@ -127,6 +127,28 @@ describe Project do
     end
   end
   
+  describe 'has_many associate_maintainer_users' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @user_1 = FactoryGirl.create(:user)
+      @associate_maintainer_1 = FactoryGirl.create(:associate_maintainer, 
+        :user => @user_1,
+        :project => @project)
+      @user_2 = FactoryGirl.create(:user)
+      @associate_maintainer_2 = FactoryGirl.create(:associate_maintainer, 
+        :user => @user_2,
+        :project => @project)
+    end
+    
+    it 'should prensent' do
+      @project.associate_maintainer_users.should be_present
+    end
+    
+    it 'should include' do
+      @project.associate_maintainer_users.should =~ [@user_1, @user_2]
+    end
+  end
+  
   describe 'scope accessible' do
     before do
       @user_1 = FactoryGirl.create(:user)
@@ -481,6 +503,33 @@ describe Project do
     context 'when current_user is not project.user nor project.associate_maintainer.user' do
       it 'should return false' do
         @project.destroyable_for?(FactoryGirl.create(:user)).should be_false
+      end
+    end
+  end
+  
+  describe 'associate_for?' do
+    before do
+      @project_user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, :user => @project_user)
+      @associate_maintainer_user = FactoryGirl.create(:user)
+      @project.associate_maintainers.create({:user_id => @associate_maintainer_user.id})
+    end
+    
+    context 'when current_user is project.user' do
+      it 'should return M' do
+        @project.associate_for?(@project_user).should eql('M')
+      end
+    end
+    
+    context 'when current_user is associate_maintainer_user' do
+      it 'should return M' do
+        @project.associate_for?(@associate_maintainer_user).should eql('A')
+      end
+    end
+    
+    context 'when current_user is no-relation' do
+      it 'should return nil' do
+        @project.associate_for?(FactoryGirl.create(:user)).should be_nil
       end
     end
   end

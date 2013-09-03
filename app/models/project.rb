@@ -10,7 +10,7 @@ class Project < ActiveRecord::Base
   has_many :instances, :dependent => :destroy
   has_many :modifications, :dependent => :destroy
   has_many :associate_maintainers, :dependent => :destroy
-
+  has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
   
   scope :accessible, lambda{|current_user|
@@ -74,12 +74,21 @@ class Project < ActiveRecord::Base
   end
   
   def updatable_for?(current_user)
-    assiate_maintainer_users = associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
-    current_user == self.user || assiate_maintainer_users.include?(current_user)
+    current_user == self.user || self.associate_maintainer_users.include?(current_user)
   end
 
   def destroyable_for?(current_user)
     current_user == user  
+  end
+  
+  def associate_for?(current_user)
+    if current_user.present?
+      if current_user == self.user
+        'M'
+      elsif self.associate_maintainer_users.include?(current_user)
+        'A'
+      end
+    end
   end
     
   def build_associate_maintainers(usernames)
