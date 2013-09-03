@@ -6,6 +6,7 @@ describe "projects/_list.html.erb" do
     @user = FactoryGirl.create(:user)
     @project = FactoryGirl.create(:project, :description => 'project description', :name => 'project name', :author => 'project author', :user => @user)
     view.stub(:projects).and_return([@project])
+    view.stub(:current_user).and_return(nil)
     view.stub(:doc).and_return(nil)
   end
   

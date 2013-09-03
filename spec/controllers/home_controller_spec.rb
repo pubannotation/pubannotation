@@ -28,14 +28,6 @@ describe HomeController do
       (assigns[:pmcdocs] - [@pmcdoc]).should be_blank
     end
     
-    it '@user_projects should eql Project.order_by' do
-      assigns[:user_projects].should eql(@project_order_by)
-    end
-    
-    it '@associate_maintaiain_projects should eql Project.order_by' do
-      assigns[:associate_maintaiain_projects].should eql(@project_order_by)
-    end
-    
     it '@projects should eql Project.order_by' do
       assigns[:projects].should eql(@project_order_by)
     end

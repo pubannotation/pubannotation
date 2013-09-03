@@ -49,6 +49,13 @@ class Project < ActiveRecord::Base
     joins('LEFT OUTER JOIN users ON users.id = projects.user_id').
     group('projects.id, users.username').
     order('users.username ASC')
+  
+  scope :order_association, lambda{|current_user|
+    if current_user.present?
+      joins("LEFT OUTER JOIN associate_maintainers ON projects.id = associate_maintainers.project_id AND associate_maintainers.user_id = #{current_user.id}").
+      order("CASE WHEN projects.user_id = #{current_user.id} THEN 2 WHEN associate_maintainers.user_id = #{current_user.id} THEN 1 ELSE 0 END DESC")
+    end
+  }
 
   def self.order_by(projects, order, current_user)
     case order
@@ -65,7 +72,8 @@ class Project < ActiveRecord::Base
     when 'maintainer'
       projects.accessible(current_user).order_maintainer
     else
-      projects.accessible(current_user).order('name ASC')
+      # 'association' or nil
+      projects.accessible(current_user).order_association(current_user)
     end    
   end
   
@@ -81,7 +89,7 @@ class Project < ActiveRecord::Base
     current_user == user  
   end
   
-  def associate_for?(current_user)
+  def association_for(current_user)
     if current_user.present?
       if current_user == self.user
         'M'
