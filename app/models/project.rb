@@ -10,7 +10,7 @@ class Project < ActiveRecord::Base
   has_many :instances, :dependent => :destroy
   has_many :modifications, :dependent => :destroy
   has_many :associate_maintainers, :dependent => :destroy
-
+  has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
   
   scope :accessible, lambda{|current_user|
@@ -49,6 +49,13 @@ class Project < ActiveRecord::Base
     joins('LEFT OUTER JOIN users ON users.id = projects.user_id').
     group('projects.id, users.username').
     order('users.username ASC')
+  
+  scope :order_association, lambda{|current_user|
+    if current_user.present?
+      joins("LEFT OUTER JOIN associate_maintainers ON projects.id = associate_maintainers.project_id AND associate_maintainers.user_id = #{current_user.id}").
+      order("CASE WHEN projects.user_id = #{current_user.id} THEN 2 WHEN associate_maintainers.user_id = #{current_user.id} THEN 1 ELSE 0 END DESC")
+    end
+  }
 
   def self.order_by(projects, order, current_user)
     case order
@@ -65,7 +72,8 @@ class Project < ActiveRecord::Base
     when 'maintainer'
       projects.accessible(current_user).order_maintainer
     else
-      projects.accessible(current_user).order('name ASC')
+      # 'association' or nil
+      projects.accessible(current_user).order_association(current_user)
     end    
   end
   
@@ -74,12 +82,21 @@ class Project < ActiveRecord::Base
   end
   
   def updatable_for?(current_user)
-    assiate_maintainer_users = associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
-    current_user == self.user || assiate_maintainer_users.include?(current_user)
+    current_user == self.user || self.associate_maintainer_users.include?(current_user)
   end
 
   def destroyable_for?(current_user)
     current_user == user  
+  end
+  
+  def association_for(current_user)
+    if current_user.present?
+      if current_user == self.user
+        'M'
+      elsif self.associate_maintainer_users.include?(current_user)
+        'A'
+      end
+    end
   end
     
   def build_associate_maintainers(usernames)

@@ -127,6 +127,28 @@ describe Project do
     end
   end
   
+  describe 'has_many associate_maintainer_users' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @user_1 = FactoryGirl.create(:user)
+      @associate_maintainer_1 = FactoryGirl.create(:associate_maintainer, 
+        :user => @user_1,
+        :project => @project)
+      @user_2 = FactoryGirl.create(:user)
+      @associate_maintainer_2 = FactoryGirl.create(:associate_maintainer, 
+        :user => @user_2,
+        :project => @project)
+    end
+    
+    it 'should prensent' do
+      @project.associate_maintainer_users.should be_present
+    end
+    
+    it 'should include' do
+      @project.associate_maintainer_users.should =~ [@user_1, @user_2]
+    end
+  end
+  
   describe 'scope accessible' do
     before do
       @user_1 = FactoryGirl.create(:user)
@@ -341,7 +363,46 @@ describe Project do
     it 'should order by author' do
       @projects[2].should eql(@project_3)
     end
+  end
+  
+  describe 'scope :order_association' do
+    before do
+      @current_user = FactoryGirl.create(:user)
+      # create other users project
+      2.times do
+        FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      end
+      @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @user_project = FactoryGirl.create(:project, :user => @current_user)
+      FactoryGirl.create(:associate_maintainer, :user => @current_user, :project => @associate_project)        
+    end
     
+    context 'when current_user.present' do
+      before do
+        @projects = Project.order_association(@current_user)
+      end
+      
+      it 'should set users project as first' do
+        @projects.first.should eql(@user_project)
+      end
+      
+      it 'should set users associate project as first' do
+        @projects.second.should eql(@associate_project)
+      end
+    end
+
+    context 'when current_user.blank' do
+      before do
+        @all_projects = Project.order('id DESC')        
+        @projects = Project.order('id DESC').order_association(nil)
+      end
+      
+      it 'should return @projects as same order projects' do
+        @projects.each_with_index do |project, index|
+          project.should eql(@all_projects[index])
+        end
+      end
+    end
   end
   
   describe 'self.order_by' do
@@ -352,6 +413,7 @@ describe Project do
       @order_relations_count = 'order_relations_count'
       @order_author = 'order_author'
       @order_maintainer = 'order_maintainer'
+      @order_association = 'order_association'
       @order_else = 'order_else'
       # stub scopes
       Project.stub(:accessible).and_return(double({
@@ -361,6 +423,7 @@ describe Project do
           :order_relations_count => @order_relations_count,
           :order_author => @order_author,
           :order_maintainer => @order_maintainer,
+          :order_association => @order_association,
           :order => @order_else
         }))
     end
@@ -390,7 +453,7 @@ describe Project do
     end
     
     it 'order by else should return accessible and orde by name ASC' do
-      Project.order_by(Project, nil, nil).should eql(@order_else)
+      Project.order_by(Project, nil, nil).should eql(@order_association)
     end
   end
    
@@ -481,6 +544,33 @@ describe Project do
     context 'when current_user is not project.user nor project.associate_maintainer.user' do
       it 'should return false' do
         @project.destroyable_for?(FactoryGirl.create(:user)).should be_false
+      end
+    end
+  end
+  
+  describe 'association_for' do
+    before do
+      @project_user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, :user => @project_user)
+      @associate_maintainer_user = FactoryGirl.create(:user)
+      @project.associate_maintainers.create({:user_id => @associate_maintainer_user.id})
+    end
+    
+    context 'when current_user is project.user' do
+      it 'should return M' do
+        @project.association_for(@project_user).should eql('M')
+      end
+    end
+    
+    context 'when current_user is associate_maintainer_user' do
+      it 'should return M' do
+        @project.association_for(@associate_maintainer_user).should eql('A')
+      end
+    end
+    
+    context 'when current_user is no-relation' do
+      it 'should return nil' do
+        @project.association_for(FactoryGirl.create(:user)).should be_nil
       end
     end
   end
