@@ -1,8 +1,10 @@
 class Project < ActiveRecord::Base
   belongs_to :user
-  has_and_belongs_to_many :docs
+  has_and_belongs_to_many :docs, :after_add => :increment_docs_counter, :after_remove => :decrement_docs_counter 
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC'}
+  has_many :projects_sprojects
+  has_and_belongs_to_many :sprojects
 
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter
   has_many :denotations, :dependent => :destroy
@@ -13,12 +15,19 @@ class Project < ActiveRecord::Base
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
   
+  default_scope where(:type => nil)
   scope :accessible, lambda{|current_user|
     if current_user.present?
       where('accessibility = ? OR projects.user_id =?', 1, current_user.id)
     else
       where(:accessibility => 1)
     end
+  }
+  scope :sprojects_projects, lambda{|project_ids|
+    where('projects.id IN (?)', project_ids)
+  }
+  scope :not_sprojects_projects, lambda{|project_ids|
+    where('projects.id NOT IN (?)', project_ids)
   }
     
   # scopes for order
@@ -59,14 +68,8 @@ class Project < ActiveRecord::Base
 
   def self.order_by(projects, order, current_user)
     case order
-    when 'pmdocs_count'
-      projects.accessible(current_user).order_pmdocs_count
-    when 'pmcdocs_count'
-      projects.accessible(current_user).order_pmcdocs_count
-    when 'denotations_count'
-      projects.accessible(current_user).order_denotations_count
-    when 'relations_count'
-      projects.accessible(current_user).order_relations_count
+    when 'pmdocs_count', 'pmcdocs_count', 'denotations_count', 'relations_count'
+      projects.accessible(current_user).order("#{order} DESC")
     when 'author'
       projects.accessible(current_user).order_author
     when 'maintainer'
@@ -77,6 +80,36 @@ class Project < ActiveRecord::Base
     end    
   end
   
+  # after_add doc
+  def increment_docs_counter(doc)
+    if doc.sourcedb == 'PMC'
+      counter_column = :pmcdocs_count
+    else
+      counter_column = :pmdocs_count
+    end
+    Project.increment_counter(counter_column, self.id)
+    if self.sprojects.present?
+      self.sprojects.each do |sproject|
+        Sproject.increment_counter(counter_column, sproject.id)
+      end          
+    end
+  end
+  
+  # after_remove doc
+  def decrement_docs_counter(doc)
+    if doc.sourcedb == 'PMC'
+      counter_column = :pmcdocs_count
+    else
+      counter_column = :pmdocs_count
+    end
+    Project.decrement_counter(counter_column, self.id)
+    if self.sprojects.present?
+      self.sprojects.each do |sproject|
+        Sproject.decrement_counter(counter_column, sproject.id)
+      end          
+    end          
+  end          
+
   def associate_maintaines_addable_for?(current_user)
     current_user == self.user
   end

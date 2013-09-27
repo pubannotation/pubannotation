@@ -7,6 +7,7 @@ describe "divs/index.html.erb" do
       assign :docs, [FactoryGirl.create(:doc, :body => 'body', :sourceid => 'sourceid', :serial => 0)]
       @project = FactoryGirl.create(:project)
       assign :project, @project
+      assign :project_name, @project.name
       @denotations_count_helper = 'denotations_count_helper'
       view.stub(:denotations_count_helper).and_return(@denotations_count_helper)
       @relations_count_helper = 'relations_count_helper'

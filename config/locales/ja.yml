@@ -202,6 +202,7 @@ ja:
       relations: リレーション
       instances: インスタンス
       project: プロジェクト
+      sproject: スーパープロジェクト
       user: ユーザー
       span: スパン
       associate_maintainer: 副管理者
@@ -228,6 +229,20 @@ ja:
         xmlwriter: XMLライター
         bionlpwriter: BioNLP-STライター
         viewer: ビューア
+      sproject:
+        name: 名前
+        description: 説明
+        author: 著者
+        license: ライセンス
+        status: ステータス
+        accessibility: 公開範囲
+        uploader: アップロード
+        reference: 参照
+        editor: エディター
+        rdfwriter: RDFライター
+        xmlwriter: XMLライター
+        bionlpwriter: BioNLP-STライター
+        viewer: ビューア
       user:
         email: メールアドレス
         login: ログインID
@@ -247,6 +262,8 @@ ja:
         annotation_server: アノテーションサーバーのURL
         pmcids: PMCのID
         pmids: PubMedのID
+      sproject:
+        project_name: 関連プロジェクト名を入力
     options:
       project:
         status:
@@ -334,6 +351,7 @@ ja:
       div: デイビジョン
     docs:
       annotation_within_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクトでこのドキュメントに付けられた</span>アノテーション"
+      annotation_within_spans: "<span class='meta'><span class='pname'>SPAN %{spans}</span>に付けられた</span>アノテーション"
       document_content: ドキュメントのコンテンツ
       projects_made_to_document: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       get_annotations: 自動アノテーションの取得
@@ -351,6 +369,8 @@ ja:
       confirm_delete: このアノテーションセットのアノテーションが全て削除されますがよろしいですか？
       user_projects: 管理中のプロジェクト
       associate_maintain_projects: 関係しているプロジェクト
+    sprojects:
+      in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:
       project:
         author: 他者が作成したアノテーションセットをアップロードする場合は、このアノテーションセットの公式の著者を記載
@@ -373,6 +393,8 @@ ja:
       pmcdocs_in_pubannotation: "<span class='meta'><span class='pname'>PubAnnotation</span>内の</span>PMCドキュメント"
       add_pmc_documents: PMCドキュメントを追加
     shared:
+      confirm:
+        delete_model: "%{model}を削除しますか？"
       add: 追加
       add_to_the_set: セットに追加
       account: アカウント

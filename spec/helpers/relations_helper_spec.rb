@@ -16,11 +16,24 @@ describe RelationsHelper do
       @doc = FactoryGirl.create(:doc)
     end
     
+    context 'when params[:action] == spans' do
+      before do
+        helper.stub(:params).and_return({:action => 'spans'})
+        @hrelations = [1,2,3]
+        Doc.any_instance.stub(:hrelations).and_return(@hrelations)
+        @result = helper.relations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
+      end
+      
+      it 'should return @doc.hrelations.size' do
+        @result.should eql(@hrelations.size)
+      end  
+    end
+        
     context 'when project present' do
       context 'when doc present' do
         context 'when sourceid nil' do
           before do
-            @result = helper.relations_count_helper(@project, @doc)
+            @result = helper.relations_count_helper(@project, {:doc => @doc})
           end
           
           it 'should return Relation.project_relations_count' do
@@ -30,7 +43,7 @@ describe RelationsHelper do
 
         context 'when sourceid present' do
           before do
-            @result = helper.relations_count_helper(@project, @doc, 'sourceid')
+            @result = helper.relations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
           end
           
           it 'should return Relation.project_relations_count' do
@@ -40,19 +53,32 @@ describe RelationsHelper do
       end
 
       context 'when doc blank' do
-        before do
-          @result = helper.relations_count_helper(@project)
+        context 'when project.class == Project' do
+          before do
+            @result = helper.relations_count_helper(@project)
+          end
+          
+          it 'should return Relation.project_relations_count' do
+            @result.should eql(@relation_project_relations_count)
+          end
         end
-        
-        it 'should return Relation.project_relations_count' do
-          @result.should eql(@relation_project_relations_count)
+
+        context 'when project.class != Project' do
+          before do
+            @sproject = FactoryGirl.create(:sproject, :relations_count => 15)
+            @result = helper.relations_count_helper(@sproject)
+          end
+          
+          it 'should return sproject.relations_count' do
+            @result.should eql(@sproject.relations_count)
+          end
         end
       end
     end
     
     context 'when project blank' do
       before do
-        @result = helper.relations_count_helper(nil, @doc)
+        @result = helper.relations_count_helper(nil, {:doc => @doc})
       end
       
       it 'should return doc.relations_count' do

@@ -1,137 +1,22 @@
-<script>
-$(function() {
-  $( "#accordion" ).accordion({
-    heightStyle: "content",
-    collapsible: true,
-    <% if params[:accordion_id].present? %>
-    	active: <%= params[:accordion_id] %>
-    <% elsif @pmdocs.length > 0 or @pmcdocs.length > 0 %>
-    	<% if @pmdocs.length >= @pmcdocs.length %>
-    		active: 1
-    	<% else %>
-    		active: 2
-    	<% end %>
-    <% end %>
-  });
-});
-</script>
-
 <% content_for :path do %>
 	> <%= link_to t('views.paths.home'), home_path %>
 	<% if @doc and @doc.sourcedb == 'PubMed' %>
 		> <%= link_to t('views.shared.pmdocs'), pmdocs_path %>
 		> <%= link_to @doc.sourceid, pmdoc_path(@doc.sourceid) %>
-	 	> <%= link_to "projects", pmdoc_projects_path(@doc.sourceid) %>
+	 	> <%= link_to t('activerecord.models.project').pluralize, pmdoc_projects_path(@doc.sourceid) %>
 	<% elsif @doc and @doc.sourcedb == 'PMC' %>
 		> <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
 		> <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
 		> <%= link_to t('views.shared.divs'),    pmcdoc_divs_path(@doc.sourceid) %>
 		> <%= link_to @doc.serial,   pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
-	 	> <%= link_to "projects", pmcdoc_div_projects_path(@doc.sourceid, @doc.serial) %>
+	 	> <%= link_to t('activerecord.models.project').pluralize, pmcdoc_div_projects_path(@doc.sourceid, @doc.serial) %>
 	<% else %>
- 		> <%= link_to "projects", projects_path %>
+ 		> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
  	<% end %>
  	> <%= @project.name %>
 <% end %>
-<h1>Project, <span class="pname"><%= @project.name %></span></h1>
 
-<div id="accordion">
-<h1><%= t('views.projects.project_details') %></h1>
-<div>
-<% if @project %>
-	<table>
-	<tr>
-	<th><%= t('activerecord.attributes.project.name') %></th>
-	<td><%= @project.name %></td>
-	</tr>
-	<tr>
-	<th><%= t('activerecord.attributes.project.description') %></th>
-	<td><%= @project.description %></td>
-	</tr>
-	<tr>
-	<th><%= t('activerecord.attributes.project.author') %></th>
-	<td><%= @project.author %></td>
-	</tr>
-	<tr>
-	<th><%= t('activerecord.attributes.project.license') %></th>
-	<td><%= @project.license %></td>
-	</tr>
-	<tr>
-	<th><%= t('activerecord.attributes.project.status') %></th>
-	<td><%=
-		case @project.status
-		when 1 then t('activerecord.options.project.status.released')
-		when 2 then t('activerecord.options.project.status.beta')
-		when 3 then t('activerecord.options.project.status.developing')
-		end
-	%></td>
-	</tr>
-	<tr>
-	<th><%= t('activerecord.attributes.project.accessibility') %></th>
-	<td><%=
-		case @project.accessibility
-		when 1 then t('activerecord.options.project.accessibility.public')
-		when 2 then :Private
-		end
-	%></td>
-	</tr>
-	<tr>
-	<th><%= t('activerecord.attributes.project.maintainer') %></th>
-	<td><%= @project.user.username %></td>
-	</tr>
-	<tr>
-	<th><%= t('activerecord.models.associate_maintainer') %></th>
-	<td>
-		<% @project.associate_maintainers.each do |associate_maintainer| -%>
-			<div>
-				<%= associate_maintainer.user.username -%>
-			</div>
-		<% end -%>
-	</td>
-	</tr>
-	<tr>
-	<th><%= t('activerecord.attributes.project.reference') %></th>
-	<td><a href="<%= @project.reference %>"><%= @project.reference %></a></td>
-	</tr>
-	<th><%= t('activerecord.attributes.project.viewer') %></th>
-	<td><a href="<%= @project.viewer %>"><%= @project.viewer %></a></td>
-	</tr>
-	<% if user_signed_in? and current_user == @project.user %>
-		<tr>
-			<th><%= t('activerecord.attributes.project.editor') %></th>
-			<td><a href="<%= @project.editor %>"><%= @project.editor %></a></td>
-		</tr>
-	<% end %>
-	<% unless @project.rdfwriter.empty? %>
-		<tr>
-			<th><%= t('activerecord.attributes.project.rdfwriter') %></th>
-			<td><a href="<%= @project.rdfwriter %>"><%= @project.rdfwriter %></a></td>
-		</tr>
-	<% end %>
-	<% unless @project.xmlwriter.empty? %>
-		<tr>
-			<th><%= t('activerecord.attributes.project.xmlwriter') %></th>
-			<td><a href="<%= @project.xmlwriter %>"><%= @project.xmlwriter %></a></td>
-		</tr>
-	<% end %>
-	<% unless @project.bionlpwriter.empty? %>
-		<tr>
-			<th><%= t('activerecord.attributes.project.bionlpwriter') %></th>
-			<td><a href="<%= @project.bionlpwriter %>"><%= @project.bionlpwriter %></a></td>
-		</tr>
-	<% end %>
-	</table>
-
-	<% if user_signed_in? -%>
-		<% if @project.updatable_for?(current_user) -%>
-			<span class="button"><%= link_to t('views.shared.edit'), edit_project_path(@project.name), :class => 'capitalize_first' %></span>
-		<% end -%>
-		<% if @project.destroyable_for?(current_user) -%>
-			<span class="button"><%= link_to t('views.shared.delete'), @project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
-		<% end -%>
-	<% end %>
-<% end %>
-</div>
+<%= render :partial => "project", :locals => {:model => @project} -%>
 
 <%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project, :accordion_id => 1, :denotations_count_order => 'same_sourceid_denotations_count', :relations_count_order => 'same_sourceid_relations_count'} %>
 

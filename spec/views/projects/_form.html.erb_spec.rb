@@ -8,6 +8,7 @@ describe "projects/_form.html.erb" do
     @project = FactoryGirl.create(:project, :user => @project_user)
     @associate_maintainer = FactoryGirl.create(:associate_maintainer, :project => @project, :user => @associate_maintainer_user)
     assign :project, @project
+    view.stub(:model).and_return(@project)
   end
   
   describe 'delete_link' do

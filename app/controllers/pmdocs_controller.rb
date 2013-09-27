@@ -1,5 +1,6 @@
 class PmdocsController < ApplicationController
   autocomplete :doc, :sourceid, :scopes => [:pmdocs]
+  include ApplicationHelper
   
   # GET /pmdocs
   # GET /pmdocs.json
@@ -41,9 +42,14 @@ class PmdocsController < ApplicationController
       else
         @doc = nil
       end
+    elsif params[:sproject_id].present?
+      @doc, notice = get_doc('PubMed', params[:id], 0)
+      @sproject, notice = get_sproject(params[:sproject_id])
+      @annotations = get_annotations(@sproject, @doc)
+      @projects = get_projects({:doc => @doc, :sproject => @sproject})
     else
       @doc, notice = get_doc('PubMed', params[:id])
-      @projects = get_projects(@doc)
+      @projects = get_projects({:doc => @doc})
     end
 
     if @doc
@@ -77,40 +83,60 @@ class PmdocsController < ApplicationController
   
   # GET /pmdocs/:begin/:end
   def spans
-    @doc, notice = get_doc('PubMed', params[:id])
-    begin_pos = params[:begin].to_i
-    end_pos = params[:end].to_i
-    context_window = params[:context_window].to_i
-    @spans = @doc.body[begin_pos...end_pos]
-    body = @doc.body
-    if params[:context_window].present?
-      prev_begin_pos = begin_pos - context_window
-      prev_end_pos = begin_pos
-      if prev_begin_pos < 0
-        prev_begin_pos = 0
+    if params[:project_id].present?
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @project)
       end
-      @prev_text = body[prev_begin_pos...prev_end_pos] 
-      next_begin_pos = end_pos
-      next_end_pos = end_pos + context_window
-      @next_text = body[next_begin_pos...next_end_pos] 
-      if params[:format] == 'txt'
-        @prev_text = "#{@prev_text}\t" if @prev_text.present?
-        @spans = "#{@spans}\t" if @next_text.present?
+    elsif params[:sproject_id].present?
+      @sproject, notice = get_sproject(params[:sproject_id])
+      if @sproject
+        @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @sproject)
       end
+      @projects = get_projects({:doc => @doc, :sproject => @sproject})
+    else
+      @doc, flash[:notice] = get_doc('PubMed', params[:id])
+      @projects = get_projects({:doc => @doc})
     end
-    if params[:encoding] == 'ascii'
-      @spans = get_ascii_text(@spans)
-      if params[:context_window].present?
-        @next_text = get_ascii_text(@next_text)[0...context_window]
-        ascii_prev_text = get_ascii_text(@prev_text) 
-        if context_window > ascii_prev_text.length
-          context_window = ascii_prev_text.length
-        end
-        @prev_text = ascii_prev_text[(context_window * -1)..-1]
-      end
+    @spans, @prev_text, @next_text = @doc.spans(params)
+    respond_to do |format|
+      format.html { render 'docs/spans'}
+      format.txt { render 'docs/spans'}
     end
   end
+  
+  def annotations
+    if (params[:project_id])
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @project)
+      end
+      project = @project
+    elsif params[:sproject_id].present?
+      @sproject, notice = get_sproject(params[:sproject_id])
+      if @sproject
+        @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @sproject)
+      end
+      project = @sproject
+    else
+      @doc, flash[:notice] = get_doc('PubMed', params[:id])
+    end
 
+    @spans, @prev_text, @next_text = @doc.spans(params)
+    annotations = get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
+    annotations[:text] = @spans
+    annotations[:spans] = {:begin => params[:begin], :end => params[:end]}
+    annotations[:spans][:prev_text] = @prev_text if @prev_text.present?
+    annotations[:spans][:next_text] = @next_text if @next_text.present?
+    @denotations = annotations[:denotations]
+    @instances = annotations[:instances]
+    @relations = annotations[:relations]
+    @modifications = annotations[:modifications]
+    respond_to do |format|
+      format.html { render 'docs/annotations'}
+      format.json { render :json => annotations, :callback => params[:callback] }
+    end
+  end
 
   # POST /pmdocs
   # POST /pmdocs.json

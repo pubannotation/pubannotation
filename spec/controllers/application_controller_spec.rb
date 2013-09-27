@@ -295,6 +295,50 @@ describe ApplicationController do
     end
   end
   
+  describe 'get_sproject' do
+    before do
+      @current_user = FactoryGirl.create(:user)
+      current_user_stub(@current_user)
+      controller.stub(:user_signed_in?).and_return(true)
+      @sproject = FactoryGirl.create(:sproject)
+    end
+    
+    context 'when sproject found' do
+      context 'when sproject.accessible == true' do
+        before do
+          Sproject.any_instance.stub(:accessible?).and_return(true)
+          @result = controller.get_sproject(@sproject.name)
+        end
+        
+        it 'should return sproject and nil notice' do
+          @result.should eql([@sproject, nil])
+        end
+      end
+
+      context 'when sproject.accessible == false' do
+        before do
+          Sproject.any_instance.stub(:accessible?).and_return(false)
+          @result = controller.get_sproject(@sproject.name)
+        end
+        
+        it 'should return nil and notice' do
+          @result.should eql([nil, I18n.t('controllers.application.get_project.private', :project_name => @sproject.name)])
+        end
+      end
+    end
+
+    context 'when sproject not found' do
+      before do
+        @name = 'name 000'
+        @result = controller.get_sproject(@name)
+      end
+      
+      it 'should return nil and notice' do
+        @result.should eql([nil, I18n.t('controllers.application.get_project.not_exist', :project_name => @name)])
+      end
+    end
+  end
+  
   describe 'get_projects' do
     before do
       @another_user = FactoryGirl.create(:user)
@@ -304,23 +348,74 @@ describe ApplicationController do
       @project_accessibility_1_and_current_user_project = FactoryGirl.create(:project, :user => @current_user, :accessibility => 1) 
       @project_accessibility_not_1_and_current_user_project = FactoryGirl.create(:project, :user => @current_user, :accessibility => 2) 
       current_user_stub(@current_user)
-      @result = controller.get_projects()
     end
     
-    it 'should include accessibility = 1 and another users project' do
-      @result.should include(@project_accessibility_1_and_another_user_project)
+    context 'when optons present' do
+      context 'when optoins[:doc] present' do
+        before do
+          @doc = FactoryGirl.create(:doc)
+          FactoryGirl.create(:docs_project, :project_id => @project_accessibility_1_and_another_user_project.id, :doc_id => @doc.id)  
+          FactoryGirl.create(:docs_project, :project_id => @project_accessibility_not_1_and_another_user_project.id, :doc_id => @doc.id)  
+          FactoryGirl.create(:docs_project, :project_id => @project_accessibility_1_and_current_user_project.id, :doc_id => @doc.id)  
+          FactoryGirl.create(:docs_project, :project_id => @project_accessibility_not_1_and_current_user_project.id, :doc_id => @doc.id)  
+        end
+        
+        context 'when options[:sproject] blank' do
+          before do
+            @result = controller.get_projects(:doc => @doc)
+          end
+          
+          it 'should include accessibility = 1 and another users project' do
+            @result.should include(@project_accessibility_1_and_another_user_project)
+          end
+          
+          it 'should not include accessibility != 1 and another users project' do
+            @result.should_not include(@project_accessibility_not_1_and_another_user_project)
+          end
+          
+          it 'should include accessibility = 1 and current users project' do
+            @result.should include(@project_accessibility_1_and_current_user_project)
+          end
+          
+          it 'should include accessibility != 1 and current users project' do
+            @result.should include(@project_accessibility_not_1_and_current_user_project)
+          end
+        end
+        
+        context 'when options[:sproject] present' do
+          before do
+            @sproject = FactoryGirl.create(:sproject)
+            FactoryGirl.create(:projects_sproject, :project_id => @project_accessibility_1_and_another_user_project.id, :sproject_id => @sproject.id)
+            @result = controller.get_projects(:doc => @doc, :sproject => @sproject)
+          end
+          
+          it 'should include included in docs.projects and sproject abd' do
+            @result.should =~ [@project_accessibility_1_and_another_user_project]
+          end
+        end
+      end
     end
     
-    it 'should not include accessibility != 1 and another users project' do
-      @result.should_not include(@project_accessibility_not_1_and_another_user_project)
-    end
-    
-    it 'should include accessibility = 1 and current users project' do
-      @result.should include(@project_accessibility_1_and_current_user_project)
-    end
-    
-    it 'should include accessibility != 1 and current users project' do
-      @result.should include(@project_accessibility_not_1_and_current_user_project)
+    context 'when options blank' do
+      before do
+        @result = controller.get_projects()
+      end
+      
+      it 'should include accessibility = 1 and another users project' do
+        @result.should include(@project_accessibility_1_and_another_user_project)
+      end
+      
+      it 'should not include accessibility != 1 and another users project' do
+        @result.should_not include(@project_accessibility_not_1_and_another_user_project)
+      end
+      
+      it 'should include accessibility = 1 and current users project' do
+        @result.should include(@project_accessibility_1_and_current_user_project)
+      end
+      
+      it 'should include accessibility != 1 and current users project' do
+        @result.should include(@project_accessibility_not_1_and_current_user_project)
+      end
     end
   end
   
@@ -330,14 +425,49 @@ describe ApplicationController do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
       end
 
-      context 'and when project passed and doc.projects does not include project' do
-        before do
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
+      context 'and when project passed' do
+        context 'when project.class == Project and doc.projects does not include project' do
+          before do
+            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+            @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
+          end
+          
+          it 'should return nil and message that doc does not belongs to the annotasion set' do
+            @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
+          end
         end
         
-        it 'should return nil and message that doc does not belongs to the annotasion set' do
-          @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
+        context 'when project.class != Project' do
+          before do
+            @sproject = FactoryGirl.create(:sproject)
+            @project = FactoryGirl.create(:project)
+            FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject.id)
+          end
+          
+          before do
+            @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid1', :serial => 0)  
+          end
+
+          context 'when projects docs include doc' do
+            before do
+              @project.docs << @doc
+              @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @sproject)
+            end
+            
+            it 'should return doc and nil notice' do
+              @result.should eql([@doc, nil])
+            end
+          end
+
+          context 'when projects docs not include doc' do
+            before do
+              @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @sproject)
+            end
+            
+            it 'should return doc and nil notice' do
+              @result.should eql([nil, I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :project_name => @sproject.name)])
+            end
+          end
         end
       end
       
@@ -379,7 +509,7 @@ describe ApplicationController do
 
       context 'and when project does not passed' do
         before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '1')
+          @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '123')
           @result = controller.get_divs(@doc.sourceid.to_s, nil)
         end
         
@@ -568,39 +698,145 @@ describe ApplicationController do
   end
   
   describe 'get_annotations' do
-    context 'when project annd doc exists' do
-      context 'when options nothing' do
-        context 'when hdenotations, hinstances, hrelations, hmodifications does not exists' do
+    context 'when doc exists' do
+      context 'when project exists' do
+        context 'when options spans present' do
+          context 'when hdenotations, hinstances, hrelations, hmodifications exists' do
+            before do
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+              @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+              @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc, :begin => 0, :end => 9)
+              @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
+              @subcatrel = FactoryGirl.create(:subcatrel,:subj_id => @denotation.id, :obj => @denotation, :project => @project)
+              @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
+            end
+            
+            context 'when project.class == Project' do
+              before do
+                @result = controller.get_annotations(@project, @doc)
+              end
+              
+              it 'should returns doc params, denotations, instances, relations and modifications' do
+                @result.should eql({
+                  :project => @project.name,
+                  :source_db => @doc.sourcedb, 
+                  :source_id => @doc.sourceid, 
+                  :division_id => @doc.serial, 
+                  :section => @doc.section, 
+                  :text => @doc.body,
+                  :denotations => [{:id => @denotation.hid, :span => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
+                  :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
+                  :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
+                  :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
+                  })
+              end
+            end
+            
+            context 'when project.class == Project' do
+              before do
+                @sproject = FactoryGirl.create(:sproject)
+                FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject.id)
+                @result = controller.get_annotations(@sproject, @doc)
+              end
+              
+              it 'should returns doc params, denotations, instances, relations and modifications' do
+                @result.should eql({
+                  :sproject => @sproject.name,
+                  :source_db => @doc.sourcedb, 
+                  :source_id => @doc.sourceid, 
+                  :division_id => @doc.serial, 
+                  :section => @doc.section, 
+                  :text => @doc.body,
+                  :denotations => [{:id => @denotation.hid, :span => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
+                  :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
+                  :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
+                  :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
+                  })
+              end
+            end
+          end
+        end
+  
+        context 'when options nothing' do
+          context 'when hdenotations, hinstances, hrelations, hmodifications does not exists' do
+            before do
+              @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+              @result = controller.get_annotations(@project, @doc)
+            end
+            
+            it 'should returns doc params' do
+              @result.should eql({
+              :project => @project.name,
+                :source_db => @doc.sourcedb, 
+                :source_id => @doc.sourceid, 
+                :division_id => @doc.serial, 
+                :section => @doc.section, 
+                :text => @doc.body
+                })
+            end
+          end
+        
+          context 'when hdenotations, hinstances, hrelations, hmodifications exists' do
+            before do
+              @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+              @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+              @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
+              @subcatrel = FactoryGirl.create(:subcatrel,:subj_id => @denotation.id, :obj => @denotation, :project => @project)
+              @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
+              @result = controller.get_annotations(@project, @doc)
+            end
+            
+            it 'should returns doc params, denotations, instances, relations and modifications' do
+              @result.should eql({
+                :project => @project.name,
+                :source_db => @doc.sourcedb, 
+                :source_id => @doc.sourceid, 
+                :division_id => @doc.serial, 
+                :section => @doc.section, 
+                :text => @doc.body,
+                :denotations => [{:id => @denotation.hid, :span => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
+                :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
+                :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
+                :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
+                })
+            end
+          end
+        end
+  
+        context 'when option encoding ascii exist' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-            @result = controller.get_annotations(@project, @doc)
+            @get_ascii_text = 'DOC body'
+            controller.stub(:get_ascii_text).and_return(@get_ascii_text)
+            @result = controller.get_annotations(@project, @doc, :encoding => 'ascii')
           end
-          
-          it 'should returns doc params' do
+  
+          it 'should return doc params and ascii encoded text' do
             @result.should eql({
-            :project => @project.name,
+              :project => @project.name,
               :source_db => @doc.sourcedb, 
               :source_id => @doc.sourceid, 
               :division_id => @doc.serial, 
               :section => @doc.section, 
-              :text => @doc.body
-              })
+              :text => @get_ascii_text})
           end
         end
-      
-        context 'when hdenotations, hinstances, hrelations, hmodifications exists' do
+  
+        context 'when option :discontinuous_annotation exist' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-            @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-            @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
-            @subcatrel = FactoryGirl.create(:subcatrel,:subj_id => @denotation.id, :obj => @denotation, :project => @project)
-            @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
-            @result = controller.get_annotations(@project, @doc)
+            @get_ascii_text = 'DOC body'
+            @hdenotations = 'hdenotations'
+            @hrelations = 'hrelations'
+            controller.stub(:bag_denotations).and_return([@hdenotations, @hrelations])
+            @result = controller.get_annotations(@project, @doc, :discontinuous_annotation => 'bag')
           end
           
-          it 'should returns doc params, denotations, instances, relations and modifications' do
+          it 'should return doc params' do
             @result.should eql({
               :project => @project.name,
               :source_db => @doc.sourcedb, 
@@ -608,57 +844,10 @@ describe ApplicationController do
               :division_id => @doc.serial, 
               :section => @doc.section, 
               :text => @doc.body,
-              :denotations => [{:id => @denotation.hid, :span => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
-              :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
-              :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
-              :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
+              :denotations => @hdenotations,
+              :relations => @hrelations
               })
           end
-        end
-      end
-
-      context 'when option encoding ascii exist' do
-        before do
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-          @get_ascii_text = 'DOC body'
-          controller.stub(:get_ascii_text).and_return(@get_ascii_text)
-          @result = controller.get_annotations(@project, @doc, :encoding => 'ascii')
-        end
-
-        it 'should return doc params and ascii encoded text' do
-          @result.should eql({
-            :project => @project.name,
-            :source_db => @doc.sourcedb, 
-            :source_id => @doc.sourceid, 
-            :division_id => @doc.serial, 
-            :section => @doc.section, 
-            :text => @get_ascii_text})
-        end
-      end
-
-      context 'when option :discontinuous_annotation exist' do
-        before do
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-          @get_ascii_text = 'DOC body'
-          @hdenotations = 'hdenotations'
-          @hrelations = 'hrelations'
-          controller.stub(:bag_denotations).and_return([@hdenotations, @hrelations])
-          @result = controller.get_annotations(@project, @doc, :discontinuous_annotation => 'bag')
-        end
-        
-        it 'should return doc params' do
-          @result.should eql({
-            :project => @project.name,
-            :source_db => @doc.sourcedb, 
-            :source_id => @doc.sourceid, 
-            :division_id => @doc.serial, 
-            :section => @doc.section, 
-            :text => @doc.body,
-            :denotations => @hdenotations,
-            :relations => @hrelations
-            })
         end
       end
     end
@@ -865,6 +1054,10 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+      @sproject_denotations_count_1 = FactoryGirl.create(:sproject, :denotations_count => 1)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_denotations_count_1.id)
+      @sproject_denotations_count_2 = FactoryGirl.create(:sproject, :denotations_count => 2)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_denotations_count_2.id)
       @hdenotation = {:id => 'hid', :span => {:begin => 1, :end => 10}, :obj => 'Category'}
       @hdenotations = Array.new
       @hdenotations << @hdenotation
@@ -898,6 +1091,33 @@ describe ApplicationController do
 
     it 'should save doc.id as doc_id' do
       @denotation.doc_id.should eql(@doc.id)
+    end
+    
+    it 'should project.denotations_count should equal 0 before save' do
+      @project.denotations_count.should eql(0)
+    end
+
+    it 'should incliment project.denotations_count after denotation saved' do
+      @project.reload
+      @project.denotations_count.should eql(1)
+    end
+      
+    it 'sproject.denotations_count should equeal 0 before save' do
+      @sproject_denotations_count_1.denotations_count.should eql(1)
+    end
+    
+    it 'sproject.denotations_count should equeal 0 before save' do
+      @sproject_denotations_count_1.reload
+      @sproject_denotations_count_1.denotations_count.should eql(2)
+    end
+    
+    it 'sproject.denotations_count should equeal 0 before save' do
+      @sproject_denotations_count_2.denotations_count.should eql(2)
+    end
+    
+    it 'sproject.denotations_count should equeal 0 before save' do
+      @sproject_denotations_count_2.reload
+      @sproject_denotations_count_2.denotations_count.should eql(3)
     end
   end
   
@@ -1191,6 +1411,15 @@ describe ApplicationController do
           :project_id => @project.id
         ).should be_present
       end
+     
+      it 'should project.denotations_count should equal 0 before save' do
+        @project.denotations_count.should eql(0)
+      end
+  
+      it 'should incliment project.denotations_count after denotation saved' do
+        @project.reload
+        @project.denotations_count.should eql(1)
+      end
     end
 
     context 'hrelations subject and object does not match /^T/' do
@@ -1215,6 +1444,46 @@ describe ApplicationController do
           :obj_type => @instance.class, 
           :project_id => @project.id
         ).should be_present
+      end
+
+      it 'should project.denotations_count should equal 0 before save' do
+        @project.denotations_count.should eql(0)
+      end
+  
+      it 'should incliment project.denotations_count after denotation saved' do
+        @project.reload
+        @project.denotations_count.should eql(1)
+      end
+    end
+    
+    context 'when projects.sprojects present' do
+      before do
+        @sproject_relations_count_1 = FactoryGirl.create(:sproject, :relations_count => 1)
+        FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_relations_count_1.id)
+        @sproject_relations_count_2 = FactoryGirl.create(:sproject, :relations_count => 2)
+        FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_relations_count_2.id)
+        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'M1', :obj => 'M1'}
+        @hrelations << @hrelation
+        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation, :hid => @hrelation[:subj])
+        @result = controller.save_hrelations(@hrelations, @project, @doc)
+      end
+      
+      it 'sproject.relatious_count should equeal 0 before save' do
+        @sproject_relations_count_1.relations_count.should eql(1)
+      end
+      
+      it 'sproject.relatious_count should equeal 0 before save' do
+        @sproject_relations_count_1.reload
+        @sproject_relations_count_1.relations_count.should eql(2)
+      end
+      
+      it 'sproject.relatious_count should equeal 0 before save' do
+        @sproject_relations_count_2.relations_count.should eql(2)
+      end
+      
+      it 'sproject.relatious_count should equeal 0 before save' do
+        @sproject_relations_count_2.reload
+        @sproject_relations_count_2.relations_count.should eql(3)
       end
     end
   end
@@ -1358,17 +1627,6 @@ describe ApplicationController do
           :obj_type => @instance.class
         ).should be_present
       end
-    end
-  end
-  
-  describe 'get_ascii_test' do
-    before do
-      @text = 'α'
-      @ascii_text = controller.get_ascii_text(@text)
-    end
-    
-    it 'should return greek retters' do
-      @ascii_text.should eql('alpha')
     end
   end
   

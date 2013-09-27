@@ -15,6 +15,7 @@ class User < ActiveRecord::Base
   has_many :projects
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
+  has_many :sprojects
 
   scope :except_current_user, lambda { |current_user| where(["id != ?", current_user.id]) }
   scope :except_project_associate_maintainers, lambda{|project_id|

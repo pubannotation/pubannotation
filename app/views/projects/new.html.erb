@@ -15,4 +15,4 @@
 
 <h1><%= t('views.shared.new_model', :model => t('activerecord.models.project')) %></h1>
 
-<%= render 'form' %>
+<%= render :partial => 'form', :locals => {:model => @project}  %>

@@ -25,6 +25,8 @@ describe "projects/_list.html.erb" do
 
   describe 'counter' do
     before do
+      assign :projects, [@project]
+      view.stub(:projects).and_return([@project])
       view.stub(:user_signed_in?).and_return(false)
       @denotations_count_helper = 'denotations_count_helper'
       view.stub(:denotations_count_helper).and_return(@denotations_count_helper, nil)

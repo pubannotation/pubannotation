@@ -1,0 +1,60 @@
+<% if @project %>
+	<% if @doc.sourcedb == 'PubMed' %>
+		<% if params[:action] == 'spans' -%>
+			<% annotation_url = spans_annotation_project_pmdoc_url(@project.name, @doc.sourceid, params[:begin], params[:end]) %>
+		<% else -%>
+			<% annotation_url = project_pmdoc_annotations_url(@project.name, @doc.sourceid) %>
+		<% end -%>
+	<% else %>
+		<% if params[:action] == 'spans' -%>
+			<% annotation_url = spans_annotation_project_pmcdoc_div_url(@project.name, @doc.sourceid, @doc.serial, params[:begin], params[:end]) %>
+		<% else -%>
+			<% annotation_url = project_pmcdoc_div_annotations_url(@project.name, @doc.sourceid, @doc.serial) %>
+		<% end -%>
+	<% end %>
+
+	<h2>
+		<% if params[:action] == 'spans' -%>
+			<%= t('views.docs.annotation_within_spans', :spans => "#{params[:begin]} - #{params[:end]}").html_safe %>
+		<% else -%>
+			<%= t('views.docs.annotation_within_project', :project_name => @project.name).html_safe %>
+		<% end -%>
+	</h2>
+	<ul>
+		<li>
+			<%= t('activerecord.models.denotation') %>:
+			<%= denotations_count_helper(@project, {:doc => @doc})%>
+		</li>
+		<li>
+			<%= t('activerecord.models.relation') %>:
+			<%= relations_count_helper(@project)%>
+			<br />
+		</li>
+	</ul>
+
+	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
+
+	<!-- automatic annotation -->
+	<% if @project and user_signed_in? and current_user == @project.user %>
+	<h2><%= t('views.docs.get_annotations') %></h2>
+		<ul>
+			<li class="notice">It is an experimental feature, and should be treated as such.</li>
+		</ul>
+
+	 	<%= form_tag annotation_url, :method => "post" do %>
+        	<table style="border-color:#FFFFFF; margin-left:20px">
+        		<tr><th>Entrez Gene Linking</th></tr>
+        		<tr><td style="text-align:center">
+        		<%#= text_field_tag :annotation_server, nil, :placeholder => t('activerecord.placeholders.doc.annotation_server') %>
+        		<%= hidden_field_tag :annotation_server, "http://nlp.dbcls.jp/db_app1/ss_pg/retrieve" %>
+        		<%= hidden_field_tag :encoding, 'ascii' %>
+				<%#= text_field_tag :dictionary, nil, :placeholder => "(optional) dictionary name" %>
+				<%= text_field_tag :tax_ids, nil, :placeholder => "Option: tax ids (space-separated)" %><br/>
+				<%= submit_tag(t('views.shared.get')) %>
+				</td></tr>
+			</table>
+		<% end %>
+	<% end %>
+<% else %>
+	<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects } %>
+<% end %>

@@ -75,9 +75,26 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def get_sproject(name)
+    sproject = Sproject.find_by_name(name)
+    if sproject
+      if sproject.accessible?(current_user)
+        return sproject, nil
+      else
+        return nil, I18n.t('controllers.application.get_project.private', :project_name => name)
+      end
+    else
+      return nil, I18n.t('controllers.application.get_project.not_exist', :project_name => name)
+    end
+  end
 
-  def get_projects (doc = nil)
-    projects = (doc)? doc.projects : Project.all
+
+  def get_projects (options = {})
+    projects = (options.present? && options[:doc].present?)? options[:doc].projects : Project.where('id > ?', 0)
+    if options.present? && options[:sproject].present?
+      sproject_projects = projects.sprojects_projects(options[:sproject].project_ids)
+      projects = projects & sproject_projects
+    end
     projects.sort!{|x, y| x.name <=> y.name}
     projects = projects.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
   end
@@ -86,9 +103,21 @@ class ApplicationController < ActionController::Base
   def get_doc (sourcedb, sourceid, serial = 0, project = nil)
     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     if doc
-      if project and !doc.projects.include?(project)
-        doc = nil
-        notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
+      if project
+        if project.class == Project
+          # Project
+          if !doc.projects.include?(project)
+            doc = nil
+            notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
+          end
+        else
+          # Sproject
+          common_projects = doc.projects & project.projects
+          if common_projects.blank?
+            doc = nil
+            notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
+          end
+        end
       end
     else
       notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
@@ -235,25 +264,11 @@ class ApplicationController < ActionController::Base
 
 
   def get_annotations (project, doc, options = {})
-    if project and doc
-      denotations = doc.denotations.where("project_id = ?", project.id).order('begin ASC')
-      hdenotations = denotations.collect {|ca| ca.get_hash} unless denotations.empty?
-
-      instances = doc.instances.where("instances.project_id = ?", project.id)
-      instances.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
-      hinstances = instances.collect {|ia| ia.get_hash} unless instances.empty?
-
-      relations  = doc.subcatrels.where("relations.project_id = ?", project.id)
-      relations += doc.subinsrels.where("relations.project_id = ?", project.id)
-      relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
-      hrelations = relations.collect {|ra| ra.get_hash} unless relations.empty?
-
-      modifications = doc.insmods.where("modifications.project_id = ?", project.id)
-      modifications += doc.subcatrelmods.where("modifications.project_id = ?", project.id)
-      modifications += doc.subinsrelmods.where("modifications.project_id = ?", project.id)
-      modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
-      hmodifications = modifications.collect {|ma| ma.get_hash} unless modifications.empty?
-
+    if doc.present?
+      hdenotations = doc.hdenotations(project, options)
+      hinstances = doc.hinstances(project, options)
+      hrelations = doc.hrelations(project, options)
+      hmodifications = doc.hmodifications(project, options)
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
@@ -276,12 +291,22 @@ class ApplicationController < ActionController::Base
       #   annotations[:pmcdoc_id] = doc.sourceid
       #   annotations[:div_id] = doc.serial
       # end
-      annotations[:project] = project[:name]
+      
+      # project sproject
+      if project.present?
+        if project.class == Project
+          annotations[:project] = project[:name]
+        else
+          annotations[:sproject] = project[:name]
+        end
+      end 
+      # doc
       annotations[:source_db] = doc.sourcedb
       annotations[:source_id] = doc.sourceid
       annotations[:division_id] = doc.serial
       annotations[:section] = doc.section
       annotations[:text] = text
+      # doc.relational_models
       annotations[:denotations] = hdenotations if hdenotations
       annotations[:instances] = hinstances if hinstances
       annotations[:relations] = hrelations if hrelations
@@ -590,58 +615,6 @@ class ApplicationController < ActionController::Base
       ma.save
     end
   end
-
-
-  def get_ascii_text(text)
-    rewritetext = Utfrewrite.utf8_to_ascii(text)
-    #rewritetext = text
-
-    # escape non-ascii characters
-    coder = HTMLEntities.new
-    asciitext = coder.encode(rewritetext, :named)
-    # restore back
-    # greek letters
-    asciitext.gsub!(/&[Aa]lpha;/, "alpha")
-    asciitext.gsub!(/&[Bb]eta;/, "beta")
-    asciitext.gsub!(/&[Gg]amma;/, "gamma")
-    asciitext.gsub!(/&[Dd]elta;/, "delta")
-    asciitext.gsub!(/&[Ee]psilon;/, "epsilon")
-    asciitext.gsub!(/&[Zz]eta;/, "zeta")
-    asciitext.gsub!(/&[Ee]ta;/, "eta")
-    asciitext.gsub!(/&[Tt]heta;/, "theta")
-    asciitext.gsub!(/&[Ii]ota;/, "iota")
-    asciitext.gsub!(/&[Kk]appa;/, "kappa")
-    asciitext.gsub!(/&[Ll]ambda;/, "lambda")
-    asciitext.gsub!(/&[Mm]u;/, "mu")
-    asciitext.gsub!(/&[Nn]u;/, "nu")
-    asciitext.gsub!(/&[Xx]i;/, "xi")
-    asciitext.gsub!(/&[Oo]micron;/, "omicron")
-    asciitext.gsub!(/&[Pp]i;/, "pi")
-    asciitext.gsub!(/&[Rr]ho;/, "rho")
-    asciitext.gsub!(/&[Ss]igma;/, "sigma")
-    asciitext.gsub!(/&[Tt]au;/, "tau")
-    asciitext.gsub!(/&[Uu]psilon;/, "upsilon")
-    asciitext.gsub!(/&[Pp]hi;/, "phi")
-    asciitext.gsub!(/&[Cc]hi;/, "chi")
-    asciitext.gsub!(/&[Pp]si;/, "psi")
-    asciitext.gsub!(/&[Oo]mega;/, "omega")
-
-    # symbols
-    asciitext.gsub!(/&apos;/, "'")
-    asciitext.gsub!(/&lt;/, "<")
-    asciitext.gsub!(/&gt;/, ">")
-    asciitext.gsub!(/&quot;/, '"')
-    asciitext.gsub!(/&trade;/, '(TM)')
-    asciitext.gsub!(/&rarr;/, ' to ')
-    asciitext.gsub!(/&hellip;/, '...')
-
-    # change escape characters
-    asciitext.gsub!(/&([a-zA-Z]{1,10});/, '==\1==')
-    asciitext.gsub!('==amp==', '&')
-
-    asciitext
-  end
-
 
   # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method

@@ -1,15 +1,24 @@
 module DenotationsHelper
-  def denotations_count_helper(project, doc = nil, sourceid = nil)
-    if project.present?
-      if sourceid.present?
-        # doc should be present
-        doc.same_sourceid_denotations_count
+  def denotations_count_helper(project, options = {})
+    if params[:action] == 'spans'
+      options[:doc].denotations.within_spans(params[:begin], params[:end]).size
+    else      
+      if project.present?
+        if options[:sourceid].present?
+          # doc should be present
+          options[:doc].same_sourceid_denotations_count
+        else
+          denotations = options[:doc].present? ? options[:doc].denotations : Denotation
+          if project.class == Project
+            Denotation.project_denotations_count(project.id, denotations)
+          else
+            # Sproject
+            project.denotations_count
+          end
+        end
       else
-        denotations = doc.present? ? doc.denotations : Denotation
-        Denotation.project_denotations_count(project.id, denotations)
-      end
-    else
-      doc.denotations.size
-    end   
+        options[:doc].denotations.size
+      end   
+    end
   end
 end

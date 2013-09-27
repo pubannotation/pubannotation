@@ -1,5 +1,5 @@
-<%= form_for(@project) do |f| %>
-	<%= errors_helper(@project) %>
+<%= form_for(model) do |f| %>
+	<%= errors_helper(model) %>
 
 <table>
   <tr>
@@ -83,6 +83,36 @@
 	  <%= hint_helper({:model => :project, :column => :reference}) %>
     </td>
   </tr>
+  <% if model.class == Sproject -%>
+	<!-- associate projects search and add field -->
+	<tr>
+	  	<th>
+	  		<%= t('activerecord.models.project') -%>
+	  	</th>
+	  	<td>
+	  		<% if @projects_sprojects.present? -%>
+		  		<% @projects_sprojects.each do |projects_sproject| -%>
+		  			<div>
+			  			<%= link_to projects_sproject.project.name, project_path(projects_sproject.project.name) -%>
+			  			<%= link_to t('views.shared.delete'), projects_sproject_path(projects_sproject), :method => :delete, :confirm => t('views.shared.confirm.delete_model', :model => t('activerecord.models.project')) -%>
+		  			</div>
+		  		<% end -%>
+	  		<% end -%>
+	  		<%= fields_for :projecs_sproject do |ps| -%>
+	  			<div id="sproject_projects"></div>
+	  			<%= ps.autocomplete_field :project_name, "/projects/autocomplete_project_name/#{@sproject.project_ids}", :id => 'project_name', :placeholder => t('activerecord.placeholders.sproject.project_name') -%>
+		  		<script type="text/javascript">
+			  		$('#project_name').bind('railsAutocomplete.select', function(event, data){
+			  			var projectName = data.item.value;
+			  			// append associate projects name
+			  			$( "<div class='associate_username'>" + projectName +"<input type='hidden' value='" + projectName + "' id='project_names[]' name='project_names[]'> <a href='' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></a></div>" ).appendTo( "#sproject_projects" );
+			  			$('#project_name').val('');
+					});
+		  		</script>
+	  		<% end -%>
+	  	</td>
+	  </tr>
+  <% end -%>
   <tr><td style="border:none"></td></tr>
 <!--   <tr>
     <th><%= f.label :viewer %></th>

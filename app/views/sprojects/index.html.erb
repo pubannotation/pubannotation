@@ -1,0 +1,15 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  <% if @doc and @doc.sourcedb == 'PubMed' %>
+    > <%= link_to t('views.shared.pmdocs'), pmdocs_path %>
+    > <%= link_to @doc.sourceid, pmdoc_path(@doc.sourceid) %>
+  <% elsif @doc and @doc.sourcedb == 'PMC' %>
+    > <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
+    > <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
+    > <%= link_to t('views.shared.divs'),    pmcdoc_divs_path(@doc.sourceid) %>
+    > <%= link_to @doc.serial,   pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
+  <% end %>
+  > <%= t('activerecord.models.sproject').pluralize %>
+<% end %>
+
+<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @sprojects } %>

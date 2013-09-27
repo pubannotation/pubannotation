@@ -145,13 +145,10 @@ class AnnotationsController < ApplicationController
 
   # DELETE /projects/:hid
   # DELETE /projects/:hid.json
-  # TODO this action doesn't seem to be used
   # def destroy
     # @project, notice = get_project(params[:project_id])
     # if @project
-# 
       # if (params[:pmdoc_id] || params[:pmcdoc_id])
-# 
         # sourcedb, sourceid, serial = get_docspec(params)
         # @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
         # if @doc

@@ -1,5 +1,5 @@
 class Relation < ActiveRecord::Base
-  belongs_to :project
+  belongs_to :project, :counter_cache => true
   belongs_to :subj, :polymorphic => true
   belongs_to :obj, :polymorphic => true
 
@@ -14,8 +14,11 @@ class Relation < ActiveRecord::Base
   validate :validate
 
   scope :project_relations, select(:id).group("relations.project_id")
+  scope :projects_relations, lambda{|project_ids|
+    where('project_id IN (?)', project_ids)
+  }
   
-  after_save :increment_subcatrels_count
+  after_save :increment_subcatrels_count, :increment_sproject_relations_count
   
   def get_hash
     hrelation = Hash.new
@@ -43,6 +46,15 @@ class Relation < ActiveRecord::Base
   def increment_subcatrels_count
     if self.subj_type == 'Denotation'
       Doc.increment_counter(:subcatrels_count, subj.doc_id)
+    end
+  end
+  
+  # after save
+  def increment_sproject_relations_count
+    if self.project.present? && self.project.sprojects.present?
+      project.sprojects.each do |sproject|
+        Sproject.increment_counter(:relations_count, sproject.id)
+      end
     end
   end
 end

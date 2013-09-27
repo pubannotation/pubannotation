@@ -1,3 +1,4 @@
+
 en:
   date:
     abbr_day_names:
@@ -221,6 +222,10 @@ en:
         rdfwriter: RDF writer
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
+      sproject:
+        rdfwriter: RDF writer
+        xmlwriter: XML writer
+        bionlpwriter: BioNLP-ST_writer
       user:
         email: E-mail
         login: login id
@@ -239,6 +244,8 @@ en:
         annotation_server: URL of annotation server
         pmcids: PMC IDs
         pmids: PubMed IDs
+      sproject:
+        project_name: Enter related project name.
     errors:
       <<: *errors
   controllers:
@@ -313,6 +320,7 @@ en:
       div: Div.
     docs:
       annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'> within the project, <span class='pname'>%{project_name}</span></span>"
+      annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
       get_annotations: Get automatic annotations
     paths:
@@ -328,6 +336,8 @@ en:
       confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.
       user_projects: Your projects
       associate_maintain_projects: Associated projects 
+    sprojects:
+      in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:
       project:
         author: specify the official author/project of this annotation set, in case you are uploading an annotation set produced by someone else
@@ -351,6 +361,8 @@ en:
       pmcdocs_in_pubannotation: "PMC documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
       add_pmc_documents: Add PMC documents
     shared:
+      confirm:
+        delete_model: "Are you sure to delete %{model}?"      
       add: Add
       add_to_the_set: Add to the set
       account: account

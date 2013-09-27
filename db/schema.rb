@@ -11,8 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130820020322) do
-
+ActiveRecord::Schema.define(:version => 20130925022731) do
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
     t.integer  "project_id"
@@ -116,10 +115,23 @@ ActiveRecord::Schema.define(:version => 20130820020322) do
     t.string   "rdfwriter"
     t.string   "xmlwriter"
     t.string   "bionlpwriter"
+    t.string   "type"
+    t.integer  "pmdocs_count",      :default => 0
+    t.integer  "pmcdocs_count",     :default => 0
+    t.integer  "denotations_count", :default => 0
+    t.integer  "relations_count",   :default => 0
   end
 
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true
+
+  create_table "projects_sprojects", :force => true do |t|
+    t.integer "project_id",  :null => false
+    t.integer "sproject_id", :null => false
+  end
+
+  add_index "projects_sprojects", ["project_id"], :name => "index_projects_sprojects_on_project_id"
+  add_index "projects_sprojects", ["sproject_id"], :name => "index_projects_sprojects_on_sproject_id"
 
   create_table "relations", :force => true do |t|
     t.string   "hid"

@@ -1,0 +1,12 @@
+<% content_for :path do %>
+	> <%= link_to t('views.paths.home'), home_path %>
+ 	> <%= link_to t("activerecord.models.sproject"), sprojects_path %>
+ 	> <%= link_to @sproject.name, sproject_path(@sproject.name) %>
+ 	> edit
+<% end %>
+
+<h1>
+	<%= t('views.shared.edit_model', :model => "#{t('activerecord.models.sproject')}") %>
+</h1>
+
+<%= render :partial => 'projects/form', :locals => {:model => @sproject}  -%>

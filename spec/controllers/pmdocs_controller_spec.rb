@@ -18,6 +18,10 @@ describe PmdocsController do
           end
           
           it 'should render template' do
+            flash[:notice].should be_nil
+          end
+          
+          it 'should render template' do
             response.should render_template('index')
           end
         end
@@ -147,7 +151,38 @@ describe PmdocsController do
       end
     end
     
-    context 'when params[:project_id] does not exists' do
+    context 'when params[:sproject_id] present' do
+      before do
+        @sproject = FactoryGirl.create(:sproject)
+        @project = FactoryGirl.create(:project)
+        @doc = FactoryGirl.create(:doc)   
+        controller.stub(:get_doc).and_return([@doc, "notice"])    
+        controller.stub(:get_sproject).and_return([@sproject, 'notice'])
+        @get_annotations = 'annotation'
+        controller.stub(:get_annotations).and_return(@get_annotations)
+        @get_projects = 'get projects'
+        controller.stub(:get_projects).and_return(@get_projects)
+        get :show, :id => 1, :sproject_id => 1
+      end
+      
+      it 'should assign get_doc as @doc' do
+        assigns[:doc].should eql(@doc)
+      end
+      
+      it 'should assign get_sproject as @sproject' do
+        assigns[:sproject].should eql(@sproject)
+      end
+
+      it 'should assign :get_annotations as @annotations' do
+        assigns[:annotations].should eql(@get_annotations)
+      end
+      
+      it 'should assign get_projects as @projects' do
+        assigns[:projects].should eql(@get_projects)
+      end
+    end
+    
+    context 'when params[:project_id] and params[:sproject_id] does not exists' do
       before do
         get :show, :id => 1
       end      
@@ -159,252 +194,229 @@ describe PmdocsController do
   end
   
   describe 'spans' do
-    context 'when body not includes ascii text' do
-      before do
-        @body = '12345spansABCDE'
-        @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
-        controller.stub(:get_doc).and_return([@doc, nil])
-        @begin = 5
-        @end = 10
-      end
-      
-      context 'when encoding normal' do
-        context 'when context_window is nil' do
-          context 'when context is nil' do
-            before do
-              get :spans, :id => @doc.sourceid, :begin => @begin, :end => @end
-            end
-            
-            it 'should set @doc' do
-              assigns[:doc].should eql(@doc)
-            end
-             
-            it 'should set body[begin...end] as @spans' do
-              assigns[:spans].should eql('spans')
-            end
-          end
-          
-          context 'when context_window is present' do
-            context 'when begin of body' do
-              before do
-                @begin = 0
-                @end = 5
-                get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
-              end
-              
-              it 'should set @prev_text' do
-                assigns[:prev_text].should eql('')
-              end
-               
-              it 'should set body[begin...end] as @spans' do
-                assigns[:spans].should eql('12345')
-              end
-              
-              it 'should set @next_text' do
-                assigns[:next_text].should eql('spans')
-              end
-            end
-            
-            context 'when middle of body' do
-              before do
-                @begin = 5
-                @end = 10
-                get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
-              end
-              
-              it 'should set @prev_text' do
-                assigns[:prev_text].should eql('12345')
-              end
-               
-              it 'should set body[begin...end] as @spans' do
-                assigns[:spans].should eql('spans')
-              end
-              
-              it 'should set @next_text' do
-                assigns[:next_text].should eql('ABCDE')
-              end
-            end
-            
-            context 'when end of body' do
-              before do
-                # '12345spansABCDE'
-                @begin = 10
-                @end = 15
-                get :spans, :id => @doc.sourceid, :context_window => 5, :begin => @begin, :end => @end
-              end
-              
-              it 'should set @prev_text' do
-                assigns[:prev_text].should eql('spans')
-              end
-               
-              it 'should set body[begin...end] as @spans' do
-                assigns[:spans].should eql('ABCDE')
-              end
-              
-              it 'should set @next_text' do
-                assigns[:next_text].should eql('')
-              end
-            end
-
-            context 'when format txt' do
-              before do
-                @begin = 5
-                @end = 10
-                get :spans, :id => @doc.sourceid, :format => 'txt', :context_window => 5, :begin => @begin, :end => @end
-              end
-              
-              it 'should set @prev_text includes tab' do
-                assigns[:prev_text].should eql("12345\t")
-              end
-               
-              it 'should set body[begin...end] as @spans includes tab' do
-                assigns[:spans].should eql("spans\t")
-              end
-              
-              it 'should set @next_text' do
-                assigns[:next_text].should eql('ABCDE')
-              end
-            end
-          end
-        end
-      end
-
-      context 'when encoding is ascii' do
-        context 'when context_window is nil' do
-          context 'when middle of body' do
-            before do
-              @begin = 5
-              @end = 10
-              get :spans, :id => @doc.sourceid, :encoding => 'ascii', :begin => @begin, :end => @end
-            end
-            
-            it 'should set body[begin...end] as @spans' do
-              assigns[:spans].should eql('spans')
-            end
-          end
+    before do
+      @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
+      @project = 'project'
+      @projects = 'projects'
+      @sproject = 'sproject'
+      controller.stub(:get_project).and_return([@project, nil])
+      controller.stub(:get_projects).and_return(@projects)
+      controller.stub(:get_sproject).and_return(@sproject)
+      controller.stub(:get_doc).and_return([@doc, nil])
+      @spans = 'SPANS'
+      @prev_text = 'PREV'
+      @next_text = 'NEXT'
+      @doc.stub(:spans).and_return([@spans, @prev_text, @next_text])
+    end
+    
+    context 'when params[:project_id] present' do
+      context 'when format html' do
+        before do
+          get :spans, :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
         end
         
-        context 'when context_window is present' do
-          context 'when middle of body' do
-            before do
-              @begin = 5
-              @end = 10
-              get :spans, :id => @doc.sourceid, :encoding => 'ascii', :context_window => 5, :begin => @begin, :end => @end
-            end
-            
-            it 'should set @prev_text' do
-              assigns[:prev_text].should eql('12345')
-            end
-             
-            it 'should set body[begin...end] as @spans' do
-              assigns[:spans].should eql('spans')
-            end
-            
-            it 'should set @next_text' do
-              assigns[:next_text].should eql('ABCDE')
-            end
-          end
+        it 'should assign @project' do
+          assigns[:project].should eql(@project)
+        end
+        
+        it 'should not assign' do
+          assigns[:projects].should be_nil
+        end
+        
+        it 'should assign @doc' do
+          assigns[:doc].should eql(@doc)
+        end
+        
+        it 'should assign @spans' do
+          assigns[:spans].should eql(@spans)
+        end
+        
+        it 'should assign @prev_text' do
+          assigns[:prev_text].should eql(@prev_text)
+        end
+        
+        it 'should assign @next_text' do
+          assigns[:next_text].should eql(@next_text)
+        end
+        
+        it 'should render template' do
+          response.should render_template('docs/spans')
+        end
+      end
+
+      context 'when format json' do
+        before do
+          get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
         end
       end
     end
     
-    context 'when span includes ascii text' do
+    context 'when params[:project_id] blank' do
       before do
-        @body = '12345Δ78901'
-        @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
-        controller.stub(:get_doc).and_return([@doc, nil])
-        @begin = 2
-        @end = 7
+        get :spans, :id => @doc.sourceid, :begin => 1, :end => 5
       end
       
-      context 'when encoding nil' do
-        context 'when context_window present' do
-          before do
-            get :spans, :id => @doc.sourceid, :context_window => 10, :begin => @begin, :end => @end
-          end
-          
-          it 'should set get_ascii_text[begin...end] as @spans' do
-            assigns[:spans].should eql('345Δ7')
-          end
-          
-          it 'should set prev_text' do
-            assigns[:prev_text].should eql('12')
-          end
-          
-          it 'should set next_text' do
-            assigns[:next_text].should eql('8901')
-          end
+      it 'should not assign @project' do
+        assigns[:project].should be_nil
+      end
+      
+      it 'should assign @projects' do
+        assigns[:projects].should eql(@projects)
+      end
+    end
+    
+    context 'when params[:sproject_id] present' do
+      before do
+        get :spans, :id => @doc.sourceid, :sproject_id => '1', :begin => 1, :end => 5
+      end
+      
+      it 'should not assign @project' do
+        assigns[:project].should be_nil
+      end
+      
+      it 'should assign @sproject' do
+        assigns[:sproject].should eql(@sproject)
+      end
+      
+      it 'should assign @doc' do
+        assigns[:doc].should eql(@doc)
+      end
+      
+      it 'should assign @projects' do
+        assigns[:projects].should eql(@projects)
+      end
+    end
+  end
+  
+  describe 'annotations' do
+    before do
+      @project = FactoryGirl.create(:project, :name => 'project_name')
+      controller.stub(:get_project).and_return(@project, 'notice')
+      @doc = FactoryGirl.create(:doc)
+      controller.stub(:get_doc).and_return(@doc, 'notice')
+      @projects = [@project]
+      controller.stub(:get_projects).and_return(@projects)
+      @spans = 'spans' 
+      @prev_text = 'prevx text'
+      @next_text = 'next text'
+      Doc.any_instance.stub(:spans).and_return([@spans, @prev_text, @next_text])
+      @annotations ={
+        :text => "text",
+        :denotations => "denotations",
+        :instances => "instances",
+        :relations => "relations",
+        :modifications => "modifications"
+      }
+      controller.stub(:get_annotations).and_return(@annotations)
+    end
+    
+    context 'when params[:project_id] present' do
+      before do
+        get :annotations, :project_id => @project.name, :id => @doc.id, :begin => 1, :end => 10
+      end
+      
+      it 'should assign @project' do
+        assigns[:project].should eql(@project)
+      end
+      
+      it 'should assign @doc' do
+        assigns[:doc].should eql(@doc)
+      end
+      
+      it 'should_not assign @projects' do
+        assigns[:projects].should be_nil
+      end
+      
+      it 'should assign @spans' do
+        assigns[:spans].should eql(@spans)
+      end
+      
+      it 'should assign @prev_text' do
+        assigns[:prev_text].should eql(@prev_text)
+      end
+      
+      it 'should assign @next_text' do
+        assigns[:next_text].should eql(@next_text)
+      end
+      
+      it 'should assign @denotations' do
+        assigns[:denotations].should eql(@annotations[:denotations])
+      end
+      
+      it 'should assign @instances' do
+        assigns[:instances].should eql(@annotations[:instances])
+      end
+      
+      it 'should assign @relations' do
+        assigns[:relations].should eql(@annotations[:relations])
+      end
+      
+      it 'should assign @modifications' do
+        assigns[:modifications].should eql(@annotations[:modifications])
+      end
+
+      context 'when params[:project_id] blank' do
+        before do
+          @sproject = FactoryGirl.create(:sproject)
+          controller.stub(:get_sproject).and_return(@sproject, 'notice')
+          controller.stub(:get_doc).and_return(@doc, 'notice')
+          get :annotations, :sproject_id => @sproject.name, :id => @doc.id, :begin => 1, :end => 10
         end
-      end
-      
-      context 'when encoding ascii' do
-        context 'when context_window present' do
-          before do
-            get :spans, :id => @doc.sourceid, :encoding => 'ascii', :context_window => 10, :begin => @begin, :end => @end
-          end
-          
-          it 'should set get_ascii_text[begin...end] as @spans' do
-            assigns[:spans].should eql('345delta7')
-          end
-          
-          it 'should set prev_text' do
-            assigns[:prev_text].should eql('12')
-          end
-          
-          it 'should set next_text' do
-            assigns[:next_text].should eql('8901')
-          end
+        
+        it 'should assign @project' do
+          assigns[:project].should eql(@project)
+        end
+        
+        it 'should assign @doc' do
+          assigns[:doc].should eql(@doc)
+        end
+        
+        it 'should_not assign @projects' do
+          assigns[:projects].should be_nil
+        end
+        
+        it 'should assign @spans' do
+          assigns[:spans].should eql(@spans)
+        end
+        
+        it 'should assign @prev_text' do
+          assigns[:prev_text].should eql(@prev_text)
+        end
+        
+        it 'should assign @next_text' do
+          assigns[:next_text].should eql(@next_text)
+        end
+        
+        it 'should assign @denotations' do
+          assigns[:denotations].should eql(@annotations[:denotations])
+        end
+        
+        it 'should assign @instances' do
+          assigns[:instances].should eql(@annotations[:instances])
+        end
+        
+        it 'should assign @relations' do
+          assigns[:relations].should eql(@annotations[:relations])
+        end
+        
+        it 'should assign @modifications' do
+          assigns[:modifications].should eql(@annotations[:modifications])
         end
       end
     end
     
-    context 'when body includes ascii text' do
+    
+    context 'when params[:project_id] and params[:sproject_id] blank' do
       before do
-        @body = '->Δ123Δ567Δ<-'
-        @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
-        controller.stub(:get_doc).and_return([@doc, nil])
-        @begin = 3
-        @end = 10
+        get :annotations, :id => @doc.id, :begin => 1, :end => 10
       end
       
-      context 'when encoding nil' do
-        context 'when context_window present' do
-          before do
-            get :spans, :id => @doc.sourceid, :context_window => 3, :begin => @begin, :end => @end
-          end
-          
-          it 'should set get_ascii_text[begin...end] as @spans' do
-            assigns[:spans].should eql('123Δ567')
-          end
-          
-          it 'should set prev_text' do
-            assigns[:prev_text].should eql('->Δ')
-          end
-          
-          it 'should set next_text' do
-            assigns[:next_text].should eql('Δ<-')
-          end
-        end
+      it 'should not assign @project' do
+        assigns[:project].should be_nil
       end
       
-      context 'when encoding ascii' do
-        context 'when context_window present' do
-          before do
-            get :spans, :id => @doc.sourceid, :encoding => 'ascii', :context_window => 3, :begin => @begin, :end => @end
-          end
-          
-          it 'should set get_ascii_text[begin...end] as @spans' do
-            assigns[:spans].should eql('123delta567')
-          end
-          
-          it 'should set prev_text' do
-            assigns[:prev_text].should eql('lta')
-          end
-          
-          it 'should set next_text' do
-            assigns[:next_text].should eql('del')
-          end
-        end
+      it 'should assign @doc' do
+        assigns[:doc].should eql(@doc)
       end
     end
   end
@@ -435,9 +447,12 @@ describe PmdocsController do
     context 'when params[:project_id] exists' do
       context 'and when project exists' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
           @sourceid = 'sourdeid'
-          #@project.docs << @doc
+          @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
+          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+          @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 0)
+          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
           controller.stub(:get_project).and_return([@project, 'notice'])        
         end
         
@@ -453,6 +468,24 @@ describe PmdocsController do
             
             it 'should redirect to project_pmdocs_path' do
               response.should redirect_to(project_path(@project.name, :accordion_id => 1))
+            end
+            
+            it 'should increment only project.pmdocs_count' do
+              @project.reload
+              @project.pmdocs_count.should eql(1)
+              @project.pmcdocs_count.should eql(0)
+            end
+            
+            it 'should incremant only sproject.pmdocs_count' do
+              @sproject_1.reload
+              @sproject_1.pmdocs_count.should eql(1)
+              @sproject_1.pmcdocs_count.should eql(0)
+            end
+            
+            it 'should incremant only sproject.pmdocs_count' do
+              @sproject_2.reload
+              @sproject_2.pmdocs_count.should eql(2)
+              @sproject_2.pmcdocs_count.should eql(0)
             end
           end
           
@@ -506,8 +539,12 @@ describe PmdocsController do
         context 'and when doc found by sourcedb and sourceid' do
           context 'and when doc.projects does not include project' do
             before do
-              @project = FactoryGirl.create(:project)
+              @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
               @id = 'sourceid'
+              @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
+              FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+              @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 0)
+              FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
             end
             
@@ -518,6 +555,24 @@ describe PmdocsController do
               
               it 'should redirect to project_pmdocs_path' do
                 response.should redirect_to(project_path(@project.name, :accordion_id => 1))
+              end
+            
+              it 'should increment only project.pmdocs_count' do
+                @project.reload
+                @project.pmdocs_count.should eql(1)
+                @project.pmcdocs_count.should eql(0)
+              end
+              
+              it 'should incremant only sproject.pmdocs_count' do
+                @sproject_1.reload
+                @sproject_1.pmdocs_count.should eql(1)
+                @sproject_1.pmcdocs_count.should eql(0)
+              end
+              
+              it 'should incremant only sproject.pmdocs_count' do
+                @sproject_2.reload
+                @sproject_2.pmdocs_count.should eql(2)
+                @sproject_2.pmcdocs_count.should eql(0)
               end
             end
             
@@ -536,8 +591,12 @@ describe PmdocsController do
         context 'and when doc not found by sourcedb and sourceid' do
           context 'and when gen_pmdoc return doc' do
             before do
-              @project = FactoryGirl.create(:project, :name => 'project name')
+              @project = FactoryGirl.create(:project, :name => 'project name', :pmdocs_count => 0, :pmcdocs_count => 0)
               @id = 'sourceid'
+              @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
+              FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+              @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 0)
+              FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PM', :sourceid => @id)
               controller.stub(:gen_pmdoc).and_return(@doc)
               post :update, :project_id => @project.name, :id => @id
@@ -549,6 +608,24 @@ describe PmdocsController do
             
             it 'should set flash[:notice]' do
               flash[:notice].should eql("The document, #{@doc.sourcedb}:#{@doc.sourceid}, was created in the annotation set, #{@project.name}.")
+            end
+          
+            it 'should increment only project.pmdocs_count' do
+              @project.reload
+              @project.pmdocs_count.should eql(1)
+              @project.pmcdocs_count.should eql(0)
+            end
+            
+            it 'should incremant only sproject.pmdocs_count' do
+              @sproject_1.reload
+              @sproject_1.pmdocs_count.should eql(1)
+              @sproject_1.pmcdocs_count.should eql(0)
+            end
+            
+            it 'should incremant only sproject.pmdocs_count' do
+              @sproject_2.reload
+              @sproject_2.pmdocs_count.should eql(2)
+              @sproject_2.pmcdocs_count.should eql(0)
             end
           end
           
@@ -673,10 +750,10 @@ describe PmdocsController do
       
       context 'when project found by nanme' do
         before do
-          @project = FactoryGirl.create(:project, :name => @project_id)  
+          @project = FactoryGirl.create(:project, :name => @project_id, :pmcdocs_count => 1, :pmdocs_count => 1)  
         end
         
-        context 'when project found by nanme' do
+        context 'when project found by name' do
           context 'when doc found by sourcedb and source id' do
             before do
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)  
@@ -698,6 +775,12 @@ describe PmdocsController do
                 
                 it 'should set flash[:notice]' do
                   flash[:notice].should eql("The document, #{@doc.sourcedb}:#{@doc.sourceid}, was removed from the annotation set, #{@project.name}.")
+                end
+                
+                it 'should decrement project.pmdocs_count' do
+                  @project.pmdocs_count.should eql(1)
+                  @project.reload
+                  @project.pmdocs_count.should eql(0)
                 end
               end
               

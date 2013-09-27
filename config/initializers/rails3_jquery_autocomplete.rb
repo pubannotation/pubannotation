@@ -47,6 +47,11 @@ module Rails3JQueryAutocomplete
             items = items.send(scope)
           elsif scope.class == Hash
             scope_name = scope.keys.first
+            # convert string to array if params[:scope_argument] is array string like '[a,b,c]'
+            if parameters[:scope_argument] =~ /\[.*\]/
+              parameters[:scope_argument] = parameters[:scope_argument].delete('[]').split(',')
+            end
+            # call scope for items(= Model) and args(parameters[:scope_argument])
             items = items.send(scope_name, parameters[:scope_argument])
           end 
         } unless scopes.empty?

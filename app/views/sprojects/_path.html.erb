@@ -1,0 +1,5 @@
+<% content_for :path do %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to_unless_current t('activerecord.models.sproject').pluralize, sprojects_path %>
+ 	> <%= link_to_unless_current @sproject.name, sproject_path(@sproject.name) %>
+<% end %>

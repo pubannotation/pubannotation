@@ -18,7 +18,30 @@
   <% end %>
 </h1>
 
-<% if projects.empty? %>
+  <% if @doc and @doc.sourcedb == 'PubMed' %>
+  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+  <% elsif @doc and @doc.sourcedb == 'PMC' %>
+  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+  <% else %>
+  	<% if projects.first.class == Project -%>
+    	<%= t('views.projects.in_pubannotation').html_safe %>
+    	<% new_path = new_project_path -%>
+    <% else -%>
+    	<%= t('views.sprojects.in_pubannotation').html_safe %>
+    	<% new_path = new_sproject_path -%>
+    <% end -%>
+    <% if params[:action] == 'index' -%>
+	    <% if user_signed_in?%>
+	    	<% model = projects.present? ? projects.first.class.name.downcase : 'sproject' -%>
+	      	<span class="button"><%= link_to t('views.shared.create_model', :model => t("activerecord.models.#{model}")), new_path %></span>
+	    <% else %>
+		    <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
+	    <% end %>
+    <% end %>
+  <% end %>
+</h1>
+
+<% if projects.blank? %>
   <p>none</p>
 <% else %>
   <table>
@@ -32,10 +55,18 @@
       <th class="sortable-th" title='PubMed Central documents'><%= link_to_unless_current 'C', url_for(:only_path => true, :projects_order => 'pmcdocs_count'), :class => 'sortable-a' %></th>
       <th class="sortable-th" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
       <th class="sortable-th" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
+      <th>T</th>
       <th></th>
     </tr>
 
   <% projects.each do |project| %>
+  	<% if project.class == Project -%>
+        <% project_path = project_path(project.name) -%>
+        <% type = 'P' -%>
+  	<% else -%>
+        <% project_path = sproject_path(project.name) -%>
+        <% type = 'S' -%>
+  	<% end -%>
     <tr>
       <td style="white-space: nowrap"><%= project.name %></td>
       <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>
@@ -45,24 +76,29 @@
       	<%= project.association_for(current_user) -%>
       </td>
       <td style="text-align:right">
-      	<%= project.docs.pmdocs.size %>
+      	<%= project.pmdocs_count -%>
       </td>
       <td style="text-align:right">
-      	<%= project.docs.pmcdocs.size %>
+      	<%= project.pmcdocs_count -%>
       </td>
       <td style="text-align:right">
-    	<%= denotations_count_helper(project, doc) %>
+    	<%= denotations_count_helper(project, {:doc => doc}) %>
       </td>
       <td style="text-align:right">
-    	<%= relations_count_helper(project, doc) %>
+    	<%= relations_count_helper(project, {:doc => doc}) %>
       </td>
-      <% if @doc and @doc.sourcedb == "PubMed" %>
-        <td><%= link_to t('views.shared.show'), project_pmdoc_path(project.name, @doc.sourceid) %></td>
-      <% elsif @doc and @doc.sourcedb == "PMC" %>
-        <td><%= link_to t('views.shared.show'), project_pmcdoc_div_path(project.name, @doc.sourceid, @doc.serial) %></td>
-      <% else %>
-        <td><%= link_to t('views.shared.show'), project_path(project.name) %></td>
-      <% end %>
+      <td>
+  		<%= type -%>
+  	  </td>
+      <td>
+	      <% if @doc and @doc.sourcedb == "PubMed" %>
+	        <%= link_to t('views.shared.show'), project_pmdoc_path(project.name, @doc.sourceid) %>
+	      <% elsif @doc and @doc.sourcedb == "PMC" %>
+	        <%= link_to t('views.shared.show'), project_pmcdoc_div_path(project.name, @doc.sourceid, @doc.serial) %>
+	      <% else %>
+	        <%= link_to t('views.shared.show'), project_path %>
+	      <% end %>
+      </td>
     </tr>
   <% end %>
   </table>

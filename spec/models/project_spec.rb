@@ -15,12 +15,12 @@ describe Project do
   
   describe 'has_and_belongs_to_many docs' do
     before do
-      @doc_1 = FactoryGirl.create(:doc, :id => 3)
-      @project_1 = FactoryGirl.create(:project, :id => 5, :user => FactoryGirl.create(:user))
-      @project_2 = FactoryGirl.create(:project, :id => 7, :user => FactoryGirl.create(:user))
+      @doc_1 = FactoryGirl.create(:doc)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       FactoryGirl.create(:docs_project, :project_id => @project_1.id, :doc_id => @doc_1.id)
       FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => @doc_1.id)
-      FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => FactoryGirl.create(:doc))
+      FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => FactoryGirl.create(:doc).id)
     end
     
     it 'doc.projects should include @project_1' do
@@ -204,119 +204,183 @@ describe Project do
     end
   end
   
-  describe 'scope order_pmdocs_count' do
+  describe 'scope sprojects_projects' do
     before do
-      @project_pmdocs_2 = FactoryGirl.create(:project)
-      2.times do
-        doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-        FactoryGirl.create(:docs_project, :doc_id => doc.id, :project_id => @project_pmdocs_2.id)
-      end
-      @project_pmdocs_1 = FactoryGirl.create(:project)
-      1.times do
-        doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-        FactoryGirl.create(:docs_project, :doc_id => doc.id, :project_id => @project_pmdocs_1.id)
-      end
-      @project_pmcdocs_4 = FactoryGirl.create(:project)
-      4.times do
-        doc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
-        FactoryGirl.create(:docs_project, :doc_id => doc.id, :project_id => @project_pmcdocs_4.id)
-      end
-      @projects = Project.order_pmdocs_count
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
     end
     
-    it 'project which has 2 pmdocs should be @projects[0]' do
-      @projects[0].should eql(@project_pmdocs_2)
+    it 'should include project_id included in project_ids' do
+      Project.sprojects_projects([@project_1.id, @project_2.id]).should =~ [@project_1, @project_2]
+    end    
+  end
+  
+  describe 'scope not_sprojects_projects' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
     end
     
-    it 'project which has 1 pmdocs should be @projects[1]' do
-      @projects[1].should eql(@project_pmdocs_1)
+    it 'should include project_id included in project_ids' do
+      Project.not_sprojects_projects([@project_1.id, @project_2.id]).should =~ [@project_3]
+    end    
+  end
+  
+  describe 'self.order_by' do
+    context 'pmdocs_count' do
+      before do
+        @project_pmdocs_1 = FactoryGirl.create(:project, :pmdocs_count => 1, :accessibility => 1)
+        @project_pmdocs_2 = FactoryGirl.create(:project, :pmdocs_count => 2, :accessibility => 1)
+        @project_pmdocs_4 = FactoryGirl.create(:project, :pmdocs_count => 4, :accessibility => 1)
+        @projects = Project.order_by(Project, 'pmdocs_count', nil)
+      end
+      it 'project which has 4 pmdocs should be @projects[0]' do
+        @projects[0].should eql(@project_pmdocs_4)
+      end
+      
+      it 'project which has 2 pmdocs should be @projects[1]' do
+        @projects[1].should eql(@project_pmdocs_2)
+      end
+  
+      it 'project which has 1 pmdocs should be @projects[2]' do
+        @projects[2].should eql(@project_pmdocs_1)
+      end
     end
+  
+    context 'pmcdocs_count' do
+      before do
+        @project_pmcdocs_1 = FactoryGirl.create(:project, :pmcdocs_count => 1, :accessibility => 1)
+        @project_pmcdocs_2 = FactoryGirl.create(:project, :pmcdocs_count => 2, :accessibility => 1)
+        @project_pmcdocs_4 = FactoryGirl.create(:project, :pmcdocs_count => 4, :accessibility => 1)
+        @projects = Project.order_by(Project, 'pmcdocs_count', nil)
+      end
+      
+      it 'project which has 4 pmcdocs should be @projects[0]' do
+        @projects[0].should eql(@project_pmcdocs_4)
+      end
+      
+      it 'project which has 2 pmcdocs should be @projects[1]' do
+        @projects[1].should eql(@project_pmcdocs_2)
+      end
+  
+      it 'project which has 1 pmcdocs should be @projects[2]' do
+        @projects[2].should eql(@project_pmcdocs_1)
+      end
+    end
+  
+    context 'denotations_count' do
+      before do
+        @project_2_denotations = FactoryGirl.create(:project, :denotations_count => 2, :accessibility => 1)
+        @project_1_denotations = FactoryGirl.create(:project, :denotations_count => 1, :accessibility => 1)
+        @project_0_denotations = FactoryGirl.create(:project, :denotations_count => 0, :accessibility => 1)
+        @projects = Project.order_by(Project, 'order_denotations_count', nil)
+      end
+      
+      it 'project which has 2 denotations should be @projects[0]' do
+        @projects[0].should eql(@project_2_denotations)
+      end
+      
+      it 'project which has 1 denotations should be @projects[1]' do
+        @projects[1].should eql(@project_1_denotations)
+      end
+      
+      it 'project which has 0 denotations should be @projects[2]' do
+        @projects[2].should eql(@project_0_denotations)
+      end
+    end
+  
+    context 'order_relations_count' do
+      before do
+        @project_2_relations = FactoryGirl.create(:project, :relations_count => 2, :accessibility => 1)
+        @project_1_relations = FactoryGirl.create(:project, :relations_count => 1, :accessibility => 1)
+        @project_0_relations = FactoryGirl.create(:project, :relations_count => 0, :accessibility => 1)
+        @projects = Project.order_by(Project, 'order_relations_count', nil)
+      end
+      
+      it 'project which has 2 relation should be @projects[0]' do
+        @projects[0].should eql(@project_2_relations)
+      end
+      
+      it 'project which has 1 relation should be @projects[1]' do
+        @projects[1].should eql(@project_1_relations)
+      end
+      
+      it 'project which has 0 relation should be @projects[2]' do
+        @projects[2].should eql(@project_0_relations)
+      end
+    end
+  
+    context 'not match' do
+      before do
+        @project_name_1 = FactoryGirl.create(:project, :name => '00001', :accessibility => 1)
+        @project_name_2 = FactoryGirl.create(:project, :name => '00002', :accessibility => 1)
+      end
+      
+      it 'order by else should return accessible and orde by name ASC' do
+        Project.order_by(Project, nil, nil).first.should eql(@project_name_1)
+      end
+    end 
+  end 
+  
+  describe 'increment_docs_counter' do
+    before do
+      @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+      @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 1)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
+      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+    end
+    
+    context 'when PubMed' do
+      before do
+        @project.docs << @pmdoc
+      end
+          
+      it 'should increment project.pmcdocs_count' do
+        @project.reload
+        @project.pmdocs_count.should eql(1)
+        @project.pmcdocs_count.should eql(0)
+      end
 
-    it 'project which has 0 pmdocs should be @projects[2]' do
-      @projects[2].should eql(@project_pmcdocs_4)
-    end
-  end
-  
-  describe 'scope order_pmcdocs_count' do
-    before do
-      @project_pmcdocs_2 = FactoryGirl.create(:project)
-      2.times do
-        doc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
-        FactoryGirl.create(:docs_project, :doc_id => doc.id, :project_id => @project_pmcdocs_2.id)
+      it 'should increment sproject.pmcdocs_count' do
+        @sproject_1.reload
+        @sproject_1.pmdocs_count.should eql(1)
+        @sproject_1.pmcdocs_count.should eql(0)
       end
-      @project_pmcdocs_1 = FactoryGirl.create(:project)
-      1.times do
-        doc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
-        FactoryGirl.create(:docs_project, :doc_id => doc.id, :project_id => @project_pmcdocs_1.id)
-      end
-      @project_pmdocs_4 = FactoryGirl.create(:project)
-      4.times do
-        doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-        FactoryGirl.create(:docs_project, :doc_id => doc.id, :project_id => @project_pmdocs_4.id)
-      end
-      @projects = Project.order_pmcdocs_count
-    end
-    
-    it 'project which has 2 pmcdocs should be @projects[0]' do
-      @projects[0].should eql(@project_pmcdocs_2)
-    end
-    
-    it 'project which has 1 pmcdocs should be @projects[1]' do
-      @projects[1].should eql(@project_pmcdocs_1)
-    end
 
-    it 'project which has 0 pmcdocs should be @projects[2]' do
-      @projects[2].should eql(@project_pmdocs_4)
-    end
-  end
-  
-  describe 'order_denotations_count' do
-    before do
-      @project_2_denotations = FactoryGirl.create(:project)
-      2.times do
-        FactoryGirl.create(:denotation, :project => @project_2_denotations, :doc_id => 1)
+      it 'should increment sproject.pmcdocs_count' do
+        @sproject_2.reload
+        @sproject_2.pmdocs_count.should eql(2)
+        @sproject_2.pmcdocs_count.should eql(1)
       end
-      @project_1_denotations = FactoryGirl.create(:project)
-      FactoryGirl.create(:denotation, :project => @project_1_denotations, :doc_id => 1)
-      @project_0_denotations = FactoryGirl.create(:project)
-      @projects = Project.order_denotations_count
     end
     
-    it 'project which has 2 denotations should be @projects[0]' do
-      @projects[0].should eql(@project_2_denotations)
-    end
-    
-    it 'project which has 1 denotations should be @projects[1]' do
-      @projects[1].should eql(@project_1_denotations)
-    end
-    
-    it 'project which has 0 denotations should be @projects[2]' do
-      @projects[2].should eql(@project_0_denotations)
-    end
-  end
-  
-  describe 'order_relations_count' do
-    before do
-      @project_2_relations = FactoryGirl.create(:project)
-      2.times do
-        FactoryGirl.create(:relation, :project => @project_2_relations, :obj_id => 1)
+    context 'when PMC' do
+      before do
+        @project.docs << @pmcdoc
       end
-      @project_1_relations = FactoryGirl.create(:project)
-      FactoryGirl.create(:relation, :project => @project_1_relations, :obj_id => 1)
-      @project_0_relations = FactoryGirl.create(:project)
-      @projects = Project.order_relations_count
-    end
-    
-    it 'project which has 2 relation should be @projects[0]' do
-      @projects[0].should eql(@project_2_relations)
-    end
-    
-    it 'project which has 1 relation should be @projects[1]' do
-      @projects[1].should eql(@project_1_relations)
-    end
-    
-    it 'project which has 0 relation should be @projects[2]' do
-      @projects[2].should eql(@project_0_relations)
+          
+      it 'should increment pmcdocs_count' do
+        @project.reload
+        @project.pmcdocs_count.should eql(1)
+        @project.pmdocs_count.should eql(0)
+      end
+
+      it 'should increment sproject.pmcdocs_count' do
+        @sproject_1.reload
+        @sproject_1.pmcdocs_count.should eql(1)
+        @sproject_1.pmdocs_count.should eql(0)
+      end
+
+      it 'should increment sproject.pmcdocs_count' do
+        @sproject_2.reload
+        @sproject_2.pmcdocs_count.should eql(2)
+        @sproject_2.pmdocs_count.should eql(1)
+      end
     end
   end
   
@@ -407,41 +471,17 @@ describe Project do
   
   describe 'self.order_by' do
     before do
-      @order_pmdocs_count = 'order_pmdocs_count'
-      @order_pmcdocs_count = 'order_pmcdocs_count'
-      @order_denotations_count = 'order_denotations_count'
-      @order_relations_count = 'order_relations_count'
       @order_author = 'order_author'
       @order_maintainer = 'order_maintainer'
       @order_association = 'order_association'
       @order_else = 'order_else'
       # stub scopes
       Project.stub(:accessible).and_return(double({
-          :order_pmdocs_count => @order_pmdocs_count,
-          :order_pmcdocs_count => @order_pmcdocs_count,
-          :order_denotations_count => @order_denotations_count,
-          :order_relations_count => @order_relations_count,
           :order_author => @order_author,
           :order_maintainer => @order_maintainer,
           :order_association => @order_association,
           :order => @order_else
         }))
-    end
-    
-    it 'order by pmdocs_count should return accessible and order_pmdocs_count scope result' do
-      Project.order_by(Project, 'pmdocs_count', nil).should eql(@order_pmdocs_count)
-    end
-    
-    it 'order by pmcdocs_count should return accessible and order_pmcdocs_count scope result' do
-      Project.order_by(Project, 'pmcdocs_count', nil).should eql(@order_pmcdocs_count)
-    end
-    
-    it 'order by denotations_count should return accessible and order_denotations_count scope result' do
-      Project.order_by(Project, 'denotations_count', nil).should eql(@order_denotations_count)
-    end
-    
-    it 'order by relations_count should return accessible and order_relations_count scope result' do
-      Project.order_by(Project, 'relations_count', nil).should eql(@order_relations_count)
     end
     
     it 'order by author should return accessible and order_author scope result' do
@@ -587,6 +627,66 @@ describe Project do
       it 'should ass associate @project.maintainers' do
        associate_maintainer_users = @project.associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
        associate_maintainer_users.should =~ [@user_1, @user_2]
+      end
+    end
+  end
+
+  describe 'decrement_docs_counter' do
+    before do
+      @project = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 1)
+      @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 1)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+      @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 2, :pmcdocs_count => 2)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
+      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+    end
+  
+    context 'when PubMed' do
+      before do
+        @project.docs.delete(@pmdoc)
+      end
+          
+      it 'should increment project.pmcdocs_count' do
+        @project.reload
+        @project.pmdocs_count.should eql(0)
+        @project.pmcdocs_count.should eql(1)
+      end
+
+      it 'should increment sproject.pmcdocs_count' do
+        @sproject_1.reload
+        @sproject_1.pmdocs_count.should eql(0)
+        @sproject_1.pmcdocs_count.should eql(1)
+      end
+
+      it 'should increment sproject.pmcdocs_count' do
+        @sproject_2.reload
+        @sproject_2.pmdocs_count.should eql(1)
+        @sproject_2.pmcdocs_count.should eql(2)
+      end
+    end
+  
+    context 'when PMC' do
+      before do
+        @project.docs.delete(@pmcdoc)
+      end
+          
+      it 'should increment pmcdocs_count' do
+        @project.reload
+        @project.pmcdocs_count.should eql(0)
+        @project.pmdocs_count.should eql(1)
+      end
+
+      it 'should increment sproject.pmcdocs_count' do
+        @sproject_1.reload
+        @sproject_1.pmcdocs_count.should eql(0)
+        @sproject_1.pmdocs_count.should eql(1)
+      end
+
+      it 'should increment sproject.pmcdocs_count' do
+        @sproject_2.reload
+        @sproject_2.pmcdocs_count.should eql(1)
+        @sproject_2.pmdocs_count.should eql(2)
       end
     end
   end

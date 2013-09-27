@@ -91,6 +91,18 @@ describe Relation do
     end
   end
   
+  describe 'scope projects_reletions' do
+    before do
+      @relation_project_1 = FactoryGirl.create(:relation, :obj_id => 1, :project_id => 1)
+      @relation_project_2 = FactoryGirl.create(:relation, :obj_id => 1, :project_id => 2)
+      @relation_project_3 = FactoryGirl.create(:relation, :obj_id => 1, :project_id => 3)
+    end
+    
+    it 'should include project_id included in project_ids' do
+      Relation.projects_relations([1,2]).should =~ [@relation_project_1, @relation_project_2]
+    end
+  end 
+  
   describe 'get_hash' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
@@ -326,4 +338,30 @@ describe Relation do
       end
     end
   end
+  
+  describe 'increment_sproject_relations_count' do
+    before do
+      @project = FactoryGirl.create(:project, :relations_count => 0)
+      @sproject_1 = FactoryGirl.create(:sproject, :relations_count => 0)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+      @sproject_2 = FactoryGirl.create(:sproject, :relations_count => 1)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @relation = FactoryGirl.create(:relation, :project => @project, :obj_id => 1)
+    end
+    
+    it 'should increment project.relations_count' do
+      @project.reload
+      @project.relations_count.should eql(1)
+    end      
+    
+    it 'should increment project.relations_count' do
+      @sproject_1.reload
+      @sproject_1.relations_count.should eql(1)
+    end      
+    
+    it 'should increment project.relations_count' do
+      @sproject_2.reload
+      @sproject_2.relations_count.should eql(2)
+    end      
+  end  
 end

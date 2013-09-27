@@ -1,0 +1,90 @@
+<% if @denotations and !@denotations.empty? %>
+  <h2><%= t('activerecord.models.denotation') %></h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Span (begin:end)</th>
+      <th>Predicate</th>
+      <th>Object</th>
+    </tr>
+
+  <% @denotations.each do |denotation| %>
+    <tr>
+      <td><%= denotation[:id] %></td>
+      <td>
+        <% unless denotation[:span].respond_to?(:keys) %>
+          <% denotation[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+        <% else %>
+          <%= denotation[:span][:begin] %>:<%= denotation[:span][:end] %>
+        <% end %>
+      </td>
+      <td>denote</td>
+      <td><%= denotation[:obj] %></td>
+      <td style="text-align:left; font-style:italic; color:#888888; border-color:white">
+  		<%= @spans -%>
+      </td>
+    </tr>
+  <% end %>
+  </table>
+<% end %>
+
+
+<% if @instances and !@instances.empty? %>
+  <h2><%= t('activerecord.models.instance') %></h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Predicate</th>
+      <th>Object</th>
+    </tr>
+
+  <% @instances.each do |instance| %>
+    <tr>
+      <td><%= instance[:id] %></td>
+      <td><%= instance[:pred] %></td>
+      <td><%= instance[:obj] %></td>
+    </tr>
+  <% end %>
+  </table>
+<% end %>
+
+
+<% if @relations and !@relations.empty? %>
+  <h2>Relations</h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Predicate</th>
+      <th>Subject</th>
+      <th>Object</th>
+    </tr>
+
+  <% @relations.each do |relation| %>
+    <tr>
+      <td><%= relation[:id] %></td>
+      <td><%= relation[:pred] %></td>
+      <td><%= relation[:subj] %></td>
+      <td><%= relation[:obj] %></td>
+    </tr>
+  <% end %>
+  </table>
+<% end %>
+
+<% if @modifications and !@modifications.empty? %>
+  <h2>Modifications</h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Predicate</th>
+      <th>Object</th>
+    </tr>
+
+  <% @modifications.each do |modification| %>
+    <tr>
+      <td><%= modification[:id] %></td>
+      <td><%= modification[:pred] %></td>
+      <td><%= modification[:obj] %></td>
+    </tr>
+  <% end %>
+  </table>
+<% end %>

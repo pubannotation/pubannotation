@@ -114,7 +114,7 @@ describe ProjectsController do
       context 'when sourceid does not exists' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 'serial')
-          controller.stub(:get_docspec).and_return(['', nil, ''])
+          Doc.stub(:order_by).and_return(Doc.where('id > ?', 0))
           controller.stub(:get_doc).and_return(@doc, 'notice')
           get :show, :id => @project.id
         end

@@ -7,11 +7,62 @@ class DivsController < ApplicationController
     if params[:project_id]
       @project_name = params[:project_id]
       @project = Project.find_by_name(@project_name)
+    elsif params[:sproject_id]
+      @project_name = params[:sproject_id]
+      @sproject = Sproject.find_by_name(@project_name)
     end
 
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @docs }
+    end
+  end
+  
+  def spans
+    if params[:project_id].present?
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @doc, flash[:notice] = get_doc('PMC', params[:pmcdoc_id], params[:id], @project)
+      end
+    elsif params[:sproject_id].present?
+      @sproject, notice = get_sproject(params[:sproject_id])
+      if @sproject
+        @doc, flash[:notice] = get_doc('PMC', params[:pmcdoc_id], params[:id], @sproject)
+      end
+      @projects = get_projects({:doc => @doc, :sproject => @sproject})
+    else
+      @doc, flash[:notice] = get_doc('PMC', params[:pmcdoc_id], params[:id])
+      @projects = get_projects({:doc => @doc})
+    end
+    @spans, @prev_text, @next_text = @doc.spans(params)
+    respond_to do |format|
+      format.html { render 'docs/spans'}
+      format.txt  { render 'docs/spans'}
+    end
+  end
+  
+  def annotations
+    if (params[:project_id])
+      @project, notice = get_project(params[:project_id])
+      @doc, flash[:notice] = get_doc('PMC', params[:pmcdoc_id], params[:id], @project)
+    else
+      @doc, flash[:notice] = get_doc('PMC', params[:pmcdoc_id], params[:id])
+    end
+    
+    @spans, @prev_text, @next_text = @doc.spans(params)
+    annotations = get_annotations(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
+    annotations[:text] = @spans
+    annotations[:spans] = {:begin => params[:begin], :end => params[:end]}
+    annotations[:spans][:prev_text] = @prev_text if @prev_text.present?
+    annotations[:spans][:next_text] = @next_text if @next_text.present?
+    @denotations = annotations[:denotations]
+    @instances = annotations[:instances]
+    @relations = annotations[:relations]
+    @modifications = annotations[:modifications]        
+
+    respond_to do |format|
+      format.html { render 'docs/annotations' }
+      format.json { render :json => annotations, :callback => params[:callback]}
     end
   end
 
@@ -26,9 +77,14 @@ class DivsController < ApplicationController
       else
         @doc = nil
       end
+    elsif params[:sproject_id].present?
+      @sproject, notice = get_sproject(params[:sproject_id])
+      @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id], @sproject)
+      @annotations = get_annotations(@sproject, @doc)
+      @projects = get_projects({:doc => @doc, :sproject => @sproject})
     else
       @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
-      @projects = get_projects(@doc)
+      @projects = get_projects({:doc => @doc})
     end
 
     if @doc

@@ -117,7 +117,7 @@ describe User do
   describe 'self.find_first_by_auth_conditions' do
     before do
       @user_name = 'user_name'
-      @user= FactoryGirl.create(:user, :id => 1, :username => @user_name)
+      @user = FactoryGirl.create(:user, :username => @user_name)
     end
 
     context 'when conditions include login' do
@@ -128,7 +128,7 @@ describe User do
 
     context 'when conditions does not include user name' do
       it '' do
-        User.find_first_by_auth_conditions({:id => 1}).should eql(@user)
+        User.find_first_by_auth_conditions({:id => @user.id}).should eql(@user)
       end
     end
   end

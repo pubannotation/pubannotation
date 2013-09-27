@@ -84,4 +84,15 @@ describe ApplicationHelper do
      end
    end
   end
+  
+  describe 'get_ascii_text' do
+    before do
+      @text = 'α'
+      @ascii_text = helper.get_ascii_text(@text)
+    end
+    
+    it 'should return greek retters' do
+      @ascii_text.should eql('alpha')
+    end
+  end
 end

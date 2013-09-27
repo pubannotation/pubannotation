@@ -361,6 +361,10 @@ describe AnnotationsController do
     before do
       controller.class.skip_before_filter :authenticate_user!
       @project = FactoryGirl.create(:project)
+      @sproject_annotations_0 = FactoryGirl.create(:sproject)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_annotations_0.id)
+      @sproject_annotations_3 = FactoryGirl.create(:sproject, :denotations_count => 3)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_annotations_3.id)
       controller.stub(:get_project).and_return([@project, nil])
       @another_project = FactoryGirl.create(:project)
       @referer_path = root_path
@@ -386,7 +390,7 @@ describe AnnotationsController do
         FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
         # another_doc
         @another_doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123456, :serial => 0) 
-        denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @another_doc)
+        denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @another_doc)
         FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
         FactoryGirl.create(:instance, :obj => denotation, :project => @project)
       end
@@ -414,6 +418,21 @@ describe AnnotationsController do
           denotation.objrels.should be_present 
         end
       end
+      
+      it 'should count upped project.denotations_count' do
+        @project.reload
+        @project.denotations_count.should eql(@doc_denotatons_count)
+      end
+      
+      it 'should count upped project.denotations_count' do
+        @sproject_annotations_0.reload
+        @sproject_annotations_0.denotations_count.should eql(@doc_denotatons_count)
+      end
+      
+      it 'should count upped project.denotations_count' do
+        @sproject_annotations_3.reload
+        @sproject_annotations_3.denotations_count.should eql(6)
+      end
             
       describe 'post' do
         before do
@@ -438,6 +457,21 @@ describe AnnotationsController do
         
         it 'should redirect_to referer path' do
           response.should redirect_to(@referer_path)
+        end
+        
+        it 'should reset project.denotaions_count' do
+          @project.reload
+          @project.denotations_count.should eql(0)
+        end
+      
+        it 'should reset sproject.denotaions_count' do
+          @sproject_annotations_0.reload
+          @sproject_annotations_0.denotations_count.should eql(0)
+        end
+      
+        it 'should reset sproject.denotaions_count' do
+          @sproject_annotations_3.reload
+          @sproject_annotations_3.denotations_count.should eql(3)
         end
       end
       

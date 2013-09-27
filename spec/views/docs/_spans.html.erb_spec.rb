@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'spec_helper'
 
-describe "pmdocs/spans.html.erb" do
+describe "docs/_span.html.erb" do
   before do
     @spans = 'this is spans'
     @doc = FactoryGirl.create(:doc, 

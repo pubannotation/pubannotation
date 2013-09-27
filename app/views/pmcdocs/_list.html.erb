@@ -13,6 +13,10 @@
 		<% search_path = search_project_path(@project.name) %>
 		<% auto_complete_path = "/projects/autocomplete_pmcdoc_sourceid/#{params[:id]}" %>
 		<% doc_tag = hidden_field_tag :doc, 'PMC' %>
+	<% elsif @sproject.present? -%>
+		<% search_path = search_sproject_path(@sproject.name) %>
+		<% auto_complete_path = "/sprojects/autocomplete_pmcdoc_sourceid/#{@sproject.project_ids}" %>
+		<% doc_tag = hidden_field_tag :doc, 'PMC' %>
 	<% else %>
 		<% search_path = search_pmcdocs_path %>
 		<% auto_complete_path = autocomplete_doc_sourceid_pmcdocs_path %>
@@ -48,16 +52,21 @@
         <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
         <td>
         	<!-- denotations count -->
-        	<%= denotations_count_helper(@project, doc, doc.sourceid) %>
+        	<%= denotations_count_helper(project, {:doc => doc, :sourceid => doc.sourceid}) %>
         </td>
         <td>
         	<!-- relations count -->
-        	<%= relations_count_helper(@project, doc, doc.sourceid) %>
+        	<%= relations_count_helper(project, {:doc => doc, :sourceid => doc.sourceid}) %>
         </td>
         <td>
           <% if project %>
-            <span class="button"><%= link_to t('views.shared.show_divisions'), project_pmcdoc_url(project.name, doc.sourceid) %></span>
-            <% if user_signed_in? and current_user == project.user %>
+          	<% if project.class == Project -%>
+          		<% pmcdoc_path = project_pmcdoc_url(project.name, doc.sourceid) -%>
+          	<% else -%>
+          		<% pmcdoc_path = sproject_pmcdoc_url(project.name, doc.sourceid) -%>
+          	<% end -%>
+            <span class="button"><%= link_to t('views.shared.show_divisions'), pmcdoc_path %></span>
+            <% if user_signed_in? and current_user == project.user && project.class == Project %>
               <span class="button"><%= link_to t('views.shared.remove'), project_pmcdoc_url(project.name, doc.sourceid), :method => :delete, :confirm => 'Are you sure? All the annotations to this document in the project will be deleted.' %></span>
             <% end %>
           <% else %>
@@ -75,7 +84,7 @@
 	  <%= will_paginate docs %>
   <% end %>
 
-  <% if project and user_signed_in? and current_user == project.user %>
+  <% if project and user_signed_in? && current_user == project.user && project.class == Project -%>
     <%= form_tag("/projects/#{project.name}/pmcdocs/", :method => "post") do %>
       <table>
         <tr>

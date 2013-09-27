@@ -11,13 +11,25 @@ describe DenotationsHelper do
       @doc = FactoryGirl.create(:doc)
     end
     
+    context 'when params[:action] == spans' do
+      before do
+        helper.stub(:params).and_return({:action => 'spans'})
+        @within_spans = [1,2,3]
+        Denotation.stub(:within_spans).and_return(@within_spans)
+        @result = helper.denotations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
+      end
+      
+      it 'should return denotations.within_spans.size' do
+        @result.should eql(@within_spans.size)
+      end  
+    end
     
     context 'when project present' do
       context 'when sourceid present' do
         before do
           @same_sourceid_denotations_count = 'same_sourceid_denotations_count'
           Doc.any_instance.stub(:same_sourceid_denotations_count).and_return(@same_sourceid_denotations_count)
-          @result = helper.denotations_count_helper(@project, @doc, 'sourceid')
+          @result = helper.denotations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
         end
         
         it 'should return doc.same_sourceid_denotations_count' do
@@ -26,28 +38,42 @@ describe DenotationsHelper do
       end
       
       context 'when sourceid nil' do
-        before do
-          @doc_denotations = 'denotations'
-          Doc.any_instance.stub(:denotations).and_return(@doc_denotations)
-        end
-        
-        context 'when doc present' do
+        context 'when project.class == Project' do
           before do
-            @result = helper.denotations_count_helper(@project, @doc)
+            @doc_denotations = 'denotations'
+            Doc.any_instance.stub(:denotations).and_return(@doc_denotations)
           end
           
-          it 'denotations should be doc.denotations' do
-            @result[1].should eql(@doc_denotations)
+          context 'when doc present' do
+            before do
+              @result = helper.denotations_count_helper(@project, {:doc => @doc})
+            end
+            
+            it 'denotations should be doc.denotations' do
+              @result[1].should eql(@doc_denotations)
+            end
+          end
+    
+          context 'when doc blank' do
+            before do
+              @result = helper.denotations_count_helper(@project)
+            end
+            
+            it 'denotations should be Denotation class' do
+              @result[1].should eql(Denotation)
+            end
           end
         end
-  
-        context 'when doc blank' do
+
+        context 'when project.class != Project' do
           before do
-            @result = helper.denotations_count_helper(@project)
+            @sproject_denotaions_count = 'Sproject denotations count'
+            @sproject = FactoryGirl.create(:sproject, :denotations_count => 15)
+            @result = helper.denotations_count_helper(@sproject)
           end
           
-          it 'denotations should be Denotation class' do
-            @result[1].should eql(Denotation)
+          it 'should return sproejct.denotations_count' do
+            @result.should eql(@sproject.denotations_count)
           end
         end
       end
@@ -57,7 +83,7 @@ describe DenotationsHelper do
       before do
         @doc_denotations_size = 'doc_denotations_size'
         Doc.any_instance.stub(:denotations).and_return(double(:size => @doc_denotations_size))
-        @result = helper.denotations_count_helper(nil, @doc)
+        @result = helper.denotations_count_helper(nil, {:doc => @doc})
       end
       
       it 'should return doc.denotations.size' do

@@ -98,6 +98,57 @@ describe Denotation do
     end
   end
   
+  describe 'scope' do
+    describe 'within_spans' do
+      before do
+        @denotation_0_9 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1, :begin => 0, :end => 9)
+        @denotation_5_15 = FactoryGirl.create(:denotation, :doc_id => 2, :project_id => 2, :begin => 5, :end => 15)
+        @denotation_10_15 = FactoryGirl.create(:denotation, :doc_id => 3, :project_id => 3, :begin => 10, :end => 15)
+        @denotation_10_19 = FactoryGirl.create(:denotation, :doc_id => 4, :project_id => 4, :begin => 10, :end => 19)
+        @denotation_15_19 = FactoryGirl.create(:denotation, :doc_id => 5, :project_id => 5, :begin => 15, :end => 19)
+        @denotation_15_25 = FactoryGirl.create(:denotation, :doc_id => 6, :project_id => 6, :begin => 15, :end => 25)
+        @denotation_20_30 = FactoryGirl.create(:denotation, :doc_id => 7, :project_id => 7, :begin => 20, :end => 30)
+        @denotations = Denotation.within_spans(10, 20)
+      end
+      
+      it 'should not include begin and end are out of spans' do
+        @denotations.should_not include(@denotation_0_9)
+      end
+      
+      it 'should not include begin is out of spans' do
+        @denotations.should_not include(@denotation_5_15)
+      end
+      
+      it 'should include begin and end are within of spans' do
+        @denotations.should include(@denotation_10_15)
+      end
+      
+      it 'should include begin and end are within of spans' do
+        @denotations.should include(@denotation_10_19)
+      end
+      
+      it 'should include begin and end are within of spans' do
+        @denotations.should include(@denotation_15_19)
+      end
+      
+      it 'should not include end is within of spans' do
+        @denotations.should_not include(@denotation_15_25)
+      end
+    end
+   
+    describe 'projects_denotations' do
+      before do
+        @denotation_project_1 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
+        @denotation_project_2 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 2)
+        @denotation_project_3 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 3)
+      end
+      
+      it 'should include project_id included in project_ids' do
+        Denotation.projects_denotations([1,2]).should =~ [@denotation_project_1, @denotation_project_2]
+      end
+    end    
+  end
+  
   describe 'get_hash' do
     before do
       @denotation = FactoryGirl.create(:denotation,
@@ -148,6 +199,65 @@ describe Denotation do
       it 'should return denotations count' do
         Denotation.project_denotations_count(@another_project.id, Denotation).should eql(0)
       end
+    end
+  end
+  
+  describe 'increment_sproject_denotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, :denotations_count => 0)
+      @sproject_1 = FactoryGirl.create(:sproject, :denotations_count => 0)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+      @sproject_2 = FactoryGirl.create(:sproject, :denotations_count => 1)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc_id => 1)
+    end
+    
+    it 'should increment project.denotations_count' do
+      @project.reload
+      @project.denotations_count.should eql(1)
+    end      
+    
+    it 'should increment sproject.denotations_count' do
+      @sproject_1.reload
+      @sproject_1.denotations_count.should eql(1)
+    end      
+    
+    it 'should increment sproject.denotations_count' do
+      @sproject_2.reload
+      @sproject_2.denotations_count.should eql(2)
+    end      
+  end
+  
+  describe 'decrement_sproject_denotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, :denotations_count => 0)
+      @sproject_1 = FactoryGirl.create(:sproject, :denotations_count => 1)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+      @sproject_2 = FactoryGirl.create(:sproject, :denotations_count => 2)
+      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc_id => 1)
+      @project.reload
+      @sproject_1.reload
+      @sproject_2.reload
+      @denotation.destroy
+    end
+    
+    it 'should decrement project.denotations_count' do
+      @project.denotations_count.should eql(1)
+      @project.reload
+      @project.denotations_count.should eql(0)
+    end      
+    
+    it 'should decrement sproject.denotations_count' do
+      @sproject_1.denotations_count.should eql(2)
+      @sproject_1.reload
+      @sproject_1.denotations_count.should eql(1)
+    end      
+    
+    it 'should decrement sproject.denotations_count' do
+      @sproject_2.denotations_count.should eql(3)
+      @sproject_2.reload
+      @sproject_2.denotations_count.should eql(2)
     end
   end
 end
