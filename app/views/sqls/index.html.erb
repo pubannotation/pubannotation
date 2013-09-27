@@ -1,0 +1,14 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+<% end -%>
+
+<h1>Submit raw SQL</h1>	
+
+<%= form_tag sql_path, :method => 'get' do -%>
+	<%= text_field_tag :sql, params[:sql] -%>
+	<%= submit_tag 'Submit' -%>
+<% end -%>
+
+<pre>
+	<%= @results -%>
+</pre>

@@ -2,6 +2,10 @@ Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
   
+  resource :sql do
+    get :index
+  end
+  
   resource :users do
    get :autocomplete_username, :on => :collection
   end
