@@ -525,11 +525,11 @@ class ApplicationController < ActionController::Base
       ra.hid       = a[:id]
       ra.pred      = a[:pred]
       ra.subj      = case a[:subj]
-        when /^[T]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
+        when /^[TE]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
         else           doc.instances.find_by_project_id_and_hid(project.id, a[:subj])
       end
       ra.obj       = case a[:obj]
-        when /^[T]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
+        when /^[TE]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
         else           doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
       end
       ra.project_id = project.id
