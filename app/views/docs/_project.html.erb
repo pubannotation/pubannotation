@@ -56,5 +56,5 @@
 		<% end %>
 	<% end %>
 <% else %>
-	<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects } %>
+	<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
 <% end %>
