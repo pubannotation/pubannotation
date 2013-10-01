@@ -9,6 +9,23 @@
 	<%= submit_tag 'Submit' -%>
 <% end -%>
 
-<pre>
-	<%= @results -%>
-</pre>
+<% if @results.present? -%>
+	<table style="margin-bottom: 1em">
+		<% @results.each do |result| -%>
+			<% result = result.select{|key, value| key.class == String} -%>
+			<% result.each do |key, value| -%>
+				<tr>
+					<th>
+						<%= key -%>
+					</th>
+					<td>
+						<%= value -%>
+					</td>
+				</tr>
+			<% end -%>
+			<tr>
+				<th colspan="2" style="background-color: #fff; height: 2em"></th>
+			</tr>
+		<% end -%>
+	</table>
+<% end -%>
