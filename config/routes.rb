@@ -2,6 +2,10 @@ Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
   
+  namespace :spans do
+    get :sql
+  end
+  
   resource :sql do
     get :index
   end
@@ -10,7 +14,9 @@ Pubann::Application.routes.draw do
    get :autocomplete_username, :on => :collection
   end
   
-  resources :docs
+  resources :docs do
+    get 'redirect_to_spans/:begin/:end' => 'docs#redirect_to_spans', :as => 'redirect_to_spans'
+  end
 
   resources :projects_sprojects, :only => [:destroy]
   resources :sprojects do
