@@ -1,20 +1,34 @@
 <h1>Submit raw SQL</h1>	
 
 <%= form_tag spans_sql_path, :method => 'get' do -%>
-	<%= text_field_tag :sql, params[:sql] -%>
+	<%= text_field_tag :sql, params[:sql], :style => 'width: 60em' -%>
 	<%= submit_tag 'Submit' -%>
 <% end -%>
 
 <% if @results.present? -%>
 	<table style="margin-bottom: 1em">
 		<tr>
+			<th>sourcedb</th>
+			<th>sourceid</th>
+			<th>doc_id</th>
 			<th>begin</th>
 			<th>end</th>
+			<th>spans</th>
 			<th></th>
 		</tr>
 		<% @results.each do |result| -%>
+			<% doc = @docs.find{|doc| doc.id == result['doc_id'].to_i}%>
 			<% result = result.select{|key, value| key.class == String} -%>
 			<tr>
+				<td>
+					<%= doc.sourcedb -%>
+				</td>
+				<td>
+					<%= doc.sourceid -%>
+				</td>
+				<td>
+					<%= result['doc_id'] -%>
+				</td>
 				<td>
 					<%= result['begin'] -%>
 				</td>
@@ -22,9 +36,20 @@
 					<%= result['end'] -%>
 				</td>
 				<td>
+					<% spans = doc.spans({:begin => result['begin'], :end => result['end']}) -%>
+					<%= spans[0] -%>
+				</td>
+				<td style='white-space: nowrap'>
+					<% if doc.sourcedb == 'PubMed'-%>
+						<%= link_to t('views.shared.show'), spans_pmdoc_path(doc.sourceid, result['begin'], result['end']), :target => '_blank'-%>
+					<% else -%>
+						<%= link_to t('views.shared.show'), spans_pmcdoc_div_path(doc.sourceid, doc.serial, result['begin'], result['end']), :target => '_blank'-%>
+					<% end -%>
 				</td>
 			</tr>
 		<% end -%>
 	</table>
+	
+	<%= will_paginate @results -%>
 <% end -%>
-<%= will_paginate @results if @results -%>
+
