@@ -14,9 +14,7 @@ Pubann::Application.routes.draw do
    get :autocomplete_username, :on => :collection
   end
   
-  resources :docs do
-    get 'redirect_to_spans/:begin/:end' => 'docs#redirect_to_spans', :as => 'redirect_to_spans'
-  end
+  resources :docs
 
   resources :projects_sprojects, :only => [:destroy]
   resources :sprojects do

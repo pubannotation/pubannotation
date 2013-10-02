@@ -126,22 +126,4 @@ class DocsController < ApplicationController
       format.json { head :no_content }
     end
   end
-  
-  def redirect_to_spans
-    @doc = Doc.find(params[:doc_id])
-    if @doc.sourcedb == 'PubMed'
-      # PubMed
-      redirect_to(spans_pmdoc_path(@doc.sourceid, params[:begin], params[:end]))
-    else
-      # PMC
-      @docs = Doc.find_all_by_sourcedb_and_sourceid('PMC', @doc.sourceid, :order => 'serial ASC')
-      @docs.each_with_index {|doc, idx| 
-        if doc.id == params[:doc_id].to_i
-          @div_id = idx
-          break
-        end
-      }
-      redirect_to spans_pmcdoc_div_path(@doc.sourceid, @div_id, params[:begin], params[:end])
-    end
-  end
 end
