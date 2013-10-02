@@ -105,6 +105,7 @@ describe Denotation do
         @denotation_5_15 = FactoryGirl.create(:denotation, :doc_id => 2, :project_id => 2, :begin => 5, :end => 15)
         @denotation_10_15 = FactoryGirl.create(:denotation, :doc_id => 3, :project_id => 3, :begin => 10, :end => 15)
         @denotation_10_19 = FactoryGirl.create(:denotation, :doc_id => 4, :project_id => 4, :begin => 10, :end => 19)
+        @denotation_10_20 = FactoryGirl.create(:denotation, :doc_id => 4, :project_id => 4, :begin => 10, :end => 20)
         @denotation_15_19 = FactoryGirl.create(:denotation, :doc_id => 5, :project_id => 5, :begin => 15, :end => 19)
         @denotation_15_25 = FactoryGirl.create(:denotation, :doc_id => 6, :project_id => 6, :begin => 15, :end => 25)
         @denotation_20_30 = FactoryGirl.create(:denotation, :doc_id => 7, :project_id => 7, :begin => 20, :end => 30)
@@ -125,6 +126,10 @@ describe Denotation do
       
       it 'should include begin and end are within of spans' do
         @denotations.should include(@denotation_10_19)
+      end
+      
+      it 'should include begin and end are within of spans' do
+        @denotations.should include(@denotation_10_20)
       end
       
       it 'should include begin and end are within of spans' do

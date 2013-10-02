@@ -24,7 +24,7 @@ class Denotation < ActiveRecord::Base
     where('project_id IN (?)', project_ids)
   }
   scope :within_spans, lambda{|begin_pos, end_pos|
-    where(['denotations.begin >= ? AND denotations.end < ?', begin_pos, end_pos])  
+    where(['denotations.begin >= ? AND denotations.end <= ?', begin_pos, end_pos])  
   }
   
   after_save :increment_sproject_denotations_count
