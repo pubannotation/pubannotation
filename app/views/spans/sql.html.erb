@@ -5,7 +5,7 @@
 	<%= submit_tag 'Submit' -%>
 <% end -%>
 
-<% if @results.present? -%>
+<% if @denotations.present? -%>
 	<table style="margin-bottom: 1em">
 		<tr>
 			<th>sourcedb</th>
@@ -16,40 +16,42 @@
 			<th>spans</th>
 			<th></th>
 		</tr>
-		<% @results.each do |result| -%>
-			<% doc = @docs.find{|doc| doc.id == result['doc_id'].to_i}%>
-			<% result = result.select{|key, value| key.class == String} -%>
+		<% @denotations.each do |denotation| -%>
 			<tr>
 				<td>
-					<%= doc.sourcedb -%>
+					<%= denotation.doc.sourcedb if denotation.doc -%>
 				</td>
 				<td>
-					<%= doc.sourceid -%>
+					<%= denotation.doc.sourceid if denotation.doc -%>
 				</td>
 				<td>
-					<%= result['doc_id'] -%>
+					<%= denotation.doc_id -%>
 				</td>
 				<td>
-					<%= result['begin'] -%>
+					<%= denotation.begin -%>
 				</td>
 				<td>
-					<%= result['end'] -%>
+					<%= denotation.end -%>
 				</td>
 				<td>
-					<% spans = doc.spans({:begin => result['begin'], :end => result['end']}) -%>
-					<%= spans[0] -%>
+					<% if denotation.doc.present? -%>
+						<% spans = denotation.doc.spans({:begin => denotation.begin, :end => denotation.end}) -%>
+						<%= spans[0] -%>
+					<% end -%>
 				</td>
 				<td style='white-space: nowrap'>
-					<% if doc.sourcedb == 'PubMed'-%>
-						<%= link_to t('views.shared.show'), spans_pmdoc_path(doc.sourceid, result['begin'], result['end']), :target => '_blank'-%>
-					<% else -%>
-						<%= link_to t('views.shared.show'), spans_pmcdoc_div_path(doc.sourceid, doc.serial, result['begin'], result['end']), :target => '_blank'-%>
+					<% if denotation.doc.present? -%>
+						<% if denotation.doc.sourcedb == 'PubMed'-%>
+							<%= link_to t('views.shared.show'), spans_pmdoc_path(denotation.doc.sourceid, denotation.begin, denotation.end), :target => '_blank'-%>
+						<% else -%>
+							<%= link_to t('views.shared.show'), spans_pmcdoc_div_path(denotation.doc.sourceid, denotation.doc.serial, denotation.begin, denotation.end), :target => '_blank'-%>
+						<% end -%>
 					<% end -%>
 				</td>
 			</tr>
 		<% end -%>
 	</table>
 	
-	<%= will_paginate @results -%>
+	<%= will_paginate @denotations -%>
 <% end -%>
 
