@@ -1,7 +1,11 @@
 module DenotationsHelper
   def denotations_count_helper(project, options = {})
     if params[:action] == 'spans'
-      options[:doc].denotations.within_spans(params[:begin], params[:end]).size
+      if project.present?
+        options[:doc].denotations.where(:project_id => project.id).within_spans(params[:begin], params[:end]).size
+      else
+        options[:doc].denotations.within_spans(params[:begin], params[:end]).size
+      end
     else      
       if project.present?
         if options[:sourceid].present?
