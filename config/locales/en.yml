@@ -336,6 +336,7 @@ en:
       confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.
       user_projects: Your projects
       associate_maintain_projects: Associated projects 
+      belongs_to_sproject: Projects belongs to this Sproject
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:

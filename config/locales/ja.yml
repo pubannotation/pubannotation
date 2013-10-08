@@ -369,6 +369,7 @@ ja:
       confirm_delete: このアノテーションセットのアノテーションが全て削除されますがよろしいですか？
       user_projects: 管理中のプロジェクト
       associate_maintain_projects: 関係しているプロジェクト
+      belongs_to_sproject: このSprojectに含まれるプロジェクト
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:

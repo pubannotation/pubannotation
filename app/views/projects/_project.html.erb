@@ -63,7 +63,7 @@
 	<tr>
 	<th><%= t('activerecord.models.associate_maintainer') %></th>
 	<td>
-		<% @project.associate_maintainers.each do |associate_maintainer| -%>
+		<% model.associate_maintainers.each do |associate_maintainer| -%>
 			<div>
 				<%= associate_maintainer.user.username -%>
 			</div>
@@ -103,12 +103,23 @@
 	<% end %>
 	</table>
 	<% if user_signed_in? -%>
-		<% if @project.updatable_for?(current_user) -%>
-			<span class="button"><%= link_to t('views.shared.edit'), edit_project_path(@project.name), :class => 'capitalize_first' %></span>
+		<% if model.updatable_for?(current_user) -%>
+			<% if model.class == Sproject -%>
+				<% edit_path = edit_sproject_path(model.name) -%>
+			<% else -%>
+				<% edit_path = edit_project_path(model.name) -%>
+			<% end -%>
+			<span class="button">
+				<%= link_to t('views.shared.edit'), edit_path, :class => 'capitalize_first' -%>
+			</span>
 		<% end -%>
-		<% if @project.destroyable_for?(current_user) -%>
-			<span class="button"><%= link_to t('views.shared.delete'), @project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
+		<% if model.destroyable_for?(current_user) -%>
+			<span class="button"><%= link_to t('views.shared.delete'), model.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
 		<% end -%>
 	<% end %>	
 <% end %>
+
+<% if model.class == Sproject && model.projects.present? -%>
+	<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => model.projects, :scope => 'belongs_to_sproject' } %>
+<% end -%>
 </div>

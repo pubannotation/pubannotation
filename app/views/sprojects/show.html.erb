@@ -2,8 +2,6 @@
 
 <%= render :partial => "projects/project", :locals => {:model => @sproject} -%>
 
-<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @sproject.projects } %>
-
 <%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @sproject, :accordion_id => 1, :denotations_count_order => 'same_sourceid_denotations_count', :relations_count_order => 'same_sourceid_relations_count'} %>
 
 <%= render :partial => "pmcdocs/list", :locals => {:docs => @pmcdocs, :project => @sproject, :accordion_id => 2, :denotations_count_order => 'same_sourceid_denotations_count', :relations_count_order => 'same_sourceid_relations_count'} %>
