@@ -26,6 +26,12 @@ class Denotation < ActiveRecord::Base
   scope :within_spans, lambda{|begin_pos, end_pos|
     where(['denotations.begin >= ? AND denotations.end <= ?', begin_pos, end_pos])  
   }
+
+  scope :sql, lambda{|ids, current_user_id|
+      joins([:project, :doc]).
+      where('(projects.accessibility = 1 OR projects.user_id = ?) AND denotations.id IN(?)', current_user_id, ids).
+      order('denotations.id ASC') 
+  }
   
   after_save :increment_sproject_denotations_count
   before_destroy :decrement_sproject_denotations_count

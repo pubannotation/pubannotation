@@ -151,7 +151,53 @@ describe Denotation do
       it 'should include project_id included in project_ids' do
         Denotation.projects_denotations([1,2]).should =~ [@denotation_project_1, @denotation_project_2]
       end
-    end    
+    end 
+    
+    describe 'sql' do
+      before do
+        # User
+        @current_user = FactoryGirl.create(:user)
+        Denotation.stub(:current_user).and_return(@current_user)
+        @another_user = FactoryGirl.create(:user)
+        # Project
+        @current_user_project_1 = FactoryGirl.create(:project, :user => @current_user, :accessibility => 0)
+        @current_user_project_2 = FactoryGirl.create(:project, :user => @current_user, :accessibility => 0)
+        @another_user_project_1 = FactoryGirl.create(:project, :user => @another_user, :accessibility => 0)
+        @another_user_project_accessible = FactoryGirl.create(:project, :user => @another_user, :accessibility => 1)
+        # Doc
+        @doc_1 = FactoryGirl.create(:doc)
+        @doc_2 = FactoryGirl.create(:doc)
+        @doc_3 = FactoryGirl.create(:doc)
+        @doc_4 = FactoryGirl.create(:doc)
+        
+        # Denotation
+        @current_user_project_denotation_1 = FactoryGirl.create(:denotation, :project => @current_user_project_1, :doc => @doc_1)
+        @current_user_project_denotation_2 = FactoryGirl.create(:denotation, :project => @current_user_project_2, :doc => @doc_2)
+        @current_user_project_denotation_no_doc = FactoryGirl.create(:denotation, :project => @current_user_project_2, :doc_id => 100000)
+        @another_user_project_denotation_1 = FactoryGirl.create(:denotation, :project => @another_user_project_1, :doc => @doc_3)
+        @another_user_accessible_project_denotation = FactoryGirl.create(:denotation, :project => @another_user_project_accessible, :doc => @doc_4)
+        
+        ids = Denotation.all.collect{|d| d.id}
+        @denotations = Denotation.sql(ids, @current_user.id)
+      end
+      
+      it "should include denotations belongs to current user's project" do
+        @denotations.should include(@current_user_project_denotation_1)
+        @denotations.should include(@current_user_project_denotation_2)
+      end
+      
+      it "should not include denotations doc is nil" do
+        @denotations.should_not include(@current_user_project_denotation_no_doc)
+      end
+      
+      it "should include denotations belongs to another users's project which accessibility == 1" do
+        @denotations.should include(@another_user_accessible_project_denotation)
+      end
+      
+      it "should not include denotations belongs to another users's project which accessibility != 1" do
+        @denotations.should_not include(@another_user_project_denotation_1)
+      end
+    end   
   end
   
   describe 'get_hash' do
