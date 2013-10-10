@@ -311,4 +311,52 @@ describe Denotation do
       @sproject_2.denotations_count.should eql(2)
     end
   end
+  
+  describe 'self.sql_find' do
+    before do
+    end
+    
+    context 'when params[:sql] present' do
+      before do
+        @sql = 'select * from denotations;'
+        @params = {:sql => @sql}
+        @project = FactoryGirl.create(:project, :accessibility => 1)
+        @project_2 = FactoryGirl.create(:project, :accessibility => 1)
+        @project_denotation = FactoryGirl.create(:denotation, :project => @project)  
+        @not_project_denotation = FactoryGirl.create(:denotation, :project => @project_2)  
+      end
+      
+      context 'when results.present' do
+        context 'when project.present' do
+          before do
+            @denotations = Denotation.sql_find(@params, 1, @project)
+          end
+          
+          it 'should return project denotations' do
+            @denotations.should =~ [@project_denotation]
+          end
+        end
+        
+        context 'when project.blank' do
+          before do
+            @denotations = Denotation.sql_find(@params, 1000, nil)
+          end
+          
+          it 'should return project denotations' do
+            @denotations.should =~ Denotation.all
+          end
+        end
+      end
+    end
+
+    context 'when params[:sql] blank' do
+      before do
+        @denotations = Denotation.sql_find({}, 1000, nil)
+      end
+      
+      it 'should return blank' do
+        @denotations.should be_blank
+      end
+    end
+  end
 end

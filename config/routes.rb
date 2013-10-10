@@ -55,6 +55,7 @@ Pubann::Application.routes.draw do
   end
   
   resources :projects do
+    get 'spans/sql' => 'spans#sql'
     resources :docs
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]

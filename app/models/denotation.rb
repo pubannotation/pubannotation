@@ -66,4 +66,18 @@ class Denotation < ActiveRecord::Base
       end
     end
   end
+  
+  def self.sql_find(params, current_user_id, project)
+    if params[:sql].present?
+      sanitized_sql =  sanitize_sql(params[:sql])
+      results = Denotation.connection.execute(sanitized_sql)
+      if results.present?
+        if project.present?
+          results = results.select{|result| result['project_id'] == project.id}
+        end
+        ids = results.collect{| result | result['id']}
+        denotations = Denotation.sql(ids, current_user_id)
+      end       
+    end
+  end
 end

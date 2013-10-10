@@ -3,11 +3,20 @@ class SpansController < ApplicationController
   include ApplicationHelper
   
   def sql
-    if params[:sql].present?
-      sanitized_sql =  sanitize_sql(params[:sql])
-      @results = Denotation.connection.execute(sanitized_sql)
-      @ids = @results.collect{| result | result['id']}
-      @denotations = Denotation.sql(@ids, current_user.id).paginate(:page => params[:page], :per_page => 50) 
+    begin
+      @search_path = spans_sql_path
+      if params[:project_id].present?
+        # when search from inner project
+        project = Project.find_by_name(params[:project_id])
+        if project.present?
+          @search_path = project_spans_sql_path
+        else
+          redirect_to @search_path
+        end
+      end
+      @denotations = Denotation.sql_find(params, current_user.id, project ||= nil).paginate(:page => params[:page], :per_page => 50)
+    rescue
+      flash[:notice] = t('controllers.shared.sql.invalid')
     end
   end
 end

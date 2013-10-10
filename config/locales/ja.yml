@@ -285,6 +285,8 @@ ja:
       successfully_updated: '%{model}を更新しました'
       successfully_destroyed: '%{model}を削除しました'
       confirm_delete: 削除してよろしいですか？
+      sql:
+        invalid: 無効なSQL文が入力されました
     application:
       get_project:
         private: アノテーションセット%{project_name}は非公開です
