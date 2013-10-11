@@ -24,7 +24,13 @@ class Denotation < ActiveRecord::Base
     where('project_id IN (?)', project_ids)
   }
   scope :within_spans, lambda{|begin_pos, end_pos|
-    where(['denotations.begin >= ? AND denotations.end < ?', begin_pos, end_pos])  
+    where(['denotations.begin >= ? AND denotations.end <= ?', begin_pos, end_pos])  
+  }
+
+  scope :sql, lambda{|ids, current_user_id|
+      joins([:project, :doc]).
+      where('(projects.accessibility = 1 OR projects.user_id = ?) AND denotations.id IN(?)', current_user_id, ids).
+      order('denotations.id ASC') 
   }
   
   after_save :increment_sproject_denotations_count
@@ -58,6 +64,20 @@ class Denotation < ActiveRecord::Base
       project.sprojects.each do |sproject|
         Sproject.decrement_counter(:denotations_count, sproject.id)
       end
+    end
+  end
+  
+  def self.sql_find(params, current_user_id, project)
+    if params[:sql].present?
+      sanitized_sql =  sanitize_sql(params[:sql])
+      results = Denotation.connection.execute(sanitized_sql)
+      if results.present?
+        if project.present?
+          results = results.select{|result| result['project_id'] == project.id}
+        end
+        ids = results.collect{| result | result['id']}
+        denotations = Denotation.sql(ids, current_user_id)
+      end       
     end
   end
 end

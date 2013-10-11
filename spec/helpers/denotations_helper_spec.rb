@@ -12,16 +12,35 @@ describe DenotationsHelper do
     end
     
     context 'when params[:action] == spans' do
-      before do
-        helper.stub(:params).and_return({:action => 'spans'})
-        @within_spans = [1,2,3]
-        Denotation.stub(:within_spans).and_return(@within_spans)
-        @result = helper.denotations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
+      context 'when project.present?' do
+        before do
+          @begin = 0
+          @end = 10
+          @denotation_project_1_1 = FactoryGirl.create(:denotation, :project_id => 1, :begin => @begin, :end => @end)
+          @denotation_project_1_2 = FactoryGirl.create(:denotation, :project_id => 1, :begin => @begin, :end => @end)
+          @denotation_project_2 = FactoryGirl.create(:denotation, :project_id => 2, :begin => @begin, :end => @end)
+          @within_spans = [@denotation_project_1_1, @denotation_project_1_2, @denotation_project_2]
+          helper.stub(:params).and_return({:action => 'spans', :begin => @begin, :end => @end})
+          @result = helper.denotations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
+        end
+        
+        it 'should return denotations.within_spans which belongs to project size' do
+          @result.should eql(2)
+        end 
       end
-      
-      it 'should return denotations.within_spans.size' do
-        @result.should eql(@within_spans.size)
-      end  
+
+      context 'when project.blank?' do
+        before do
+          helper.stub(:params).and_return({:action => 'spans'})
+          @within_spans = [1, 2, 3]
+          Denotation.stub(:within_spans).and_return(@within_spans)
+          @result = helper.denotations_count_helper(nil, {:doc => @doc, :sourceid => 'sourceid'})
+        end
+        
+        it 'should return denotations.within_spans.size' do
+          @result.should eql(@within_spans.size)
+        end  
+      end
     end
     
     context 'when project present' do

@@ -2,6 +2,14 @@ Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
   
+  namespace :spans do
+    get :sql
+  end
+  
+  resource :sql do
+    get :index
+  end
+  
   resource :users do
    get :autocomplete_username, :on => :collection
   end
@@ -47,6 +55,7 @@ Pubann::Application.routes.draw do
   end
   
   resources :projects do
+    get 'spans/sql' => 'spans#sql'
     resources :docs
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]

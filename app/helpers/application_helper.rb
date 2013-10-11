@@ -82,4 +82,9 @@ module ApplicationHelper
 
     asciitext
   end
+  
+  def sanitize_sql(sql)
+    # sanitized_sql = ActiveRecord::Base::sanitize(params[:sql])#.gsub('\'', '')
+    sql.gsub("\"", '\'')
+  end
 end

@@ -254,6 +254,8 @@ en:
       successfully_updated: '%{model} was successfully updated.'
       successfully_destroyed: '%{model} was successfully deleted.'
       confirm_delete: Are you sure to delete?
+      sql:
+        invalid: Invalid SQL
     application:
       get_project:
         private: The annotation set, %{project_name}, is specified as private.
