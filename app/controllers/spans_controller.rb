@@ -14,9 +14,12 @@ class SpansController < ApplicationController
           redirect_to @search_path
         end
       end
-      @denotations = Denotation.sql_find(params, current_user.id, project ||= nil).paginate(:page => params[:page], :per_page => 50)
-    rescue
-      flash[:notice] = t('controllers.shared.sql.invalid')
+      @denotations = Denotation.sql_find(params, current_user.id, project ||= nil)
+      if @denotations.present?
+        @denotations = @denotations.paginate(:page => params[:page], :per_page => 50)
+      end
+    rescue => error
+      flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"
     end
   end
 end
