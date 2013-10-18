@@ -1056,7 +1056,7 @@ describe PmdocsController do
         end
         
         it 'should assign Doc.sql_find as @denotations' do
-          assigns[:pmdocs].should eql(@sql_find)
+          assigns[:docs].should eql(@sql_find)
         end
       end
 
@@ -1069,6 +1069,10 @@ describe PmdocsController do
           assigns[:search_path] = project_pmdocs_sql_path
         end
         
+        it '@redirected should be true' do
+          assigns[:redirected].should be_true
+        end
+                
         it 'should redirect_to project_pmdocs_sql_path' do
           response.should redirect_to(sql_pmdocs_path)
         end

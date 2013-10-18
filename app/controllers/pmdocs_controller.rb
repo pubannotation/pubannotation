@@ -313,15 +313,17 @@ class PmdocsController < ApplicationController
         if project.present?
           @search_path = project_pmdocs_sql_path
         else
+          @redirected = true
           redirect_to @search_path
         end
       end     
-      @pmdocs = Doc.pmdocs.sql_find(params, current_user.id, project ||= nil)
-      if @pmdocs.present?
-        @pmdocs = @pmdocs.paginate(:page => params[:page], :per_page => 50)
+      @docs = Doc.pmdocs.sql_find(params, current_user.id, project ||= nil)
+      if @docs.present?
+        @docs = @docs.paginate(:page => params[:page], :per_page => 50)
       end
     rescue => error
       flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"
     end
+    render 'docs/sql' unless @redirected
   end
 end
