@@ -189,4 +189,29 @@ class PmcdocsController < ApplicationController
       format.json { head :no_content }
     end
   end
+
+  
+  def sql
+    @search_path = sql_pmcdocs_path 
+    @columns = [:sourcedb, :sourceid, :section]
+    begin
+      if params[:project_id].present?
+        # when search from inner project
+        project = Project.find_by_name(params[:project_id])
+        if project.present?
+          @search_path = project_pmcdocs_sql_path
+        else
+          @redirected = true
+          redirect_to @search_path
+        end
+      end     
+      @docs = Doc.pmcdocs.sql_find(params, current_user.id, project ||= nil)
+      if @docs.present?
+        @docs = @docs.paginate(:page => params[:page], :per_page => 50)
+      end
+    rescue => error
+      flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"
+    end
+    render 'docs/sql' unless @redirected
+  end
 end

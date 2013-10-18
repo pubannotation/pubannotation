@@ -671,4 +671,62 @@ describe PmcdocsController do
       end
     end
   end
+  
+  describe 'sql' do
+    before do
+      controller.class.skip_before_filter :authenticate_user!
+      @sql_find = ['Denotation sql_find']      
+    end
+    
+    context 'when params[:project_id] present' do
+      before do
+        Doc.stub(:sql_find).and_return(@sql_find)
+        @project = FactoryGirl.create(:project)
+        @current_user = FactoryGirl.create(:user)
+        current_user_stub(@current_user)
+      end
+      
+      context 'when project present' do
+        before do
+          get :sql, :project_id => @project.name, :sql => 'select * from docs;'
+        end
+        
+        it 'should assign project_pmdocs_sql_path as @search_path' do
+          assigns[:search_path] = project_pmdocs_sql_path
+        end
+        
+        it 'should assign Doc.sql_find as @denotations' do
+          assigns[:docs].should eql(@sql_find)
+        end
+      end
+
+      context 'when project blank' do
+        before do
+          get :sql, :project_id => 'invalid', :sql => 'select * from docs;'
+        end
+        
+        it 'should assign project_pmdocs_sql_path as @search_path' do
+          assigns[:search_path] = project_pmdocs_sql_path
+        end
+        
+        it '@redirected should be true' do
+          assigns[:redirected].should be_true
+        end
+        
+        it 'should redirect_to project_pmdocs_sql_path' do
+          response.should redirect_to(sql_pmcdocs_path)
+        end
+      end
+    end
+    
+    context 'when invalid SQL' do
+      before do
+        get :sql, :sql => 'select - docss;'
+      end
+      
+      it 'should assign flash[:notice]' do
+        flash[:notice].should be_present
+      end
+    end
+  end  
 end

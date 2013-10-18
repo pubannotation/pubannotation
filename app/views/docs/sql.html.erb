@@ -1,0 +1,25 @@
+<%= render :partial => 'sqls/form' -%>
+
+<% if @docs.present? -%>
+	<table style="margin-bottom: 1em">
+		<tr>
+			<% @columns.each do |column|-%>
+				<th>
+					<%= column -%>
+				</th>
+			<% end -%>
+		</tr>
+		<% @docs.each do |doc| -%>
+			<tr>
+				<% @columns.each do |column|-%>
+					<td>
+						<%= doc[column] -%>
+					</td>
+				<% end -%>
+			</tr>
+		<% end -%>
+	</table>
+	
+	<%= will_paginate @docs -%>
+<% end -%>
+

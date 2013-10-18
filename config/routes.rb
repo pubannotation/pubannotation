@@ -57,6 +57,7 @@ Pubann::Application.routes.draw do
   resources :projects do
     get 'spans/sql' => 'spans#sql'
     get 'pmdocs/sql' => 'pmdocs#sql'
+    get 'pmcdocs/sql' => 'pmcdocs#sql'
     resources :docs
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
@@ -94,6 +95,7 @@ Pubann::Application.routes.draw do
     collection do
       get :search
       get :autocomplete_doc_sourceid
+      get :sql
     end
     
     resources :divs do
