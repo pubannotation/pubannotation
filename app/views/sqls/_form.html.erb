@@ -1,0 +1,6 @@
+<h1>Submit raw SQL</h1>	
+
+<%= form_tag @search_path, :method => 'get' do -%>
+	<%= text_field_tag :sql, params[:sql], :style => 'width: 60em' -%>
+	<%= submit_tag 'Submit' -%>
+<% end -%>
