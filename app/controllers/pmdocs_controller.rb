@@ -302,4 +302,26 @@ class PmdocsController < ApplicationController
     @pm_sourceid_value = params[:sourceid]
     @pm_body_value = params[:body]
   end
+  
+  def sql
+    @search_path = sql_pmdocs_path 
+    @columns = [:sourcedb, :sourceid, :section]
+    begin
+      if params[:project_id].present?
+        # when search from inner project
+        project = Project.find_by_name(params[:project_id])
+        if project.present?
+          @search_path = project_pmdocs_sql_path
+        else
+          redirect_to @search_path
+        end
+      end     
+      @pmdocs = Doc.pmdocs.sql_find(params, current_user.id, project ||= nil)
+      if @pmdocs.present?
+        @pmdocs = @pmdocs.paginate(:page => params[:page], :per_page => 50)
+      end
+    rescue => error
+      flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"
+    end
+  end
 end

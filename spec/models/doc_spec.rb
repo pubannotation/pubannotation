@@ -245,7 +245,47 @@ describe Doc do
       @projects_docs.should =~ [@doc_1, @doc_2]
     end
   end
+  
+  describe 'accessible_projects' do
+    before do
+      @user_1 = FactoryGirl.create(:user)
+      @user_2 = FactoryGirl.create(:user)
+      @project_accessibility_0_user_1 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_1)  
+      @doc_accessibility_0_user_1 = FactoryGirl.create(:doc)
+      FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_0_user_1.id , :project_id => @project_accessibility_0_user_1.id)  
+      @project_accessibility_1_user_1 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_1)  
+      @doc_accessibility_1_user_1 = FactoryGirl.create(:doc)
+      FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_1_user_1.id , :project_id => @project_accessibility_1_user_1.id)  
+      @project_accessibility_0_user_2 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_2)  
+      @doc_accessibility_0_user_2 = FactoryGirl.create(:doc)
+      FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_0_user_2.id , :project_id => @project_accessibility_0_user_2.id)  
+      @project_accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)  
+      @doc_accessibility_1_user_2 = FactoryGirl.create(:doc)
+      FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_1_user_2.id , :project_id => @project_accessibility_1_user_2.id)  
+    end
     
+    context 'when current_user present' do
+      before do
+        @docs = Doc.accessible_projects(@user_1.id)
+      end
+      
+      it 'includes accessibility = 1 and user is not current_user' do
+        @docs.should include(@doc_accessibility_1_user_2)
+      end
+      
+      it 'includes accessibility = 1 and user is current_user' do
+        @docs.should include(@doc_accessibility_1_user_1)
+      end
+      
+      it 'not includes accessibility != 1 and user is not current_user' do
+        @docs.should_not include(@doc_accessibility_0_user_2)
+      end
+      
+      it 'includes accessibility != 1 and user is current_user' do
+        @docs.should include(@doc_accessibility_0_user_1)
+      end
+    end
+  end  
   
   describe 'self.order_by' do
     context 'when docs present' do
