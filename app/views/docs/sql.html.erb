@@ -8,6 +8,9 @@
 					<%= column -%>
 				</th>
 			<% end -%>
+			<th>
+			
+			</th>
 		</tr>
 		<% @docs.each do |doc| -%>
 			<tr>
@@ -16,6 +19,12 @@
 						<%= doc[column] -%>
 					</td>
 				<% end -%>
+				<% if doc.sourcedb == 'PubMed' -%>
+      				<td><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) -%></td>
+    			<% end -%>
+			    <% if doc.sourcedb == 'PMC' -%>
+			    	<td><%= link_to t('views.shared.show'), pmcdoc_path(doc.sourceid) -%></td>
+			    <% end -%>
 			</tr>
 		<% end -%>
 	</table>
