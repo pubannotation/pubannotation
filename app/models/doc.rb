@@ -234,7 +234,7 @@ class Doc < ActiveRecord::Base
         ids = results.collect{| result | result['id']}
         if project.present?
           # within project
-          docs = self.projects_docs([project.id]).accessible_projects(current_user_id).sql(ids, current_user_id)
+          docs = self.accessible_projects(current_user_id).projects_docs([project.id]).sql(ids, current_user_id)
         else
           # within accessible projects
           docs = self.accessible_projects(current_user_id).sql(ids, current_user_id)
