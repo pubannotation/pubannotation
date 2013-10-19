@@ -51,7 +51,7 @@ class Doc < ActiveRecord::Base
       where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
   }
   
-  scope :sql, lambda{|ids, current_user_id|
+  scope :sql, lambda{|ids|
       where('docs.id IN(?)', ids).
       order('docs.id ASC')
   }
@@ -234,10 +234,10 @@ class Doc < ActiveRecord::Base
         ids = results.collect{| result | result['id']}
         if project.present?
           # within project
-          docs = self.accessible_projects(current_user_id).projects_docs([project.id]).sql(ids, current_user_id)
+          docs = self.accessible_projects(current_user_id).projects_docs([project.id]).sql(ids)
         else
           # within accessible projects
-          docs = self.accessible_projects(current_user_id).sql(ids, current_user_id)
+          docs = self.accessible_projects(current_user_id).sql(ids)
         end
       end       
     end

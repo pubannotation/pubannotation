@@ -296,7 +296,7 @@ describe Doc do
       @doc_2 = FactoryGirl.create(:doc)
       @current_user = FactoryGirl.create(:user)
       @ids = [@doc_1.id, @doc_2.id]
-      @docs = Doc.sql(@ids, @current_user.id)
+      @docs = Doc.sql(@ids)
     end
     
     it 'should include id matched and order by id ASC' do
