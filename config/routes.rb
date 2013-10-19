@@ -2,6 +2,10 @@ Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
   
+  namespace :relations do
+    get :sql
+  end
+  
   namespace :spans do
     get :sql
   end
@@ -58,6 +62,7 @@ Pubann::Application.routes.draw do
     get 'spans/sql' => 'spans#sql'
     get 'pmdocs/sql' => 'pmdocs#sql'
     get 'pmcdocs/sql' => 'pmcdocs#sql'
+    get 'relations/sql' => 'relations#sql'
     resources :docs
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]

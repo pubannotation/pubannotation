@@ -17,7 +17,17 @@ class Relation < ActiveRecord::Base
   scope :projects_relations, lambda{|project_ids|
     where('project_id IN (?)', project_ids)
   }
-  
+
+  scope :accessible_projects, lambda{|current_user_id|
+    joins(:project).
+    where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
+  }
+
+  scope :sql, lambda{|ids|
+      where('relations.id IN(?)', ids).
+      order('relations.id ASC') 
+  }
+    
   after_save :increment_subcatrels_count, :increment_sproject_relations_count
   
   def get_hash
@@ -47,6 +57,23 @@ class Relation < ActiveRecord::Base
     if self.subj_type == 'Denotation'
       Doc.increment_counter(:subcatrels_count, subj.doc_id)
     end
+  end
+  
+  def self.sql_find(params, current_user_id, project)
+    if params[:sql].present?
+      sanitized_sql = sanitize_sql(params[:sql])
+      results = self.connection.execute(sanitized_sql)
+      if results.present?
+        ids = results.collect{| result | result['id']}
+        if project.present?
+          # within project
+          docs = self.accessible_projects(current_user_id).projects_relations([project.id]).sql(ids)
+        else
+          # within accessible projects
+          docs = self.accessible_projects(current_user_id).sql(ids)
+        end
+      end     
+    end     
   end
   
   # after save
