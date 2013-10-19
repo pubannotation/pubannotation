@@ -1,5 +1,6 @@
 class PmcdocsController < ApplicationController
   autocomplete :doc, :sourceid, :scopes => [:pmcdocs]
+  before_filter :authenticate_user!, :only => :sql
 
   # GET /pmcdocs
   # GET /pmcdocs.json

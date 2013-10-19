@@ -1,5 +1,5 @@
 class SpansController < ApplicationController
-  before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :search]
+  before_filter :authenticate_user!, :only => :sql
   include ApplicationHelper
   
   def sql

@@ -1,5 +1,6 @@
 class PmdocsController < ApplicationController
   autocomplete :doc, :sourceid, :scopes => [:pmdocs]
+  before_filter :authenticate_user!, :only => :sql
   include ApplicationHelper
   
   # GET /pmdocs
