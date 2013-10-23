@@ -95,4 +95,10 @@ describe ApplicationHelper do
       @ascii_text.should eql('alpha')
     end
   end
+  
+  describe 'sanitize_sql' do
+    it 'should trim ""' do
+      helper.sanitize_sql('"content"').should eql("'content'")
+    end
+  end
 end

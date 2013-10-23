@@ -45,7 +45,17 @@ class Doc < ActiveRecord::Base
       :group => 'docs.id'
     }
   }
+
+  scope :accessible_projects, lambda{|current_user_id|
+      joins([:projects]).
+      where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
+  }
   
+  scope :sql, lambda{|ids|
+      where('docs.id IN(?)', ids).
+      order('docs.id ASC')
+  }
+    
   def self.order_by(docs, order)
     if docs.present?
       case order
@@ -216,6 +226,23 @@ class Doc < ActiveRecord::Base
     end
   end
   
+  def self.sql_find(params, current_user_id, project)
+    if params[:sql].present?
+      sanitized_sql = sanitize_sql(params[:sql])
+      results = self.connection.execute(sanitized_sql)
+      if results.present?
+        ids = results.collect{| result | result['id']}
+        if project.present?
+          # within project
+          docs = self.accessible_projects(current_user_id).projects_docs([project.id]).sql(ids)
+        else
+          # within accessible projects
+          docs = self.accessible_projects(current_user_id).sql(ids)
+        end
+      end       
+    end
+  end
+    
   # before destroy
   def decrement_docs_counter
     if self.projects.present?

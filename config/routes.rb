@@ -2,6 +2,10 @@ Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
   
+  namespace :relations do
+    get :sql
+  end
+  
   namespace :spans do
     get :sql
   end
@@ -56,6 +60,9 @@ Pubann::Application.routes.draw do
   
   resources :projects do
     get 'spans/sql' => 'spans#sql'
+    get 'pmdocs/sql' => 'pmdocs#sql'
+    get 'pmcdocs/sql' => 'pmcdocs#sql'
+    get 'relations/sql' => 'relations#sql'
     resources :docs
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
@@ -76,6 +83,7 @@ Pubann::Application.routes.draw do
     collection do
       get :search
       get :autocomplete_doc_sourceid
+      get :sql
     end
     
     member do
@@ -92,6 +100,7 @@ Pubann::Application.routes.draw do
     collection do
       get :search
       get :autocomplete_doc_sourceid
+      get :sql
     end
     
     resources :divs do

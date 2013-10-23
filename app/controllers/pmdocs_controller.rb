@@ -1,5 +1,6 @@
 class PmdocsController < ApplicationController
   autocomplete :doc, :sourceid, :scopes => [:pmdocs]
+  before_filter :authenticate_user!, :only => :sql
   include ApplicationHelper
   
   # GET /pmdocs
@@ -301,5 +302,29 @@ class PmdocsController < ApplicationController
     @docs = Doc.pmdocs.where(conditions).paginate(:page => params[:page])
     @pm_sourceid_value = params[:sourceid]
     @pm_body_value = params[:body]
+  end
+  
+  def sql
+    @search_path = sql_pmdocs_path 
+    @columns = [:sourcedb, :sourceid, :section]
+    begin
+      if params[:project_id].present?
+        # when search from inner project
+        project = Project.find_by_name(params[:project_id])
+        if project.present?
+          @search_path = project_pmdocs_sql_path
+        else
+          @redirected = true
+          redirect_to @search_path
+        end
+      end     
+      @docs = Doc.pmdocs.sql_find(params, current_user.id, project ||= nil)
+      if @docs.present?
+        @docs = @docs.paginate(:page => params[:page], :per_page => 50)
+      end
+    rescue => error
+      flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"
+    end
+    render 'docs/sql' unless @redirected
   end
 end

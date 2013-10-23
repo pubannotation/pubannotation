@@ -245,7 +245,64 @@ describe Doc do
       @projects_docs.should =~ [@doc_1, @doc_2]
     end
   end
+  
+  describe 'accessible_projects' do
+    before do
+      @user_1 = FactoryGirl.create(:user)
+      @user_2 = FactoryGirl.create(:user)
+      @project_accessibility_0_user_1 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_1)  
+      @doc_accessibility_0_user_1 = FactoryGirl.create(:doc)
+      FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_0_user_1.id , :project_id => @project_accessibility_0_user_1.id)  
+      @project_accessibility_1_user_1 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_1)  
+      @doc_accessibility_1_user_1 = FactoryGirl.create(:doc)
+      FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_1_user_1.id , :project_id => @project_accessibility_1_user_1.id)  
+      @project_accessibility_0_user_2 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_2)  
+      @doc_accessibility_0_user_2 = FactoryGirl.create(:doc)
+      FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_0_user_2.id , :project_id => @project_accessibility_0_user_2.id)  
+      @project_accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)  
+      @doc_accessibility_1_user_2 = FactoryGirl.create(:doc)
+      FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_1_user_2.id , :project_id => @project_accessibility_1_user_2.id)  
+    end
     
+    context 'when current_user present' do
+      before do
+        @docs = Doc.accessible_projects(@user_1.id)
+      end
+      
+      it 'includes accessibility = 1 and user is not current_user' do
+        @docs.should include(@doc_accessibility_1_user_2)
+      end
+      
+      it 'includes accessibility = 1 and user is current_user' do
+        @docs.should include(@doc_accessibility_1_user_1)
+      end
+      
+      it 'not includes accessibility != 1 and user is not current_user' do
+        @docs.should_not include(@doc_accessibility_0_user_2)
+      end
+      
+      it 'includes accessibility != 1 and user is current_user' do
+        @docs.should include(@doc_accessibility_0_user_1)
+      end
+    end
+  end 
+  
+  describe 'scope sql' do
+    before do
+      2.times do
+        FactoryGirl.create(:doc)
+      end
+      @doc_1 = FactoryGirl.create(:doc)
+      @doc_2 = FactoryGirl.create(:doc)
+      @current_user = FactoryGirl.create(:user)
+      @ids = [@doc_1.id, @doc_2.id]
+      @docs = Doc.sql(@ids)
+    end
+    
+    it 'should include id matched and order by id ASC' do
+      @docs = [@doc_1, @doc_2]
+    end
+  end 
   
   describe 'self.order_by' do
     context 'when docs present' do
@@ -1112,6 +1169,59 @@ describe Doc do
     end
   end
   
+  describe 'sql_find' do
+    before do
+      @current_user = FactoryGirl.create(:user)
+      @accessible_doc = FactoryGirl.create(:doc)
+      @project_doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project)
+      # stub scope and return all Doc
+      @accessible_projects = Doc.where(:id => @accessible_doc.id)
+      Doc.stub(:accessible_projects).and_return(@accessible_projects)
+      @project_docs = Doc.where(:id => @project_doc.id)
+      Doc.stub(:projects_docs).and_return(@project_docs)
+    end
+    
+    context 'when params[:sql] present' do
+      before do
+        @params = {:sql => 'select * from docs;'}
+      end
+      context 'when results present' do
+        context 'when project present' do
+          before do
+            @docs = Doc.sql_find(@params, @current_user.id, @project)
+          end
+          
+          it 'should return sql result refined by scope project_docs' do
+            @docs.should =~ @project_docs
+          end
+        end
+
+        context 'when project blank' do
+          before do
+            @docs = Doc.sql_find(@params, @current_user.id, nil)
+          end
+          
+          it 'should return sql result refined by scope accessible_projects' do
+            @docs.should =~ @accessible_projects
+          end
+        end
+      end
+      
+      context 'when results present' do
+        it 'should return nil' do
+          Doc.sql_find({:sql => 'select * from docs where id = 1000'}, @current_user.id, @project).should be_nil
+        end
+      end
+    end
+    
+    context 'when params[:sql] present' do
+      it 'should return nil' do
+       Doc.sql_find({}, @current_user.id, @project).should be_nil
+      end
+    end
+  end
+   
   describe 'decrement_docs_counter' do
     before do
       @project = FactoryGirl.create(:project, :pmcdocs_count => 2, :pmdocs_count => 2)
