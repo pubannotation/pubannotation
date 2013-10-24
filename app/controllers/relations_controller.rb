@@ -1,5 +1,4 @@
 class RelationsController < ApplicationController
-  before_filter :authenticate_user!, :only => :sql
   include ApplicationHelper
 
   def sql
@@ -16,7 +15,7 @@ class RelationsController < ApplicationController
           redirect_to @search_path
         end
       end     
-      @relations = Relation.sql_find(params, current_user.id, project ||= nil)
+      @relations = Relation.sql_find(params, current_user, project ||= nil)
       if @relations.present?
         @relations = @relations.paginate(:page => params[:page], :per_page => 50)
       end

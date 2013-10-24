@@ -674,7 +674,6 @@ describe PmcdocsController do
   
   describe 'sql' do
     before do
-      controller.class.skip_before_filter :authenticate_user!
       @sql_find = ['Denotation sql_find']      
     end
     

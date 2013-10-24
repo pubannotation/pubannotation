@@ -59,8 +59,9 @@ class Relation < ActiveRecord::Base
     end
   end
   
-  def self.sql_find(params, current_user_id, project)
+  def self.sql_find(params, current_user, project)
     if params[:sql].present?
+      current_user_id = current_user.present? ? current_user.id : nil
       sanitized_sql = sanitize_sql(params[:sql])
       results = self.connection.execute(sanitized_sql)
       if results.present?

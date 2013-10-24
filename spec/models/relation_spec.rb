@@ -316,23 +316,74 @@ describe Relation do
       @relation_accessibility_0_user_2 = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_0_user_2)
       @project_accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)  
       @relation_accessibility_1_user_2 = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_1_user_2)
-      @relations = Relation.accessible_projects(@user_1.id)
+      @project_accessibility_0_user_nil = FactoryGirl.create(:project, :accessibility => 0, :user_id => nil)  
+      @relation_accessibility_0_user_nil = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_0_user_nil)
+      @project_accessibility_1_user_nil = FactoryGirl.create(:project, :accessibility => 1, :user_id => nil)  
+      @relation_accessibility_1_user_nil = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_1_user_nil)
     end
     
-    it 'includes accessibility = 1 and user is not current_user' do
-      @relations.should include(@relation_accessibility_1_user_2)
+    context 'when current_user_id present' do
+      before do
+        @relations = Relation.accessible_projects(@user_1.id)
+      end
+    
+      it 'includes accessibility = 1 and user is not current_user' do
+        @relations.should include(@relation_accessibility_1_user_2)
+      end
+      
+      it 'includes accessibility = 1 and user is current_user' do
+        @relations.should include(@relation_accessibility_1_user_1)
+      end
+      
+      it 'includes accessibility = 1 and user is nil' do
+        @relations.should include(@relation_accessibility_1_user_nil)
+      end
+      
+      it 'not includes accessibility != 1 and user is not current_user' do
+        @relations.should_not include(@relation_accessibility_0_user_2)
+      end
+      
+      it 'includes accessibility != 1 and user is current_user' do
+        @relations.should include(@relation_accessibility_0_user_1)
+      end
+      
+      it 'not includes accessibility != 1 and user is nil' do
+        @relations.should_not include(@relation_accessibility_0_user_nil)
+      end
     end
     
-    it 'includes accessibility = 1 and user is current_user' do
-      @relations.should include(@relation_accessibility_1_user_1)
-    end
+    context 'when current_user_id nil' do
+      before do
+        @relations = Relation.accessible_projects(nil)
+      end
     
-    it 'not includes accessibility != 1 and user is not current_user' do
-      @relations.should_not include(@relation_accessibility_0_user_2)
-    end
-    
-    it 'includes accessibility != 1 and user is current_user' do
-      @relations.should include(@relation_accessibility_0_user_1)
+      it 'includes accessibility = 1' do
+        @relations.should include(@relation_accessibility_1_user_2)
+      end
+      
+      it 'includes accessibility = 1 ' do
+        @relations.should include(@relation_accessibility_1_user_1)
+      end
+      
+      it 'includes accessibility = 1 and user is nil' do
+        @relations.should include(@relation_accessibility_1_user_nil)
+      end
+      
+      it 'not includes accessibility != 1' do
+        @relations.should_not include(@relation_accessibility_0_user_2)
+      end
+      
+      it 'not includes accessibility != 1' do
+        @relations.should_not include(@relation_accessibility_0_user_1)
+      end
+      
+      it 'not includes accessibility != 1' do
+        @relations.select{|relation| relation.project.accessibility != 1}.should be_blank
+      end
+      
+      it 'not includes accessibility != 1 and user is nil' do
+        @relations.should_not include(@relation_accessibility_0_user_nil)
+      end
     end
   end
   
@@ -405,38 +456,71 @@ describe Relation do
       before do
         @params = {:sql => 'select * from relations;'}
       end
-      context 'when results present' do
-        context 'when project present' do
-          before do
-            @relations = Relation.sql_find(@params, @current_user.id, @project)
+      
+      context 'when current_user present' do
+        context 'when results present' do
+          context 'when project present' do
+            before do
+              @relations = Relation.sql_find(@params, @current_user, @project)
+            end
+            
+            it 'should return sql result refined by scope project_relations' do
+              @relations.should =~ @project_relations
+            end
           end
-          
-          it 'should return sql result refined by scope project_relations' do
-            @relations.should =~ @project_relations
+  
+          context 'when project blank' do
+            before do
+              @relations = Relation.sql_find(@params, @current_user, nil)
+            end
+            
+            it 'should return sql result refined by scope accessible_projects' do
+              @relations.should =~ @accessible_projects
+            end
           end
         end
-
-        context 'when project blank' do
-          before do
-            @relations = Relation.sql_find(@params, @current_user.id, nil)
-          end
-          
-          it 'should return sql result refined by scope accessible_projects' do
-            @relations.should =~ @accessible_projects
+        
+        context 'when results present' do
+          it 'should return nil' do
+            Relation.sql_find({:sql => 'select * from relations where id = 1000'}, @current_user, @project).should be_nil
           end
         end
       end
       
-      context 'when results present' do
-        it 'should return nil' do
-          Relation.sql_find({:sql => 'select * from relations where id = 1000'}, @current_user.id, @project).should be_nil
+      context 'when current_user nil' do
+        context 'when results present' do
+          context 'when project present' do
+            before do
+              @relations = Relation.sql_find(@params, nil, @project)
+            end
+            
+            it 'should return sql result refined by scope project_relations' do
+              @relations.should =~ @project_relations
+            end
+          end
+  
+          context 'when project blank' do
+            before do
+              @relations = Relation.sql_find(@params, nil, nil)
+            end
+            
+            it 'should return sql result refined by scope accessible_projects' do
+              @relations.should =~ @accessible_projects
+            end
+          end
+        end
+        
+        context 'when results present' do
+          it 'should return nil' do
+            Relation.sql_find({:sql => 'select * from relations where id = 1000'}, nil, @project).should be_nil
+          end
         end
       end
     end
     
-    context 'when params[:sql] present' do
+    context 'when params[:sql] blank' do
       it 'should return nil' do
-       Doc.sql_find({}, @current_user.id, @project).should be_nil
+       Doc.sql_find({}, @current_user, @project).should be_nil
       end
     end
   end
