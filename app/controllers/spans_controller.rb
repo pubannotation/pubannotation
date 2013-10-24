@@ -1,5 +1,4 @@
 class SpansController < ApplicationController
-  before_filter :authenticate_user!, :only => :sql
   include ApplicationHelper
   
   def sql
@@ -14,7 +13,7 @@ class SpansController < ApplicationController
           redirect_to @search_path
         end
       end
-      @denotations = Denotation.sql_find(params, current_user.id, project ||= nil)
+      @denotations = Denotation.sql_find(params, current_user, project ||= nil)
       if @denotations.present?
         @denotations = @denotations.paginate(:page => params[:page], :per_page => 50)
       end

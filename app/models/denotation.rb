@@ -27,9 +27,13 @@ class Denotation < ActiveRecord::Base
     where(['denotations.begin >= ? AND denotations.end <= ?', begin_pos, end_pos])  
   }
 
-  scope :sql, lambda{|ids, current_user_id|
+  scope :accessible_projects, lambda{|current_user_id|
       joins([:project, :doc]).
-      where('(projects.accessibility = 1 OR projects.user_id = ?) AND denotations.id IN(?)', current_user_id, ids).
+      where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
+  }
+  
+  scope :sql, lambda{|ids|
+      where('denotations.id IN(?)', ids).
       order('denotations.id ASC') 
   }
   
@@ -67,16 +71,19 @@ class Denotation < ActiveRecord::Base
     end
   end
   
-  def self.sql_find(params, current_user_id, project)
+  def self.sql_find(params, current_user, project)
     if params[:sql].present?
-      sanitized_sql =  sanitize_sql(params[:sql])
-      results = Denotation.connection.execute(sanitized_sql)
+      current_user_id = current_user.present? ? current_user.id : nil
+      sanitized_sql = sanitize_sql(params[:sql])
+      results = self.connection.execute(sanitized_sql)
       if results.present?
+        ids = results.collect{|result| result['id']}
         if project.present?
-          results = results.select{|result| result['project_id'] == project.id}
+          #results = results.select{|result| result['project_id'] == project.id}
+          denotations = self.accessible_projects(current_user_id).projects_denotations([project.id]).sql(ids)
+        else
+          denotations = self.accessible_projects(current_user_id).sql(ids)
         end
-        ids = results.collect{| result | result['id']}
-        denotations = Denotation.sql(ids, current_user_id)
       end       
     end
   end

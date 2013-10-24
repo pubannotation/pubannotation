@@ -153,7 +153,7 @@ describe Denotation do
       end
     end 
     
-    describe 'sql' do
+    describe 'accessible_projects' do
       before do
         # User
         @current_user = FactoryGirl.create(:user)
@@ -178,26 +178,68 @@ describe Denotation do
         @another_user_accessible_project_denotation = FactoryGirl.create(:denotation, :project => @another_user_project_accessible, :doc => @doc_4)
         
         ids = Denotation.all.collect{|d| d.id}
-        @denotations = Denotation.sql(ids, @current_user.id)
       end
       
-      it "should include denotations belongs to current user's project" do
-        @denotations.should include(@current_user_project_denotation_1)
-        @denotations.should include(@current_user_project_denotation_2)
+      context 'when current_user_id present' do
+        before do
+          @denotations = Denotation.accessible_projects(@current_user.id)
+        end
+              
+        it "should include denotations belongs to accessibility = 0 and current user's project" do
+          @denotations.should include(@current_user_project_denotation_1)
+          @denotations.should include(@current_user_project_denotation_2)
+        end
+        
+        it "should not include denotations doc is nil" do
+          @denotations.should_not include(@current_user_project_denotation_no_doc)
+        end
+        
+        it "should include denotations belongs to another users's project which accessibility == 1" do
+          @denotations.should include(@another_user_accessible_project_denotation)
+        end
+        
+        it "should not include denotations belongs to another users's project which accessibility != 1" do
+          @denotations.should_not include(@another_user_project_denotation_1)
+        end
       end
       
-      it "should not include denotations doc is nil" do
-        @denotations.should_not include(@current_user_project_denotation_no_doc)
+      context 'when current_user_id present' do
+        before do
+          @denotations = Denotation.accessible_projects(nil)
+        end
+              
+        it "should include denotations belongs to accessibility = 0 and current user's project" do
+          @denotations.should_not include(@current_user_project_denotation_1)
+          @denotations.should_not include(@current_user_project_denotation_2)
+        end
+        
+        it "should not include denotations doc is nil" do
+          @denotations.should_not include(@current_user_project_denotation_no_doc)
+        end
+        
+        it "should include denotations belongs to another users's project which accessibility == 1" do
+          @denotations.should include(@another_user_accessible_project_denotation)
+        end
+        
+        it "should not include denotations belongs to another users's project which accessibility != 1" do
+          @denotations.should_not include(@another_user_project_denotation_1)
+        end
+      end
+    end 
+    
+    describe 'sql' do
+      before do
+        @denotation_1 = FactoryGirl.create(:denotation, :project_id => 1, :doc_id => 1)
+        @denotation_2 = FactoryGirl.create(:denotation, :project_id => 1, :doc_id => 1)
+        @denotation_3 = FactoryGirl.create(:denotation, :project_id => 1, :doc_id => 1)
+        FactoryGirl.create(:denotation, :project_id => 1, :doc_id => 1)
+        @denotations = Denotation.sql([@denotation_1.id, @denotation_2.id])
       end
       
-      it "should include denotations belongs to another users's project which accessibility == 1" do
-        @denotations.should include(@another_user_accessible_project_denotation)
+      it 'should include id matched and order by id ASC' do
+        @denotations = [@denotation_1, @denotation_2]
       end
-      
-      it "should not include denotations belongs to another users's project which accessibility != 1" do
-        @denotations.should_not include(@another_user_project_denotation_1)
-      end
-    end   
+    end  
   end
   
   describe 'get_hash' do
@@ -318,32 +360,60 @@ describe Denotation do
     
     context 'when params[:sql] present' do
       before do
+        @current_user = FactoryGirl.create(:user)
         @sql = 'select * from denotations;'
         @params = {:sql => @sql}
-        @project = FactoryGirl.create(:project, :accessibility => 1)
-        @project_2 = FactoryGirl.create(:project, :accessibility => 1)
+        @accessible_denotation = FactoryGirl.create(:denotation, :project_id => 1)  
+        @project = FactoryGirl.create(:project)
         @project_denotation = FactoryGirl.create(:denotation, :project => @project)  
-        @not_project_denotation = FactoryGirl.create(:denotation, :project => @project_2)  
+        Denotation.stub(:accessible_projects).and_return(Denotation.where(:id => @accessible_denotation.id))
+        Denotation.stub(:projects_denotations).and_return(Denotation.where(:id => @project_denotation.id))
       end
       
-      context 'when results.present' do
-        context 'when project.present' do
-          before do
-            @denotations = Denotation.sql_find(@params, 1, @project)
+      context 'when current_user blank' do
+        context 'when results.present' do
+          context 'when project.present' do
+            before do
+              @denotations = Denotation.sql_find(@params, nil, @project)
+            end
+            
+            it "should return project's denotations" do
+              @denotations.should =~ [@project_denotation]
+            end
           end
           
-          it 'should return project denotations' do
-            @denotations.should =~ [@project_denotation]
+          context 'when project.blank' do
+            before do
+              @denotations = Denotation.sql_find(@params, nil, nil)
+            end
+            
+            it "should return accessible project's denotations" do
+              @denotations.should =~ [@accessible_denotation]
+            end
           end
         end
-        
-        context 'when project.blank' do
-          before do
-            @denotations = Denotation.sql_find(@params, 1000, nil)
+      end
+      
+      context 'when current_user present' do
+        context 'when results.present' do
+          context 'when project.present' do
+            before do
+              @denotations = Denotation.sql_find(@params, @current_user, @project)
+            end
+            
+            it "should return project's denotations" do
+              @denotations.should =~ [@project_denotation]
+            end
           end
           
-          it 'should return project denotations' do
-            @denotations.should =~ Denotation.all
+          context 'when project.blank' do
+            before do
+              @denotations = Denotation.sql_find(@params, @current_user, nil)
+            end
+            
+            it "should return accessible project's denotations" do
+              @denotations.should =~ [@accessible_denotation]
+            end
           end
         end
       end
@@ -351,7 +421,7 @@ describe Denotation do
 
     context 'when params[:sql] blank' do
       before do
-        @denotations = Denotation.sql_find({}, 1000, nil)
+        @denotations = Denotation.sql_find({}, nil, nil)
       end
       
       it 'should return blank' do
