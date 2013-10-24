@@ -1094,6 +1094,26 @@ describe Doc do
     end
   end
   
+  describe 'spans_projects' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @denotation_project_1 = FactoryGirl.create(:project)
+      @denotation_project_2 = FactoryGirl.create(:project)
+      @not_denotation_project = FactoryGirl.create(:project)
+      @denotation_1 = FactoryGirl.create(:denotation, :project => @denotation_project_1, :doc => @doc)
+      @denotation_2 = FactoryGirl.create(:denotation, :project => @denotation_project_2, :doc => @doc)
+      @denotation_3 = FactoryGirl.create(:denotation, :project_id => 1000, :doc => @doc)
+      @denotations = double(:denotations)
+      @doc.stub(:denotations).and_return(@denotations)
+      @denotations.stub(:within_spans).and_return([@denotation_1, @denotation_2, @denotation_3])
+      @projects = @doc.spans_projects({:begin => nil, :end => nil})
+    end
+    
+    it 'should return projects which has doc.denotations as denotations' do
+      @projects.should =~ [@denotation_project_1, @denotation_project_2]
+    end
+  end
+  
   describe 'hmodifications' do
     before do
       @doc = FactoryGirl.create(:doc)

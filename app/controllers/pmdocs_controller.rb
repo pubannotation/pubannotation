@@ -93,11 +93,11 @@ class PmdocsController < ApplicationController
       @sproject, notice = get_sproject(params[:sproject_id])
       if @sproject
         @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @sproject)
+        @projects = @doc.spans_projects(params)
       end
-      @projects = get_projects({:doc => @doc, :sproject => @sproject})
     else
       @doc, flash[:notice] = get_doc('PubMed', params[:id])
-      @projects = get_projects({:doc => @doc})
+      @projects = @doc.spans_projects(params)
     end
     @spans, @prev_text, @next_text = @doc.spans(params)
     respond_to do |format|

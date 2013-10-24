@@ -71,7 +71,7 @@ describe DivsController do
       @sproject = 'sproject'
       controller.stub(:get_sproject).and_return([@sproject, nil])
       controller.stub(:get_project).and_return([@project, nil])
-      controller.stub(:get_projects).and_return(@projects)
+      @doc.stub(:spans_projects).and_return(@projects)
       controller.stub(:get_doc).and_return([@doc, nil])
       @spans = 'SPANS'
       @prev_text = 'PREV'
