@@ -226,6 +226,13 @@ class Doc < ActiveRecord::Base
     end
   end
   
+  def spans_projects(params)
+    self_denotations = self.denotations
+    if self_denotations.present?
+      self_denotations.within_spans(params[:begin], params[:end]).collect{|denotation| denotation.project}.uniq.compact
+    end  
+  end
+  
   def self.sql_find(params, current_user_id, project)
     if params[:sql].present?
       sanitized_sql = sanitize_sql(params[:sql])
