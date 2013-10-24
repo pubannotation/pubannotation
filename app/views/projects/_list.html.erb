@@ -1,7 +1,11 @@
 
 <h1>
   <% if scope.present? -%>
-  	<%= t("views.projects.#{scope}") -%>
+  	<% if projects.first.class == Project -%>
+  		<%= t("views.projects.#{scope}").html_safe -%>
+  	<% else -%>
+  		<%= t("views.sprojects.#{scope}").html_safe -%>
+  	<% end -%>
   <% else -%>
 	  <% if @doc and @doc.sourcedb == 'PubMed' %>
 	  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
