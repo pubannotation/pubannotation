@@ -12,36 +12,22 @@
 	  <% elsif @doc and @doc.sourcedb == 'PMC' %>
 	  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
 	  <% else %>
-	    <%= t('views.projects.in_pubannotation').html_safe %>
-	    <% if user_signed_in? %>
-	      <span class="button"><%= link_to t('views.shared.create_model', :model => t('activerecord.models.project')), new_project_path %></span>
-	    <% else %>
-	      <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
+	  	<% if projects.first.class == Project -%>
+	    	<%= t('views.projects.in_pubannotation').html_safe %>
+	    	<% new_path = new_project_path -%>
+	    <% else -%>
+	    	<%= t('views.sprojects.in_pubannotation').html_safe %>
+	    	<% new_path = new_sproject_path -%>
+	    <% end -%>
+	    <% if params[:action] == 'index' -%>
+		    <% if user_signed_in?%>
+		    	<% model = projects.present? ? projects.first.class.name.downcase : 'sproject' -%>
+		      	<span class="button"><%= link_to t('views.shared.create_model', :model => t("activerecord.models.#{model}")), new_path %></span>
+		    <% else %>
+			    <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
+		    <% end %>
 	    <% end %>
 	  <% end %>
-  <% end %>
-</h1>
-
-  <% if @doc and @doc.sourcedb == 'PubMed' %>
-  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
-  <% elsif @doc and @doc.sourcedb == 'PMC' %>
-  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
-  <% else %>
-  	<% if projects.first.class == Project -%>
-    	<%= t('views.projects.in_pubannotation').html_safe %>
-    	<% new_path = new_project_path -%>
-    <% else -%>
-    	<%= t('views.sprojects.in_pubannotation').html_safe %>
-    	<% new_path = new_sproject_path -%>
-    <% end -%>
-    <% if params[:action] == 'index' -%>
-	    <% if user_signed_in?%>
-	    	<% model = projects.present? ? projects.first.class.name.downcase : 'sproject' -%>
-	      	<span class="button"><%= link_to t('views.shared.create_model', :model => t("activerecord.models.#{model}")), new_path %></span>
-	    <% else %>
-		    <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
-	    <% end %>
-    <% end %>
   <% end %>
 </h1>
 
