@@ -1,6 +1,5 @@
 class PmdocsController < ApplicationController
   autocomplete :doc, :sourceid, :scopes => [:pmdocs]
-  before_filter :authenticate_user!, :only => :sql
   include ApplicationHelper
   
   # GET /pmdocs
@@ -103,6 +102,7 @@ class PmdocsController < ApplicationController
     respond_to do |format|
       format.html { render 'docs/spans'}
       format.txt { render 'docs/spans'}
+      format.json { render 'docs/spans'}
     end
   end
   
@@ -318,7 +318,7 @@ class PmdocsController < ApplicationController
           redirect_to @search_path
         end
       end     
-      @docs = Doc.pmdocs.sql_find(params, current_user.id, project ||= nil)
+      @docs = Doc.pmdocs.sql_find(params, current_user, project ||= nil)
       if @docs.present?
         @docs = @docs.paginate(:page => params[:page], :per_page => 50)
       end

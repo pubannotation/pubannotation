@@ -264,7 +264,7 @@ describe Doc do
       FactoryGirl.create(:docs_project, :doc_id => @doc_accessibility_1_user_2.id , :project_id => @project_accessibility_1_user_2.id)  
     end
     
-    context 'when current_user present' do
+    context 'when current_user_id present' do
       before do
         @docs = Doc.accessible_projects(@user_1.id)
       end
@@ -284,6 +284,32 @@ describe Doc do
       it 'includes accessibility != 1 and user is current_user' do
         @docs.should include(@doc_accessibility_0_user_1)
       end
+    end
+    
+    context 'when current_user_id nil' do
+      before do
+        @docs = Doc.accessible_projects(nil)
+      end
+      
+      it 'includes accessibility = 1' do
+        @docs.should include(@doc_accessibility_1_user_2)
+      end
+      
+      it 'includes accessibility = 1' do
+        @docs.should include(@doc_accessibility_1_user_1)
+      end
+      
+      it 'not includes accessibility != 1' do
+        @docs.should_not include(@doc_accessibility_0_user_2)
+      end
+      
+      it 'not includes accessibility != 1' do
+        @docs.should_not include(@doc_accessibility_0_user_1)
+      end
+      
+      it 'not includes accessibility != 1' do
+        @docs.collect{|doc| doc.projects}.flatten.uniq.select{|project| project.accessibility != 1}.should be_blank
+      end      
     end
   end 
   
@@ -1203,41 +1229,78 @@ describe Doc do
     end
     
     context 'when params[:sql] present' do
-      before do
-        @params = {:sql => 'select * from docs;'}
-      end
-      context 'when results present' do
-        context 'when project present' do
-          before do
-            @docs = Doc.sql_find(@params, @current_user.id, @project)
+      context 'when current_user present' do
+        before do
+          @params = {:sql => 'select * from docs;'}
+        end
+        
+        context 'when results present' do
+          context 'when project present' do
+            before do
+              @docs = Doc.sql_find(@params, @current_user, @project)
+            end
+            
+            it 'should return sql result refined by scope project_docs' do
+              @docs.should =~ @project_docs
+            end
           end
-          
-          it 'should return sql result refined by scope project_docs' do
-            @docs.should =~ @project_docs
+  
+          context 'when project blank' do
+            before do
+              @docs = Doc.sql_find(@params, @current_user, nil)
+            end
+            
+            it 'should return sql result refined by scope accessible_projects' do
+              @docs.should =~ @accessible_projects
+            end
           end
         end
+        
+        context 'when results blank' do
+          it 'should return nil' do
+            Doc.sql_find({:sql => 'select * from docs where id = 1000'}, @current_user, @project).should be_nil
+          end
+        end
+      end
 
-        context 'when project blank' do
-          before do
-            @docs = Doc.sql_find(@params, @current_user.id, nil)
+      context 'when current_user nil' do
+        before do
+          @params = {:sql => 'select * from docs;'}
+        end
+        
+        context 'when results present' do
+          context 'when project present' do
+            before do
+              @docs = Doc.sql_find(@params, nil, @project)
+            end
+            
+            it 'should return sql result refined by scope project_docs' do
+              @docs.should =~ @project_docs
+            end
           end
-          
-          it 'should return sql result refined by scope accessible_projects' do
-            @docs.should =~ @accessible_projects
+  
+          context 'when project blank' do
+            before do
+              @docs = Doc.sql_find(@params, nil, nil)
+            end
+            
+            it 'should return sql result refined by scope accessible_projects' do
+              @docs.should =~ @accessible_projects
+            end
           end
         end
-      end
-      
-      context 'when results present' do
-        it 'should return nil' do
-          Doc.sql_find({:sql => 'select * from docs where id = 1000'}, @current_user.id, @project).should be_nil
+        
+        context 'when results blank' do
+          it 'should return nil' do
+            Doc.sql_find({:sql => 'select * from docs where id = 1000'}, nil, @project).should be_nil
+          end
         end
       end
     end
     
-    context 'when params[:sql] present' do
+    context 'when params[:sql] blank' do
       it 'should return nil' do
-       Doc.sql_find({}, @current_user.id, @project).should be_nil
+       Doc.sql_find({}, @current_user, @project).should be_nil
       end
     end
   end

@@ -38,6 +38,7 @@ class DivsController < ApplicationController
     respond_to do |format|
       format.html { render 'docs/spans'}
       format.txt  { render 'docs/spans'}
+      format.json { render 'docs/spans'}
     end
   end
   

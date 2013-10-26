@@ -1,6 +1,5 @@
 class PmcdocsController < ApplicationController
   autocomplete :doc, :sourceid, :scopes => [:pmcdocs]
-  before_filter :authenticate_user!, :only => :sql
 
   # GET /pmcdocs
   # GET /pmcdocs.json
@@ -206,7 +205,7 @@ class PmcdocsController < ApplicationController
           redirect_to @search_path
         end
       end     
-      @docs = Doc.pmcdocs.sql_find(params, current_user.id, project ||= nil)
+      @docs = Doc.pmcdocs.sql_find(params, current_user, project ||= nil)
       if @docs.present?
         @docs = @docs.paginate(:page => params[:page], :per_page => 50)
       end
