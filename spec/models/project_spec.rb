@@ -40,6 +40,38 @@ describe Project do
     end
   end
   
+  describe 'has_and_belongs_to_many associate_projects' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
+      @asssociate_project_1 = FactoryGirl.create(:project)
+      @asssociate_project_2 = FactoryGirl.create(:project)
+      @asssociate_project_3 = FactoryGirl.create(:project)
+
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @asssociate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @asssociate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @asssociate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @asssociate_project_3)
+    end  
+    
+    it 'project.associate_projecs should return associate projects' do
+      @project_1.associate_projecs.should eql([@asssociate_project_1, @asssociate_project_2])
+    end
+    
+    it 'project.associate_projecs should return associate projects' do
+      @project_2.associate_projecs.should eql([@asssociate_project_1])
+    end
+    
+    it 'project.projecs should return associated projects' do
+      @asssociate_project_1.projects.should eql([@project_1, @project_2])
+    end
+    
+    it 'project.projecs should return associated projects' do
+      @asssociate_project_2.projects.should eql([@project_1])
+    end
+  end
+  
   describe 'has_many denotations' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))

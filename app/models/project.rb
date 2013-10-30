@@ -5,6 +5,20 @@ class Project < ActiveRecord::Base
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC'}
   has_many :projects_sprojects
   has_and_belongs_to_many :sprojects
+  
+  # Project to Proejct associations
+  # parent project => associate projects = @project.associate_projects
+  has_and_belongs_to_many :associate_projecs, 
+    :foreign_key => 'project_id', 
+    :association_foreign_key => 'associate_project_id', 
+    :join_table => 'associate_projects_projects',
+    :class_name => 'Project'
+    
+  # associate projects => parent projects = @project.projects
+  has_and_belongs_to_many :projects, 
+    :foreign_key => 'associate_project_id',
+    :association_foreign_key => 'project_id',
+    :join_table => 'associate_projects_projects'
 
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter
   has_many :denotations, :dependent => :destroy
