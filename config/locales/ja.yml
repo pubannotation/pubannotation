@@ -206,6 +206,7 @@ ja:
       user: ユーザー
       span: スパン
       associate_maintainer: 副管理者
+      associate_projects_project: 関連プロジェクト
     attributes:
       doc:
         sourcedb: ソースDB
@@ -258,6 +259,7 @@ ja:
         reference: このプロジェクトの参照URL
         pmids: PubMedのID
         username: 副管理者名
+        associate_project_name: 関連プロジェクト名を入力
       doc:
         annotation_server: アノテーションサーバーのURL
         pmcids: PMCのID

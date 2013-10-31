@@ -378,3 +378,7 @@ li {
 .associate_username{
 	margin: 0.5em 0;
 }
+.clickable-text{
+	color:#234979 !important;
+	cursor: pointer;
+}

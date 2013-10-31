@@ -213,6 +213,7 @@ en:
       project: project
       user: user
       associate_maintainer: sub-maintainer
+      associate_projects_project: associate project 
     attributes:
       doc:
         sourcedb: src DB
@@ -240,6 +241,7 @@ en:
         reference: URL to a page that describes this project 
         pmids: PubMed IDs
         username: sub-maintainers name
+        associate_project_name: Enter associate project name.
       doc:
         annotation_server: URL of annotation server
         pmcids: PMC IDs

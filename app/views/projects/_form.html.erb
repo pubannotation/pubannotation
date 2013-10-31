@@ -1,5 +1,5 @@
-<%= form_for(model) do |f| %>
-	<%= errors_helper(model) %>
+<%= form_for(@project) do |f| %>
+	<%= errors_helper(@project) %>
 
 <table>
   <tr>
@@ -51,24 +51,24 @@
   		<%= t('activerecord.models.associate_maintainer') -%>
   	</th>
   	<td>
-		<% model.associate_maintainers.each do |associate_maintainer| -%>
+		<% @project.associate_maintainers.each do |associate_maintainer| -%>
 			<div>
 				<%= associate_maintainer.user.username -%>
 				<% if associate_maintainer.destroyable_for?(current_user) -%>
-					<%= link_to t('views.shared.delete'), project_associate_maintainer_path(model, associate_maintainer), :method => :delete, :confirm => t('controllers.shared.confirm_delete') -%>
+					<%= link_to t('views.shared.delete'), project_associate_maintainer_path(@project, associate_maintainer), :method => :delete, :confirm => t('controllers.shared.confirm_delete') -%>
 				<% end -%>
 			</div>
 		<% end -%>
 		<!-- associate maintainer search and add field -->
-		<% if model.associate_maintaines_addable_for?(current_user) -%>
+		<% if @project.associate_maintaines_addable_for?(current_user) -%>
 	  		<%= fields_for :associate_maintainer do -%>
 	  			<div id="associate_maintainers"></div>
-  				<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }?project_id=#{model.id}", :placeholder => t('activerecord.placeholders.project.username')  -%>
+  				<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }?project_id=#{@project.id}", :placeholder => t('activerecord.placeholders.project.username')  -%>
 		  		<script type="text/javascript">
 			  		$('#username').bind('railsAutocomplete.select', function(event, data){
 			  			var userName = data.item.value;
 			  			// append associate maintainer username
-			  			$( "<div class='associate_username'>" + userName +"<input type='hidden' value='" + userName + "' id='usernames[]' name='usernames[]'> <a href='' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></a></div>" ).appendTo( "#associate_maintainers" );
+			  			$( "<div class='associate_username'>" + userName +"<input type='hidden' value='" + userName + "' id='usernames[]' name='usernames[]'> <span class='clickable-text' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></span></div>" ).appendTo( "#associate_maintainers" );
 			  			$('#username').val('');
 					});
 		  		</script>
@@ -83,36 +83,34 @@
 	  <%= hint_helper({:model => :project, :column => :reference}) %>
     </td>
   </tr>
-  <% if model.class == Sproject -%>
 	<!-- associate projects search and add field -->
 	<tr>
 	  	<th>
 	  		<%= t('activerecord.models.project') -%>
 	  	</th>
 	  	<td>
-	  		<% if @projects_sprojects.present? -%>
-		  		<% @projects_sprojects.each do |projects_sproject| -%>
+	  		<% if @project.present? && @project.associate_projects.present? -%>
+		  		<% @project.associate_projects.each do |associate_project| -%>
 		  			<div>
-			  			<%= link_to projects_sproject.project.name, project_path(projects_sproject.project.name) -%>
-			  			<%= link_to t('views.shared.delete'), projects_sproject_path(projects_sproject), :method => :delete, :confirm => t('views.shared.confirm.delete_model', :model => t('activerecord.models.project')) -%>
+			  			<%= link_to associate_project.name, project_path(associate_project.name) -%>
+			  			<%= link_to t('views.shared.delete'), delete_associate_projects_project_path(@project.id, associate_project.id), :method => :delete, :confirm => t('views.shared.confirm.delete_model', :model => t('activerecord.models.project')) -%>
 		  			</div>
 		  		<% end -%>
 	  		<% end -%>
-	  		<%= fields_for :projecs_sproject do |ps| -%>
-	  			<div id="sproject_projects"></div>
-	  			<%= ps.autocomplete_field :project_name, "/projects/autocomplete_project_name/#{@sproject.project_ids}", :id => 'project_name', :placeholder => t('activerecord.placeholders.sproject.project_name') -%>
+	  		<%= fields_for :associate_projects_project do |ps| -%>
+	  			<div id="associate_projects_projects"></div>
+	  			<%= ps.autocomplete_field :project_name, "/projects/autocomplete_project_name/#{@project.associate_project_and_project_ids}", :id => 'associate_project_name', :placeholder => t('activerecord.placeholders.project.associate_project_name') -%>
 		  		<script type="text/javascript">
-			  		$('#project_name').bind('railsAutocomplete.select', function(event, data){
+			  		$('#associate_project_name').bind('railsAutocomplete.select', function(event, data){
 			  			var projectName = data.item.value;
 			  			// append associate projects name
-			  			$( "<div class='associate_username'>" + projectName +"<input type='hidden' value='" + projectName + "' id='project_names[]' name='project_names[]'> <a href='' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></a></div>" ).appendTo( "#sproject_projects" );
-			  			$('#project_name').val('');
+			  			$( "<div class='associate_username'>" + projectName +"<input type='hidden' value='" + projectName + "' id='associate_project_names[]' name='associate_project_names[]'> <span class='clickable-text' href='' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></span></div>" ).appendTo( "#associate_projects_projects" );
+			  			$('#associate_project_name').val('');
 					});
 		  		</script>
 	  		<% end -%>
 	  	</td>
 	  </tr>
-  <% end -%>
   <tr><td style="border:none"></td></tr>
 <!--   <tr>
     <th><%= f.label :viewer %></th>
