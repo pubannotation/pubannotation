@@ -119,7 +119,7 @@
 	<% end %>	
 <% end %>
 
-<% if model.class == Sproject && model.projects.present? -%>
-	<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => model.projects, :scope => 'belongs_to_sproject' } %>
+<% if model.associate_projects.present? -%>
+	<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => model.associate_projects, :scope => 'associate_project' } %>
 <% end -%>
 </div>

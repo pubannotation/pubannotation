@@ -8,11 +8,13 @@ class Project < ActiveRecord::Base
   
   # Project to Proejct associations
   # parent project => associate projects = @project.associate_projects
-  has_and_belongs_to_many :associate_projecs, 
+  has_and_belongs_to_many :associate_projects, 
     :foreign_key => 'project_id', 
     :association_foreign_key => 'associate_project_id', 
     :join_table => 'associate_projects_projects',
-    :class_name => 'Project'
+    :class_name => 'Project', 
+    :after_add => :increment_counters, 
+    :after_remove => :decrement_counters
     
   # associate projects => parent projects = @project.projects
   has_and_belongs_to_many :projects, 
@@ -107,6 +109,11 @@ class Project < ActiveRecord::Base
         Sproject.increment_counter(counter_column, sproject.id)
       end          
     end
+    if self.associate_projects.present?
+      self.associate_project.each do |associate_project|
+        Project.increment_counter(counter_column, associate_project.id)
+      end          
+    end
   end
   
   # after_remove doc
@@ -120,6 +127,11 @@ class Project < ActiveRecord::Base
     if self.sprojects.present?
       self.sprojects.each do |sproject|
         Sproject.decrement_counter(counter_column, sproject.id)
+      end          
+    end          
+    if self.associate_projects.present?
+      self.associate_projects.each do |associate_project|
+        associate_project.decrement_counter(counter_column, associate_project.id)
       end          
     end          
   end          
@@ -154,4 +166,31 @@ class Project < ActiveRecord::Base
       end
     end
   end
+  
+  def associate_project_and_project_ids
+    associate_project_ids = associate_projects.present? ? associate_projects.collect{|associate_project| associate_project.id} : []
+    project_ids = projects.present? ? projects.collect{|project| project.id} : []
+    if associate_project_ids.present? || project_ids.present?
+      (associate_project_ids + project_ids).uniq
+    else
+      [0]
+    end
+  end
+
+  
+  def increment_counters(project)
+    Project.update_counters self.id, 
+      :pmdocs_count => project.pmdocs_count,
+      :pmcdocs_count => project.pmcdocs_count,
+      :denotations_count => project.denotations_count,
+      :relations_count => project.relations_count
+  end  
+  
+  def decrement_counters(project)
+    Project.update_counters self.id, 
+      :pmdocs_count => - project.pmdocs_count,
+      :pmcdocs_count => - project.pmcdocs_count,
+      :denotations_count => - project.denotations_count,
+      :relations_count => - project.relations_count
+  end  
 end

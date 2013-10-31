@@ -55,12 +55,12 @@ describe Project do
       FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @asssociate_project_3)
     end  
     
-    it 'project.associate_projecs should return associate projects' do
-      @project_1.associate_projecs.should eql([@asssociate_project_1, @asssociate_project_2])
+    it 'project.associate_projects should return associate projects' do
+      @project_1.associate_projects.should eql([@asssociate_project_1, @asssociate_project_2])
     end
     
-    it 'project.associate_projecs should return associate projects' do
-      @project_2.associate_projecs.should eql([@asssociate_project_1])
+    it 'project.associate_projects should return associate projects' do
+      @project_2.associate_projects.should eql([@asssociate_project_1])
     end
     
     it 'project.projecs should return associated projects' do
@@ -719,6 +719,48 @@ describe Project do
         @sproject_2.reload
         @sproject_2.pmcdocs_count.should eql(1)
         @sproject_2.pmdocs_count.should eql(2)
+      end
+    end
+  end
+  
+  describe 'associate_project_and_project_ids' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
+      @project_4 = FactoryGirl.create(:project)
+      @asssociate_project_1 = FactoryGirl.create(:project)
+      @asssociate_project_2 = FactoryGirl.create(:project)
+      @asssociate_project_3 = FactoryGirl.create(:project)
+
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @asssociate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @asssociate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @asssociate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @asssociate_project_3)
+    end
+    
+    context 'when associate_projects and projects present' do
+      it 'should return associate_project_ids and project_ids' do
+        @project_1.associate_project_and_project_ids.should =~ [@asssociate_project_1.id, @asssociate_project_2.id, @project_2.id]
+      end
+    end
+    
+    context 'when projects present' do
+      it 'should return project_ids' do
+        @asssociate_project_1.associate_project_and_project_ids.should =~ [@project_1.id, @project_2.id]
+      end
+    end
+    
+    context 'when associate_projects present' do
+      it 'should return associate_project_ids' do
+        @project_2.associate_project_and_project_ids.should =~ [@asssociate_project_1.id, @project_1.id]
+      end
+    end
+    
+    context 'when associate_projects and projects blank' do
+      it 'should return default value' do
+        @project_4.associate_project_and_project_ids.should eql([0])
       end
     end
   end
