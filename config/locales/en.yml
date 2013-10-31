@@ -210,7 +210,8 @@ en:
       denotations: Denotations
       relations: Relations
       instances: Instances
-      project: project
+      project: Project
+      sproject: Super Project
       user: user
       associate_maintainer: sub-maintainer
     attributes:
@@ -334,7 +335,7 @@ en:
       project_details: Project details
       that_annotate_a_pmdoc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
-      in_pubannotation: "<a href='%{href}'>Annotations projects</a> in PubAnnotation"
+      in_pubannotation: "<a href='%{href}'>Annotation projects</a> in PubAnnotation"
       confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.
       user_projects: Your projects
       associate_maintain_projects: Associated projects 
@@ -375,7 +376,7 @@ en:
       delete_all: delete all
       none: none
       new_model: New %{model}
-      create_model: Create new %{model}
+      create_model: Create a New %{model}
       edit_model: Editing %{model}
       add_model: Add %{model}
       delete_model: Delete %{model}

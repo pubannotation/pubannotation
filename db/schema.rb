@@ -12,6 +12,7 @@
 # It's strongly recommended to check this file into your version control system.
 
 ActiveRecord::Schema.define(:version => 20130925022731) do
+
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
     t.integer  "project_id"
@@ -57,8 +58,8 @@ ActiveRecord::Schema.define(:version => 20130925022731) do
     t.string   "sourceid"
     t.integer  "serial"
     t.string   "section"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
     t.integer  "denotations_count", :default => 0
     t.integer  "subcatrels_count",  :default => 0
   end
@@ -103,8 +104,8 @@ ActiveRecord::Schema.define(:version => 20130925022731) do
     t.string   "name"
     t.text     "description"
     t.string   "author"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
     t.string   "license"
     t.string   "reference"
     t.string   "editor"
