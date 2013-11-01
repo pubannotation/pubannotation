@@ -295,7 +295,7 @@ describe Denotation do
     end
   end
   
-  describe 'increment_sproject_denotations_count' do
+  describe 'associate_project_sproject_denotations_count' do
     before do
       @project = FactoryGirl.create(:project, :denotations_count => 0)
       @sproject_1 = FactoryGirl.create(:sproject, :denotations_count => 0)
@@ -318,6 +318,32 @@ describe Denotation do
     it 'should increment sproject.denotations_count' do
       @sproject_2.reload
       @sproject_2.denotations_count.should eql(2)
+    end      
+  end
+  
+  describe 'increment_project_denotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, :denotations_count => 0)
+      @associate_project_1 = FactoryGirl.create(:project, :denotations_count => 0)
+      FactoryGirl.create(:associate_projects_Project, :project => @project, :associate_project => @associate_project_1.id)
+      @associate_project_2 = FactoryGirl.create(:associate_project, :denotations_count => 1)
+      FactoryGirl.create(:associate_projects_Project, :project => @project, :associate_project => @associate_project_2.id)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc_id => 1)
+    end
+    
+    it 'should increment project.denotations_count' do
+      @project.reload
+      @project.denotations_count.should eql(1)
+    end      
+    
+    it 'should increment associate_project.denotations_count' do
+      @associate_project_1.reload
+      @associate_project_1.denotations_count.should eql(1)
+    end      
+    
+    it 'should increment associate_project.denotations_count' do
+      @associate_project_2.reload
+      @associate_project_2.denotations_count.should eql(2)
     end      
   end
   

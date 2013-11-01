@@ -447,12 +447,24 @@ describe PmdocsController do
     context 'when params[:project_id] exists' do
       context 'and when project exists' do
         before do
+          @sourceid = 'sourceid'
+          # project
           @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
-          @sourceid = 'sourdeid'
-          @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
-          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-          @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 0)
-          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+          @project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 0)
+          @project_3 = FactoryGirl.create(:project, :pmdocs_count => 2, :pmcdocs_count => 0)
+          # project.projects
+          @project_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_1, :associate_project => @project)
+          @project_project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 0)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_2, :associate_project => @project)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_2, :associate_project => @project_2)
+          # project.projects.projects
+          @project_project_project_1 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 0)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_project_1, :associate_project => @project_project_1)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_project_1, :associate_project => @project_project_2)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_project_1, :associate_project => @project_3)
+          # force to associate projects
+          @project.reload
           controller.stub(:get_project).and_return([@project, 'notice'])        
         end
         
@@ -463,7 +475,7 @@ describe PmdocsController do
           
           context 'and when format html' do
             before do
-              post :create, :project_id => 1, :pmids => @sourceid
+              post :create, :project_id => @project.id, :pmids => @sourceid
             end
             
             it 'should redirect to project_pmdocs_path' do
@@ -477,15 +489,15 @@ describe PmdocsController do
             end
             
             it 'should incremant only sproject.pmdocs_count' do
-              @sproject_1.reload
-              @sproject_1.pmdocs_count.should eql(1)
-              @sproject_1.pmcdocs_count.should eql(0)
+              @project_project_1.reload
+              @project_project_1.pmdocs_count.should eql(1)
+              @project_project_1.pmcdocs_count.should eql(0)
             end
             
             it 'should incremant only sproject.pmdocs_count' do
-              @sproject_2.reload
-              @sproject_2.pmdocs_count.should eql(2)
-              @sproject_2.pmcdocs_count.should eql(0)
+              @project_project_2.reload
+              @project_project_2.pmdocs_count.should eql(2)
+              @project_project_2.pmcdocs_count.should eql(0)
             end
           end
           

@@ -370,10 +370,10 @@ describe Project do
     context 'when PubMed' do
       before do
         @project.docs << @pmdoc
+        @project.reload
       end
           
       it 'should increment project.pmcdocs_count' do
-        @project.reload
         @project.pmdocs_count.should eql(1)
         @project.pmcdocs_count.should eql(0)
       end
@@ -764,4 +764,24 @@ describe Project do
       end
     end
   end
+  
+  describe 'update_couters' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @project_project_1 = FactoryGirl.create(:project)
+      FactoryGirl.create(:associate_projects_project, :project => @project_project_1, :associate_project => @project)
+      #@project_project_1.associate_projects << @project
+      #FactoryGirl.create(:docs_project, :doc_id => @doc.id, :project_id => @project.id)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
+      @project.docs << @doc
+    end
+    
+    describe '' do
+      before do
+      end
+    
+      it '' do
+      end
+    end
+  end 
 end

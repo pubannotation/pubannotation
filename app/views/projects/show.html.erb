@@ -15,7 +15,7 @@
  	<% end %>
  	> <%= @project.name %>
 <% end %>
-
+<%= @project.id -%>
 <%= render :partial => "project", :locals => {:model => @project} -%>
 
 <%= render :partial => "pmdocs/list", :locals => {:docs => @pmdocs, :project => @project, :accordion_id => 1, :denotations_count_order => 'same_sourceid_denotations_count', :relations_count_order => 'same_sourceid_relations_count'} %>

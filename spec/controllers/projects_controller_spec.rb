@@ -228,7 +228,7 @@ describe ProjectsController do
             @project_name = 'ansnet name'
           end
           
-          describe 'after post' do
+          describe 'before post' do
             it 'associate project should not have projects' do
               @associate_project_1.projects.should be_blank
             end       
@@ -241,6 +241,8 @@ describe ProjectsController do
           describe 'after post' do
             before do
               post :create, :project => {:name => @project_name}, :associate_project_names => [@associate_project_1.name, @associate_project_2.name]
+              @associate_project_1.reload
+              @associate_project_2.reload
             end
             
             it 'associate project should have projects' do
@@ -385,12 +387,93 @@ describe ProjectsController do
         end
         
         context 'and when format html' do
-          before do
-            post :update, :id => @project.id, :project => @params_project          
+          context 'when assciate_project_names blank' do
+            before do
+              post :update, :id => @project.id, :project => @params_project          
+            end
+            
+            it 'should render edit template' do
+              response.should render_template('edit')
+            end
           end
-          
-          it 'should render edit template' do
-            response.should render_template('edit')
+
+          context 'when associate_projects present' do
+            before do
+              @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30, :relations_count => 40)
+              @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2, :denotations_count => 3, :relations_count => 4)
+              @project_name = 'ansnet name'
+            end
+            
+            describe 'before post' do
+              it 'project pmdocs_count is 0' do
+                @project.pmdocs_count.should eql(0)  
+              end
+              
+              it 'project pmcdocs_count is 0' do
+                @project.pmcdocs_count.should eql(0)  
+              end
+              
+              it 'project denotations_count is 0' do
+                @project.denotations_count.should eql(0)  
+              end
+              
+              it 'project relations_count is 0' do
+                @project.relations_count.should eql(0)  
+              end
+              
+              it 'associate project should not have projects' do
+                @associate_project_1.projects.should be_blank
+              end       
+                   
+              it 'associate project should not have projects' do
+                @associate_project_2.projects.should be_blank
+              end            
+            end
+            
+            describe 'after post' do
+              before do
+                post :update, :id => @project.id, :associate_project_names => [@associate_project_1.name, @associate_project_2.name]
+                @project.reload
+                @associate_project_1.reload
+                @associate_project_2.reload
+              end
+              
+              it 'associate project should have projects' do
+                @associate_project_1.projects.should be_present
+              end
+              
+              it 'associate project should equal created project' do
+                @associate_project_1.projects.should include(Project.find_by_name(assigns[:project].name))
+              end
+              
+              it 'associate project should have projects' do
+                @associate_project_2.projects.should be_present
+              end
+              
+              it 'associate project should equal created project' do
+                @associate_project_2.projects.should include(Project.find_by_name(assigns[:project].name))
+              end
+              
+              it 'should increment pmdocs_count by associate projects' do
+                @project.pmdocs_count.should eql(@associate_project_1.pmdocs_count + @associate_project_2.pmdocs_count)
+              end
+               
+              it 'should increment pmcdocs_count by associate projects' do
+                @project.pmcdocs_count.should eql(@associate_project_1.pmcdocs_count + @associate_project_2.pmcdocs_count)
+              end
+              
+              it 'should increment denotations_count by associate projects' do
+                @project.denotations_count.should eql(@associate_project_1.denotations_count + @associate_project_2.denotations_count)
+              end
+              
+              it 'should increment relations_count by associate projects' do
+                @project.relations_count.should eql(@associate_project_1.relations_count + @associate_project_2.relations_count)
+              end
+               
+              it 'should redirect to project_path' do
+                response.should redirect_to(project_path(@project.name))
+              end
+            end
           end
         end
   
