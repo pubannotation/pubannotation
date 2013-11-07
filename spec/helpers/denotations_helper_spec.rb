@@ -4,8 +4,9 @@ require 'spec_helper'
 describe DenotationsHelper do
   describe 'denotations_count_helper' do
     before do
+      @project_denotations_count = 'project_denotations_count'
       Denotation.stub!(:project_denotations_count) do |project_id, denotations|
-        [project_id, denotations]
+        [project_id, denotations, @project_denotations_count]
       end
       @project = FactoryGirl.create(:project)
       @doc = FactoryGirl.create(:doc)
@@ -44,18 +45,6 @@ describe DenotationsHelper do
     end
     
     context 'when project present' do
-      context 'when sourceid present' do
-        before do
-          @same_sourceid_denotations_count = 'same_sourceid_denotations_count'
-          Doc.any_instance.stub(:same_sourceid_denotations_count).and_return(@same_sourceid_denotations_count)
-          @result = helper.denotations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
-        end
-        
-        it 'should return doc.same_sourceid_denotations_count' do
-          @result.should eql(@same_sourceid_denotations_count)
-        end
-      end
-      
       context 'when sourceid nil' do
         context 'when project.class == Project' do
           before do
@@ -71,6 +60,10 @@ describe DenotationsHelper do
             it 'denotations should be doc.denotations' do
               @result[1].should eql(@doc_denotations)
             end
+            
+            it 'denotations should be returned Denotation.project_denotations_count' do
+              @result[2].should eql(@project_denotations_count)
+            end
           end
     
           context 'when doc blank' do
@@ -80,6 +73,10 @@ describe DenotationsHelper do
             
             it 'denotations should be Denotation class' do
               @result[1].should eql(Denotation)
+            end
+            
+            it 'denotations should be returned Denotation.project_denotations_count' do
+              @result[2].should eql(@project_denotations_count)
             end
           end
         end
