@@ -28,7 +28,7 @@ class Relation < ActiveRecord::Base
       order('relations.id ASC') 
   }
     
-  after_save :increment_subcatrels_count, :increment_sproject_relations_count
+  after_save :increment_subcatrels_count, :increment_project_relations_count
   
   def get_hash
     hrelation = Hash.new
@@ -78,10 +78,18 @@ class Relation < ActiveRecord::Base
   end
   
   # after save
-  def increment_sproject_relations_count
-    if self.project.present? && self.project.sprojects.present?
-      project.sprojects.each do |sproject|
-        Sproject.increment_counter(:relations_count, sproject.id)
+  # def increment_sproject_relations_count
+    # if self.project.present? && self.project.sprojects.present?
+      # project.sprojects.each do |sproject|
+        # Sproject.increment_counter(:relations_count, sproject.id)
+      # end
+    # end
+  # end
+
+  def increment_project_relations_count
+    if self.project.present? && self.project.projects.present?
+      project.projects.each do |project|
+        Project.decrement_counter(:relations_count, project.id)
       end
     end
   end

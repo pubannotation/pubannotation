@@ -42,11 +42,11 @@ class PmdocsController < ApplicationController
       else
         @doc = nil
       end
-    elsif params[:sproject_id].present?
-      @doc, notice = get_doc('PubMed', params[:id], 0)
-      @sproject, notice = get_sproject(params[:sproject_id])
-      @annotations = get_annotations(@sproject, @doc)
-      @projects = get_projects({:doc => @doc, :sproject => @sproject})
+    # elsif params[:sproject_id].present?
+      # @doc, notice = get_doc('PubMed', params[:id], 0)
+      # @sproject, notice = get_sproject(params[:sproject_id])
+      # @annotations = get_annotations(@sproject, @doc)
+      # @projects = get_projects({:doc => @doc, :sproject => @sproject})
     else
       @doc, notice = get_doc('PubMed', params[:id])
       @projects = get_projects({:doc => @doc})

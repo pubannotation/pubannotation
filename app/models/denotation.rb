@@ -54,16 +54,15 @@ class Denotation < ActiveRecord::Base
   end  
   
   # after save
-  def increment_sproject_denotations_count
-    if self.project.present? && self.project.sprojects.present?
-      project.sprojects.each do |sproject|
-        Sproject.increment_counter(:denotations_count, sproject.id)
-      end
-    end
-  end
+  # def increment_sproject_denotations_count
+    # if self.project.present? && self.project.sprojects.present?
+      # project.sprojects.each do |sproject|
+        # Sproject.increment_counter(:denotations_count, sproject.id)
+      # end
+    # end
+  # end
   
   def increment_projects_denotations_count
-    p 'DENOTATION INC'
     if self.project.present? && self.project.projects.present?
       project.projects.each do |project|
         Project.increment_counter(:denotations_count, project.id)
@@ -72,13 +71,13 @@ class Denotation < ActiveRecord::Base
   end
   
   # before destroy
-  def decrement_sproject_denotations_count
-    if self.project.present? && self.project.sprojects.present?
-      project.sprojects.each do |sproject|
-        Sproject.decrement_counter(:denotations_count, sproject.id)
-      end
-    end
-  end
+  # def decrement_sproject_denotations_count
+    # if self.project.present? && self.project.sprojects.present?
+      # project.sprojects.each do |sproject|
+        # Sproject.decrement_counter(:denotations_count, sproject.id)
+      # end
+    # end
+  # end
   
   def decrement_projects_denotations_count
     if self.project.present? && self.project.projects.present?

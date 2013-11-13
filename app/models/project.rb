@@ -98,21 +98,19 @@ class Project < ActiveRecord::Base
   
   # after_add doc
   def increment_docs_counter(doc)
-    p 'INCREMENT DOCS COUNTER'
     if doc.sourcedb == 'PMC'
       counter_column = :pmcdocs_count
     else
       counter_column = :pmdocs_count
     end
     Project.increment_counter(counter_column, self.id)
-    p 'Project after add decrement_docs_counter'
-    self.update_attribute(:updated_at, DateTime.now)
-    # if self.projects.present?
-      # self.projects.each do |project|
-        # Project.increment_counter(counter_column, project.id)
-        # project.update_attribute(:updated_at, DateTime.now)
-      # end          
-    # end
+    # self.update_attribute(:updated_at, DateTime.now)
+    if self.projects.present?
+      self.projects.each do |project|
+        Project.increment_counter(counter_column, project.id)
+        #project.update_attribute(:updated_at, DateTime.now)
+      end          
+    end
   end
   
   # after_remove doc
@@ -122,16 +120,14 @@ class Project < ActiveRecord::Base
     else
       counter_column = :pmdocs_count
     end
-    p 'Project after remove decrement_docs_counter'
     Project.decrement_counter(counter_column, self.id)
-    self.update_attribute(:updated_at, DateTime.now)
-    # if self.projects.present?
-      # self.projects.each do |project|
-        # p "AFTER ADD DECREMENT project.projects >>#{ project.id }<< COUNT"
-        # Project.decrement_counter(counter_column, project.id)
-        # project.update_attribute(:updated_at, DateTime.now)
-      # end          
-    # end          
+    #self.update_attribute(:updated_at, DateTime.now)
+    if self.projects.present?
+      self.projects.each do |project|
+        Project.decrement_counter(counter_column, project.id)
+        #project.update_attribute(:updated_at, DateTime.now)
+      end          
+    end          
   end          
 
   def associate_maintaines_addable_for?(current_user)
@@ -165,16 +161,29 @@ class Project < ActiveRecord::Base
     end
   end
   
-  def associate_project_and_project_ids
+  def self_id_and_associate_project_ids
+    associate_project_ids << self.id
+  end
+  
+  def associate_project_ids
     associate_project_ids = associate_projects.present? ? associate_projects.collect{|associate_project| associate_project.id} : []
+    associate_project_ids.uniq
+  end
+  
+  def project_ids
     project_ids = projects.present? ? projects.collect{|project| project.id} : []
+    project_ids.uniq
+  end
+  
+  def associate_project_and_project_ids
     if associate_project_ids.present? || project_ids.present?
-      (associate_project_ids + project_ids).uniq
+      associate_project_ids | project_ids
     else
       [0]
     end
   end
   
+  # increment counters after add associate projects
   def increment_counters(associate_project)
     Project.update_counters self.id, 
       :pmdocs_count => associate_project.pmdocs_count,
@@ -183,6 +192,7 @@ class Project < ActiveRecord::Base
       :relations_count => associate_project.relations_count
   end  
   
+  # iderement counters after delete associate projects
   def decrement_counters(associate_project)
     Project.update_counters self.id, 
       :pmdocs_count => - associate_project.pmdocs_count,
@@ -206,7 +216,7 @@ class Project < ActiveRecord::Base
       :denotations_count => self.associate_projects.sum(:denotations_count), 
       :relations_count => self.associate_projects.sum(:relations_count)
     }
-    self.update_attribute(:updated_at, DateTime.now)    
+    #self.update_attribute(:updated_at, DateTime.now)    
   end
 
   after_save :update_counters

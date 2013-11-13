@@ -45,30 +45,32 @@ describe Project do
       @project_1 = FactoryGirl.create(:project)
       @project_2 = FactoryGirl.create(:project)
       @project_3 = FactoryGirl.create(:project)
-      @asssociate_project_1 = FactoryGirl.create(:project)
-      @asssociate_project_2 = FactoryGirl.create(:project)
-      @asssociate_project_3 = FactoryGirl.create(:project)
+      @associate_project_1 = FactoryGirl.create(:project)
+      @associate_project_2 = FactoryGirl.create(:project)
+      @associate_project_3 = FactoryGirl.create(:project)
 
-      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @asssociate_project_1)
-      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @asssociate_project_2)
-      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @asssociate_project_1)
-      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @asssociate_project_3)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @associate_project_3)
     end  
     
     it 'project.associate_projects should return associate projects' do
-      @project_1.associate_projects.should eql([@asssociate_project_1, @asssociate_project_2])
+      @project_1.associate_projects.should eql([@associate_project_1, @associate_project_2])
     end
     
     it 'project.associate_projects should return associate projects' do
-      @project_2.associate_projects.should eql([@asssociate_project_1])
+      @project_2.associate_projects.should eql([@associate_project_1])
     end
     
     it 'project.projecs should return associated projects' do
-      @asssociate_project_1.projects.should eql([@project_1, @project_2])
+      @associate_project_1.reload
+      @associate_project_1.projects.should eql([@project_1, @project_2])
     end
     
     it 'project.projecs should return associated projects' do
-      @asssociate_project_2.projects.should eql([@project_1])
+      @associate_project_2.reload
+      @associate_project_2.projects.should eql([@project_1])
     end
   end
   
@@ -359,59 +361,48 @@ describe Project do
   describe 'increment_docs_counter' do
     before do
       @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
-      @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-      @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 1)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 2, :pmcdocs_count => 4)
+      @project.associate_projects << @associate_project_1
+      @project.associate_projects << @associate_project_2
       @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
       @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+      @project.reload
     end
     
-    context 'when PubMed' do
+    describe 'before add ' do
+      it 'project.pmdocs should equal sum of associate projects pmdocs_count' do
+         @project.pmdocs_count.should eql(2)
+      end
+      
+      it 'projectpmcdocs should equal sum of associate projects pmcdocs_count' do
+         @project.pmcdocs_count.should eql(4)
+      end
+    end
+
+    context 'when added PubMed' do
       before do
-        @project.docs << @pmdoc
+        @associate_project_1.reload
+        @associate_project_1.docs << @pmdoc
         @project.reload
       end
           
       it 'should increment project.pmcdocs_count' do
-        @project.pmdocs_count.should eql(1)
-        @project.pmcdocs_count.should eql(0)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmdocs_count.should eql(1)
-        @sproject_1.pmcdocs_count.should eql(0)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_2.reload
-        @sproject_2.pmdocs_count.should eql(2)
-        @sproject_2.pmcdocs_count.should eql(1)
+        @project.pmdocs_count.should eql(3)
+        @project.pmcdocs_count.should eql(4)
       end
     end
     
-    context 'when PMC' do
+    context 'when added PMC' do
       before do
-        @project.docs << @pmcdoc
+        @associate_project_1.reload
+        @associate_project_1.docs << @pmcdoc
       end
           
       it 'should increment pmcdocs_count' do
         @project.reload
-        @project.pmcdocs_count.should eql(1)
-        @project.pmdocs_count.should eql(0)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmcdocs_count.should eql(1)
-        @sproject_1.pmdocs_count.should eql(0)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_2.reload
-        @sproject_2.pmcdocs_count.should eql(2)
-        @sproject_2.pmdocs_count.should eql(1)
+        @project.pmcdocs_count.should eql(5)
+        @project.pmdocs_count.should eql(2)
       end
     end
   end
@@ -666,59 +657,48 @@ describe Project do
   describe 'decrement_docs_counter' do
     before do
       @project = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 1)
-      @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 1)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-      @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 2, :pmcdocs_count => 2)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 1)
+      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 2, :pmcdocs_count => 3)
+      @project.associate_projects << @associate_project_1
+      @project.associate_projects << @associate_project_2
       @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
       @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+      @project.reload
+      @associate_project_1.reload
+      @associate_project_2.reload
     end
-  
-    context 'when PubMed' do
+    
+    describe 'before delete' do
+      it 'project.pmdocs should equal sum of associate projects pmdocs_count' do
+         @project.pmdocs_count.should eql(4)
+      end
+      
+      it 'projectpmcdocs should equal sum of associate projects pmcdocs_count' do
+         @project.pmcdocs_count.should eql(5)
+      end
+    end
+
+    context 'when deleted PubMed' do
       before do
-        @project.docs.delete(@pmdoc)
+        @associate_project_1.docs.delete(@pmdoc)
+        @project.reload
       end
           
       it 'should increment project.pmcdocs_count' do
-        @project.reload
-        @project.pmdocs_count.should eql(0)
-        @project.pmcdocs_count.should eql(1)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmdocs_count.should eql(0)
-        @sproject_1.pmcdocs_count.should eql(1)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_2.reload
-        @sproject_2.pmdocs_count.should eql(1)
-        @sproject_2.pmcdocs_count.should eql(2)
+        @project.pmdocs_count.should eql(3)
+        @project.pmcdocs_count.should eql(5)
       end
     end
-  
-    context 'when PMC' do
+    
+    context 'when added PMC' do
       before do
-        @project.docs.delete(@pmcdoc)
+        @associate_project_1.docs.delete(@pmcdoc)
       end
           
       it 'should increment pmcdocs_count' do
         @project.reload
-        @project.pmcdocs_count.should eql(0)
-        @project.pmdocs_count.should eql(1)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmcdocs_count.should eql(0)
-        @sproject_1.pmdocs_count.should eql(1)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_2.reload
-        @sproject_2.pmcdocs_count.should eql(1)
-        @sproject_2.pmdocs_count.should eql(2)
+        @project.pmcdocs_count.should eql(4)
+        @project.pmdocs_count.should eql(4)
       end
     end
   end
@@ -729,32 +709,39 @@ describe Project do
       @project_2 = FactoryGirl.create(:project)
       @project_3 = FactoryGirl.create(:project)
       @project_4 = FactoryGirl.create(:project)
-      @asssociate_project_1 = FactoryGirl.create(:project)
-      @asssociate_project_2 = FactoryGirl.create(:project)
-      @asssociate_project_3 = FactoryGirl.create(:project)
+      @associate_project_1 = FactoryGirl.create(:project)
+      @associate_project_2 = FactoryGirl.create(:project)
+      @associate_project_3 = FactoryGirl.create(:project)
 
-      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @asssociate_project_1)
-      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @asssociate_project_2)
-      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @asssociate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
       FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @project_1)
-      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @asssociate_project_3)
+      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @associate_project_3)
+      @project_1.reload
+      @project_2.reload
+      @project_3.reload
+      @project_4.reload
+      @associate_project_1.reload
+      @associate_project_2.reload
+      @associate_project_3.reload
     end
     
     context 'when associate_projects and projects present' do
       it 'should return associate_project_ids and project_ids' do
-        @project_1.associate_project_and_project_ids.should =~ [@asssociate_project_1.id, @asssociate_project_2.id, @project_2.id]
+        @project_1.associate_project_and_project_ids.should =~ [@associate_project_1.id, @associate_project_2.id, @project_2.id]
       end
     end
     
     context 'when projects present' do
       it 'should return project_ids' do
-        @asssociate_project_1.associate_project_and_project_ids.should =~ [@project_1.id, @project_2.id]
+        @associate_project_1.associate_project_and_project_ids.should =~ [@project_1.id, @project_2.id]
       end
     end
     
     context 'when associate_projects present' do
       it 'should return associate_project_ids' do
-        @project_2.associate_project_and_project_ids.should =~ [@asssociate_project_1.id, @project_1.id]
+        @project_2.associate_project_and_project_ids.should =~ [@associate_project_1.id, @project_1.id]
       end
     end
     

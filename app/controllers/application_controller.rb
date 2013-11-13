@@ -91,10 +91,11 @@ class ApplicationController < ActionController::Base
 
   def get_projects (options = {})
     projects = (options.present? && options[:doc].present?)? options[:doc].projects : Project.where('id > ?', 0)
-    if options.present? && options[:sproject].present?
-      sproject_projects = projects.sprojects_projects(options[:sproject].project_ids)
-      projects = projects & sproject_projects
-    end
+    # TODO associate projects should be got ?
+    # if options.present? && options[:sproject].present?
+      # sproject_projects = projects.sprojects_projects(options[:sproject].project_ids)
+      # projects = projects & sproject_projects
+    # end
     projects.sort!{|x, y| x.name <=> y.name}
     projects = projects.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
   end
@@ -104,19 +105,9 @@ class ApplicationController < ActionController::Base
     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     if doc
       if project
-        if project.class == Project
-          # Project
-          if !doc.projects.include?(project)
-            doc = nil
-            notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
-          end
-        else
-          # Sproject
-          common_projects = doc.projects & project.projects
-          if common_projects.blank?
-            doc = nil
-            notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
-          end
+        if !doc.projects.include?(project)
+          doc = nil
+          notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
         end
       end
     else
@@ -294,11 +285,7 @@ class ApplicationController < ActionController::Base
       
       # project sproject
       if project.present?
-        if project.class == Project
-          annotations[:project] = project[:name]
-        else
-          annotations[:sproject] = project[:name]
-        end
+        annotations[:project] = project[:name]
       end 
       # doc
       annotations[:source_db] = doc.sourcedb

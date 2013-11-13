@@ -893,75 +893,87 @@ describe Doc do
       @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc_1 = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       # doc and project match
-      @doc_1_project_1_denotation_0_9 = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_1, :begin => 0, :end => 9)
-      @doc_1_project_1_denotation_1_9 = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_1, :begin => 1, :end => 9)
+      @doc_1_project_1_denotation_0_9 = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_1, :begin => 0, :end => 6)
+      @doc_1_project_1_denotation_1_9 = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_1, :begin => 1, :end => 7)
       # doc match project not match
-      @doc_1_project_2_denotation = FactoryGirl.create(:denotation, :project => @project_2, :doc => @doc_1, :begin => 0, :end => 9)
+      @doc_1_project_2_denotation = FactoryGirl.create(:denotation, :project => @project_2, :doc => @doc_1, :begin => 2, :end => 8)
       @doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       # doc not match project match
-      @doc_2_project_1_denotation = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_2, :begin => 0, :end => 9)
+      @doc_2_project_1_denotation = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_2, :begin => 3, :end => 9)
     end
     
     context 'when options[:span] blank' do
-      context 'when project.class == Project' do
+      context 'when project.associate_projects blank' do
         before do
           @denotations = @doc_1.hdenotations(@project_1)  
         end
         
         it 'should return @doc.denotations project match' do
           @denotations[0].should eql(
-          {:id => @doc_1_project_1_denotation_0_9.hid,
-          :obj => @doc_1_project_1_denotation_0_9.obj,
-          :span => {:begin => @doc_1_project_1_denotation_0_9.begin, :end => @doc_1_project_1_denotation_0_9.end}
+          {
+            :id => @doc_1_project_1_denotation_0_9.hid,
+            :obj => @doc_1_project_1_denotation_0_9.obj,
+            :span => {:begin => @doc_1_project_1_denotation_0_9.begin, :end => @doc_1_project_1_denotation_0_9.end}
           })
         end
         
         it 'should return @doc.denotations project match' do
           @denotations[1].should eql(
-          {:id => @doc_1_project_1_denotation_1_9.hid,
-          :obj => @doc_1_project_1_denotation_1_9.obj,
-          :span => {:begin => @doc_1_project_1_denotation_1_9.begin, :end => @doc_1_project_1_denotation_0_9.end}
+          {
+            :id => @doc_1_project_1_denotation_1_9.hid,
+            :obj => @doc_1_project_1_denotation_1_9.obj,
+            :span => {:begin => @doc_1_project_1_denotation_1_9.begin, :end => @doc_1_project_1_denotation_1_9.end}
           })
-        end
-        
-        it 'should not include project does not match' do
-          @denotations.should_not include(@doc_1_project_2_denotation)
-        end
-        
-        it 'should not include doc does not match' do
-          @denotations.should_not include(@doc_2_project_1_denotation)
         end
       end
 
-      context 'when project.class != Project' do
+      context 'when project.associate_projects present' do
         before do
-          @sproject = FactoryGirl.create(:sproject)
-          FactoryGirl.create(:projects_sproject, :project_id => @project_1.id, :sproject_id => @sproject.id)
-          @denotations = @doc_1.hdenotations(@sproject)  
+          @project = FactoryGirl.create(:project)
+          @project.associate_projects << @project_1
+          @project.associate_projects << @project_2
+          @project_denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc_1, :begin => 4, :end => 10)
+          @denotations = @doc_1.hdenotations(@project)  
         end
         
-        it 'should return @doc.denotations project match' do
+        it 'should return denotation belongs to doc, project and associate_proejct' do
+          @denotations.size.should eql(4)
+        end
+        
+        it 'should return @project.associate_projects.denotations project match' do
           @denotations[0].should eql(
-          {:id => @doc_1_project_1_denotation_0_9.hid,
-          :obj => @doc_1_project_1_denotation_0_9.obj,
-          :span => {:begin => @doc_1_project_1_denotation_0_9.begin, :end => @doc_1_project_1_denotation_0_9.end}
+          {
+            :id => @doc_1_project_1_denotation_0_9.hid,
+            :obj => @doc_1_project_1_denotation_0_9.obj,
+            :span => {:begin => @doc_1_project_1_denotation_0_9.begin, :end => @doc_1_project_1_denotation_0_9.end}
           })
         end
         
-        it 'should return @doc.denotations project match' do
+        it 'should return @project.associate_projects.denotations project match' do
           @denotations[1].should eql(
-          {:id => @doc_1_project_1_denotation_1_9.hid,
-          :obj => @doc_1_project_1_denotation_1_9.obj,
-          :span => {:begin => @doc_1_project_1_denotation_1_9.begin, :end => @doc_1_project_1_denotation_0_9.end}
+          {
+            :id => @doc_1_project_1_denotation_1_9.hid,
+            :obj => @doc_1_project_1_denotation_1_9.obj,
+            :span => {:begin => @doc_1_project_1_denotation_1_9.begin, :end => @doc_1_project_1_denotation_1_9.end}
           })
         end
         
-        it 'should not include project does not match' do
-          @denotations.should_not include(@doc_1_project_2_denotation)
+        it 'should return @project.associate_projects.denotations project match' do
+          @denotations[2].should eql(
+          {
+            :id => @doc_1_project_2_denotation.hid,
+            :obj => @doc_1_project_2_denotation.obj,
+            :span => {:begin => @doc_1_project_2_denotation.begin, :end => @doc_1_project_2_denotation.end}
+          })
         end
         
-        it 'should not include doc does not match' do
-          @denotations.should_not include(@doc_2_project_1_denotation)
+        it 'should return @project.associate_projects.denotations project match' do
+          @denotations[3].should eql(
+          {
+            :id => @project_denotation.hid,
+            :obj => @project_denotation.obj,
+            :span => {:begin => @project_denotation.begin, :end => @project_denotation.end}
+          })
         end
       end
     end
@@ -1021,7 +1033,7 @@ describe Doc do
         @instance_4 = FactoryGirl.create(:instance, :project => @project, :hid => 'Phid_2', :pred => 'Ppred_2', :obj => @denotation)
       end
       
-      context 'when project.clas == Project' do
+      context 'when project.accosite_projects blank' do
         before do
           @hinstances = @doc.hinstances(@project)
         end
@@ -1034,17 +1046,21 @@ describe Doc do
         end
       end
 
-      context 'when project.class != Project' do
+      context 'when project.accosite_projects present' do
         before do
-          @sproject = FactoryGirl.create(:sproject)
-          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject.id)
-          @hinstances = @doc.hinstances(@sproject)
+          @project_1 = FactoryGirl.create(:project)
+          @project_1.associate_projects << @project
+          @associate_project = FactoryGirl.create(:project)
+          @project_1.associate_projects << @associate_project
+          @instance_5 = FactoryGirl.create(:instance, :project => @associate_project, :hid => 'assocPhid_2', :pred => 'assocPpred_2', :obj => @denotation)
+          @hinstances = @doc.hinstances(@project_1)
         end
         
-        it 'should return Instance where obj_id IN self.denotations.within_spans.instances' do
+        it 'should return Instance belongs to denotation, project and associate_projects' do
           @hinstances.should eql([
             {:id => @instance_3.hid, :pred => @instance_3.pred, :obj=> @denotation.hid}, 
-            {:id => @instance_4.hid, :pred => @instance_4.pred, :obj=> @denotation.hid}
+            {:id => @instance_4.hid, :pred => @instance_4.pred, :obj=> @denotation.hid},
+            {:id => @instance_5.hid, :pred => @instance_5.pred, :obj=> @denotation.hid}
             ]) 
         end
       end
@@ -1081,16 +1097,13 @@ describe Doc do
         @relation_2 = FactoryGirl.create(:subinsrel, :obj => @instance_1, :project => @project_1)
 
         @project_2 = FactoryGirl.create(:project)
-        @sproject = FactoryGirl.create(:sproject)
-        FactoryGirl.create(:projects_sproject, :project_id => @project_1.id, :sproject_id => @sproject.id)
-        FactoryGirl.create(:projects_sproject, :project_id => @project_2.id, :sproject_id => @sproject.id)
         @denotation_2 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
         @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2)
         @relation_3 = FactoryGirl.create(:subcatrel, :obj => @denotation_2, :project => @project_2)
         @relation_4 = FactoryGirl.create(:subinsrel, :obj => @instance_2, :project => @project_2)
       end
       
-      context 'when project.class == Project' do
+      context 'when project.associate_projects blank' do
         before do
           @hrelations  = @doc.hrelations(@project_1)
         end
@@ -1103,9 +1116,12 @@ describe Doc do
         end
       end
       
-      context 'when project.class != Project' do
+      context 'when project.associate_projects present' do
         before do
-          @hrelations  = @doc.hrelations(@sproject)
+          @project = FactoryGirl.create(:project)
+          @project.associate_projects << @project_1
+          @project.associate_projects << @project_2
+          @hrelations  = @doc.hrelations(@project)
         end
         
         it 'should return doc.subcatrels and subinsresl' do
@@ -1179,7 +1195,7 @@ describe Doc do
         @modification_6 = FactoryGirl.create(:modification, :hid => 'M6', :obj => @relation_4, :obj_type => @relation_4.class.to_s, :project => @project_2)
       end
       
-      context 'when project.class == Project' do
+      context 'when project.accociate_project blank' do
         before do
           @hmodifications = @doc.hmodifications(@project_1) 
         end
@@ -1193,12 +1209,12 @@ describe Doc do
         end
       end
 
-      context 'when project.class != Project' do
+      context 'when project.accociate_project present' do
         before do
-          @sproject = FactoryGirl.create(:sproject)
-          FactoryGirl.create(:projects_sproject, :project_id => @project_1.id, :sproject_id => @sproject.id)
-          FactoryGirl.create(:projects_sproject, :project_id => @project_2.id, :sproject_id => @sproject.id)
-          @hmodifications = @doc.hmodifications(@sproject)
+          @project = FactoryGirl.create(:project)
+          @project.associate_projects << @project_1
+          @project.associate_projects << @project_2
+          @hmodifications = @doc.hmodifications(@project)
         end
         
         it 'should return self.insmodes, subcatrelmods and subinsrelmods where project_id = project.id' do
@@ -1307,48 +1323,86 @@ describe Doc do
    
   describe 'decrement_docs_counter' do
     before do
-      @project = FactoryGirl.create(:project, :pmcdocs_count => 2, :pmdocs_count => 2)
-      @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 4, :pmcdocs_count => 4)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
+      @project =             FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2)
+      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 3)
+      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid')
+      # @associate_project_1.pmcdocs_count 3 => 4
+      @associate_project_1.docs << @div
+      @associate_project_1.reload
+      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 4, :pmcdocs_count => 6)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 'sourceid')
+      # @associate_project_2.pmdocs_count 4 => 5
+      @associate_project_2.docs << @doc
+      @associate_project_2.reload
+      @project.associate_projects << @associate_project_1
+      @project.associate_projects << @associate_project_2
+      @project.reload
+    end
+    
+    describe 'before destroy' do
+      it 'associate_project_1 should incremented pmcdocs counter' do
+        @associate_project_1.pmcdocs_count.should eql(4)
+      end
+
+      it 'associate_project_2 should incremented pmdocs counter' do
+        @associate_project_2.pmdocs_count.should eql(5)
+      end
+      
+      it 'project.pmdocs_count should equal sum of associate proejct pmdocs count' do
+        @project.pmdocs_count.should eql(9)
+      end
+
+      it 'project.pmcdocs_count should equal sum of associate proejct pmdcocs count' do
+        @project.pmcdocs_count.should eql(12)
+      end
     end
     
     context 'when PMC docs' do
       before do
-        @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid')
-        FactoryGirl.create(:docs_project, :doc_id => @div, :project_id => @project.id)
+        @project.reload
         @div.destroy
       end
       
       it 'should decrement doc.projects pmcdocs_count' do
         @project.reload
-        @project.pmcdocs_count.should eql(1)
-        @project.pmdocs_count.should eql(2)
+        @project.pmcdocs_count.should eql(11)
+        @project.pmdocs_count.should eql(9)
       end
               
       it 'should incremant only sproject.pmdcocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmcdocs_count.should eql(3)
-        @sproject_1.pmdocs_count.should eql(4)
+        @associate_project_1.reload
+        @associate_project_1.pmcdocs_count.should eql(3)
+        @associate_project_1.pmdocs_count.should eql(3)
+      end
+              
+      it 'should incremant only sproject.pmdcocs_count' do
+        @associate_project_2.reload
+        @associate_project_2.pmdocs_count.should eql(5)
+        @associate_project_2.pmcdocs_count.should eql(6)
       end
     end
     
     context 'when PubMed docs' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 'sourceid')
-        FactoryGirl.create(:docs_project, :doc_id => @doc, :project_id => @project.id)
         @doc.destroy
       end
       
       it 'should decrement doc.projects pmdocs_count' do
         @project.reload
-        @project.pmdocs_count.should eql(1)
-        @project.pmcdocs_count.should eql(2)
+        @project.pmdocs_count.should eql(8)
+        @project.pmcdocs_count.should eql(12)
       end
               
-      it 'should incremant only sproject.pmdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmdocs_count.should eql(3)
-        @sproject_1.pmcdocs_count.should eql(4)
+      it 'should incremant only sproject.pmdcocs_count' do
+        @associate_project_1.reload
+        @associate_project_1.pmdocs_count.should eql(3)
+        @associate_project_1.pmcdocs_count.should eql(4)
+      end
+              
+      it 'should incremant only sproject.pmdcocs_count' do
+        @associate_project_2.reload
+        @associate_project_2.pmdocs_count.should eql(4)
+        @associate_project_2.pmcdocs_count.should eql(6)
       end
     end
   end

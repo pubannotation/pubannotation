@@ -382,15 +382,15 @@ describe ApplicationController do
           end
         end
         
-        context 'when options[:sproject] present' do
-          before do
-            @sproject = FactoryGirl.create(:sproject)
-            FactoryGirl.create(:projects_sproject, :project_id => @project_accessibility_1_and_another_user_project.id, :sproject_id => @sproject.id)
-            @result = controller.get_projects(:doc => @doc, :sproject => @sproject)
-          end
-          
-          it 'should include included in docs.projects and sproject abd' do
-            @result.should =~ [@project_accessibility_1_and_another_user_project]
+        pending 'associate projects shoube be got?' do
+          context 'when associate projects present' do
+            before do
+              @result = controller.get_projects(:doc => @doc, :sproject => @sproject)
+            end
+            
+            it 'should include included in docs.projects and sproject abd' do
+              @result.should =~ [@project_accessibility_1_and_another_user_project]
+            end
           end
         end
       end
@@ -432,41 +432,8 @@ describe ApplicationController do
             @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
           end
           
-          it 'should return nil and message that doc does not belongs to the annotasion set' do
+          it 'should return nil and message that doc does not belongs to the annotation set' do
             @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
-          end
-        end
-        
-        context 'when project.class != Project' do
-          before do
-            @sproject = FactoryGirl.create(:sproject)
-            @project = FactoryGirl.create(:project)
-            FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject.id)
-          end
-          
-          before do
-            @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid1', :serial => 0)  
-          end
-
-          context 'when projects docs include doc' do
-            before do
-              @project.docs << @doc
-              @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @sproject)
-            end
-            
-            it 'should return doc and nil notice' do
-              @result.should eql([@doc, nil])
-            end
-          end
-
-          context 'when projects docs not include doc' do
-            before do
-              @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @sproject)
-            end
-            
-            it 'should return doc and nil notice' do
-              @result.should eql([nil, I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :project_name => @sproject.name)])
-            end
           end
         end
       end
@@ -711,7 +678,7 @@ describe ApplicationController do
               @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
             end
             
-            context 'when project.class == Project' do
+            context 'when project.presentt' do
               before do
                 @result = controller.get_annotations(@project, @doc)
               end
@@ -719,29 +686,6 @@ describe ApplicationController do
               it 'should returns doc params, denotations, instances, relations and modifications' do
                 @result.should eql({
                   :project => @project.name,
-                  :source_db => @doc.sourcedb, 
-                  :source_id => @doc.sourceid, 
-                  :division_id => @doc.serial, 
-                  :section => @doc.section, 
-                  :text => @doc.body,
-                  :denotations => [{:id => @denotation.hid, :span => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
-                  :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
-                  :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
-                  :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
-                  })
-              end
-            end
-            
-            context 'when project.class == Project' do
-              before do
-                @sproject = FactoryGirl.create(:sproject)
-                FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject.id)
-                @result = controller.get_annotations(@sproject, @doc)
-              end
-              
-              it 'should returns doc params, denotations, instances, relations and modifications' do
-                @result.should eql({
-                  :sproject => @sproject.name,
                   :source_db => @doc.sourcedb, 
                   :source_id => @doc.sourceid, 
                   :division_id => @doc.serial, 
@@ -1054,14 +998,15 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @sproject_denotations_count_1 = FactoryGirl.create(:sproject, :denotations_count => 1)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_denotations_count_1.id)
-      @sproject_denotations_count_2 = FactoryGirl.create(:sproject, :denotations_count => 2)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_denotations_count_2.id)
+      @associate_project_denotations_count_1 = FactoryGirl.create(:project, :denotations_count => 1)
+      @associate_project_denotations_count_2 = FactoryGirl.create(:project, :denotations_count => 2)
+      @project.associate_projects << @associate_project_denotations_count_1
+      @project.associate_projects << @associate_project_denotations_count_2
+      
       @hdenotation = {:id => 'hid', :span => {:begin => 1, :end => 10}, :obj => 'Category'}
       @hdenotations = Array.new
       @hdenotations << @hdenotation
-      @result = controller.save_hdenotations(@hdenotations, @project, @doc) 
+      @result = controller.save_hdenotations(@hdenotations, @associate_project_denotations_count_1, @doc) 
       @denotation = Denotation.find_by_hid(@hdenotation[:id])
     end
     
@@ -1086,7 +1031,7 @@ describe ApplicationController do
     end
 
     it 'should save project.id as project_id' do
-      @denotation.project_id.should eql(@project.id)
+      @denotation.project_id.should eql(@associate_project_denotations_count_1.id)
     end
 
     it 'should save doc.id as doc_id' do
@@ -1099,25 +1044,21 @@ describe ApplicationController do
 
     it 'should incliment project.denotations_count after denotation saved' do
       @project.reload
-      @project.denotations_count.should eql(1)
+      @project.denotations_count.should eql(4)
     end
       
-    it 'sproject.denotations_count should equeal 0 before save' do
-      @sproject_denotations_count_1.denotations_count.should eql(1)
+    it 'associate_projectproject.denotations_count should equal 1 before save' do
+      @associate_project_denotations_count_1.denotations_count.should eql(1)
     end
     
-    it 'sproject.denotations_count should equeal 0 before save' do
-      @sproject_denotations_count_1.reload
-      @sproject_denotations_count_1.denotations_count.should eql(2)
+    it 'associate_projectproject.denotations_count should incremented after save' do
+      @associate_project_denotations_count_1.reload
+      @associate_project_denotations_count_1.denotations_count.should eql(2)
     end
     
-    it 'sproject.denotations_count should equeal 0 before save' do
-      @sproject_denotations_count_2.denotations_count.should eql(2)
-    end
-    
-    it 'sproject.denotations_count should equeal 0 before save' do
-      @sproject_denotations_count_2.reload
-      @sproject_denotations_count_2.denotations_count.should eql(3)
+    it 'associate_projectproject.denotations_count should remain' do
+      @associate_project_denotations_count_2.reload
+      @associate_project_denotations_count_2.denotations_count.should eql(2)
     end
   end
   
@@ -1453,37 +1394,6 @@ describe ApplicationController do
       it 'should incliment project.denotations_count after denotation saved' do
         @project.reload
         @project.denotations_count.should eql(1)
-      end
-    end
-    
-    context 'when projects.sprojects present' do
-      before do
-        @sproject_relations_count_1 = FactoryGirl.create(:sproject, :relations_count => 1)
-        FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_relations_count_1.id)
-        @sproject_relations_count_2 = FactoryGirl.create(:sproject, :relations_count => 2)
-        FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_relations_count_2.id)
-        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'M1', :obj => 'M1'}
-        @hrelations << @hrelation
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation, :hid => @hrelation[:subj])
-        @result = controller.save_hrelations(@hrelations, @project, @doc)
-      end
-      
-      it 'sproject.relatious_count should equeal 0 before save' do
-        @sproject_relations_count_1.relations_count.should eql(1)
-      end
-      
-      it 'sproject.relatious_count should equeal 0 before save' do
-        @sproject_relations_count_1.reload
-        @sproject_relations_count_1.relations_count.should eql(2)
-      end
-      
-      it 'sproject.relatious_count should equeal 0 before save' do
-        @sproject_relations_count_2.relations_count.should eql(2)
-      end
-      
-      it 'sproject.relatious_count should equeal 0 before save' do
-        @sproject_relations_count_2.reload
-        @sproject_relations_count_2.relations_count.should eql(3)
       end
     end
   end

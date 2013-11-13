@@ -224,11 +224,14 @@ describe PmcdocsController do
       context 'and when project exists' do
         before do
           @project = FactoryGirl.create(:project, :user => @user, :pmdocs_count => 0, :pmcdocs_count => 0)
-          @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
-          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-          @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 1)
-          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
-          controller.stub(:get_project).and_return([@project, 'notice'])
+          @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2)
+          @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 4)
+          @project.associate_projects << @associate_project_1
+          @project.associate_projects << @associate_project_2
+          controller.stub(:get_project).and_return([@associate_project_1, 'notice'])
+          @project.reload
+          @associate_project_1.reload
+          @associate_project_2.reload
         end
         
         context 'and when divs found by sourcedb and sourceid' do
@@ -238,32 +241,49 @@ describe PmcdocsController do
             @div = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)            
           end
           
+          describe 'counters before create' do
+            it 'should increment only project.pmdocs_count' do
+              @project.pmcdocs_count.should eql(6)
+              @project.pmdocs_count.should eql(4)
+            end
+            
+            it 'should incremant only sproject.pmdocs_count' do
+              @associate_project_1.pmcdocs_count.should eql(2)
+              @associate_project_1.pmdocs_count.should eql(1)
+            end
+            
+            it 'should incremant only associate_project.pmdocs_count' do
+              @associate_project_2.pmcdocs_count.should eql(4)
+              @associate_project_2.pmdocs_count.should eql(3)
+            end
+          end
+          
           context 'and when project.docs does not include divs.first' do
             context 'and when format html' do
               before do
-                post :create, :project_id => 1, :pmcids => @sourceid
+                post :create, :project_id => @associate_project_1.id, :pmcids => @sourceid
               end
               
               it 'should redirect_to project_pmcdocs_path' do
-                response.should redirect_to(project_path(@project.name, :accordion_id => 2))
+                response.should redirect_to(project_path(@associate_project_1.name, :accordion_id => 2))
               end
-           
+              
+              it 'should incremant only sproject.pmdocs_count' do
+                @associate_project_1.reload
+                @associate_project_1.pmcdocs_count.should eql(3)
+                @associate_project_1.pmdocs_count.should eql(1)
+              end
+              
+              it 'should incremant only associate_project.pmdocs_count' do
+                @associate_project_2.reload
+                @associate_project_2.pmcdocs_count.should eql(4)
+                @associate_project_2.pmdocs_count.should eql(3)
+              end
+              
               it 'should increment only project.pmdocs_count' do
                 @project.reload
-                @project.pmcdocs_count.should eql(1)
-                @project.pmdocs_count.should eql(0)
-              end
-              
-              it 'should incremant only sproject.pmdocs_count' do
-                @sproject_1.reload
-                @sproject_1.pmcdocs_count.should eql(1)
-                @sproject_1.pmdocs_count.should eql(0)
-              end
-              
-              it 'should incremant only sproject.pmdocs_count' do
-                @sproject_2.reload
-                @sproject_2.pmcdocs_count.should eql(2)
-                @sproject_2.pmdocs_count.should eql(0)
+                @project.pmcdocs_count.should eql(7)
+                @project.pmdocs_count.should eql(4)
               end
             end
 
@@ -277,7 +297,7 @@ describe PmcdocsController do
               end
               
               it 'should return location' do
-                response.location.should eql(project_path(@project.name, :accordion_id => 2))
+                response.location.should eql(project_path(@associate_project_1.name, :accordion_id => 2))
               end
             end
           end
@@ -288,31 +308,30 @@ describe PmcdocsController do
             before do
               @div = FactoryGirl.create(:doc, :id => 2, :sourcedb => 'PMC', :sourceid => 'sourceid')
               controller.stub(:gen_pmcdoc).and_return([[@div], 'message'])            
-              post :create, :project_id => @project.name, :pmcids => 'abcd'
+              post :create, :project_id => @associate_project_1.name, :pmcids => 'abcd'
             end
 
-            
             it 'should redirect_to project_pmcdocs_path' do
-              response.should redirect_to(project_path(@project.name, :accordion_id => 2))
+              response.should redirect_to(project_path(@associate_project_1.name, :accordion_id => 2))
             end
          
+            it 'should incremant only sproject.pmdocs_count' do
+              @associate_project_1.reload
+              @associate_project_1.pmcdocs_count.should eql(3)
+              @associate_project_1.pmdocs_count.should eql(1)
+            end
+            
+            it 'should incremant only associate_project.pmdocs_count' do
+              @associate_project_2.reload
+              @associate_project_2.pmcdocs_count.should eql(4)
+              @associate_project_2.pmdocs_count.should eql(3)
+            end
+            
             it 'should increment only project.pmdocs_count' do
               @project.reload
-              @project.pmcdocs_count.should eql(1)
-              @project.pmdocs_count.should eql(0)
-            end
-            
-            it 'should incremant only sproject.pmdocs_count' do
-              @sproject_1.reload
-              @sproject_1.pmcdocs_count.should eql(1)
-              @sproject_1.pmdocs_count.should eql(0)
-            end
-            
-            it 'should incremant only sproject.pmdocs_count' do
-              @sproject_2.reload
-              @sproject_2.pmcdocs_count.should eql(2)
-              @sproject_2.pmdocs_count.should eql(0)
-            end            
+              @project.pmcdocs_count.should eql(7)
+              @project.pmdocs_count.should eql(4)
+            end          
           end
 
           context 'and when divs does not returned by gen_pmcdoc' do
@@ -323,7 +342,7 @@ describe PmcdocsController do
             end
             
             it 'should redirect to project_pmcdocs_path' do
-              response.should redirect_to(project_path(@project.name, :accordion_id => 2))
+              response.should redirect_to(project_path(@associate_project_1.name, :accordion_id => 2))
             end
           end
         end
