@@ -272,9 +272,9 @@ class ApplicationController < ActionController::Base
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
-        aligner = Aligner.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
-        # aligner = Aligner.new(text, asciitext)
-        hdenotations = aligner.transform_denotations(hdenotations)
+        sequence_alignment = SequenceAlignment.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
+        # sequence_alignment = Aligner.new(text, asciitext)
+        hdenotations = sequence_alignment.transform_denotations(hdenotations)
         # hdenotations = adjust_denotations(hdenotations, asciitext)
         text = asciitext
       end
