@@ -1,28 +1,18 @@
 
 <h1>
   <% if scope.present? -%>
-  	<% if projects.first.class == Project -%>
-  		<%= t("views.projects.#{scope}").html_safe -%>
-  	<% else -%>
-  		<%= t("views.sprojects.#{scope}").html_safe -%>
-  	<% end -%>
+	<%= t("views.projects.#{scope}").html_safe -%>
   <% else -%>
 	  <% if @doc and @doc.sourcedb == 'PubMed' %>
 	  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
 	  <% elsif @doc and @doc.sourcedb == 'PMC' %>
 	  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
 	  <% else %>
-	  	<% if projects.first.class == Project -%>
-	    	<%= t('views.projects.in_pubannotation').html_safe %>
-	    	<% new_path = new_project_path -%>
-	    <% else -%>
-	    	<%= t('views.sprojects.in_pubannotation').html_safe %>
-	    	<% new_path = new_sproject_path -%>
-	    <% end -%>
+    	<%= t('views.projects.in_pubannotation').html_safe %>
+    	<% new_path = new_project_path -%>
 	    <% if params[:action] == 'index' -%>
 		    <% if user_signed_in?%>
-		    	<% model = projects.present? ? projects.first.class.name.downcase : 'sproject' -%>
-		      	<span class="button"><%= link_to t('views.shared.create_model', :model => t("activerecord.models.#{model}")), new_path %></span>
+		      	<span class="button"><%= link_to t('views.shared.create_model', :model => t("activerecord.models.project")), new_path %></span>
 		    <% else %>
 			    <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
 		    <% end %>
@@ -50,13 +40,8 @@
     </tr>
 
   <% projects.each do |project| %>
-  	<% if project.class == Project -%>
-        <% project_path = project_path(project.name) -%>
-        <% type = 'P' -%>
-  	<% else -%>
-        <% project_path = sproject_path(project.name) -%>
-        <% type = 'S' -%>
-  	<% end -%>
+    <% project_path = project_path(project.name) -%>
+    <% type = 'P' -%>
     <tr>
       <td style="white-space: nowrap"><%= project.name %></td>
       <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>

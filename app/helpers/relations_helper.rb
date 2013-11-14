@@ -15,6 +15,7 @@ module RelationsHelper
           if project.class == Project
             Relation.project_relations_count(project.id, Relation)
           else
+            # Sproject
             project.relations_count
           end
         end

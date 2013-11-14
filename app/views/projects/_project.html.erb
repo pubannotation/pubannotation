@@ -104,11 +104,7 @@
 	</table>
 	<% if user_signed_in? -%>
 		<% if model.updatable_for?(current_user) -%>
-			<% if model.class == Sproject -%>
-				<% edit_path = edit_sproject_path(model.name) -%>
-			<% else -%>
-				<% edit_path = edit_project_path(model.name) -%>
-			<% end -%>
+			<% edit_path = edit_project_path(model.name) -%>
 			<span class="button">
 				<%= link_to t('views.shared.edit'), edit_path, :class => 'capitalize_first' -%>
 			</span>

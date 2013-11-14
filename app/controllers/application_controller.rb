@@ -75,27 +75,10 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def get_sproject(name)
-    sproject = Sproject.find_by_name(name)
-    if sproject
-      if sproject.accessible?(current_user)
-        return sproject, nil
-      else
-        return nil, I18n.t('controllers.application.get_project.private', :project_name => name)
-      end
-    else
-      return nil, I18n.t('controllers.application.get_project.not_exist', :project_name => name)
-    end
-  end
-
 
   def get_projects (options = {})
     projects = (options.present? && options[:doc].present?)? options[:doc].projects : Project.where('id > ?', 0)
     # TODO associate projects should be got ?
-    # if options.present? && options[:sproject].present?
-      # sproject_projects = projects.sprojects_projects(options[:sproject].project_ids)
-      # projects = projects & sproject_projects
-    # end
     projects.sort!{|x, y| x.name <=> y.name}
     projects = projects.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
   end
@@ -283,7 +266,7 @@ class ApplicationController < ActionController::Base
       #   annotations[:div_id] = doc.serial
       # end
       
-      # project sproject
+      # project
       if project.present?
         annotations[:project] = project[:name]
       end 

@@ -160,36 +160,6 @@ describe PmcdocsController do
       end
     end
     
-    context 'when params[:sproject_id] exists' do
-      before do
-        @sproject = FactoryGirl.create(:sproject)
-        controller.stub(:get_sproject).and_return([@sproject, 'notice'])
-      end
-      
-      context 'when divs present' do
-        before do
-          @div = FactoryGirl.create(:doc)
-          @sproject.stub(:get_divs).and_return([@div])
-          get :show, :sproject_id => @sproject, :id => @div.id
-        end
-        
-        it 'should redirect to sproject pmcdoc divs path' do
-          response.should redirect_to(sproject_pmcdoc_divs_path(@sproject.id, @div.id))
-        end
-      end
-      
-      context 'when divs blank' do
-        before do
-          @sproject.stub(:get_divs).and_return(nil)
-          get :show, :sproject_id => @sproject, :id => 1
-        end
-        
-        it 'should redirect to sproject pmcdoc divs path' do
-          response.should redirect_to(sproject_pmcdocs_path(@sproject.id))
-        end
-      end
-    end
-    
     context 'when params[:project_id] does not exists' do
       context 'and when divs exists' do
         before do
@@ -247,7 +217,7 @@ describe PmcdocsController do
               @project.pmdocs_count.should eql(4)
             end
             
-            it 'should incremant only sproject.pmdocs_count' do
+            it 'should incremant only associate project.pmdocs_count' do
               @associate_project_1.pmcdocs_count.should eql(2)
               @associate_project_1.pmdocs_count.should eql(1)
             end
@@ -268,7 +238,7 @@ describe PmcdocsController do
                 response.should redirect_to(project_path(@associate_project_1.name, :accordion_id => 2))
               end
               
-              it 'should incremant only sproject.pmdocs_count' do
+              it 'should incremant only associate project.pmdocs_count' do
                 @associate_project_1.reload
                 @associate_project_1.pmcdocs_count.should eql(3)
                 @associate_project_1.pmdocs_count.should eql(1)
@@ -315,7 +285,7 @@ describe PmcdocsController do
               response.should redirect_to(project_path(@associate_project_1.name, :accordion_id => 2))
             end
          
-            it 'should incremant only sproject.pmdocs_count' do
+            it 'should incremant only associate project.pmdocs_count' do
               @associate_project_1.reload
               @associate_project_1.pmcdocs_count.should eql(3)
               @associate_project_1.pmdocs_count.should eql(1)

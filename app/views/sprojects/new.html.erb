@@ -1,7 +1,0 @@
-<% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
- 	> <%= link_to t('activerecord.models.sproject'), sprojects_path %>
- 	> <%= t('views.paths.new') %>
-<% end %>
-
-<%= render :partial => 'projects/form', :locals => {:model => @sproject} -%>

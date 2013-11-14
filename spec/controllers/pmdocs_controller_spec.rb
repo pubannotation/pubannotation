@@ -151,7 +151,7 @@ describe PmdocsController do
       end
     end
     
-    context 'when params[:project_id] and params[:sproject_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       before do
         get :show, :id => 1
       end      
@@ -167,9 +167,7 @@ describe PmdocsController do
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
       @project = 'project'
       @projects = 'projects'
-      @sproject = 'sproject'
       controller.stub(:get_project).and_return([@project, nil])
-      controller.stub(:get_sproject).and_return(@sproject)
       @doc.stub(:spans_projects).and_return(@projects)
       controller.stub(:get_doc).and_return([@doc, nil])
       @spans = 'SPANS'
@@ -227,28 +225,6 @@ describe PmdocsController do
       
       it 'should not assign @project' do
         assigns[:project].should be_nil
-      end
-      
-      it 'should assign @projects' do
-        assigns[:projects].should eql(@projects)
-      end
-    end
-    
-    context 'when params[:sproject_id] present' do
-      before do
-        get :spans, :id => @doc.sourceid, :sproject_id => '1', :begin => 1, :end => 5
-      end
-      
-      it 'should not assign @project' do
-        assigns[:project].should be_nil
-      end
-      
-      it 'should assign @sproject' do
-        assigns[:sproject].should eql(@sproject)
-      end
-      
-      it 'should assign @doc' do
-        assigns[:doc].should eql(@doc)
       end
       
       it 'should assign @projects' do
@@ -323,59 +299,10 @@ describe PmdocsController do
       it 'should assign @modifications' do
         assigns[:modifications].should eql(@annotations[:modifications])
       end
-
-      context 'when params[:project_id] blank' do
-        before do
-          @sproject = FactoryGirl.create(:sproject)
-          controller.stub(:get_sproject).and_return(@sproject, 'notice')
-          controller.stub(:get_doc).and_return(@doc, 'notice')
-          get :annotations, :sproject_id => @sproject.name, :id => @doc.id, :begin => 1, :end => 10
-        end
-        
-        it 'should assign @project' do
-          assigns[:project].should eql(@project)
-        end
-        
-        it 'should assign @doc' do
-          assigns[:doc].should eql(@doc)
-        end
-        
-        it 'should_not assign @projects' do
-          assigns[:projects].should be_nil
-        end
-        
-        it 'should assign @spans' do
-          assigns[:spans].should eql(@spans)
-        end
-        
-        it 'should assign @prev_text' do
-          assigns[:prev_text].should eql(@prev_text)
-        end
-        
-        it 'should assign @next_text' do
-          assigns[:next_text].should eql(@next_text)
-        end
-        
-        it 'should assign @denotations' do
-          assigns[:denotations].should eql(@annotations[:denotations])
-        end
-        
-        it 'should assign @instances' do
-          assigns[:instances].should eql(@annotations[:instances])
-        end
-        
-        it 'should assign @relations' do
-          assigns[:relations].should eql(@annotations[:relations])
-        end
-        
-        it 'should assign @modifications' do
-          assigns[:modifications].should eql(@annotations[:modifications])
-        end
-      end
     end
     
     
-    context 'when params[:project_id] and params[:sproject_id] blank' do
+    context 'when params[:project_id] blank' do
       before do
         get :annotations, :id => @doc.id, :begin => 1, :end => 10
       end
@@ -457,13 +384,13 @@ describe PmdocsController do
               @project.pmcdocs_count.should eql(0)
             end
             
-            it 'should incremant only sproject.pmdocs_count' do
+            it 'should incremant only associate project.pmdocs_count' do
               @project_project_1.reload
               @project_project_1.pmdocs_count.should eql(1)
               @project_project_1.pmcdocs_count.should eql(0)
             end
             
-            it 'should incremant only sproject.pmdocs_count' do
+            it 'should incremant only associate project.pmdocs_count' do
               @project_project_2.reload
               @project_project_2.pmdocs_count.should eql(2)
               @project_project_2.pmcdocs_count.should eql(0)

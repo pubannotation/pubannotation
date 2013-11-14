@@ -465,12 +465,12 @@ describe AnnotationsController do
           @project.denotations_count.should eql(0)
         end
       
-        it 'should reset sproject.denotaions_count' do
+        it 'should reset associate project.denotaions_count' do
           @associate_project_annotations_0.reload
           @associate_project_annotations_0.denotations_count.should eql(0)
         end
       
-        it 'should reset sproject.denotaions_count' do
+        it 'should reset associate project.denotaions_count' do
           @associate_project_annotations_3.reload
           @associate_project_annotations_3.denotations_count.should eql(0)
         end
@@ -594,12 +594,12 @@ describe AnnotationsController do
           @project.denotations_count.should eql(0)
         end
       
-        it 'should reset sproject.denotaions_count' do
+        it 'should reset associate project.denotaions_count' do
           @associate_project_annotations_0.reload
           @associate_project_annotations_0.denotations_count.should eql(0)
         end
       
-        it 'should reset sproject.denotaions_count' do
+        it 'should reset associate project.denotaions_count' do
           @associate_project_annotations_3.reload
           @associate_project_annotations_3.denotations_count.should eql(0)
         end

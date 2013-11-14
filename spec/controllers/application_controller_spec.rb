@@ -295,50 +295,6 @@ describe ApplicationController do
     end
   end
   
-  describe 'get_sproject' do
-    before do
-      @current_user = FactoryGirl.create(:user)
-      current_user_stub(@current_user)
-      controller.stub(:user_signed_in?).and_return(true)
-      @sproject = FactoryGirl.create(:sproject)
-    end
-    
-    context 'when sproject found' do
-      context 'when sproject.accessible == true' do
-        before do
-          Sproject.any_instance.stub(:accessible?).and_return(true)
-          @result = controller.get_sproject(@sproject.name)
-        end
-        
-        it 'should return sproject and nil notice' do
-          @result.should eql([@sproject, nil])
-        end
-      end
-
-      context 'when sproject.accessible == false' do
-        before do
-          Sproject.any_instance.stub(:accessible?).and_return(false)
-          @result = controller.get_sproject(@sproject.name)
-        end
-        
-        it 'should return nil and notice' do
-          @result.should eql([nil, I18n.t('controllers.application.get_project.private', :project_name => @sproject.name)])
-        end
-      end
-    end
-
-    context 'when sproject not found' do
-      before do
-        @name = 'name 000'
-        @result = controller.get_sproject(@name)
-      end
-      
-      it 'should return nil and notice' do
-        @result.should eql([nil, I18n.t('controllers.application.get_project.not_exist', :project_name => @name)])
-      end
-    end
-  end
-  
   describe 'get_projects' do
     before do
       @another_user = FactoryGirl.create(:user)
@@ -360,37 +316,13 @@ describe ApplicationController do
           FactoryGirl.create(:docs_project, :project_id => @project_accessibility_not_1_and_current_user_project.id, :doc_id => @doc.id)  
         end
         
-        context 'when options[:sproject] blank' do
+        context 'when associate projects present' do
           before do
             @result = controller.get_projects(:doc => @doc)
           end
           
-          it 'should include accessibility = 1 and another users project' do
-            @result.should include(@project_accessibility_1_and_another_user_project)
-          end
-          
-          it 'should not include accessibility != 1 and another users project' do
-            @result.should_not include(@project_accessibility_not_1_and_another_user_project)
-          end
-          
-          it 'should include accessibility = 1 and current users project' do
-            @result.should include(@project_accessibility_1_and_current_user_project)
-          end
-          
-          it 'should include accessibility != 1 and current users project' do
-            @result.should include(@project_accessibility_not_1_and_current_user_project)
-          end
-        end
-        
-        pending 'associate projects shoube be got?' do
-          context 'when associate projects present' do
-            before do
-              @result = controller.get_projects(:doc => @doc, :sproject => @sproject)
-            end
-            
-            it 'should include included in docs.projects and sproject abd' do
-              @result.should =~ [@project_accessibility_1_and_another_user_project]
-            end
+          it 'should include included in docs.projects' do
+            @result.should =~ @doc.projects
           end
         end
       end

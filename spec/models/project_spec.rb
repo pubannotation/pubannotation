@@ -238,7 +238,7 @@ describe Project do
     end
   end
   
-  describe 'scope sprojects_projects' do
+  describe 'scope not_id_in' do
     before do
       @project_1 = FactoryGirl.create(:project)
       @project_2 = FactoryGirl.create(:project)
@@ -246,19 +246,7 @@ describe Project do
     end
     
     it 'should include project_id included in project_ids' do
-      Project.sprojects_projects([@project_1.id, @project_2.id]).should =~ [@project_1, @project_2]
-    end    
-  end
-  
-  describe 'scope not_sprojects_projects' do
-    before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @project_3 = FactoryGirl.create(:project)
-    end
-    
-    it 'should include project_id included in project_ids' do
-      Project.not_sprojects_projects([@project_1.id, @project_2.id]).should =~ [@project_3]
+      Project.not_id_in([@project_1.id, @project_2.id]).should =~ [@project_3]
     end    
   end
   

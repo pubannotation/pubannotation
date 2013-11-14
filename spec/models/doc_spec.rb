@@ -1369,13 +1369,13 @@ describe Doc do
         @project.pmdocs_count.should eql(9)
       end
               
-      it 'should incremant only sproject.pmdcocs_count' do
+      it 'should incremant only associate project.pmdcocs_count' do
         @associate_project_1.reload
         @associate_project_1.pmcdocs_count.should eql(3)
         @associate_project_1.pmdocs_count.should eql(3)
       end
               
-      it 'should incremant only sproject.pmdcocs_count' do
+      it 'should incremant only associate project.pmdcocs_count' do
         @associate_project_2.reload
         @associate_project_2.pmdocs_count.should eql(5)
         @associate_project_2.pmcdocs_count.should eql(6)
@@ -1393,13 +1393,13 @@ describe Doc do
         @project.pmcdocs_count.should eql(12)
       end
               
-      it 'should incremant only sproject.pmdcocs_count' do
+      it 'should incremant only associate project.pmdcocs_count' do
         @associate_project_1.reload
         @associate_project_1.pmdocs_count.should eql(3)
         @associate_project_1.pmcdocs_count.should eql(4)
       end
               
-      it 'should incremant only sproject.pmdcocs_count' do
+      it 'should incremant only associate project.pmdcocs_count' do
         @associate_project_2.reload
         @associate_project_2.pmdocs_count.should eql(4)
         @associate_project_2.pmcdocs_count.should eql(6)

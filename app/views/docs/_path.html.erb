@@ -21,28 +21,6 @@
 				> annotations
 			<% end -%>
 		<% end %>
-	<% elsif @sproject -%>
-		> <%= link_to t('activerecord.models.sproject'), sprojects_path %>
-		> <%= link_to @sproject.name, sproject_path(@sproject.name) %>
-		<% if @doc and @doc.sourcedb == 'PubMed' %>
-		    > <%= link_to_unless_current t('views.shared.a_pmdoc', :sourceid => @doc.sourceid), sproject_pmdoc_path(@sproject.name, @doc.sourceid) %>
-		    <% if params[:begin] && params[:end] -%>
-				<%= link_to_unless_current "> spans #{params[:begin]} - #{params[:end]}", spans_sproject_pmdoc_url(@sproject.name, @doc.sourceid, params[:begin], params[:end]) -%>
-			<% end %>
-			<% if params[:action] == 'annotations' -%>
-				> annotations
-			<% end -%>
-		<% elsif @doc and @doc.sourcedb == 'PMC' %>
-		    > <%= link_to t('views.shared.a_pmcdoc', :sourceid => @doc.sourceid), sproject_pmcdoc_path(@sproject.name, @doc.sourceid) %>
-		    > <%= link_to_unless_current "#{t('views.shared.divs')}: #{@doc.serial}", sproject_pmcdoc_div_url(@sproject.name, @doc.sourceid, params[:id]) %>
-		    <% if params[:begin] && params[:end] -%>
-				<%= link_to_unless_current "> spans #{params[:begin]} - #{params[:end]}", spans_sproject_pmcdoc_div_path(@sproject.name, @doc.sourceid, params[:id], params[:begin], params[:end]) -%>
-			<% end %>
-			<% if params[:action] == 'annotations' -%>
-				> annotations
-			<% end -%>
-		<% end %>
-	
 	<% else %>
 		<% if @doc.sourcedb == 'PubMed' %>
 		    > <%= link_to t('views.shared.pmdocs'), pmdocs_path %>

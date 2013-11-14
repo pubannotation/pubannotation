@@ -13,10 +13,6 @@
 		<% search_path = search_project_path(@project.name) %>
 		<% auto_complete_path = "/projects/autocomplete_pmcdoc_sourceid/#{params[:id]}" %>
 		<% doc_tag = hidden_field_tag :doc, 'PMC' %>
-	<% elsif @sproject.present? -%>
-		<% search_path = search_sproject_path(@sproject.name) %>
-		<% auto_complete_path = "/sprojects/autocomplete_pmcdoc_sourceid/#{@sproject.project_ids}" %>
-		<% doc_tag = hidden_field_tag :doc, 'PMC' %>
 	<% else %>
 		<% search_path = search_pmcdocs_path %>
 		<% auto_complete_path = autocomplete_doc_sourceid_pmcdocs_path %>
@@ -60,11 +56,7 @@
         </td>
         <td>
           <% if project %>
-          	<% if project.class == Project -%>
-          		<% pmcdoc_path = project_pmcdoc_url(project.name, doc.sourceid) -%>
-          	<% else -%>
-          		<% pmcdoc_path = sproject_pmcdoc_url(project.name, doc.sourceid) -%>
-          	<% end -%>
+      		<% pmcdoc_path = project_pmcdoc_url(project.name, doc.sourceid) -%>
             <span class="button"><%= link_to t('views.shared.show_divisions'), pmcdoc_path %></span>
             <% if user_signed_in? and current_user == project.user && project.class == Project %>
               <span class="button"><%= link_to t('views.shared.remove'), project_pmcdoc_url(project.name, doc.sourceid), :method => :delete, :confirm => 'Are you sure? All the annotations to this document in the project will be deleted.' %></span>

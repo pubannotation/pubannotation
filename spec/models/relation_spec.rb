@@ -525,7 +525,7 @@ describe Relation do
     end
   end
   
-  describe 'increment_sproject_relations_count' do
+  describe 'increment_project_relations_count' do
     before do
       @project = FactoryGirl.create(:project, :relations_count => 0)
       @associate_project_1 = FactoryGirl.create(:project, :relations_count => 0)

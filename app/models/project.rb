@@ -3,8 +3,6 @@ class Project < ActiveRecord::Base
   has_and_belongs_to_many :docs, :after_add => :increment_docs_counter, :after_remove => :decrement_docs_counter 
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC'}
-  has_many :projects_sprojects
-  has_and_belongs_to_many :sprojects
   
   # Project to Proejct associations
   # parent project => associate projects = @project.associate_projects
@@ -39,10 +37,7 @@ class Project < ActiveRecord::Base
       where(:accessibility => 1)
     end
   }
-  scope :sprojects_projects, lambda{|project_ids|
-    where('projects.id IN (?)', project_ids)
-  }
-  scope :not_sprojects_projects, lambda{|project_ids|
+  scope :not_id_in, lambda{|project_ids|
     where('projects.id NOT IN (?)', project_ids)
   }
     

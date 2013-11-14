@@ -7,9 +7,6 @@ class DivsController < ApplicationController
     if params[:project_id]
       @project_name = params[:project_id]
       @project = Project.find_by_name(@project_name)
-    elsif params[:sproject_id]
-      @project_name = params[:sproject_id]
-      @sproject = Sproject.find_by_name(@project_name)
     end
 
     respond_to do |format|
@@ -23,12 +20,6 @@ class DivsController < ApplicationController
       @project, notice = get_project(params[:project_id])
       if @project
         @doc, flash[:notice] = get_doc('PMC', params[:pmcdoc_id], params[:id], @project)
-      end
-    elsif params[:sproject_id].present?
-      @sproject, notice = get_sproject(params[:sproject_id])
-      if @sproject
-        @doc, flash[:notice] = get_doc('PMC', params[:pmcdoc_id], params[:id], @sproject)
-        @projects = @doc.spans_projects(params)
       end
     else
       @doc, flash[:notice] = get_doc('PMC', params[:pmcdoc_id], params[:id])
@@ -78,11 +69,6 @@ class DivsController < ApplicationController
       else
         @doc = nil
       end
-    elsif params[:sproject_id].present?
-      @sproject, notice = get_sproject(params[:sproject_id])
-      @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id], @sproject)
-      @annotations = get_annotations(@sproject, @doc)
-      @projects = get_projects({:doc => @doc, :sproject => @sproject})
     else
       @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
       @projects = get_projects({:doc => @doc})

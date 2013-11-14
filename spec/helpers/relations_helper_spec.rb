@@ -62,17 +62,6 @@ describe RelationsHelper do
             @result.should eql(@relation_project_relations_count)
           end
         end
-
-        context 'when project.class != Project' do
-          before do
-            @sproject = FactoryGirl.create(:sproject, :relations_count => 15)
-            @result = helper.relations_count_helper(@sproject)
-          end
-          
-          it 'should return sproject.relations_count' do
-            @result.should eql(@sproject.relations_count)
-          end
-        end
       end
     end
     

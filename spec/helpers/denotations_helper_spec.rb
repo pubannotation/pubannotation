@@ -83,18 +83,6 @@ describe DenotationsHelper do
             end
           end
         end
-
-        context 'when project.class != Project' do
-          before do
-            @sproject_denotaions_count = 'Sproject denotations count'
-            @sproject = FactoryGirl.create(:sproject, :denotations_count => 15)
-            @result = helper.denotations_count_helper(@sproject)
-          end
-          
-          it 'should return sproejct.denotations_count' do
-            @result.should eql(@sproject.denotations_count)
-          end
-        end
       end
     end
       
