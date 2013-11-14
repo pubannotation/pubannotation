@@ -41,7 +41,7 @@ describe ApplicationHelper do
       end
       
       it 'should output errors count for an error' do
-        @result.should include(I18n.t('errors.template.header.one', :model => @model_name.downcase))
+        @result.should include(I18n.t('errors.template.header.one', :model => @model_name))
       end
     end
     
@@ -53,7 +53,7 @@ describe ApplicationHelper do
       end
       
       it 'should output errors count for more than one error' do
-        @result.should include(I18n.t('errors.template.header.other', :model => @model_name.downcase, :count => @errors_count))
+        @result.should include(I18n.t('errors.template.header.other', :model => @model_name, :count => @errors_count))
       end
     end
   end
