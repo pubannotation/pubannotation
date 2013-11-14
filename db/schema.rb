@@ -66,8 +66,8 @@ ActiveRecord::Schema.define(:version => 20131030030747) do
     t.string   "sourceid"
     t.integer  "serial"
     t.string   "section"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
     t.integer  "denotations_count", :default => 0
     t.integer  "subcatrels_count",  :default => 0
   end
@@ -112,8 +112,8 @@ ActiveRecord::Schema.define(:version => 20131030030747) do
     t.string   "name"
     t.text     "description"
     t.string   "author"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
     t.string   "license"
     t.string   "reference"
     t.string   "editor"

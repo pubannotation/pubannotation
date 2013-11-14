@@ -471,6 +471,7 @@ class ApplicationController < ActionController::Base
 
   def save_hinstances (hinstances, project, doc)
     hinstances.each do |a|
+      p a
       ia            = Instance.new
       ia.hid        = a[:id]
       ia.pred       = a[:pred]

@@ -111,6 +111,57 @@ describe ProjectsController do
         end
       end
       
+      describe '@accordion_id' do
+        context 'when params[:accordion_id] present' do
+          before do
+            @accordion_id = 'Accordion Id'
+            get :show, :id => @project.id, :accordion_id => @accordion_id
+          end
+          
+          it 'should assign params[:accordion_id] as @accordion_id' do
+            assigns[:accordion_id].should eql(@accordion_id)
+          end
+        end
+
+        context 'when params[:accordion_id] blank' do
+          context 'when @pmdocs.size != @pmcdosc.size' do
+            context 'when @pmdocs.size > @pmcdocs.size' do
+              before do
+                @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
+                FactoryGirl.create(:docs_project, :project_id => @project.id , :doc_id => @pmdoc.id)
+                get :show, :id => @project.id
+              end
+              
+              it 'should assign 1 as @accordion_id' do
+                assigns[:accordion_id].should eql('1')
+              end
+            end
+
+            context 'when @pmdocs.size < @pmcdocs.size' do
+              before do
+                @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+                FactoryGirl.create(:docs_project, :project_id => @project.id , :doc_id => @pmcdoc.id)
+                get :show, :id => @project.id
+              end
+              
+              it 'should assign 2 as @accordion_id' do
+                assigns[:accordion_id].should eql('2')
+              end
+            end
+          end
+
+          context 'when @pmdocs.size == @pmcdosc.size' do
+            before do
+              get :show, :id => @project.id
+            end
+            
+            it '@accordion_id should be nil' do
+              assigns[:accordion_id].should be_nil
+            end
+          end
+        end
+      end
+      
       context 'when sourceid does not exists' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 'serial')

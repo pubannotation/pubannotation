@@ -30,7 +30,7 @@
       <th><%= t('activerecord.attributes.project.description') %></th>
       <th><%= link_to_unless_current t('activerecord.attributes.project.author'), url_for(:only_path => true, :projects_order => 'author'), :class => 'sortable-a' %></th>
       <th class="sortable-th" ><%= link_to_unless_current t('activerecord.attributes.project.maintainer'), url_for(:only_path => true, :projects_order => 'maintainer'), :class => 'sortable-a' %></th>
-      <th class="sortable-th" title='Association'><%= link_to_unless_current 'A', url_for(:only_path => true, :projects_order => 'association'), :class => 'sortable-a' %></th>
+      <!-- <th class="sortable-th" title='Association'><%= link_to_unless_current 'A', url_for(:only_path => true, :projects_order => 'association'), :class => 'sortable-a' %></th> -->
       <th class="sortable-th" title='PubMed abstracts'><%= link_to_unless_current 'P', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>
       <th class="sortable-th" title='PubMed Central documents'><%= link_to_unless_current 'C', url_for(:only_path => true, :projects_order => 'pmcdocs_count'), :class => 'sortable-a' %></th>
       <th class="sortable-th" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
@@ -47,10 +47,10 @@
       <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>
       <td style="white-space: nowrap"><%= project.author %></td>
       <td style="white-space: nowrap"><%= project.user.username %></td>
-      <td>
+<!--       <td>
       	<%= project.association_for(current_user) -%>
       </td>
-      <td style="text-align:right">
+ -->      <td style="text-align:right">
       	<%= project.pmdocs_count -%>
       </td>
       <td style="text-align:right">

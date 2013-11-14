@@ -4,10 +4,7 @@
 	  $( "#accordion" ).accordion({
 	    heightStyle: "content",
 	    collapsible: true,
-	    <% if params[:accordion_id].present? %>
-	    	active: <%= params[:accordion_id] %>
-
-	    <% end %>
+	    <%= "active: #{@accordion_id}" if @accordion_id.present? -%>
 	  });
 	});
 	</script>

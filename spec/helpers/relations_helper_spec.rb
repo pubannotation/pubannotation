@@ -31,24 +31,12 @@ describe RelationsHelper do
         
     context 'when project present' do
       context 'when doc present' do
-        context 'when sourceid nil' do
-          before do
-            @result = helper.relations_count_helper(@project, {:doc => @doc})
-          end
-          
-          it 'should return Relation.project_relations_count' do
-            @result.should eql(@doc_project_relations_count)
-          end
+        before do
+          @result = helper.relations_count_helper(@project, {:doc => @doc})
         end
-
-        context 'when sourceid present' do
-          before do
-            @result = helper.relations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
-          end
-          
-          it 'should return Relation.project_relations_count' do
-            @result.should eql(@same_sourceid_relations_count)
-          end
+        
+        it 'should return Relation.project_relations_count' do
+          @result.should eql(@doc_project_relations_count)
         end
       end
 
