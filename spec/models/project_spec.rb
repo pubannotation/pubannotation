@@ -691,6 +691,93 @@ describe Project do
     end
   end
   
+  describe 'associate_project_ids' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
+      @project_4 = FactoryGirl.create(:project)
+      @associate_project_1 = FactoryGirl.create(:project)
+      @associate_project_2 = FactoryGirl.create(:project)
+      @associate_project_3 = FactoryGirl.create(:project)
+
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @associate_project_3)
+      @project_1.reload
+      @project_2.reload
+      @project_3.reload
+      @project_4.reload
+      @associate_project_1.reload
+      @associate_project_2.reload
+      @associate_project_3.reload
+    end
+    
+    context 'when have associate projects' do
+      before do
+        @ids = @project_1.associate_project_ids  
+      end
+      
+      it 'should return associate project ids' do
+        @ids.should =~ [@associate_project_1.id, @associate_project_2.id]
+      end
+    end
+    
+    context 'when does not have associate projects' do
+      before do
+        @ids = @project_4.associate_project_ids  
+      end
+      
+      it 'should be blank' do
+        @ids.should be_blank
+      end
+    end
+  end
+  
+  describe 'self_id_and_associate_project_ids' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @associate_project_ids = ['A', 'B']
+      @project.stub(:associate_project_ids).and_return(@associate_project_ids)
+    end
+    
+    it 'should return associate_project_ids and self id' do
+      @project.self_id_and_associate_project_ids.should =~ @associate_project_ids << @project.id
+    end
+  end
+  
+  describe 'project_ids' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @associate_project_1 = FactoryGirl.create(:project)
+      @associate_project_2 = FactoryGirl.create(:project)
+      @associate_project_3 = FactoryGirl.create(:project)
+
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
+      @project_1.reload
+      @project_2.reload
+      @associate_project_1.reload
+      @associate_project_2.reload
+      @associate_project_3.reload
+    end
+    
+    context 'when have projects' do
+      it 'should return project ids' do
+        @associate_project_1.project_ids.should =~ [@project_1.id, @project_2.id]
+      end
+    end
+    
+    context 'when does not have projects' do
+      it 'should be blank' do
+        @project_1.project_ids.should be_blank
+      end
+    end
+  end
+  
   describe 'associate_project_and_project_ids' do
     before do
       @project_1 = FactoryGirl.create(:project)
@@ -739,24 +826,4 @@ describe Project do
       end
     end
   end
-  
-  describe 'update_couters' do
-    before do
-      @project = FactoryGirl.create(:project)
-      @project_project_1 = FactoryGirl.create(:project)
-      FactoryGirl.create(:associate_projects_project, :project => @project_project_1, :associate_project => @project)
-      #@project_project_1.associate_projects << @project
-      #FactoryGirl.create(:docs_project, :doc_id => @doc.id, :project_id => @project.id)
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-      @project.docs << @doc
-    end
-    
-    describe '' do
-      before do
-      end
-    
-      it '' do
-      end
-    end
-  end 
 end

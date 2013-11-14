@@ -8,12 +8,7 @@ module RelationsHelper
         if options[:doc].present?
           options[:doc].project_relations_count(project.id)
         else 
-          if project.class == Project
-            Relation.project_relations_count(project.id, Relation)
-          else
-            # Sproject
-            project.relations_count
-          end
+          Relation.project_relations_count(project.id, Relation)
         end
       else
         options[:doc].relations_count

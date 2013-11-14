@@ -156,13 +156,13 @@ class Project < ActiveRecord::Base
     end
   end
   
-  def self_id_and_associate_project_ids
-    associate_project_ids << self.id
-  end
-  
   def associate_project_ids
     associate_project_ids = associate_projects.present? ? associate_projects.collect{|associate_project| associate_project.id} : []
     associate_project_ids.uniq
+  end
+  
+  def self_id_and_associate_project_ids
+    associate_project_ids << self.id
   end
   
   def project_ids
@@ -187,7 +187,7 @@ class Project < ActiveRecord::Base
       :relations_count => associate_project.relations_count
   end  
   
-  # iderement counters after delete associate projects
+  # decrement counters after delete associate projects
   def decrement_counters(associate_project)
     Project.update_counters self.id, 
       :pmdocs_count => - associate_project.pmdocs_count,
@@ -195,35 +195,4 @@ class Project < ActiveRecord::Base
       :denotations_count => - associate_project.denotations_count,
       :relations_count => - associate_project.relations_count
   end  
-  
-  def decrement_each_docs_count
-    Project.decrement_counter(:pmdocs_count, self.id)
-    # force to execute callback 'after_save'
-    self.update_attribute(:updated_at, DateTime.now)    
-  end
-  
-  def update_each_docs_count
-    #Project.decrement_counter(:pmdocs_count, self.id)
-    # force to execute callback 'after_save'
-    associate_project_counters = { 
-      :pmdocs_count => self.associate_projects.sum(:pmdocs_count), 
-      :pmcdocs_count => self.associate_projects.sum(:pmcdocs_count), 
-      :denotations_count => self.associate_projects.sum(:denotations_count), 
-      :relations_count => self.associate_projects.sum(:relations_count)
-    }
-    #self.update_attribute(:updated_at, DateTime.now)    
-  end
-
-  after_save :update_counters
-  
-  def update_counters
-    if self.projects.present?
-      p "projecd.#{ self.id } have to update project #{ self.projects.collect{| project | project.id} }"
-    end
-      self.projects.each do |project|
-        #p "AFTER UPDATE DECREMENT project.projects >> #{ project.id } << COUNT"
-        project.update_each_docs_count
-      end
-    # end
-  end
 end
