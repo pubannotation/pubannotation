@@ -530,11 +530,12 @@ describe Relation do
       @project = FactoryGirl.create(:project, :relations_count => 0)
       @associate_project_1 = FactoryGirl.create(:project, :relations_count => 0)
       @associate_project_2 = FactoryGirl.create(:project, :relations_count => 1)
-      @relation = FactoryGirl.create(:relation, :project => @associate_project_2, :obj_id => 1)
-      @associate_project_1.reload
-      @associate_project_2.reload
       @project.associate_projects << @associate_project_1
       @project.associate_projects << @associate_project_2
+      @project.reload
+      @associate_project_2.reload
+      @relation = FactoryGirl.create(:relation, :project => @associate_project_2, :obj_id => 1)
+      @associate_project_2.reload
       @project.reload
     end
     

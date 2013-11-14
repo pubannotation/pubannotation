@@ -81,7 +81,7 @@ class Relation < ActiveRecord::Base
   def increment_project_relations_count
     if self.project.present? && self.project.projects.present?
       project.projects.each do |project|
-        Project.decrement_counter(:relations_count, project.id)
+        Project.increment_counter(:relations_count, project.id)
       end
     end
   end
