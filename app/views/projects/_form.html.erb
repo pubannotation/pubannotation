@@ -101,11 +101,13 @@
 	  			<div id="associate_projects_projects"></div>
 	  			<%= ps.autocomplete_field :project_name, "/projects/autocomplete_project_name/#{@project.associate_project_and_project_ids}", :id => 'associate_project_name', :placeholder => t('activerecord.placeholders.project.associate_project_name') -%>
 		  		<script type="text/javascript">
+		  			var i = 0;  
 			  		$('#associate_project_name').bind('railsAutocomplete.select', function(event, data){
 			  			var projectName = data.item.value;
 			  			// append associate projects name
-			  			$( "<div class='associate_username'>" + projectName +"<input type='hidden' value='" + projectName + "' id='associate_project_names[]' name='associate_project_names[]'> <span class='clickable-text' href='' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></span></div>" ).appendTo( "#associate_projects_projects" );
+			  			$( "<div class='associate_project'>" + projectName +"<input type='hidden' value='" + projectName + "' id='associate_projects[name][" + i + "]' name='associate_projects[name][" + i + "]'> <span class='clickable-text' href='' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></span><label><input type='checkbox' checked='checkced' id='associate_projects[import][" + i + "]' name='associate_projects[import][" + i + "]' value='true'><%= t('controllers.projects.new.import') -%></label></div>" ).appendTo( "#associate_projects_projects" );
 			  			$('#associate_project_name').val('');
+			  			i += 1;
 					});
 		  		</script>
 	  		<% end -%>

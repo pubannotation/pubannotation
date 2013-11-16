@@ -156,6 +156,24 @@ class Project < ActiveRecord::Base
     end
   end
   
+  def add_associate_projects(params_associate_projects)
+    if params_associate_projects.present?
+      associate_projects_names = Array.new
+      params_associate_projects[:name].each do |index, name|
+        associate_projects_names << name
+        if params_associate_projects[:import].present? && params_associate_projects[:import][index]
+          project = Project.includes(:associate_projects).find_by_name(name)
+          if project.associate_projects.present?
+            associate_project_names = project.associate_projects.collect{|associate_project| associate_project.name}
+            associate_projects_names = associate_projects_names | associate_project_names if associate_project_names.present?
+          end
+        end
+      end
+      associate_projects = Project.where('name IN (?)', associate_projects_names.uniq)
+      self.associate_projects << associate_projects
+    end    
+  end
+  
   def associate_project_ids
     associate_project_ids = associate_projects.present? ? associate_projects.collect{|associate_project| associate_project.id} : []
     associate_project_ids.uniq

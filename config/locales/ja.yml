@@ -338,6 +338,8 @@ ja:
         does_not_exist: ドキュメント%{sourcedb}:%{sourceid}はPubAnnotation内に存在しません
       destroy:
         deleted: アノテーションセット%{id}を削除しました
+      new:
+        import: "関連プロジェクトをインポート"
   views:
     service:
       title: PubAnnotation

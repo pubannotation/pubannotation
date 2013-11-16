@@ -641,6 +641,116 @@ describe Project do
       end
     end
   end
+  
+  describe 'add_associate_projects' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @associate_project_have_no_associate_projects = FactoryGirl.create(:project)
+      @associated_project = FactoryGirl.create(:project)
+      @associate_project_have_associate_projects_1 = FactoryGirl.create(:project)
+      @associate_project_have_associate_projects_1.associate_projects << @associated_project
+      @associate_project_have_associate_projects_1.reload      
+      @associate_project_have_associate_projects_2 = FactoryGirl.create(:project)
+      @associate_project_have_associate_projects_2.associate_projects << @associated_project
+      @associate_project_have_associate_projects_2.reload      
+    end
+
+    context 'when params[:associate_projects] present' do
+      context 'when params[:associate_projects][:import] present' do
+        context 'when params[:associate_projects][:import] is true' do
+          context 'when associate project have associate_projects' do
+            before do
+              @project.add_associate_projects(
+                {
+                      :name => {
+                        '0' => @associate_project_have_no_associate_projects.name, 
+                        '1' => @associate_project_have_associate_projects_1.name,
+                        '2' => @associate_project_have_no_associate_projects.name,
+                        '3' => @associate_project_have_associate_projects_2.name
+                      },
+                      :import => {
+                        '0' => 'true',
+                        '1' => 'true',
+                        '2' => 'true',
+                        '3' => 'true'
+                      }
+                }          
+              )
+              @project.reload
+            end
+            
+            it 'should associate projects associated associate projects once only' do
+              @project.associate_projects.should =~ [
+                @associate_project_have_no_associate_projects, 
+                @associate_project_have_associate_projects_1, 
+                @associated_project, 
+                @associate_project_have_associate_projects_2
+              ]
+            end
+          end
+
+          context 'when associate project does not have associate_projects' do
+            before do
+              @project.add_associate_projects(
+                {
+                      :name => {
+                        '0' => @associate_project_have_no_associate_projects.name, 
+                        '1' => @associated_project.name
+                      },
+                      :import => {
+                        '0' => 'true',
+                        '1' => 'true'
+                      }
+                }          
+              )
+              @project.reload
+            end
+            
+            it 'should associate associate projects' do
+              @project.associate_projects.should =~ [
+                @associate_project_have_no_associate_projects, 
+                @associated_project
+              ]
+            end
+          end
+        end
+      end
+
+      context 'when params[:associate_projects][:import] blank' do
+        before do
+          @project.add_associate_projects(
+            {
+                  :name => {
+                    '0' => @associate_project_have_no_associate_projects.name, 
+                    '1' => @associate_project_have_associate_projects_1.name,
+                    '2' => @associate_project_have_no_associate_projects.name,
+                    '3' => @associate_project_have_associate_projects_2.name
+                  }
+            }          
+          )
+          @project.reload
+        end
+        
+        it 'should not associate projects associated associate projects' do
+          @project.associate_projects.should =~ [
+            @associate_project_have_no_associate_projects, 
+            @associate_project_have_associate_projects_1, 
+            @associate_project_have_associate_projects_2
+          ]
+        end
+      end
+    end
+
+    context 'when params[:associate_projects] blank' do
+      before do
+        @result = @project.add_associate_projects(nil)
+      end
+      
+      it 'should do nothinc' do
+        @result.should be_nil
+      end
+    end
+  end
 
   describe 'decrement_docs_counter' do
     before do

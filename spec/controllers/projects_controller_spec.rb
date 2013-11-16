@@ -291,7 +291,9 @@ describe ProjectsController do
           
           describe 'after post' do
             before do
-              post :create, :project => {:name => @project_name}, :associate_project_names => [@associate_project_1.name, @associate_project_2.name]
+              post :create, :project => {:name => @project_name}, :associate_projects => {
+                  :name => {'0' => @associate_project_1.name, '1' => @associate_project_2.name}
+              }
               @associate_project_1.reload
               @associate_project_2.reload
             end
@@ -483,7 +485,7 @@ describe ProjectsController do
             
             describe 'after post' do
               before do
-                post :update, :id => @project.id, :associate_project_names => [@associate_project_1.name, @associate_project_2.name]
+                post :update, :id => @project.id, :associate_projects => {:name => {'0' => @associate_project_1.name, '1' => @associate_project_2.name}}
                 @project.reload
                 @associate_project_1.reload
                 @associate_project_2.reload
