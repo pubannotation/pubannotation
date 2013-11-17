@@ -308,7 +308,7 @@ en:
         does_not_exist: The document, %{sourcedb}:%{sourceid}, does not exist in PubAnnotation.
       destroy:
         deleted: The annotation set, %{id}, was deleted.
-      create:
+      new:
         import: "import associated projects"
   views:
     service:

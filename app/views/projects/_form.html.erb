@@ -104,7 +104,7 @@
 							<div class="associate_project">
 								<%= name -%>
 		  						<%= hidden_field_tag "associate_projects[name][#{index}]", name -%>
-								<span onclick="$(this).parent().remove()" href="" class="clickable-text">削除</span>
+								<span onclick="$(this).parent().remove()" href="" class="clickable-text"><%= t('views.shared.delete') -%></span>
 								<label>
 									<%= check_box_tag "associate_projects[import][#{index}]", 'true', params[:associate_projects][:import].present? && params[:associate_projects][:import][index].present? -%><%= t('controllers.projects.new.import') -%>
 								</label>
