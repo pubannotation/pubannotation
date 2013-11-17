@@ -12,7 +12,7 @@ describe RelationsHelper do
       Doc.any_instance.stub(:relations_count).and_return(@doc_relations_count)
       @same_sourceid_relations_count = 'same_sourceid_relations_count'
       Doc.any_instance.stub(:same_sourceid_relations_count).and_return(@same_sourceid_relations_count)
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :relations_count => 100)
       @doc = FactoryGirl.create(:doc)
     end
     
@@ -47,7 +47,7 @@ describe RelationsHelper do
           end
           
           it 'should return Relation.project_relations_count' do
-            @result.should eql(@relation_project_relations_count)
+            @result.should eql(@project.relations_count)
           end
         end
       end
