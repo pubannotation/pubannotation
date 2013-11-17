@@ -8,8 +8,11 @@ module DenotationsHelper
       end
     else      
       if project.present?
-        denotations = options[:doc].present? ? options[:doc].denotations : Denotation
-        Denotation.project_denotations_count(project.id, denotations)
+        if options[:doc].present?
+          Denotation.project_denotations_count(project.id, options[:doc].denotations)
+        else
+          project.denotations_count
+        end
       else
         options[:doc].denotations.size
       end   

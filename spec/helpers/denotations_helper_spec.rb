@@ -8,7 +8,7 @@ describe DenotationsHelper do
       Denotation.stub!(:project_denotations_count) do |project_id, denotations|
         [project_id, denotations, @project_denotations_count]
       end
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :relations_count => 100)
       @doc = FactoryGirl.create(:doc)
     end
     
@@ -44,54 +44,48 @@ describe DenotationsHelper do
       end
     end
     
-    context 'when project present' do
-      context 'when sourceid nil' do
-        context 'when project.class == Project' do
+    context 'when params[:action] != spans' do
+      context 'when project present' do
+        before do
+          @doc_denotations = 'denotations'
+          Doc.any_instance.stub(:denotations).and_return(@doc_denotations)
+        end
+        
+        context 'when doc present' do
           before do
-            @doc_denotations = 'denotations'
-            Doc.any_instance.stub(:denotations).and_return(@doc_denotations)
+            @result = helper.denotations_count_helper(@project, {:doc => @doc})
           end
           
-          context 'when doc present' do
-            before do
-              @result = helper.denotations_count_helper(@project, {:doc => @doc})
-            end
-            
-            it 'denotations should be doc.denotations' do
-              @result[1].should eql(@doc_denotations)
-            end
-            
-            it 'denotations should be returned Denotation.project_denotations_count' do
-              @result[2].should eql(@project_denotations_count)
-            end
+          it 'denotations should be doc.denotations' do
+            @result[1].should eql(@doc_denotations)
           end
-    
-          context 'when doc blank' do
-            before do
-              @result = helper.denotations_count_helper(@project)
-            end
-            
-            it 'denotations should be Denotation class' do
-              @result[1].should eql(Denotation)
-            end
-            
-            it 'denotations should be returned Denotation.project_denotations_count' do
-              @result[2].should eql(@project_denotations_count)
-            end
+          
+          it 'denotations should be returned Denotation.project_denotations_count' do
+            @result[2].should eql(@project_denotations_count)
+          end
+        end
+  
+        context 'when doc blank' do
+          before do
+            @result = helper.denotations_count_helper(@project)
+          end
+          
+          it 'denotations should be project.denotations_count' do
+            @result.should eql(@project.denotations_count)
           end
         end
       end
-    end
-      
-    context 'when project blank' do
-      before do
-        @doc_denotations_size = 'doc_denotations_size'
-        Doc.any_instance.stub(:denotations).and_return(double(:size => @doc_denotations_size))
-        @result = helper.denotations_count_helper(nil, {:doc => @doc})
-      end
-      
-      it 'should return doc.denotations.size' do
-        @result.should eql(@doc_denotations_size)
+        
+      context 'when project blank' do
+        before do
+          @doc_denotations_size = 'doc_denotations_size'
+          Doc.any_instance.stub(:denotations).and_return(double(:size => @doc_denotations_size))
+          @result = helper.denotations_count_helper(nil, {:doc => @doc})
+        end
+        
+        it 'should return doc.denotations.size' do
+          @result.should eql(@doc_denotations_size)
+        end
       end
     end
   end
