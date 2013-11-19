@@ -208,7 +208,7 @@ describe PmcdocsController do
           before do
             @sourcedb = 'PMC'
             @sourceid = 'sourceid'
-            @div = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)            
+            @div = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 0)            
           end
           
           describe 'counters before create' do
@@ -276,7 +276,7 @@ describe PmcdocsController do
         context 'and when divs not found by sourcedb and sourceid' do
           context 'and when divs returned by gen_pmcdoc' do
             before do
-              @div = FactoryGirl.create(:doc, :id => 2, :sourcedb => 'PMC', :sourceid => 'sourceid')
+              @div = FactoryGirl.create(:doc, :id => 2, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
               controller.stub(:gen_pmcdoc).and_return([[@div], 'message'])            
               post :create, :project_id => @associate_project_1.name, :pmcids => 'abcd'
             end
@@ -592,7 +592,7 @@ describe PmcdocsController do
           
         context 'when divs present' do
           before do
-            @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid')
+            @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
             FactoryGirl.create(:docs_project, :project_id => @project.id, :doc_id => @div.id)
           end
           

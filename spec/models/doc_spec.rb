@@ -1325,7 +1325,7 @@ describe Doc do
     before do
       @project =             FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2)
       @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 3)
-      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid')
+      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
       # @associate_project_1.pmcdocs_count 3 => 4
       @associate_project_1.docs << @div
       @associate_project_1.reload

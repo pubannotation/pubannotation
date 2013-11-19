@@ -354,7 +354,8 @@ describe Project do
       @project.associate_projects << @associate_project_1
       @project.associate_projects << @associate_project_2
       @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+      @pmcdoc_serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
       @project.reload
     end
     
@@ -382,15 +383,30 @@ describe Project do
     end
     
     context 'when added PMC' do
-      before do
-        @associate_project_1.reload
-        @associate_project_1.docs << @pmcdoc
+      context 'when serial == 0' do
+        before do
+          @associate_project_1.reload
+          @associate_project_1.docs << @pmcdoc
+        end
+            
+        it 'should increment pmcdocs_count' do
+          @project.reload
+          @project.pmcdocs_count.should eql(5)
+          @project.pmdocs_count.should eql(2)
+        end
       end
-          
-      it 'should increment pmcdocs_count' do
-        @project.reload
-        @project.pmcdocs_count.should eql(5)
-        @project.pmdocs_count.should eql(2)
+
+      context 'when serial == 0' do
+        before do
+          @associate_project_1.reload
+          @associate_project_1.docs << @pmcdoc_serial_1
+        end
+            
+        it 'should not increment pmcdocs_count' do
+          @project.reload
+          @project.pmcdocs_count.should eql(4)
+          @project.pmdocs_count.should eql(2)
+        end
       end
     end
   end
@@ -760,7 +776,8 @@ describe Project do
       @project.associate_projects << @associate_project_1
       @project.associate_projects << @associate_project_2
       @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+      @pmcdoc_serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
       @project.reload
       @associate_project_1.reload
       @associate_project_2.reload
@@ -782,21 +799,35 @@ describe Project do
         @project.reload
       end
           
-      it 'should increment project.pmcdocs_count' do
+      it 'should decrement project.pmcdocs_count' do
         @project.pmdocs_count.should eql(3)
         @project.pmcdocs_count.should eql(5)
       end
     end
     
     context 'when added PMC' do
-      before do
-        @associate_project_1.docs.delete(@pmcdoc)
+      context 'when serial == 0' do
+        before do
+          @associate_project_1.docs.delete(@pmcdoc)
+        end
+            
+        it 'should decrement pmcdocs_count' do
+          @project.reload
+          @project.pmcdocs_count.should eql(4)
+          @project.pmdocs_count.should eql(4)
+        end
       end
-          
-      it 'should increment pmcdocs_count' do
-        @project.reload
-        @project.pmcdocs_count.should eql(4)
-        @project.pmdocs_count.should eql(4)
+
+      context 'when serial == 1' do
+        before do
+          @associate_project_1.docs.delete(@pmcdoc_serial_1)
+        end
+            
+        it 'should not decrement pmcdocs_count' do
+          @project.reload
+          @project.pmcdocs_count.should eql(5)
+          @project.pmdocs_count.should eql(4)
+        end
       end
     end
   end

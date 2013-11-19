@@ -2,7 +2,7 @@ class Project < ActiveRecord::Base
   belongs_to :user
   has_and_belongs_to_many :docs, :after_add => :increment_docs_counter, :after_remove => :decrement_docs_counter 
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
-  has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC'}
+  has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
   
   # Project to Proejct associations
   # parent project => associate projects = @project.associate_projects
@@ -93,34 +93,34 @@ class Project < ActiveRecord::Base
   
   # after_add doc
   def increment_docs_counter(doc)
-    if doc.sourcedb == 'PMC'
+    if doc.sourcedb == 'PMC' && doc.serial == 0
       counter_column = :pmcdocs_count
-    else
+    elsif doc.sourcedb == 'PubMed'
       counter_column = :pmdocs_count
     end
-    Project.increment_counter(counter_column, self.id)
-    # self.update_attribute(:updated_at, DateTime.now)
-    if self.projects.present?
-      self.projects.each do |project|
-        Project.increment_counter(counter_column, project.id)
-        #project.update_attribute(:updated_at, DateTime.now)
-      end          
+    if counter_column
+      Project.increment_counter(counter_column, self.id)
+      if self.projects.present?
+        self.projects.each do |project|
+          Project.increment_counter(counter_column, project.id)
+        end          
+      end
     end
   end
   
   # after_remove doc
   def decrement_docs_counter(doc)
-    if doc.sourcedb == 'PMC'
+    if doc.sourcedb == 'PMC' && doc.serial == 0
       counter_column = :pmcdocs_count
-    else
+    elsif doc.sourcedb == 'PubMed'
       counter_column = :pmdocs_count
     end
-    Project.decrement_counter(counter_column, self.id)
-    #self.update_attribute(:updated_at, DateTime.now)
-    if self.projects.present?
-      self.projects.each do |project|
-        Project.decrement_counter(counter_column, project.id)
-        #project.update_attribute(:updated_at, DateTime.now)
+    if counter_column
+      Project.decrement_counter(counter_column, self.id)
+      if self.projects.present?
+        self.projects.each do |project|
+          Project.decrement_counter(counter_column, project.id)
+        end          
       end          
     end          
   end          

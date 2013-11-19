@@ -522,7 +522,7 @@ describe PmdocsController do
             before do
               @project = FactoryGirl.create(:project, :name => 'project name', :pmdocs_count => 0, :pmcdocs_count => 0)
               @id = 'sourceid2'
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'PM', :sourceid => @id)
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
               @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 2)
               @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 4)
               @associate_project_1.reload
@@ -553,7 +553,7 @@ describe PmdocsController do
                         
             describe 'after post' do
               before do
-                post :update, :project_id => @associate_project_1.name, :id => @id
+                post :update, :project_id => @associate_project_1.name, :id => 'invalidid'
               end
 
               it 'should redirect to project_pmdocs_path' do
