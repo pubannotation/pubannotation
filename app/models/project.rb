@@ -76,6 +76,25 @@ class Project < ActiveRecord::Base
       order("CASE WHEN projects.user_id = #{current_user.id} THEN 2 WHEN associate_maintainers.user_id = #{current_user.id} THEN 1 ELSE 0 END DESC")
     end
   }
+  
+  STATUS_HASH = {
+    1 => I18n.t('activerecord.options.project.status.released'),
+    2 => I18n.t('activerecord.options.project.status.beta'),
+    3 => I18n.t('activerecord.options.project.status.developing')
+  }
+
+  ACCESSIBILITY_HASH = {
+    1 => I18n.t('activerecord.options.project.accessibility.public'),
+    2 => :Private
+  }
+  
+  def status_text
+   STATUS_HASH[self.status]
+  end
+  
+  def accessibility_text
+   ACCESSIBILITY_HASH[self.accessibility]
+  end
 
   def self.order_by(projects, order, current_user)
     case order

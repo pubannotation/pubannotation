@@ -250,6 +250,60 @@ describe Project do
     end    
   end
   
+  describe 'status_text' do
+    context 'when status = 1' do
+      before do
+        @project = FactoryGirl.create(:project, :status => 1)
+      end 
+      
+      it 'should return I18n released' do
+        @project.status_text.should eql(I18n.t('activerecord.options.project.status.released'))
+      end
+    end
+    
+    context 'when status = 2' do
+      before do
+        @project = FactoryGirl.create(:project, :status => 2)
+      end 
+      
+      it 'should return I18n beta' do
+        @project.status_text.should eql(I18n.t('activerecord.options.project.status.beta'))
+      end
+    end
+
+    context 'when status = 3' do
+      before do
+        @project = FactoryGirl.create(:project, :status => 3)
+      end 
+      
+      it 'should return I18n developing' do
+        @project.status_text.should eql(I18n.t('activerecord.options.project.status.developing'))
+      end
+    end
+  end
+  
+  describe 'accessibility_text' do
+    context 'when accessibility = 1' do
+      before do
+        @project = FactoryGirl.create(:project, :accessibility => 1)
+      end 
+      
+      it 'should return I18n released' do
+        @project.accessibility_text.should eql(I18n.t('activerecord.options.project.accessibility.public'))
+      end
+    end
+    
+    context 'when accessibility = 2' do
+      before do
+        @project = FactoryGirl.create(:project, :accessibility => 2)
+      end 
+      
+      it 'should return I18n beta' do
+        @project.accessibility_text.should eql(:Private)
+      end
+    end
+  end
+  
   describe 'self.order_by' do
     context 'pmdocs_count' do
       before do
