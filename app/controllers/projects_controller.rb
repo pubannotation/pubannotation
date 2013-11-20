@@ -100,7 +100,7 @@ class ProjectsController < ApplicationController
     @project.user = current_user
     respond_to do |format|
       if @project.save
-        @project.add_associate_projects(params[:associate_projects])
+        @project.add_associate_projects(params[:associate_projects], current_user)
         format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_created', :model => t('views.shared.annotation_sets')) }
         format.json { render json: @project, status: :created, location: @project }
       else
@@ -115,7 +115,7 @@ class ProjectsController < ApplicationController
   def update
     respond_to do |format|
       if @project.update_attributes(params[:project])
-        @project.add_associate_projects(params[:associate_projects])
+        @project.add_associate_projects(params[:associate_projects], current_user)
         format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
         format.json { head :no_content }
       else

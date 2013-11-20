@@ -728,15 +728,19 @@ describe Project do
   
   describe 'add_associate_projects' do
     before do
+      @current_user = FactoryGirl.create(:user)
+      @user = FactoryGirl.create(:user)
       @project = FactoryGirl.create(:project)
-      @associate_project_have_no_associate_projects = FactoryGirl.create(:project)
-      @associated_project = FactoryGirl.create(:project)
-      @associate_project_have_associate_projects_1 = FactoryGirl.create(:project)
+      @associate_project_have_no_associate_projects = FactoryGirl.create(:project, :accessibility => 1)
+      @associated_project = FactoryGirl.create(:project, :accessibility => 1)
+      @associate_project_have_associate_projects_1 = FactoryGirl.create(:project, :accessibility => 1)
       @associate_project_have_associate_projects_1.associate_projects << @associated_project
       @associate_project_have_associate_projects_1.reload      
-      @associate_project_have_associate_projects_2 = FactoryGirl.create(:project)
+      @associate_project_have_associate_projects_2 = FactoryGirl.create(:project, :accessibility => 1)
       @associate_project_have_associate_projects_2.associate_projects << @associated_project
-      @associate_project_have_associate_projects_2.reload      
+      @associated_project_unaccessible = FactoryGirl.create(:project, :accessibility => 2, :user => @user)
+      @associate_project_have_associate_projects_2.associate_projects << @associated_project_unaccessible
+      @associate_project_have_associate_projects_2.reload  
     end
 
     context 'when params[:associate_projects] present' do
@@ -758,7 +762,7 @@ describe Project do
                         '2' => 'true',
                         '3' => 'true'
                       }
-                }          
+                }, @current_user          
               )
               @project.reload
             end
@@ -785,7 +789,7 @@ describe Project do
                         '0' => 'true',
                         '1' => 'true'
                       }
-                }          
+                }, @current_user          
               )
               @project.reload
             end
@@ -810,7 +814,7 @@ describe Project do
                     '2' => @associate_project_have_no_associate_projects.name,
                     '3' => @associate_project_have_associate_projects_2.name
                   }
-            }          
+            }, @current_user          
           )
           @project.reload
         end
@@ -827,7 +831,7 @@ describe Project do
 
     context 'when params[:associate_projects] blank' do
       before do
-        @result = @project.add_associate_projects(nil)
+        @result = @project.add_associate_projects(nil, @current_user)
       end
       
       it 'should do nothinc' do
