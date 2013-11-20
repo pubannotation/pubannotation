@@ -901,58 +901,120 @@ describe Project do
   end
   
   describe 'associate_project_ids' do
-    before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @project_3 = FactoryGirl.create(:project)
-      @project_4 = FactoryGirl.create(:project)
-      @associate_project_1 = FactoryGirl.create(:project)
-      @associate_project_2 = FactoryGirl.create(:project)
-      @associate_project_3 = FactoryGirl.create(:project)
-
-      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
-      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
-      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
-      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @associate_project_3)
-      @project_1.reload
-      @project_2.reload
-      @project_3.reload
-      @project_4.reload
-      @associate_project_1.reload
-      @associate_project_2.reload
-      @associate_project_3.reload
-    end
-    
-    context 'when have associate projects' do
+    context 'when saved project' do
       before do
-        @ids = @project_1.associate_project_ids  
+        @project_1 = FactoryGirl.create(:project)
+        @project_2 = FactoryGirl.create(:project)
+        @project_3 = FactoryGirl.create(:project)
+        @project_4 = FactoryGirl.create(:project)
+        @associate_project_1 = FactoryGirl.create(:project)
+        @associate_project_2 = FactoryGirl.create(:project)
+        @associate_project_3 = FactoryGirl.create(:project)
+  
+        FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+        FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+        FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
+        FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @associate_project_3)
+        @project_1.reload
+        @project_2.reload
+        @project_3.reload
+        @project_4.reload
+        @associate_project_1.reload
+        @associate_project_2.reload
+        @associate_project_3.reload
       end
       
-      it 'should return associate project ids' do
-        @ids.should =~ [@associate_project_1.id, @associate_project_2.id]
+      context 'when have associate projects' do
+        before do
+          @ids = @project_1.associate_project_ids  
+        end
+        
+        it 'should return associate project ids' do
+          @ids.should =~ [@associate_project_1.id, @associate_project_2.id]
+        end
+      end
+      
+      context 'when does not have associate projects' do
+        before do
+          @ids = @project_4.associate_project_ids  
+        end
+        
+        it 'should be blank' do
+          @ids.should be_blank
+        end
       end
     end
     
-    context 'when does not have associate projects' do
+    context 'when new project' do
       before do
-        @ids = @project_4.associate_project_ids  
+        @project = Project.new
       end
       
-      it 'should be blank' do
-        @ids.should be_blank
+      it 'should return blank array' do
+        @project.associate_project_ids.should be_blank
       end
     end
   end
   
   describe 'self_id_and_associate_project_ids' do
-    before do
-      @project = FactoryGirl.create(:project)
-      @associate_project_ids = ['A', 'B']
-      @project.stub(:associate_project_ids).and_return(@associate_project_ids)
+    context 'when saved project' do
+      before do
+        @project = FactoryGirl.create(:project)
+        @associate_project_ids = ['A', 'B']
+        @project.stub(:associate_project_ids).and_return(@associate_project_ids)
+      end
+      
+      it 'should return associate_project_ids and self id' do
+        @project.self_id_and_associate_project_ids.should =~ @associate_project_ids << @project.id
+      end
     end
-    
-    it 'should return associate_project_ids and self id' do
-      @project.self_id_and_associate_project_ids.should =~ @associate_project_ids << @project.id
+
+    context 'when new project' do
+      before do
+        @project = Project.new
+      end
+      
+      it 'should return nil' do
+        @project.self_id_and_associate_project_ids.should be_nil
+      end
+    end
+  end
+  
+  describe 'self_id_and_associate_project_and_project_ids' do
+    context 'when saved project' do
+      context 'when associate_project_and_project_ids present' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @associate_project_ids = ['A', 'B']
+          @project.stub(:associate_project_and_project_ids).and_return(@associate_project_ids)
+        end
+        
+        it 'should return associate_project_ids and self id' do
+          @project.self_id_and_associate_project_and_project_ids.should =~ @associate_project_ids << @project.id
+        end
+      end
+
+      context 'when associate_project_and_project_ids blank' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @associate_project_ids = [0]
+          @project.stub(:associate_project_and_project_ids).and_return(@associate_project_ids)
+        end
+        
+        it 'should return associate_project_ids and self id' do
+          @project.self_id_and_associate_project_and_project_ids.should =~ @associate_project_ids << @project.id
+        end
+      end
+    end
+
+    context 'when new project' do
+      before do
+        @project = Project.new
+      end
+      
+      it 'should return nil' do
+        @project.self_id_and_associate_project_and_project_ids.should be_nil
+      end
     end
   end
   
@@ -1031,7 +1093,39 @@ describe Project do
     
     context 'when associate_projects and projects blank' do
       it 'should return default value' do
-        @project_4.associate_project_and_project_ids.should eql([0])
+        @project_4.associate_project_and_project_ids.should be_blank
+      end
+    end
+  end
+  
+  describe 'associatable_project_ids' do
+    before do
+      @accessible_1 = FactoryGirl.create(:project)
+      @accessible_2 = FactoryGirl.create(:project)
+      @un_accessible = FactoryGirl.create(:project)
+      @not_id_in = FactoryGirl.create(:project)
+      @current_user = FactoryGirl.create(:user)
+    end
+    
+    context 'when new record' do
+      before do
+        Project.stub(:accessible).and_return([@accessible_1, @accessible_2])
+        @project = Project.new
+      end
+      
+      it 'should return Project.accessible project ids' do
+        @project.associatable_project_ids(@current_user).should =~ [@accessible_1.id, @accessible_2.id]
+      end
+    end
+    
+    context 'when saved record' do
+      before do
+        Project.stub(:not_id_in).and_return([@not_id_in])
+        @project = FactoryGirl.create(:project)
+      end
+      
+      it 'should return Project.accessible(current_user).not_id_in()' do
+        @project.associatable_project_ids(@current_user).should =~ [@not_id_in.id]
       end
     end
   end

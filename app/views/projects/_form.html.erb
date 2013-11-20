@@ -112,7 +112,7 @@
 	  					<% end -%>
 	  				<% end -%>
 	  			</div>
-	  			<%= ps.autocomplete_field :project_name, "/projects/autocomplete_project_name/#{@project.associate_project_and_project_ids}", :id => 'associate_project_name', :placeholder => t('activerecord.placeholders.project.associate_project_name') -%>
+	  			<%= ps.autocomplete_field :project_name, "/projects/autocomplete_project_name/#{@project.associatable_project_ids(current_user)}", :id => 'associate_project_name', :placeholder => t('activerecord.placeholders.project.associate_project_name') -%>
 		  		<script type="text/javascript">
 		  			var i = 0;  
 			  		$('#associate_project_name').bind('railsAutocomplete.select', function(event, data){

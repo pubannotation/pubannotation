@@ -6,7 +6,7 @@ class ProjectsController < ApplicationController
   autocomplete :pmdoc,  :sourceid, :class_name => :doc, :scopes => [:pmdocs,  :project_name => :project_name]
   autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
   autocomplete :user, :username
-  autocomplete :project, :name, :full => true, :scopes => [:not_id_in => :project_ids]
+  autocomplete :project, :name, :full => true, :scopes => [:id_in => :project_ids]
 
   # GET /projects
   # GET /projects.json

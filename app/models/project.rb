@@ -40,6 +40,9 @@ class Project < ActiveRecord::Base
   scope :not_id_in, lambda{|project_ids|
     where('projects.id NOT IN (?)', project_ids)
   }
+  scope :id_in, lambda{|project_ids|
+    where('projects.id IN (?)', project_ids)
+  }
     
   # scopes for order
   scope :order_pmdocs_count, 
@@ -199,7 +202,11 @@ class Project < ActiveRecord::Base
   end
   
   def self_id_and_associate_project_ids
-    associate_project_ids << self.id
+    associate_project_ids << self.id if self.id.present?
+  end
+  
+  def self_id_and_associate_project_and_project_ids
+    associate_project_and_project_ids << self.id if self.id.present?
   end
   
   def project_ids
@@ -211,8 +218,17 @@ class Project < ActiveRecord::Base
     if associate_project_ids.present? || project_ids.present?
       associate_project_ids | project_ids
     else
-      [0]
+      []
     end
+  end
+  
+  def associatable_project_ids(current_user)
+    if self.new_record?
+      associatable_projects = Project.accessible(current_user)
+    else
+      associatable_projects = Project.accessible(current_user).not_id_in(self.self_id_and_associate_project_and_project_ids)
+    end
+    associatable_projects.collect{|associatable_projects| associatable_projects.id}
   end
   
   # increment counters after add associate projects
