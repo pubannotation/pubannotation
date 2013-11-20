@@ -190,7 +190,13 @@ describe Project do
       @accessibility_0_user_1 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_1)  
       @accessibility_1_user_1 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_1)  
       @accessibility_0_user_2 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_2)  
-      @accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)  
+      @accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)
+      @maintainer_project_accessibility_0_user_2 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_2)
+      @maintainer_project_accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)
+      FactoryGirl.create(:associate_maintainer, :project => @maintainer_project_accessibility_0_user_2, :user => @user_1)
+      FactoryGirl.create(:associate_maintainer, :project => @maintainer_project_accessibility_1_user_2, :user => @user_1)
+      @maintainer_project_accessibility_0_user_2.reload
+      @maintainer_project_accessibility_1_user_2.reload
     end
     
     context 'when current_user present' do
@@ -212,6 +218,14 @@ describe Project do
       
       it 'includes accessibility != 1 and user is current_user' do
         @projects.should include(@accessibility_0_user_1)
+      end
+      
+      it 'includes accessibility != 1 and user is not current_user but user is an associate maintainer' do
+        @projects.should include(@maintainer_project_accessibility_0_user_2)
+      end
+      
+      it 'includes accessibility == 1 and user is not current_user but user is an associate maintainer' do
+        @projects.should include(@maintainer_project_accessibility_1_user_2)
       end
     end
     

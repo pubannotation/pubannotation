@@ -32,7 +32,7 @@ class Project < ActiveRecord::Base
   default_scope where(:type => nil)
   scope :accessible, lambda{|current_user|
     if current_user.present?
-      where('accessibility = ? OR projects.user_id =?', 1, current_user.id)
+      includes(:associate_maintainers).where('accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
     else
       where(:accessibility => 1)
     end
