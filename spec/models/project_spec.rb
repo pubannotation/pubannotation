@@ -264,6 +264,18 @@ describe Project do
     end    
   end
   
+  describe 'scope id_in' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
+    end
+    
+    it 'should include project_id included in project_ids' do
+      Project.id_in([@project_1.id, @project_2.id]).should =~ [@project_1, @project_2]
+    end    
+  end
+  
   describe 'status_text' do
     context 'when status = 1' do
       before do
