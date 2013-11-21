@@ -3,9 +3,6 @@
   <% if @project %>
     > <%= link_to t('activerecord.models.project'), projects_path %>
     > <%= link_to @project.name, project_path(@project.name) %>
-  <% elsif @sproject %>
-    > <%= link_to t('activerecord.models.sproject'), sprojects_path %>
-    > <%= link_to @sproject.name, sproject_path(@sproject.name) %>
   <% end %>
   > <%= t('views.shared.a_pmcdoc', :sourceid => @docs.first.sourceid) %>
 <% end %>
@@ -73,8 +70,6 @@
 			    </td>
 			    <% if @project %>
 				    <td><span class="button"><%= link_to t('views.shared.show'), project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></span></td>
-			    <% elsif @sproject %>    
-				    <td><span class="button"><%= link_to t('views.shared.show'), sproject_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></span></td>
 			    <% else %>    
 			    	<td><span class="button"><%= link_to t('views.shared.show'), pmcdoc_div_path(doc.sourceid, doc.serial) %></span></td>
 			    <% end %>

@@ -525,29 +525,30 @@ describe Relation do
     end
   end
   
-  describe 'increment_sproject_relations_count' do
+  describe 'increment_project_relations_count' do
     before do
       @project = FactoryGirl.create(:project, :relations_count => 0)
-      @sproject_1 = FactoryGirl.create(:sproject, :relations_count => 0)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-      @sproject_2 = FactoryGirl.create(:sproject, :relations_count => 1)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
-      @relation = FactoryGirl.create(:relation, :project => @project, :obj_id => 1)
+      @associate_project_1 = FactoryGirl.create(:project, :relations_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, :relations_count => 1)
+      @project.associate_projects << @associate_project_1
+      @project.associate_projects << @associate_project_2
+      @project.reload
+      @associate_project_2.reload
+      @relation = FactoryGirl.create(:relation, :project => @associate_project_2, :obj_id => 1)
+      @associate_project_2.reload
+      @project.reload
     end
     
     it 'should increment project.relations_count' do
-      @project.reload
-      @project.relations_count.should eql(1)
+      @project.relations_count.should eql(2)
     end      
     
     it 'should increment project.relations_count' do
-      @sproject_1.reload
-      @sproject_1.relations_count.should eql(1)
+      @associate_project_1.relations_count.should eql(0)
     end      
     
     it 'should increment project.relations_count' do
-      @sproject_2.reload
-      @sproject_2.relations_count.should eql(2)
+      @associate_project_2.relations_count.should eql(2)
     end      
   end  
 end

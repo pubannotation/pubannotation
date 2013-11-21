@@ -68,4 +68,79 @@ describe "projects/_form.html.erb" do
       end
     end
   end
+  
+  describe 'associate_projects' do
+    before do
+      current_user_stub(FactoryGirl.create(:user))  
+    end
+    
+    context 'when import present' do
+      before do
+        view.stub(:params).and_return({
+          :associate_projects => {
+            :name => {'0' => 'associate 0', '1' => 'associate 1'},
+            :import => {'1' => 'true'}
+          }
+        })
+        render
+      end
+      
+      it 'should render associate project hidden tag' do
+        rendered.should have_selector :input, :type => 'hidden', :value => 'associate 0', :id => 'associate_projects_name_0' 
+      end
+      
+      it 'should render associate project import not checked hidden import tag' do
+        rendered.should have_selector :input, :type => 'checkbox', :value => 'true', :id => 'associate_projects_import_0'
+      end
+      
+      it 'should not render associate project import not checked hidden import tag checked' do
+        rendered.should_not have_selector :input, :type => 'checkbox', :value => 'true', :id => 'associate_projects_import_0', :checked => 'checked' 
+      end
+      
+      it 'should render associate project hidden tag' do
+        rendered.should have_selector :input, :type => 'hidden', :value => 'associate 1', :id => 'associate_projects_name_1' 
+      end
+      
+      it 'should render associate project import checked  hidden import tag checked' do
+        rendered.should have_selector :input, :type => 'checkbox', :value => 'true', :id => 'associate_projects_import_1', :checked => 'checked'  
+      end
+    end
+    
+    context 'when import blank' do
+      before do
+        view.stub(:params).and_return({
+          :associate_projects => {
+            :name => {'0' => 'associate 0', '1' => 'associate 1'},
+          }
+        })
+        render
+      end
+      
+      it 'should render associate project hidden tag' do
+        rendered.should have_selector :input, :type => 'hidden', :value => 'associate 0', :id => 'associate_projects_name_0' 
+      end
+      
+      it 'should render associate project import not checked hidden import tag' do
+        rendered.should have_selector :input, :type => 'checkbox', :value => 'true', :id => 'associate_projects_import_0'
+      end
+      
+      
+      it 'should not render associate project import not checked hidden import tag' do
+        rendered.should_not have_selector :input, :type => 'checkbox', :value => 'true', :id => 'associate_projects_import_0', :checked => 'checked' 
+      end
+      
+      it 'should render associate project hidden tag' do
+        rendered.should have_selector :input, :type => 'hidden', :value => 'associate 1', :id => 'associate_projects_name_1' 
+      end
+      
+      it 'should render associate project import not checked hidden import tag' do
+        rendered.should have_selector :input, :type => 'checkbox', :value => 'true', :id => 'associate_projects_import_1'
+      end
+      
+      
+      it 'should not render associate project import not checked  hidden import tag checked' do
+        rendered.should_not have_selector :input, :type => 'checkbox', :value => 'true', :id => 'associate_projects_import_1', :checked => 'checked'  
+      end
+    end
+  end
 end

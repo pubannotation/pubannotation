@@ -111,6 +111,57 @@ describe ProjectsController do
         end
       end
       
+      describe '@accordion_id' do
+        context 'when params[:accordion_id] present' do
+          before do
+            @accordion_id = 'Accordion Id'
+            get :show, :id => @project.id, :accordion_id => @accordion_id
+          end
+          
+          it 'should assign params[:accordion_id] as @accordion_id' do
+            assigns[:accordion_id].should eql(@accordion_id)
+          end
+        end
+
+        context 'when params[:accordion_id] blank' do
+          context 'when @pmdocs.size != @pmcdosc.size' do
+            context 'when @pmdocs.size > @pmcdocs.size' do
+              before do
+                @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
+                FactoryGirl.create(:docs_project, :project_id => @project.id , :doc_id => @pmdoc.id)
+                get :show, :id => @project.id
+              end
+              
+              it 'should assign 1 as @accordion_id' do
+                assigns[:accordion_id].should eql('1')
+              end
+            end
+
+            context 'when @pmdocs.size < @pmcdocs.size' do
+              before do
+                @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+                FactoryGirl.create(:docs_project, :project_id => @project.id , :doc_id => @pmcdoc.id)
+                get :show, :id => @project.id
+              end
+              
+              it 'should assign 2 as @accordion_id' do
+                assigns[:accordion_id].should eql('2')
+              end
+            end
+          end
+
+          context 'when @pmdocs.size == @pmcdosc.size' do
+            before do
+              get :show, :id => @project.id
+            end
+            
+            it '@accordion_id should be nil' do
+              assigns[:accordion_id].should be_nil
+            end
+          end
+        end
+      end
+      
       context 'when sourceid does not exists' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 'serial')
@@ -211,12 +262,78 @@ describe ProjectsController do
       end
 
       context 'when format html' do
-        before do
-          post :create, :project => {:name => 'ansnet name'}
+        context 'when associate_projects blank' do
+          before do
+            post :create, :project => {:name => 'ansnet name'}
+          end
+          
+          it 'should redirect to project_path' do
+            response.should redirect_to(project_path('ansnet name'))
+          end
         end
         
-        it 'should redirect to project_path' do
-          response.should redirect_to(project_path('ansnet name'))
+        context 'when associate_projects present' do
+          before do
+            @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30, :relations_count => 40)
+            @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2, :denotations_count => 3, :relations_count => 4)
+            @project_name = 'ansnet name'
+          end
+          
+          describe 'before post' do
+            it 'associate project should not have projects' do
+              @associate_project_1.projects.should be_blank
+            end       
+                 
+            it 'associate project should not have projects' do
+              @associate_project_2.projects.should be_blank
+            end            
+          end
+          
+          describe 'after post' do
+            before do
+              post :create, :project => {:name => @project_name}, :associate_projects => {
+                  :name => {'0' => @associate_project_1.name, '1' => @associate_project_2.name}
+              }
+              @associate_project_1.reload
+              @associate_project_2.reload
+            end
+            
+            it 'associate project should have projects' do
+              @associate_project_1.projects.should be_present
+            end
+            
+            it 'associate project should equal created project' do
+              @associate_project_1.projects.should include(Project.find_by_name(assigns[:project].name))
+            end
+            
+            it 'associate project should have projects' do
+              @associate_project_2.projects.should be_present
+            end
+            
+            it 'associate project should equal created project' do
+              @associate_project_2.projects.should include(Project.find_by_name(assigns[:project].name))
+            end
+            
+            it 'should increment pmdocs_count by associate projects' do
+              Project.find_by_name(assigns[:project].name).pmdocs_count.should eql(@associate_project_1.pmdocs_count + @associate_project_2.pmdocs_count)
+            end
+             
+            it 'should increment pmcdocs_count by associate projects' do
+              Project.find_by_name(assigns[:project].name).pmcdocs_count.should eql(@associate_project_1.pmcdocs_count + @associate_project_2.pmcdocs_count)
+            end
+            
+            it 'should increment denotations_count by associate projects' do
+              Project.find_by_name(assigns[:project].name).denotations_count.should eql(@associate_project_1.denotations_count + @associate_project_2.denotations_count)
+            end
+            
+            it 'should increment relations_count by associate projects' do
+              Project.find_by_name(assigns[:project].name).relations_count.should eql(@associate_project_1.relations_count + @associate_project_2.relations_count)
+            end
+             
+            it 'should redirect to project_path' do
+              response.should redirect_to(project_path('ansnet name'))
+            end
+          end
         end
       end
 
@@ -323,12 +440,93 @@ describe ProjectsController do
         end
         
         context 'and when format html' do
-          before do
-            post :update, :id => @project.id, :project => @params_project          
+          context 'when assciate_project_names blank' do
+            before do
+              post :update, :id => @project.id, :project => @params_project          
+            end
+            
+            it 'should render edit template' do
+              response.should render_template('edit')
+            end
           end
-          
-          it 'should render edit template' do
-            response.should render_template('edit')
+
+          context 'when associate_projects present' do
+            before do
+              @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30, :relations_count => 40)
+              @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2, :denotations_count => 3, :relations_count => 4)
+              @project_name = 'ansnet name'
+            end
+            
+            describe 'before post' do
+              it 'project pmdocs_count is 0' do
+                @project.pmdocs_count.should eql(0)  
+              end
+              
+              it 'project pmcdocs_count is 0' do
+                @project.pmcdocs_count.should eql(0)  
+              end
+              
+              it 'project denotations_count is 0' do
+                @project.denotations_count.should eql(0)  
+              end
+              
+              it 'project relations_count is 0' do
+                @project.relations_count.should eql(0)  
+              end
+              
+              it 'associate project should not have projects' do
+                @associate_project_1.projects.should be_blank
+              end       
+                   
+              it 'associate project should not have projects' do
+                @associate_project_2.projects.should be_blank
+              end            
+            end
+            
+            describe 'after post' do
+              before do
+                post :update, :id => @project.id, :associate_projects => {:name => {'0' => @associate_project_1.name, '1' => @associate_project_2.name}}
+                @project.reload
+                @associate_project_1.reload
+                @associate_project_2.reload
+              end
+              
+              it 'associate project should have projects' do
+                @associate_project_1.projects.should be_present
+              end
+              
+              it 'associate project should equal created project' do
+                @associate_project_1.projects.should include(Project.find_by_name(assigns[:project].name))
+              end
+              
+              it 'associate project should have projects' do
+                @associate_project_2.projects.should be_present
+              end
+              
+              it 'associate project should equal created project' do
+                @associate_project_2.projects.should include(Project.find_by_name(assigns[:project].name))
+              end
+              
+              it 'should increment pmdocs_count by associate projects' do
+                @project.pmdocs_count.should eql(@associate_project_1.pmdocs_count + @associate_project_2.pmdocs_count)
+              end
+               
+              it 'should increment pmcdocs_count by associate projects' do
+                @project.pmcdocs_count.should eql(@associate_project_1.pmcdocs_count + @associate_project_2.pmcdocs_count)
+              end
+              
+              it 'should increment denotations_count by associate projects' do
+                @project.denotations_count.should eql(@associate_project_1.denotations_count + @associate_project_2.denotations_count)
+              end
+              
+              it 'should increment relations_count by associate projects' do
+                @project.relations_count.should eql(@associate_project_1.relations_count + @associate_project_2.relations_count)
+              end
+               
+              it 'should redirect to project_path' do
+                response.should redirect_to(project_path(@project.name))
+              end
+            end
           end
         end
   

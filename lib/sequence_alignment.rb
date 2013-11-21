@@ -24,7 +24,7 @@ class SequenceAlignment
 
     puts
     sdiff.each_with_index do |h, i|
-      p h
+      # p h
       break if i > 1100
     end
 
@@ -174,5 +174,5 @@ if __FILE__ == $0
   aligner.mapping
   denotations = aligner.transform_denotations(denotations)
 
-  p denotations
+  # p denotations
 end

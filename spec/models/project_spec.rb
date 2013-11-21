@@ -40,6 +40,40 @@ describe Project do
     end
   end
   
+  describe 'has_and_belongs_to_many associate_projects' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
+      @associate_project_1 = FactoryGirl.create(:project)
+      @associate_project_2 = FactoryGirl.create(:project)
+      @associate_project_3 = FactoryGirl.create(:project)
+
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @associate_project_3)
+    end  
+    
+    it 'project.associate_projects should return associate projects' do
+      @project_1.associate_projects.should eql([@associate_project_1, @associate_project_2])
+    end
+    
+    it 'project.associate_projects should return associate projects' do
+      @project_2.associate_projects.should eql([@associate_project_1])
+    end
+    
+    it 'project.projecs should return associated projects' do
+      @associate_project_1.reload
+      @associate_project_1.projects.should eql([@project_1, @project_2])
+    end
+    
+    it 'project.projecs should return associated projects' do
+      @associate_project_2.reload
+      @associate_project_2.projects.should eql([@project_1])
+    end
+  end
+  
   describe 'has_many denotations' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
@@ -156,7 +190,13 @@ describe Project do
       @accessibility_0_user_1 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_1)  
       @accessibility_1_user_1 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_1)  
       @accessibility_0_user_2 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_2)  
-      @accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)  
+      @accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)
+      @maintainer_project_accessibility_0_user_2 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_2)
+      @maintainer_project_accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)
+      FactoryGirl.create(:associate_maintainer, :project => @maintainer_project_accessibility_0_user_2, :user => @user_1)
+      FactoryGirl.create(:associate_maintainer, :project => @maintainer_project_accessibility_1_user_2, :user => @user_1)
+      @maintainer_project_accessibility_0_user_2.reload
+      @maintainer_project_accessibility_1_user_2.reload
     end
     
     context 'when current_user present' do
@@ -178,6 +218,14 @@ describe Project do
       
       it 'includes accessibility != 1 and user is current_user' do
         @projects.should include(@accessibility_0_user_1)
+      end
+      
+      it 'includes accessibility != 1 and user is not current_user but user is an associate maintainer' do
+        @projects.should include(@maintainer_project_accessibility_0_user_2)
+      end
+      
+      it 'includes accessibility == 1 and user is not current_user but user is an associate maintainer' do
+        @projects.should include(@maintainer_project_accessibility_1_user_2)
       end
     end
     
@@ -204,7 +252,7 @@ describe Project do
     end
   end
   
-  describe 'scope sprojects_projects' do
+  describe 'scope not_id_in' do
     before do
       @project_1 = FactoryGirl.create(:project)
       @project_2 = FactoryGirl.create(:project)
@@ -212,11 +260,11 @@ describe Project do
     end
     
     it 'should include project_id included in project_ids' do
-      Project.sprojects_projects([@project_1.id, @project_2.id]).should =~ [@project_1, @project_2]
+      Project.not_id_in([@project_1.id, @project_2.id]).should =~ [@project_3]
     end    
   end
   
-  describe 'scope not_sprojects_projects' do
+  describe 'scope id_in' do
     before do
       @project_1 = FactoryGirl.create(:project)
       @project_2 = FactoryGirl.create(:project)
@@ -224,8 +272,62 @@ describe Project do
     end
     
     it 'should include project_id included in project_ids' do
-      Project.not_sprojects_projects([@project_1.id, @project_2.id]).should =~ [@project_3]
+      Project.id_in([@project_1.id, @project_2.id]).should =~ [@project_1, @project_2]
     end    
+  end
+  
+  describe 'status_text' do
+    context 'when status = 1' do
+      before do
+        @project = FactoryGirl.create(:project, :status => 1)
+      end 
+      
+      it 'should return I18n released' do
+        @project.status_text.should eql(I18n.t('activerecord.options.project.status.released'))
+      end
+    end
+    
+    context 'when status = 2' do
+      before do
+        @project = FactoryGirl.create(:project, :status => 2)
+      end 
+      
+      it 'should return I18n beta' do
+        @project.status_text.should eql(I18n.t('activerecord.options.project.status.beta'))
+      end
+    end
+
+    context 'when status = 3' do
+      before do
+        @project = FactoryGirl.create(:project, :status => 3)
+      end 
+      
+      it 'should return I18n developing' do
+        @project.status_text.should eql(I18n.t('activerecord.options.project.status.developing'))
+      end
+    end
+  end
+  
+  describe 'accessibility_text' do
+    context 'when accessibility = 1' do
+      before do
+        @project = FactoryGirl.create(:project, :accessibility => 1)
+      end 
+      
+      it 'should return I18n released' do
+        @project.accessibility_text.should eql(I18n.t('activerecord.options.project.accessibility.public'))
+      end
+    end
+    
+    context 'when accessibility = 2' do
+      before do
+        @project = FactoryGirl.create(:project, :accessibility => 2)
+      end 
+      
+      it 'should return I18n beta' do
+        @project.accessibility_text.should eql(:Private)
+      end
+    end
   end
   
   describe 'self.order_by' do
@@ -327,59 +429,64 @@ describe Project do
   describe 'increment_docs_counter' do
     before do
       @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
-      @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-      @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 1)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 2, :pmcdocs_count => 4)
+      @project.associate_projects << @associate_project_1
+      @project.associate_projects << @associate_project_2
       @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+      @pmcdoc_serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
+      @project.reload
     end
     
-    context 'when PubMed' do
+    describe 'before add ' do
+      it 'project.pmdocs should equal sum of associate projects pmdocs_count' do
+         @project.pmdocs_count.should eql(2)
+      end
+      
+      it 'projectpmcdocs should equal sum of associate projects pmcdocs_count' do
+         @project.pmcdocs_count.should eql(4)
+      end
+    end
+
+    context 'when added PubMed' do
       before do
-        @project.docs << @pmdoc
+        @associate_project_1.reload
+        @associate_project_1.docs << @pmdoc
+        @project.reload
       end
           
       it 'should increment project.pmcdocs_count' do
-        @project.reload
-        @project.pmdocs_count.should eql(1)
-        @project.pmcdocs_count.should eql(0)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmdocs_count.should eql(1)
-        @sproject_1.pmcdocs_count.should eql(0)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_2.reload
-        @sproject_2.pmdocs_count.should eql(2)
-        @sproject_2.pmcdocs_count.should eql(1)
+        @project.pmdocs_count.should eql(3)
+        @project.pmcdocs_count.should eql(4)
       end
     end
     
-    context 'when PMC' do
-      before do
-        @project.docs << @pmcdoc
-      end
-          
-      it 'should increment pmcdocs_count' do
-        @project.reload
-        @project.pmcdocs_count.should eql(1)
-        @project.pmdocs_count.should eql(0)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmcdocs_count.should eql(1)
-        @sproject_1.pmdocs_count.should eql(0)
+    context 'when added PMC' do
+      context 'when serial == 0' do
+        before do
+          @associate_project_1.reload
+          @associate_project_1.docs << @pmcdoc
+        end
+            
+        it 'should increment pmcdocs_count' do
+          @project.reload
+          @project.pmcdocs_count.should eql(5)
+          @project.pmdocs_count.should eql(2)
+        end
       end
 
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_2.reload
-        @sproject_2.pmcdocs_count.should eql(2)
-        @sproject_2.pmdocs_count.should eql(1)
+      context 'when serial == 0' do
+        before do
+          @associate_project_1.reload
+          @associate_project_1.docs << @pmcdoc_serial_1
+        end
+            
+        it 'should not increment pmcdocs_count' do
+          @project.reload
+          @project.pmcdocs_count.should eql(4)
+          @project.pmdocs_count.should eql(2)
+        end
       end
     end
   end
@@ -630,63 +737,411 @@ describe Project do
       end
     end
   end
+  
+  describe 'add_associate_projects' do
+    before do
+      @current_user = FactoryGirl.create(:user)
+      @user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project)
+      @associate_project_have_no_associate_projects = FactoryGirl.create(:project, :accessibility => 1)
+      @associated_project = FactoryGirl.create(:project, :accessibility => 1)
+      @associate_project_have_associate_projects_1 = FactoryGirl.create(:project, :accessibility => 1)
+      @associate_project_have_associate_projects_1.associate_projects << @associated_project
+      @associate_project_have_associate_projects_1.reload      
+      @associate_project_have_associate_projects_2 = FactoryGirl.create(:project, :accessibility => 1)
+      @associate_project_have_associate_projects_2.associate_projects << @associated_project
+      @associated_project_unaccessible = FactoryGirl.create(:project, :accessibility => 2, :user => @user)
+      @associate_project_have_associate_projects_2.associate_projects << @associated_project_unaccessible
+      @associate_project_have_associate_projects_2.reload  
+    end
+
+    context 'when params[:associate_projects] present' do
+      context 'when params[:associate_projects][:import] present' do
+        context 'when params[:associate_projects][:import] is true' do
+          context 'when associate project have associate_projects' do
+            before do
+              @project.add_associate_projects(
+                {
+                      :name => {
+                        '0' => @associate_project_have_no_associate_projects.name, 
+                        '1' => @associate_project_have_associate_projects_1.name,
+                        '2' => @associate_project_have_no_associate_projects.name,
+                        '3' => @associate_project_have_associate_projects_2.name
+                      },
+                      :import => {
+                        '0' => 'true',
+                        '1' => 'true',
+                        '2' => 'true',
+                        '3' => 'true'
+                      }
+                }, @current_user          
+              )
+              @project.reload
+            end
+            
+            it 'should associate projects associated associate projects once only' do
+              @project.associate_projects.should =~ [
+                @associate_project_have_no_associate_projects, 
+                @associate_project_have_associate_projects_1, 
+                @associated_project, 
+                @associate_project_have_associate_projects_2
+              ]
+            end
+          end
+
+          context 'when associate project does not have associate_projects' do
+            before do
+              @project.add_associate_projects(
+                {
+                      :name => {
+                        '0' => @associate_project_have_no_associate_projects.name, 
+                        '1' => @associated_project.name
+                      },
+                      :import => {
+                        '0' => 'true',
+                        '1' => 'true'
+                      }
+                }, @current_user          
+              )
+              @project.reload
+            end
+            
+            it 'should associate associate projects' do
+              @project.associate_projects.should =~ [
+                @associate_project_have_no_associate_projects, 
+                @associated_project
+              ]
+            end
+          end
+        end
+      end
+
+      context 'when params[:associate_projects][:import] blank' do
+        before do
+          @project.add_associate_projects(
+            {
+                  :name => {
+                    '0' => @associate_project_have_no_associate_projects.name, 
+                    '1' => @associate_project_have_associate_projects_1.name,
+                    '2' => @associate_project_have_no_associate_projects.name,
+                    '3' => @associate_project_have_associate_projects_2.name
+                  }
+            }, @current_user          
+          )
+          @project.reload
+        end
+        
+        it 'should not associate projects associated associate projects' do
+          @project.associate_projects.should =~ [
+            @associate_project_have_no_associate_projects, 
+            @associate_project_have_associate_projects_1, 
+            @associate_project_have_associate_projects_2
+          ]
+        end
+      end
+    end
+
+    context 'when params[:associate_projects] blank' do
+      before do
+        @result = @project.add_associate_projects(nil, @current_user)
+      end
+      
+      it 'should do nothinc' do
+        @result.should be_nil
+      end
+    end
+  end
 
   describe 'decrement_docs_counter' do
     before do
       @project = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 1)
-      @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 1)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-      @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 2, :pmcdocs_count => 2)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 1)
+      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 2, :pmcdocs_count => 3)
+      @project.associate_projects << @associate_project_1
+      @project.associate_projects << @associate_project_2
       @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
+      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+      @pmcdoc_serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
+      @project.reload
+      @associate_project_1.reload
+      @associate_project_2.reload
     end
-  
-    context 'when PubMed' do
-      before do
-        @project.docs.delete(@pmdoc)
+    
+    describe 'before delete' do
+      it 'project.pmdocs should equal sum of associate projects pmdocs_count' do
+         @project.pmdocs_count.should eql(4)
       end
-          
-      it 'should increment project.pmcdocs_count' do
-        @project.reload
-        @project.pmdocs_count.should eql(0)
-        @project.pmcdocs_count.should eql(1)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmdocs_count.should eql(0)
-        @sproject_1.pmcdocs_count.should eql(1)
-      end
-
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_2.reload
-        @sproject_2.pmdocs_count.should eql(1)
-        @sproject_2.pmcdocs_count.should eql(2)
+      
+      it 'projectpmcdocs should equal sum of associate projects pmcdocs_count' do
+         @project.pmcdocs_count.should eql(5)
       end
     end
-  
-    context 'when PMC' do
+
+    context 'when deleted PubMed' do
       before do
-        @project.docs.delete(@pmcdoc)
+        @associate_project_1.docs.delete(@pmdoc)
+        @project.reload
       end
           
-      it 'should increment pmcdocs_count' do
-        @project.reload
-        @project.pmcdocs_count.should eql(0)
-        @project.pmdocs_count.should eql(1)
+      it 'should decrement project.pmcdocs_count' do
+        @project.pmdocs_count.should eql(3)
+        @project.pmcdocs_count.should eql(5)
+      end
+    end
+    
+    context 'when added PMC' do
+      context 'when serial == 0' do
+        before do
+          @associate_project_1.docs.delete(@pmcdoc)
+        end
+            
+        it 'should decrement pmcdocs_count' do
+          @project.reload
+          @project.pmcdocs_count.should eql(4)
+          @project.pmdocs_count.should eql(4)
+        end
       end
 
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_1.reload
-        @sproject_1.pmcdocs_count.should eql(0)
-        @sproject_1.pmdocs_count.should eql(1)
+      context 'when serial == 1' do
+        before do
+          @associate_project_1.docs.delete(@pmcdoc_serial_1)
+        end
+            
+        it 'should not decrement pmcdocs_count' do
+          @project.reload
+          @project.pmcdocs_count.should eql(5)
+          @project.pmdocs_count.should eql(4)
+        end
+      end
+    end
+  end
+  
+  describe 'associate_project_ids' do
+    context 'when saved project' do
+      before do
+        @project_1 = FactoryGirl.create(:project)
+        @project_2 = FactoryGirl.create(:project)
+        @project_3 = FactoryGirl.create(:project)
+        @project_4 = FactoryGirl.create(:project)
+        @associate_project_1 = FactoryGirl.create(:project)
+        @associate_project_2 = FactoryGirl.create(:project)
+        @associate_project_3 = FactoryGirl.create(:project)
+  
+        FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+        FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+        FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
+        FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @associate_project_3)
+        @project_1.reload
+        @project_2.reload
+        @project_3.reload
+        @project_4.reload
+        @associate_project_1.reload
+        @associate_project_2.reload
+        @associate_project_3.reload
+      end
+      
+      context 'when have associate projects' do
+        before do
+          @ids = @project_1.associate_project_ids  
+        end
+        
+        it 'should return associate project ids' do
+          @ids.should =~ [@associate_project_1.id, @associate_project_2.id]
+        end
+      end
+      
+      context 'when does not have associate projects' do
+        before do
+          @ids = @project_4.associate_project_ids  
+        end
+        
+        it 'should be blank' do
+          @ids.should be_blank
+        end
+      end
+    end
+    
+    context 'when new project' do
+      before do
+        @project = Project.new
+      end
+      
+      it 'should return blank array' do
+        @project.associate_project_ids.should be_blank
+      end
+    end
+  end
+  
+  describe 'self_id_and_associate_project_ids' do
+    context 'when saved project' do
+      before do
+        @project = FactoryGirl.create(:project)
+        @associate_project_ids = ['A', 'B']
+        @project.stub(:associate_project_ids).and_return(@associate_project_ids)
+      end
+      
+      it 'should return associate_project_ids and self id' do
+        @project.self_id_and_associate_project_ids.should =~ @associate_project_ids << @project.id
+      end
+    end
+
+    context 'when new project' do
+      before do
+        @project = Project.new
+      end
+      
+      it 'should return nil' do
+        @project.self_id_and_associate_project_ids.should be_nil
+      end
+    end
+  end
+  
+  describe 'self_id_and_associate_project_and_project_ids' do
+    context 'when saved project' do
+      context 'when associate_project_and_project_ids present' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @associate_project_ids = ['A', 'B']
+          @project.stub(:associate_project_and_project_ids).and_return(@associate_project_ids)
+        end
+        
+        it 'should return associate_project_ids and self id' do
+          @project.self_id_and_associate_project_and_project_ids.should =~ @associate_project_ids << @project.id
+        end
       end
 
-      it 'should increment sproject.pmcdocs_count' do
-        @sproject_2.reload
-        @sproject_2.pmcdocs_count.should eql(1)
-        @sproject_2.pmdocs_count.should eql(2)
+      context 'when associate_project_and_project_ids blank' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @associate_project_ids = [0]
+          @project.stub(:associate_project_and_project_ids).and_return(@associate_project_ids)
+        end
+        
+        it 'should return associate_project_ids and self id' do
+          @project.self_id_and_associate_project_and_project_ids.should =~ @associate_project_ids << @project.id
+        end
+      end
+    end
+
+    context 'when new project' do
+      before do
+        @project = Project.new
+      end
+      
+      it 'should return nil' do
+        @project.self_id_and_associate_project_and_project_ids.should be_nil
+      end
+    end
+  end
+  
+  describe 'project_ids' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @associate_project_1 = FactoryGirl.create(:project)
+      @associate_project_2 = FactoryGirl.create(:project)
+      @associate_project_3 = FactoryGirl.create(:project)
+
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
+      @project_1.reload
+      @project_2.reload
+      @associate_project_1.reload
+      @associate_project_2.reload
+      @associate_project_3.reload
+    end
+    
+    context 'when have projects' do
+      it 'should return project ids' do
+        @associate_project_1.project_ids.should =~ [@project_1.id, @project_2.id]
+      end
+    end
+    
+    context 'when does not have projects' do
+      it 'should be blank' do
+        @project_1.project_ids.should be_blank
+      end
+    end
+  end
+  
+  describe 'associate_project_and_project_ids' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
+      @project_4 = FactoryGirl.create(:project)
+      @associate_project_1 = FactoryGirl.create(:project)
+      @associate_project_2 = FactoryGirl.create(:project)
+      @associate_project_3 = FactoryGirl.create(:project)
+
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @associate_project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_2, :associate_project => @project_1)
+      FactoryGirl.create(:associate_projects_project, :project => @project_3, :associate_project => @associate_project_3)
+      @project_1.reload
+      @project_2.reload
+      @project_3.reload
+      @project_4.reload
+      @associate_project_1.reload
+      @associate_project_2.reload
+      @associate_project_3.reload
+    end
+    
+    context 'when associate_projects and projects present' do
+      it 'should return associate_project_ids and project_ids' do
+        @project_1.associate_project_and_project_ids.should =~ [@associate_project_1.id, @associate_project_2.id, @project_2.id]
+      end
+    end
+    
+    context 'when projects present' do
+      it 'should return project_ids' do
+        @associate_project_1.associate_project_and_project_ids.should =~ [@project_1.id, @project_2.id]
+      end
+    end
+    
+    context 'when associate_projects present' do
+      it 'should return associate_project_ids' do
+        @project_2.associate_project_and_project_ids.should =~ [@associate_project_1.id, @project_1.id]
+      end
+    end
+    
+    context 'when associate_projects and projects blank' do
+      it 'should return default value' do
+        @project_4.associate_project_and_project_ids.should be_blank
+      end
+    end
+  end
+  
+  describe 'associatable_project_ids' do
+    before do
+      @accessible_1 = FactoryGirl.create(:project)
+      @accessible_2 = FactoryGirl.create(:project)
+      @un_accessible = FactoryGirl.create(:project)
+      @not_id_in = FactoryGirl.create(:project)
+      @current_user = FactoryGirl.create(:user)
+    end
+    
+    context 'when new record' do
+      before do
+        Project.stub(:accessible).and_return([@accessible_1, @accessible_2])
+        @project = Project.new
+      end
+      
+      it 'should return Project.accessible project ids' do
+        @project.associatable_project_ids(@current_user).should =~ [@accessible_1.id, @accessible_2.id]
+      end
+    end
+    
+    context 'when saved record' do
+      before do
+        Project.stub(:not_id_in).and_return([@not_id_in])
+        @project = FactoryGirl.create(:project)
+      end
+      
+      it 'should return Project.accessible(current_user).not_id_in()' do
+        @project.associatable_project_ids(@current_user).should =~ [@not_id_in.id]
       end
     end
   end

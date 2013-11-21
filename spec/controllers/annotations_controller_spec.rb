@@ -360,30 +360,36 @@ describe AnnotationsController do
     #POST   /projects/:project_id/pmdocs/:pmdoc_id/annotations/destroy_all(.:format)
     before do
       controller.class.skip_before_filter :authenticate_user!
+      # project
       @project = FactoryGirl.create(:project)
-      @sproject_annotations_0 = FactoryGirl.create(:sproject)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_annotations_0.id)
-      @sproject_annotations_3 = FactoryGirl.create(:sproject, :denotations_count => 3)
-      FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_annotations_3.id)
-      controller.stub(:get_project).and_return([@project, nil])
+      # associate projects
+      @associate_project_annotations_0 = FactoryGirl.create(:project)
+      @associate_project_annotations_3 = FactoryGirl.create(:project)
+      controller.stub(:get_project).and_return([@associate_project_annotations_3, nil])
       @another_project = FactoryGirl.create(:project)
       @referer_path = root_path
       request.env["HTTP_REFERER"] = @referer_path
     end
-    
+
     context 'when pmdoc' do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 12345, :serial => 0) 
         controller.stub(:get_doc).and_return([@doc, nil])
+        # add denotations to associate_projects
         @doc_denotatons_count = 3
         @doc_denotasions_related_model_count = 2
         @doc_denotatons_count.times do
-          denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+          denotation = FactoryGirl.create(:denotation, :project => @associate_project_annotations_3, :doc => @doc)
           @doc_denotasions_related_model_count.times do
-            FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
-            FactoryGirl.create(:instance, :obj => denotation, :project => @project)
+            FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @associate_project_annotations_3)
+            FactoryGirl.create(:instance, :obj => denotation, :project => @associate_project_annotations_3)
           end
         end
+        @associate_project_annotations_0.reload
+        @associate_project_annotations_3.reload
+        # add associate_projects to project
+        @project.associate_projects << @associate_project_annotations_0
+        @project.associate_projects << @associate_project_annotations_3
         # another_project
         denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @doc)
         FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
@@ -391,8 +397,8 @@ describe AnnotationsController do
         # another_doc
         @another_doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123456, :serial => 0) 
         denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @another_doc)
-        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
-        FactoryGirl.create(:instance, :obj => denotation, :project => @project)
+        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
       end
       
       it 'denotations are present' do
@@ -408,39 +414,34 @@ describe AnnotationsController do
       end
       
       it 'denotations are present' do
-        @doc.denotations.where("project_id = ?", @project.id).size.should eql(@doc_denotatons_count)
+        @doc.denotations.where("project_id = ?", @associate_project_annotations_3.id).size.should eql(@doc_denotatons_count)
       end
       
       it 'denotation.instances, subrels, objrels should present' do
-        @doc.denotations.where("project_id = ?", @project.id).each do |denotation|
+        @doc.denotations.where("project_id = ?", @associate_project_annotations_3.id).each do |denotation|
           denotation.instances.should be_present
           denotation.subrels.should be_present 
           denotation.objrels.should be_present 
         end
       end
       
-      it 'should count upped project.denotations_count' do
+      it 'should increment project.denotations_count when add assciate projects' do
+        @associate_project_annotations_3.denotations_count.should eql(@doc_denotatons_count)
+      end
+      
+      it 'project.denotations_count should equal sum of assciate projects denotations_count' do
+        @project.denotations_count.should eql(0)
         @project.reload
-        @project.denotations_count.should eql(@doc_denotatons_count)
+        @project.denotations_count.should eql(@associate_project_annotations_3.denotations_count)
       end
-      
-      it 'should count upped project.denotations_count' do
-        @sproject_annotations_0.reload
-        @sproject_annotations_0.denotations_count.should eql(@doc_denotatons_count)
-      end
-      
-      it 'should count upped project.denotations_count' do
-        @sproject_annotations_3.reload
-        @sproject_annotations_3.denotations_count.should eql(6)
-      end
-            
+
       describe 'post' do
         before do
-          post :destroy_all, :project_id => @project.name, :pmdoc_id => @doc.sourceid
+          post :destroy_all, :project_id => @associate_project_annotations_3.name, :pmdoc_id => @doc.sourceid
         end
         
         it 'doc.denotations should be blank' do
-          @doc.denotations.where("project_id = ?", @project.id).should be_blank
+          @doc.denotations.where("project_id = ?", @associate_project_annotations_3.id).should be_blank
         end
         
         it 'relation count should reduced ' do
@@ -464,14 +465,14 @@ describe AnnotationsController do
           @project.denotations_count.should eql(0)
         end
       
-        it 'should reset sproject.denotaions_count' do
-          @sproject_annotations_0.reload
-          @sproject_annotations_0.denotations_count.should eql(0)
+        it 'should reset associate project.denotaions_count' do
+          @associate_project_annotations_0.reload
+          @associate_project_annotations_0.denotations_count.should eql(0)
         end
       
-        it 'should reset sproject.denotaions_count' do
-          @sproject_annotations_3.reload
-          @sproject_annotations_3.denotations_count.should eql(3)
+        it 'should reset associate project.denotaions_count' do
+          @associate_project_annotations_3.reload
+          @associate_project_annotations_3.denotations_count.should eql(0)
         end
       end
       
@@ -499,29 +500,34 @@ describe AnnotationsController do
         end        
       end
     end
-    
+
     context 'when pmcdoc' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'PMCß', :sourceid => 12345, :serial => 0) 
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 12345, :serial => 0) 
         controller.stub(:get_doc).and_return([@doc, nil])
         @doc_denotatons_count = 3
         @doc_denotasions_related_model_count = 2
         @doc_denotatons_count.times do
-          denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+          denotation = FactoryGirl.create(:denotation, :project => @associate_project_annotations_3, :doc => @doc)
           @doc_denotasions_related_model_count.times do
-            FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
-            FactoryGirl.create(:instance, :obj => denotation, :project => @project)
+            FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @associate_project_annotations_3)
+            FactoryGirl.create(:instance, :obj => denotation, :project => @associate_project_annotations_3)
           end
         end
+        @associate_project_annotations_0.reload
+        @associate_project_annotations_3.reload
+        # add associate_projects to project
+        @project.associate_projects << @associate_project_annotations_0
+        @project.associate_projects << @associate_project_annotations_3
         # another_project
         denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @doc)
         FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
         FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
         # another_doc
         @another_doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123456, :serial => 0) 
-        denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @another_doc)
-        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @project)
-        FactoryGirl.create(:instance, :obj => denotation, :project => @project)
+        denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @another_doc)
+        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
       end
       
       it 'denotations are present' do
@@ -537,24 +543,34 @@ describe AnnotationsController do
       end
       
       it 'denotations are present' do
-        @doc.denotations.where("project_id = ?", @project.id).size.should eql(@doc_denotatons_count)
+        @doc.denotations.where("project_id = ?", @associate_project_annotations_3.id).size.should eql(@doc_denotatons_count)
       end
       
       it 'denotation.instances, subrels, objrels should present' do
-        @doc.denotations.where("project_id = ?", @project.id).each do |denotation|
+        @doc.denotations.where("project_id = ?", @associate_project_annotations_3.id).each do |denotation|
           denotation.instances.should be_present
           denotation.subrels.should be_present 
           denotation.objrels.should be_present 
         end
       end
-            
+      
+      it 'should increment project.denotations_count when add assciate projects' do
+        @associate_project_annotations_3.denotations_count.should eql(@doc_denotatons_count)
+      end
+      
+      it 'project.denotations_count should equal sum of assciate projects denotations_count' do
+        @project.denotations_count.should eql(0)
+        @project.reload
+        @project.denotations_count.should eql(@associate_project_annotations_3.denotations_count)
+      end
+                  
       describe 'post' do
         before do
-          post :destroy_all, :project_id => @project.name, :div_id => 0, :pmcdoc_id => @doc.sourceid
+          post :destroy_all, :project_id => @associate_project_annotations_3.name, :div_id => 0, :pmcdoc_id => @doc.sourceid
         end
         
         it 'doc.denotations should be blank' do
-          @doc.denotations.where("project_id = ?", @project.id).should be_blank
+          @doc.denotations.where("project_id = ?", @associate_project_annotations_3.id).should be_blank
         end
         
         it 'relation count should reduced ' do
@@ -571,6 +587,21 @@ describe AnnotationsController do
         
         it 'should redirect_to referer path' do
           response.should redirect_to(@referer_path)
+        end
+          
+        it 'should reset project.denotaions_count' do
+          @project.reload
+          @project.denotations_count.should eql(0)
+        end
+      
+        it 'should reset associate project.denotaions_count' do
+          @associate_project_annotations_0.reload
+          @associate_project_annotations_0.denotations_count.should eql(0)
+        end
+      
+        it 'should reset associate project.denotaions_count' do
+          @associate_project_annotations_3.reload
+          @associate_project_annotations_3.denotations_count.should eql(0)
         end
       end
     end

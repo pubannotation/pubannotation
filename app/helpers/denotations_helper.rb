@@ -8,17 +8,10 @@ module DenotationsHelper
       end
     else      
       if project.present?
-        if options[:sourceid].present?
-          # doc should be present
-          options[:doc].same_sourceid_denotations_count
+        if options[:doc].present?
+          Denotation.project_denotations_count(project.id, options[:doc].denotations)
         else
-          denotations = options[:doc].present? ? options[:doc].denotations : Denotation
-          if project.class == Project
-            Denotation.project_denotations_count(project.id, denotations)
-          else
-            # Sproject
-            project.denotations_count
-          end
+          project.denotations_count
         end
       else
         options[:doc].denotations.size

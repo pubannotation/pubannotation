@@ -151,38 +151,7 @@ describe PmdocsController do
       end
     end
     
-    context 'when params[:sproject_id] present' do
-      before do
-        @sproject = FactoryGirl.create(:sproject)
-        @project = FactoryGirl.create(:project)
-        @doc = FactoryGirl.create(:doc)   
-        controller.stub(:get_doc).and_return([@doc, "notice"])    
-        controller.stub(:get_sproject).and_return([@sproject, 'notice'])
-        @get_annotations = 'annotation'
-        controller.stub(:get_annotations).and_return(@get_annotations)
-        @get_projects = 'get projects'
-        controller.stub(:get_projects).and_return(@get_projects)
-        get :show, :id => 1, :sproject_id => 1
-      end
-      
-      it 'should assign get_doc as @doc' do
-        assigns[:doc].should eql(@doc)
-      end
-      
-      it 'should assign get_sproject as @sproject' do
-        assigns[:sproject].should eql(@sproject)
-      end
-
-      it 'should assign :get_annotations as @annotations' do
-        assigns[:annotations].should eql(@get_annotations)
-      end
-      
-      it 'should assign get_projects as @projects' do
-        assigns[:projects].should eql(@get_projects)
-      end
-    end
-    
-    context 'when params[:project_id] and params[:sproject_id] does not exists' do
+    context 'when params[:project_id] does not exists' do
       before do
         get :show, :id => 1
       end      
@@ -198,9 +167,7 @@ describe PmdocsController do
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
       @project = 'project'
       @projects = 'projects'
-      @sproject = 'sproject'
       controller.stub(:get_project).and_return([@project, nil])
-      controller.stub(:get_sproject).and_return(@sproject)
       @doc.stub(:spans_projects).and_return(@projects)
       controller.stub(:get_doc).and_return([@doc, nil])
       @spans = 'SPANS'
@@ -258,28 +225,6 @@ describe PmdocsController do
       
       it 'should not assign @project' do
         assigns[:project].should be_nil
-      end
-      
-      it 'should assign @projects' do
-        assigns[:projects].should eql(@projects)
-      end
-    end
-    
-    context 'when params[:sproject_id] present' do
-      before do
-        get :spans, :id => @doc.sourceid, :sproject_id => '1', :begin => 1, :end => 5
-      end
-      
-      it 'should not assign @project' do
-        assigns[:project].should be_nil
-      end
-      
-      it 'should assign @sproject' do
-        assigns[:sproject].should eql(@sproject)
-      end
-      
-      it 'should assign @doc' do
-        assigns[:doc].should eql(@doc)
       end
       
       it 'should assign @projects' do
@@ -354,59 +299,10 @@ describe PmdocsController do
       it 'should assign @modifications' do
         assigns[:modifications].should eql(@annotations[:modifications])
       end
-
-      context 'when params[:project_id] blank' do
-        before do
-          @sproject = FactoryGirl.create(:sproject)
-          controller.stub(:get_sproject).and_return(@sproject, 'notice')
-          controller.stub(:get_doc).and_return(@doc, 'notice')
-          get :annotations, :sproject_id => @sproject.name, :id => @doc.id, :begin => 1, :end => 10
-        end
-        
-        it 'should assign @project' do
-          assigns[:project].should eql(@project)
-        end
-        
-        it 'should assign @doc' do
-          assigns[:doc].should eql(@doc)
-        end
-        
-        it 'should_not assign @projects' do
-          assigns[:projects].should be_nil
-        end
-        
-        it 'should assign @spans' do
-          assigns[:spans].should eql(@spans)
-        end
-        
-        it 'should assign @prev_text' do
-          assigns[:prev_text].should eql(@prev_text)
-        end
-        
-        it 'should assign @next_text' do
-          assigns[:next_text].should eql(@next_text)
-        end
-        
-        it 'should assign @denotations' do
-          assigns[:denotations].should eql(@annotations[:denotations])
-        end
-        
-        it 'should assign @instances' do
-          assigns[:instances].should eql(@annotations[:instances])
-        end
-        
-        it 'should assign @relations' do
-          assigns[:relations].should eql(@annotations[:relations])
-        end
-        
-        it 'should assign @modifications' do
-          assigns[:modifications].should eql(@annotations[:modifications])
-        end
-      end
     end
     
     
-    context 'when params[:project_id] and params[:sproject_id] blank' do
+    context 'when params[:project_id] blank' do
       before do
         get :annotations, :id => @doc.id, :begin => 1, :end => 10
       end
@@ -447,12 +343,24 @@ describe PmdocsController do
     context 'when params[:project_id] exists' do
       context 'and when project exists' do
         before do
+          @sourceid = 'sourceid'
+          # project
           @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
-          @sourceid = 'sourdeid'
-          @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
-          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-          @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 0)
-          FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+          @project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 0)
+          @project_3 = FactoryGirl.create(:project, :pmdocs_count => 2, :pmcdocs_count => 0)
+          # project.projects
+          @project_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_1, :associate_project => @project)
+          @project_project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 0)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_2, :associate_project => @project)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_2, :associate_project => @project_2)
+          # project.projects.projects
+          @project_project_project_1 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 0)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_project_1, :associate_project => @project_project_1)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_project_1, :associate_project => @project_project_2)
+          FactoryGirl.create(:associate_projects_project, :project => @project_project_project_1, :associate_project => @project_3)
+          # force to associate projects
+          @project.reload
           controller.stub(:get_project).and_return([@project, 'notice'])        
         end
         
@@ -463,7 +371,7 @@ describe PmdocsController do
           
           context 'and when format html' do
             before do
-              post :create, :project_id => 1, :pmids => @sourceid
+              post :create, :project_id => @project.id, :pmids => @sourceid
             end
             
             it 'should redirect to project_pmdocs_path' do
@@ -476,16 +384,16 @@ describe PmdocsController do
               @project.pmcdocs_count.should eql(0)
             end
             
-            it 'should incremant only sproject.pmdocs_count' do
-              @sproject_1.reload
-              @sproject_1.pmdocs_count.should eql(1)
-              @sproject_1.pmcdocs_count.should eql(0)
+            it 'should incremant only associate project.pmdocs_count' do
+              @project_project_1.reload
+              @project_project_1.pmdocs_count.should eql(1)
+              @project_project_1.pmcdocs_count.should eql(0)
             end
             
-            it 'should incremant only sproject.pmdocs_count' do
-              @sproject_2.reload
-              @sproject_2.pmdocs_count.should eql(2)
-              @sproject_2.pmcdocs_count.should eql(0)
+            it 'should incremant only associate project.pmdocs_count' do
+              @project_project_2.reload
+              @project_project_2.pmdocs_count.should eql(2)
+              @project_project_2.pmcdocs_count.should eql(0)
             end
           end
           
@@ -541,44 +449,65 @@ describe PmdocsController do
             before do
               @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
               @id = 'sourceid'
-              @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
-              FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-              @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 0)
-              FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
+              @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 2)
+              @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 4)
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
+              @associate_project_1.reload
+              @project.associate_projects << @associate_project_1
+              @project.associate_projects << @associate_project_2
+            end
+            
+            describe 'counters before update' do
+              it 'project counters should equal associate project counters' do
+                @project.reload
+                @project.pmdocs_count.should eql(3)
+                @project.pmcdocs_count.should eql(6)
+              end
+              
+              it 'associate project counters same as before statements' do
+                @associate_project_1.reload
+                @associate_project_1.pmdocs_count.should eql(0)
+                @associate_project_1.pmcdocs_count.should eql(2)
+              end
+              
+              it 'associate project counters same as before statements' do
+                @associate_project_2.reload
+                @associate_project_2.pmdocs_count.should eql(3)
+                @associate_project_2.pmcdocs_count.should eql(4)
+              end
             end
             
             context 'and when format html' do
               before do
-                post :update, :project_id => @project.name, :id => @id
+                post :update, :project_id => @associate_project_1.name, :id => @id
               end
               
               it 'should redirect to project_pmdocs_path' do
-                response.should redirect_to(project_path(@project.name, :accordion_id => 1))
+                response.should redirect_to(project_path(@associate_project_1.name, :accordion_id => 1))
               end
             
-              it 'should increment only project.pmdocs_count' do
+              it 'should increment pmdocs_counter' do
                 @project.reload
-                @project.pmdocs_count.should eql(1)
-                @project.pmcdocs_count.should eql(0)
+                @project.pmdocs_count.should eql(4)
+                @project.pmcdocs_count.should eql(6)
               end
               
-              it 'should incremant only sproject.pmdocs_count' do
-                @sproject_1.reload
-                @sproject_1.pmdocs_count.should eql(1)
-                @sproject_1.pmcdocs_count.should eql(0)
+              it 'should increment pmdocs_counter' do
+                @associate_project_1.reload
+                @associate_project_1.pmdocs_count.should eql(1)
+                @associate_project_1.pmcdocs_count.should eql(2)
               end
               
-              it 'should incremant only sproject.pmdocs_count' do
-                @sproject_2.reload
-                @sproject_2.pmdocs_count.should eql(2)
-                @sproject_2.pmcdocs_count.should eql(0)
+              it 'should not increment counters' do
+                @associate_project_2.reload
+                @associate_project_2.pmdocs_count.should eql(3)
+                @associate_project_2.pmcdocs_count.should eql(4)
               end
             end
             
             context 'and when format json' do
               before do
-                post :update, :format => 'json', :project_id => @project.name, :id => @id
+                post :update, :format => 'json', :project_id => @associate_project_1.name, :id => @id
               end
               
               it 'return blank header' do
@@ -592,40 +521,66 @@ describe PmdocsController do
           context 'and when gen_pmdoc return doc' do
             before do
               @project = FactoryGirl.create(:project, :name => 'project name', :pmdocs_count => 0, :pmcdocs_count => 0)
-              @id = 'sourceid'
-              @sproject_1 = FactoryGirl.create(:sproject, :pmdocs_count => 0, :pmcdocs_count => 0)
-              FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_1.id)
-              @sproject_2 = FactoryGirl.create(:sproject, :pmdocs_count => 1, :pmcdocs_count => 0)
-              FactoryGirl.create(:projects_sproject, :project_id => @project.id, :sproject_id => @sproject_2.id)
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'PM', :sourceid => @id)
+              @id = 'sourceid2'
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
+              @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 2)
+              @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 4)
+              @associate_project_1.reload
+              @project.associate_projects << @associate_project_1
+              @project.associate_projects << @associate_project_2
               controller.stub(:gen_pmdoc).and_return(@doc)
-              post :update, :project_id => @project.name, :id => @id
             end
+            
+            describe 'counters before update' do
+              it 'project counters should equal associate project counters' do
+                @project.reload
+                @project.pmdocs_count.should eql(3)
+                @project.pmcdocs_count.should eql(6)
+              end
+              
+              it 'associate project counters same as before statements' do
+                @associate_project_1.reload
+                @associate_project_1.pmdocs_count.should eql(0)
+                @associate_project_1.pmcdocs_count.should eql(2)
+              end
+              
+              it 'associate project counters same as before statements' do
+                @associate_project_2.reload
+                @associate_project_2.pmdocs_count.should eql(3)
+                @associate_project_2.pmcdocs_count.should eql(4)
+              end
+            end
+                        
+            describe 'after post' do
+              before do
+                post :update, :project_id => @associate_project_1.name, :id => 'invalidid'
+              end
 
-            it 'should redirect to project_pmdocs_path' do
-              response.should redirect_to(project_path(@project.name, :accordion_id => 1))
-            end
+              it 'should redirect to project_pmdocs_path' do
+                response.should redirect_to(project_path(@associate_project_1.name, :accordion_id => 1))
+              end
+              
+              it 'should set flash[:notice]' do
+                flash[:notice].should eql("The document, #{@doc.sourcedb}:#{@doc.sourceid}, was created in the annotation set, #{@associate_project_1.name}.")
+              end
             
-            it 'should set flash[:notice]' do
-              flash[:notice].should eql("The document, #{@doc.sourcedb}:#{@doc.sourceid}, was created in the annotation set, #{@project.name}.")
-            end
-          
-            it 'should increment only project.pmdocs_count' do
-              @project.reload
-              @project.pmdocs_count.should eql(1)
-              @project.pmcdocs_count.should eql(0)
-            end
-            
-            it 'should incremant only sproject.pmdocs_count' do
-              @sproject_1.reload
-              @sproject_1.pmdocs_count.should eql(1)
-              @sproject_1.pmcdocs_count.should eql(0)
-            end
-            
-            it 'should incremant only sproject.pmdocs_count' do
-              @sproject_2.reload
-              @sproject_2.pmdocs_count.should eql(2)
-              @sproject_2.pmcdocs_count.should eql(0)
+              it 'should increment pmdocs_count' do
+                @project.reload
+                @project.pmdocs_count.should eql(4)
+                @project.pmcdocs_count.should eql(6)
+              end
+              
+              it 'should increment pmdocs_count' do
+                @associate_project_1.reload
+                @associate_project_1.pmdocs_count.should eql(1)
+                @associate_project_1.pmcdocs_count.should eql(2)
+              end
+              
+              it 'should not increment counters' do
+                @associate_project_2.reload
+                @associate_project_2.pmdocs_count.should eql(3)
+                @associate_project_2.pmcdocs_count.should eql(4)
+              end
             end
           end
           

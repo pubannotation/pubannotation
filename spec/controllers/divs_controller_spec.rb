@@ -45,22 +45,6 @@ describe DivsController do
         end
       end
     end
-    
-    context 'when sproject_id.present' do
-      before do
-        @sproject_id = 'sproject_id'
-        @sproject = FactoryGirl.create(:sproject, :name => @sproject_id)
-        get :index, :pmcdoc_id => @pmcdoc_id, :sproject_id => @sproject_id
-      end
-      
-      it 'should assign project_name' do
-        assigns[:project_name].should eql(@sproject_id)
-      end
-      
-      it 'should assign sproject' do
-        assigns[:sproject].should eql(@sproject)
-      end
-    end
   end
 
   describe 'spans' do
@@ -68,8 +52,6 @@ describe DivsController do
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
       @project = 'project'
       @projects = 'projects'
-      @sproject = 'sproject'
-      controller.stub(:get_sproject).and_return([@sproject, nil])
       controller.stub(:get_project).and_return([@project, nil])
       @doc.stub(:spans_projects).and_return(@projects)
       controller.stub(:get_doc).and_return([@doc, nil])
@@ -91,52 +73,6 @@ describe DivsController do
         
         it 'should not assign' do
           assigns[:projects].should be_nil
-        end
-        
-        it 'should assign @doc' do
-          assigns[:doc].should eql(@doc)
-        end
-        
-        it 'should assign @spans' do
-          assigns[:spans].should eql(@spans)
-        end
-        
-        it 'should assign @prev_text' do
-          assigns[:prev_text].should eql(@prev_text)
-        end
-        
-        it 'should assign @next_text' do
-          assigns[:next_text].should eql(@next_text)
-        end
-        
-        it 'should render template' do
-          response.should render_template('docs/spans')
-        end
-      end
-
-      context 'when format json' do
-        before do
-          get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
-        end
-      end
-    end
-    
-    context 'when params[:sproject_id] present' do
-      context 'when format html' do
-        before do
-          get :spans, :sproject_id => 1, :pmcdoc_id => @doc.sourceid, :id => 1, :begin => 1, :end => 5
-        end
-        
-        it '@project should be_nil' do
-          assigns[:project].should be_nil
-        end
-        
-        it 'should assign @sproject' do
-          assigns[:sproject].should eql(@sproject)
-        end
-        
-        it 'should assign @projects' do
-          assigns[:projects].should eql(@projects)
         end
         
         it 'should assign @doc' do
@@ -411,42 +347,6 @@ describe DivsController do
           end  
         end  
       end
-    end
-    
-    context 'when params[:sproject_id] exists' do
-      before do
-        @sproject_id = 'name of project'
-        @sproject = FactoryGirl.create(:sproject, :name => @sproject_id)
-        controller.stub(:get_sproject).and_return([@sproject, 'notice'])
-        @doc = FactoryGirl.create(:doc)
-        @get_annotations = 'get annotations'
-        controller.stub(:get_annotations).and_return(@get_annotations)
-        @get_doc_notice = 'get doc notice'
-        controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
-        @get_projects = 'get projects'
-        controller.stub(:get_projects).and_return(@get_projects)
-        get :show, :sproject_id => @sproject_id, :pmcdoc_id => 'pmcdoc_id', :id => 'id'
-      end
-      
-      it 'should assign get_sproject as @sproject' do
-        assigns[:sproject].should eql(@sproject)
-      end
-      
-      it 'should assign get_doc as @doc' do
-        assigns[:doc].should eql(@doc)
-      end
-      
-      it 'should assign get_annotations as @annotations' do
-        assigns[:annotations].should eql(@get_annotations)
-      end
-      
-      it 'should assign get_projects as @projects' do
-        assigns[:projects].should eql(@get_projects)
-      end
-      
-      it 'should render template' do
-        response.should render_template('docs/show')
-      end      
     end
   end
   

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130925022731) do
+ActiveRecord::Schema.define(:version => 20131120030351) do
 
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
@@ -22,6 +22,14 @@ ActiveRecord::Schema.define(:version => 20130925022731) do
 
   add_index "associate_maintainers", ["project_id"], :name => "index_associate_maintainers_on_project_id"
   add_index "associate_maintainers", ["user_id"], :name => "index_associate_maintainers_on_user_id"
+
+  create_table "associate_projects_projects", :force => true do |t|
+    t.integer "project_id",           :null => false
+    t.integer "associate_project_id", :null => false
+  end
+
+  add_index "associate_projects_projects", ["associate_project_id"], :name => "index_associate_projects_projects_on_associate_project_id"
+  add_index "associate_projects_projects", ["project_id"], :name => "index_associate_projects_projects_on_project_id"
 
   create_table "blocks", :force => true do |t|
     t.string   "hid"
@@ -125,14 +133,6 @@ ActiveRecord::Schema.define(:version => 20130925022731) do
 
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true
-
-  create_table "projects_sprojects", :force => true do |t|
-    t.integer "project_id",  :null => false
-    t.integer "sproject_id", :null => false
-  end
-
-  add_index "projects_sprojects", ["project_id"], :name => "index_projects_sprojects_on_project_id"
-  add_index "projects_sprojects", ["sproject_id"], :name => "index_projects_sprojects_on_sproject_id"
 
   create_table "relations", :force => true do |t|
     t.string   "hid"

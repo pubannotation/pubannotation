@@ -75,26 +75,10 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def get_sproject(name)
-    sproject = Sproject.find_by_name(name)
-    if sproject
-      if sproject.accessible?(current_user)
-        return sproject, nil
-      else
-        return nil, I18n.t('controllers.application.get_project.private', :project_name => name)
-      end
-    else
-      return nil, I18n.t('controllers.application.get_project.not_exist', :project_name => name)
-    end
-  end
-
 
   def get_projects (options = {})
     projects = (options.present? && options[:doc].present?)? options[:doc].projects : Project.where('id > ?', 0)
-    if options.present? && options[:sproject].present?
-      sproject_projects = projects.sprojects_projects(options[:sproject].project_ids)
-      projects = projects & sproject_projects
-    end
+    # TODO associate projects should be got ?
     projects.sort!{|x, y| x.name <=> y.name}
     projects = projects.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
   end
@@ -104,19 +88,9 @@ class ApplicationController < ActionController::Base
     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     if doc
       if project
-        if project.class == Project
-          # Project
-          if !doc.projects.include?(project)
-            doc = nil
-            notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
-          end
-        else
-          # Sproject
-          common_projects = doc.projects & project.projects
-          if common_projects.blank?
-            doc = nil
-            notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
-          end
+        if !doc.projects.include?(project)
+          doc = nil
+          notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
         end
       end
     else
@@ -272,9 +246,9 @@ class ApplicationController < ActionController::Base
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
-        aligner = Aligner.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
-        # aligner = Aligner.new(text, asciitext)
-        hdenotations = aligner.transform_denotations(hdenotations)
+        sequence_alignment = SequenceAlignment.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
+        # sequence_alignment = Aligner.new(text, asciitext)
+        hdenotations = sequence_alignment.transform_denotations(hdenotations)
         # hdenotations = adjust_denotations(hdenotations, asciitext)
         text = asciitext
       end
@@ -292,13 +266,9 @@ class ApplicationController < ActionController::Base
       #   annotations[:div_id] = doc.serial
       # end
       
-      # project sproject
+      # project
       if project.present?
-        if project.class == Project
-          annotations[:project] = project[:name]
-        else
-          annotations[:sproject] = project[:name]
-        end
+        annotations[:project] = project[:name]
       end 
       # doc
       annotations[:source_db] = doc.sourcedb
@@ -501,7 +471,7 @@ class ApplicationController < ActionController::Base
 
   def save_hinstances (hinstances, project, doc)
     hinstances.each do |a|
-      p a
+      # p a
       ia            = Instance.new
       ia.hid        = a[:id]
       ia.pred       = a[:pred]

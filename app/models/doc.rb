@@ -156,10 +156,10 @@ class Doc < ActiveRecord::Base
     if options.present? && options[:spans].present?
       denotations = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos])
     else
-      if project.class == Project
+      if project.associate_projects.blank?
         denotations = self.denotations.where("project_id = ?", project.id)
       else
-        denotations = self.denotations.projects_denotations(project.project_ids)
+        denotations = self.denotations.projects_denotations(project.self_id_and_associate_project_ids)
       end
     end
     hdenotations = denotations.order('begin ASC').collect {|ca| ca.get_hash} if denotations.present?    
@@ -170,10 +170,10 @@ class Doc < ActiveRecord::Base
       denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
       instances = Instance.where('obj_id IN (?)', denotation_ids)
     else
-      if project.class == Project
+      if project.associate_projects.blank?
         instances = self.instances.where("instances.project_id = ?", project.id)
       else
-        instances = self.instances.where("instances.project_id IN (?)", project.project_ids)
+        instances = self.instances.where("instances.project_id IN (?)", project.self_id_and_associate_project_ids)
       end
     end
     if instances.present?
@@ -187,12 +187,12 @@ class Doc < ActiveRecord::Base
       denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
       relations = Relation.where(["subj_id IN(?) AND obj_id IN (?) AND subj_type = 'Denotation' AND obj_type = 'Denotation'", denotation_ids, denotation_ids])
     else
-      if project.class == Project
+      if project.associate_projects.blank?
         relations  = self.subcatrels.where("relations.project_id = ?", project.id)
         relations += self.subinsrels.where("relations.project_id = ?", project.id)
       else
-        relations  = self.subcatrels.where("relations.project_id IN (?)", project.project_ids)
-        relations += self.subinsrels.where("relations.project_id IN (?)", project.project_ids)
+        relations  = self.subcatrels.where("relations.project_id IN (?)", project.self_id_and_associate_project_ids)
+        relations += self.subinsrels.where("relations.project_id IN (?)", project.self_id_and_associate_project_ids)
       end
     end
     if relations.present?
@@ -210,14 +210,14 @@ class Doc < ActiveRecord::Base
         joins('INNER JOIN instances ON modifications.obj_id = instances.id')
         .where("modifications.obj_type = 'Instance' AND instances.obj_id IN (?)", denotation_ids)
     else
-      if project.class == Project
+      if project.associate_projects.blank?
         modifications = self.insmods.where("modifications.project_id = ?", project.id)
         modifications += self.subcatrelmods.where("modifications.project_id = ?", project.id)
         modifications += self.subinsrelmods.where("modifications.project_id = ?", project.id)
       else
-        modifications = self.insmods.where("modifications.project_id IN (?)", project.project_ids)
-        modifications += self.subcatrelmods.where("modifications.project_id IN (?)", project.project_ids)
-        modifications += self.subinsrelmods.where("modifications.project_id IN (?)", project.project_ids)
+        modifications = self.insmods.where("modifications.project_id IN (?)", project.self_id_and_associate_project_ids)
+        modifications += self.subcatrelmods.where("modifications.project_id IN (?)", project.self_id_and_associate_project_ids)
+        modifications += self.subinsrelmods.where("modifications.project_id IN (?)", project.self_id_and_associate_project_ids)
       end
     end
     if modifications.present?

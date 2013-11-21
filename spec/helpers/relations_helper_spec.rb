@@ -12,7 +12,7 @@ describe RelationsHelper do
       Doc.any_instance.stub(:relations_count).and_return(@doc_relations_count)
       @same_sourceid_relations_count = 'same_sourceid_relations_count'
       Doc.any_instance.stub(:same_sourceid_relations_count).and_return(@same_sourceid_relations_count)
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :relations_count => 100)
       @doc = FactoryGirl.create(:doc)
     end
     
@@ -31,24 +31,12 @@ describe RelationsHelper do
         
     context 'when project present' do
       context 'when doc present' do
-        context 'when sourceid nil' do
-          before do
-            @result = helper.relations_count_helper(@project, {:doc => @doc})
-          end
-          
-          it 'should return Relation.project_relations_count' do
-            @result.should eql(@doc_project_relations_count)
-          end
+        before do
+          @result = helper.relations_count_helper(@project, {:doc => @doc})
         end
-
-        context 'when sourceid present' do
-          before do
-            @result = helper.relations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})
-          end
-          
-          it 'should return Relation.project_relations_count' do
-            @result.should eql(@same_sourceid_relations_count)
-          end
+        
+        it 'should return Relation.project_relations_count' do
+          @result.should eql(@doc_project_relations_count)
         end
       end
 
@@ -59,18 +47,7 @@ describe RelationsHelper do
           end
           
           it 'should return Relation.project_relations_count' do
-            @result.should eql(@relation_project_relations_count)
-          end
-        end
-
-        context 'when project.class != Project' do
-          before do
-            @sproject = FactoryGirl.create(:sproject, :relations_count => 15)
-            @result = helper.relations_count_helper(@sproject)
-          end
-          
-          it 'should return sproject.relations_count' do
-            @result.should eql(@sproject.relations_count)
+            @result.should eql(@project.relations_count)
           end
         end
       end

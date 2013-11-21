@@ -6,7 +6,7 @@ class ProjectsController < ApplicationController
   autocomplete :pmdoc,  :sourceid, :class_name => :doc, :scopes => [:pmdocs,  :project_name => :project_name]
   autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
   autocomplete :user, :username
-  autocomplete :project, :name, :full => true, :scopes => [:not_sprojects_projects => :project_ids]
+  autocomplete :project, :name, :full => true, :scopes => [:id_in => :project_ids]
 
   # GET /projects
   # GET /projects.json
@@ -48,6 +48,18 @@ class ProjectsController < ApplicationController
         @pmdocs = Doc.order_by(docs.pmdocs, params[:docs_order]).paginate(:page => params[:page])
         @pmcdocs = Doc.order_by(docs.pmcdocs, params[:docs_order]).paginate(:page => params[:page])
         # @pmcdocs = docs.select{|d| d.sourcedb == 'PMC' and d.serial == 0}
+        if params[:accordion_id].blank?
+          if @pmdocs.size != @pmcdocs.size
+            if @pmdocs.size > @pmcdocs.size
+              @accordion_id = '1'
+            else
+              @accordion_id = '2'
+            end
+          end
+        end
+      end
+      if params[:accordion_id].present?
+        @accordion_id = params[:accordion_id]
       end
     end
 
@@ -86,9 +98,9 @@ class ProjectsController < ApplicationController
   def create
     @project = Project.new(params[:project])
     @project.user = current_user
-    
     respond_to do |format|
       if @project.save
+        @project.add_associate_projects(params[:associate_projects], current_user)
         format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_created', :model => t('views.shared.annotation_sets')) }
         format.json { render json: @project, status: :created, location: @project }
       else
@@ -103,6 +115,7 @@ class ProjectsController < ApplicationController
   def update
     respond_to do |format|
       if @project.update_attributes(params[:project])
+        @project.add_associate_projects(params[:associate_projects], current_user)
         format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
         format.json { head :no_content }
       else

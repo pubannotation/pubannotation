@@ -214,6 +214,7 @@ en:
       sproject: Super Project
       user: user
       associate_maintainer: sub-maintainer
+      associate_projects_project: associate project 
     attributes:
       doc:
         sourcedb: src DB
@@ -241,6 +242,7 @@ en:
         reference: URL to a page that describes this project 
         pmids: PubMed IDs
         username: sub-maintainers name
+        associate_project_name: Enter associate project name.
       doc:
         annotation_server: URL of annotation server
         pmcids: PMC IDs
@@ -306,6 +308,8 @@ en:
         does_not_exist: The document, %{sourcedb}:%{sourceid}, does not exist in PubAnnotation.
       destroy:
         deleted: The annotation set, %{id}, was deleted.
+      new:
+        import: "import associated projects"
   views:
     service:
       title: PubAnnotation
@@ -340,6 +344,7 @@ en:
       user_projects: Your projects
       associate_maintain_projects: Associated projects 
       belongs_to_sproject: Projects belongs to this Sproject
+      associate_project: Associate project
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:

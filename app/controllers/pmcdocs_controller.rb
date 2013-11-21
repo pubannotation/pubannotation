@@ -40,9 +40,6 @@ class PmcdocsController < ApplicationController
       else
         divs = nil
       end
-    elsif params[:sproject_id].present?
-      sproject, notice = get_sproject(params[:sproject_id])
-      divs = sproject.get_divs(params[:id])
     else
       divs, notice = get_divs(params[:id])
     end
@@ -52,16 +49,12 @@ class PmcdocsController < ApplicationController
         if divs
           if project
             redirect_to project_pmcdoc_divs_path(params[:project_id], params[:id]), :notice => notice
-          elsif sproject.present?
-            redirect_to sproject_pmcdoc_divs_path(params[:sproject_id], params[:id]), :notice => notice
           else
             redirect_to pmcdoc_divs_path(params[:id]), :notice => notice
           end
         else
           if project
             redirect_to project_pmcdocs_path(params[:project_id]), :notice => notice
-          elsif sproject.present?
-            redirect_to sproject_pmcdocs_path(params[:sproject_id]), :notice => notice
           else
             redirect_to pmcdocs_path, :notice => notice
           end

@@ -42,11 +42,6 @@ class PmdocsController < ApplicationController
       else
         @doc = nil
       end
-    elsif params[:sproject_id].present?
-      @doc, notice = get_doc('PubMed', params[:id], 0)
-      @sproject, notice = get_sproject(params[:sproject_id])
-      @annotations = get_annotations(@sproject, @doc)
-      @projects = get_projects({:doc => @doc, :sproject => @sproject})
     else
       @doc, notice = get_doc('PubMed', params[:id])
       @projects = get_projects({:doc => @doc})
@@ -88,12 +83,6 @@ class PmdocsController < ApplicationController
       if @project
         @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @project)
       end
-    elsif params[:sproject_id].present?
-      @sproject, notice = get_sproject(params[:sproject_id])
-      if @sproject
-        @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @sproject)
-        @projects = @doc.spans_projects(params)
-      end
     else
       @doc, flash[:notice] = get_doc('PubMed', params[:id])
       @projects = @doc.spans_projects(params)
@@ -113,12 +102,6 @@ class PmdocsController < ApplicationController
         @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @project)
       end
       project = @project
-    elsif params[:sproject_id].present?
-      @sproject, notice = get_sproject(params[:sproject_id])
-      if @sproject
-        @doc, flash[:notice] = get_doc('PubMed', params[:id], 0, @sproject)
-      end
-      project = @sproject
     else
       @doc, flash[:notice] = get_doc('PubMed', params[:id])
     end

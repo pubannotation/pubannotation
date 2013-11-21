@@ -20,43 +20,7 @@ Pubann::Application.routes.draw do
   
   resources :docs
 
-  resources :projects_sprojects, :only => [:destroy]
-  resources :sprojects do
-    resources :pmdocs do
-      member do
-        # spans
-        get 'spans/:begin-:end/' => 'pmdocs#spans', :as => 'spans'
-        # annotations
-        get 'spans/:begin-:end/annotations' => 'pmdocs#annotations', :as => 'spans_annotation'
-      end
-      resources :annotations do
-        collection do
-          post :destroy_all
-        end
-      end
-    end
-    
-    resources :pmcdocs do
-      resources :divs do
-        member do
-          # spans
-          get 'spans/:begin-:end/' => 'divs#spans', :as => 'spans'
-          # annotations
-          get 'spans/:begin-:end/annotations' => 'divs#annotations', :as => 'spans_annotation'
-        end
-      end
-    end
-    
-    member do
-      get :search  
-    end
-    
-    collection do
-      # auto complete path which use scope and scope argument required :scope_argument param
-      get 'autocomplete_pmdoc_sourceid/:scope_argument'   => 'sprojects#autocomplete_pmdoc_sourceid',  :as => 'autocomplete_pmdoc_sourceid'
-      get 'autocomplete_pmcdoc_sourceid/:scope_argument'  => 'sprojects#autocomplete_pmcdoc_sourceid', :as => 'autocomplete_pmcdoc_sourceid'
-    end
-  end
+  delete '/associate_projects_projects/:project_id/:associate_project_id' => 'associate_projects_projects#destroy', :as => 'delete_associate_projects_project'
   
   resources :projects do
     get 'spans/sql' => 'spans#sql'

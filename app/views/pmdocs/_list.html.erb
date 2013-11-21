@@ -13,10 +13,6 @@
 		<% search_path = search_project_path(@project.name) %>
 		<% auto_complete_path = "/projects/autocomplete_pmdoc_sourceid//#{params[:id]}" %>
 		<% doc_tag = hidden_field_tag :doc, 'PubMed' %>
-	<% elsif @sproject.present? -%>
-		<% search_path = search_sproject_path(@sproject.name) %>
-		<% auto_complete_path = "/sprojects/autocomplete_pmdoc_sourceid/#{@sproject.project_ids}" %>
-		<% doc_tag = hidden_field_tag :doc, 'PubMed' %>
 	<% else %>
 		<% search_path = search_pmdocs_path %>
 		<% auto_complete_path = autocomplete_doc_sourceid_pmdocs_path %>
@@ -60,11 +56,7 @@
         </td>
         <td>
           <% if project %>
-          	<% if project.class == Project -%>
-          		<% pmdoc_path = project_pmdoc_path(project.name, doc.sourceid) -%>
-            <% else -%>
-          		<% pmdoc_path = sproject_pmdoc_path(project.name, doc.sourceid) -%>
-            <% end -%>
+      		<% pmdoc_path = project_pmdoc_path(project.name, doc.sourceid) -%>
         	<span class="button"><%= link_to t('views.shared.show'), pmdoc_path %></span>
             <% if user_signed_in? && current_user == project.user && project.class == Project  %>
               <span class="button"><%= link_to t('views.shared.remove'), project_pmdoc_path(project.name, doc.sourceid), :method => :delete, :confirm => t('views.pmdocs.confirm_delete') %></span>
