@@ -236,18 +236,18 @@ class Project < ActiveRecord::Base
   # increment counters after add associate projects
   def increment_counters(associate_project)
     Project.update_counters self.id, 
-      :pmdocs_count => associate_project.pmdocs_count,
-      :pmcdocs_count => associate_project.pmcdocs_count,
-      :denotations_count => associate_project.denotations_count,
-      :relations_count => associate_project.relations_count
+      :pmdocs_count => associate_project.pmdocs.count,
+      :pmcdocs_count => associate_project.pmcdocs.count,
+      :denotations_count => associate_project.denotations.count,
+      :relations_count => associate_project.relations.count
   end  
   
   # decrement counters after delete associate projects
   def decrement_counters(associate_project)
     Project.update_counters self.id, 
-      :pmdocs_count => - associate_project.pmdocs_count,
-      :pmcdocs_count => - associate_project.pmcdocs_count,
-      :denotations_count => - associate_project.denotations_count,
-      :relations_count => - associate_project.relations_count
+      :pmdocs_count => - associate_project.pmdocs.count,
+      :pmcdocs_count => - associate_project.pmcdocs.count,
+      :denotations_count => - associate_project.denotations.count,
+      :relations_count => - associate_project.relations.count
   end  
 end

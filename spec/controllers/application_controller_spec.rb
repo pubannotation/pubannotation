@@ -930,8 +930,16 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @associate_project_denotations_count_1 = FactoryGirl.create(:project, :denotations_count => 1)
-      @associate_project_denotations_count_2 = FactoryGirl.create(:project, :denotations_count => 2)
+      @associate_project_denotations_count_1 = FactoryGirl.create(:project, :denotations_count => 0)
+      1.times do
+        FactoryGirl.create(:denotation, :project_id => @associate_project_denotations_count_1.id, :doc_id => @doc.id)
+      end
+      @associate_project_denotations_count_1.reload
+      @associate_project_denotations_count_2 = FactoryGirl.create(:project, :denotations_count => 0)
+      2.times do
+        FactoryGirl.create(:denotation, :project_id => @associate_project_denotations_count_2.id, :doc_id => @doc.id)
+      end
+      @associate_project_denotations_count_2.reload
       @project.associate_projects << @associate_project_denotations_count_1
       @project.associate_projects << @associate_project_denotations_count_2
       

@@ -315,19 +315,19 @@ describe ProjectsController do
             end
             
             it 'should increment pmdocs_count by associate projects' do
-              Project.find_by_name(assigns[:project].name).pmdocs_count.should eql(@associate_project_1.pmdocs_count + @associate_project_2.pmdocs_count)
+              Project.find_by_name(assigns[:project].name).pmdocs_count.should eql(@associate_project_1.pmdocs.count + @associate_project_2.pmdocs.count)
             end
              
             it 'should increment pmcdocs_count by associate projects' do
-              Project.find_by_name(assigns[:project].name).pmcdocs_count.should eql(@associate_project_1.pmcdocs_count + @associate_project_2.pmcdocs_count)
+              Project.find_by_name(assigns[:project].name).pmcdocs_count.should eql(@associate_project_1.pmcdocs.count + @associate_project_2.pmcdocs.count)
             end
             
             it 'should increment denotations_count by associate projects' do
-              Project.find_by_name(assigns[:project].name).denotations_count.should eql(@associate_project_1.denotations_count + @associate_project_2.denotations_count)
+              Project.find_by_name(assigns[:project].name).denotations_count.should eql(@associate_project_1.denotations.count + @associate_project_2.denotations.count)
             end
             
             it 'should increment relations_count by associate projects' do
-              Project.find_by_name(assigns[:project].name).relations_count.should eql(@associate_project_1.relations_count + @associate_project_2.relations_count)
+              Project.find_by_name(assigns[:project].name).relations_count.should eql(@associate_project_1.relations.count + @associate_project_2.relations.count)
             end
              
             it 'should redirect to project_path' do
@@ -508,19 +508,19 @@ describe ProjectsController do
               end
               
               it 'should increment pmdocs_count by associate projects' do
-                @project.pmdocs_count.should eql(@associate_project_1.pmdocs_count + @associate_project_2.pmdocs_count)
+                @project.pmdocs_count.should eql(@associate_project_1.pmdocs.count + @associate_project_2.pmdocs.count)
               end
                
               it 'should increment pmcdocs_count by associate projects' do
-                @project.pmcdocs_count.should eql(@associate_project_1.pmcdocs_count + @associate_project_2.pmcdocs_count)
+                @project.pmcdocs_count.should eql(@associate_project_1.pmcdocs.count + @associate_project_2.pmcdocs.count)
               end
               
               it 'should increment denotations_count by associate projects' do
-                @project.denotations_count.should eql(@associate_project_1.denotations_count + @associate_project_2.denotations_count)
+                @project.denotations_count.should eql(@associate_project_1.denotations.count + @associate_project_2.denotations.count)
               end
               
               it 'should increment relations_count by associate projects' do
-                @project.relations_count.should eql(@associate_project_1.relations_count + @associate_project_2.relations_count)
+                @project.relations_count.should eql(@associate_project_1.relations.count + @associate_project_2.relations.count)
               end
                
               it 'should redirect to project_path' do

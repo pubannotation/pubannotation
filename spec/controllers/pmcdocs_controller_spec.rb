@@ -194,14 +194,32 @@ describe PmcdocsController do
       context 'and when project exists' do
         before do
           @project = FactoryGirl.create(:project, :user => @user, :pmdocs_count => 0, :pmcdocs_count => 0)
-          @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2)
-          @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 4)
+          @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+          @associate_project_1_pmdocs_count = 1
+          @associate_project_1_pmdocs_count.times do
+            @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+          end
+          @associate_project_1_pmcdocs_count = 2
+          @associate_project_1_pmcdocs_count.times do
+            @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+          end     
+          @associate_project_1.reload
+                
+          @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+          @associate_project_2_pmdocs_count = 3
+          @associate_project_2_pmdocs_count.times do
+            @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+          end
+          @associate_project_2_pmcdocs_count = 4
+          @associate_project_2_pmcdocs_count.times do
+            @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+          end     
+          @associate_project_2.reload
+      
           @project.associate_projects << @associate_project_1
           @project.associate_projects << @associate_project_2
           controller.stub(:get_project).and_return([@associate_project_1, 'notice'])
           @project.reload
-          @associate_project_1.reload
-          @associate_project_2.reload
         end
         
         context 'and when divs found by sourcedb and sourceid' do
@@ -259,7 +277,7 @@ describe PmcdocsController do
 
             context 'and when format json' do
               before do
-                post :create, :format => 'json', :project_id => 1, :pmcids => @sourceid
+                post :create, :format => 'json', :project_id => FactoryGirl.create(:project).id, :pmcids => @sourceid
               end
               
               it 'should return status 201' do
@@ -276,7 +294,7 @@ describe PmcdocsController do
         context 'and when divs not found by sourcedb and sourceid' do
           context 'and when divs returned by gen_pmcdoc' do
             before do
-              @div = FactoryGirl.create(:doc, :id => 2, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
+              @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
               controller.stub(:gen_pmcdoc).and_return([[@div], 'message'])            
               post :create, :project_id => @associate_project_1.name, :pmcids => 'abcd'
             end
@@ -306,7 +324,7 @@ describe PmcdocsController do
 
           context 'and when divs does not returned by gen_pmcdoc' do
             before do
-              @div = FactoryGirl.create(:doc, :id => 2, :sourcedb => 'sourcedb', :sourceid => 'sourceid')
+              @div = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid')
               controller.stub(:gen_pmcdoc).and_return([nil, 'message'])            
               post :create, :project_id => 1, :pmcids => 'abcd,cdef'
             end

@@ -1324,13 +1324,30 @@ describe Doc do
   describe 'decrement_docs_counter' do
     before do
       @project =             FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2)
-      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 3, :pmcdocs_count => 3)
+      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_1_pmdocs_count = 3
+      @associate_project_1_pmdocs_count.times do
+        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+      end
+      @associate_project_1_pmcdocs_count = 3
       @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
+      @associate_project_1_pmcdocs_count.times do
+        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+      end     
       # @associate_project_1.pmcdocs_count 3 => 4
       @associate_project_1.docs << @div
       @associate_project_1.reload
-      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 4, :pmcdocs_count => 6)
+      
+      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_2_pmdocs_count = 4
+      @associate_project_2_pmdocs_count.times do
+        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+      end
+      @associate_project_2_pmcdocs_count = 6
       @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 'sourceid')
+      @associate_project_2_pmcdocs_count.times do
+        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+      end     
       # @associate_project_2.pmdocs_count 4 => 5
       @associate_project_2.docs << @doc
       @associate_project_2.reload
