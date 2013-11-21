@@ -193,7 +193,7 @@ class Project < ActiveRecord::Base
           end
         end
       end
-      associate_projects = Project.where('name IN (?)', associate_projects_names.uniq)
+      associate_projects = Project.where('name IN (?) AND id NOT IN (?)', associate_projects_names.uniq, associate_project_and_project_ids)
       self.associate_projects << associate_projects
     end    
   end
@@ -220,7 +220,7 @@ class Project < ActiveRecord::Base
     if associate_project_ids.present? || project_ids.present?
       associate_project_ids | project_ids
     else
-      []
+      [0]
     end
   end
   
