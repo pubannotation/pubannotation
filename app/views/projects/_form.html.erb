@@ -63,7 +63,11 @@
 		<% if @project.associate_maintaines_addable_for?(current_user) -%>
 	  		<%= fields_for :associate_maintainer do -%>
 	  			<div id="associate_maintainers"></div>
-  				<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }?project_id=#{@project.id}", :placeholder => t('activerecord.placeholders.project.username')  -%>
+	  			<% if @project.new_record? -%>
+  					<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }", :placeholder => t('activerecord.placeholders.project.username')  -%>
+  				<% else -%>
+  					<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }?project_id=#{@project.id}", :placeholder => t('activerecord.placeholders.project.username')  -%>
+  				<% end -%>
 		  		<script type="text/javascript">
 			  		$('#username').bind('railsAutocomplete.select', function(event, data){
 			  			var userName = data.item.value;

@@ -148,7 +148,11 @@ class Project < ActiveRecord::Base
   end          
 
   def associate_maintaines_addable_for?(current_user)
-    current_user == self.user
+    if self.new_record?
+      true
+    else
+      current_user == self.user
+    end
   end
   
   def updatable_for?(current_user)
@@ -168,11 +172,11 @@ class Project < ActiveRecord::Base
       end
     end
   end
-    
+  
   def build_associate_maintainers(usernames)
     if usernames.present?
-      usernames.each do |username|
-        user = User.where(:username => username).first
+      users = User.where('username IN (?)', usernames)
+      users.each do |user|
         self.associate_maintainers.build({:user_id => user.id})
       end
     end

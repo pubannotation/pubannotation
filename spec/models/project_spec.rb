@@ -614,22 +614,37 @@ describe Project do
   end
    
   describe 'associate_maintaines_addable_for?' do
-    before do
-      @project_user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project, :user => @project_user)
-      @associate_maintainer_user = FactoryGirl.create(:user)
-      FactoryGirl.create(:associate_maintainer, :project => @project, :user => @associate_maintainer_user)
-    end
-    
-    context 'when current_user is project.user' do
-      it 'should return true' do
-        @project.associate_maintaines_addable_for?(@project_user).should be_true
+    context 'when new project' do
+      before do
+        @project_user = FactoryGirl.create(:user)
+        @project = Project.new
+      end
+      
+      context 'when current_user is project.user' do
+        it 'should return true' do
+          @project.associate_maintaines_addable_for?(@project_user).should be_true
+        end
       end
     end
-    
-    context 'when current_user is not project.user' do
-      it 'should return false' do
-        @project.associate_maintaines_addable_for?(@associate_maintainer_user).should be_false
+
+    context 'when saved project' do
+      before do
+        @project_user = FactoryGirl.create(:user)
+        @project = FactoryGirl.create(:project, :user => @project_user)
+        @associate_maintainer_user = FactoryGirl.create(:user)
+        FactoryGirl.create(:associate_maintainer, :project => @project, :user => @associate_maintainer_user)
+      end
+      
+      context 'when current_user is project.user' do
+        it 'should return true' do
+          @project.associate_maintaines_addable_for?(@project_user).should be_true
+        end
+      end
+      
+      context 'when current_user is not project.user' do
+        it 'should return false' do
+          @project.associate_maintaines_addable_for?(@associate_maintainer_user).should be_false
+        end
       end
     end
   end

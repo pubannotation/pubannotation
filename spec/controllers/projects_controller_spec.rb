@@ -262,6 +262,22 @@ describe ProjectsController do
       end
 
       context 'when format html' do
+        context 'when associate_maintainers present' do
+          before do
+            @associate_maintainer_user_1 = FactoryGirl.create(:user, :username => 'Associate Maintainer1')
+            @associate_maintainer_user_2 = FactoryGirl.create(:user, :username => 'Associate Maintainer2')
+            post :create, :project => {:name => 'ansnet name'}, :usernames => [@associate_maintainer_user_1.username, @associate_maintainer_user_2.username]
+          end
+          
+          it 'should redirect to project_path' do
+            response.should redirect_to(project_path('ansnet name'))
+          end
+          
+          it 'should ass associate_maintainers' do
+            Project.last.associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}.should =~ [@associate_maintainer_user_1, @associate_maintainer_user_2]
+          end
+        end
+        
         context 'when associate_projects blank' do
           before do
             post :create, :project => {:name => 'ansnet name'}
