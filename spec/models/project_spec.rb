@@ -430,7 +430,16 @@ describe Project do
     before do
       @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
-      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 2, :pmcdocs_count => 4)
+      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_2_pmdocs_count = 2
+      @associate_project_2_pmdocs_count.times do
+        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+      end
+      @associate_project_2_pmcdocs_count = 4
+      @associate_project_2_pmcdocs_count.times do
+        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+      end
+      @associate_project_2.reload
       @project.associate_projects << @associate_project_1
       @project.associate_projects << @associate_project_2
       @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
@@ -759,33 +768,68 @@ describe Project do
       context 'when params[:associate_projects][:import] present' do
         context 'when params[:associate_projects][:import] is true' do
           context 'when associate project have associate_projects' do
-            before do
-              @project.add_associate_projects(
-                {
-                      :name => {
-                        '0' => @associate_project_have_no_associate_projects.name, 
-                        '1' => @associate_project_have_associate_projects_1.name,
-                        '2' => @associate_project_have_no_associate_projects.name,
-                        '3' => @associate_project_have_associate_projects_2.name
-                      },
-                      :import => {
-                        '0' => 'true',
-                        '1' => 'true',
-                        '2' => 'true',
-                        '3' => 'true'
-                      }
-                }, @current_user          
-              )
-              @project.reload
+            context 'when project does not have associate_projects' do
+              before do
+                @project.add_associate_projects(
+                  {
+                        :name => {
+                          '0' => @associate_project_have_no_associate_projects.name, 
+                          '1' => @associate_project_have_associate_projects_1.name,
+                          '2' => @associate_project_have_no_associate_projects.name,
+                          '3' => @associate_project_have_associate_projects_2.name
+                        },
+                        :import => {
+                          '0' => 'true',
+                          '1' => 'true',
+                          '2' => 'true',
+                          '3' => 'true'
+                        }
+                  }, @current_user          
+                )
+                @project.reload
+              end
+              
+              it 'should associate projects associated associate projects once only' do
+                @project.associate_projects.should =~ [
+                  @associate_project_have_no_associate_projects, 
+                  @associate_project_have_associate_projects_1, 
+                  @associated_project, 
+                  @associate_project_have_associate_projects_2
+                ]
+              end
             end
-            
-            it 'should associate projects associated associate projects once only' do
-              @project.associate_projects.should =~ [
-                @associate_project_have_no_associate_projects, 
-                @associate_project_have_associate_projects_1, 
-                @associated_project, 
-                @associate_project_have_associate_projects_2
-              ]
+
+            context 'when project have associate_projects included in associate_projects.associate_projects' do
+              before do
+                @project.associate_projects << @associated_project
+                @project.reload
+                @project.add_associate_projects(
+                  {
+                        :name => {
+                          '0' => @associate_project_have_no_associate_projects.name, 
+                          '1' => @associate_project_have_associate_projects_1.name,
+                          '2' => @associate_project_have_no_associate_projects.name,
+                          '3' => @associate_project_have_associate_projects_2.name
+                        },
+                        :import => {
+                          '0' => 'true',
+                          '1' => 'true',
+                          '2' => 'true',
+                          '3' => 'true'
+                        }
+                  }, @current_user          
+                )
+                @project.reload
+              end
+              
+              it 'should associate projects associated associate projects once only' do
+                @project.associate_projects.should =~ [
+                  @associate_project_have_no_associate_projects, 
+                  @associate_project_have_associate_projects_1, 
+                  @associated_project, 
+                  @associate_project_have_associate_projects_2
+                ]
+              end
             end
           end
 
@@ -855,8 +899,28 @@ describe Project do
   describe 'decrement_docs_counter' do
     before do
       @project = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 1)
-      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 1)
-      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 2, :pmcdocs_count => 3)
+      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_1_pmdocs_count = 1
+      @associate_project_1_pmdocs_count.times do
+        @associate_project_1.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+      end
+      @associate_project_1_pmcdocs_count = 1
+      @associate_project_1_pmcdocs_count.times do
+        @associate_project_1.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+      end     
+      @associate_project_1.reload
+       
+      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_2_pmdocs_count = 2
+      @associate_project_2_pmdocs_count.times do
+        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+      end
+      @associate_project_2_pmcdocs_count = 3
+      @associate_project_2_pmcdocs_count.times do
+        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+      end     
+      @associate_project_2.reload
+      
       @project.associate_projects << @associate_project_1
       @project.associate_projects << @associate_project_2
       @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
@@ -1109,7 +1173,7 @@ describe Project do
     
     context 'when associate_projects and projects blank' do
       it 'should return default value' do
-        @project_4.associate_project_and_project_ids.should be_blank
+        @project_4.associate_project_and_project_ids.should eql([0])
       end
     end
   end
@@ -1142,6 +1206,77 @@ describe Project do
       
       it 'should return Project.accessible(current_user).not_id_in()' do
         @project.associatable_project_ids(@current_user).should =~ [@not_id_in.id]
+      end
+    end
+  end
+  
+  describe 'increment_counters' do
+    before do
+      @project = FactoryGirl.create(:project)
+    end
+    
+    context 'when associate project has relation models' do
+      before do
+        @associate_project = FactoryGirl.create(:project)
+        @associate_project_pmdocs_count = 1
+        @associate_project_pmdocs_count.times do
+          @associate_project.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+        end
+        @associate_project_pmcdocs_count = 2
+        @associate_project_pmcdocs_count.times do
+          @associate_project.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+        end  
+        @associate_project_relations_count = 3
+        @associate_project_relations_count.times do
+          FactoryGirl.create(:relation, :subj_id => 1, :obj_id => 2, :project_id => @associate_project.id)
+        end
+        @associate_project_denotations_count = 4
+        @associate_project_denotations_count.times do
+          FactoryGirl.create(:denotation, :doc_id => 1, :project_id => @associate_project.id)
+        end
+        @associate_project.reload
+        @project.increment_counters(@associate_project)
+        @project.reload
+      end
+      
+      it 'should increment pmdocs count' do
+        @project.pmdocs_count.should eql(@associate_project_pmdocs_count)
+      end
+      
+      it 'should increment pmcdocs count' do
+        @project.pmcdocs_count.should eql(@associate_project_pmcdocs_count)
+      end
+      
+      it 'should increment relations count' do
+        @project.relations_count.should eql(@associate_project_relations_count)
+      end
+      
+      it 'should increment denotations count' do
+        @project.denotations_count.should eql(@associate_project_denotations_count)
+      end
+    end
+    
+    context 'when associate project has relation models' do
+      before do
+        @associate_project = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :relations_count => 30, :denotations_count => 40)
+        @project.increment_counters(@associate_project)
+        @project.reload
+      end
+      
+      it 'should not increment pmdocs count' do
+        @project.pmdocs_count.should eql(0)
+      end
+      
+      it 'should not increment pmcdocs count' do
+        @project.pmcdocs_count.should eql(0)
+      end
+      
+      it 'should  not increment relations count' do
+        @project.relations_count.should eql(0)
+      end
+      
+      it 'should not increment denotations count' do
+        @project.denotations_count.should eql(0)
       end
     end
   end
