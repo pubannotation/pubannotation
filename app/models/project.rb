@@ -147,7 +147,7 @@ class Project < ActiveRecord::Base
     end          
   end          
 
-  def associate_maintaines_addable_for?(current_user)
+  def associate_maintainers_addable_for?(current_user)
     if self.new_record?
       true
     else

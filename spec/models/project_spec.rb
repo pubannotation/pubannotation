@@ -613,7 +613,7 @@ describe Project do
     end
   end
    
-  describe 'associate_maintaines_addable_for?' do
+  describe 'associate_maintainers_addable_for?' do
     context 'when new project' do
       before do
         @project_user = FactoryGirl.create(:user)
@@ -622,7 +622,7 @@ describe Project do
       
       context 'when current_user is project.user' do
         it 'should return true' do
-          @project.associate_maintaines_addable_for?(@project_user).should be_true
+          @project.associate_maintainers_addable_for?(@project_user).should be_true
         end
       end
     end
@@ -637,13 +637,13 @@ describe Project do
       
       context 'when current_user is project.user' do
         it 'should return true' do
-          @project.associate_maintaines_addable_for?(@project_user).should be_true
+          @project.associate_maintainers_addable_for?(@project_user).should be_true
         end
       end
       
       context 'when current_user is not project.user' do
         it 'should return false' do
-          @project.associate_maintaines_addable_for?(@associate_maintainer_user).should be_false
+          @project.associate_maintainers_addable_for?(@associate_maintainer_user).should be_false
         end
       end
     end

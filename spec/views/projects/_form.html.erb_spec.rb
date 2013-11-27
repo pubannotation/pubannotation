@@ -40,15 +40,47 @@ describe "projects/_form.html.erb" do
       end
     end
   end
+  
+  describe 'usernames' do
+    context 'when project.associate_maintenes_addable_for? = true' do
+      before do
+        Project.any_instance.stub(:associate_maintainers_addable_for?).and_return(true)
+        @user = FactoryGirl.create(:user)
+        current_user_stub(@user)
+      end
+      
+      context 'when params[:usernames] present' do
+        before do
+          @usernames = ['user1', 'user2']
+          view.stub(:params).and_return({:usernames => @usernames})
+          render
+        end
+        
+        it 'shoud render usernames input field' do
+          rendered.should have_selector :input, :type => 'hidden', :id => 'usernames[]', :value => @usernames[0]
+        end
+      end
+      
+      context 'when params[:usernames] blank' do
+        before do
+          render
+        end
+        
+        it 'shoud not render usernames input field' do
+          rendered.should_not have_selector :input, :type => 'hidden', :id => 'usernames[]'
+        end
+      end
+    end
+  end
 
   describe 'associate maintainer field' do
     before do
       current_user_stub(FactoryGirl.create(:user))
     end
     
-    context 'when project.associate_maintaines_addable_for? == true' do
+    context 'when project.associate_maintainers_addable_for? == true' do
       before do
-        Project.any_instance.stub(:associate_maintaines_addable_for?).and_return(true)
+        Project.any_instance.stub(:associate_maintainers_addable_for?).and_return(true)
         render
       end
       
@@ -57,9 +89,9 @@ describe "projects/_form.html.erb" do
       end
     end
 
-    context 'when project.associate_maintaines_addable_for? == false' do
+    context 'when project.associate_maintainers_addable_for? == false' do
       before do
-        Project.any_instance.stub(:associate_maintaines_addable_for?).and_return(false)
+        Project.any_instance.stub(:associate_maintainers_addable_for?).and_return(false)
         render
       end
       

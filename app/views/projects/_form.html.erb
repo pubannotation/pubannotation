@@ -60,9 +60,21 @@
 			</div>
 		<% end -%>
 		<!-- associate maintainer search and add field -->
-		<% if @project.associate_maintaines_addable_for?(current_user) -%>
+		<% if @project.associate_maintainers_addable_for?(current_user) -%>
 	  		<%= fields_for :associate_maintainer do -%>
-	  			<div id="associate_maintainers"></div>
+	  			<div id="associate_maintainers">
+	  				<% if params[:usernames].present? -%>
+	  					<% params[:usernames].each do |username| -%>
+				  			<div class="associate_username">
+		  						<%= username -%>
+				  				<input type="hidden" value="<%= username -%>" id="usernames[]" name="usernames[]">
+				  				<span class="clickable-text" onclick='$(this).parent().remove()'>
+				  					<%= t('views.shared.delete') -%>
+				  				</span>
+				  			</div>
+		  				<% end %>
+	  				<% end %>
+	  			</div>
 	  			<% if @project.new_record? -%>
   					<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }", :placeholder => t('activerecord.placeholders.project.username')  -%>
   				<% else -%>
