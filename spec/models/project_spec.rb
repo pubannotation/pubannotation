@@ -755,9 +755,22 @@ describe Project do
         @project.build_associate_maintainers([@user_1.username, @user_2.username])
       end
       
-      it 'should ass associate @project.maintainers' do
+      it 'should associate @project.maintainers' do
        associate_maintainer_users = @project.associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
        associate_maintainer_users.should =~ [@user_1, @user_2]
+      end
+    end
+
+    context 'when usernames dupliticated' do
+      before do
+        @project = FactoryGirl.create(:project)
+        @user_1 = FactoryGirl.create(:user, :username => 'Username 1')
+        @project.build_associate_maintainers([@user_1.username, @user_1.username, @user_1.username])
+      end
+      
+      it 'should associate @project.maintainers once' do
+       associate_maintainer_users = @project.associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}
+       associate_maintainer_users.should =~ [@user_1]
       end
     end
   end

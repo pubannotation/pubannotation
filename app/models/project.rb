@@ -176,6 +176,7 @@ class Project < ActiveRecord::Base
   def build_associate_maintainers(usernames)
     if usernames.present?
       users = User.where('username IN (?)', usernames)
+      users = users.uniq if users.present?
       users.each do |user|
         self.associate_maintainers.build({:user_id => user.id})
       end
