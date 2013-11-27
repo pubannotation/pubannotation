@@ -3,6 +3,7 @@
 <% if @denotations.present? -%>
 	<table style="margin-bottom: 1em">
 		<tr>
+			<th>project</th>
 			<th>sourcedb</th>
 			<th>sourceid</th>
 			<th>doc_id</th>
@@ -13,6 +14,9 @@
 		</tr>
 		<% @denotations.each do |denotation| -%>
 			<tr>
+				<td>
+					<%= "#{denotation.project.name} (#{denotation.project.id})" -%>
+				</td>
 				<td>
 					<%= denotation.doc.sourcedb if denotation.doc -%>
 				</td>

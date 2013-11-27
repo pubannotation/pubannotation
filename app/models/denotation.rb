@@ -75,7 +75,7 @@ class Denotation < ActiveRecord::Base
     if params[:sql].present?
       current_user_id = current_user.present? ? current_user.id : nil
       sanitized_sql = sanitize_sql(params[:sql])
-      results = self.connection.execute(sanitized_sql)
+      results = self.connection.execute(sanitized_sql, :includes => [:project])
       if results.present?
         ids = results.collect{|result| result['id']}
         if project.present?
