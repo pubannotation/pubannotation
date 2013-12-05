@@ -198,6 +198,7 @@ ja:
   activerecord:
     models:
       doc: ドキュメント
+      documentation: ドキュメント
       denotations: デノテーション
       relations: リレーション
       instances: インスタンス
@@ -215,6 +216,10 @@ ja:
         body: テキスト
         serial: シリアル
         section: セクション
+      documentation:
+        title: タイトル
+        body: 本文
+        documentation_category_id: カテゴリ
       project:
         name: 名前
         description: 説明

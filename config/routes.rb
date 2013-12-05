@@ -2,6 +2,8 @@ Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
   
+  resources :documentations
+  
   namespace :relations do
     get :sql
   end

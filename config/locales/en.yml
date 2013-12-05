@@ -207,6 +207,7 @@ en:
   activerecord:
     models:
       doc: document
+      documentation: documentation
       denotations: Denotations
       relations: Relations
       instances: Instances
@@ -220,6 +221,10 @@ en:
         sourcedb: src DB
         sourceid: src id
         body: text
+      documentation:
+        title: title
+        body: body
+        documentation_category_id: category
       project:
         rdfwriter: RDF writer
         xmlwriter: XML writer

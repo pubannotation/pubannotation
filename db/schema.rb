@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131120030351) do
+ActiveRecord::Schema.define(:version => 20131205030655) do
 
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
@@ -82,6 +82,18 @@ ActiveRecord::Schema.define(:version => 20131120030351) do
   end
 
   add_index "docs_projects", ["project_id", "doc_id"], :name => "index_docs_projects_on_project_id_and_doc_id", :unique => true
+
+  create_table "documentation_categories", :force => true do |t|
+    t.string "name", :null => false
+  end
+
+  create_table "documentations", :force => true do |t|
+    t.string  "title",                     :null => false
+    t.string  "body",                      :null => false
+    t.integer "documentation_category_id"
+  end
+
+  add_index "documentations", ["documentation_category_id"], :name => "index_documentations_on_documentation_category_id"
 
   create_table "instances", :force => true do |t|
     t.string   "hid"
