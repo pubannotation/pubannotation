@@ -1,0 +1,7 @@
+<ul id='documentation_cateogories'>
+	<% DocumentationCategory.all.each do |documentation_categorie| -%>
+		<li class="documentation_cateogory">
+			<%= link_to_unless_current documentation_categorie.name, documentations_category_documentations_path(documentation_categorie.name) -%>
+		</li>
+	<% end -%>
+</ul>

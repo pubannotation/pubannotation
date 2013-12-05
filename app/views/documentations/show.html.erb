@@ -1,8 +1,1 @@
-<h1>
-	<%= @documentation.title -%>
-</h1>
-
-<p>
-	<%= @documentation.body -%>
-</p>
-<%= @documentation.documentation_category.name -%>
+<%= render :partial => 'documentation', :collection => [@documentation] -%>

@@ -1,0 +1,7 @@
+<%= render :partial => 'category' -%>
+
+<h1>
+	<%= @documentation_category.name -%>
+</h1>
+
+<%= render :partial => 'documentation', :collection => @documentation_category.documentations -%>

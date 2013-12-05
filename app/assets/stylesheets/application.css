@@ -376,9 +376,22 @@ li {
 	color: #7D7D7D;	
 }
 .associate_username{
-	margin: 0.5em 0;
+	margin: 0.2em 0;
 }
 .clickable-text{
 	color:#234979 !important;
 	cursor: pointer;
+}
+
+#documentation_cateogories{
+	margin: 1em 0;
+	padding: 0;
+}
+.documentation_cateogory{
+	display: inline;
+	padding: 0.2em 1em;
+	border-right: 1px solid #ccc;
+}
+#documentation_body{
+	width: 80%;
 }

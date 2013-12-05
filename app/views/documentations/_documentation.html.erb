@@ -1,0 +1,12 @@
+<h2>
+	<%= documentation.title -%>
+</h2>
+
+<p>
+	<%= simple_format documentation.body -%>
+</p>
+
+<% if Documentation.maintainable_for?(current_user) -%>
+	<%= link_to t('views.shared.edit'), edit_documentation_path(documentation), :class => 'button' %>
+	<%= link_to t('views.shared.delete'), documentation_path(documentation), :method => :delete, :confirm => t('controllers.shared.confirm_delete'), :class => 'button' if Documentation.maintainable_for?(current_user) -%>
+<% end -%>

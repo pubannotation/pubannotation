@@ -2,7 +2,11 @@ Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
   
-  resources :documentations
+  resources :documentations do
+    collection do
+      get 'category/:name' => 'documentations#category', :as => 'documentations_category'
+    end
+  end
   
   namespace :relations do
     get :sql
