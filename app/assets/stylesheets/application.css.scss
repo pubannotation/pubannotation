@@ -13,7 +13,7 @@
  */
 
 $main_color: #001854;
-$sub_color: lighten(#001854, 75%);
+$sub_color: lighten(#001854, 70%);
 $base_margin: 15px;
 
 body {
@@ -80,9 +80,9 @@ $logo_height : 80px;
  }
  a{
    background-color: $sub_color;
+   border-radius: 3px;
    color: $main_color;
    padding: 2px 5px;
-   border-radius: 3px;
    margin-left: 0.5em;
  }
 }
@@ -161,7 +161,7 @@ table.menu {
 h1 {
     width:43em;
     border:solid $main_color;
-    border-width: 0px 0px 1px 10px;
+    border-width: 0px 0px 1px 5px;
     padding-left: 10px;
     margin-top: 30px;
     font-size: medium;
@@ -169,18 +169,11 @@ h1 {
 
 h2 {
     width:43em;
-
     margin-top:25px;
     margin-bottom:10px;
     margin-left:4px;
     padding:0px 2px;
-
-    border-style:solid;
-    border-color:#AAFFBB;
-    border-width:0px 0px 1px 10px;
-    border-top-left-radius:10px;
-    border-bottom-left-radius:10px;
-
+    border-bottom: 1px solid $main_color;
     font-size: medium;
 }
 

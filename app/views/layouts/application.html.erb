@@ -23,7 +23,7 @@
 				<span id="language">
 					<%= language_switch_helper.html_safe %>
 				</span>
-				<ul id="login">
+				<ul id="login" class="capitalize">
 					<li>
 						<%= render 'devise/menu/registration_items' %>
 					</li>
@@ -43,7 +43,7 @@
 			</table>
 			-->
 			<ul id="navigation">
-				<li class="navigation_menu">
+				<li class="navigation_menu capitalize">
 					<%= link_to t('views.paths.home'), home_path -%>
 				</li>
 				<li class="navigation_menu">
