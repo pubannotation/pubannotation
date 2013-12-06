@@ -22,23 +22,24 @@ body {
 
 #header {
     position:relative;
-    width:50em;
-
-    /* fallback (Opera) */
-    background: #AAEEBB;
-    /* Mozilla: */
-    background: -moz-linear-gradient(left, #AAEEBB, #FFFFFF);
-    /* Chrome, Safari:*/
-    background: -webkit-gradient(linear,  left top, right top, from(#AAEEBB), to(#FFFFFF));
-    /* MSIE */
-    filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#AAEEBB', EndColorStr='#FFFFFF', GradientType=1);
 }
 
+#navigation{
+	list-style: none;
+	margin: 0;
+	padding: 0.5em;
+}
+.navigation_menu{
+	display: inline;
+	margin-right: 1em;
+}
+
+#logo{
+	text-indent: -999em;
+	height: 85px;
+	background: url(/assets/logo.png) 10px 10px no-repeat #001854;
+}
 #title {
-    font-family: Verdana, Geneva, sans-serif;
-    font-weight: 900;
-    font-size: x-large;
-    color: #119911;
 }
 
 #slogan {
@@ -52,7 +53,6 @@ body {
 
 #account{
     position:absolute;
-    bottom:8px;
     text-align:right;
     font-size:small;
     right:3px;
@@ -103,10 +103,9 @@ table.menu {
 #footer {
     width:50em;
     margin:0px;
-    margin-top:30px;
+    margin-top:10px;
     padding:10px 0px;
     background:#DDDDDD;
-
     /* fallback (Opera) */
     background: #DDDDDD;
     /* Mozilla: */
@@ -115,6 +114,14 @@ table.menu {
     background: -webkit-gradient(linear,  left top, right top, from(#DDDDDD), to(#FFFFFF));
     /* MSIE */
     filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#DDDDDD', EndColorStr='#FFFFFF', GradientType=1);
+}
+#footer_navigation{
+    margin-top:20px;
+	width: 50em;
+	text-align: center;
+}
+#footer_navigation a{
+	padding: 1em;
 }
 
 .meta {

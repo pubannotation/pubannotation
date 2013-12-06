@@ -1,57 +1,86 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title><%= t('views.service.title') %></title>
-  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
-  <%= stylesheet_link_tag    "application", :media => "all" %>
-  <%= javascript_include_tag "application" %>
-  <%= javascript_include_tag "http://code.jquery.com/ui/1.10.3/jquery-ui.min.js" %>
-  <%= yield :javascript %>
-  <%= csrf_meta_tags %>
-</head>
-<body>
-
-<div id="header">
-<div id="title"><%= link_to t('views.service.title'), home_path %></div>
-<div id="slogan"><%= t('views.service.slogan') %></div>
-
-<div id="account">
-<span id="language">
-<%= language_switch_helper.html_safe %>
-</span>
-<span id="login">
-[<%= render 'devise/menu/registration_items' %>|<%= render 'devise/menu/login_items' %>]
-</span>
-</div>
-
-<table class="menu">
-<tr>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Overview" class="capitalize"><%= t('views.menus.overview') %></a></td>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features" class="capitalize"><%= t('views.menus.features') %></a></td>
-<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format" class="capitalize"><%= t('views.menus.formats') %></a></td>
-<td><a href="http://dbcls.rois.ac.jp">DBCLS</a></td>
-</tr>
-</table>
-</div>
-
-<div id="path">
-	<%= yield :path %>
-</div>
-
-<div id="notice">
-	<%= notice %>
-	<%= alert %>
-</div>
-
-<div id="main">
-<%= yield %>
-</div>
-
-<div id="footer">
-<div class='credit'>
-<%= t('views.service.credit').html_safe %>
-</div>
-</div>
-
-</body>
+	<head>
+	  <title><%= t('views.service.title') -%></title>
+	  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+	  <%= stylesheet_link_tag    "application", :media => "all" -%>
+	  <%= javascript_include_tag "application" -%>
+	  <%= javascript_include_tag "http://code.jquery.com/ui/1.10.3/jquery-ui.min.js" -%>
+	  <%= yield :javascript -%>
+	  <%= csrf_meta_tags -%>
+	</head>
+	
+	<body>
+		<div id="header">
+			<div id="logo">
+				<div id="title"><%= link_to t('views.service.title'), home_path -%></div>
+				<div id="slogan"><%= t('views.service.slogan') -%></div>
+			</div>
+			
+			<!--
+				-->
+			<div id="account">
+				<span id="language">
+					<%= language_switch_helper.html_safe %>
+				</span>
+				<ul id="login">
+					<li>
+						<%= render 'devise/menu/registration_items' %>
+					</li>
+					<li>
+						<%= render 'devise/menu/login_items' %>
+					</li>
+				</ul>
+			</div>
+			<!--
+			<table class="menu">
+			<tr>
+			<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Overview" class="capitalize"><%= t('views.menus.overview') %></a></td>
+			<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features" class="capitalize"><%= t('views.menus.features') %></a></td>
+			<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format" class="capitalize"><%= t('views.menus.formats') %></a></td>
+			<td><a href="http://dbcls.rois.ac.jp">DBCLS</a></td>
+			</tr>
+			</table>
+			-->
+			<ul id="navigation">
+				<li class="navigation_menu">
+					<%= link_to t('views.paths.home'), home_path -%>
+				</li>
+				<li class="navigation_menu">
+					<%= link_to "PubMed #{t('activerecord.models.doc').pluralize}", pmdocs_path -%>
+				</li>
+				<li class="navigation_menu">
+					<%= link_to "PMC #{t('activerecord.models.doc').pluralize}", pmcdocs_path -%>
+				</li>
+				<li class="navigation_menu">
+					<%=  link_to t('activerecord.models.project'), projects_path -%>
+				</li>
+			</ul>
+		</div>
+		
+		<div id="path">
+			<%= yield :path -%>
+		</div>
+		
+		<div id="notice">
+			<%= notice -%>
+			<%= alert -%>
+		</div>
+		
+		<div id="main">
+			<%= yield -%>
+		</div>
+		
+		<div id='footer_navigation'>
+			<% DocumentationCategory.all.each do |documentation_categorie| -%>
+				<%= link_to_unless_current documentation_categorie.name, documentations_category_documentations_path(documentation_categorie.name) -%>
+			<% end -%>
+			<a href="http://dbcls.rois.ac.jp">DBCLS</a>
+		</div>
+		<div id="footer">
+			<div class='credit'>
+				<%= t('views.service.credit').html_safe -%>
+			</div>
+		</div>
+	</body>
 </html>

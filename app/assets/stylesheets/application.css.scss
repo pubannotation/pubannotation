@@ -1,0 +1,416 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the top of the
+ * compiled file, but it's generally better to create a new file per style scope.
+ *
+ *= require_self
+ *=# require_tree .
+ */
+
+$main_color: #001854;
+$sub_color: lighten(#001854, 75%);
+$base_margin: 15px;
+
+body {
+    margin:0px;
+    font-family: Meiryo, "メイリオ", "MS PGothic","MS Pゴシック", osaka,  Verdana, Geneva, sans-serif;
+    font-size: small;
+}
+
+#header {
+    position:relative;
+}
+
+#navigation{
+  margin: 0;
+  padding: 0.5em;
+  padding-left: $base_margin;
+  background-color: $sub_color;
+}
+.navigation_menu{
+  display: inline;
+  margin-right: 1em;
+  a{
+    padding-right: $base_margin;
+    border-right: 1px solid $main_color;
+  }
+}
+
+$logo_height : 80px;
+#logo{
+  height: $logo_height;
+  background: url('/assets/logo.png') 15px 15px no-repeat $main_color;
+}
+#title a{
+  height: $logo_height;
+  text-indent: -999em;
+  display: block;
+}
+
+#slogan {
+    text-indent: -999em;
+    margin-bottom:10px;
+    font-family: Gill Sans / Gill Sans MT, sans-serif;
+    /*font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;*/
+    font-size: small;
+    font-style: italic;
+    color: #22dd22;
+}
+
+#account{
+    position:absolute;
+    text-align:right;
+    font-size:small;
+    top: 10px;
+    right: 10px;
+    color: #fff;
+    a{
+      color: #fff;
+    }
+}
+#login{
+ list-style: none;
+ li{
+   display: inline;
+ }
+ a{
+   background-color: $sub_color;
+   color: $main_color;
+   padding: 2px 5px;
+   border-radius: 3px;
+   margin-left: 0.5em;
+ }
+}
+#language{
+  color: #ccc;
+}
+table.menu {
+    margin:0px;
+    border:3px solid #AAEEBB;
+    font-size:small;
+}
+
+.menu td {
+    border:3px solid #AAEEBB;
+}
+
+#path {
+    margin:0px;
+    padding: 0.5em;
+    padding-left: $base_margin;
+    font-size:x-small;
+    font-style:italic;
+
+}
+
+#notice {
+    margin:0px 5px;
+    font-size:small;
+    color:red;
+}
+
+.notice {
+    font-style:italic;
+    color:red;
+}
+
+#main {
+    margin:0px $base_margin;
+}
+
+#footer {
+    margin:0px;
+    margin-top:10px;
+    padding:10px 0px;
+}
+#footer_navigation{
+  margin-top:20px;
+  text-align: center;
+  a{
+    padding: 0.2em $base_margin;
+    border-right: 1px solid $main_color;
+  }
+}
+
+.meta {
+    color: #888888;
+}
+
+.pname {
+    font-style: italic;
+}
+
+.credit {
+    font-style:italic;
+    text-align:center;
+}
+
+.capitalize{
+  text-transform:capitalize;
+}
+
+.capitalize_first:first-letter{
+  text-transform:capitalize;
+}
+
+h1 {
+    width:43em;
+    border:solid $main_color;
+    border-width: 0px 0px 1px 10px;
+    padding-left: 10px;
+    margin-top: 30px;
+    font-size: medium;
+}
+
+h2 {
+    width:43em;
+
+    margin-top:25px;
+    margin-bottom:10px;
+    margin-left:4px;
+    padding:0px 2px;
+
+    border-style:solid;
+    border-color:#AAFFBB;
+    border-width:0px 0px 1px 10px;
+    border-top-left-radius:10px;
+    border-bottom-left-radius:10px;
+
+    font-size: medium;
+}
+
+
+h3 {
+    width:35em;
+    white-space:nowrap;
+
+    font-size:small;
+    font-weight:bold;
+    /* fallback (Opera) */
+    background: #EECCCC;
+    /* Mozilla: */
+    background: -moz-linear-gradient(left, #00FF00, #FFFFFF);
+    /* Chrome, Safari:*/
+    background: -webkit-gradient(linear, left top, right top, from(#00FF00), to(#FFFFFF));
+    /* MSIE */
+    filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#00FF00', EndColorStr='#FFFFFF', GradientType=1);
+}
+
+div.note {
+    margin: 5px;
+    font-style:italic;
+    color:#555555;
+}
+
+p.note {
+    font-style:italic;
+}
+
+span.note {
+    font-size:small;
+    font-style:italic;
+}
+
+a {
+    text-decoration:none;
+    color: $main_color;
+}
+
+a:hover {
+    color: lighten($main_color, 40%);
+}
+
+table, th, td{
+  border:1px solid $main_color;
+}
+table {
+    border-collapse:collapse;
+    margin-top:5px;
+    margin-bottom:5px;
+}
+
+th {
+    padding:5px;
+    text-align:center;
+    font-weight:bold;
+    background-color: $sub_color;
+}
+
+td {
+    padding:5px;
+    text-align:left;
+}
+
+td * {
+    vertical-align: middle;
+}
+
+table.ann {
+    text-align: center;
+}
+
+.ann th {
+    text-align: center;
+
+}
+
+.ann td {
+    text-align: center;
+}
+
+
+table.frame {
+    width:600px;
+    border-width:0px;
+    text-align:left
+}
+
+.frame tr {
+    border-width:0px;
+}
+
+.frame th {
+    border-width:0px;
+}
+
+.frame td {
+    border-width:0px;
+}
+
+.frame thead {
+    text-align:right;
+    font-style:italic;
+}
+
+.frame tbody {
+}
+
+.frame tfoot {
+    padding-top:2cm;
+    text-align:center;
+    font-style:italic;
+}
+
+.frame th {
+    text-align:left;
+    background-color: #EECCCC
+}
+
+.frame th {
+    /* fallback (Opera) */
+    background: #EECCCC;
+    /* Mozilla: */
+    background: -moz-linear-gradient(left, #00FF00, #FFFFFF);
+    /* Chrome, Safari:*/
+    background: -webkit-gradient(linear,  left top, right top, from(#00FF00), to(#FFFFFF));
+    /* MSIE */
+    filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#00FF00', EndColorStr='#FFFFFF', GradientType=1);
+}
+
+li {
+    margin-top:5px;
+}
+
+.button {
+    -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffffff), color-stop(1, #f6f6f6));
+    background:-moz-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+    background:-webkit-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+    background:-o-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+    background:-ms-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+    background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0);
+    
+    background-color:#ffffff;
+    
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    
+    border:1px solid #dcdcdc;
+    
+    display:inline-block;
+    color:#666666;
+    font-family:arial;
+    font-size: smaller;
+    padding:2px 12px;
+    text-decoration:none;
+    
+    text-shadow:0px 1px 0px #ffffff;
+    
+}
+.button:hover {
+    
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #f6f6f6), color-stop(1, #ffffff));
+    background:-moz-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+    background:-webkit-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+    background:-o-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+    background:-ms-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+    background:linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f6f6f6', endColorstr='#ffffff',GradientType=0);
+    
+    background-color:#f6f6f6;
+}
+.button:active {
+    position:relative;
+    top:1px;
+}
+
+
+.input {
+    width:360px;
+}
+
+#path{
+  text-transform: lowercase;
+}
+.ui-widget-content {
+    border-width:0px 0px 0px 1px;
+}
+.ui-widget-content {
+    border-width:0px 0px 0px 1px;
+}
+.sortable-th{
+  padding-left:15px;
+  background: url(/assets/sort_asc.png) no-repeat 5px center $sub_color;
+  text-align :left;
+}
+.sortable-a,
+.sortable-a:visited{
+  margin-left:-15px;
+  padding-left:15px;
+  color:#234979 !important;
+  background: url(/assets/sort_asc_p.png) no-repeat 5px center $sub_color;
+}
+.spans_prev, 
+.spans_next{
+  color: #7D7D7D; 
+}
+.associate_username{
+  margin: 0.2em 0;
+}
+.clickable-text{
+  color:#234979 !important;
+  cursor: pointer;
+}
+
+#documentation_cateogories{
+  margin: 1em 0;
+  padding: 0;
+}
+.documentation_cateogory{
+  display: inline;
+  padding: 0.2em 1em;
+  border-right: 1px solid #ccc;
+}
+#documentation_body{
+  width: 80%;
+}
