@@ -67,7 +67,8 @@ describe ApplicationHelper do
      end 
      
      it 'helper should show link for japanese' do
-       @text.should eql("[english | <a href=\"#{@url_for}\">日本語</a>]")
+       @text.should include("english")
+       @text.should include("<a href=\"#{@url_for}\">日本語</a>")
      end
    end 
    
@@ -80,7 +81,8 @@ describe ApplicationHelper do
      end 
      
      it 'helper should show link for english' do
-       @text.should eql("[<a href=\"url\">english</a> | 日本語]")
+       @text.should include("<a href=\"url\">english</a>")
+       @text.should include("日本語")
      end
    end
   end
