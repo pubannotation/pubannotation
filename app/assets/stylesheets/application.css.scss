@@ -129,11 +129,16 @@ table.menu {
     padding:10px 0px;
 }
 #footer_navigation{
+  list-style: none;
   margin-top:20px;
   text-align: center;
-  a{
-    padding: 0.2em $base_margin;
+  li{
+    display: inline;
     border-right: 1px solid $main_color;
+    padding: 0.2em $base_margin;
+  }
+  li:last-child{
+    border: none;
   }
 }
 

@@ -71,12 +71,12 @@
 			<%= yield -%>
 		</div>
 		
-		<div id='footer_navigation'>
+		<ul id='footer_navigation'>
 			<% DocumentationCategory.all.each do |documentation_categorie| -%>
-				<%= link_to_unless_current documentation_categorie.name, documentations_category_documentations_path(documentation_categorie.name) -%>
+				<li><%= link_to_unless_current documentation_categorie.name, documentations_category_documentations_path(documentation_categorie.name) -%></li>
 			<% end -%>
-			<a href="http://dbcls.rois.ac.jp">DBCLS</a>
-		</div>
+			<li><a href="http://dbcls.rois.ac.jp">DBCLS</a></li>
+		</ul>
 		<div id="footer">
 			<div class='credit'>
 				<%= t('views.service.credit').html_safe -%>
