@@ -35,10 +35,8 @@ body {
 .navigation_menu{
   display: inline;
   margin-right: 1em;
-  a{
-    padding-right: $base_margin;
-    border-right: 1px solid $main_color;
-  }
+  padding-right: $base_margin;
+  border-right: 1px solid $main_color;
 }
 
 $logo_height : 80px;
