@@ -27,7 +27,7 @@
 		</li>
 		<li>
 			<%= t('activerecord.models.relations') %>:
-			<%= relations_count_helper(@project)%>
+			<%= relations_count_helper(@project, {:doc => @doc})%>
 			<br />
 		</li>
 	</ul>
