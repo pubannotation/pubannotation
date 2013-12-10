@@ -17,8 +17,6 @@
 				<div id="slogan"><%= t('views.service.slogan') -%></div>
 			</div>
 			
-			<!--
-				-->
 			<div id="account">
 				<span id="language">
 					<%= language_switch_helper.html_safe %>
@@ -42,19 +40,11 @@
 			</tr>
 			</table>
 			-->
-			<ul id="navigation">
-				<li class="navigation_menu capitalize">
-					<%= link_to t('views.paths.home'), home_path -%>
-				</li>
-				<li class="navigation_menu">
-					<%= link_to "PubMed #{t('activerecord.models.doc').pluralize}", pmdocs_path -%>
-				</li>
-				<li class="navigation_menu">
-					<%= link_to "PMC #{t('activerecord.models.doc').pluralize}", pmcdocs_path -%>
-				</li>
-				<li class="navigation_menu">
-					<%=  link_to t('activerecord.models.project'), projects_path -%>
-				</li>
+			<ul id='navigation'>
+				<% DocumentationCategory.all.each do |documentation_categorie| -%>
+					<li class="navigation_menu"><%= link_to_unless_current documentation_categorie.name, documentations_category_documentations_path(documentation_categorie.name) -%></li>
+				<% end -%>
+				<li class="navigation_menu"><a href="http://dbcls.rois.ac.jp">DBCLS</a></li>
 			</ul>
 		</div>
 		
@@ -70,13 +60,6 @@
 		<div id="main">
 			<%= yield -%>
 		</div>
-		
-		<ul id='footer_navigation'>
-			<% DocumentationCategory.all.each do |documentation_categorie| -%>
-				<li><%= link_to_unless_current documentation_categorie.name, documentations_category_documentations_path(documentation_categorie.name) -%></li>
-			<% end -%>
-			<li><a href="http://dbcls.rois.ac.jp">DBCLS</a></li>
-		</ul>
 		<div id="footer">
 			<div class='credit'>
 				<%= t('views.service.credit').html_safe -%>
