@@ -356,6 +356,7 @@ class ApplicationController < ActionController::Base
   end
 
 
+  # clean denotations
   def clean_hdenotations (denotations)
     denotations = denotations.values if denotations.respond_to?(:values)
     ids = denotations.collect {|a| a[:id] or a["id"]}
