@@ -4,6 +4,7 @@ require 'utfrewrite'
 require 'sequence_alignment'
 
 class ApplicationController < ActionController::Base
+  include ApplicationHelper
   protect_from_forgery
   before_filter :set_locale
   after_filter :store_location
