@@ -1,4 +1,6 @@
 class DivsController < ApplicationController
+  include ApplicationHelper
+  
   # GET /pmcdocs/:pmcid/divs
   # GET /pmcdocs/:pmcid/divs.json
   def index
