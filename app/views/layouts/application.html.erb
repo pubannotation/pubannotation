@@ -42,7 +42,7 @@
 			-->
 			<ul id='navigation'>
 				<% DocumentationCategory.all.each do |documentation_categorie| -%>
-					<li class="navigation_menu"><%= link_to_unless_current documentation_categorie.name, documentations_category_documentations_path(documentation_categorie.name) -%></li>
+					<li class="navigation_menu"><%= link_to_unless_current t("views.documentations.#{documentation_categorie.name}"), documentations_category_documentations_path(documentation_categorie.name) -%></li>
 				<% end -%>
 				<li class="navigation_menu"><a href="http://dbcls.rois.ac.jp">DBCLS</a></li>
 			</ul>

@@ -335,6 +335,12 @@ en:
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
       get_annotations: Get automatic annotations
+    documentations:
+      Overview: Overview
+      Features: Features
+      Format: Format
+      API: API
+
     paths:
       home: home
     projects:

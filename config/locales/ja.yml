@@ -366,6 +366,11 @@ ja:
       document_content: ドキュメントのコンテンツ
       projects_made_to_document: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       get_annotations: 自動アノテーションの取得
+    documentations:
+      Overview: 概要
+      Features: 特徴
+      Format: フォーマット
+      API: API
     paths:
       home: ホーム
       new: 新規作成
