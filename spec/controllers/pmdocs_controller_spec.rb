@@ -476,8 +476,8 @@ describe PmdocsController do
             describe 'counters before update' do
               it 'project counters should equal associate project counters' do
                 @project.reload
-                @project.pmdocs_count.should eql(3)
-                @project.pmcdocs_count.should eql(6)
+                @project.pmdocs_count.should eql(@associate_project_2_pmdocs_count * 2 )
+                @project.pmcdocs_count.should eql((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
               end
               
               it 'associate project counters same as before statements' do
@@ -504,8 +504,8 @@ describe PmdocsController do
             
               it 'should increment pmdocs_counter' do
                 @project.reload
-                @project.pmdocs_count.should eql(4)
-                @project.pmcdocs_count.should eql(6)
+                @project.pmdocs_count.should eql((@associate_project_2_pmdocs_count * 2 ) + 1)
+                @project.pmcdocs_count.should eql((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
               end
               
               it 'should increment pmdocs_counter' do
@@ -563,8 +563,8 @@ describe PmdocsController do
             describe 'counters before update' do
               it 'project counters should equal associate project counters' do
                 @project.reload
-                @project.pmdocs_count.should eql(3)
-                @project.pmcdocs_count.should eql(6)
+                @project.pmdocs_count.should eql(@associate_project_2_pmdocs_count * 2 )
+                @project.pmcdocs_count.should eql((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)                
               end
               
               it 'associate project counters same as before statements' do
@@ -595,8 +595,8 @@ describe PmdocsController do
             
               it 'should increment pmdocs_count' do
                 @project.reload
-                @project.pmdocs_count.should eql(4)
-                @project.pmcdocs_count.should eql(6)
+                @project.pmdocs_count.should eql((@associate_project_2_pmdocs_count * 2 ) + 1)
+                @project.pmcdocs_count.should eql((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
               end
               
               it 'should increment pmdocs_count' do

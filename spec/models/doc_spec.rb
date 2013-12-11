@@ -933,11 +933,11 @@ describe Doc do
           @project.associate_projects << @project_1
           @project.associate_projects << @project_2
           @project_denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc_1, :begin => 4, :end => 10)
-          @denotations = @doc_1.hdenotations(@project)  
+          @denotations = @doc_1.hdenotations(@project)
         end
         
-        it 'should return denotation belongs to doc, project and associate_proejct' do
-          @denotations.size.should eql(4)
+        it 'should return denotation belongs to doc, project and associate_proejct, and copied form associate_projects' do
+          @denotations.size.should eql(7)
         end
         
         it 'should return @project.associate_projects.denotations project match' do
@@ -950,7 +950,7 @@ describe Doc do
         end
         
         it 'should return @project.associate_projects.denotations project match' do
-          @denotations[1].should eql(
+          @denotations[2].should eql(
           {
             :id => @doc_1_project_1_denotation_1_9.hid,
             :obj => @doc_1_project_1_denotation_1_9.obj,
@@ -959,7 +959,7 @@ describe Doc do
         end
         
         it 'should return @project.associate_projects.denotations project match' do
-          @denotations[2].should eql(
+          @denotations[4].should eql(
           {
             :id => @doc_1_project_2_denotation.hid,
             :obj => @doc_1_project_2_denotation.obj,
@@ -968,7 +968,7 @@ describe Doc do
         end
         
         it 'should return @project.associate_projects.denotations project match' do
-          @denotations[3].should eql(
+          @denotations[6].should eql(
           {
             :id => @project_denotation.hid,
             :obj => @project_denotation.obj,
@@ -1323,7 +1323,9 @@ describe Doc do
    
   describe 'decrement_docs_counter' do
     before do
-      @project =             FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2)
+      @project_pmdocs_count = 1
+      @project_pmcdocs_count = 2
+      @project =             FactoryGirl.create(:project, :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
       @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_1_pmdocs_count = 3
       @associate_project_1_pmdocs_count.times do
@@ -1365,12 +1367,12 @@ describe Doc do
         @associate_project_2.pmdocs_count.should eql(5)
       end
       
-      it 'project.pmdocs_count should equal sum of associate proejct pmdocs count' do
-        @project.pmdocs_count.should eql(9)
+      it 'project.pmdocs_count should equal sum of associate proejct pmdocs count and copied pmdocs and self.pmdocs_count' do
+        @project.pmdocs_count.should eql((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2  + 2 + @project_pmdocs_count)
       end
 
-      it 'project.pmcdocs_count should equal sum of associate proejct pmdcocs count' do
-        @project.pmcdocs_count.should eql(12)
+      it 'project.pmcdocs_count should equal sum of associate proejct pmdcocs count and copied pmdocs and self.pmdocs_count' do
+        @project.pmcdocs_count.should eql((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2 + 2 + @project_pmcdocs_count)
       end
     end
     
@@ -1382,8 +1384,8 @@ describe Doc do
       
       it 'should decrement doc.projects pmcdocs_count' do
         @project.reload
-        @project.pmcdocs_count.should eql(11)
-        @project.pmdocs_count.should eql(9)
+        @project.pmcdocs_count.should eql(((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) *2 + 2 + @project_pmcdocs_count) -1 )
+        @project.pmdocs_count.should eql((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2  + 2 + @project_pmdocs_count)
       end
               
       it 'should incremant only associate project.pmdcocs_count' do
@@ -1406,8 +1408,8 @@ describe Doc do
       
       it 'should decrement doc.projects pmdocs_count' do
         @project.reload
-        @project.pmdocs_count.should eql(8)
-        @project.pmcdocs_count.should eql(12)
+        @project.pmdocs_count.should eql(((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2  + 2 + @project_pmdocs_count) -1 )
+        @project.pmcdocs_count.should eql((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) *2 + 2 + @project_pmcdocs_count)
       end
               
       it 'should incremant only associate project.pmdcocs_count' do

@@ -984,7 +984,7 @@ describe ApplicationController do
 
     it 'should incliment project.denotations_count after denotation saved' do
       @project.reload
-      @project.denotations_count.should eql(4)
+      @project.denotations_count.should eql((@associate_project_denotations_count_1.denotations_count + @associate_project_denotations_count_2.denotations_count) *2  + 1)
     end
       
     it 'associate_projectproject.denotations_count should equal 1 before save' do

@@ -449,12 +449,12 @@ describe Project do
     end
     
     describe 'before add ' do
-      it 'project.pmdocs should equal sum of associate projects pmdocs_count' do
-         @project.pmdocs_count.should eql(2)
+      it 'project.pmdocs should equal sum of associate projects pmdocs_count and sum of copied pmdocs' do
+         @project.pmdocs_count.should eql(@associate_project_2_pmdocs_count * 2)
       end
       
-      it 'projectpmcdocs should equal sum of associate projects pmcdocs_count' do
-         @project.pmcdocs_count.should eql(4)
+      it 'projectpmcdocs should equal sum of associate projects pmcdocs_count and sum of copied pmcdocs' do
+         @project.pmcdocs_count.should eql(@associate_project_2_pmcdocs_count * 2)
       end
     end
 
@@ -466,8 +466,8 @@ describe Project do
       end
           
       it 'should increment project.pmcdocs_count' do
-        @project.pmdocs_count.should eql(3)
-        @project.pmcdocs_count.should eql(4)
+        @project.pmdocs_count.should eql((@associate_project_2_pmdocs_count * 2) + 1)
+        @project.pmcdocs_count.should eql(@associate_project_2_pmcdocs_count * 2)
       end
     end
     
@@ -480,8 +480,8 @@ describe Project do
             
         it 'should increment pmcdocs_count' do
           @project.reload
-          @project.pmcdocs_count.should eql(5)
-          @project.pmdocs_count.should eql(2)
+          @project.pmcdocs_count.should eql((@associate_project_2_pmcdocs_count * 2) + 1)
+          @project.pmdocs_count.should eql(@associate_project_2_pmdocs_count * 2)
         end
       end
 
@@ -493,8 +493,8 @@ describe Project do
             
         it 'should not increment pmcdocs_count' do
           @project.reload
-          @project.pmcdocs_count.should eql(4)
-          @project.pmdocs_count.should eql(2)
+          @project.pmcdocs_count.should eql(@associate_project_2_pmcdocs_count * 2)
+          @project.pmdocs_count.should eql(@associate_project_2_pmdocs_count * 2)
         end
       end
     end
@@ -926,7 +926,9 @@ describe Project do
 
   describe 'decrement_docs_counter' do
     before do
-      @project = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 1)
+      @project_pmdocs_count = 1
+      @project_pmcdocs_count = 2
+      @project = FactoryGirl.create(:project, :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
       @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_1_pmdocs_count = 1
       @associate_project_1_pmdocs_count.times do
@@ -961,11 +963,11 @@ describe Project do
     
     describe 'before delete' do
       it 'project.pmdocs should equal sum of associate projects pmdocs_count' do
-         @project.pmdocs_count.should eql(4)
+         @project.pmdocs_count.should eql(@project_pmdocs_count + (@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
       end
       
       it 'projectpmcdocs should equal sum of associate projects pmcdocs_count' do
-         @project.pmcdocs_count.should eql(5)
+         @project.pmcdocs_count.should eql(@project_pmcdocs_count + (@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
       end
     end
 
@@ -976,12 +978,12 @@ describe Project do
       end
           
       it 'should decrement project.pmcdocs_count' do
-        @project.pmdocs_count.should eql(3)
-        @project.pmcdocs_count.should eql(5)
+        @project.pmdocs_count.should eql((@project_pmdocs_count + (@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2) - 1)
+        @project.pmcdocs_count.should eql(@project_pmcdocs_count + (@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
       end
     end
     
-    context 'when added PMC' do
+    context 'when deleted PMC' do
       context 'when serial == 0' do
         before do
           @associate_project_1.docs.delete(@pmcdoc)
@@ -989,8 +991,8 @@ describe Project do
             
         it 'should decrement pmcdocs_count' do
           @project.reload
-          @project.pmcdocs_count.should eql(4)
-          @project.pmdocs_count.should eql(4)
+          @project.pmcdocs_count.should eql((@project_pmcdocs_count + (@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2) - 1)
+          @project.pmdocs_count.should eql(@project_pmdocs_count + (@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
         end
       end
 
@@ -1001,8 +1003,8 @@ describe Project do
             
         it 'should not decrement pmcdocs_count' do
           @project.reload
-          @project.pmcdocs_count.should eql(5)
-          @project.pmdocs_count.should eql(4)
+          @project.pmcdocs_count.should eql(@project_pmcdocs_count + (@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
+          @project.pmdocs_count.should eql(@project_pmdocs_count + (@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
         end
       end
     end
@@ -1305,6 +1307,140 @@ describe Project do
       
       it 'should not increment denotations count' do
         @project.denotations_count.should eql(0)
+      end
+    end
+  end
+  
+  describe 'add associate projects' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @project_pmdocs_count = 1
+      @project_pmdocs_count.times do
+        doc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed')
+        @project.docs << doc
+      end
+      @project_pmcdocs_count = 2
+      @project_pmcdocs_count.times do
+        doc = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0)
+        @project.docs << doc
+      end
+      @project_denotations_count = 3
+      @project_denotations_count.times do
+        FactoryGirl.create(:denotation, :hid => 'T1', :project => @project)
+      end
+      @project.reload
+      
+      @associate_pmdocs_count = 10
+      @associate_pmcdocs_count = 20
+      @associate_denotations_count = 30
+      @associate_project = FactoryGirl.create(:project, 
+        :pmdocs_count => @associate_pmdocs_count, 
+        :pmcdocs_count => @associate_pmcdocs_count, 
+        :denotations_count => @associate_denotations_count)
+      @dup_pmdocs_count = 2
+      @dup_pmdocs_count.times do
+        pmdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed')
+        @associate_project.docs << pmdoc
+      end
+
+      @dup_pmcdocs_count = 3
+      @dup_pmcdocs_count.times do
+        pmcdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PMC', :serial => 0)
+        @associate_project.docs << pmcdoc
+      end
+
+      @dup_denotations_count = 4
+      @dup_denotations_count.times do
+        FactoryGirl.create(:denotation, :hid => 'T1', :project => @associate_project)
+      end
+      @associate_project.reload
+    end
+    
+    describe 'before add' do
+      it 'associate project pmdocs_count should equal count nubmer and assocaite model count' do
+        @associate_project.pmdocs_count.should eql @associate_pmdocs_count + @dup_pmdocs_count
+      end
+
+      it 'associate project pmcdocs_count should equal count nubmer and assocaite model count' do
+        @associate_project.pmcdocs_count.should eql @associate_pmcdocs_count + @dup_pmcdocs_count
+      end
+
+      it 'associate project denotations_count should equal count nubmer and assocaite model count' do
+        @associate_project.denotations_count.should eql @associate_denotations_count + @dup_denotations_count
+      end
+    end
+    
+    describe 'afte add' do
+      before do
+        @project.associate_projects << @associate_project
+        @associate_project.reload
+        @project.reload 
+      end
+      
+      it 'should increment project.pmdocs_count as associate_project.pmdocs.count * 2' do
+        @project.pmdocs_count.should eql(@project_pmdocs_count + (@dup_pmdocs_count * 2))
+      end
+      
+      it 'should increment project.pmcdocs_count as associate_project.pmdocs.count * 2' do
+        @project.pmcdocs_count.should eql(@project_pmcdocs_count + (@dup_pmcdocs_count * 2))
+      end
+      
+      it 'should increment project.denotations_count as associate_project.denotations.count * 2' do
+        @project.denotations_count.should eql(@project_denotations_count + (@dup_denotations_count * 2))
+      end
+    end
+  end
+  
+  describe 'copy_docs_and_denotations' do
+    context 'when associate_project have docs' do
+      before do
+        @associate_project = FactoryGirl.create(:project)
+        @doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed')
+        @doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0)
+        @associate_project.docs << @doc_1
+        @associate_project.docs << @doc_2
+        @denotation_1 = FactoryGirl.create(:denotation, :hid => 'T1', :project => @associate_project)
+        @denotation_2 = FactoryGirl.create(:denotation, :hid => 'T2', :project => @associate_project)
+        @associate_project.reload
+        @project = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30)
+        @project.reload
+      end
+      
+      describe 'before' do
+        it 'project.docs should be blank' do
+          @project.docs.should be_blank
+        end
+
+        it 'project.docs should be blank' do
+          @project.denotations.should be_blank
+        end
+      end
+      
+      describe 'after' do
+        before do
+          @project.copy_docs_and_denotations(@associate_project)
+          @project.reload
+        end
+        
+        it 'project.docs should created' do
+          @project.docs.count.should eql(2)
+        end
+
+        it 'project.denotations should created' do
+          @project.denotations.count.should eql(2)
+        end
+        
+        it 'project.pmdocs_count should not incremented' do
+          @project.pmdocs_count.should eql(11)
+        end
+        
+        it 'project.pmcdocs_count should not incremented' do
+          @project.pmcdocs_count.should eql(21)
+        end
+        
+        it 'project.denotations_count should not incremented' do
+          @project.denotations_count.should eql(32)
+        end
       end
     end
   end

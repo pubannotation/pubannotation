@@ -11,7 +11,7 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'associate_project_id', 
     :join_table => 'associate_projects_projects',
     :class_name => 'Project', 
-    :after_add => :increment_counters, 
+    :after_add => [:increment_counters, :copy_docs_and_denotations],
     :after_remove => :decrement_counters
     
   # associate projects => parent projects = @project.projects
@@ -247,6 +247,20 @@ class Project < ActiveRecord::Base
       :relations_count => associate_project.relations.count
   end  
   
+  def copy_docs_and_denotations(associate_project)
+    if associate_project.docs.present?
+      associate_project.docs.each do |doc|
+        self.docs << doc.dup
+      end
+    end
+    
+    if associate_project.denotations.present?
+      associate_project.denotations.each do |denotation|
+        self.denotations << denotation.dup
+      end
+    end
+  end
+    
   # decrement counters after delete associate projects
   def decrement_counters(associate_project)
     Project.update_counters self.id, 

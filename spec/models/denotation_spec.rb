@@ -314,7 +314,7 @@ describe Denotation do
     
     describe 'before create' do
       it 'project.denotations_count should qeual associate_projects' do
-        @project.denotations_count.should eql(1)
+        @project.denotations_count.should eql(@associate_project_2_denotations_count * 2)
       end
       
       it 'should not increment associate_project.denotations_count' do
@@ -335,7 +335,7 @@ describe Denotation do
       end
           
       it 'should increment project.denotations_count' do
-        @project.denotations_count.should eql(2)
+        @project.denotations_count.should eql((@associate_project_2_denotations_count * 2) + 1)
       end      
       
       it 'should increment associate_project.denotations_count' do
@@ -367,8 +367,8 @@ describe Denotation do
     end
     
     describe 'before create' do
-      it 'project.denotations_count should qeual associate_projects' do
-        @project.denotations_count.should eql(2)
+      it 'project.denotations_count should equal associate_projects' do
+        @project.denotations_count.should eql(@associate_project_2.denotations.count * 2)
       end
       
       it 'should not increment associate_project.denotations_count' do
@@ -389,7 +389,7 @@ describe Denotation do
       end
           
       it 'should increment project.denotations_count' do
-        @project.denotations_count.should eql(1)
+        @project.denotations_count.should eql(@associate_project_2_denotations_count *2 + (1 *2) -1)
       end      
       
       it 'should increment associate_project.denotations_count' do

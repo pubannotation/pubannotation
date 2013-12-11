@@ -402,7 +402,7 @@ describe AnnotationsController do
       end
       
       it 'denotations are present' do
-        Denotation.all.size.should eql(@doc_denotatons_count + 2)
+        Denotation.all.size.should eql((@doc_denotatons_count * 2) + 2)
       end
       
       it 'relations are present' do
@@ -432,7 +432,7 @@ describe AnnotationsController do
       it 'project.denotations_count should equal sum of assciate projects denotations_count' do
         @project.denotations_count.should eql(0)
         @project.reload
-        @project.denotations_count.should eql(@associate_project_annotations_3.denotations_count)
+        @project.denotations_count.should eql(@associate_project_annotations_3.denotations_count * 2)
       end
 
       describe 'post' do
@@ -453,7 +453,7 @@ describe AnnotationsController do
         end
         
         it 'denotation.instances, subrels, objrels should present' do
-          Denotation.all.size.should eql(2)
+          Denotation.all.size.should eql(@doc_denotatons_count + 2)
         end
         
         it 'should redirect_to referer path' do
@@ -462,7 +462,7 @@ describe AnnotationsController do
         
         it 'should reset project.denotaions_count' do
           @project.reload
-          @project.denotations_count.should eql(0)
+          @project.denotations_count.should eql(@doc_denotatons_count)
         end
       
         it 'should reset associate project.denotaions_count' do
@@ -488,7 +488,7 @@ describe AnnotationsController do
         end
         
         it 'denotations are not destroied' do
-          Denotation.all.size.should eql(@doc_denotatons_count + 2)
+          Denotation.all.size.should eql((@doc_denotatons_count * 2) + 2)
         end
         
         it 'relations are not destroied' do
@@ -531,7 +531,7 @@ describe AnnotationsController do
       end
       
       it 'denotations are present' do
-        Denotation.all.size.should eql(@doc_denotatons_count + 2)
+        Denotation.all.size.should eql((@doc_denotatons_count * 2) + 2)
       end
       
       it 'relations are present' do
@@ -561,7 +561,7 @@ describe AnnotationsController do
       it 'project.denotations_count should equal sum of assciate projects denotations_count' do
         @project.denotations_count.should eql(0)
         @project.reload
-        @project.denotations_count.should eql(@associate_project_annotations_3.denotations_count)
+        @project.denotations_count.should eql(@associate_project_annotations_3.denotations_count * 2)
       end
                   
       describe 'post' do
@@ -582,7 +582,7 @@ describe AnnotationsController do
         end
         
         it 'denotation.instances, subrels, objrels should present' do
-          Denotation.all.size.should eql(2)
+          Denotation.all.size.should eql(@doc_denotatons_count + 2)
         end
         
         it 'should redirect_to referer path' do
@@ -591,7 +591,7 @@ describe AnnotationsController do
           
         it 'should reset project.denotaions_count' do
           @project.reload
-          @project.denotations_count.should eql(0)
+          @project.denotations_count.should eql(@doc_denotatons_count)
         end
       
         it 'should reset associate project.denotaions_count' do

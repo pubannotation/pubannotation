@@ -231,8 +231,8 @@ describe PmcdocsController do
           
           describe 'counters before create' do
             it 'should increment only project.pmdocs_count' do
-              @project.pmcdocs_count.should eql(6)
-              @project.pmdocs_count.should eql(4)
+              @project.pmcdocs_count.should eql((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
+              @project.pmdocs_count.should eql((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
             end
             
             it 'should incremant only associate project.pmdocs_count' do
@@ -270,8 +270,8 @@ describe PmcdocsController do
               
               it 'should increment only project.pmdocs_count' do
                 @project.reload
-                @project.pmcdocs_count.should eql(7)
-                @project.pmdocs_count.should eql(4)
+                @project.pmcdocs_count.should eql(((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2) + 1)
+                @project.pmdocs_count.should eql((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
               end
             end
 
@@ -317,8 +317,8 @@ describe PmcdocsController do
             
             it 'should increment only project.pmdocs_count' do
               @project.reload
-              @project.pmcdocs_count.should eql(7)
-              @project.pmdocs_count.should eql(4)
+              @project.pmcdocs_count.should eql(((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2) + 1)
+              @project.pmdocs_count.should eql((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
             end          
           end
 
