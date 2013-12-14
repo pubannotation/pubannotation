@@ -352,25 +352,41 @@ describe ApplicationController do
   end
   
   describe 'get_doc' do
-    context 'when doc exists' do
+    context 'project passed' do
+      before do
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      end
+      
+      context 'when doc present' do
+        before do
+          @project.docs << @doc
+          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
+        end
+        
+        it 'should return doc and nil' do
+          @result.should eql([@doc, nil])
+        end
+      end
+
+      context 'when doc blank' do
+        before do
+          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
+        end
+        
+        it 'should return nil and notice' do
+          @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
+        end
+      end  
+    end
+    
+
+    context 'and when project does not passed' do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
       end
-
-      context 'and when project passed' do
-        context 'when project.class == Project and doc.projects does not include project' do
-          before do
-            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-            @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
-          end
-          
-          it 'should return nil and message that doc does not belongs to the annotation set' do
-            @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
-          end
-        end
-      end
       
-      context 'and when project does not passed' do
+      context 'when doc exists' do
         before do
           @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, nil)
         end
@@ -379,34 +395,52 @@ describe ApplicationController do
           @result.should eql([@doc, nil])
         end
       end
-    end
-
-    context 'when doc does not exists' do
-      before do
-        @result = controller.get_doc(nil, nil, nil, nil)
-      end
       
-      it 'should return nil and no annotation message' do
-        @result.should eql([nil, "No annotation to the document, :, exists in PubAnnotation."])
+      context 'when doc does not exists' do
+        before do
+          @result = controller.get_doc(nil, nil, nil, nil)
+        end
+        
+        it 'should return nil and no annotation message' do
+          @result.should eql([nil, "No annotation to the document, :, exists in PubAnnotation."])
+        end
       end
     end
   end
   
   describe 'get_divs' do
-    context 'when divs present' do
-      context 'and when project passed and divs.first.projects exclude project' do
+    context 'when project passed' do
+      before do
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '1')
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      end
+
+      context 'and when divs present' do
         before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '1')
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+          @project.docs << @doc
           @result = controller.get_divs(@doc.sourceid.to_s, @project)
         end
         
-        it 'should return nil and message doc does not belongs to the annotation' do
-          @result.should eql([nil, "The document, PMC::#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
+        it 'should return blank array and message doc does not belongs to the annotation' do
+          @result[0].first.should eql(@doc) 
+          @result[1].should be_nil
         end
       end
-
-      context 'and when project does not passed' do
+      
+      context 'and when divs.first.projects exclude project' do
+        before do
+          @result = controller.get_divs(@doc.sourceid.to_s, @project)
+        end
+        
+        it 'should return blank array and message doc does not belongs to the annotation' do
+          @result[0].should be_blank
+          @result[1].should eql "The document, PMC::#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."
+        end
+      end
+    end
+    
+    context 'and when project does not passed' do
+      context 'when divs present' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '123')
           @result = controller.get_divs(@doc.sourceid.to_s, nil)
@@ -416,15 +450,16 @@ describe ApplicationController do
           @result.should eql([[@doc], nil])
         end
       end
-    end
 
-    context 'when divs is blank' do
-      before do
-        @result = controller.get_divs(nil, nil)
-      end
-      
-      it 'should return nil and no annotation message' do
-        @result.should eql([nil, "No annotation to the document, PMC:, exists in PubAnnotation."])
+      context 'when divs is blank' do
+        before do
+          @result = controller.get_divs(nil, nil)
+        end
+        
+        it 'should return nil and no annotation message' do
+          @result[0].should be_blank
+          @result[1].should eql "No annotation to the document, PMC:, exists in PubAnnotation."
+        end
       end
     end
   end

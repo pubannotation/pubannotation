@@ -86,16 +86,16 @@ class ApplicationController < ActionController::Base
 
 
   def get_doc (sourcedb, sourceid, serial = 0, project = nil)
-    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-    if doc
-      if project
-        if !doc.projects.include?(project)
-          doc = nil
-          notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
-        end
+    if project.present?
+      doc = Doc.joins(:projects).where('sourcedb = ? AND sourceid = ? AND serial = ? AND projects.id =?', sourcedb, sourceid, serial, project.id).first
+      if doc.blank?
+        notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
       end
     else
-      notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
+      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
+      if doc.blank?
+        notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
+      end
     end
 
     return doc, notice
@@ -103,15 +103,17 @@ class ApplicationController < ActionController::Base
 
 
   def get_divs (sourceid, project = nil)
-    divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
-    if divs and !divs.empty?
-      if project and !divs.first.projects.include?(project)
-        divs = nil
+    if project.present?
+      divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
+      divs = Doc.joins(:projects).where('sourceid = ? AND projects.id =?', sourceid, project.id)
+      if divs.blank?
         notice = I18n.t('controllers.application.get_divs.not_belong_to', :sourceid => sourceid, :project_name => project.name)
       end
     else
-      divs = nil
-      notice = I18n.t('controllers.application.get_divs.no_annotation', :sourceid => sourceid) 
+      divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
+      if divs.blank?
+        notice = I18n.t('controllers.application.get_divs.no_annotation', :sourceid => sourceid) 
+      end
     end
 
     return [divs, notice]
