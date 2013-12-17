@@ -104,8 +104,7 @@ class ApplicationController < ActionController::Base
 
   def get_divs (sourceid, project = nil)
     if project.present?
-      divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
-      divs = Doc.joins(:projects).where('sourceid = ? AND projects.id =?', sourceid, project.id)
+      divs = Doc.joins(:projects).where("sourcedb = 'PMC' AND sourceid = ? AND projects.id =?", sourceid, project.id)
       if divs.blank?
         notice = I18n.t('controllers.application.get_divs.not_belong_to', :sourceid => sourceid, :project_name => project.name)
       end
