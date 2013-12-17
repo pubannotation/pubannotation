@@ -234,16 +234,12 @@ class PmdocsController < ApplicationController
     if params[:project_id]
       project = Project.find_by_name(params[:project_id])
       if project
-        doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
+        doc = get_doc('PubMed', params[:id], 0, project)[0]
         if doc
-          if doc.projects.include?(project)
-            project.docs.delete(doc)
-            notice = t('controllers.pmdocs.destroy.removed_from_annotation_set', :sourcedb => doc.sourcedb, :sourceid => doc.sourceid, :project_name => project.name)
-          else
-            notice = t('controllers.pmdocs.destroy.does_not_include_document', :project_name => project.name, :sourcedb => doc.sourcedb, :sourceid => doc.sourceid)
-          end
+          project.docs.delete(doc)
+          notice = t('controllers.pmdocs.destroy.removed_from_annotation_set', :sourcedb => doc.sourcedb, :sourceid => doc.sourceid, :project_name => project.name)
         else
-          notice = t('controllers.pmdocs.destroy.does_not_exist_in_pubannotation', :id => params[:id]) 
+          notice = t('controllers.pmdocs.destroy.does_not_include_document', :project_name => project.name, :sourcedb => 'PubMed', :sourceid => params[:id])
         end
       else
         notice = t('controllers.pmdocs.destroy.does_not_exist', :project_id => params[:project_id])

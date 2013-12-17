@@ -139,16 +139,13 @@ class PmcdocsController < ApplicationController
   # DELETE /pmcdocs/:pmcid.json
   def destroy
     project = nil
-
     if params[:project_id]
       project = Project.find_by_name(params[:project_id])
       if project
-        divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:id])
+        divs = get_divs(params[:id], project)[0]
         if divs.present?
           divs.each do |div|
-            if div.projects.include?(project)
-              project.docs.delete(div) 
-            end
+            project.docs.delete(div) 
           end
           notice = I18n.t('controllers.pmcdocs.destroy.document_removed_from_annotation_set', :sourcedb => divs.first.sourcedb, :sourceid => divs.first.sourceid,:project_name => project.name)
         else

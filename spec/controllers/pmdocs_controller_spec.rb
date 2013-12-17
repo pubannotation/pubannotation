@@ -718,7 +718,7 @@ describe PmdocsController do
     
     context 'when params[:project_id] does not exists' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)  
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id, :serial => 0)  
         delete :destroy, :id => @id
       end
       
@@ -748,7 +748,7 @@ describe PmdocsController do
         context 'when project found by name' do
           context 'when doc found by sourcedb and source id' do
             before do
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)  
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id, :serial => 0)  
             end
             
             context 'when doc.projects include project' do
@@ -799,21 +799,6 @@ describe PmdocsController do
               it 'should set flash[:notice]' do
                 flash[:notice].should eql("the annotation set, #{@project.name} does not include the document, #{@doc.sourcedb}:#{@doc.sourceid}.")
               end
-            end
-          end
-
-          context 'when doc not found by sourcedb and source id' do
-            before do
-              delete :destroy, :project_id => @project_id, :id => @id
-            end
-            
-            
-            it 'should redirect to project_pmdocs_path(project.name)' do
-              response.should redirect_to(project_path(@project.name, :accordion_id => 1))
-            end
-            
-            it 'should set flash[:notice]' do
-              flash[:notice].should eql("The document, PubMed:#{@id}, does not exist in PubAnnotation.")
             end
           end
         end
