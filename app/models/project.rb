@@ -240,7 +240,7 @@ class Project < ActiveRecord::Base
   
   # increment counters after add associate projects
   def increment_counters(associate_project)
-    Project.update_counters self.id, 
+    Project.update_counters self.id,
       :pmdocs_count => associate_project.pmdocs.count,
       :pmcdocs_count => associate_project.pmcdocs.count,
       :denotations_count => associate_project.denotations.count,
