@@ -301,8 +301,10 @@ describe Denotation do
       @associate_project_1 = FactoryGirl.create(:project, :denotations_count => 0)
       @associate_project_2 = FactoryGirl.create(:project, :denotations_count => 0)
       @associate_project_2_denotations_count = 1
+      @doc = FactoryGirl.create(:doc)
+      @associate_project_2.docs << @doc
       @associate_project_2_denotations_count.times do
-        FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => 1)
+        FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => @doc.id)
       end
       @associate_project_2.reload
       @project.associate_projects << @associate_project_1
@@ -354,11 +356,13 @@ describe Denotation do
       @associate_project_1 = FactoryGirl.create(:project, :denotations_count => 0)
       @associate_project_2 = FactoryGirl.create(:project, :denotations_count => 0)
       @associate_project_2_denotations_count = 1
+      @doc = FactoryGirl.create(:doc)
+      @associate_project_2.docs << @doc      
       @associate_project_2_denotations_count.times do
-        FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => 1)
+        FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => @doc.id)
       end
       @associate_project_2.reload
-      @denotation = FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => 1)
+      @denotation = FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => @doc.id)
       @associate_project_1.reload
       @associate_project_2.reload
       @project.associate_projects << @associate_project_1

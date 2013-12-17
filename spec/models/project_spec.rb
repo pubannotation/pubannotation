@@ -432,12 +432,15 @@ describe Project do
       @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2_pmdocs_count = 2
+      @i = 1
       @associate_project_2_pmdocs_count.times do
-        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i)
+        @i += 1  
       end
       @associate_project_2_pmcdocs_count = 4
       @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @i += 1  
       end
       @associate_project_2.reload
       @project.associate_projects << @associate_project_1
@@ -931,23 +934,28 @@ describe Project do
       @project = FactoryGirl.create(:project, :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
       @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_1_pmdocs_count = 1
+      @i = 1
       @associate_project_1_pmdocs_count.times do
-        @associate_project_1.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+        @associate_project_1.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
+        @i += 1 
       end
       @associate_project_1_pmcdocs_count = 1
       @associate_project_1_pmcdocs_count.times do
-        @associate_project_1.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+        @associate_project_1.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @i += 1 
       end     
       @associate_project_1.reload
        
       @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2_pmdocs_count = 2
       @associate_project_2_pmdocs_count.times do
-        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
+        @i += 1 
       end
       @associate_project_2_pmcdocs_count = 3
       @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @i += 1 
       end     
       @associate_project_2.reload
       
@@ -1338,20 +1346,25 @@ describe Project do
         :pmcdocs_count => @associate_pmcdocs_count, 
         :denotations_count => @associate_denotations_count)
       @dup_pmdocs_count = 2
+      @i = 1
       @dup_pmdocs_count.times do
-        pmdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed')
+        pmdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed', :sourceid => @i)
+        @i += 1
         @associate_project.docs << pmdoc
       end
 
       @dup_pmcdocs_count = 3
       @dup_pmcdocs_count.times do
-        pmcdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PMC', :serial => 0)
+        pmcdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PMC', :serial => 0, :sourceid => @i)
+        @i += 1
         @associate_project.docs << pmcdoc
       end
 
       @dup_denotations_count = 4
+      @doc = FactoryGirl.create(:doc)
+      @associate_project.docs << @doc
       @dup_denotations_count.times do
-        FactoryGirl.create(:denotation, :hid => 'T1', :project => @associate_project)
+        FactoryGirl.create(:denotation, :hid => 'T1', :project => @associate_project, :doc => @doc)
       end
       @associate_project.reload
     end
@@ -1393,53 +1406,125 @@ describe Project do
   
   describe 'copy_docs_and_denotations' do
     context 'when associate_project have docs' do
-      before do
-        @associate_project = FactoryGirl.create(:project)
-        @doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed')
-        @doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0)
-        @associate_project.docs << @doc_1
-        @associate_project.docs << @doc_2
-        @denotation_1 = FactoryGirl.create(:denotation, :hid => 'T1', :project => @associate_project)
-        @denotation_2 = FactoryGirl.create(:denotation, :hid => 'T2', :project => @associate_project)
-        @associate_project.reload
-        @project = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30)
-        @project.reload
-      end
-      
-      describe 'before' do
-        it 'project.docs should be blank' do
-          @project.docs.should be_blank
-        end
-
-        it 'project.docs should be blank' do
-          @project.denotations.should be_blank
-        end
-      end
-      
-      describe 'after' do
+      context 'when project does not have same doc' do
         before do
-          @project.copy_docs_and_denotations(@associate_project)
+          @associate_project = FactoryGirl.create(:project)
+          @doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed')
+          @doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0)
+          @associate_project.docs << @doc_1
+          @associate_project.docs << @doc_2
+          @denotation_1 = FactoryGirl.create(:denotation, :hid => 'T1', :project => @associate_project)
+          @denotation_2 = FactoryGirl.create(:denotation, :hid => 'T2', :project => @associate_project)
+          @associate_project.reload
+          @project = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30)
           @project.reload
         end
         
-        it 'project.docs should created' do
-          @project.docs.count.should eql(2)
+        describe 'before' do
+          it 'project.docs should be blank' do
+            @project.docs.should be_blank
+          end
+  
+          it 'project.denotations should be blank' do
+            @project.denotations.should be_blank
+          end
         end
+        
+        describe 'after' do
+          before do
+            @project.copy_docs_and_denotations(@associate_project)
+            @project.reload
+          end
+          
+          it 'project.docs should created' do
+            @project.docs.count.should eql(2)
+          end
+  
+          it 'project.denotations should created' do
+            @project.denotations.count.should eql(2)
+          end
+          
+          it 'project.pmdocs_count should not incremented' do
+            @project.pmdocs_count.should eql(11)
+          end
+          
+          it 'project.pmcdocs_count should not incremented' do
+            @project.pmcdocs_count.should eql(21)
+          end
+          
+          it 'project.denotations_count should not incremented' do
+            @project.denotations_count.should eql(32)
+          end
+        end
+      end
 
-        it 'project.denotations should created' do
-          @project.denotations.count.should eql(2)
+      context 'when project have same doc' do
+        before do
+          @associate_project = FactoryGirl.create(:project)
+          @doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source', :sourcedb => 'PubMed', :sourceid => 123456, :serial => 1, :section => 'section')
+          @doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source', :sourcedb => 'PMC', :sourceid => 123456, :serial => 0, :section => 'section')
+          @associate_project.docs << @doc_1
+          @associate_project.docs << @doc_2
+          @denotation_1 = FactoryGirl.create(:denotation, :hid => 'T1', :project => @associate_project)
+          @denotation_2 = FactoryGirl.create(:denotation, :hid => 'T2', :project => @associate_project)
+          @associate_project.reload
+          @project = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30)
+          @project.docs << @doc_1.dup
+          @project.docs << @doc_2.dup
+          @project.reload
         end
         
-        it 'project.pmdocs_count should not incremented' do
-          @project.pmdocs_count.should eql(11)
+        describe 'before' do
+          it 'project.docs should be present' do
+            @project.docs.count.should eql(2)
+          end
+  
+          it 'project.denotations should be blank' do
+            @project.denotations.should be_blank
+          end
+  
+          it 'project.denotations should not created' do
+            @project.denotations.count.should eql(0)
+          end
+          
+          it 'project.pmdocs_count should not incremented' do
+            @project.pmdocs_count.should eql(11)
+          end
+          
+          it 'project.pmcdocs_count should not incremented' do
+            @project.pmcdocs_count.should eql(21)
+          end
+          
+          it 'project.denotations_count should not incremented' do
+            @project.denotations_count.should eql(30)
+          end
         end
         
-        it 'project.pmcdocs_count should not incremented' do
-          @project.pmcdocs_count.should eql(21)
-        end
-        
-        it 'project.denotations_count should not incremented' do
-          @project.denotations_count.should eql(32)
+        describe 'after' do
+          before do
+            @project.copy_docs_and_denotations(@associate_project)
+            @project.reload
+          end
+          
+          it 'project.docs should created' do
+            @project.docs.count.should eql(2)
+          end
+  
+          it 'project.denotations should not created' do
+            @project.denotations.count.should eql(0)
+          end
+          
+          it 'project.pmdocs_count should not incremented' do
+            @project.pmdocs_count.should eql(11)
+          end
+          
+          it 'project.pmcdocs_count should not incremented' do
+            @project.pmcdocs_count.should eql(21)
+          end
+          
+          it 'project.denotations_count should not incremented' do
+            @project.denotations_count.should eql(30)
+          end
         end
       end
     end

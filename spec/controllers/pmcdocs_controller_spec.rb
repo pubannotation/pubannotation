@@ -196,23 +196,28 @@ describe PmcdocsController do
           @project = FactoryGirl.create(:project, :user => @user, :pmdocs_count => 0, :pmcdocs_count => 0)
           @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
           @associate_project_1_pmdocs_count = 1
+          @i = 1
           @associate_project_1_pmdocs_count.times do
-            @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+            @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
+            @i += 1
           end
           @associate_project_1_pmcdocs_count = 2
           @associate_project_1_pmcdocs_count.times do
-            @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+            @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+            @i += 1
           end     
           @associate_project_1.reload
                 
           @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
           @associate_project_2_pmdocs_count = 3
           @associate_project_2_pmdocs_count.times do
-            @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+            @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
+            @i += 1
           end
           @associate_project_2_pmcdocs_count = 4
           @associate_project_2_pmcdocs_count.times do
-            @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+            @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+            @i += 1
           end     
           @associate_project_2.reload
       

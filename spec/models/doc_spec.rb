@@ -892,14 +892,16 @@ describe Doc do
       @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc_1 = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @project_1.docs << @doc_1
       # doc and project match
       @doc_1_project_1_denotation_0_9 = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_1, :begin => 0, :end => 6)
       @doc_1_project_1_denotation_1_9 = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_1, :begin => 1, :end => 7)
       # doc match project not match
       @doc_1_project_2_denotation = FactoryGirl.create(:denotation, :project => @project_2, :doc => @doc_1, :begin => 2, :end => 8)
-      @doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '123', :serial => 1, :section => 'section', :body => 'doc body')
       # doc not match project match
       @doc_2_project_1_denotation = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_2, :begin => 3, :end => 9)
+      @project_2.docs << @doc_2
     end
     
     context 'when options[:span] blank' do
@@ -1328,13 +1330,16 @@ describe Doc do
       @project =             FactoryGirl.create(:project, :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
       @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_1_pmdocs_count = 3
+      @i = 1
       @associate_project_1_pmdocs_count.times do
-        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i)
+        @i += 1 
       end
       @associate_project_1_pmcdocs_count = 3
       @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
       @associate_project_1_pmcdocs_count.times do
-        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @i += 1 
       end     
       # @associate_project_1.pmcdocs_count 3 => 4
       @associate_project_1.docs << @div
@@ -1343,12 +1348,14 @@ describe Doc do
       @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2_pmdocs_count = 4
       @associate_project_2_pmdocs_count.times do
-        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
+        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
+        @i += 1 
       end
       @associate_project_2_pmcdocs_count = 6
       @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 'sourceid')
       @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @i += 1 
       end     
       # @associate_project_2.pmdocs_count 4 => 5
       @associate_project_2.docs << @doc

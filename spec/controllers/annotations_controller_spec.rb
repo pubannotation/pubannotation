@@ -374,6 +374,7 @@ describe AnnotationsController do
     context 'when pmdoc' do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 12345, :serial => 0) 
+        @associate_project_annotations_3.docs << @doc
         controller.stub(:get_doc).and_return([@doc, nil])
         # add denotations to associate_projects
         @doc_denotatons_count = 3
@@ -504,6 +505,7 @@ describe AnnotationsController do
     context 'when pmcdoc' do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 12345, :serial => 0) 
+        @associate_project_annotations_3.docs << @doc
         controller.stub(:get_doc).and_return([@doc, nil])
         @doc_denotatons_count = 3
         @doc_denotasions_related_model_count = 2
