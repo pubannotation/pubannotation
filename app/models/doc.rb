@@ -187,13 +187,8 @@ class Doc < ActiveRecord::Base
       denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
       relations = Relation.where(["subj_id IN(?) AND obj_id IN (?) AND subj_type = 'Denotation' AND obj_type = 'Denotation'", denotation_ids, denotation_ids])
     else
-      if project.associate_projects.blank?
-        relations  = self.subcatrels.where("relations.project_id = ?", project.id)
-        relations += self.subinsrels.where("relations.project_id = ?", project.id)
-      else
-        relations  = self.subcatrels.where("relations.project_id IN (?)", project.self_id_and_associate_project_ids)
-        relations += self.subinsrels.where("relations.project_id IN (?)", project.self_id_and_associate_project_ids)
-      end
+      relations  = self.subcatrels.where("relations.project_id = ?", project.id)
+      relations += self.subinsrels.where("relations.project_id = ?", project.id)
     end
     if relations.present?
       relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
