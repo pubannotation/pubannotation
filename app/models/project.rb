@@ -273,6 +273,22 @@ class Project < ActiveRecord::Base
         end
       end
     end
+    
+    if associate_project.relations.present?
+      associate_project.relations.each do |relation|
+        same_relation = self.relations.where({
+          :hid => relation.hid,
+          :subj_id => relation.subj_id,
+          :subj_type => relation.subj_type,
+          :obj_id => relation.obj_id,
+          :obj_type => relation.obj_type,
+          :pred => relation.pred
+        })
+        if same_relation.blank?
+          self.relations << relation.dup
+        end
+      end
+    end
   end
     
   # decrement counters after delete associate projects

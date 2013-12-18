@@ -545,7 +545,7 @@ describe Relation do
     end
     
     it 'should increment project.relations_count' do
-      @project.relations_count.should eql(2)
+      @project.relations_count.should eql((@associate_project_2_relations_count * 2) + 1)
     end      
     
     it 'should increment project.relations_count' do

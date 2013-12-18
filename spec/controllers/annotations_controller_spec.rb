@@ -380,12 +380,14 @@ describe AnnotationsController do
         @doc_denotatons_count = 3
         @doc_denotasions_related_model_count = 2
         @di = 1
+        @ri = 1
         @doc_denotatons_count.times do
           denotation = FactoryGirl.create(:denotation, :begin => @di, :project => @associate_project_annotations_3, :doc => @doc)
           @di += 1
           @doc_denotasions_related_model_count.times do
-            FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @associate_project_annotations_3)
+            FactoryGirl.create(:relation, :hid => @ri, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @associate_project_annotations_3)
             FactoryGirl.create(:instance, :obj => denotation, :project => @associate_project_annotations_3)
+            @ri += 1
           end
         end
         @associate_project_annotations_0.reload
@@ -396,12 +398,14 @@ describe AnnotationsController do
         # another_project
         denotation = FactoryGirl.create(:denotation, :begin => @di, :project => @another_project, :doc => @doc)
         @di += 1
-        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        FactoryGirl.create(:relation, :hid => @ri, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        @ri += 1
         FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
         # another_doc
         @another_doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123456, :serial => 0) 
         denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @another_doc)
-        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        FactoryGirl.create(:relation, :hid => @ri, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        @ri += 1
         FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
       end
       
@@ -410,7 +414,7 @@ describe AnnotationsController do
       end
       
       it 'relations are present' do
-        Relation.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+        Relation.all.size.should eql((@doc_denotatons_count * @doc_denotasions_related_model_count) * 2 + 2)
       end
       
       it 'relations are present' do
@@ -496,7 +500,7 @@ describe AnnotationsController do
         end
         
         it 'relations are not destroied' do
-          Relation.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+          Relation.all.size.should eql((@doc_denotatons_count * @doc_denotasions_related_model_count) * 2 + 2)
         end
         
         it 'relations are not destroied' do
@@ -513,11 +517,13 @@ describe AnnotationsController do
         @doc_denotatons_count = 3
         @doc_denotasions_related_model_count = 2
         @di = 1
+        @ri = 1
         @doc_denotatons_count.times do
           denotation = FactoryGirl.create(:denotation, :begin => @di, :project => @associate_project_annotations_3, :doc => @doc)
           @di += 1
           @doc_denotasions_related_model_count.times do
-            FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @associate_project_annotations_3)
+            FactoryGirl.create(:relation, :hid => @ri, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @associate_project_annotations_3)
+            @ri += 1
             FactoryGirl.create(:instance, :obj => denotation, :project => @associate_project_annotations_3)
           end
         end
@@ -528,12 +534,13 @@ describe AnnotationsController do
         @project.associate_projects << @associate_project_annotations_3
         # another_project
         denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @doc)
-        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        FactoryGirl.create(:relation, :hid => @ri, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        @ri += 1
         FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
         # another_doc
         @another_doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123456, :serial => 0) 
         denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @another_doc)
-        FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
+        FactoryGirl.create(:relation, :hid => @ri, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
         FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
       end
       
@@ -542,7 +549,7 @@ describe AnnotationsController do
       end
       
       it 'relations are present' do
-        Relation.all.size.should eql(@doc_denotatons_count * @doc_denotasions_related_model_count + 2)
+        Relation.all.size.should eql((@doc_denotatons_count * @doc_denotasions_related_model_count) * 2 + 2)
       end
       
       it 'relations are present' do

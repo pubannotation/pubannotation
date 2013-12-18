@@ -1469,32 +1469,27 @@ describe Project do
     
     describe 'copy denotations' do
       before do
-        @associate_project =  FactoryGirl.create(:project)
         @doc = FactoryGirl.create(:doc)
-        
-        @same_denotation_attributes = {
-            :hid => 'HID',
-            :doc_id => 1,
-            :begin => 1,
-            :end => 2,
-            :obj => 'Obj',
-        }
+        # associate project
+        @associate_project =  FactoryGirl.create(:project)
+        # associate project same denotation
         @same_denotation_associate = FactoryGirl.create(:denotation,
           :project => @associate_project,
           :doc => @doc
         )
+        # associate project not same denotation
         @not_same_denotation_associate = FactoryGirl.create(:denotation,
           :project => @associate_project,
           :begin => @same_denotation_associate.begin + 1,
           :doc => @doc
         )
-        
+        # not associate project
         @not_associate_project =  FactoryGirl.create(:project)
         FactoryGirl.create(:denotation,
           :project => @not_associate_project,
           :doc => @doc
         )
-        
+        # import project
         @project = FactoryGirl.create(:project)
         @same_denotation_project = FactoryGirl.create(:denotation,
           :project => @project,
@@ -1522,6 +1517,64 @@ describe Project do
               :end => @not_same_denotation_associate.end,
               :obj => @not_same_denotation_associate.obj,
               :doc_id => @not_same_denotation_associate.doc_id,
+              :project_id => @project.id
+            }).first
+           ]
+        end      
+      end
+    end
+    
+    describe 'copy relations' do
+      before do
+        @denotation = FactoryGirl.create(:denotation)
+        # associate project
+        @associate_project =  FactoryGirl.create(:project)
+        # associate project same relation
+        @same_relation_associate = FactoryGirl.create(:relation,
+          :project => @associate_project,
+          :obj => @denotation
+        )
+        # associate project not same denotation
+        @not_same_relation_associate = FactoryGirl.create(:relation,
+          :project => @associate_project,
+          :subj_id => @same_relation_associate.subj_id + 1,
+          :obj => @denotation
+        )
+        # not associate project
+        @not_associate_project =  FactoryGirl.create(:project)
+        FactoryGirl.create(:relation,
+          :project => @not_associate_project,
+          :obj => @denotation
+        )
+        # import project
+        @project = FactoryGirl.create(:project)
+        @same_relation_project = FactoryGirl.create(:relation,
+          :project => @project,
+          :obj => @denotation
+        )
+      end
+      
+      describe 'before' do
+        it 'project should only have self relations' do
+          @project.relations.should =~ [@same_relation_project]
+        end
+      end
+      
+      describe 'after' do
+        before do
+          @project.copy_docs_and_denotations(@associate_project)
+          @project.reload
+        end
+        
+        it 'project should import not duplicative denotations' do
+          @project.relations.should =~ [@same_relation_project, 
+            @project.relations.where({
+              :hid => @not_same_relation_associate.hid,
+              :subj_id => @not_same_relation_associate.subj_id,
+              :subj_type => @not_same_relation_associate.subj_type,
+              :obj_id => @not_same_relation_associate.obj_id,
+              :obj_type => @not_same_relation_associate.obj_type,
+              :pred => @not_same_relation_associate.pred,
               :project_id => @project.id
             }).first
            ]
