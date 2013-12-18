@@ -1336,7 +1336,8 @@ describe Doc do
         @i += 1 
       end
       @associate_project_1_pmcdocs_count = 3
-      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
+      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i)
+      @i += 1 
       @associate_project_1_pmcdocs_count.times do
         @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
         @i += 1 
@@ -1352,7 +1353,8 @@ describe Doc do
         @i += 1 
       end
       @associate_project_2_pmcdocs_count = 6
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 'sourceid')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i)
+      @i += 1 
       @associate_project_2_pmcdocs_count.times do
         @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
         @i += 1 
@@ -1390,8 +1392,8 @@ describe Doc do
       end
       
       it 'should decrement doc.projects pmcdocs_count' do
-        @project.reload
-        @project.pmcdocs_count.should eql(((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) *2 + 2 + @project_pmcdocs_count) -1 )
+        @project.reload #
+        @project.pmcdocs_count.should eql(((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) *2 + 2 + @project_pmcdocs_count) -2 )
         @project.pmdocs_count.should eql((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2  + 2 + @project_pmdocs_count)
       end
               
@@ -1415,7 +1417,7 @@ describe Doc do
       
       it 'should decrement doc.projects pmdocs_count' do
         @project.reload
-        @project.pmdocs_count.should eql(((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2  + 2 + @project_pmdocs_count) -1 )
+        @project.pmdocs_count.should eql(((@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2  + 2 + @project_pmdocs_count) -2 )
         @project.pmcdocs_count.should eql((@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) *2 + 2 + @project_pmcdocs_count)
       end
               

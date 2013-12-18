@@ -1469,8 +1469,8 @@ describe Project do
           @denotation_2 = FactoryGirl.create(:denotation, :hid => 'T2', :project => @associate_project)
           @associate_project.reload
           @project = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30)
-          @project.docs << @doc_1.dup
-          @project.docs << @doc_2.dup
+          @project.docs << @doc_1
+          @project.docs << @doc_2
           @project.reload
         end
         
