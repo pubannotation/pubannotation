@@ -410,3 +410,23 @@ li {
 #documentation_body{
   width: 80%;
 }
+.show{
+  display: block !important;
+}
+$indicator_size : 100px;
+#Indicator{
+  width: $indicator_size;
+  height: $indicator_size;
+  position:fixed;
+  top:50%;
+  left:50%;
+  margin-top: -$indicator_size;
+  margin-left: -$indicator_size/2;
+  background: url(/assets/ajax-loader.gif) no-repeat center #000;
+  opacity: 0.8;
+  border-radius: 10px;
+  margin-left:- ($indicator_size / 2) + px;
+  margin-topt:- ($indicator_size / 2) + px;
+  display: none;
+  z-index: 9999;
+}

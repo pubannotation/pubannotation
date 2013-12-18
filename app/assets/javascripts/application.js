@@ -14,3 +14,10 @@
 //= require jquery_ujs
 //= require autocomplete-rails
 //#= require_tree .
+
+var submitIndicator = $(document).ready(function(){
+	// Show Indicator div when submit form IndicatorForm class
+    $('.IndicatorForm').submit(function(){
+		$('#Indicator').addClass('show');
+    });
+});
