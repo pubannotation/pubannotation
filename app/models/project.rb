@@ -253,11 +253,23 @@ class Project < ActiveRecord::Base
       copy_docs.each do |doc|
         # copy doc
         self.docs << doc
-        # copy denotations 
-        if doc.denotations.present?
-          associate_project.denotations.each do |denotation|
-            self.denotations << denotation.dup
-          end
+      end
+    end
+    
+    if associate_project.denotations.present?
+      # copy denotations
+      associate_project.denotations.each do |denotation|
+        same_denotation = self.denotations.where(
+          {
+            :hid => denotation.hid,
+            :doc_id => denotation.doc_id,
+            :begin => denotation.begin,
+            :end => denotation.end,
+            :obj => denotation.obj
+          }
+        )
+        if same_denotation.blank?
+          self.denotations << denotation.dup
         end
       end
     end

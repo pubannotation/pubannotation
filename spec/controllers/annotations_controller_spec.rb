@@ -379,8 +379,10 @@ describe AnnotationsController do
         # add denotations to associate_projects
         @doc_denotatons_count = 3
         @doc_denotasions_related_model_count = 2
+        @di = 1
         @doc_denotatons_count.times do
-          denotation = FactoryGirl.create(:denotation, :project => @associate_project_annotations_3, :doc => @doc)
+          denotation = FactoryGirl.create(:denotation, :begin => @di, :project => @associate_project_annotations_3, :doc => @doc)
+          @di += 1
           @doc_denotasions_related_model_count.times do
             FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @associate_project_annotations_3)
             FactoryGirl.create(:instance, :obj => denotation, :project => @associate_project_annotations_3)
@@ -392,7 +394,8 @@ describe AnnotationsController do
         @project.associate_projects << @associate_project_annotations_0
         @project.associate_projects << @associate_project_annotations_3
         # another_project
-        denotation = FactoryGirl.create(:denotation, :project => @another_project, :doc => @doc)
+        denotation = FactoryGirl.create(:denotation, :begin => @di, :project => @another_project, :doc => @doc)
+        @di += 1
         FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @another_project)
         FactoryGirl.create(:instance, :obj => denotation, :project => @another_project)
         # another_doc
@@ -509,8 +512,10 @@ describe AnnotationsController do
         controller.stub(:get_doc).and_return([@doc, nil])
         @doc_denotatons_count = 3
         @doc_denotasions_related_model_count = 2
+        @di = 1
         @doc_denotatons_count.times do
-          denotation = FactoryGirl.create(:denotation, :project => @associate_project_annotations_3, :doc => @doc)
+          denotation = FactoryGirl.create(:denotation, :begin => @di, :project => @associate_project_annotations_3, :doc => @doc)
+          @di += 1
           @doc_denotasions_related_model_count.times do
             FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => denotation.class.to_s, :obj => denotation, :project => @associate_project_annotations_3)
             FactoryGirl.create(:instance, :obj => denotation, :project => @associate_project_annotations_3)

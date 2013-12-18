@@ -358,11 +358,13 @@ describe Denotation do
       @associate_project_2_denotations_count = 1
       @doc = FactoryGirl.create(:doc)
       @associate_project_2.docs << @doc      
+      @di = 1
       @associate_project_2_denotations_count.times do
-        FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => @doc.id)
+        FactoryGirl.create(:denotation, :project => @associate_project_2, :begin => @di, :doc_id => @doc.id)
+        @di += 1
       end
       @associate_project_2.reload
-      @denotation = FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => @doc.id)
+      @denotation = FactoryGirl.create(:denotation, :begin => @di, :project => @associate_project_2, :doc_id => @doc.id)
       @associate_project_1.reload
       @associate_project_2.reload
       @project.associate_projects << @associate_project_1
