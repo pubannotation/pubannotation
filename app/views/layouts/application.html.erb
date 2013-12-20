@@ -41,6 +41,7 @@
 			</table>
 			-->
 			<ul id='navigation'>
+				<li class="navigation_menu"><%= link_to t('views.paths.home'), home_path -%></li>
 				<% DocumentationCategory.all.each do |documentation_categorie| -%>
 					<li class="navigation_menu"><%= link_to_unless_current t("views.documentations.#{documentation_categorie.name}"), documentations_category_documentations_path(documentation_categorie.name) -%></li>
 				<% end -%>
