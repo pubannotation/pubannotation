@@ -50,6 +50,7 @@ gem 'thin'
 gem 'devise'
 gem 'rubyzip'
 gem 'rails3-jquery-autocomplete'
+gem 'delayed_job_active_record'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
