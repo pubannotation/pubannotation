@@ -290,6 +290,7 @@ class Project < ActiveRecord::Base
       end
     end
   end
+  handle_asynchronously :copy_associate_project_relational_models, :run_at => Proc.new { 1.minutes.from_now }
     
   # decrement counters after delete associate projects
   def decrement_counters(associate_project)
