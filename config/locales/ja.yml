@@ -345,6 +345,8 @@ ja:
         deleted: アノテーションセット%{id}を削除しました
       new:
         import: "関連プロジェクトをインポート"
+      show:
+        pending_associate_projects: "このプロジェクトはプロジェクトのインポート処理中です..."
   views:
     service:
       title: PubAnnotation

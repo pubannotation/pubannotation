@@ -1407,7 +1407,39 @@ describe Project do
     end
   end
   
+  describe 'increment_pending_associate_projects_count' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @associate_projects_count = 2
+      @project.stub!(:copy_associate_project_relational_models).and_return(nil)
+      @associate_projects_count.times do
+        @project.associate_projects << FactoryGirl.create(:project)
+      end
+      @project.reload
+    end
+    
+    it 'should increment project.pending_associate_projects_count' do
+      @project.pending_associate_projects_count.should eql(@associate_projects_count)
+    end
+  end
+  
   describe 'copy_associate_project_relational_models' do
+    describe 'decrement pending_associate_projects_count' do
+      before do
+        @associate_projects_count = 2
+        @project = FactoryGirl.create(:project, :pending_associate_projects_count => @associate_projects_count)
+        @project.stub!(:increment_pending_associate_projects_count).and_return(nil)
+        @associate_projects_count.times do
+          @project.associate_projects << FactoryGirl.create(:project)
+        end
+        @project.reload
+      end
+      
+      it 'should increment project.pending_associate_projects_count' do
+        @project.pending_associate_projects_count.should eql(0)
+      end
+    end
+    
     describe 'copy docs' do
       before do
         @associate_project = FactoryGirl.create(:project)

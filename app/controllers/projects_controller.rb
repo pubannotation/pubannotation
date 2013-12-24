@@ -41,6 +41,7 @@ class ProjectsController < ApplicationController
     @project, notice = get_project(params[:id])
     if @project
       sourcedb, sourceid, serial = get_docspec(params)
+      notice = t('controllers.projects.show.pending_associate_projects') if @project.pending_associate_projects_count > 0
       if sourceid
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
       else

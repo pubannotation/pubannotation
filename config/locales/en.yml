@@ -315,6 +315,8 @@ en:
         deleted: The annotation set, %{id}, was deleted.
       new:
         import: "import associated projects"
+      show:
+        pending_associate_projects: "This project is processing importing projects"
   views:
     service:
       title: PubAnnotation

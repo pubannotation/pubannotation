@@ -11,6 +11,7 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'associate_project_id', 
     :join_table => 'associate_projects_projects',
     :class_name => 'Project', 
+    :before_add => :increment_pending_associate_projects_count,
     :after_add => [:increment_counters, :copy_associate_project_relational_models],
     :after_remove => :decrement_counters
     
@@ -245,9 +246,14 @@ class Project < ActiveRecord::Base
       :pmcdocs_count => associate_project.pmcdocs.count,
       :denotations_count => associate_project.denotations.count,
       :relations_count => associate_project.relations.count
-  end  
+  end 
+  
+  def increment_pending_associate_projects_count(associate_project)
+    Project.increment_counter(:pending_associate_projects_count, self.id)
+  end 
   
   def copy_associate_project_relational_models(associate_project)
+    Project.decrement_counter(:pending_associate_projects_count, self.id)
     if associate_project.docs.present?
       copy_docs = associate_project.docs - self.docs
       copy_docs.each do |doc|

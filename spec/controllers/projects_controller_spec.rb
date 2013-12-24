@@ -98,6 +98,17 @@ describe ProjectsController do
         controller.stub(:get_project).and_return(@project)
       end
       
+      context 'when processing associate projects' do
+        before do
+          @project.pending_associate_projects_count = 1
+          get :show, :id => @project.id
+        end  
+        
+        it 'should set processing notice message' do
+          flash[:notice].should eql(I18n.t('controllers.projects.show.pending_associate_projects'))
+        end
+      end
+      
       context 'when sourceid exists' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 'serial')
