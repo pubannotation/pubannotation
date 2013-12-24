@@ -11,7 +11,7 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'associate_project_id', 
     :join_table => 'associate_projects_projects',
     :class_name => 'Project', 
-    :after_add => [:increment_counters, :copy_docs_and_denotations],
+    :after_add => [:increment_counters, :copy_associate_project_relational_models],
     :after_remove => :decrement_counters
     
   # associate projects => parent projects = @project.projects
@@ -247,7 +247,7 @@ class Project < ActiveRecord::Base
       :relations_count => associate_project.relations.count
   end  
   
-  def copy_docs_and_denotations(associate_project)
+  def copy_associate_project_relational_models(associate_project)
     if associate_project.docs.present?
       copy_docs = associate_project.docs - self.docs
       copy_docs.each do |doc|
