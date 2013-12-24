@@ -1407,7 +1407,7 @@ describe Project do
     end
   end
   
-  describe 'copy_docs_and_denotations' do
+  describe 'copy_associate_project_relational_models' do
     describe 'copy docs' do
       before do
         @associate_project = FactoryGirl.create(:project)
@@ -1441,7 +1441,7 @@ describe Project do
       
       describe 'after' do
         before do
-          @project.copy_docs_and_denotations(@associate_project)
+          @project.copy_associate_project_relational_models(@associate_project)
           @project.reload
         end
 
@@ -1505,7 +1505,7 @@ describe Project do
       
       describe 'after' do
         before do
-          @project.copy_docs_and_denotations(@associate_project)
+          @project.copy_associate_project_relational_models(@associate_project)
           @project.reload
         end
         
@@ -1562,7 +1562,7 @@ describe Project do
       
       describe 'after' do
         before do
-          @project.copy_docs_and_denotations(@associate_project)
+          @project.copy_associate_project_relational_models(@associate_project)
           @project.reload
         end
         
