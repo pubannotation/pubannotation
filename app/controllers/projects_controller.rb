@@ -66,7 +66,7 @@ class ProjectsController < ApplicationController
 
     respond_to do |format|
       if @project
-        format.html { flash[:notice] = notice }
+        format.html { flash.now[:notice] = notice }
         format.json { render json: @project }
       else
         format.html {
