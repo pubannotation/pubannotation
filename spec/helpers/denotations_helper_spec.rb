@@ -49,19 +49,34 @@ describe DenotationsHelper do
         before do
           @doc_denotations = 'denotations'
           Doc.any_instance.stub(:denotations).and_return(@doc_denotations)
+          @project_pmcdoc_denotations = [1, 2 , 3]
+          Denotation.stub(:project_pmcdoc_denotations).and_return(@project_pmcdoc_denotations)
         end
         
         context 'when doc present' do
-          before do
-            @result = helper.denotations_count_helper(@project, {:doc => @doc})
+          context 'when controller == projects' do
+            before do
+              helper.stub(:params).and_return({:controller => 'projects'})
+              @result = helper.denotations_count_helper(@project, {:doc => @doc})
+            end
+            
+            it 'denotations should be project.denotations.project_pmcdoc_denotations(options[:sourceid]).count' do
+              @result.should eql(@project_pmcdoc_denotations.size)
+            end
           end
           
-          it 'denotations should be doc.denotations' do
-            @result[1].should eql(@doc_denotations)
-          end
-          
-          it 'denotations should be returned Denotation.project_denotations_count' do
-            @result[2].should eql(@project_denotations_count)
+          context 'when controller == divs' do
+            before do
+              @result = helper.denotations_count_helper(@project, {:doc => @doc})
+            end
+            
+            it 'denotations should be doc.denotations' do
+              @result[1].should eql(@doc_denotations)
+            end
+            
+            it 'denotations should be returned Denotation.project_denotations_count' do
+              @result[2].should eql(@project_denotations_count)
+            end
           end
         end
   

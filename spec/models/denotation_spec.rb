@@ -151,6 +151,34 @@ describe Denotation do
       it 'should include project_id included in project_ids' do
         Denotation.projects_denotations([1,2]).should =~ [@denotation_project_1, @denotation_project_2]
       end
+    end
+    
+    describe 'project_pmcdoc_denotations' do
+      before do
+        @project = FactoryGirl.create(:project)
+        # pmcdoc
+        @sourceid = 'si123456'
+        @project_pmcdoc_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid)
+        @project_denotation_1 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmcdoc_1)
+        @project_pmcdoc_2 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1, :sourceid => @sourceid)
+        @project_denotation_2 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmcdoc_2)
+        @project_pmcdoc_3 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 2, :sourceid => @sourceid)
+        @project_denotation_3 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmcdoc_3)
+        # pmdoc
+        @project_pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => @sourceid)
+        @project_denotation_4 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmdoc)
+        # other sourceid
+        @project_pmcdoc_5 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid + '0')
+        @project_denotation_5 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmcdoc_5)
+      end
+      
+      it 'project denotations should return proejct.denotations' do
+        @project.denotations.should =~ [@project_denotation_1, @project_denotation_2, @project_denotation_3, @project_denotation_4, @project_denotation_5]
+      end
+      
+      it 'should return project.denotations belongs to PMC and same sourceid' do
+        Denotation.project_pmcdoc_denotations(@sourceid).should =~ [@project_denotation_1, @project_denotation_2, @project_denotation_3]
+      end
     end 
     
     describe 'accessible_projects' do

@@ -19,7 +19,11 @@ class Denotation < ActiveRecord::Base
   validates :project_id, :presence => true
   validates :doc_id,    :presence => true
 
-  scope :project_denotations, select(:id).group(:project_id)
+  scope :project_denotations, select(:id).group(:project_id) 
+  scope :project_pmcdoc_denotations, lambda{|sourceid|
+    joins(:doc).
+    where("docs.sourcedb = 'PMC' AND docs.sourceid = ?", sourceid)
+  }  
   scope :projects_denotations, lambda {|project_ids|
     where('project_id IN (?)', project_ids)
   }

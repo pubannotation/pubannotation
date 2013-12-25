@@ -9,7 +9,11 @@ module DenotationsHelper
     else      
       if project.present?
         if options[:doc].present?
-          Denotation.project_denotations_count(project.id, options[:doc].denotations)
+          if params[:controller] == 'projects'
+            project.denotations.project_pmcdoc_denotations(options[:sourceid]).count
+          else  
+            Denotation.project_denotations_count(project.id, options[:doc].denotations)
+          end
         else
           project.denotations_count
         end
