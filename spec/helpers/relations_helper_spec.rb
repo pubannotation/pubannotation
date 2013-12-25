@@ -31,12 +31,29 @@ describe RelationsHelper do
         
     context 'when project present' do
       context 'when doc present' do
-        before do
-          @result = helper.relations_count_helper(@project, {:doc => @doc})
+        context 'when controller = projects' do
+          before do
+            helper.stub(:params).and_return({:controller => 'projects'})
+            @project_pmcdoc_cat_relations = [1, 2]
+            Relation.stub(:project_pmcdoc_cat_relations).and_return(@project_pmcdoc_cat_relations)
+            @project_pmcdoc_ins_relations = [1, 2, 3]
+            Relation.stub(:project_pmcdoc_ins_relations).and_return(@project_pmcdoc_ins_relations)
+            @result = helper.relations_count_helper(@project, {:doc => @doc})
+          end
+          
+          it 'should return project.relations project_pmcdoc_cat_relations.count + project_pmcdoc_ins_relations.count' do
+            @result.should eql(@project_pmcdoc_cat_relations.count + @project_pmcdoc_ins_relations.count)
+          end
         end
         
-        it 'should return Relation.project_relations_count' do
-          @result.should eql(@doc_project_relations_count)
+        context 'when controller = divs' do
+          before do
+            @result = helper.relations_count_helper(@project, {:doc => @doc})
+          end
+          
+          it 'should return Relation.project_relations_count' do
+            @result.should eql(@doc_project_relations_count)
+          end
         end
       end
 
