@@ -6,7 +6,11 @@ module RelationsHelper
     else 
       if project.present?
         if options[:doc].present?
-          options[:doc].project_relations_count(project.id)
+          if params[:controller] == 'projects'
+            
+          else  
+            options[:doc].project_relations_count(project.id)
+          end
         else 
           project.relations_count
         end
