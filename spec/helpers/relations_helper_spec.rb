@@ -33,6 +33,7 @@ describe RelationsHelper do
       context 'when doc present' do
         context 'when controller = projects' do
           before do
+            @doc.sourcedb = 'PMC'
             helper.stub(:params).and_return({:controller => 'projects'})
             @project_pmcdoc_cat_relations = [1, 2]
             Relation.stub(:project_pmcdoc_cat_relations).and_return(@project_pmcdoc_cat_relations)
