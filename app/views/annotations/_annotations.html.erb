@@ -16,6 +16,7 @@
           <% denotation[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
         <% else %>
         	<% if params[:controller] == 'annotations'-%>
+	        	<!-- annotations#index-->
 	         	<% if params[:pmcdoc_id].present? -%>
 	          		<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_project_pmcdoc_div_path(params[:project_id], params[:pmcdoc_id], params[:div_id], denotation[:span][:begin], denotation[:span][:end])  -%>
 	          	<% elsif params[:pmdoc_id].present? -%>
@@ -31,12 +32,10 @@
 		        <% end -%>
 	        <% end -%>
         	<% if params[:controller] == 'divs'-%>
-	        	<!-- pmdocs#annotations-->
+	        	<!-- divs#annotations-->
       			<% if params[:project_id].present? -%>
-      				<!-- divs#spans -->
       				<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_project_pmcdoc_div_path(params[:project_id], params[:pmcdoc_id], params[:id], denotation[:span][:begin], denotation[:span][:end])  -%>
       			<% else -%>
-                  	<!-- spans_pmcdoc_div GET    /pmcdocs/:pmcdoc_id/divs/:id/spans/:begin-:end(.:format) -->
       				<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}",spans_pmcdoc_div_path(params[:pmcdoc_id], params[:id], denotation[:span][:begin], denotation[:span][:end])  -%>
 		        <% end -%>
 	        <% end -%>
