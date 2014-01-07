@@ -6,8 +6,8 @@ module RelationsHelper
     else 
       if project.present?
         if options[:doc].present?
-          if params[:controller] == 'projects'
-            
+          if params[:controller] == 'projects' && options[:doc].sourcedb == 'PMC'
+            project.relations.project_pmcdoc_cat_relations(options[:sourceid]).count + project.relations.project_pmcdoc_ins_relations(options[:sourceid]).count
           else  
             options[:doc].project_relations_count(project.id)
           end

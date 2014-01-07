@@ -56,6 +56,7 @@ describe DenotationsHelper do
         context 'when doc present' do
           context 'when controller == projects' do
             before do
+              @doc.sourcedb = 'PMC'
               helper.stub(:params).and_return({:controller => 'projects'})
               @result = helper.denotations_count_helper(@project, {:doc => @doc})
             end

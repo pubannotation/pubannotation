@@ -103,6 +103,45 @@ describe Relation do
     end
   end 
   
+  describe 'project_pmcdoc_cat_relations' do
+    before do
+      @sourceid = 'pm123456'
+      @project = FactoryGirl.create(:project)
+      @pmc_doc_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid)
+      @denotation_1 = FactoryGirl.create(:denotation, :doc => @pmc_doc_1, :project => @project)
+      @relation_1 = FactoryGirl.create(:subcatrel, :obj => @denotation_1, :project => @project)
+      @pmc_doc_2 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1, :sourceid => @sourceid)
+      @denotation_2 = FactoryGirl.create(:denotation, :doc => @pmc_doc_2, :project => @project)
+      @relation_2 = FactoryGirl.create(:subcatrel, :obj => @denotation_2, :project => @project)
+      @pmc_doc_3 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 2, :sourceid => @sourceid)
+      @denotation_3 = FactoryGirl.create(:denotation, :doc => @pmc_doc_3, :project => @project)
+      @relation_3 = FactoryGirl.create(:subcatrel, :obj => @denotation_3, :project => @project)
+    end
+    
+    it 'should return project_pmcdoc_cat_relations' do
+      @project.relations.project_pmcdoc_cat_relations(@pmc_doc_1.sourceid).should =~ [@relation_1, @relation_2, @relation_3]
+    end
+  end
+  
+  describe 'project_pmcdoc_ins_relations' do
+    before do
+      @sourceid = 'pm123456'
+      @project = FactoryGirl.create(:project)
+      @pmc_doc_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid)
+      @denotation_1 = FactoryGirl.create(:denotation, :doc => @pmc_doc_1, :project => @project)
+      @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1)
+      @relation_1 = FactoryGirl.create(:relation, :subj_id => @instance_1.id, :subj_type => 'Instance', :obj => @denotation_1)
+      @pmc_doc_2 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid)
+      @denotation_2 = FactoryGirl.create(:denotation, :doc => @pmc_doc_2, :project => @project)
+      @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2)
+      @relation_2 = FactoryGirl.create(:relation, :subj_id => @instance_2.id, :subj_type => 'Instance', :obj => @denotation_2)
+    end
+    
+    it 'shoud return project_pmcdoc_cat_relations' do
+      @project.relations.project_pmcdoc_ins_relations(@pmc_doc_1.sourceid).should =~ [@relation_1, @relation_2]
+    end
+  end
+  
   describe 'get_hash' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))

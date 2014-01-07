@@ -254,6 +254,15 @@ en:
         pmids: PubMed IDs
       sproject:
         project_name: Enter related project name.
+    options:
+      project:
+        status:
+          released: Released
+          beta: Beta
+          developing: Developing
+        accessibility:
+          public: Public
+          private: Private
     errors:
       <<: *errors
   controllers:

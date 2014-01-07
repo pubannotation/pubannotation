@@ -1,10 +1,11 @@
 <h1>
   <% if project %>
   	<%= t('views.pmcdocs.pmcdocs_in_a_project', :project_name => project.name).html_safe %>
+	(<%= project.pmcdocs_count %>)
   <% else %>
   	<%= t('views.pmcdocs.pmcdocs_in_pubannotation').html_safe %>
+	(<%= docs.length %>)
   <% end %>
-  (<%= docs.length %>)
 </h1>
 
 <div>
