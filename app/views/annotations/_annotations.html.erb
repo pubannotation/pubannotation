@@ -15,7 +15,31 @@
         <% unless denotation[:span].respond_to?(:keys) %>
           <% denotation[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
         <% else %>
-          <%= denotation[:span][:begin] %>:<%= denotation[:span][:end] %>
+        	<% if params[:controller] == 'annotations'-%>
+	         	<% if params[:pmcdoc_id].present? -%>
+	          		<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_project_pmcdoc_div_path(params[:project_id], params[:pmcdoc_id], params[:div_id], denotation[:span][:begin], denotation[:span][:end])  -%>
+	          	<% elsif params[:pmdoc_id].present? -%>
+	      			<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_project_pmdoc_path(params[:project_id], params[:pmdoc_id], denotation[:span][:begin], denotation[:span][:end])  -%>
+		        <% end %>
+	        <% end %>
+        	<% if params[:controller] == 'pmdocs'-%>
+	        	<!-- pmdocs#annotations-->
+      			<% if params[:project_id].present? -%>
+      				<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_project_pmdoc_path(params[:project_id], params[:id], denotation[:span][:begin], denotation[:span][:end])  -%>
+      			<% else -%>
+      				<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_pmdoc_path(params[:id], denotation[:span][:begin], denotation[:span][:end])  -%>
+		        <% end -%>
+	        <% end -%>
+        	<% if params[:controller] == 'divs'-%>
+	        	<!-- pmdocs#annotations-->
+      			<% if params[:project_id].present? -%>
+      				<!-- divs#spans -->
+      				<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_project_pmcdoc_div_path(params[:project_id], params[:pmcdoc_id], params[:id], denotation[:span][:begin], denotation[:span][:end])  -%>
+      			<% else -%>
+                  	<!-- spans_pmcdoc_div GET    /pmcdocs/:pmcdoc_id/divs/:id/spans/:begin-:end(.:format) -->
+      				<%= link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}",spans_pmcdoc_div_path(params[:pmcdoc_id], params[:id], denotation[:span][:begin], denotation[:span][:end])  -%>
+		        <% end -%>
+	        <% end -%>
         <% end %>
       </td>
       <td>denote</td>
