@@ -1,0 +1,16 @@
+<% if @denotations.present? -%>
+	<table>
+		<tr>
+			<th>
+				Span
+			</th>
+		</tr>
+		<% @denotations.each do | denotation | -%>
+			<tr>
+				<td>
+					<%= spans_link_helper(denotation) -%>
+				</td>
+			</tr>
+		<% end -%>
+	</table>
+<% end -%>

@@ -76,6 +76,7 @@ Pubann::Application.routes.draw do
     resources :divs do
       member do
         # spans
+        get 'spans/' => 'divs#spans_index'
         get 'spans/:begin-:end' => 'divs#spans', :as => 'spans'
         # annotations
         get 'spans/:begin-:end/annotations' => 'divs#annotations'
@@ -107,6 +108,7 @@ Pubann::Application.routes.draw do
       resources :divs do
         member do
           # spans
+          get 'spans/' => 'divs#spans_index'
           get 'spans/:begin-:end/' => 'divs#spans', :as => 'spans'
           # annotations
           get 'spans/:begin-:end/annotations' => 'divs#annotations', :as => 'spans_annotation'
