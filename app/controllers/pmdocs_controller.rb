@@ -76,6 +76,30 @@ class PmdocsController < ApplicationController
     end
   end
   
+  def spans_index
+    params[:pmdoc_id] = params[:id]
+    if params[:project_id].present?
+      @project, notice = get_project(params[:project_id])
+      sourcedb, sourceid, serial = get_docspec(params)
+      @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
+      if @doc
+        annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
+        @denotations = annotations[:denotations]
+      end
+    else
+      sourcedb, sourceid, serial = get_docspec(params)
+      @doc, notice = get_doc(sourcedb, sourceid, serial, nil)
+      if @doc
+        # TODO uniq by begin-end?
+        @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
+      end
+    end
+    
+    respond_to do |format|
+      format.html { render 'docs/spans_index'}
+    end    
+  end
+  
   # GET /pmdocs/:begin/:end
   def spans
     if params[:project_id].present?
