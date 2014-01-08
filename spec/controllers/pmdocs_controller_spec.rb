@@ -162,6 +162,59 @@ describe PmdocsController do
     end
   end
   
+  describe 'spans_index' do
+    before do
+      @project = FactoryGirl.create(:project)
+      controller.stub(:get_project).and_return([@project, nil])
+      @doc = FactoryGirl.create(:doc, :sourceid => '12345', :sourcedb => 'PubMed')
+      controller.stub(:get_doc).and_return([@doc, nil])
+    end
+    
+    context 'when project_id present' do
+      before do
+        @denotations = [1, 2, 3]
+        controller.stub(:get_annotations).and_return({:denotations => @denotations})
+        get :spans_index, :project_id => @project.name, :id => @doc.sourceid
+      end
+      
+      it 'should assign @project' do
+        assigns[:project].should eql(@project)  
+      end
+      
+      it 'should assign @doc' do
+        assigns[:doc].should eql(@doc)  
+      end
+      
+      it 'should assign @denotations' do
+        assigns[:denotations].should eql(@denotations)  
+      end
+      
+      it 'should render template' do
+        response.should render_template('docs/spans_index')
+      end
+    end
+    
+    context 'when project_id blank' do
+      before do
+        @denotation = FactoryGirl.create(:denotation)
+        @doc.denotations << @denotation
+        get :spans_index, :id => @doc.sourceid
+      end
+      
+      it 'should assign @doc' do
+        assigns[:doc].should eql(@doc)  
+      end
+      
+      it 'should assign @denotations' do
+        assigns[:denotations].should eql([{"id" => @denotation.hid, "span" => {"begin" => @denotation.begin, "end" => @denotation.end}, "obj" => @denotation.obj}])  
+      end
+      
+      it 'should render template' do
+        response.should render_template('docs/spans_index')
+      end
+    end
+  end
+  
   describe 'spans' do
     before do
       @body = 'doc body'

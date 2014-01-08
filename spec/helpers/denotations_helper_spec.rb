@@ -105,4 +105,116 @@ describe DenotationsHelper do
       end
     end
   end
+  
+  describe 'spans_link_helper' do
+    before do
+      @begin = 22
+      @end = 33
+      @denotation = {:span => {:begin => @begin, :end => @end}}
+      @id = 11
+      @pmcdoc_id = 44
+    end
+    
+    context 'when params[:project_id] present' do
+      before do
+        @project_id = 55
+      end
+      
+      context 'when controller == pmdocs' do
+        before do
+          helper.stub(:params).and_return({
+            :controller => 'pmdocs',
+            :project_id => @project_id,
+            :id => @id
+          })
+          @result = helper.spans_link_helper(@denotation)
+        end
+        
+        it 'should return project pmdoc spans url' do
+          @result.should have_selector :a, :href => "/projects/#{@project_id}/pmdocs/#{@id}/spans/#{@begin}-#{@end}"
+        end        
+      end
+      
+      context 'when params[:pmdoc_id] present' do
+        before do
+          helper.stub(:params).and_return({
+            :controller => 'annotations',
+            :project_id => @project_id,
+            :pmdoc_id => @id
+          })
+          @result = helper.spans_link_helper(@denotation)
+        end
+        
+        it 'should return project pmdoc spans url' do
+          @result.should have_selector :a, :href => "/projects/#{@project_id}/pmdocs/#{@id}/spans/#{@begin}-#{@end}"
+        end        
+
+      end
+      
+      describe 'divs#spans or annotaitons#index' do
+        context 'when controller == pmcdocs' do
+          before do
+            helper.stub(:params).and_return({
+              :controller => 'divs',
+              :project_id => @project_id,
+              :pmcdoc_id => @pmcdoc_id,
+              :id => @id
+            })
+            @result = helper.spans_link_helper(@denotation)
+          end
+          
+          it 'should return project pmdoc spans url' do
+            @result.should have_selector :a, :href => "/projects/#{@project_id}/pmcdocs/#{@pmcdoc_id}/divs/#{@id}/spans/#{@begin}-#{@end}"
+          end        
+        end
+        
+        context 'when params[:pmdoc_id] present' do
+          before do
+            helper.stub(:params).and_return({
+              :controller => 'annotations',
+              :project_id => @project_id,
+              :pmcdoc_id => @pmcdoc_id,
+              :div_id => @id
+            })
+            @result = helper.spans_link_helper(@denotation)
+          end
+          
+          it 'should return project pmdoc spans url' do
+            @result.should have_selector :a, :href => "/projects/#{@project_id}/pmcdocs/#{@pmcdoc_id}/divs/#{@id}/spans/#{@begin}-#{@end}"
+          end        
+        end
+      end
+    end
+
+    describe 'when params[:project_id] blank' do
+      context 'when controller == pmdocs' do
+        before do
+          helper.stub(:params).and_return({
+            :controller => 'pmdocs',
+            :id => @id
+          })
+          @result = helper.spans_link_helper(@denotation)
+        end
+        
+        it 'should return pmdoc spans url' do
+          @result.should have_selector :a, :href => "/pmdocs/#{@id}/spans/#{@begin}-#{@end}"
+        end        
+      end      
+
+      context 'when controller == pmcdocs' do
+        before do
+          helper.stub(:params).and_return({
+            :controller => 'divs',
+            :pmcdoc_id => @pmcdoc_id,
+            :id => @id
+          })
+          @result = helper.spans_link_helper(@denotation)
+        end
+        
+        it 'should return project pmdoc spans url' do
+          @result.should have_selector :a, :href => "/pmcdocs/#{@pmcdoc_id}/divs/#{@id}/spans/#{@begin}-#{@end}"
+        end        
+      end     
+    end
+  end
 end
