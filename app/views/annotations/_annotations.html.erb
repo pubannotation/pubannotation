@@ -20,11 +20,13 @@
       </td>
       <td>denote</td>
       <td><%= denotation[:obj] %></td>
-      <td style="text-align:left; font-style:italic; color:#888888;">
-  		<%= @spans -%>
-      </td>
+      <% if @doc.present? -%>
+	      <td style="text-align:left; font-style:italic; color:#888888;">
+	  		<%= @doc.body[denotation[:span][:begin]...denotation[:span][:end]] -%>
+	      </td>
+	  <% end %> 
     </tr>
-  <% end %>
+  <% end %> 
   </table>
 <% end %>
 
