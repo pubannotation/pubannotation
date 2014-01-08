@@ -164,6 +164,7 @@ describe PmdocsController do
   
   describe 'spans' do
     before do
+      @body = 'doc body'
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
       @project = 'project'
       @projects = 'projects'

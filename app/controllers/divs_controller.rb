@@ -52,6 +52,7 @@ class DivsController < ApplicationController
       @projects = @doc.spans_projects(params)
     end
     @spans, @prev_text, @next_text = @doc.spans(params)
+    @highlight_text = @doc.spans_highlight(params)
     respond_to do |format|
       format.html { render 'docs/spans'}
       format.txt  { render 'docs/spans'}

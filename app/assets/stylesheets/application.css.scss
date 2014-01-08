@@ -160,7 +160,11 @@ table.menu {
 .capitalize_first:first-letter{
   text-transform:capitalize;
 }
-
+.highlight{
+  background-color: lighten(#ccc, 13%);
+  font-weight: bold;
+  padding: 0.1em 0.4em;
+}
 h1 {
     width:43em;
     border:solid $main_color;
