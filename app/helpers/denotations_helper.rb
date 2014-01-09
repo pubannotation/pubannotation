@@ -24,26 +24,12 @@ module DenotationsHelper
   end
   
   def spans_link_helper(denotation)
-    if params[:project_id].present?
-      if params[:controller] == 'pmdocs' || params[:pmdoc_id].present?
-        # case pmdocs#spans or annotations#index
-        # pmdocs#annotations(params[:id]) || annotaions#index(params[:pmdoc_id]) |
-        params[:id] ||= params[:pmdoc_id] 
-        link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_project_pmdoc_path(params[:project_id], params[:id], denotation[:span][:begin], denotation[:span][:end])
-      elsif params[:controller] == 'divs' ||  params[:pmcdoc_id].present?
-        # case divs#spans or annotations#index
-        # divs#annotations(params[:id]) || annotaions#index(params[:div_id])
-        params[:id] ||= params[:div_id]
-        link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_project_pmcdoc_div_path(params[:project_id], params[:pmcdoc_id], params[:id], denotation[:span][:begin], denotation[:span][:end])
-      end
-    else
-      if params[:controller] == 'pmdocs'
-        # case pmdocs#annotations
-        link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_pmdoc_path(params[:id], denotation[:span][:begin], denotation[:span][:end])
-      elsif params[:controller] == 'divs'
-        # case divs#annotations
-        link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_pmcdoc_div_path(params[:pmcdoc_id], params[:id], denotation[:span][:begin], denotation[:span][:end])
-      end
+    if params[:controller] == 'pmdocs' || params[:pmdoc_id].present?
+      params[:id] ||= params[:pmdoc_id] 
+      link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_pmdoc_path(params[:id], denotation[:span][:begin], denotation[:span][:end])
+    elsif params[:controller] == 'divs' || params[:pmcdoc_id].present?
+      params[:id] ||= params[:div_id]
+      link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_pmcdoc_div_path(params[:pmcdoc_id], params[:id], denotation[:span][:begin], denotation[:span][:end])
     end
   end
 end

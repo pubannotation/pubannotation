@@ -2,6 +2,11 @@
 require 'spec_helper'
 
 describe "annotations/index.html.erb" do
+  before do
+    @spans_link_helper = 'spans_link_helper'
+    view.stub(:spans_link_helper).and_return(@spans_link_helper)  
+  end
+  
   describe 'destroy_all form' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
