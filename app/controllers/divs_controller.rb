@@ -35,6 +35,9 @@ class DivsController < ApplicationController
         @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
       end
     end
+    if @denotations.present?
+      @denotations = @denotations.uniq{|denotation| denotation[:span]}
+    end
     
     respond_to do |format|
       format.html { render 'docs/spans_index'}
