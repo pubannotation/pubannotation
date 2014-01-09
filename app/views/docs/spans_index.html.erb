@@ -1,4 +1,26 @@
 <% if @denotations.present? -%>
+	<% denotation_groups = Array.new -%>
+	<% span_ids = Array.new -%>
+	<% @doc_body = @doc.body -%>
+	<% @doc_anc = @doc.body -%>
+	<% @denotations.each do | denotation | -%>
+		<% span_text = Doc.find(@doc.id).body[denotation[:span][:begin]...denotation[:span][:end]]%>
+		<% @doc_anc.sub!("#{span_text}", "<a href='#{denotation[:span][:begin]}-#{denotation[:span][:end]}'>#{span_text}</a>") -%>
+	<% end -%>
+	<% p @doc.body -%>
+	<%= @doc.body.html_safe -%>
+	
+	<% @denotations.each do | denotation | -%>
+		<% denotation_group = @denotations.select{|other_denotation| other_denotation[:span][:begin] >= denotation[:span][:begin] && other_denotation[:span][:begin] <= denotation[:span][:end] && other_denotation[:span][:end] <= denotation[:span][:end] } -%>
+		<% span_ids << denotation_group.collect{|dg| dg[:id]}%>
+		<% denotation_groups << denotation_group if span_ids.include?(denotation[:id]) == false -%>
+	<% end -%>
+	<% denotation_groups.each do |denotation_group| -%>
+		<% denotation_group.each do |span| -%>
+			<%#= span_text = @doc.body[span[:span][:begin]...span[:span][:end]] -%>
+			<br />
+		<% end %>
+	<% end -%>
 	<table>
 		<tr>
 			<th>
