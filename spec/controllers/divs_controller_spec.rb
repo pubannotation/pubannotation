@@ -57,7 +57,9 @@ describe DivsController do
     
     context 'when project_id present' do
       before do
-        @denotations = [1, 2, 3]
+        @denotation_1 = {:span => 'span1'}
+        @denotation_2 = {:span => 'span2'}
+        @denotations = [@denotation_1, @denotation_1, @denotation_2]
         controller.stub(:get_annotations).and_return({:denotations => @denotations})
         get :spans_index, :project_id => @project.name, :pmcdoc_id => @doc.id, :id => 0
       end
@@ -70,8 +72,8 @@ describe DivsController do
         assigns[:doc].should eql(@doc)  
       end
       
-      it 'should assign @denotations' do
-        assigns[:denotations].should eql(@denotations)  
+      it 'should assign unique denotation hashes as @denotations' do
+        assigns[:denotations].should =~ @denotation_1.map{|key, value| {key.to_s => value}} + @denotation_2.map{|key, value| {key.to_s => value}}
       end
       
       it 'should render template' do
