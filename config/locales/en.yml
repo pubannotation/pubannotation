@@ -345,7 +345,7 @@ en:
       annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'> within the project, <span class='pname'>%{project_name}</span></span>"
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
-      get_annotations: Get automatic annotations
+      automatic_annotation: Get automatic annotation
     documentations:
       Overview: Overview
       Features: Features
