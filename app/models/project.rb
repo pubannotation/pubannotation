@@ -1,4 +1,5 @@
 class Project < ActiveRecord::Base
+  include AnnotationsHelper
   belongs_to :user
   has_and_belongs_to_many :docs, :after_add => :increment_docs_counter, :after_remove => :decrement_docs_counter 
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
