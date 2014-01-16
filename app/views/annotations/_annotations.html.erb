@@ -1,35 +1,4 @@
-<% if @denotations and !@denotations.empty? %>
-  <h2><%= t('activerecord.models.denotation') %></h2>
-  <table class="ann">
-    <tr>
-      <th>Id</th>
-      <th>Span (begin:end)</th>
-      <th>Predicate</th>
-      <th>Object</th>
-    </tr>
-
-  <% @denotations.each do |denotation| %>
-    <tr>
-      <td><%= denotation[:id] %></td>
-      <td>
-        <% unless denotation[:span].respond_to?(:keys) %>
-          <% denotation[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
-        <% else %>
-	        <%= spans_link_helper(denotation) -%>
-        <% end %>
-      </td>
-      <td>denote</td>
-      <td><%= denotation[:obj] %></td>
-      <% if @doc.present? -%>
-	      <td style="text-align:left; font-style:italic; color:#888888;">
-	  		<%= @doc.body[denotation[:span][:begin]...denotation[:span][:end]] -%>
-	      </td>
-	  <% end %> 
-    </tr>
-  <% end %> 
-  </table>
-<% end %>
-
+<%= render :partial => 'denotation', :collection => @denotations -%>
 
 <% if @instances and !@instances.empty? %>
   <h2><%= t('activerecord.models.instance') %></h2>

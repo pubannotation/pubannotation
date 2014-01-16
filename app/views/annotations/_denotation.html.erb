@@ -1,0 +1,32 @@
+<% if denotation_counter == 0 -%>
+  <h2><%= t('activerecord.models.denotation') %></h2>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Span (begin:end)</th>
+      <th>Predicate</th>
+      <th>Object</th>
+    </tr>
+<% end %>
+
+<tr>
+  <td><%= denotation[:id] %></td>
+  <td>
+    <% unless denotation[:span].respond_to?(:keys) %>
+      <% denotation[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
+    <% else %>
+        <%= spans_link_helper(denotation) -%>
+    <% end %>
+  </td>
+  <td>denote</td>
+  <td><%= denotation[:obj] %></td>
+  <% if @doc.present? -%>
+      <td class="spans_preview">
+  		<%= @doc.body[denotation[:span][:begin]...denotation[:span][:end]] -%>
+      </td>
+  <% end %> 
+</tr>
+
+<% if denotation_counter == @denotations.size - 1 -%>
+  </table>
+<% end -%>
