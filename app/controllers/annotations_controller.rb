@@ -105,7 +105,9 @@ class AnnotationsController < ApplicationController
             annotations = get_annotations(project, doc, :encoding => params[:encoding])
 
             # options = [:db_name => params[:dictionary], :tax_ids => params[:tax_ids].split(/\s+/)]
-            options = {:tax_ids => params[:tax_ids].split(/\s+/).collect {|id| id.to_i}}
+            # options = {:tax_ids => params[:tax_ids].split(/\s+/).collect {|id| id.to_i}}
+            # options = {:dics => params[:dics].split(/\s*,\s*/)}
+            options = nil
             annotations = gen_annotations(annotations, params[:annotation_server], options)
           else
             annotations = JSON.parse params[:annotations], :symbolize_names => true

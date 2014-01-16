@@ -367,7 +367,7 @@ ja:
       annotation_within_spans: "<span class='meta'><span class='pname'>SPAN %{spans}</span>に付けられた</span>アノテーション"
       document_content: ドキュメントのコンテンツ
       projects_made_to_document: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
-      get_annotations: 自動アノテーションの取得
+      automatic_annotation: 自動アノテーションの取得
     documentations:
       Overview: 概要
       Features: 特徴

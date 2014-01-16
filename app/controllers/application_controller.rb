@@ -86,16 +86,16 @@ class ApplicationController < ActionController::Base
 
 
   def get_doc (sourcedb, sourceid, serial = 0, project = nil)
-    if project.present?
-      doc = Doc.joins(:projects).where('sourcedb = ? AND sourceid = ? AND serial = ? AND projects.id =?', sourcedb, sourceid, serial, project.id).first
-      if doc.blank?
-        notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
+    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
+    if doc
+      if project
+        if !doc.projects.include?(project)
+          doc = nil
+          notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
+        end
       end
     else
-      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if doc.blank?
-        notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
-      end
+      notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
     end
 
     return doc, notice
@@ -103,16 +103,15 @@ class ApplicationController < ActionController::Base
 
 
   def get_divs (sourceid, project = nil)
-    if project.present?
-      divs = Doc.joins(:projects).where("sourcedb = 'PMC' AND sourceid = ? AND projects.id =?", sourceid, project.id)
-      if divs.blank?
+    divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
+    if divs and !divs.empty?
+      if project and !divs.first.projects.include?(project)
+        divs = nil
         notice = I18n.t('controllers.application.get_divs.not_belong_to', :sourceid => sourceid, :project_name => project.name)
       end
     else
-      divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
-      if divs.blank?
-        notice = I18n.t('controllers.application.get_divs.no_annotation', :sourceid => sourceid) 
-      end
+      divs = nil
+      notice = I18n.t('controllers.application.get_divs.no_annotation', :sourceid => sourceid) 
     end
 
     return [divs, notice]
@@ -228,7 +227,7 @@ class ApplicationController < ActionController::Base
 
 
   def gen_annotations (annotation, annserver, options = nil)
-    RestClient.post annserver, {:annotation => annotation.to_json, :options => options.to_json}, :content_type => :json, :accept => :json do |response, request, result|
+    RestClient.post annserver, {:annotation => annotation.to_json, :options => {}.to_json}, :content_type => :json, :accept => :json do |response, request, result|
       case response.code
       when 200
         annotations = JSON.parse response, :symbolize_names => true
