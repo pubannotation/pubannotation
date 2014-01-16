@@ -2,6 +2,9 @@
   <h2><%= t('activerecord.models.denotation') %></h2>
   <table class="ann">
     <tr>
+      <% if local_assigns[:project].present? -%>
+      	<th>Project</th>
+      <% end -%>
       <th>Id</th>
       <th>Span (begin:end)</th>
       <th>Predicate</th>
@@ -10,6 +13,9 @@
 <% end %>
 
 <tr>
+  <% if local_assigns[:project].present? && denotation_counter == 0 -%>
+  	<td rowspan="<%= @denotations.size -%>" style="vertical-align: top"><%= project.name -%></td>
+  <% end -%>
   <td><%= denotation[:id] %></td>
   <td>
     <% unless denotation[:span].respond_to?(:keys) %>

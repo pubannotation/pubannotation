@@ -113,6 +113,12 @@ class PmdocsController < ApplicationController
     else
       @doc, flash[:notice] = get_doc('PubMed', params[:id])
       @projects = @doc.spans_projects(params)
+      if @doc.present?  && @projects.present?
+        @project_denotations = Array.new
+        @projects.each do |project|
+          @project_denotations << {:project => project, :denotations => get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})[:denotations]}
+        end
+      end
     end
     @spans, @prev_text, @next_text = @doc.spans(params)
     @highlight_text = @doc.spans_highlight(params)

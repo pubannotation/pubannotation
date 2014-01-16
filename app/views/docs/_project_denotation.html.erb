@@ -1,0 +1,2 @@
+<% @denotations =  project_denotation[:denotations] -%>
+<%= render :partial => 'denotations/denotation', :collection => @denotations, :locals => {:project => project_denotation[:project]} -%>

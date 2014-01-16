@@ -222,7 +222,8 @@ describe PmdocsController do
       @body = 'doc body'
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
       @project = 'project'
-      @projects = 'projects'
+      @project_1 = FactoryGirl.create(:project)
+      @projects = [@project_1]
       controller.stub(:get_project).and_return([@project, nil])
       @doc.stub(:spans_projects).and_return(@projects)
       controller.stub(:get_doc).and_return([@doc, nil])
@@ -276,6 +277,9 @@ describe PmdocsController do
     
     context 'when params[:project_id] blank' do
       before do
+        @project_denotation = 'project denotations'
+        @project_denotations = {:denotations => @project_denotation}
+        controller.stub(:get_annotations).and_return(@project_denotations)
         get :spans, :id => @doc.sourceid, :begin => 1, :end => 5
       end
       
@@ -285,6 +289,10 @@ describe PmdocsController do
       
       it 'should assign @projects' do
         assigns[:projects].should eql(@projects)
+      end
+      
+      it 'should assign @project_denotations' do
+        assigns[:project_denotations].should eql([{'project' => @project_1, 'denotations' => @project_denotation}])
       end
     end
   end
