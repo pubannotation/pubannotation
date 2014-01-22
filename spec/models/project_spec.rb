@@ -1614,4 +1614,66 @@ describe Project do
       end
     end
   end
+  
+  describe 'anncollection' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @get_annotations = 'get annotations'
+      @project.stub(:get_annotations).and_return(@get_annotations)
+    end
+    
+    context 'when project.docs present' do
+      before do
+        @project.docs << FactoryGirl.create(:doc)
+      end
+      
+      it 'should return anncollection' do
+        @project.anncollection(nil).should eql([@get_annotations])
+      end
+    end
+    
+    context 'when project.docs blank' do
+      it 'should return anncollection' do
+        @project.anncollection(nil).should be_blank
+      end
+    end
+  end
+  
+  describe 'save_annotation_zip' do
+    before do
+      @name = 'rspec'
+      @project = FactoryGirl.create(:project, :name => @name)
+    end
+    
+    context 'when project.anncollection blank' do
+      before do
+         @result = @project.save_annotation_zip
+      end
+          
+      it 'should not create ZIP file' do
+        File.exist?("#{Denotation::ZIP_FILE_PATH}#{@name}.zip").should be_false
+      end
+    end
+    
+    context 'when project.anncollection present' do
+      before do
+        Project.any_instance.stub(:anncollection).and_return(
+          [{
+            :source_db => 'source_db',
+            :source_id => 'source_id',
+            :division_id => 1,
+            :section => 'section',
+         }])
+         @result = @project.save_annotation_zip
+      end
+          
+      it 'should create ZIP file' do
+        File.exist?("#{Denotation::ZIP_FILE_PATH}#{@name}.zip").should be_true
+      end
+      
+      after do
+        File.unlink("#{Denotation::ZIP_FILE_PATH}#{@name}.zip")
+      end
+    end
+  end
 end

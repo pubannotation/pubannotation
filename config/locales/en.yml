@@ -431,3 +431,5 @@ en:
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
       made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"
+      zip:
+        delayed_job_present: ZIP file will be created in a few minutes.      

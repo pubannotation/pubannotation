@@ -95,19 +95,4 @@ class Denotation < ActiveRecord::Base
       end       
     end
   end
-  
-  def self.save_to_zip(file_path)
-    # File name for save on server
-    file = File.new(file_path, 'w')
-    
-    Zip::ZipOutputStream.open(file.path) do |z|
-      title = "json_file_name"
-      title.sub!(/\.$/, '')
-      title.gsub!(' ', '_')
-      title += ".json" unless title.end_with?(".json")
-      z.put_next_entry(title)
-      z.print 'This is json content.'
-    end
-    file.close 
-  end
 end

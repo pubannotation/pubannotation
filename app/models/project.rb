@@ -319,7 +319,7 @@ class Project < ActiveRecord::Base
     return anncollection
   end
   
-  def save_annotation_zip(options = {})#(file_path)
+  def save_annotation_zip(options = {})
     # File name for save on server
     anncollection = self.anncollection(options[:encoding])
     if anncollection.present?
