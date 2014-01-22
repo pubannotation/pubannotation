@@ -77,4 +77,24 @@ module AnnotationsHelper
 
     return denotations, new_relations
   end
+  
+  def project_annotations_zip_link_helper(project_name, options = {})
+    file_path = "#{Denotation::ZIP_FILE_PATH}#{project_name}.zip"
+    
+    if File.exist?(file_path) == true
+      # when ZIP file exists 
+      html = link_to "annotation.zip", "/annotations/#{project_name}.zip", :class => 'button'
+      html += content_tag :span, "#{File.ctime(file_path).strftime("#{t('controllers.shared.last_modified_at')}:%Y-%m-%d %T")}", :class => 'zip_time_stamp'
+    else
+      # when ZIP file deos not exists 
+      delayed_job_tasks = ActiveRecord::Base.connection.execute('SELECT * FROM delayed_jobs').select{|delayed_job| delayed_job['handler'] =~ /#{project_name}/ }
+      if delayed_job_tasks.blank?
+        # when delayed_job exists
+        link_to t('controllers.annotations.create_zip'), project_annotations_path(project_name, :delay => true), :class => 'button', :confirm => t('controllers.annotations.confirm_create_zip')
+      else
+        # delayed_job does not exists
+        t('views.shared.zip.delayed_job_present')
+      end
+    end    
+  end  
 end

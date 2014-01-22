@@ -202,4 +202,43 @@ describe AnnotationsHelper do
       end
     end
   end
+  
+  describe 'project_annotations_zip_link_helper' do
+    before do
+      @project_name = 'project_name'
+    end
+    
+    context 'when ZIP file exists' do
+      before do
+        File.stub(:exist?).and_return(true)
+        File.stub(:ctime).and_return(DateTime.now)
+        @result = helper.project_annotations_zip_link_helper(@project_name)
+      end
+      
+      it 'should return ZIP file' do
+        @result.should have_selector :a, :href => "/annotations/#{@project_name}.zip"
+      end
+    end
+    
+    context 'when delayed_job not exists' do
+      before do
+        @result = helper.project_annotations_zip_link_helper(@project_name)
+      end
+      
+      it 'should return create ZIP link tag' do
+        @result.should have_selector :a, :href => project_annotations_path(@project_name, :delay => true)
+      end
+    end
+    
+    context 'when delayed_job exists' do
+      before do
+        ActiveRecord::Base.connection.execute("INSERT INTO delayed_jobs ('attempts', 'created_at', 'failed_at', 'handler', 'last_error', 'locked_at', 'locked_by', 'priority', 'queue', 'run_at', 'updated_at') VALUES(1, 1, 0, '#{@project_name}', '', '', '', '', '', '', '') ")
+        @result = helper.project_annotations_zip_link_helper(@project_name)
+      end
+      
+      it 'should return message tells delayed job present' do
+        @result.should eql(t('views.shared.zip.delayed_job_present'))
+      end
+    end
+  end
 end
