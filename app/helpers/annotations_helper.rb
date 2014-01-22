@@ -44,7 +44,7 @@ module AnnotationsHelper
       annotations[:instances] = hinstances if hinstances
       annotations[:relations] = hrelations if hrelations
       annotations[:modifications] = hmodifications if hmodifications
-      p annotations
+      annotations
     else
       nil
     end
