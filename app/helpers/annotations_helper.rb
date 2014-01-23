@@ -87,7 +87,7 @@ module AnnotationsHelper
       html += content_tag :span, "#{File.ctime(file_path).strftime("#{t('controllers.shared.last_modified_at')}:%Y-%m-%d %T")}", :class => 'zip_time_stamp'
     else
       # when ZIP file deos not exists 
-      delayed_job_tasks = ActiveRecord::Base.connection.execute('SELECT * FROM delayed_jobs').select{|delayed_job| delayed_job['handler'] =~ /#{project_name}/ }
+      delayed_job_tasks = ActiveRecord::Base.connection.execute('SELECT * FROM delayed_jobs').select{|delayed_job| delayed_job['handler'].include?(project_name) && delayed_job['handler'].include?('save_annotation_zip')}
       if delayed_job_tasks.blank?
         # when delayed_job exists
         link_to t('controllers.annotations.create_zip'), project_annotations_path(project_name, :delay => true), :class => 'button', :confirm => t('controllers.annotations.confirm_create_zip')

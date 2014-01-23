@@ -232,7 +232,7 @@ describe AnnotationsHelper do
     
     context 'when delayed_job exists' do
       before do
-        ActiveRecord::Base.connection.execute("INSERT INTO delayed_jobs ('attempts', 'created_at', 'failed_at', 'handler', 'last_error', 'locked_at', 'locked_by', 'priority', 'queue', 'run_at', 'updated_at') VALUES(1, 1, 0, '#{@project_name}', '', '', '', '', '', '', '') ")
+        ActiveRecord::Base.connection.execute("INSERT INTO delayed_jobs ('attempts', 'created_at', 'failed_at', 'handler', 'last_error', 'locked_at', 'locked_by', 'priority', 'queue', 'run_at', 'updated_at') VALUES(1, 1, 0, '#{@project_name} save_annotation_zip', '', '', '', '', '', '', '') ")
         @result = helper.project_annotations_zip_link_helper(@project_name)
       end
       
