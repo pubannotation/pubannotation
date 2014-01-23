@@ -22,11 +22,12 @@ class AnnotationsController < ApplicationController
         end
 
       else
-        # retrieve annotatons to all the documents
         if params[:delay].present?
+          # Creaet ZIP file by delayed_job
           @project.delay.save_annotation_zip(:encoding => params[:encoding])
           redirect_to :back
         else
+          # retrieve annotatons to all the documents
           anncollection = @project.anncollection(params[:encoding])
         end
       end
