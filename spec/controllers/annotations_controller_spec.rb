@@ -131,7 +131,7 @@ describe AnnotationsController do
             
             after do
               # delete ZIP file
-              File.unlink("#{Denotation::ZIP_FILE_PATH}#{@project.name}.zip")
+              File.unlink(@project.annotations_zip_path)
             end  
           end
           

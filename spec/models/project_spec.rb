@@ -1639,6 +1639,17 @@ describe Project do
     end
   end
   
+  describe 'annotations_zip_path' do
+    before do
+      @project_name = 'project name'
+      @project = FactoryGirl.create(:project, :name => @project_name)
+    end
+    
+    it 'should return project annotations zip path' do
+      @project.annotations_zip_path.should eql("#{Denotation::ZIP_FILE_PATH}#{@project_name}.zip")
+    end
+  end
+  
   describe 'save_annotation_zip' do
     before do
       @name = 'rspec'

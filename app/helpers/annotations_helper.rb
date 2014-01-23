@@ -80,7 +80,7 @@ module AnnotationsHelper
   
   def project_annotations_zip_link_helper(project)
     if project.annotations_zip_downloadable == true
-      file_path = "#{Denotation::ZIP_FILE_PATH}#{project.name}.zip"
+      file_path = project.annotations_zip_path
       
       if File.exist?(file_path) == true
         zip_created_at = File.ctime(file_path)
