@@ -21,3 +21,6 @@
 
 # Ignore asset pipline files
 /public/assets/*
+
+# Ignore generated annotations ZIP files
+/public/annotations/*.zip
