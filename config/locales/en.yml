@@ -229,6 +229,7 @@ en:
         rdfwriter: RDF writer
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
+        annotations_zip_downloadable: Annotation downloadable
       sproject:
         rdfwriter: RDF writer
         xmlwriter: XML writer
@@ -411,6 +412,7 @@ en:
       edit_model: Editing %{model}
       add_model: Add %{model}
       delete_model: Delete %{model}
+      permit: permit
       show: show
       remove: remove
       show_divisions: Show divisions

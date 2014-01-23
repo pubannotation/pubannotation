@@ -101,7 +101,7 @@
 			<% end %>
 		<% end %>
 		
-		<%= project_annotations_zip_link_helper(model.name) -%>
+		<%= project_annotations_zip_link_helper(model.name, {:downloadable => model.annotations_zip_downloadable}) -%>
 		
 		<% if model.associate_projects.present? -%>
 			<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => model.associate_projects, :scope => 'associate_project' } %>

@@ -22,7 +22,7 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'project_id',
     :join_table => 'associate_projects_projects'
 
-  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter
+  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable
   has_many :denotations, :dependent => :destroy
   has_many :relations, :dependent => :destroy
   has_many :instances, :dependent => :destroy

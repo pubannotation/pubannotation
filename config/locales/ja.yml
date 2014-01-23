@@ -235,6 +235,7 @@ ja:
         xmlwriter: XMLライター
         bionlpwriter: BioNLP-STライター
         viewer: ビューア
+        annotations_zip_downloadable: アノテーションのダウンロード
       sproject:
         name: 名前
         description: 説明
@@ -434,6 +435,7 @@ ja:
       edit_model: '%{model}の編集'
       add_model: '%{model}の追加'
       delete_model: '%{model}の削除'
+      permit: 許可する
       section: セクション
       size: サイズ
       show: 表示
