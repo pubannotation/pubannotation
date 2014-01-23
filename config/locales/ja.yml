@@ -292,6 +292,7 @@ ja:
       successfully_updated: '%{model}を更新しました'
       successfully_destroyed: '%{model}を削除しました'
       confirm_delete: 削除してよろしいですか？
+      last_modified_at: 最終更新日時
       sql:
         invalid: 無効なSQL文が入力されました
     application:
@@ -312,6 +313,9 @@ ja:
       create:
         does_not_include: アノテーションセット%{project_id}は、ドキュメントPubMed:%{sourceid}を含んでいません
         no_annotation: アノテーションが含まれていません
+      confirm_create_zip: ZIPファイル作成をしてますか？※作成は遅延処理で実行されます。
+      create_zip: アノテーションZIPファイルの作成
+      create_zip_delay: アノテーションZIPファイルの作成を受け付けました。数分後に再度このページにアクセスして下さい。
     pmcdocs:
       create:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
@@ -453,4 +457,6 @@ ja:
       annotation_sets: アノテーションセット
       stored_in: "<span class='meta'><span>%{pname}</span>内の</span>%{content}"   
       made_to: "<span class='meta'><span class='pname'>%{pname}</span>用の</span>%{content}"
-      made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"      
+      made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"
+      zip:
+        delayed_job_present: ZIPファイルは数分程度で作成されます。      

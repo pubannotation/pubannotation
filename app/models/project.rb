@@ -1,4 +1,5 @@
 class Project < ActiveRecord::Base
+  include AnnotationsHelper
   belongs_to :user
   has_and_belongs_to_many :docs, :after_add => :increment_docs_counter, :after_remove => :decrement_docs_counter 
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
@@ -305,5 +306,36 @@ class Project < ActiveRecord::Base
       :pmcdocs_count => - associate_project.pmcdocs.count,
       :denotations_count => - associate_project.denotations.count,
       :relations_count => - associate_project.relations.count
-  end  
+  end
+  
+  def anncollection(encoding)
+    anncollection = Array.new
+    if self.docs.present?
+      docs.each do |doc|
+        # puts "#{doc.sourceid}:#{doc.serial} <======="
+        anncollection.push (get_annotations(self, doc, :encoding => encoding))
+      end
+    end
+    return anncollection
+  end
+  
+  def save_annotation_zip(options = {})
+    # File name for save on server
+    anncollection = self.anncollection(options[:encoding])
+    if anncollection.present?
+      file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
+      file = File.new(file_path, 'w')
+      Zip::ZipOutputStream.open(file.path) do |z|
+        anncollection.each do |ann|
+          title = "%s-%s-%02d-%s" % [ann[:source_db], ann[:source_id], ann[:division_id], ann[:section]]
+          title.sub!(/\.$/, '')
+          title.gsub!(' ', '_')
+          title += ".json" unless title.end_with?(".json")
+          z.put_next_entry(title)
+          z.print ann.to_json
+        end
+      end
+      file.close   
+    end  
+  end 
 end

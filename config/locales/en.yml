@@ -271,6 +271,7 @@ en:
       successfully_updated: '%{model} was successfully updated.'
       successfully_destroyed: '%{model} was successfully deleted.'
       confirm_delete: Are you sure to delete?
+      last_modified_at: Modified at
       sql:
         invalid: Invalid SQL
     application:
@@ -291,6 +292,9 @@ en:
       create:
         does_not_include: The annotation set, %{project_id}, does not include the document, PubMed:%{sourceid}.
         no_annotation: No annotation found in the submission.
+      confirm_create_zip: Are you sure to create zip? It will take a few minutes.
+      create_zip: Create annotations ZIP file.
+      create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
     pmcdocs:
       create:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
@@ -427,3 +431,5 @@ en:
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
       made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"
+      zip:
+        delayed_job_present: ZIP file will be created in a few minutes.      

@@ -1,5 +1,6 @@
 class DivsController < ApplicationController
   include ApplicationHelper
+  include AnnotationsHelper
   
   # GET /pmcdocs/:pmcid/divs
   # GET /pmcdocs/:pmcid/divs.json

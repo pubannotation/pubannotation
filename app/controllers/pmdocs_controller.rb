@@ -1,6 +1,7 @@
 class PmdocsController < ApplicationController
   autocomplete :doc, :sourceid, :scopes => [:pmdocs]
   include ApplicationHelper
+  include AnnotationsHelper
   
   # GET /pmdocs
   # GET /pmdocs.json

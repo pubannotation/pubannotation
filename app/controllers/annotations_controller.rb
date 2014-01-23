@@ -23,11 +23,11 @@ class AnnotationsController < ApplicationController
 
       else
         # retrieve annotatons to all the documents
-        docs = @project.docs
-        anncollection = Array.new
-        docs.each do |doc|
-          # puts "#{doc.sourceid}:#{doc.serial} <======="
-          anncollection.push (get_annotations(@project, doc, :encoding => params[:encoding]))
+        if params[:delay].present?
+          @project.delay.save_annotation_zip(:encoding => params[:encoding])
+          redirect_to :back
+        else
+          anncollection = @project.anncollection(params[:encoding])
         end
       end
     end

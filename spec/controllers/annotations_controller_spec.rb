@@ -111,15 +111,39 @@ describe AnnotationsController do
 
       context 'and when params pmdoc_id nor pmc_doc_id does not exists' do
         context 'and when anncollection exists' do
+          context 'when params[:delay] present' do
+            before do
+               Project.any_instance.stub(:anncollection).and_return(
+                [{
+                  :source_db => 'source_db',
+                  :source_id => 'source_id',
+                  :division_id => 1,
+                  :section => 'section',
+               }])
+               @refrerer = root_path
+              request.env["HTTP_REFERER"] = @refrerer
+              get :index, :delay => true, :project_id => @project.name
+            end
+            
+            it 'should redirect to back' do
+              response.should redirect_to(@refrerer)
+            end
+            
+            after do
+              # delete ZIP file
+              File.unlink("#{Denotation::ZIP_FILE_PATH}#{@project.name}.zip")
+            end  
+          end
+          
           context 'when format is json' do
             before do
-              controller.stub(:get_annotations).and_return(
-              {
-                :source_db => 'source_db',
-                :source_id => 'source_id',
-                :division_id => 1,
-                :section => 'section',
-               })
+               Project.any_instance.stub(:anncollection).and_return(
+                [{
+                  :source_db => 'source_db',
+                  :source_id => 'source_id',
+                  :division_id => 1,
+                  :section => 'section',
+               }])
               get :index, :format => 'json', :project_id => @project.name
             end
             
@@ -152,7 +176,7 @@ describe AnnotationsController do
 
         context 'and when anncollection does not exists' do
           before do
-            controller.stub(:get_annotations).and_return('')
+            Project.any_instance.stub(:anncollection).and_return([])            
           end
           
           context 'and whern format html' do
