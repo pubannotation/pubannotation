@@ -45,8 +45,8 @@ class Denotation < ActiveRecord::Base
       order('denotations.id ASC') 
   }
   
-  after_save :increment_projects_denotations_count
-  before_destroy :decrement_projects_denotations_count
+  after_save :update_projects_after_save
+  before_destroy :update_projects_before_destroy
   
   def get_hash
     hdenotation = Hash.new
@@ -62,20 +62,36 @@ class Denotation < ActiveRecord::Base
   end  
   
   # after save
-  def increment_projects_denotations_count
-    if self.project.present? && self.project.projects.present?
-      project.projects.each do |project|
-        Project.increment_counter(:denotations_count, project.id)
+  def update_projects_after_save
+    project_ids = Array.new
+    if self.project.present? 
+      project_ids << self.project.id
+      if self.project.projects.present?
+        # increment projects.denotations_count
+        project.projects.each do |project|
+          Project.increment_counter(:denotations_count, project.id)
+          project_ids << project.id
+        end
       end
+      # update project annotations_updated_at
+      Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
     end
   end
   
   # before destroy
-  def decrement_projects_denotations_count
-    if self.project.present? && self.project.projects.present?
-      project.projects.each do |project|
-        Project.decrement_counter(:denotations_count, project.id)
+  def update_projects_before_destroy
+    project_ids = Array.new
+    if self.project.present? 
+      project_ids << self.project.id
+      if self.project.projects.present?
+        project.projects.each do |project|
+          # decrement projects_denotations_count
+          Project.decrement_counter(:denotations_count, project.id)
+          project_ids << project.id
+        end
       end
+      # update project annotations_updated_at
+      Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
     end
   end
   

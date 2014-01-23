@@ -323,9 +323,9 @@ describe Denotation do
     end
   end
   
-  describe 'increment_projects_denotations_count' do
+  describe 'update_projects_after_save' do
     before do
-      @project = FactoryGirl.create(:project, :denotations_count => 0)
+      @project = FactoryGirl.create(:project, :denotations_count => 0, :annotations_updated_at => 10.days.ago)
       @associate_project_1 = FactoryGirl.create(:project, :denotations_count => 0)
       @associate_project_2 = FactoryGirl.create(:project, :denotations_count => 0)
       @associate_project_2_denotations_count = 1
@@ -374,11 +374,15 @@ describe Denotation do
       
       it 'should increment associate_project.denotations_count' do
         @associate_project_2.denotations_count.should eql(2)
-      end      
+      end 
+      
+      it '' do
+        p Date @project.annotations_updated_at
+      end     
     end      
   end
   
-  describe 'decrement_projects_denotations_count' do
+  describe 'update_projects_before_destroy' do
     before do
       @project = FactoryGirl.create(:project, :denotations_count => 0)
       @associate_project_1 = FactoryGirl.create(:project, :denotations_count => 0)

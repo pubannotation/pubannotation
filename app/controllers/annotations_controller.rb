@@ -23,6 +23,8 @@ class AnnotationsController < ApplicationController
 
       else
         if params[:delay].present?
+          # delete ZIP file if params[:update]
+          File.unlink(@project.annotations_zip_path) if params[:update].present?
           # Creaet ZIP file by delayed_job
           @project.delay.save_annotation_zip(:encoding => params[:encoding])
           redirect_to :back

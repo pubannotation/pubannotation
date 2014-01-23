@@ -316,6 +316,7 @@ ja:
         no_annotation: アノテーションが含まれていません
       confirm_create_zip: ZIPファイル作成をしますか？※作成は遅延処理で実行されます。
       create_zip: アノテーションZIPファイルの作成
+      update_zip: アノテーションZIPファイルの更新
       create_zip_delay: アノテーションZIPファイルの作成を受け付けました。数分後に再度このページにアクセスして下さい。
     pmcdocs:
       create:

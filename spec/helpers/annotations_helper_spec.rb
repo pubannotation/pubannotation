@@ -205,7 +205,7 @@ describe AnnotationsHelper do
   
   describe 'project_annotations_zip_link_helper' do
     before do
-      @project = FactoryGirl.create(:project, :name => 'project_name')
+      @project = FactoryGirl.create(:project, :name => 'project_name', :annotations_updated_at => 1.day.ago)
     end
     
     context 'when downloadable = false' do
@@ -223,12 +223,36 @@ describe AnnotationsHelper do
       context 'when ZIP file exists' do
         before do
           File.stub(:exist?).and_return(true)
-          File.stub(:ctime).and_return(DateTime.now)
-          @result = helper.project_annotations_zip_link_helper(@project)
         end
         
-        it 'should return ZIP file' do
-          @result.should have_selector :a, :href => "/annotations/#{@project.name}.zip"
+        context 'when ZIP file is up-to-date' do
+          before do
+            File.stub(:ctime).and_return(DateTime.now)
+            @result = helper.project_annotations_zip_link_helper(@project)
+          end
+          
+          it 'should return ZIP file' do
+            @result.should have_selector :a, :href => "/annotations/#{@project.name}.zip"
+          end
+          
+          it 'should not return update ZIP file link' do
+            @result.should_not have_selector :a, :href => project_annotations_path(@project.name, :delay => true, :update => true)
+          end
+        end
+        
+        context 'when ZIP file is not up-to-date' do
+          before do
+            File.stub(:ctime).and_return(2.days.ago)
+            @result = helper.project_annotations_zip_link_helper(@project)
+          end
+          
+          it 'should return ZIP file' do
+            @result.should have_selector :a, :href => "/annotations/#{@project.name}.zip"
+          end
+          
+          it 'should return update ZIP file link' do
+            @result.should have_selector :a, :href => project_annotations_path(@project.name, :delay => true, :update => true)
+          end
         end
       end
       
