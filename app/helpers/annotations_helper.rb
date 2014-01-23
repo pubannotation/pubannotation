@@ -83,7 +83,7 @@ module AnnotationsHelper
     
     if File.exist?(file_path) == true
       # when ZIP file exists 
-      html = link_to "annotation.zip", "/annotations/#{project_name}.zip", :class => 'button'
+      html = link_to "#{project_name}.zip", "/annotations/#{project_name}.zip", :class => 'button'
       html += content_tag :span, "#{File.ctime(file_path).strftime("#{t('controllers.shared.last_modified_at')}:%Y-%m-%d %T")}", :class => 'zip_time_stamp'
     else
       # when ZIP file deos not exists 
