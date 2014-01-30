@@ -89,6 +89,13 @@ Pubann::Application.routes.draw do
   end
 
   resources :projects do
+    resources :docs do
+      resources :annotations do
+      end
+    end
+  end
+  
+  resources :projects do
     resources :pmdocs do
       member do
         # spans
