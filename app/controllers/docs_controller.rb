@@ -59,7 +59,8 @@ class DocsController < ApplicationController
   # GET /docs/1.json
   def show
     @doc = Doc.find(params[:id])
-
+    @text = @doc.body
+    @project, notice = get_project(params[:project_id])
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @doc }

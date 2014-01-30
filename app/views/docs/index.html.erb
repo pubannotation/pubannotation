@@ -22,9 +22,10 @@
       <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
     <% if doc.sourcedb == 'PubMed' %>
       <td><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) %></td>
-    <% end %>
-    <% if doc.sourcedb == 'PMC' %>
+    <% elsif doc.sourcedb == 'PMC' %>
       <td><%= link_to t('views.shared.show'), pmcdoc_path(doc.sourceid) %></td>
+    <% else  %>
+      <td><%= link_to t('views.shared.show'), doc_path(doc.id) %></td>
     <% end %>
     </tr>
   <% end %>
