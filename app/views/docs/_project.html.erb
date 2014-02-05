@@ -12,7 +12,7 @@
 			<% annotation_url = project_pmcdoc_div_annotations_url(@project.name, @doc.sourceid, @doc.serial) %>
 		<% end -%>
 	<% else -%>
-		<% annotation_url = project_doc_annotations_url(@project.name, @doc.sourceid) -%>
+		<% annotation_url = project_doc_annotations_url(@project.name, @doc.id) -%>
 	<% end %>
 
 	<h2>

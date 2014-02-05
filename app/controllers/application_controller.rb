@@ -58,9 +58,10 @@ class ApplicationController < ActionController::Base
       sourcedb = nil
       sourceid = nil
       serial   = nil
+      id = params[:doc_id] if params[:doc_id]
     end
 
-    return sourcedb, sourceid, serial
+    return sourcedb, sourceid, serial, id
   end
 
 
@@ -86,8 +87,13 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def get_doc (sourcedb, sourceid, serial = 0, project = nil)
-    doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
+  def get_doc (sourcedb, sourceid, serial = 0, project = nil, id = nil)
+    if id
+      doc = Doc.find(id)
+    else
+      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
+    end
+
     if doc
       if project
         if !doc.projects.include?(project)
@@ -247,7 +253,7 @@ class ApplicationController < ActionController::Base
       if denotations
         denotations_old = doc.denotations.where("project_id = ?", project.id)
         denotations_old.destroy_all
-      
+
         save_hdenotations(denotations, project, doc)
 
         if annotations[:instances] and !annotations[:instances].empty?
