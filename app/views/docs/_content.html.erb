@@ -2,10 +2,14 @@
 
 <table>
 <tr><th style="text-align:left">
-	<%= @doc.sourcedb %>:<a href="<%= @doc.source %>"><%= @doc.sourceid %></a>
+	<% if @doc.sourcedb.present? -%>
+		<%= @doc.sourcedb %>:<a href="<%= @doc.source %>"><%= @doc.sourceid %></a>
+	<% else -%>
+		<%= "Doc :#{@doc.id}" -%>
+	<% end -%>
 	<% if @doc.sourcedb == 'PMC' %>
 	(<%= @doc.serial %> - <%= @doc.section %>)
 	<% end %>
 </th></tr>
-<tr><td class="text"><%= raw @text.gsub(/\n/, "<br>") %></td><tr>
+<tr><td class="text"><%= raw @text.gsub(/\n/, "<br>") if @text.present? %></td><tr>
 </table>

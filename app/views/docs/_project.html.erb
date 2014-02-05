@@ -5,12 +5,14 @@
 		<% else -%>
 			<% annotation_url = project_pmdoc_annotations_url(@project.name, @doc.sourceid) %>
 		<% end -%>
-	<% else %>
+	<% elsif @doc.sourcedb == 'PMC' %>
 		<% if params[:action] == 'spans' -%>
 			<% annotation_url = spans_annotation_project_pmcdoc_div_url(@project.name, @doc.sourceid, @doc.serial, params[:begin], params[:end]) %>
 		<% else -%>
 			<% annotation_url = project_pmcdoc_div_annotations_url(@project.name, @doc.sourceid, @doc.serial) %>
 		<% end -%>
+	<% else -%>
+		<% annotation_url = project_doc_annotations_url(@project.name, @doc.sourceid) -%>
 	<% end %>
 
 	<h2>
@@ -35,7 +37,7 @@
 	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 
 	<!-- automatic annotation -->
-	<% if @project and user_signed_in? and current_user == @project.user %>
+	<% if @project.present? && user_signed_in? and current_user == @project.user %>
 	<h2><%= t('views.docs.automatic_annotation') %></h2>
 
 	 	<%= form_tag annotation_url, :method => "post" do %>

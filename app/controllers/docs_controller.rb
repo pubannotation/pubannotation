@@ -59,7 +59,8 @@ class DocsController < ApplicationController
   # GET /docs/1.json
   def show
     @doc = Doc.find(params[:id])
-
+    @text = @doc.body
+    @project, notice = get_project(params[:project_id])
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @doc }
@@ -70,7 +71,7 @@ class DocsController < ApplicationController
   # GET /docs/new.json
   def new
     @doc = Doc.new
-
+    @project, notice = get_project(params[:project_id])
     respond_to do |format|
       format.html # new.html.erb
       format.json { render json: @doc }
@@ -86,10 +87,18 @@ class DocsController < ApplicationController
   # POST /docs.json
   def create
     @doc = Doc.new(params[:doc])
-
     respond_to do |format|
       if @doc.save
-        format.html { redirect_to @doc, notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc')) }
+        @project, notice = get_project(params[:project_id])
+        @project.docs << @doc if @project.present?
+        get_project(params[:project_id])
+        format.html { 
+          if @project.present?
+            redirect_to project_doc_path(@project.name, @doc), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
+          else
+            redirect_to @doc, notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
+          end 
+        }
         format.json { render json: @doc, status: :created, location: @doc }
       else
         format.html { render action: "new" }
