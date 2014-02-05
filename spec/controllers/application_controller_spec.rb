@@ -211,7 +211,8 @@ describe ApplicationController do
       end
       
       it 'should return values which includes params[:pmdoc_id]' do
-        @result.should eql(['PubMed', @params[:pmdoc_id], 0])
+        @result.should eql(['PubMed', @params[:pmdoc_id], 0, nil
+        ])
       end
     end
 
@@ -222,18 +223,32 @@ describe ApplicationController do
       end
       
       it 'should return values which includes params[:pmcdoc_id] and params[:div_id]' do
-        @result.should eql(['PMC', @params[:pmcdoc_id], @params[:div_id]])
+        @result.should eql(['PMC', @params[:pmcdoc_id], @params[:div_id], nil])
       end
     end
 
     context 'others' do
-      before do
-        @params = {}
-        @result = controller.get_docspec(@params)
+      context 'when params[:doc_id] blank' do
+        before do
+          @params = {}
+          @result = controller.get_docspec(@params)
+        end
+        
+        it 'should return nil array' do
+          @result.should eql([nil, nil, nil, nil])
+        end
       end
       
-      it 'should return nil array' do
-        @result.should eql([nil, nil, nil])
+      context 'when params[:doc_id] present' do
+        before do
+          @doc_id = 5
+          @params = {:doc_id => @doc_id}
+          @result = controller.get_docspec(@params)
+        end
+        
+        it 'should return nil and params[:doc_id] array' do
+          @result.should eql([nil, nil, nil, @doc_id])
+        end
       end
     end
   end
