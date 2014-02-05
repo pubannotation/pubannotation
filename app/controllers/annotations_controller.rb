@@ -8,10 +8,10 @@ class AnnotationsController < ApplicationController
     @project, notice = get_project(params[:project_id])
     if @project
 
-      if (params[:pmdoc_id] || params[:pmcdoc_id])
+      if (params[:pmdoc_id] || params[:pmcdoc_id] || params[:doc_id])
+        sourcedb, sourceid, serial, id = get_docspec(params)
+        @doc, notice = get_doc(sourcedb, sourceid, serial, @project, id)
 
-        sourcedb, sourceid, serial = get_docspec(params)
-        @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
         if @doc
           annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
           @text = annotations[:text]
@@ -117,8 +117,8 @@ class AnnotationsController < ApplicationController
 
       project, notice = get_project(params[:project_id])
       if project
-        sourcedb, sourceid, serial = get_docspec(params)
-        doc, notice = get_doc(sourcedb, sourceid, serial, project)
+        sourcedb, sourceid, serial, id = get_docspec(params)
+        doc, notice = get_doc(sourcedb, sourceid, serial, project, id)
         if doc
           if params[:annotation_server]
             annotations = get_annotations(project, doc, :encoding => params[:encoding])
@@ -143,8 +143,13 @@ class AnnotationsController < ApplicationController
     respond_to do |format|
       format.html {
         if doc and project
-          redirect_to project_pmdoc_path(project.name, doc.sourceid), notice: notice if doc.sourcedb == 'PubMed'
-          redirect_to project_pmcdoc_div_path(project.name, doc.sourceid, doc.serial), notice: notice if doc.sourcedb == 'PMC'
+          if doc.sourcedb == 'PubMed'
+            redirect_to project_pmdoc_path(project.name, doc.sourceid), notice: notice
+          elsif doc.sourcedb == 'PMC'
+            redirect_to project_pmcdoc_div_path(project.name, doc.sourceid, doc.serial), notice: notice
+          else
+            redirect_to project_doc_path(project.name, doc.id), notice: notice
+          end
         elsif project
           redirect_to project_path(project.name), notice: notice
         else
