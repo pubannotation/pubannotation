@@ -66,6 +66,81 @@ class DocsController < ApplicationController
       format.json { render json: @doc }
     end
   end
+  
+  def annotations
+    if params[:project_id].present?
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @doc, flash[:notice] = get_doc(nil, nil, nil, @project, params[:id])
+      end
+      project = @project
+    else
+      @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
+    end
+    @spans, @prev_text, @next_text = @doc.spans(params)
+    annotations = get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
+    annotations[:text] = @spans
+    annotations[:spans] = {:begin => params[:begin], :end => params[:end]}
+    annotations[:spans][:prev_text] = @prev_text if @prev_text.present?
+    annotations[:spans][:next_text] = @next_text if @next_text.present?
+    @denotations = annotations[:denotations]
+    @instances = annotations[:instances]
+    @relations = annotations[:relations]
+    @modifications = annotations[:modifications]
+    respond_to do |format|
+      format.html { render 'annotations'}
+      format.json { render :json => annotations, :callback => params[:callback] }
+    end
+  end
+  
+  def spans
+    if params[:project_id].present?
+      @project, notice = get_project(params[:project_id])
+      if @project
+        @doc, flash[:notice] = get_doc(nil, nil, nil, @project, params[:id])
+      end
+    else
+      @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
+      @projects = @doc.spans_projects(params)
+      if @doc.present?  && @projects.present?
+        @project_denotations = Array.new
+        @projects.each do |project|
+          @project_denotations << {:project => project, :denotations => get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})[:denotations]}
+        end
+      end
+    end
+    @spans, @prev_text, @next_text = @doc.spans(params)
+    @highlight_text = @doc.spans_highlight(params)
+    respond_to do |format|
+      format.html { render 'docs/spans'}
+      format.txt { render 'docs/spans'}
+      format.json { render 'docs/spans'}
+    end
+  end
+  
+  def spans_index
+    if params[:project_id].present?
+      @project, notice = get_project(params[:project_id])
+      sourcedb, sourceid, serial = get_docspec(params)
+      @doc, flash[:notice] = get_doc(nil, nil, nil, @project, params[:id])
+      if @doc
+        annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
+        @denotations = annotations[:denotations]
+      end
+    else
+      sourcedb, sourceid, serial = get_docspec(params)
+      @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
+      if @doc
+        @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
+      end
+    end
+    if @denotations.present?
+      @denotations = @denotations.uniq{|denotation| denotation[:span]}
+    end
+    respond_to do |format|
+      format.html { render 'docs/spans_index'}
+    end    
+  end
 
   # GET /docs/new
   # GET /docs/new.json
