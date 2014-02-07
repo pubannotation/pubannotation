@@ -5,7 +5,14 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs
   # GET /pmcdocs/:pmcid/divs.json
   def index
-    @docs = Doc.find_all_by_sourcedb_and_sourceid('PMC', params[:pmcdoc_id], :order => 'serial ASC')
+    if params[:sourcedb]
+      sourcedb = params[:sourcedb]
+      doc_id = params[:sourceid]
+    else
+      sourcedb = 'PMC'
+      doc_id = params[:pmcdoc_id]
+    end
+    @docs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, doc_id, :order => 'serial ASC')
 
     if params[:project_id]
       @project_name = params[:project_id]
@@ -107,8 +114,13 @@ class DivsController < ApplicationController
         @doc = nil
       end
     else
-      @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
-      @projects = get_projects({:doc => @doc})
+      if params[:pmcdoc_id].present?
+        @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
+        @projects = get_projects({:doc => @doc})
+      else
+        @doc, notice = get_doc(params[:sourcedb], params[:sourceid], params[:div_id])
+        @projects = get_projects({:doc => @doc})
+      end
     end
 
     if @doc

@@ -54,17 +54,42 @@ class DocsController < ApplicationController
     end
   end
 
+  # TODO ?
+  def sourcedb_index
+    render :text => 'docs#sourcedb_index'
+  end
 
+  # TODO ?
+  def sourceid_index
+    render :text => 'docs#sourceid_index'
+  end
+    
   # GET /docs/1
   # GET /docs/1.json
   def show
-    @doc = Doc.find(params[:id])
-    @text = @doc.body
-    @project, notice = get_project(params[:project_id])
-    respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @doc }
+    if params[:id].present?
+      @doc = Doc.find(params[:id])
+    elsif params[:sourcedb].present? && params[:sourceid].present?
+      docs = Doc.where('sourcedb = ? AND sourceid = ?', params[:sourcedb], params[:sourceid])
+      if docs.length == 1
+        @doc = docs.first
+      else
+        # when same sourcedb and sourceid docs present => redirect divs#index
+       redirect_to doc_sourcedb_sourceid_divs_index_path
+      end
     end
+    
+    if @doc.present?
+      @text = @doc.body
+      @project, notice = get_project(params[:project_id])
+      respond_to do |format|
+        format.html # show.html.erb
+        format.json { render json: @doc }
+      end
+    end
+  end
+  
+  def divs_index
   end
   
   def annotations
@@ -128,10 +153,21 @@ class DocsController < ApplicationController
         @denotations = annotations[:denotations]
       end
     else
-      sourcedb, sourceid, serial = get_docspec(params)
-      @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
-      if @doc
-        @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
+      if params[:id].present?
+        sourcedb, sourceid, serial = get_docspec(params)
+        @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
+        if @doc
+          @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
+        end
+      elsif params[:sourcedb].present? && params[:sourceid].present?
+        docs = Doc.where('sourcedb = ? AND sourceid = ?', params[:sourcedb], params[:sourceid])
+        if docs.length == 1
+          @doc = docs.first
+          @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
+        else
+          @doc = docs.detect{|doc| doc.serial == params[:div_id].to_i}
+          @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
+        end
       end
     end
     if @denotations.present?

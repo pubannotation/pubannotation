@@ -12,6 +12,7 @@ describe "divs/index.html.erb" do
       view.stub(:denotations_count_helper).and_return(@denotations_count_helper)
       @relations_count_helper = 'relations_count_helper'
       view.stub(:relations_count_helper).and_return(@relations_count_helper)
+      view.stub(:params).and_return({:pmcdoc_id => 1})
       render
     end
     

@@ -56,16 +56,21 @@
 			<% end %>
 		<% else -%>
 			> <%= link_to t('activerecord.models.doc'), docs_path -%>
-			> <%= link_to_unless_current params[:id], doc_path(params[:id]) -%>
-			<% if params[:action] == 'annotation' -%>
-				> <%= link_to_unless_current t('views.shared.annotation'), annotations_doc_path(params[:id]) -%>
-			<% end -%>
-		    <%= link_to_unless_current "> spans", spans_index_doc_path(params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
-			<% if params[:begin] && params[:end] -%>
-				<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_doc_path(params[:id], params[:begin], params[:end]) -%>
-			<% end %>
-			<% if params[:action] == 'annotations' -%>
-				> annotations
+			<% if params[:id] -%>
+				> <%= link_to_unless_current params[:id], doc_path(params[:id]) -%>
+				<% if params[:action] == 'annotation' -%>
+					> <%= link_to_unless_current t('views.shared.annotation'), annotations_doc_path(params[:id]) -%>
+				<% end -%>
+			    <%= link_to_unless_current "> spans", spans_index_doc_path(params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
+				<% if params[:begin] && params[:end] -%>
+					<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_doc_path(params[:id], params[:begin], params[:end]) -%>
+				<% end %>
+				<% if params[:action] == 'annotations' -%>
+					> annotations
+				<% end -%>
+			<% else -%>
+				> <%= link_to params[:sourcedb], doc_sourcedb_sourceid_index_path(params[:sourcedb]) -%>
+				> <%= link_to_unless_current params[:sourceid], doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid]) -%>
 			<% end -%>
 		<% end %>
   <% end %>
