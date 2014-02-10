@@ -257,6 +257,18 @@ describe AnnotationsController do
                 response.should redirect_to(project_pmcdoc_div_path(@project.name, @doc.sourceid, @doc.serial))
               end      
             end
+            
+            context 'when doc.sourcedb is free' do
+              before do
+                @doc = FactoryGirl.create(:doc, :sourcedb => 'FA', :sourceid => 1, :serial => 3) 
+                controller.stub(:get_doc).and_return(@doc, 'notice')  
+                post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
+              end
+              
+              it 'should redirect to project_pmdoc_path' do
+                response.should redirect_to(project_doc_path(@project.name, @doc.id))
+              end      
+            end
           end
           
           context 'when format is json' do

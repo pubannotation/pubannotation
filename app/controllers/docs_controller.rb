@@ -56,12 +56,10 @@ class DocsController < ApplicationController
 
   # TODO ?
   def sourcedb_index
-    render :text => 'docs#sourcedb_index'
   end
 
   # TODO ?
   def sourceid_index
-    render :text => 'docs#sourceid_index'
   end
     
   # GET /docs/1
@@ -74,7 +72,7 @@ class DocsController < ApplicationController
       if docs.length == 1
         @doc = docs.first
       else
-        # when same sourcedb and sourceid docs present => redirect divs#index
+        # when same sourcedb and sourceid docs present => redirect to divs#index
        redirect_to doc_sourcedb_sourceid_divs_index_path
       end
     end

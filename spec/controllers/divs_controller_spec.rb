@@ -11,37 +11,53 @@ describe DivsController do
       @project = FactoryGirl.create(:project, :name => @project_id)
     end
 
-    context 'when project_id.present' do
-      context 'when format html' do
-        before do
-          get :index, :pmcdoc_id => @pmcdoc_id, :project_id => @project_id
-        end
-        
-        it '@docs should include only sourcede == PMC and sourceid == params[:pmcdoc_id]' do
-          assigns[:docs].should include(@doc_pmc_sourceid)      
-          assigns[:docs].should_not include(@doc_not_pmc) 
-        end
-        
-        it '@project_name should be same as params[:project_id]' do
-          assigns[:project_name].should eql(@project_id)
-        end
-        
-        it 'should render template' do
-          response.should render_template('index')
-        end
-        
-        it 'should assign project' do
-          assigns[:project].should eql(@project)
-        end
+    context 'when params sourcedb present' do 
+      before do
+        get :index, :sourcedb => @doc_not_pmc.sourcedb, :sourceid => @doc_not_pmc.sourceid
       end
-  
-      context 'when format json' do
-        before do
-          get :index, :format => 'json', :pmcdoc_id => @pmcdoc_id, :project_id => @project_id
+      
+      it 'should include doc in @docs' do
+        assigns[:docs].should include(@doc_not_pmc) 
+      end
+      
+      it 'should render template' do
+        response.should render_template('index')
+      end
+    end
+    
+    context 'when params sourcedb blank' do 
+      context 'when project_id.present' do
+        context 'when format html' do
+          before do
+            get :index, :pmcdoc_id => @pmcdoc_id, :project_id => @project_id
+          end
+          
+          it '@docs should include only sourcede == PMC and sourceid == params[:pmcdoc_id]' do
+            assigns[:docs].should include(@doc_pmc_sourceid)      
+            assigns[:docs].should_not include(@doc_not_pmc) 
+          end
+          
+          it '@project_name should be same as params[:project_id]' do
+            assigns[:project_name].should eql(@project_id)
+          end
+          
+          it 'should render template' do
+            response.should render_template('index')
+          end
+          
+          it 'should assign project' do
+            assigns[:project].should eql(@project)
+          end
         end
-        
-        it 'should render json' do
-          response.body.should eql(assigns[:docs].to_json)
+    
+        context 'when format json' do
+          before do
+            get :index, :format => 'json', :pmcdoc_id => @pmcdoc_id, :project_id => @project_id
+          end
+          
+          it 'should render json' do
+            response.body.should eql(assigns[:docs].to_json)
+          end
         end
       end
     end
@@ -283,7 +299,7 @@ describe DivsController do
       @id = 'id'
       @pmcdoc_id = 'pmc doc id'
       @asciitext = 'aschii text'
-      @doc = FactoryGirl.create(:doc)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 123, :serial => 0)
       @project = FactoryGirl.create(:project)
       @get_doc_notice = 'get doc notice'
     end
@@ -296,42 +312,61 @@ describe DivsController do
           controller.stub(:get_projects).and_return([@project, @get_projects_notice])
           controller.stub(:get_ascii_text).and_return(@asciitext)
         end
-        context 'when format html' do
-          before do
-            get :show, :encoding => 'ascii', :pmcdoc_id => @pmcdoc_id, :id => @id
-          end
-          
-          it 'should set get_projects_notice as flash[:notice]' do
-            flash[:notice].should eql(@get_doc_notice)  
-          end
-          
-          it 'should render template' do
-            response.should render_template('docs/show')
-          end
-        end
-
-        context 'when format json' do
-          before do
-            get :show, :encoding => 'ascii', :format => 'json', :pmcdoc_id => @pmcdoc_id, :id => @id
-          end
-          
-          it 'should render json' do
-            hash = {
-              :pmcdoc_id => @pmcdoc_id,
-              :div_id => @id,
-              :text => @asciitext
-            }
-            response.body.should eql(hash.to_json)
+        
+        context 'when params pmcdoc_id blank' do
+          context 'when format html' do
+            before do
+              get :show, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @doc.serial
+            end
+            
+            it 'should set get_projects_notice as flash[:notice]' do
+              flash[:notice].should eql(@get_doc_notice)  
+            end
+            
+            it 'should render template' do
+              response.should render_template('docs/show')
+            end
           end
         end
         
-        context 'when format txt' do
-          before do
-            get :show, :encoding => 'ascii', :format => 'txt', :pmcdoc_id => @pmcdoc_id, :id => @id
+        context 'when params pmcdoc_id present' do
+          context 'when format html' do
+            before do
+              get :show, :encoding => 'ascii', :pmcdoc_id => @pmcdoc_id, :id => @id
+            end
+            
+            it 'should set get_projects_notice as flash[:notice]' do
+              flash[:notice].should eql(@get_doc_notice)  
+            end
+            
+            it 'should render template' do
+              response.should render_template('docs/show')
+            end
+          end
+  
+          context 'when format json' do
+            before do
+              get :show, :encoding => 'ascii', :format => 'json', :pmcdoc_id => @pmcdoc_id, :id => @id
+            end
+            
+            it 'should render json' do
+              hash = {
+                :pmcdoc_id => @pmcdoc_id,
+                :div_id => @id,
+                :text => @asciitext
+              }
+              response.body.should eql(hash.to_json)
+            end
           end
           
-          it 'should render ascii text' do
-            response.body.should eql(@asciitext)
+          context 'when format txt' do
+            before do
+              get :show, :encoding => 'ascii', :format => 'txt', :pmcdoc_id => @pmcdoc_id, :id => @id
+            end
+            
+            it 'should render ascii text' do
+              response.body.should eql(@asciitext)
+            end
           end
         end
       end

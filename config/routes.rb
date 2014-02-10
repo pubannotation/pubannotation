@@ -34,8 +34,6 @@ Pubann::Application.routes.draw do
       get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
       get 'spans/:begin-:end/annotations' => 'docs#annotations'    
     end
-    
-    # ADD
   end
   
   # routings for /docs/sourcedb....

@@ -367,32 +367,45 @@ describe ApplicationController do
   end
   
   describe 'get_doc' do
-    context 'project passed' do
+    context 'when id blank' do
+      context 'whenproject passed' do
+        before do
+          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        end
+        
+        context 'when doc present' do
+          before do
+            @project.docs << @doc
+            @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
+          end
+          
+          it 'should return doc and nil' do
+            @result.should eql([@doc, nil])
+          end
+        end
+  
+        context 'when doc blank' do
+          before do
+            @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
+          end
+          
+          it 'should return nil and notice' do
+            @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
+          end
+        end  
+      end
+    end
+    
+    context 'when id present' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @doc = FactoryGirl.create(:doc)
+        @result = controller.get_doc(nil, nil, nil, nil, @doc.id)
       end
       
-      context 'when doc present' do
-        before do
-          @project.docs << @doc
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
-        end
-        
-        it 'should return doc and nil' do
-          @result.should eql([@doc, nil])
-        end
+      it 'should return doc found by id and nil notice' do
+        @result.should =~ [@doc, nil]
       end
-
-      context 'when doc blank' do
-        before do
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
-        end
-        
-        it 'should return nil and notice' do
-          @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
-        end
-      end  
     end
     
 
