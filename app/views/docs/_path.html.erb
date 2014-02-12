@@ -3,49 +3,74 @@
 	<% if @project %>
 		> <%= link_to "projects", projects_path %>
 		> <%= link_to @project.name, project_path(@project.name) %>
-		<% if @doc and @doc.sourcedb == 'PubMed' %>
-		    > <%= link_to_unless_current t('views.shared.a_pmdoc', :sourceid => @doc.sourceid), project_pmdoc_path(@project.name, @doc.sourceid) %>
-		    <%= link_to_unless_current "> spans", spans_index_project_pmdoc_path(@project.name, params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
-		    <% if params[:begin] && params[:end] -%>
-				<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_project_pmdoc_url(@project.name, @doc.sourceid, params[:begin], params[:end]) -%>
+		<% if params[:controller] == 'pmdocs' ||  params[:controller] == 'pmcdocs' -%>
+			<% if @doc and @doc.sourcedb == 'PubMed' %>
+			    > <%= link_to_unless_current t('views.shared.a_pmdoc', :sourceid => @doc.sourceid), project_pmdoc_path(@project.name, @doc.sourceid) %>
+			    <%= link_to_unless_current "> spans", spans_index_project_pmdoc_path(@project.name, params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
+			    <% if params[:begin] && params[:end] -%>
+					<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_project_pmdoc_url(@project.name, @doc.sourceid, params[:begin], params[:end]) -%>
+				<% end %>
+				<% if params[:action] == 'annotations' -%>
+					> annotations
+				<% end -%>
+			<% elsif @doc and @doc.sourcedb == 'PMC' %>
+			    > <%= link_to t('views.shared.a_pmcdoc', :sourceid => @doc.sourceid), project_pmcdoc_path(@project.name, @doc.sourceid) %>
+			    > <%= link_to_unless_current "#{t('views.shared.divs')}: #{@doc.serial}", project_pmcdoc_div_url(@project.name, @doc.sourceid, params[:id]) %>
+			    <%= link_to_unless_current "> spans", spans_index_project_pmcdoc_div_path(@project.name, params[:pmcdoc_id], params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
+			    <% if params[:begin] && params[:end] -%>
+					<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_project_pmcdoc_div_path(@project.name, @doc.sourceid, params[:id], params[:begin], params[:end]) -%>
+				<% end %>
+				<% if params[:action] == 'annotations' -%>
+					> annotations
+				<% end -%>
 			<% end %>
-			<% if params[:action] == 'annotations' -%>
-				> annotations
-			<% end -%>
-		<% elsif @doc and @doc.sourcedb == 'PMC' %>
-		    > <%= link_to t('views.shared.a_pmcdoc', :sourceid => @doc.sourceid), project_pmcdoc_path(@project.name, @doc.sourceid) %>
-		    > <%= link_to_unless_current "#{t('views.shared.divs')}: #{@doc.serial}", project_pmcdoc_div_url(@project.name, @doc.sourceid, params[:id]) %>
-		    <%= link_to_unless_current "> spans", spans_index_project_pmcdoc_div_path(@project.name, params[:pmcdoc_id], params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
-		    <% if params[:begin] && params[:end] -%>
-				<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_project_pmcdoc_div_path(@project.name, @doc.sourceid, params[:id], params[:begin], params[:end]) -%>
-			<% end %>
-			<% if params[:action] == 'annotations' -%>
-				> annotations
-			<% end -%>
+		<% else -%>
+		    > <%= link_to @doc.id, project_doc_path(@project.name, @doc.id) -%>
+		    <%= link_to_unless_current "> spans", spans_index_project_doc_path(@project.name, params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
 		<% end %>
 	<% else %>
-		<% if @doc.sourcedb == 'PubMed' %>
-		    > <%= link_to t('views.shared.pmdocs'), pmdocs_path %>
-			> <%= link_to_unless_current @doc.sourceid, @doc.source %>
-		    <%= link_to_unless_current "> spans", spans_index_pmdoc_path(params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
-			<% if params[:begin] && params[:end] -%>
-				<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_pmdoc_url(@doc.sourceid, params[:begin], params[:end]) -%>
+		<% if params[:controller] == 'pmdocs' ||  params[:controller] == 'pmcdocs' -%>
+			<% if @doc.sourcedb == 'PubMed' %>
+			    > <%= link_to t('views.shared.pmdocs'), pmdocs_path %>
+				> <%= link_to_unless_current @doc.sourceid, @doc.source %>
+			    <%= link_to_unless_current "> spans", spans_index_pmdoc_path(params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
+				<% if params[:begin] && params[:end] -%>
+					<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_pmdoc_url(@doc.sourceid, params[:begin], params[:end]) -%>
+				<% end %>
+				<% if params[:action] == 'annotations' -%>
+					> annotations
+				<% end -%>
+				<%#= @doc.sourceid %>
+			<% elsif @doc.sourcedb == 'PMC' %>
+			    > <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
+			    > <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
+			    > <%= link_to t('views.shared.divs'), pmcdoc_divs_path(@doc.sourceid) %>
+			    > <%= link_to_unless_current @doc.serial, pmcdoc_div_url(@doc.sourceid, params[:id]) %>
+			    <%= link_to_unless_current "> spans", spans_index_pmcdoc_div_path(params[:pmcdoc_id], params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
+				<% if params[:begin] && params[:end] -%>
+					<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_pmcdoc_div_url(@doc.sourceid, params[:id], params[:begin], params[:end]) -%>
+				<% end %>
+				<% if params[:action] == 'annotations' -%>
+					> annotations
+				<% end -%>
 			<% end %>
-			<% if params[:action] == 'annotations' -%>
-				> annotations
-			<% end -%>
-			<%#= @doc.sourceid %>
-		<% elsif @doc.sourcedb == 'PMC' %>
-		    > <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
-		    > <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
-		    > <%= link_to t('views.shared.divs'), pmcdoc_divs_path(@doc.sourceid) %>
-		    > <%= link_to_unless_current @doc.serial, pmcdoc_div_url(@doc.sourceid, params[:id]) %>
-		    <%= link_to_unless_current "> spans", spans_index_pmcdoc_div_path(params[:pmcdoc_id], params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
-			<% if params[:begin] && params[:end] -%>
-				<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_pmcdoc_div_url(@doc.sourceid, params[:id], params[:begin], params[:end]) -%>
-			<% end %>
-			<% if params[:action] == 'annotations' -%>
-				> annotations
+		<% else -%>
+			> <%= link_to t('activerecord.models.doc'), docs_path -%>
+			<% if params[:id] -%>
+				> <%= link_to_unless_current params[:id], doc_path(params[:id]) -%>
+				<% if params[:action] == 'annotation' -%>
+					> <%= link_to_unless_current t('views.shared.annotation'), annotations_doc_path(params[:id]) -%>
+				<% end -%>
+			    <%= link_to_unless_current "> spans", spans_index_doc_path(params[:id]) if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
+				<% if params[:begin] && params[:end] -%>
+					<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", spans_doc_path(params[:id], params[:begin], params[:end]) -%>
+				<% end %>
+				<% if params[:action] == 'annotations' -%>
+					> annotations
+				<% end -%>
+			<% else -%>
+				> <%= link_to params[:sourcedb], doc_sourcedb_sourceid_index_path(params[:sourcedb]) -%>
+				> <%= link_to_unless_current params[:sourceid], doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid]) -%>
 			<% end -%>
 		<% end %>
   <% end %>

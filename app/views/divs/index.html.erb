@@ -69,10 +69,18 @@
 			    	<%= relations_count_helper(@project, {:doc => doc})%>
 			    </td>
 			    <% if @project %>
-				    <td><span class="button"><%= link_to t('views.shared.show'), project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) %></span></td>
+			    	<% if params[:pmcdoc_id].present? -%>
+			    		<% div_href = project_pmcdoc_div_path(@project_name, doc.sourceid, doc.serial) -%>
+				    <% else -%>    
+			    	<% end -%>
 			    <% else %>    
-			    	<td><span class="button"><%= link_to t('views.shared.show'), pmcdoc_div_path(doc.sourceid, doc.serial) %></span></td>
+			    	<% if params[:pmcdoc_id].present? -%>
+			    		<% div_href = pmcdoc_div_path(doc.sourceid, doc.serial) -%>
+				    <% else %>    
+			    		<% div_href = doc_sourcedb_sourceid_divs_show_path(params[:sourcedb], params[:sourceid], doc.serial) -%>
+				    <% end %>
 			    <% end %>
+		    	<td><span class="button"><%= link_to t('views.shared.show'),  div_href -%></span></td>
 		    </tr>
 		<% end %>
 	</tbody>

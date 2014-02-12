@@ -23,9 +23,57 @@ Pubann::Application.routes.draw do
   resource :users do
    get :autocomplete_username, :on => :collection
   end
-  
-  resources :docs
 
+  # Mdocs
+  
+  resources :docs do
+    # ADD
+    member do
+      get 'annotations' => 'docs#annotations'
+      get 'spans' => 'docs#spans_index', :as => 'spans_index'
+      get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
+      get 'spans/:begin-:end/annotations' => 'docs#annotations'    
+    end
+  end
+  
+  # routings for /docs/sourcedb....
+  scope 'docs',  :as => 'doc' do
+    scope 'sourcedb', :as => 'sourcedb' do
+      # list sourcedb
+      get '/' => 'docs#sourcedb_index' 
+      
+      scope ':sourcedb' do
+        # list sourceids
+        get '/' => 'docs#sourceid_index', :as => 'sourceid_index'
+      
+        scope 'sourceid', :as => 'sourceid' do
+          # list docs
+          get '/' => 'docs#sourcedb_sourceid_index', :as => 'sourceid_index'
+          
+          scope ':sourceid' do
+            get '/' => 'docs#show', :as =>'show'
+            get 'annotations' => 'docs#annotations'
+            get 'spans' => 'docs#spans_index', :as => 'spans_index'
+            get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
+            get 'spans/:begin-:end/annotations' => 'docs#annotations'
+            
+            scope 'divs', :as => 'divs' do
+              get '/' => 'divs#index', :as => 'index'
+
+              scope ':div_id' do
+                get '/' => 'divs#show', :as => 'show'
+                get 'annotations' => 'docs#annotations'
+                get 'spans' => 'docs#spans_index', :as => 'spans_index'
+                get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
+                get 'spans/:begin-:end/annotations' => 'docs#annotations'
+              end  
+            end    
+          end
+        end
+      end
+    end
+  end
+  
   delete '/associate_projects_projects/:project_id/:associate_project_id' => 'associate_projects_projects#destroy', :as => 'delete_associate_projects_project'
   
   resources :projects do
@@ -33,7 +81,15 @@ Pubann::Application.routes.draw do
     get 'pmdocs/sql' => 'pmdocs#sql'
     get 'pmcdocs/sql' => 'pmcdocs#sql'
     get 'relations/sql' => 'relations#sql'
-    resources :docs
+    resources :docs do
+      # ADD
+      member do
+        get 'annontations' => 'docs#annotations'
+        get 'spans' => 'docs#spans_index'
+        get 'spans/:begin-:end' => 'docs#spans'
+        get 'spans/:begin-:end/annotations' => 'docs#annotations'
+      end
+    end
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
     
@@ -90,6 +146,12 @@ Pubann::Application.routes.draw do
 
   resources :projects do
     resources :docs do
+      member do
+        get 'annotations' => 'docs#annotations'
+        get 'spans' => 'docs#spans_index', :as => 'spans_index'
+        get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
+        get 'spans/:begin-:end/annotations' => 'docs#annotations'    
+      end
       resources :annotations do
       end
     end

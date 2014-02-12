@@ -211,7 +211,8 @@ describe ApplicationController do
       end
       
       it 'should return values which includes params[:pmdoc_id]' do
-        @result.should eql(['PubMed', @params[:pmdoc_id], 0])
+        @result.should eql(['PubMed', @params[:pmdoc_id], 0, nil
+        ])
       end
     end
 
@@ -222,18 +223,32 @@ describe ApplicationController do
       end
       
       it 'should return values which includes params[:pmcdoc_id] and params[:div_id]' do
-        @result.should eql(['PMC', @params[:pmcdoc_id], @params[:div_id]])
+        @result.should eql(['PMC', @params[:pmcdoc_id], @params[:div_id], nil])
       end
     end
 
     context 'others' do
-      before do
-        @params = {}
-        @result = controller.get_docspec(@params)
+      context 'when params[:doc_id] blank' do
+        before do
+          @params = {}
+          @result = controller.get_docspec(@params)
+        end
+        
+        it 'should return nil array' do
+          @result.should eql([nil, nil, nil, nil])
+        end
       end
       
-      it 'should return nil array' do
-        @result.should eql([nil, nil, nil])
+      context 'when params[:doc_id] present' do
+        before do
+          @doc_id = 5
+          @params = {:doc_id => @doc_id}
+          @result = controller.get_docspec(@params)
+        end
+        
+        it 'should return nil and params[:doc_id] array' do
+          @result.should eql([nil, nil, nil, @doc_id])
+        end
       end
     end
   end
@@ -352,32 +367,45 @@ describe ApplicationController do
   end
   
   describe 'get_doc' do
-    context 'project passed' do
+    context 'when id blank' do
+      context 'whenproject passed' do
+        before do
+          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        end
+        
+        context 'when doc present' do
+          before do
+            @project.docs << @doc
+            @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
+          end
+          
+          it 'should return doc and nil' do
+            @result.should eql([@doc, nil])
+          end
+        end
+  
+        context 'when doc blank' do
+          before do
+            @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
+          end
+          
+          it 'should return nil and notice' do
+            @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
+          end
+        end  
+      end
+    end
+    
+    context 'when id present' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @doc = FactoryGirl.create(:doc)
+        @result = controller.get_doc(nil, nil, nil, nil, @doc.id)
       end
       
-      context 'when doc present' do
-        before do
-          @project.docs << @doc
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
-        end
-        
-        it 'should return doc and nil' do
-          @result.should eql([@doc, nil])
-        end
+      it 'should return doc found by id and nil notice' do
+        @result.should =~ [@doc, nil]
       end
-
-      context 'when doc blank' do
-        before do
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
-        end
-        
-        it 'should return nil and notice' do
-          @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
-        end
-      end  
     end
     
 

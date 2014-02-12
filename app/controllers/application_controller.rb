@@ -55,8 +55,8 @@ class ApplicationController < ActionController::Base
       sourceid = params[:pmcdoc_id]
       serial   = params[:div_id]
     else
-      sourcedb = nil
-      sourceid = nil
+      sourcedb = params[:sourcedb]
+      sourceid = params[:sourceid]
       serial   = nil
       id = params[:doc_id] if params[:doc_id]
     end

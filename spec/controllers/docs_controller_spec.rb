@@ -101,26 +101,349 @@ describe DocsController do
   
   describe 'show' do
     before do
-      @doc = FactoryGirl.create(:doc)  
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sd', :sourceid => '123456')  
     end
     
-    context 'when format html' do
+    context 'when params id present' do
+      context 'when format html' do
+        before do
+          get :show, :id => @doc.id
+        end
+        
+        it 'should render template' do
+          response.should render_template('show')
+        end
+      end
+      
+      context 'when format json' do
+        before do
+          get :show, :format => 'json', :id => @doc.id
+        end
+        
+        it 'should render @doc as json' do
+          response.body.should eql(@doc.to_json)
+        end
+      end
+    end
+    
+    context 'when params sourcedb sourceid present' do
+      context 'when docs.length == 1' do
+        context 'when format html' do
+          before do
+            get :show, :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
+          end
+          
+          it 'should render template' do
+            response.should render_template('show')
+          end
+        end
+        
+        context 'when format json' do
+          before do
+            get :show, :format => 'json', :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
+          end
+          
+          it 'should render @doc as json' do
+            response.body.should eql(@doc.to_json)
+          end
+        end
+      end
+
+      context 'when docs.length != 1' do
+        before do
+          FactoryGirl.create(:doc, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid.to_s)  
+          get :show, :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
+        end
+        
+        it 'should render template' do
+          response.should redirect_to(doc_sourcedb_sourceid_divs_index_path)
+        end
+      end
+    end
+  end
+  
+  describe 'annotations' do
+    before do
+      @project = FactoryGirl.create(:project, :name => 'project_name')
+      controller.stub(:get_project).and_return(@project, 'notice')
+      @doc = FactoryGirl.create(:doc)
+      controller.stub(:get_doc).and_return(@doc, 'notice')
+      @projects = [@project]
+      controller.stub(:get_projects).and_return(@projects)
+      @spans = 'spans' 
+      @prev_text = 'prevx text'
+      @next_text = 'next text'
+      Doc.any_instance.stub(:spans).and_return([@spans, @prev_text, @next_text])
+      @annotations ={
+        :text => "text",
+        :denotations => "denotations",
+        :instances => "instances",
+        :relations => "relations",
+        :modifications => "modifications"
+      }
+      controller.stub(:get_annotations).and_return(@annotations)
+    end
+    
+    context 'when params[:project_id] present' do
       before do
-        get :show, :id => @doc.id
+       get :annotations, :project_id => @project.name, :id => @doc.id, :begin => 1, :end => 10
+      end
+      
+      it 'should assign @project' do
+        assigns[:project].should eql(@project)
+      end
+      
+      it 'should assign @doc' do
+        assigns[:doc].should eql(@doc)
+      end
+      
+      it 'should_not assign @projects' do
+        assigns[:projects].should be_nil
+      end
+      
+      it 'should assign @spans' do
+        assigns[:spans].should eql(@spans)
+      end
+      
+      it 'should assign @prev_text' do
+        assigns[:prev_text].should eql(@prev_text)
+      end
+      
+      it 'should assign @next_text' do
+        assigns[:next_text].should eql(@next_text)
+      end
+      
+      it 'should assign @denotations' do
+        assigns[:denotations].should eql(@annotations[:denotations])
+      end
+      
+      it 'should assign @instances' do
+        assigns[:instances].should eql(@annotations[:instances])
+      end
+      
+      it 'should assign @relations' do
+        assigns[:relations].should eql(@annotations[:relations])
+      end
+      
+      it 'should assign @modifications' do
+        assigns[:modifications].should eql(@annotations[:modifications])
+      end
+        
+      it 'sould render template' do
+        response.should render_template('annotations')
+      end
+    end
+    
+    
+    context 'when params[:project_id] blank' do
+      context 'when format html' do
+        before do
+          get :annotations, :id => @doc.id, :begin => 1, :end => 10
+        end
+        
+        it 'should not assign @project' do
+          assigns[:project].should be_nil
+        end
+        
+        it 'should assign @doc' do
+          assigns[:doc].should eql(@doc)
+        end
+        
+        it 'sould render template' do
+          response.should render_template('annotations')
+        end
+      end
+
+      context 'when format json' do
+        before do
+          get :annotations, :format => :json, :id => @doc.id, :begin => 1, :end => 10
+        end
+        
+        it 'sould render json' do
+          response.body.should eql(@annotations.to_json)
+        end
+      end
+    end
+  end
+
+  
+  describe 'spans_index' do
+    before do
+      @project = FactoryGirl.create(:project)
+      controller.stub(:get_project).and_return([@project, nil])
+      @doc = FactoryGirl.create(:doc, :sourceid => '12345', :sourcedb => 'PubMed', :serial => 0)
+      controller.stub(:get_doc).and_return([@doc, nil])
+    end
+    
+    context 'when project_id present' do
+      before do
+        @denotation_1 = {:span => 'span1'}
+        @denotation_2 = {:span => 'span2'}
+        @denotations = [@denotation_1, @denotation_1, @denotation_2]
+        controller.stub(:get_annotations).and_return({:denotations => @denotations})
+        get :spans_index, :project_id => @project.name, :id => @doc.sourceid
+      end
+      
+      it 'should assign @project' do
+        assigns[:project].should eql(@project)  
+      end
+      
+      it 'should assign @doc' do
+        assigns[:doc].should eql(@doc)  
+      end
+      
+      it 'should assign unique denotation hashes as @denotations' do
+        assigns[:denotations].should =~ @denotation_1.map{|key, value| {key.to_s => value}} + @denotation_2.map{|key, value| {key.to_s => value}}
       end
       
       it 'should render template' do
-        response.should render_template('show')
+        response.should render_template('docs/spans_index')
       end
     end
     
-    context 'when format json' do
-      before do
-        get :show, :format => 'json', :id => @doc.id
+    context 'when project_id blank' do
+      context 'when params id present' do
+        before do
+          @denotation = FactoryGirl.create(:denotation)
+          @doc.denotations << @denotation
+          get :spans_index, :id => @doc.sourceid
+        end
+        
+        it 'should assign @doc' do
+          assigns[:doc].should eql(@doc)  
+        end
+        
+        it 'should assign @denotations' do
+          assigns[:denotations].should eql([{"id" => @denotation.hid, "span" => {"begin" => @denotation.begin, "end" => @denotation.end}, "obj" => @denotation.obj}])  
+        end
+        
+        it 'should render template' do
+          response.should render_template('docs/spans_index')
+        end
       end
       
-      it 'should render @doc as json' do
-        response.body.should eql(@doc.to_json)
+      context 'when params id blank' do
+        before do
+          @denotation = FactoryGirl.create(:denotation)
+          @doc.denotations << @denotation
+        end
+        
+        context 'when docs.lengs == 1' do
+          before do
+            get :spans_index, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid
+          end
+          
+          it 'should assign @doc' do
+            assigns[:doc].should eql(@doc)  
+          end
+          
+          it 'should assign @denotations' do
+            assigns[:denotations].should eql([{"id" => @denotation.hid, "span" => {"begin" => @denotation.begin, "end" => @denotation.end}, "obj" => @denotation.obj}])  
+          end
+          
+          it 'should render template' do
+            response.should render_template('docs/spans_index')
+          end
+        end
+
+        context 'when docs.lengs > 1' do
+          before do
+            @doc_2 = FactoryGirl.create(:doc, :sourceid => @doc.sourceid, :sourcedb => @doc.sourcedb, :serial => @doc.serial.to_i + 1 )
+            get :spans_index, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @doc.serial
+          end
+          
+          it 'should assign @doc' do
+            assigns[:doc].should eql(@doc)  
+          end
+          
+          it 'should assign @denotations' do
+            assigns[:denotations].should eql([{"id" => @denotation.hid, "span" => {"begin" => @denotation.begin, "end" => @denotation.end}, "obj" => @denotation.obj}])  
+          end
+          
+          it 'should render template' do
+            response.should render_template('docs/spans_index')
+          end
+        end
+      end
+    end
+  end
+  
+  describe 'spans' do
+    before do
+      @body = 'doc body'
+      @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
+      @project = 'project'
+      @project_1 = FactoryGirl.create(:project)
+      @projects = [@project_1]
+      controller.stub(:get_project).and_return([@project, nil])
+      @doc.stub(:spans_projects).and_return(@projects)
+      controller.stub(:get_doc).and_return([@doc, nil])
+      @spans = 'SPANS'
+      @prev_text = 'PREV'
+      @next_text = 'NEXT'
+      @doc.stub(:spans).and_return([@spans, @prev_text, @next_text])
+    end
+    
+    context 'when params[:project_id] present' do
+      context 'when format html' do
+        before do
+          get :spans, :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+        end
+        
+        it 'should assign @project' do
+          assigns[:project].should eql(@project)
+        end
+        
+        it 'should not assign' do
+          assigns[:projects].should be_nil
+        end
+        
+        it 'should assign @doc' do
+          assigns[:doc].should eql(@doc)
+        end
+        
+        it 'should assign @spans' do
+          assigns[:spans].should eql(@spans)
+        end
+        
+        it 'should assign @prev_text' do
+          assigns[:prev_text].should eql(@prev_text)
+        end
+        
+        it 'should assign @next_text' do
+          assigns[:next_text].should eql(@next_text)
+        end
+        
+        it 'should render template' do
+          response.should render_template('docs/spans')
+        end
+      end
+
+      context 'when format json' do
+        before do
+          get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+        end
+      end
+    end
+    
+    context 'when params[:project_id] blank' do
+      before do
+        @project_denotation = 'project denotations'
+        @project_denotations = {:denotations => @project_denotation}
+        controller.stub(:get_annotations).and_return(@project_denotations)
+        get :spans, :id => @doc.sourceid, :begin => 1, :end => 5
+      end
+      
+      it 'should not assign @project' do
+        assigns[:project].should be_nil
+      end
+      
+      it 'should assign @projects' do
+        assigns[:projects].should eql(@projects)
+      end
+      
+      it 'should assign @project_denotations' do
+        assigns[:project_denotations].should eql([{'project' => @project_1, 'denotations' => @project_denotation}])
       end
     end
   end
@@ -169,12 +492,26 @@ describe DocsController do
   describe 'create' do
     context 'when save successfully' do
       context 'when format html' do
-        before do
-          post :create
+        context 'when project blank' do
+          before do
+            post :create
+          end
+          
+          it 'should redirect to doc_path' do
+            response.should redirect_to(doc_path(assigns[:doc]))
+          end
         end
         
-        it 'should redirect to doc_path' do
-          response.should redirect_to(doc_path(assigns[:doc]))
+        context 'when project present' do
+          before do
+            @project = FactoryGirl.create(:project)
+            controller.stub(:get_project).and_return(@project)
+            post :create, :project_id => @project.id
+          end
+          
+          it 'should redirect to doc_path' do
+            response.should redirect_to(project_doc_path(@project.name, assigns[:doc]))
+          end
         end
       end
 

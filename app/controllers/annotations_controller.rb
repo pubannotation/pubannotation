@@ -54,25 +54,6 @@ class AnnotationsController < ApplicationController
             render :text => get_conversion(annotations, @project.xmlwriter, serial), :content_type => 'application/xml;charset=urf-8'
           end
         }
-        format.zip {
-          file_name = (@project)? @project.name + ".zip" : "annotations.zip"
-          t = Tempfile.new("pubann-temp-filename-#{Time.now}")
-          Zip::ZipOutputStream.open(t.path) do |z|
-            #anncollection.each do |ann|
-              title = "title"
-              title.sub!(/\.$/, '')
-              title.gsub!(' ', '_')
-              title += ".json" unless title.end_with?(".json")
-              z.put_next_entry(title)
-              z.print 'json zip'#.to_json
-            #end
-          end
-          send_file t.path, :type => 'application/zip',
-                            :disposition => 'attachment',
-                            :filename => file_name
-          t.close
-        }
-
       elsif anncollection && anncollection[0].class == Hash
 
         format.json {
