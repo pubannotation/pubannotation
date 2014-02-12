@@ -8,7 +8,7 @@ class AnnotationsController < ApplicationController
     @project, notice = get_project(params[:project_id])
     if @project
 
-      if (params[:pmdoc_id] || params[:pmcdoc_id] || params[:doc_id])
+      if (params[:pmdoc_id] || params[:pmcdoc_id] || params[:id])
         sourcedb, sourceid, serial, id = get_docspec(params)
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project, id)
 

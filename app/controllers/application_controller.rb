@@ -58,7 +58,7 @@ class ApplicationController < ActionController::Base
       sourcedb = params[:sourcedb]
       sourceid = params[:sourceid]
       serial   = nil
-      id = params[:doc_id] if params[:doc_id]
+      id = params[:id] if params[:id]
     end
 
     return sourcedb, sourceid, serial, id
