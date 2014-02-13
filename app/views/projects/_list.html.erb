@@ -71,7 +71,7 @@
 	      <% elsif @doc and @doc.sourcedb == "PMC" %>
 	        <%= link_to t('views.shared.show'), project_pmcdoc_div_path(project.name, @doc.sourceid, @doc.serial) %>
 	      <% else %>
-	        <%= link_to t('views.shared.show'), project_path %>
+	        <%= link_to t('views.shared.show'), project_docs_path(project.name) %>
 	      <% end %>
       </td>
     </tr>

@@ -374,6 +374,8 @@ ja:
       document_content: ドキュメントのコンテンツ
       projects_made_to_document: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       automatic_annotation: 自動アノテーションの取得
+      docs_list: ドキュメント一覧
+      source_db_id_list: ソースDB・ID別ドキュメント一覧
     documentations:
       Overview: 概要
       Features: 特徴

@@ -364,6 +364,16 @@ li {
     top:1px;
 }
 
+.tab{
+  border: 1px solid $main_color;
+  border-radius: 3px;
+  padding: 1px 5px; 
+}
+.active_tab{
+  background-color: $sub_color;
+}
+.inactive_tab{
+}
 
 .input {
     width:360px;
@@ -406,7 +416,13 @@ li {
   color:#234979 !important;
   cursor: pointer;
 }
-
+.doc_body_ellipsis{
+  height: 1.5em;
+  width: 64em;
+  white-space: nowrap;
+  overflow: hidden; 
+  text-overflow: ellipsis;
+}
 #documentation_cateogories{
   margin: 1em 0;
   padding: 0;

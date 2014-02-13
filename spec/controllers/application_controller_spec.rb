@@ -239,15 +239,15 @@ describe ApplicationController do
         end
       end
       
-      context 'when params[:doc_id] present' do
+      context 'when params[:id] present' do
         before do
-          @doc_id = 5
-          @params = {:doc_id => @doc_id}
+          @id = 5
+          @params = {:id => @id}
           @result = controller.get_docspec(@params)
         end
         
         it 'should return nil and params[:doc_id] array' do
-          @result.should eql([nil, nil, nil, @doc_id])
+          @result.should eql([nil, nil, nil, @id])
         end
       end
     end

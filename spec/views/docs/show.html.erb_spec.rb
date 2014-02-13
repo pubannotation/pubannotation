@@ -10,6 +10,7 @@ describe "docs/show.html.erb" do
     )
     assign :doc, @doc
     assign :text, 'text'
+    view.stub(:current_user).and_return(nil)
   end
 
   context 'when @project present' do

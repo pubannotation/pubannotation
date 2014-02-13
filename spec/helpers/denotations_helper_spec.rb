@@ -216,4 +216,83 @@ describe DenotationsHelper do
       end     
     end
   end
+  
+  describe 'spans_link_helper' do
+    before do
+      @denotation = {:span => {:begin => 0, :end => 10}}  
+      @id = 3
+      @pmdoc_id = 5
+      @pmcdoc_id = 10
+    end
+    
+    context 'when controller == pmdocs' do
+      before do
+        helper.stub(:params).and_return({:controller => 'pmdocs', :id => @id})
+        @result = helper.spans_link_helper(@denotation)
+      end
+      
+      it 'should rerutn spans_pmdoc_path' do
+        @result.should have_selector :a, :href => spans_pmdoc_path(@id, @denotation[:span][:begin], @denotation[:span][:end])
+      end
+    end
+    
+    context 'when params[:pmdoc_id] present' do
+      before do
+        helper.stub(:params).and_return({:pmdoc_id => @pmdoc_id, :id => @id})
+        @result = helper.spans_link_helper(@denotation)
+      end
+      
+      it 'should rerutn spans_pmdoc_path' do
+        @result.should have_selector :a, :href => spans_pmdoc_path(@id, @denotation[:span][:begin], @denotation[:span][:end])
+      end
+    end
+    
+    context 'when controller == pmdocs' do
+      before do
+        helper.stub(:params).and_return({:controller => 'divs', :pmcdoc_id => @pmcdoc_id, :id => @id})
+        @result = helper.spans_link_helper(@denotation)
+      end
+      
+      it 'should rerutn spans_pmcdoc_div_path' do
+        @result.should have_selector :a, :href => spans_pmcdoc_div_path(@pmcdoc_id, @id, @denotation[:span][:begin], @denotation[:span][:end])
+      end
+    end
+    
+    context 'when params[:pmcdoc_id] present' do
+      before do
+        helper.stub(:params).and_return({:pmcdoc_id => @pmcdoc_id, :id => @id})
+        @result = helper.spans_link_helper(@denotation)
+      end
+      
+      it 'should rerutn spans_pmcdoc_div_path' do
+        @result.should have_selector :a, :href => spans_pmcdoc_div_path(@pmcdoc_id, @id, @denotation[:span][:begin], @denotation[:span][:end])
+      end
+    end
+    
+    context 'when controller == docs' do
+      context 'when params[:id] present' do
+        before do
+          helper.stub(:params).and_return({:controller => 'docs', :id => @id})
+          @result = helper.spans_link_helper(@denotation)
+        end
+          
+        it 'should rerutn spans_doc_path' do
+          @result.should have_selector :a, :href => spans_doc_path(@id, @denotation[:span][:begin], @denotation[:span][:end])
+        end
+      end
+      
+      context 'when params[:id] blank' do
+        before do
+          helper.stub(:params).and_return({:controller => 'docs'})
+          @doc = FactoryGirl.create(:doc) 
+          assign :doc, @doc 
+          @result = helper.spans_link_helper(@denotation)
+        end
+          
+        it 'should rerutn spans_doc_path' do
+          @result.should have_selector :a, :href => spans_doc_path(@doc.id, @denotation[:span][:begin], @denotation[:span][:end])
+        end
+      end
+    end
+  end
 end

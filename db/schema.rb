@@ -72,8 +72,8 @@ ActiveRecord::Schema.define(:version => 20140123031354) do
     t.datetime "updated_at", :null => false
   end
 
-  add_index "denotations", ["doc_id"], :name => "index_spans_on_doc_id"
-  add_index "denotations", ["project_id"], :name => "index_spans_on_project_id"
+  add_index "denotations", ["doc_id"], :name => "index_denotations_on_doc_id"
+  add_index "denotations", ["project_id"], :name => "index_denotations_on_project_id"
 
   create_table "docs", :force => true do |t|
     t.text     "body"
@@ -87,10 +87,6 @@ ActiveRecord::Schema.define(:version => 20140123031354) do
     t.integer  "denotations_count", :default => 0
     t.integer  "subcatrels_count",  :default => 0
   end
-
-  add_index "docs", ["serial"], :name => "index_docs_on_serial"
-  add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
-  add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
 
   create_table "docs_projects", :id => false, :force => true do |t|
     t.integer "project_id"
@@ -140,8 +136,8 @@ ActiveRecord::Schema.define(:version => 20140123031354) do
     t.string   "name"
     t.text     "description"
     t.string   "author"
-    t.datetime "created_at",                                      :null => false
-    t.datetime "updated_at",                                      :null => false
+    t.datetime "created_at",                                                          :null => false
+    t.datetime "updated_at",                                                          :null => false
     t.string   "license"
     t.string   "reference"
     t.string   "editor"
@@ -159,7 +155,7 @@ ActiveRecord::Schema.define(:version => 20140123031354) do
     t.integer  "relations_count",                  :default => 0
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
-    t.datetime "annotations_updated_at",           :default => '2014-01-23 03:17:06'
+    t.datetime "annotations_updated_at",           :default => '2014-01-28 02:18:34'
   end
 
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true

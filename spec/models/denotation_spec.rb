@@ -377,7 +377,7 @@ describe Denotation do
       end 
       
       it '' do
-        p Date @project.annotations_updated_at
+        @project.annotations_updated_at.to_date.should eql(Date.today)
       end     
     end      
   end

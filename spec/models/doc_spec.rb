@@ -330,6 +330,43 @@ describe Doc do
     end
   end 
   
+  describe 'source_db_id' do
+    before do
+      @doc_sourcedb_nil = FactoryGirl.create(:doc, :sourcedb => nil)
+      @doc_sourcedb_blank = FactoryGirl.create(:doc, :sourcedb => '')
+      @doc_sourceid_nil = FactoryGirl.create(:doc, :sourceid => nil)
+      @doc_sourceid_blank = FactoryGirl.create(:doc, :sourceid => '')
+      @doc_sourcedb_uniq = FactoryGirl.create(:doc, :sourcedb => 'Uniq1', :sourceid => 1)
+      @doc_sourceid_uniq_1 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => 1)
+      @doc_sourceid_uniq_2 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => 1)
+      @docs = Doc.source_db_id
+    end
+    
+    it 'should not include sourcedb is nil' do
+      @docs.should_not include(@doc_sourcedb_nil)
+    end
+    
+    it 'should not include sourcedb is blank' do
+      @docs.should_not include(@doc_sourcedb_blank)
+    end
+    
+    it 'should not include sourceid is nil' do
+      @docs.should_not include(@doc_sourceid_nil)
+    end
+    
+    it 'should not include sourceid is blank' do
+      @docs.should_not include(@doc_sourceid_blank)
+    end
+    
+    it 'should not include has no same sourcedb docs' do
+      @docs.should_not include(@doc_sourcedb_uniq)
+    end
+    
+    it 'should include has no same sourcedb docs' do
+      @docs.should include(@doc_sourceid_uniq_2)
+    end
+  end
+  
   describe 'self.order_by' do
     context 'when docs present' do
       context 'same_sourceid_denotations_count' do
@@ -1319,6 +1356,42 @@ describe Doc do
     context 'when params[:sql] blank' do
       it 'should return nil' do
        Doc.sql_find({}, @current_user, @project).should be_nil
+      end
+    end
+  end
+  
+  describe 'updatable_for?' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+    end
+    
+    context 'when doc.projects present' do 
+      before do
+        @project_user = FactoryGirl.create(:user)
+        @project = FactoryGirl.create(:project, :user => @project_user)
+        @associate_maintainer_user_1 = FactoryGirl.create(:user)
+        @project.associate_maintainers.create({:user_id => @associate_maintainer_user_1.id})
+        @project.docs << @doc
+      end
+      
+      context 'when current_user is doc.projects.user' do
+        it 'should return true' do
+          @doc.updatable_for?(@project_user).should be_true
+        end
+      end
+      
+      context 'when current_user is project.associate_maintainer.user' do
+        it 'should return true' do
+          @doc.updatable_for?(@associate_maintainer_user_1).should be_true
+        end
+      end
+      
+      context 'when current_user is not project.user nor project.associate_maintainer.user' do
+        pending 'always return true for demo' do
+          it 'should return false' do
+            @doc.updatable_for?(FactoryGirl.create(:user)).should be_false
+          end
+        end
       end
     end
   end

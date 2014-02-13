@@ -6,6 +6,7 @@ class DocsController < ApplicationController
   def index
     if params[:project_id]
       @project, notice = get_project(params[:project_id])
+      @new_doc_src = new_project_doc_path
       if @project
         @docs = @project.docs
       else
@@ -13,6 +14,7 @@ class DocsController < ApplicationController
       end
     else
       @docs = Doc.all
+      @new_doc_src = new_doc_path
     end
 
     if @docs
@@ -54,13 +56,14 @@ class DocsController < ApplicationController
     end
   end
 
-  # TODO ?
-  def sourcedb_index
+ def source
+  if params[:project_id].present?
+    @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
+    @source_docs = @project.docs.source_db_id.paginate(:page => params[:page])
+  else
+    @source_docs = Doc.source_db_id.paginate(:page => params[:page])
   end
-
-  # TODO ?
-  def sourceid_index
-  end
+ end
     
   # GET /docs/1
   # GET /docs/1.json

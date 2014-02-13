@@ -55,6 +55,12 @@ class Doc < ActiveRecord::Base
       where('docs.id IN(?)', ids).
       order('docs.id ASC')
   }
+  
+  scope :source_db_id, 
+    where(['sourcedb NOT ? AND sourcedb != ? AND sourceid NOT ? AND sourceid != ?', nil, '', nil, ''])
+    .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count')
+    .having('sourcedb_count > 1 AND sourceid_count > 1')
+    .group(:sourcedb).group(:sourceid).order('sourceid ASC')
     
   def self.order_by(docs, order)
     if docs.present?
@@ -254,7 +260,21 @@ class Doc < ActiveRecord::Base
       end       
     end
   end
-    
+  
+  def updatable_for?(current_user)
+    if current_user.present?
+      if self.projects.present?
+        project_users = self.projects.collect{|project| [project.user] | project.associate_maintainer_users}
+        project_users.include?(current_user)
+      else
+      # TODO When not belongs to project, how to detect updatable or not  ?
+      end
+    else
+      false
+    end
+    true
+  end
+      
   # before destroy
   def decrement_docs_counter
     if self.projects.present?

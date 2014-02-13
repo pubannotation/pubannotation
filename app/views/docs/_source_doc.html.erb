@@ -1,0 +1,40 @@
+<% if source_doc_counter == 0 -%>
+	<h1 class="capitalize_first">
+		<%= t('views.docs.source_db_id_list') -%>
+	</h1>
+
+	<%= render :partial => 'links' -%>
+	
+	<table>		
+		<tr>
+			<th><%= t('activerecord.attributes.doc.sourcedb') %></th>
+			<th class="sortable-th">
+				<%= link_to_unless_current t('activerecord.attributes.doc.sourceid'), url_for(:only_path => true, :docs_order => 'sourceid', :accordion_id => 2), :class => 'sortable-a' %>
+			</th>
+			<th><%= t('activerecord.attributes.doc.body') %></th>
+			<th></th>
+		</tr>
+<% end -%>
+
+<tr>
+	<td>
+		<%= source_doc.sourcedb -%>
+	</td>
+	<td>
+		<%= source_doc.sourceid -%>
+	</td>
+	<td>
+		<div class="doc_body_ellipsis">
+			<%= source_doc.body -%>
+		</div>
+	</td>
+	<td>
+        <span class="button"><%= link_to t('views.shared.show_divisions'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%></span>
+	</td>
+</tr>
+
+<% if source_doc_counter == @source_docs.size - 1 -%>
+	</table>
+	
+	<%= will_paginate @source_docs -%>
+<% end -%>

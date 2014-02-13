@@ -99,6 +99,42 @@ describe DocsController do
     end
   end
   
+  describe 'source' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @project_doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 123)
+      @project.docs << @project_doc  
+      @source_db_id = Doc.all
+      Doc.stub(:source_db_id).and_return(@source_db_id)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123)  
+    end
+    
+    context 'when project present' do
+      before do
+        get :source, :project_id => @project.name
+      end
+      
+      it 'should assign project' do
+        assigns[:project].should eql(@project)
+      end
+      
+      
+      it 'should assign @source_docs' do
+        assigns[:source_docs].should =~ @source_db_id
+      end
+    end    
+    
+    context 'when project blank' do
+      before do
+        get :source
+      end
+      
+      it 'should assign @source_docs' do
+        assigns[:source_docs].should =~ @source_db_id
+      end
+    end    
+  end
+  
   describe 'show' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sd', :sourceid => '123456')  

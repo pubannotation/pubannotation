@@ -1,0 +1,20 @@
+<% if @project -%>
+	<%= link_to @project.name, project_path(@project.name) -%>
+	<% 
+		docs_src = project_docs_path(@project.name)
+		source_docs_src = source_project_docs_path(@project.name)
+	-%>
+<% else -%>
+	<% 
+		docs_src = docs_path
+		source_docs_src = source_docs_path
+	-%>
+<% end -%>
+
+<%= link_to_unless_current t('views.docs.docs_list'), docs_src, :class => 'tab inactive_tab' do
+	content_tag :span, t('views.docs.docs_list'), :class => 'tab active_tab'
+end -%>
+
+<%= link_to_unless_current t('views.docs.source_db_id_list'), source_docs_src, :class => 'tab inactive_tab' do
+	content_tag :span, t('views.docs.source_db_id_list'), :class => 'tab active_tab'
+end -%>
