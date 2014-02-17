@@ -141,6 +141,40 @@ Pubann::Application.routes.draw do
     resources :docs do
       collection do
         get 'source' => 'docs#source'
+        scope 'sourcedb', :as => 'sourcedb' do
+          # list sourcedb
+          get '/' => 'docs#sourcedb_index' 
+          
+          scope ':sourcedb' do
+            # list sourceids
+            get '/' => 'docs#sourceid_index', :as => 'sourceid_index'
+          
+            scope 'sourceid', :as => 'sourceid' do
+              # list docs
+              get '/' => 'docs#sourcedb_sourceid_index', :as => 'sourceid_index'
+              
+              scope ':sourceid' do
+                get '/' => 'docs#show', :as =>'show'
+                get 'annotations' => 'docs#annotations'
+                get 'spans' => 'docs#spans_index', :as => 'spans_index'
+                get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
+                get 'spans/:begin-:end/annotations' => 'docs#annotations'
+                
+                scope 'divs', :as => 'divs' do
+                  get '/' => 'divs#index', :as => 'index'
+    
+                  scope ':div_id' do
+                    get '/' => 'divs#show', :as => 'show'
+                    get 'annotations' => 'docs#annotations'
+                    get 'spans' => 'docs#spans_index', :as => 'spans_index'
+                    get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
+                    get 'spans/:begin-:end/annotations' => 'docs#annotations'
+                  end  
+                end    
+              end
+            end
+          end
+        end
       end  
       
       member do

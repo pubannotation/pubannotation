@@ -29,7 +29,13 @@
 		</div>
 	</td>
 	<td>
-        <span class="button"><%= link_to t('views.shared.show_divisions'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%></span>
+        <span class="button">
+        	<% if  params[:project_id].present? -%>
+        		<%= link_to t('views.shared.show_divisions'), index_project_sourcedb_sourceid_divs_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
+        	<% else -%>
+        		<%#= link_to t('views.shared.show_divisions'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
+        	<% end -%>
+        </span>
 	</td>
 </tr>
 
