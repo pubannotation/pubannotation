@@ -59,7 +59,6 @@ class Doc < ActiveRecord::Base
   scope :source_db_id, 
     where(['sourcedb NOT ? AND sourcedb != ? AND sourceid NOT ? AND sourceid != ?', nil, '', nil, ''])
     .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count')
-    .having('sourcedb_count > 1 AND sourceid_count > 1')
     .group(:sourcedb).group(:sourceid).order('sourceid ASC')
     
   def self.order_by(docs, order)

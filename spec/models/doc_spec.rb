@@ -358,8 +358,8 @@ describe Doc do
       @docs.should_not include(@doc_sourceid_blank)
     end
     
-    it 'should not include has no same sourcedb docs' do
-      @docs.should_not include(@doc_sourcedb_uniq)
+    it 'should include has no same sourcedb docs' do
+      @docs.should include(@doc_sourcedb_uniq)
     end
     
     it 'should include has no same sourcedb docs' do
