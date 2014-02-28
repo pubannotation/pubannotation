@@ -1,0 +1,11 @@
+<h1>
+	<%= t('views.docs.sourcedb_list')-%>
+</h1>
+
+<ul>
+	<% @docs.each do |doc| -%>
+		<li>
+			<%= sourceid_index_link_helper(doc) -%>
+		</li>
+	<% end -%>
+</ul>

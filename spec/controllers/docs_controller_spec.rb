@@ -99,6 +99,81 @@ describe DocsController do
     end
   end
   
+  describe 'sourcedb_index' do
+    before do
+      @project = FactoryGirl.create(:project)
+      # create docs belongs to project
+      @project_doc_1 = FactoryGirl.create(:doc, :sourcedb => "sourcedb1")
+      @project.docs << @project_doc_1
+      @project_doc_2 = FactoryGirl.create(:doc, :sourcedb => "sourcedb2")
+      @project.docs << @project_doc_2
+      # create docs not belongs to project
+      2.times do
+        FactoryGirl.create(:doc, :sourcedb => 'sdb')
+      end
+      # create docs not belongs to project sourced db nil
+      2.times do
+        FactoryGirl.create(:doc, :sourcedb => nil)
+      end
+      # create docs not belongs to project sourced db ''
+      2.times do
+        FactoryGirl.create(:doc, :sourcedb => '')
+      end
+    end
+
+    context 'when params[:project_id] present' do
+      before do
+        get :sourcedb_index, :project_id => @project.name
+      end  
+      
+      it 'should include project.docs sourcedb' do
+        assigns[:docs].collect{|doc| doc.sourcedb}.uniq.should =~ @project.docs.collect{|doc| doc.sourcedb}
+      end    
+    end
+
+    context 'when params[:project_id] blank' do
+      before do
+        get :sourcedb_index
+      end  
+      
+      it 'should not contatin blank sourcedb' do
+        assigns[:docs].select{|doc| doc.sourcedb == nil || doc.sourcedb == ''}.should be_blank
+      end    
+    end
+  end
+  
+  describe 'sourceid_index' do
+    before do
+      @project = FactoryGirl.create(:project, :name => 'project name')
+      @sourcedb = 'source db'
+      @project_doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => 123)
+      @project.docs << @project_doc  
+      @project_doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sdb', :sourceid => 123)
+      @project.docs << @project_doc_2  
+      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => 123)
+    end
+    
+    context 'when params[:project_id] present' do
+      before do
+        get :sourceid_index, :project_id => @project.name, :sourcedb => @sourcedb
+      end
+      
+      it 'should assigns project.docs which sourcedb match' do
+        assigns[:source_docs].should =~ @project.docs.where(['sourcedb = ?', @sourcedb])
+      end
+    end
+    
+    context 'when params[:project_id] blank' do
+      before do
+        get :sourceid_index, :sourcedb => @sourcedb
+      end
+      
+      it 'should assigns docs which sourcedb match' do
+        assigns[:source_docs].should =~ Doc.where(['sourcedb = ?', @sourcedb])
+      end
+    end
+  end
+  
   describe 'source' do
     before do
       @project = FactoryGirl.create(:project)

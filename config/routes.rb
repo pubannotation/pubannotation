@@ -29,6 +29,8 @@ Pubann::Application.routes.draw do
   resources :docs do
     collection do
       get 'source' => 'docs#source'
+      # list sourcedb
+      get 'sourcedb' => 'docs#sourcedb_index' 
     end  
     member do
       get 'annotations' => 'docs#annotations'
@@ -41,8 +43,6 @@ Pubann::Application.routes.draw do
   # routings for /docs/sourcedb....
   scope 'docs',  :as => 'doc' do
     scope 'sourcedb', :as => 'sourcedb' do
-      # list sourcedb
-      get '/' => 'docs#sourcedb_index' 
       
       scope ':sourcedb' do
         # list sourceids

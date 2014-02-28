@@ -18,7 +18,7 @@
 
 <tr>
 	<td>
-		<%= source_doc.sourcedb -%>
+      	<%= sourceid_index_link_helper(source_doc) -%>
 	</td>
 	<td>
 		<%= source_doc.sourceid -%>
@@ -31,9 +31,17 @@
 	<td>
         <span class="button">
         	<% if  params[:project_id].present? -%>
-        		<%= link_to t('views.shared.show_divisions'), index_project_sourcedb_sourceid_divs_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
+        		<% if source_doc.has_divs? -%>
+        			<%= link_to t('views.shared.show_divisions'), index_project_sourcedb_sourceid_divs_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
+        		<% else -%>
+        			<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
+        		<% end -%>
         	<% else -%>
-        		<%#= link_to t('views.shared.show_divisions'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
+        		<% if source_doc.has_divs? -%>
+        			<%= link_to t('views.shared.show_divisions'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
+	        	<% else -%>
+        			<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
+	        	<% end -%>
         	<% end -%>
         </span>
 	</td>

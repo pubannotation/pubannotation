@@ -1395,6 +1395,30 @@ describe Doc do
       end
     end
   end
+  
+  describe 'has_divs?' do
+    before do
+      @sourcedb = 'sourcedb'
+      @sourceid = 123456789
+      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)  
+    end
+    
+    context 'when same sourcedb and sourceid doc blank' do
+      it 'shoud return false' do
+        @doc.has_divs?.should be_false
+      end
+    end
+    
+    context 'when same sourcedb and sourceid doc present' do
+      before do
+        FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)  
+      end
+      
+      it 'shoud return true' do
+        @doc.has_divs?.should be_true
+      end
+    end
+  end
    
   describe 'decrement_docs_counter' do
     before do

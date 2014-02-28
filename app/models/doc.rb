@@ -61,6 +61,11 @@ class Doc < ActiveRecord::Base
     .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count')
     .group(:sourcedb).group(:sourceid).order('sourceid ASC')
     
+  
+  scope :same_sourcedb_sourceid, lambda{|sourcedb, sourceid|
+    where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
+  }
+  
   def self.order_by(docs, order)
     if docs.present?
       case order
@@ -272,6 +277,10 @@ class Doc < ActiveRecord::Base
       false
     end
     true
+  end
+  
+  def has_divs?
+    Doc.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
   end
       
   # before destroy

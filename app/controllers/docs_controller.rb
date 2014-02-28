@@ -55,14 +55,35 @@ class DocsController < ApplicationController
       end
     end
   end
+ 
+ def sourcedb_index
+  if params[:project_id].present?
+    project = Project.find_by_name(params[:project_id]) 
+    docs = project.docs
+  else
+    docs = Doc
+  end
+  @docs = docs.where(['sourcedb IS NOT ? AND sourcedb IS NOT ?', nil, '']).select(:sourcedb).uniq
+ end 
+ 
+ def sourceid_index
+   if params[:project_id].present?
+    project = Project.find_by_name(params[:project_id]) 
+    docs = project.docs
+   else
+     docs = Doc
+   end
+   @source_docs = docs.where(['sourcedb = ?', params[:sourcedb]]).order('sourceid ASC').paginate(:page => params[:page])
+ end 
 
  def source
   if params[:project_id].present?
     @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
-    @source_docs = @project.docs.source_db_id.paginate(:page => params[:page])
+    docs = @project.docs
   else
-    @source_docs = Doc.source_db_id.paginate(:page => params[:page])
+    docs = Doc
   end
+  @source_docs = docs.source_db_id.paginate(:page => params[:page])
  end
     
   # GET /docs/1

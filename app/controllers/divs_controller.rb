@@ -105,22 +105,26 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs/:divid
   # GET /pmcdocs/:pmcid/divs/:divid.json
   def show
+    # TODO compatibility for PMC and Docs
+    params[:sourcedb] ||= 'PMC'
+    params[:sourceid] ||= params[:pmcdoc_id]
+    params[:div_id]   ||= params[:id]
     if (params[:project_id])
       @project, notice = get_project(params[:project_id])
       if @project
-        @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id], @project)
+        @doc, notice = get_doc(params[:sourcedb], params[:sourceid], params[:div_id], @project)
         @annotations = get_annotations(@project, @doc)
       else
         @doc = nil
       end
     else
-      if params[:pmcdoc_id].present?
-        @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
-        @projects = get_projects({:doc => @doc})
-      else
+      # if params[:pmcdoc_id].present?
+        # @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
+        # @projects = get_projects({:doc => @doc})
+      # else
         @doc, notice = get_doc(params[:sourcedb], params[:sourceid], params[:div_id])
         @projects = get_projects({:doc => @doc})
-      end
+      # end
     end
 
     if @doc
@@ -139,8 +143,9 @@ class DivsController < ApplicationController
         }
         format.json {
           standoff = Hash.new
-          standoff[:pmcdoc_id] = params[:pmcdoc_id]
-          standoff[:div_id] = params[:id]
+          # TODO pmcdoc_id => sourceid ?
+          standoff[:pmcdoc_id] = params[:sourceid]
+          standoff[:div_id] = params[:div_id]
           standoff[:text] = @text
           render :json => standoff #, :callback => params[:callback]
         }

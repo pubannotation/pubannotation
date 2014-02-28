@@ -351,6 +351,10 @@ en:
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
       automatic_annotation: Get automatic annotation
+      docs_list: Documents List
+      sourcedb_list: Source DB List
+      sourceid_list: Source ID List
+      source_db_id_list: Source DB and ID list
     documentations:
       Overview: Overview
       Features: Features

@@ -19,7 +19,9 @@
 
   <% @docs.each do |doc| %>
     <tr>
-      <td><%= doc.sourcedb %></td>
+      <td>
+      	<%= sourceid_index_link_helper(doc)-%>
+      </td>
       <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
       <td><%= doc.serial %></td>
       <td><%= doc.section %></td>
