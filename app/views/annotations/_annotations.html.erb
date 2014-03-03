@@ -1,4 +1,8 @@
-<%= render :partial => 'denotations/denotation', :collection => @denotations -%>
+<% if @denotations.present? -%>
+	<%= render :partial => 'denotations/denotation', :collection => @denotations -%>
+<% else -%>
+	<%= t('controllers.shared.not_exists', :model => t('views.shared.annotation')) %>
+<% end -%>
 
 <% if @instances and !@instances.empty? %>
   <h2><%= t('activerecord.models.instance') %></h2>

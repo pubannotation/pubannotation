@@ -122,21 +122,33 @@ class DocsController < ApplicationController
       end
       project = @project
     else
-      @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
+      if params[:id].present?
+        @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
+      elsif params[:sourcedb] && params[:sourceid]
+        doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        if doc.has_divs? == true
+          redirect_to doc_sourcedb_sourceid_divs_index_path
+        else
+          @doc = doc
+        end
+      end
     end
-    @spans, @prev_text, @next_text = @doc.spans(params)
-    annotations = get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
-    annotations[:text] = @spans
-    annotations[:spans] = {:begin => params[:begin], :end => params[:end]}
-    annotations[:spans][:prev_text] = @prev_text if @prev_text.present?
-    annotations[:spans][:next_text] = @next_text if @next_text.present?
-    @denotations = annotations[:denotations]
-    @instances = annotations[:instances]
-    @relations = annotations[:relations]
-    @modifications = annotations[:modifications]
-    respond_to do |format|
-      format.html { render 'annotations'}
-      format.json { render :json => annotations, :callback => params[:callback] }
+    
+    if @doc.present?
+      @spans, @prev_text, @next_text = @doc.spans(params)
+      annotations = get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
+      annotations[:text] = @spans
+      annotations[:spans] = {:begin => params[:begin], :end => params[:end]}
+      annotations[:spans][:prev_text] = @prev_text if @prev_text.present?
+      annotations[:spans][:next_text] = @next_text if @next_text.present?
+      @denotations = annotations[:denotations]
+      @instances = annotations[:instances]
+      @relations = annotations[:relations]
+      @modifications = annotations[:modifications]
+      respond_to do |format|
+        format.html { render 'annotations'}
+        format.json { render :json => annotations, :callback => params[:callback] }
+      end
     end
   end
   

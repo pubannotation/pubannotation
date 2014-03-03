@@ -277,7 +277,7 @@ describe DocsController do
     before do
       @project = FactoryGirl.create(:project, :name => 'project_name')
       controller.stub(:get_project).and_return(@project, 'notice')
-      @doc = FactoryGirl.create(:doc)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 123456)
       controller.stub(:get_doc).and_return(@doc, 'notice')
       @projects = [@project]
       controller.stub(:get_projects).and_return(@projects)
@@ -348,20 +348,61 @@ describe DocsController do
     
     context 'when params[:project_id] blank' do
       context 'when format html' do
-        before do
-          get :annotations, :id => @doc.id, :begin => 1, :end => 10
+        context 'when params[:id] present' do
+          before do
+            get :annotations, :id => @doc.id, :begin => 1, :end => 10
+          end
+          
+          it 'should not assign @project' do
+            assigns[:project].should be_nil
+          end
+          
+          it 'should assign @doc' do
+            assigns[:doc].should eql(@doc)
+          end
+          
+          it 'sould render template' do
+            response.should render_template('annotations')
+          end
         end
-        
-        it 'should not assign @project' do
-          assigns[:project].should be_nil
-        end
-        
-        it 'should assign @doc' do
-          assigns[:doc].should eql(@doc)
-        end
-        
-        it 'sould render template' do
-          response.should render_template('annotations')
+
+        context 'when params[:id] is nil and params[:sourcedb] and params[:sourceid] present' do
+          context 'when docs.has_divs? is false' do
+            before do
+              get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid
+            end
+            
+            it 'should not assign @project' do
+              assigns[:project].should be_nil
+            end
+            
+            it 'should assign @doc' do
+              assigns[:doc].should eql(@doc)
+            end
+            
+            it 'sould render template' do
+              response.should render_template('annotations')
+            end
+          end
+
+          context 'when docs.has_divs? is true' do
+            before do
+              Doc.any_instance.stub(:has_divs?).and_return(true)
+              get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid
+            end
+            
+            it 'should not assign @project' do
+              assigns[:project].should be_nil
+            end
+            
+            it 'should not assign @doc' do
+              assigns[:doc].should be_nil
+            end
+            
+            it 'sould render template' do
+              response.should redirect_to(doc_sourcedb_sourceid_divs_index_path)
+            end
+          end
         end
       end
 

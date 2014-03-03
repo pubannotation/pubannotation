@@ -294,6 +294,7 @@ ja:
       successfully_destroyed: '%{model}を削除しました'
       confirm_delete: 削除してよろしいですか？
       last_modified_at: 最終更新日時
+      not_exists: "%{model}はありません"
       sql:
         invalid: 無効なSQL文が入力されました
     application:
@@ -428,6 +429,7 @@ ja:
       add: 追加
       add_to_the_set: セットに追加
       account: アカウント
+      annotation: アノテーション
       back: 戻る
       category: カテゴリー
       edit: 編集

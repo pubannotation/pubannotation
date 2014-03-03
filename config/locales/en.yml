@@ -273,6 +273,7 @@ en:
       successfully_destroyed: '%{model} was successfully deleted.'
       confirm_delete: Are you sure to delete?
       last_modified_at: Modified at
+      not_exists: There are no %{model}
       sql:
         invalid: Invalid SQL
     application:
@@ -406,6 +407,7 @@ en:
       add: Add
       add_to_the_set: Add to the set
       account: account
+      annotation: annotation
       edit : edit
       error: error
       delete: delete
