@@ -34,7 +34,7 @@
         		<% if source_doc.has_divs? -%>
         			<%= link_to t('views.shared.show_divisions'), index_project_sourcedb_sourceid_divs_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
         		<% else -%>
-        			<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
+        			<%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
         		<% end -%>
         	<% else -%>
         		<% if source_doc.has_divs? -%>
