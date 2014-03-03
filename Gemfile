@@ -49,6 +49,7 @@ gem 'will_paginate'
 gem 'thin'
 gem 'devise'
 gem 'rubyzip'
+gem 'zip-zip'
 gem 'rails3-jquery-autocomplete'
 gem 'delayed_job_active_record'
 
