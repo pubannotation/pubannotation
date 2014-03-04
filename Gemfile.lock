@@ -226,7 +226,7 @@ PLATFORMS
 DEPENDENCIES
   coffee-rails (~> 3.2.1)
   delayed_job_active_record
-  devise
+  devise (= 3.2.3)
   diff-lcs
   factory_girl_rails
   guard
