@@ -24,3 +24,6 @@
 
 # Ignore generated annotations ZIP files
 /public/annotations/*.zip
+
+# Ignore devise config file
+/config/initializers/devise.rb
