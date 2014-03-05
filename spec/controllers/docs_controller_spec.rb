@@ -271,6 +271,29 @@ describe DocsController do
         end
       end
     end
+    
+    describe 'when @doc present' do
+      before do
+        @project = 'project'
+        @noice = 'notice'
+        controller.stub(:get_project).and_return([@project, @notice])
+        @projects = 'projects'
+        controller.stub(:get_projects).and_return(@projects)
+        get :show, :id => @doc.id
+      end
+      
+      it 'should assign @doc' do
+        assigns[:doc].should eql @doc
+      end
+      
+      it 'should assign @project' do
+        assigns[:project].should eql @project
+      end
+      
+      it 'should assign @projects' do
+        assigns[:projects].should eql @projects
+      end
+    end
   end
   
   describe 'annotations' do

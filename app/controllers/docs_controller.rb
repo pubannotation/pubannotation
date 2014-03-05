@@ -104,6 +104,7 @@ class DocsController < ApplicationController
     if @doc.present?
       @text = @doc.body
       @project, notice = get_project(params[:project_id])
+      @projects = get_projects({:doc => @doc})
       respond_to do |format|
         format.html # show.html.erb
         format.json { render json: @doc }
