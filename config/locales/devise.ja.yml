@@ -2,80 +2,82 @@
 ja:
   errors:
     messages:
-      expired: "の期限が切れましたので、新しくリクエストしてください"
-      not_found: "は見つかりませんでした"
-      already_confirmed: "は既に登録済みですのでログインしてください"
-      not_locked: "は凍結されていません"
+      expired: は期限が切れたため、新しく取得する必要があります
+      not_found: は見つかりませんでした
+      already_confirmed: は既に登録済みです
+      not_locked: は凍結されていません
       not_saved:
         one: "1 つのエラーにより %{resource} は保存されませんでした:"
         other: "%{count} つのエラーにより %{resource} は保存されませんでした:"
+      confirmation_period_expired: は%{period}以内に確認が必要です。もう一度要求してください。
 
   devise:
     failure:
-      already_authenticated: '既にログインしています。'
-      unauthenticated: 'ログインしてください。'
-      unconfirmed: '本登録を行ってください。'
-      locked: 'あなたのアカウントは凍結されています。'
-      invalid: 'メールアドレスかパスワードが違います。'
-      invalid_token: '認証キーが不正です。'
-      timeout: 'セッションがタイムアウトしました。もう一度ログインしてください。'
-      inactive: 'アカウントがアクティベートされていません。'
+      already_authenticated: 既にログインしています。
+      unauthenticated: 続けるにはログインまたはアカウントを登録してください。
+      unconfirmed: 本登録を行ってください。
+      locked: アカウントが凍結されています。
+      invalid: メールアドレスまたはパスワードが違います。
+      timeout: セッションがタイムアウトしました。もう一度ログインしてください。
+      inactive: アカウントが有効化されていません。
+      last_attempt: あと一回間違えるとアカウントが凍結されます。
+      not_found_in_database: メールアドレスまたはパスワードが違います。
     sessions:
-      signed_in: 'ログインしました。'
-      signed_out: 'ログアウトしました。'
+      signed_in: ログインしました。
+      signed_out: ログアウトしました。
     passwords:
-      send_instructions: 'パスワードのリセット方法を数分以内にメールでご連絡します。'
-      updated: 'パスワードを変更しました。'
-      change_your_password: 'パスワードの変更'
-      new_password: '新しいパスワード'
-      confirm_new_password: '新しいパスワードの確認'
-      change_my_password: 'パスワードの変更'
-      updated_not_active: 'パスワードが正しく変更されました。'
-      send_paranoid_instructions: "もしあなたのEメールアドレスが見つかった場合、パスワード復元用のメールが数分以内に送られます。"
-      no_token: "このページにはアクセスできません。パスワード復元メールのリンクをコピーした場合には、正しい URL かどうかをお確かめください。"
+      send_instructions: パスワードの再設定方法を数分以内にメールでご連絡します。
+      updated: パスワードを変更し、ログインしました。
+      change_your_password: パスワードの変更
+      new_password: 新しいパスワード
+      confirm_new_password: 新しいパスワードの確認
+      change_my_password: パスワードの変更
+      updated_not_active: パスワードを変更しました。
+      send_paranoid_instructions: メールアドレスが登録されていれば、数分以内にパスワード再設定のメールが届きます。
+      no_token: パスワード再設定のメール以外からこのページへアクセスする事はできません。もしパスワード再設定のメールに記載されたリンクをクリックしてこのページへ訪れた場合、不完全なURLのリンクをクリックしていないか確認してください。メーラーによっては、リンクのURLが途中で切れる可能性があります。
     confirmations:
-      send_instructions: '登録方法を数分以内にメールでご連絡します。'
-      send_paranoid_instructions: 'もしあなたのEメールアドレスが見つかった場合、本人確認についてのメールが数分以内に送られます。'
-      confirmed: 'アカウントを登録しました。'
-      resend_confirmation_instructions: '登録方法の再送'
+      send_instructions: 登録方法を数分以内にメールでご連絡します。
+      send_paranoid_instructions: メールアドレスが登録されていれば、数分以内にアカウントを確認する方法が記載されているメールが届きます。
+      confirmed: アカウントを登録しました。
+      resend_confirmation_instructions: 登録方法の再送
     registrations:
-      signed_up: 'ようこそ！ アカウント登録を受け付けました。'
-      signed_up_but_unconfirmed: '本人確認用のメールがあなたのEメールアドレスに送られました。メール内のリンクからアカウントを有効化さ>せてください。'
-      signed_up_but_inactive: 'アカウント登録を受け付けました。しかしまだ有効化されておらず、ログインできません。'
-      signed_up_but_locked: 'アカウント登録を受け付けました。しかし、アカウントが凍結されているためログインできません。'
-      updated: 'アカウント情報を変更しました。'
-      update_needs_confirmation: "アカウント情報を変更しましたが、Eメールアドレスの本人確認用Eメールをお送りしましたので、中のリンクをクリックして証明してください。"
-      destroyed: 'アカウントを削除しました。またのご利用をお待ちしております。'
-      full_name: '（フルネーム）'
-      password_leave_blank: '(変更したくない場合は空欄)'
-      current_password: '(変更を確認するために現在のパスワードを入力)'
-      delete_my_account: 'アカウントの削除'
-      notice_before_delete: '(注意：あなたのデータが全て削除されます)'
+      signed_up: アカウント登録を受け付けました。
+      signed_up_but_unconfirmed: アカウント確認のリンクが入っているメールを送りました。 メール内のリンクでアカウントを有効にしてください。
+      signed_up_but_inactive: 登録に成功しました。しかし、アカウントが有効になっていないためログインできません。
+      signed_up_but_locked: 登録に成功しました。しかし、アカウントがロックされているためログインできません。
+      updated: アカウント情報を更新しました。
+      update_needs_confirmation: アカウント情報を変更しました。しかし、メールアドレスを確認する必要があります。メール内のリンクで新しいメールアドレスを確認してください。
+      destroyed: アカウントを削除しました。またのご利用をお待ちしております。
+      full_name: （フルネーム）
+      password_leave_blank: (変更したくない場合は空欄)
+      current_password: (変更を確認するために現在のパスワードを入力)
+      delete_my_account: アカウントの削除
+      notice_before_delete: (注意：あなたのデータが全て削除されます)
     unlocks:
-      send_instructions: 'アカウントの凍結解除方法を数分以内にメールでご連絡します。'
-      unlocked: 'アカウントを凍結解除しました。ログインしています。'
-      send_paranoid_instructions: 'アカウントが見つかった場合、アカウントの凍結解除方法を数分以内にメールでご連絡します。'
+      send_instructions: アカウントの凍結解除方法を数分以内にメールでご連絡します。
+      unlocked: アカウントを凍結解除しました。続けるにはログインしてください。
+      send_paranoid_instructions: アカウントが登録されていれば、数分以内にアカウントの凍結解除方法が登録しているアドレスに届きます。
     omniauth_callbacks:
-      success: '%{kind} アカウントによる個人認証に成功しました。'
-      failure: '%{kind} アカウントによる個人認証に失敗しました（%{reason}）。'
+      success: '%{kind}による認証に成功しました。'
+      failure: 「%{reason}」のため、%{kind}による認証ができませんでした。
     mailer:
       confirmation_instructions:
-        subject: 'アカウントの登録方法'
+        subject: アカウントの登録方法
         welcome: 'ようこそ%{email}さん'
-        confirm_email_link: '以下のリンクよりあなたのアカウントのe-mailをご確認頂けます。'
-        confirm_my_account: 'アカウントの確認'
+        confirm_email_link: 以下のリンクよりあなたのアカウントのe-mailをご確認頂けます。
+        confirm_my_account: アカウントの確認
       reset_password_instructions:
-        subject: 'パスワードの再設定'
+        subject: パスワードの再設定
         hello: '%{email}さん'
         requested: 'パスワードのリセットが要求されました。パスワードのリセットは以下のリンクから行うことができます。'
         change_my_password: 'パスワードの変更'
         description: '万が一パスワードのリセットを要求していない場合は、このメールを無視して下さい。<br />以下のリンクにアクセスするまでパスワードは変更されません。'
       unlock_instructions:
-        subject: 'アカウントの凍結解除'
+        subject: アカウントの凍結解除
         hello: '%{email}さん'
-        locked: 'あなたのアカウントは多数回ログインに失敗したため凍結されました。'
-        unlock_link: 'アカウントの凍結解除をするには、以下のリンクをクリックして下さい'
-        unlock_my_account: 'アカウントの凍結解除'
+        locked: あなたのアカウントは多数回ログインに失敗したため凍結されました。
+        unlock_link: アカウントの凍結解除をするには、以下のリンクをクリックして下さい
+        unlock_my_account: アカウントの凍結解除
     shared:
-      confirmation_instructions: 'アカウントの登録方法のメールを受信していませんか？'
-      unlock_instructions: 'アカウントの凍結解除のメールを受信していませんか？'
+      confirmation_instructions: アカウントの登録方法のメールを受信していませんか？
+      unlock_instructions: アカウントの凍結解除のメールを受信していませんか？
