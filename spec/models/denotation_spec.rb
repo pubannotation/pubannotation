@@ -173,7 +173,7 @@ describe Denotation do
       end
       
       it 'project denotations should return proejct.denotations' do
-        @project.denotations.should =~ [@project_denotation_1, @project_denotation_2, @project_denotation_3, @project_denotation_4, @project_denotation_5]
+        @project.denotations.to_a.should =~ [@project_denotation_1, @project_denotation_2, @project_denotation_3, @project_denotation_4, @project_denotation_5]
       end
       
       it 'should return project.denotations belongs to PMC and same sourceid' do

@@ -5,7 +5,7 @@ describe DenotationsHelper do
   describe 'denotations_count_helper' do
     before do
       @project_denotations_count = 'project_denotations_count'
-      Denotation.stub!(:project_denotations_count) do |project_id, denotations|
+      Denotation.stub(:project_denotations_count) do |project_id, denotations|
         [project_id, denotations, @project_denotations_count]
       end
       @project = FactoryGirl.create(:project, :relations_count => 100)

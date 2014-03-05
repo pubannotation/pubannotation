@@ -33,7 +33,7 @@ describe "docs/_source_doc.html.erb" do
         end
         
         it 'should render show link' do
-          rendered.should have_selector :a, :href => doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) 
+          rendered.should have_selector :a, :href => show_project_sourcedb_sourceid_docs_path(@project_id, @doc.sourcedb, @doc.sourceid) 
         end
       end
     end

@@ -152,7 +152,7 @@ describe Project do
     end
     
     it 'should prensent' do
-      @project.associate_maintainers.should =~ [@associate_maintainer_1, @associate_maintainer_2]
+      @project.associate_maintainers.to_a.should =~ [@associate_maintainer_1, @associate_maintainer_2]
     end
     
     it 'should destoryed when project destroyed' do
@@ -179,7 +179,7 @@ describe Project do
     end
     
     it 'should include' do
-      @project.associate_maintainer_users.should =~ [@user_1, @user_2]
+      @project.associate_maintainer_users.to_a.should =~ [@user_1, @user_2]
     end
   end
   
@@ -821,7 +821,7 @@ describe Project do
               end
               
               it 'should associate projects associated associate projects once only' do
-                @project.associate_projects.should =~ [
+                @project.associate_projects.to_a.should =~ [
                   @associate_project_have_no_associate_projects, 
                   @associate_project_have_associate_projects_1, 
                   @associated_project, 
@@ -854,7 +854,7 @@ describe Project do
               end
               
               it 'should associate projects associated associate projects once only' do
-                @project.associate_projects.should =~ [
+                @project.associate_projects.to_a.should =~ [
                   @associate_project_have_no_associate_projects, 
                   @associate_project_have_associate_projects_1, 
                   @associated_project, 
@@ -882,7 +882,7 @@ describe Project do
             end
             
             it 'should associate associate projects' do
-              @project.associate_projects.should =~ [
+              @project.associate_projects.to_a.should =~ [
                 @associate_project_have_no_associate_projects, 
                 @associated_project
               ]
@@ -907,7 +907,7 @@ describe Project do
         end
         
         it 'should not associate projects associated associate projects' do
-          @project.associate_projects.should =~ [
+          @project.associate_projects.to_a.should =~ [
             @associate_project_have_no_associate_projects, 
             @associate_project_have_associate_projects_1, 
             @associate_project_have_associate_projects_2
@@ -1411,7 +1411,7 @@ describe Project do
     before do
       @project = FactoryGirl.create(:project)
       @associate_projects_count = 2
-      @project.stub!(:copy_associate_project_relational_models).and_return(nil)
+      @project.stub(:copy_associate_project_relational_models).and_return(nil)
       @associate_projects_count.times do
         @project.associate_projects << FactoryGirl.create(:project)
       end
@@ -1428,7 +1428,7 @@ describe Project do
       before do
         @associate_projects_count = 2
         @project = FactoryGirl.create(:project, :pending_associate_projects_count => @associate_projects_count)
-        @project.stub!(:increment_pending_associate_projects_count).and_return(nil)
+        @project.stub(:increment_pending_associate_projects_count).and_return(nil)
         @associate_projects_count.times do
           @project.associate_projects << FactoryGirl.create(:project)
         end
@@ -1463,11 +1463,11 @@ describe Project do
       
       describe 'before' do
         it 'project.pmdocs_count should not incremented' do
-          @project.pmdocs.should =~ [@same_doc_1]
+          @project.pmdocs.to_a.should =~ [@same_doc_1]
         end
         
         it 'project.pmcdocs_count should not incremented' do
-          @project.pmcdocs.should =~ [@same_doc_2]
+          @project.pmcdocs.to_a.should =~ [@same_doc_2]
         end
       end
       
@@ -1478,11 +1478,11 @@ describe Project do
         end
 
         it 'should include not duplicative pmdoc' do
-          @project.pmdocs.should =~ [@same_doc_1, @not_same_doc_1]
+          @project.pmdocs.to_a.should =~ [@same_doc_1, @not_same_doc_1]
         end
         
         it 'should include not duplicative pmcdoc' do
-          @project.pmcdocs.should =~ [@same_doc_2, @not_same_doc_2]
+          @project.pmcdocs.to_a.should =~ [@same_doc_2, @not_same_doc_2]
         end
         
         it 'project.docs should incremented by not duplicative docs count' do
@@ -1531,7 +1531,7 @@ describe Project do
       
       describe 'before' do
         it 'project should only have self denotations' do
-          @project.denotations.should =~ [@same_denotation_project]
+          @project.denotations.to_a.should =~ [@same_denotation_project]
         end
       end
       
@@ -1542,7 +1542,7 @@ describe Project do
         end
         
         it 'project should import not duplicative denotations' do
-          @project.denotations.should =~ [@same_denotation_project, 
+          @project.denotations.to_a.should =~ [@same_denotation_project, 
             @project.denotations.where({
               :hid => @not_same_denotation_associate.hid,
               :begin => @not_same_denotation_associate.begin,
@@ -1588,7 +1588,7 @@ describe Project do
       
       describe 'before' do
         it 'project should only have self relations' do
-          @project.relations.should =~ [@same_relation_project]
+          @project.relations.to_a.should =~ [@same_relation_project]
         end
       end
       
@@ -1599,7 +1599,7 @@ describe Project do
         end
         
         it 'project should import not duplicative denotations' do
-          @project.relations.should =~ [@same_relation_project, 
+          @project.relations.to_a.should =~ [@same_relation_project, 
             @project.relations.where({
               :hid => @not_same_relation_associate.hid,
               :subj_id => @not_same_relation_associate.subj_id,

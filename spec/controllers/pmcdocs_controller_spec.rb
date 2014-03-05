@@ -620,7 +620,7 @@ describe PmcdocsController do
           end
           
           it 'project.doc should include @div, @not_div' do
-            @project.docs.should =~ [@div, @not_div]  
+            @project.docs.to_a.should =~ [@div, @not_div]  
           end
           
           describe 'delete' do
@@ -629,7 +629,7 @@ describe PmcdocsController do
             end
             
             it 'div should deleted from project.docs' do
-              @project.docs.should =~ [@not_div]
+              @project.docs.to_a.should =~ [@not_div]
             end
             
             it 'should redirect_to project path' do

@@ -45,7 +45,7 @@ describe User do
       end
       
       it 'should include all users' do
-        @users.should =~ User.all
+        @users.to_a.should =~ User.all
       end
     end
   end
@@ -67,7 +67,7 @@ describe User do
     end
     
     it 'should include associate_maineiners' do
-      @user.associate_maintainers.should =~ [@associate_maintainer_1, @associate_maintainer_2]
+      @user.associate_maintainers.to_a.should =~ [@associate_maintainer_1, @associate_maintainer_2]
     end
     
     it 'should destory all associate maintainers when detroyed' do
@@ -88,7 +88,7 @@ describe User do
     end
     
     it 'should include projects' do
-      @user.projects.should =~ [@project_1, @project_2]
+      @user.projects.to_a.to_a.should =~ [@project_1, @project_2]
     end
   end
   
@@ -110,7 +110,7 @@ describe User do
     end
     
     it 'should include associate_maineiners' do
-      @user.associate_maintaiain_projects.should =~ [@project_1, @project_2]
+      @user.associate_maintaiain_projects.to_a.should =~ [@project_1, @project_2]
     end
   end
   
