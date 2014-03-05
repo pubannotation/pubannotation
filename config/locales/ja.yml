@@ -400,6 +400,7 @@ ja:
       associate_maintain_projects: 関係しているプロジェクト
       belongs_to_sproject: このSprojectに含まれるプロジェクト
       associate_project: 関連プロジェクト
+      detail: プロジェクト詳細
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:

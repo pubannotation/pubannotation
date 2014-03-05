@@ -1,5 +1,7 @@
 <% if @project -%>
-	<%= link_to @project.name, project_path(@project.name) -%>
+	<%= link_to_unless_current t('views.projects.detail'), project_path(@project.name) , :class => 'tab inactive_tab' do 
+		content_tag :span, t('views.projects.detail'), :class => 'tab active_tab' 
+	end -%>
 	<% 
 		docs_src = project_docs_path(@project.name)
 		source_docs_src = source_project_docs_path(@project.name)
