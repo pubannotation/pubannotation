@@ -145,6 +145,135 @@ describe AnnotationsHelper do
     end
   end  
 
+  describe 'get_annotations_for_json' do
+    context 'when doc present' do
+      before do
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'SDB', :sourceid => 123, :body => 'annotation doc body')
+        @hdenotations = 'hdenotations'
+        @hrelations = 'hrelations'
+        @hmodifications = 'hrelations'
+      end
+      
+      context  'when project blank'  do
+        context  'when no options'  do
+          before do
+            @annotations = helper.get_annotations_for_json(nil, @doc)
+          end
+               
+          it 'should not return :project' do
+            @annotations[:project].should be_nil
+          end
+               
+          it 'should return doc_sourcedb_sourceid_show_path as :target' do
+            @annotations[:target].should eql(doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid, :only_path => false))
+          end
+               
+          it 'should return doc.body as :base_text' do
+            @annotations[:base_text].should eql(@doc.body)
+          end
+               
+          it 'should not return :denotations' do
+            @annotations[:denotations].should be_nil
+          end
+               
+          it 'should not return :relations' do
+            @annotations[:relations].should be_nil
+          end
+               
+          it 'should not return :modifications' do
+            @annotations[:modifications].should be_nil
+          end
+        end
+      
+        context  'when options[:encoding] == ascii'  do
+          before do
+            @ascii_text = 'ascii text'
+            helper.stub(:get_ascii_text).and_return(@ascii_text)
+            @annotations = helper.get_annotations_for_json(nil, @doc, :encoding => 'ascii')
+          end
+               
+          it 'should return asciitext as :base_text' do
+            @annotations[:base_text].should eql(@ascii_text)
+          end
+        end        
+      end
+      
+      context  'when project present' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @doc.stub(:hdenotations).and_return(@hdenotations)
+          @doc.stub(:hrelations).and_return(@hrelations)
+          @doc.stub(:hmodifications).and_return(@hmodifications)
+        end
+        
+        context 'no optiond' do
+          before do
+            @annotations = helper.get_annotations_for_json(@project, @doc)
+          end
+               
+          it 'should return project_path as :project' do
+            @annotations[:project].should eql(project_path(@project.name, :only_path => false))
+          end
+               
+          it 'should return equence_alignment.transform_denotations as :hdenotations' do
+            @annotations[:denotations].should eql(@hdenotations)
+          end
+               
+          it 'should not return :relations' do
+            @annotations[:relations].should eql(@hrelations)
+          end
+               
+          it 'should not return :modifications' do
+            @annotations[:modifications].should eql(@hmodifications)
+          end
+        end
+
+        context  'when options[:discontinuous_annotation] == bag'  do
+          before do
+            helper.stub(:bag_denotations).and_return([@hdenotations, @hrelations])
+            @annotations = helper.get_annotations_for_json(@project, @doc, :discontinuous_annotation => 'bag')
+          end
+               
+          it 'should return equence_alignment.transform_denotations as :hdenotations' do
+            @annotations[:denotations].should eql(@hdenotations)
+          end
+               
+          it 'should not return :relations' do
+            @annotations[:relations].should eql(@hrelations)
+          end
+        end
+        
+        context  'when options[:encoding] == ascii'  do
+          before do
+            @ascii_text = 'ascii text'
+            helper.stub(:get_ascii_text).and_return(@ascii_text)
+            SequenceAlignment.any_instance.stub(:initialize).and_return(nil)
+            SequenceAlignment.any_instance.stub(:transform_denotations).and_return(@hdenotations)
+            @annotations = helper.get_annotations_for_json(@project, @doc, :encoding => 'ascii')
+          end
+               
+          it 'should return asciitext as :base_text' do
+            @annotations[:base_text].should eql(@ascii_text)
+          end
+               
+          it 'should return equence_alignment.transform_denotations as :hdenotations' do
+            @annotations[:denotations].should eql(@hdenotations)
+          end
+        end
+      end
+    end
+
+    context 'when doc blank' do
+      before do
+        @annotations = helper.get_annotations_for_json(nil, nil)
+      end
+      
+      it 'should return nil' do
+        @annotations.should be_nil
+      end
+    end
+  end
+  
   describe 'bag_denotations' do
     context 'when relation type = lexChain' do
       before do

@@ -126,24 +126,15 @@ class DocsController < ApplicationController
       if params[:id].present?
         @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
       elsif params[:sourcedb] && params[:sourceid]
-        doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        if doc.has_divs? == true
-          redirect_to doc_sourcedb_sourceid_divs_index_path
-        else
-          @doc = doc
-        end
+        @doc, flash[:notice] = get_doc(params[:sourcedb],  params[:sourceid])
       end
     end
     
     if @doc.present?
+      annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
       @spans, @prev_text, @next_text = @doc.spans(params)
-      annotations = get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
-      annotations[:text] = @spans
-      annotations[:spans] = {:begin => params[:begin], :end => params[:end]}
-      annotations[:spans][:prev_text] = @prev_text if @prev_text.present?
-      annotations[:spans][:next_text] = @next_text if @next_text.present?
+      annotations[:base_text] = @spans if @spans.present?
       @denotations = annotations[:denotations]
-      @instances = annotations[:instances]
       @relations = annotations[:relations]
       @modifications = annotations[:modifications]
       respond_to do |format|

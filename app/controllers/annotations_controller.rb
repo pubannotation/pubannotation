@@ -13,8 +13,8 @@ class AnnotationsController < ApplicationController
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project, id)
 
         if @doc
-          annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
-          @text = annotations[:text]
+          annotations = get_annotations_for_json(@project, @doc, :encoding => params[:encoding])
+          @text = annotations[:base_text]
           @denotations = annotations[:denotations]
           @instances = annotations[:instances]
           @relations = annotations[:relations]

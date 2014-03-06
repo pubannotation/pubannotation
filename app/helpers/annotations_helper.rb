@@ -50,6 +50,54 @@ module AnnotationsHelper
     end
   end
 
+  def get_annotations_for_json(project, doc, options = {})
+    if doc.present?
+      text = doc.body
+      annotations = Hash.new
+      annotations[:target] = doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
+      if (options[:encoding] == 'ascii')
+        asciitext = get_ascii_text(text)
+        text = asciitext
+      end
+      annotations[:base_text] = text
+      # project
+      if project.present?
+        get_annotation_relational_models(doc, project, text, annotations, options)
+      elsif doc.projects.present?
+        annotations[:tracks] = Array.new
+        i = 0
+        doc.projects.each do |project|
+          annotations[:tracks][i] = Hash.new
+          get_annotation_relational_models(doc, project, text, annotations[:tracks][i], options)
+          i += 1
+        end
+      end
+      annotations
+    else
+      nil
+    end
+  end
+  
+  def get_annotation_relational_models(doc, project, text, annotations, options)
+    annotations[:project] = project_path(project.name, :only_path => false)
+    hrelations = doc.hrelations(project, options)
+    hmodifications = doc.hmodifications(project, options)
+    hdenotations = doc.hdenotations(project, options)
+    if (options[:encoding] == 'ascii')
+      asciitext = get_ascii_text(text)
+      sequence_alignment = SequenceAlignment.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
+      hdenotations = sequence_alignment.transform_denotations(hdenotations)
+    end
+    if (options[:discontinuous_annotation] == 'bag')
+      # TODO: convert to hash representation
+      hdenotations, hrelations = bag_denotations(hdenotations, hrelations)
+    end
+    # doc.relational_models
+    annotations[:denotations] = hdenotations if hdenotations
+    annotations[:relations] = hrelations if hrelations
+    annotations[:modifications] = hmodifications if hmodifications
+  end
+  
   def bag_denotations (denotations, relations)
     tomerge = Hash.new
 

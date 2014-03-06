@@ -309,22 +309,18 @@ describe DocsController do
       @next_text = 'next text'
       Doc.any_instance.stub(:spans).and_return([@spans, @prev_text, @next_text])
       @annotations ={
-        :text => "text",
+        :base_text => "text",
         :denotations => "denotations",
         :instances => "instances",
         :relations => "relations",
         :modifications => "modifications"
       }
-      controller.stub(:get_annotations).and_return(@annotations)
+      controller.stub(:get_annotations_for_json).and_return(@annotations)
     end
     
     context 'when params[:project_id] present' do
       before do
        get :annotations, :project_id => @project.name, :id => @doc.id, :begin => 1, :end => 10
-      end
-      
-      it 'should assign @project' do
-        assigns[:project].should eql(@project)
       end
       
       it 'should assign @doc' do
@@ -349,10 +345,6 @@ describe DocsController do
       
       it 'should assign @denotations' do
         assigns[:denotations].should eql(@annotations[:denotations])
-      end
-      
-      it 'should assign @instances' do
-        assigns[:instances].should eql(@annotations[:instances])
       end
       
       it 'should assign @relations' do
@@ -410,7 +402,6 @@ describe DocsController do
 
           context 'when docs.has_divs? is true' do
             before do
-              Doc.any_instance.stub(:has_divs?).and_return(true)
               get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid
             end
             
@@ -418,12 +409,12 @@ describe DocsController do
               assigns[:project].should be_nil
             end
             
-            it 'should not assign @doc' do
-              assigns[:doc].should be_nil
+            it 'should assign @doc' do
+              assigns[:doc].should eql(@doc)
             end
             
             it 'sould render template' do
-              response.should redirect_to(doc_sourcedb_sourceid_divs_index_path)
+              response.should render_template('annotations')
             end
           end
         end

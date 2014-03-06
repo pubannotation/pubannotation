@@ -17,13 +17,12 @@ describe AnnotationsController do
         controller.stub(:get_docspec).and_return(nil)
         controller.stub(:get_doc).and_return('doc')
         @annotations = {
-            :text => 'text val',
+            :base_text => 'text val',
             :denotations => 'denotations val',
-            :instances => 'instances val',
             :relations => 'relations val',
             :modifications => 'modifications val'
           }
-        controller.stub(:get_annotations).and_return(@annotations)
+        controller.stub(:get_annotations_for_json).and_return(@annotations)
       end
       
       context 'and when params pmdoc_id or pmc_doc_id exists' do
