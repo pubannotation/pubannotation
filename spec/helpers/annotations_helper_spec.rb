@@ -151,7 +151,7 @@ describe AnnotationsHelper do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'SDB', :sourceid => 123, :body => 'annotation doc body')
         @hdenotations = 'hdenotations'
         @hrelations = 'hrelations'
-        @hmodifications = 'hrelations'
+        @hmodifications = 'hmodifications'
       end
       
       context  'when project blank'  do
@@ -184,6 +184,18 @@ describe AnnotationsHelper do
             @annotations[:modifications].should be_nil
           end
         end
+        
+        context 'when docs.projects present' do
+          before do
+            @doc.stub(:projects).and_return([0, 1])
+            helper.stub(:get_annotation_relational_models).and_return(nil)
+            @annotations = helper.get_annotations_for_json(nil, @doc)
+          end
+          
+          it 'should set tracks' do
+            @annotations[:tracks].should =~ [{}, {}]
+          end
+        end
       
         context  'when options[:encoding] == ascii'  do
           before do
@@ -206,7 +218,7 @@ describe AnnotationsHelper do
           @doc.stub(:hmodifications).and_return(@hmodifications)
         end
         
-        context 'no optiond' do
+        context 'no options' do
           before do
             @annotations = helper.get_annotations_for_json(@project, @doc)
           end
@@ -270,6 +282,75 @@ describe AnnotationsHelper do
       
       it 'should return nil' do
         @annotations.should be_nil
+      end
+    end
+  end
+  
+  describe 'get_annotation_relational_models' do
+    before do
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'SDB', :sourceid => 123, :body => 'annotation doc body')
+      @hrelations = 'hrelations'
+      @hmodifications = 'hmodifications'
+      @hdenotations = 'hdenotations'
+      @doc.stub(:hrelations).and_return(@hrelations)
+      @doc.stub(:hmodifications).and_return(@hmodifications)
+      @doc.stub(:hdenotations).and_return(@hdenotations)
+      @transform_denotations = 'transform_denotations'
+      @project = FactoryGirl.create(:project)
+      @text = 'doc body'
+      @asciitext = 'ascii text'
+      @annotations_hash = {}
+    end
+    
+    context 'when no options' do
+      before do
+        @annotations = helper.get_annotation_relational_models(@doc, @project, @text, nil, @annotations_hash, {})
+      end
+      
+      it 'should return project_path as :project' do
+        @annotations[:project].should eql(project_path(@project.name, :only_path => false))
+      end
+  
+      it 'should return equence_alignment.transform_denotations as :hdenotations' do
+        @annotations[:denotations].should eql(@hdenotations)
+      end
+           
+      it 'should not return :relations' do
+        @annotations[:relations].should eql(@hrelations)
+      end
+           
+      it 'should not return :modifications' do
+        @annotations[:modifications].should eql(@hmodifications)
+      end
+    end
+    
+    context  'when options[:encoding] == ascii'  do
+      before do
+        helper.stub(:get_ascii_text).and_return(@asciitext)
+        SequenceAlignment.any_instance.stub(:initialize).and_return(nil)
+        SequenceAlignment.any_instance.stub(:transform_denotations).and_return(@transform_denotations)
+        @annotations = helper.get_annotation_relational_models(@doc, @project, @text, @asciitext, @annotations_hash, :encoding => 'ascii')
+      end
+           
+      it 'should return equence_alignment.transform_denotations as :hdenotations' do
+        @annotations[:denotations].should eql(@transform_denotations)
+      end
+    end
+    
+    context  'when options[:discontinuous_annotation] == bag'  do
+      before do
+        @hdenotations_bag = 'hdenotations_bag'
+        @hrelations_bag = 'hrelations_bag'
+        helper.stub(:bag_denotations).and_return([@hdenotations_bag, @hrelations_bag])
+        @annotations = helper.get_annotations_for_json(@project, @doc, :discontinuous_annotation => 'bag')
+      end
+           
+      it 'should return equence_alignment.transform_denotations as :hdenotations' do
+        @annotations[:denotations].should eql(@hdenotations_bag)
+      end
+           
+      it 'should not return :relations' do
+        @annotations[:relations].should eql(@hrelations_bag)
       end
     end
   end

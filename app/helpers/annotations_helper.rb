@@ -62,13 +62,13 @@ module AnnotationsHelper
       annotations[:base_text] = text
       # project
       if project.present?
-        get_annotation_relational_models(doc, project, text, annotations, options)
+        get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
       elsif doc.projects.present?
         annotations[:tracks] = Array.new
         i = 0
         doc.projects.each do |project|
           annotations[:tracks][i] = Hash.new
-          get_annotation_relational_models(doc, project, text, annotations[:tracks][i], options)
+          get_annotation_relational_models(doc, project, text, asciitext, annotations[:tracks][i], options)
           i += 1
         end
       end
@@ -78,24 +78,23 @@ module AnnotationsHelper
     end
   end
   
-  def get_annotation_relational_models(doc, project, text, annotations, options)
+  def get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
     annotations[:project] = project_path(project.name, :only_path => false)
     hrelations = doc.hrelations(project, options)
     hmodifications = doc.hmodifications(project, options)
     hdenotations = doc.hdenotations(project, options)
-    if (options[:encoding] == 'ascii')
-      asciitext = get_ascii_text(text)
+    if options[:encoding] == 'ascii'
       sequence_alignment = SequenceAlignment.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
       hdenotations = sequence_alignment.transform_denotations(hdenotations)
     end
-    if (options[:discontinuous_annotation] == 'bag')
-      # TODO: convert to hash representation
+    if options[:discontinuous_annotation] == 'bag'
       hdenotations, hrelations = bag_denotations(hdenotations, hrelations)
     end
     # doc.relational_models
     annotations[:denotations] = hdenotations if hdenotations
     annotations[:relations] = hrelations if hrelations
     annotations[:modifications] = hmodifications if hmodifications
+    annotations
   end
   
   def bag_denotations (denotations, relations)
