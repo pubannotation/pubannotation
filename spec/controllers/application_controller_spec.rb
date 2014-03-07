@@ -235,7 +235,7 @@ describe ApplicationController do
         end
         
         it 'should return nil array' do
-          @result.should eql([nil, nil, nil, nil])
+          @result.should eql([nil, nil, 0, nil])
         end
       end
       
@@ -247,7 +247,7 @@ describe ApplicationController do
         end
         
         it 'should return nil and params[:doc_id] array' do
-          @result.should eql([nil, nil, nil, @id])
+          @result.should eql([nil, nil, 0, @id])
         end
       end
     end

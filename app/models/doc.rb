@@ -184,6 +184,20 @@ class Doc < ActiveRecord::Base
     hdenotations = denotations.order('begin ASC').collect {|ca| ca.get_hash} if denotations.present?    
   end
   
+  # return denotations group by project
+  def project_denotations
+    if self.denotations.present?
+      denotations_by_project = self.denotations.group_by(&:project_id)
+      denotations = Array.new
+      denotations_by_project.each do |key, denotations_array|
+        denotation_project = denotations_array[0].project
+        #denotations_hash << self.hdenotations(denotation_project)
+        denotations << {:project => denotation_project, :denotations => self.hdenotations(denotation_project)}
+      end
+      return denotations
+    end
+  end
+  
   def hinstances(project, options = {})
     if options.present? && options[:spans].present?
       denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}

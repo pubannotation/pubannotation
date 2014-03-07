@@ -1,5 +1,5 @@
 <% if @denotations.present? -%>
-	<%= render :partial => 'denotations/denotation', :collection => @denotations -%>
+	<%= render :partial => 'denotations/denotation', :collection => @denotations, :locals => {:project => @project} -%>
 <% else -%>
 	<%= t('controllers.shared.not_exists', :model => t('views.shared.annotation')) %>
 <% end -%>

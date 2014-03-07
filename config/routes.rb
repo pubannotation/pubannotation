@@ -33,7 +33,7 @@ Pubann::Application.routes.draw do
       get 'sourcedb' => 'docs#sourcedb_index' 
     end  
     member do
-      get 'annotations' => 'docs#annotations'
+      get 'annotations' => 'docs#annotations_index'
       get 'spans' => 'docs#spans_index', :as => 'spans_index'
       get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
       get 'spans/:begin-:end/annotations' => 'docs#annotations'    
@@ -54,7 +54,7 @@ Pubann::Application.routes.draw do
           
           scope ':sourceid' do
             get '/' => 'docs#show', :as =>'show'
-            get 'annotations' => 'docs#annotations'
+            get 'annotations' => 'docs#annotations_index'
             get 'spans' => 'docs#spans_index', :as => 'spans_index'
             get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
             get 'spans/:begin-:end/annotations' => 'docs#annotations'
@@ -64,7 +64,7 @@ Pubann::Application.routes.draw do
 
               scope ':div_id' do
                 get '/' => 'divs#show', :as => 'show'
-                get 'annotations' => 'docs#annotations'
+                get 'annotations' => 'docs#annotations_index'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
                 get 'spans/:begin-:end/annotations' => 'docs#annotations'
@@ -155,7 +155,7 @@ Pubann::Application.routes.draw do
               
               scope ':sourceid' do
                 get '/' => 'docs#show', :as =>'show'
-                get 'annotations' => 'docs#annotations'
+                get 'annotations' => 'annotations#index'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
                 get 'spans/:begin-:end/annotations' => 'docs#annotations'
@@ -165,7 +165,7 @@ Pubann::Application.routes.draw do
     
                   scope ':div_id' do
                     get '/' => 'divs#show', :as => 'show'
-                    get 'annotations' => 'docs#annotations'
+                    get 'annotations' => 'annotations#index'
                     get 'spans' => 'docs#spans_index', :as => 'spans_index'
                     get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
                     get 'spans/:begin-:end/annotations' => 'docs#annotations'

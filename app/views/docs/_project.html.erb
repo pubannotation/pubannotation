@@ -14,6 +14,9 @@
 	<% else -%>
 		<% annotation_url = project_doc_annotations_url(@project.name, @doc.id) -%>
 	<% end %>
+	<% if params[:project_id] -%>
+		<% annotation_url = annotations_project_sourcedb_sourceid_docs_path(params[:project_id], @doc.sourcedb, @doc.sourceid) -%>
+	<% end %>
 
 	<h2>
 		<% if params[:action] == 'spans' -%>

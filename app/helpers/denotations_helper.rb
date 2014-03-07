@@ -30,7 +30,7 @@ module DenotationsHelper
     elsif params[:controller] == 'divs' || params[:pmcdoc_id].present?
       params[:id] ||= params[:div_id]
       link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_pmcdoc_div_path(params[:pmcdoc_id], params[:id], denotation[:span][:begin], denotation[:span][:end])
-    elsif params[:controller] == 'docs' 
+    elsif params[:controller] == 'docs' || params[:controller] == 'annotations'
       if params[:id]
         link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_doc_path(params[:id], denotation[:span][:begin], denotation[:span][:end])
       else

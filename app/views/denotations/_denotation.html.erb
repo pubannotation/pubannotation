@@ -1,3 +1,5 @@
+<% collection_size = local_assigns[:size].present? ? local_assigns[:size] : @denotations.size-%>
+
 <% if denotation_counter == 0 -%>
   <h2><%= t('activerecord.models.denotation') %></h2>
   <table class="ann">
@@ -14,7 +16,7 @@
 
 <tr>
   <% if local_assigns[:project].present? && denotation_counter == 0 -%>
-  	<td rowspan="<%= @denotations.size -%>" style="vertical-align: top"><%= project.name -%></td>
+  	<td rowspan="<%= collection_size -%>" style="vertical-align: top"><%= project.name -%></td>
   <% end -%>
   <td><%= denotation[:id] %></td>
   <td>
@@ -33,6 +35,6 @@
   <% end %> 
 </tr>
 
-<% if denotation_counter == @denotations.size - 1 -%>
+<% if denotation_counter == collection_size - 1 -%>
   </table>
 <% end -%>

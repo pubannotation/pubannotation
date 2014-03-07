@@ -384,7 +384,7 @@ describe DocsController do
         context 'when params[:id] is nil and params[:sourcedb] and params[:sourceid] present' do
           context 'when docs.has_divs? is false' do
             before do
-              get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid
+              get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :begin => 0, :end => 10
             end
             
             it 'should not assign @project' do
@@ -402,7 +402,7 @@ describe DocsController do
 
           context 'when docs.has_divs? is true' do
             before do
-              get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid
+              get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :begin => 0, :end => 10
             end
             
             it 'should not assign @project' do

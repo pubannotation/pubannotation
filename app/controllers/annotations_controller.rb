@@ -8,10 +8,9 @@ class AnnotationsController < ApplicationController
     @project, notice = get_project(params[:project_id])
     if @project
 
-      if (params[:pmdoc_id] || params[:pmcdoc_id] || params[:id])
+      if (params[:pmdoc_id] || params[:pmcdoc_id] || params[:id] || (params[:sourcedb] && params[:sourceid]))
         sourcedb, sourceid, serial, id = get_docspec(params)
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project, id)
-
         if @doc
           annotations = get_annotations_for_json(@project, @doc, :encoding => params[:encoding])
           @text = annotations[:base_text]
