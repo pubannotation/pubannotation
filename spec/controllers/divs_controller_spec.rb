@@ -217,7 +217,7 @@ describe DivsController do
         :relations => "relations",
         :modifications => "modifications"
       }
-      controller.stub(:get_annotations).and_return(@annotations)
+      controller.stub(:get_annotations_for_json).and_return(@annotations)
     end
 
     context 'when params[:project_id] present' do
@@ -253,10 +253,6 @@ describe DivsController do
         assigns[:denotations].should eql(@annotations[:denotations])
       end
       
-      it 'should assign @instances' do
-        assigns[:instances].should eql(@annotations[:instances])
-      end
-      
       it 'should assign @relations' do
         assigns[:relations].should eql(@annotations[:relations])
       end
@@ -282,7 +278,7 @@ describe DivsController do
         end
       end
       
-      context 'when format html' do
+      context 'when format json' do
         before do
           get :annotations, :format => 'json', :pmcdoc_id => @doc.id, :id => 1, :begin => 1, :end => 10
         end

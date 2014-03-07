@@ -86,13 +86,9 @@ class DivsController < ApplicationController
     end
     
     @spans, @prev_text, @next_text = @doc.spans(params)
-    annotations = get_annotations(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
-    annotations[:text] = @spans
-    annotations[:spans] = {:begin => params[:begin], :end => params[:end]}
-    annotations[:spans][:prev_text] = @prev_text if @prev_text.present?
-    annotations[:spans][:next_text] = @next_text if @next_text.present?
+    annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
+    annotations[:base_text] = @spans
     @denotations = annotations[:denotations]
-    @instances = annotations[:instances]
     @relations = annotations[:relations]
     @modifications = annotations[:modifications]        
 

@@ -316,7 +316,7 @@ describe PmdocsController do
         :relations => "relations",
         :modifications => "modifications"
       }
-      controller.stub(:get_annotations).and_return(@annotations)
+      controller.stub(:get_annotations_for_json).and_return(@annotations)
     end
     
     context 'when params[:project_id] present' do
@@ -352,10 +352,6 @@ describe PmdocsController do
         assigns[:denotations].should eql(@annotations[:denotations])
       end
       
-      it 'should assign @instances' do
-        assigns[:instances].should eql(@annotations[:instances])
-      end
-      
       it 'should assign @relations' do
         assigns[:relations].should eql(@annotations[:relations])
       end
@@ -378,6 +374,16 @@ describe PmdocsController do
       it 'should assign @doc' do
         assigns[:doc].should eql(@doc)
       end
+    end
+    
+    context 'when format json' do
+      before do
+        get :annotations, :format => :json, :id => @doc.id, :begin => 1, :end => 10
+      end
+      
+      it 'sould render json' do
+        response.body.should eql(@annotations.to_json)
+      end      
     end
   end
   
