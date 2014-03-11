@@ -140,6 +140,7 @@ Pubann::Application.routes.draw do
   resources :projects do
     resources :docs do
       collection do
+        post 'project_docs' => 'docs#create_project_docs'
         get 'source' => 'docs#source'
         scope 'sourcedb', :as => 'sourcedb' do
           # list sourcedb

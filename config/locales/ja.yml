@@ -268,6 +268,7 @@ ja:
         associate_project_name: 関連プロジェクト名を入力
       doc:
         annotation_server: アノテーションサーバーのURL
+        ids: ドキュメントのID
         pmcids: PMCのID
         pmids: PubMedのID
       sproject:

@@ -41,4 +41,6 @@
 
 <%= link_to t('views.shared.new_model', :model => t('activerecord.models.doc')), @new_doc_src, :class => 'button' -%>
 
+<%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
+
 <%= will_paginate @docs %>

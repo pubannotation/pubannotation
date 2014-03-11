@@ -1,4 +1,5 @@
 require 'zip/zip'
+require 'pmcdoc'
 
 class DocsController < ApplicationController
   # GET /docs
@@ -256,6 +257,29 @@ class DocsController < ApplicationController
         format.json { render json: @doc.errors, status: :unprocessable_entity }
       end
     end
+  end
+  
+  def create_project_docs
+    num_created, num_added, num_failed = 0, 0, 0
+    if (params[:project_id])
+      project, notice = get_project(params[:project_id])
+      if project
+        num_added, num_failed = Object.const_get(params[:sourcedb]).add_to_project(project, params[:ids], num_created, num_added, num_failed)
+        notice = t('controllers.pmcdocs.create.added_to_document_set', :num_added => num_added, :project_name => project.name)
+      end
+    else
+      notice = t('controllers.pmcdocs.create.annotation_set_not_specified')
+    end
+
+    respond_to do |format|
+      if num_created + num_added + num_failed > 0
+        format.html { redirect_to project_path(project.name), :notice => notice }
+        format.json { render :json => nil, status: :created, location: project_path(project.name, :accordion_id => 2) }
+      else
+        format.html { redirect_to home_path, :notice => notice }
+        format.json { head :unprocessable_entity }
+      end
+    end  
   end
 
   # PUT /docs/1
