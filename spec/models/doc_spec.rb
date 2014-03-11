@@ -1042,6 +1042,39 @@ describe Doc do
     end
   end
   
+  describe 'project_denotations' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @denotation_1 = FactoryGirl.create(:denotation, :project_id => @project_1.id)
+      @denotation_2 = FactoryGirl.create(:denotation, :project_id => @project_2.id)
+      @doc.stub(:denotation).and_return([@denotation_1, @denotation_2])
+      @hdenotaions = 'hdenotations'
+      @doc.stub(:hdenotations) do |project|
+        "project_id_#{ project.id }"
+      end
+      #and_return(@hdenotaions)
+      @project_denotaions = @doc.project_denotations
+    end
+    
+    it 'should return project' do
+      @project_denotaions[0][:project].should eql(@project_1)
+    end
+    
+    it 'should return denotations' do
+      @project_denotaions[0][:denotations].should eql("project_id_#{ @project_1.id }")
+    end
+    
+    it 'should return project' do
+      @project_denotaions[1][:project].should eql(@project_2)
+    end
+    
+    it 'should return denotations' do
+      @project_denotaions[1][:denotations].should eql("project_id_#{ @project_2.id }")
+    end
+  end
+  
   describe 'hinstances' do
     before do
       @doc = FactoryGirl.create(:doc)

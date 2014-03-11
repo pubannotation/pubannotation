@@ -191,7 +191,6 @@ class Doc < ActiveRecord::Base
       denotations = Array.new
       denotations_by_project.each do |key, denotations_array|
         denotation_project = denotations_array[0].project
-        #denotations_hash << self.hdenotations(denotation_project)
         denotations << {:project => denotation_project, :denotations => self.hdenotations(denotation_project)}
       end
       return denotations
