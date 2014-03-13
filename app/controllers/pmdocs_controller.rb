@@ -170,7 +170,7 @@ class PmdocsController < ApplicationController
               num_added += 1
             end
           else
-            doc = gen_pmdoc(sourceid)
+            doc = PMDoc.generate(sourceid)
             if doc
               project.docs << doc
               num_added += 1
@@ -214,7 +214,7 @@ class PmdocsController < ApplicationController
             notice = t('controllers.pmdocs.update.added_to_annotationset', :sourcedb => doc.sourcedb, :sourceid => doc.sourceid, :project_name => project.name)
           end
         else
-          doc = gen_pmdoc(params[:id])
+          doc = PMDoc.generate(params[:id])
           if doc
             project.docs << doc
             notice = t('controllers.pmdocs.update.created_in_annotation_set', :sourcedb => doc.sourcedb, :sourceid => doc.sourceid, :project_name => project.name)
@@ -229,7 +229,7 @@ class PmdocsController < ApplicationController
     else
       doc = Doc.find_by_sourcedb_and_sourceid('PubMed', params[:id])
       unless doc
-        doc = gen_pmdoc(params[:id])
+        doc = PMDoc.generate(params[:id])
         if doc
           notice = t('controllers.pmdocs.update.successfuly_created', :id => params[:id]) 
         else

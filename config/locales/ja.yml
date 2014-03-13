@@ -308,8 +308,6 @@ ja:
       get_divs:
         not_belong_to: ドキュメントPMC::%{sourceid}はアノテーションセット%{project_name}に属していません
         no_annotation: PubAnnotation内にドキュメントPMC:%{sourceid}のアノテーションセットは存在しません
-      gen_pmcdoc:
-        no_body: ドキュメントに本文がありません
       save_annotations:
         successfully_saved: アノテーションは正常に作成／更新されました
     annotations:
@@ -324,6 +322,7 @@ ja:
       create:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
         annotation_set_not_specified: アノテーションセットが未指定です
+        no_body: ドキュメントに本文がありません
       destroy:
         document_removed_from_annotation_set: "ドキュメント %{sourcedb}:%{sourceid}はアノテーションセット%{project_name}から削除されました"
         project_does_not_include_document: "プロジェクト %{project_name}はドキュメント%{sourcedb}を含んでいません"

@@ -287,8 +287,6 @@ en:
       get_divs:
         not_belong_to: The document, PMC::%{sourceid}, does not belong to the annotation set, %{project_name}.
         no_annotation: No annotation to the document, PMC:%{sourceid}, exists in PubAnnotation.
-      gen_pmcdoc:
-        no_body: no body in the document.
       save_annotations:
         successfully_saved: Annotations were successfully created/updated.
     annotations:
@@ -302,6 +300,7 @@ en:
       create:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
         annotation_set_not_specified: Annotation set is not specified.
+        no_body: no body in the document.
       destroy:
         document_removed_from_annotation_set: "The document, %{sourcedb}:%{sourceid}, was removed from the annotation set, %{project_name}."
         project_does_not_include_document: "the project, %{project_name} does not include the document, %{sourcedb}."

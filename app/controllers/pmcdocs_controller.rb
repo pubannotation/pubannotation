@@ -88,7 +88,7 @@ class PmcdocsController < ApplicationController
               num_added += 1
             end
           else
-            divs, message = gen_pmcdoc(sourceid)
+            divs, message = PMCDoc.generate(sourceid)
             if divs
               divs.each {|div| project.docs << div}
               num_added += 1

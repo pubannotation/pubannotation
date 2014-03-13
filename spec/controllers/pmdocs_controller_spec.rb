@@ -486,7 +486,7 @@ describe PmdocsController do
           context 'and when gem_pmdoc returns doc' do
             before do
               @doc = FactoryGirl.create(:doc, :sourceid => @sourceid, :sourcedb => 'PM', :serial => 0)
-              controller.stub(:gen_pmdoc).and_return(@doc)
+              PMDoc.stub(:generate).and_return(@doc)
               post :create, :project_id => 1, :pmids => @sourceid
             end
             
@@ -498,7 +498,7 @@ describe PmdocsController do
           context 'and when gem_pmdoc does not returns doc' do
             before do
               @doc = FactoryGirl.create(:doc, :sourceid => @sourceid, :sourcedb => 'PM', :serial => 0)
-              controller.stub(:gen_pmdoc).and_return(nil)
+              PMDoc.stub(:generate).and_return(nil)
               post :create, :project_id => 1, :pmids => @sourceid
             end
             
@@ -608,7 +608,7 @@ describe PmdocsController do
         end
 
         context 'and when doc not found by sourcedb and sourceid' do
-          context 'and when gen_pmdoc return doc' do
+          context 'and when PMDoc.generate return doc' do
             before do
               @project = FactoryGirl.create(:project, :name => 'project name', :pmdocs_count => 0, :pmcdocs_count => 0)
               @id = 'sourceid2'
@@ -635,7 +635,7 @@ describe PmdocsController do
               @associate_project_2.reload
               @project.associate_projects << @associate_project_1
               @project.associate_projects << @associate_project_2
-              controller.stub(:gen_pmdoc).and_return(@doc)
+              PMDoc.stub(:generate).and_return(@doc)
             end
             
             describe 'counters before update' do
@@ -691,11 +691,11 @@ describe PmdocsController do
             end
           end
           
-          context 'and when gen_pmdoc does not return doc' do
+          context 'and when PMDoc.generate does not return doc' do
             before do
               @project = FactoryGirl.create(:project)
               @id = 'sourceid'
-              controller.stub(:gen_pmdoc).and_return(nil)
+              PMDoc.stub(:generate).and_return(nil)
               post :update, :project_id => @project.name, :id => @id
             end
 
@@ -730,10 +730,10 @@ describe PmdocsController do
     end
 
     context 'when params[:project_id] does not exists' do
-      context 'and when gen_pmdoc returns doc' do
+      context 'and when PMDoc.generate returns doc' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
-          controller.stub(:gen_pmdoc).and_return(@doc)
+          PMDoc.stub(:generate).and_return(@doc)
           @id = 1
           post :update, :id => 1
         end      
@@ -747,10 +747,10 @@ describe PmdocsController do
         end
       end
 
-      context 'and when gen_pmdoc does not returns doc' do
+      context 'and when PMDoc.generate does not returns doc' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @id)
-          controller.stub(:gen_pmdoc).and_return(nil)
+          PMDoc.stub(:generate).and_return(nil)
           @id = 1
         end      
         

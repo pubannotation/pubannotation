@@ -132,65 +132,6 @@ class ApplicationController < ActionController::Base
     docs
   end
 
-
-  ## get a pmdoc from pubmed
-  def gen_pmdoc (pmid)
-    RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=#{pmid}" do |response, request, result|
-      case response.code
-      when 200
-        parser   = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
-        doc      = parser.parse
-        result   = doc.find_first('/PubmedArticleSet').content.strip
-        return nil if result.empty?
-        title    = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/ArticleTitle')
-        abstract = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText')
-        doc      = Doc.new
-        doc.body = ""
-        doc.body += title.content.strip if title
-        doc.body += "\n" + abstract.content.strip if abstract
-        doc.source = 'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid
-        doc.sourcedb = 'PubMed'
-        doc.sourceid = pmid
-        doc.serial = 0
-        doc.section = 'TIAB'
-        doc.save
-        return doc
-      else
-        return nil
-      end
-    end
-  end
-
-
-  ## get a pmcdoc from pubmed central
-  def gen_pmcdoc (pmcid)
-    pmcdoc = PMCDoc.new(pmcid)
-
-    if pmcdoc.doc
-      divs = pmcdoc.get_divs
-      if divs
-        docs = []
-        divs.each_with_index do |div, i|
-          doc = Doc.new
-          doc.body = div[1]
-          doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + pmcid
-          doc.sourcedb = 'PMC'
-          doc.sourceid = pmcid
-          doc.serial = i
-          doc.section = div[0]
-          doc.save
-          docs << doc
-        end
-        return [docs, nil]
-      else
-        return [nil, t('controllers.application.gen_pmcdoc.no_body')]
-      end
-    else
-      return [nil, pmcdoc.message]
-    end
-  end
-
-
   def archive_texts (docs)
     unless docs.empty?
       file_name = "docs.zip"

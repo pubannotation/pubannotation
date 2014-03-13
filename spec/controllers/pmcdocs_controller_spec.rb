@@ -297,10 +297,10 @@ describe PmcdocsController do
         end
         
         context 'and when divs not found by sourcedb and sourceid' do
-          context 'and when divs returned by gen_pmcdoc' do
+          context 'and when divs returned by PMCDoc.generate' do
             before do
               @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 'sourceid', :serial => 0)
-              controller.stub(:gen_pmcdoc).and_return([[@div], 'message'])            
+              PMCDoc.stub(:generate).and_return([[@div], 'message'])            
               post :create, :project_id => @associate_project_1.name, :pmcids => 'abcd'
             end
 
@@ -327,10 +327,10 @@ describe PmcdocsController do
             end          
           end
 
-          context 'and when divs does not returned by gen_pmcdoc' do
+          context 'and when divs does not returned by PMCDoc.generate' do
             before do
               @div = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid')
-              controller.stub(:gen_pmcdoc).and_return([nil, 'message'])            
+              PMCDoc.stub(:generate).and_return([nil, 'message'])            
               post :create, :project_id => 1, :pmcids => 'abcd,cdef'
             end
             
