@@ -1,6 +1,7 @@
 require 'zip/zip'
 require 'pmdoc'
 require 'pmcdoc'
+require 'fadoc'
 
 class DocsController < ApplicationController
   # GET /docs
