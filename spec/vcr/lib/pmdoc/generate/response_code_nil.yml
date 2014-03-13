@@ -1,0 +1,49 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=0&retmode=xml
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept:
+      - ! '*/*; q=0.5, application/xml'
+      Accept-Encoding:
+      - gzip, deflate
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 400
+      message: Bad Request
+    headers:
+      Date:
+      - Thu, 13 Mar 2014 04:55:09 GMT
+      Server:
+      - Apache
+      Access-Control-Allow-Origin:
+      - ! '*'
+      Cache-Control:
+      - private
+      Ncbi-Sid:
+      - 9DFD19023213A2D1_0854SID
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Set-Cookie:
+      - ncbi_sid=9DFD19023213A2D1_0854SID; domain=.nih.gov; path=/; expires=Fri, 13
+        Mar 2015 04:55:09 GMT
+      X-Ua-Compatible:
+      - IE=Edge
+      Connection:
+      - close
+      Transfer-Encoding:
+      - chunked
+    body:
+      encoding: US-ASCII
+      string: ! "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE eEfetchResult
+        PUBLIC \"-//NLM//DTD efetch 20131226//EN\" \"http://eutils.ncbi.nlm.nih.gov/eutils/dtd/20131226/efetch.dtd\">\n<eFetchResult>\n\t<ERROR>ID
+        list is empty! Possibly it has no correct IDs.</ERROR>\n</eFetchResult>\n"
+    http_version: 
+  recorded_at: Thu, 13 Mar 2014 04:55:09 GMT
+recorded_with: VCR 2.8.0

@@ -38,6 +38,55 @@ class PMCDoc
     end
   end
 
+  def self.generate(pmcid)
+    pmcdoc = PMCDoc.new(pmcid)
+
+    if pmcdoc.doc
+      divs = pmcdoc.get_divs
+      if divs
+        docs = []
+        divs.each_with_index do |div, i|
+          doc = Doc.new
+          doc.body = div[1]
+          doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + pmcid
+          doc.sourcedb = 'PMC'
+          doc.sourceid = pmcid
+          doc.serial = i
+          doc.section = div[0]
+          doc.save
+          docs << doc
+        end
+        return [docs, nil]
+      else
+        return [nil, I18n.t('controllers.application.gen_pmcdoc.no_body')]
+      end
+    else
+      return [nil, pmcdoc.message]
+    end
+  end
+  
+  def self.add_to_project(project, ids, num_created, num_added, num_failed)
+    pmcids = ids.split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
+    pmcids.each do |sourceid|
+      divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
+      if divs.present?
+        unless project.docs.include?(divs.first)
+          project.docs << divs
+          num_added += divs.size
+        end
+      else
+        divs, message = generate(sourceid)
+        if divs
+          project.docs << divs
+          num_added += divs.size
+        else
+          num_failed += 1
+        end
+      end
+    end
+    return [num_added, num_failed]    
+  end
+
 
   def empty?
     (@doc)? false : true

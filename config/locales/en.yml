@@ -251,6 +251,7 @@ en:
         associate_project_name: Enter associate project name.
       doc:
         annotation_server: URL of annotation server
+        ids: Doc IDs
         pmcids: PMC IDs
         pmids: PubMed IDs
       sproject:

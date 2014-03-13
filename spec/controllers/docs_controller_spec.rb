@@ -766,6 +766,100 @@ describe DocsController do
     end
   end
   
+  describe 'create_project_docs' do
+    before do
+      @project = FactoryGirl.create(:project)
+    end
+    
+    context 'when params[:project_id] present' do
+      context 'when project present' do
+        before do
+          controller.stub(:get_project).and_return([@project, nil])
+        end
+        
+        context 'when num_added > 0' do
+          before do
+            @num_added = 5
+            PMCDoc.stub(:add_to_project).and_return([@num_added, 0])
+          end
+          
+          context 'when format html' do
+            before do
+              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMCDoc'
+            end
+            
+            it 'should set number of documents added to project flash[:notice]' do
+              flash[:notice].should eql(I18n.t('controllers.pmcdocs.create.added_to_document_set', :num_added => @num_added, :project_name => @project.name))
+            end
+            
+            it 'should redirect project_path' do
+              response.should redirect_to(project_path(@project.name))
+            end
+          end
+          
+          context 'when format json' do
+            before do
+              get :create_project_docs, :format => 'json', :project_id => @project.name, :sourcedb => 'PMCDoc'
+            end
+            
+            it 'should return status 201' do
+              response.status.should eql(201)
+            end
+            
+            it 'should return project_path as location' do
+              response.location.should eql project_path(@project.name)
+            end
+          end
+        end
+        
+        context 'when num_added == 0' do
+          before do
+            @num_added = 0
+            PMCDoc.stub(:add_to_project).and_return([@num_added, 0])
+          end
+          
+          context 'when format html' do
+            before do
+              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMCDoc'
+            end
+            
+            it 'should set number of documents added to project flash[:notice]' do
+              flash[:notice].should eql(I18n.t('controllers.pmcdocs.create.added_to_document_set', :num_added => @num_added, :project_name => @project.name))
+            end
+            
+            it 'should redirect home_path' do
+              response.should redirect_to(home_path)
+            end
+          end
+          
+          context 'when format json' do
+            before do
+              get :create_project_docs, :format => 'json', :project_id => @project.name, :sourcedb => 'PMCDoc'
+            end
+            
+            it 'should return status 422' do
+              response.status.should eql(422)
+            end
+          end
+        end
+      end
+
+      context 'when project nil' do
+        before do
+          get :create_project_docs, :project_id => 'invalid'
+        end
+              
+        it 'should set flash[:notice]' do
+          flash[:notice].should eql(I18n.t('controllers.pmcdocs.create.annotation_set_not_specified'))
+        end
+        
+        it 'should redirect home_path' do
+          response.should redirect_to(home_path)
+        end     
+      end
+    end
+  end
+  
   describe 'update' do
     before do
       @doc = FactoryGirl.create(:doc)
