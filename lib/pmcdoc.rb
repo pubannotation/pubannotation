@@ -58,7 +58,7 @@ class PMCDoc
         end
         return [docs, nil]
       else
-        return [nil, t('controllers.application.gen_pmcdoc.no_body')]
+        return [nil, I18n.t('controllers.application.gen_pmcdoc.no_body')]
       end
     else
       return [nil, pmcdoc.message]

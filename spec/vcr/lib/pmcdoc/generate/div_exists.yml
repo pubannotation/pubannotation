@@ -1,0 +1,770 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&id=2626672&retmode=xml
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept:
+      - ! '*/*; q=0.5, application/xml'
+      Accept-Encoding:
+      - gzip, deflate
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 13 Mar 2014 05:49:09 GMT
+      Server:
+      - Apache
+      Access-Control-Allow-Origin:
+      - ! '*'
+      Cache-Control:
+      - private
+      Ncbi-Sid:
+      - 08DE749632146D51_0747SID
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Set-Cookie:
+      - ncbi_sid=08DE749632146D51_0747SID; domain=.nih.gov; path=/; expires=Fri, 13
+        Mar 2015 05:49:09 GMT
+      X-Ua-Compatible:
+      - IE=Edge
+      Transfer-Encoding:
+      - chunked
+    body:
+      encoding: US-ASCII
+      string: ! "<?xml version=\"1.0\"?>\n<!DOCTYPE pmc-articleset PUBLIC \"-//NLM//DTD
+        ARTICLE SET 2.0//EN\" \"http://dtd.nlm.nih.gov/ncbi/pmc/articleset/nlm-articleset-2.0.dtd\">\n<pmc-articleset><article
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" article-type=\"research-article\">\n
+        \ <?properties open_access?>\n  <front>\n    <journal-meta>\n      <journal-id
+        journal-id-type=\"nlm-ta\">J Exp Med</journal-id>\n      <journal-id journal-id-type=\"publisher-id\">jem</journal-id>\n
+        \     <journal-title>The Journal of Experimental Medicine</journal-title>\n
+        \     <issn pub-type=\"ppub\">0022-1007</issn>\n      <issn pub-type=\"epub\">1540-9538</issn>\n
+        \     <publisher>\n        <publisher-name>The Rockefeller University Press</publisher-name>\n
+        \     </publisher>\n    </journal-meta>\n    <article-meta>\n      <article-id
+        pub-id-type=\"pmid\">19103881</article-id>\n      <article-id pub-id-type=\"pmc\">2626672</article-id>\n
+        \     <article-id pub-id-type=\"publisher-id\">20081880</article-id>\n      <article-id
+        pub-id-type=\"doi\">10.1084/jem.20081880</article-id>\n      <article-categories>\n
+        \       <subj-group subj-group-type=\"heading\">\n          <subject>Brief
+        Definitive Reports</subject>\n          <subj-group>\n            <subject>Brief
+        Definitive Report</subject>\n          </subj-group>\n        </subj-group>\n
+        \     </article-categories>\n      <title-group>\n        <article-title>Maresins:
+        novel macrophage mediators with potent antiinflammatory and proresolving actions</article-title>\n
+        \     </title-group>\n      <contrib-group>\n        <contrib contrib-type=\"author\">\n
+        \         <name>\n            <surname>Serhan</surname>\n            <given-names>Charles
+        N.</given-names>\n          </name>\n        </contrib>\n        <contrib
+        contrib-type=\"author\">\n          <name>\n            <surname>Yang</surname>\n
+        \           <given-names>Rong</given-names>\n          </name>\n        </contrib>\n
+        \       <contrib contrib-type=\"author\">\n          <name>\n            <surname>Martinod</surname>\n
+        \           <given-names>Kimberly</given-names>\n          </name>\n        </contrib>\n
+        \       <contrib contrib-type=\"author\">\n          <name>\n            <surname>Kasuga</surname>\n
+        \           <given-names>Kie</given-names>\n          </name>\n        </contrib>\n
+        \       <contrib contrib-type=\"author\">\n          <name>\n            <surname>Pillai</surname>\n
+        \           <given-names>Padmini S.</given-names>\n          </name>\n        </contrib>\n
+        \       <contrib contrib-type=\"author\">\n          <name>\n            <surname>Porter</surname>\n
+        \           <given-names>Timothy F.</given-names>\n          </name>\n        </contrib>\n
+        \       <contrib contrib-type=\"author\">\n          <name>\n            <surname>Oh</surname>\n
+        \           <given-names>Sungwhan F.</given-names>\n          </name>\n        </contrib>\n
+        \       <contrib contrib-type=\"author\">\n          <name>\n            <surname>Spite</surname>\n
+        \           <given-names>Matthew</given-names>\n          </name>\n        </contrib>\n
+        \     </contrib-group>\n      <aff id=\"N0x1cdd8e0N0x1df3fc8\">Center for
+        Experimental Therapeutics and Reperfusion Injury, Department of Anesthesiology,
+        Perioperative and Pain Medicine, Brigham and Women's Hospital and Harvard
+        Medical School, Boston, MA 02115</aff>\n      <author-notes>\n        <fn>\n
+        \         <p>CORRESPONDENCE Charles N. Serhan: <email>cnserhan@zeus.bwh.harvard.edu</email></p>\n
+        \       </fn>\n      </author-notes>\n      <pub-date pub-type=\"ppub\">\n
+        \       <day>19</day>\n        <month>1</month>\n        <year>2009</year>\n
+        \     </pub-date>\n      <volume>206</volume>\n      <issue>1</issue>\n      <fpage>15</fpage>\n
+        \     <lpage>23</lpage>\n      <history>\n        <date date-type=\"received\">\n
+        \         <day>21</day>\n          <month>8</month>\n          <year>2008</year>\n
+        \       </date>\n        <date date-type=\"accepted\">\n          <day>21</day>\n
+        \         <month>11</month>\n          <year>2008</year>\n        </date>\n
+        \     </history>\n      <permissions>\n        <copyright-statement>&#xA9;
+        2009 Serhan et al.</copyright-statement>\n        <license>\n          <p>This
+        article is distributed under the terms of an Attribution&#x2013;Noncommercial&#x2013;Share
+        Alike&#x2013;No Mirror Sites license for the first six months after the publication
+        date (see <ext-link ext-link-type=\"uri\" xlink:href=\"http://www.jem.org/misc/terms.shtml\">http://www.jem.org/misc/terms.shtml</ext-link>).
+        After six months it is available under a Creative Commons License (Attribution&#x2013;Noncommercial&#x2013;Share
+        Alike 3.0 Unported license, as described at <ext-link ext-link-type=\"uri\"
+        xlink:href=\"http://creativecommons.org/licenses/by-nc-sa/3.0/\">http://creativecommons.org/licenses/by-nc-sa/3.0/</ext-link>).</p>\n
+        \       </license>\n      </permissions>\n      <self-uri xlink:title=\"pdf\"
+        xlink:href=\"jem2060015.pdf\"/>\n      <abstract>\n        <p>The endogenous
+        cellular and molecular mechanisms that control acute inflammation and its
+        resolution are of wide interest. Using self-resolving inflammatory exudates
+        and lipidomics, we have identified a new pathway involving biosynthesis of
+        potent antiinflammatory and proresolving mediators from the essential fatty
+        acid docosahexaenoic acid (DHA) by macrophages (M&#x3A6;s). During the resolution
+        of mouse peritonitis, exudates accumulated both 17-hydroxydocosahexaenoic
+        acid, a known marker of 17<italic>S</italic>-D series resolvin (Rv) and protectin
+        biosynthesis, and 14<italic>S</italic>-hydroxydocosa-4<italic>Z</italic>,7<italic>Z</italic>,10<italic>Z</italic>,12<italic>E</italic>,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid from endogenous DHA. Addition of either DHA or 14<italic>S</italic>-hydroperoxydocosa-4<italic>Z</italic>,7<italic>Z</italic>,10<italic>Z</italic>,12<italic>E</italic>,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid to activated M&#x3A6;s converted these substrates to novel dihydroxy-containing
+        products that possessed potent antiinflammatory and proresolving activity
+        with a potency similar to resolvin E1, 5<italic>S</italic>,12<italic>R</italic>,18<italic>R</italic>-trihydroxyeicosa-6<italic>Z</italic>,8<italic>E</italic>,10<italic>E</italic>,14<italic>Z</italic>,16<italic>E</italic>-pentaenoic
+        acid, and protectin D1, 10<italic>R</italic>,17<italic>S</italic>-dihydroxydocosa-4<italic>Z</italic>,7<italic>Z</italic>,11<italic>E</italic>,13<italic>E</italic>,15<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid. Stable isotope incorporation, intermediate trapping, and characterization
+        of physical and biological properties of the products demonstrated a novel
+        14-lipoxygenase pathway, generating bioactive 7,14-dihydroxydocosa-4<italic>Z</italic>,8,10,12,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid, coined M&#x3A6; mediator in resolving inflammation (maresin), which
+        enhances resolution. These findings suggest that maresins and this new metabolome
+        may be involved in some of the beneficial actions of DHA and M&#x3A6;s in
+        tissue homeostasis, inflammation resolution, wound healing, and host defense.</p>\n
+        \     </abstract>\n    </article-meta>\n  </front>\n  <body><p>Given the contribution
+        of uncontrolled inflammation to many human diseases, the identification of
+        endogenous control mechanisms in the acute inflammatory response is of wide
+        interest (<xref ref-type=\"bibr\" rid=\"bib1\">1</xref>). Classical lipid
+        mediators such as the prostaglandins and leukotrienes are well appreciated
+        for their important proinflammatory roles in inflammation (<xref ref-type=\"bibr\"
+        rid=\"bib2\">2</xref>). In recent years, the resolution of inflammation has
+        emerged as an area with considerable potential to contain local mediators
+        that may be useful for new therapeutic approaches (for reviews see references
+        <xref ref-type=\"bibr\" rid=\"bib3\">3</xref>, <xref ref-type=\"bibr\" rid=\"bib4\">4</xref>).
+        Using an unbiased systems approach using lipidomics, proteomics, and cell
+        trafficking to study self-resolving inflammatory exudates revealed that the
+        termination of acute inflammation involves active biosynthetic processes producing
+        novel endogenous lipid mediators that are both antiinflammatory and proresolving
+        (<xref ref-type=\"bibr\" rid=\"bib5\">5</xref>&#x2013;<xref ref-type=\"bibr\"
+        rid=\"bib8\">8</xref>). It is now clear that resolution of acute inflammation
+        is an active rather than passive process, as previously understood (<xref
+        ref-type=\"bibr\" rid=\"bib9\">9</xref>), generating novel potent counterregulatory
+        mediators termed resolvins (Rvs) and protectins (for review see reference
+        <xref ref-type=\"bibr\" rid=\"bib4\">4</xref>).</p><p>Rvs and protectins are
+        biosynthesized by exudates from essential omega-3 fatty acids (e.g., eicosapentaenoic
+        acid [EPA] and docosahexaenoic acid [DHA]), and the structures are established
+        for key members of these families (<xref ref-type=\"bibr\" rid=\"bib4\">4</xref>).
+        The immune regulatory actions of omega-3 fatty acids and their roles in human
+        health and diseases such as cancer and neuroinflammation are widely appreciated
+        (<xref ref-type=\"bibr\" rid=\"bib10\">10</xref>&#x2013;<xref ref-type=\"bibr\"
+        rid=\"bib12\">12</xref>). Although omega-3 fatty acids are in wide use as
+        dietary supplements and potential therapeutics in many diseases, including
+        inflammatory diseases, their mechanisms and connection to inflammation remain
+        of interest. Rvs and protectins display potent multilevel antiinflammatory
+        and proresolving actions (<xref ref-type=\"bibr\" rid=\"bib13\">13</xref>)
+        and are members of a new genus of endogenous mediators of resolution (<xref
+        ref-type=\"bibr\" rid=\"bib4\">4</xref>). For example, resolvin E1, 5<italic>S</italic>,12<italic>R</italic>,18<italic>R</italic>-trihydroxyeicosa-6<italic>Z</italic>,8<italic>E</italic>,10<italic>E</italic>,14<italic>Z</italic>,16<italic>E</italic>-pentaenoic
+        acid (RvE1) is biosynthesized from EPA and interacts with specific receptors
+        to control inflammatory cells (<xref ref-type=\"bibr\" rid=\"bib14\">14</xref>,
+        <xref ref-type=\"bibr\" rid=\"bib15\">15</xref>). Also, <italic>fat-1</italic>
+        transgenic mice, producing higher endogenous levels of omega-3, show reduced
+        inflammatory status and elevated levels of Rvs and protectins, which when
+        administered reduce inflammation and stimulate resolution (<xref ref-type=\"bibr\"
+        rid=\"bib16\">16</xref>&#x2013;<xref ref-type=\"bibr\" rid=\"bib18\">18</xref>).
+        The main biosynthetic route with DHA for Rvs and protectins proceeds during
+        resolution via a 17<italic>S</italic>-hydroperoxydocosahexaenoic intermediate
+        produced by a lipoxygenase (LOX) mechanism. With aspirin therapy, acetylated
+        cyclooxygenase-2 produces aspirin-triggered 17<italic>R</italic>-epimers of
+        Rvs and protectins and also enhances their formation (<xref ref-type=\"bibr\"
+        rid=\"bib6\">6</xref>). Genetic deficiency or overexpression of mouse 12/15-LOX
+        regulates production of Rvs and protectins, and alters their responses to
+        both thermal injury and extent of atherosclerosis (<xref ref-type=\"bibr\"
+        rid=\"bib17\">17</xref>, <xref ref-type=\"bibr\" rid=\"bib18\">18</xref>).</p><p>In
+        this report, we present evidence for a new pathway of mediators operative
+        in resolution of acute inflammation that possess potent actions with polymorphonuclear
+        neutrophils (PMNs) and macrophages (M&#x3A6;s). Identification of these new
+        mediators, coined M&#x3A6; mediators in resolving inflammation (maresins),
+        provides evidence for autacoids produced from essential omega-3 fatty acids
+        by a new pathway that may be linked to homeostasis, inflammation resolution,
+        wound healing, and cancer.</p><sec><title>RESULTS AND DISCUSSION</title><sec><title>Targeted
+        lipidomics of resolving inflammatory exudates</title><p>In view of the actions
+        of specialized chemical mediators in resolution (<xref ref-type=\"bibr\" rid=\"bib6\">6</xref>,
+        <xref ref-type=\"bibr\" rid=\"bib7\">7</xref>), we monitored 17-hydroxydocosahexaenoic
+        acid (17-HDHA) as a biomarker of activation and conversion of endogenous DHA,
+        and also used targeted lipidomics to query whether other pathways were operative
+        (<xref rid=\"fig1\" ref-type=\"fig\">Fig. 1</xref>). During this course of
+        peritonitis, PMNs rapidly entered, reaching maximum within 12 h. As expected
+        in this self-resolving system (<xref ref-type=\"bibr\" rid=\"bib19\">19</xref>),
+        PMNs declined and were lost from exudates, thus defining resolution (<xref
+        rid=\"fig1\" ref-type=\"fig\">Fig. 1</xref>). Unbiased targeted mediator lipidomics
+        using liquid chromatography&#x2013;tandem mass spectrometry (LC/MS/MS)&#x2013;based
+        analyses were performed with these exudates. In addition to 17<italic>S</italic>-hydroxydocosa-4<italic>Z</italic>,7<italic>Z</italic>,10<italic>Z</italic>,13<italic>Z</italic>,15<italic>E</italic>,19<italic>Z</italic>-hexaenoic
+        acid, a marker of Rv and protectin biosynthesis (<xref ref-type=\"bibr\" rid=\"bib6\">6</xref>),
+        endogenous DHA was converted to 14<italic>S</italic>-hydroxydocosa-4<italic>Z</italic>,7<italic>Z</italic>,10<italic>Z</italic>,12<italic>E</italic>,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid (14<italic>S</italic>-HDHA). Neither product was identified in exudates
+        obtained with the LOX inhibitor esculetin (<italic>n</italic> = 3), and both
+        were substantially reduced in peritonitis lavages from 12/15-LOX&#x2013;deficient
+        mice (<italic>n</italic> = 2, d = 4). The appearance of 14<italic>S</italic>-HDHA
+        in this system accompanied 17-HDHA throughout the 72-h course, indicating
+        that 14<italic>S</italic>-HDHA accumulated within the resolution phase.</p><fig
+        position=\"float\" id=\"fig1\"><label>Figure 1.</label><caption><p><bold>Self-resolving
+        acute inflammatory exudates.</bold> (A) Time course of PMN (dashed line; <italic>n</italic>
+        = 4) accumulation, resolution, and hydroxydocosahexaenoic acid formation during
+        zymosan-initiated peritonitis. Exudates were extracted for targeted lipidomics
+        using LC/MS/MS. Hydroxydocosahexaenoic acids 17-HDHA (dotted line) and 14<italic>S</italic>-HDHA
+        (continuous line) identified using MRM results are representative (<italic>n</italic>
+        = 3). (B and C) Representative mass spectra for 17-HDHA (B) and 14<italic>S</italic>-HDHA
+        (C; <italic>n</italic> = 3). amu, atomic mass unit.</p></caption><graphic
+        xlink:href=\"jem2060015f01\"/></fig><p>These two LOX products were identified
+        by characteristic diagnostic ions in their respective mass spectra. <xref
+        rid=\"fig1\" ref-type=\"fig\">Fig. 1 B</xref> shows a representative spectrum
+        of 17-HDHA formed in the time course, and <xref rid=\"fig1\" ref-type=\"fig\">Fig.
+        1 C</xref> shows the spectrum of 14<italic>S</italic>-HDHA, as well as diagnostic
+        ions for identification. These included mass-to-charge ratio (m/z) 205, 138,
+        and 233, specific for 14<italic>S</italic>-HDHA. The m/z 343 [M-H], and m/z
+        325, 299, and 281 ions are shared between 14- and 17-HDHA (<xref rid=\"fig1\"
+        ref-type=\"fig\">Fig. 1, B and C</xref>, insets). Both 14<italic>S</italic>-HDHA
+        and 17-HDHA were also generated from endogenous DHA with isolated mouse M&#x3A6;s
+        activated with Ca<sup>2+</sup> ionophore A<sub>23187</sub> (5 &#x3BC;M, pH
+        7.45, <italic>n</italic> = 4; representative values: 14<italic>S</italic>-HDHA,
+        325 pg/10<sup>6</sup> cells, and 17-HDHA, 439 pg/10<sup>6</sup> cells). These
+        results demonstrate that during the time course of acute inflammation and
+        its resolution, a sustained production of endogenous LOX products was present
+        in the initial acute phase at 2&#x2013;4 h that accumulated during resolution
+        with the highest levels of 14<italic>S</italic>-HDHA &gt; 17-HDHA at 72 h.</p><p>We
+        reasoned that 14<italic>S</italic>-HDHA might be a marker reflecting activation
+        of a novel DHA (C22:6) carbon 14&#x2013;lipoxygenation pathway. This could
+        lead to production of bioactive mediators via DHA, because monohydroxy products
+        of polyunsaturated fatty acids are biomarkers of pathways leading to potent
+        bioactive molecules, as in the case of 17-HDHA and 17-HpDHA, precursors to
+        Rvs and protectins (<xref ref-type=\"bibr\" rid=\"bib6\">6</xref>, <xref ref-type=\"bibr\"
+        rid=\"bib20\">20</xref>, <xref ref-type=\"bibr\" rid=\"bib21\">21</xref>).
+        Also, 5-hydroxyeicosatetraenoic acid is a well-appreciated marker of arachidonic
+        acid conversion to leukotrienes (<xref ref-type=\"bibr\" rid=\"bib2\">2</xref>).
+        To this end, resident peritoneal M&#x3A6;s were isolated (<xref rid=\"fig2\"
+        ref-type=\"fig\">Fig. 2 A</xref>, FACS inset), containing &#x223C;85&#x2013;90%
+        M&#x3A6;s and 10&#x2013;15% lymphocytes, and 14<italic>S</italic>-hydroperoxydocosa-4<italic>Z</italic>,7<italic>Z</italic>,10<italic>Z</italic>,12<italic>E</italic>,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid (14<italic>S</italic>-HpDHA) was prepared via biogenic synthesis and
+        incubated with these cells to determine whether it was a precursor to new
+        bioactive products. 14<italic>S</italic>-HpDHA was isolated from 12-LOX incubated
+        with HPLC-purified DHA (<italic>n</italic> = 7) and was &gt;98% <italic>S</italic>
+        configuration determined by chiral LC/MS/MS. Both 14<italic>S</italic>-HpDHA
+        (10 &#x3BC;M) and DHA (10 &#x3BC;M) were converted by resident M&#x3A6;s to
+        new products identified via LC/MS/MS-based mediator lipidomics (<xref rid=\"fig2\"
+        ref-type=\"fig\">Fig. 2 A</xref>) labeled I and II. Each had conjugated triene-containing
+        UV chromophores, chromatographic behavior, and mass spectra consistent with
+        7,14-dihydroxy&#x2013;containing products with a C22 backbone originating
+        from DHA. Both gave essentially the same mass spectrum yet different retention
+        times, indicating that they were very likely isomers (<xref rid=\"fig2\" ref-type=\"fig\">Fig.
+        2, B and C</xref>). These were isolated and subject to gas chromatography&#x2013;mass
+        spectrometry (GC-MS) to further identify and confirm fragment assignments
+        and positional sites of oxygenation, e.g., carbon positions of alcohol groups.
+        GC-MS analyses confirmed assigned ions from LC/MS/MS and were consistent with
+        7,14-dihydroxy&#x2013;containing products biosynthesized from DHA (<xref ref-type=\"table\"
+        rid=\"tbl1\">Table I</xref>). Isolated human M&#x3A6;s incubated with 14<italic>S</italic>-HpDHA
+        also gave the novel 7,14-dihydroxy&#x2013;containing product and matched the
+        compound from mouse M&#x3A6;s (<italic>n</italic> = 3).</p><fig position=\"float\"
+        id=\"fig2\"><label>Figure 2.</label><caption><p><bold>M&#x3A6;s generate novel
+        products.</bold> (A) Mouse-resident M&#x3A6;s (5 &#xD7; 10<sup>6</sup> cells/ml)
+        incubated with DHA or 14<italic>S</italic>-HpDHA showing targeted LC/MS/MS-based
+        mediator lipidomics. Selected ion chromatogram (m/z 359/250) of 7,14-diHDHA
+        (II) and its transconjugated isomer (I) is shown. Selected ion chromatogram
+        (dashed overlay; m/z 359/250) shows double dioxygenation product 7<italic>S</italic>,14<italic>S</italic>-diHDHA.
+        (inset) FACS plot of isolated resident M&#x3A6;s. (B and C) Lipid mediator
+        lipidomics. (B) Mass spectra for 7,14-diHDHA (m/z 359; B) and corresponding
+        isomer (C). See inset and Results for diagnostic ions (<italic>n</italic>
+        = 3). amu, atomic mass unit.</p></caption><graphic xlink:href=\"jem2060015f02\"/></fig><table-wrap
+        position=\"float\" id=\"tbl1\"><label>Table I.</label><caption><p>Structures
+        and LC-MS and GC-MS fragmentation for novel 14 series compounds identified
+        using mediator-based lipidomics</p></caption><table frame=\"hsides\" rules=\"groups\"><tbody><tr><td
+        colspan=\"1\" rowspan=\"1\" align=\"left\" valign=\"top\"><graphic xlink:href=\"jem2060015t01.jpg\"/></td></tr></tbody></table></table-wrap></sec><sec><title>Novel
+        antiinflammatory and proresolving mediators</title><p>In parallel with these
+        determinations, materials obtained from mouse M&#x3A6;s were assessed for
+        potential bioactivity after extraction and C18 solid-phase chromatography.
+        M&#x3A6;-derived material showed remarkable antiinflammatory properties (<xref
+        rid=\"fig3\" ref-type=\"fig\">Fig. 3 A</xref>) regulating PMN entry into zymosan-induced
+        peritonitis when directly compared with other omega-3 fatty acid&#x2013;derived
+        mediators such as neuroprotectin/protectin D1, 10<italic>R</italic>,17<italic>S</italic>-dihydroxydocosa-4<italic>Z</italic>,7<italic>Z</italic>,11<italic>E</italic>,13<italic>E</italic>,15<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid (PD1) (<xref ref-type=\"bibr\" rid=\"bib20\">20</xref>) and RvE1 (<xref
+        ref-type=\"bibr\" rid=\"bib5\">5</xref>, <xref ref-type=\"bibr\" rid=\"bib6\">6</xref>,
+        <xref ref-type=\"bibr\" rid=\"bib14\">14</xref>). Thus, these findings suggested
+        that within M&#x3A6; isolates obtained from cells incubated with 14<italic>S</italic>-HpDHA,
+        potent bioactive materials were biosynthesized from this precursor that regulated
+        PMNs, preventing their infiltration. These substances were likely to be very
+        potent because only nanogram quantities given per mouse elicited antiinflammatory
+        actions.</p><fig position=\"float\" id=\"fig3\"><label>Figure 3.</label><caption><p><bold>Antiinflammatory
+        and proresolving novel M&#x3A6; products.</bold> (A) Reduction in PMN in peritonitis.
+        Activity in methyl formate fractions from C18 extraction of isolated M&#x3A6;s
+        and 20 ng/mouse of M&#x3A6; products isolated with RP-HPLC, 20 ng/mouse PD1,
+        or 20 ng/mouse RvE1. Results are expressed as exudate PMN means &#xB1; SEM
+        (<italic>n</italic> = 3; *, P &lt; 0.05 compared with zymosan plus vehicle).
+        (B) Differential PMN versus monocyte actions. Mice were injected with 0.1
+        ng/mouse of the double dioxygenation product, 0.1 ng/mouse of M&#x3A6; isolate,
+        or vehicle alone (as in A), followed by i.p injection of 1 mg zymosan to evoke
+        peritonitis. After 2 h, leukocytes were enumerated (black bar, PMNs; hatched
+        bar, mononuclear cells). Results are means &#xB1; SEM (<italic>n</italic>
+        = 3; *, P &lt; 0.05 compared with zymosan plus vehicle; &#x2020;, P &lt; 0.05
+        for double dioxygenation vs. M&#x3A6; isolate). (C) Reduction in peritonitis
+        showing dose response. M&#x3A6; product isolated after HPLC isolation was
+        injected i.v. &#x223C;2 min before i.p. zymosan. Results are means &#xB1;
+        SEM (<italic>n</italic> = 3; *, P &lt; 0.05 compared with zymosan plus vehicle).
+        (D) MaR1 enhances phagocytosis. M&#x3A6;s (24-well plate, 10<sup>5</sup> cells/well)
+        were exposed to the indicated concentrations for 15 min followed by FITC-labeled
+        zymosan for 30 min at 37&#xB0;C. Results are means &#xB1; SEM expressed as
+        the percent increase above vehicle (<italic>n</italic> = 3; *, P &lt; 0.05
+        compared with vehicle; &#x2020;, P &lt; 0.05 for double dioxygenation vs.
+        MaR1). The closed diamond represents MaR1, and the closed square represents
+        the double dioxygenation product 7<italic>S</italic>,14<italic>S</italic>-diHDHA.
+        (inset) Comparison of MaR1 with other mediators (1 nM).</p></caption><graphic
+        xlink:href=\"jem2060015f03\"/></fig><p>Given the ability of DHA to serve as
+        a substrate for LOX forming both double dioxygenation products related to
+        PD1 as well as the carbon 17&#x2013;hydroperoxide&#x2013;containing precursor
+        of epoxide (<xref ref-type=\"bibr\" rid=\"bib20\">20</xref>), we reasoned
+        that 14<italic>S</italic>-HpDHA might also be a substrate for double dioxygenation.
+        This indeed proved to be the case: sequential actions of 12-LOX and 5-LOX
+        with DHA generated 7<italic>S</italic>,14<italic>S</italic>-dihydroxydocosa-4<italic>Z</italic>,8<italic>E</italic>,10<italic>Z</italic>,12<italic>E</italic>,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid (7<italic>S</italic>,14<italic>S</italic>-diHDHA; <italic>n</italic>
+        = 5; <xref rid=\"fig2\" ref-type=\"fig\">Fig. 2</xref>, dotted profile; and
+        <xref ref-type=\"table\" rid=\"tbl1\">Table I</xref>). This is likely an isomer
+        of the M&#x3A6;-isolated material (<xref rid=\"fig2\" ref-type=\"fig\">Figs.
+        2</xref> and <xref rid=\"fig3\" ref-type=\"fig\">3</xref>), because this reference
+        compound (<xref rid=\"fig2\" ref-type=\"fig\">Fig. 2 A</xref>, dotted curve)
+        did not coelute with M&#x3A6;-derived products beneath labels I and II. This
+        double dioxygenation product at a 0.1-ng dose per mouse reduced PMN infiltration
+        in zymosan-induced peritonitis but appeared to be less potent than the M&#x3A6;-isolated
+        material (<xref rid=\"fig3\" ref-type=\"fig\">Fig. 3 B</xref>). Thus, the
+        results in <xref rid=\"fig3\" ref-type=\"fig\">Fig. 3</xref> clearly demonstrate
+        potent bioactions of the novel 7,14-dihydroxy&#x2013;containing product HPLC
+        purified from resident M&#x3A6; incubations with zymosan and 14<italic>S</italic>-HpDHA.</p><p>Further
+        experiments were performed to isolate material beneath peaks I and II (<xref
+        rid=\"fig2\" ref-type=\"fig\">Fig. 2 A</xref>) and determine whether compound
+        I is an isomer of II. Subjecting the isolated compounds to isomerization conditions
+        (<xref ref-type=\"bibr\" rid=\"bib22\">22</xref>) demonstrated that compound
+        II likely contained a cis double bond&#x2013;containing triene structure sensitive
+        to conversion to an all-trans&#x2013;containing conjugated triene (i.e., 8<italic>E</italic>,10<italic>E</italic>,12<italic>E</italic>)
+        isomer I in bench and work-up conditions. In view of <sup>18</sup>O incorporation
+        and epoxide trapping, it is likely that the isomer I peak also contained <italic>R/S</italic>
+        racemates at carbon 7. Further RP-HPLC purification of the 7,14-dihydroxy&#x2013;containing
+        product from M&#x3A6;s was performed to assess its actions. The results in
+        <xref rid=\"fig3\" ref-type=\"fig\">Fig. 3 C</xref> demonstrate that at doses
+        as low as 0.2 ng/mouse, the new compound potently reduced infiltration of
+        PMNs into sites of inflammation.</p></sec><sec><title>M&#x3A6;-enhanced phagocytosis</title><p>A
+        key feature of a proresolving mediator, in addition to limiting PMN entry,
+        is the dual action of stimulating M&#x3A6; uptake of apoptotic PMNs and/or
+        zymosan to stimulate resolution and microbial clearance (<xref ref-type=\"bibr\"
+        rid=\"bib4\">4</xref>, <xref ref-type=\"bibr\" rid=\"bib13\">13</xref>, <xref
+        ref-type=\"bibr\" rid=\"bib23\">23</xref>). We determined whether the new
+        M&#x3A6;-derived compound enhanced phagocytosis and compared it with RvE1,
+        PD1, and an eicosanoid, prostaglandin E<sub>2</sub> (PGE<sub>2</sub>; <xref
+        rid=\"fig3\" ref-type=\"fig\">Fig. 3 D</xref>, inset). RvE1 and PD1 are potent
+        enhancers of M&#x3A6; phagocytosis at concentrations as low as 1 nM (<xref
+        ref-type=\"bibr\" rid=\"bib13\">13</xref>). For direct comparison, the double
+        dioxygenation product (7<italic>S</italic>,14<italic>S</italic>-diHDHA) was
+        active but less potent than the new product isolated from M&#x3A6;s. Thus,
+        given its potent actions and novel structure, the M&#x3A6; product was denoted
+        maresin 1 (MaR1).</p></sec><sec><title>Maresin biosynthetic pathway</title><p>We
+        present a hypothetical scheme for the maresin pathway (see <xref rid=\"fig5\"
+        ref-type=\"fig\">Fig. 5</xref>). DHA is converted to 14-hydroperoxydocosahexaenoic
+        acid, likely via 12-LOX in humans, as shown in incubations of DHA and 12-LOX,
+        followed by either reduction to 14<italic>S</italic>-HDHA and/or, via double
+        dioxygenation (e.g., sequential 12-LOX&#x2013;5-LOX), to generate 7<italic>S</italic>,14<italic>S</italic>-diHDHA.
+        In 12/15-LOX&#x2013;deficient mice, 14<italic>S</italic>-HDHA generation in
+        peritonitis was reduced &gt;95%. The key 14<italic>S-</italic>hydroperoxide
+        intermediate is enzymatically converted to a 13(14)-epoxide&#x2013;containing
+        intermediate that is then enzymatically hydrolyzed via a carbonium cation
+        to bioactive 7,14<italic>S</italic>-diHDHA by creating a conjugated triene
+        within three of the six double bonds. The results from <sup>18</sup>O isotope
+        incorporation using H<sub>2</sub><sup>18</sup>O demonstrated that &gt;75%
+        of the oxygen at the carbon 7 position was derived from H<sub>2</sub>O (see
+        Supplemental materials and methods and Fig. S1, available at <ext-link ext-link-type=\"uri\"
+        xlink:href=\"http://www.jem.org/cgi/content/full/jem.20081880/DC1\">http://www.jem.org/cgi/content/full/jem.20081880/DC1</ext-link>)
+        and not from molecular oxygen, as would have been the case if this carbon
+        7 position alcohol group was generated by double lipoxygenation mechanism
+        (compare with reference <xref ref-type=\"bibr\" rid=\"bib20\">20</xref>).
+        In parallel, alcohol trapping with excess acidic methanol was performed with
+        isolated M&#x3A6;s that gave the methoxy-trapping product 7-methoxy-14-hydroxydocosa-4<italic>Z</italic>,8,10,12,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid, identified using LC/MS/MS targeted profiling. Its MS<sup>2</sup> spectrum
+        showed ions consistent with acid-assisted attack at the carbon 7 position
+        and addition of the methoxy, giving the MS<sup>2</sup> spectrum of m/z 373
+        at 10.2 min (<xref rid=\"fig4\" ref-type=\"fig\">Fig. 4</xref>, inset for
+        ion assignments; and <xref rid=\"fig5\" ref-type=\"fig\">Fig. 5</xref>). It
+        is also possible that a methoxy addition could have occurred at the carbon
+        13 position that could give essentially the same ions in MS<sup>2</sup>. It
+        is more likely that methoxy addition was at carbon 7, because it is the least
+        sterically hindered end of the conjugated carbonium cation.</p><fig position=\"float\"
+        id=\"fig4\"><label>Figure 4.</label><caption><p><bold>Identification of methoxy-trapping
+        product from M&#x3A6;s.</bold> MS/MS spectrum of m/z 373 product at 10.2 min.
+        (inset) Extracted ion chromatogram of m/z 373&#x2192;263 and deduced structure.
+        amu, atomic mass unit.</p></caption><graphic xlink:href=\"jem2060015f04\"/></fig><fig
+        position=\"float\" id=\"fig5\"><label>Figure 5.</label><caption><p><bold>Biosynthetic
+        scheme proposed for MaR1 and related products.</bold> Stereochemistries and
+        double-bond geometries of the new dihydroxy-containing mediators are tentative
+        assignments and depicted in likely configurations based on biogenic synthesis,
+        trapping, and labeling (see Results).</p></caption><graphic xlink:href=\"jem2060015f05\"/></fig><p>To
+        provide further confirmation of the maresin pathway and biosynthetic scheme,
+        isolated mouse M&#x3A6;s (15.5 &#xD7; 10<sup>6</sup> cells/3 ml, 37&#xB0;C,
+        30 min) were incubated with zymosan and 10 &#x3BC;M of deuterium-labeled DHA-d<sub>5</sub>
+        containing five deuterium atoms at the 21, 21, 22, 22, and 22 carbon positions.
+        M&#x3A6;s converted DHA-d<sub>5</sub> to 14<italic>S</italic>-HDHA-d<sub>5</sub>,
+        with diagnostic ions in its mass spectrum at m/z 348, 330, 304, 286, and 205,
+        as well as further evidence for the 7,14<italic>S</italic>-dihydroxy&#x2013;containing
+        product. The dihydroxy structure carried d<sub>5</sub>, from precursor, and
+        was confirmed with ions at m/z 364, 346, 320, and 302, and the hydroxy groups'
+        7 and 14 positions supported by m/z 251, 223 and 250, 221, respectively (Fig.
+        S2, available at <ext-link ext-link-type=\"uri\" xlink:href=\"http://www.jem.org/cgi/content/full/jem.20081880/DC1\">http://www.jem.org/cgi/content/full/jem.20081880/DC1</ext-link>).
+        Collectively, these results provide support for the biosynthesis of a 13(14)
+        epoxide intermediate by M&#x3A6;s from 14<italic>S</italic>-HpDHA that is
+        enzymatically converted to the potent bioactive 7,14-dihydroxydocosa-4<italic>Z</italic>,8,10,12,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid MaR1 (<xref rid=\"fig5\" ref-type=\"fig\">Fig. 5</xref>).</p><p>DHA (C22:6)
+        is an essential fatty acid and member of the omega-3 family of fatty acids,
+        which are in high levels in marine oils. It is essential for mammalian systems
+        in that it is not biosynthesized de novo and is therefore a nutritional requirement
+        (<xref ref-type=\"bibr\" rid=\"bib10\">10</xref>, <xref ref-type=\"bibr\"
+        rid=\"bib11\">11</xref>, <xref ref-type=\"bibr\" rid=\"bib21\">21</xref>).
+        In this report, we identified a novel pathway during resolution that converts
+        DHA to new, potent bioactive products. This new pathway was identified using
+        targeted mediator lipidomics of exudates from mouse peritonitis and was demonstrated
+        with both mouse and human M&#x3A6;s. Parallel biofunction and spectral analyses
+        confirmed the new structures as 7,14-dihydroxy&#x2013;containing products
+        biosynthesized from DHA. One of the novel products characterized, MaR1, proved
+        to be a potent mediator, stopping PMN infiltration and stimulating M&#x3A6;
+        phagocytosis. An isomer of MaR1, 7<italic>S</italic>,14<italic>S</italic>-diHDHA,
+        was less potent, indicating stereoselective actions in vitro and in vivo.
+        These antiinflammatory and proresolving actions were evident in nanogram range
+        both in vitro and in vivo, suggesting that this new mediator pathway could
+        play a key role in regulating catabasis or the return of tissues from the
+        inflammatory state to homeostasis (<xref ref-type=\"bibr\" rid=\"bib8\">8</xref>,
+        <xref ref-type=\"bibr\" rid=\"bib13\">13</xref>).</p><p>The new compounds
+        isolated from M&#x3A6;s showed distinct and separate actions on PMNs compared
+        with mononuclear cells, such as those recently identified for multifunctional
+        mediators. Specifically, to expedite resolution, members of this new genus
+        of endogenous mediators carry multilevel actions limiting further PMN accumulation
+        at tissue sites and stimulate clearance by enhancing M&#x3A6; nonphlogistic
+        phagocytosis (<xref ref-type=\"bibr\" rid=\"bib4\">4</xref>, <xref ref-type=\"bibr\"
+        rid=\"bib23\">23</xref>). This type of selectivity places a spatial and temporal
+        as well as a functional separation between these new mediators from, e.g.,
+        leukotrienes, which stimulate proinflammatory responses.</p><p>When compared
+        with RvE1 derived from EPA and PD1/NPD1 from DHA that carries alcohol groups
+        at carbons 10 and 17 (<xref ref-type=\"bibr\" rid=\"bib6\">6</xref>, <xref
+        ref-type=\"bibr\" rid=\"bib7\">7</xref>, <xref ref-type=\"bibr\" rid=\"bib20\">20</xref>,
+        <xref ref-type=\"bibr\" rid=\"bib21\">21</xref>), MaR1 proved to be of comparable
+        potency (<xref rid=\"fig3\" ref-type=\"fig\">Fig. 3</xref>). In contrast,
+        PGE<sub>2</sub> did not enhance phagocytosis, a finding consistent with PGE<sub>2</sub>
+        and PGD<sub>2</sub> specifically reducing M&#x3A6; phagocytosis of apoptotic
+        cells (<xref ref-type=\"bibr\" rid=\"bib24\">24</xref>). Although D and E
+        series Rvs as well as PD1 share proresolving and antiinflammatory actions
+        for the genus, each member acts at specific receptors (<xref ref-type=\"bibr\"
+        rid=\"bib4\">4</xref>, <xref ref-type=\"bibr\" rid=\"bib14\">14</xref>) and,
+        thus, given the stereospecific actions of the new pathway mediators, it is
+        likely that they act on their own receptors separate from those for Rvs. These
+        findings with novel chemical mediators suggest that enhancing M&#x3A6; capacity
+        to remove apoptotic and necrotic cells at sites of inflammation and enhancing
+        microbial particle containment along with down-regulating new PMN entry to
+        the site may not only shorten the resolution interval (<xref ref-type=\"bibr\"
+        rid=\"bib8\">8</xref>, <xref ref-type=\"bibr\" rid=\"bib13\">13</xref>) but
+        can also protect tissues from unwanted tissue injury damage and oxidative
+        stress that can accompany inflammation and infection.</p><p>We also found
+        that the epoxide intermediate can undergo nonenzymatic hydrolysis to give
+        7<italic>R/S</italic>,14<italic>S</italic>-dihydroxy&#x2013;containing products
+        (which appear to coelute in this LC system) and corresponding vicinal diol,
+        namely 13,14-diHDHA (which was isolated and identified; see <xref rid=\"fig5\"
+        ref-type=\"fig\">Fig. 5</xref>, <xref ref-type=\"table\" rid=\"tbl1\">Table
+        I</xref>, and Fig. S3, available at <ext-link ext-link-type=\"uri\" xlink:href=\"http://www.jem.org/cgi/content/full/jem.20081880/DC1\">http://www.jem.org/cgi/content/full/jem.20081880/DC1</ext-link>).
+        The proposed biosynthetic sequence is also supported by results from <sup>18</sup>O
+        incorporation and deuterium (d<sub>5</sub>)-labeled tracking from d<sub>5</sub>-DHA
+        to d<sub>5</sub>-labeled maresin pathway products. Collectively, these results
+        provide evidence for a highly efficient pathway in isolated resident M&#x3A6;s
+        for the biosynthesis of potent new chemical mediators via 14-lipoxygenation
+        of DHA and subsequent enzymatic steps (<xref rid=\"fig5\" ref-type=\"fig\">Fig.
+        5</xref>). We also identified 4,14-di-HDHA (<xref ref-type=\"table\" rid=\"tbl1\">Table
+        I</xref>), a likely product of 5-LOX and 12-LOX interactions, as well as two
+        other new products from DHA generated by M&#x3A6;s, a 13(14)-epoxy-alcohol&#x2013;containing
+        docosanoid and 4<italic>S</italic>,13,14<italic>S</italic>-trihydroxydocosa-5,7,9,11,16<italic>Z</italic>,19<italic>Z</italic>-hexaenoic
+        acid (their biosynthesis and actions will be reported separately).</p><p>The
+        14<italic>S</italic>-HDHA via arachidonate 12-LOX was first identified in
+        the gills of fish (<xref ref-type=\"bibr\" rid=\"bib25\">25</xref>) and in
+        human platelets (<xref ref-type=\"bibr\" rid=\"bib26\">26</xref>), neural
+        systems (<xref ref-type=\"bibr\" rid=\"bib27\">27</xref>), and many other
+        mammalian and invertebrate marine organisms (<xref ref-type=\"bibr\" rid=\"bib28\">28</xref>).
+        Thus, although 14<italic>S</italic>-HDHA was identified in many systems, it
+        remained to be determined that it can serve as a marker of DHA conversion
+        to novel bioactive mediators. It should be noted that, in addition to 14<italic>S</italic>-HDHA
+        production by cells with 12-LOX, human 15-LOX can also contribute to this
+        14-LOX pathway because M&#x3A6;s and other human cells possess a prominent
+        12-LOX and 15-LOX (<xref ref-type=\"bibr\" rid=\"bib2\">2</xref>, <xref ref-type=\"bibr\"
+        rid=\"bib10\">10</xref>, <xref ref-type=\"bibr\" rid=\"bib18\">18</xref>),
+        and 14<italic>S</italic>-HDHA was essentially absent in 12/15-LOX&#x2013;deficient
+        mice. Given the importance of platelet 12-LOX in transcellular biosynthesis
+        of lipid mediators (<xref ref-type=\"bibr\" rid=\"bib4\">4</xref>), it is
+        likely that cell&#x2013;cell interactions can also contribute to biosynthesis
+        of maresins and related products.</p><p>Although marine omega-3 fatty acid
+        supplements are in wide use in animals and humans because they are believed
+        to possess therapeutic actions, convincing evidence from clinical trials supporting
+        their actions in treating inflammatory disorders and reducing cancer risk
+        are not without criticism (<xref ref-type=\"bibr\" rid=\"bib29\">29</xref>&#x2013;<xref
+        ref-type=\"bibr\" rid=\"bib31\">31</xref>). Possible sources of variation
+        in their actions in clinical studies are (a) the very high doses used (milligram
+        to gram doses), (b) the absence of appropriate biomarkers of omega-3 fatty
+        acid utilization, and (c) specific mediator functions evoked in pico- to nanogram
+        range. Thus, the new pathways and bioactive maresins documented in this report,
+        along with Rvs, protectins, and related functional metabolome, might provide
+        a new means to mark the impact of essential omega-3 fatty acids in health
+        and disease, as well as provide new therapeutic approaches.</p></sec></sec><sec
+        sec-type=\"materials|methods\"><title>MATERIALS AND METHODS</title><sec disp-level=\"3\"><title>Materials.</title><p>DHA,
+        12-LOX (porcine), 5-LOX (human), 17-HDHA-d<sub>5</sub>, and PGE<sub>2</sub>-d<sub>4</sub>
+        were purchased from Cayman Chemical. Zymosan A was purchased from Sigma-Aldrich.
+        Solid-phase extraction materials, LC/MS/MS, and GC-MS solvents and reagents
+        were obtained as previously described (<xref ref-type=\"bibr\" rid=\"bib32\">32</xref>).
+        Synthetic RvE1 and PD1 were prepared by total organic synthesis according
+        to published matching criteria (<xref ref-type=\"bibr\" rid=\"bib14\">14</xref>,
+        <xref ref-type=\"bibr\" rid=\"bib20\">20</xref>, <xref ref-type=\"bibr\" rid=\"bib32\">32</xref>)
+        and provided via the Synthesis Core (N.A. Petasis, University of Southern
+        California, Los Angeles, CA), Specialized Research Center (C.N. Serhan).</p><p>14<italic>S</italic>-HpDHA
+        was prepared from DHA (&#x223C;150 &#x3BC;M) incubated with 5.4 U/ml isolated
+        12-LOX (porcine) (0.05 M phosphate buffer, 0.02% Tween 20, pH 7.4). 14<italic>S</italic>-HpDHA
+        was isolated via RP-HPLC (1100 Series; Agilent Technologies) using a C18 column
+        (250 mm &#xD7; 10 mm &#xD7; 5 &#x3BC;m; Beckman Coulter) and a mobile phase
+        consisting of methanol/water (80:20, vol/vol) at 4 ml/min for 20 min and was
+        &gt;98% (<italic>S</italic>) configuration (see Supplemental materials and
+        methods). Reduction with NaBH<sub>4</sub> yielded 14<italic>S</italic>-HDHA
+        used for mass spectrometry standard. Biogenic synthesis of the double dioxygenation
+        product (7<italic>S</italic>,14<italic>S</italic>-diHDHA) was performed with
+        5-LOX enzyme incubated with 14<italic>S</italic>-HDHA. The 7<italic>S</italic>,14<italic>S</italic>-diHDHA
+        was scaled up for direct comparison of biological and physical properties
+        with other novel compounds isolated from M&#x3A6;s.</p></sec><sec disp-level=\"3\"><title>M&#x3A6;
+        incubations.</title><p>Resident peritoneal M&#x3A6;s were collected by lavage
+        from naive mice (20&#x2013;25 g, 6&#x2013;8-wk-old FVB mice; Charles River
+        Laboratories) with unlimited access to rodent diet 5001 (Laboratory Diet)
+        containing EPA 1.5% and DHA 1.9% of total fatty acids (<xref ref-type=\"bibr\"
+        rid=\"bib19\">19</xref>). All animal studies were approved and performed in
+        accordance with guidelines provided by the Harvard Medical Standing Committee
+        on Animals (protocol no. 02570).</p><p>After centrifugation at 2,000 rpm and
+        addition of DPBS<sup>+/+</sup>, M&#x3A6;s (15.5 &#xD7; 10<sup>6</sup> cells/3
+        ml) were incubated with zymosan A and 10 &#x3BC;M DHA or 14<italic>S</italic>-HpDHA
+        (pH 7.45) at 37&#xB0;C for 30 min. For assessing <sup>18</sup>O incorporation,
+        0.45 ml H<sub>2</sub><sup>18</sup>O (Cambridge Isotopes) was added to 50 &#x3BC;l
+        10&#xD7; DPBS<sup>+/+</sup>, mixed and adjusted to approximately pH 7.3 with
+        1 N HCl. 5 &#xD7; 10<sup>6</sup> isolated peritoneal M&#x3A6;s were suspended
+        in H<sub>2</sub><sup>18</sup>O-containing buffer. After rapid freeze&#x2013;thaw
+        in liquid nitrogen, 5 &#x3BC;M of purified 14<italic>S</italic>-HpDHA was
+        added with 2.5 &#x3BC;M A<sub>23187</sub> for 30 min at 37&#xB0;C. For alcohol
+        trapping, isolated M&#x3A6;s (5 &#xD7; 10<sup>6</sup> cells/100 &#x3BC;l)
+        were incubated at 37&#xB0;C for 5 min with 100 &#x3BC;M 14<italic>S</italic>-HpDHA
+        and 5 &#x3BC;M A<sub>23187</sub>, and incubations were stopped with 10&#xD7;
+        vol of cold methanol, with the apparent pH adjusted to approximately pH 3
+        (<xref ref-type=\"bibr\" rid=\"bib20\">20</xref>). All other incubations were
+        stopped with 2 vol of cold methanol and held at &#x2212;80&#xB0;C before extraction.</p></sec><sec
+        disp-level=\"3\"><title>Mediator lipidomics: product isolation and extractions.</title><p>Deuterated
+        internal standard (17-HDHA-d<sub>5</sub>, PGE<sub>2</sub>-d<sub>4</sub>; &#x223C;3
+        ng) was added to each incubation after protein precipitation &gt;30 min. Samples
+        were extracted (<xref ref-type=\"bibr\" rid=\"bib32\">32</xref>) and methyl
+        formate fractions were taken for LC/MS/MS-based mediator lipidomics. UV spectra
+        were recorded in methanol using an Agilent Technologies 4682 system for quantitation
+        and assessment of structural integrity of known mediators using appropriate
+        extinction coefficients (<xref ref-type=\"bibr\" rid=\"bib32\">32</xref>).</p><p>LC/MS/MS-based
+        analysis was performed with an HPLC system (Agilent Technologies 1100 series)
+        with a linear ion trap quadrupole mass spectrometer (3200 QTRAP; Applied Biosystems)
+        equipped with an Eclipse Plus C18 column (4.6 mm &#xD7; 50 mm &#xD7; 1.8 &#x3BC;m;
+        Agilent Technologies). The instrument was run in negative ionization mode,
+        and for enhanced product ion (EPI) mode, the mobile phase consisted of methanol/water/acetic
+        acid (60:40:0.01, vol/vol/vol) and ramped to 80:20:0.01 over 7.5 min and to
+        95:5:0.01 in the next 4.5 min at a flow rate of 400 &#x3BC;l/min. The flow
+        rate was decreased to 200 &#x3BC;l/min for 3 min and returned to 400 &#x3BC;l/min,
+        and the mobile phase was ramped up over the next 6 min to 100:0:0.01. For
+        multiple reaction monitoring (MRM) data acquisition, the mobile phase was
+        methanol/water/acetic acid (60:40:0.01) ramped to 80:20:0.01 after 5 min,
+        95:5:0.01 after 8 min, and 100:0:0.01 after 14 min to wash the column.</p><p>The
+        novel dihydroxy-containing products from DHA were monitored in EPI mode (359.2).
+        Ion pairs from reported MRM methods were used for profiling and quantitation
+        of 17-HDHA, 14<italic>S</italic>-HDHA, and internal standards. Ion pair 359.2/250.2
+        was used to identify 7,14-dihydroxy&#x2013;containing products. Criteria for
+        matching retention time and greater than or equal to six diagnostic ions to
+        those of synthetic references were used for identification (<xref ref-type=\"bibr\"
+        rid=\"bib32\">32</xref>). Quantitation was performed using calibration curves
+        constructed for each compound, and recoveries were monitored using added deuterated
+        internal standards.</p></sec><sec disp-level=\"3\"><title>Mouse peritonitis
+        and phagocytosis.</title><p>The 7,14-dihydroxy&#x2013;containing products
+        were isolated from methyl formate fractions obtained from mouse M&#x3A6;s
+        via RP-HPLC (Agilent Technologies 1100 series) using a Beckman Coulter C18
+        column (250 mm &#xD7; 10 mm &#xD7; 5 &#x3BC;m) and methanol/water (65:35,
+        vol/vol) ramped to 85:15 for 30 min. Their actions were assessed in mouse
+        zymosan A&#x2013;induced peritonitis (<xref ref-type=\"bibr\" rid=\"bib19\">19</xref>).
+        Peritonitis was initiated by i.p. administration of 1 mg zymosan A in 1 ml
+        of sterile saline, and each compound was administered i.v. 5 min before zymosan.
+        At 2 h, mice were killed, and peritoneal exudates were harvested (5 ml DPBS<sup>&#x2212;/&#x2212;</sup>
+        without calcium and magnesium), identified, and enumerated by light microscopy
+        and FACS. Resident M&#x3A6;s were identified by FACS (<xref ref-type=\"bibr\"
+        rid=\"bib8\">8</xref>). To assess proresolving actions, peritoneal M&#x3A6;s
+        (24-well plate, 10<sup>5</sup> cells/well) from naive mice were incubated
+        with each compound (15 min, pH 7.45), followed by the addition of FITC-labeled
+        zymosan A for 30 min at 37&#xB0;C. Trypan blue was used to quench extracellular
+        zymosan particles for 1 min at 37&#xB0;C, followed by DPBS<sup>+/+</sup> (pH
+        7.45), and phagocytosis was quantified using a Victor<sup>3</sup> (PerkinElmer).</p></sec><sec
+        disp-level=\"3\"><title>Statistical analysis.</title><p>Results are expressed
+        as means &#xB1; SEM. Statistical significance was determined using a two-tailed
+        Student's <italic>t</italic> test.</p></sec><sec disp-level=\"3\"><title>Online
+        supplemental material.</title><p>Fig. S1 shows the MS-MS spectrum of the novel
+        product obtained with H<sub>2</sub><sup>18</sup>O and M&#x3A6; incubations.
+        Fig. S2 is the representative mass spectrum of d<sub>5</sub>-MaR1 from M&#x3A6;
+        incubation with d<sub>5</sub>-DHA. Fig. S3 is the GC-MS spectrum obtained
+        for the 13,14-dihydroxy vicinal diol from DHA and M&#x3A6;s. This product
+        derivative was obtained after treatment with diazomethane and BSTFA to give
+        the methyl ester, OTMS derivative. Supplemental materials and methods describes
+        human M&#x3A6; incubations, GC-MS analysis, and chiral HPLC-MS/MS. Online
+        supplemental material is available at <ext-link ext-link-type=\"uri\" xlink:href=\"http://www.jem.org/cgi/content/full/jem.20081880/DC1\">http://www.jem.org/cgi/content/full/jem.20081880/DC1</ext-link>.</p></sec></sec>\n<sec
+        sec-type=\"supplementary-material\">\n<title>Supplementary Material</title>\n<supplementary-material
+        id=\"PMC_1\" content-type=\"local-data\">\n<caption>\n<title>[Supplemental
+        Material Index]</title>\n</caption>\n<media mimetype=\"text\" mime-subtype=\"html\"
+        xlink:href=\"jem.20081880_index.html\"/>\n<media xlink:role=\"associated-file\"
+        mimetype=\"application\" mime-subtype=\"pdf\" xlink:href=\"jem.20081880_1.pdf\"/>\n</supplementary-material>\n</sec>\n</body>\n
+        \ <back>\n    <ack>\n      <p>We thank M.H. Small for expert assistance in
+        manuscript preparation, Dr. N. Chiang for FACS analysis, and Dr. K. Gronert
+        for carrying out peritonitis with 12/15-LOX KO mice.</p>\n      <p>We acknowledge
+        National Institutes of Health grants P50-DE016191 and R37-GM038765.</p>\n
+        \     <p>C.N. Serhan is an inventor on U.S. patents for RvE1, Rv composition,
+        and related compounds, as well as their clinical uses assigned to Brigham
+        and Women's Hospital that are licensed and subject for consultantship. The
+        authors have no other conflicting financial interests.</p>\n    </ack>\n    <ref-list>\n
+        \     <ref id=\"bib1\">\n        <label>1</label>\n        <citation citation-type=\"journal\">Nathan,
+        C. <year>2002</year>. Points of control in inflammation. <source>Nature.</source>
+        <volume>420</volume>:<fpage>846</fpage>&#x2013;852.<pub-id pub-id-type=\"pmid\">12490957</pub-id></citation>\n
+        \     </ref>\n      <ref id=\"bib2\">\n        <label>2</label>\n        <citation
+        citation-type=\"journal\">Samuelsson, B. <year>1983</year>. Leukotrienes:
+        mediators of immediate hypersensitivity reactions and inflammation. <source>Science.</source>
+        <volume>220</volume>:<fpage>568</fpage>&#x2013;575.<pub-id pub-id-type=\"pmid\">6301011</pub-id></citation>\n
+        \     </ref>\n      <ref id=\"bib3\">\n        <label>3</label>\n        <citation
+        citation-type=\"journal\">Gilroy, D.W., T. Lawrence, M. Perretti, and A.G.
+        Rossi. <year>2004</year>. Inflammatory resolution: new opportunities for drug
+        discovery. <source>Nat. Rev. Drug Discov.</source> <volume>3</volume>:<fpage>401</fpage>&#x2013;416.<pub-id
+        pub-id-type=\"pmid\">15136788</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib4\">\n        <label>4</label>\n        <citation citation-type=\"journal\">Serhan,
+        C.N., N. Chiang, and T.E. Van Dyke. <year>2008</year>. Resolving inflammation:
+        dual anti-inflammatory and pro-resolution lipid mediators. <source>Nat. Rev.
+        Immunol.</source> <volume>8</volume>:<fpage>349</fpage>&#x2013;361.<pub-id
+        pub-id-type=\"pmid\">18437155</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib5\">\n        <label>5</label>\n        <citation citation-type=\"journal\">Serhan,
+        C.N., C.B. Clish, J. Brannon, S.P. Colgan, N. Chiang, and K. Gronert. <year>2000</year>.
+        Novel functional sets of lipid-derived mediators with antiinflammatory actions
+        generated from omega-3 fatty acids via cyclooxygenase 2&#x2013;nonsteroidal
+        antiinflammatory drugs and transcellular processing. <source>J. Exp. Med.</source>
+        <volume>192</volume>:<fpage>1197</fpage>&#x2013;1204.<pub-id pub-id-type=\"pmid\">11034610</pub-id></citation>\n
+        \     </ref>\n      <ref id=\"bib6\">\n        <label>6</label>\n        <citation
+        citation-type=\"journal\">Serhan, C.N., S. Hong, K. Gronert, S.P. Colgan,
+        P.R. Devchand, G. Mirick, and R.-L. Moussignac. <year>2002</year>. Resolvins:
+        a family of bioactive products of omega-3 fatty acid transformation circuits
+        initiated by aspirin treatment that counter proinflammation signals. <source>J.
+        Exp. Med.</source> <volume>196</volume>:<fpage>1025</fpage>&#x2013;1037.<pub-id
+        pub-id-type=\"pmid\">12391014</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib7\">\n        <label>7</label>\n        <citation citation-type=\"journal\">Hong,
+        S., K. Gronert, P. Devchand, R.-L. Moussignac, and C.N. Serhan. <year>2003</year>.
+        Novel docosatrienes and 17S-resolvins generated from docosahexaenoic acid
+        in murine brain, human blood and glial cells: autacoids in anti-inflammation.
+        <source>J. Biol. Chem.</source> <volume>278</volume>:<fpage>14677</fpage>&#x2013;14687.<pub-id
+        pub-id-type=\"pmid\">12590139</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib8\">\n        <label>8</label>\n        <citation citation-type=\"journal\">Bannenberg,
+        G.L., N. Chiang, A. Ariel, M. Arita, E. Tjonahen, K.H. Gotlinger, S. Hong,
+        and C.N. Serhan. <year>2005</year>. Molecular circuits of resolution: formation
+        and actions of resolvins and protectins. <source>J. Immunol.</source> <volume>174</volume>:<fpage>4345</fpage>&#x2013;4355.<pub-id
+        pub-id-type=\"pmid\">15778399</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib9\">\n        <label>9</label>\n        <citation citation-type=\"other\">Cotran,
+        R.S., V. Kumar, and T. Collins, editors. <year>1999</year>. Robbins Pathologic
+        Basis of Disease. W.B. Saunders Co., Philadelphia. 1425 pp.</citation>\n      </ref>\n
+        \     <ref id=\"bib10\">\n        <label>10</label>\n        <citation citation-type=\"journal\">Calder,
+        P.C. <year>2007</year>. Immunomodulation by omega-3 fatty acids. <source>Prostaglandins
+        Leukot. Essent. Fatty Acids.</source> <volume>77</volume>:<fpage>327</fpage>&#x2013;335.<pub-id
+        pub-id-type=\"pmid\">18032006</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib11\">\n        <label>11</label>\n        <citation citation-type=\"journal\">Simopoulos,
+        A.P. <year>2002</year>. Omega-3 fatty acids in inflammation and autoimmune
+        diseases. <source>J. Am. Coll. Nutr.</source> <volume>21</volume>:<fpage>495</fpage>&#x2013;505.<pub-id
+        pub-id-type=\"pmid\">12480795</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib12\">\n        <label>12</label>\n        <citation citation-type=\"journal\">Orr,
+        S.K., and R.P. Bazinet. <year>2008</year>. The emerging role of docosahexaenoic
+        acid in neuroinflammation. <source>Curr. Opin. Investig. Drugs.</source> <volume>9</volume>:<fpage>735</fpage>&#x2013;743.</citation>\n
+        \     </ref>\n      <ref id=\"bib13\">\n        <label>13</label>\n        <citation
+        citation-type=\"journal\">Schwab, J.M., N. Chiang, M. Arita, and C.N. Serhan.
+        <year>2007</year>. Resolvin E1 and protectin D1 activate inflammation-resolution
+        programmes. <source>Nature.</source> <volume>447</volume>:<fpage>869</fpage>&#x2013;874.<pub-id
+        pub-id-type=\"pmid\">17568749</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib14\">\n        <label>14</label>\n        <citation citation-type=\"journal\">Arita,
+        M., F. Bianchini, J. Aliberti, A. Sher, N. Chiang, S. Hong, R. Yang, N.A.
+        Petasis, and C.N. Serhan. <year>2005</year>. Stereochemical assignment, antiinflammatory
+        properties, and receptor for the omega-3 lipid mediator resolvin E1. <source>J.
+        Exp. Med.</source> <volume>201</volume>:<fpage>713</fpage>&#x2013;722.<pub-id
+        pub-id-type=\"pmid\">15753205</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib15\">\n        <label>15</label>\n        <citation citation-type=\"journal\">Cash,
+        J.L., R. Hart, A. Russ, J.P.C. Dixon, W.H. Colledge, J. Doran, A.G. Hendrick,
+        M.B.L. Carlton, and D.R. Greaves. <year>2008</year>. Synthetic chemerin-derived
+        peptides suppress inflammation through ChemR23. <source>J. Exp. Med.</source>
+        <volume>205</volume>:<fpage>767</fpage>&#x2013;775.<pub-id pub-id-type=\"pmid\">18391062</pub-id></citation>\n
+        \     </ref>\n      <ref id=\"bib16\">\n        <label>16</label>\n        <citation
+        citation-type=\"journal\">Hudert, C.A., K.H. Weylandt, J. Wang, Y. Lu, S.
+        Hong, A. Dignass, C.N. Serhan, and J.X. Kang. <year>2006</year>. Transgenic
+        mice rich in endogenous n-3 fatty acids are protected from colitis. <source>Proc.
+        Natl. Acad. Sci. USA.</source> <volume>103</volume>:<fpage>11276</fpage>&#x2013;11281.<pub-id
+        pub-id-type=\"pmid\">16847262</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib17\">\n        <label>17</label>\n        <citation citation-type=\"journal\">Gronert,
+        K., N. Maheshwari, N. Khan, I.R. Hassan, M. Dunn, and M.L. Schwartzman. <year>2005</year>.
+        A role for the mouse 12/15-lipoxygenase pathway in promoting epithelial wound
+        healing and host defense. <source>J. Biol. Chem.</source> <volume>280</volume>:<fpage>15267</fpage>&#x2013;15278.<pub-id
+        pub-id-type=\"pmid\">15708862</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib18\">\n        <label>18</label>\n        <citation citation-type=\"journal\">Merched,
+        A., K. Ko, K.H. Gotlinger, C.N. Serhan, and L. Chan. <year>2008</year>. Atherosclerosis:
+        evidence for impairment of resolution of vascular inflammation governed by
+        specific lipid mediators. <source>FASEB J.</source> <volume>22</volume>:<fpage>3595</fpage>&#x2013;3606.<pub-id
+        pub-id-type=\"pmid\">18559988</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib19\">\n        <label>19</label>\n        <citation citation-type=\"other\">Winyard,
+        P.G., and D.A. Willoughby, editors. <year>2003</year>. Inflammation Protocols.
+        Humana, Totowa, NJ. 378 pp.</citation>\n      </ref>\n      <ref id=\"bib20\">\n
+        \       <label>20</label>\n        <citation citation-type=\"journal\">Serhan,
+        C.N., K. Gotlinger, S. Hong, Y. Lu, J. Siegelman, T. Baer, R. Yang, S.P. Colgan,
+        and N.A. Petasis. <year>2006</year>. Anti-inflammatory actions of neuroprotectin
+        D1/protectin D1 and its natural stereoisomers: assignments of dihydroxy-containing
+        docosatrienes. <source>J. Immunol.</source> <volume>176</volume>:<fpage>1848</fpage>&#x2013;1859.<pub-id
+        pub-id-type=\"pmid\">16424216</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib21\">\n        <label>21</label>\n        <citation citation-type=\"journal\">Mukherjee,
+        P.K., V.L. Marcheselli, C.N. Serhan, and N.G. Bazan. <year>2004</year>. Neuroprotectin
+        D1: a docosahexaenoic acid-derived docosatriene protects human retinal pigment
+        epithelial cells from oxidative stress. <source>Proc. Natl. Acad. Sci. USA.</source>
+        <volume>101</volume>:<fpage>8491</fpage>&#x2013;8496.<pub-id pub-id-type=\"pmid\">15152078</pub-id></citation>\n
+        \     </ref>\n      <ref id=\"bib22\">\n        <label>22</label>\n        <citation
+        citation-type=\"other\">Fox, M.A., and J.K. Whitesell. <year>1997</year>.
+        Organic Chemistry. Jones and Bartlett Publishers, Boston. 1248 pp.</citation>\n
+        \     </ref>\n      <ref id=\"bib23\">\n        <label>23</label>\n        <citation
+        citation-type=\"journal\">Godson, C., S. Mitchell, K. Harvey, N.A. Petasis,
+        N. Hogg, and H.R. Brady. <year>2000</year>. Cutting edge: lipoxins rapidly
+        stimulate nonphlogistic phagocytosis of apoptotic neutrophils by monocyte-derived
+        macrophages. <source>J. Immunol.</source> <volume>164</volume>:<fpage>1663</fpage>&#x2013;1667.<pub-id
+        pub-id-type=\"pmid\">10657608</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib24\">\n        <label>24</label>\n        <citation citation-type=\"journal\">Rossi,
+        A.G., J.C. McCutcheon, N. Roy, E.R. Chilvers, C. Haslett, and I. Dransfield.
+        <year>1998</year>. Regulation of macrophage phagocytosis of apoptotic cells
+        by cAMP. <source>J. Immunol.</source> <volume>160</volume>:<fpage>3562</fpage>&#x2013;3568.<pub-id
+        pub-id-type=\"pmid\">9531319</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib25\">\n        <label>25</label>\n        <citation citation-type=\"journal\">German,
+        J.B., G.G. Bruckner, and J.E. Kinsella. <year>1986</year>. Lipoxygenase in
+        trout gill tissue acting on arachidonic, eicosapentaenoic and docosahexaenoic
+        acids. <source>Biochim. Biophys. Acta.</source> <volume>875</volume>:<fpage>12</fpage>&#x2013;20.<pub-id
+        pub-id-type=\"pmid\">3000452</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib26\">\n        <label>26</label>\n        <citation citation-type=\"journal\">Lagarde,
+        M., M. Croset, M. Guichardant, and M. Dechavanne. <year>1985</year>. Role
+        of lipoxygenase products in platelet function: relation to fatty acid modified
+        phospholipids. <source>Adv. Exp. Med. Biol.</source> <volume>192</volume>:<fpage>327</fpage>&#x2013;335.<pub-id
+        pub-id-type=\"pmid\">3938923</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib27\">\n        <label>27</label>\n        <citation citation-type=\"journal\">Kim,
+        H.Y., J.W. Karanian, T. Shingu, and N. Salem Jr. <year>1990</year>. Stereochemical
+        analysis of hydroxylated docosahexaenoates produced by human platelets and
+        rat brain homogenate. <source>Prostaglandins.</source> <volume>40</volume>:<fpage>473</fpage>&#x2013;490.<pub-id
+        pub-id-type=\"pmid\">2147773</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib28\">\n        <label>28</label>\n        <citation citation-type=\"other\">Rowley,
+        A.F., H. K&#xFC;hn, and T. Schewe, editors. <year>1998</year>. Eicosanoids
+        and Related Compounds in Plants and Animals. Portland Press, London. 240 pp.</citation>\n
+        \     </ref>\n      <ref id=\"bib29\">\n        <label>29</label>\n        <citation
+        citation-type=\"journal\">MacLean, C.H., S.J. Newberry, W.A. Mojica, P. Khanna,
+        A.M. Issa, M.J. Suttorp, Y.W. Lim, S.B. Traina, L. Hilton, R. Garland, and
+        S.C. Morton. <year>2006</year>. Effects of omega-3 fatty acids on cancer risk:
+        a systematic review. <source>JAMA.</source> <volume>295</volume>:<fpage>403</fpage>&#x2013;415.<pub-id
+        pub-id-type=\"pmid\">16434631</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib30\">\n        <label>30</label>\n        <citation citation-type=\"journal\">Dwyer,
+        J.H., H. Allayee, K.M. Dwyer, J. Fan, H. Wu, R. Mar, A.J. Lusis, and M. Mehrabian.
+        <year>2004</year>. Arachidonate 5-lipoxygenase promoter genotype, dietary
+        arachidonic acid, and atherosclerosis. <source>N. Engl. J. Med.</source> <volume>350</volume>:<fpage>29</fpage>&#x2013;37.<pub-id
+        pub-id-type=\"pmid\">14702425</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib31\">\n        <label>31</label>\n        <citation citation-type=\"journal\">Colomer,
+        R., J.M. Moreno-Nogueira, P.P. Garc&#xED;a-Luna, P. Garc&#xED;a-Peris, A.
+        Garc&#xED;a-de-Lorenzo, A. Zarazaga, L. Quecedo, J. del Llano, L. Us&#xE1;n,
+        and C. Casimiro. <year>2007</year>. N-3 fatty acids, cancer and cachexia:
+        a systematic review of the literature. <source>Br. J. Nutr.</source> <volume>97</volume>:<fpage>823</fpage>&#x2013;831.<pub-id
+        pub-id-type=\"pmid\">17408522</pub-id></citation>\n      </ref>\n      <ref
+        id=\"bib32\">\n        <label>32</label>\n        <citation citation-type=\"journal\">Serhan,
+        C.N., Y. Lu, S. Hong, and R. Yang. <year>2007</year>. Mediator lipidomics:
+        search algorithms for eicosanoids, resolvins and protectins. <source>Methods
+        Enzymol.</source> <volume>432</volume>:<fpage>275</fpage>&#x2013;317.<pub-id
+        pub-id-type=\"pmid\">17954222</pub-id></citation>\n      </ref>\n    </ref-list>\n
+        \ </back>\n</article>\n</pmc-articleset>\n"
+    http_version: 
+  recorded_at: Thu, 13 Mar 2014 05:49:10 GMT
+recorded_with: VCR 2.8.0
