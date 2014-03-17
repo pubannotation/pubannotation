@@ -268,7 +268,7 @@ ja:
         associate_project_name: 関連プロジェクト名を入力
       doc:
         annotation_server: アノテーションサーバーのURL
-        ids: ドキュメントのID
+        ids: ドキュメントのID(複数の場合は空白もしくはコンマで区切る)
         pmcids: PMCのID
         pmids: PubMedのID
       sproject:
@@ -375,10 +375,11 @@ ja:
       document_content: ドキュメントのコンテンツ
       projects_made_to_document: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       automatic_annotation: 自動アノテーションの取得
-      docs_list: ドキュメント一覧
+      docs_list: ドキュメント一覧(レコード)
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
-      source_db_id_list: ソースDB・ID別ドキュメント一覧
+      folded_docs_list: ドキュメント一覧(纏める)
+      add_new_documents: ドキュメント追加
     documentations:
       Overview: 概要
       Features: 特徴
@@ -391,7 +392,7 @@ ja:
       try_textae: お持ちでない場合はこちらをお試し下さい
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
       about_the_project: "<span class='pname'>%{project_name}</span>について"
-      project_details: プロジェクト詳細
+      project_properties: プロジェクト詳細
       that_annotate_a_pmdoc: "<span class='pname'>%{sourcedb}:%{sourceid}</span>用の<a href='%{href}'>アノテーションプロジェクト</a>"
       that_annotate_a_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョンをアノテートする<a href='%{href}'>プロジェクト</a>"
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>アノテーションプロジェクト"
@@ -428,7 +429,6 @@ ja:
       confirm:
         delete_model: "%{model}を削除しますか？"
       add: 追加
-      add_to_the_set: セットに追加
       account: アカウント
       annotation: アノテーション
       back: 戻る

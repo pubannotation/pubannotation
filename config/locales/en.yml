@@ -218,8 +218,8 @@ en:
       associate_projects_project: associate project 
     attributes:
       doc:
-        sourcedb: src DB
-        sourceid: src id
+        sourcedb: source DB
+        sourceid: source ID
         body: text
       documentation:
         title: title
@@ -251,7 +251,7 @@ en:
         associate_project_name: Enter associate project name.
       doc:
         annotation_server: URL of annotation server
-        ids: Doc IDs
+        ids: space-or-comma-separated IDs
         pmcids: PMC IDs
         pmids: PubMed IDs
       sproject:
@@ -352,10 +352,11 @@ en:
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
       automatic_annotation: Get automatic annotation
-      docs_list: Documents List
+      docs_list: Document List (records)
+      folded_docs_list: Document List (folded)
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
-      source_db_id_list: Source DB and ID list
+      add_new_documents: Add new documents
     documentations:
       Overview: Overview
       Features: Features
@@ -368,7 +369,7 @@ en:
       try_textae: "If you don't have one, try with" 
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this annotation set</span></span>"
       about_the_project: "About the project, <span class='pname'>%{project_name}</span>"
-      project_details: Project details
+      properties: Properties
       that_annotate_a_pmdoc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubannotation: "<span class='meta'>Annotation projects</span> in PubAnnotation"
@@ -377,7 +378,6 @@ en:
       associate_maintain_projects: Associated projects 
       belongs_to_sproject: Projects belongs to this Sproject
       associate_project: Associate project
-      detail: Project Detail
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:
@@ -406,14 +406,13 @@ en:
       confirm:
         delete_model: "Are you sure to delete %{model}?"      
       add: Add
-      add_to_the_set: Add to the set
       account: account
       annotation: annotation
       edit : edit
       error: error
       delete: delete
       delete_all: delete all
-      none: none
+      none: no entry
       new_model: New %{model}
       create_model: Create a New %{model}
       edit_model: Editing %{model}

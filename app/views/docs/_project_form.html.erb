@@ -2,12 +2,13 @@
 	<%= form_tag(project_docs_project_docs_path(@project.name), :method => "post") do %>
 	  <table>
 	    <tr>
-	      <th><%= label_tag(:ids,  t('views.shared.add_model', :model => t('activerecord.models.doc').pluralize)) %><br/></th>
-	      <td>
-	      	<%= select_tag(:sourcedb, options_for_select({'PubMed' => 'PMDoc', 'PMC' => 'PMCDoc', 'FADoc' => 'FADoc'})) -%>
-	        <%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids'), :required => true) %>
-	        <%= submit_tag(t('views.shared.add')) %>
-	      </td>
+		    <th><%= t('activerecord.attributes.doc.sourcedb')%></th>
+		    <th><%= t('activerecord.attributes.doc.sourceid')%></th>
+		</tr>
+		<tr>
+	    	<td><%= select_tag(:sourcedb, options_for_select({'PubMed' => 'PMDoc', 'PMC' => 'PMCDoc', 'FirstAuthors' => 'FADoc'})) -%></td>
+	        <td><%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids'), :required => true) %></td>
+	        <td><%= submit_tag(t('views.shared.add')) %></td>
 	    </tr>
 	  </table>
 	<% end %>

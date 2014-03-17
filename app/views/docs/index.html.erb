@@ -1,11 +1,9 @@
-<h1 class="capitalize_first">
-	<%= t('views.docs.docs_list') -%>
-</h1>
+<%= render :partial => 'projects/links' -%>
 
-<%= render :partial => 'links' -%>
+<h2><%= t('views.docs.docs_list') -%></h2>
 
 <% if @docs.empty? %>
-  <%= t('views.shared.none') %>
+  <p><%= t('views.shared.none') %></p>
 <% else %>
   <table>
     <tr>
@@ -39,8 +37,18 @@
   </table>
 <% end %>
 
-<%= link_to t('views.shared.new_model', :model => t('activerecord.models.doc')), @new_doc_src, :class => 'button' -%>
-
-<%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
-
 <%= will_paginate @docs %>
+
+<% if user_signed_in? %>
+<h2><%= t('views.docs.add_new_documents') -%></h2>
+<ul>
+  <li>by getting from a public database<br/>
+    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
+  </li>
+  <p>or</p>
+  <li>by uploading a new document<br/>
+    <%= link_to t('views.shared.new_model', :model => t('activerecord.models.doc')), @new_doc_src, :class => 'button' -%>
+  </li>
+</ul>
+
+<% end %>

@@ -1,10 +1,8 @@
 <% if source_doc_counter == 0 -%>
-	<h1 class="capitalize_first">
-		<%= t('views.docs.source_db_id_list') -%>
-	</h1>
+	<%= render :partial => 'projects/links' -%>
 
-	<%= render :partial => 'links' -%>
-	
+	<h2><%= t('views.docs.folded_docs_list') -%></h2>
+
 	<table>		
 		<tr>
 			<th><%= t('activerecord.attributes.doc.sourcedb') %></th>

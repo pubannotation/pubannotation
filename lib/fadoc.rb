@@ -299,51 +299,6 @@ if __FILE__ == $0
     fadoc.get_divs.each do |d|
       p d
     end
-
-  exit
-
-
-    if source == "n"
-      pmcdoc = PMCDoc.new(p)
-      id = p
-    else
-      pmcdoc = PMCDoc.new(nil, p)
-      p =~ /([0-9]+)/
-      id = $1
-    end
-
-    unless pmcdoc.doc
-      puts pmcdoc.message
-      exit
-    end
-
-    if divs = pmcdoc.get_divs
-      normal += 1
-      puts "#{id}\t:good"
-      if output == 'html'
-        divs.each_with_index do |d, i|
-
-          doc = HTML::Document.new()
-          doc.root = HTML::Node.new('clipSet')
-          root = doc.root
-          root << clip = HTML::Node.new('clip')
-          d[1].each_line do |l|
-            clip << p = HTML::Node.new('p')
-            p << l.chomp
-          end
-          outfilename = "PMC-#{id}-%02d-#{d[0].gsub(/ /, '_')}.html" % i
-          doc.save(outfilename, :encoding => HTML::Encoding::UTF_8)
-        end
-      end
-    else
-      abnormal += 1
-      puts "#{id}\t:bad"
-    end
-
   end
 
-  puts
-  puts "Good  : #{normal}"
-  puts "Bad   : #{abnormal}"
-  puts "Total : #{normal+abnormal}"
 end
