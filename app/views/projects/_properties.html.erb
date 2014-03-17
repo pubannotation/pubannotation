@@ -1,0 +1,98 @@
+<%= render :partial => 'links' -%>
+
+<h2><%= t('views.projects.properties') %></h2>
+<div>
+	<% if project %>
+		<table>
+			<tr>
+				<th><%= t('activerecord.attributes.project.name') %></th>
+				<td><%= project.name %></td>
+			</tr>
+			<tr>
+				<th><%= t('activerecord.attributes.project.description') %></th>
+				<td><%= project.description %></td>
+			</tr>
+			<tr>
+				<th><%= t('activerecord.attributes.project.author') %></th>
+				<td><%= project.author %></td>
+			</tr>
+			<tr>
+				<th><%= t('activerecord.attributes.project.license') %></th>
+				<td><%= project.license %></td>
+			</tr>
+			<tr>
+				<th><%= t('activerecord.attributes.project.status') %></th>
+				<td>
+					<%= project.status_text -%>
+				</td>
+			</tr>
+			<tr>
+				<th><%= t('activerecord.attributes.project.accessibility') %></th>
+				<td>
+					<%= project.accessibility_text -%>
+				</td>
+			</tr>
+			<tr>
+				<th><%= t('activerecord.attributes.project.maintainer') %></th>
+				<td><%= project.user.username %></td>
+			</tr>
+			<tr>
+				<th><%= t('activerecord.models.associate_maintainer') %></th>
+				<td>
+					<% project.associate_maintainers.each do |associate_maintainer| -%>
+						<div>
+							<%= associate_maintainer.user.username -%>
+						</div>
+					<% end -%> 
+				</td>
+			</tr>
+			<tr>
+				<th><%= t('activerecord.attributes.project.reference') %></th>
+				<td><a href="<%= project.reference %>"><%= project.reference %></a></td>
+			</tr>
+			<th><%= t('activerecord.attributes.project.viewer') %></th>
+			<td><a href="<%= project.viewer %>"><%= project.viewer %></a></td>
+			</tr>
+			<% if user_signed_in? and current_user == project.user %>
+				<tr>
+					<th><%= t('activerecord.attributes.project.editor') %></th>
+					<td><a href="<%= project.editor %>"><%= project.editor %></a></td>
+				</tr>
+			<% end %>
+			<% unless project.rdfwriter.blank? %>
+			<tr>
+				<th><%= t('activerecord.attributes.project.rdfwriter') %></th>
+				<td><a href="<%= project.rdfwriter %>"><%= project.rdfwriter %></a></td>
+			</tr>
+			<% end %>
+			<% unless project.xmlwriter.blank? %>
+			<tr>
+				<th><%= t('activerecord.attributes.project.xmlwriter') %></th>
+				<td><a href="<%= project.xmlwriter %>"><%= project.xmlwriter %></a></td>
+			</tr>
+			<% end %>
+			<% unless project.bionlpwriter.blank? %>
+			<tr>
+				<th><%= t('activerecord.attributes.project.bionlpwriter') %></th>
+				<td><a href="<%= project.bionlpwriter %>"><%= project.bionlpwriter %></a></td>
+			</tr>
+			<% end %>
+		</table>
+		<% if user_signed_in? -%>
+			<% if project.updatable_for?(current_user) -%>
+				<% edit_path = edit_project_path(project.name) -%> <span class="button"> <%= link_to t('views.shared.edit'), edit_path, :class => 'capitalize_first' -%> </span>
+			<% end -%>
+			<% if project.destroyable_for?(current_user) -%> 
+				<span class="button"><%= link_to t('views.shared.delete'), project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
+			<% end -%>
+		<% end %>
+	<% end %>
+	
+	<div>
+		<%= project_annotations_zip_link_helper(project) -%>
+	</div>
+	
+	<% if project.associate_projects.present? -%>
+		<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => project.associate_projects, :scope => 'associate_project' } %>
+	<% end -%>
+</div>
