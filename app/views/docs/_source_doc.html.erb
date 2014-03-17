@@ -47,6 +47,21 @@
 
 <% if source_doc_counter == @source_docs.size - 1 -%>
 	</table>
-	
 	<%= will_paginate @source_docs -%>
+
+
+<% if user_signed_in? and current_user == @project.user %>
+<h2><%= t('views.docs.add_new_documents') -%></h2>
+<ul>
+  <li>by getting from a public database<br/>
+    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
+  </li>
+  <p>or</p>
+  <li>by uploading a new document<br/>
+    <%= link_to t('views.shared.new_model', :model => t('activerecord.models.doc')), @new_doc_src, :class => 'button' -%>
+  </li>
+</ul>
+
+<% end %>
+
 <% end -%>

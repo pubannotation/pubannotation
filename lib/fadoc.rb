@@ -294,11 +294,14 @@ if __FILE__ == $0
   ARGV.each do |id|
     fadoc = FADoc.new(id)
     p fadoc.doc.class
+    puts "-----"
     p fadoc.get_title
     puts "-----"
-    fadoc.get_divs.each do |d|
-      p d
-    end
+    p fadoc.get_divs
+    puts "-----"
+    # fadoc.get_divs.each do |d|
+    #   p d
+    # end
   end
 
 end

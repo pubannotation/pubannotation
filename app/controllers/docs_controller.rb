@@ -71,8 +71,8 @@ class DocsController < ApplicationController
  
  def sourceid_index
    if params[:project_id].present?
-    project = Project.find_by_name(params[:project_id]) 
-    docs = project.docs
+    @project = Project.find_by_name(params[:project_id]) 
+    docs = @project.docs
    else
      docs = Doc
    end
