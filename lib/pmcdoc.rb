@@ -6,34 +6,27 @@ Encoding.default_internal="UTF-8"
 require 'rest_client'
 require 'xml'
 
-class PMCDoc
-  attr_reader :doc, :message
+class DBAccessorPMC
+  attr_reader :doc
 
-  def initialize(pmcid, filename=nil)
-    if pmcid
+  def initialize(id)
+    if id
       RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{pmcid}" do |response, request, result|
         case response.code
         when 200
           if response.index("PMC#{pmcid} not found")
-            @doc = nil
-            @message = "#{pmcid} is a non-existence article ID."
+            raise "#{pmcid} is a non-existence article ID."
           else
             parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
-            @doc = parser.parse
+            @doc = 
+            # {
+            #   source_db_url: "http://....pmc.gov"
+            #   divs: parser.parse
+            # }
           end
         else
-          @doc = nil
-          @message = "PubMed Central unreachable."
+          raise "PubMed Central unreachable."
         end
-      end
-    elsif filename
-      file = File.read(filename)
-      if file
-        parser = XML::Parser.string(file, :encoding => XML::Encoding::UTF_8)
-        @doc = parser.parse
-      else
-        @doc = nil
-        @message = "File not found"
       end
     end
   end
