@@ -28,7 +28,7 @@ Pubann::Application.routes.draw do
   
   resources :docs do
     collection do
-      get 'source' => 'docs#source'
+      get 'records' => 'docs#records'
       # list sourcedb
       get 'sourcedb' => 'docs#sourcedb_index' 
     end  
@@ -141,7 +141,7 @@ Pubann::Application.routes.draw do
     resources :docs do
       collection do
         post 'project_docs' => 'docs#create_project_docs'
-        get 'source' => 'docs#source'
+        get 'records' => 'docs#records'
         scope 'sourcedb', :as => 'sourcedb' do
           # list sourcedb
           get '/' => 'docs#sourcedb_index' 

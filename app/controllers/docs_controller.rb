@@ -3,7 +3,7 @@ require 'zip/zip'
 class DocsController < ApplicationController
   # GET /docs
   # GET /docs.json
-  def index
+  def records
     if params[:project_id]
       @project, notice = get_project(params[:project_id])
       @new_doc_src = new_project_doc_path
@@ -76,7 +76,7 @@ class DocsController < ApplicationController
    @source_docs = docs.where(['sourcedb = ?', params[:sourcedb]]).order('sourceid ASC').paginate(:page => params[:page])
  end 
 
- def source
+ def index
   if params[:project_id].present?
     @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
     docs = @project.docs

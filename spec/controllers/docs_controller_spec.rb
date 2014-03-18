@@ -2,7 +2,7 @@
 require 'spec_helper'
 
 describe DocsController do
-  describe 'index' do
+  describe 'records' do
     before do
       @doc = FactoryGirl.create(:doc, :sourceid => 'sourceid', :serial => 1, :section => 'section')
     end
@@ -17,11 +17,11 @@ describe DocsController do
       context 'when get_project returns project' do
         before do
           controller.stub(:get_project).and_return([@project, @get_project_notice])
-          get :index, :project_id => @project_id
+          get :records, :project_id => @project_id
         end
         
         it 'should render template' do
-          response.should render_template('index')
+          response.should render_template('records')
         end
       end
 
@@ -32,11 +32,11 @@ describe DocsController do
         
         context 'when format html' do
           before do
-            get :index, :project_id => @project_id
+            get :records, :project_id => @project_id
           end
           
           it 'should render template' do
-            response.should render_template('index')
+            response.should render_template('records')
           end
           
           it 'set get_project notice as flash[:notice]' do
@@ -46,7 +46,7 @@ describe DocsController do
         
         context 'when format json' do
           before do
-            get :index, :format => 'json', :project_id => @project_id
+            get :records, :format => 'json', :project_id => @project_id
           end
           
           it 'should return status 422' do
@@ -56,7 +56,7 @@ describe DocsController do
         
         context 'when format text' do
           before do
-            get :index, :format => 'txt', :project_id => @project_id
+            get :records, :format => 'txt', :project_id => @project_id
           end
           
           it 'should return status 422' do
@@ -69,17 +69,17 @@ describe DocsController do
     context 'when params[:project_id] does not exists' do
       context 'when format html' do
         before do
-          get :index
+          get :records
         end
         
         it 'should render template' do
-          response.should render_template('index')
+          response.should render_template('records')
         end
       end
 
       context 'when format json' do
         before do
-          get :index, :format => 'json'
+          get :records, :format => 'json'
         end
         
         it 'should render @docs as json' do
@@ -89,7 +89,7 @@ describe DocsController do
 
       context 'when format text' do
         before do
-          get :index, :format => 'txt'
+          get :records, :format => 'txt'
         end
         
         it 'should return zpi' do
@@ -174,7 +174,7 @@ describe DocsController do
     end
   end
   
-  describe 'source' do
+  describe 'index' do
     before do
       @project = FactoryGirl.create(:project)
       @project_doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 123)
@@ -186,7 +186,7 @@ describe DocsController do
     
     context 'when project present' do
       before do
-        get :source, :project_id => @project.name
+        get :index, :project_id => @project.name
       end
       
       it 'should assign project' do
@@ -201,7 +201,7 @@ describe DocsController do
     
     context 'when project blank' do
       before do
-        get :source
+        get :index
       end
       
       it 'should assign @source_docs' do

@@ -6,19 +6,19 @@
 	end -%>
 	<% 
 		docs_src = project_docs_path(@project.name)
-		source_docs_src = source_project_docs_path(@project.name)
+		records_docs_src = records_project_docs_path(@project.name)
 	-%>
 <% else -%>
 	<% 
 		docs_src = docs_path
-		source_docs_src = source_docs_path
+		records_docs_src = records_docs_path
 	-%>
 <% end -%>
 
-<%= link_to_unless_current t('views.docs.folded_docs_list'), source_docs_src, :class => 'tab inactive_tab' do
+<%= link_to_unless_current t('views.docs.folded_docs_list'), docs_src, :class => 'tab inactive_tab' do
 	content_tag :span, t('views.docs.folded_docs_list'), :class => 'tab active_tab'
 end -%>
 
-<%= link_to_unless_current t('views.docs.docs_list'), docs_src, :class => 'tab inactive_tab' do
+<%= link_to_unless_current t('views.docs.docs_list'), records_docs_src, :class => 'tab inactive_tab' do
 	content_tag :span, t('views.docs.docs_list'), :class => 'tab active_tab'
 end -%>

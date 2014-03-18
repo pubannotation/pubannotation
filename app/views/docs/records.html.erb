@@ -1,0 +1,51 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  <% if @project %>
+    > <%= link_to t('activerecord.models.project'), projects_path %>
+    > <%= link_to @project.name, project_path(@project.name) %>
+  <% end %>
+  > <%= t('views.docs.docs_list') -%>
+<% end %>
+
+
+<%= render :partial => 'projects/links' -%>
+
+<h2><%= t('views.docs.docs_list') -%></h2>
+
+<% if @docs.empty? %>
+  <p><%= t('views.shared.none') %></p>
+<% else %>
+  <table>
+    <tr>
+      <th><%= t('activerecord.attributes.doc.sourcedb')%></th>
+      <th><%= t('activerecord.attributes.doc.sourceid')%></th>
+	  <th><%= t('views.divs.div')%></th>
+      <th><%= t('activerecord.attributes.doc.section')%></th>
+      <th><%= t('activerecord.attributes.doc.body')%></th>
+      <th></th>
+    </tr>
+
+  <% @docs.each do |doc| %>
+    <tr>
+      <td>
+      	<%= sourceid_index_link_helper(doc)-%>
+      </td>
+      <td><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
+      <td><%= doc.serial %></td>
+      <td><%= doc.section %></td>
+      <td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' %></td>
+      <td>
+      <% if @project %>
+        <%= link_to t('views.shared.show'), project_doc_path(@project.name, doc.id), :class => 'button' %>
+      <% else %>
+        <%= link_to t('views.shared.show'), doc_path(doc.id), :class => 'button' %>
+      <% end %>
+      <%= link_to t('views.shared.edit'), edit_doc_path(doc), :class => 'button' if doc.updatable_for?(current_user) -%>
+      </td>
+    </tr>
+  <% end %>
+  </table>
+<% end %>
+
+<%= will_paginate @docs %>
+
