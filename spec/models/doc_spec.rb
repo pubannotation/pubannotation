@@ -1429,6 +1429,40 @@ describe Doc do
     end
   end
   
+  describe 'generate_divs' do
+    before do
+      @hash_1 = {:heading => 'HEAD1', :body => 'DIV BODY1'}
+      @hash_2 = {:heading => 'HEAD2', :body => 'DIV BODY2'}
+      @divs_hash = [@hash_1, @hash_2]
+      @attributes = {
+        :source_url => 'http://source.url',
+        :sourcedb => 'sourcedb',
+        :sourceid => 'sourceid'
+      }
+      @divs = Doc.create_divs(@divs_hash, @attributes)
+    end
+    
+    it 'should create divs.body from divs_hash[:body]' do
+      @divs.collect{|div| div.body}.should =~ [@hash_1[:body], @hash_2[:body]]
+    end
+    
+    it 'should create divs.section from divs_hash[:heading]' do
+      @divs.collect{|div| div.section}.should =~ [@hash_1[:heading], @hash_2[:heading]]
+    end
+    
+    it 'should create divs.source_url from attributes[:source_url]' do
+      @divs.collect{|div| div.source}.uniq.should =~ [@attributes[:source_url]]
+    end
+    
+    it 'should create divs.sourcedb from attributes[:sourcedb]' do
+      @divs.collect{|div| div.sourcedb}.uniq.should =~ [@attributes[:sourcedb]]
+    end
+    
+    it 'should create divs.sourceid from attributes[:sourceid]' do
+      @divs.collect{|div| div.sourceid}.uniq.should =~ [@attributes[:sourceid]]
+    end
+  end
+  
   describe 'has_divs?' do
     before do
       @sourcedb = 'sourcedb'

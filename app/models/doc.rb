@@ -292,6 +292,26 @@ class Doc < ActiveRecord::Base
     true
   end
   
+  def self.create_divs(divs_hash, attributes = {})
+    if divs_hash.present?
+      divs = Array.new
+      divs_hash.each_with_index do |div_hash, i|
+        doc = Doc.new(
+          {
+            :body     => div_hash[:body],
+            :section  => div_hash[:heading],
+            :source   => attributes[:source_url],
+            :sourcedb => attributes[:sourcedb],
+            :sourceid => attributes[:sourceid],
+            :serial   => i
+          }
+        )
+        divs << doc if doc.save
+      end
+    end
+    return divs
+  end
+  
   def has_divs?
     Doc.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
   end

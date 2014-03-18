@@ -342,4 +342,29 @@ class Project < ActiveRecord::Base
       file.close   
     end  
   end 
+  
+  def add_docs(ids, sourcedb)
+    num_created, num_added, num_failed = 0, 0, 0
+    ids = ids.split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
+    ids.each do |sourceid|
+      divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+      if divs.present?
+        unless self.docs.include?(divs.first)
+          self.docs << divs
+          num_added += divs.size
+        end
+      else
+        doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
+        divs_hash = doc_sequence.divs
+        divs = Doc.create_divs(divs_hash, :sourcedb => sourcedb, :sourceid => sourceid, :source_url => doc_sequence.source_url)
+        if divs
+          self.docs << divs
+          num_created += divs.size
+        else
+          num_failed += 1
+        end
+      end
+    end  
+    return [num_created, num_added, num_failed]   
+  end
 end

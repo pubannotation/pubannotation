@@ -1,7 +1,4 @@
 require 'zip/zip'
-require 'pmdoc'
-require 'pmcdoc'
-# require 'fadoc'
 
 class DocsController < ApplicationController
   # GET /docs
@@ -263,17 +260,27 @@ class DocsController < ApplicationController
   end
   
   def create_project_docs
-    num_created, num_added, num_failed = 0, 0, 0
     project, notice = get_project(params[:project_id])
     if project
-      num_added, num_failed = Object.const_get(params[:sourcedb]).add_to_project(project, params[:ids], num_created, num_added, num_failed)
-      notice = t('controllers.pmcdocs.create.added_to_document_set', :num_added => num_added, :project_name => project.name)
+      begin
+        num_created, num_added, num_failed = project.add_docs(params[:ids], params[:sourcedb])
+        if num_added > 0
+          notice = t('controllers.docs.create_project_docs.added_to_document_set', :num_added => num_added, :project_name => project.name)
+        elsif num_created > 0
+          notice = t('controllers.docs.create_project_docs.created_to_document_set', :num_created => num_created, :project_name => project.name)
+        else
+          notice = t('controllers.docs.create_project_docs.added_to_document_set', :num_added => num_added, :project_name => project.name)
+        end
+      rescue => e
+        notice = e.message
+        num_failed = 1
+      end
     else
       notice = t('controllers.pmcdocs.create.annotation_set_not_specified')
     end
 
     respond_to do |format|
-      if num_created + num_added + num_failed > 0
+      if num_created.to_i + num_added.to_i + num_failed.to_i > 0
         format.html { redirect_to project_path(project.name), :notice => notice }
         format.json { render :json => nil, status: :created, location: project_path(project.name) }
       else

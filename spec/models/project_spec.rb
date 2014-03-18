@@ -1687,4 +1687,95 @@ describe Project do
       end
     end
   end
+  
+  describe 'add_docs' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @sourceid = '8424'
+      @sourcedb = 'FA'
+    end 
+    
+    context 'when divs present' do
+      before do
+        @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 0)
+        FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 1)        
+        @project.reload
+      end
+      
+      describe 'before execute' do
+        it '@project should not include @doc' do
+          @project.docs.should_not include(@doc)
+        end
+      end   
+      
+      context 'when project docs not include divs.first' do
+        before do
+          @result = @project.add_docs(@sourceid, @sourcedb)
+          @project.reload
+        end
+
+        it '@project should include @doc' do
+          @project.docs.should include(@doc)
+        end
+        
+        it 'should increment num_added by added docs size' do
+          @result.should eql [0, Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @sourceid).size, 0]
+        end        
+      end
+
+      context 'when project docs include divs.first' do
+        before do
+          @project.docs << @doc
+          @project.reload
+        end
+        
+        describe 'before execute' do
+          it '@project should include @doc' do
+            @project.docs.should include(@doc)
+          end
+        end        
+        
+        before do
+          @result = @project.add_docs(@sourceid, @sourcedb)
+          @project.reload
+        end
+
+        it '@project should include @doc' do
+          @project.docs.should include(@doc)
+        end
+        
+        it 'should not increment num_added' do
+          @result.should eql [0, 0, 0]
+        end      
+      end
+    end
+     
+    context 'when divs blank' do
+      context 'when generate creates doc successfully' do
+        before do
+          @new_sourceid = 'new sourceid'
+          @generated_doc_1 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 0)
+          @generated_doc_2 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 1)
+          
+          Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
+          @result = @project.add_docs(@sourceid, @sourcedb)
+        end
+        
+        it 'should increment num_added' do
+          @result.should eql [Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @new_sourceid).size, 0, 0]
+        end
+      end 
+      
+      context 'when generate crates doc unsuccessfully' do
+        before do
+          Doc.stub(:create_divs).and_return(nil)
+          @result = @project.add_docs(@sourceid, @sourcedb)
+        end
+        
+        it 'should not increment num_failed' do
+          @result.should eql [0, 0, 1]
+        end
+      end            
+    end
+  end
 end

@@ -318,6 +318,10 @@ ja:
       create_zip: アノテーションZIPファイルの作成
       update_zip: アノテーションZIPファイルの更新
       create_zip_delay: アノテーションZIPファイルの作成を受け付けました。数分後に再度このページにアクセスして下さい。
+    docs:
+      create_project_docs:
+        added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
+        created_to_document_set: '%{num_created}個のドキュメントがドキュメントセット %{project_name}に作成されました'
     pmcdocs:
       create:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'

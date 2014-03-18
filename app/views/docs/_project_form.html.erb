@@ -6,7 +6,7 @@
 		    <th><%= t('activerecord.attributes.doc.sourceid')%></th>
 		</tr>
 		<tr>
-	    	<td><%= select_tag(:sourcedb, options_for_select({'PubMed' => 'PMDoc', 'PMC' => 'PMCDoc', 'FirstAuthors' => 'FADoc'})) -%></td>
+	    	<td><%= select_tag(:sourcedb, options_for_select({'PubMed' => 'PubMed', 'PMC' => 'PMC', 'FirstAuthors' => 'FA'})) -%></td>
 	        <td><%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids'), :required => true) %></td>
 	        <td><%= submit_tag(t('views.shared.add')) %></td>
 	    </tr>

@@ -55,8 +55,8 @@ class PMCDoc
   end
   
   def self.add_to_project(project, ids, num_created, num_added, num_failed)
-    pmcids = ids.split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
-    pmcids.each do |sourceid|
+    ids = ids.split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
+    ids.each do |sourceid|
       divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
       if divs.present?
         unless project.docs.include?(divs.first)

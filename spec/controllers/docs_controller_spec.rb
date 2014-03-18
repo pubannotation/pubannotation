@@ -780,16 +780,16 @@ describe DocsController do
         context 'when num_added > 0' do
           before do
             @num_added = 5
-            PMCDoc.stub(:add_to_project).and_return([@num_added, 0])
+            @project.stub(:add_docs).and_return([0, @num_added, 0])
           end
           
           context 'when format html' do
             before do
-              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMCDoc'
+              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMC'
             end
             
             it 'should set number of documents added to project flash[:notice]' do
-              flash[:notice].should eql(I18n.t('controllers.pmcdocs.create.added_to_document_set', :num_added => @num_added, :project_name => @project.name))
+              flash[:notice].should eql(I18n.t('controllers.docs.create_project_docs.added_to_document_set', :num_added => @num_added, :project_name => @project.name))
             end
             
             it 'should redirect project_path' do
@@ -799,7 +799,7 @@ describe DocsController do
           
           context 'when format json' do
             before do
-              get :create_project_docs, :format => 'json', :project_id => @project.name, :sourcedb => 'PMCDoc'
+              get :create_project_docs, :format => 'json', :project_id => @project.name, :sourcedb => 'PMC'
             end
             
             it 'should return status 201' do
@@ -812,19 +812,41 @@ describe DocsController do
           end
         end
         
-        context 'when num_added == 0' do
+        context 'when num_added == 0 and num_created > 0' do
           before do
             @num_added = 0
-            PMCDoc.stub(:add_to_project).and_return([@num_added, 0])
+            @num_created = 1
+            @project.stub(:add_docs).and_return([@num_created, @num_added, 0])
           end
           
           context 'when format html' do
             before do
-              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMCDoc'
+              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMC'
             end
             
             it 'should set number of documents added to project flash[:notice]' do
-              flash[:notice].should eql(I18n.t('controllers.pmcdocs.create.added_to_document_set', :num_added => @num_added, :project_name => @project.name))
+              flash[:notice].should eql(I18n.t('controllers.docs.create_project_docs.created_to_document_set', :num_created => @num_created, :project_name => @project.name))
+            end
+            
+            it 'should redirect project_path' do
+              response.should redirect_to(project_path(@project.name))
+            end
+          end
+        end
+        
+        context 'when num_added == 0' do
+          before do
+            @num_added = 0
+            @project.stub(:add_docs).and_return([0, @num_added, 0])
+          end
+          
+          context 'when format html' do
+            before do
+              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMC'
+            end
+            
+            it 'should set number of documents added to project flash[:notice]' do
+              flash[:notice].should eql(I18n.t('controllers.docs.create_project_docs.added_to_document_set', :num_added => @num_added, :project_name => @project.name))
             end
             
             it 'should redirect home_path' do
@@ -834,12 +856,23 @@ describe DocsController do
           
           context 'when format json' do
             before do
-              get :create_project_docs, :format => 'json', :project_id => @project.name, :sourcedb => 'PMCDoc'
+              get :create_project_docs, :format => 'json', :project_id => @project.name, :sourcedb => 'PMC'
             end
             
             it 'should return status 422' do
               response.status.should eql(422)
             end
+          end
+        end
+        
+        context 'when error raised' do
+          before do
+            @project.stub(:add_docs).and_raise('eoor')
+            get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMC'
+          end
+          
+          it 'should redirect project_path' do
+            response.should redirect_to(project_path(@project.name))
           end
         end
       end
