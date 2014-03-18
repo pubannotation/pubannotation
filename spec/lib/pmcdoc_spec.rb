@@ -32,12 +32,8 @@ describe PMCDoc do
     end
     
     context 'when pmcdoc.doc does not exists' do
-      before do
-        @result = PMCDoc.generate('0')
-      end
-      
-      it 'should return nil and message' do
-        @result.should eql([nil, 'PubMed Central unreachable.'])
+      it 'should raise error' do
+        lambda { PMCDoc.generate('0') }.should raise_error
       end
     end    
   end

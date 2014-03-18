@@ -6,23 +6,19 @@ Encoding.default_internal="UTF-8"
 require 'rest_client'
 require 'xml'
 
-class DBAccessorPMC
+class PMCDoc
   attr_reader :doc
 
   def initialize(id)
     if id
-      RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{pmcid}" do |response, request, result|
+      RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{id}" do |response, request, result|
         case response.code
         when 200
-          if response.index("PMC#{pmcid} not found")
-            raise "#{pmcid} is a non-existence article ID."
+          if response.index("PMC#{id} not found")
+            raise "#{id} is a non-existence article ID."
           else
             parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
-            @doc = 
-            # {
-            #   source_db_url: "http://....pmc.gov"
-            #   divs: parser.parse
-            # }
+            @doc = parser.parse
           end
         else
           raise "PubMed Central unreachable."
@@ -31,8 +27,8 @@ class DBAccessorPMC
     end
   end
 
-  def self.generate(pmcid)
-    pmcdoc = PMCDoc.new(pmcid)
+  def self.generate(id)
+    pmcdoc = PMCDoc.new(id)
 
     if pmcdoc.doc
       divs = pmcdoc.get_divs
@@ -41,9 +37,9 @@ class DBAccessorPMC
         divs.each_with_index do |div, i|
           doc = Doc.new
           doc.body = div[1]
-          doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + pmcid
+          doc.source = 'http://www.ncbi.nlm.nih.gov/pmc/' + id
           doc.sourcedb = 'PMC'
-          doc.sourceid = pmcid
+          doc.sourceid = id
           doc.serial = i
           doc.section = div[0]
           doc.save
