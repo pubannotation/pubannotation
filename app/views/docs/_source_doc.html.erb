@@ -14,9 +14,19 @@
 	
 	<table>		
 		<tr>
-			<th><%= link_to t('activerecord.attributes.doc.sourcedb'), url_for(:only_path => true, :order_key => 'sourcedb', :order_method => @reverse_order_method), :class => 'sortable-a' %></th>
+			<th>
+				<% if params[:action] == 'search' -%>
+					<%= t('activerecord.attributes.doc.sourcedb') -%>
+				<% else -%>
+					<%= link_to t('activerecord.attributes.doc.sourcedb'), url_for(:only_path => true, :order_key => 'sourcedb', :order_method => @reverse_order_method), :class => 'sortable-a' %>
+				<% end -%>
+			</th>
 			<th class="sortable-th">
-				<%= link_to t('activerecord.attributes.doc.sourceid'), url_for(:only_path => true, :order_key => 'sourceid_int', :order_method => @reverse_order_method), :class => 'sortable-a' %>
+				<% if params[:action] == 'search' -%>
+					<%= t('activerecord.attributes.doc.sourceid') -%>
+				<% else -%>
+					<%= link_to t('activerecord.attributes.doc.sourceid'), url_for(:only_path => true, :order_key => 'sourceid_int', :order_method => @reverse_order_method), :class => 'sortable-a' %>
+				<% end -%>
 			</th>
 			<th><%= t('activerecord.attributes.doc.body')  %></th>
 			<th></th>
