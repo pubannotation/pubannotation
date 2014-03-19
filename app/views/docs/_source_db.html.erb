@@ -1,0 +1,12 @@
+<% if source_db_counter == 0 -%>
+	<ul>
+<% end -%>
+	
+<li>
+	<%= sourceid_index_link_helper(source_db) -%>
+	<%= "(#{Doc.count(:conditions => ['sourcedb =?', "#{ source_db.sourcedb }"])})" -%>
+</li>
+
+<% if source_db_counter == @source_dbs.size-1 -%>
+	</ul>
+<% end -%>

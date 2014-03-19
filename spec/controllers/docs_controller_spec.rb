@@ -170,7 +170,7 @@ describe DocsController do
       end  
       
       it 'should include project.docs sourcedb' do
-        assigns[:docs].collect{|doc| doc.sourcedb}.uniq.should =~ @project.docs.collect{|doc| doc.sourcedb}
+        assigns[:source_dbs].collect{|doc| doc.sourcedb}.uniq.should =~ @project.docs.collect{|doc| doc.sourcedb}
       end    
     end
 
@@ -180,7 +180,7 @@ describe DocsController do
       end  
       
       it 'should not contatin blank sourcedb' do
-        assigns[:docs].select{|doc| doc.sourcedb == nil || doc.sourcedb == ''}.should be_blank
+        assigns[:source_dbs].select{|doc| doc.sourcedb == nil || doc.sourcedb == ''}.should be_blank
       end    
     end
   end

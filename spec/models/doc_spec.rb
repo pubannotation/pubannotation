@@ -246,6 +246,32 @@ describe Doc do
     end
   end
   
+  describe 'source_dbs' do
+    before do
+      @project = FactoryGirl.create(:project)
+      # create docs belongs to project
+      @project_doc_1 = FactoryGirl.create(:doc, :sourcedb => "sourcedb1")
+      @project_doc_2 = FactoryGirl.create(:doc, :sourcedb => "sourcedb2")
+      # create docs not belongs to project
+      2.times do
+        FactoryGirl.create(:doc, :sourcedb => 'sdb')
+      end
+      # create docs not belongs to project sourced db nil
+      2.times do
+        FactoryGirl.create(:doc, :sourcedb => nil)
+      end
+      # create docs not belongs to project sourced db ''
+      2.times do
+        FactoryGirl.create(:doc, :sourcedb => '')
+      end  
+      @docs = Doc.source_dbs   
+    end
+    
+    it 'should not include sourcedb is nil or blank' do
+      @docs.select{|doc| doc.sourcedb == nil || doc.sourcedb == ''}.should be_blank
+    end
+  end
+  
   describe 'accessible_projects' do
     before do
       @user_1 = FactoryGirl.create(:user)

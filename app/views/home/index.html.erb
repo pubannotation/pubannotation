@@ -5,9 +5,7 @@
 <h1>
 	<span class="capitalize_first"><%= t('views.shared.stored_in', :pname => t('views.service.title'), :content => t('activerecord.models.doc').pluralize).html_safe %></span>
 </h1>
-<ul>
-	<li><%= link_to "PubMed #{t('activerecord.models.doc').pluralize}", pmdocs_path %> (<%= @pmdocs.length %>)</li>
-	<li><%= link_to "PMC #{t('activerecord.models.doc').pluralize}", pmcdocs_path %> (<%= @pmcdocs.length %>)</li>
-</ul>
+
+<%= render :partial => "docs/source_db", collection: @source_dbs -%>
 
 <%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects, :scope => nil } %>

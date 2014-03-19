@@ -2,11 +2,4 @@
 	<%= t('views.docs.sourcedb_list')-%>
 </h1>
 
-<ul>
-	<% @docs.each do |doc| -%>
-		<li>
-			<%= sourceid_index_link_helper(doc) -%>
-			<%= "(#{Doc.count(:conditions => ['sourcedb =?', "#{ doc.sourcedb }"])})" -%>
-		</li>
-	<% end -%>
-</ul>
+<%= render :partial => "docs/source_db", collection: @source_dbs -%>

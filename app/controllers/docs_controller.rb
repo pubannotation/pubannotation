@@ -72,7 +72,7 @@ class DocsController < ApplicationController
   else
     docs = Doc
   end
-  @docs = docs.where(['sourcedb IS NOT ? AND sourcedb IS NOT ?', nil, '']).select(:sourcedb).uniq
+  @source_dbs = docs.select(:sourcedb).source_dbs.uniq
  end 
  
  def sourceid_index

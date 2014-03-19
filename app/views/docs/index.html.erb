@@ -7,10 +7,9 @@
   > <%= t('views.docs.folded_docs_list') -%>
 <% end %>
 
-
 <%= render :partial => 'source_doc', :collection => @source_docs -%>
 
-<% if user_signed_in? and current_user == @project.user %>
+<% if user_signed_in? && @project.present? && current_user == @project.user %>
 	<h2><%= t('views.docs.add_new_documents') -%></h2>
 	<ul>
 	  <li>by getting from a public database<br/>
