@@ -42,7 +42,39 @@ describe DocsController do
       it 'should assign @source_docs' do
         assigns[:source_docs].should =~ @source_db_id
       end
-    end    
+    end   
+    
+    describe 'order_method' do
+      context 'when order_method nil' do
+        before do
+          get :index
+        end
+        
+        it 'should set ASC as @reverse_order_method' do
+          assigns[:reverse_order_method].should eql 'DESC'
+        end
+      end
+      
+      context 'when order_method ASC' do
+        before do
+          get :index, :order_method => 'ASC'
+        end
+        
+        it 'should set DESC as @reverse_order_method' do
+          assigns[:reverse_order_method].should eql 'DESC'
+        end
+      end
+      
+      context 'when order_method nil' do
+        before do
+          get :index, :order_method => 'DESC'
+        end
+        
+        it 'should set ASC as @reverse_order_method' do
+          assigns[:reverse_order_method].should eql 'ASC'
+        end
+      end
+    end 
   end
   
   describe 'records' do

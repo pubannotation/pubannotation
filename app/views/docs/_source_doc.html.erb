@@ -14,11 +14,11 @@
 	
 	<table>		
 		<tr>
-			<th><%= t('activerecord.attributes.doc.sourcedb') %></th>
+			<th><%= link_to t('activerecord.attributes.doc.sourcedb'), url_for(:only_path => true, :order_key => 'sourcedb', :order_method => @reverse_order_method), :class => 'sortable-a' %></th>
 			<th class="sortable-th">
-				<%= link_to_unless_current t('activerecord.attributes.doc.sourceid'), url_for(:only_path => true, :docs_order => 'sourceid', :accordion_id => 2), :class => 'sortable-a' %>
+				<%= link_to t('activerecord.attributes.doc.sourceid'), url_for(:only_path => true, :order_key => 'sourceid_int', :order_method => @reverse_order_method), :class => 'sortable-a' %>
 			</th>
-			<th><%= t('activerecord.attributes.doc.body') %></th>
+			<th><%= t('activerecord.attributes.doc.body')  %></th>
 			<th></th>
 		</tr>
 <% end -%>

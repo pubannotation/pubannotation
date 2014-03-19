@@ -362,34 +362,87 @@ describe Doc do
       @doc_sourcedb_blank = FactoryGirl.create(:doc, :sourcedb => '')
       @doc_sourceid_nil = FactoryGirl.create(:doc, :sourceid => nil)
       @doc_sourceid_blank = FactoryGirl.create(:doc, :sourceid => '')
-      @doc_sourcedb_uniq = FactoryGirl.create(:doc, :sourcedb => 'Uniq1', :sourceid => 1)
-      @doc_sourceid_uniq_1 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => 1)
-      @doc_sourceid_uniq_2 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => 1)
-      @docs = Doc.source_db_id
+      @doc_sourcedb_uniq = FactoryGirl.create(:doc, :sourcedb => 'Uniq1', :sourceid => '11')
+      @doc_sourceid_uniq_1 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '10')
+      @doc_sourceid_uniq_2 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '123')
     end
     
-    it 'should not include sourcedb is nil' do
-      @docs.should_not include(@doc_sourcedb_nil)
+    context 'when order_key_method nil' do
+      before do
+        @docs = Doc.source_db_id(nil)
+      end
+      
+      it 'should not include sourcedb is nil' do
+        @docs.should_not include(@doc_sourcedb_nil)
+      end
+      
+      it 'should not include sourcedb is blank' do
+        @docs.should_not include(@doc_sourcedb_blank)
+      end
+      
+      it 'should not include sourceid is nil' do
+        @docs.should_not include(@doc_sourceid_nil)
+      end
+      
+      it 'should not include sourceid is blank' do
+        @docs.should_not include(@doc_sourceid_blank)
+      end
+      
+      it 'should include has no same sourcedb docs' do
+        @docs.should include(@doc_sourcedb_uniq)
+      end
+      
+      it 'should include has no same sourcedb docs' do
+        @docs.should include(@doc_sourceid_uniq_2)
+      end
+      
+      it 'should order by sourcedb ASC sourceid ASC' do
+        @docs.first.should eql @doc_sourcedb_uniq
+      end
+      
+      it 'should order by sourcedb ASC sourceid ASC' do
+        @docs.second.should eql @doc_sourceid_uniq_1
+      end
+      
+      it 'should order by sourcedb ASC sourceid ASC' do
+        @docs.last.should eql @doc_sourceid_uniq_2
+      end
     end
     
-    it 'should not include sourcedb is blank' do
-      @docs.should_not include(@doc_sourcedb_blank)
+    context 'when order_key sourcedb method DESC' do
+      before do
+        @docs = Doc.source_db_id('sourcedb DESC')
+      end
+      
+      it 'should order by sourcedb DESC' do
+        @docs.last.should eql @doc_sourcedb_uniq
+      end
+      
+      it 'should order by sourcedb DESC' do
+        @docs.first.should eql @doc_sourceid_uniq_1
+      end
+      
+      it 'should order by sourcedb DESC' do
+        @docs.second.should eql @doc_sourceid_uniq_2
+      end
     end
     
-    it 'should not include sourceid is nil' do
-      @docs.should_not include(@doc_sourceid_nil)
-    end
-    
-    it 'should not include sourceid is blank' do
-      @docs.should_not include(@doc_sourceid_blank)
-    end
-    
-    it 'should include has no same sourcedb docs' do
-      @docs.should include(@doc_sourcedb_uniq)
-    end
-    
-    it 'should include has no same sourcedb docs' do
-      @docs.should include(@doc_sourceid_uniq_2)
+    context 'when order_key sourceid_int method DESC' do
+      before do
+        @docs = Doc.source_db_id('sourceid_int DESC')
+      end
+      
+      it 'should order by sourceid_int DESC' do
+        @docs.second.should eql @doc_sourcedb_uniq
+      end
+      
+      it 'should order by sourceid_int DESC' do
+        @docs.last.should eql @doc_sourceid_uniq_1
+      end
+      
+      it 'should order by sourceid_int DESC' do
+        @docs.first.should eql @doc_sourceid_uniq_2
+      end
     end
   end
   

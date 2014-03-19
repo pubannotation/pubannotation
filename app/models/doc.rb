@@ -56,10 +56,13 @@ class Doc < ActiveRecord::Base
       order('docs.id ASC')
   }
   
-  scope :source_db_id, 
+  scope :source_db_id, lambda{|order_key_method|
+    # source id should cast as integer
+    order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
     where(['sourcedb NOT ? AND sourcedb != ? AND sourceid NOT ? AND sourceid != ?', nil, '', nil, ''])
-    .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count')
-    .group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('sourceid ASC')
+    .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count, CAST(sourceid AS INT) AS sourceid_int')
+    .group(:sourcedb).group(:sourceid).order(order_key_method)
+  }
     
   
   scope :same_sourcedb_sourceid, lambda{|sourcedb, sourceid|

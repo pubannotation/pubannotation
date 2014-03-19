@@ -13,7 +13,10 @@ class DocsController < ApplicationController
       docs = Doc
       @search_path = search_docs_path
     end
-    @source_docs = docs.source_db_id.paginate(:page => params[:page])
+    params[:order_method] ||= 'ASC'
+    @reverse_order_method = params[:order_method] == 'ASC' ? 'DESC' : 'ASC'
+    docs_order = "#{params[:order_key]} #{params[:order_method]}" if params[:order_key]
+    @source_docs = docs.source_db_id(docs_order).paginate(:page => params[:page])
   end
  
   def records
