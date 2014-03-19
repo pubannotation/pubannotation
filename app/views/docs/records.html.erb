@@ -41,6 +41,7 @@
         <%= link_to t('views.shared.show'), doc_path(doc.id), :class => 'button' %>
       <% end %>
       <%= link_to t('views.shared.edit'), edit_doc_path(doc), :class => 'button' if doc.updatable_for?(current_user) -%>
+      <%= link_to t('views.shared.delete'), project_doc_path(@project.name, doc.id), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: 'button' if @project.present? && doc.updatable_for?(current_user) -%>
       </td>
     </tr>
   <% end %>

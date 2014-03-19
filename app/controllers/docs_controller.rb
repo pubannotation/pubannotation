@@ -313,10 +313,17 @@ class DocsController < ApplicationController
   # DELETE /docs/1.json
   def destroy
     @doc = Doc.find(params[:id])
-    @doc.destroy
+    if params[:project_id].present?
+      project = Project.find_by_name(params[:project_id])
+      project.docs.delete(@doc)
+      redirect_path = records_project_docs_path(params[:project_id])
+    else
+      @doc.destroy
+      redirect_path = docs_url
+    end
 
     respond_to do |format|
-      format.html { redirect_to docs_url }
+      format.html { redirect_to redirect_path }
       format.json { head :no_content }
     end
   end

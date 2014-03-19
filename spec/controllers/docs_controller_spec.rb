@@ -976,23 +976,65 @@ describe DocsController do
       @doc = FactoryGirl.create(:doc)
     end
     
-    context 'format html' do
-      before do
-        delete :destroy, :id => @doc.id
-      end
-      
-      it 'should redirect to docs_url' do
-        response.should redirect_to(docs_url)
+    context 'when params[:project_id] present' do
+      context 'format html' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @project.docs << @doc
+          @project.reload
+        end
+        
+        describe 'before post' do
+          it 'doc should included in project.docs' do
+            @project.docs.should include @doc
+          end
+        end
+        
+        describe 'adter post' do
+          before do
+            delete :destroy, :id => @doc.id, :project_id => @project.name
+            @project.reload
+          end  
+          
+          it 'doc should not included in project.docs' do
+            @project.docs.should_not include @doc
+          end
+        
+          it 'should not destory doc' do
+            Doc.find_by_id(@doc.id).should be_present
+          end
+          
+          it 'should redirect to docs_url' do
+            response.should redirect_to(records_project_docs_path(@project.name))
+          end
+        end
+        
       end
     end
-
-    context 'format json' do
-      before do
-        delete :destroy, :format => 'json', :id => @doc.id
+    
+    context 'when params[:project_id] blank' do
+      context 'format html' do
+        before do
+          delete :destroy, :id => @doc.id
+        end
+        
+        it 'should destory doc' do
+          Doc.find_by_id(@doc.id).should be_nil
+        end
+        
+        it 'should redirect to docs_url' do
+          response.should redirect_to(docs_url)
+        end
       end
-      
-      it 'should return blank header' do
-        response.header.should be_blank
+  
+      context 'format json' do
+        before do
+          delete :destroy, :format => 'json', :id => @doc.id
+        end
+        
+        it 'should return blank header' do
+          response.header.should be_blank
+        end
       end
     end
   end
