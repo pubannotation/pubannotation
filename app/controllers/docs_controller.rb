@@ -24,12 +24,12 @@ class DocsController < ApplicationController
       @project, notice = get_project(params[:project_id])
       @new_doc_src = new_project_doc_path
       if @project
-        @docs = @project.docs.order('sourcedb ASC').order('sourceid ASC')
+        @docs = @project.docs.order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
       else
         @docs = nil
       end
     else
-      @docs = Doc.order('sourcedb ASC').order('sourceid ASC')
+      @docs = Doc.order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
       @new_doc_src = new_doc_path
     end
 
@@ -111,7 +111,7 @@ class DocsController < ApplicationController
       i += 1
     end
     conditions.unshift(columns)
-    @source_docs = docs.where(conditions).order('sourcedb ASC').order('sourceid ASC').paginate(:page => params[:page])
+    @source_docs = docs.where(conditions).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC').paginate(:page => params[:page])
     flash[:notice] = t('controllers.docs.search.not_found') if @source_docs.blank?
   end
   
