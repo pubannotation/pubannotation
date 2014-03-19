@@ -29,4 +29,35 @@ describe DocsHelper do
       end
     end
   end
+  
+  describe 'source_db_index_docs_count_helper' do
+    before do
+      @doc = FactoryGirl.create(:doc, sourcedb: 'sourcedb', sourceid: 'sourceid')
+      @docs = ''
+    end
+    
+    context 'when count.class == Fixnum' do
+      before do
+        @count = 5
+        @docs.stub(:same_sourcedb_sourceid).and_return(double(count: @count))
+        @result = source_db_index_docs_count_helper(@docs, @doc)
+      end
+      
+      it 'should rerutn ' do
+        @result.should eql("(#{@count})")
+      end
+    end
+    
+    context 'when count.class != Fixnum' do
+      before do
+        @count = '5'
+        @docs.stub(:same_sourcedb_sourceid).and_return(double(count: {[] => @count}))
+        @result = source_db_index_docs_count_helper(@docs, @doc)
+      end
+      
+      it 'should rerutn ' do
+        @result.should eql("(#{@count})")
+      end
+    end
+  end
 end

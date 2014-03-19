@@ -6,6 +6,7 @@
 	<% @docs.each do |doc| -%>
 		<li>
 			<%= sourceid_index_link_helper(doc) -%>
+			<%= "(#{Doc.count(:conditions => ['sourcedb =?', "#{ doc.sourcedb }"])})" -%>
 		</li>
 	<% end -%>
 </ul>
