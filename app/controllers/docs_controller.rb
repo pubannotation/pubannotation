@@ -95,20 +95,25 @@ class DocsController < ApplicationController
       docs = Doc.where('sourcedb = ? AND sourceid = ?', params[:sourcedb], params[:sourceid])
       if docs.length == 1
         @doc = docs.first
-      else
-        # when same sourcedb and sourceid docs present => redirect to divs#index
-       redirect_to doc_sourcedb_sourceid_divs_index_path
       end
     end
     
+    @project, notice = get_project(params[:project_id])
     if @doc.present?
       @text = @doc.body
-      @project, notice = get_project(params[:project_id])
       @projects = get_projects({:doc => @doc})
       respond_to do |format|
         format.html # show.html.erb
         format.json { render json: @doc }
       end
+    elsif docs.present?
+      # when same sourcedb and sourceid docs present => redirect to divs#index
+      if @project.present?
+        redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])
+      else
+        redirect_to doc_sourcedb_sourceid_divs_index_path
+      end
+      
     end
   end
   
@@ -281,7 +286,7 @@ class DocsController < ApplicationController
 
     respond_to do |format|
       if num_created.to_i + num_added.to_i + num_failed.to_i > 0
-        format.html { redirect_to project_path(project.name), :notice => notice }
+        format.html { redirect_to project_docs_path(project.name), :notice => notice }
         format.json { render :json => nil, status: :created, location: project_path(project.name) }
       else
         format.html { redirect_to home_path, :notice => notice }

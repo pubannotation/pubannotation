@@ -259,17 +259,6 @@ describe DocsController do
           end
         end
       end
-
-      context 'when docs.length != 1' do
-        before do
-          FactoryGirl.create(:doc, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid.to_s)  
-          get :show, :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
-        end
-        
-        it 'should render template' do
-          response.should redirect_to(doc_sourcedb_sourceid_divs_index_path)
-        end
-      end
     end
     
     describe 'when @doc present' do
@@ -292,6 +281,36 @@ describe DocsController do
       
       it 'should assign @projects' do
         assigns[:projects].should eql @projects
+      end
+    end
+    
+    describe 'when @doc blank docs present' do
+      before do
+        @noice = 'notice'
+        FactoryGirl.create(:doc, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid.to_s)  
+      end
+      
+      context 'when @project present' do
+        before do
+          @project = FactoryGirl.create(:project)
+          controller.stub(:get_project).and_return([@project, @notice])
+          get :show, :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
+        end
+        
+        it 'should render template' do
+          response.should redirect_to(index_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid))
+        end
+      end
+      
+      context 'when @project blank' do
+        before do
+          controller.stub(:get_project).and_return([nil, @notice])
+          get :show, :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
+        end
+        
+        it 'should render template' do
+          response.should redirect_to(doc_sourcedb_sourceid_divs_index_path)
+        end
       end
     end
   end
@@ -793,7 +812,7 @@ describe DocsController do
             end
             
             it 'should redirect project_path' do
-              response.should redirect_to(project_path(@project.name))
+              response.should redirect_to(project_docs_path(@project.name))
             end
           end
           
@@ -829,7 +848,7 @@ describe DocsController do
             end
             
             it 'should redirect project_path' do
-              response.should redirect_to(project_path(@project.name))
+              response.should redirect_to(project_docs_path(@project.name))
             end
           end
         end
@@ -872,7 +891,7 @@ describe DocsController do
           end
           
           it 'should redirect project_path' do
-            response.should redirect_to(project_path(@project.name))
+            response.should redirect_to(project_docs_path(@project.name))
           end
         end
       end
