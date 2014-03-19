@@ -2,6 +2,42 @@
 require 'spec_helper'
 
 describe DocsController do
+  describe 'index' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @project_doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 123)
+      @project.docs << @project_doc  
+      @source_db_id = Doc.all
+      Doc.stub(:source_db_id).and_return(@source_db_id)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123)  
+    end
+    
+    context 'when project present' do
+      before do
+        get :index, :project_id => @project.name
+      end
+      
+      it 'should assign project' do
+        assigns[:project].should eql(@project)
+      end
+      
+      
+      it 'should assign @source_docs' do
+        assigns[:source_docs].should =~ @source_db_id
+      end
+    end    
+    
+    context 'when project blank' do
+      before do
+        get :index
+      end
+      
+      it 'should assign @source_docs' do
+        assigns[:source_docs].should =~ @source_db_id
+      end
+    end    
+  end
+  
   describe 'records' do
     before do
       @doc = FactoryGirl.create(:doc, :sourceid => 'sourceid', :serial => 1, :section => 'section')
@@ -172,42 +208,6 @@ describe DocsController do
         assigns[:source_docs].should =~ Doc.where(['sourcedb = ?', @sourcedb])
       end
     end
-  end
-  
-  describe 'index' do
-    before do
-      @project = FactoryGirl.create(:project)
-      @project_doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 123)
-      @project.docs << @project_doc  
-      @source_db_id = Doc.all
-      Doc.stub(:source_db_id).and_return(@source_db_id)
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123)  
-    end
-    
-    context 'when project present' do
-      before do
-        get :index, :project_id => @project.name
-      end
-      
-      it 'should assign project' do
-        assigns[:project].should eql(@project)
-      end
-      
-      
-      it 'should assign @source_docs' do
-        assigns[:source_docs].should =~ @source_db_id
-      end
-    end    
-    
-    context 'when project blank' do
-      before do
-        get :index
-      end
-      
-      it 'should assign @source_docs' do
-        assigns[:source_docs].should =~ @source_db_id
-      end
-    end    
   end
   
   describe 'show' do

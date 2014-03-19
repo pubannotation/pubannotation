@@ -1,8 +1,19 @@
 require 'zip/zip'
 
 class DocsController < ApplicationController
+
   # GET /docs
   # GET /docs.json
+  def index
+    if params[:project_id].present?
+      @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
+      docs = @project.docs
+    else
+      docs = Doc
+    end
+    @source_docs = docs.source_db_id.paginate(:page => params[:page])
+  end
+ 
   def records
     if params[:project_id]
       @project, notice = get_project(params[:project_id])
@@ -75,16 +86,6 @@ class DocsController < ApplicationController
    end
    @source_docs = docs.where(['sourcedb = ?', params[:sourcedb]]).order('sourceid ASC').paginate(:page => params[:page])
  end 
-
- def index
-  if params[:project_id].present?
-    @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
-    docs = @project.docs
-  else
-    docs = Doc
-  end
-  @source_docs = docs.source_db_id.paginate(:page => params[:page])
- end
     
   # GET /docs/1
   # GET /docs/1.json
