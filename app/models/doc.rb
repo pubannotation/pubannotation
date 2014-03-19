@@ -59,7 +59,7 @@ class Doc < ActiveRecord::Base
   scope :source_db_id, 
     where(['sourcedb NOT ? AND sourcedb != ? AND sourceid NOT ? AND sourceid != ?', nil, '', nil, ''])
     .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count')
-    .group(:sourcedb).group(:sourceid).order('sourceid ASC')
+    .group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('sourceid ASC')
     
   
   scope :same_sourcedb_sourceid, lambda{|sourcedb, sourceid|

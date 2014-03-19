@@ -19,19 +19,15 @@ class DocsController < ApplicationController
       @project, notice = get_project(params[:project_id])
       @new_doc_src = new_project_doc_path
       if @project
-        @docs = @project.docs
+        @docs = @project.docs.order('sourcedb ASC').order('sourceid ASC')
       else
         @docs = nil
       end
     else
-      @docs = Doc.all
+      @docs = Doc.order('sourcedb ASC').order('sourceid ASC')
       @new_doc_src = new_doc_path
     end
 
-    if @docs
-      @docs = @docs.sort{|a, b| [b.sourcedb, a.sourceid.to_i, a.serial.to_i] <=> [a.sourcedb, b.sourceid.to_i, b.serial.to_i]}
-    end
-    
     rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
 
     respond_to do |format|
