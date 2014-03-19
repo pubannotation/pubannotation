@@ -300,6 +300,8 @@ en:
       create_project_docs:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
         created_to_document_set: '%{num_created} documents were crated to the document set, %{project_name}.'
+      search:
+        not_found: No docs found matches conditions
     pmcdocs:
       create:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'

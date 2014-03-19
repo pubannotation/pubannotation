@@ -21,6 +21,9 @@ describe DocsController do
         assigns[:project].should eql(@project)
       end
       
+      it 'should assign search_project_docs_path as @search_path' do
+        assigns[:search_path].should eql search_project_docs_path(@project.name)
+      end
       
       it 'should assign @source_docs' do
         assigns[:source_docs].should =~ @source_db_id
@@ -32,6 +35,10 @@ describe DocsController do
         get :index
       end
       
+      it 'should assign search_docs_path as @search_path' do
+        assigns[:search_path].should eql search_docs_path
+      end
+            
       it 'should assign @source_docs' do
         assigns[:source_docs].should =~ @source_db_id
       end
@@ -206,6 +213,141 @@ describe DocsController do
       
       it 'should assigns docs which sourcedb match' do
         assigns[:source_docs].should =~ Doc.where(['sourcedb = ?', @sourcedb])
+      end
+    end
+  end
+  
+  describe 'search' do
+    context 'without pagination' do
+      before do
+        @pubmed = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 234)
+        @selial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1, :sourceid => 123)
+        @sourceid_123 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123)
+        @sourceid_1234 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1234)
+        @sourceid_1123 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1123)
+        @sourceid_234 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234)
+      end
+      
+      context 'when project_id blank' do
+        context 'when params[:sourceid] and params[:body] is nil' do
+          before do
+            @sourcedb = 'PMC'
+            get :search, sourcedb: 'PMC'
+          end  
+          
+          it 'should set sourcedb docs as @source_docs' do
+            assigns[:source_docs].should =~ Doc.find_all_by_sourcedb(@sourcedb)
+          end
+          
+          it 'should not include sourcedb not match' do
+            assigns[:source_docs].should_not include @pubmed
+          end
+        end
+        
+        context 'when params[:sourceid] present' do
+          before do
+            get :search, :sourceid => '123'
+          end
+          
+          it 'should not include source id like not match' do
+            assigns[:source_docs].should_not include(@pubmed)
+          end
+          
+          it 'should include source id like match' do
+            assigns[:source_docs].should include(@selial_1)
+          end
+          
+          it 'should include sourceid include 123' do
+            assigns[:source_docs].should include(@sourceid_123)
+          end
+    
+          it 'should include sourceid include 123' do
+            assigns[:source_docs].should include(@sourceid_1234)
+          end
+    
+          it 'should include sourceid include 123' do
+            assigns[:source_docs].should include(@sourceid_1123)
+          end
+    
+          it 'should not include sourceid not include 123' do
+            assigns[:source_docs].should_not include(@sourceid_234)
+          end
+        end
+        
+        context 'when params[:body] present' do
+          before do
+            @sourceid_123_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123, :body => 'test')
+            @sourceid_1234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1234, :body => 'testmatch')
+            @sourceid_234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234, :body => 'matchtest')
+            @sourceid_123_est = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123, :body => 'est')
+            get :search, :body => 'test'
+          end
+          
+          it 'should include  body contains body' do
+            assigns[:source_docs].should include(@sourceid_123_test)
+          end
+          
+          it 'should include body contains body' do
+            assigns[:source_docs].should include(@sourceid_1234_test)
+          end
+          
+          it 'should include body contains body' do
+            assigns[:source_docs].should include(@sourceid_234_test)
+          end
+          
+          it 'should include body contains body' do
+            assigns[:source_docs].should_not include(@sourceid_123_est)
+          end
+        end
+        
+        context 'when params[:sourceid] and params[:body] present' do
+          before do
+            @sourceid_1_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => 'test')
+            @sourceid_1_body_test_and = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => 'testand')
+            @sourceid_1_body_nil = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => nil)
+            @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 2, :body => 'test')
+            get :search, :sourceid => 1, :body => 'test'
+          end
+          
+          it 'should include sourceid and body matches' do
+            assigns[:source_docs].should include(@sourceid_1_body_test)
+          end
+          
+          it 'should include sourceid and body matches' do
+            assigns[:source_docs].should include(@sourceid_1_body_test_and)
+          end
+          
+          it 'should not include body does not match' do
+            assigns[:source_docs].should_not include(@sourceid_1_body_nil)
+          end
+          
+          it 'should not include sourceid does not match' do
+            assigns[:source_docs].should_not include(@sourceid_2_body_test)
+          end
+        end
+      end
+      
+      context 'when project_id prsent' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @project.docs << @selial_1
+          @project.reload
+          get :search, :sourcedb => @selial_1.sourcedb, :project_id => @project.name
+        end
+        
+        it 'should docs condition match included in project' do
+          assigns[:source_docs].should =~ [@selial_1]
+        end
+      end
+      
+      context 'when docs not found' do
+        before do
+          get :search, :sourcedb => 'invalid'
+        end
+        
+        it 'should set flash[:notice]' do
+          flash[:notice].should be_present
+        end
       end
     end
   end

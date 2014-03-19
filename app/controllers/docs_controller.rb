@@ -8,8 +8,10 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
       docs = @project.docs
+      @search_path = search_project_docs_path(@project.name)
     else
       docs = Doc
+      @search_path = search_docs_path
     end
     @source_docs = docs.source_db_id.paginate(:page => params[:page])
   end
@@ -83,6 +85,33 @@ class DocsController < ApplicationController
    @source_docs = docs.where(['sourcedb = ?', params[:sourcedb]]).order('sourceid ASC').paginate(:page => params[:page])
  end 
     
+  def search
+    if params[:project_id].present?
+      @project = Project.find_by_name(params[:project_id])
+      docs = @project.docs
+    else
+      docs = Doc
+    end
+    conditions_array = Array.new
+    conditions_array << ['sourcedb = ?', "#{params[:sourcedb]}"] if params[:sourcedb].present?
+    conditions_array << ['sourceid like ?', "%#{params[:sourceid]}%"] if params[:sourceid].present?
+    conditions_array << ['body like ?', "%#{params[:body]}%"] if params[:body].present?
+    
+    # Build condition
+    i = 0
+    conditions = Array.new
+    columns = ''
+    conditions_array.each do |key, val|
+      key = " AND #{key}" if i > 0
+      columns += key
+      conditions[i] = val
+      i += 1
+    end
+    conditions.unshift(columns)
+    @source_docs = docs.where(conditions).order('sourcedb ASC').order('sourceid ASC').paginate(:page => params[:page])
+    flash[:notice] = t('controllers.docs.search.not_found') if @source_docs.blank?
+  end
+  
   # GET /docs/1
   # GET /docs/1.json
   def show

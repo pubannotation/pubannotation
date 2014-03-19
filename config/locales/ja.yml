@@ -322,6 +322,8 @@ ja:
       create_project_docs:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
         created_to_document_set: '%{num_created}個のドキュメントがドキュメントセット %{project_name}に作成されました'
+      search:
+        not_found: 条件に合うドキュメントがみつかりませんでした。
     pmcdocs:
       create:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'

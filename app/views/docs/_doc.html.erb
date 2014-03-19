@@ -1,0 +1,32 @@
+<% if doc_counter == 0 -%>
+	<table>
+		<tr>
+			<th><%= t('activerecord.attributes.doc.sourcedb') -%></th>
+			<th><%= t('activerecord.attributes.doc.sourceid') -%></th>
+			<th><%= t('views.divs.div')%></th>
+			<th><%= t('activerecord.attributes.doc.section') -%></th>
+			<th><%= t('activerecord.attributes.doc.body') -%></th>
+			<th></th>
+		</tr>
+<% end -%>
+
+<tr>
+	<td> <%= sourceid_index_link_helper(doc) -%> </td>
+	<td><a href="<%= doc.source -%>"><%= doc.sourceid -%></a></td>
+	<td><%= doc.serial -%></td>
+	<td><%= doc.section -%></td>
+	<td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' -%></td>
+	<td>
+		<% if @project -%>
+			<%= link_to t('views.shared.show'), project_doc_path(@project.name, doc.id), :class => 'button' -%>
+		<% else -%>
+			<%= link_to t('views.shared.show'), doc_path(doc.id), :class => 'button' -%>
+		<% end -%>
+		<%= link_to t('views.shared.edit'), edit_doc_path(doc), :class => 'button' if doc.updatable_for?(current_user) -%>
+		<%= link_to t('views.shared.delete'), project_doc_path(@project.name, doc.id), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: 'button' if @project.present? && doc.updatable_for?(current_user) -%>
+	</td>
+</tr>
+
+<% if doc_counter == @docs.size-1 -%>
+	</table>
+<% end -%>
