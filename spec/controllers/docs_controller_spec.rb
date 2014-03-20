@@ -268,7 +268,7 @@ describe DocsController do
           end  
           
           it 'should set sourcedb docs as @source_docs' do
-            assigns[:source_docs].should =~ Doc.find_all_by_sourcedb(@sourcedb)
+            assigns[:source_docs].should =~ Doc.where(sourcedb: @sourcedb).group(:sourcedb).group(:sourceid)
           end
           
           it 'should not include sourcedb not match' do
@@ -278,27 +278,16 @@ describe DocsController do
         
         context 'when params[:sourceid] present' do
           before do
-            get :search, :sourceid => '123'
+            @search_sourceid = '123'
+            get :search, :sourceid => @search_sourceid
+          end
+          
+          it 'should include source id like match' do
+            assigns[:source_docs].should =~ Doc.where('sourceid like ?', "#{@search_sourceid}%").group(:sourcedb).group(:sourceid)
           end
           
           it 'should not include source id like not match' do
             assigns[:source_docs].should_not include(@pubmed)
-          end
-          
-          it 'should include source id like match' do
-            assigns[:source_docs].should include(@selial_1)
-          end
-          
-          it 'should include sourceid include 123' do
-            assigns[:source_docs].should include(@sourceid_123)
-          end
-    
-          it 'should include sourceid include 123' do
-            assigns[:source_docs].should include(@sourceid_1234)
-          end
-    
-          it 'should include sourceid include 123' do
-            assigns[:source_docs].should include(@sourceid_1123)
           end
     
           it 'should not include sourceid not include 123' do
@@ -312,19 +301,12 @@ describe DocsController do
             @sourceid_1234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1234, :body => 'testmatch')
             @sourceid_234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234, :body => 'matchtest')
             @sourceid_123_est = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123, :body => 'est')
-            get :search, :body => 'test'
+            @search_text = 'test'
+            get :search, :body => @search_text 
           end
           
           it 'should include  body contains body' do
-            assigns[:source_docs].should include(@sourceid_123_test)
-          end
-          
-          it 'should include body contains body' do
-            assigns[:source_docs].should include(@sourceid_1234_test)
-          end
-          
-          it 'should include body contains body' do
-            assigns[:source_docs].should include(@sourceid_234_test)
+            assigns[:source_docs].should =~ Doc.where('body like ?', "%#{@search_text}%").group(:sourcedb).group(:sourceid)
           end
           
           it 'should include body contains body' do
@@ -338,15 +320,13 @@ describe DocsController do
             @sourceid_1_body_test_and = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => 'testand')
             @sourceid_1_body_nil = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => nil)
             @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 2, :body => 'test')
-            get :search, :sourceid => 1, :body => 'test'
+            @search_sourceid = 1
+            @search_body = 'test'
+            get :search, :sourceid => 1, :body => @search_body
           end
           
           it 'should include sourceid and body matches' do
-            assigns[:source_docs].should include(@sourceid_1_body_test)
-          end
-          
-          it 'should include sourceid and body matches' do
-            assigns[:source_docs].should include(@sourceid_1_body_test_and)
+            assigns[:source_docs].should =~ Doc.where('sourceid like ?', "#{@search_sourceid}%").where('body like ?', "%#{@search_body}%").group(:sourcedb).group(:sourceid)
           end
           
           it 'should not include body does not match' do

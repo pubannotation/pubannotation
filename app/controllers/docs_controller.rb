@@ -97,7 +97,7 @@ class DocsController < ApplicationController
     end
     conditions_array = Array.new
     conditions_array << ['sourcedb = ?', "#{params[:sourcedb]}"] if params[:sourcedb].present?
-    conditions_array << ['sourceid like ?', "%#{params[:sourceid]}%"] if params[:sourceid].present?
+    conditions_array << ['sourceid like ?', "#{params[:sourceid]}%"] if params[:sourceid].present?
     conditions_array << ['body like ?', "%#{params[:body]}%"] if params[:body].present?
     
     # Build condition
@@ -111,7 +111,7 @@ class DocsController < ApplicationController
       i += 1
     end
     conditions.unshift(columns)
-    @source_docs = docs.where(conditions).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC').paginate(:page => params[:page])
+    @source_docs = docs.where(conditions).group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC').paginate(:page => params[:page])
     flash[:notice] = t('controllers.docs.search.not_found') if @source_docs.blank?
   end
   
