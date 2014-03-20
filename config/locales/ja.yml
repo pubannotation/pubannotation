@@ -384,7 +384,7 @@ ja:
       docs_list: ドキュメント一覧(レコード)
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
-      folded_docs_list: ドキュメント一覧(省略)
+      folded_docs_list: ドキュメント一覧(一括)
       add_new_documents: ドキュメント追加
     documentations:
       Overview: 概要
