@@ -1,7 +1,7 @@
 <% content_for :path do %>
   > <%= link_to t('views.paths.home'), home_path %>
   <% if @project %>
-    > <%= link_to t('activerecord.models.project'), projects_path %>
+    > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
     > <%= link_to @project.name, project_path(@project.name) %>
   <% end %>
   > <%= t('views.docs.folded_docs_list') -%>
