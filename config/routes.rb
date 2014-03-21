@@ -159,6 +159,7 @@ Pubann::Application.routes.draw do
               scope ':sourceid' do
                 get '/' => 'docs#show', :as =>'show'
                 get 'annotations' => 'annotations#index'
+                post 'annotations' => 'annotations#create'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
                 get 'spans/:begin-:end/annotations' => 'docs#annotations'

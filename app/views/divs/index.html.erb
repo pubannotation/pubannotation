@@ -35,18 +35,18 @@
 	</script>
 <% end %>
 
-<table id="divisions" class="tablesorter">
+<table id="divisions" class="tablesorter full">
 	<thead>
 		<tr>
-			<th><%= t('activerecord.attributes.doc.sourcedb')%></th>
-			<th><%= t('activerecord.attributes.doc.sourceid')%></th>
-			<th class="sortable-th"><%= t('views.divs.div')%></th>
-			<th><%= t('activerecord.attributes.doc.section') %></th>
+			<th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
+			<th style="width:6em"><%= t('activerecord.attributes.doc.sourceid')%></th>
+			<th style="width:2em" class="sortable-th"><%= t('views.divs.div')%></th>
+			<th style="width:14em"><%= t('activerecord.attributes.doc.section') %></th>
 			<th><%= t('activerecord.attributes.doc.body') %></th>
-			<th><%= t('views.shared.size') %></th>
-			<th class="sortable-th" title="<%= t('activerecord.models.denotations') %>">D</th>
-			<th class="sortable-th" title="<%= t('activerecord.models.relations') %>">R</th>
-			<th></th>
+			<th style="width:3em"><%= t('views.shared.size') %></th>
+			<th style="width:1em" class="sortable-th" title="<%= t('activerecord.models.denotations') %>">D</th>
+			<th style="width:1em" class="sortable-th" title="<%= t('activerecord.models.relations') %>">R</th>
+			<th style="width:4em"></th>
 		</tr>
 	</thead>
 
@@ -57,18 +57,10 @@
 			    <td style="text-align:center"><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
 			    <td style="text-align:center"><%= doc.serial %></td>
 			    <td style="text-align:center"><%= doc.section %></td>
-			    <td style="text-align:left"><%= (doc.body.length < 42)? doc.body : doc.body[0, 40] + ' ...' %></td>
-			    <% if doc.body.length > 5000 %>
-			      <td style="text-align:right;color:red"><%= doc.body.length %></td>
-			    <% else %>    
-			      <td style="text-align:right"><%= doc.body.length %></td>
-			    <% end %>
-			    <td>
-			    	<%= denotations_count_helper(@project, {:doc => doc}) %>
-			    </td>
-			    <td>
-			    	<%= relations_count_helper(@project, {:doc => doc})%>
-			    </td>
+			    <td style="text-align:left"><%= doc.body %></td>
+			    <td style="text-align:right"><%= doc.body.length %></td>
+			    <td style="text-align:right"><%= denotations_count_helper(@project, {:doc => doc}) %></td>
+			    <td style="text-align:right"><%= relations_count_helper(@project, {:doc => doc})%></td>
 		    	<td><span class="button"><%= div_link_helper(@project, doc) -%></span></td>
 		    </tr>
 		<% end %>

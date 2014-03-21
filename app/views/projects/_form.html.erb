@@ -1,7 +1,7 @@
 <%= form_for(@project, :html => {:class => 'IndicatorForm'}) do |f| %>
 	<%= errors_helper(@project) %>
 
-<table>
+<table style="table-layout:auto">
   <tr>
     <th><%= f.label :name %></th>
     <td><%= f.text_field :name, :class => "input", :placeholder => t('activerecord.placeholders.project.name') %></td>

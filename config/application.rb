@@ -21,7 +21,7 @@ module Pubann
     # Rquire lib/
     require 'doc_sequencer_pubmed'
     require 'doc_sequencer_pmc'
-    require 'doc_sequencer_fa'
+    require 'doc_sequencer_firstauthor'
     
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.

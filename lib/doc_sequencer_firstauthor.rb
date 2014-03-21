@@ -8,7 +8,7 @@ require 'nokogiri'
 require 'open-uri'
 
 
-class DocSequencerFA
+class DocSequencerFirstAuthor
   attr_reader :source_url, :divs
 
   def initialize (id)

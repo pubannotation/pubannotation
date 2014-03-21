@@ -5,12 +5,12 @@
 	<% if project %>
 		<table>
 			<tr>
-				<th><%= t('activerecord.attributes.project.name') %></th>
+				<th style="width:8em"><%= t('activerecord.attributes.project.name') %></th>
 				<td><%= project.name %></td>
 			</tr>
 			<tr>
 				<th><%= t('activerecord.attributes.project.description') %></th>
-				<td><%= project.description %></td>
+				<td class="text"><%= project.description %></td>
 			</tr>
 			<tr>
 				<th><%= t('activerecord.attributes.project.author') %></th>

@@ -24,47 +24,38 @@
 <% if projects.blank? %>
   <p>none</p>
 <% else %>
-  <table>
+  <table class="full">
     <tr>
-      <th class="sortable-th"><%= link_to_unless_current t('activerecord.attributes.project.name'), url_for(:only_path => true, :projects_order => 'name'), :class => 'sortable-a' %></th>
+      <th class="sortable-th" style="width:6em"><%= link_to_unless_current t('activerecord.attributes.project.name'), url_for(:only_path => true, :projects_order => 'name'), :class => 'sortable-a' %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
-      <th><%= link_to_unless_current t('activerecord.attributes.project.author'), url_for(:only_path => true, :projects_order => 'author'), :class => 'sortable-a' %></th>
-      <th class="sortable-th" ><%= link_to_unless_current t('activerecord.attributes.project.maintainer'), url_for(:only_path => true, :projects_order => 'maintainer'), :class => 'sortable-a' %></th>
-      <!-- <th class="sortable-th" title='Association'><%= link_to_unless_current 'A', url_for(:only_path => true, :projects_order => 'association'), :class => 'sortable-a' %></th> -->
-      <th class="sortable-th" title='PubMed abstracts'><%= link_to_unless_current 'P', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>
-      <th class="sortable-th" title='PubMed Central documents'><%= link_to_unless_current 'C', url_for(:only_path => true, :projects_order => 'pmcdocs_count'), :class => 'sortable-a' %></th>
-      <th class="sortable-th" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
-      <th class="sortable-th" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
-      <th>AP</th>
-      <th></th>
+      <th class="sortable-th" style="width:6em"><%= link_to_unless_current t('activerecord.attributes.project.author'), url_for(:only_path => true, :projects_order => 'author'), :class => 'sortable-a' %></th>
+      <th class="sortable-th" style="width:6em"><%= link_to_unless_current t('activerecord.attributes.project.maintainer'), url_for(:only_path => true, :projects_order => 'maintainer'), :class => 'sortable-a' %></th>
+<!-- 
+      <th class="sortable-th" title='Association'><%= link_to_unless_current 'A', url_for(:only_path => true, :projects_order => 'association'), :class => 'sortable-a' %></th>
+      <th class="sortable-th" style="width:1em" title='PubMed abstracts'><%= link_to_unless_current 'P', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>
+      <th class="sortable-th" style="width:1em" title='PubMed Central documents'><%= link_to_unless_current 'C', url_for(:only_path => true, :projects_order => 'pmcdocs_count'), :class => 'sortable-a' %></th>
+      <th class="sortable-th" style="width:1em" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
+      <th class="sortable-th" style="width:1em" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
+ -->
+      <th style="width:3em"></th>
     </tr>
 
   <% projects.each do |project| %>
     <% project_path = project_path(project.name) -%>
     <% type = 'P' -%>
     <tr>
-      <td style="white-space: nowrap"><%= project.name %></td>
-      <td class="text"><%= (project.description.length < 42)? project.description : project.description[0, 40] + ' ...' %></td>
-      <td style="white-space: nowrap"><%= project.author %></td>
-      <td style="white-space: nowrap"><%= project.user.username %></td>
-<!--       <td>
-      	<%= project.association_for(current_user) -%>
-      </td>
- -->      <td style="text-align:right">
-      	<%= project.pmdocs_count -%>
-      </td>
-      <td style="text-align:right">
-      	<%= project.pmcdocs_count -%>
-      </td>
-      <td style="text-align:right">
-    	<%= denotations_count_helper(project, {:doc => doc}) %>
-      </td>
-      <td style="text-align:right">
-    	<%= relations_count_helper(project, {:doc => doc}) %>
-      </td>
-      <td>
-  		<%= project.associate_projects.size -%>
-  	  </td>
+      <td><%= project.name %></td>
+      <td><%= project.description %></td>
+      <td><%= project.author %></td>
+      <td><%= project.user.username %></td>
+<!-- 
+      <td><%= project.association_for(current_user) -%></td>
+      <td style="text-align:right"><%= project.pmdocs_count -%></td>
+      <td style="text-align:right"><%= project.pmcdocs_count -%></td>
+      <td style="text-align:right"><%= denotations_count_helper(project, {:doc => doc}) %></td>
+      <td style="text-align:right"><%= relations_count_helper(project, {:doc => doc}) %></td>
+      <td><%= project.associate_projects.size -%></td>
+ -->
       <td>
 	      <% if @doc and @doc.sourcedb == "PubMed" %>
 	        <%= link_to t('views.shared.show'), project_pmdoc_path(project.name, @doc.sourceid) %>

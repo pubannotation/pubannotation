@@ -8,7 +8,7 @@ describe DocSequencerFA do
         @id = '8424'
         @divs = 'divs'
         DocSequencerFA.any_instance.stub(:get_divs).and_return(@divs)
-        VCR.use_cassette 'lib/doc_sequencer_fa/initialize' do
+        VCR.use_cassette 'lib/doc_sequencer_firstauthor/initialize' do
           @doc_sequencer = DocSequencerFA.new(@id)
         end
       end

@@ -110,6 +110,8 @@ class AnnotationsController < ApplicationController
             # options = {:dics => params[:dics].split(/\s*,\s*/)}
             options = nil
             annotations = gen_annotations(annotations, params[:annotation_server], options)
+            p annotations
+            puts "-=-=-=-=-=-"
           else
             annotations = JSON.parse params[:annotations], :symbolize_names => true
           end

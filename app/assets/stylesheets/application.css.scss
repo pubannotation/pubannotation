@@ -233,23 +233,40 @@ a:hover {
 table, th, td{
   border:1px solid $main_color;
 }
+
 table {
-    border-collapse:collapse;
-    margin-top:5px;
-    margin-bottom:5px;
+  border-collapse:collapse;
+  margin-top:5px;
+  margin-bottom:5px;
+}
+
+table.full {
+  table-layout: fixed;
+  width: 100%;
+}
+
+table.full td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 th {
-    padding:5px;
-    text-align:center;
-    font-weight:bold;
-    background-color: $sub_color;
+  padding:5px;
+  text-align:center;
+  font-weight:bold;
+  background-color: $sub_color;
 }
 
 td {
-    padding:5px;
-    text-align:left;
+  padding:5px;
+  text-align:left;
 }
+
+td.text {
+  white-space: normal
+}
+
 
 td * {
     vertical-align: middle;
@@ -389,17 +406,21 @@ li {
 #path{
   /*text-transform: lowercase;*/
 }
+
 .ui-widget-content {
     border-width:0px 0px 0px 1px;
 }
+
 .ui-widget-content {
     border-width:0px 0px 0px 1px;
 }
+
 .sortable-th{
   padding-left:15px;
   background: url(/assets/sort_asc.png) no-repeat 5px center $sub_color;
   text-align :left;
 }
+
 .sortable-a,
 .sortable-a:visited{
   margin-left:-15px;
@@ -407,29 +428,27 @@ li {
   color:#234979 !important;
   background: url(/assets/sort_asc_p.png) no-repeat 5px center $sub_color;
 }
+
 .spans_prev, 
 .spans_next{
   color: #7D7D7D; 
 }
+
 .spans_preview{
   text-align: left !important; 
   font-style: italic; 
   color: #888888;  
 }
+
 .associate_username{
   margin: 0.2em 0;
 }
+
 .clickable-text{
   color:#234979 !important;
   cursor: pointer;
 }
-.doc_body_ellipsis{
-  height: 1.5em;
-  width: 64em;
-  white-space: nowrap;
-  overflow: hidden; 
-  text-overflow: ellipsis;
-}
+
 #documentation_cateogories{
   margin: 1em 0;
   padding: 0;
