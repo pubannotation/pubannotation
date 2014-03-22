@@ -57,7 +57,7 @@ class ApplicationController < ActionController::Base
     else
       sourcedb = params[:sourcedb]
       sourceid = params[:sourceid]
-      serial   = 0
+      serial   = params[:div_id].present? ? params[:div_id] : 0
       id = params[:id] if params[:id]
     end
 

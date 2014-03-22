@@ -250,6 +250,18 @@ describe ApplicationController do
           @result.should eql([nil, nil, 0, @id])
         end
       end
+      
+      context 'when params[:div_id] present' do
+        before do
+          @div_id = 5
+          @params = {:div_id => @div_id}
+          @result = controller.get_docspec(@params)
+        end
+        
+        it 'should return nil and params[:doc_id] array' do
+          @result.should eql([nil, nil, @div_id, nil])
+        end
+      end
     end
   end
   

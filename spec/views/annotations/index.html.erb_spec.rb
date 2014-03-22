@@ -14,10 +14,10 @@ describe "annotations/index.html.erb" do
       view.stub(:current_user).and_return(@current_user)
       assign :text, '1234'
       view.stub(:destroy_all_path).and_return('destroy_all')
-      @destroy_all_project_pmcdoc_div_annotations_path = 'destroy_all/PMC'
-      view.stub(:destroy_all_project_pmcdoc_div_annotations_path).and_return(@destroy_all_project_pmcdoc_div_annotations_path)
-      @destroy_all_project_pmdoc_annotations_path = 'destroy_all/PubMed'
-      view.stub(:destroy_all_project_pmdoc_annotations_path).and_return(@destroy_all_project_pmdoc_annotations_path)
+      @annotations_destroy_all_project_sourcedb_sourceid_divs_docs_path = 'annotations_destroy_all_project_sourcedb_sourceid_divs_docs_path'
+      view.stub(:annotations_destroy_all_project_sourcedb_sourceid_divs_docs_path).and_return(@annotations_destroy_all_project_sourcedb_sourceid_divs_docs_path)
+      @annotations_destroy_all_project_sourcedb_sourceid_docs_path = 'annotations_destroy_all_project_sourcedb_sourceid_docs_path'
+      view.stub(:annotations_destroy_all_project_sourcedb_sourceid_docs_path).and_return(@annotations_destroy_all_project_sourcedb_sourceid_docs_path)
     end
     
     context 'when @denotations.present' do
@@ -49,25 +49,25 @@ describe "annotations/index.html.erb" do
             assign :project, @project
           end
         
-          context 'when params[:pmc_doc_id] present' do
+          context 'when params[:div_id] present' do
             before do
-              view.stub(:params).and_return(:pmcdoc_id => 1)
+              view.stub(:params).and_return({:div_id => 1, :sourcedb => 'sourcedb', :sourceid => 123})
               render
             end
             
-            it 'should render form for destroy all PMC docs in project' do
-              rendered.should have_selector :form, :action => @destroy_all_project_pmcdoc_div_annotations_path
+            it 'should render form for destroy all div docs in project' do
+              rendered.should have_selector :form, :action => @annotations_destroy_all_project_sourcedb_sourceid_divs_docs_path
             end
           end
             
-          context 'when params[:pm_doc_id] present' do
+          context 'when params[:div_id] blank' do
             before do
-              view.stub(:params).and_return(:pmdoc_id => 1)
+              view.stub(:params).and_return({:sourcedb => 'sourcedb', :sourceid => 123})
               render
             end
             
             it 'should render form for destroy all PubMed docs in project' do
-              rendered.should have_selector :form, :action => @destroy_all_project_pmdoc_annotations_path
+              rendered.should have_selector :form, :action => @annotations_destroy_all_project_sourcedb_sourceid_docs_path
             end
           end
         end
