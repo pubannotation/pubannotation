@@ -584,8 +584,9 @@ describe ApplicationController do
     
     context 'when response.code is not 200' do
      before do
+        @annotation = {:text => '', :others => 'others'}
         VCR.use_cassette 'controllers/application/gen_annotations/response_not_200' do
-          @result = controller.gen_annotations(@project, 'http://localhost:3000')
+          @result = controller.gen_annotations(@annotation, 'http://localhost:3000')
         end
       end
       

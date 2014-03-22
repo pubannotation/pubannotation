@@ -18,7 +18,7 @@ describe ApplicationHelper do
   
   describe 'errors_helper' do
     before do
-      @model_name = 'Project'  
+      @model_name = 'project'  
     end
     
     context 'when model has no error' do

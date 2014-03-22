@@ -1692,7 +1692,7 @@ describe Project do
     before do
       @project = FactoryGirl.create(:project)
       @sourceid = '8424'
-      @sourcedb = 'FA'
+      @sourcedb = 'PMC'
     end 
     
     context 'when divs present' do
