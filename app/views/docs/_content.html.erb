@@ -8,7 +8,7 @@
 		<%= "Doc :#{@doc.id}" -%>
 	<% end -%>
 	<% if @doc.sourcedb == 'PMC' %>
-	(<%= @doc.serial %> - <%= @doc.section %>)
+		(<%= @doc.serial %> - <%= @doc.section %>)
 	<% end %>
 </th></tr>
 <tr><td class="text"><%= raw @text.gsub(/\n/, "<br>") if @text.present? %></td><tr>
