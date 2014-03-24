@@ -19,3 +19,11 @@
 
 <%= will_paginate @docs %>
 
+<% if user_signed_in? && @project.present? && current_user == @project.user %>
+	<h2><%= t('views.docs.add_new_documents') -%></h2>
+	<ul>
+	  <li>by uploading a new document<br/>
+	    <%= link_to t('views.shared.new_model', :model => t('activerecord.models.doc')), @new_doc_src, :class => 'button' -%>
+	  </li>
+	</ul>
+<% end %>

@@ -1,8 +1,4 @@
 <% if source_doc_counter == 0 -%>
-	<%= render :partial => 'projects/links' -%>
-	
-	<h2><%= t('views.docs.folded_docs_list') -%></h2>
-
 	<%= form_tag(@search_path, method: 'get')  do -%>
 		<%= select_tag(:sourcedb, options_for_select({'PubMed' => 'PubMed', 'PMC' => 'PMC', 'FirstAuthor' => 'FirstAuthor'}, selected: params[:sourcedb])) -%>
 		<%= label_tag :sourceid, t('activerecord.attributes.doc.sourceid') -%>

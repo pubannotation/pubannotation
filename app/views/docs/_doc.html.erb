@@ -1,19 +1,19 @@
 <% if doc_counter == 0 -%>
-	<table>
+	<table class="full">
 		<tr>
-			<th><%= t('activerecord.attributes.doc.sourcedb') -%></th>
-			<th><%= t('activerecord.attributes.doc.sourceid') -%></th>
-			<th><%= t('views.divs.div')%></th>
-			<th><%= t('activerecord.attributes.doc.section') -%></th>
+			<th style="width:5em"><%= t('activerecord.attributes.doc.sourcedb') -%></th>
+			<th style="width:5em"><%= t('activerecord.attributes.doc.sourceid') -%></th>
+			<th style="width:2em"><%= t('views.divs.div')%></th>
+			<th style="width:10em"><%= t('activerecord.attributes.doc.section') -%></th>
 			<th><%= t('activerecord.attributes.doc.body') -%></th>
-			<th></th>
+			<th style="width:12em"></th>
 		</tr>
 <% end -%>
 
 <tr>
 	<td> <%= sourceid_index_link_helper(doc) -%> </td>
 	<td><a href="<%= doc.source -%>"><%= doc.sourceid -%></a></td>
-	<td><%= doc.serial -%></td>
+	<td style="text-align:right"><%= doc.serial -%></td>
 	<td><%= doc.section -%></td>
 	<td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' -%></td>
 	<td>

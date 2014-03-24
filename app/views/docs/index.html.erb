@@ -7,6 +7,9 @@
   > <%= t('views.docs.folded_docs_list') -%>
 <% end %>
 
+<%= render :partial => 'projects/links' -%>
+
+<h2><%= t('views.docs.folded_docs_list') -%></h2>
 <%= render :partial => 'source_doc', :collection => @source_docs -%>
 
 <% if user_signed_in? && @project.present? && current_user == @project.user %>
@@ -14,10 +17,6 @@
 	<ul>
 	  <li>by getting from a public database<br/>
 	    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
-	  </li>
-	  <p>or</p>
-	  <li>by uploading a new document<br/>
-	    <%= link_to t('views.shared.new_model', :model => t('activerecord.models.doc')), @new_doc_src, :class => 'button' -%>
 	  </li>
 	</ul>
 <% end %>
