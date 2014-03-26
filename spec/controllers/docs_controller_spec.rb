@@ -1192,4 +1192,49 @@ describe DocsController do
       end
     end
   end
+  
+  describe 'delete_project_docs' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @sourcedb = 'PMC'
+      @sourceid = '123456'
+      @project_doc_1  = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid, serial: 0)
+      @project.docs << @project_doc_1
+      @project_doc_2  = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid, serial: 1)
+      @project.docs << @project_doc_2
+      @project_doc_3  = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid + '1')
+      @project.docs << @project_doc_3
+      @project_doc_4  = FactoryGirl.create(:doc, sourcedb: 'PubMed', sourceid: @sourceid)
+      @project.docs << @project_doc_4
+      @refrerer = root_path
+      request.env["HTTP_REFERER"] = @refrerer
+      @project.reload
+    end
+    
+    describe 'before delete' do
+      it 'project has 4docs' do
+        @project.docs.size.should eql 4
+      end
+    end
+    
+    describe 'before delete' do
+      before do
+        delete :delete_project_docs, project_id: @project.name, sourcedb: @sourcedb, sourceid: @sourceid 
+        @project.reload
+      end
+      
+      it 'should delete 2docs from poject docs' do
+        @project.docs.size.should eql 2 
+      end
+      
+      it 'should not destroy doc' do
+        Doc.find(@project_doc_1).should be_present
+        Doc.find(@project_doc_2).should be_present
+      end
+      
+      it 'should redirect_to back' do
+        response.should redirect_to @refrerer
+      end
+    end
+  end 
 end

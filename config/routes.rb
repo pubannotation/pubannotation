@@ -164,6 +164,7 @@ Pubann::Application.routes.draw do
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
                 get 'spans/:begin-:end/annotations' => 'docs#annotations', :as => 'spans_annotations'
+                delete 'delete_project_docs' => 'docs#delete_project_docs'
                 
                 scope 'divs', :as => 'divs' do
                   get '/' => 'divs#index', :as => 'index'

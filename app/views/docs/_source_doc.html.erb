@@ -25,7 +25,7 @@
 				<% end -%>
 			</th>
 			<th><%= t('activerecord.attributes.doc.body') %></th>
-			<th style="width:8em"></th>
+			<th style="width:12em"></th>
 		</tr>
 <% end -%>
 
@@ -49,6 +49,7 @@
 	        	<% end -%>
         	<% end -%>
         </span>
+    	<%= link_to t('views.shared.delete'), delete_project_docs_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: 'button' if @project.present? && source_doc.updatable_for?(current_user) -%>
 	</td>
 </tr>
 

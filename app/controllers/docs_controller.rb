@@ -359,4 +359,11 @@ class DocsController < ApplicationController
       format.json { head :no_content }
     end
   end
+  
+  def delete_project_docs
+    project = Project.find_by_name(params[:project_id])
+    docs = project.docs.where(:sourcedb => params[:sourcedb]).where(:sourceid => params[:sourceid])
+    project.docs.delete(docs) 
+    redirect_to :back
+  end  
 end
