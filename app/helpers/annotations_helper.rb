@@ -150,5 +150,29 @@ module AnnotationsHelper
         end
       end    
     end    
+  end 
+  
+  def annotaions_url_helper
+    if params[:div_id].present?
+      if params[:action] == 'spans'
+        spans_annotations_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, params[:begin], params[:end])
+      else
+        annotations_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+      end      
+    else
+      if params[:action] == 'spans'
+        spans_annotations_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, params[:begin], params[:end])
+      else
+        annotations_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
+      end
+    end
+  end  
+
+  def annotaions_form_action_helper
+    if params[:div_id].present?
+      create_annotatons_project_sourcedb_sourceid_divs_docs_path(params[:project_id], params[:sourcedb], params[:sourceid], params[:div_id])
+    else
+      create_annotatons_project_sourcedb_sourceid_docs_path(params[:project_id], params[:sourcedb], params[:sourceid])
+    end
   end  
 end

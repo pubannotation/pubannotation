@@ -159,11 +159,11 @@ Pubann::Application.routes.draw do
               scope ':sourceid' do
                 get '/' => 'docs#show', :as =>'show'
                 get 'annotations' => 'annotations#index'
-                post 'annotations' => 'annotations#create'
+                post 'annotations' => 'annotations#create', :as => 'create_annotatons'
                 post 'annotations/destroy_all' => 'annotations#destroy_all'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-                get 'spans/:begin-:end/annotations' => 'docs#annotations'
+                get 'spans/:begin-:end/annotations' => 'docs#annotations', :as => 'spans_annotations'
                 
                 scope 'divs', :as => 'divs' do
                   get '/' => 'divs#index', :as => 'index'
@@ -171,10 +171,11 @@ Pubann::Application.routes.draw do
                   scope ':div_id' do
                     get '/' => 'divs#show', :as => 'show'
                     get 'annotations' => 'annotations#index'
+                    post 'annotations' => 'annotations#create', :as => 'create_annotatons'
                     post 'annotations/destroy_all' => 'annotations#destroy_all'
                     get 'spans' => 'docs#spans_index', :as => 'spans_index'
                     get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-                    get 'spans/:begin-:end/annotations' => 'docs#annotations'
+                    get 'spans/:begin-:end/annotations' => 'docs#annotations', :as => 'spans_annotations'
                   end  
                 end    
               end

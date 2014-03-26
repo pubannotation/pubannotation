@@ -488,4 +488,93 @@ describe AnnotationsHelper do
       end
     end
   end
+  
+  describe 'annotaions_url_helper' do
+    before do
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '123', :serial => 0)  
+      assigns[:doc] = @doc
+      @project = FactoryGirl.create(:project)  
+      assigns[:project] = @project 
+      @begin = '5'
+      @end = '10'
+    end
+    
+    context 'when params[:div_id] present' do
+      before do
+        @div_id = '123'
+      end
+      
+      context 'whern action == spans' do
+        before do
+          helper.stub(:params).and_return(:action => 'spans', :div_id => @div_id, :begin => @begin, :end => @end)  
+        end
+        
+        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
+          helper.annotaions_url_helper.should eql spans_annotations_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, @begin, @end)   
+        end  
+      end
+      
+      context 'whern action != spans' do
+        before do
+          helper.stub(:params).and_return(:action => 'doc', :div_id => @div_id)  
+        end
+        
+        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
+          helper.annotaions_url_helper.should eql annotations_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)   
+        end  
+      end
+    end
+    
+    context 'when params[:div_id] blank' do
+      context 'whern action == spans' do
+        before do
+          helper.stub(:params).and_return(:action => 'spans', :begin => @begin, :end => @end)  
+        end
+        
+        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
+          helper.annotaions_url_helper.should eql spans_annotations_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @begin, @end)   
+        end  
+      end
+      
+      context 'whern action != spans' do
+        before do
+          helper.stub(:params).and_return(:action => 'doc')  
+        end
+        
+        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
+          helper.annotaions_url_helper.should eql annotations_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)   
+        end  
+      end
+    end
+  end
+  
+  describe 'annotaions_form_action_helper' do
+    before do
+      @sourcedb = 'PMC'
+      @sourceid = '123'
+      @project_id = 'projectid'
+    end
+    
+    context 'when params[:div_id] present' do
+      before do
+        @div_id = '123'
+        helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id)  
+      end
+      
+      it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
+        helper.annotaions_form_action_helper.should eql create_annotatons_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @div_id)
+      end
+    end
+    
+    context 'when params[:div_id] blank' do
+      before do
+        @div_id = '123'
+        helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid)  
+      end
+      
+      it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
+        helper.annotaions_form_action_helper.should eql create_annotatons_project_sourcedb_sourceid_docs_path(@project_id, @sourcedb, @sourceid)
+      end
+    end
+  end
 end

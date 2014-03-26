@@ -1,23 +1,4 @@
 <% if @project %>
-	<% if @doc.sourcedb == 'PubMed' %>
-		<% if params[:action] == 'spans' -%>
-			<% annotation_url = spans_annotation_project_pmdoc_url(@project.name, @doc.sourceid, params[:begin], params[:end]) %>
-		<% else -%>
-			<% annotation_url = project_pmdoc_annotations_url(@project.name, @doc.sourceid) %>
-		<% end -%>
-	<% elsif @doc.sourcedb == 'PMC' %>
-		<% if params[:action] == 'spans' -%>
-			<% annotation_url = spans_annotation_project_pmcdoc_div_url(@project.name, @doc.sourceid, @doc.serial, params[:begin], params[:end]) %>
-		<% else -%>
-			<% annotation_url = project_pmcdoc_div_annotations_url(@project.name, @doc.sourceid, @doc.serial) %>
-		<% end -%>
-	<% else -%>
-		<% annotation_url = project_doc_annotations_url(@project.name, @doc.id) -%>
-	<% end %>
-	<% if params[:project_id] -%>
-		<% annotation_url = annotations_project_sourcedb_sourceid_docs_url(params[:project_id], @doc.sourcedb, @doc.sourceid) -%>
-	<% end %>
-
 	<h2>
 		<% if params[:action] == 'spans' -%>
 			<%= t('views.docs.annotation_within_spans', :spans => "#{params[:begin]} - #{params[:end]}").html_safe %>
@@ -37,13 +18,13 @@
 		</li>
 	</ul>
 
-	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotation_url, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
+	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotaions_url_helper, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 
 	<!-- automatic annotation -->
 	<% if @project.present? && user_signed_in? and current_user == @project.user %>
 	<h2><%= t('views.docs.automatic_annotation') %></h2>
 
-	 	<%= form_tag annotation_url, :method => "post" do %>
+	 	<%= form_tag annotaions_form_action_helper, :method => "post" do %>
         	<table style="border-color:#FFFFFF; margin-left:20px">
         		<tr><th>REST annotation service</th></tr>
         		<tr><td style="text-align:center">
