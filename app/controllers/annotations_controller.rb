@@ -95,14 +95,14 @@ class AnnotationsController < ApplicationController
   # POST /annotations
   # POST /annotations.json
   def create
-    if params[:annotation_server] or (params[:annotations])
+    if params[:annotation_server].present? or (params[:annotations])
 
       project, notice = get_project(params[:project_id])
       if project
         sourcedb, sourceid, serial, id = get_docspec(params)
         doc, notice = get_doc(sourcedb, sourceid, serial, project, id)
         if doc
-          if params[:annotation_server]
+          if params[:annotation_server].present?
             annotations = get_annotations(project, doc, :encoding => params[:encoding])
 
             # options = [:db_name => params[:dictionary], :tax_ids => params[:tax_ids].split(/\s+/)]
@@ -117,20 +117,18 @@ class AnnotationsController < ApplicationController
           end
           notice = save_annotations(annotations, project, doc)
         else
-          notice = t('controller.annotations.create.does_not_include', :project_id => params[:project_id], :sourceid => sourceid)
+          notice = t('controllers.annotations.create.does_not_include', :project_id => params[:project_id], :sourceid => sourceid)
         end
       end
     else
-      notice = t('controller.annotations.create.no_annotation')
+      notice = t('controllers.annotations.create.no_annotation')
     end
 
     respond_to do |format|
       format.html {
         if doc and project
-          if doc.sourcedb == 'PubMed'
-            redirect_to project_pmdoc_path(project.name, doc.sourceid), notice: notice
-          elsif doc.sourcedb == 'PMC'
-            redirect_to project_pmcdoc_div_path(project.name, doc.sourceid, doc.serial), notice: notice
+          if doc.has_divs? == true
+            redirect_to show_project_sourcedb_sourceid_divs_docs_path(project.name, doc.sourcedb, doc.sourceid, doc.serial), notice: notice
           else
             redirect_to project_doc_path(project.name, doc.id), notice: notice
           end

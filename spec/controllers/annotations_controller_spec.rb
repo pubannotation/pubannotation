@@ -233,27 +233,16 @@ describe AnnotationsController do
           end
           
           context 'when format is html' do
-            context 'when doc.sourcedb == PubMed' do
-              before do
-                @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
-                controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
-              end
-              
-              it 'should redirect to project_pmdoc_path' do
-                response.should redirect_to(project_pmdoc_path(@project.name, @doc.sourceid))
-              end      
-            end
-            
-            context 'when doc.sourcedb == PubMed' do
+            context 'when doc.has_divs == true' do
               before do
                 @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
+                @doc.stub(:has_divs?).and_return(true)
                 controller.stub(:get_doc).and_return(@doc, 'notice')  
                 post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
               end
               
               it 'should redirect to project_pmdoc_path' do
-                response.should redirect_to(project_pmcdoc_div_path(@project.name, @doc.sourceid, @doc.serial))
+                response.should redirect_to(show_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial))
               end      
             end
             
@@ -302,29 +291,31 @@ describe AnnotationsController do
             controller.stub(:save_annotations).and_return('save annotations') 
           end
           
-          context 'when doc.sourcedb == PubMed' do
-            before do
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
-              controller.stub(:get_doc).and_return(@doc, 'notice')
-              annotations = {:id => 1}.to_json  
-              post :create, :project_id => 2, :annotations => annotations
-            end
-            
-            it 'should redirect to project_pmdoc_path' do
-              response.should redirect_to(project_pmdoc_path(@project.name, @doc.sourceid))
-            end      
-          end
-          
-          context 'when doc.sourcedb == PubMed' do
+          context 'when doc.has_divs == true' do
             before do
               @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
+              @doc.stub(:has_divs?).and_return(true)
               controller.stub(:get_doc).and_return(@doc, 'notice')  
               annotations = {:id => 1}.to_json  
               post :create, :project_id => 2, :annotations => annotations
             end
             
             it 'should redirect to project_pmdoc_path' do
-              response.should redirect_to(project_pmcdoc_div_path(@project.name, @doc.sourceid, @doc.serial))
+              response.should redirect_to(show_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial))
+            end      
+          end
+          
+          context 'when doc.has_divs == false' do
+            before do
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
+              @doc.stub(:has_divs?).and_return(false)
+              controller.stub(:get_doc).and_return(@doc, 'notice')
+              annotations = {:id => 1}.to_json  
+              post :create, :project_id => 2, :annotations => annotations
+            end
+            
+            it 'should redirect to project_pmdoc_path' do
+              response.should redirect_to(project_doc_path(@project.name, @doc.id))
             end      
           end
         end
