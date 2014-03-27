@@ -127,11 +127,7 @@ class AnnotationsController < ApplicationController
     respond_to do |format|
       format.html {
         if doc and project
-          if doc.has_divs? == true
-            redirect_to show_project_sourcedb_sourceid_divs_docs_path(project.name, doc.sourcedb, doc.sourceid, doc.serial), notice: notice
-          else
-            redirect_to project_doc_path(project.name, doc.id), notice: notice
-          end
+          redirect_to :back, notice: notice
         elsif project
           redirect_to project_path(project.name), notice: notice
         else

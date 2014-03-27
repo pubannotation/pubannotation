@@ -212,11 +212,60 @@ describe AnnotationsController do
     end
   end
   
+  describe 'create with minimal stubs' do
+    before do
+      controller.class.skip_before_filter :authenticate_user!
+      @annotation_server = 'http://pubdictionaries.dbcls.jp/dictionaries/EntrezGene%20-%20Homo%20Sapiens/text_annotation?matching_method=approximate&max_tokens=6&min_tokens=1&threshold=0.6&top_n=0'
+      @current_user = FactoryGirl.create(:user)
+      current_user_stub(@current_user)
+      @project = FactoryGirl.create(:project, name: 'project name', user: @current_user)
+      @sourceid = '12345'
+      @body = 'doc body'
+      @referer_path = root_path
+      request.env["HTTP_REFERER"] = @referer_path
+    end
+    
+    context 'when PubMed(id nil div id nil) /projects/:project_id/docs/sourcedb/PubMed/sourceid/12345/annotations?annotation_server=...' do
+      before do
+        @doc = FactoryGirl.create(:doc, sourcedb: 'PubMed', sourceid: @sourceid, serial: 0, body: @body)
+        @project.docs << @doc
+        post :create, project_id: @project.name, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, annotation_server: @annotation_server 
+      end  
+      
+      it 'should set success fully created message as flash[:notice]' do
+        flash[:notice].should eql I18n.t('controllers.application.save_annotations.successfully_saved')
+      end  
+      
+      it 'should redirect_to project_doc_path' do
+        response.should redirect_to @referer_path
+      end
+    end
+    
+    context 'when PMC(id nil div id present) /projects/:project_id/docs/sourcedb/PMC/sourceid/12345/divs/0/annotations?annotation_server=...' do
+      before do
+        @doc = FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: @sourceid, serial: 0, body: @body)
+        FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: @sourceid, serial: 1, body: @body)
+        @project.docs << @doc
+        post :create, project_id: @project.name, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, div_id: @doc.serial, annotation_server: @annotation_server 
+      end  
+      
+      it 'should set success fully created message as flash[:notice]' do
+        flash[:notice].should eql I18n.t('controllers.application.save_annotations.successfully_saved')
+      end  
+      
+      it 'should redirect_to project_doc_path' do
+        response.should redirect_to @referer_path
+      end
+    end
+  end
+  
   describe 'create' do
     before do
       @user = FactoryGirl.create(:user)
       @project = FactoryGirl.create(:project, :user => @user, :name => 'project name')
       controller.class.skip_before_filter :authenticate_user!
+      @referer_path = root_path
+      request.env["HTTP_REFERER"] = @referer_path
     end
     
     context 'when annotation_server or annotations exists' do
@@ -233,30 +282,16 @@ describe AnnotationsController do
           end
           
           context 'when format is html' do
-            context 'when doc.has_divs == true' do
-              before do
-                @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
-                @doc.stub(:has_divs?).and_return(true)
-                controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
-              end
-              
-              it 'should redirect to project_pmdoc_path' do
-                response.should redirect_to(show_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial))
-              end      
+            before do
+              @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
+              @doc.stub(:has_divs?).and_return(true)
+              controller.stub(:get_doc).and_return(@doc, 'notice')  
+              post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
             end
             
-            context 'when doc.sourcedb is free' do
-              before do
-                @doc = FactoryGirl.create(:doc, :sourcedb => 'FA', :sourceid => 1, :serial => 3) 
-                controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
-              end
-              
-              it 'should redirect to project_pmdoc_path' do
-                response.should redirect_to(project_doc_path(@project.name, @doc.id))
-              end      
-            end
+            it 'should redirect to :back' do
+              response.should redirect_to @referer_path
+            end      
           end
           
           context 'when format is json' do
@@ -289,35 +324,16 @@ describe AnnotationsController do
         context 'and when params annotation_server does not exists' do
           before do
             controller.stub(:save_annotations).and_return('save annotations') 
+            @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
+            @doc.stub(:has_divs?).and_return(true)
+            controller.stub(:get_doc).and_return(@doc, 'notice')  
+            annotations = {:id => 1}.to_json  
+            post :create, :project_id => 2, :annotations => annotations
           end
-          
-          context 'when doc.has_divs == true' do
-            before do
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
-              @doc.stub(:has_divs?).and_return(true)
-              controller.stub(:get_doc).and_return(@doc, 'notice')  
-              annotations = {:id => 1}.to_json  
-              post :create, :project_id => 2, :annotations => annotations
-            end
-            
-            it 'should redirect to project_pmdoc_path' do
-              response.should redirect_to(show_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial))
-            end      
-          end
-          
-          context 'when doc.has_divs == false' do
-            before do
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 1) 
-              @doc.stub(:has_divs?).and_return(false)
-              controller.stub(:get_doc).and_return(@doc, 'notice')
-              annotations = {:id => 1}.to_json  
-              post :create, :project_id => 2, :annotations => annotations
-            end
-            
-            it 'should redirect to project_pmdoc_path' do
-              response.should redirect_to(project_doc_path(@project.name, @doc.id))
-            end      
-          end
+           
+          it 'should redirect to :back' do
+            response.should redirect_to @referer_path
+          end  
         end
       end      
       
