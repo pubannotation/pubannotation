@@ -1,4 +1,4 @@
-<% if @project %>
+<% if @project.present? -%>
 	<h2>
 		<% if params[:action] == 'spans' -%>
 			<%= t('views.docs.annotation_within_spans', :spans => "#{params[:begin]} - #{params[:end]}").html_safe %>
@@ -21,7 +21,7 @@
 	<%= render :partial => "annotations/options", :locals => {:project => @project, :annotation_url => annotaions_url_helper, :identifier => "#{@doc.sourcedb}-#{@doc.sourceid}-#{@doc.serial}-#{@doc.section}" } %>
 
 	<!-- automatic annotation -->
-	<% if @project.present? && user_signed_in? and current_user == @project.user %>
+	<% if user_signed_in? and current_user == @project.user %>
 	<h2><%= t('views.docs.automatic_annotation') %></h2>
 
 	 	<%= form_tag annotaions_form_action_helper, :method => "post" do %>
