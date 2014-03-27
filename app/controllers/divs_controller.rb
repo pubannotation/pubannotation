@@ -134,7 +134,7 @@ class DivsController < ApplicationController
     respond_to do |format|
       if @doc
         format.html {
-          flash[:notice] = notice
+          flash[:notice] = notice if notice.present?
           render 'docs/show'
         }
         format.json {
