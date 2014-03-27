@@ -221,141 +221,150 @@ describe AnnotationsController do
       @project = FactoryGirl.create(:project, name: 'project name', user: @current_user)
       @sourceid = '12345'
       @body = 'doc body'
-      @referer_path = root_path
+      @referer_path = docs_path
       request.env["HTTP_REFERER"] = @referer_path
+      controller.stub(:get_project).and_return(@project, 'notice') 
+      @get_annotations = 'get annotations'
+      controller.stub(:get_annotations).and_return(@get_annotations)  
+      @gen_annotations = 'gen annotations'
+      controller.stub(:gen_annotations).and_return(@gen_annotations)
+      @save_annotations = 'save annotations'
+      controller.stub(:save_annotations) do |annotations|
+        @annotations = annotations
+      end
+      @doc = FactoryGirl.create(:doc, sourcedb: 'PubMed', sourceid: @sourceid, serial: 0, body: @body)
     end
     
-    context 'when PubMed(id nil div id nil) /projects/:project_id/docs/sourcedb/PubMed/sourceid/12345/annotations?annotation_server=...' do
-      before do
-        @doc = FactoryGirl.create(:doc, sourcedb: 'PubMed', sourceid: @sourceid, serial: 0, body: @body)
-        @project.docs << @doc
-        post :create, project_id: @project.name, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, annotation_server: @annotation_server 
-      end  
-      
-      it 'should set success fully created message as flash[:notice]' do
-        flash[:notice].should eql I18n.t('controllers.application.save_annotations.successfully_saved')
-      end  
-      
-      it 'should redirect_to project_doc_path' do
-        response.should redirect_to @referer_path
-      end
-    end
-    
-    context 'when PMC(id nil div id present) /projects/:project_id/docs/sourcedb/PMC/sourceid/12345/divs/0/annotations?annotation_server=...' do
-      before do
-        @doc = FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: @sourceid, serial: 0, body: @body)
-        FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: @sourceid, serial: 1, body: @body)
-        @project.docs << @doc
-        post :create, project_id: @project.name, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, div_id: @doc.serial, annotation_server: @annotation_server 
-      end  
-      
-      it 'should set success fully created message as flash[:notice]' do
-        flash[:notice].should eql I18n.t('controllers.application.save_annotations.successfully_saved')
-      end  
-      
-      it 'should redirect_to project_doc_path' do
-        response.should redirect_to @referer_path
-      end
-    end
-  end
-  
-  describe 'create' do
-    before do
-      @user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project, :user => @user, :name => 'project name')
-      controller.class.skip_before_filter :authenticate_user!
-      @referer_path = root_path
-      request.env["HTTP_REFERER"] = @referer_path
-    end
-    
-    context 'when annotation_server or annotations exists' do
-      before do
-        controller.stub(:get_project).and_return(@project, 'notice')  
-      end
-      
-      context 'and when doc exists' do
-        context 'and when params annotation_server exists' do
+    context 'when params[:annotation_server] or params[:annotations]  present' do
+      context 'when project present' do
+        context 'when params[:doc_id].present? /projects/:project_id/docs/:doc_id/annotations?annotation_server=...' do
           before do
-            controller.stub(:get_annotations).and_return('get annotations')  
-            controller.stub(:gen_annotations).and_return('gen annotations')  
-            controller.stub(:save_annotations).and_return('save annotations') 
-          end
-          
-          context 'when format is html' do
-            before do
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
-              @doc.stub(:has_divs?).and_return(true)
-              controller.stub(:get_doc).and_return(@doc, 'notice')  
-              post :create, :project_id => 2, :annotation_server => 'annotation server', :tax_ids => '1 2'
-            end
-            
-            it 'should redirect to :back' do
-              response.should redirect_to @referer_path
-            end      
-          end
-          
-          context 'when format is json' do
-            context 'when annotations exists' do
-              before do
-                @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
-                controller.stub(:get_doc).and_return(@doc, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server', :annotations => {:id => 1}.to_json, :format => 'json', :tax_ids => '1 2'
-              end
-              
-              it 'should return blank response header' do
-                response.header.should be_blank
-              end
-            end
-
-            context 'when annotations does not exists' do
-              before do
-                @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
-                controller.stub(:get_doc).and_return(nil, 'notice')  
-                post :create, :project_id => 2, :annotation_server => 'annotation server', :format => 'json'
-              end
-              
-              it 'should return status 422' do
-                response.status.should eql(422)
-              end
-            end
-          end
-        end
-
-        context 'and when params annotation_server does not exists' do
-          before do
-            controller.stub(:save_annotations).and_return('save annotations') 
-            @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 1, :serial => 3) 
-            @doc.stub(:has_divs?).and_return(true)
-            controller.stub(:get_doc).and_return(@doc, 'notice')  
-            annotations = {:id => 1}.to_json  
-            post :create, :project_id => 2, :annotations => annotations
-          end
-           
-          it 'should redirect to :back' do
-            response.should redirect_to @referer_path
+            post :create, project_id: @project.name, doc_id: @doc.id, annotation_server: @annotation_server 
           end  
-        end
-      end      
-      
-      context 'and when doc does not exists' do
-        before do
-          controller.stub(:get_doc).and_return(nil, 'notice')  
-          post :create, :project_id => 2, :annotation_server => 'annotation server'
+          
+          it 'should redirect_to :back' do
+            response.should redirect_to @referer_path
+          end
         end
         
-        it 'should redirect to project_path' do
-          response.should redirect_to(project_path(@project.name))
-        end      
-      end      
-    end
+        context 'when params[doc_id] blank' do
+          before do
+            controller.stub(:get_docspec).and_return(nil)
+            controller.stub(:get_doc).and_return(@doc)
+            post :create, project_id: @project.name, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, annotation_server: @annotation_server 
+          end  
+          
+          it 'should redirect_to :back' do
+            response.should redirect_to @referer_path
+          end
+        end
 
-    context 'when annotation_server and annotations exists' do
-      before do
-        post :create, :project_id => 2
+        context 'when doc present' do
+          context 'when params[:annotation_server].present?' do
+            before do
+              controller.stub(:get_doc).and_return(@doc)
+              post :create, project_id: @project.name, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, annotation_server: @annotation_server 
+            end
+            
+            it 'annotations should generated by gen_annotations' do
+              @annotations.should eql @gen_annotations
+            end
+          end
+
+          context 'when params[:annotation_server].blank' do
+            before do
+              controller.stub(:get_doc).and_return(@doc)
+              @params_annotations = 'params annotations'
+              JSON.stub(:parse).and_return(@params_annotations)
+              post :create, project_id: @project.name, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, annotations: @params_annotations
+            end
+            
+            it 'annotations should generated by JSON.parse params[:annotations]' do
+              @annotations.should eql @params_annotations
+            end
+          end
+        end
+
+        context 'when doc blank' do
+          before do
+            controller.stub(:get_doc).and_return(nil)
+            post :create, project_id: @project.name, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, annotation_server: @annotation_server 
+          end
+          
+          it 'shoud set flash notice' do
+            flash[:notice].should eql I18n.t('controllers.annotations.create.does_not_include', :project_id => @project.name, :sourceid => @doc.sourceid)
+          end
+        end
       end
-      
-      it 'should redirect to home_path' do
-        should redirect_to(home_path)
+
+      describe 'response' do
+        context 'when format html' do
+          context 'when doc and project present' do
+            before do
+              Doc.stub(:find).and_return(@doc)
+              post :create, project_id: 'project', doc_id: 1, annotation_server: 'server'
+            end
+              
+            it 'should redirect_to :back' do
+              response.should redirect_to @referer_path
+            end        
+          end
+          
+          context 'when project present' do
+            before do
+              Doc.stub(:find).and_return(nil)
+              post :create, project_id: 'project', doc_id: 1, annotation_server: 'server'
+            end
+              
+            it 'should redirect_to :back' do
+              response.should redirect_to project_path(@project.name)
+            end        
+          end
+          
+          context 'when doc project blank' do
+            before do
+              controller.stub(:get_project).and_return(nil, 'notice') 
+              Doc.stub(:find).and_return(nil)
+              post :create, project_id: 'project', doc_id: 1, annotation_server: 'server'
+            end
+              
+            it 'should redirect_to :back' do
+              response.should redirect_to home_path
+            end        
+          end
+        end
+
+        context 'when format json' do
+          context 'when annotations exists' do
+            before do
+              post :create, project_id: 'project', doc_id: 1, annotation_server: 'server', format: :json, annotations: {:id => 1}.to_json
+            end
+            
+            it 'should return blank response header' do
+              response.header.should be_blank
+            end
+          end
+
+          context 'when annotations does not exists' do
+            before do
+              post :create, project_id: 'project', doc_id: 1, format: :json
+            end
+            
+            it 'should return status 422' do
+              response.status.should eql(422)
+            end
+          end
+        end
+       end
+    end
+    
+    context 'when params[:annotation_server] or params[:annotations] blank' do
+      before do
+        post :create, project_id: 'project', doc_id: 1
+      end
+
+      it 'shoud set flash notice' do
+        flash[:notice].should eql I18n.t('controllers.annotations.create.no_annotation') 
       end
     end
   end

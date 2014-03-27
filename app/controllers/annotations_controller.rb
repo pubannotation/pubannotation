@@ -99,8 +99,12 @@ class AnnotationsController < ApplicationController
 
       project, notice = get_project(params[:project_id])
       if project
-        sourcedb, sourceid, serial, id = get_docspec(params)
-        doc, notice = get_doc(sourcedb, sourceid, serial, project, id)
+        if params[:doc_id].present?
+          doc = Doc.find(params[:doc_id])
+        else
+          sourcedb, sourceid, serial, id = get_docspec(params)
+          doc, notice = get_doc(sourcedb, sourceid, serial, project, id)
+        end
         if doc
           if params[:annotation_server].present?
             annotations = get_annotations(project, doc, :encoding => params[:encoding])
