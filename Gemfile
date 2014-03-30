@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '3.2.8'
+gem 'rails', '3.2.17'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
@@ -44,10 +44,11 @@ gem 'jquery-rails'
 gem 'rest-client'
 gem 'htmlentities'
 gem 'libxml-ruby'
+gem 'wikipedia-client'
 gem 'diff-lcs'
 gem 'will_paginate'
 gem 'thin'
-gem 'devise', '3.2.3'
+gem 'devise'
 gem 'rubyzip'
 gem 'zip-zip'
 gem 'rails3-jquery-autocomplete'

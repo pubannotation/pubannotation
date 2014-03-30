@@ -1,8 +1,20 @@
 require 'zip/zip'
 
 class AnnotationsController < ApplicationController
+  before_filter :allow_cors
   before_filter :authenticate_user!, :except => [:index, :show]
-  after_filter :set_access_control_headers
+  # after_filter :set_access_control_headers
+
+  def allow_cors
+    headers["Access-Control-Allow-Origin"] = "*"
+    headers["Access-Control-Allow-Methods"] = %w{GET POST PUT DELETE}.join(",")
+    headers["Access-Control-Allow-Headers"] =
+      %w{Origin Accept Content-Type X-Requested-With X-CSRF-Token}.join(",")
+
+    head(:ok) if request.request_method == "OPTIONS"
+    # or, render text: ''
+    # if that's more your style
+  end
 
   def index
     @project, notice = get_project(params[:project_id])
@@ -98,6 +110,7 @@ class AnnotationsController < ApplicationController
     if params[:annotation_server].present? or (params[:annotations])
 
       project, notice = get_project(params[:project_id])
+
       if project
         if params[:doc_id].present?
           doc = Doc.find(params[:doc_id])
@@ -114,8 +127,6 @@ class AnnotationsController < ApplicationController
             # options = {:dics => params[:dics].split(/\s*,\s*/)}
             options = nil
             annotations = gen_annotations(annotations, params[:annotation_server], options)
-            p annotations
-            puts "-=-=-=-=-=-"
           else
             annotations = JSON.parse params[:annotations], :symbolize_names => true
           end
@@ -204,5 +215,4 @@ class AnnotationsController < ApplicationController
       headers['Access-Control-Max-Age'] = "1728000"
     end
   end
-
 end
