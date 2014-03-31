@@ -17,7 +17,7 @@ describe AnnotationsController do
         controller.stub(:get_docspec).and_return(nil)
         controller.stub(:get_doc).and_return('doc')
         @annotations = {
-            :base_text => 'text val',
+            :text => 'text val',
             :denotations => 'denotations val',
             :relations => 'relations val',
             :modifications => 'modifications val'

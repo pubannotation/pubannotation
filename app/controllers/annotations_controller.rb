@@ -1,20 +1,9 @@
 require 'zip/zip'
 
 class AnnotationsController < ApplicationController
-  before_filter :allow_cors
+  protect_from_forgery :except => [:create]
   before_filter :authenticate_user!, :except => [:index, :show]
-  # after_filter :set_access_control_headers
-
-  def allow_cors
-    headers["Access-Control-Allow-Origin"] = "*"
-    headers["Access-Control-Allow-Methods"] = %w{GET POST PUT DELETE}.join(",")
-    headers["Access-Control-Allow-Headers"] =
-      %w{Origin Accept Content-Type X-Requested-With X-CSRF-Token}.join(",")
-
-    head(:ok) if request.request_method == "OPTIONS"
-    # or, render text: ''
-    # if that's more your style
-  end
+  after_filter :set_access_control_headers
 
   def index
     @project, notice = get_project(params[:project_id])
@@ -25,7 +14,7 @@ class AnnotationsController < ApplicationController
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project, id)
         if @doc
           annotations = get_annotations_for_json(@project, @doc, :encoding => params[:encoding])
-          @text = annotations[:base_text]
+          @text = annotations[:text]
           @denotations = annotations[:denotations]
           @instances = annotations[:instances]
           @relations = annotations[:relations]
@@ -128,7 +117,8 @@ class AnnotationsController < ApplicationController
             options = nil
             annotations = gen_annotations(annotations, params[:annotation_server], options)
           else
-            annotations = JSON.parse params[:annotations], :symbolize_names => true
+            # annotations = JSON.parse params[:annotations].to_json, :symbolize_names => true
+            annotations = params[:annotations].symbolize_keys
           end
           notice = save_annotations(annotations, project, doc)
         else
@@ -204,15 +194,15 @@ class AnnotationsController < ApplicationController
   private
 
   def set_access_control_headers
-    allowed_origins = ["http://localhost", "http://bionlp.dbcls.jp"]
+    allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp']
     origin = request.env['HTTP_ORIGIN']
     if allowed_origins.include?(origin)
       headers['Access-Control-Allow-Origin'] = origin
-      headers['Access-Control-Expose-Headers'] = 'ETag'
-      headers['Access-Control-Allow-Methods'] = "GET, POST, OPTIONS"
-      headers['Access-Control-Allow-Headers'] = "Authorization, X-Requested-With"
-      headers['Access-Control-Allow-Credentials'] = "true"
+      headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
+      headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Prototype-Version'
+      headers['Access-Control-Allow-Credentials'] = 'true'
       headers['Access-Control-Max-Age'] = "1728000"
     end
   end
+
 end

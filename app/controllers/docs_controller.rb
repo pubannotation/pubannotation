@@ -182,7 +182,7 @@ class DocsController < ApplicationController
     if @doc.present?
       annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
       @spans, @prev_text, @next_text = @doc.spans(params)
-      annotations[:base_text] = @spans if @spans.present?
+      annotations[:text] = @spans if @spans.present?
       @denotations = annotations[:denotations]
       @relations = annotations[:relations]
       @modifications = annotations[:modifications]

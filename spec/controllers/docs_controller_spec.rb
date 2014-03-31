@@ -523,7 +523,7 @@ describe DocsController do
       @next_text = 'next text'
       Doc.any_instance.stub(:spans).and_return([@spans, @prev_text, @next_text])
       @annotations ={
-        :base_text => "text",
+        :text => "text",
         :denotations => "denotations",
         :instances => "instances",
         :relations => "relations",

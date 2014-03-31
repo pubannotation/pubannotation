@@ -233,6 +233,8 @@ Pubann::Application.routes.draw do
   end
 
   #match '/projects/:project_id/pmdocs/:pmdoc_id/annotations' => 'annotations#index', :via => ["OPTIONS"]
+  match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divs_id/annotations' => 'annotations#index', :via => ["OPTIONS"]
+  # match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divs_id/annotations' => 'annotations#create', :via => ["OPTIONS"]
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

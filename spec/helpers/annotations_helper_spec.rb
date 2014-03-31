@@ -168,8 +168,8 @@ describe AnnotationsHelper do
             @annotations[:target].should eql(doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid, :only_path => false))
           end
                
-          it 'should return doc.body as :base_text' do
-            @annotations[:base_text].should eql(@doc.body)
+          it 'should return doc.body as :text' do
+            @annotations[:text].should eql(@doc.body)
           end
                
           it 'should not return :denotations' do
@@ -204,8 +204,8 @@ describe AnnotationsHelper do
             @annotations = helper.get_annotations_for_json(nil, @doc, :encoding => 'ascii')
           end
                
-          it 'should return asciitext as :base_text' do
-            @annotations[:base_text].should eql(@ascii_text)
+          it 'should return asciitext as :text' do
+            @annotations[:text].should eql(@ascii_text)
           end
         end        
       end
@@ -264,8 +264,8 @@ describe AnnotationsHelper do
             @annotations = helper.get_annotations_for_json(@project, @doc, :encoding => 'ascii')
           end
                
-          it 'should return asciitext as :base_text' do
-            @annotations[:base_text].should eql(@ascii_text)
+          it 'should return asciitext as :text' do
+            @annotations[:text].should eql(@ascii_text)
           end
                
           it 'should return equence_alignment.transform_denotations as :hdenotations' do

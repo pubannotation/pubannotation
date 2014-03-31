@@ -143,7 +143,7 @@ class PmdocsController < ApplicationController
 
     @spans, @prev_text, @next_text = @doc.spans(params)
     annotations = get_annotations_for_json(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
-    annotations[:base_text] = @spans
+    annotations[:text] = @spans
     @denotations = annotations[:denotations]
     @relations = annotations[:relations]
     @modifications = annotations[:modifications]

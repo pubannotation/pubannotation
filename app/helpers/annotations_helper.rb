@@ -59,7 +59,7 @@ module AnnotationsHelper
         asciitext = get_ascii_text(text)
         text = asciitext
       end
-      annotations[:base_text] = text
+      annotations[:text] = text
       # project
       if project.present?
         get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
