@@ -25,7 +25,6 @@ class Project < ActiveRecord::Base
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable
   has_many :denotations, :dependent => :destroy
   has_many :relations, :dependent => :destroy
-  has_many :instances, :dependent => :destroy
   has_many :modifications, :dependent => :destroy
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'

@@ -3,7 +3,6 @@ module AnnotationsHelper
   def get_annotations (project, doc, options = {})
     if doc.present?
       hdenotations = doc.hdenotations(project, options)
-      hinstances = doc.hinstances(project, options)
       hrelations = doc.hrelations(project, options)
       hmodifications = doc.hmodifications(project, options)
       text = doc.body
@@ -41,7 +40,6 @@ module AnnotationsHelper
       annotations[:text] = text
       # doc.relational_models
       annotations[:denotations] = hdenotations if hdenotations
-      annotations[:instances] = hinstances if hinstances
       annotations[:relations] = hrelations if hrelations
       annotations[:modifications] = hmodifications if hmodifications
       annotations

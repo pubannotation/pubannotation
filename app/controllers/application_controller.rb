@@ -199,12 +199,6 @@ class ApplicationController < ActionController::Base
 
         save_hdenotations(denotations, project, doc)
 
-        if annotations[:instances] and !annotations[:instances].empty?
-          instances = annotations[:instances]
-          instances = instances.values if instances.respond_to?(:values)
-          save_hinstances(instances, project, doc)
-        end
-
         if annotations[:relations] and !annotations[:relations].empty?
           relations = annotations[:relations]
           relations = relations.values if relations.respond_to?(:values)
@@ -257,8 +251,7 @@ class ApplicationController < ActionController::Base
 
   # clean denotations
   def clean_hdenotations (denotations)
-    denotations = denotations.values if denotations.respond_to?(:values)
-    ids = denotations.collect {|a| a[:id] or a["id"]}
+    ids = denotations.collect {|d| d[:id]}
     ids.compact!
 
     idnum = 1
@@ -310,48 +303,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  ## get instances
-  def get_instances (project_name, sourcedb, sourceid, serial = 0)
-    instances = []
-
-    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if project_name and project = doc.projects.find_by_name(project_name)
-        instances = doc.instances.where("instances.project_id = ?", project.id)
-        instances.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
-      else
-        instances = doc.instances
-      end
-    else
-      if project_name and project = Project.find_by_name(project_name)
-        instances = project.instances
-      else
-        instances = Instance.all
-      end
-    end
-
-    instances
-  end
-
-
-  # get instances (hash version)
-  def get_hinstances (project_name, sourcedb, sourceid, serial = 0)
-    instances = get_instances(project_name, sourcedb, sourceid, serial)
-    hinstances = instances.collect {|ia| ia.get_hash}
-  end
-
-
-  def save_hinstances (hinstances, project, doc)
-    hinstances.each do |a|
-      # p a
-      ia            = Instance.new
-      ia.hid        = a[:id]
-      ia.pred       = a[:pred]
-      ia.obj        = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
-      ia.project_id = project.id
-      ia.save
-    end
-  end
-
 
   ## get relations
   def get_relations (project_name, sourcedb, sourceid, serial = 0)
@@ -362,8 +313,6 @@ class ApplicationController < ActionController::Base
         relations  = doc.subcatrels.where("relations.project_id = ?", project.id)
         relations += doc.subinsrels.where("relations.project_id = ?", project.id)
         relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
-#        relations += doc.objcatrels.where("relations.project_id = ?", project.id)
-#        relations += doc.objinsrels.where("relations.project_id = ?", project.id)
       else
         relations = doc.subcatrels + doc.subinsrels unless doc.denotations.empty?
       end
@@ -411,15 +360,11 @@ class ApplicationController < ActionController::Base
 
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if project_name and project = doc.projects.find_by_name(project_name)
-        modifications = doc.insmods.where("modifications.project_id = ?", project.id)
-        modifications += doc.subcatrelmods.where("modifications.project_id = ?", project.id)
-        modifications += doc.subinsrelmods.where("modifications.project_id = ?", project.id)
+        modifications = doc.subcatrelmods.where("modifications.project_id = ?", project.id)
         modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       else
         #modifications = doc.modifications unless doc.denotations.empty?
-        modifications = doc.insmods
-        modifications += doc.subcatrelmods
-        modifications += doc.subinsrelmods
+        modifications = doc.subcatrelmods
         modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
       end
     else
@@ -448,10 +393,9 @@ class ApplicationController < ActionController::Base
       ma.pred   = a[:pred]
       ma.obj    = case a[:obj]
         when /^R/
-          #doc.subcatrels.find_by_project_id_and_hid(project.id, a[:obj])
-          doc.subinsrels.find_by_project_id_and_hid(project.id, a[:obj])
+          doc.subcatrels.find_by_project_id_and_hid(project.id, a[:obj])
         else
-          doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
+          Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
       end
       ma.project_id = project.id
       ma.save

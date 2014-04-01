@@ -18,10 +18,6 @@ class Relation < ActiveRecord::Base
     joins("INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation' INNER JOIN docs ON docs.id = denotations.doc_id AND docs.sourcedb = 'PMC'").
     where("docs.sourceid = ?", sourceid)
   }
-  scope :project_pmcdoc_ins_relations, lambda{|sourceid|
-    joins("INNER JOIN instances ON relations.subj_id = instances.id AND relations.subj_type = 'Instance' INNER JOIN denotations ON instances.obj_id = denotations.id INNER JOIN docs ON docs.id = denotations.doc_id AND docs.sourcedb = 'PMC'").
-    where("docs.sourceid = ?", sourceid)
-  }
   scope :projects_relations, lambda{|project_ids|
     where('project_id IN (?)', project_ids)
   }

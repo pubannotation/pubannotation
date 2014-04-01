@@ -4,16 +4,11 @@ class Doc < ActiveRecord::Base
   
   attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid
   has_many :denotations
-  has_many :instances, :through => :denotations
 
   has_many :subcatrels, :class_name => 'Relation', :through => :denotations, :source => :subrels
-  has_many :subinsrels, :class_name => 'Relation', :through => :instances, :source => :subrels
-  #has_many :objcatrels, :class_name => 'Relation', :through => :denotations, :source => :objrels
-  #has_many :objinsrels, :class_name => 'Relation', :through => :instances, :source => :objrels
 
-  has_many :insmods, :class_name => 'Modification', :through => :instances, :source => :modifications
+  has_many :catmods, :class_name => 'Modification', :through => :denotations, :source => :modifications
   has_many :subcatrelmods, :class_name => 'Modification', :through => :subcatrels, :source => :modifications
-  has_many :subinsrelmods, :class_name => 'Modification', :through => :subinsrels, :source => :modifications
 
   has_and_belongs_to_many :projects
   
@@ -21,7 +16,7 @@ class Doc < ActiveRecord::Base
   scope :pmcdocs, where(:sourcedb => 'PMC', :serial => 0)
   scope :project_name, lambda{|project_name|
     {:joins => :projects,
-     :conditions => ['projects.name =?', project_name]  
+     :conditions => ['projects.name =?', project_name]
     }
    }
   scope :denotations_count,
@@ -108,13 +103,12 @@ class Doc < ActiveRecord::Base
   
   # returns relations count which belongs to project and doc
   def project_relations_count(project_id)
-    count =   Relation.project_relations_count(project_id, subcatrels)
-    count +=  Relation.project_relations_count(project_id, subinsrels)
+    count = Relation.project_relations_count(project_id, subcatrels)
   end
   
   # returns doc.relations count
   def relations_count
-    subcatrels.size # + subinsrels.size
+    subcatrels.size
   end
   
   def same_sourceid_denotations_count
@@ -202,30 +196,12 @@ class Doc < ActiveRecord::Base
     end
   end
   
-  def hinstances(project, options = {})
-    if options.present? && options[:spans].present?
-      denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
-      instances = Instance.where('obj_id IN (?)', denotation_ids)
-    else
-      if project.associate_projects.blank?
-        instances = self.instances.where("instances.project_id = ?", project.id)
-      else
-        instances = self.instances.where("instances.project_id IN (?)", project.self_id_and_associate_project_ids)
-      end
-    end
-    if instances.present?
-      instances.sort! {|i1, i2| i1.hid[1..-1].to_i <=> i2.hid[1..-1].to_i}
-      hinstances = instances.collect {|ia| ia.get_hash}
-    end
-  end
-  
   def hrelations(project, options = {})
     if options.present? && options[:spans].present?
       denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
       relations = Relation.where(["subj_id IN(?) AND obj_id IN (?) AND subj_type = 'Denotation' AND obj_type = 'Denotation'", denotation_ids, denotation_ids])
     else
       relations  = self.subcatrels.where("relations.project_id = ?", project.id)
-      relations += self.subinsrels.where("relations.project_id = ?", project.id)
     end
     if relations.present?
       relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
@@ -238,19 +214,15 @@ class Doc < ActiveRecord::Base
       self.denotations
       denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
       # SELECT "modifications".* FROM "modifications" INNER JOIN "instances" ON "modifications"."obj_id" = "instances"."id" AND "modifications"."obj_type" = 'Instance' WHERE "instances"."obj_id" = 1750
+      # modifications = Modification.
+      #   joins('INNER JOIN instances ON modifications.obj_id = instances.id')
+      #   .where("modifications.obj_type = 'Instance' AND instances.obj_id IN (?)", denotation_ids)
       modifications = Modification.
-        joins('INNER JOIN instances ON modifications.obj_id = instances.id')
-        .where("modifications.obj_type = 'Instance' AND instances.obj_id IN (?)", denotation_ids)
+        joins('INNER JOIN denotations ON modifications.obj_id = denotations.id')
+        .where("modifications.obj_type = 'Denotation' AND denotations.id IN (?)", denotation_ids)
     else
-      if project.associate_projects.blank?
-        modifications = self.insmods.where("modifications.project_id = ?", project.id)
-        modifications += self.subcatrelmods.where("modifications.project_id = ?", project.id)
-        modifications += self.subinsrelmods.where("modifications.project_id = ?", project.id)
-      else
-        modifications = self.insmods.where("modifications.project_id IN (?)", project.self_id_and_associate_project_ids)
-        modifications += self.subcatrelmods.where("modifications.project_id IN (?)", project.self_id_and_associate_project_ids)
-        modifications += self.subinsrelmods.where("modifications.project_id IN (?)", project.self_id_and_associate_project_ids)
-      end
+      modifications  = self.catmods.where("modifications.project_id = ?", project.id)
+      modifications += self.subcatrelmods.where("modifications.project_id = ?", project.id)
     end
     if modifications.present?
       modifications.sort! {|m1, m2| m1.hid[1..-1].to_i <=> m2.hid[1..-1].to_i}
