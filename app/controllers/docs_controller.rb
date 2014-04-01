@@ -81,11 +81,15 @@ class DocsController < ApplicationController
   def sourceid_index
     if params[:project_id].present?
       @project = Project.find_by_name(params[:project_id]) 
-      docs = @project.docs
+      docs = @project.docs.where(['sourcedb = ?', params[:sourcedb]])
     else
-      docs = Doc
+      docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
     end
-    @source_docs = docs.where(['sourcedb = ?', params[:sourcedb]]).order('sourceid ASC').paginate(:page => params[:page])
+    params[:order_method] ||= 'ASC'
+    @reverse_order_method = params[:order_method] == 'ASC' ? 'DESC' : 'ASC'
+    docs_order = "#{params[:order_key]} #{params[:order_method]}" if params[:order_key]
+    @source_docs = docs.source_db_id(docs_order).paginate(:page => params[:page])
+    # @source_docs = docs.where(['sourcedb = ?', params[:sourcedb]]).order('sourceid ASC').paginate(:page => params[:page])
   end 
     
   def search

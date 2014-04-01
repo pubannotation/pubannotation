@@ -30,7 +30,7 @@ Pubann::Application.routes.draw do
     collection do
       get 'records' => 'docs#records'
       # list sourcedb
-      get 'sourcedb' => 'docs#sourcedb_index' 
+      get 'sourcedb' => 'docs#sourcedb_index'
       get 'search' => 'docs#search'
     end  
     member do

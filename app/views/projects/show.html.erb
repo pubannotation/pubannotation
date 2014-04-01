@@ -16,4 +16,5 @@
  	> <%= @project.name %>
 <% end %>
 
+<%= render :partial => 'title_and_links' -%>
 <%= render :partial => "properties", :locals => {:project => @project} -%>

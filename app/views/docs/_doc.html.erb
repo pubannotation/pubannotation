@@ -15,7 +15,7 @@
 	<td><a href="<%= doc.source -%>"><%= doc.sourceid -%></a></td>
 	<td style="text-align:right"><%= doc.serial -%></td>
 	<td><%= doc.section -%></td>
-	<td class="text"><%= (doc.body.length < 64)? doc.body : doc.body[0, 62] + ' ...' -%></td>
+	<td class="text"><%= doc.body -%></td>
 	<td>
 		<% if @project -%>
 			<%= link_to t('views.shared.show'), project_doc_path(@project.name, doc.id), :class => 'button' -%>
