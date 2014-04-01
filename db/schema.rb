@@ -159,7 +159,7 @@ ActiveRecord::Schema.define(:version => 20140303065151) do
     t.integer  "relations_count",                  :default => 0
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
-    t.datetime "annotations_updated_at",           :default => '2014-03-13 02:25:55'
+    t.datetime "annotations_updated_at",           :default => '2014-04-01 06:13:48'
   end
 
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true
