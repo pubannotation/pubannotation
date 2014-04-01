@@ -7,6 +7,7 @@ class AnnotationsController < ApplicationController
 
   def index
     @project, notice = get_project(params[:project_id])
+
     if @project
 
       if (params[:pmdoc_id] || params[:pmcdoc_id] || params[:id] || (params[:sourcedb] && params[:sourceid]))

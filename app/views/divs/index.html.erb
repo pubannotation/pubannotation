@@ -3,9 +3,9 @@
 	<% if @project %>
 		> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
 		> <%= link_to @project.name, project_path(@project.name) %>
-		> <%= link_to t('views.docs.folded_docs_list'), project_docs_path(@project.name) -%>
+		> <%= link_to 'docs', project_docs_path(@project.name) -%>
 	<% end %>
-	> <%= t('views.shared.a_pmcdoc', :sourceid => @docs.first.sourceid) %>
+	> <%= t('views.shared.a_doc_id', :sourcedb => @docs.first.sourcedb, :sourceid => @docs.first.sourceid) %>
 <% end %>
 
 <h1>

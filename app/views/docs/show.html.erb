@@ -2,4 +2,14 @@
 
 <%= render :partial => 'docs/content'-%>
 
-<%= render :partial => 'docs/project'-%>
+<% if @project.present? -%>
+
+	<%= render :partial => 'annotations/summary_and_view_options'-%>
+
+	<% if user_signed_in? and current_user == @project.user %>
+		<%= render :partial => 'annotations/get_annotation'-%>
+	<% end %>
+
+<% else %>
+	<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
+<% end %>

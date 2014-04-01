@@ -98,8 +98,7 @@ class DivsController < ApplicationController
     end
   end
 
-  # GET /pmcdocs/:pmcid/divs/:divid
-  # GET /pmcdocs/:pmcid/divs/:divid.json
+  # GET /docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid
   def show
     # TODO compatibility for PMC and Docs
     params[:sourcedb] ||= 'PMC'

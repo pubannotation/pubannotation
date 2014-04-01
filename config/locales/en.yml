@@ -274,7 +274,7 @@ en:
       successfully_destroyed: '%{model} was successfully deleted.'
       confirm_delete: Are you sure to delete?
       last_modified_at: Modified at
-      not_exists: There are no %{model}
+      not_exists: There is no %{model}
       sql:
         invalid: Invalid SQL
     application:
@@ -358,8 +358,8 @@ en:
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
       automatic_annotation: Get automatic annotation
-      docs_list: document records
-      folded_docs_list: documents
+      records: document records
+      list: documents
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
       add_new_documents: Add new documents
@@ -372,6 +372,7 @@ en:
     paths:
       home: home
     projects:
+      project: project
       try_textae: "If you don't have one, try with" 
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this annotation set</span></span>"
       about_the_project: "About the project, <span class='pname'>%{project_name}</span>"
@@ -432,8 +433,7 @@ en:
       maintainer: maintainer
       update: update
       pubmed: PubMed
-      a_pmdoc: PubMed:%{sourceid}
-      a_pmcdoc: PMC:%{sourceid}
+      a_doc_id: "%{sourcedb}:%{sourceid}"
       pmdocs: pmdocs
       pmcdocs: pmcdocs
       search: search

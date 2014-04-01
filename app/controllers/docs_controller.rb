@@ -198,15 +198,16 @@ class DocsController < ApplicationController
   end
   
   def spans
+    sourcedb, sourceid, serial = get_docspec(params)
     if params[:project_id].present?
-      @project, notice = get_project(params[:project_id])
+      @project, flash[:notice] = get_project(params[:project_id])
       if @project
-        @doc, flash[:notice] = get_doc(nil, nil, nil, @project, params[:id])
+        @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
       end
     else
-      @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
+      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
       @projects = @doc.spans_projects(params)
-      if @doc.present?  && @projects.present?
+      if @doc.present? && @projects.present?
         @project_denotations = Array.new
         @projects.each do |project|
           @project_denotations << {:project => project, :denotations => get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})[:denotations]}
@@ -223,30 +224,20 @@ class DocsController < ApplicationController
   end
   
   def spans_index
+    sourcedb, sourceid, serial = get_docspec(params)
     if params[:project_id].present?
-      @project, notice = get_project(params[:project_id])
-      sourcedb, sourceid, serial = get_docspec(params)
-      @doc, flash[:notice] = get_doc(nil, nil, nil, @project, params[:id])
-      if @doc
-        annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
-        @denotations = annotations[:denotations]
+      @project, flash[:notice] = get_project(params[:project_id])
+      if @project
+        @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
+        if @doc
+          annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
+          @denotations = annotations[:denotations]
+        end
       end
     else
-      if params[:id].present?
-        sourcedb, sourceid, serial = get_docspec(params)
-        @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
-        if @doc
-          @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
-        end
-      elsif params[:sourcedb].present? && params[:sourceid].present?
-        docs = Doc.where('sourcedb = ? AND sourceid = ?', params[:sourcedb], params[:sourceid])
-        if docs.length == 1
-          @doc = docs.first
-          @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
-        else
-          @doc = docs.detect{|doc| doc.serial == params[:div_id].to_i}
-          @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
-        end
+      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
+      if @doc
+        @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
       end
     end
     if @denotations.present?

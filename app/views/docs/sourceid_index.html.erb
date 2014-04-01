@@ -1,1 +1,22 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  <% if @project %>
+    > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+    > <%= link_to @project.name, project_path(@project.name) %>
+  <% end %>
+  > <%= t('views.docs.list') -%>
+<% end %>
+
+<%= render :partial => 'projects/title_and_links' -%>
+
+<h2><%= t('views.docs.list') -%></h2>
 <%= render :partial => 'source_doc', :collection => @source_docs -%>
+
+<% if user_signed_in? && @project.present? && current_user == @project.user %>
+	<h2><%= t('views.docs.add_new_documents') -%></h2>
+	<ul>
+	  <li>by getting from a public database<br/>
+	    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
+	  </li>
+	</ul>
+<% end %>

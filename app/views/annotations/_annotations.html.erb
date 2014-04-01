@@ -4,26 +4,6 @@
 	<%= t('controllers.shared.not_exists', :model => t('views.shared.annotation')) %>
 <% end -%>
 
-<% if @instances and !@instances.empty? %>
-  <h2><%= t('activerecord.models.instance') %></h2>
-  <table class="ann">
-    <tr>
-      <th>Id</th>
-      <th>Predicate</th>
-      <th>Object</th>
-    </tr>
-
-  <% @instances.each do |instance| %>
-    <tr>
-      <td><%= instance[:id] %></td>
-      <td><%= instance[:pred] %></td>
-      <td><%= instance[:obj] %></td>
-    </tr>
-  <% end %>
-  </table>
-<% end %>
-
-
 <% if @relations and !@relations.empty? %>
   <h2>Relations</h2>
   <table class="ann">

@@ -381,10 +381,10 @@ ja:
       document_content: ドキュメントのコンテンツ
       projects_made_to_document: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       automatic_annotation: 自動アノテーションの取得
-      docs_list: ドキュメント一覧(レコード)
+      records: ドキュメントレコード一覧
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
-      folded_docs_list: ドキュメント一覧(一括)
+      list: ドキュメント一覧
       add_new_documents: ドキュメント追加
     documentations:
       Overview: 概要
@@ -395,6 +395,7 @@ ja:
       home: ホーム
       new: 新規作成
     projects:
+      project: プロジェクト
       try_textae: お持ちでない場合はこちらをお試し下さい
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
       about_the_project: "<span class='pname'>%{project_name}</span>について"
@@ -459,8 +460,7 @@ ja:
       uploader:  アップローダー
       update: 更新
       pubmed: PubMed
-      a_pmdoc: PubMed:%{sourceid}
-      a_pmcdoc: PMC:%{sourceid}
+      a_doc_id: "%{sourcedb}:%{sourceid}"
       pmdocs: pmdocs
       pmcdocs: pmcdocs
       see: 表示

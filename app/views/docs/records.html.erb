@@ -4,12 +4,12 @@
     > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
     > <%= link_to @project.name, project_path(@project.name) %>
   <% end %>
-  > <%= t('views.docs.docs_list') -%>
+  > <%= t('views.docs.records') -%>
 <% end %>
 
 <%= render :partial => 'projects/title_and_links' -%>
 
-<h2><%= t('views.docs.docs_list') -%></h2>
+<h2><%= t('views.docs.records') -%></h2>
 
 <% if @docs.empty? %>
   <p><%= t('views.shared.none') %></p>

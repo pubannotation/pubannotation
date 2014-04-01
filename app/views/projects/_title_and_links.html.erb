@@ -1,5 +1,5 @@
 <% if @project -%>
-	<h1><span class="pname"><%= @project.name %></span></h1>
+	<h1><%= t('views.projects.project').capitalize %>, <span class="pname"><%= @project.name %></span></h1>
 
 	<%= link_to_unless_current t('views.projects.properties'), project_path(@project.name) , :class => 'tab inactive_tab' do 
 		content_tag :span, t('views.projects.properties'), :class => 'tab active_tab' 
@@ -15,10 +15,10 @@
 	-%>
 <% end -%>
 
-<%= link_to_unless_current t('views.docs.folded_docs_list'), docs_src, :class => 'tab inactive_tab' do
-	content_tag :span, t('views.docs.folded_docs_list'), :class => 'tab active_tab'
+<%= link_to_unless_current t('views.docs.list'), docs_src, :class => 'tab inactive_tab' do
+	content_tag :span, t('views.docs.list'), :class => 'tab active_tab'
 end -%>
 
-<%= link_to_unless_current t('views.docs.docs_list'), records_docs_src, :class => 'tab inactive_tab' do
-	content_tag :span, t('views.docs.docs_list'), :class => 'tab active_tab'
+<%= link_to_unless_current t('views.docs.records'), records_docs_src, :class => 'tab inactive_tab' do
+	content_tag :span, t('views.docs.records'), :class => 'tab active_tab'
 end -%>

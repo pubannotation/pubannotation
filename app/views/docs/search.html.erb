@@ -3,9 +3,9 @@
   <% if @project -%>
     > <%= link_to t('activerecord.models.project'), projects_path -%>
     > <%= link_to @project.name, project_path(@project.name) -%>
-    > <%= link_to t('views.docs.folded_docs_list'), project_docs_path(@project.name) -%>
+    > <%= link_to t('views.docs.list'), project_docs_path(@project.name) -%>
   <% else -%>
-    > <%= link_to t('views.docs.folded_docs_list'), docs_path -%>
+    > <%= link_to t('views.docs.list'), docs_path -%>
   <% end %>
   > <%= t('views.shared.search') -%>
 <% end -%>
