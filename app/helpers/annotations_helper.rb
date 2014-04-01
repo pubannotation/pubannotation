@@ -148,7 +148,21 @@ module AnnotationsHelper
         end
       end    
     end    
-  end 
+  end
+
+  def annotations_destroy_all_helper(doc, project)
+    if doc
+      annotations = doc.denotations.where("project_id = ?", project.id)
+      
+      ActiveRecord::Base.transaction do
+        begin
+          annotations.destroy_all
+        rescue => e
+          flash[:notice] = e
+        end
+      end
+    end
+  end
   
   def annotaions_url_helper
     if params[:id].present?

@@ -177,17 +177,7 @@ class AnnotationsController < ApplicationController
     @project = get_project(params[:project_id])[0]
     sourcedb, sourceid, serial = get_docspec(params)
     @doc = get_doc(sourcedb, sourceid, serial, @project)[0]
-    if @doc
-      annotations = @doc.denotations.where("project_id = ?", @project.id)
-      
-      ActiveRecord::Base.transaction do
-        begin
-          annotations.destroy_all
-        rescue => e
-          flash[:notice] = e
-        end
-      end
-    end
+    annotations_destroy_all_helper(@doc, @project)
     redirect_to :back
   end
 

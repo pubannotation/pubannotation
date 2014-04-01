@@ -3,7 +3,7 @@ class Doc < ActiveRecord::Base
   include ApplicationHelper
   
   attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid
-  has_many :denotations
+  has_many :denotations, :dependent => :destroy
 
   has_many :subcatrels, :class_name => 'Relation', :through => :denotations, :source => :subrels
 
