@@ -169,24 +169,21 @@ class DocsController < ApplicationController
   end
   
   def annotations
+    sourcedb, sourceid, serial = get_docspec(params)
     if params[:project_id].present?
-      @project, notice = get_project(params[:project_id])
+      @project, flash[:notice] = get_project(params[:project_id])
       if @project
-        @doc, flash[:notice] = get_doc(nil, nil, nil, @project, params[:id])
+        @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
       end
-      project = @project
     else
-      if params[:id].present?
-        @doc, flash[:notice] = get_doc(nil, nil, nil, nil, params[:id])
-      elsif params[:sourcedb] && params[:sourceid]
-        @doc, flash[:notice] = get_doc(params[:sourcedb],  params[:sourceid])
-      end
+      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
     end
     
     if @doc.present?
       annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
       @spans, @prev_text, @next_text = @doc.spans(params)
       annotations[:text] = @spans if @spans.present?
+      # ToDo: to process tracks 
       @denotations = annotations[:denotations]
       @relations = annotations[:relations]
       @modifications = annotations[:modifications]

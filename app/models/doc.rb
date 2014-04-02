@@ -182,7 +182,7 @@ class Doc < ActiveRecord::Base
   
   def hdenotations(project, options = {})
     if options.present? && options[:spans].present?
-      denotations = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos])
+      denotations = self.denotations.where("project_id = ?", project.id).within_spans(options[:spans][:begin_pos], options[:spans][:end_pos])
     else
       if project.associate_projects.blank?
         denotations = self.denotations.where("project_id = ?", project.id)

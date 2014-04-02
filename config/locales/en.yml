@@ -243,9 +243,10 @@ en:
         username: Username (your full name)
     placeholders:
       project:
-        name: The name of this project (up to 30 characters)
+        name: Name of the project (up to 20 characters)
+        description: Short description of the project
         author: The name of author of this project
-        reference: URL to a page that describes this project 
+        reference: URL to an external page that describes this project 
         pmids: PubMed IDs
         username: sub-maintainers name
         associate_project_name: Enter associate project name.
@@ -262,6 +263,7 @@ en:
           released: Released
           beta: Beta
           developing: Developing
+          testing: Testing
         accessibility:
           public: Public
           private: Private

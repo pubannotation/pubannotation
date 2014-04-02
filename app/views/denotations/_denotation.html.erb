@@ -8,7 +8,7 @@
       	<th>Project</th>
       <% end -%>
       <th>Id</th>
-      <th>Span (begin:end)</th>
+      <th>Span</th>
       <th>Predicate</th>
       <th>Object</th>
     </tr>
@@ -16,7 +16,9 @@
 
 <tr>
   <% if local_assigns[:project].present? && denotation_counter == 0 -%>
-  	<td rowspan="<%= collection_size -%>" style="vertical-align: top"><%= project.name -%></td>
+  	<td rowspan="<%= collection_size -%>" style="vertical-align: top">
+      <%= link_to project.name, project_path(project.name) -%>
+    </td>
   <% end -%>
   <td><%= denotation[:id] %></td>
   <td>

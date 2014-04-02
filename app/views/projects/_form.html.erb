@@ -30,8 +30,9 @@
     <td><%= f.select :status, 
     		options_for_select([
 				[t('activerecord.options.project.status.released'), 1],
-				[t('activerecord.options.project.status.beta'), 2], 
-				[t('activerecord.options.project.status.developing'), 3]], 
+				[t('activerecord.options.project.status.beta'), 2],
+				[t('activerecord.options.project.status.developing'), 3],
+        [t('activerecord.options.project.status.testing'), 4]],
     		f.object.status) %></td>
   </tr>
   <tr>
@@ -46,7 +47,8 @@
     <th><%= f.label :maintainer %></th>
     <td><%= current_user.username %></td>
   </tr>
-  <tr>
+
+<!--   <tr>
   	<th>
   		<%= t('activerecord.models.associate_maintainer') -%>
   	</th>
@@ -59,7 +61,7 @@
 				<% end -%>
 			</div>
 		<% end -%>
-		<!-- associate maintainer search and add field -->
+
 		<% if @project.associate_maintainers_addable_for?(current_user) -%>
 	  		<%= fields_for :associate_maintainer do -%>
 	  			<div id="associate_maintainers">
@@ -92,6 +94,8 @@
 		<% end -%>
   	</td>
   </tr>
+ -->
+
   <tr>
     <th><%= f.label :reference %></th>
     <td>
@@ -99,8 +103,9 @@
 	  <%= hint_helper({:model => :project, :column => :reference}) %>
     </td>
   </tr>
+
 	<!-- associate projects search and add field -->
-	<tr>
+<!-- 	<tr>
 	  	<th>
 	  		<%= t('activerecord.models.project') -%>
 	  	</th>
@@ -141,7 +146,9 @@
 		  		</script>
 	  		<% end -%>
 	  	</td>
-	  </tr>
+	</tr>
+ -->
+
   <tr><td style="border:none"></td></tr>
 <!--   <tr>
     <th><%= f.label :viewer %></th>

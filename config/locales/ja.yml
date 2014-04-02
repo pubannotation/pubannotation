@@ -260,7 +260,8 @@ ja:
         username: 名前
     placeholders:
       project:
-        name: プロジェクト名(30文字以内)
+        name: プロジェクト名(20文字以内)
+        description: プロジェクトに関しての簡単な説明
         author: プロジェクトの著者名
         reference: このプロジェクトの参照URL
         pmids: PubMedのID
@@ -279,6 +280,7 @@ ja:
           released: 公開中
           beta: ベータ
           developing: 開発中
+          testing: テスト中
         accessibility:
           public: 公開
           private: プライベート
