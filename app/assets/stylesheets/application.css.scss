@@ -26,95 +26,70 @@ body {
     position:relative;
 }
 
-#navigation{
-  margin: 0;
-  padding: 0.5em;
-  padding-left: $base_margin;
+#top-ribbon {
+  position: relative;
+  margin:0px;
+  padding: 1px 5px;
   background-color: $sub_color;
-}
-.navigation_menu{
-  display: inline;
-  margin-right: 1em;
-  padding-right: $base_margin;
-  border-right: 1px solid $main_color;
-}
-
-$logo_height : 110px;
-#logo{
-  height: $logo_height;
-  background: url('/assets/logo.png') 15px 15px no-repeat $main_color;
-}
-#title a{
-  height: $logo_height;
-  text-indent: -999em;
-  display: block;
-}
-
-#slogan {
-    text-indent: -999em;
-    margin-bottom:10px;
-    font-family: Gill Sans / Gill Sans MT, sans-serif;
-    /*font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;*/
-    font-size: small;
-    font-style: italic;
-    color: #22dd22;
-}
-
-#account{
-    position:absolute;
-    text-align:right;
-    font-size:small;
-    top: 10px;
-    right: 10px;
-    color: #fff;
-    a{
-      color: #fff;
+  .left {
+    position: static;
+    div {
+      display: inline;
     }
-}
-#login{
- list-style: none;
- li{
-   display: inline;
- }
- a{
-   background-color: $sub_color;
-   border-radius: 3px;
-   color: $main_color;
-   padding: 2px 5px;
-   margin-left: 0.5em;
- }
-}
-#language{
-  color: #ccc;
-}
-table.menu {
-    margin:0px;
-    border:3px solid #AAEEBB;
-    font-size:small;
-}
-
-.menu td {
-    border:3px solid #AAEEBB;
+  }
+  .right {
+    position: absolute;
+    top: 0px;
+    right: 5px;
+    div {
+      display: inline;
+    }
+  }
 }
 
 #path {
-    margin:0px;
-    padding: 0.5em;
-    padding-left: $base_margin;
-    font-size:x-small;
-    font-style:italic;
+  font-size:x-small;
+  font-style:italic;
+}
 
+#language {
+  color: #888;
+}
+
+#account{
+  font-size:small;
+  color: #fff;
+  a{
+    color: #fff;
+  }
+}
+
+.menu {
+  ul {
+    display: inline;
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    display: inline;
+  }
+  a {
+    background-color: $sub_color;
+    border-radius: 3px;
+    color: $main_color;
+    margin-left: 0.5em;
+  }
 }
 
 #notice {
-    margin:0px 5px;
-    font-size:small;
-    color:red;
+  margin:0px 5px;
+  font-size:small;
+  color:red;
 }
 
 .notice {
-    font-style:italic;
-    color:red;
+  font-style:italic;
+  color:red;
 }
 
 #main {

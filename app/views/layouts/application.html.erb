@@ -11,48 +11,25 @@
 	</head>
 	
 	<body>
-		<div id="header">
-			<div id="logo">
-				<div id="title"><%= link_to t('views.service.title'), home_path -%></div>
-				<div id="slogan"><%= t('views.service.slogan') -%></div>
+		<div id="top-ribbon">
+			<div class="left">
+				<div id="path">
+					<%= yield :path -%>
+				</div>
 			</div>
-			
-			<div id="account">
-				<span id="language">
+			<div class="right menu">
+				<div id="language">
 					<%= language_switch_helper.html_safe %>
-				</span>
-				<ul id="login" class="capitalize">
-					<li>
-						<%= render 'devise/menu/registration_items' %>
-					</li>
-					<li>
-						<%= render 'devise/menu/login_items' %>
-					</li>
-				</ul>
+				</div>
+
+				<div id="account menu">
+					<ul>
+						<li><%= render 'devise/menu/registration_items' %></li>
+						<li><%= render 'devise/menu/login_items' %></li>
+					</ul>
+				</div>
 			</div>
-			<!--
-			<table class="menu">
-			<tr>
-			<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Overview" class="capitalize"><%= t('views.menus.overview') %></a></td>
-			<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Features" class="capitalize"><%= t('views.menus.features') %></a></td>
-			<td><a href="http://bionlp.dbcls.jp/redmine/projects/pubann/wiki/Format" class="capitalize"><%= t('views.menus.formats') %></a></td>
-			<td><a href="http://dbcls.rois.ac.jp">DBCLS</a></td>
-			</tr>
-			</table>
-			-->
-			<ul id='navigation'>
-				<li class="navigation_menu"><%= link_to t('views.paths.home'), home_path -%></li>
-				<% DocumentationCategory.all.each do |documentation_categorie| -%>
-					<li class="navigation_menu"><%= link_to_unless_current t("views.documentations.#{documentation_categorie.name}"), documentations_category_documentations_path(documentation_categorie.name) -%></li>
-				<% end -%>
-				<li class="navigation_menu"><a href="http://dbcls.rois.ac.jp">DBCLS</a></li>
-			</ul>
 		</div>
-		
-		<div id="path">
-			<%= yield :path -%>
-		</div>
-		
 		<div id="notice">
 			<%= notice -%>
 			<%= alert -%>

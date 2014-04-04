@@ -21,7 +21,7 @@ module ApplicationHelper
   
   def language_switch_helper
     requested_path = url_for(:only_path => false, :overwrite_params => nil)
-    en_text = 'english'
+    en_text = 'English'
     if I18n.locale != :en
       en_text = link_to en_text, requested_path + '?locale=en'
     end
