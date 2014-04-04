@@ -1,5 +1,0 @@
-<% if user_signed_in? %>
-  <%= link_to(t('views.users.sign_out'), destroy_user_session_path, :method => :delete, :class => 'capitalize_first') %>        
-<% else %>
-  <%= link_to(t('views.users.sign_in'), new_user_session_path, :class => 'capitalize_first')  %>  
-<% end %>

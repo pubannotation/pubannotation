@@ -1,0 +1,4 @@
+name: PubAnnotation
+markdown: redcarpet
+pygments: true
+baseurl: pubannotation
