@@ -29,7 +29,7 @@ module ApplicationHelper
     if I18n.locale != :ja
       ja_text = link_to ja_text, requested_path + '?locale=ja'
     end
-    "#{en_text} #{ja_text}"
+    "<ul><li>#{en_text}</li><li>#{ja_text}</li></ul>"
   end
 
 

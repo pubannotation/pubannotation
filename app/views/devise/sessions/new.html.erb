@@ -3,7 +3,7 @@
 	> login
 <% end %>
 
-<h2><%= t('views.users.sign_in') %></h2>
+<h1><%= t('views.users.sign_in') %></h1>
 
 <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
   <div class="capitalize_first"><%= f.label :login %><br />

@@ -9,21 +9,17 @@
  * compiled file, but it's generally better to create a new file per style scope.
  *
  *= require_self
- *=# require_tree .
+ *= require_tree .
  */
 
-$main_color: #001854;
-$sub_color: lighten(#001854, 70%);
+$main_color: #002266;
+$sub_color: lighten(#112266, 70%);
 $base_margin: 15px;
 
 body {
     margin:0px;
     font-family: Meiryo, "メイリオ", "MS PGothic","MS Pゴシック", osaka,  Verdana, Geneva, sans-serif;
     font-size: small;
-}
-
-#header {
-    position:relative;
 }
 
 #top-ribbon {
@@ -52,10 +48,6 @@ body {
   font-style:italic;
 }
 
-#language {
-  color: #888;
-}
-
 #account{
   font-size:small;
   color: #fff;
@@ -72,12 +64,12 @@ body {
   }
   li {
     display: inline;
+    margin-left: 0.5em;
   }
   a {
     background-color: $sub_color;
     border-radius: 3px;
     color: $main_color;
-    margin-left: 0.5em;
   }
 }
 

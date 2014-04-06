@@ -381,7 +381,7 @@ en:
       properties: properties
       that_annotate_a_pmdoc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
-      in_pubannotation: "<span class='meta'>Annotation projects</span> in PubAnnotation"
+      in_pubannotation: "Annotation projects <span class='meta'>in PubAnnotation</span>"
       confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.
       user_projects: Your projects
       associate_maintain_projects: Associated projects 
@@ -397,10 +397,10 @@ en:
         editor: Specify URL of the  editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
     users:
       forgot_password: reset password
-      sign_in: sign in
-      sign_in_to_create_model: Sign in to create your %{model}
-      sign_up: sign up
-      sign_out: sign out
+      sign_in: Login
+      sign_in_to_create_model: Login to create your %{model}
+      sign_up: Signup
+      sign_out: Logout
       send_reset_password_instructions: Send me reset password instructions
     pmdocs:
       pmdocs_in_a_project: "PubMed documents <span class='meta'>in the project, <span class='pname'>%{project_name}</span></span>"

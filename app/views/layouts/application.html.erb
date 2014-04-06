@@ -11,6 +11,7 @@
 	</head>
 	
 	<body>
+		<%= render :partial => 'layouts/header' -%>
 		<div id="top-ribbon">
 			<div class="left">
 				<div id="path">
@@ -18,7 +19,7 @@
 				</div>
 			</div>
 			<div class="right menu">
-				<div id="language">
+				<div id="language menu">
 					<%= language_switch_helper.html_safe %>
 				</div>
 
