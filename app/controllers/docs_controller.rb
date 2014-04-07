@@ -13,10 +13,20 @@ class DocsController < ApplicationController
       docs = Doc
       @search_path = search_docs_path
     end
-    params[:order_method] ||= 'ASC'
-    @reverse_order_method = params[:order_method] == 'ASC' ? 'DESC' : 'ASC'
-    docs_order = "#{params[:order_key]} #{params[:order_method]}" if params[:order_key]
-    @source_docs = docs.source_db_id(docs_order).paginate(:page => params[:page])
+
+    if params[:sort_key]
+      sort_method = "#{params[:sort_key]} #{params[:sort_order]}"
+      unless sort_method == @@sort_methods[1]
+        @@sort_methods.shift
+        @@sort_methods.push(sort_method)
+      end
+    else
+      @@sort_methods = ['sourceid ASC', 'sourcedb ASC']
+    end
+
+    @sort_order_next = params[:sort_order] == 'ASC' ? 'DESC' : 'ASC'
+
+    @source_docs = docs.where(serial: 0).order(@@sort_methods[1]).order(@@sort_methods[0]).paginate(:page => params[:page])
   end
  
   def records
@@ -24,12 +34,12 @@ class DocsController < ApplicationController
       @project, notice = get_project(params[:project_id])
       @new_doc_src = new_project_doc_path
       if @project
-        @docs = @project.docs.order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
+        @docs = @project.docs.order('sourcedb ASC').order('sourceid ASC').order('serial ASC')
       else
         @docs = nil
       end
     else
-      @docs = Doc.order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
+      @docs = Doc.order('sourcedb ASC').order('sourceid ASC').order('serial ASC')
       @new_doc_src = new_doc_path
     end
 
@@ -85,11 +95,16 @@ class DocsController < ApplicationController
     else
       docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
     end
-    params[:order_method] ||= 'ASC'
-    @reverse_order_method = params[:order_method] == 'ASC' ? 'DESC' : 'ASC'
-    docs_order = "#{params[:order_key]} #{params[:order_method]}" if params[:order_key]
-    @source_docs = docs.source_db_id(docs_order).paginate(:page => params[:page])
-    # @source_docs = docs.where(['sourcedb = ?', params[:sourcedb]]).order('sourceid ASC').paginate(:page => params[:page])
+
+    sort_method = if params[:sort_key]
+      "#{params[:sort_key]} #{params[:sort_order]}"
+    else
+      'sourceid ASC'
+    end
+
+    @sort_order_next = params[:sort_order] == 'ASC' ? 'DESC' : 'ASC'
+
+    @source_docs = docs.where(serial: 0).order(sort_method).paginate(:page => params[:page])
   end 
     
   def search
