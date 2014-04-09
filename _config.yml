@@ -2,3 +2,4 @@ name: PubAnnotation
 markdown: redcarpet
 pygments: true
 baseurl: /pubannotation
+relative_permalinks: false
