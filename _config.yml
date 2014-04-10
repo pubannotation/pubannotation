@@ -1,5 +1,5 @@
 name: PubAnnotation
 markdown: redcarpet
 pygments: true
-baseurl: /pubannotation
+#baseurl: /pubannotation
 relative_permalinks: false
