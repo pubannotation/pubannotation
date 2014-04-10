@@ -26,7 +26,7 @@
 <% else %>
   <table class="full">
     <tr>
-      <th class="sortable-th" style="width:10em"><%= link_to_unless_current t('activerecord.attributes.project.name'), url_for(:only_path => true, :projects_order => 'name'), :class => 'sortable-a' %></th>
+      <th class="sortable-th" style="width:12em"><%= link_to_unless_current t('activerecord.attributes.project.name'), url_for(:only_path => true, :projects_order => 'name'), :class => 'sortable-a' %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
       <th class="sortable-th" style="width:8em"><%= link_to_unless_current t('activerecord.attributes.project.author'), url_for(:only_path => true, :projects_order => 'author'), :class => 'sortable-a' %></th>
       <th class="sortable-th" style="width:8em"><%= link_to_unless_current t('activerecord.attributes.project.maintainer'), url_for(:only_path => true, :projects_order => 'maintainer'), :class => 'sortable-a' %></th>
@@ -37,7 +37,7 @@
       <th class="sortable-th" style="width:1em" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
       <th class="sortable-th" style="width:1em" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
  -->
-      <th style="width:3em"></th>
+      <th style="width:4em"></th>
     </tr>
 
   <% projects.each do |project| %>
@@ -58,11 +58,11 @@
  -->
       <td>
 	      <% if @doc and @doc.sourcedb == "PubMed" %>
-	        <%= link_to t('views.shared.show'), project_pmdoc_path(project.name, @doc.sourceid) %>
+	        <%= link_to t('views.shared.show'), project_pmdoc_path(project.name, @doc.sourceid), class: 'button' %>
 	      <% elsif @doc and @doc.sourcedb == "PMC" %>
-	        <%= link_to t('views.shared.show'), project_pmcdoc_div_path(project.name, @doc.sourceid, @doc.serial) %>
+	        <%= link_to t('views.shared.show'), project_pmcdoc_div_path(project.name, @doc.sourceid, @doc.serial), class: 'button' %>
 	      <% else %>
-	        <%= link_to t('views.shared.show'), project_path(project.name) %>
+	        <%= link_to t('views.shared.show'), project_path(project.name), class: 'button' %>
 	      <% end %>
       </td>
     </tr>

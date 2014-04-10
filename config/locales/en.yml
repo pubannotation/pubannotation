@@ -360,7 +360,7 @@ en:
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
       automatic_annotation: Get automatic annotation
-      records: document records
+      records: doc records
       list: documents
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
