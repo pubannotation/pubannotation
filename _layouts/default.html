@@ -12,11 +12,17 @@
 </head>
 
 <body>
-	{% include _header.html %}
-	<div id="main">
-	{{ content }}
+	<div id="header" class="frame">
+		{% include _header.html %}
 	</div>
-	{% include _footer.html %}
+
+	<div id="main">
+		{{ content }}
+	</div>
+
+	<div id="footer" class="frame">
+		{% include _footer.html %}
+	</div>
 </body>
 
 </html>
