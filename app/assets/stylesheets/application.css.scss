@@ -17,9 +17,23 @@ $sub_color: lighten(#112266, 70%);
 $base_margin: 15px;
 
 body {
-    margin:0px;
-    font-family: Meiryo, "メイリオ", "MS PGothic","MS Pゴシック", osaka,  Verdana, Geneva, sans-serif;
-    font-size: small;
+  margin: 0px;
+  font-family: Meiryo, "メイリオ", "MS PGothic","MS Pゴシック", osaka,  Verdana, Geneva, sans-serif;
+  font-size: small;
+}
+
+.frame {
+  position:relative;
+  padding: 10px;
+  background-color: $main_color;
+  color: #aaaaaa;
+  a {
+    color: #aaaaff;
+  }
+}
+
+#footer {
+  margin-top: 20px;
 }
 
 #top-ribbon {
@@ -80,18 +94,23 @@ body {
 }
 
 .notice {
-  font-style:italic;
-  color:red;
+  ul {
+    -webkit-margin-before: 0em;
+    -webkit-margin-after: 0em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 20px;
+    -webkit-padding-start: 0px;
+
+    li {
+      margin: 0px;
+      padding: 0px;
+    }
+  }
 }
 
 #main {
-    margin:0px $base_margin;
-}
-
-#footer {
-    margin:0px;
-    margin-top:10px;
-    padding:10px 0px;
+  margin:0px $base_margin;
 }
 
 #footer_navigation{
@@ -171,16 +190,6 @@ h3 {
     filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#00FF00', EndColorStr='#FFFFFF', GradientType=1);
 }
 
-div.note {
-    margin: 5px;
-    font-style:italic;
-    color:#555555;
-}
-
-p.note {
-    font-style:italic;
-}
-
 span.note {
     font-size:small;
     font-style:italic;
@@ -248,55 +257,6 @@ table.ann {
 
 .ann td {
     text-align: center;
-}
-
-
-table.frame {
-    width:600px;
-    border-width:0px;
-    text-align:left
-}
-
-.frame tr {
-    border-width:0px;
-}
-
-.frame th {
-    border-width:0px;
-}
-
-.frame td {
-    border-width:0px;
-}
-
-.frame thead {
-    text-align:right;
-    font-style:italic;
-}
-
-.frame tbody {
-}
-
-.frame tfoot {
-    padding-top:2cm;
-    text-align:center;
-    font-style:italic;
-}
-
-.frame th {
-    text-align:left;
-    background-color: #EECCCC
-}
-
-.frame th {
-    /* fallback (Opera) */
-    background: #EECCCC;
-    /* Mozilla: */
-    background: -moz-linear-gradient(left, #00FF00, #FFFFFF);
-    /* Chrome, Safari:*/
-    background: -webkit-gradient(linear,  left top, right top, from(#00FF00), to(#FFFFFF));
-    /* MSIE */
-    filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#00FF00', EndColorStr='#FFFFFF', GradientType=1);
 }
 
 li {

@@ -372,7 +372,7 @@ en:
       API: API
 
     paths:
-      home: home
+      home: top
     projects:
       project: project
       try_textae: "If you don't have one, try with" 
