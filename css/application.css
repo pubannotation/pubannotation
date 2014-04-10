@@ -4,13 +4,37 @@ body {
   font-size: small;
 }
 
+.frame {
+  position:relative;
+  padding: 10px;
+  background-color: #112277;
+  color: #aaaaaa;
+}
+
+.frame a {
+    color: #aaaaff;
+}
+
+#footer {
+  margin-top: 20px;
+}
+
 #path{
   background-color: #baceff;
 }
 
-.notice {
-    font-style:italic;
-    color:red;
+.notice ul {
+  -webkit-margin-before: 0em;
+  -webkit-margin-after: 0em;
+  -webkit-margin-start: 0px;
+  -webkit-margin-end: 0px;
+  -webkit-padding-start: 20px;
+  -webkit-padding-start: 0px;
+}
+
+.notice li {
+  margin: 0px;
+  padding: 0px;
 }
 
 #main {
@@ -21,12 +45,6 @@ body {
   width: 100%;
   height: 100%;
   overflow: visible;
-}
-
-#footer {
-    margin:0px;
-    margin-top:10px;
-    padding:10px 0px;
 }
 
 #footer_navigation{
@@ -123,11 +141,11 @@ span.note {
 
 a {
   text-decoration:none;
-  color: #fc0;
+  color: #4444bb;
 }
 
 a:hover {
-  color: lighten(#001854, 40%);
+  color: #8888ff;
 }
 
 table, th, td{
