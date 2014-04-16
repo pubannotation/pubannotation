@@ -340,18 +340,27 @@ li {
     border-width:0px 0px 0px 1px;
 }
 
-.sortable-th{
-  padding-left:15px;
+.sortable-th {
+  padding-left: 15px;
   background: url(/assets/sort_asc.png) no-repeat 5px center $sub_color;
   text-align :left;
 }
 
 .sortable-a,
-.sortable-a:visited{
-  margin-left:-15px;
-  padding-left:15px;
+.sortable-a:visited {
   color:#234979 !important;
-  background: url(/assets/sort_asc_p.png) no-repeat 5px center $sub_color;
+}
+
+.sortable-a:after {
+  content: ' ' url(/assets/sort_asc.png);
+}
+
+.sortable-ASC:after {
+  content: ' ' url(/assets/sort_asc.png);  
+}
+
+.sortable-DESC:after {
+  content: ' ' url(/assets/sort_desc.png);  
 }
 
 .spans_prev, 

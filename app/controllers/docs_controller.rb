@@ -17,18 +17,16 @@ class DocsController < ApplicationController
     end
 
     if params[:sort_key]
-      sort_method = "#{params[:sort_key]} #{params[:sort_order]}"
-      unless sort_method == @@sort_methods[1]
-        @@sort_methods.shift
-        @@sort_methods.push(sort_method)
-      end
+      @sort_order = flash[:sort_order]
+      @sort_order.delete(@sort_order.assoc(params[:sort_key]))
+      @sort_order.unshift([params[:sort_key], params[:sort_direction]])
     else
-      @@sort_methods = ['sourceid ASC', 'sourcedb ASC']
+      # initialize the sort order
+      @sort_order = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
     end
 
-    @sort_order_next = params[:sort_order] == 'ASC' ? 'DESC' : 'ASC'
-
-    @source_docs = docs.where(serial: 0).order(@@sort_methods[1]).order(@@sort_methods[0]).paginate(:page => params[:page])
+    @source_docs = docs.where(serial: 0).order(@sort_order.collect{|s| s.join(' ')}.join(', ')).paginate(:page => params[:page])
+    flash[:sort_order] = @sort_order
   end
  
   def records
@@ -98,15 +96,17 @@ class DocsController < ApplicationController
       docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
     end
 
-    sort_method = if params[:sort_key]
-      "#{params[:sort_key]} #{params[:sort_order]}"
+    if params[:sort_key]
+      @sort_order = flash[:sort_order]
+      @sort_order.delete(@sort_order.assoc(params[:sort_key]))
+      @sort_order.unshift([params[:sort_key], params[:sort_direction]])
     else
-      'sourceid ASC'
+      # initialize the sort order
+      @sort_order = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
     end
 
-    @sort_order_next = params[:sort_order] == 'ASC' ? 'DESC' : 'ASC'
-
-    @source_docs = docs.where(serial: 0).order(sort_method).paginate(:page => params[:page])
+    @source_docs = docs.where(serial: 0).order(@sort_order.collect{|s| s.join(' ')}.join(', ')).paginate(:page => params[:page])
+    flash[:sort_order] = @sort_order
   end 
     
   def search
@@ -151,7 +151,19 @@ class DocsController < ApplicationController
     @project, notice = get_project(params[:project_id])
     if @doc.present?
       @text = @doc.body
-      @projects = get_projects({:doc => @doc})
+
+      if params[:sort_key]
+        @sort_order = flash[:sort_order]
+        @sort_order.delete(@sort_order.assoc(params[:sort_key]))
+        @sort_order.unshift([params[:sort_key], params[:sort_direction]])
+      else
+        # initialize the sort order
+        @sort_order = [['name', 'ASC'], ['author', 'ASC']]
+      end
+
+      @projects = @doc.projects.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+      flash[:sort_order] = @sort_order
+
       respond_to do |format|
         format.html # show.html.erb
         format.json { render json: @doc }

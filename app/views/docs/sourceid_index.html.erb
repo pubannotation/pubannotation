@@ -4,10 +4,12 @@
     > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
     > <%= link_to @project.name, project_path(@project.name) %>
   <% end %>
-  > <%= t('views.docs.list') -%>
+  > docs
 <% end %>
 
-<%= render :partial => 'projects/title_and_links' -%>
+<% if @project.present? -%>
+	<%= render :partial => 'projects/title_and_links' -%>
+<% end %>
 
 <h2><%= t('views.docs.list') -%></h2>
 <%= render :partial => 'source_doc', :collection => @source_docs -%>

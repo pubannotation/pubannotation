@@ -10,18 +10,18 @@
 	
 	<table class="full">		
 		<tr>
-			<th class="sortable-th" style="width:5em">
+			<th style="width:6em">
 				<% if params[:action] == 'search' -%>
 					<%= t('activerecord.attributes.doc.sourcedb') -%>
 				<% else -%>
-					<%= link_to t('activerecord.attributes.doc.sourcedb'), url_for(:only_path => true, :sort_key => 'sourcedb', :sort_order => @sort_order_next), :class => 'sortable-a' %>
+					<%= sortable('sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
 				<% end -%>
 			</th>
-			<th class="sortable-th" style="width:5em">
+			<th style="width:6em">
 				<% if params[:action] == 'search' -%>
 					<%= t('activerecord.attributes.doc.sourceid') -%>
 				<% else -%>
-					<%= link_to t('activerecord.attributes.doc.sourceid'), url_for(:only_path => true, :sort_key => 'sourceid', :sort_order => @sort_order_next), :class => 'sortable-a' %>
+					<%= sortable('sourceid', t('activerecord.attributes.doc.sourceid')) %>
 				<% end -%>
 			</th>
 			<th><%= t('activerecord.attributes.doc.body') %></th>
@@ -50,7 +50,7 @@
         	<% end -%>
         </span>
 
-		<% if user_signed_in? && @project.user == current_user %>
+		<% if @project && user_signed_in? && @project.user == current_user %>
 	    	<%= link_to t('views.shared.delete'), delete_project_docs_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: 'button' if @project.present? && source_doc.updatable_for?(current_user) -%>
 	    <% end %>
 	</td>

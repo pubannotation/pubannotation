@@ -12,6 +12,7 @@ class DivsController < ApplicationController
       sourcedb = 'PMC'
       doc_id = params[:pmcdoc_id]
     end
+
     @docs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, doc_id, :order => 'serial ASC')
 
     if params[:project_id]
@@ -101,8 +102,6 @@ class DivsController < ApplicationController
   # GET /docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid
   def show
     # TODO compatibility for PMC and Docs
-    params[:sourcedb] ||= 'PMC'
-    params[:sourceid] ||= params[:pmcdoc_id]
     params[:div_id]   ||= params[:id]
     if (params[:project_id])
       @project, notice = get_project(params[:project_id])
@@ -113,13 +112,19 @@ class DivsController < ApplicationController
         @doc = nil
       end
     else
-      # if params[:pmcdoc_id].present?
-        # @doc, notice = get_doc('PMC', params[:pmcdoc_id], params[:id])
-        # @projects = get_projects({:doc => @doc})
-      # else
-        @doc, notice = get_doc(params[:sourcedb], params[:sourceid], params[:div_id])
-        @projects = get_projects({:doc => @doc})
-      # end
+      @doc, notice = get_doc(params[:sourcedb], params[:sourceid], params[:div_id])
+
+      if params[:sort_key]
+        @sort_order = flash[:sort_order]
+        @sort_order.delete(@sort_order.assoc(params[:sort_key]))
+        @sort_order.unshift([params[:sort_key], params[:sort_direction]])
+      else
+        # initialize the sort order
+        @sort_order = [['name', 'ASC'], ['author', 'ASC']]
+      end
+
+      @projects = @doc.projects.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+      flash[:sort_order] = @sort_order
     end
 
     if @doc
