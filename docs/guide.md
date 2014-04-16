@@ -7,11 +7,9 @@ permalink: /guide/
 
 *Under construction*
 
-This site aims to be a comprehensive guide to PubAnnotation.
-
 ## Motivation
 
-* It would be good if there is a central place where we can find annotations made to literature.
+* It would be good if there is a portal place where we can find most of the annotations made to literature.
 
 * It would be even better if those annotations can be accessed in various common formats.
 

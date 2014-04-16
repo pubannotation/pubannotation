@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Beta service begins"
+title:  "Beta service begins."
 categories: news
 ---
 
