@@ -379,7 +379,7 @@ en:
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this annotation set</span></span>"
       about_the_project: "About the project, <span class='pname'>%{project_name}</span>"
       properties: properties
-      that_annotate_a_pmdoc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
+      that_annotate_a_doc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubannotation: "Annotation projects <span class='meta'>in PubAnnotation</span>"
       confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.

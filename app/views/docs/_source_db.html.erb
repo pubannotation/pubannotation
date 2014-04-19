@@ -4,7 +4,7 @@
 	
 <li>
 	<%= sourceid_index_link_helper(source_db) -%>
-	<%= "(#{Doc.count(:conditions => ['sourcedb =?', "#{ source_db.sourcedb }"])})" -%>
+	<%= "(#{Doc.where(:sourcedb => source_db.sourcedb).count(:sourceid, :distinct => true)})" -%>
 </li>
 
 <% if source_db_counter == @source_dbs.size-1 -%>

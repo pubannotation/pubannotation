@@ -1,11 +1,13 @@
 <h1>
   <% if scope.present? -%>
-	<%= t("views.projects.#{scope}").html_safe -%>
+    <%= t("views.projects.#{scope}").html_safe -%>
   <% else -%>
-	  <% if @doc and @doc.sourcedb == 'PubMed' %>
-	  	<%= t('views.projects.that_annotate_a_pmdoc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
-	  <% elsif @doc and @doc.sourcedb == 'PMC' %>
-	  	<%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+    <% if @doc %>
+      <% if @doc.has_divs? %>
+        <%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+      <% else %>
+        <%= t('views.projects.that_annotate_a_doc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+      <% end %>
 	  <% else %>
     	<%= t('views.projects.in_pubannotation').html_safe %>
     	<% new_path = new_project_path -%>
