@@ -185,9 +185,9 @@ module AnnotationsHelper
       annotations_project_doc_path(@project.name, @doc.id)
     else
       if params[:div_id].present?
-        create_annotatons_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+        generate_annotatons_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
       else
-        create_annotatons_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
+        generate_annotatons_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
       end
     end
   end  

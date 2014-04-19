@@ -46,20 +46,10 @@ class ApplicationController < ActionController::Base
   end
 
   def get_docspec(params)
-    if params[:pmdoc_id]
-      sourcedb = 'PubMed'
-      sourceid = params[:pmdoc_id]
-      serial   = 0
-    elsif params[:pmcdoc_id]
-      sourcedb = 'PMC'
-      sourceid = params[:pmcdoc_id]
-      serial   = params[:div_id]
-    else
-      sourcedb = params[:sourcedb]
-      sourceid = params[:sourceid]
-      serial   = params[:div_id].present? ? params[:div_id] : 0
-      id = params[:id] if params[:id]
-    end
+    sourcedb = params[:sourcedb]
+    sourceid = params[:sourceid]
+    serial   = params[:div_id].present? ? params[:div_id] : 0
+    id = params[:id] if params[:id]
 
     return sourcedb, sourceid, serial, id
   end
@@ -174,7 +164,7 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def gen_annotations (annotations, annserver, options = nil)
+  def gen_annotations (annotations, annserver)
     RestClient.post annserver, {:text => annotations[:text], :options => {}.to_json}, :content_type => :json, :accept => :json do |response, request, result|
       case response.code
       when 200
