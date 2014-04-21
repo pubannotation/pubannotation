@@ -98,15 +98,15 @@ class AnnotationsController < ApplicationController
   # POST /annotations.json
   def create
     project, notice = get_project(params[:project_id])
+
     if project
       doc, notice = get_doc(*get_docspec(params))
       doc = nil if doc and !project.docs.include?(doc)
 
       if doc
-
         annotations = if params[:annotations]
             params[:annotations].symbolize_keys
-        elsif params[:text]
+        elsif params[:text] and !params[:text].empty?
           {:text => params[:text], :denotations => params[:denotations], :relations => params[:relations], :modifications => params[:modifications]}
         else
           nil
@@ -117,9 +117,8 @@ class AnnotationsController < ApplicationController
         else
           notice = t('controllers.annotations.create.no_annotation')
         end
-
       else
-        notice = t('controllers.annotations.create.does_not_include', :project_id => params[:project_id], :sourceid => sourceid)
+        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => sourcedb, :sourceid => sourceid)
       end
     end
 
@@ -136,7 +135,7 @@ class AnnotationsController < ApplicationController
 
       format.json {
         if doc and project and annotations
-          head :no_content, :content_type => ''
+          head :created
         else
           head :unprocessable_entity
         end
@@ -158,7 +157,7 @@ class AnnotationsController < ApplicationController
         annotations = gen_annotations(annotations, params[:annotation_server])
         notice      = save_annotations(annotations, project, doc)
       else
-        notice = t('controllers.annotations.create.does_not_include', :project_id => params[:project_id], :sourceid => sourceid)
+        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => sourcedb, :sourceid => sourceid)
       end
     end
 

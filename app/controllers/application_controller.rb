@@ -179,33 +179,29 @@ class ApplicationController < ActionController::Base
 
 
   def save_annotations (annotations, project, doc)
-    denotations, notice = clean_hdenotations(annotations[:denotations])
-    if denotations
+    denotations_old = doc.denotations.where(:project_id => project.id)
+    denotations_old.destroy_all
+    notice = I18n.t('controllers.application.save_annotations.annotation_cleared')
+
+    if annotations[:denotations] and !annotations[:denotations].empty?
+      denotations, notice = clean_hdenotations(annotations[:denotations])
       denotations = realign_denotations(denotations, annotations[:text], doc.body)
+      save_hdenotations(denotations, project, doc)
 
-      if denotations
-        denotations_old = doc.denotations.where("project_id = ?", project.id)
-        denotations_old.destroy_all
-
-        save_hdenotations(denotations, project, doc)
-
-        if annotations[:relations] and !annotations[:relations].empty?
-          relations = annotations[:relations]
-          relations = relations.values if relations.respond_to?(:values)
-          save_hrelations(relations, project, doc)
-        end
-
-        if annotations[:modifications] and !annotations[:modifications].empty?
-          modifications = annotations[:modifications]
-          modifications = modifications.values if modifications.respond_to?(:values)
-          save_hmodifications(modifications, project, doc)
-        end
-
-        notice = I18n.t('controllers.application.save_annotations.successfully_saved')
+      if annotations[:relations] and !annotations[:relations].empty?
+        relations = annotations[:relations]
+        relations = relations.values if relations.respond_to?(:values)
+        save_hrelations(relations, project, doc)
       end
-    end
 
-    notice
+      if annotations[:modifications] and !annotations[:modifications].empty?
+        modifications = annotations[:modifications]
+        modifications = modifications.values if modifications.respond_to?(:values)
+        save_hmodifications(modifications, project, doc)
+      end
+
+      notice = I18n.t('controllers.application.save_annotations.successfully_saved')
+    end
   end
 
 

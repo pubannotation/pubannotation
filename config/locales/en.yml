@@ -287,14 +287,15 @@ en:
         not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the annotation set, %{project_name}.
         no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
       get_divs:
-        not_belong_to: The document, PMC::%{sourceid}, does not belong to the annotation set, %{project_name}.
-        no_annotation: No annotation to the document, PMC:%{sourceid}, exists in PubAnnotation.
+        not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the annotation set, %{project_name}.
+        no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
       save_annotations:
-        successfully_saved: Annotations were successfully created/updated.
+        annotation_cleared: Annotations are cleared.
+        successfully_saved: Annotations are successfully created/updated.
     annotations:
       create:
-        does_not_include: The annotation set, %{project_id}, does not include the document, PubMed:%{sourceid}.
-        no_annotation: No annotation found in the submission.
+        no_project_document: The project, %{project_id}, does not exist, or the document, %{sourcedb}:%{sourceid}, does not belong to the project.
+        no_annotation: No annotation in the submission.
       confirm_create_zip: Are you sure to create zip? It will take a few minutes.
       create_zip: Create annotations ZIP file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.

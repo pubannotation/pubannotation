@@ -311,6 +311,7 @@ ja:
         not_belong_to: ドキュメントPMC::%{sourceid}はアノテーションセット%{project_name}に属していません
         no_annotation: PubAnnotation内にドキュメントPMC:%{sourceid}のアノテーションセットは存在しません
       save_annotations:
+        annotation_cleared: 既存のアノテーションを消しました
         successfully_saved: アノテーションは正常に作成／更新されました
     annotations:
       create:
