@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :only => [:new, :edit, :create, :create_project_docs, :update, :destroy, :delete_project_docs]
+  before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_docs]
 
   # GET /docs
   # GET /docs.json
