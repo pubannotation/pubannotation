@@ -237,12 +237,13 @@ class ApplicationController < ActionController::Base
 
   # clean denotations
   def clean_hdenotations (denotations)
+    denotations = denotations.collect {|d| d.symbolize_keys}
     ids = denotations.collect {|d| d[:id]}
     ids.compact!
 
     idnum = 1
     denotations.each do |a|
-      return nil, "format error" unless (a[:span] or (a[:begin] and a[:end])) and a[:obj]
+      return nil, "format error #{p a}" unless (a[:span] or (a[:begin] and a[:end])) and a[:obj]
 
       unless a[:id]
         idnum += 1 until !ids.include?('T' + idnum.to_s)
@@ -322,18 +323,14 @@ class ApplicationController < ActionController::Base
 
 
   def save_hrelations (hrelations, project, doc)
+    hrelations = hrelations.collect{|r| r.symbolize_keys}
+
     hrelations.each do |a|
       ra           = Relation.new
       ra.hid       = a[:id]
       ra.pred      = a[:pred]
-      ra.subj      = case a[:subj]
-        when /^[TE]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subj])
-      end
-      ra.obj       = case a[:obj]
-        when /^[TE]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
-      end
+      ra.subj      = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
+      ra.obj       = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
       ra.project_id = project.id
       ra.save
     end
