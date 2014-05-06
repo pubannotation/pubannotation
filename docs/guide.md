@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Guide
-next_section: quickstart
+next_section: /create-project
 permalink: /guide/
 ---
 
