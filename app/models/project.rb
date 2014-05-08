@@ -164,7 +164,7 @@ class Project < ActiveRecord::Base
   end
 
   def destroyable_for?(current_user)
-    current_user == user || current_user
+    current_user == user  
   end
   
   def association_for(current_user)
