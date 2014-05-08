@@ -20,8 +20,9 @@
   <tr>
     <th><%= f.label :license %></th>
     <td>
-      <%= f.text_field :license, :value => "Creative Commons Attribution 3.0 Unported License", :class => "input" %>
-      <%= hint_helper({:model => :project, :column => :license}) %>
+      <%= f.text_field :license, :class => "input" %>
+      <%= hint_helper({:model => :project, :column => :license}) %><br/>
+      <span class="note">e.g., Creative Commons Attribution 3.0 Unported License</span>
     </td>
 
   </tr>
@@ -161,7 +162,7 @@
       <%= f.text_field :editor, :class => "input", :placeholder => 'URL' %>
       <%= hint_helper({:model => :project, :column => :editor})%>
       <br/>
-      <span class="note"><%= t('views.projects.try_textae') %> <a href="http://bionlp.dbcls.jp/textae/">TextAE</a></span>.
+      <span class="note"><%= t('views.projects.try_textae') %> <a href="http://bionlp.dbcls.jp/textae/textae.html">TextAE</a></span>.
     </td>
   </tr>
   <tr>

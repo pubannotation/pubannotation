@@ -31,6 +31,7 @@ class Project < ActiveRecord::Base
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
   
   default_scope where(:type => nil)
+
   scope :accessible, lambda{|current_user|
     if current_user.present?
       includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
@@ -38,13 +39,15 @@ class Project < ActiveRecord::Base
       where(:accessibility => 1)
     end
   }
+
   scope :not_id_in, lambda{|project_ids|
     where('projects.id NOT IN (?)', project_ids)
   }
+
   scope :id_in, lambda{|project_ids|
     where('projects.id IN (?)', project_ids)
   }
-    
+  
   # scopes for order
   scope :order_pmdocs_count, 
     joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PubMed'").

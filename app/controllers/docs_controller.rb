@@ -1,6 +1,8 @@
 require 'zip/zip'
 
 class DocsController < ApplicationController
+  protect_from_forgery :except => [:create]
+  before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_docs]
 
   # GET /docs
   # GET /docs.json
@@ -13,10 +15,18 @@ class DocsController < ApplicationController
       docs = Doc
       @search_path = search_docs_path
     end
-    params[:order_method] ||= 'ASC'
-    @reverse_order_method = params[:order_method] == 'ASC' ? 'DESC' : 'ASC'
-    docs_order = "#{params[:order_key]} #{params[:order_method]}" if params[:order_key]
-    @source_docs = docs.source_db_id(docs_order).paginate(:page => params[:page])
+
+    if params[:sort_key]
+      @sort_order = flash[:sort_order]
+      @sort_order.delete(@sort_order.assoc(params[:sort_key]))
+      @sort_order.unshift([params[:sort_key], params[:sort_direction]])
+    else
+      # initialize the sort order
+      @sort_order = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
+    end
+
+    @source_docs = docs.where(serial: 0).order(@sort_order.collect{|s| s.join(' ')}.join(', ')).paginate(:page => params[:page])
+    flash[:sort_order] = @sort_order
   end
  
   def records
@@ -24,12 +34,12 @@ class DocsController < ApplicationController
       @project, notice = get_project(params[:project_id])
       @new_doc_src = new_project_doc_path
       if @project
-        @docs = @project.docs.order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
+        @docs = @project.docs.order('sourcedb ASC').order('sourceid ASC').order('serial ASC')
       else
         @docs = nil
       end
     else
-      @docs = Doc.order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
+      @docs = Doc.order('sourcedb ASC').order('sourceid ASC').order('serial ASC')
       @new_doc_src = new_doc_path
     end
 
@@ -85,11 +95,18 @@ class DocsController < ApplicationController
     else
       docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
     end
-    params[:order_method] ||= 'ASC'
-    @reverse_order_method = params[:order_method] == 'ASC' ? 'DESC' : 'ASC'
-    docs_order = "#{params[:order_key]} #{params[:order_method]}" if params[:order_key]
-    @source_docs = docs.source_db_id(docs_order).paginate(:page => params[:page])
-    # @source_docs = docs.where(['sourcedb = ?', params[:sourcedb]]).order('sourceid ASC').paginate(:page => params[:page])
+
+    if params[:sort_key]
+      @sort_order = flash[:sort_order]
+      @sort_order.delete(@sort_order.assoc(params[:sort_key]))
+      @sort_order.unshift([params[:sort_key], params[:sort_direction]])
+    else
+      # initialize the sort order
+      @sort_order = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
+    end
+
+    @source_docs = docs.where(serial: 0).order(@sort_order.collect{|s| s.join(' ')}.join(', ')).paginate(:page => params[:page])
+    flash[:sort_order] = @sort_order
   end 
     
   def search
@@ -134,7 +151,19 @@ class DocsController < ApplicationController
     @project, notice = get_project(params[:project_id])
     if @doc.present?
       @text = @doc.body
-      @projects = get_projects({:doc => @doc})
+
+      if params[:sort_key]
+        @sort_order = flash[:sort_order]
+        @sort_order.delete(@sort_order.assoc(params[:sort_key]))
+        @sort_order.unshift([params[:sort_key], params[:sort_direction]])
+      else
+        # initialize the sort order
+        @sort_order = [['name', 'ASC'], ['author', 'ASC']]
+      end
+
+      @projects = @doc.projects.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+      flash[:sort_order] = @sort_order
+
       respond_to do |format|
         format.html # show.html.erb
         format.json { render json: @doc }

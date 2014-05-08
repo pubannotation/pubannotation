@@ -46,20 +46,10 @@ class ApplicationController < ActionController::Base
   end
 
   def get_docspec(params)
-    if params[:pmdoc_id]
-      sourcedb = 'PubMed'
-      sourceid = params[:pmdoc_id]
-      serial   = 0
-    elsif params[:pmcdoc_id]
-      sourcedb = 'PMC'
-      sourceid = params[:pmcdoc_id]
-      serial   = params[:div_id]
-    else
-      sourcedb = params[:sourcedb]
-      sourceid = params[:sourceid]
-      serial   = params[:div_id].present? ? params[:div_id] : 0
-      id = params[:id] if params[:id]
-    end
+    sourcedb = params[:sourcedb]
+    sourceid = params[:sourceid]
+    serial   = params[:div_id].present? ? params[:div_id] : 0
+    id = params[:id] if params[:id]
 
     return sourcedb, sourceid, serial, id
   end
@@ -174,7 +164,7 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def gen_annotations (annotations, annserver, options = nil)
+  def gen_annotations (annotations, annserver)
     RestClient.post annserver, {:text => annotations[:text], :options => {}.to_json}, :content_type => :json, :accept => :json do |response, request, result|
       case response.code
       when 200
@@ -189,33 +179,29 @@ class ApplicationController < ActionController::Base
 
 
   def save_annotations (annotations, project, doc)
-    denotations, notice = clean_hdenotations(annotations[:denotations])
-    if denotations
+    denotations_old = doc.denotations.where(:project_id => project.id)
+    denotations_old.destroy_all
+    notice = I18n.t('controllers.application.save_annotations.annotation_cleared')
+
+    if annotations[:denotations] and !annotations[:denotations].empty?
+      denotations, notice = clean_hdenotations(annotations[:denotations])
       denotations = realign_denotations(denotations, annotations[:text], doc.body)
+      save_hdenotations(denotations, project, doc)
 
-      if denotations
-        denotations_old = doc.denotations.where("project_id = ?", project.id)
-        denotations_old.destroy_all
-
-        save_hdenotations(denotations, project, doc)
-
-        if annotations[:relations] and !annotations[:relations].empty?
-          relations = annotations[:relations]
-          relations = relations.values if relations.respond_to?(:values)
-          save_hrelations(relations, project, doc)
-        end
-
-        if annotations[:modifications] and !annotations[:modifications].empty?
-          modifications = annotations[:modifications]
-          modifications = modifications.values if modifications.respond_to?(:values)
-          save_hmodifications(modifications, project, doc)
-        end
-
-        notice = I18n.t('controllers.application.save_annotations.successfully_saved')
+      if annotations[:relations] and !annotations[:relations].empty?
+        relations = annotations[:relations]
+        relations = relations.values if relations.respond_to?(:values)
+        save_hrelations(relations, project, doc)
       end
-    end
 
-    notice
+      if annotations[:modifications] and !annotations[:modifications].empty?
+        modifications = annotations[:modifications]
+        modifications = modifications.values if modifications.respond_to?(:values)
+        save_hmodifications(modifications, project, doc)
+      end
+
+      notice = I18n.t('controllers.application.save_annotations.successfully_saved')
+    end
   end
 
 
@@ -251,12 +237,13 @@ class ApplicationController < ActionController::Base
 
   # clean denotations
   def clean_hdenotations (denotations)
+    denotations = denotations.collect {|d| d.symbolize_keys}
     ids = denotations.collect {|d| d[:id]}
     ids.compact!
 
     idnum = 1
     denotations.each do |a|
-      return nil, "format error" unless (a[:span] or (a[:begin] and a[:end])) and a[:obj]
+      return nil, "format error #{p a}" unless (a[:span] or (a[:begin] and a[:end])) and a[:obj]
 
       unless a[:id]
         idnum += 1 until !ids.include?('T' + idnum.to_s)
@@ -336,18 +323,14 @@ class ApplicationController < ActionController::Base
 
 
   def save_hrelations (hrelations, project, doc)
+    hrelations = hrelations.collect{|r| r.symbolize_keys}
+
     hrelations.each do |a|
       ra           = Relation.new
       ra.hid       = a[:id]
       ra.pred      = a[:pred]
-      ra.subj      = case a[:subj]
-        when /^[TE]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:subj])
-      end
-      ra.obj       = case a[:obj]
-        when /^[TE]/ then Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
-        else           doc.instances.find_by_project_id_and_hid(project.id, a[:obj])
-      end
+      ra.subj      = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
+      ra.obj       = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
       ra.project_id = project.id
       ra.save
     end
