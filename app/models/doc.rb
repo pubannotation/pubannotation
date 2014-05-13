@@ -74,7 +74,7 @@ class Doc < ActiveRecord::Base
     where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
   }
   
-  scope :source_dbs, where(['sourcedb IS NOT ? AND sourcedb != ?', nil, ''])
+  scope :source_dbs, where(['sourcedb IS NOT ? AND sourcedb IS NOT ?', nil, ''])
   
   def self.order_by(docs, order)
     if docs.present?
