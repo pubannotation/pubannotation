@@ -18,22 +18,6 @@ describe Doc do
     end
   end
   
-  describe 'has_many instances' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
-      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
-    end
-    
-    it 'denotation.instances should present' do
-      @denotation.instances.should be_present
-    end
-    
-    it 'denotation.instances should include instance through denotations' do
-      (@denotation.instances - [@instance]).should be_blank
-    end
-  end
-  
   describe 'has_many :subcatrels' do
     before do
       @doc = FactoryGirl.create(:doc)
@@ -63,31 +47,6 @@ describe Doc do
         :obj_id => 20,
         :project_id => 30
       ) 
-    end
-    
-    it 'doc.subinsrels should present' do
-      @doc.subinsrels.should be_present
-    end
-    
-    it 'doc.subinsrels include Relation thrhou instances' do
-      (@doc.subinsrels - [@subinsrel]).should be_blank
-    end
-  end
-
-  describe 'has_many insmods' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
-      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
-      @insmod = FactoryGirl.create(:modification, :obj => @instance, :project_id => 5)
-    end
-    
-    it 'doc.insmods should present' do
-      @doc.insmods.should be_present
-    end
-    
-    it 'doc.insmods should present' do
-      (@doc.insmods - [@insmod]).should be_blank
     end
   end
   
@@ -125,14 +84,6 @@ describe Doc do
         :obj => @subinsrel,
         :project_id => 30
       )
-    end
-    
-    it 'doc.subinsrelmods should present' do
-      @doc.subinsrelmods.should be_present
-    end
-    
-    it 'doc.subinsrelmods should inclde modification through subcatrels' do
-      (@doc.subinsrelmods - [@subinsrelmod]).should be_blank
     end
   end
   
@@ -256,14 +207,6 @@ describe Doc do
       2.times do
         FactoryGirl.create(:doc, :sourcedb => 'sdb')
       end
-      # create docs not belongs to project sourced db nil
-      2.times do
-        FactoryGirl.create(:doc, :sourcedb => nil)
-      end
-      # create docs not belongs to project sourced db ''
-      2.times do
-        FactoryGirl.create(:doc, :sourcedb => '')
-      end  
       @docs = Doc.source_dbs   
     end
     
@@ -358,10 +301,6 @@ describe Doc do
   
   describe 'source_db_id' do
     before do
-      @doc_sourcedb_nil = FactoryGirl.create(:doc, :sourcedb => nil)
-      @doc_sourcedb_blank = FactoryGirl.create(:doc, :sourcedb => '')
-      @doc_sourceid_nil = FactoryGirl.create(:doc, :sourceid => nil)
-      @doc_sourceid_blank = FactoryGirl.create(:doc, :sourceid => '')
       @doc_sourcedb_uniq = FactoryGirl.create(:doc, :sourcedb => 'Uniq1', :sourceid => '11')
       @doc_sourceid_uniq_1 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '10')
       @doc_sourceid_uniq_2 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '123')
@@ -370,22 +309,6 @@ describe Doc do
     context 'when order_key_method nil' do
       before do
         @docs = Doc.source_db_id(nil)
-      end
-      
-      it 'should not include sourcedb is nil' do
-        @docs.should_not include(@doc_sourcedb_nil)
-      end
-      
-      it 'should not include sourcedb is blank' do
-        @docs.should_not include(@doc_sourcedb_blank)
-      end
-      
-      it 'should not include sourceid is nil' do
-        @docs.should_not include(@doc_sourceid_nil)
-      end
-      
-      it 'should not include sourceid is blank' do
-        @docs.should_not include(@doc_sourceid_blank)
       end
       
       it 'should include has no same sourcedb docs' do
@@ -537,23 +460,23 @@ describe Doc do
             
       context 'relations_count' do
         before do
-          @doc_3relations = Doc.create(:id => 5)
+          @doc_3relations = FactoryGirl.create(:doc, :id => 5)
           3.times do
             denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => @doc_3relations)
             FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
           end
   
-          @doc_2relations = Doc.create(:id => 4)
+          @doc_2relations = FactoryGirl.create(:doc, :id => 4)
           2.times do
             denotation = FactoryGirl.create(:denotation, :project_id => 2, :doc => @doc_2relations)
             FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
           end
           
-          @doc_1relations = Doc.create(:id => 3)
+          @doc_1relations = FactoryGirl.create(:doc, :id => 3)
           denotation = FactoryGirl.create(:denotation, :project_id => 3, :doc => @doc_1relations)
           FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
           
-          @doc_0relations = Doc.create(:id => 2)
+          @doc_0relations = FactoryGirl.create(:doc, :id => 2)
           @docs = Doc.order_by(Doc, 'relations_count')
         end
         
@@ -679,7 +602,7 @@ describe Doc do
     end
     
     it 'should return project_relations_count values' do
-      @doc.project_relations_count(nil).should eql(@project_relations_count * 2)
+      @doc.project_relations_count(nil).should eql(@project_relations_count)
     end
   end
   
@@ -1003,6 +926,21 @@ describe Doc do
     end    
   end
   
+  describe 'spans_highlight' do
+    before do
+      @begin = 5
+      @end = 10
+      @body = 'ABCDE12345ABCDE1234567890'
+
+      @doc = FactoryGirl.create(:doc, body: @body)
+      @spans_highlight = @doc.spans_highlight({begin: @begin, end: @end})
+    end
+    
+    it 'should return prev, span, next text' do
+      @spans_highlight.should eql("#{@doc.body[0...@begin]}<span class='highlight'>#{@doc.body[@begin...@end]}</span>#{@doc.body[@end..@doc.body.length]}")
+    end
+  end
+
   describe 'hdenotations' do
     before do
       @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
@@ -1154,70 +1092,6 @@ describe Doc do
     end
   end
   
-  describe 'hinstances' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation)
-    end
-    
-    context 'when options[:spans] present' do
-      before do
-        @instance_1 = FactoryGirl.create(:instance, :hid => 'hid_1', :pred => 'pred_1', :obj => @denotation)
-        @instance_2 = FactoryGirl.create(:instance, :hid => 'hid_2', :pred => 'pred_2', :obj => @denotation)
-        @within_spans = [double(:id => @instance_1.obj_id), double(:id => @instance_2.obj_id)]
-        Denotation.stub(:within_spans).and_return(@within_spans)
-        @hinstances = @doc.hinstances(nil, {:spans => {:begin_pos => 1, :end_pos => 5}})
-      end
-      
-      it 'should return Instance where obj_id IN self.denotations.within_spans.instances' do
-        @hinstances.should eql([
-          {:id => @instance_1.hid, :pred => @instance_1.pred, :obj=> @denotation.hid}, 
-          {:id => @instance_2.hid, :pred => @instance_2.pred, :obj=> @denotation.hid}
-          ]) 
-      end
-    end
-    
-    context 'when options[:spans] blank' do
-      before do
-        @project = FactoryGirl.create(:project)
-        @instance_3 = FactoryGirl.create(:instance, :project => @project, :hid => 'Phid_1', :pred => 'Ppred_1', :obj => @denotation)
-        @instance_4 = FactoryGirl.create(:instance, :project => @project, :hid => 'Phid_2', :pred => 'Ppred_2', :obj => @denotation)
-      end
-      
-      context 'when project.accosite_projects blank' do
-        before do
-          @hinstances = @doc.hinstances(@project)
-        end
-        
-        it 'should return Instance where obj_id IN self.denotations.within_spans.instances' do
-          @hinstances.should eql([
-            {:id => @instance_3.hid, :pred => @instance_3.pred, :obj=> @denotation.hid}, 
-            {:id => @instance_4.hid, :pred => @instance_4.pred, :obj=> @denotation.hid}
-            ]) 
-        end
-      end
-
-      context 'when project.accosite_projects present' do
-        before do
-          @project_1 = FactoryGirl.create(:project)
-          @project_1.associate_projects << @project
-          @associate_project = FactoryGirl.create(:project)
-          @project_1.associate_projects << @associate_project
-          @instance_5 = FactoryGirl.create(:instance, :project => @associate_project, :hid => 'assocPhid_2', :pred => 'assocPpred_2', :obj => @denotation)
-          @hinstances = @doc.hinstances(@project_1)
-        end
-        
-        it 'should return Instance belongs to denotation, project and associate_projects' do
-          @hinstances.should eql([
-            {:id => @instance_3.hid, :pred => @instance_3.pred, :obj=> @denotation.hid}, 
-            {:id => @instance_4.hid, :pred => @instance_4.pred, :obj=> @denotation.hid},
-            {:id => @instance_5.hid, :pred => @instance_5.pred, :obj=> @denotation.hid}
-            ]) 
-        end
-      end
-    end
-  end
-  
   describe 'hrelations' do
     before do
       @doc = FactoryGirl.create(:doc)
@@ -1262,7 +1136,7 @@ describe Doc do
         it 'should return doc.subcatrels and subinsresl' do
           @hrelations.should eql([
               {:id => @relation_1.hid, :pred => @relation_1.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid}, 
-              {:id => @relation_2.hid, :pred => @relation_2.pred, :subj => @instance_1.hid, :obj => @instance_1.hid}
+              # {:id => @relation_2.hid, :pred => @relation_2.pred, :subj => @instance_1.hid, :obj => @instance_1.hid}
           ])
         end
       end
@@ -1278,9 +1152,7 @@ describe Doc do
         it 'should return doc.subcatrels and subinsresl' do
           @hrelations.should eql([
               {:id => @relation_1.hid, :pred => @relation_1.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid}, 
-              {:id => @relation_3.hid, :pred => @relation_3.pred, :subj => @denotation_2.hid, :obj => @denotation_2.hid}, 
-              {:id => @relation_2.hid, :pred => @relation_2.pred, :subj => @instance_1.hid, :obj => @instance_1.hid}, 
-              {:id => @relation_4.hid, :pred => @relation_4.pred, :subj => @instance_2.hid, :obj => @instance_2.hid}
+              {:id => @relation_3.hid, :pred => @relation_3.pred, :subj => @denotation_2.hid, :obj => @denotation_2.hid} 
           ])
         end
       end
@@ -1316,12 +1188,12 @@ describe Doc do
       before do
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
         @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project_id => 1)
-        @modification_1 = FactoryGirl.create(:modification, :hid => 'HID', :pred => 'PRED', :obj_type => 'Instance', :obj => @instance_1)
+        @modification_1 = FactoryGirl.create(:modification, :hid => 'HID', :pred => 'PRED', :obj_type => 'Denotation', :obj => @denotation_1)
         @hmodifications = @doc.hmodifications(@project,  {:spans => {:begin_pos => 1, :end_pos => 5}})
       end
       
       it 'should return denotations.within_spans.modifications' do
-        @hmodifications.should eql([{:id => @modification_1.hid, :pred => @modification_1.pred, :obj => @instance_1.hid}])
+        @hmodifications.should eql([{:id => @modification_1.hid, :pred => @modification_1.pred, :obj => @denotation_1.hid}])
       end
     end
     
@@ -1329,55 +1201,29 @@ describe Doc do
       before do
         @project_1 = FactoryGirl.create(:project)
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc)
-        @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project => @project_1)
-        @modification_1 = FactoryGirl.create(:modification, :hid => 'M1', :obj => @instance_1, :project => @project_1)
+        # @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project => @project_1)
+        @modification_1 = FactoryGirl.create(:modification, :hid => 'M1', :obj => @denotation_1, :project => @project_1)
         @relation_1 = FactoryGirl.create(:subcatrel, :hid => 'r1', :obj => @denotation_1, :project => @project_1)
-        @relation_2 = FactoryGirl.create(:subinsrel, :hid => 'r2', :obj => @instance_1, :project => @project_1)
+        @relation_2 = FactoryGirl.create(:subinsrel, :hid => 'r2', :obj => @denotation_1, :project => @project_1)
         @modification_2 = FactoryGirl.create(:modification, :hid => 'M2', :obj => @relation_1, :obj_type => @relation_1.class.to_s, :project => @project_1)
         @modification_3 = FactoryGirl.create(:modification, :hid => 'M3', :obj => @relation_2, :obj_type => @relation_2.class.to_s, :project => @project_1)
 
         @project_2 = FactoryGirl.create(:project)
         @denotation_2 = FactoryGirl.create(:denotation, :doc => @doc)
-        @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2, :project => @project_2)
-        @modification_4 = FactoryGirl.create(:modification, :hid => 'M4', :obj => @instance_2, :project => @project_2)
+        # @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2, :project => @project_2)
+        @modification_4 = FactoryGirl.create(:modification, :hid => 'M4', :obj => @denotation_2, :project => @project_2)
         @relation_3 = FactoryGirl.create(:subcatrel, :hid => 'r3', :obj => @denotation_2, :project => @project_2)
-        @relation_4 = FactoryGirl.create(:subinsrel, :hid => 'r4', :obj => @instance_2, :project => @project_2)
+        @relation_4 = FactoryGirl.create(:subinsrel, :hid => 'r4', :obj => @denotation_2, :project => @project_2)
         @modification_5 = FactoryGirl.create(:modification, :hid => 'M5', :obj => @relation_3, :obj_type => @relation_3.class.to_s, :project => @project_2)
         @modification_6 = FactoryGirl.create(:modification, :hid => 'M6', :obj => @relation_4, :obj_type => @relation_4.class.to_s, :project => @project_2)
+        @hmodifications = @doc.hmodifications(@project_1) 
       end
       
-      context 'when project.accociate_project blank' do
-        before do
-          @hmodifications = @doc.hmodifications(@project_1) 
-        end
-        
-        it 'should return self.insmodes, subcatrelmods and subinsrelmods where project_id = project.id' do
-          @hmodifications.should eql([
-            {:id => @modification_1.hid, :pred => @modification_1.pred, :obj => @instance_1.hid}, 
-            {:id => @modification_2.hid, :pred => @modification_1.pred, :obj => @relation_1.hid}, 
-            {:id => @modification_3.hid, :pred => @modification_1.pred, :obj => @relation_2.hid}
-          ])
-        end
-      end
-
-      context 'when project.accociate_project present' do
-        before do
-          @project = FactoryGirl.create(:project)
-          @project.associate_projects << @project_1
-          @project.associate_projects << @project_2
-          @hmodifications = @doc.hmodifications(@project)
-        end
-        
-        it 'should return self.insmodes, subcatrelmods and subinsrelmods where project_id = project.id' do
-          @hmodifications.should eql([
-            {:id => @modification_1.hid, :pred => @modification_1.pred, :obj => @instance_1.hid}, 
-            {:id => @modification_2.hid, :pred => @modification_2.pred, :obj => @relation_1.hid}, 
-            {:id => @modification_3.hid, :pred => @modification_3.pred, :obj => @relation_2.hid},
-            {:id => @modification_4.hid, :pred => @modification_4.pred, :obj => @instance_2.hid},
-            {:id => @modification_5.hid, :pred => @modification_5.pred, :obj => @relation_3.hid},
-            {:id => @modification_6.hid, :pred => @modification_6.pred, :obj => @relation_4.hid},
-          ])
-        end
+      it 'should return self.catmods, subcatrelmods and subinsrelmods where project_id = project.id' do
+        @hmodifications.should eql([
+          {:id => @modification_1.hid, :pred => @modification_1.pred, :obj => @denotation_1.hid}, 
+          {:id => @modification_2.hid, :pred => @modification_2.pred, :obj => @relation_1.hid} 
+        ])
       end
     end
   end
@@ -1499,10 +1345,14 @@ describe Doc do
       end
       
       context 'when current_user is not project.user nor project.associate_maintainer.user' do
-        pending 'always return true for demo' do
-          it 'should return false' do
-            @doc.updatable_for?(FactoryGirl.create(:user)).should be_false
-          end
+        it 'should return false' do
+          @doc.updatable_for?(FactoryGirl.create(:user)).should be_false
+        end
+      end
+      
+      context 'when current_user is blank' do
+        it 'should return false' do
+          @doc.updatable_for?(nil).should be_false
         end
       end
     end
