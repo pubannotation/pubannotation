@@ -104,25 +104,13 @@ describe Project do
     end
   end
   
-  describe 'has_many instances' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @instance = FactoryGirl.create(:instance, :obj_id => 10, :project => @project)
-    end
-    
-    it 'project.instances should present' do
-      @project.instances.should be_present
-    end
-    
-    it 'project.instances should include related instance' do
-      (@project.instances - [@instance]).should be_blank
-    end
-  end
-  
   describe 'has_many modifications' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @modification = FactoryGirl.create(:modification, :obj_id => 1, :project => @project)      
+      @doc = FactoryGirl.create(:doc)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @modification = FactoryGirl.create(:modification, :obj => @denotation, :project => @project)
+      # @modification = FactoryGirl.create(:modification, :obj_id => 1, :project => @project)      
     end
     
     it 'project.modifications should be present' do
@@ -1612,6 +1600,40 @@ describe Project do
            ]
         end      
       end
+    end
+  end
+
+  describe 'decrement_counters' do
+    before do
+      @pmdocs_count = 1
+      @pmcdocs_count = 2
+      @denotations_count = 3
+      @relations_count = 4
+      @project = FactoryGirl.create(:project, pmdocs_count: @pmdocs_count, pmcdocs_count: @pmcdocs_count, denotations_count: @denotations_count, relations_count: @relations_count)
+      @associate_project = FactoryGirl.create(:project)
+      @associate_project.stub(:pmdocs).and_return([1])
+      @associate_project.stub(:pmcdocs).and_return([1])
+      @associate_project.stub(:denotations).and_return([1])
+      @associate_project.stub(:relations).and_return([1])
+      @project.reload
+      @project.decrement_counters(@associate_project)
+      @project.reload
+    end
+
+    it 'should decrement project.pmdocs_count' do
+      @project.pmdocs_count.should eql(@pmdocs_count - 1) 
+    end
+
+    it 'should decrement project.pmcdocs_count' do
+      @project.pmcdocs_count.should eql(@pmcdocs_count - 1) 
+    end
+    
+    it 'should decrement project.denotations_count' do
+      @project.denotations_count.should eql(@denotations_count - 1) 
+    end
+
+    it 'should decrement project.relations_count' do
+      @project.relations_count.should eql(@relations_count - 1) 
     end
   end
   
