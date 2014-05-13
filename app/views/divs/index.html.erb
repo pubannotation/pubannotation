@@ -14,7 +14,6 @@
 
 <!-- tablesorter js -->
 <% content_for :javascript do %>
-	<%= javascript_include_tag "jquery.tablesorter" %>
 	<script type="text/javascript">
 		$(document).ready(function() 
 		    { 
@@ -40,12 +39,12 @@
 		<tr>
 			<th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
 			<th style="width:6em"><%= t('activerecord.attributes.doc.sourceid')%></th>
-			<th style="width:2em" class="sortable-th"><%= t('views.divs.div')%></th>
+			<th style="width:3em" class="sortable-ASC"><%= t('views.divs.div')%></th>
 			<th style="width:14em"><%= t('activerecord.attributes.doc.section') %></th>
 			<th><%= t('activerecord.attributes.doc.body') %></th>
 			<th style="width:3em"><%= t('views.shared.size') %></th>
-			<th style="width:1em" class="sortable-th" title="<%= t('activerecord.models.denotations') %>">D</th>
-			<th style="width:1em" class="sortable-th" title="<%= t('activerecord.models.relations') %>">R</th>
+			<th style="width:2em" class="sortable-ASC" title="<%= t('activerecord.models.denotations') %>">D</th>
+			<th style="width:2em" class="sortable-ASC" title="<%= t('activerecord.models.relations') %>">R</th>
 			<th style="width:4em"></th>
 		</tr>
 	</thead>

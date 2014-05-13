@@ -87,4 +87,13 @@ module ApplicationHelper
     # sanitized_sql = ActiveRecord::Base::sanitize(params[:sql])#.gsub('\'', '')
     sql.gsub("\"", '\'')
   end
+
+  def sortable(key, title = nil)
+    title ||= key
+    current_direction = @sort_order.assoc(key)[1]
+    css_class = "sortable-" + current_direction
+    next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'
+    link_to title, {:sort_key => key, :sort_direction => next_direction}, {:class => css_class}
+  end
+
 end

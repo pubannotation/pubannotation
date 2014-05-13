@@ -66,7 +66,8 @@ class Doc < ActiveRecord::Base
     
   scope :source_db_id, lambda{|order_key_method|
     order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
-    select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count, CAST(sourceid AS INT) AS sourceid_int')
+    where(['sourcedb IS NOT ? AND sourceid IS NOT ?', nil, nil])
+    .select('*, CAST(sourceid AS INT) AS sourceid_int')
     .group(:sourcedb).group(:sourceid).order(order_key_method)
   }
   
@@ -74,7 +75,7 @@ class Doc < ActiveRecord::Base
     where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
   }
   
-  scope :source_dbs, where(['sourcedb IS NOT ? AND sourcedb IS NOT ?', nil, ''])
+  scope :source_dbs, where(['sourcedb IS NOT ?', nil])
   
   def self.order_by(docs, order)
     if docs.present?

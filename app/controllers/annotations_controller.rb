@@ -97,37 +97,68 @@ class AnnotationsController < ApplicationController
   # POST /annotations
   # POST /annotations.json
   def create
-    if params[:annotation_server].present? or (params[:annotations])
+    project, notice = get_project(params[:project_id])
 
-      project, notice = get_project(params[:project_id])
+    if project
+      doc, notice = get_doc(*get_docspec(params))
+      doc = nil if doc and !project.docs.include?(doc)
 
-      if project
-        if params[:doc_id].present?
-          doc = Doc.find(params[:doc_id])
+      if doc
+        annotations = if params[:annotations]
+            params[:annotations].symbolize_keys
+        elsif params[:text] and !params[:text].empty?
+          {:text => params[:text], :denotations => params[:denotations], :relations => params[:relations], :modifications => params[:modifications]}
         else
-          sourcedb, sourceid, serial, id = get_docspec(params)
-          doc, notice = get_doc(sourcedb, sourceid, serial, project, id)
+          nil
         end
-        if doc
-          if params[:annotation_server].present?
-            annotations = get_annotations(project, doc, :encoding => params[:encoding])
 
-            # options = [:db_name => params[:dictionary], :tax_ids => params[:tax_ids].split(/\s+/)]
-            # options = {:tax_ids => params[:tax_ids].split(/\s+/).collect {|id| id.to_i}}
-            # options = {:dics => params[:dics].split(/\s*,\s*/)}
-            options = nil
-            annotations = gen_annotations(annotations, params[:annotation_server], options)
-          else
-            # annotations = JSON.parse params[:annotations].to_json, :symbolize_names => true
-            annotations = params[:annotations].symbolize_keys
-          end
+        if annotations
           notice = save_annotations(annotations, project, doc)
         else
-          notice = t('controllers.annotations.create.does_not_include', :project_id => params[:project_id], :sourceid => sourceid)
+          notice = t('controllers.annotations.create.no_annotation')
         end
+      else
+        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => sourcedb, :sourceid => sourceid)
       end
-    else
-      notice = t('controllers.annotations.create.no_annotation')
+    end
+
+    respond_to do |format|
+      format.html {
+        if doc and project
+          redirect_to :back, notice: notice
+        elsif project
+          redirect_to project_path(project.name), notice: notice
+        else
+          redirect_to home_path, notice: notice
+        end
+      }
+
+      format.json {
+        if doc and project and annotations
+          head :created
+        else
+          head :unprocessable_entity
+        end
+      }
+    end
+
+  end
+
+
+  # POST /annotations
+  # POST /annotations.json
+  def generate
+    project = Project.accessible(current_user).find_by_name(params[:project_id])
+
+    if project
+      doc, notice = get_doc(*get_docspec(params))
+      if doc
+        annotations = get_annotations(project, doc, :encoding => params[:encoding])
+        annotations = gen_annotations(annotations, params[:annotation_server])
+        notice      = save_annotations(annotations, project, doc)
+      else
+        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => sourcedb, :sourceid => sourceid)
+      end
     end
 
     respond_to do |format|
@@ -149,7 +180,6 @@ class AnnotationsController < ApplicationController
         end
       }
     end
-
   end
 
 

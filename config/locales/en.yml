@@ -281,27 +281,28 @@ en:
         invalid: Invalid SQL
     application:
       get_project:
-        private: The annotation set, %{project_name}, is specified as private.
-        not_exist: The annotation set, %{project_name}, does not exist.        
+        private: The project, %{project_name}, is specified as private.
+        not_exist: The project, %{project_name}, does not exist.        
       get_doc:
-        not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the annotation set, %{project_name}.
+        not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the project, %{project_name}.
         no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
       get_divs:
-        not_belong_to: The document, PMC::%{sourceid}, does not belong to the annotation set, %{project_name}.
-        no_annotation: No annotation to the document, PMC:%{sourceid}, exists in PubAnnotation.
+        not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the project, %{project_name}.
+        no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
       save_annotations:
-        successfully_saved: Annotations were successfully created/updated.
+        annotation_cleared: Annotations are cleared.
+        successfully_saved: Annotations are successfully created/updated.
     annotations:
       create:
-        does_not_include: The annotation set, %{project_id}, does not include the document, PubMed:%{sourceid}.
-        no_annotation: No annotation found in the submission.
+        no_project_document: The project, %{project_id}, does not exist, or the document, %{sourcedb}:%{sourceid}, does not belong to the project.
+        no_annotation: No annotation in the submission.
       confirm_create_zip: Are you sure to create zip? It will take a few minutes.
       create_zip: Create annotations ZIP file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
     docs:
       create_project_docs:
-        added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
-        created_to_document_set: '%{num_created} documents were crated to the document set, %{project_name}.'
+        added_to_document_set: '%{num_added} documents were added to the project, %{project_name}.'
+        created_to_document_set: '%{num_created} documents were created and added to the project, %{project_name}.'
       search:
         not_found: No docs found matches conditions
     pmcdocs:
@@ -310,7 +311,7 @@ en:
         annotation_set_not_specified: Annotation set is not specified.
         no_body: no body in the document.
       destroy:
-        document_removed_from_annotation_set: "The document, %{sourcedb}:%{sourceid}, was removed from the annotation set, %{project_name}."
+        document_removed_from_annotation_set: "The document, %{sourcedb}:%{sourceid}, was removed from the project, %{project_name}."
         project_does_not_include_document: "the project, %{project_name} does not include the document, %{sourcedb}."
         project_does_not_exist_in_pubannotation: "The project, %{project_id} does not exist in PubAnnotation." 
         document_removed_from_pubannotation: "The document, %{sourcedb}:%{sourceid}, was removed from PubAnnotation."
@@ -320,22 +321,22 @@ en:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
         annotation_set_not_specified: Annotation set is not specified.
       update:
-        added_to_annotationset: The document, %{sourcedb}:%{sourceid}, was added to the annotation set, %{project_name}.
-        created_in_annotation_set: The document, %{sourcedb}:%{sourceid}, was created in the annotation set, %{project_name}.
+        added_to_annotationset: The document, %{sourcedb}:%{sourceid}, was added to the project, %{project_name}.
+        created_in_annotation_set: The document, %{sourcedb}:%{sourceid}, was created in the project, %{project_name}.
         not_created: The document, PubMed:%{id}, could not be created.
-        does_not_exist: The annotation set, %{project_id}, does not exist.
+        does_not_exist: The project, %{project_id}, does not exist.
         successfuly_created: The document, PubMed:%{id}, was successfuly created.
         not_created: The document, PubMed:%{id}, could not be created.
       destroy:
-        removed_from_annotation_set: The document, %{sourcedb}:%{sourceid}, was removed from the annotation set, %{project_name}.
-        does_not_include_document: the annotation set, %{project_name} does not include the document, %{sourcedb}:%{sourceid}.
+        removed_from_annotation_set: The document, %{sourcedb}:%{sourceid}, was removed from the project, %{project_name}.
+        does_not_include_document: the project, %{project_name} does not include the document, %{sourcedb}:%{sourceid}.
         does_not_exist_in_pubannotation: The document, PubMed:%{id}, does not exist in PubAnnotation.
-        does_not_exist: The annotation set, %{project_id}, does not exist.
+        does_not_exist: The project, %{project_id}, does not exist.
     projects:
       index:
         does_not_exist: The document, %{sourcedb}:%{sourceid}, does not exist in PubAnnotation.
       destroy:
-        deleted: The annotation set, %{id}, was deleted.
+        deleted: The project, %{id}, was deleted.
       new:
         import: "import associated projects"
       show:
@@ -351,7 +352,7 @@ en:
       formats: formats
     annotations:
       index:
-        confirm_destroy_all: Are you sure? All the instances and relations that belong to this annotation set will be deleted.
+        confirm_destroy_all: Are you sure? All the instances and relations that belong to this project will be deleted.
     divs:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
       div: Div.
@@ -360,7 +361,7 @@ en:
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
       automatic_annotation: Get automatic annotation
-      records: document records
+      records: doc records
       list: documents
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
@@ -372,17 +373,17 @@ en:
       API: API
 
     paths:
-      home: home
+      home: top
     projects:
       project: project
-      try_textae: "If you don't have one, try with" 
-      annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this annotation set</span></span>"
+      try_textae: "If you don't have one, try" 
+      annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this project</span></span>"
       about_the_project: "About the project, <span class='pname'>%{project_name}</span>"
       properties: properties
-      that_annotate_a_pmdoc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
+      that_annotate_a_doc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubannotation: "Annotation projects <span class='meta'>in PubAnnotation</span>"
-      confirm_delete: Are you sure? All the annotations that belong to this annotation set will be deleted.
+      confirm_delete: Are you sure? All the annotations that belong to this project will be deleted.
       user_projects: Your projects
       associate_maintain_projects: Associated projects 
       belongs_to_sproject: Projects belongs to this Sproject
@@ -391,9 +392,9 @@ en:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:
       project:
-        author: specify the official author/project of this annotation set, in case you are uploading an annotation set produced by someone else
+        author: specify the official author/project of the annotations, in case you are uploading annotations produced by someone else
         license: \'CC-BY\' is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.
-        reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation set that provides a comprehensive description of it.
+        reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation/project that provides a comprehensive description of it.
         editor: Specify URL of the  editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
     users:
       forgot_password: reset password
@@ -443,7 +444,7 @@ en:
       divs: divs
       div: div:%{divid}
       annotation: annnotation
-      annotation_sets: annotation sets
+      annotation_sets: project
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
       made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"
