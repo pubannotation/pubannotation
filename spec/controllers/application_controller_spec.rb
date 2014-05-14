@@ -204,63 +204,36 @@ describe ApplicationController do
   end
   
   describe 'get_docspec' do
-    context 'pmdoc_id' do
+    context 'when div_id present' do
       before do
-        @params = {:pmdoc_id => 1}
+        @params = {sourcedb: 'sourcedb', sourceid: 'sourceid', div_id: 1}
         @result = controller.get_docspec(@params)
       end
       
-      it 'should return values which includes params[:pmdoc_id]' do
-        @result.should eql(['PubMed', @params[:pmdoc_id], 0, nil
-        ])
+      it 'should return params[:div_id] as serial' do
+        @result.should eql [@params[:sourcedb], @params[:sourceid], @params[:div_id], nil]
       end
     end
-
-    context 'pmcdoc_id' do
+    
+    context 'when div_id blank' do
       before do
-        @params = {:pmcdoc_id => 1, :div_id => 2}
+        @params = {sourcedb: 'sourcedb', sourceid: 'sourceid'}
         @result = controller.get_docspec(@params)
       end
       
-      it 'should return values which includes params[:pmcdoc_id] and params[:div_id]' do
-        @result.should eql(['PMC', @params[:pmcdoc_id], @params[:div_id], nil])
+      it 'should return 0 as serial' do
+        @result.should eql [@params[:sourcedb], @params[:sourceid], 0, nil]
       end
     end
 
-    context 'others' do
-      context 'when params[:doc_id] blank' do
-        before do
-          @params = {}
-          @result = controller.get_docspec(@params)
-        end
-        
-        it 'should return nil array' do
-          @result.should eql([nil, nil, 0, nil])
-        end
+    context 'when id present' do
+      before do
+        @params = {sourcedb: 'sourcedb', sourceid: 'sourceid', id: 10}
+        @result = controller.get_docspec(@params)
       end
       
-      context 'when params[:id] present' do
-        before do
-          @id = 5
-          @params = {:id => @id}
-          @result = controller.get_docspec(@params)
-        end
-        
-        it 'should return nil and params[:doc_id] array' do
-          @result.should eql([nil, nil, 0, @id])
-        end
-      end
-      
-      context 'when params[:div_id] present' do
-        before do
-          @div_id = 5
-          @params = {:div_id => @div_id}
-          @result = controller.get_docspec(@params)
-        end
-        
-        it 'should return nil and params[:doc_id] array' do
-          @result.should eql([nil, nil, @div_id, nil])
-        end
+      it 'should return params[:id] as id' do
+        @result.should eql [@params[:sourcedb], @params[:sourceid], 0, @params[:id]]
       end
     end
   end
@@ -270,7 +243,7 @@ describe ApplicationController do
       @user = FactoryGirl.create(:user)
     end
 
-    context 'when ansset exists' do
+    context 'when project exists' do
       context 'and when project.accessibility == 1' do
         before do
           @current_user = FactoryGirl.create(:user)
@@ -306,18 +279,19 @@ describe ApplicationController do
         end
         
         it 'should returs nil and message which notice annotationset is private' do
-          @result.should eql([nil, "The annotation set, #{@project.name}, is specified as private."])
+          @result.should eql([nil, I18n.t('controllers.application.get_project.private', :project_name => @project.name)])
         end
       end
     end
     
-    context 'when ansset does not exists' do
+    context 'when project does not exists' do
       before do
-        @result = controller.get_project('')
+        @project_name = 'Project name'
+        @result = controller.get_project(@project_name)
       end
       
       it 'returns nil and message notice annotasion set does not exist' do
-        @result.should eql([nil, "The annotation set, , does not exist."])
+        @result.should eql([nil, I18n.t('controllers.application.get_project.not_exist', :project_name => @project_name)])
       end
     end
   end
@@ -379,14 +353,37 @@ describe ApplicationController do
   end
   
   describe 'get_doc' do
-    context 'when id blank' do
-      context 'whenproject passed' do
+    before do
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
+    end
+
+    context 'when id passed' do
+      before do
+        @result = controller.get_doc(nil, nil, nil, nil, @doc.id)
+      end
+
+      it 'should return doc and nil' do
+        @result.should eql([@doc, nil])
+      end
+    end
+
+    context 'when id not passed' do
+      before do
+        @result = controller.get_doc(@doc.sourcedb, @doc.sourceid, @doc.serial)
+      end
+
+      it 'should return doc and nil' do
+        @result.should eql([@doc, nil])
+      end
+    end
+
+    context 'when doc present' do
+      context 'when project passed' do
         before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
           @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         end
         
-        context 'when doc present' do
+        context 'when doc.projects include project' do
           before do
             @project.docs << @doc
             @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
@@ -396,66 +393,38 @@ describe ApplicationController do
             @result.should eql([@doc, nil])
           end
         end
-  
-        context 'when doc blank' do
+        
+        context 'when doc.projects not include project' do
           before do
             @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, @project)
           end
           
           it 'should return nil and notice' do
-            @result.should eql([nil, "The document, #{@doc.sourcedb}:#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."])
+            @result.should eql([nil, I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :project_name => @project.name)])
           end
-        end  
+        end
       end
     end
     
-    context 'when id present' do
+    context 'when doc does not exists' do
       before do
-        @doc = FactoryGirl.create(:doc)
-        @result = controller.get_doc(nil, nil, nil, nil, @doc.id)
+        @result = controller.get_doc(nil, nil, nil, nil)
       end
       
-      it 'should return doc found by id and nil notice' do
-        @result.should =~ [@doc, nil]
-      end
-    end
-    
-
-    context 'and when project does not passed' do
-      before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1)
-      end
-      
-      context 'when doc exists' do
-        before do
-          @result = controller.get_doc(@doc.sourcedb, @doc.sourceid.to_s, @doc.serial, nil)
-        end
-        
-        it 'should return doc and nil' do
-          @result.should eql([@doc, nil])
-        end
-      end
-      
-      context 'when doc does not exists' do
-        before do
-          @result = controller.get_doc(nil, nil, nil, nil)
-        end
-        
-        it 'should return nil and no annotation message' do
-          @result.should eql([nil, "No annotation to the document, :, exists in PubAnnotation."])
-        end
+      it 'should return nil and no annotation message' do
+        @result.should eql([nil, I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => nil, :sourceid => nil) ])
       end
     end
   end
   
   describe 'get_divs' do
-    context 'when project passed' do
+    context 'when divs present' do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '1')
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       end
 
-      context 'and when divs present' do
+      context 'and when divs belongs to project' do
         before do
           @project.docs << @doc
           @result = controller.get_divs(@doc.sourceid.to_s, @project)
@@ -474,32 +443,20 @@ describe ApplicationController do
         
         it 'should return blank array and message doc does not belongs to the annotation' do
           @result[0].should be_blank
-          @result[1].should eql "The document, PMC::#{@doc.sourceid}, does not belong to the annotation set, #{@project.name}."
+          @result[1].should eql I18n.t('controllers.application.get_divs.not_belong_to', :sourceid => @doc.sourceid, :project_name => @project.name)
         end
       end
     end
     
-    context 'and when project does not passed' do
-      context 'when divs present' do
-        before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '123')
-          @result = controller.get_divs(@doc.sourceid.to_s, nil)
-        end
-        
-        it 'should return docs and nil' do
-          @result.should eql([[@doc], nil])
-        end
+    context 'when divs is blank' do
+      before do
+        @sourceid = 'sourceid invalid'
+        @result = controller.get_divs(@sourceid, nil)
       end
-
-      context 'when divs is blank' do
-        before do
-          @result = controller.get_divs(nil, nil)
-        end
-        
-        it 'should return nil and no annotation message' do
-          @result[0].should be_blank
-          @result[1].should eql "No annotation to the document, PMC:, exists in PubAnnotation."
-        end
+      
+      it 'should return nil and no annotation message' do
+        @result[0].should be_blank
+        @result[1].should eql I18n.t('controllers.application.get_divs.no_annotation', :sourceid => @sourceid)
       end
     end
   end
@@ -609,30 +566,53 @@ describe ApplicationController do
   end
   
   describe 'save annotations' do
+    before do
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+    end
+
     context 'when denotations exists' do
       before do
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-        @annotations = {:denotations => 'denotations', :instances => ['instance'], :relations => ['relation'], :modifications => ['modification']}
+        @relations = 'relations'
+        @modification = 'modification'
+        @annotations = {:denotations => 'denotations', :instances => ['instance'], :relations => @relations, :modifications => @modification}
         controller.stub(:clean_hdenotations).and_return('clean_hdenotations')
-        controller.stub(:realign_denotations).and_return('realign_denotations')
-        controller.stub(:save_hdenotations).and_return('save_hdenotations')
-        controller.stub(:save_hinstances).and_return('save_hinstances')
-        controller.stub(:save_hrelations).and_return('save_hrelations')
-        controller.stub(:save_hmodifications).and_return('save_hmodifications')
+        @realign_denotations = 'realign_denotations'
+        controller.stub(:realign_denotations).and_return(@realign_denotations)
+        controller.stub(:save_hdenotations) do |denotations, project, doc|
+          @denotations = denotations
+        end
+        controller.stub(:save_hrelations) do |relations, project, doc|
+          @relations = relations
+        end
+        controller.stub(:save_hmodifications) do |modifications, project, doc|
+          @modifications = modifications
+        end
         @result = controller.save_annotations(@annotations, @project, @doc)
       end
-      
+
+      it 'should exec save_hdenotations' do
+        @denotations.should eql(@realign_denotations)
+      end
+
+      it 'should exec save_hrelations' do
+        @relations.should eql(@relations)
+      end
+
+      it 'should exec save_hdenotations' do
+        @modifications.should eql(@modifications)
+      end
+
       it 'should return notice message' do
-        @result.should eql('Annotations were successfully created/updated.')
+        @result.should eql('Annotations are successfully created/updated.')
       end
     end
     
     context 'denotations does not exists' do
       before do
-        @annotations = {:denotations => 'denotations', :instances => ['instance'], :relations => ['relation'], :modifications => ['modification']}
+        @annotations = {:denotations => nil} 
         controller.stub(:clean_hdenotations).and_return(nil)
-        @result = controller.save_annotations(@annotations, nil, nil)
+        @result = controller.save_annotations(@annotations, @project, @doc)
       end
       
       it 'should return nil' do
@@ -725,27 +705,27 @@ describe ApplicationController do
     context 'when format error' do
       context 'when denotation and begin does not present' do
         before do
-          denotation = {:id => 'id', :end => '5', :obj => 'Category'}
+          @denotation = {:id => 'id', :end => '5', :obj => 'Category'}
           denotations = Array.new
-          denotations << denotation
+          denotations << @denotation
           @result = controller.clean_hdenotations(denotations)
         end
         
         it 'should return nil and format error' do
-          @result.should eql([nil, 'format error'])
+          @result.should eql([nil, "format error #{@denotation}"])
         end
       end
   
       context 'when obj does not present' do
         before do
-          denotation = {:id => 'id', :begin => '`1', :end => '5', :obj => nil}
+          @denotation = {:id => 'id', :begin => '`1', :end => '5', :obj => nil}
           denotations = Array.new
-          denotations << denotation
+          denotations << @denotation
           @result = controller.clean_hdenotations(denotations)
         end
         
         it 'should return nil and format error' do
-          @result.should eql([nil, 'format error'])
+          @result.should eql([nil, "format error #{@denotation}"])
         end
       end
     end
@@ -895,115 +875,6 @@ describe ApplicationController do
     end
   end
   
-  describe 'get_instances' do
-    before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-
-      @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
-    end
-    
-    context 'when Doc find_by_sourcedb_and_sourceid_and_serial exists' do
-      
-      context 'when doc.projects.find_by_name exists' do
-        before do
-          @doc.projects << @project
-          @instances = controller.get_instances(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
-        end
-        
-        it 'should not return empty array' do
-          @instances.should be_present
-        end
-        
-        it 'should return doc.instances where project_id = project.id' do
-          (@instances - @doc.instances.where("instances.project_id = ?", @project.id)).should be_blank
-        end
-      end
-      
-      context 'when doc.projects.find_by_name does not exists' do
-        before do
-          @instances = controller.get_instances(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
-        end
-        
-        it 'should not return empty array' do
-          @instances.should be_present
-        end
-        
-        it 'should return @doc.instances' do
-          (@instances - @doc.instances).should be_blank
-        end
-      end
-    end
-
-    context 'when Doc find_by_sourcedb_and_sourceid_and_serial does not exists' do
-      context 'when Projectfind by project_name exists' do
-        before do
-          @instances = controller.get_instances(@project.name, '', '', '')
-        end
-        
-        it 'should not return empty array' do
-          @instances.should be_present
-        end
-        
-        it 'should return project.instances' do
-          (@instances - @project.instances).should be_blank
-        end
-      end
-
-      context 'when Projectfind by project_name  does not exists' do
-        before do
-          5.times do |i|
-            @instance = FactoryGirl.create(:instance, :project_id => i, :obj_id => i)
-          end
-          @instances = controller.get_instances('', '', '', '')
-        end
-        
-        it 'should not return empty array' do
-          @instances.should be_present
-        end
-        
-        it 'should return all Instance' do
-          (Instance.all - @instances).should be_blank
-        end
-      end
-    end
-  end
-  
-  describe 'get_hinstances' do
-    before do
-      @instance = FactoryGirl.create(:instance, :project_id => 1, :obj_id => 1)
-      controller.stub(:get_instances).and_return([@instance])
-      @get_hash = 'get hash'
-      Instance.any_instance.stub(:get_hash).and_return(@get_hash)
-      @hinstances = controller.get_hinstances('', '', '')
-    end
-    
-    it 'should return instance.get_hash' do
-      @hinstances.should eql([@get_hash])
-    end 
-  end
-  
-  describe 'save_hinstances' do
-    before do
-      @hinstance = {:id => 'hid', :pred => 'type', :obj => 'object'}
-      @hinstances = Array.new
-      @hinstances << @hinstance
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @denotation = FactoryGirl.create(:denotation, :id => 90, :project => @project, :doc => @doc, :hid => @hinstance[:obj])
-      @result = controller.save_hinstances(@hinstances, @project, @doc) 
-    end
-    
-    it 'should returns saved successfully' do
-      @result.should be_true
-    end
-    
-    it 'should save Instance from args' do
-      Instance.find_by_hid_and_pred_and_obj_id_and_project_id(@hinstance[:id], @hinstance[:pred], @denotation.id, @project.id).should be_present
-    end
-  end
-  
   describe 'get_relations' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
@@ -1089,18 +960,20 @@ describe ApplicationController do
       @hrelations = Array.new
     end
     
-    context 'hrelations subject and object match /^T/' do
+    describe 'before exec' do
+      it 'Modification is empty' do
+        Modification.all.should be_blank
+      end
+    end
+
+    describe 'after exec' do
       before do
-        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'T1', :obj => 'T1'}
+        @hrelation = {:id => 'hid', :pred => 'pred', :subj => @denotation.hid, :obj => @denotation.hid}
         @hrelations << @hrelation
         @result = controller.save_hrelations(@hrelations, @project, @doc)
       end
-      
-      it 'should save new Relation successfully' do
-        @result.should be_true
-      end
-      
-      it 'should save from hrelations params and project, and subj and obj should be denotation' do
+
+      it '' do
         Relation.where(
           :hid => @hrelation[:id], 
           :pred => @hrelation[:pred], 
@@ -1111,49 +984,6 @@ describe ApplicationController do
           :project_id => @project.id
         ).should be_present
       end
-     
-      it 'should project.denotations_count should equal 0 before save' do
-        @project.denotations_count.should eql(0)
-      end
-  
-      it 'should incliment project.denotations_count after denotation saved' do
-        @project.reload
-        @project.denotations_count.should eql(1)
-      end
-    end
-
-    context 'hrelations subject and object does not match /^T/' do
-      before do
-        @hrelation = {:id => 'hid', :pred => 'pred', :subj => 'M1', :obj => 'M1'}
-        @hrelations << @hrelation
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation, :hid => @hrelation[:subj])
-        @result = controller.save_hrelations(@hrelations, @project, @doc)
-      end
-      
-      it 'should save new Relation successfully' do
-        @result.should be_true
-      end
-      
-      it 'should save from hrelations params and project, and subj and obj should be instance' do
-        Relation.where(
-          :hid => @hrelation[:id], 
-          :pred => @hrelation[:pred], 
-          :subj_id => @instance.id, 
-          :subj_type => @instance.class, 
-          :obj_id => @instance.id, 
-          :obj_type => @instance.class, 
-          :project_id => @project.id
-        ).should be_present
-      end
-
-      it 'should project.denotations_count should equal 0 before save' do
-        @project.denotations_count.should eql(0)
-      end
-  
-      it 'should incliment project.denotations_count after denotation saved' do
-        @project.reload
-        @project.denotations_count.should eql(1)
-      end
     end
   end
   
@@ -1162,38 +992,33 @@ describe ApplicationController do
       before do
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+        @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name2")
         @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
         @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
       end
       
       context 'and when doc.projects.find_by_name(project_name) exists' do
         before do
-          @subinsrel = FactoryGirl.create(:subinsrel, :obj => @instance, :project => @project)
-          @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
           @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project)
-          @subinsrelmod = FactoryGirl.create(:modification, :obj => @subinsrel, :project => @project)
+          @subcatrelmod_2 = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project_2)
           @doc.projects << @project
           @modifications = controller.get_modifications(@project.name, @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
         
-        it 'should return doc.insmods, doc.subcatrelmods, subinsrelmods where project_id = project.id' do
-          (@modifications - [@modification, @subcatrelmod, @subinsrelmod]).should be_blank
+        it 'should return doc.subcatrelmods  where project_id = project.id' do
+          @modifications.should =~ [@subcatrelmod]
         end
       end
       
       context 'and when doc.projects.find_by_name(project_name) does not exists' do
         before do
-          @subinsrel = FactoryGirl.create(:subinsrel, :obj => @instance, :project => @project)
-          @modification = FactoryGirl.create(:modification, :obj => @instance, :project_id => 70)
           @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project_id => 80)
-          @subinsrelmod = FactoryGirl.create(:modification, :obj => @subinsrel, :project_id => 90)
           @doc.projects << @project
           @modifications = controller.get_modifications('', @doc.sourcedb, @doc.sourceid.to_s, @doc.serial)
         end
         
-        it 'should return doc.insmodsd, doc.subcatrelmods and doc.subinsrelmods' do
-          (@modifications - [@modification, @subcatrelmod, @subinsrelmod]).should be_blank
+        it 'should return doc.subcatrelmods' do
+          (@modifications - [@subcatrelmod]).should be_blank
         end
       end
     end
@@ -1201,11 +1026,13 @@ describe ApplicationController do
     context 'when Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial) does not exists' do
       before do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
       end
       
       context 'Project.find_by_name(project_name) exists' do
         before do
-          @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
+          @modification = FactoryGirl.create(:modification, :obj => @denotation, :project => @project)
           @modifications = controller.get_modifications(@project.name, '', '', '')
         end
         
@@ -1214,10 +1041,25 @@ describe ApplicationController do
         end
       end
       
+      context 'Project.find_by_name(project_name) present' do
+        before do
+          @project_2 = FactoryGirl.create(:project)
+          5.times do |i|
+            FactoryGirl.create(:modification, :obj => @denotation, project: @project_2)
+          end
+          @modification = FactoryGirl.create(:modification, :obj => @denotation, project: @project)
+          @modifications = controller.get_modifications(@project.name, '', '', '')
+        end
+        
+        it 'should return project.modifications' do
+          (@modifications - @project.modifications).should be_blank
+        end
+      end
+
       context 'Project.find_by_name(project_name) does not exists' do
         before do
           5.times do |i|
-            @modification = FactoryGirl.create(:modification, :obj => @instance, :project_id => i)
+            FactoryGirl.create(:modification, :obj => @denotation, :project_id => i)
           end
           @modifications = controller.get_modifications('', '', '', '')
         end
@@ -1231,7 +1073,8 @@ describe ApplicationController do
   
   describe 'get_hmodifications' do
     before do
-      @modification = FactoryGirl.create(:modification, :obj_id => 1, :obj_type => '', :project_id => 1)
+      @denotation = FactoryGirl.create(:denotation)
+      @modification = FactoryGirl.create(:modification, :obj => @denotation, :project_id => 1)
       controller.stub(:get_modifications).and_return([@modification])
       Modification.any_instance.stub(:get_hash).and_return(@modification.id)
       @hmodifications = controller.get_hmodifications('', '', '')
@@ -1251,34 +1094,8 @@ describe ApplicationController do
     context 'when hmodifications[:obj] match /^R/' do
       before do
         @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
-        @subinsrel = FactoryGirl.create(:subinsrel, :subj_id => @instance.id, :obj => @instance, :project => @project)
-        @hmodification = {:id => 'hid', :pred => 'type', :obj => 'R1'}
-        @hmodifications = Array.new
-        @hmodifications << @hmodification
-        @result = controller.save_hmodifications(@hmodifications, @project, @doc)
-      end
-      
-      it 'should save successfully' do
-        @result.should be_true
-      end
-      
-      it 'should save Modification from hmodifications params and doc.subinsrels' do
-        Modification.where(
-          :hid => @hmodification[:id],
-          :pred => @hmodification[:pred],
-          :obj_id => @subinsrel.id,
-          :obj_type => @subinsrel.class
-        ).should be_present
-      end
-    end
-    
-    context 'when hmodifications[:obj] does not match /^R/' do
-      before do
-        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
-        @subinsrel = FactoryGirl.create(:subinsrel, :obj => @instance, :project => @project)
-        @hmodification = {:id => 'hid', :pred => 'type', :obj => @instance.hid}
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+        @hmodification = {:id => 'hid', :pred => 'type', :obj => @subcatrel.hid}
         @hmodifications = Array.new
         @hmodifications << @hmodification
         @result = controller.save_hmodifications(@hmodifications, @project, @doc)
@@ -1292,8 +1109,31 @@ describe ApplicationController do
         Modification.where(
           :hid => @hmodification[:id],
           :pred => @hmodification[:pred],
-          :obj_id => @instance.id,
-          :obj_type => @instance.class
+          :obj_id => @subcatrel.id,
+          :obj_type => @subcatrel.class
+        ).should be_present
+      end
+    end
+
+    context 'when hmodifications[:obj] not match /^R/' do
+      before do
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @hmodification = {:id => 'hid', :pred => 'type', :obj => @denotation.hid}
+        @hmodifications = Array.new
+        @hmodifications << @hmodification
+        @result = controller.save_hmodifications(@hmodifications, @project, @doc)
+      end
+      
+      it 'should save successfully' do
+        @result.should be_true
+      end
+      
+      it 'should save Modification from hmodifications params and doc.instances' do
+        Modification.where(
+          :hid => @hmodification[:id],
+          :pred => @hmodification[:pred],
+          :obj_id => @denotation.id,
+          :obj_type => @denotation.class
         ).should be_present
       end
     end
