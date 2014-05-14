@@ -118,7 +118,7 @@ class AnnotationsController < ApplicationController
           notice = t('controllers.annotations.create.no_annotation')
         end
       else
-        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => sourcedb, :sourceid => sourceid)
+        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => params[:sourcedb], :sourceid => params[:sourceid])
       end
     end
 
@@ -157,7 +157,7 @@ class AnnotationsController < ApplicationController
         annotations = gen_annotations(annotations, params[:annotation_server])
         notice      = save_annotations(annotations, project, doc)
       else
-        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => sourcedb, :sourceid => sourceid)
+        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => params[:sourcedb], :sourceid => params[:sourceid])
       end
     end
 
