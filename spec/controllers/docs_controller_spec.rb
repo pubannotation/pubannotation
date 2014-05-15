@@ -12,7 +12,7 @@ describe DocsController do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123)  
     end
     
-    context 'when project present' do
+    context 'when params[:project_id] present' do
       before do
         get :index, :project_id => @project.name
       end
@@ -24,10 +24,6 @@ describe DocsController do
       it 'should assign search_project_docs_path as @search_path' do
         assigns[:search_path].should eql search_project_docs_path(@project.name)
       end
-      
-      it 'should assign @source_docs' do
-        assigns[:source_docs].should =~ @source_db_id
-      end
     end    
     
     context 'when project blank' do
@@ -38,43 +34,7 @@ describe DocsController do
       it 'should assign search_docs_path as @search_path' do
         assigns[:search_path].should eql search_docs_path
       end
-            
-      it 'should assign @source_docs' do
-        assigns[:source_docs].should =~ @source_db_id
-      end
     end   
-    
-    describe 'order_method' do
-      context 'when order_method nil' do
-        before do
-          get :index
-        end
-        
-        it 'should set ASC as @reverse_order_method' do
-          assigns[:reverse_order_method].should eql 'DESC'
-        end
-      end
-      
-      context 'when order_method ASC' do
-        before do
-          get :index, :order_method => 'ASC'
-        end
-        
-        it 'should set DESC as @reverse_order_method' do
-          assigns[:reverse_order_method].should eql 'DESC'
-        end
-      end
-      
-      context 'when order_method nil' do
-        before do
-          get :index, :order_method => 'DESC'
-        end
-        
-        it 'should set ASC as @reverse_order_method' do
-          assigns[:reverse_order_method].should eql 'ASC'
-        end
-      end
-    end 
   end
   
   describe 'records' do
@@ -185,14 +145,6 @@ describe DocsController do
       # create docs not belongs to project
       2.times do
         FactoryGirl.create(:doc, :sourcedb => 'sdb')
-      end
-      # create docs not belongs to project sourced db nil
-      2.times do
-        FactoryGirl.create(:doc, :sourcedb => nil)
-      end
-      # create docs not belongs to project sourced db ''
-      2.times do
-        FactoryGirl.create(:doc, :sourcedb => '')
       end
     end
 
@@ -318,7 +270,6 @@ describe DocsController do
           before do
             @sourceid_1_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => 'test')
             @sourceid_1_body_test_and = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => 'testand')
-            @sourceid_1_body_nil = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => nil)
             @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 2, :body => 'test')
             @search_sourceid = 1
             @search_body = 'test'
@@ -366,6 +317,7 @@ describe DocsController do
   
   describe 'show' do
     before do
+      current_user_stub(nil)
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sd', :sourceid => '123456')  
     end
     
@@ -417,24 +369,16 @@ describe DocsController do
     
     describe 'when @doc present' do
       before do
-        @project = 'project'
         @noice = 'notice'
-        controller.stub(:get_project).and_return([@project, @notice])
-        @projects = 'projects'
-        controller.stub(:get_projects).and_return(@projects)
+        @current_user = FactoryGirl.create(:user)
+        current_user_stub(@current_user)
+        @project = FactoryGirl.create(:project, user: @current_user)
+        @doc.projects << @project
         get :show, :id => @doc.id
       end
       
-      it 'should assign @doc' do
-        assigns[:doc].should eql @doc
-      end
-      
-      it 'should assign @project' do
-        assigns[:project].should eql @project
-      end
-      
       it 'should assign @projects' do
-        assigns[:projects].should eql @projects
+        assigns[:projects].should =~ [@project] 
       end
     end
     
@@ -870,11 +814,15 @@ describe DocsController do
   end
   
   describe 'create' do
+    before do
+      controller.class.skip_before_filter :authenticate_user!
+    end
+
     context 'when save successfully' do
       context 'when format html' do
         context 'when project blank' do
           before do
-            post :create
+            post :create, doc: {body: 'body', sourcedb: 'sourcedb', sourceid: 'sourceid', serial: 0}
           end
           
           it 'should redirect to doc_path' do
@@ -886,7 +834,7 @@ describe DocsController do
           before do
             @project = FactoryGirl.create(:project)
             controller.stub(:get_project).and_return(@project)
-            post :create, :project_id => @project.id
+            post :create, doc: {body: 'body', sourcedb: 'sourcedb', sourceid: 'sourceid', serial: 0}, :project_id => @project.id
           end
           
           it 'should redirect to doc_path' do
@@ -897,7 +845,7 @@ describe DocsController do
 
       context 'when format json' do
         before do
-          post :create, :format => 'json'
+          post :create, doc: {body: 'body', sourcedb: 'sourcedb', sourceid: 'sourceid', serial: 0}, :format => 'json'
         end
         
         it 'should render @doc as json' do
@@ -941,6 +889,7 @@ describe DocsController do
   
   describe 'create_project_docs' do
     before do
+      controller.class.skip_before_filter :authenticate_user!
       @project = FactoryGirl.create(:project)
     end
     
@@ -1068,6 +1017,7 @@ describe DocsController do
   
   describe 'update' do
     before do
+      controller.class.skip_before_filter :authenticate_user!
       @doc = FactoryGirl.create(:doc)
     end
     
@@ -1127,6 +1077,7 @@ describe DocsController do
   
   describe 'destroy' do
     before do
+      controller.class.skip_before_filter :authenticate_user!
       @doc = FactoryGirl.create(:doc)
     end
     
@@ -1195,6 +1146,7 @@ describe DocsController do
   
   describe 'delete_project_docs' do
     before do
+      controller.class.skip_before_filter :authenticate_user!
       @project = FactoryGirl.create(:project)
       @sourcedb = 'PMC'
       @sourceid = '123456'
