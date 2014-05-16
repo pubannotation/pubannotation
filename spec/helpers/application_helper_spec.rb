@@ -12,7 +12,7 @@ describe ApplicationHelper do
     end
     
     it 'should render img tag with title attribute' do
-      @result.should have_selector :img, :src => '/assets/hint.png', :title => 'specify the official author/project of this annotation set, in case you are uploading an annotation set produced by someone else'
+      @result.should have_selector :img, :src => '/assets/hint.png', :title => 'specify the official author/project of the annotations, in case you are uploading annotations produced by someone else'
     end
   end
   
@@ -67,7 +67,7 @@ describe ApplicationHelper do
      end 
      
      it 'helper should show link for japanese' do
-       @text.should include("english")
+       @text.should include("English")
        @text.should include("<a href=\"#{@url_for}\">日本語</a>")
      end
    end 
@@ -81,7 +81,7 @@ describe ApplicationHelper do
      end 
      
      it 'helper should show link for english' do
-       @text.should include("<a href=\"url\">english</a>")
+       @text.should include("<a href=\"url\">English</a>")
        @text.should include("日本語")
      end
    end
@@ -101,6 +101,22 @@ describe ApplicationHelper do
   describe 'sanitize_sql' do
     it 'should trim ""' do
       helper.sanitize_sql('"content"').should eql("'content'")
+    end
+  end
+
+  describe 'sortable' do
+    pending 'link path ambiguous' do
+      context 'when title present' do
+        before do
+          @key = 'key'
+          assign :sort_order,  [[@key, 'val2']]
+          @result = helper.sortable(@key, 'title')
+        end
+
+        it '' do
+          @result
+        end
+      end
     end
   end
 end
