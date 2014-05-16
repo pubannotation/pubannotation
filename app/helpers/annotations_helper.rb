@@ -151,6 +151,7 @@ module AnnotationsHelper
   end
 
   def annotations_destroy_all_helper(doc, project)
+    # TODO should be instance method
     if doc
       annotations = doc.denotations.where("project_id = ?", project.id)
       
