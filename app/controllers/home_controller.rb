@@ -12,7 +12,7 @@ class HomeController < ApplicationController
       @sort_order = [['name', 'ASC'], ['author', 'ASC']]
     end
 
-    @projects = Project.unscoped.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+    @projects = Project.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
     flash[:sort_order] = @sort_order
   end
 end

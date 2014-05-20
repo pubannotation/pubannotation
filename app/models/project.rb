@@ -30,7 +30,7 @@ class Project < ActiveRecord::Base
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
   
-  default_scope where(:type => nil)
+  default_scope where(:type => nil).order('status ASC')
 
   scope :accessible, lambda{|current_user|
     if current_user.present?

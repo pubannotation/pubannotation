@@ -171,6 +171,34 @@ describe Project do
     end
   end
   
+  describe 'default_scope' do
+    before do
+      FactoryGirl.create(:project, :name => "aaa111", :status => 3)
+      [4, 3, 2, 1].each do |status|
+        2.times do |time|
+          FactoryGirl.create(:project, :name => "project_#{status}_#{time}", :status => status)
+        end
+      end
+      @projects = Project.order('id ASC').order('name DESC')
+    end
+
+    it 'should order by status' do
+      @projects[0..1].collect{|project| project.status}.uniq.should eql([1])
+    end
+
+    it 'should order by status' do
+      @projects[2..3].collect{|project| project.status}.uniq.should eql([2])
+    end
+
+    it 'should order by status' do
+      @projects[4..6].collect{|project| project.status}.uniq.should eql([3])
+    end
+
+    it 'should order by status' do
+      @projects[7..8].collect{|project| project.status}.uniq.should eql([4])
+    end
+  end
+
   describe 'scope accessible' do
     before do
       @user_1 = FactoryGirl.create(:user)
