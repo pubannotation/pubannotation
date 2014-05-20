@@ -9,10 +9,10 @@ class HomeController < ApplicationController
     else
       # initialize the sort order
       # @sort_order = [['name', 'ASC'], ['author', 'ASC'], ['user_id', 'ASC']]
-      @sort_order = [['name', 'ASC'], ['author', 'ASC']]
+      @sort_order = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
     end
 
-    @projects = Project.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+    @projects = Project.includes(:user).accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
     flash[:sort_order] = @sort_order
   end
 end
