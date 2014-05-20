@@ -38,6 +38,7 @@
       <th style="width:1em" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
       <th style="width:1em" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
  -->
+      <th style="width:8em"><%= t('activerecord.attributes.project.status') -%></th>
       <th style="width:4em"></th>
     </tr>
 
@@ -57,6 +58,7 @@
       <td style="text-align:right"><%= relations_count_helper(project, {:doc => doc}) %></td>
       <td><%= project.associate_projects.size -%></td>
  -->
+      <td><%= project.status_text -%></td>
       <td>
 	      <% if @doc and @doc.sourcedb and @doc.sourceid %>
           <% if @doc.has_divs? %>
