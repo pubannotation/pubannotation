@@ -27,7 +27,7 @@
 	<td>[<%= link_to "JSON",  annotation_url + '.json' %>]</td>
 </tr>
 
-<% unless @project.editor.empty? %>
+<% unless @project.editor.blank? %>
 	<tr>
 		<th><%= t('views.shared.open') %></th>
 		<td>in</td>
@@ -39,19 +39,19 @@
 	</tr>
 <% end %>
 
-<% unless @project.rdfwriter.empty? and @project.xmlwriter.empty? and @project.bionlpwriter.empty? %>
+<% unless @project.rdfwriter.blank? and @project.xmlwriter.blank? and @project.bionlpwriter.blank? %>
 	<tr>
 		<th><%= t('views.shared.get') %></th>
 		<td>in</td>
-		<% unless @project.rdfwriter.empty? %>
+		<% unless @project.rdfwriter.blank? %>
 			<td>[<%= link_to "RDF",  annotation_url + '.ttl' %>]</td>
 		<% end %>
 
-		<% unless @project.xmlwriter.empty? %>
+		<% unless @project.xmlwriter.blank? %>
 			<td>[<%= link_to "XML",  annotation_url + '.xml' %>]</td>
 		<% end %>
 
-		<% unless @project.bionlpwriter.empty? %>
+		<% unless @project.bionlpwriter.blank? %>
 
 			<!--script type="text/javascript">
 				// function getconversion(name) {
