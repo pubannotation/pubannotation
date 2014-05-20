@@ -773,6 +773,10 @@ describe DocsController do
   end
   
   describe 'new' do
+    before do
+      controller.class.skip_before_filter :authenticate_user!
+    end
+
     context 'when format html' do
       before do
         get :new
