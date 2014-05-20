@@ -800,6 +800,7 @@ describe DocsController do
   
   describe 'edit' do
     before do
+      controller.class.skip_before_filter :authenticate_user!
       @doc = FactoryGirl.create(:doc)
       get :edit, :id => @doc.id
     end
