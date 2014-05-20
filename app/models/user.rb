@@ -35,4 +35,8 @@ class User < ActiveRecord::Base
       where(conditions).first
     end
   end
+
+  def root?
+    root    
+  end
 end

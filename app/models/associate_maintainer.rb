@@ -7,6 +7,6 @@ class AssociateMaintainer < ActiveRecord::Base
   attr_accessible :user_id
   
   def destroyable_for?(current_user)
-    current_user == self.user || current_user == project.user
+    current_user.root? == true || (current_user == self.user || current_user == project.user)
   end
 end

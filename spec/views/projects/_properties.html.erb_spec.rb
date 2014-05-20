@@ -1,23 +1,24 @@
 # encoding: utf-8
 require 'spec_helper'
 
-describe "projects/show.html.erb" do
+describe "projects/_properties.html.erb" do
   before do
     @project_user = FactoryGirl.create(:user)
     #@associate_maintainer_user = FactoryGirl.create(:user)
     @project = FactoryGirl.create(:project, :user => @project_user, :rdfwriter => '', :xmlwriter => '', :bionlpwriter => '')
     #@associate_maintainer = FactoryGirl.create(:associate_maintainer, :project => @project, :user => @associate_maintainer_user)
-    assign :project, @project
+    @current_user = FactoryGirl.create(:user)
     assign :pmdocs, []
     assign :pmcdocs, []
     view.stub(:will_paginate).and_return(nil)
+    view.stub(:project).and_return(@project)
   end
   
   describe 'edit delete link' do
     context 'when user_signed_in? == true' do
       before do
         view.stub(:user_signed_in?).and_return(true)
-        view.stub(:current_user).and_return(nil)
+        view.stub(:current_user).and_return(@current_user)
       end
       
       describe 'edit link' do

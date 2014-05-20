@@ -43,6 +43,17 @@ describe AssociateMaintainer do
         :project => @project)
     end
     
+
+    context 'when user.root is true' do
+      before do
+        @user = FactoryGirl.create(:user, root: true)
+      end
+
+      it 'should return true' do
+        @project.updatable_for?(@user).should be_true
+      end
+    end
+
     context 'when current_user is self.user' do
       it 'should return true' do
         @associate_maintainer.destroyable_for?(@associate_user).should be_true

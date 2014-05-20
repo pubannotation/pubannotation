@@ -1323,36 +1323,48 @@ describe Doc do
       @doc = FactoryGirl.create(:doc)
     end
     
-    context 'when doc.projects present' do 
+    context 'when user.root is true' do
       before do
-        @project_user = FactoryGirl.create(:user)
-        @project = FactoryGirl.create(:project, :user => @project_user)
-        @associate_maintainer_user_1 = FactoryGirl.create(:user)
-        @project.associate_maintainers.create({:user_id => @associate_maintainer_user_1.id})
-        @project.docs << @doc
+        @user = FactoryGirl.create(:user, root: true)
       end
-      
-      context 'when current_user is doc.projects.user' do
-        it 'should return true' do
-          @doc.updatable_for?(@project_user).should be_true
+
+      it 'should return true' do
+        @doc.updatable_for?(@user).should be_true
+      end
+    end
+
+    context 'when doc.projects present' do 
+      context 'when doc.projects present' do 
+        before do
+          @project_user = FactoryGirl.create(:user)
+          @project = FactoryGirl.create(:project, :user => @project_user)
+          @associate_maintainer_user_1 = FactoryGirl.create(:user)
+          @project.associate_maintainers.create({:user_id => @associate_maintainer_user_1.id})
+          @project.docs << @doc
         end
-      end
-      
-      context 'when current_user is project.associate_maintainer.user' do
-        it 'should return true' do
-          @doc.updatable_for?(@associate_maintainer_user_1).should be_true
+        
+        context 'when current_user is doc.projects.user' do
+          it 'should return true' do
+            @doc.updatable_for?(@project_user).should be_true
+          end
         end
-      end
-      
-      context 'when current_user is not project.user nor project.associate_maintainer.user' do
-        it 'should return false' do
-          @doc.updatable_for?(FactoryGirl.create(:user)).should be_false
+        
+        context 'when current_user is project.associate_maintainer.user' do
+          it 'should return true' do
+            @doc.updatable_for?(@associate_maintainer_user_1).should be_true
+          end
         end
-      end
-      
-      context 'when current_user is blank' do
-        it 'should return false' do
-          @doc.updatable_for?(nil).should be_false
+        
+        context 'when current_user is not project.user nor project.associate_maintainer.user' do
+          it 'should return false' do
+            @doc.updatable_for?(FactoryGirl.create(:user)).should be_false
+          end
+        end
+        
+        context 'when current_user is blank' do
+          it 'should return false' do
+            @doc.updatable_for?(nil).should be_false
+          end
         end
       end
     end

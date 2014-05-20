@@ -678,6 +678,17 @@ describe Project do
       @project.associate_maintainers.create({:user_id => @associate_maintainer_user_2.id})
     end
     
+
+    context 'when user.root is true' do
+      before do
+        @user = FactoryGirl.create(:user, root: true)
+      end
+
+      it 'should return true' do
+        @project.updatable_for?(@user).should be_true
+      end
+    end
+
     context 'when current_user is project.user' do
       it 'should return true' do
         @project.updatable_for?(@project_user).should be_true
@@ -712,7 +723,18 @@ describe Project do
       @associate_maintainer_user_2 = FactoryGirl.create(:user)
       @project.associate_maintainers.create({:user_id => @associate_maintainer_user_2.id})
     end
+
     
+    context 'when user.root is true' do
+      before do
+        @user = FactoryGirl.create(:user, root: true)
+      end
+
+      it 'should return true' do
+        @project.updatable_for?(@user).should be_true
+      end
+    end
+
     context 'when current_user is project.user' do
       it 'should return true' do
         @project.destroyable_for?(@project_user).should be_true

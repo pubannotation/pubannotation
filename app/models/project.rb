@@ -160,11 +160,11 @@ class Project < ActiveRecord::Base
   end
   
   def updatable_for?(current_user)
-    current_user == self.user || self.associate_maintainer_users.include?(current_user)
+    current_user.root? == true || (current_user == self.user || self.associate_maintainer_users.include?(current_user))
   end
 
   def destroyable_for?(current_user)
-    current_user == user  
+    current_user.root? == true || current_user == user  
   end
   
   def association_for(current_user)

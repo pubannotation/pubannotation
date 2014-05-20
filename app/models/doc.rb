@@ -268,15 +268,19 @@ class Doc < ActiveRecord::Base
   
   def updatable_for?(current_user)
     if current_user.present?
-      if self.projects.present?
-        project_users = Array.new
-        self.projects.each do |project|
-          project_users << project.user
-          project_users = project_users | project.associate_maintainer_users if project.associate_maintainer_users.present?
-        end
-        project_users.include?(current_user)
+      if current_user.root? == true
+        true
       else
-      # TODO When not belongs to project, how to detect updatable or not  ?
+        if self.projects.present?
+          project_users = Array.new
+          self.projects.each do |project|
+            project_users << project.user
+            project_users = project_users | project.associate_maintainer_users if project.associate_maintainer_users.present?
+          end
+          project_users.include?(current_user)
+        else
+        # TODO When not belongs to project, how to detect updatable or not  ?
+        end
       end
     else
       false
