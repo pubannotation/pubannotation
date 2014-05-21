@@ -18,7 +18,7 @@ class ProjectsController < ApplicationController
     else
       # initialize the sort order
       # @sort_order = [['name', 'ASC'], ['author', 'ASC'], ['user_id', 'ASC']]
-      @sort_order = [['name', 'ASC'], ['author', 'ASC']]
+      @sort_order = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
     end
 
     sourcedb, sourceid, serial = get_docspec(params)
@@ -26,14 +26,14 @@ class ProjectsController < ApplicationController
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if @doc
         # @projects = Project.order_by(@doc.projects, params[:projects_order], current_user)
-        @projects = @doc.projects.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+        @projects = @doc.projects.includes(:user).accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
       else
         @projects = nil
         notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
       end
     else
       # @projects = Project.order_by(Project, params[:projects_order], current_user)
-      @projects = Project.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+      @projects = Project.includes(:user).accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
     end
 
     flash[:sort_order] = @sort_order

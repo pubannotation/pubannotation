@@ -90,7 +90,8 @@ module ApplicationHelper
 
   def sortable(key, title = nil)
     title ||= key
-    current_direction = @sort_order.assoc(key)[1]
+    current_direction = @sort_order.assoc(key)[1] if @sort_order.present? && @sort_order.assoc(key).present?
+    current_direction ||= 'DESC'
     css_class = "sortable-" + current_direction
     next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'
     link_to title, {:sort_key => key, :sort_direction => next_direction}, {:class => css_class}

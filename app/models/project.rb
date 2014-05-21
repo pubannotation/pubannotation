@@ -155,7 +155,7 @@ class Project < ActiveRecord::Base
     if self.new_record?
       true
     else
-      current_user == self.user
+      current_user.root? == true || current_user == self.user
     end
   end
   

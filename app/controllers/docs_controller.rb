@@ -158,10 +158,10 @@ class DocsController < ApplicationController
         @sort_order.unshift([params[:sort_key], params[:sort_direction]])
       else
         # initialize the sort order
-        @sort_order = [['name', 'ASC'], ['author', 'ASC']]
+        @sort_order = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
       end
 
-      @projects = @doc.projects.accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+      @projects = @doc.projects.includes(:user).accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
       flash[:sort_order] = @sort_order
 
       respond_to do |format|

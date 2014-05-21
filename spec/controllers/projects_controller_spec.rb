@@ -17,9 +17,10 @@ describe ProjectsController do
           before do
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1)
             controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, @doc.serial])
-            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+            @project_user = FactoryGirl.create(:user, username: 'user name')
+            @project = FactoryGirl.create(:project, :user => @project_user)
             @doc.projects << @project
-            Project.stub(:accessible).and_return(Project)
+            Project.stub(:accessible).and_return(Project.includes(:user))
           end
           
           context 'and when format html' do
@@ -27,8 +28,8 @@ describe ProjectsController do
               get :index
             end
 
-            it '' do
-              assigns[:projects].should =~ @doc.projects 
+            it 'should assign @projects' do
+              assigns[:projects].should =~ @doc.projects
             end
             
             it 'should render template' do
@@ -85,7 +86,7 @@ describe ProjectsController do
     
     context 'when format is json' do
       before do
-        Project.stub(:accessible).and_return(Project)
+        Project.stub(:accessible).and_return(Project.includes(:user))
         get :index, :format => 'json'
       end
       
