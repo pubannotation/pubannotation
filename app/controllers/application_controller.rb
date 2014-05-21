@@ -168,8 +168,13 @@ class ApplicationController < ActionController::Base
     RestClient.post annserver, {:text => annotations[:text], :options => {}.to_json}, :content_type => :json, :accept => :json do |response, request, result|
       case response.code
       when 200
-        denotations = JSON.parse response, :symbolize_names => true
-        annotations[:denotations] = denotations
+        result = JSON.parse response, :symbolize_names => true
+        if defined? result[:denotations]
+          annotations[:denotations] = result[:denotations]
+          annotations[:relations] = result[:relations] if defined? result[:relations]
+        else 
+          annotations[:denotations] = result
+        end
         annotations
       else
         nil
@@ -186,6 +191,7 @@ class ApplicationController < ActionController::Base
     if annotations[:denotations] and !annotations[:denotations].empty?
       denotations, notice = clean_hdenotations(annotations[:denotations])
       denotations = realign_denotations(denotations, annotations[:text], doc.body)
+
       save_hdenotations(denotations, project, doc)
 
       if annotations[:relations] and !annotations[:relations].empty?
@@ -237,6 +243,8 @@ class ApplicationController < ActionController::Base
 
   # clean denotations
   def clean_hdenotations (denotations)
+    p denotations
+    puts "-=-=-=-=-=-=-"
     denotations = denotations.collect {|d| d.symbolize_keys}
     ids = denotations.collect {|d| d[:id]}
     ids.compact!
@@ -245,7 +253,7 @@ class ApplicationController < ActionController::Base
     denotations.each do |a|
       return nil, "format error #{p a}" unless (a[:span] or (a[:begin] and a[:end])) and a[:obj]
 
-      unless a[:id]
+      unless a.has_key? :id
         idnum += 1 until !ids.include?('T' + idnum.to_s)
         a[:id] = 'T' + idnum.to_s
         idnum += 1
