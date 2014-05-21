@@ -291,6 +291,50 @@ describe Project do
       Project.id_in([@project_1.id, @project_2.id]).should =~ [@project_1, @project_2]
     end    
   end
+
+  describe 'sort_by_params' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
+    end
+
+    context 'when sort_order is id DESC' do
+      before do
+        @projects = Project.sort_by_params([['id DESC']])
+      end
+
+      it 'should sort project by sort_order' do
+        @projects.first.should eql @project_3
+      end
+
+      it 'should sort project by sort_order' do
+        @projects.second.should eql @project_2
+      end
+      
+      it 'should sort project by sort_order' do
+        @projects.last.should eql @project_1
+      end
+    end
+
+    context 'when sort_order is id ASC' do
+      before do
+        @projects = Project.sort_by_params([['id ASC']])
+      end
+
+      it 'should sort project by sort_order' do
+        @projects.first.should eql @project_1
+      end
+
+      it 'should sort project by sort_order' do
+        @projects.second.should eql @project_2
+      end
+      
+      it 'should sort project by sort_order' do
+        @projects.last.should eql @project_3
+      end
+    end
+  end
   
   describe 'status_text' do
     context 'when status = 1' do

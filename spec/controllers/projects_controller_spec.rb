@@ -19,8 +19,12 @@ describe ProjectsController do
             controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, @doc.serial])
             @project_user = FactoryGirl.create(:user, username: 'user name')
             @project = FactoryGirl.create(:project, :user => @project_user)
-            @doc.projects << @project
-            Project.stub(:accessible).and_return(Project.includes(:user))
+            @docs_projects = double(:docs_projects)
+            Doc.any_instance.stub(:projects).and_return(@docs_projects)
+            @accessble_projects = double(:accessible)
+            @docs_projects.stub(:accessible).and_return(@accessble_projects)
+            @sort_by_params = 'sort_by_params'
+            @accessble_projects.stub(:sort_by_params).and_return(@sort_by_params)
           end
           
           context 'and when format html' do
@@ -28,8 +32,8 @@ describe ProjectsController do
               get :index
             end
 
-            it 'should assign @projects' do
-              assigns[:projects].should =~ @doc.projects
+            it '@projects should eql @doc.projects.accessible.sort_by_params' do
+              assigns[:projects].should eql(@sort_by_params)
             end
             
             it 'should render template' do
@@ -76,7 +80,15 @@ describe ProjectsController do
         @user = FactoryGirl.create(:user)
         current_user_stub(@user)
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @accessble_projects = double(:accessible)
+        Project.stub(:accessible).and_return(@accessble_projects)
+        @sort_by_params = 'sort_by_params'
+        @accessble_projects.stub(:sort_by_params).and_return(@sort_by_params)
         get :index
+      end
+
+      it '@projects should eql Project.accessible.sort_by_params' do
+        assigns[:projects].should eql(@sort_by_params)
       end
       
       it 'should render template' do

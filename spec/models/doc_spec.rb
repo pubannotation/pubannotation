@@ -368,6 +368,50 @@ describe Doc do
       end
     end
   end
+
+  describe 'sort_by_params' do
+    before do
+      @doc_1 = FactoryGirl.create(:doc)
+      @doc_2 = FactoryGirl.create(:doc)
+      @doc_3 = FactoryGirl.create(:doc)
+    end
+
+    context 'when sort_order is id DESC' do
+      before do
+        @docs = Doc.sort_by_params([['id DESC']])
+      end
+
+      it 'should sort doc by sort_order' do
+        @docs.first.should eql @doc_3
+      end
+
+      it 'should sort doc by sort_order' do
+        @docs.second.should eql @doc_2
+      end
+      
+      it 'should sort doc by sort_order' do
+        @docs.last.should eql @doc_1
+      end
+    end
+
+    context 'when sort_order is id ASC' do
+      before do
+        @docs = Doc.sort_by_params([['id ASC']])
+      end
+
+      it 'should sort doc by sort_order' do
+        @docs.first.should eql @doc_1
+      end
+
+      it 'should sort doc by sort_order' do
+        @docs.second.should eql @doc_2
+      end
+      
+      it 'should sort doc by sort_order' do
+        @docs.last.should eql @doc_3
+      end
+    end
+  end
   
   describe 'self.order_by' do
     context 'when docs present' do

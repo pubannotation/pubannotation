@@ -11,32 +11,20 @@ class ProjectsController < ApplicationController
   # GET /projects
   # GET /projects.json
   def index
-    if params[:sort_key]
-      @sort_order = flash[:sort_order]
-      @sort_order.delete(@sort_order.assoc(params[:sort_key]))
-      @sort_order.unshift([params[:sort_key], params[:sort_direction]])
-    else
-      # initialize the sort order
-      # @sort_order = [['name', 'ASC'], ['author', 'ASC'], ['user_id', 'ASC']]
-      @sort_order = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
-    end
-
+    @sort_order = sort_order(Project)
     sourcedb, sourceid, serial = get_docspec(params)
     if sourcedb
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if @doc
-        # @projects = Project.order_by(@doc.projects, params[:projects_order], current_user)
-        @projects = @doc.projects.includes(:user).accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+        @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
+        @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
       else
         @projects = nil
         notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
       end
     else
-      # @projects = Project.order_by(Project, params[:projects_order], current_user)
-      @projects = Project.includes(:user).accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+      @projects = Project.accessible(current_user).sort_by_params(@sort_order)
     end
-
-    flash[:sort_order] = @sort_order
 
     respond_to do |format|
       format.html {

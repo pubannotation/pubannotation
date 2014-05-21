@@ -77,6 +77,14 @@ class Doc < ActiveRecord::Base
   
   scope :source_dbs, where(['sourcedb IS NOT ?', nil])
   
+  # default sort order 
+  DefaultSortArray = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
+
+  scope :sort_by_params, lambda{|sort_order|
+      sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
+      order(sort_order)
+  }
+  
   def self.order_by(docs, order)
     if docs.present?
       case order
