@@ -739,7 +739,7 @@ describe ApplicationController do
 
       context 'when id is nil' do
         before do
-          @denotation = {:id => nil, :span => {:begin => @begin, :end => @end}, :obj => 'Category'}
+          @denotation = {:span => {:begin => @begin, :end => @end}, :obj => 'Category'}
           @denotations << @denotation
           @result = controller.clean_hdenotations(@denotations)
         end
