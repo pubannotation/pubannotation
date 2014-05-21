@@ -15,6 +15,7 @@ describe "docs/_source_doc.html.erb" do
         view.stub(:source_db_index_docs_count_helper).and_return(nil)
         view.stub(:params).and_return({:project_id => @project_id})
         view.stub(:user_signed_in?).and_return(false)
+        view.stub(:sortable).and_return(nil)
       end
       
       context 'when doc.has_divs == true' do

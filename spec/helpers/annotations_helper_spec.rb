@@ -4,87 +4,16 @@ require 'spec_helper'
 describe AnnotationsHelper do
   describe 'get_annotations' do
     context 'when doc exists' do
-      context 'when project exists' do
-        context 'when options spans present' do
-          context 'when hdenotations, hinstances, hrelations, hmodifications exists' do
-            before do
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-              @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-              @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc, :begin => 0, :end => 9)
-              @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
-              @subcatrel = FactoryGirl.create(:subcatrel,:subj_id => @denotation.id, :obj => @denotation, :project => @project)
-              @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
-            end
-            
-            context 'when project.presentt' do
-              before do
-                @result = helper.get_annotations(@project, @doc)
-              end
-              
-              it 'should returns doc params, denotations, instances, relations and modifications' do
-                @result.should eql({
-                  :project => @project.name,
-                  :source_db => @doc.sourcedb, 
-                  :source_id => @doc.sourceid, 
-                  :division_id => @doc.serial, 
-                  :section => @doc.section, 
-                  :text => @doc.body,
-                  :denotations => [{:id => @denotation.hid, :span => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
-                  :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
-                  :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
-                  :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
-                  })
-              end
-            end
-          end
-        end
-  
-        context 'when options nothing' do
-          context 'when hdenotations, hinstances, hrelations, hmodifications does not exists' do
-            before do
-              @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-              @result = helper.get_annotations(@project, @doc)
-            end
-            
-            it 'should returns doc params' do
-              @result.should eql({
-              :project => @project.name,
-                :source_db => @doc.sourcedb, 
-                :source_id => @doc.sourceid, 
-                :division_id => @doc.serial, 
-                :section => @doc.section, 
-                :text => @doc.body
-                })
-            end
-          end
-        
-          context 'when hdenotations, hinstances, hrelations, hmodifications exists' do
-            before do
-              @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-              @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-              @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-              @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
-              @subcatrel = FactoryGirl.create(:subcatrel,:subj_id => @denotation.id, :obj => @denotation, :project => @project)
-              @insmod = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
-              @result = helper.get_annotations(@project, @doc)
-            end
-            
-            it 'should returns doc params, denotations, instances, relations and modifications' do
-              @result.should eql({
-                :project => @project.name,
-                :source_db => @doc.sourcedb, 
-                :source_id => @doc.sourceid, 
-                :division_id => @doc.serial, 
-                :section => @doc.section, 
-                :text => @doc.body,
-                :denotations => [{:id => @denotation.hid, :span => {:begin => @denotation.begin, :end => @denotation.end}, :obj => @denotation.obj}],
-                :instances => [{:id => @instance.hid, :pred => @instance.pred, :obj => @instance.obj.hid}],
-                :relations => [{:id => @subcatrel.hid, :pred => @subcatrel.pred, :subj => @subcatrel.subj.hid, :obj => @subcatrel.obj.hid}],
-                :modifications => [{:id => @insmod.hid, :pred => @insmod.pred, :obj => @insmod.obj.hid}]
-                })
-            end
-          end
+      context 'when hdenotations, hrelations, hmodifications exists' do
+        before do
+          @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+          @hdenotations = 'hdnotations'
+          @doc.stub(:hdenotations).and_return(@hdenotations)
+          @hrelations = 'hrelations'
+          @doc.stub(:hrelations).and_return(@hrelations)
+          @hmodifications = 'hmodifications'
+          @doc.stub(:hmodifications).and_return(@hmodifications)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         end
   
         context 'when option encoding ascii exist' do
@@ -106,7 +35,7 @@ describe AnnotationsHelper do
               :text => @get_ascii_text})
           end
         end
-  
+
         context 'when option :discontinuous_annotation exist' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
@@ -128,6 +57,26 @@ describe AnnotationsHelper do
               :text => @doc.body,
               :denotations => @hdenotations,
               :relations => @hrelations
+              })
+          end
+        end
+        
+        context 'when project.presentt' do
+          before do
+            @result = helper.get_annotations(@project, @doc)
+          end
+          
+          it 'should returns doc params, denotations, instances, relations and modifications' do
+            @result.should eql({
+              :project => @project.name,
+              :source_db => @doc.sourcedb, 
+              :source_id => @doc.sourceid, 
+              :division_id => @doc.serial, 
+              :section => @doc.section, 
+              :text => @doc.body,
+              :denotations => @hdenotations,
+              :relations => @hrelations, 
+              :modifications => @hmodifications
               })
           end
         end
@@ -488,8 +437,8 @@ describe AnnotationsHelper do
       end
     end
   end
-  
-  describe 'annotaions_url_helper' do
+
+  describe 'annotations_url_helper' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '123', :serial => 0)  
       assigns[:doc] = @doc
@@ -499,68 +448,56 @@ describe AnnotationsHelper do
       @end = '10'
     end
     
-    context 'when params[:id] present' do
+    context 'when params[:div_id] present' do
       before do
-        helper.stub(:params).and_return(id: @doc.id)  
+        @div_id = '123'
       end
       
-      it 'should return annotations_project_doc_path' do
-        helper.annotaions_url_helper.should eql annotations_project_doc_url(@project.name, @doc.id)
+      context 'whern action == spans' do
+        before do
+          helper.stub(:params).and_return(:action => 'spans', :div_id => @div_id, :begin => @begin, :end => @end)  
+        end
+        
+        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
+          helper.annotations_url_helper.should eql spans_annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, @begin, @end)   
+        end  
+      end
+      
+      context 'whern action != spans' do
+        before do
+          helper.stub(:params).and_return(:action => 'doc', :div_id => @div_id)  
+        end
+        
+        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
+          helper.annotations_url_helper.should eql annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)   
+        end  
       end
     end
     
-    context 'when params[:id] blank' do
-      context 'when params[:div_id] present' do
+    context 'when params[:div_id] blank' do
+      context 'whern action == spans' do
         before do
-          @div_id = '123'
+          helper.stub(:params).and_return(:action => 'spans', :begin => @begin, :end => @end)  
         end
         
-        context 'whern action == spans' do
-          before do
-            helper.stub(:params).and_return(:action => 'spans', :div_id => @div_id, :begin => @begin, :end => @end)  
-          end
-          
-          it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
-            helper.annotaions_url_helper.should eql spans_annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, @begin, @end)   
-          end  
-        end
-        
-        context 'whern action != spans' do
-          before do
-            helper.stub(:params).and_return(:action => 'doc', :div_id => @div_id)  
-          end
-          
-          it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
-            helper.annotaions_url_helper.should eql annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)   
-          end  
-        end
+        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
+          helper.annotations_url_helper.should eql spans_annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @begin, @end)   
+        end  
       end
       
-      context 'when params[:div_id] blank' do
-        context 'whern action == spans' do
-          before do
-            helper.stub(:params).and_return(:action => 'spans', :begin => @begin, :end => @end)  
-          end
-          
-          it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
-            helper.annotaions_url_helper.should eql spans_annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @begin, @end)   
-          end  
+      context 'whern action != spans' do
+        before do
+          helper.stub(:params).and_return(:action => 'doc')  
         end
         
-        context 'whern action != spans' do
-          before do
-            helper.stub(:params).and_return(:action => 'doc')  
-          end
-          
-          it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
-            helper.annotaions_url_helper.should eql annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid)   
-          end  
-        end
+        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
+          helper.annotations_url_helper.should eql annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid)   
+        end  
       end
     end
   end
   
-  describe 'annotaions_form_action_helper' do
+  describe 'annotations_form_action_helper' do
     before do
       @sourcedb = 'PMC'
       @sourceid = '123'
@@ -578,7 +515,7 @@ describe AnnotationsHelper do
       end
       
       it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
-        helper.annotaions_form_action_helper.should eql annotations_project_doc_path(@project.name, @doc.id)
+        helper.annotations_form_action_helper.should eql annotations_project_doc_path(@project.name, @doc.id)
       end
     end
     
@@ -589,7 +526,7 @@ describe AnnotationsHelper do
         end
         
         it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
-          helper.annotaions_form_action_helper.should eql create_annotatons_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @div_id)
+          helper.annotations_form_action_helper.should eql generate_annotatons_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @div_id)
         end
       end
       
@@ -600,7 +537,7 @@ describe AnnotationsHelper do
         end
         
         it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
-          helper.annotaions_form_action_helper.should eql create_annotatons_project_sourcedb_sourceid_docs_path(@project_id, @sourcedb, @sourceid)
+          helper.annotations_form_action_helper.should eql generate_annotatons_project_sourcedb_sourceid_docs_path(@project_id, @sourcedb, @sourceid)
         end
       end
     end

@@ -287,8 +287,8 @@ en:
         not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the project, %{project_name}.
         no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
       get_divs:
-        not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the project, %{project_name}.
-        no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
+        not_belong_to: The document, %{sourceid}, does not belong to the project, %{project_name}.
+        no_annotation: No annotation to the document, %{sourceid}, exists in PubAnnotation.
       save_annotations:
         annotation_cleared: Annotations are cleared.
         successfully_saved: Annotations are successfully created/updated.

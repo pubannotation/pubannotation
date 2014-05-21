@@ -4,7 +4,9 @@ describe Relation do
   describe 'belongs_to project' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @modification = FactoryGirl.create(:modification, :obj_id => 1, :project => @project)
+      @doc = FactoryGirl.create(:doc)
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @modification = FactoryGirl.create(:modification, :obj => @denotation, :project => @project)
     end
     
     it 'modification should belongs to project' do

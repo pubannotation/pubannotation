@@ -30,7 +30,7 @@
       <th style="width:13em"><%= sortable('name', t('activerecord.attributes.project.name')) %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
       <th style="width:8em"><%= sortable('author', t('activerecord.attributes.project.author')) %></th>
-      <th style="width:8em"><%= t('activerecord.attributes.project.maintainer') %></th>
+      <th style="width:8em"><%= sortable('users.username', t('activerecord.attributes.project.maintainer')) -%></th>
 <!-- 
       <th title='Association'><%= link_to_unless_current 'A', url_for(:only_path => true, :projects_order => 'association'), :class => 'sortable-a' %></th>
       <th style="width:1em" title='PubMed abstracts'><%= link_to_unless_current 'P', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>
@@ -38,6 +38,7 @@
       <th style="width:1em" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
       <th style="width:1em" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
  -->
+      <th style="width:8em"><%= t('activerecord.attributes.project.status') -%></th>
       <th style="width:4em"></th>
     </tr>
 
@@ -46,7 +47,7 @@
     <% type = 'P' -%>
     <tr>
       <td><%= project.name %></td>
-      <td><%= project.description %></td>
+      <td title="<%= project.description -%>"><%= project.description %></td>
       <td><%= project.author %></td>
       <td><%= project.user.username %></td>
 <!-- 
@@ -57,6 +58,7 @@
       <td style="text-align:right"><%= relations_count_helper(project, {:doc => doc}) %></td>
       <td><%= project.associate_projects.size -%></td>
  -->
+      <td><%= project.status_text -%></td>
       <td>
 	      <% if @doc and @doc.sourcedb and @doc.sourceid %>
           <% if @doc.has_divs? %>

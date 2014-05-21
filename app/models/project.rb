@@ -30,7 +30,7 @@ class Project < ActiveRecord::Base
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
   
-  default_scope where(:type => nil)
+  default_scope where(:type => nil).order('status ASC')
 
   scope :accessible, lambda{|current_user|
     if current_user.present?
@@ -84,23 +84,23 @@ class Project < ActiveRecord::Base
     end
   }
   
-  STATUS_HASH = {
-    1 => I18n.t('activerecord.options.project.status.released'),
-    2 => I18n.t('activerecord.options.project.status.beta'),
-    3 => I18n.t('activerecord.options.project.status.developing')
-  }
-
-  ACCESSIBILITY_HASH = {
-    1 => I18n.t('activerecord.options.project.accessibility.public'),
-    2 => :Private
-  }
-  
   def status_text
-   STATUS_HASH[self.status]
+   status_hash = {
+     1 => I18n.t('activerecord.options.project.status.released'),
+     2 => I18n.t('activerecord.options.project.status.beta'),
+     3 => I18n.t('activerecord.options.project.status.developing'),
+     4 => I18n.t('activerecord.options.project.status.testing')
+   }
+
+   status_hash[self.status]
   end
   
   def accessibility_text
-   ACCESSIBILITY_HASH[self.accessibility]
+   accessibility_hash = {
+     1 => I18n.t('activerecord.options.project.accessibility.public'),
+     2 => :Private
+   }
+   accessibility_hash[self.accessibility]
   end
 
   def self.order_by(projects, order, current_user)

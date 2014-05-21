@@ -8,6 +8,7 @@ describe "projects/_list.html.erb" do
     view.stub(:projects).and_return([@project])
     view.stub(:current_user).and_return(nil)
     view.stub(:doc).and_return(nil)
+    view.stub(:sortable).and_return(nil)
   end
   
   describe 'h1' do

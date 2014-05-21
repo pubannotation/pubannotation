@@ -18,12 +18,17 @@ describe ProjectsController do
             @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1)
             controller.stub(:get_docspec).and_return([@doc.sourcedb, @doc.sourceid, @doc.serial])
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-            Project.stub(:order_by).and_return([@project])
+            @doc.projects << @project
+            Project.stub(:accessible).and_return(Project)
           end
           
           context 'and when format html' do
             before do
               get :index
+            end
+
+            it '' do
+              assigns[:projects].should =~ @doc.projects 
             end
             
             it 'should render template' do
@@ -80,13 +85,12 @@ describe ProjectsController do
     
     context 'when format is json' do
       before do
-        @projects = {:a => 'a', :b => 'b'}
-        Project.stub(:order_by).and_return(@projects)
+        Project.stub(:accessible).and_return(Project)
         get :index, :format => 'json'
       end
       
       it 'should render json' do
-        response.body.should eql(@projects.to_json)
+        response.body.should eql(Project.all.to_json)
       end
     end
   end

@@ -306,10 +306,9 @@ class ApplicationController < ActionController::Base
     if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if project_name and project = doc.projects.find_by_name(project_name)
         relations  = doc.subcatrels.where("relations.project_id = ?", project.id)
-        relations += doc.subinsrels.where("relations.project_id = ?", project.id)
         relations.sort! {|r1, r2| r1.hid[1..-1].to_i <=> r2.hid[1..-1].to_i}
       else
-        relations = doc.subcatrels + doc.subinsrels unless doc.denotations.empty?
+        relations = doc.subcatrels unless doc.denotations.empty?
       end
     else
       if project_name and project = Project.find_by_name(project_name)

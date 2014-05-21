@@ -269,7 +269,11 @@ class Doc < ActiveRecord::Base
   def updatable_for?(current_user)
     if current_user.present?
       if self.projects.present?
-        project_users = self.projects.collect{|project| [project.user] | project.associate_maintainer_users}
+        project_users = Array.new
+        self.projects.each do |project|
+          project_users << project.user
+          project_users = project_users | project.associate_maintainer_users if project.associate_maintainer_users.present?
+        end
         project_users.include?(current_user)
       else
       # TODO When not belongs to project, how to detect updatable or not  ?
@@ -277,7 +281,6 @@ class Doc < ActiveRecord::Base
     else
       false
     end
-    true
   end
   
   def self.create_divs(divs_hash, attributes = {})

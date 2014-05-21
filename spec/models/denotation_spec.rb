@@ -28,21 +28,6 @@ describe Denotation do
     end  
   end
   
-  describe 'has_many instances' do
-    before do
-      @denotation = FactoryGirl.create(:denotation, :project_id => 10, :doc_id => 20)
-      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 10) 
-    end
-    
-    it 'denotation.instances should present' do
-      @denotation.instances.should be_present
-    end
-    
-    it 'denotation.instances should present' do
-      (@denotation.instances - [@instance]).should be_blank
-    end
-  end
-  
   describe 'has_many subrels' do
     before do
       @denotation = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
@@ -80,21 +65,6 @@ describe Denotation do
     
     it 'denotation.resmods should include relation' do
       (@denotation.objrels - [@relation]).should be_blank 
-    end
-  end
-  
-  describe 'has_many insmods' do
-    before do
-      @denotation = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
-      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 5)
-      @modification = FactoryGirl.create(:modification,
-      :obj => @instance,
-      :obj_type => @instance.class.to_s
-      )
-    end
-    
-    it 'denotation.insmods should present' do
-      @denotation.insmods.should be_present
     end
   end
   
