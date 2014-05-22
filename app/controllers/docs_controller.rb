@@ -3,6 +3,7 @@ require 'zip/zip'
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
   before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_docs]
+  after_filter :set_access_control_headers
 
   # GET /docs
   # GET /docs.json
@@ -178,10 +179,10 @@ class DocsController < ApplicationController
       
     end
   end
-  
+
   def divs_index
   end
-  
+
   # annotations for doc without project
   def annotations_index
     sourcedb, sourceid, serial, id = get_docspec(params)
@@ -196,7 +197,7 @@ class DocsController < ApplicationController
       format.json { render :json => annotations, :callback => params[:callback] }
     end
   end
-  
+
   def annotations
     sourcedb, sourceid, serial = get_docspec(params)
     if params[:project_id].present?
@@ -207,12 +208,12 @@ class DocsController < ApplicationController
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
     end
-    
+
     if @doc.present?
       annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
       @spans, @prev_text, @next_text = @doc.spans(params)
       annotations[:text] = @spans if @spans.present?
-      # ToDo: to process tracks 
+      # ToDo: to process tracks
       @denotations = annotations[:denotations]
       @relations = annotations[:relations]
       @modifications = annotations[:modifications]
@@ -222,7 +223,7 @@ class DocsController < ApplicationController
       end
     end
   end
-  
+
   def spans
     sourcedb, sourceid, serial = get_docspec(params)
     if params[:project_id].present?
@@ -387,5 +388,20 @@ class DocsController < ApplicationController
     docs.each {|d| annotations_destroy_all_helper(d, project)}
     project.docs.delete(docs) 
     redirect_to :back
-  end  
+  end
+
+  private
+
+  def set_access_control_headers
+    allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp']
+    origin = request.env['HTTP_ORIGIN']
+    if allowed_origins.include?(origin)
+      headers['Access-Control-Allow-Origin'] = origin
+      headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
+      headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Prototype-Version'
+      headers['Access-Control-Allow-Credentials'] = 'true'
+      headers['Access-Control-Max-Age'] = "1728000"
+    end
+  end
+
 end

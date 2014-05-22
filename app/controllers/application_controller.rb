@@ -122,6 +122,7 @@ class ApplicationController < ActionController::Base
     docs
   end
 
+
   def archive_texts (docs)
     unless docs.empty?
       file_name = "docs.zip"
@@ -243,8 +244,6 @@ class ApplicationController < ActionController::Base
 
   # clean denotations
   def clean_hdenotations (denotations)
-    p denotations
-    puts "-=-=-=-=-=-=-"
     denotations = denotations.collect {|d| d.symbolize_keys}
     ids = denotations.collect {|d| d[:id]}
     ids.compact!

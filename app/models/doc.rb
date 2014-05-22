@@ -184,14 +184,17 @@ class Doc < ActiveRecord::Base
   def hdenotations(project, options = {})
     if options.present? && options[:spans].present?
       denotations = self.denotations.where("project_id = ?", project.id).within_spans(options[:spans][:begin_pos], options[:spans][:end_pos])
+      hdenotations = denotations.order('begin ASC').collect{|d| d.get_hash} if denotations.present?
+      hdenotations.each{|d| d[:span][:begin] -= options[:spans][:begin_pos].to_i; d[:span][:end] -= options[:spans][:begin_pos].to_i} if hdenotations.present?
     else
       if project.associate_projects.blank?
         denotations = self.denotations.where("project_id = ?", project.id)
       else
         denotations = self.denotations.projects_denotations(project.self_id_and_associate_project_ids)
       end
+      hdenotations = denotations.order('begin ASC').collect{|d| d.get_hash} if denotations.present?
     end
-    hdenotations = denotations.order('begin ASC').collect {|ca| ca.get_hash} if denotations.present?    
+    hdenotations
   end
   
   # return denotations group by project
