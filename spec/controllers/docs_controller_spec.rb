@@ -457,134 +457,131 @@ describe DocsController do
   describe 'annotations' do
     before do
       @project = FactoryGirl.create(:project, :name => 'project_name')
-      controller.stub(:get_project).and_return(@project, 'notice')
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 123456)
-      controller.stub(:get_doc).and_return(@doc, 'notice')
-      @projects = [@project]
-      controller.stub(:get_projects).and_return(@projects)
-      @spans = 'spans' 
-      @prev_text = 'prevx text'
-      @next_text = 'next text'
-      Doc.any_instance.stub(:spans).and_return([@spans, @prev_text, @next_text])
-      @annotations ={
-        :text => "text",
-        :denotations => "denotations",
-        :instances => "instances",
-        :relations => "relations",
-        :modifications => "modifications"
-      }
-      controller.stub(:get_annotations_for_json).and_return(@annotations)
+      @get_doc_notice = 'notice'
+      controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
+      @get_project_notice = 'project notice'
     end
     
     context 'when params[:project_id] present' do
-      before do
-       get :annotations, :project_id => @project.name, :id => @doc.id, :begin => 1, :end => 10
+      context 'when @project present' do
+        before do
+          controller.stub(:get_project).and_return([@project, @get_project_notice])
+          get :annotations, :project_id => @project.name, :id => @doc.id, :begin => 1, :end => 10
+        end
+
+        it 'should assign @doc' do
+          assigns[:doc].should eql(@doc)
+        end
+
+        it 'should assing get_doc notice as flash[:notice]' do
+          flash[:notice].should eql @get_doc_notice
+        end
       end
-      
-      it 'should assign @doc' do
-        assigns[:doc].should eql(@doc)
-      end
-      
-      it 'should_not assign @projects' do
-        assigns[:projects].should be_nil
-      end
-      
-      it 'should assign @spans' do
-        assigns[:spans].should eql(@spans)
-      end
-      
-      it 'should assign @prev_text' do
-        assigns[:prev_text].should eql(@prev_text)
-      end
-      
-      it 'should assign @next_text' do
-        assigns[:next_text].should eql(@next_text)
-      end
-      
-      it 'should assign @denotations' do
-        assigns[:denotations].should eql(@annotations[:denotations])
-      end
-      
-      it 'should assign @relations' do
-        assigns[:relations].should eql(@annotations[:relations])
-      end
-      
-      it 'should assign @modifications' do
-        assigns[:modifications].should eql(@annotations[:modifications])
-      end
-        
-      it 'sould render template' do
-        response.should render_template('annotations')
+
+      context 'when @project blank' do
+        before do
+          controller.stub(:get_project).and_return([nil, @get_project_notice])
+          get :annotations, :project_id => @project.name, :id => @doc.id, :begin => 1, :end => 10
+        end
+
+        it 'should not assign @doc' do
+          assigns[:doc].should be_nil
+        end
+
+        it 'should assing get_project notice as flash[:notice]' do
+          flash[:notice].should eql @get_project_notice
+        end
       end
     end
     
     
     context 'when params[:project_id] blank' do
-      context 'when format html' do
-        context 'when params[:id] present' do
-          before do
-            get :annotations, :id => @doc.id, :begin => 1, :end => 10
-          end
-          
-          it 'should not assign @project' do
-            assigns[:project].should be_nil
-          end
-          
-          it 'should assign @doc' do
-            assigns[:doc].should eql(@doc)
-          end
-          
-          it 'sould render template' do
-            response.should render_template('annotations')
-          end
-        end
-
-        context 'when params[:id] is nil and params[:sourcedb] and params[:sourceid] present' do
-          context 'when docs.has_divs? is false' do
-            before do
-              get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :begin => 0, :end => 10
-            end
-            
-            it 'should not assign @project' do
-              assigns[:project].should be_nil
-            end
-            
-            it 'should assign @doc' do
-              assigns[:doc].should eql(@doc)
-            end
-            
-            it 'sould render template' do
-              response.should render_template('annotations')
-            end
-          end
-
-          context 'when docs.has_divs? is true' do
-            before do
-              get :annotations, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :begin => 0, :end => 10
-            end
-            
-            it 'should not assign @project' do
-              assigns[:project].should be_nil
-            end
-            
-            it 'should assign @doc' do
-              assigns[:doc].should eql(@doc)
-            end
-            
-            it 'sould render template' do
-              response.should render_template('annotations')
-            end
-          end
-        end
+      before do
+        get :annotations, :id => @doc.id, :begin => 1, :end => 10
       end
 
-      context 'when format json' do
+      it 'should assign @doc' do
+        assigns[:doc].should eql(@doc)
+      end
+
+      it 'should assing get_doc notice as flash[:notice]' do
+        flash[:notice].should eql @get_doc_notice
+      end
+    end
+
+    context 'when @doc present' do
+      context 'when @spans present' do
         before do
-          get :annotations, :format => :json, :id => @doc.id, :begin => 1, :end => 10
+          @spans = 'spans' 
+          @prev_text = 'prevx text'
+          @next_text = 'next text'
+          Doc.any_instance.stub(:spans).and_return([@spans, @prev_text, @next_text])
+          @begin = 1
+          @denotations = [{span: {begin: 0, end: 5}}]
+          @tracks = [{denotations: [{span: {begin: 1, end: 8}}]}]
         end
-        
-        it 'sould render json' do
-          response.body.should eql(@annotations.to_json)
+
+        context 'when tracks present' do
+          before do
+            @annotations ={
+              :text => "text",
+              :tracks => @tracks,
+              :denotations => @denotations,
+              :instances => "instances",
+              :relations => "relations",
+              :modifications => "modifications"
+            }
+            controller.stub(:get_annotations_for_json).and_return(@annotations)
+            get :annotations, :id => @doc.id, :begin => @begin, :end => 10, format: 'json'
+            @json = JSON.parse(response.body)
+          end
+
+          it 'should assign @spans' do
+            assigns[:spans].should eql(@spans)
+          end
+
+          it 'should assign @prev_text' do
+            assigns[:prev_text].should eql(@prev_text)
+          end
+
+          it 'should assign @next_text' do
+            assigns[:next_text].should eql(@next_text)
+          end
+
+          it 'should assign @relations' do
+            assigns[:relations].should eql(@annotations[:relations])
+          end
+
+          it 'should assign @modifications' do
+            assigns[:modifications].should eql(@annotations[:modifications])
+          end
+
+          it 'should assign annotations[:tracks] and params[:begin] minus param[:begin]' do
+            @json['tracks'].should eql([{"denotations" => [{"span" => {"begin" => 0, "end" => 7}}]}])
+          end
+
+          it 'should assign annotations[:denotations] as @denotations' do
+            assigns[:denotations].should eql [{"span" => {"begin" => 0, "end" => 5}}]
+          end
+        end
+
+        context 'when denotations present' do
+          before do
+            @annotations ={
+              :text => "text",
+              :denotations => @denotations,
+              :instances => "instances",
+              :relations => "relations",
+              :modifications => "modifications"
+            }
+            controller.stub(:get_annotations_for_json).and_return(@annotations)
+            get :annotations, :id => @doc.id, :begin => @begin, :end => 10
+          end
+          
+          it 'should assigns[:denotations] minus param[:begin]' do
+            assigns[:denotations].should eql([{"span" => {"begin" => -1, "end" => 4}}])
+          end
         end
       end
     end
@@ -1194,4 +1191,38 @@ describe DocsController do
       end
     end
   end 
+
+  describe '' do
+    before do
+      @controller = DocsController.new
+      @headers = {'Access-Control-Allow-Origin' => nil}
+      @controller.stub(:headers).and_return(@headers)
+    end
+
+    context 'when allowed_origins includes' do
+      before do
+        @controller.stub(:request).and_return(double(env: {'HTTP_ORIGIN' => 'http://localhost'}))
+      end
+
+      it 'should return headers[Access-Control-Max-Age]' do
+        @result = @controller.instance_eval{
+          set_access_control_headers
+        }
+        @result.should eql "1728000"
+      end
+    end
+
+    context 'when allowed_origins not includes' do
+      before do
+        @controller.stub(:request).and_return(double(env: {'HTTP_ORIGIN' => 'remote'}))
+      end
+
+      it 'should return nil' do
+        @result = @controller.instance_eval{
+          set_access_control_headers
+        }
+        @result.should be_nil 
+      end
+    end
+  end
 end

@@ -170,10 +170,10 @@ class ApplicationController < ActionController::Base
       case response.code
       when 200
         result = JSON.parse response, :symbolize_names => true
-        if defined? result[:denotations]
+        if result.instance_of? Hash and defined? result[:denotations]
           annotations[:denotations] = result[:denotations]
           annotations[:relations] = result[:relations] if defined? result[:relations]
-        else 
+        elsif result.instance_of? Array
           annotations[:denotations] = result
         end
         annotations
