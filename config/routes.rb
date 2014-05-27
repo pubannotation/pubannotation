@@ -82,7 +82,6 @@ Pubann::Application.routes.draw do
   resources :projects do
     get 'spans/sql' => 'spans#sql'
     get 'pmdocs/sql' => 'pmdocs#sql'
-    get 'pmcdocs/sql' => 'pmcdocs#sql'
     get 'relations/sql' => 'relations#sql'
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
@@ -94,7 +93,6 @@ Pubann::Application.routes.draw do
     collection do
       # auto complete path which use scope and scope argument required :scope_argument param
       get 'autocomplete_pmdoc_sourceid/:scope_argument'   => 'projects#autocomplete_pmdoc_sourceid',  :as => 'autocomplete_pmdoc_sourceid'
-      get 'autocomplete_pmcdoc_sourceid/:scope_argument'  => 'projects#autocomplete_pmcdoc_sourceid', :as => 'autocomplete_pmcdoc_sourceid'
       get 'autocomplete_project_name/:scope_argument'  => 'projects#autocomplete_project_name', :as => 'autocomplete_project_name'
     end
   end
@@ -114,27 +112,6 @@ Pubann::Application.routes.draw do
     
     resources :projects do
       resources :annotations
-    end
-  end
-
-  resources :pmcdocs do
-    collection do
-      get :search
-      get :autocomplete_doc_sourceid
-      get :sql
-    end
-    
-    resources :divs do
-      member do
-        # spans
-        get 'spans/' => 'divs#spans_index', :as => 'spans_index'
-        get 'spans/:begin-:end' => 'divs#spans', :as => 'spans'
-        # annotations
-        get 'spans/:begin-:end/annotations' => 'divs#annotations'
-      end
-      resources :projects do
-        resources :annotations
-      end
     end
   end
 
@@ -210,25 +187,6 @@ Pubann::Application.routes.draw do
       resources :annotations do
         collection do
           post :destroy_all
-        end
-      end
-    end
-  end
-
-  resources :projects do
-    resources :pmcdocs do
-      resources :divs do
-        member do
-          # spans
-          get 'spans/' => 'divs#spans_index', :as => 'spans_index'
-          get 'spans/:begin-:end/' => 'divs#spans', :as => 'spans'
-          # annotations
-          get 'spans/:begin-:end/annotations' => 'divs#annotations', :as => 'spans_annotation'
-        end
-        resources :annotations do
-          collection do
-            post :destroy_all
-          end
         end
       end
     end

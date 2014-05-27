@@ -13,6 +13,7 @@ describe "divs/index.html.erb" do
       @relations_count_helper = 'relations_count_helper'
       view.stub(:relations_count_helper).and_return(@relations_count_helper)
       view.stub(:params).and_return({:pmcdoc_id => 1})
+      view.stub(:div_link_helper).and_return(nil)
       render
     end
     

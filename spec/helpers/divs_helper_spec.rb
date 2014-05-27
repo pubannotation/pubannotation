@@ -10,17 +10,6 @@ describe DivsHelper do
     end    
     
     context 'when project present' do
-      context 'when params[:pmcdoc_id] present' do
-        before do
-          helper.stub(:params).and_return({:pmcdoc_id => @pmcdoc_id})
-          @result = helper.div_link_helper(@project, @doc)
-        end
-      
-        it 'should return project_pmcdoc_div_path' do
-          @result.should have_selector :a, :href => project_pmcdoc_div_path(@project.name, @doc.sourceid, @doc.serial)
-        end        
-      end
-
       context 'when params[:pmcdoc_id] blank' do
         before do
           helper.stub(:params).and_return({:project_id => @project.name, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid})
@@ -34,17 +23,6 @@ describe DivsHelper do
     end
     
     context 'when project blank' do
-      context 'when params[:pmcdoc_id] present' do
-        before do
-          helper.stub(:params).and_return({:pmcdoc_id => @pmcdoc_id})
-          @result = helper.div_link_helper(nil, @doc)
-        end
-      
-        it 'should return pmcdoc_div_path' do
-          @result.should have_selector :a, :href => pmcdoc_div_path(@doc.sourceid, @doc.serial)
-        end        
-      end
-
       context 'when params[:pmcdoc_id] blank' do
         before do
           helper.stub(:params).and_return({:project_id => @project.name, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid})
