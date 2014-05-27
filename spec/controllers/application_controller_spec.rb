@@ -541,13 +541,39 @@ describe ApplicationController do
     context 'when response.code is 200' do
       before do
         @annotation = {:text => 'text', :others => 'others'}
-        VCR.use_cassette 'controllers/application/gen_annotation/response_200' do
-          @result = controller.gen_annotations(@annotation, 'http://nlp.dbcls.jp/biosentencer/')
+      end
+
+      context 'when response[:denotations] defined' do
+        before do
+          @denotation = 'deenotation'
+          @relations = 'relations'
+          JSON.stub(:parse).and_return({denotations: @denotation, relations: @relations})
+          VCR.use_cassette 'controllers/application/gen_annotation/response_200' do
+            @result = controller.gen_annotations(@annotation, 'http://nlp.dbcls.jp/biosentencer/')
+          end
+        end
+        
+        it 'should set result[:denotations] as annotations[:denotations]' do
+          @result[:denotations].should eql(@denotation) 
+        end
+        
+        it 'should set result[:relations] as annotations[:relations]' do
+          @result[:relations].should eql(@relations) 
         end
       end
-      
-      it 'should return response' do
-        @result.should be_present
+
+      context 'when response[:denotations] not defined' do
+        before do
+          @post_result = {result: nil} 
+          JSON.stub(:parse).and_return(@post_result)
+          VCR.use_cassette 'controllers/application/gen_annotation/response_200' do
+            @result = controller.gen_annotations(@annotation, 'http://nlp.dbcls.jp/biosentencer/')
+          end
+        end
+        
+        it 'should set result as annotations[:denotations]' do
+          @result.should eql({:text => @annotation[:text], :others => @annotation[:others], :denotations => @post_result})
+        end
       end
     end
     
