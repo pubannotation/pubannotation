@@ -564,7 +564,7 @@ describe ApplicationController do
 
       context 'when response[:denotations] not defined' do
         before do
-          @post_result = {result: nil} 
+          @post_result = [{result: nil}]
           JSON.stub(:parse).and_return(@post_result)
           VCR.use_cassette 'controllers/application/gen_annotation/response_200' do
             @result = controller.gen_annotations(@annotation, 'http://nlp.dbcls.jp/biosentencer/')
