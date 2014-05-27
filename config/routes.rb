@@ -81,7 +81,6 @@ Pubann::Application.routes.draw do
   
   resources :projects do
     get 'spans/sql' => 'spans#sql'
-    get 'pmdocs/sql' => 'pmdocs#sql'
     get 'relations/sql' => 'relations#sql'
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
@@ -92,26 +91,7 @@ Pubann::Application.routes.draw do
     
     collection do
       # auto complete path which use scope and scope argument required :scope_argument param
-      get 'autocomplete_pmdoc_sourceid/:scope_argument'   => 'projects#autocomplete_pmdoc_sourceid',  :as => 'autocomplete_pmdoc_sourceid'
       get 'autocomplete_project_name/:scope_argument'  => 'projects#autocomplete_project_name', :as => 'autocomplete_project_name'
-    end
-  end
-
-  resources :pmdocs do
-    collection do
-      get :search
-      get :autocomplete_doc_sourceid
-      get :sql
-    end
-    
-    member do
-      get 'spans/' => 'pmdocs#spans_index', :as => 'spans_index'
-      get 'spans/:begin-:end' => 'pmdocs#spans', :as => 'spans'
-      get 'spans/:begin-:end/annotations' => 'pmdocs#annotations'
-    end
-    
-    resources :projects do
-      resources :annotations
     end
   end
 
@@ -175,23 +155,6 @@ Pubann::Application.routes.draw do
     end
   end
   
-  resources :projects do
-    resources :pmdocs do
-      member do
-        # spans
-        get 'spans/' => 'pmdocs#spans_index', :as => 'spans_index'
-        get 'spans/:begin-:end/' => 'pmdocs#spans', :as => 'spans'
-        # annotations
-        get 'spans/:begin-:end/annotations' => 'pmdocs#annotations', :as => 'spans_annotation'
-      end
-      resources :annotations do
-        collection do
-          post :destroy_all
-        end
-      end
-    end
-  end
-
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divs_id/annotations' => 'annotations#index', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/annotations' => 'annotations#index', :via => ["OPTIONS"]
 
