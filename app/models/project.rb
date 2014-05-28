@@ -83,7 +83,15 @@ class Project < ActiveRecord::Base
       order("CASE WHEN projects.user_id = #{current_user.id} THEN 2 WHEN associate_maintainers.user_id = #{current_user.id} THEN 1 ELSE 0 END DESC")
     end
   }
+
+  # default sort order 
+  DefaultSortArray = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
   
+  scope :sort_by_params, lambda{|sort_order|
+      sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
+      includes(:user).order(sort_order)
+  }
+
   def status_text
    status_hash = {
      1 => I18n.t('activerecord.options.project.status.released'),

@@ -104,6 +104,41 @@ describe ApplicationHelper do
     end
   end
 
+  describe 'sort_order' do
+    context 'when param[:sort_key] present' do
+      before do
+        flash[:sort_order] = [['column_1', 'ASC'], ['column_2', 'ASC'], ['column_3', 'ASC']]
+        @params = {sort_key: 'column_2', sort_direction: 'DESC'}
+        helper.stub(:params).and_return(@params)
+        @sort_order = helper.sort_order(nil)
+      end
+
+      it 'should add sort_key array to top and switch sort_direction' do
+        @sort_order.should eql([["column_2", "DESC"], ["column_1", "ASC"], ["column_3", "ASC"]])
+      end
+
+      it 'flash[:sort_order] should be_set' do
+        flash[:sort_order].should eql @sort_order
+      end
+    end
+
+    context 'when params[:sort_key] blank' do
+      before do
+        @default_sort_array = 'default sort array'
+        stub_const('StubModel::DefaultSortArray', @default_sort_array)
+        @sort_order = helper.sort_order(StubModel)
+      end
+
+      it 'should return model::DefaultSortArray' do
+        @sort_order.should eql(@default_sort_array)
+      end
+
+      it 'flash[:sort_order] should eql model::DefaultSortArray' do
+        flash[:sort_order].should eql @default_sort_array
+      end
+    end
+  end
+
   describe 'sortable' do
     pending 'link path ambiguous' do
       context 'when title present' do

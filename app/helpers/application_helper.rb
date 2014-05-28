@@ -88,6 +88,18 @@ module ApplicationHelper
     sql.gsub("\"", '\'')
   end
 
+  def sort_order(model)
+    if params[:sort_key]
+      sort_order = flash[:sort_order]
+      sort_order.delete(sort_order.assoc(params[:sort_key]))
+      sort_order.unshift([params[:sort_key], params[:sort_direction]])
+    else
+      sort_order = model::DefaultSortArray
+    end
+    flash[:sort_order] = sort_order
+    return sort_order
+  end
+
   def sortable(key, title = nil)
     title ||= key
     current_direction = @sort_order.assoc(key)[1] if @sort_order.present? && @sort_order.assoc(key).present?

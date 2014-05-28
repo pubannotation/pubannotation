@@ -8,7 +8,11 @@ describe DocsController do
       @project_doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 123)
       @project.docs << @project_doc  
       @source_db_id = Doc.all
-      Doc.stub(:source_db_id).and_return(@source_db_id)
+      # Doc.stub(:source_db_id).and_return(@source_db_id)
+      @sort_by_params = double(:sort_by_params)
+      Doc.stub(:sort_by_params).and_return(@sort_by_params)
+      @paginate = 'paginate'
+      @sort_by_params.stub(:paginate).and_return(@paginate)
       @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123)  
     end
     
@@ -19,6 +23,10 @@ describe DocsController do
       
       it 'should assign project' do
         assigns[:project].should eql(@project)
+      end
+
+      it 'should assing sort_by_params.paginate as @source_docs' do
+        assigns[:source_docs].should eql(@paginate)
       end
       
       it 'should assign search_project_docs_path as @search_path' do
@@ -174,29 +182,29 @@ describe DocsController do
       @project = FactoryGirl.create(:project, :name => 'project name')
       @sourcedb = 'source db'
       @project_doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => 123)
-      @project.docs << @project_doc  
       @project_doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sdb', :sourceid => 123)
-      @project.docs << @project_doc_2  
-      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => 123)
+      @paginate = 'paginate'
     end
     
     context 'when params[:project_id] present' do
       before do
+        Project.any_instance.stub_chain(:docs, :where, :where, :sort_by_params, :paginate).and_return(@paginate)
         get :sourceid_index, :project_id => @project.name, :sourcedb => @sourcedb
       end
-      
-      it 'should assigns project.docs which sourcedb match' do
-        assigns[:source_docs].should =~ @project.docs.where(['sourcedb = ?', @sourcedb])
+
+      it 'should assing @project.docs.where.wheresort_by_params.paginate as @source_docs' do
+        assigns[:source_docs].should eql(@paginate)
       end
     end
     
     context 'when params[:project_id] blank' do
       before do
+        Doc.stub_chain(:where, :where, :sort_by_params, :paginate).and_return(@paginate)
         get :sourceid_index, :sourcedb => @sourcedb
       end
       
-      it 'should assigns docs which sourcedb match' do
-        assigns[:source_docs].should =~ Doc.where(['sourcedb = ?', @sourcedb])
+      it 'should assing @project.docs.where.wheresort_by_params.paginate as @source_docs' do
+        assigns[:source_docs].should eql(@paginate)
       end
     end
   end
@@ -373,12 +381,14 @@ describe DocsController do
         @current_user = FactoryGirl.create(:user)
         current_user_stub(@current_user)
         @project = FactoryGirl.create(:project, user: @current_user)
-        @doc.projects << @project
+        # @doc.projects << @project
+        @sort_by_params = 'sort_by_params'
+        Doc.any_instance.stub_chain(:projects, :accessible, :sort_by_params).and_return(@sort_by_params)
         get :show, :id => @doc.id
       end
       
       it 'should assign @projects' do
-        assigns[:projects].should =~ [@project] 
+        assigns[:projects].should eql @sort_by_params 
       end
     end
     

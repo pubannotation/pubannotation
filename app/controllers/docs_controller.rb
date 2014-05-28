@@ -17,16 +17,8 @@ class DocsController < ApplicationController
       @search_path = search_docs_path
     end
 
-    if params[:sort_key]
-      @sort_order = flash[:sort_order]
-      @sort_order.delete(@sort_order.assoc(params[:sort_key]))
-      @sort_order.unshift([params[:sort_key], params[:sort_direction]])
-    else
-      # initialize the sort order
-      @sort_order = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
-    end
-
-    @source_docs = docs.where(serial: 0).order(@sort_order.collect{|s| s.join(' ')}.join(', ')).paginate(:page => params[:page])
+    @sort_order = sort_order(Doc)
+    @source_docs = docs.where(serial: 0).sort_by_params(@sort_order).paginate(:page => params[:page])
     flash[:sort_order] = @sort_order
   end
  
@@ -97,16 +89,8 @@ class DocsController < ApplicationController
       docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
     end
 
-    if params[:sort_key]
-      @sort_order = flash[:sort_order]
-      @sort_order.delete(@sort_order.assoc(params[:sort_key]))
-      @sort_order.unshift([params[:sort_key], params[:sort_direction]])
-    else
-      # initialize the sort order
-      @sort_order = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
-    end
-
-    @source_docs = docs.where(serial: 0).order(@sort_order.collect{|s| s.join(' ')}.join(', ')).paginate(:page => params[:page])
+    @sort_order = sort_order(Doc)
+    @source_docs = docs.where(serial: 0).sort_by_params(@sort_order).paginate(:page => params[:page])
     flash[:sort_order] = @sort_order
   end 
     
@@ -152,17 +136,8 @@ class DocsController < ApplicationController
     @project, notice = get_project(params[:project_id])
     if @doc.present?
       @text = @doc.body
-
-      if params[:sort_key]
-        @sort_order = flash[:sort_order]
-        @sort_order.delete(@sort_order.assoc(params[:sort_key]))
-        @sort_order.unshift([params[:sort_key], params[:sort_direction]])
-      else
-        # initialize the sort order
-        @sort_order = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
-      end
-
-      @projects = @doc.projects.includes(:user).accessible(current_user).order(@sort_order.collect{|s| s.join(' ')}.join(', '))
+      @sort_order = sort_order(Project)
+      @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
       flash[:sort_order] = @sort_order
 
       respond_to do |format|

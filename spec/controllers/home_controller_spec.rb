@@ -8,8 +8,10 @@ describe HomeController do
       current_user_stub(@current_user)
       @source_dbs = ['source_dbs']
       Doc.stub(:source_dbs).and_return(@source_dbs)
-      @project_order_by = 'project_order_by'
-      Project.stub(:order_by).and_return(@project_order_by)
+      @accessble_projects = double(:accessible)
+      Project.stub(:accessible).and_return(@accessble_projects)
+      @sort_by_params = 'sort_by_params'
+      @accessble_projects.stub(:sort_by_params).and_return(@sort_by_params)
       get :index
     end
     
@@ -18,9 +20,7 @@ describe HomeController do
     end
     
     it '@projects should eql Project.order_by' do
-      pending 'order method should be refactor' do
-        assigns[:projects].should eql(@project_order_by)
-      end
+      assigns[:projects].should eql(@sort_by_params)
     end
   end
 end
