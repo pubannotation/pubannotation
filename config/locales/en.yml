@@ -100,6 +100,7 @@ en:
     format: ! '%{attribute} %{message}'
     statuses:
       forbidden: You don't have permission to do this action.
+      unauthorized: You don't have permission to do this action.
     messages:
       accepted: must be accepted
       blank: can't be blank
@@ -241,6 +242,7 @@ en:
         password_confirmation: password confirmation
         remember_me: remember me
         username: Username (your full name)
+        last_sign_in_at: Last sign in datetime
     placeholders:
       project:
         name: Name of the project (up to 20 characters)

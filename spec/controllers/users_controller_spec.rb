@@ -2,6 +2,22 @@
 require 'spec_helper'
 
 describe UsersController do
+  describe 'index' do
+    before do
+      controller.class.skip_before_filter :is_root_user? 
+      FactoryGirl.create(:user)
+      get :index
+    end
+
+    it 'should assign @users' do
+      assigns[:users].should be_present
+    end
+
+    it 'should render template' do
+      response.should render_template('index')
+    end
+  end
+
   describe 'autocomplete_username' do
     before do
       @user = FactoryGirl.create(:user, :username => 'user1')

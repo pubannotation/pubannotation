@@ -1,4 +1,10 @@
 class UsersController < ApplicationController
+  before_filter :is_root_user?, only: :index
+  
+  def index
+    @users = User.all.paginate(:page => params[:page]) 
+  end
+
   def autocomplete_username
     if params[:project_id].blank?
       # when search with new project

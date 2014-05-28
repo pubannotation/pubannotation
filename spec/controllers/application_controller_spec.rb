@@ -11,6 +11,52 @@ describe ApplicationController do
       after_sign_out_path_for(resource_or_scope)
     end
   end
+
+  describe 'is_root_user?' do
+    before do
+      @render_status_error = 'status error'
+      controller.stub(:render_status_error).and_return(@render_status_error)
+    end
+
+    context 'when user signed_in? == true' do
+      before do
+        controller.stub(:user_signed_in?).and_return(true)
+      end
+
+      context 'when root user' do
+        before do
+          controller.stub_chain(:current_user, :root?).and_return(true)
+          @result = controller.is_root_user?
+        end
+
+        it 'should return nil' do
+          @result.should be_nil
+        end
+      end
+
+      context 'when not root user' do
+        before do
+          controller.stub_chain(:current_user, :root?).and_return(false)
+          @result = controller.is_root_user?
+        end
+
+        it 'should return render_status_error' do
+          @result.should eql @render_status_error 
+        end
+      end
+    end
+
+    context 'when user signed_in? == false' do
+      before do
+        controller.stub(:user_signed_in?).and_return(false)
+        @result = controller.is_root_user?
+      end
+
+      it 'should return render_status_error' do
+        @result.should eql @render_status_error 
+      end
+    end
+  end
   
   describe 'set_locale' do
     context 'when session[:locale].blank' do

@@ -21,6 +21,7 @@ Pubann::Application.routes.draw do
   end
   
   resource :users do
+    get '/' => 'users#index'
     get :autocomplete_username, :on => :collection
   end
 

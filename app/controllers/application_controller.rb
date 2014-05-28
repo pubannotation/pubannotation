@@ -9,6 +9,12 @@ class ApplicationController < ActionController::Base
   protect_from_forgery
   before_filter :set_locale
   after_filter :store_location
+
+  def is_root_user?
+    unless user_signed_in? && current_user.root?    
+      render_status_error(:unauthorized)
+    end
+  end
   
   def set_locale
     accept_locale = ['en', 'ja']

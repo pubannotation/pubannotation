@@ -99,6 +99,7 @@ ja:
     format: ! '%{attribute}%{message}'
     statuses:
       forbidden: 権限がありません
+      unauthorized: 権限がありません
     messages:
       accepted: を受諾してください。
       blank: を入力してください。
@@ -258,6 +259,7 @@ ja:
         password_confirmation: パスワードの確認
         remember_me: 記憶する
         username: 名前
+        last_sign_in_at: 最終ログイン日時
     placeholders:
       project:
         name: プロジェクト名(20文字以内)
