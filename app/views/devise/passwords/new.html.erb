@@ -3,7 +3,7 @@
 <%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post }) do |f| %>
   <%= devise_error_messages! %>
 
-  <div><%= f.label :login %><br />
+  <div class="capitalize_first"><%= f.label :login %><br />
   <%= f.text_field :login %></div>
 
   <div><%= f.submit t('views.users.send_reset_password_instructions') %></div>

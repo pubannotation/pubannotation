@@ -14,6 +14,10 @@
   <div><%= f.label :email %><br />
   <%= f.email_field :email %></div>
 
+  <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+    <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+  <% end %>
+
   <div><%= f.label :password %> <span class="meta"><%= t('devise.registrations.password_leave_blank') %></span><br />
   <%= f.password_field :password, :autocomplete => "off" %></div>
 

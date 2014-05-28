@@ -206,6 +206,36 @@ describe ApplicationController do
         session[:after_sign_in_path].should eql(@request_full_path)
       end
     end
+
+    describe 'params[:controller]' do
+      before do
+        @request_full_path = 'fullpath'
+        controller.stub(:request).and_return(double(:fullpath => @request_full_path, :method => 'GET'))
+        controller.stub(:url_for).and_return(nil)
+      end
+
+      context 'when params[:controller] is devise' do
+        before do
+          controller.stub(:params).and_return(:controller => 'devise')
+          controller.store_location
+        end
+        
+        it 'request.fullpath should not stored as redirect_path and previous fullpath should be stored' do
+          session[:after_sign_in_path].should be_nil 
+        end
+      end
+
+      context 'when params[:controller] is devise' do
+        before do
+          controller.stub(:params).and_return(:controller => 'notdevise')
+          controller.store_location
+        end
+        
+        it 'request.fullpath should stored as session' do
+          session[:after_sign_in_path].should eql @request_full_path
+        end
+      end
+    end
   end
   
   describe 'after_sign_in_path_for' do
