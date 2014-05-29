@@ -1,3 +1,7 @@
-<% @denotations.each do |denotations| -%>
-	<%= render :partial => 'denotations/denotation', :collection => denotations[:denotations], :locals => {:project => denotations[:project], :size => denotations[:denotations].size} -%>
+<% if @denotations.present? -%>
+  <% @denotations.each do |denotations| -%>
+    <%= render :partial => 'denotations/denotation', :collection => denotations[:denotations], :locals => {:project => denotations[:project], :size => denotations[:denotations].size} -%>
+  <% end -%>
+<% else -%>
+	<%= t('controllers.shared.not_exists', :model => t('views.shared.annotation')) %>
 <% end -%>
