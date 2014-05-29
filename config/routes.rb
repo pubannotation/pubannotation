@@ -38,7 +38,7 @@ Pubann::Application.routes.draw do
       get 'annotations' => 'annotations#annotations_index'
       get 'spans' => 'docs#spans_index', :as => 'spans_index'
       get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-      get 'spans/:begin-:end/annotations' => 'docs#annotations'    
+      get 'spans/:begin-:end/annotations' => 'annotations#annotations'    
     end
   end
   
@@ -59,7 +59,7 @@ Pubann::Application.routes.draw do
             get 'annotations' => 'annotations#annotations_index'
             get 'spans' => 'docs#spans_index', :as => 'spans_index'
             get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-            get 'spans/:begin-:end/annotations' => 'docs#annotations'
+            get 'spans/:begin-:end/annotations' => 'annotations#annotations'
             
             scope 'divs', :as => 'divs' do
               get '/' => 'divs#index', :as => 'index'
@@ -69,7 +69,7 @@ Pubann::Application.routes.draw do
                 get 'annotations' => 'annotations#annotations_index'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-                get 'spans/:begin-:end/annotations' => 'docs#annotations'
+                get 'spans/:begin-:end/annotations' => 'annotations#annotations'
               end  
             end    
           end
@@ -122,7 +122,7 @@ Pubann::Application.routes.draw do
                 post 'annotations/destroy_all' => 'annotations#destroy_all'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-                get 'spans/:begin-:end/annotations' => 'docs#annotations', :as => 'spans_annotations'
+                get 'spans/:begin-:end/annotations' => 'annotations#annotations', :as => 'spans_annotations'
                 delete 'delete_project_docs' => 'docs#delete_project_docs'
                 
                 scope 'divs', :as => 'divs' do
@@ -136,7 +136,7 @@ Pubann::Application.routes.draw do
                     post 'annotations/destroy_all' => 'annotations#destroy_all'
                     get 'spans' => 'docs#spans_index', :as => 'spans_index'
                     get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-                    get 'spans/:begin-:end/annotations' => 'docs#annotations', :as => 'spans_annotations'
+                    get 'spans/:begin-:end/annotations' => 'annotations#annotations', :as => 'spans_annotations'
                   end  
                 end    
               end
@@ -149,7 +149,7 @@ Pubann::Application.routes.draw do
         get 'annotations' => 'annotations#index'
         get 'spans' => 'docs#spans_index', :as => 'spans_index'
         get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-        get 'spans/:begin-:end/annotations' => 'docs#annotations'    
+        get 'spans/:begin-:end/annotations' => 'annotations#annotations'    
       end
       resources :annotations do
       end

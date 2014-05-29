@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :show, :annotations_index]
+  before_filter :authenticate_user!, :except => [:index, :show, :annotations_index,:annotations]
   after_filter :set_access_control_headers
 
   def index
@@ -105,6 +105,51 @@ class AnnotationsController < ApplicationController
     respond_to do |format|
       format.html {}
       format.json { render :json => annotations, :callback => params[:callback] }
+    end
+  end
+
+  def annotations
+    sourcedb, sourceid, serial = get_docspec(params)
+    if params[:project_id].present?
+      @project, flash[:notice] = get_project(params[:project_id])
+      if @project
+        @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
+      end
+    else
+      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
+    end
+
+    if @doc.present?
+      annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
+      @spans, @prev_text, @next_text = @doc.spans(params)
+
+      if @spans.present?
+        annotations[:text] = @spans
+        if annotations[:tracks].present?
+          annotations[:tracks].each do |track|
+            if track[:denotations].present?
+              track[:denotations].each do |d|
+                d[:span][:begin] -= params[:begin].to_i
+                d[:span][:end]   -= params[:begin].to_i
+              end
+            end
+          end
+        elsif annotations[:denotations].present?
+          annotations[:denotations].each do |d|
+            d[:span][:begin] -= params[:begin].to_i
+            d[:span][:end]   -= params[:begin].to_i
+          end
+        end
+      end
+
+      # ToDo: to process tracks
+      @denotations = annotations[:denotations]
+      @relations = annotations[:relations]
+      @modifications = annotations[:modifications]
+      respond_to do |format|
+        format.html { render 'annotations'}
+        format.json { render :json => annotations, :callback => params[:callback] }
+      end
     end
   end
 
