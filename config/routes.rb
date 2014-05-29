@@ -35,7 +35,7 @@ Pubann::Application.routes.draw do
       get 'search' => 'docs#search'
     end  
     member do
-      get 'annotations' => 'docs#annotations_index'
+      get 'annotations' => 'annotations#annotations_index'
       get 'spans' => 'docs#spans_index', :as => 'spans_index'
       get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
       get 'spans/:begin-:end/annotations' => 'docs#annotations'    
@@ -56,7 +56,7 @@ Pubann::Application.routes.draw do
           
           scope ':sourceid' do
             get '/' => 'docs#show', :as =>'show'
-            get 'annotations' => 'docs#annotations_index'
+            get 'annotations' => 'annotations#annotations_index'
             get 'spans' => 'docs#spans_index', :as => 'spans_index'
             get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
             get 'spans/:begin-:end/annotations' => 'docs#annotations'
@@ -66,7 +66,7 @@ Pubann::Application.routes.draw do
 
               scope ':div_id' do
                 get '/' => 'divs#show', :as => 'show'
-                get 'annotations' => 'docs#annotations_index'
+                get 'annotations' => 'annotations#annotations_index'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
                 get 'spans/:begin-:end/annotations' => 'docs#annotations'

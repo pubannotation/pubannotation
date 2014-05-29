@@ -422,48 +422,7 @@ describe DocsController do
       end
     end
   end
-  
-  describe 'annotations_index' do
-    before do
-      controller.stub(:get_docspec).and_return(nil)
-    end
-    
-    context 'when @doc present' do
-      before do
-        @doc = FactoryGirl.create(:doc)
-        @project_denotations = 'project_denotations'
-        @doc.stub(:project_denotations).and_return(@project_denotations)
-        controller.stub(:get_doc).and_return([@doc, nil])
-        @get_annotations_for_json = {:root => 'get_annotations_for_json'}
-        controller.stub(:get_annotations_for_json).and_return(@get_annotations_for_json)
-      end
-      
-      context 'when format html' do
-        before do
-          get :annotations_index, :id => @doc.id   
-        end
-        
-        it 'should assign @doc.project_denotatios as @denotations' do
-          assigns[:denotations].should eql(@project_denotations)
-        end
-        
-        it 'should render template' do
-          response.should render_template('docs/annotations_index')
-        end
-      end
-      
-      context 'when format json' do
-        before do
-          get :annotations_index, :id => @doc.id, :format => 'json'   
-        end
-        
-        it 'should render template' do
-          response.body.should eql(@get_annotations_for_json.to_json)
-        end
-      end
-    end
-  end
-  
+
   describe 'annotations' do
     before do
       @project = FactoryGirl.create(:project, :name => 'project_name')

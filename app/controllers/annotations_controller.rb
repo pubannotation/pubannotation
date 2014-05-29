@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :show]
+  before_filter :authenticate_user!, :except => [:index, :show, :annotations_index]
   after_filter :set_access_control_headers
 
   def index
@@ -93,6 +93,20 @@ class AnnotationsController < ApplicationController
 
   end
 
+  # annotations for doc without project
+  def annotations_index
+    sourcedb, sourceid, serial, id = get_docspec(params)
+    @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
+    if @doc
+      @denotations = @doc.project_denotations
+      annotations = get_annotations_for_json(nil, @doc, :encoding => params[:encoding])
+    end
+
+    respond_to do |format|
+      format.html {}
+      format.json { render :json => annotations, :callback => params[:callback] }
+    end
+  end
 
   # POST /annotations
   # POST /annotations.json

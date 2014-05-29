@@ -158,21 +158,6 @@ class DocsController < ApplicationController
   def divs_index
   end
 
-  # annotations for doc without project
-  def annotations_index
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
-    if @doc
-      @denotations = @doc.project_denotations
-      annotations = get_annotations_for_json(nil, @doc, :encoding => params[:encoding])
-    end
-
-    respond_to do |format|
-      format.html {}
-      format.json { render :json => annotations, :callback => params[:callback] }
-    end
-  end
-
   def annotations
     sourcedb, sourceid, serial = get_docspec(params)
     if params[:project_id].present?
