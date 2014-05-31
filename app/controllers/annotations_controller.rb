@@ -196,7 +196,7 @@ class AnnotationsController < ApplicationController
         if doc and project and annotations
           render :json => {:status => :created}, :status => :created
         else
-          head :unprocessable_entity
+          render :json => {:status => :unprocessable_entity}, :status => :unprocessable_entity
         end
       }
     end
