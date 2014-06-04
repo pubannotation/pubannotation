@@ -52,7 +52,11 @@ module AnnotationsHelper
     if doc.present?
       text = doc.body
       annotations = Hash.new
-      annotations[:target] = doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
+
+      annotations[:target] = (doc.has_divs?)?
+        doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false) :
+        doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
+
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text(text)
         text = asciitext
@@ -191,5 +195,12 @@ module AnnotationsHelper
         generate_annotatons_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
       end
     end
-  end  
+  end
+
+  def get_doc_info (doc_uri)
+    source_db = (doc_uri =~ %r|/sourcedb/([^/]+)|)? $1 : nil
+    source_id = (doc_uri =~ %r|/sourceid/([^/]+)|)? $1 : nil
+    div_id    = (doc_uri =~ %r|/divs/([^/]+)|)? $1 : nil
+    docinfo   = (div_id == nil)? "#{source_db}-#{source_id}" : "#{source_db}-#{source_id}-#{div_id}"
+  end
 end
