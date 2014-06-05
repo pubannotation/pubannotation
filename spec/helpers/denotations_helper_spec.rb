@@ -132,4 +132,20 @@ describe DenotationsHelper do
       end
     end
   end
+
+  describe 'get_project_denotations' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @doc = FactoryGirl.create(:doc)
+      @params = {begin: 0, end: 5} 
+      @denotations = 'denotations'
+      helper.stub(:get_annotations).and_return({denotations: @denotations})
+      @project_denotations = helper.get_project_denotations([@project_1, @project_2], @doc, {begin: 0, end: 0})
+    end
+
+    it 'should return project denotations' do
+      @project_denotations.should =~ [{project: @project_1, denotations: @denotations}, {project: @project_2, denotations: @denotations}]
+    end
+  end
 end

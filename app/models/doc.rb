@@ -179,6 +179,18 @@ class Doc < ActiveRecord::Base
     end
     return [spans, prev_text, next_text]    
   end
+
+  def text(params)
+    spans, prev_text, next_text = self.spans(params)
+    [prev_text, spans, next_text].compact.join('') 
+  end
+
+  def to_csv(params)
+    CSV.generate(col_sep: "\t") do |csv|
+      csv << ["text"]
+      csv << ["#{self.text(params)}"]
+    end
+  end  
   
   def spans_highlight(params)
     begin_pos = params[:begin].to_i

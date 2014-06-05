@@ -598,13 +598,23 @@ describe DocsController do
           expect(response).to render_template('docs/spans')
         end
       end
+
+      context 'when format csv' do
+        before do
+          get :spans, :format => 'csv', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+        end
+
+        it 'should render csv' do
+          expect(response.body).to render_template([@prev_text, @spans, @next_text].compact.join('\t'))
+        end
+      end
     end
     
     context 'when params[:project_id] blank' do
       before do
         @project_denotation = 'project denotations'
         @project_denotations = {:denotations => @project_denotation}
-        controller.stub(:get_annotations).and_return(@project_denotations)
+        controller.stub(:get_project_denotations).and_return([{project: @project_1, denotations: @project_denotations[:denotations]}])
         get :spans, :id => @doc.sourceid, :begin => 1, :end => 5
       end
       

@@ -969,6 +969,48 @@ describe Doc do
       end
     end    
   end
+
+  describe 'text' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @spans = 'spans'
+      @prev_text = 'prev_text'
+      @next_text = 'next_text'
+    end
+
+    context 'when prev, next text is nil' do
+      before do
+        @doc.stub(:spans).and_return([@spans, nil, nil])
+      end
+
+      it 'should return spans text' do
+        @doc.text(nil).should eql @spans 
+      end
+    end
+
+    context 'when prev, next text prev' do
+      before do
+        @doc.stub(:spans).and_return([@spans, @prev_text, @next_text])
+      end
+
+      it 'should return joined prev_text spans next_text' do
+        @doc.text(nil).should eql "#{@prev_text}#{@spans}#{@next_text}" 
+      end
+    end
+  end
+
+  describe 'to_csv' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @text = 'doc text'
+      @doc.stub(:text).and_return(@text)
+      @csv = @doc.to_csv(nil)
+    end
+
+    it 'should return csv data' do
+      @csv.should eql("text\n#{@text}\n")
+    end
+  end
   
   describe 'spans_highlight' do
     before do
