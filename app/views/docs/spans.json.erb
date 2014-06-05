@@ -1,15 +1,13 @@
 <% doc_class = @doc.sourcedb == 'PMC' ? 'pmc' : 'pm'-%>
 {
-    "<%= doc_class -%>doc_id": "<%= params[:id] -%>",
-    "text": "<%= @spans -%>",
-    "spans":{
-    	"begin": "<%= params[:begin] -%>",
-    	"end": "<%= params[:end] -%>",
-    	<% if @prev_text.present? -%>
-    	"prev_text": "<%= @prev_text -%>", 
-    	<% end -%>
-    	<% if @next_text.present? -%>
-    	"@ext_text": "<%= @next_text -%>" 
-    	<% end -%>
-    }
+    "text": "<%= @text -%>",
+    "denotations": [
+      {
+          "span":{
+              "begin": "<%= params[:begin] -%>",
+              "end": "<%= params[:end] -%>"
+          },
+          "obj": "_focus"
+      }
+    ]
 }

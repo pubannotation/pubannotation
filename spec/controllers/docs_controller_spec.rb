@@ -550,7 +550,7 @@ describe DocsController do
           assigns[:project].should eql(@project)
         end
         
-        it 'should not assign' do
+        it 'should not assign @projects' do
           assigns[:projects].should be_nil
         end
         
@@ -570,14 +570,32 @@ describe DocsController do
           assigns[:next_text].should eql(@next_text)
         end
         
+        it 'should assign @text' do
+          assigns[:text].should eql("#{@prev_text}#{@spans}#{@next_text}")
+        end
+        
         it 'should render template' do
           response.should render_template('docs/spans')
+        end
+      end
+
+      context 'when format text' do
+        before do
+          get :spans, :format => 'txt', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+        end
+
+        it 'should render text' do
+          expect(response.body).to eql(assigns[:text])
         end
       end
 
       context 'when format json' do
         before do
           get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+        end
+
+        it 'should render template' do
+          expect(response).to render_template('docs/spans')
         end
       end
     end
