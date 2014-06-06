@@ -174,11 +174,12 @@ class DocsController < ApplicationController
       end
     end
     @spans, @prev_text, @next_text = @doc.spans(params)
+    @text = @doc.text(params)
     @highlight_text = @doc.spans_highlight(params)
     respond_to do |format|
       format.html { render 'docs/spans'}
       format.txt { 
-        render text: @doc.text(params)
+        render text: @text
       }
       format.json { render 'docs/spans'}
       format.csv { 

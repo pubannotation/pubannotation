@@ -533,6 +533,8 @@ describe DocsController do
       @projects = [@project_1]
       controller.stub(:get_project).and_return([@project, nil])
       @doc.stub(:spans_projects).and_return(@projects)
+      @text = 'doc text'
+      @doc.stub(:text).and_return(@text)
       controller.stub(:get_doc).and_return([@doc, nil])
       @spans = 'SPANS'
       @prev_text = 'PREV'
@@ -572,6 +574,10 @@ describe DocsController do
         
         it 'should render template' do
           response.should render_template('docs/spans')
+        end
+
+        it 'shoud assigns @text' do
+          expect(assigns[:text]).to eql(@text)
         end
       end
 
