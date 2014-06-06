@@ -136,9 +136,9 @@ describe AnnotationsHelper do
         
         context 'when docs.projects present' do
           before do
-            @doc.stub(:projects).and_return([0, 1])
+            @doc.stub_chain(:projects, :not_name_in).and_return([0, 1])
             helper.stub(:get_annotation_relational_models).and_return(nil)
-            @annotations = helper.get_annotations_for_json(nil, @doc)
+            @annotations = helper.get_annotations_for_json(nil, @doc, projects: 'projects')
           end
           
           it 'should set tracks' do
@@ -220,6 +220,17 @@ describe AnnotationsHelper do
           it 'should return equence_alignment.transform_denotations as :hdenotations' do
             @annotations[:denotations].should eql(@hdenotations)
           end
+        end
+      end
+
+      context 'when options[:project_denotations] present' do
+        before do
+          @project_denotations = [{denotations: [{span: 'span'}]}]
+          @annotations = helper.get_annotations_for_json(nil, @doc, project_denotations: @project_denotations)
+        end
+        
+        it 'should set annotaitons project_denotations' do
+          expect(@annotations[:project_denotations]).to eql([@project_denotations[0][:denotations][0].merge(target: '_focus')])
         end
       end
     end
