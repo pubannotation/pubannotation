@@ -122,11 +122,10 @@ class AnnotationsController < ApplicationController
     end
 
     if @doc.present?
-      annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
+      annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]}, :projects => params[:projects], :project_denotations => @project_denotations)
       @spans, @prev_text, @next_text = @doc.spans(params)
-
       if @spans.present?
-        annotations[:text] = @spans
+        annotations[:text] = @doc.text(params)
         if annotations[:tracks].present?
           annotations[:tracks].each do |track|
             if track[:denotations].present?
