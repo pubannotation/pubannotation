@@ -182,7 +182,7 @@ class DocsController < ApplicationController
       }
       format.json { render 'docs/spans'}
       format.csv { 
-        send_data @doc.to_csv (params)
+        send_data @doc.to_csv(params)
       }
     end
   end

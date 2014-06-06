@@ -570,10 +570,6 @@ describe DocsController do
           assigns[:next_text].should eql(@next_text)
         end
         
-        it 'should assign @text' do
-          assigns[:text].should eql("#{@prev_text}#{@spans}#{@next_text}")
-        end
-        
         it 'should render template' do
           response.should render_template('docs/spans')
         end
@@ -581,11 +577,13 @@ describe DocsController do
 
       context 'when format text' do
         before do
+          @text = 'doc text'
+          @doc.stub(:text).and_return(@text)
           get :spans, :format => 'txt', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
         end
 
         it 'should render text' do
-          expect(response.body).to eql(assigns[:text])
+          expect(response.body).to eql(@text)
         end
       end
 
@@ -601,11 +599,13 @@ describe DocsController do
 
       context 'when format csv' do
         before do
+          @csv = 'csv text'
+          @doc.stub(:to_csv).and_return(@csv)
           get :spans, :format => 'csv', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
         end
 
-        it 'should render csv' do
-          expect(response.body).to render_template([@prev_text, @spans, @next_text].compact.join('\t'))
+        it 'should render to_csv' do
+          expect(response.body).to eql(@csv)
         end
       end
     end
