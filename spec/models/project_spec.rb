@@ -292,15 +292,15 @@ describe Project do
     end    
   end
   
-  describe 'scope not_name_in' do
+  describe 'scope name_in' do
     before do
       @project_1 = FactoryGirl.create(:project)
       @project_2 = FactoryGirl.create(:project)
       @project_3 = FactoryGirl.create(:project)
     end
     
-    it 'should include project_id included in project_ids' do
-      Project.not_name_in([@project_1.name, @project_2.name]).should =~ [@project_3]
+    it 'should include project_name included in project_names' do
+      Project.name_in([@project_1.name, @project_2.name]).should =~ [@project_1, @project_2]
     end    
   end
 

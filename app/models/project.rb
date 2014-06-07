@@ -48,8 +48,8 @@ class Project < ActiveRecord::Base
     where('projects.id IN (?)', project_ids)
   }
   
-  scope :not_name_in, lambda{|project_names|
-    where('projects.name NOT IN (?)', project_names) if project_names.present?
+  scope :name_in, lambda{|project_names|
+    where('projects.name IN (?)', project_names) if project_names.present?
   }
 
   # scopes for order

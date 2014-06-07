@@ -136,7 +136,7 @@ describe AnnotationsHelper do
         
         context 'when docs.projects present' do
           before do
-            @doc.stub_chain(:projects, :not_name_in).and_return([0, 1])
+            @doc.stub_chain(:projects, :name_in).and_return([0, 1])
             helper.stub(:get_annotation_relational_models).and_return(nil)
             @annotations = helper.get_annotations_for_json(nil, @doc, projects: 'projects')
           end

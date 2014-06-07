@@ -65,7 +65,7 @@ module AnnotationsHelper
         annotations[:tracks] = Array.new
         i = 0
         project_names = options[:projects].split(',') if options[:projects].present?
-        doc.projects.not_name_in(project_names).each do |project|
+        doc.projects.name_in(project_names).each do |project|
           annotations[:tracks][i] = Hash.new
           get_annotation_relational_models(doc, project, text, asciitext, annotations[:tracks][i], options)
           i += 1
