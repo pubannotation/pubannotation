@@ -186,9 +186,17 @@ class Doc < ActiveRecord::Base
   end
 
   def to_csv(params)
+    focus, left, right = self.spans(params) 
     CSV.generate(col_sep: "\t") do |csv|
-      csv << ["text"]
-      csv << ["#{self.text(params)}"]
+      if params[:context_size].present?
+        headers = %w(left focus right)
+        values = [left, focus, right]
+      else
+        headers = %w(focus)
+        values = [focus]
+      end
+      csv << headers
+      csv << values 
     end
   end  
   

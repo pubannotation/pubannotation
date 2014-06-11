@@ -1002,13 +1002,28 @@ describe Doc do
   describe 'to_csv' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @text = 'doc text'
-      @doc.stub(:text).and_return(@text)
-      @csv = @doc.to_csv(nil)
+      @spans =['spans', 'prev', 'next']
+      @doc.stub(:spans).and_return(@spans)
     end
 
-    it 'should return csv data' do
-      @csv.should eql("text\n#{@text}\n")
+    context 'when params[:context_size] not present' do
+      before do
+        @csv = @doc.to_csv({:context_size => true})
+      end
+
+      it 'should return csv data' do
+        @csv.should eql("left\tfocus\tright\n#{@spans[1]}\t#{@spans[0]}\t#{@spans[2]}\n")
+      end
+    end
+
+    context 'when params[:context_size] not present' do
+      before do
+        @csv = @doc.to_csv({})
+      end
+
+      it 'should return csv data' do
+        @csv.should eql("focus\n#{@spans[0]}\n")
+      end
     end
   end
   
