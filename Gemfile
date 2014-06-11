@@ -56,6 +56,7 @@ gem 'zip-zip'
 gem 'rails3-jquery-autocomplete'
 gem 'delayed_job_active_record'
 gem 'backup'
+gem 'whenever', :require => false
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
