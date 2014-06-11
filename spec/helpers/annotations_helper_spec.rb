@@ -102,6 +102,28 @@ describe AnnotationsHelper do
         @hrelations = 'hrelations'
         @hmodifications = 'hmodifications'
       end
+
+      context 'when doc.has_divs? == true' do
+        before do
+          @doc.stub(:has_divs?).and_return(true)
+          @annotations = helper.get_annotations_for_json(nil, @doc)
+        end
+        
+        it 'should set divs#show path as target' do
+          expect(@annotations[:target]).to eql(doc_sourcedb_sourceid_divs_show_path(@doc.sourcedb, @doc.sourceid, @doc.serial, :only_path => false))
+        end
+      end
+
+      context 'when doc.has_divs? == false' do
+        before do
+          @doc.stub(:has_divs?).and_return(false)
+          @annotations = helper.get_annotations_for_json(nil, @doc)
+        end
+        
+        it 'should set docs#show path as target' do
+          expect(@annotations[:target]).to eql(doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid, :only_path => false))
+        end
+      end
       
       context  'when project blank'  do
         context  'when no options'  do
