@@ -4,6 +4,7 @@ class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
   before_filter :authenticate_user!, :except => [:index, :show, :annotations_index,:annotations]
   after_filter :set_access_control_headers
+  include DenotationsHelper
 
   def index
     @project, notice = get_project(params[:project_id])
@@ -124,14 +125,14 @@ class AnnotationsController < ApplicationController
       end
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
+      @project_denotations = get_project_denotations(@doc.projects, @doc, params)
     end
 
     if @doc.present?
-      annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})
+      annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]}, :projects => params[:projects], :project_denotations => @project_denotations)
       @spans, @prev_text, @next_text = @doc.spans(params)
-
       if @spans.present?
-        annotations[:text] = @spans
+        annotations[:text] = @doc.text(params)
         if annotations[:tracks].present?
           annotations[:tracks].each do |track|
             if track[:denotations].present?

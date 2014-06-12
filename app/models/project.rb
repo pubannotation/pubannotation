@@ -48,6 +48,10 @@ class Project < ActiveRecord::Base
     where('projects.id IN (?)', project_ids)
   }
   
+  scope :name_in, lambda{|project_names|
+    where('projects.name IN (?)', project_names) if project_names.present?
+  }
+
   # scopes for order
   scope :order_pmdocs_count, 
     joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PubMed'").

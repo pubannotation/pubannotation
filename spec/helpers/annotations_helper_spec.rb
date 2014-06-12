@@ -102,6 +102,28 @@ describe AnnotationsHelper do
         @hrelations = 'hrelations'
         @hmodifications = 'hmodifications'
       end
+
+      context 'when doc.has_divs? == true' do
+        before do
+          @doc.stub(:has_divs?).and_return(true)
+          @annotations = helper.get_annotations_for_json(nil, @doc)
+        end
+        
+        it 'should set divs#show path as target' do
+          expect(@annotations[:target]).to eql(doc_sourcedb_sourceid_divs_show_path(@doc.sourcedb, @doc.sourceid, @doc.serial, :only_path => false))
+        end
+      end
+
+      context 'when doc.has_divs? == false' do
+        before do
+          @doc.stub(:has_divs?).and_return(false)
+          @annotations = helper.get_annotations_for_json(nil, @doc)
+        end
+        
+        it 'should set docs#show path as target' do
+          expect(@annotations[:target]).to eql(doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid, :only_path => false))
+        end
+      end
       
       context  'when project blank'  do
         context  'when no options'  do
@@ -136,9 +158,9 @@ describe AnnotationsHelper do
         
         context 'when docs.projects present' do
           before do
-            @doc.stub(:projects).and_return([0, 1])
+            @doc.stub_chain(:projects, :name_in).and_return([0, 1])
             helper.stub(:get_annotation_relational_models).and_return(nil)
-            @annotations = helper.get_annotations_for_json(nil, @doc)
+            @annotations = helper.get_annotations_for_json(nil, @doc, projects: 'projects')
           end
           
           it 'should set tracks' do
@@ -220,6 +242,17 @@ describe AnnotationsHelper do
           it 'should return equence_alignment.transform_denotations as :hdenotations' do
             @annotations[:denotations].should eql(@hdenotations)
           end
+        end
+      end
+
+      context 'when options[:project_denotations] present' do
+        before do
+          @project_denotations = [{denotations: [{span: 'span'}]}]
+          @annotations = helper.get_annotations_for_json(nil, @doc, project_denotations: @project_denotations)
+        end
+        
+        it 'should set annotaitons project_denotations' do
+          expect(@annotations[:project_denotations]).to eql([@project_denotations[0][:denotations][0].merge(target: '_focus')])
         end
       end
     end

@@ -315,8 +315,12 @@ describe AnnotationsController do
           @prev_text = 'prevx text'
           @next_text = 'next text'
           Doc.any_instance.stub(:spans).and_return([@spans, @prev_text, @next_text])
+          @text = 'doc text'
+          Doc.any_instance.stub(:text).and_return(@text)
           @begin = 1
           @denotations = [{span: {begin: 0, end: 5}}]
+          @project_denotations = 'project denotations'
+          controller.stub(:get_project_denotations).and_return(@project_denotations)
           @tracks = [{denotations: [{span: {begin: 1, end: 8}}]}]
         end
 
@@ -333,6 +337,14 @@ describe AnnotationsController do
             controller.stub(:get_annotations_for_json).and_return(@annotations)
             get :annotations, :id => @doc.id, :begin => @begin, :end => 10, format: 'json'
             @json = JSON.parse(response.body)
+          end
+         
+          it 'set text to @doc.text' do
+            @json['text'].should eql(@text)
+          end
+         
+          it 'should assigns project_denotatios' do
+            assigns[:project_denotations].should eql(@project_denotations)
           end
 
           it 'should assign @spans' do

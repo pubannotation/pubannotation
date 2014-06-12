@@ -533,6 +533,8 @@ describe DocsController do
       @projects = [@project_1]
       controller.stub(:get_project).and_return([@project, nil])
       @doc.stub(:spans_projects).and_return(@projects)
+      @text = 'doc text'
+      @doc.stub(:text).and_return(@text)
       controller.stub(:get_doc).and_return([@doc, nil])
       @spans = 'SPANS'
       @prev_text = 'PREV'
@@ -550,7 +552,7 @@ describe DocsController do
           assigns[:project].should eql(@project)
         end
         
-        it 'should not assign' do
+        it 'should not assign @projects' do
           assigns[:projects].should be_nil
         end
         
@@ -573,11 +575,43 @@ describe DocsController do
         it 'should render template' do
           response.should render_template('docs/spans')
         end
+
+        it 'shoud assigns @text' do
+          expect(assigns[:text]).to eql(@text)
+        end
+      end
+
+      context 'when format text' do
+        before do
+          @text = 'doc text'
+          @doc.stub(:text).and_return(@text)
+          get :spans, :format => 'txt', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+        end
+
+        it 'should render text' do
+          expect(response.body).to eql(@text)
+        end
       end
 
       context 'when format json' do
         before do
           get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+        end
+
+        it 'should render template' do
+          expect(response).to render_template('docs/spans')
+        end
+      end
+
+      context 'when format csv' do
+        before do
+          @csv = 'csv text'
+          @doc.stub(:to_csv).and_return(@csv)
+          get :spans, :format => 'csv', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+        end
+
+        it 'should render to_csv' do
+          expect(response.body).to eql(@csv)
         end
       end
     end
@@ -586,7 +620,7 @@ describe DocsController do
       before do
         @project_denotation = 'project denotations'
         @project_denotations = {:denotations => @project_denotation}
-        controller.stub(:get_annotations).and_return(@project_denotations)
+        controller.stub(:get_project_denotations).and_return([{project: @project_1, denotations: @project_denotations[:denotations]}])
         get :spans, :id => @doc.sourceid, :begin => 1, :end => 5
       end
       

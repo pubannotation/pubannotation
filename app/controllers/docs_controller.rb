@@ -4,6 +4,7 @@ class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
   before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_docs]
   after_filter :set_access_control_headers
+  include DenotationsHelper
 
   # GET /docs
   # GET /docs.json
@@ -169,18 +170,21 @@ class DocsController < ApplicationController
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
       @projects = @doc.spans_projects(params)
       if @doc.present? && @projects.present?
-        @project_denotations = Array.new
-        @projects.each do |project|
-          @project_denotations << {:project => project, :denotations => get_annotations(project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})[:denotations]}
-        end
+        @project_denotations = get_project_denotations(@projects, @doc, params)
       end
     end
     @spans, @prev_text, @next_text = @doc.spans(params)
+    @text = @doc.text(params)
     @highlight_text = @doc.spans_highlight(params)
     respond_to do |format|
       format.html { render 'docs/spans'}
-      format.txt { render 'docs/spans'}
+      format.txt { 
+        render text: @text
+      }
       format.json { render 'docs/spans'}
+      format.csv { 
+        send_data @doc.to_csv(params)
+      }
     end
   end
   

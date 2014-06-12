@@ -148,37 +148,57 @@ class Doc < ActiveRecord::Base
   def spans(params)
     begin_pos = params[:begin].to_i
     end_pos = params[:end].to_i
-    context_window = params[:context_window].to_i
+    context_size = params[:context_size].to_i
     spans = self.body[begin_pos...end_pos]
     body = self.body
-    if params[:context_window].present?
-      prev_begin_pos = begin_pos - context_window
+    if params[:context_size].present?
+      prev_begin_pos = begin_pos - context_size
       prev_end_pos = begin_pos
       if prev_begin_pos < 0
         prev_begin_pos = 0
       end
       prev_text = body[prev_begin_pos...prev_end_pos] 
       next_begin_pos = end_pos
-      next_end_pos = end_pos + context_window
+      next_end_pos = end_pos + context_size
       next_text = body[next_begin_pos...next_end_pos] 
       if params[:format] == 'txt'
-        prev_text = "#{prev_text}\t" if prev_text.present?
-        spans = "#{spans}\t" if next_text.present?
+        prev_text = "#{prev_text}" if prev_text.present?
+        spans = "#{spans}" if next_text.present?
       end
     end
     if params[:encoding] == 'ascii'
       spans = get_ascii_text(spans)
-      if params[:context_window].present?
-        next_text = get_ascii_text(next_text)[0...context_window]
+      if params[:context_size].present?
+        next_text = get_ascii_text(next_text)[0...context_size]
         ascii_prev_text = get_ascii_text(prev_text) 
-        if context_window > ascii_prev_text.length
-          context_window = ascii_prev_text.length
+        if context_size > ascii_prev_text.length
+          context_size = ascii_prev_text.length
         end
-        prev_text = ascii_prev_text[(context_window * -1)..-1]
+        prev_text = ascii_prev_text[(context_size * -1)..-1]
       end
     end
     return [spans, prev_text, next_text]    
   end
+
+  def text(params)
+    spans, prev_text, next_text = self.spans(params)
+    [prev_text, spans, next_text].compact.join('') 
+  end
+
+  def to_csv(params)
+    focus, left, right = self.spans(params) 
+    CSV.generate(col_sep: "\t") do |csv|
+      if params[:context_size].present?
+        headers = %w(left focus right)
+        values = [left, focus, right]
+      else
+        headers = %w(focus)
+        values = [focus]
+      end
+      csv << headers
+      csv << values 
+    end
+  end  
   
   def spans_highlight(params)
     begin_pos = params[:begin].to_i

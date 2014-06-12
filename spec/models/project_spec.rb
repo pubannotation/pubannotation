@@ -291,6 +291,18 @@ describe Project do
       Project.id_in([@project_1.id, @project_2.id]).should =~ [@project_1, @project_2]
     end    
   end
+  
+  describe 'scope name_in' do
+    before do
+      @project_1 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project)
+    end
+    
+    it 'should include project_name included in project_names' do
+      Project.name_in([@project_1.name, @project_2.name]).should =~ [@project_1, @project_2]
+    end    
+  end
 
   describe 'sort_by_params' do
     before do

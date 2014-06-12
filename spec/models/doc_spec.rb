@@ -725,7 +725,7 @@ describe Doc do
       end
       
       context 'when encoding normal' do
-        context 'when context_window is nil' do
+        context 'when context_size is nil' do
           context 'when context is nil' do
             before do
               params = {:begin => @begin, :end => @end}
@@ -737,12 +737,12 @@ describe Doc do
             end
           end
           
-          context 'when context_window is present' do
+          context 'when context_size is present' do
             context 'when begin of body' do
               before do
                 @begin = 0
                 @end = 5
-                params = {:context_window => 5, :begin => @begin, :end => @end}
+                params = {:context_size => 5, :begin => @begin, :end => @end}
                 @spans, @prev_text, @next_text = @doc.spans(params)
               end
               
@@ -763,7 +763,7 @@ describe Doc do
               before do
                 @begin = 5
                 @end = 10
-                params = {:context_window => 5, :begin => @begin, :end => @end}
+                params = {:context_size => 5, :begin => @begin, :end => @end}
                  @spans, @prev_text, @next_text = @doc.spans(params)
               end
               
@@ -785,7 +785,7 @@ describe Doc do
                 # '12345spansABCDE'
                 @begin = 10
                 @end = 15
-                params = {:context_window => 5, :begin => @begin, :end => @end}
+                params = {:context_size => 5, :begin => @begin, :end => @end}
                 @spans, @prev_text, @next_text = @doc.spans(params)
               end
               
@@ -806,16 +806,16 @@ describe Doc do
               before do
                 @begin = 5
                 @end = 10
-                params = {:format => 'txt', :context_window => 5, :begin => @begin, :end => @end}
+                params = {:format => 'txt', :context_size => 5, :begin => @begin, :end => @end}
                 @spans, @prev_text, @next_text = @doc.spans(params)
               end
               
               it 'should set prev_text includes tab' do
-                @prev_text.should eql("12345\t")
+                @prev_text.should eql("12345")
               end
                
               it 'should set body[begin...end] as spans includes tab' do
-                @spans.should eql("spans\t")
+                @spans.should eql("spans")
               end
               
               it 'should set next_text' do
@@ -827,7 +827,7 @@ describe Doc do
       end
 
       context 'when encoding is ascii' do
-        context 'when context_window is nil' do
+        context 'when context_size is nil' do
           context 'when middle of body' do
             before do
               @begin = 5
@@ -842,12 +842,12 @@ describe Doc do
           end
         end
         
-        context 'when context_window is present' do
+        context 'when context_size is present' do
           context 'when middle of body' do
             before do
               @begin = 5
               @end = 10
-              params = {:encoding => 'ascii', :context_window => 5, :begin => @begin, :end => @end}
+              params = {:encoding => 'ascii', :context_size => 5, :begin => @begin, :end => @end}
               @spans, @prev_text, @next_text = @doc.spans(params)
             end
             
@@ -876,9 +876,9 @@ describe Doc do
       end
       
       context 'when encoding nil' do
-        context 'when context_window present' do
+        context 'when context_size present' do
           before do
-            params = {:context_window => 10, :begin => @begin, :end => @end}
+            params = {:context_size => 10, :begin => @begin, :end => @end}
             @spans, @prev_text, @next_text = @doc.spans(params)
           end
           
@@ -897,9 +897,9 @@ describe Doc do
       end
       
       context 'when encoding ascii' do
-        context 'when context_window present' do
+        context 'when context_size present' do
           before do
-            params = {:encoding => 'ascii', :context_window => 10, :begin => @begin, :end => @end}
+            params = {:encoding => 'ascii', :context_size => 10, :begin => @begin, :end => @end}
             @spans, @prev_text, @next_text = @doc.spans(params)
           end
           
@@ -927,9 +927,9 @@ describe Doc do
       end
       
       context 'when encoding nil' do
-        context 'when context_window present' do
+        context 'when context_size present' do
           before do
-            params = {:context_window => 3, :begin => @begin, :end => @end}
+            params = {:context_size => 3, :begin => @begin, :end => @end}
             @spans, @prev_text, @next_text = @doc.spans(params)
           end
           
@@ -948,9 +948,9 @@ describe Doc do
       end
       
       context 'when encoding ascii' do
-        context 'when context_window present' do
+        context 'when context_size present' do
           before do
-            params = {:encoding => 'ascii', :context_window => 3, :begin => @begin, :end => @end}
+            params = {:encoding => 'ascii', :context_size => 3, :begin => @begin, :end => @end}
             @spans, @prev_text, @next_text = @doc.spans(params)
           end
           
@@ -968,6 +968,63 @@ describe Doc do
         end
       end
     end    
+  end
+
+  describe 'text' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @spans = 'spans'
+      @prev_text = 'prev_text'
+      @next_text = 'next_text'
+    end
+
+    context 'when prev, next text is nil' do
+      before do
+        @doc.stub(:spans).and_return([@spans, nil, nil])
+      end
+
+      it 'should return spans text' do
+        @doc.text(nil).should eql @spans 
+      end
+    end
+
+    context 'when prev, next text prev' do
+      before do
+        @doc.stub(:spans).and_return([@spans, @prev_text, @next_text])
+      end
+
+      it 'should return joined prev_text spans next_text' do
+        @doc.text(nil).should eql "#{@prev_text}#{@spans}#{@next_text}" 
+      end
+    end
+  end
+
+  describe 'to_csv' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @spans =['spans', 'prev', 'next']
+      @doc.stub(:spans).and_return(@spans)
+    end
+
+    context 'when params[:context_size] not present' do
+      before do
+        @csv = @doc.to_csv({:context_size => true})
+      end
+
+      it 'should return csv data' do
+        @csv.should eql("left\tfocus\tright\n#{@spans[1]}\t#{@spans[0]}\t#{@spans[2]}\n")
+      end
+    end
+
+    context 'when params[:context_size] not present' do
+      before do
+        @csv = @doc.to_csv({})
+      end
+
+      it 'should return csv data' do
+        @csv.should eql("focus\n#{@spans[0]}\n")
+      end
+    end
   end
   
   describe 'spans_highlight' do

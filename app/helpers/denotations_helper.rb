@@ -30,4 +30,12 @@ module DenotationsHelper
       link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", doc_sourcedb_sourceid_spans_path(@doc.sourcedb, @doc.sourceid, denotation[:span][:begin], denotation[:span][:end])
     end
   end
+
+  def get_project_denotations(projects, doc, params)
+    project_denotations = Array.new
+    projects.each do |project|
+      project_denotations << {:project => project, :denotations => get_annotations(project, doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]})[:denotations]}
+    end
+    return project_denotations
+  end
 end

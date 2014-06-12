@@ -52,11 +52,11 @@ module AnnotationsHelper
     if doc.present?
       text = doc.body
       annotations = Hash.new
-
-      annotations[:target] = (doc.has_divs?)?
-        doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false) :
-        doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
-
+      if doc.has_divs?
+        annotations[:target] = doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false)
+      else
+        annotations[:target] = doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
+      end
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text(text)
         text = asciitext
@@ -68,11 +68,26 @@ module AnnotationsHelper
       elsif doc.projects.present?
         annotations[:tracks] = Array.new
         i = 0
-        doc.projects.each do |project|
+        project_names = options[:projects].split(',') if options[:projects].present?
+        doc.projects.name_in(project_names).each do |project|
           annotations[:tracks][i] = Hash.new
           get_annotation_relational_models(doc, project, text, asciitext, annotations[:tracks][i], options)
           i += 1
         end
+      end
+
+      if options[:project_denotations].present?
+        # TODO annnotations[:denotations] is already exists. 
+        annotations[:project_denotations] = options[:project_denotations].collect{|project_denotation| 
+          if project_denotation[:denotations].present?
+            denotation_hash = Hash.new
+            project_denotation[:denotations].each do |denotation|
+              denotation_hash[:span] = denotation[:span]
+            end
+            denotation_hash[:target] = '_focus'
+            denotation_hash
+          end
+        }
       end
       annotations
     else
