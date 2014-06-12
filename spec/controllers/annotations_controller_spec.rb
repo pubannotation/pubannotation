@@ -175,7 +175,7 @@ describe AnnotationsController do
 
         context 'and when anncollection does not exists' do
           before do
-            Project.any_instance.stub(:anncollection).and_return([])            
+            Project.any_instance.stub(:docs).and_return([])            
           end
           
           context 'and whern format html' do
@@ -188,7 +188,7 @@ describe AnnotationsController do
             end
           end
           
-          context 'and whern format json' do
+          context 'and when format json' do
             before do
               get :index, :format => 'json', :project_id => @project.name
             end
