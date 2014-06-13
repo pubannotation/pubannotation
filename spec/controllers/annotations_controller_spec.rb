@@ -315,8 +315,6 @@ describe AnnotationsController do
           @prev_text = 'prevx text'
           @next_text = 'next text'
           Doc.any_instance.stub(:spans).and_return([@spans, @prev_text, @next_text])
-          @text = 'doc text'
-          Doc.any_instance.stub(:text).and_return(@text)
           @begin = 1
           @denotations = [{span: {begin: 0, end: 5}}]
           @project_denotations = 'project denotations'
@@ -324,74 +322,54 @@ describe AnnotationsController do
           @tracks = [{denotations: [{span: {begin: 1, end: 8}}]}]
         end
 
-        context 'when tracks present' do
-          before do
-            @annotations ={
-              :text => "text",
-              :tracks => @tracks,
-              :denotations => @denotations,
-              :instances => "instances",
-              :relations => "relations",
-              :modifications => "modifications"
-            }
-            controller.stub(:get_annotations_for_json).and_return(@annotations)
-            get :annotations, :id => @doc.id, :begin => @begin, :end => 10, format: 'json'
-            @json = JSON.parse(response.body)
-          end
-         
-          it 'set text to @doc.text' do
-            @json['text'].should eql(@text)
-          end
-         
-          it 'should assigns project_denotatios' do
-            assigns[:project_denotations].should eql(@project_denotations)
-          end
-
-          it 'should assign @spans' do
-            assigns[:spans].should eql(@spans)
-          end
-
-          it 'should assign @prev_text' do
-            assigns[:prev_text].should eql(@prev_text)
-          end
-
-          it 'should assign @next_text' do
-            assigns[:next_text].should eql(@next_text)
-          end
-
-          it 'should assign @relations' do
-            assigns[:relations].should eql(@annotations[:relations])
-          end
-
-          it 'should assign @modifications' do
-            assigns[:modifications].should eql(@annotations[:modifications])
-          end
-
-          it 'should assign annotations[:tracks] and params[:begin] minus param[:begin]' do
-            @json['tracks'].should eql([{"denotations" => [{"span" => {"begin" => 0, "end" => 7}}]}])
-          end
-
-          it 'should assign annotations[:denotations] as @denotations' do
-            assigns[:denotations].should eql [{"span" => {"begin" => 0, "end" => 5}}]
-          end
+        before do
+          @annotations ={
+            :text => "text",
+            :tracks => @tracks,
+            :denotations => @denotations,
+            :instances => "instances",
+            :relations => "relations",
+            :modifications => "modifications"
+          }
+          controller.stub(:get_annotations_for_json).and_return(@annotations)
+          get :annotations, :id => @doc.id, :begin => @begin, :end => 10, format: 'json'
+          @json = JSON.parse(response.body)
+        end
+       
+        it 'set text to get_annotations_for_json text' do
+          @json['text'].should eql(@annotations[:text])
+        end
+       
+        it 'should assigns project_denotatios' do
+          assigns[:project_denotations].should eql(@project_denotations)
         end
 
-        context 'when denotations present' do
-          before do
-            @annotations ={
-              :text => "text",
-              :denotations => @denotations,
-              :instances => "instances",
-              :relations => "relations",
-              :modifications => "modifications"
-            }
-            controller.stub(:get_annotations_for_json).and_return(@annotations)
-            get :annotations, :id => @doc.id, :begin => @begin, :end => 10
-          end
-          
-          it 'should assigns[:denotations] minus param[:begin]' do
-            assigns[:denotations].should eql([{"span" => {"begin" => -1, "end" => 4}}])
-          end
+        it 'should assign @spans' do
+          assigns[:spans].should eql(@spans)
+        end
+
+        it 'should assign @prev_text' do
+          assigns[:prev_text].should eql(@prev_text)
+        end
+
+        it 'should assign @next_text' do
+          assigns[:next_text].should eql(@next_text)
+        end
+
+        it 'should assign @relations' do
+          assigns[:relations].should eql(@annotations[:relations])
+        end
+
+        it 'should assign @modifications' do
+          assigns[:modifications].should eql(@annotations[:modifications])
+        end
+
+        it 'should assign get_annotations_for_json tracks as annotations[:tracks]' do
+          @json['tracks'].should eql(JSON.parse(@annotations[:tracks].to_json))
+        end
+
+        it 'should assign annotations[:denotations] as @denotations' do
+          assigns[:denotations].should eql [{"span" => {"begin" => 0, "end" => 5}}]
         end
       end
     end

@@ -245,14 +245,89 @@ describe AnnotationsHelper do
         end
       end
 
-      context 'when options[:project_denotations] present' do
+      context 'when doc_spans present' do
         before do
-          @project_denotations = [{denotations: [{span: 'span'}]}]
-          @annotations = helper.get_annotations_for_json(nil, @doc, project_denotations: @project_denotations)
+          @doc_text = 'doc text'
+          @doc.stub(:text).and_return(@doc_text)
+          @doc_projects = [@project]
+          @doc.stub_chain(:projects, :name_in).and_return(@doc_projects)
+          @denotations_span_begin = 5
+          @denotations_span_end = 10
+          @denotations = [{span: {begin: @denotations_span_begin, end: @denotations_span_end}}]
+          @params_begin = 1
+          @params_end = 2
+          @annotation_relational_models = {denotations: @denotations}
+          helper.stub(:get_annotation_relational_models) do |doc, project, text, asciitext, annotaitons, options|
+            annotaitons[:denotations] = @denotations
+          end
+          @set_denotations_begin_end = 'set begin end'
+          helper.stub(:set_denotations_begin_end).and_return(@set_denotations_begin_end)
         end
-        
-        it 'should set annotaitons project_denotations' do
-          expect(@annotations[:project_denotations]).to eql([@project_denotations[0][:denotations][0].merge(target: '_focus')])
+
+        describe 'text' do
+          before do
+            @annotations = helper.get_annotations_for_json(nil, @doc, doc_spans: 'spans', params: {begin: @params_begin, end: @params_end})
+          end
+
+          it 'should set set_denotations_begin_end values as track[:denotations]' do
+            expect(@annotations[:text]).to eql(@doc_text)
+          end
+        end
+
+        context 'when tracks present' do
+          before do
+            @annotations = helper.get_annotations_for_json(nil, @doc, doc_spans: 'spans', params: {begin: @params_begin, end: @params_end})
+          end
+
+          it 'should set set_denotations_begin_end values as track[:denotations]' do
+            expect(@annotations[:tracks][0][:denotations]).to eql(@set_denotations_begin_end)
+          end
+        end
+
+        context 'when denotations present' do
+          before do
+            @project = FactoryGirl.create(:project)
+            @annotations = helper.get_annotations_for_json(@project, @doc, doc_spans: 'spans', params: {begin: @params_begin, end: @params_end})
+          end
+
+          it 'should set set_denotations_begin_end values as annotaitons[:denotations]' do
+            expect(@annotations[:denotations]).to eql(@set_denotations_begin_end)
+          end
+        end
+
+        describe 'annotaitons[:focus]' do
+          context 'when context_size blank' do
+            before do
+              @params_begin = 1
+              @params_end = 5
+              @annotations = helper.get_annotations_for_json(nil, @doc, params: {begin: @params_begin, end: @params_end})
+            end
+
+            it 'annotaitons[:focus][:begin] should be 0' do
+              expect(@annotations[:focus][:begin]).to eql(0) 
+            end
+
+            it 'annotaitons[:focus][:end] should equal gap of begin - end' do
+              expect(@annotations[:focus][:end]).to eql(@params_end - @params_begin) 
+            end
+          end
+
+          context 'when context_size present' do
+            before do
+              @params_begin = 1
+              @params_end = 5
+              @context_size = 6
+              @annotations = helper.get_annotations_for_json(nil, @doc, params: {begin: @params_begin, end: @params_end, context_size: @context_size})
+            end
+
+            it 'annotaitons[:focus][:begin] should be params[:context_size]' do
+              expect(@annotations[:focus][:begin]).to eql(@context_size) 
+            end
+
+            it 'annotaitons[:focus][:end] should equal gap of begin - end + params[:context_size]' do
+              expect(@annotations[:focus][:end]).to eql(@params_end - @params_begin + @context_size) 
+            end
+          end
         end
       end
     end
@@ -264,6 +339,47 @@ describe AnnotationsHelper do
       
       it 'should return nil' do
         @annotations.should be_nil
+      end
+    end
+  end
+
+  describe 'set_denotations_begin_end' do
+    before do
+      @begin = 50
+      @end = 60
+      @denotations = [{span: {begin: @begin, end: @end}}]
+      @params_begin = 50
+      @params_end = 60
+      @context_size = 5
+    end
+
+    context 'when options context_size blank' do
+      before do
+        @options = {params: {begin: @params_begin, end: @params_end} }
+        @denotations = helper.set_denotations_begin_end(@denotations, @options)
+      end
+
+      it 'span begin should denotations[:begin] - params[:begin]' do
+        expect(@denotations[0][:span][:begin]).to eql(@begin - @params_begin)
+      end
+
+      it 'span end should denotations[:end] - params[:begin]' do
+        expect(@denotations[0][:span][:end]).to eql(@end - @begin)
+      end
+    end
+
+    context 'when options context_size present' do
+      before do
+        @options = {params: {begin: @params_begin, end: @params_end, context_size: @context_size} }
+        @denotations = helper.set_denotations_begin_end(@denotations, @options)
+      end
+
+      it 'span begin should denotations[:begin] - params[:begin] + context_size' do
+        expect(@denotations[0][:span][:begin]).to eql(@begin - @params_begin + @context_size)
+      end
+
+      it 'span end should denotations[:end] - params[:begin] + context_size' do
+        expect(@denotations[0][:span][:end]).to eql(@end - @begin + @context_size)
       end
     end
   end

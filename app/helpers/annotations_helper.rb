@@ -76,23 +76,41 @@ module AnnotationsHelper
         end
       end
 
-      if options[:project_denotations].present?
-        # TODO annnotations[:denotations] is already exists. 
-        annotations[:project_denotations] = options[:project_denotations].collect{|project_denotation| 
-          if project_denotation[:denotations].present?
-            denotation_hash = Hash.new
-            project_denotation[:denotations].each do |denotation|
-              denotation_hash[:span] = denotation[:span]
+      if options[:doc_spans].present?
+        annotations[:text] = doc.text(options[:params])
+        if annotations[:tracks].present?
+          annotations[:tracks].each do |track|
+            if track[:denotations].present?
+              track[:denotations] = set_denotations_begin_end(track[:denotations], options)
             end
-            denotation_hash[:target] = '_focus'
-            denotation_hash
           end
-        }
+        elsif annotations[:denotations].present?
+          annotations[:denotations] = set_denotations_begin_end(annotations[:denotations], options)
+        end
+      end
+
+      if options.present? && options[:params].present? && options[:params][:begin].present?
+        context_size_value = options[:params][:context_size].to_i
+        end_value = options[:params][:end].to_i - options[:params][:begin].to_i + context_size_value
+        begin_value = 0 + context_size_value
+        annotations[:focus] = {begin: begin_value, end: end_value}
       end
       annotations
     else
       nil
     end
+  end
+
+  def set_denotations_begin_end(denotations, options)
+    denotations.each do |d|
+      d[:span][:begin] -= options[:params][:begin].to_i
+      d[:span][:end]   -= options[:params][:begin].to_i
+      if options[:params][:context_size].present?
+        d[:span][:begin] += options[:params][:context_size].to_i
+        d[:span][:end] += options[:params][:context_size].to_i
+      end
+    end
+    return denotations
   end
   
   def get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
