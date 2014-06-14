@@ -228,5 +228,12 @@ module AnnotationsHelper
         generate_annotatons_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
       end
     end
-  end  
+  end
+
+  def get_doc_info (doc_uri)
+    source_db = (doc_uri =~ %r|/sourcedb/([^/]+)|)? $1 : nil
+    source_id = (doc_uri =~ %r|/sourceid/([^/]+)|)? $1 : nil
+    div_id    = (doc_uri =~ %r|/divs/([^/]+)|)? $1 : nil
+    docinfo   = (div_id == nil)? "#{source_db}-#{source_id}" : "#{source_db}-#{source_id}-#{div_id}"
+  end
 end

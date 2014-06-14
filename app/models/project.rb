@@ -327,7 +327,8 @@ class Project < ActiveRecord::Base
     if self.docs.present?
       docs.each do |doc|
         # puts "#{doc.sourceid}:#{doc.serial} <======="
-        anncollection.push (get_annotations(self, doc, :encoding => encoding))
+        # anncollection.push (get_annotations(self, doc, :encoding => encoding))
+        anncollection.push (get_annotations_for_json(self, doc, :encoding => encoding))
       end
     end
     return anncollection

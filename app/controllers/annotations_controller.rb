@@ -18,7 +18,6 @@ class AnnotationsController < ApplicationController
           annotations = get_annotations_for_json(@project, @doc, :encoding => params[:encoding])
           @text = annotations[:text]
           @denotations = annotations[:denotations]
-          @instances = annotations[:instances]
           @relations = annotations[:relations]
           @modifications = annotations[:modifications]
         end
@@ -32,7 +31,15 @@ class AnnotationsController < ApplicationController
           redirect_to :back
         else
           # retrieve annotatons to all the documents
-          anncollection = @project.anncollection(params[:encoding])
+          # anncollection = @project.anncollection(params[:encoding])
+          anncollection = Array.new
+          if @project.docs.present?
+            @project.docs.each do |doc|
+              # puts "#{doc.sourceid}:#{doc.serial} <======="
+              # anncollection.push (get_annotations(self, doc, :encoding => encoding))
+              anncollection.push (get_annotations_for_json(@project, doc, :encoding => params[:encoding]))
+            end
+          end
         end
       end
     end
@@ -63,7 +70,7 @@ class AnnotationsController < ApplicationController
           t = Tempfile.new("pubann-temp-filename-#{Time.now}")
           Zip::ZipOutputStream.open(t.path) do |z|
             anncollection.each do |ann|
-              title = "%s-%s-%02d-%s" % [ann[:source_db], ann[:source_id], ann[:division_id], ann[:section]]
+              title = get_doc_info(ann[:target])
               title.sub!(/\.$/, '')
               title.gsub!(' ', '_')
               title += ".json" unless title.end_with?(".json")
@@ -79,8 +86,8 @@ class AnnotationsController < ApplicationController
         format.ttl {
           ttl = ''
           anncollection.each_with_index do |ann, i|
-            if i == 0 then ttl = get_conversion(ann, @project.rdfwriter).split("\n")[0..8].join("\n") end
-            ttl += "\n" + get_conversion(ann, @project.rdfwriter).split("\n")[9..-1].join("\n")
+            if i == 0 then ttl = get_conversion(ann, @project.rdfwriter).split("\n")[0..4].join("\n") end
+            ttl += get_conversion(ann, @project.rdfwriter).split("\n")[5..-1].join("\n")
           end
           render :text => ttl, :content_type => 'application/x-turtle', :filename => @project.name
         }
