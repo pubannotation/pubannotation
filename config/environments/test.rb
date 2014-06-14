@@ -36,4 +36,7 @@ Pubann::Application.configure do
   config.active_support.deprecation = :stderr
   
   config.i18n.default_locale = :en
+
+  # option for url_helpers in models 
+  Rails.application.routes.default_url_options[:host]= 'test.host' 
 end

@@ -37,4 +37,7 @@ Pubann::Application.configure do
 
   # for "devise"
   config.action_mailer.default_url_options = { :host => 'localhost:3000' }
+
+  # option for url_helpers in models 
+  Rails.application.routes.default_url_options[:host]= 'localhost:3000' 
 end

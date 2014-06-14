@@ -1746,8 +1746,8 @@ describe Project do
   describe 'anncollection' do
     before do
       @project = FactoryGirl.create(:project)
-      @get_annotations = 'get annotations'
-      @project.stub(:get_annotations).and_return(@get_annotations)
+      @get_annotations_for_json = 'get annotations'
+      @project.stub(:get_annotations_for_json).and_return(@get_annotations_for_json)
     end
     
     context 'when project.docs present' do
@@ -1756,7 +1756,7 @@ describe Project do
       end
       
       it 'should return anncollection' do
-        @project.anncollection(nil).should eql([@get_annotations])
+        @project.anncollection(nil).should eql([@get_annotations_for_json])
       end
     end
     

@@ -53,9 +53,9 @@ module AnnotationsHelper
       text = doc.body
       annotations = Hash.new
       if doc.has_divs?
-        annotations[:target] = doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false)
+        annotations[:target] =Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false)
       else
-        annotations[:target] = doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
+        annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
       end
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text(text)
