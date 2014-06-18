@@ -195,14 +195,14 @@ class DocsController < ApplicationController
       if @project
         @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
         if @doc
-          annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
+          annotations = get_annotations(@project, @doc, :encoding => params[:encoding], :format => params[:format])
           @denotations = annotations[:denotations]
         end
       end
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
       if @doc
-        @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
+        @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash(doc: @doc, format: params[:format])}
       end
     end
     if @denotations.present?
@@ -210,6 +210,11 @@ class DocsController < ApplicationController
     end
     respond_to do |format|
       format.html { render 'docs/spans_index'}
+      format.json { 
+        annotations_json = get_annotations_for_json(@project, @doc, :encoding => params[:encoding])
+        json = {text: annotations_json[:text], target: annotations_json[:target], denotations: @denotations} 
+        render :json => json
+      }
     end    
   end
 

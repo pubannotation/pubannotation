@@ -105,8 +105,8 @@ describe DenotationsHelper do
       end
     end
   end
-  
-  describe 'spans_link_helper' do
+
+  describe 'spans_link_url_helper' do
     before do
       @doc = FactoryGirl.create(:doc)
       @denotation = {:span => {:begin => 0, :end => 10}}  
@@ -118,7 +118,7 @@ describe DenotationsHelper do
       end
 
       it 'should return divs_spans_path link tag' do
-        helper.spans_link_helper(@denotation).should have_selector(:a, href: doc_sourcedb_sourceid_divs_spans_path(@doc.sourcedb, @doc.sourceid, @doc.serial, @denotation[:span][:begin], @denotation[:span][:end]))
+        helper.spans_link_url_helper(@doc, @denotation).should eql(doc_sourcedb_sourceid_divs_spans_url(@doc.sourcedb, @doc.sourceid, @doc.serial, @denotation[:span][:begin], @denotation[:span][:end]))
       end
     end
 
@@ -128,8 +128,22 @@ describe DenotationsHelper do
       end
 
       it 'should return divs_spans_path link tag' do
-        helper.spans_link_helper(@denotation).should have_selector(:a, href: doc_sourcedb_sourceid_spans_path(@doc.sourcedb, @doc.sourceid,  @denotation[:span][:begin], @denotation[:span][:end]))
+        helper.spans_link_url_helper(@doc, @denotation).should eql(doc_sourcedb_sourceid_spans_url(@doc.sourcedb, @doc.sourceid,  @denotation[:span][:begin], @denotation[:span][:end]))
       end
+    end
+
+  end
+  
+  describe 'spans_link_helper' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @spans_link_url_helper = 'spans_link_url_helper'
+      helper.stub(:spans_link_url_helper).and_return(@spans_link_url_helper)
+      @denotation = {:span => {:begin => 0, :end => 10}}  
+    end
+
+    it 'should return spans_link_url_helper url' do
+      helper.spans_link_helper(@doc, @denotation).should have_selector(:a, href: @spans_link_url_helper)
     end
   end
 

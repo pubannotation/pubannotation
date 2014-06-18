@@ -10,7 +10,7 @@
 		<% @denotations.each do | denotation | -%>
 			<tr>
 				<td>
-					<%= spans_link_helper(denotation) -%>
+					<%= spans_link_helper(@doc, denotation) -%>
 				</td>
 			</tr>
 		<% end -%>

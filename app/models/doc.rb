@@ -219,7 +219,8 @@ class Doc < ActiveRecord::Base
         denotations = self.denotations.projects_denotations(project.self_id_and_associate_project_ids)
       end
     end
-    hdenotations = denotations.order('begin ASC').collect{|d| d.get_hash} if denotations.present?
+    options[:doc] = self
+    hdenotations = denotations.order('begin ASC').collect{|d| d.get_hash(options)} if denotations.present?
   end
   
   # return denotations group by project

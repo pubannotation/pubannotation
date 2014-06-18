@@ -25,7 +25,7 @@
     <% unless denotation[:span].respond_to?(:keys) %>
       <% denotation[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
     <% else %>
-        <%= spans_link_helper(denotation) -%>
+        <%= spans_link_helper(@doc, denotation) -%>
     <% end %>
   </td>
   <td>denote</td>

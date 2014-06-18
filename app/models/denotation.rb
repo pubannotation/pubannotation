@@ -1,6 +1,7 @@
 require 'zip/zip'
 
 class Denotation < ActiveRecord::Base
+  include DenotationsHelper
   ZIP_FILE_PATH = "#{Rails.root}/public/annotations/"
   
   belongs_to :project, :counter_cache => true
@@ -45,11 +46,15 @@ class Denotation < ActiveRecord::Base
   after_save :update_projects_after_save
   before_destroy :update_projects_before_destroy
   
-  def get_hash
+  def get_hash(options = {})
     hdenotation = Hash.new
     hdenotation[:id]       = hid
     hdenotation[:span]     = {:begin => self.begin, :end => self.end}
     hdenotation[:obj] = obj
+    if options.present? && options[:format].present?
+      hdenotation.delete(:id)
+      hdenotation[:obj] = spans_link_url_helper(options[:doc], hdenotation) 
+    end
     hdenotation
   end
 

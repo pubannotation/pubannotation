@@ -23,12 +23,16 @@ module DenotationsHelper
     end
   end
   
-  def spans_link_helper(denotation)
-    if @doc.has_divs?
-      link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", doc_sourcedb_sourceid_divs_spans_path(@doc.sourcedb, @doc.sourceid, @doc.serial, denotation[:span][:begin], denotation[:span][:end])
+  def spans_link_url_helper(doc, denotation)
+    if doc.has_divs?
+      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_spans_url(doc.sourcedb, doc.sourceid, doc.serial, denotation[:span][:begin], denotation[:span][:end])
     else
-      link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", doc_sourcedb_sourceid_spans_path(@doc.sourcedb, @doc.sourceid, denotation[:span][:begin], denotation[:span][:end])
+      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_spans_url(doc.sourcedb, doc.sourceid, denotation[:span][:begin], denotation[:span][:end])
     end
+  end
+
+  def spans_link_helper(doc, denotation)
+    link_to "#{denotation[:span][:begin]}-#{ denotation[:span][:end]}", spans_link_url_helper(doc, denotation) 
   end
 
   def get_project_denotations(projects, doc, params)

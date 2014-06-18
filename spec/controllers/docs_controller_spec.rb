@@ -430,6 +430,29 @@ describe DocsController do
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :sourcedb => 'PubMed', :serial => 0)
       controller.stub(:get_doc).and_return([@doc, nil])
     end
+
+    context 'when format json' do
+      before do
+        @annotations = {text: 'text', tagget: 'target'}
+        controller.stub(:get_annotations_for_json).and_return(@annotations)
+        @denotations = 'denotations'
+        controller.stub(:get_annotations).and_return({:denotations => [@denotations]})
+        get :spans_index, :project_id => @project.name, :id => @doc.sourceid, format: 'json'
+        @json = JSON.parse(response.body)
+      end
+
+      it 'should set get_annotations_for_json[:text] as json text' do
+        expect(@json['text']).to eql(@annotations[:text])
+      end
+
+      it 'should set get_annotations_for_json[:target] as json target' do
+        expect(@json['target']).to eql(@annotations[:target])
+      end
+
+      it 'should set get_annotations_for_json[:denotations] as json denotations' do
+        expect(@json['denotations']).to eql([@denotations])
+      end
+    end
     
     context 'when project_id present' do
       before do

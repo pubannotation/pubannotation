@@ -250,23 +250,52 @@ describe Denotation do
         :project_id => 'project_id',
         :doc_id => 3
       )
-      @get_hash = @denotation.get_hash
     end
     
-    it 'should set hid as id' do
-      @get_hash[:id].should eql(@denotation[:hid])
+    context 'when options blank' do
+      before do
+        @get_hash = @denotation.get_hash
+      end
+
+      it 'should set hid as id' do
+        @get_hash[:id].should eql(@denotation[:hid])
+      end
+      
+      it 'should set begin as denotation:begin' do
+        @get_hash[:span][:begin].should eql(@denotation[:begin])
+      end
+      
+      it 'should set end as denotation:end' do
+        @get_hash[:span][:end].should eql(@denotation[:end])
+      end
+      
+      it 'should set obj as obj' do
+        @get_hash[:obj].should eql(@denotation[:obj])
+      end
     end
-    
-    it 'should set begin as denotation:begin' do
-      @get_hash[:span][:begin].should eql(@denotation[:begin])
-    end
-    
-    it 'should set end as denotation:end' do
-      @get_hash[:span][:end].should eql(@denotation[:end])
-    end
-    
-    it 'obj as obj' do
-      @get_hash[:obj].should eql(@denotation[:obj])
+   
+    context 'when options present' do
+      before do
+        @spans_link_url_helper = 'spans_link_url_helper'
+        @denotation.stub(:spans_link_url_helper).and_return(@spans_link_url_helper)
+        @get_hash = @denotation.get_hash({format: 'json'})
+      end
+
+      it 'should not set id' do
+        @get_hash[:id].should be_nil
+      end
+      
+      it 'should set begin as denotation:begin' do
+        @get_hash[:span][:begin].should eql(@denotation[:begin])
+      end
+      
+      it 'should set end as denotation:end' do
+        @get_hash[:span][:end].should eql(@denotation[:end])
+      end
+      
+      it 'should set spans_link_url_helper as obj' do
+        @get_hash[:obj].should eql(@spans_link_url_helper)
+      end
     end
   end
   
