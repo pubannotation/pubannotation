@@ -1203,14 +1203,33 @@ describe Doc do
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
         @relation_1 = FactoryGirl.create(:relation, :hid => 'H1', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
         @relation_2 = FactoryGirl.create(:relation, :hid => 'H2', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
-        @hrelations  = @doc.hrelations(nil, {:spans => {:begin_pos => 1, :end_pos => 5}} )
       end
       
-      it 'should return doc.denotations subjrels && objrels' do
-        @hrelations.should eql([
-            {:id => @relation_1.hid, :pred => @relation_1.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid}, 
-            {:id => @relation_2.hid, :pred => @relation_2.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid} 
-        ])
+      context 'when project blank' do
+        before do
+          @hrelations  = @doc.hrelations(nil, {:spans => {:begin_pos => 1, :end_pos => 5}} )
+        end
+
+        it 'should return doc.denotations subjrels && objrels' do
+          @hrelations.should eql([
+              {:id => @relation_1.hid, :pred => @relation_1.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid}, 
+              {:id => @relation_2.hid, :pred => @relation_2.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid} 
+          ])
+        end
+      end
+      
+      context 'when project present' do
+        before do
+          @project = FactoryGirl.create(:project)
+          @project.stub_chain(:relations, :where).and_return([@relation_2])
+          @hrelations  = @doc.hrelations(@project, {:spans => {:begin_pos => 1, :end_pos => 5}} )
+        end
+
+        it 'should return project.relations' do
+          @hrelations.should eql([
+              {:id => @relation_2.hid, :pred => @relation_2.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid} 
+          ])
+        end
       end
     end
     
