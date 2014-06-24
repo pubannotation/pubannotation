@@ -239,7 +239,11 @@ class Doc < ActiveRecord::Base
   def hrelations(project, options = {})
     if options.present? && options[:spans].present?
       denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
-      relations = Relation.where(["subj_id IN(?) AND obj_id IN (?) AND subj_type = 'Denotation' AND obj_type = 'Denotation'", denotation_ids, denotation_ids])
+      if project.blank?
+        relations = Relation.where(["subj_id IN(?) AND obj_id IN (?) AND subj_type = 'Denotation' AND obj_type = 'Denotation'", denotation_ids, denotation_ids])
+      else
+        relations = project.relations.where(["subj_id IN(?) AND obj_id IN (?) AND subj_type = 'Denotation' AND obj_type = 'Denotation'", denotation_ids, denotation_ids])
+      end
     else
       relations  = self.subcatrels.where("relations.project_id = ?", project.id)
     end
