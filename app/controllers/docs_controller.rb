@@ -160,7 +160,7 @@ class DocsController < ApplicationController
   end
 
   def spans
-    sourcedb, sourceid, serial = get_docspec(params)
+    sourcedb, sourceid, serial, id = get_docspec(params)
     if params[:project_id].present?
       @project, flash[:notice] = get_project(params[:project_id])
       if @project
@@ -189,7 +189,7 @@ class DocsController < ApplicationController
   end
   
   def spans_index
-    sourcedb, sourceid, serial = get_docspec(params)
+    sourcedb, sourceid, serial, id = get_docspec(params)
     if params[:project_id].present?
       @project, flash[:notice] = get_project(params[:project_id])
       if @project
@@ -200,7 +200,7 @@ class DocsController < ApplicationController
         end
       end
     else
-      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
+      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
       if @doc
         @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash(doc: @doc, format: params[:format])}
       end

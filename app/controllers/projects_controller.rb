@@ -12,7 +12,7 @@ class ProjectsController < ApplicationController
   # GET /projects.json
   def index
     @sort_order = sort_order(Project)
-    sourcedb, sourceid, serial = get_docspec(params)
+    sourcedb, sourceid, serial, id = get_docspec(params)
     if sourcedb
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if @doc
@@ -42,7 +42,7 @@ class ProjectsController < ApplicationController
   def show
     @project, notice = get_project(params[:id])
     if @project
-      sourcedb, sourceid, serial = get_docspec(params)
+      sourcedb, sourceid, serial, id = get_docspec(params)
       notice = t('controllers.projects.show.pending_associate_projects') if @project.pending_associate_projects_count > 0
       if sourceid
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
@@ -93,7 +93,7 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1/edit
   def edit
-    @sourcedb, @sourceid, @serial = get_docspec(params)
+    @sourcedb, @sourceid, @serial, @id = get_docspec(params)
   end
 
   # POST /projects

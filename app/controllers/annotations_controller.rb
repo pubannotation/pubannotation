@@ -117,14 +117,14 @@ class AnnotationsController < ApplicationController
   end
 
   def annotations
-    sourcedb, sourceid, serial = get_docspec(params)
+    sourcedb, sourceid, serial, id = get_docspec(params)
     if params[:project_id].present?
       @project, flash[:notice] = get_project(params[:project_id])
       if @project
         @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
       end
     else
-      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
+      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
       @project_denotations = get_project_denotations(@doc.projects, @doc, params)
     end
 
@@ -255,7 +255,7 @@ class AnnotationsController < ApplicationController
 
   def destroy_all
     @project = get_project(params[:project_id])[0]
-    sourcedb, sourceid, serial = get_docspec(params)
+    sourcedb, sourceid, serial, id = get_docspec(params)
     @doc = get_doc(sourcedb, sourceid, serial, @project)[0]
     annotations_destroy_all_helper(@doc, @project)
     redirect_to :back
