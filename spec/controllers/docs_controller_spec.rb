@@ -555,6 +555,9 @@ describe DocsController do
       @project_1 = FactoryGirl.create(:project)
       @projects = [@project_1]
       controller.stub(:get_project).and_return([@project, nil])
+      @project_denotations_span = {begin: 0, end: 5}
+      @project_denotations = [denotations: [{id: 'Ts', span: @project_denotations_span}]]
+      controller.stub(:get_project_denotations).and_return(@project_denotations)
       @doc.stub(:spans_projects).and_return(@projects)
       @text = 'doc text'
       @doc.stub(:text).and_return(@text)
@@ -602,6 +605,10 @@ describe DocsController do
         it 'shoud assigns @text' do
           expect(assigns[:text]).to eql(@text)
         end
+
+        it 'shoud assigns @project_denotations' do
+          expect(assigns[:project_denotations]).to be_present
+        end
       end
 
       context 'when format text' do
@@ -618,11 +625,13 @@ describe DocsController do
 
       context 'when format json' do
         before do
-          get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
+          @params_begin = 1
+          @params_end = 5
+          get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => @params_begin, :end => @params_end 
         end
 
-        it 'should render template' do
-          expect(response).to render_template('docs/spans')
+        it 'should render json' do
+          expect(response.body).to eql({text: @text, denotations: [{span: @project_denotations_span}], focus: {begin: @params_begin, end: @params_end}}.to_json)
         end
       end
 
