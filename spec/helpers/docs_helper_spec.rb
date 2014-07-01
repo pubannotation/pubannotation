@@ -60,4 +60,16 @@ describe DocsHelper do
       end
     end
   end
-end
+
+  describe 'sourcedb_options_for_select' do
+    before do
+      ['A', 'B'].each do |sourcedb|
+        FactoryGirl.create(:doc, sourcedb: sourcedb) 
+      end
+    end
+
+    it 'should return sourcedb array' do
+      expect(helper.sourcedb_options_for_select).to eql([['A', 'A'], ['B', 'B']])
+    end
+  end
+end 
