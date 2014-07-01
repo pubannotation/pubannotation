@@ -114,7 +114,7 @@ module AnnotationsHelper
   end
   
   def get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
-    annotations[:project] = project_path(project.name, :only_path => false)
+    annotations[:project] = Rails.application.routes.url_helpers.project_path(project.name, :only_path => false)
     hrelations = doc.hrelations(project, options)
     hmodifications = doc.hmodifications(project, options)
     hdenotations = doc.hdenotations(project, options)
