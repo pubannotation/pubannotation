@@ -627,11 +627,13 @@ describe DocsController do
         before do
           @params_begin = 1
           @params_end = 5
+          @get_focus = 'get_focus'
+          controller.stub(:get_focus).and_return(@get_focus)
           get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => @params_begin, :end => @params_end 
         end
 
         it 'should render json' do
-          expect(response.body).to eql({text: @text, denotations: [{span: @project_denotations_span}], focus: {begin: @params_begin, end: @params_end}}.to_json)
+          expect(response.body).to eql({text: @text, focus: @get_focus}.to_json)
         end
       end
 

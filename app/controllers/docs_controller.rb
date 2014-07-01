@@ -193,8 +193,7 @@ class DocsController < ApplicationController
         end
         json = {
           text: @text,
-          denotations: @denotations,
-          focus: {begin: params[:begin].to_i, end: params[:end].to_i}
+          focus: get_focus({params: params}) 
         }
         render json: json
       }

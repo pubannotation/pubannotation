@@ -48,6 +48,15 @@ module AnnotationsHelper
     end
   end
 
+  def get_focus(options)
+    if options.present? && options[:params].present? && options[:params][:begin].present?
+      context_size_value = options[:params][:context_size].to_i
+      end_value = options[:params][:end].to_i - options[:params][:begin].to_i + context_size_value
+      begin_value = 0 + context_size_value
+      {begin: begin_value, end: end_value}
+    end
+  end
+
   def get_annotations_for_json(project, doc, options = {})
     if doc.present?
       text = doc.body
@@ -88,12 +97,10 @@ module AnnotationsHelper
           annotations[:denotations] = set_denotations_begin_end(annotations[:denotations], options)
         end
       end
-
-      if options.present? && options[:params].present? && options[:params][:begin].present?
-        context_size_value = options[:params][:context_size].to_i
-        end_value = options[:params][:end].to_i - options[:params][:begin].to_i + context_size_value
-        begin_value = 0 + context_size_value
-        annotations[:focus] = {begin: begin_value, end: end_value}
+      
+      focus = get_focus(options)
+      if focus.present?
+        annotations[:focus] = focus
       end
       annotations
     else

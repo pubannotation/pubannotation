@@ -94,6 +94,41 @@ describe AnnotationsHelper do
     end
   end  
 
+  describe 'annotaitons[:focus]' do
+    context 'when context_size blank' do
+      before do
+        @params_begin = 1
+        @params_end = 5
+        @annotations = helper.get_focus(params: {begin: @params_begin, end: @params_end})
+      end
+
+      it 'annotaitons[:focus][:begin] should be 0' do
+        expect(@annotations[:begin]).to eql(0) 
+      end
+
+      it 'annotaitons[:focus][:end] should equal gap of begin - end' do
+        expect(@annotations[:end]).to eql(@params_end - @params_begin) 
+      end
+    end
+
+    context 'when context_size present' do
+      before do
+        @params_begin = 1
+        @params_end = 5
+        @context_size = 6
+        @annotations = helper.get_focus(params: {begin: @params_begin, end: @params_end, context_size: @context_size})
+      end
+
+      it 'annotaitons[:focus][:begin] should be params[:context_size]' do
+        expect(@annotations[:begin]).to eql(@context_size) 
+      end
+
+      it 'annotaitons[:focus][:end] should equal gap of begin - end + params[:context_size]' do
+        expect(@annotations[:end]).to eql(@params_end - @params_begin + @context_size) 
+      end
+    end
+  end
+
   describe 'get_annotations_for_json' do
     context 'when doc present' do
       before do
@@ -296,37 +331,14 @@ describe AnnotationsHelper do
         end
 
         describe 'annotaitons[:focus]' do
-          context 'when context_size blank' do
-            before do
-              @params_begin = 1
-              @params_end = 5
-              @annotations = helper.get_annotations_for_json(nil, @doc, params: {begin: @params_begin, end: @params_end})
-            end
-
-            it 'annotaitons[:focus][:begin] should be 0' do
-              expect(@annotations[:focus][:begin]).to eql(0) 
-            end
-
-            it 'annotaitons[:focus][:end] should equal gap of begin - end' do
-              expect(@annotations[:focus][:end]).to eql(@params_end - @params_begin) 
-            end
+          before do
+            @get_focus = 'get_focus'
+            helper.stub(:get_focus).and_return(@get_focus)
+            @annotations = helper.get_annotations_for_json(nil, @doc, {})
           end
 
-          context 'when context_size present' do
-            before do
-              @params_begin = 1
-              @params_end = 5
-              @context_size = 6
-              @annotations = helper.get_annotations_for_json(nil, @doc, params: {begin: @params_begin, end: @params_end, context_size: @context_size})
-            end
-
-            it 'annotaitons[:focus][:begin] should be params[:context_size]' do
-              expect(@annotations[:focus][:begin]).to eql(@context_size) 
-            end
-
-            it 'annotaitons[:focus][:end] should equal gap of begin - end + params[:context_size]' do
-              expect(@annotations[:focus][:end]).to eql(@params_end - @params_begin + @context_size) 
-            end
+          it 'annotaitons[:focus][:begin] should be 0' do
+            expect(@annotations[:focus]).to eql(@get_focus) 
           end
         end
       end
