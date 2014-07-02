@@ -1,7 +1,7 @@
 <% collection_size = local_assigns[:size].present? ? local_assigns[:size] : @denotations.size-%>
 
 <% if denotation_counter == 0 -%>
-  <h2><%= t('activerecord.models.denotation') %></h2>>
+  <h2><%= t('activerecord.models.denotation') %></h2>
   <table class="ann">
     <tr>
       <% if local_assigns[:project].present? -%>
