@@ -122,6 +122,7 @@ class AnnotationsController < ApplicationController
       @project, flash[:notice] = get_project(params[:project_id])
       if @project
         @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
+        @project_denotations = get_project_denotations([@project], @doc, params)
       end
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)

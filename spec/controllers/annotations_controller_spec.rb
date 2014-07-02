@@ -266,11 +266,17 @@ describe AnnotationsController do
       context 'when @project present' do
         before do
           controller.stub(:get_project).and_return([@project, @get_project_notice])
+          @project_denotations = 'project denotations'
+          controller.stub(:get_project_denotations).and_return(@project_denotations)
           get :annotations, :project_id => @project.name, :id => @doc.id, :begin => 1, :end => 10
         end
 
         it 'should assign @doc' do
           assigns[:doc].should eql(@doc)
+        end
+       
+        it 'should assigns project_denotatios' do
+          assigns[:project_denotations].should eql(@project_denotations)
         end
 
         it 'should assing get_doc notice as flash[:notice]' do
