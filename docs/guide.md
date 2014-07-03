@@ -1,13 +1,15 @@
 ---
 layout: docs
 title: Guide
-next_section: quickstart
+next_section: /create-project
 permalink: /guide/
 ---
 
-*Under construction*
+*Under Preparation*
 
-## Motivation
+*We are sorry for the inconvenience you may experience for the moment.*
+
+<!-- ## Motivation
 
 * It would be good if there is a portal place where we can find most of the annotations made to literature.
 
@@ -18,3 +20,4 @@ permalink: /guide/
 ## What is PubAnnotation?
 
 * PubAnnotation is a public repository of literature annotation where anyone can create new annotations or submit existing ones.
+ -->

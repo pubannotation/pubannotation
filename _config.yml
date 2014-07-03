@@ -1,5 +1,5 @@
 name: PubAnnotation
 markdown: redcarpet
-pygments: true
+highlighter: pigments
 baseurl: ''
 relative_permalinks: false
