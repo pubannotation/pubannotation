@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-PubAnnotation
+## PubAnnotation
 
 * is a **repository** of text annotation, i.e.,
   * anyone can create annotations, or
@@ -20,7 +20,7 @@ PubAnnotation
   * with its home at [GitHub](https://github.com/pubannotation/pubannotation).
 * is mainly developed and maintained by **[DBCLS](http://dbcls.rois.ac.jp)**.
 
-# People
+## People
 
 * [Jin-Dong Kim](http://dbcls.rois.ac.jp/~jdkim) ([DBCLS](http://dbcls.rois.ac.jp)) : Project Leader
 * Yue Wang ([DBCLS](http://dbcls.rois.ac.jp)) : Software Test, Documentation

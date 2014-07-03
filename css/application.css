@@ -89,30 +89,25 @@ body {
 }
 
 h1 {
-    width:43em;
-    border:solid #001854;
-    border-width: 0px 0px 1px 5px;
-    padding-left: 10px;
-    margin-top: 30px;
-    font-size: medium;
+  font-size: xx-large;
+  font-style: italic;
+  font-weight: bold;
 }
 
 h2 {
-    width:43em;
-    margin-top:25px;
-    margin-bottom:10px;
-    margin-left:4px;
-    padding:0px 2px;
-    border-bottom: 1px solid #001854;
+    width:20em;
+    border:solid #001854;
+    border-width: 0px 0px 1px 10px;
+    padding-left: 5px;
+    margin-top: 30px;
     font-size: medium;
 }
-
 
 h3 {
     width:35em;
     white-space:nowrap;
 
-    font-size:small;
+    font-size: small;
     font-weight:bold;
     /* fallback (Opera) */
     background: #EECCCC;

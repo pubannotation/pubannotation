@@ -5,9 +5,8 @@ next_section: /create-project
 permalink: /guide/
 ---
 
-*Under Preparation*
-
-*We are sorry for the inconvenience you may experience for the moment.*
+* *Documents on how to use PubAnnotatin is now under Preparation.*
+* *We are sorry for the inconvenience you may experience for the moment.*
 
 <!-- ## Motivation
 
