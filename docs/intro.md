@@ -1,11 +1,11 @@
 ---
 layout: docs
-title: Guide
-next_section: /create-project
+title: Intro
+next_section: about
 permalink: /docs/intro/
 ---
 
-* *Documents on how to use PubAnnotatin is now under Preparation.*
+* *We are now working on documentation, however it is yet largely incomplete.*
 * *We are sorry for the inconvenience you may experience for the moment.*
 
 <!-- ## Motivation
