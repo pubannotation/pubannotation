@@ -146,9 +146,8 @@ However, again, PubAnnotation does not enforce any specific annotation scheme, a
 ![modification example 2]({{ site.url }}/img/ex-modification2.png)
 
 In the above example, 
-the modification annotation, *M1*, speculates the denotation, *E2*,
+the modification annotation, *M1*, speculates (the existence of) the entity (a regulation event), *E2*,
 instead of speculating a relation.
-It is actually the style of BioNLP Shared Task annotation, and what the annotation means is to speculate the existence of the object, *Regulation*.
 
 Note that the syntax of modification annotation is experimental and subject to chanage.
 
