@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: About
-permalink: /about/
+permalink: /docs/about/
 ---
 
 ## PubAnnotation

@@ -2,7 +2,7 @@
 layout: docs
 title: Guide
 next_section: /create-project
-permalink: /intro/
+permalink: /docs/intro/
 ---
 
 * *Documents on how to use PubAnnotatin is now under Preparation.*
