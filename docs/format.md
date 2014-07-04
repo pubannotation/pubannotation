@@ -26,3 +26,5 @@ A denotation annotation in PubAnnotation connects a span of text to a conceptual
    ]
 }
 {% endhighlight %}
+
+![denotation]({{ site.url }}/img/ex-denotation.png)
