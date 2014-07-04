@@ -38,7 +38,8 @@ body {
 }
 
 #main {
-  margin:0px 15px;
+  margin:0px;
+  background-color: #eee;
 }
 
 #repository {
@@ -80,12 +81,6 @@ body {
 
 .capitalize_first:first-letter{
   text-transform:capitalize;
-}
-
-.highlight{
-  background-color: lighten(#ccc, 13%);
-  font-weight: bold;
-  padding: 0.1em 0;
 }
 
 h1 {
