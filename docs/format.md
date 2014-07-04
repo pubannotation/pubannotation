@@ -16,3 +16,13 @@ PubAnnotation JSON annotation format supports three different types of informati
 ## Denotation
 
 A denotation annotation in PubAnnotation connects a span of text to a conceptual object.
+
+{% highlight json %}
+{
+   "text": "IRF-4 expression in CML may be induced by IFN-α therapy",
+   "denotations": [
+      {"id": "T1", "span": {"begin": 0, "end": 5}, "obj": "Protein"},
+      {"id": "T2", "span": {"begin": 42, "end": 47}, "obj": "Protein"}
+   ]
+}
+{% endhighlight %}
