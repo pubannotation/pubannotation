@@ -5,7 +5,7 @@ next_section: about
 permalink: /docs/intro/
 ---
 
-* *We are now working on documentation, however it is yet largely incomplete.*
+* *We are now working on documentation, yet it is largely incomplete.*
 * *We are sorry for the inconvenience you may experience for the moment.*
 
 <!-- ## Motivation
