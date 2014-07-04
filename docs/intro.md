@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Intro
-next_section: about
+next_section: format
 permalink: /docs/intro/
 ---
 

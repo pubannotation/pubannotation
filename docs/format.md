@@ -1,6 +1,8 @@
 ---
 layout: docs
 title: Format
+prev_section: intro
+next_section: about
 permalink: /docs/format/
 ---
 
