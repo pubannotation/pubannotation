@@ -37,7 +37,7 @@ The first one states that
 
 * An entity, *T1*, is introduced in the context.
   * `"id":"T1"`
-* The span between 0'th and 5'th positions denotes the entity.
+* The span between the 0'th and the 5'th positions denotes the entity.
   * `"span":{"begin":0, "end":5}`
 * The type of the entity is *Protein*.
   * `"obj":"Protein"`
