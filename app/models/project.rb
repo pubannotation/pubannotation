@@ -346,7 +346,7 @@ class Project < ActiveRecord::Base
       file = File.new(file_path, 'w')
       Zip::ZipOutputStream.open(file.path) do |z|
         anncollection.each do |ann|
-          title = "%s-%s-%02d-%s" % [ann[:source_db], ann[:source_id], ann[:division_id], ann[:section]]
+          title = get_doc_info(ann[:target])
           title.sub!(/\.$/, '')
           title.gsub!(' ', '_')
           title += ".json" unless title.end_with?(".json")
