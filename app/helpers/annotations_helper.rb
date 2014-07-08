@@ -242,6 +242,7 @@ module AnnotationsHelper
     source_id = (doc_uri =~ %r|/sourceid/([^/]+)|)? $1 : nil
     div_id    = (doc_uri =~ %r|/divs/([^/]+)|)? $1 : nil
     docinfo   = (div_id == nil)? "#{source_db}-#{source_id}" : "#{source_db}-#{source_id}-#{div_id}"
-    docinfo  += "-" + Doc.find_by_sourcedb_and_sourceid_and_serial(source_db, source_id, div_id).section.to_s
+
+    docinfo  += "-" + Doc.find_by_sourcedb_and_sourceid_and_serial(source_db, source_id, div_id.to_i).section.to_s
   end
 end
