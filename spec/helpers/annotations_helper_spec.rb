@@ -703,4 +703,44 @@ describe AnnotationsHelper do
       end
     end
   end
+
+  describe 'get_doc_info' do
+    before do
+      @source_db = 'sourcedb'
+      @source_id = 'sourceid'
+      @div_id = 3
+      @section = 'section'
+      @doc = FactoryGirl.create(:doc, sourcedb: @source_db, sourceid: @source_id, serial: @div_id, section: @section)
+    end
+
+    context 'when sourcedb sourceid divs section present' do
+      before do
+        @doc_info = helper.get_doc_info("/sourcedb/#{@source_db}/sourceid/#{@source_id}/divs/#{@div_id}")
+      end
+
+      it 'should return source_db, source_id, div_id and section' do
+        @doc_info.should eql("#{@source_db}-#{@source_id}-#{@div_id}-#{@section}")
+      end
+    end
+
+    context 'when sourcedb sourceid section present and divs(div_id) blank' do
+      before do
+        @doc_info = helper.get_doc_info("/sourcedb/#{@source_db}/sourceid/#{@source_id}")
+      end
+
+      it 'should return source_db and source_id' do
+        @doc_info.should eql("#{@source_db}-#{@source_id}")
+      end
+    end
+
+    context 'when sourcedb, sourceid and divs blank' do
+      before do
+        @doc_info = helper.get_doc_info(nil)
+      end
+
+      it 'should include source_db' do
+        @doc_info.should eql("-") 
+      end
+    end
+  end
 end

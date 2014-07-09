@@ -121,17 +121,13 @@ describe AnnotationsController do
                }])
                @refrerer = root_path
               request.env["HTTP_REFERER"] = @refrerer
+              @project.stub_chain(:delay, :save_annotation_zip).and_return(nil)
               get :index, :delay => true, :project_id => @project.name
             end
             
             it 'should redirect to back' do
               response.should redirect_to(@refrerer)
             end
-            
-            after do
-              # delete ZIP file
-              File.unlink(@project.annotations_zip_path)
-            end  
           end
           
           context 'when format is json' do
@@ -143,6 +139,9 @@ describe AnnotationsController do
                   :division_id => 1,
                   :section => 'section',
                }])
+              controller.stub(:get_annotations_for_json).and_return({val: 'val'})
+              controller.stub(:get_doc_info).and_return('')
+              get :index, :format => 'json', :project_id => @project.name
               get :index, :format => 'json', :project_id => @project.name
             end
             

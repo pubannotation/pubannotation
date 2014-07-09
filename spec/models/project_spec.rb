@@ -1781,6 +1781,7 @@ describe Project do
   describe 'save_annotation_zip' do
     before do
       @name = 'rspec'
+      Project.any_instance.stub(:get_doc_info).and_return('')
       @project = FactoryGirl.create(:project, :name => @name)
     end
     
