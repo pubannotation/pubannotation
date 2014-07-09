@@ -3,6 +3,10 @@ class ProjectsController < ApplicationController
   before_filter :updatable?, :only => [:edit, :update]
   before_filter :destroyable?, :only => :destroy
   before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :search]
+  # JSON POST
+  before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/json'}
+  skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/json'}
+
   autocomplete :pmdoc,  :sourceid, :class_name => :doc, :scopes => [:pmdocs,  :project_name => :project_name]
   autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
   autocomplete :user, :username

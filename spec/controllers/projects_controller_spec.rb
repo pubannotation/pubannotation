@@ -282,6 +282,7 @@ describe ProjectsController do
   describe 'create' do
     before do
       current_user_stub(FactoryGirl.create(:user))  
+      controller.class.skip_before_filter :http_basic_authenticate
     end
     
     context 'when saved successfully' do
@@ -383,7 +384,8 @@ describe ProjectsController do
 
       context 'when format json' do
         before do
-          post :create, :format => 'json', :project => {:name => 'ansnet name'}
+          @user = FactoryGirl.create(:user)
+          post :create, :format => 'json', :project => {:name => 'ansnet name'}, login: @user.email, password: @user.password
         end
         
         it 'should render json' do
@@ -411,7 +413,7 @@ describe ProjectsController do
         end
       end
       
-      context 'when format html' do      
+      context 'when format json' do      
         before do
           post :create, :format => 'json', :project => {:name => nil}
         end

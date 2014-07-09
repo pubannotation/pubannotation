@@ -207,6 +207,53 @@ describe ApplicationController do
       end
     end
   end
+
+  describe 'http_basic_authenticate' do
+    before do
+      @user = FactoryGirl.create(:user)
+      @controller = ApplicationController.new
+      @controller.stub(:sign_in).and_return(@user)
+    end
+
+    describe 'when user found' do
+      before do
+        @controller.stub(:params).and_return({login: @user.email})
+      end
+
+      context 'when password valid' do
+        before do
+          User.any_instance.stub(:valid_password?).and_return(true)
+        end
+
+        it 'should receive sign_in' do
+          @controller.should_receive(:sign_in)
+          @controller.http_basic_authenticate
+        end
+      end
+
+      context 'when password invalid' do
+        before do
+          User.any_instance.stub(:valid_password?).and_return(false)
+        end
+
+        it 'should not receive sign_in' do
+          @controller.should_not_receive(:sign_in)
+          @controller.http_basic_authenticate
+        end
+      end
+    end
+
+    describe 'when user not found' do
+      before do
+        @controller.stub(:params).and_return({login: ''})
+      end
+
+      it 'should receive sign_in' do
+        @controller.should_not_receive(:sign_in)
+        @controller.http_basic_authenticate
+      end
+    end
+  end
   
   describe 'after_sign_in_path_for' do
     before do

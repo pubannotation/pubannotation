@@ -42,6 +42,13 @@ class ApplicationController < ActionController::Base
       session[:after_sign_in_path] = request.fullpath
     end
   end
+
+  def http_basic_authenticate 
+    user = User.find_by_email(params[:login])
+    if user.present? && user.valid_password?(params[:password])
+      sign_in :user, user 
+    end
+  end
   
   def after_sign_in_path_for(resource)
     session[:after_sign_in_path] ||= root_path
