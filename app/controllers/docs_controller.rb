@@ -4,6 +4,9 @@ class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
   before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_docs]
   after_filter :set_access_control_headers
+  # JSON POST
+  before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/json'}
+  skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/json'}
   include DenotationsHelper
 
   # GET /docs

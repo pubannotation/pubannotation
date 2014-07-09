@@ -99,6 +99,7 @@ Pubann::Application.routes.draw do
   resources :projects do
     resources :docs do
       collection do
+        post '/' => 'docs#create_project_docs'
         post 'project_docs' => 'docs#create_project_docs'
         get 'records' => 'docs#records'
         get 'search' => 'docs#search'
