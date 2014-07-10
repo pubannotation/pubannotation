@@ -345,8 +345,8 @@ describe DocsController do
           get :show, :format => 'json', :id => @doc.id
         end
         
-        it 'should render @doc as json' do
-          response.body.should eql(@doc.to_json)
+        it 'should render template' do
+          response.should render_template('docs/show') 
         end
       end
     end
@@ -368,8 +368,8 @@ describe DocsController do
             get :show, :format => 'json', :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
           end
           
-          it 'should render @doc as json' do
-            response.body.should eql(@doc.to_json)
+          it 'should render template' do
+            response.should render_template('docs/show') 
           end
         end
       end
@@ -826,7 +826,7 @@ describe DocsController do
           
           context 'when format json' do
             before do
-              get :create_project_docs, :format => 'json', :project_id => @project.name, :sourcedb => 'PMC'
+              post :create_project_docs, :format => 'json', :project_id => @project.name, ids: "id", sourcedb: 'PMC'
             end
             
             it 'should return status 201' do

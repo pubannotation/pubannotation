@@ -51,12 +51,7 @@ class DivsController < ApplicationController
           render 'docs/show'
         }
         format.json {
-          standoff = Hash.new
-          # TODO pmcdoc_id => sourceid ?
-          standoff[:pmcdoc_id] = params[:sourceid]
-          standoff[:div_id] = params[:div_id]
-          standoff[:text] = @text
-          render :json => standoff #, :callback => params[:callback]
+          render 'docs/show'
         }
         format.txt  { render :text => @text }
       else 

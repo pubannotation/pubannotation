@@ -108,12 +108,7 @@ describe DivsController do
             end
             
             it 'should render template' do
-              hash = {
-                :pmcdoc_id => @doc.sourceid.to_s,
-                :div_id => @id,
-                :text => @doc.body
-              }
-              response.body.should eql(hash.to_json)            
+              response.should render_template('docs/show')
             end
           end
         end     
@@ -129,7 +124,6 @@ describe DivsController do
             @refrerer = root_path
             request.env["HTTP_REFERER"] = @refrerer
             get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
-            # get :show, :project_id => @project_id, :pmcdoc_id => @pmcdoc_id, :id => @id
           end
 
           it '@doc should be nil' do

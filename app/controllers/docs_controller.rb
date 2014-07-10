@@ -14,15 +14,15 @@ class DocsController < ApplicationController
   def index
     if params[:project_id].present?
       @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
-      docs = @project.docs
+      @docs = @project.docs
       @search_path = search_project_docs_path(@project.name)
     else
-      docs = Doc
+      @docs = Doc
       @search_path = search_docs_path
     end
 
     @sort_order = sort_order(Doc)
-    @source_docs = docs.where(serial: 0).sort_by_params(@sort_order).paginate(:page => params[:page])
+    @source_docs = @docs.where(serial: 0).sort_by_params(@sort_order).paginate(:page => params[:page])
     flash[:sort_order] = @sort_order
   end
  
@@ -146,7 +146,7 @@ class DocsController < ApplicationController
 
       respond_to do |format|
         format.html # show.html.erb
-        format.json { render json: @doc }
+        format.json # show.json.erb
       end
     elsif docs.present?
       # when same sourcedb and sourceid docs present => redirect to divs#index
