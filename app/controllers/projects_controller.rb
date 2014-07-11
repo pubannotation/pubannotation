@@ -69,11 +69,10 @@ class ProjectsController < ApplicationController
         @accordion_id = params[:accordion_id]
       end
     end
-
     respond_to do |format|
       if @project
         format.html { flash.now[:notice] = notice if notice.present? }
-        format.json { render json: @project }
+        format.json 
       else
         format.html {
           redirect_to home_path, :notice => notice

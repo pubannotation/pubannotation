@@ -1,0 +1,22 @@
+{
+  "accessibility": <%= @project.accessibility -%>,
+  "annotations_updated_at": "<%= @project.annotations_updated_at -%>",
+  "annotations_zip_downloadable": <%= @project.annotations_zip_downloadable -%>,
+  "author": "<%= @project.author -%>",
+  "bionlpwriter": "<%= @project.bionlpwriter -%>",
+  "created_at": "<%= @project.created_at-%>",
+  "denotations_count": <%= @project.denotations_count -%>,
+  "description": "<%= @project.description -%>",
+  "editor": "<%= @project.editor -%>",
+  "id": <%= @project.id -%>,
+  "license": "<%= @project.license -%>",
+  "name": "<%= @project.name -%>",
+  "rdfwriter": "<%= @project.rdfwriter -%>",
+  "reference": "<%= @project.reference -%>",
+  "relations_count": <%= @project.relations_count -%>,
+  "status": <%= @project.status -%>,
+  "updated_at": "<%= @project.updated_at -%>",
+  "maintainer": "<%= @project.user.username -%>",
+  "viewer": "<%= @project.viewer -%>",
+  "xmlwriter": "<%= @project.xmlwriter -%>"
+}

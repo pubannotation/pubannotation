@@ -126,6 +126,16 @@ describe ProjectsController do
         end
       end
       
+      context 'when format json' do
+        before do
+          get :show, format: 'json', :id => @project.id
+        end  
+        
+        it 'should render template' do
+          response.should render_template('show')
+        end
+      end
+      
       context 'when sourceid exists' do
         before do
           @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 'serial')
