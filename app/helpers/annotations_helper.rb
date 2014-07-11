@@ -177,7 +177,7 @@ module AnnotationsHelper
         html = link_to "#{project.name}.zip", "/annotations/#{project.name}.zip", :class => 'button'
         html += content_tag :span, "#{zip_created_at.strftime("#{t('controllers.shared.last_modified_at')}:%Y-%m-%d %T")}", :class => 'zip_time_stamp'
         if zip_created_at < project.annotations_updated_at
-          html += link_to t('controllers.annotations.update_zip'), project_annotations_path(project.name, :delay => true, :update => true), :class => 'button', :confirm => t('controllers.annotations.confirm_create_zip')
+          html += link_to t('controllers.annotations.update_zip'), project_annotations_path(project.name, :delay => true, :update => true), :class => 'button', :style => "margin-left: 0.5em", :confirm => t('controllers.annotations.confirm_create_zip')
         end
         html
       else
