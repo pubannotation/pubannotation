@@ -1932,4 +1932,37 @@ describe Project do
       end            
     end
   end
+
+  describe 'update_annotations_updated_at' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @annotations_updated_at = 5.days.ago
+      @project_1 = FactoryGirl.create(:project, annotations_updated_at: @annotations_updated_at )
+      @project_2 = FactoryGirl.create(:project, annotations_updated_at: @annotations_updated_at )
+    end
+
+    describe 'after_add' do
+      before do
+        @project_1.docs << @doc
+        @project_2.docs << @doc
+      end
+
+      it 'should update projects.annotations_updated_at' do
+        @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
+        @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
+      end
+    end
+
+    describe 'after_remove' do
+      before do
+        @project_1.docs.delete(@doc)
+        @project_2.docs.delete(@doc)
+      end
+
+      it 'should update projects.annotations_updated_at' do
+        @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
+        @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
+      end
+    end
+  end
 end

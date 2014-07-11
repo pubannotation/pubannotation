@@ -1,7 +1,7 @@
 class Project < ActiveRecord::Base
   include AnnotationsHelper
   belongs_to :user
-  has_and_belongs_to_many :docs, :after_add => :increment_docs_counter, :after_remove => :decrement_docs_counter 
+  has_and_belongs_to_many :docs, :after_add => [:increment_docs_counter, :update_annotations_updated_at], :after_remove => [:decrement_docs_counter, :update_annotations_updated_at]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
   
@@ -162,6 +162,10 @@ class Project < ActiveRecord::Base
       end          
     end          
   end          
+
+  def update_annotations_updated_at(doc)
+    self.update_attribute(:annotations_updated_at, DateTime.now)
+  end
 
   def associate_maintainers_addable_for?(current_user)
     if self.new_record?
