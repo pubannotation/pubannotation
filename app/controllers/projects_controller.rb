@@ -52,21 +52,6 @@ class ProjectsController < ApplicationController
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
       else
         docs = @project.docs
-        @pmdocs = Doc.order_by(docs.pmdocs, params[:docs_order]).paginate(:page => params[:page])
-        @pmcdocs = Doc.order_by(docs.pmcdocs, params[:docs_order]).paginate(:page => params[:page])
-        # @pmcdocs = docs.select{|d| d.sourcedb == 'PMC' and d.serial == 0}
-        if params[:accordion_id].blank?
-          if @pmdocs.size != @pmcdocs.size
-            if @pmdocs.size > @pmcdocs.size
-              @accordion_id = '1'
-            else
-              @accordion_id = '2'
-            end
-          end
-        end
-      end
-      if params[:accordion_id].present?
-        @accordion_id = params[:accordion_id]
       end
     end
     respond_to do |format|
