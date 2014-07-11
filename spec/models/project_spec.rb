@@ -1816,6 +1816,31 @@ describe Project do
       end
     end
   end
+
+  describe 'add_docs_from_json' do
+    before do
+      @project = FactoryGirl.create(:project) 
+    end
+    
+    context 'when source_dbs prensent' do
+      before do
+        @attributes = Array.new
+        @project.stub(:add_docs) do |ids, source_db|  
+          @attributes << {source_db: source_db, ids: ids}
+          [1, 1, 1]
+        end
+        @result = @project.add_docs_from_json([{"id" => "1", "source_db" => "PMC"}, {"id" => "2", "source_db" => "PMC"}, {"id" => "1", "source_db" => "PubMed"}])
+      end
+
+      it 'should pass ids and source_db for add_docs correctly' do
+        @attributes.should =~ [{source_db: "PMC", ids: "1,2"}, {source_db: "PubMed", ids: "1"}]
+      end
+
+      it 'should count up num_created, num_added, num_failed' do
+        @result.should =~ [2, 2, 2]
+      end
+    end
+  end
   
   describe 'add_docs' do
     before do

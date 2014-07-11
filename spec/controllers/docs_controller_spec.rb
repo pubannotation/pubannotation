@@ -826,7 +826,8 @@ describe DocsController do
           
           context 'when format json' do
             before do
-              post :create_project_docs, :format => 'json', :project_id => @project.name, ids: "id", sourcedb: 'PMC'
+              @project.stub(:add_docs_from_json).and_return([1, 0, 0])
+              post :create_project_docs, '_json' => 'json' , :format => 'json', :project_id => @project.name, ids: "id", sourcedb: 'PMC'
             end
             
             it 'should return status 201' do

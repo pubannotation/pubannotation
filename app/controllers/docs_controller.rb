@@ -278,9 +278,14 @@ class DocsController < ApplicationController
   
   def create_project_docs
     project, notice = get_project(params[:project_id])
+    num_created, num_added, num_failed = 0, 0, 0
     if project
-      begin
-        num_created, num_added, num_failed = project.add_docs(params[:ids], params[:sourcedb])
+      begin 
+        if params['_json'].present?
+          num_created, num_added, num_failed = project.add_docs_from_json(params['_json'])
+        else
+          num_created, num_added, num_failed = project.add_docs(params[:ids], params[:sourcedb])
+        end
         if num_added > 0
           notice = t('controllers.docs.create_project_docs.added_to_document_set', :num_added => num_added, :project_name => project.name)
         elsif num_created > 0
