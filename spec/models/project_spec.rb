@@ -1766,6 +1766,41 @@ describe Project do
       end
     end
   end
+
+  describe 'json' do
+    before do
+      @project = FactoryGirl.create(:project)
+      @maintainer = 'maintainer'
+      @project.stub(:maintainer).and_return(@maintainer)
+    end
+
+    it 'shoud return @project as json except specific columns and include maintainer' do
+      @project.json.should eql("{\"accessibility\":null,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
+    end
+  end
+
+  describe 'maintainer' do
+    context 'when user present' do
+      before do
+        @user = FactoryGirl.create(:user)
+        @project = FactoryGirl.create(:project, user: @user) 
+      end
+
+      it 'shoud return user.username' do
+        @project.maintainer.should eql(@user.username)
+      end
+    end
+
+    context 'when user blank' do
+      before do
+        @project = FactoryGirl.create(:project) 
+      end
+
+      it 'shoud be blank' do
+        @project.maintainer.should be_blank
+      end
+    end
+  end
   
   describe 'annotations_zip_path' do
     before do

@@ -57,7 +57,7 @@ class ProjectsController < ApplicationController
     respond_to do |format|
       if @project
         format.html { flash.now[:notice] = notice if notice.present? }
-        format.json 
+        format.json { render json: @project.json} 
       else
         format.html {
           redirect_to home_path, :notice => notice

@@ -337,6 +337,15 @@ class Project < ActiveRecord::Base
     end
     return anncollection
   end
+
+  def json
+    except_columns = %w(pmdocs_count pmcdocs_count pending_associate_projects_count user_id)
+    to_json(except: except_columns, methods: :maintainer)
+  end
+
+  def maintainer
+    user.present? ? user.username : ''
+  end
   
   def annotations_zip_path
     "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
@@ -349,6 +358,8 @@ class Project < ActiveRecord::Base
       file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
       file = File.new(file_path, 'w')
       Zip::ZipOutputStream.open(file.path) do |z|
+        z.put_next_entry('project-info.json')
+        z.print self.json
         anncollection.each do |ann|
           title = get_doc_info(ann[:target])
           title.sub!(/\.$/, '')

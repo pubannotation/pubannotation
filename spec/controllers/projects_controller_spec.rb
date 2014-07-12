@@ -128,11 +128,13 @@ describe ProjectsController do
       
       context 'when format json' do
         before do
+          @json = {val: 'val'}
+          @project.stub(:json).and_return(@json)
           get :show, format: 'json', :id => @project.id
         end  
         
-        it 'should render template' do
-          response.should render_template('show')
+        it 'should return project.json' do
+          response.body.should eql(@json.to_json)
         end
       end
       
