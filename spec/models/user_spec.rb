@@ -1,6 +1,36 @@
 require 'spec_helper'
 
 describe User do
+  describe 'email uniqueness' do
+    before do
+      @email = 'test@email.com'
+      @username = 'user name'
+      FactoryGirl.create(:user, email: @email, username: @username)
+    end
+
+    context 'when email already taken' do
+      before do
+        @user = User.new(username: 'uname', email: @email, password: 'password')
+      end
+
+      it 'should not valid and return errors on email' do
+        @user.valid?.should be_false
+        @user.errors.messages.should eql({:email => ["has already been taken"]})
+      end
+    end
+
+    context 'when username already taken' do
+      before do
+        @user = User.new(username: @username, email: 'newe@email.com', password: 'password')
+      end
+
+      it 'should not valid and return errors on username' do
+        @user.valid?.should be_false
+        @user.errors.messages.should eql({:username => ["has already been taken"]})
+      end
+    end
+  end 
+
   describe 'scope except_current_user' do
     before do
       @current_user = FactoryGirl.create(:user)
