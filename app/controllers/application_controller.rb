@@ -47,6 +47,16 @@ class ApplicationController < ActionController::Base
     user = User.find_by_email(params[:login])
     if user.present? && user.valid_password?(params[:password])
       sign_in :user, user 
+    else
+      respond_to do |format|
+        format.json{
+          res = {
+            status: :unauthorized,
+            message: 'Authentication Failed'
+          }
+          render json: res.to_json
+        }
+      end
     end
   end
   
