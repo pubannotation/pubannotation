@@ -1894,7 +1894,8 @@ describe Project do
           @attributes << {source_db: source_db, ids: ids}
           [1, 1, 1]
         end
-        @result = @project.add_docs_from_json([{"id" => "1", "source_db" => "PMC"}, {"id" => "2", "source_db" => "PMC"}, {"id" => "1", "source_db" => "PubMed"}])
+        json = [{"source_id" => "1", "source_db" => "PMC"}, {"source_id" => "2", "source_db" => "PMC"}, {"source_id" => "1", "source_db" => "PubMed"}]
+        @result = @project.add_docs_from_json(json.to_json)
       end
 
       it 'should pass ids and source_db for add_docs correctly' do

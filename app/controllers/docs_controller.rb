@@ -5,8 +5,8 @@ class DocsController < ApplicationController
   before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_docs]
   after_filter :set_access_control_headers
   # JSON POST
-  before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/json'}
-  skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/json'}
+  before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
+  skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   include DenotationsHelper
 
   # GET /docs
@@ -281,8 +281,9 @@ class DocsController < ApplicationController
     num_created, num_added, num_failed = 0, 0, 0
     if project
       begin 
-        if params['_json'].present?
-          num_created, num_added, num_failed = project.add_docs_from_json(params['_json'])
+        if params['json'].present?
+          json = File.read(params['json'].tempfile)
+          num_created, num_added, num_failed = project.add_docs_from_json(json)
         else
           num_created, num_added, num_failed = project.add_docs(params[:ids], params[:sourcedb])
         end
