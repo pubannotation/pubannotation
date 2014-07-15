@@ -794,6 +794,7 @@ describe DocsController do
   
   describe 'create_project_docs' do
     before do
+      controller.class.skip_before_filter :http_basic_authenticate
       controller.class.skip_before_filter :authenticate_user!
       @project = FactoryGirl.create(:project)
     end
@@ -827,7 +828,8 @@ describe DocsController do
           context 'when format json' do
             before do
               @project.stub(:add_docs_from_json).and_return([1, 0, 0])
-              post :create_project_docs, '_json' => 'json' , :format => 'json', :project_id => @project.name, ids: "id", sourcedb: 'PMC'
+              File.stub(:read).and_return({val: 'val'}.to_json)
+              post :create_project_docs, 'json' => double('json', tempfile: 'temp'), :format => 'json', :project_id => @project.name, ids: "id", sourcedb: 'PMC'
             end
             
             it 'should return status 201' do

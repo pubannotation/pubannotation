@@ -233,6 +233,7 @@ describe ApplicationController do
 
       context 'when password invalid' do
         before do
+          @controller.stub(:respond_to).and_return('json')
           User.any_instance.stub(:valid_password?).and_return(false)
         end
 
@@ -245,7 +246,8 @@ describe ApplicationController do
 
     describe 'when user not found' do
       before do
-        @controller.stub(:params).and_return({login: ''})
+        @controller.stub(:respond_to).and_return('json')
+        @controller.stub(:params).and_return({login: '', format: 'json'})
       end
 
       it 'should receive sign_in' do
