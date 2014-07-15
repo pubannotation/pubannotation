@@ -4,8 +4,8 @@ class ProjectsController < ApplicationController
   before_filter :destroyable?, :only => :destroy
   before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :search]
   # JSON POST
-  before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/json'}
-  skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/json'}
+  before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
+  skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
   autocomplete :pmdoc,  :sourceid, :class_name => :doc, :scopes => [:pmdocs,  :project_name => :project_name]
   autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
@@ -87,6 +87,9 @@ class ProjectsController < ApplicationController
   # POST /projects
   # POST /projects.json
   def create
+    if params[:project].class == ActionDispatch::Http::UploadedFile
+      params[:project] = JSON.parse(File.read(params[:project].tempfile))
+    end
     @project = Project.new(params[:project])
     @project.user = current_user
     respond_to do |format|

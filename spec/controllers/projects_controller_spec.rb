@@ -345,8 +345,11 @@ describe ProjectsController do
 
       context 'when format json' do
         before do
+          controller.stub(:params).and_return({locale: '', project: double('project', class: ActionDispatch::Http::UploadedFile, tempfile: '')} )
+          @name = 'json project'
+          File.stub(:read).and_return({name: @name}.to_json)
           @user = FactoryGirl.create(:user)
-          post :create, :format => 'json', :project => {:name => 'ansnet name'}, login: @user.email, password: @user.password
+          post :create, :format => 'json'
         end
         
         it 'should render json' do
