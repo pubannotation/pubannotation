@@ -352,7 +352,10 @@ class Project < ActiveRecord::Base
   end
   
   def save_annotation_zip(options = {})
-    # File name for save on server
+    require 'fileutils'
+    unless Dir.exist?(Denotation::ZIP_FILE_PATH)
+      FileUtils.mkdir_p(Denotation::ZIP_FILE_PATH)
+    end
     anncollection = self.anncollection(options[:encoding])
     if anncollection.present?
       file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"

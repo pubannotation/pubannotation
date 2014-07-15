@@ -1819,6 +1819,36 @@ describe Project do
       Project.any_instance.stub(:get_doc_info).and_return('')
       @project = FactoryGirl.create(:project, :name => @name)
     end
+
+    describe 'create directory' do
+      before do
+        FileUtils.stub(:mkdir_p) do |path|
+          @path = path
+        end
+      end
+
+      context 'when public/annotations directory does not exist' do
+        before do
+          Dir.stub(:exist?).and_return(false)
+          FactoryGirl.create(:project).save_annotation_zip
+        end
+
+        it 'should call mkdir_p with Denotation::ZIP_FILE_PATH' do
+          @path.should eql(Denotation::ZIP_FILE_PATH)
+        end
+      end
+
+      context 'when public/annotations directory exist' do
+        before do
+          Dir.stub(:exist?).and_return(true)
+          FactoryGirl.create(:project).save_annotation_zip
+        end
+
+        it 'should not call mkdir_p' do
+          @path.should be_nil
+        end
+      end
+    end
     
     context 'when project.anncollection blank' do
       before do
