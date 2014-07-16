@@ -347,13 +347,13 @@ describe ProjectsController do
         before do
           controller.stub(:params).and_return({locale: '', project: double('project', class: ActionDispatch::Http::UploadedFile, tempfile: '')} )
           @name = 'json project'
-          File.stub(:read).and_return({name: @name}.to_json)
+          File.stub(:read).and_return({name: @name, relations_count: 3}.to_json)
           @user = FactoryGirl.create(:user)
           post :create, :format => 'json'
         end
         
-        it 'should render json' do
-          response.body.should eql(assigns[:project].to_json)
+        it 'should set attr_accessible columns only' do
+          assigns[:project][:relations_count].should eql(0)
         end
 
         it 'should return http response created as status' do

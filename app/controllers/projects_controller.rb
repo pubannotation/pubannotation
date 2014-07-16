@@ -88,7 +88,8 @@ class ProjectsController < ApplicationController
   # POST /projects.json
   def create
     if params[:project].class == ActionDispatch::Http::UploadedFile
-      params[:project] = JSON.parse(File.read(params[:project].tempfile))
+      project_attributes = JSON.parse(File.read(params[:project].tempfile))
+      params[:project] = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
     end
     @project = Project.new(params[:project])
     @project.user = current_user
