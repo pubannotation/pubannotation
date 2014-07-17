@@ -44,18 +44,20 @@ class ApplicationController < ActionController::Base
   end
 
   def http_basic_authenticate 
-    user = User.find_by_email(params[:login])
-    if user.present? && user.valid_password?(params[:password])
-      sign_in :user, user 
-    else
-      respond_to do |format|
-        format.json{
-          res = {
-            status: :unauthorized,
-            message: 'Authentication Failed'
+    authenticate_or_request_with_http_basic do |username, password|
+      user = User.find_by_email(username)
+      if user.present? && user.valid_password?(password)
+        sign_in :user, user 
+      else
+        respond_to do |format|
+          format.json{
+            res = {
+              status: :unauthorized,
+              message: 'Authentication Failed'
+            }
+            render json: res.to_json
           }
-          render json: res.to_json
-        }
+        end
       end
     end
   end

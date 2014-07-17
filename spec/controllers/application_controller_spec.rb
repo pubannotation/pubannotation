@@ -213,11 +213,12 @@ describe ApplicationController do
       @user = FactoryGirl.create(:user)
       @controller = ApplicationController.new
       @controller.stub(:sign_in).and_return(@user)
+      @controller.stub(:request).and_return(double(:request, authorization: 'auth'))
     end
 
     describe 'when user found' do
       before do
-        @controller.stub(:params).and_return({login: @user.email})
+        User.stub(:find_by_email).and_return(@user)
       end
 
       context 'when password valid' do
@@ -246,6 +247,7 @@ describe ApplicationController do
 
     describe 'when user not found' do
       before do
+        User.stub(:find_by_email).and_return(nil)
         @controller.stub(:respond_to).and_return('json')
         @controller.stub(:params).and_return({login: '', format: 'json'})
       end
