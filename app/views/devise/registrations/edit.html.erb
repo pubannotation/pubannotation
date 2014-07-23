@@ -9,7 +9,7 @@
   <%= devise_error_messages! %>
 
   <div><%= f.label :username %> <span class="meta"><%= t('devise.registrations.full_name') %></span><br />
-  <%= f.text_field :username %></div>
+  <%= f.text_field :username, disabled: true %></div>
 
   <div><%= f.label :email %><br />
   <%= f.email_field :email %></div>

@@ -72,6 +72,18 @@ describe User do
     end
   end
 
+  describe 'username_changed' do
+    before do
+      @user = FactoryGirl.create(:user)
+      @user.attributes = {username: 'new username'}#.should raise_exception
+    end
+
+    it 'shoud not update username' do
+      @user.save.should be_false
+      @user.errors.messages[:username].should eql([I18n.t('errors.messages.unupdatable')])
+    end
+  end
+
   describe 'scope except_current_user' do
     before do
       @current_user = FactoryGirl.create(:user)

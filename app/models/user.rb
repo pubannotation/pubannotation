@@ -17,6 +17,7 @@ class User < ActiveRecord::Base
   has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
   validates_uniqueness_of :username
   validate :check_invalid_character
+  validate :username_changed, on: :update
 
   scope :except_current_user, lambda { |current_user| where(["id != ?", current_user.id]) }
   scope :except_project_associate_maintainers, lambda{|project_id|
@@ -46,5 +47,9 @@ class User < ActiveRecord::Base
     if username =~/(\.+|\/|\?)/
       errors.add(:username, I18n.t('errors.messages.invalid_character_included'))
     end
+  end
+
+  def username_changed
+    errors.add(:username, I18n.t('errors.messages.unupdatable')) if username_changed?
   end
 end
