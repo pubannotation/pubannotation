@@ -16,6 +16,7 @@ class DocsController < ApplicationController
       @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
       @docs = @project.docs
       @search_path = search_project_docs_path(@project.name)
+      @json_hash = @project.docs_json_hash
     else
       @docs = Doc
       @search_path = search_docs_path
@@ -24,6 +25,10 @@ class DocsController < ApplicationController
     @sort_order = sort_order(Doc)
     @source_docs = @docs.where(serial: 0).sort_by_params(@sort_order).paginate(:page => params[:page])
     flash[:sort_order] = @sort_order
+    respond_to do |format|
+      format.html
+      format.json { render json: @json_hash}
+    end
   end
  
   def records

@@ -1779,6 +1779,35 @@ describe Project do
     end
   end
 
+  describe 'docs_json_hash' do
+    before do
+      @project = FactoryGirl.create(:project)
+    end
+
+    context 'when docs present' do
+      before do
+        @doc = FactoryGirl.create(:doc)
+        @project.stub(:docs).and_return([@doc])
+        @json_hash = 'json'
+        @doc.stub(:json_hash).and_return(@json_hash)
+      end
+
+      it 'should return collect of docs_json_hash of projecs.docs' do
+        @project.docs_json_hash.should eql([@json_hash])
+      end
+    end
+
+    context 'when docs blank' do
+      before do
+        @project.stub(:docs).and_return(nil)
+      end
+
+      it 'should return nil' do
+        @project.docs_json_hash.should be_nil
+      end
+    end
+  end
+
   describe 'maintainer' do
     context 'when user present' do
       before do

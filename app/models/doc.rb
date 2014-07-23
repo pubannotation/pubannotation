@@ -280,6 +280,21 @@ class Doc < ActiveRecord::Base
       self_denotations.within_spans(params[:begin], params[:end]).collect{|denotation| denotation.project}.uniq.compact
     end  
   end
+
+  def json_hash
+    json_hash = {
+      id: id,
+      text: body.gsub(/[\r\n]/, ""),
+      source_db: sourcedb,
+      source_id: sourceid,
+      section: section,
+      source_url: source
+    }
+    if has_divs?
+      json_hash[:div_id] = serial
+    end
+    return json_hash
+  end
   
   def self.sql_find(params, current_user, project)
     if params[:sql].present?
@@ -341,7 +356,7 @@ class Doc < ActiveRecord::Base
   end
   
   def has_divs?
-    Doc.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+    self.class.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
   end
       
   # before destroy

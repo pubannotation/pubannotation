@@ -17,20 +17,38 @@ describe DocsController do
     end
     
     context 'when params[:project_id] present' do
-      before do
-        get :index, :project_id => @project.name
-      end
-      
-      it 'should assign project' do
-        assigns[:project].should eql(@project)
+      context 'when format html' do
+        before do
+          get :index, :project_id => @project.name
+        end
+        
+        it 'should assign project' do
+          assigns[:project].should eql(@project)
+        end
+
+        it 'should assing sort_by_params.paginate as @source_docs' do
+          assigns[:source_docs].should eql(@paginate)
+        end
+        
+        it 'should assign search_project_docs_path as @search_path' do
+          assigns[:search_path].should eql search_project_docs_path(@project.name)
+        end
       end
 
-      it 'should assing sort_by_params.paginate as @source_docs' do
-        assigns[:source_docs].should eql(@paginate)
-      end
-      
-      it 'should assign search_project_docs_path as @search_path' do
-        assigns[:search_path].should eql search_project_docs_path(@project.name)
+      context 'when format html' do
+        before do
+          @docs_json_hash = {'val' => 'val'} 
+          Project.any_instance.stub(:docs_json_hash).and_return(@docs_json_hash)
+          get :index, format: 'json', :project_id => @project.name
+        end
+
+        it 'should assign @json_hash' do
+          assigns[:json_hash].should eql(@docs_json_hash)
+        end
+
+        it 'shoud render @project.docs_json_hash to_json' do
+          response.body.should eql(@docs_json_hash.to_json)
+        end
       end
     end    
     

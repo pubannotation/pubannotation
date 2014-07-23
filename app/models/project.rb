@@ -343,6 +343,12 @@ class Project < ActiveRecord::Base
     to_json(except: except_columns, methods: :maintainer)
   end
 
+  def docs_json_hash
+    if docs.present?
+      docs.collect{|doc| doc.json_hash}
+    end
+  end
+
   def maintainer
     user.present? ? user.username : ''
   end
@@ -363,6 +369,8 @@ class Project < ActiveRecord::Base
       Zip::ZipOutputStream.open(file.path) do |z|
         z.put_next_entry('project.json')
         z.print self.json
+        z.put_next_entry('docs.json')
+        z.print self.docs_json_hash.to_json
         anncollection.each do |ann|
           title = get_doc_info(ann[:target])
           title.sub!(/\.$/, '')

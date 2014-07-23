@@ -1298,6 +1298,58 @@ describe Doc do
       @projects.should =~ [@denotation_project_1, @denotation_project_2]
     end
   end
+
+  describe 'json_hash' do
+    before do
+      @doc = FactoryGirl.create(:doc, section: 'SECTION', source: 'http://sour.ce')
+    end
+
+    context 'when has_divs? == true' do
+      before do
+        @doc.stub(:has_divs?).and_return(true)
+        @json_hash = @doc.json_hash
+      end
+
+      it 'should return doc.id' do
+        @json_hash[:id].should eql(@doc.id) 
+      end
+
+      it 'should return doc.body' do
+        @json_hash[:text].should eql(@doc.body) 
+      end
+
+      it 'should return doc.sourcedb' do
+        @json_hash[:source_db].should eql(@doc.sourcedb) 
+      end
+
+      it 'should return doc.sourceid' do
+        @json_hash[:source_id].should eql(@doc.sourceid) 
+      end
+
+      it 'should return doc.section' do
+        @json_hash[:section].should eql(@doc.section) 
+      end
+
+      it 'should return doc.source' do
+        @json_hash[:source_url].should eql(@doc.source) 
+      end
+
+      it 'should return doc.serial' do
+        @json_hash[:div_id].should eql(@doc.serial) 
+      end
+    end
+
+    context 'when has_divs? == false' do
+      before do
+        @doc.stub(:has_divs?).and_return(false)
+        @json_hash = @doc.json_hash
+      end
+
+      it 'should return doc.serial' do
+        @json_hash[:div_id].should be_nil
+      end
+    end
+  end
   
   describe 'hmodifications' do
     before do
