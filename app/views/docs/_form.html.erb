@@ -25,6 +25,7 @@
     <%= f.label :section %><br />
     <%= f.text_field :section %>
   </div>
+  <%= f.hidden_field :username, value: current_user.id -%>
   <%= hidden_field_tag :project_id, @project.name if @project.present? -%>
   <div class="actions">
     <%= f.submit %>

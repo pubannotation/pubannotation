@@ -1599,6 +1599,49 @@ describe Doc do
       end
     end
   end
+
+  describe 'attach_sourcedb_suffix' do
+    context 'when sourcedb include : == false' do
+      before do
+        @sourcedb = 'source_db'
+        @username = 'user name'
+      end
+
+      context 'when username present' do
+        before do
+          @doc = FactoryGirl.build(:doc, sourcedb: @sourcedb, username: @username)
+        end
+
+        it 'should attach suffix' do
+          @doc.valid? 
+          @doc.sourcedb.should eql("#{@sourcedb}:#{@username}")
+        end
+      end
+
+      context 'when username blank' do
+        before do
+          @doc = FactoryGirl.build(:doc, sourcedb: @sourcedb)
+        end
+
+        it 'should not attach suffix' do
+          @doc.valid? 
+          @doc.sourcedb.should eql("#{@sourcedb}")
+        end
+      end
+    end
+
+    context 'when sourcedb include : == true' do
+      before do
+        @sourcedb = 'source_db:username'
+        @doc = FactoryGirl.build(:doc, sourcedb: @sourcedb)
+      end
+
+      it 'should not attach suffix' do
+        @doc.valid? 
+        @doc.sourcedb.should eql("#{@sourcedb}")
+      end
+    end
+  end
    
   describe 'decrement_docs_counter' do
     before do

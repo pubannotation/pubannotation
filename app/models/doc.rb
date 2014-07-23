@@ -1,8 +1,10 @@
 class Doc < ActiveRecord::Base
   before_destroy :decrement_docs_counter
+  before_validation :attach_sourcedb_suffix
   include ApplicationHelper
   
-  attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid
+  attr_accessor :username
+  attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid, :username
   has_many :denotations, :dependent => :destroy
 
   has_many :subcatrels, :class_name => 'Relation', :through => :denotations, :source => :subrels
@@ -357,6 +359,12 @@ class Doc < ActiveRecord::Base
   
   def has_divs?
     self.class.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+  end
+
+  def attach_sourcedb_suffix
+    if sourcedb.include?(':') == false && username.present?
+      self.sourcedb = "#{sourcedb}:#{username}"
+    end
   end
       
   # before destroy
