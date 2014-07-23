@@ -16,6 +16,7 @@ class User < ActiveRecord::Base
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
   validates_uniqueness_of :username
+  validate :check_invalid_character
 
   scope :except_current_user, lambda { |current_user| where(["id != ?", current_user.id]) }
   scope :except_project_associate_maintainers, lambda{|project_id|
@@ -39,5 +40,11 @@ class User < ActiveRecord::Base
 
   def root?
     root    
+  end
+
+  def check_invalid_character
+    if username =~/(\.+|\/|\?)/
+      errors.add(:username, I18n.t('errors.messages.invalid_character_included'))
+    end
   end
 end

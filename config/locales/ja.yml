@@ -123,6 +123,7 @@ ja:
       too_short: は%{count}文字以上で入力してください。
       wrong_length: は%{count}文字で入力してください。
       save_prohibited: '%{model}に%{error}が発生しました。'
+      invalid_character_included: 使用不可な文字が含まれています。 
     template:
       body: 次の項目を確認してください。
       header:

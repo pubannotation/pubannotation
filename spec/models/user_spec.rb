@@ -30,6 +30,47 @@ describe User do
       end
     end
   end 
+  
+  describe 'check_invalid_character' do
+    context 'when not include invalid character' do
+      it 'shoud not raise validation error' do
+        User.new(email: 'email@mail.check.com', password: 'password', username:'user').valid?.should be_true
+      end
+    end
+
+    context 'when include /' do
+      before do
+        @user = User.new(email: 'email', password: 'password', username:'us/er')
+      end
+
+      it 'shoud raise validation error' do
+        @user.valid?
+        @user.errors.messages[:username].should eql([I18n.t('errors.messages.invalid_character_included')])
+      end
+    end
+
+    context 'when include .' do
+      before do
+        @user = User.new(email: 'email', password: 'password', username:'us.er')
+      end
+
+      it 'shoud raise validation error' do
+        @user.valid?
+        @user.errors.messages[:username].should eql([I18n.t('errors.messages.invalid_character_included')])
+      end
+    end
+
+    context 'when include ?' do
+      before do
+        @user = User.new(email: 'email', password: 'password', username:'us?er')
+      end
+
+      it 'shoud raise validation error' do
+        @user.valid?
+        @user.errors.messages[:username].should eql([I18n.t('errors.messages.invalid_character_included')])
+      end
+    end
+  end
 
   describe 'scope except_current_user' do
     before do
