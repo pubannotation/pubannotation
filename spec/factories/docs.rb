@@ -3,6 +3,6 @@ FactoryGirl.define do
     d.body 'body'
     d.sourcedb 'sourcedb'
     d.sourceid 'sourceid'
-    d.serial 0
+    d.sequence(:serial){|n| n}
   end
 end

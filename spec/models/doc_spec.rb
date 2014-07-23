@@ -114,13 +114,40 @@ describe Doc do
       @project_2.docs.should include(@doc_1)
     end
   end
+
+  describe 'validates_uniqueness_of sourcedb, sourceid and serial' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+    end
+    
+    context 'when same sourcedb, sourceid and serial present' do
+      before do
+        @new_doc = FactoryGirl.build(:doc, serial: @doc.serial)
+      end
+
+      it 'should raise validation error' do
+        @new_doc.valid?
+        @new_doc.errors.messages[:serial].should eql([I18n.t('errors.messages.taken')])
+      end
+    end
+    
+    context 'when same sourcedb, sourceid and another serial present' do
+      before do
+        @new_doc = FactoryGirl.build(:doc)
+      end
+
+      it 'should be valid ' do
+        @new_doc.valid?.should be_true
+      end
+    end
+  end
   
   describe 'scope' do
     describe 'pmdocs' do
       before do
         @pmdocs_count = 3
-        @pmdocs_count.times do
-          FactoryGirl.create(:doc, :sourcedb => 'PubMed')
+        @pmdocs_count.times do |time|
+          FactoryGirl.create(:doc, :sourcedb => 'PubMed', serial: time)
         end
         @not_pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
         @pmdocs = Doc.pmdocs
@@ -138,11 +165,11 @@ describe Doc do
     describe 'pmcdocs' do
       before do
         @pmcdocs_count = 3
-        @pmcdocs_count.times do
-          FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
+        @pmcdocs_count.times do |time|
+          FactoryGirl.create(:doc, :sourcedb => 'PMC', sourceid: time, serial: 0)
         end
         @not_pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-        @serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
+        @serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC')
         @pmcdocs = Doc.pmcdocs
       end
       
@@ -572,26 +599,25 @@ describe Doc do
           before do
             @relations_count2 = FactoryGirl.create(:doc,  :sourceid => '12345', :subcatrels_count => 2, :sourcedb => 'PMC', :serial => 0)
             @relations_count3 = FactoryGirl.create(:doc,  :sourceid => '23456', :subcatrels_count => 3, :sourcedb => 'PMC', :serial => 0)
-            @relations_count4 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 4, :sourcedb => 'PMC', :serial => 0)
             @relations_count0 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 0, :sourcedb => 'PMC', :serial => 0)
             @docs = Doc.order_by(Doc.pmcdocs, 'same_sourceid_relations_count')
           end
           
-          it 'doc which has 4 relations(same sourceid) should be docs[0]' do
-            @docs[0].should eql(@relations_count0)
+          it 'doc which has 3 relations(same sourceid) should be docs[0]' do
+            @docs[0].should eql(@relations_count3)
           end
           
-          it 'doc which has 4 relations should be docs[1]' do
-            @docs[1].should eql(@relations_count4)
+          it 'doc which has 2 relations should be docs[1]' do
+            @docs[1].should eql(@relations_count2)
           end
           
-          it 'doc which has 3 relations should be docs[2]' do
-            @docs[2].should eql(@relations_count3)
+          it 'doc which has 0 relations should be docs[2]' do
+            @docs[2].should eql(@relations_count0)
           end
           
-          it 'doc which has 2 relations should be docs[3]' do
-            @docs[3].should eql(@relations_count2)
-          end
+          # it 'doc which has 2 relations should be docs[3]' do
+          #   @docs[3].should eql(@relations_count2)
+          # end
         end
       end
       

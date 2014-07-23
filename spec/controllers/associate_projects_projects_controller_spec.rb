@@ -12,8 +12,8 @@ describe AssociateProjectsProjectsController do
         @associate_project.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
       end
       @associate_project_pmcdocs_count = 20
-      @associate_project_pmcdocs_count.times do
-        @associate_project.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+      @associate_project_pmcdocs_count.times do |time|
+        @associate_project.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, sourceid: time) 
       end     
       @associate_project_denotations_count = 30
       @associate_project_denotations_count.times do

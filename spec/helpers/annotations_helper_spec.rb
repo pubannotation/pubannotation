@@ -19,7 +19,7 @@ describe AnnotationsHelper do
         context 'when option encoding ascii exist' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-            @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+            @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1234566', :serial => 1, :section => 'section', :body => 'doc body')
             @get_ascii_text = 'DOC body'
             helper.stub(:get_ascii_text).and_return(@get_ascii_text)
             @result = helper.get_annotations(@project, @doc, :encoding => 'ascii')
@@ -39,7 +39,7 @@ describe AnnotationsHelper do
         context 'when option :discontinuous_annotation exist' do
           before do
             @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-            @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+            @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1111', :serial => 1, :section => 'section', :body => 'doc body')
             @get_ascii_text = 'DOC body'
             @hdenotations = 'hdenotations'
             @hrelations = 'hrelations'

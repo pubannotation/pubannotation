@@ -275,10 +275,10 @@ describe DocsController do
         
         context 'when params[:body] present' do
           before do
-            @sourceid_123_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123, :body => 'test')
-            @sourceid_1234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1234, :body => 'testmatch')
-            @sourceid_234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234, :body => 'matchtest')
-            @sourceid_123_est = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123, :body => 'est')
+            @sourceid_123_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123123, :body => 'test')
+            @sourceid_1234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1234123, :body => 'testmatch')
+            @sourceid_234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234123, :body => 'matchtest')
+            @sourceid_12345_est = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123123123, :body => 'est')
             @search_text = 'test'
             get :search, :body => @search_text 
           end
@@ -288,13 +288,13 @@ describe DocsController do
           end
           
           it 'should include body contains body' do
-            assigns[:source_docs].should_not include(@sourceid_123_est)
+            assigns[:source_docs].should_not include(@sourceid_12345_est)
           end
         end
         
         context 'when params[:sourceid] and params[:body] present' do
           before do
-            @sourceid_1_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => 'test')
+            @sourceid_0_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 0, :body => 'test')
             @sourceid_1_body_test_and = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => 'testand')
             @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 2, :body => 'test')
             @search_sourceid = 1

@@ -1355,8 +1355,8 @@ describe Project do
           @associate_project.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
         end
         @associate_project_pmcdocs_count = 2
-        @associate_project_pmcdocs_count.times do
-          @associate_project.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0) 
+        @associate_project_pmcdocs_count.times do |time|
+          @associate_project.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, sourceid: time) 
         end  
         @associate_project_relations_count = 3
         @associate_project_relations_count.times do
@@ -1422,8 +1422,8 @@ describe Project do
         @project.docs << doc
       end
       @project_pmcdocs_count = 2
-      @project_pmcdocs_count.times do
-        doc = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0)
+      @project_pmcdocs_count.times do |time|
+        doc = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0, sourceid: time)
         @project.docs << doc
       end
       @project_denotations_count = 3
@@ -1543,8 +1543,8 @@ describe Project do
         @associate_project.docs << @same_doc_1
         @associate_project.docs << @same_doc_2
         # not duplicative docs
-        @not_same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source.another', :sourcedb => 'PubMed', :sourceid => 123456, :serial => 1, :section => 'section')
-        @not_same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source.another', :sourcedb => 'PMC', :sourceid => 123456, :serial => 0, :section => 'section')
+        @not_same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source.another', :sourcedb => 'PubMed', :sourceid => 1234567, :serial => 1, :section => 'section')
+        @not_same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source.another', :sourcedb => 'PMC', :sourceid => 1234567, :serial => 0, :section => 'section')
         @associate_project.docs << @not_same_doc_1
         @associate_project.docs << @not_same_doc_2
         @associate_project.reload

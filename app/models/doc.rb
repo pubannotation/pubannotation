@@ -18,6 +18,7 @@ class Doc < ActiveRecord::Base
   validates :sourcedb, :presence => true
   validates :sourceid, :presence => true
   validates :serial,   :presence => true
+  validates_uniqueness_of :serial, scope: [:sourcedb, :sourceid]
   
   scope :pmdocs, where(:sourcedb => 'PubMed')
   scope :pmcdocs, where(:sourcedb => 'PMC', :serial => 0)

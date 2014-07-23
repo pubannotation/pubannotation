@@ -612,8 +612,8 @@ describe ProjectsController do
       @project_PMC_docs =  @project.docs.pmcdocs
 
       # another projects
-      @PubMed_another_project =   FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => '123',   :body => 'abc', :serial => 0)
-      @PMC_another_project =  FactoryGirl.create(:doc, :sourcedb => 'PMC',    :sourceid => '1234',  :body => 'abcd', :serial => 0)
+      @PubMed_another_project =   FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => '1239',   :body => 'abc', :serial => 0)
+      @PMC_another_project =  FactoryGirl.create(:doc, :sourcedb => 'PMC',    :sourceid => '12349',  :body => 'abcd', :serial => 0)
     end
     
     context 'when params[:doc] is PMC' do
