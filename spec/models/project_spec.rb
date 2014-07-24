@@ -1911,6 +1911,88 @@ describe Project do
     end
   end
 
+  describe 'params_from_json' do
+    before do
+      json = {name: 'name', user_id: 1, created_at: DateTime.now, relations_count: 6}.to_json
+      File.stub(:read).and_return(json)
+      @params = Project.params_from_json('')
+    end
+
+    it 'should not include not attr_accessible column' do
+      @params.select{|key, value| !Project.attr_accessible[:default].include?(key)}.size.should eql(0)
+      @params.should eql({'name' => 'name'})
+    end
+  end
+
+  describe 'create_from_zip' do
+    before do
+      @zip_file = "#{Denotation::ZIP_FILE_PATH}project.zip"
+      file = File.new(@zip_file, 'w')
+      Zip::ZipOutputStream.open(file.path) do |z|
+        z.put_next_entry('project.json')
+        z.print ''
+        z.put_next_entry('docs.json')
+        z.print ''
+      end
+      file.close   
+      @project_name = 'project name'
+      Project.stub(:params_from_json).and_return({name: @project_name})
+      @num_created = 1
+      @num_added = 2
+      @num_failed = 3
+      Project.any_instance.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
+    end
+
+    context 'when project successfully saved' do
+      before do
+        @messages, @errors = Project.create_from_zip(@zip_file, @project_name)
+      end
+
+      it 'should create project' do
+        Project.find_by_name(@project_name).should be_present
+      end
+
+      it 'messages shoud include project successfully created' do
+        @messages.should include(I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project')))
+      end
+
+      it 'should include docs created' do
+        @messages.should include(I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: @num_created, project_name: @project_name))
+      end
+
+      it 'should include docs added' do
+        @messages.should include(I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: @num_added, project_name: @project_name))
+      end
+
+      it 'should include docs failed' do
+        @messages.should include(I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: @num_failed, project_name: @project_name))
+      end
+
+      it 'should return blank errors' do
+        @errors.should be_blank
+      end
+    end
+
+    context 'when project which has same name exists' do
+      before do
+        FactoryGirl.create(:project, name: @project_name)
+        @messages, @errors = Project.create_from_zip(@zip_file, @project_name)
+      end
+
+      it 'should return blank messages' do
+        @messages.should be_blank
+      end
+
+      it 'should return errors on project.name' do
+        @errors[0].should include(I18n.t('errors.messages.taken'))
+      end
+    end
+
+    after do
+      File.unlink(@zip_file)
+    end
+  end
+
   describe 'add_docs_from_json' do
     before do
       @project = FactoryGirl.create(:project) 

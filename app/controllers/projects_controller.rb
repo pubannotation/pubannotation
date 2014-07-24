@@ -88,8 +88,7 @@ class ProjectsController < ApplicationController
   # POST /projects.json
   def create
     if params[:project].class == ActionDispatch::Http::UploadedFile
-      project_attributes = JSON.parse(File.read(params[:project].tempfile))
-      params[:project] = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
+      params[:project] = Project.params_from_json(params[:project].tempfile)
     end
     @project = Project.new(params[:project])
     @project.user = current_user
@@ -103,6 +102,23 @@ class ProjectsController < ApplicationController
       else
         format.html { render action: "new" }
         format.json { render json: @project.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def zip_upload
+  end
+
+  def create_from_zip
+    zip_file = params[:zip].path
+    if zip_file.present? && params[:zip].content_type == 'application/zip'
+      project_name = File.basename(params[:zip].original_filename, ".*")
+      messages, errors = Project.create_from_zip(zip_file, project_name)
+      # 結果をうけとってメッセージに表示
+      if messages.present?
+        flash[:notice] = messages.join('<br />')
+      else errors.present?
+        flash[:notice] = errors.join('<br />')
       end
     end
   end

@@ -392,6 +392,7 @@ en:
       associate_maintain_projects: Associated projects 
       belongs_to_sproject: Projects belongs to this Sproject
       associate_project: Associate project
+      select_zip_file: Select zip file to upload.
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:
@@ -437,6 +438,7 @@ en:
       remove: remove
       show_divisions: Show divisions
       uploader: uploader
+      upload: upload
       maintainer: maintainer
       update: update
       pubmed: PubMed

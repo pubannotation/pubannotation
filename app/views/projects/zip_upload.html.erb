@@ -1,0 +1,10 @@
+<p>
+  <%= t('views.projects.select_zip_file') -%>
+</p>
+
+<%= form_tag create_from_zip_projects_path, multipart: true do -%>
+  <%= file_field_tag 'zip' -%>
+  <br />
+  <br />
+  <%= submit_tag t('views.shared.upload') -%>
+<% end -%>

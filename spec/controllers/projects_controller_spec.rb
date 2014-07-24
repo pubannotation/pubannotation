@@ -347,13 +347,9 @@ describe ProjectsController do
         before do
           controller.stub(:params).and_return({locale: '', project: double('project', class: ActionDispatch::Http::UploadedFile, tempfile: '')} )
           @name = 'json project'
-          File.stub(:read).and_return({name: @name, relations_count: 3}.to_json)
+          Project.stub(:params_from_json).and_return({name: @name})
           @user = FactoryGirl.create(:user)
           post :create, :format => 'json'
-        end
-        
-        it 'should set attr_accessible columns only' do
-          assigns[:project][:relations_count].should eql(0)
         end
 
         it 'should return http response created as status' do
@@ -388,6 +384,57 @@ describe ProjectsController do
         
         it 'should return status 422' do
           response.status.should eql(422)
+        end
+      end
+    end
+  end
+
+  describe 'zip_upload' do
+    before do
+      get :zip_upload
+    end
+
+    it 'should render template' do
+      response.should render_template('zip_upload')
+    end
+  end
+
+  describe 'create_from_zip' do
+    context 'when zip_file present' do
+      before do
+        @zip = double(:zip, path: 'path', content_type: 'application/zip', original_filename: 'project.zip')
+        controller.stub(:params).and_return({zip: @zip})
+      end
+
+      context 'when messages present' do
+        before do
+          @messages = ['message']
+          Project.stub(:create_from_zip).and_return([@messages])
+          post :create_from_zip
+        end
+
+        it 'should set message' do
+          flash[:notice].should include(@messages[0])
+        end
+
+        it 'should render template' do
+          response.should render_template('create_from_zip')
+        end
+      end
+
+      context 'when errors present' do
+        before do
+          @errors = ['error']
+          Project.stub(:create_from_zip).and_return([nil, @errors])
+          post :create_from_zip
+        end
+
+        it 'should set errors' do
+          flash[:notice].should include(@errors[0])
+        end
+
+        it 'should render template' do
+          response.should render_template('create_from_zip')
         end
       end
     end

@@ -416,6 +416,7 @@ ja:
       belongs_to_sproject: このSprojectに含まれるプロジェクト
       associate_project: 関連プロジェクト
       detail: プロジェクト詳細
+      select_zip_file: アップロードするzipファイルを選択して下さい。
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:
@@ -465,6 +466,7 @@ ja:
       show_divisions: ディビジョン表示
       text: テキスト
       uploader:  アップローダー
+      upload:  アップロード
       update: 更新
       pubmed: PubMed
       a_doc_id: "%{sourcedb}:%{sourceid}"

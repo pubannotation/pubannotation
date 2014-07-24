@@ -28,7 +28,7 @@ class Project < ActiveRecord::Base
   has_many :modifications, :dependent => :destroy
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
-  validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}
+  validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
   
   default_scope where(:type => nil).order('status ASC')
 
@@ -384,6 +384,58 @@ class Project < ActiveRecord::Base
     end  
   end 
 
+  def self.params_from_json(json_file)
+    project_attributes = JSON.parse(File.read(json_file))
+    project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
+  end
+
+  def self.create_from_zip(zip_file, project_name)
+    messages = Array.new
+    errors = Array.new
+    project_json_file = "#{TempFilePath}#{project_name}-project.json"
+    docs_json_file = "#{TempFilePath}#{project_name}-docs.json"
+    # open zip file
+    Zip::ZipFile.open(zip_file) do |zipfile|
+      zipfile.each do |file|
+        file_name = file.name
+        # extract project.json
+        if file_name == 'project.json'
+          file.extract(project_json_file) unless File.exist?(project_json_file)
+        end
+        # extract docs.json
+        if file_name == 'docs.json'
+          file.extract(docs_json_file) unless File.exist?(docs_json_file)
+        end
+      end
+    end
+
+    # create project if [project_name]-project.json exist
+    project = nil
+    if File.exist?(project_json_file)
+      project_params = Project.params_from_json(project_json_file)
+      File.unlink(project_json_file)
+      project = Project.new(project_params)
+      if project.valid?
+        project.save
+        created_project = project
+        messages << I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project'))
+      else
+        errors << project.errors.full_messages.join('<br />')
+        project = nil
+      end
+    end
+
+    # create project.docs if [project_name]-project.json exist
+    if File.exist?(docs_json_file) && project.present?
+      num_created, num_added, num_failed = project.add_docs_from_json(File.read(docs_json_file))
+      File.unlink(docs_json_file)
+      messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
+      messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
+      messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
+    end
+    return [messages, errors]
+  end
+
   def add_docs_from_json(json)
     json = JSON.parse(json)
     num_created, num_added, num_failed = 0, 0, 0
@@ -391,7 +443,7 @@ class Project < ActiveRecord::Base
     if source_dbs.present?
       source_dbs.each do |source_db, docs_array|docs_array
         ids = docs_array.collect{|doc| doc["source_id"]}.join(",")
-        num_created_t, num_added_t, num_failed_t = self.add_docs(ids, source_db)
+        num_created_t, num_added_t, num_failed_t = self.add_docs(ids, source_db, docs_array)
         num_created += num_created_t
         num_added += num_added_t
         num_failed += num_failed_t
@@ -400,7 +452,7 @@ class Project < ActiveRecord::Base
     return [num_created, num_added, num_failed]   
   end
   
-  def add_docs(ids, sourcedb)
+  def add_docs(ids, sourcedb, docs_array)
     num_created, num_added, num_failed = 0, 0, 0
     ids = ids.split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
     ids.each do |sourceid|
@@ -411,9 +463,26 @@ class Project < ActiveRecord::Base
           num_added += divs.size
         end
       else
-        doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
-        divs_hash = doc_sequence.divs
-        divs = Doc.create_divs(divs_hash, :sourcedb => sourcedb, :sourceid => sourceid, :source_url => doc_sequence.source_url)
+        if sourcedb.include?(Doc::UserSourcedbSeparator)
+          # when sourcedb is user generated
+          divs = Array.new
+          docs_array.each do |doc_array_params|
+            mappings = {'text' => 'body', 'source_db' => 'sourcedb', 'source_id' => 'sourceid', 'source_url' => 'source', 'div_id' => 'serial'}
+            doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}]
+            doc = Doc.new(doc_params) 
+            if doc.valid?
+              doc.save
+              divs << doc
+            else
+              num_failed += 1
+            end
+          end
+        else
+          # when sourcedb is not user generated
+          doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
+          divs_hash = doc_sequence.divs
+          divs = Doc.create_divs(divs_hash, :sourcedb => sourcedb, :sourceid => sourceid, :source_url => doc_sequence.source_url)
+        end
         if divs
           self.docs << divs
           num_created += divs.size
