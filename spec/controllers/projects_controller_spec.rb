@@ -347,13 +347,17 @@ describe ProjectsController do
         before do
           controller.stub(:params).and_return({locale: '', project: double('project', class: ActionDispatch::Http::UploadedFile, tempfile: '')} )
           @name = 'json project'
-          Project.stub(:params_from_json).and_return({name: @name})
           @user = FactoryGirl.create(:user)
+          Project.stub(:params_from_json).and_return({project_params: {name: @name}, user: @user})
           post :create, :format => 'json'
         end
 
         it 'should return http response created as status' do
           response.status.should eql(201)
+        end
+
+        it 'shoud set params_from_json user as project.user' do
+          Project.find_by_name(@name).user.should eql(@user)
         end
 
         it 'should return project path as location' do

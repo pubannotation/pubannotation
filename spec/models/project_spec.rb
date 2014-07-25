@@ -1913,9 +1913,10 @@ describe Project do
 
   describe 'params_from_json' do
     before do
-      json = {name: 'name', user_id: 1, created_at: DateTime.now, relations_count: 6}.to_json
+      @project_user = FactoryGirl.create(:user)
+      json = {name: 'name', user_id: 1, created_at: DateTime.now, relations_count: 6, maintainer: @project_user.username}.to_json
       File.stub(:read).and_return(json)
-      @params = Project.params_from_json('')
+      @params = Project.params_from_json('')[:project_params]
     end
 
     it 'should not include not attr_accessible column' do
@@ -1935,8 +1936,9 @@ describe Project do
         z.print ''
       end
       file.close   
+      @project_user = FactoryGirl.create(:user)
       @project_name = 'project name'
-      Project.stub(:params_from_json).and_return({name: @project_name})
+      Project.stub(:params_from_json).and_return({project_params: {name: @project_name}, user: @project_user})
       @num_created = 1
       @num_added = 2
       @num_failed = 3

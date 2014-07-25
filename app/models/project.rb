@@ -386,7 +386,9 @@ class Project < ActiveRecord::Base
 
   def self.params_from_json(json_file)
     project_attributes = JSON.parse(File.read(json_file))
-    project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
+    user = User.find_by_username(project_attributes['maintainer'])
+    project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
+    return {project_params: project_params, user: user}
   end
 
   def self.create_from_zip(zip_file, project_name)
@@ -415,11 +417,14 @@ class Project < ActiveRecord::Base
     # create project if [project_name]-project.json exist
     project = nil
     if File.exist?(project_json_file)
-      project_params = Project.params_from_json(project_json_file)
+      params_from_json = Project.params_from_json(project_json_file)
       File.unlink(project_json_file)
+      project_params = params_from_json[:project_params]
+      user = params_from_json[:user] 
       project = Project.new(project_params)
-      if project.valid?
+      if project.valid? && user.present?
         project.save
+        project.user = user
         created_project = project
         messages << I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project'))
       else

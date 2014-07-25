@@ -88,10 +88,14 @@ class ProjectsController < ApplicationController
   # POST /projects.json
   def create
     if params[:project].class == ActionDispatch::Http::UploadedFile
-      params[:project] = Project.params_from_json(params[:project].tempfile)
+      params_from_json = Project.params_from_json(params[:project].tempfile)
+      params[:project] = params_from_json[:project_params]
+      user = params_from_json[:user]
+    else
+      user = current_user
     end
     @project = Project.new(params[:project])
-    @project.user = current_user
+    @project.user = user
     respond_to do |format|
       if @project.save
         @project.build_associate_maintainers(params[:usernames])
