@@ -2001,20 +2001,31 @@ describe Project do
     context 'when source_dbs prensent' do
       before do
         @attributes = Array.new
-        @project.stub(:add_docs) do |ids, source_db|  
+        @docs_array = Array.new
+        @project.stub(:add_docs) do |ids, source_db, docs_array|  
           @attributes << {source_db: source_db, ids: ids}
+          @docs_array << docs_array
           [1, 1, 1]
         end
-        json = [{"source_id" => "1", "source_db" => "PMC"}, {"source_id" => "2", "source_db" => "PMC"}, {"source_id" => "1", "source_db" => "PubMed"}]
+        @pmc_user_1 = {"source_db" => "PMC:user name", 'source_id' => '1', 'div_id' => 0, 'text' => 'body text'}
+        @pmc_user_2 = {"source_db" => "PMC:user name", 'source_id' => '1', 'div_id' => 1, 'text' => 'body text'} 
+        @pmc_1 = {"source_id" => "1", "source_db" => "PMC"} 
+        @pmc_2 = {"source_id" => "2", "source_db" => "PMC"} 
+        @pub_med = {"source_id" => "1", "source_db" => "PubMed"}
+        json = [@pmc_user_1, @pmc_user_2, @pmc_1, @pmc_2, @pub_med]
         @result = @project.add_docs_from_json(json.to_json)
       end
 
       it 'should pass ids and source_db for add_docs correctly' do
-        @attributes.should =~ [{source_db: "PMC", ids: "1,2"}, {source_db: "PubMed", ids: "1"}]
+        @attributes.should =~ [{source_db: "PMC:user name", ids: "1,1"}, {source_db: "PMC", ids: "1,2"}, {source_db: "PubMed", ids: "1"}]
       end
 
       it 'should count up num_created, num_added, num_failed' do
-        @result.should =~ [2, 2, 2]
+        @result.should =~ [3, 3, 3]
+      end
+
+      it 'should pass docs_array by sourcedb' do
+        @docs_array.should eql([[@pmc_user_1, @pmc_user_2], [@pmc_1, @pmc_2], [@pub_med]])
       end
     end
   end
@@ -2041,7 +2052,7 @@ describe Project do
       
       context 'when project docs not include divs.first' do
         before do
-          @result = @project.add_docs(@sourceid, @sourcedb)
+          @result = @project.add_docs(@sourceid, @sourcedb, nil)
           @project.reload
         end
 
@@ -2067,7 +2078,7 @@ describe Project do
         end        
         
         before do
-          @result = @project.add_docs(@sourceid, @sourcedb)
+          @result = @project.add_docs(@sourceid, @sourcedb, nil)
           @project.reload
         end
 
@@ -2083,24 +2094,54 @@ describe Project do
      
     context 'when divs blank' do
       context 'when generate creates doc successfully' do
-        before do
-          @new_sourceid = 'new sourceid'
-          @generated_doc_1 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 0)
-          @generated_doc_2 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 1)
+        context 'when sourcedb is user sourcedb' do
+          before do
+            @sourcedb = "PMC#{Doc::UserSourcedbSeparator}tanaka"
+            @docs_array = [
+              # successfully create
+              {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
+              {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+              # fail since same sourcedb, sourceid and serial
+              {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
+            ]
+            @result = @project.add_docs(@sourceid, @sourcedb, @docs_array)
+          end
           
-          Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
-          @result = @project.add_docs(@sourceid, @sourcedb)
+          it 'should increment num_created' do
+            @result.should eql [2, 0, 1]
+          end
+
+          it 'shoud create doc from docs_array' do
+            Doc.find_by_body_and_sourcedb_and_sourceid_and_source_and_serial(@docs_array[0]['text'], 
+            @docs_array[0]['source_db'], @docs_array[0]['source_id'], @docs_array[0]['source_url'], @docs_array[0]['div_id']).should be_present
+          end
+
+          it 'shoud create doc from docs_array' do
+            Doc.find_by_body_and_sourcedb_and_sourceid_and_source_and_serial(@docs_array[0]['text'], 
+            @docs_array[1]['source_db'], @docs_array[1]['source_id'], @docs_array[1]['source_url'], @docs_array[1]['div_id']).should be_present
+          end
         end
-        
-        it 'should increment num_added' do
-          @result.should eql [Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @new_sourceid).size, 0, 0]
+
+        context 'when sourcedb is not user sourcedb' do
+          before do
+            @new_sourceid = 'new sourceid'
+            @generated_doc_1 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 0)
+            @generated_doc_2 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 1)
+            
+            Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
+            @result = @project.add_docs(@sourceid, @sourcedb, nil)
+          end
+          
+          it 'should increment num_created' do
+            @result.should eql [Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @new_sourceid).size, 0, 0]
+          end
         end
       end 
       
       context 'when generate crates doc unsuccessfully' do
         before do
           Doc.stub(:create_divs).and_return(nil)
-          @result = @project.add_docs(@sourceid, @sourcedb)
+          @result = @project.add_docs(@sourceid, @sourcedb, nil)
         end
         
         it 'should not increment num_failed' do

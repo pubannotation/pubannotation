@@ -392,6 +392,9 @@ class Project < ActiveRecord::Base
   def self.create_from_zip(zip_file, project_name)
     messages = Array.new
     errors = Array.new
+    unless Dir.exist?(TempFilePath)
+      FileUtils.mkdir_p(TempFilePath)
+    end
     project_json_file = "#{TempFilePath}#{project_name}-project.json"
     docs_json_file = "#{TempFilePath}#{project_name}-docs.json"
     # open zip file
@@ -426,12 +429,14 @@ class Project < ActiveRecord::Base
     end
 
     # create project.docs if [project_name]-project.json exist
-    if File.exist?(docs_json_file) && project.present?
-      num_created, num_added, num_failed = project.add_docs_from_json(File.read(docs_json_file))
-      File.unlink(docs_json_file)
-      messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
-      messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
-      messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
+    if File.exist?(docs_json_file)
+      if project.present?
+        num_created, num_added, num_failed = project.add_docs_from_json(File.read(docs_json_file))
+        messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
+        messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
+        messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
+      end
+      File.unlink(docs_json_file) 
     end
     return [messages, errors]
   end

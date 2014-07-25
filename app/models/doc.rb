@@ -1,4 +1,5 @@
 class Doc < ActiveRecord::Base
+  UserSourcedbSeparator = ':'
   before_destroy :decrement_docs_counter
   before_validation :attach_sourcedb_suffix
   include ApplicationHelper
@@ -293,9 +294,9 @@ class Doc < ActiveRecord::Base
       section: section,
       source_url: source
     }
-    if has_divs?
+    # if has_divs?
       json_hash[:div_id] = serial
-    end
+    # end
     return json_hash
   end
   
@@ -364,7 +365,7 @@ class Doc < ActiveRecord::Base
 
   def attach_sourcedb_suffix
     if sourcedb.include?(':') == false && username.present?
-      self.sourcedb = "#{sourcedb}:#{username}"
+      self.sourcedb = "#{sourcedb}#{UserSourcedbSeparator}#{username}"
     end
   end
       
