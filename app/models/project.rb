@@ -477,8 +477,16 @@ class Project < ActiveRecord::Base
           # when sourcedb is user generated
           divs = Array.new
           docs_array.each do |doc_array_params|
-            mappings = {'text' => 'body', 'source_db' => 'sourcedb', 'source_id' => 'sourceid', 'source_url' => 'source', 'div_id' => 'serial'}
-            doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}]
+            # all of columns insert into database need to be included in this hash.
+            mappings = {
+              'text' => 'body', 
+              'source_db' => 'sourcedb', 
+              'source_id' => 'sourceid', 
+              'section' => 'section', 
+              'source_url' => 'source', 
+              'div_id' => 'serial'
+            }
+            doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
             doc = Doc.new(doc_params) 
             if doc.valid?
               doc.save

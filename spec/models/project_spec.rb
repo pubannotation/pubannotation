@@ -2101,8 +2101,8 @@ describe Project do
             @sourcedb = "PMC#{Doc::UserSourcedbSeparator}tanaka"
             @docs_array = [
               # successfully create
-              {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
-              {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+              {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
+              {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
               # fail since same sourcedb, sourceid and serial
               {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
             ]
