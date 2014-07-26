@@ -1942,6 +1942,7 @@ describe Project do
       @num_created = 1
       @num_added = 2
       @num_failed = 3
+      Dir.stub(:exist?).and_return(false)
       Project.any_instance.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
     end
 
