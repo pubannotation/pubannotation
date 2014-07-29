@@ -254,7 +254,7 @@ describe AnnotationsController do
 
   describe 'annotations' do
     before do
-      @project = FactoryGirl.create(:project, :name => 'project_name')
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'project_name')
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 123456)
       @get_doc_notice = 'notice'
       controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
@@ -627,8 +627,8 @@ describe AnnotationsController do
   describe 'destroy_all' do
     before do
       controller.class.skip_before_filter :authenticate_user!
-      @project = FactoryGirl.create(:project)
-      @another_project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @another_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       controller.stub(:get_project).and_return([@project])
       controller.stub(:get_docspec).and_return(nil)
       

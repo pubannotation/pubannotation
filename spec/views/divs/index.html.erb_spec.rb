@@ -5,7 +5,7 @@ describe "divs/index.html.erb" do
   describe 'counts' do
     before do
       assign :docs, [FactoryGirl.create(:doc, :body => 'body', :sourceid => 'sourceid', :serial => 0)]
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       assign :project, @project
       assign :project_name, @project.name
       @denotations_count_helper = 'denotations_count_helper'

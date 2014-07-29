@@ -23,7 +23,7 @@ describe UsersController do
       @user = FactoryGirl.create(:user, :username => 'user1')
       @current_user = FactoryGirl.create(:user)
       current_user_stub(@current_user)
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
     
     context 'when project_id blank' do

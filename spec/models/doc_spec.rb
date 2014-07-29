@@ -21,10 +21,11 @@ describe Doc do
   describe 'has_many :subcatrels' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3, :project_id => 1)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3, :project_id => @project_1.id)
       @subj = FactoryGirl.create(:denotation, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation)
+      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation, project: @project)
     end
     
     it 'doc.denotations should include related denotation' do
@@ -41,11 +42,12 @@ describe Doc do
       @doc = FactoryGirl.create(:doc)
       @denotation = FactoryGirl.create(:denotation, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @subinsrel = FactoryGirl.create(:relation,
         :subj_id => @instance.id,
         :subj_type => @instance.class.to_s,
         :obj_id => 20,
-        :project_id => 30
+        :project => @project
       ) 
     end
   end
@@ -53,10 +55,10 @@ describe Doc do
   describe 'has_many subcatrelmods' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3, :project_id => 1)
-      @subj = FactoryGirl.create(:denotation, :doc => @doc, :id => 4)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3, :project => @project)
+      @subj = FactoryGirl.create(:denotation, :doc => @doc, :id => 4)
+      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation, :project => @project)
       @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project)
     end
     
@@ -188,12 +190,12 @@ describe Doc do
     
     describe 'project_name' do
       before do
-        @project_1 = FactoryGirl.create(:project, :name => 'project_1')
+        @project_1 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'project_1')
         @doc_1 = FactoryGirl.create(:doc)
         FactoryGirl.create(:docs_project, :project_id => @project_1.id, :doc_id => @doc_1.id)
         @doc_2 = FactoryGirl.create(:doc)
         FactoryGirl.create(:docs_project, :project_id => @project_1.id, :doc_id => @doc_2.id)
-        @project_2 = FactoryGirl.create(:project, :name => 'project_2')
+        @project_2 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'project_2')
         @doc_3 = FactoryGirl.create(:doc)
         FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => @doc_3.id)
         @project_name = Doc.project_name(@project_1.name)
@@ -207,13 +209,13 @@ describe Doc do
   
   describe 'scope projects_docs' do
     before do
-      @project_1 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc_1 = FactoryGirl.create(:doc)
       FactoryGirl.create(:docs_project, :project_id => @project_1.id, :doc_id => @doc_1.id)
-      @project_2 = FactoryGirl.create(:project)
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc_2 = FactoryGirl.create(:doc)
       FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => @doc_2.id)
-      @project_3 = FactoryGirl.create(:project)
+      @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc_3 = FactoryGirl.create(:doc)
       FactoryGirl.create(:docs_project, :project_id => @project_3.id, :doc_id => @doc_3.id)
       @projects_docs = Doc.projects_docs([@project_1.id, @project_2.id]) 
@@ -226,7 +228,7 @@ describe Doc do
   
   describe 'source_dbs' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       # create docs belongs to project
       @project_doc_1 = FactoryGirl.create(:doc, :sourcedb => "sourcedb1")
       @project_doc_2 = FactoryGirl.create(:doc, :sourcedb => "sourcedb2")
@@ -494,7 +496,7 @@ describe Doc do
       
       context 'denotations_count' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @doc_denotations_3 = FactoryGirl.create(:doc)
           FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_3.id, :project_id => @project.id)
           3.times do
@@ -531,21 +533,25 @@ describe Doc do
             
       context 'relations_count' do
         before do
+          FactoryGirl.create(:user)
           @doc_3relations = FactoryGirl.create(:doc, :id => 5)
+          @project_1 = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
           3.times do
-            denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => @doc_3relations)
-            FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+            denotation = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_3relations)
+            FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id, project: @project_1)
           end
   
+          @project_2 = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
           @doc_2relations = FactoryGirl.create(:doc, :id => 4)
           2.times do
-            denotation = FactoryGirl.create(:denotation, :project_id => 2, :doc => @doc_2relations)
-            FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+            denotation = FactoryGirl.create(:denotation, :project => @project_2, :doc => @doc_2relations)
+            FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id, project: @project_2)
           end
           
+          @project_3 = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
           @doc_1relations = FactoryGirl.create(:doc, :id => 3)
-          denotation = FactoryGirl.create(:denotation, :project_id => 3, :doc => @doc_1relations)
-          FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id)
+          denotation = FactoryGirl.create(:denotation, :project => @project_3, :doc => @doc_1relations)
+          FactoryGirl.create(:subcatrel, :obj => denotation, :subj_id => denotation.id, project: @project_3)
           
           @doc_0relations = FactoryGirl.create(:doc, :id => 2)
           @docs = Doc.order_by(Doc, 'relations_count')
@@ -723,14 +729,15 @@ describe Doc do
       @same_sourceid_docs_count = 5
       @relations_size = 3
       # create documents
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
       @same_sourceid_docs_count.times do |i|
         id = i + 1
         doc = FactoryGirl.create(:doc, :id => id,  :sourceid => '123456')
-        denotation = FactoryGirl.create(:denotation, :id => id, :project_id => 1, :doc => doc)
+        denotation = FactoryGirl.create(:denotation, :id => id, :project => @project, :doc => doc)
         # create relations
         @relations_size.times do |i|
           id = i + 1
-          FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => 'Denotation', :obj_id => id)
+          FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => 'Denotation', project: @project, :obj_id => id)
         end
       end
       @doc = FactoryGirl.create(:doc,  :sourceid => '123456')
@@ -1112,7 +1119,7 @@ describe Doc do
 
       context 'when project.associate_projects present' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @project.associate_projects << @project_1
           @project.associate_projects << @project_2
           @project_denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc_1, :begin => 4, :end => 10)
@@ -1189,8 +1196,8 @@ describe Doc do
   describe 'project_denotations' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @denotation_1 = FactoryGirl.create(:denotation, :project_id => @project_1.id)
       @denotation_2 = FactoryGirl.create(:denotation, :project_id => @project_2.id)
       @doc.stub(:denotation).and_return([@denotation_1, @denotation_2])
@@ -1222,13 +1229,15 @@ describe Doc do
   describe 'hrelations' do
     before do
       @doc = FactoryGirl.create(:doc)
+      FactoryGirl.create(:user)
     end
     
     context 'when options[:spans] present' do
       before do
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
-        @relation_1 = FactoryGirl.create(:relation, :hid => 'H1', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
-        @relation_2 = FactoryGirl.create(:relation, :hid => 'H2', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @relation_1 = FactoryGirl.create(:relation, project: @project, :hid => 'H1', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
+        @relation_2 = FactoryGirl.create(:relation, project: @project, :hid => 'H2', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
       end
       
       context 'when project blank' do
@@ -1246,7 +1255,6 @@ describe Doc do
       
       context 'when project present' do
         before do
-          @project = FactoryGirl.create(:project)
           @project.stub_chain(:relations, :where).and_return([@relation_2])
           @hrelations  = @doc.hrelations(@project, {:spans => {:begin_pos => 1, :end_pos => 5}} )
         end
@@ -1261,15 +1269,15 @@ describe Doc do
     
     context 'when options blank' do
       before do
-        @project_1 = FactoryGirl.create(:project)
+        @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
-        @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1)
+        @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project => @project_1)
         @relation_1 = FactoryGirl.create(:subcatrel, :obj => @denotation_1, :project => @project_1)
         @relation_2 = FactoryGirl.create(:subinsrel, :obj => @instance_1, :project => @project_1)
 
-        @project_2 = FactoryGirl.create(:project)
+        @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @denotation_2 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
-        @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2)
+        @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2, :project => @project_2)
         @relation_3 = FactoryGirl.create(:subcatrel, :obj => @denotation_2, :project => @project_2)
         @relation_4 = FactoryGirl.create(:subinsrel, :obj => @instance_2, :project => @project_2)
       end
@@ -1289,7 +1297,7 @@ describe Doc do
       
       context 'when project.associate_projects present' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @project.associate_projects << @project_1
           @project.associate_projects << @project_2
           @hrelations  = @doc.hrelations(@project)
@@ -1308,9 +1316,9 @@ describe Doc do
   describe 'spans_projects' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @denotation_project_1 = FactoryGirl.create(:project)
-      @denotation_project_2 = FactoryGirl.create(:project)
-      @not_denotation_project = FactoryGirl.create(:project)
+      @denotation_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @denotation_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @not_denotation_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @denotation_1 = FactoryGirl.create(:denotation, :project => @denotation_project_1, :doc => @doc)
       @denotation_2 = FactoryGirl.create(:denotation, :project => @denotation_project_2, :doc => @doc)
       @denotation_3 = FactoryGirl.create(:denotation, :project_id => 1000, :doc => @doc)
@@ -1382,13 +1390,14 @@ describe Doc do
   describe 'hmodifications' do
     before do
       @doc = FactoryGirl.create(:doc)
+      FactoryGirl.create(:user)
     end
       
     context 'when options[:spans] present' do
       before do
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
         @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project_id => 1)
-        @modification_1 = FactoryGirl.create(:modification, :hid => 'HID', :pred => 'PRED', :obj_type => 'Denotation', :obj => @denotation_1)
+        @modification_1 = FactoryGirl.create(:modification, :hid => 'HID', :pred => 'PRED', :obj_type => 'Denotation', :obj => @denotation_1, project: FactoryGirl.create(:project, user: FactoryGirl.create(:user)))
         @hmodifications = @doc.hmodifications(@project,  {:spans => {:begin_pos => 1, :end_pos => 5}})
       end
       
@@ -1399,7 +1408,7 @@ describe Doc do
     
     context 'when options[:spans] blank' do
       before do
-        @project_1 = FactoryGirl.create(:project)
+        @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc)
         # @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project => @project_1)
         @modification_1 = FactoryGirl.create(:modification, :hid => 'M1', :obj => @denotation_1, :project => @project_1)
@@ -1408,7 +1417,7 @@ describe Doc do
         @modification_2 = FactoryGirl.create(:modification, :hid => 'M2', :obj => @relation_1, :obj_type => @relation_1.class.to_s, :project => @project_1)
         @modification_3 = FactoryGirl.create(:modification, :hid => 'M3', :obj => @relation_2, :obj_type => @relation_2.class.to_s, :project => @project_1)
 
-        @project_2 = FactoryGirl.create(:project)
+        @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @denotation_2 = FactoryGirl.create(:denotation, :doc => @doc)
         # @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2, :project => @project_2)
         @modification_4 = FactoryGirl.create(:modification, :hid => 'M4', :obj => @denotation_2, :project => @project_2)
@@ -1433,7 +1442,7 @@ describe Doc do
       @current_user = FactoryGirl.create(:user)
       @accessible_doc = FactoryGirl.create(:doc)
       @project_doc = FactoryGirl.create(:doc)
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       # stub scope and return all Doc
       @accessible_projects = Doc.where(:id => @accessible_doc.id)
       Doc.stub(:accessible_projects).and_return(@accessible_projects)
@@ -1675,8 +1684,8 @@ describe Doc do
     before do
       @project_pmdocs_count = 1
       @project_pmcdocs_count = 2
-      @project =             FactoryGirl.create(:project, :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
-      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @project =             FactoryGirl.create(:project, user: FactoryGirl.create(:user), :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
+      @associate_project_1 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_1_pmdocs_count = 3
       @i = 1
       @associate_project_1_pmdocs_count.times do
@@ -1694,7 +1703,7 @@ describe Doc do
       @associate_project_1.docs << @div
       @associate_project_1.reload
       
-      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2_pmdocs_count = 4
       @associate_project_2_pmdocs_count.times do
         @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 

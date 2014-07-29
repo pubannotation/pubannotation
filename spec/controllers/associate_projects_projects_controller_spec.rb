@@ -5,8 +5,8 @@ describe AssociateProjectsProjectsController do
   describe 'destroy' do
     before do
       request.env["HTTP_REFERER"] = projects_path
-      @project = FactoryGirl.create(:project, :pmdocs_count => 20, :pmcdocs_count => 30, :denotations_count => 40, :relations_count => 50)
-      @associate_project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0, :denotations_count => 0, :relations_count => 0)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 20, :pmcdocs_count => 30, :denotations_count => 40, :relations_count => 50)
+      @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0, :denotations_count => 0, :relations_count => 0)
       @associate_project_pmdocs_count = 10
       @associate_project_pmdocs_count.times do
         @associate_project.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 

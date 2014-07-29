@@ -42,12 +42,12 @@ describe Project do
   
   describe 'has_and_belongs_to_many associate_projects' do
     before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @project_3 = FactoryGirl.create(:project)
-      @associate_project_1 = FactoryGirl.create(:project)
-      @associate_project_2 = FactoryGirl.create(:project)
-      @associate_project_3 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
 
       FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
       FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
@@ -173,10 +173,10 @@ describe Project do
   
   describe 'default_scope' do
     before do
-      FactoryGirl.create(:project, :name => "aaa111", :status => 3)
+      FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "aaa111", :status => 3)
       [4, 3, 2, 1].each do |status|
         2.times do |time|
-          FactoryGirl.create(:project, :name => "project_#{status}_#{time}", :status => status)
+          FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_#{status}_#{time}", :status => status)
         end
       end
       @projects = Project.order('id ASC').order('name DESC')
@@ -270,9 +270,9 @@ describe Project do
   
   describe 'scope not_id_in' do
     before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @project_3 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
     
     it 'should include project_id included in project_ids' do
@@ -282,9 +282,9 @@ describe Project do
   
   describe 'scope id_in' do
     before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @project_3 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
     
     it 'should include project_id included in project_ids' do
@@ -294,9 +294,9 @@ describe Project do
   
   describe 'scope name_in' do
     before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @project_3 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
     
     it 'should include project_name included in project_names' do
@@ -306,9 +306,9 @@ describe Project do
 
   describe 'sort_by_params' do
     before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @project_3 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
 
     context 'when sort_order is id DESC' do
@@ -351,7 +351,7 @@ describe Project do
   describe 'status_text' do
     context 'when status = 1' do
       before do
-        @project = FactoryGirl.create(:project, :status => 1)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :status => 1)
       end 
       
       it 'should return I18n released' do
@@ -361,7 +361,7 @@ describe Project do
     
     context 'when status = 2' do
       before do
-        @project = FactoryGirl.create(:project, :status => 2)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :status => 2)
       end 
       
       it 'should return I18n beta' do
@@ -371,7 +371,7 @@ describe Project do
 
     context 'when status = 3' do
       before do
-        @project = FactoryGirl.create(:project, :status => 3)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :status => 3)
       end 
       
       it 'should return I18n developing' do
@@ -383,7 +383,7 @@ describe Project do
   describe 'accessibility_text' do
     context 'when accessibility = 1' do
       before do
-        @project = FactoryGirl.create(:project, :accessibility => 1)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :accessibility => 1)
       end 
       
       it 'should return I18n released' do
@@ -393,7 +393,7 @@ describe Project do
     
     context 'when accessibility = 2' do
       before do
-        @project = FactoryGirl.create(:project, :accessibility => 2)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :accessibility => 2)
       end 
       
       it 'should return I18n beta' do
@@ -405,9 +405,9 @@ describe Project do
   describe 'self.order_by' do
     context 'pmdocs_count' do
       before do
-        @project_pmdocs_1 = FactoryGirl.create(:project, :pmdocs_count => 1, :accessibility => 1)
-        @project_pmdocs_2 = FactoryGirl.create(:project, :pmdocs_count => 2, :accessibility => 1)
-        @project_pmdocs_4 = FactoryGirl.create(:project, :pmdocs_count => 4, :accessibility => 1)
+        @project_pmdocs_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 1, :accessibility => 1)
+        @project_pmdocs_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 2, :accessibility => 1)
+        @project_pmdocs_4 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 4, :accessibility => 1)
         @projects = Project.order_by(Project, 'pmdocs_count', nil)
       end
       it 'project which has 4 pmdocs should be @projects[0]' do
@@ -425,9 +425,9 @@ describe Project do
   
     context 'pmcdocs_count' do
       before do
-        @project_pmcdocs_1 = FactoryGirl.create(:project, :pmcdocs_count => 1, :accessibility => 1)
-        @project_pmcdocs_2 = FactoryGirl.create(:project, :pmcdocs_count => 2, :accessibility => 1)
-        @project_pmcdocs_4 = FactoryGirl.create(:project, :pmcdocs_count => 4, :accessibility => 1)
+        @project_pmcdocs_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmcdocs_count => 1, :accessibility => 1)
+        @project_pmcdocs_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmcdocs_count => 2, :accessibility => 1)
+        @project_pmcdocs_4 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmcdocs_count => 4, :accessibility => 1)
         @projects = Project.order_by(Project, 'pmcdocs_count', nil)
       end
       
@@ -446,9 +446,9 @@ describe Project do
   
     context 'denotations_count' do
       before do
-        @project_2_denotations = FactoryGirl.create(:project, :denotations_count => 2, :accessibility => 1)
-        @project_1_denotations = FactoryGirl.create(:project, :denotations_count => 1, :accessibility => 1)
-        @project_0_denotations = FactoryGirl.create(:project, :denotations_count => 0, :accessibility => 1)
+        @project_2_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 2, :accessibility => 1)
+        @project_1_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 1, :accessibility => 1)
+        @project_0_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 0, :accessibility => 1)
         @projects = Project.order_by(Project, 'order_denotations_count', nil)
       end
       
@@ -467,9 +467,9 @@ describe Project do
   
     context 'order_relations_count' do
       before do
-        @project_2_relations = FactoryGirl.create(:project, :relations_count => 2, :accessibility => 1)
-        @project_1_relations = FactoryGirl.create(:project, :relations_count => 1, :accessibility => 1)
-        @project_0_relations = FactoryGirl.create(:project, :relations_count => 0, :accessibility => 1)
+        @project_2_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 2, :accessibility => 1)
+        @project_1_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 1, :accessibility => 1)
+        @project_0_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0, :accessibility => 1)
         @projects = Project.order_by(Project, 'order_relations_count', nil)
       end
       
@@ -488,8 +488,8 @@ describe Project do
   
     context 'not match' do
       before do
-        @project_name_1 = FactoryGirl.create(:project, :name => '00001', :accessibility => 1)
-        @project_name_2 = FactoryGirl.create(:project, :name => '00002', :accessibility => 1)
+        @project_name_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => '00001', :accessibility => 1)
+        @project_name_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => '00002', :accessibility => 1)
       end
       
       it 'order by else should return accessible and orde by name ASC' do
@@ -500,9 +500,9 @@ describe Project do
   
   describe 'increment_docs_counter' do
     before do
-      @project = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
-      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
-      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2_pmdocs_count = 2
       @i = 1
       @associate_project_2_pmdocs_count.times do
@@ -577,9 +577,10 @@ describe Project do
   
   describe 'order_author' do
     before do
-      @project_1 = FactoryGirl.create(:project, :author => 'A')
-      @project_2 = FactoryGirl.create(:project, :author => 'B')
-      @project_3 = FactoryGirl.create(:project, :author => 'C')
+      @user = FactoryGirl.create(:user)
+      @project_1 = FactoryGirl.create(:project, :user => @user, :author => 'A')
+      @project_2 = FactoryGirl.create(:project, :user => @user, :author => 'B')
+      @project_3 = FactoryGirl.create(:project, :user => @user, :author => 'C')
       @projects = Project.order_maintainer
     end
     
@@ -846,7 +847,7 @@ describe Project do
   describe 'build_associate_maintainers' do
     context 'when usernames present' do
       before do
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @user_1 = FactoryGirl.create(:user, :username => 'Username 1')
         @user_2 = FactoryGirl.create(:user, :username => 'Username 2')
         @project.build_associate_maintainers([@user_1.username, @user_2.username])
@@ -860,7 +861,7 @@ describe Project do
 
     context 'when usernames dupliticated' do
       before do
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @user_1 = FactoryGirl.create(:user, :username => 'Username 1')
         @project.build_associate_maintainers([@user_1.username, @user_1.username, @user_1.username])
       end
@@ -876,15 +877,15 @@ describe Project do
     before do
       @current_user = FactoryGirl.create(:user)
       @user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project)
-      @associate_project_have_no_associate_projects = FactoryGirl.create(:project, :accessibility => 1)
-      @associated_project = FactoryGirl.create(:project, :accessibility => 1)
-      @associate_project_have_associate_projects_1 = FactoryGirl.create(:project, :accessibility => 1)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :user => FactoryGirl.create(:user))
+      @associate_project_have_no_associate_projects = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :accessibility => 1)
+      @associated_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :accessibility => 1)
+      @associate_project_have_associate_projects_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :accessibility => 1)
       @associate_project_have_associate_projects_1.associate_projects << @associated_project
       @associate_project_have_associate_projects_1.reload      
-      @associate_project_have_associate_projects_2 = FactoryGirl.create(:project, :accessibility => 1)
+      @associate_project_have_associate_projects_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :accessibility => 1)
       @associate_project_have_associate_projects_2.associate_projects << @associated_project
-      @associated_project_unaccessible = FactoryGirl.create(:project, :accessibility => 2, :user => @user)
+      @associated_project_unaccessible = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :accessibility => 2, :user => @user)
       @associate_project_have_associate_projects_2.associate_projects << @associated_project_unaccessible
       @associate_project_have_associate_projects_2.reload  
     end
@@ -1025,8 +1026,8 @@ describe Project do
     before do
       @project_pmdocs_count = 1
       @project_pmcdocs_count = 2
-      @project = FactoryGirl.create(:project, :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
-      @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
+      @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_1_pmdocs_count = 1
       @i = 1
       @associate_project_1_pmdocs_count.times do
@@ -1040,7 +1041,7 @@ describe Project do
       end     
       @associate_project_1.reload
        
-      @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 0, :pmcdocs_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2_pmdocs_count = 2
       @associate_project_2_pmdocs_count.times do
         @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
@@ -1115,13 +1116,13 @@ describe Project do
   describe 'associate_project_ids' do
     context 'when saved project' do
       before do
-        @project_1 = FactoryGirl.create(:project)
-        @project_2 = FactoryGirl.create(:project)
-        @project_3 = FactoryGirl.create(:project)
-        @project_4 = FactoryGirl.create(:project)
-        @associate_project_1 = FactoryGirl.create(:project)
-        @associate_project_2 = FactoryGirl.create(:project)
-        @associate_project_3 = FactoryGirl.create(:project)
+        @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @project_4 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @associate_project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
   
         FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
         FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
@@ -1171,7 +1172,7 @@ describe Project do
   describe 'self_id_and_associate_project_ids' do
     context 'when saved project' do
       before do
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @associate_project_ids = ['A', 'B']
         @project.stub(:associate_project_ids).and_return(@associate_project_ids)
       end
@@ -1196,7 +1197,7 @@ describe Project do
     context 'when saved project' do
       context 'when associate_project_and_project_ids present' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @associate_project_ids = ['A', 'B']
           @project.stub(:associate_project_and_project_ids).and_return(@associate_project_ids)
         end
@@ -1208,7 +1209,7 @@ describe Project do
 
       context 'when associate_project_and_project_ids blank' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @associate_project_ids = [0]
           @project.stub(:associate_project_and_project_ids).and_return(@associate_project_ids)
         end
@@ -1232,11 +1233,11 @@ describe Project do
   
   describe 'project_ids' do
     before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @associate_project_1 = FactoryGirl.create(:project)
-      @associate_project_2 = FactoryGirl.create(:project)
-      @associate_project_3 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
 
       FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
       FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
@@ -1263,13 +1264,13 @@ describe Project do
   
   describe 'associate_project_and_project_ids' do
     before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
-      @project_3 = FactoryGirl.create(:project)
-      @project_4 = FactoryGirl.create(:project)
-      @associate_project_1 = FactoryGirl.create(:project)
-      @associate_project_2 = FactoryGirl.create(:project)
-      @associate_project_3 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_4 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @associate_project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
 
       FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_1)
       FactoryGirl.create(:associate_projects_project, :project => @project_1, :associate_project => @associate_project_2)
@@ -1312,10 +1313,10 @@ describe Project do
   
   describe 'associatable_project_ids' do
     before do
-      @accessible_1 = FactoryGirl.create(:project)
-      @accessible_2 = FactoryGirl.create(:project)
-      @un_accessible = FactoryGirl.create(:project)
-      @not_id_in = FactoryGirl.create(:project)
+      @accessible_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @accessible_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @un_accessible = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @not_id_in = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @current_user = FactoryGirl.create(:user)
     end
     
@@ -1333,7 +1334,7 @@ describe Project do
     context 'when saved record' do
       before do
         Project.stub(:not_id_in).and_return([@not_id_in])
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       end
       
       it 'should return Project.accessible(current_user).not_id_in()' do
@@ -1344,12 +1345,12 @@ describe Project do
   
   describe 'increment_counters' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
     
     context 'when associate project has relation models' do
       before do
-        @associate_project = FactoryGirl.create(:project)
+        @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @associate_project_pmdocs_count = 1
         @associate_project_pmdocs_count.times do
           @associate_project.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
@@ -1390,7 +1391,7 @@ describe Project do
     
     context 'when associate project has relation models' do
       before do
-        @associate_project = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :relations_count => 30, :denotations_count => 40)
+        @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 10, :pmcdocs_count => 20, :relations_count => 30, :denotations_count => 40)
         @project.increment_counters(@associate_project)
         @project.reload
       end
@@ -1415,7 +1416,7 @@ describe Project do
   
   describe 'add associate projects' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @project_pmdocs_count = 1
       @project_pmdocs_count.times do
         doc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed')
@@ -1438,6 +1439,7 @@ describe Project do
       @associate_pmcdocs_count = 20
       @associate_denotations_count = 30
       @associate_project = FactoryGirl.create(:project, 
+        :user => FactoryGirl.create(:user), 
         :pmdocs_count => @associate_pmdocs_count, 
         :pmcdocs_count => @associate_pmcdocs_count, 
         :denotations_count => @associate_denotations_count)
@@ -1503,11 +1505,11 @@ describe Project do
   
   describe 'increment_pending_associate_projects_count' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @associate_projects_count = 2
       @project.stub(:copy_associate_project_relational_models).and_return(nil)
       @associate_projects_count.times do
-        @project.associate_projects << FactoryGirl.create(:project)
+        @project.associate_projects << FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       end
       @project.reload
     end
@@ -1521,10 +1523,10 @@ describe Project do
     describe 'decrement pending_associate_projects_count' do
       before do
         @associate_projects_count = 2
-        @project = FactoryGirl.create(:project, :pending_associate_projects_count => @associate_projects_count)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pending_associate_projects_count => @associate_projects_count)
         @project.stub(:increment_pending_associate_projects_count).and_return(nil)
         @associate_projects_count.times do
-          @project.associate_projects << FactoryGirl.create(:project)
+          @project.associate_projects << FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         end
         @project.reload
       end
@@ -1536,7 +1538,7 @@ describe Project do
     
     describe 'copy docs' do
       before do
-        @associate_project = FactoryGirl.create(:project)
+        @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         # duplicative docs
         @same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source', :sourcedb => 'PubMed', :sourceid => 123456, :serial => 1, :section => 'section')
         @same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source', :sourcedb => 'PMC', :sourceid => 123456, :serial => 0, :section => 'section')
@@ -1548,7 +1550,7 @@ describe Project do
         @associate_project.docs << @not_same_doc_1
         @associate_project.docs << @not_same_doc_2
         @associate_project.reload
-        @project = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30)
         # add dupulicative docs to project
         @project.docs << @same_doc_1
         @project.docs << @same_doc_2
@@ -1597,7 +1599,7 @@ describe Project do
       before do
         @doc = FactoryGirl.create(:doc)
         # associate project
-        @associate_project =  FactoryGirl.create(:project)
+        @associate_project =  FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         # associate project same denotation
         @same_denotation_associate = FactoryGirl.create(:denotation,
           :project => @associate_project,
@@ -1610,13 +1612,13 @@ describe Project do
           :doc => @doc
         )
         # not associate project
-        @not_associate_project =  FactoryGirl.create(:project)
+        @not_associate_project =  FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         FactoryGirl.create(:denotation,
           :project => @not_associate_project,
           :doc => @doc
         )
         # import project
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @same_denotation_project = FactoryGirl.create(:denotation,
           :project => @project,
           :doc => @doc
@@ -1654,7 +1656,7 @@ describe Project do
       before do
         @denotation = FactoryGirl.create(:denotation)
         # associate project
-        @associate_project =  FactoryGirl.create(:project)
+        @associate_project =  FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         # associate project same relation
         @same_relation_associate = FactoryGirl.create(:relation,
           :project => @associate_project,
@@ -1667,13 +1669,13 @@ describe Project do
           :obj => @denotation
         )
         # not associate project
-        @not_associate_project =  FactoryGirl.create(:project)
+        @not_associate_project =  FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         FactoryGirl.create(:relation,
           :project => @not_associate_project,
           :obj => @denotation
         )
         # import project
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @same_relation_project = FactoryGirl.create(:relation,
           :project => @project,
           :obj => @denotation
@@ -1715,8 +1717,8 @@ describe Project do
       @pmcdocs_count = 2
       @denotations_count = 3
       @relations_count = 4
-      @project = FactoryGirl.create(:project, pmdocs_count: @pmdocs_count, pmcdocs_count: @pmcdocs_count, denotations_count: @denotations_count, relations_count: @relations_count)
-      @associate_project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), pmdocs_count: @pmdocs_count, pmcdocs_count: @pmcdocs_count, denotations_count: @denotations_count, relations_count: @relations_count)
+      @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @associate_project.stub(:pmdocs).and_return([1])
       @associate_project.stub(:pmcdocs).and_return([1])
       @associate_project.stub(:denotations).and_return([1])
@@ -1745,7 +1747,7 @@ describe Project do
   
   describe 'anncollection' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @get_annotations_for_json = 'get annotations'
       @project.stub(:get_annotations_for_json).and_return(@get_annotations_for_json)
     end
@@ -1769,7 +1771,7 @@ describe Project do
 
   describe 'json' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @maintainer = 'maintainer'
       @project.stub(:maintainer).and_return(@maintainer)
     end
@@ -1781,7 +1783,7 @@ describe Project do
 
   describe 'docs_json_hash' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
 
     context 'when docs present' do
@@ -1822,7 +1824,8 @@ describe Project do
 
     context 'when user blank' do
       before do
-        @project = FactoryGirl.create(:project) 
+        @project = FactoryGirl.build(:project)
+        @project.save(validate: false) 
       end
 
       it 'shoud be blank' do
@@ -1834,7 +1837,7 @@ describe Project do
   describe 'annotations_zip_path' do
     before do
       @project_name = 'project name'
-      @project = FactoryGirl.create(:project, :name => @project_name)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => @project_name)
     end
     
     it 'should return project annotations zip path' do
@@ -1846,7 +1849,7 @@ describe Project do
     before do
       @name = 'rspec'
       Project.any_instance.stub(:get_doc_info).and_return('')
-      @project = FactoryGirl.create(:project, :name => @name)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => @name)
     end
 
     describe 'create directory' do
@@ -1859,7 +1862,7 @@ describe Project do
       context 'when public/annotations directory does not exist' do
         before do
           Dir.stub(:exist?).and_return(false)
-          FactoryGirl.create(:project).save_annotation_zip
+          FactoryGirl.create(:project, :user => FactoryGirl.create(:user)).save_annotation_zip
         end
 
         it 'should call mkdir_p with Denotation::ZIP_FILE_PATH' do
@@ -1870,7 +1873,7 @@ describe Project do
       context 'when public/annotations directory exist' do
         before do
           Dir.stub(:exist?).and_return(true)
-          FactoryGirl.create(:project).save_annotation_zip
+          FactoryGirl.create(:project, :user => FactoryGirl.create(:user)).save_annotation_zip
         end
 
         it 'should not call mkdir_p' do
@@ -1972,13 +1975,14 @@ describe Project do
       end
 
       it 'should return blank errors' do
+        p @errors
         @errors.should be_blank
       end
     end
 
     context 'when project which has same name exists' do
       before do
-        FactoryGirl.create(:project, name: @project_name)
+        FactoryGirl.create(:project, :user => FactoryGirl.create(:user), name: @project_name)
         @messages, @errors = Project.create_from_zip(@zip_file, @project_name)
       end
 
@@ -1998,7 +2002,7 @@ describe Project do
 
   describe 'add_docs_from_json' do
     before do
-      @project = FactoryGirl.create(:project) 
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) 
     end
     
     context 'when source_dbs prensent' do
@@ -2035,7 +2039,7 @@ describe Project do
   
   describe 'add_docs' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @sourceid = '8424'
       @sourcedb = 'PMC'
     end 
@@ -2158,8 +2162,8 @@ describe Project do
     before do
       @doc = FactoryGirl.create(:doc)
       @annotations_updated_at = 5.days.ago
-      @project_1 = FactoryGirl.create(:project, annotations_updated_at: @annotations_updated_at )
-      @project_2 = FactoryGirl.create(:project, annotations_updated_at: @annotations_updated_at )
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
     end
 
     describe 'after_add' do
@@ -2186,4 +2190,29 @@ describe Project do
       end
     end
   end
+
+  describe 'user_presence' do
+    context 'when user blank' do
+      before do
+        @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
+      end
+
+
+      it 'should not raise user_id validation error' do
+        @project.valid?
+        @project.errors[:user_id].should be_blank
+      end 
+    end 
+
+    context 'when user blank' do
+      before do
+        @project = FactoryGirl.build(:project)  
+      end
+
+      it 'should raise user_id validation error' do
+        @project.valid?
+        @project.errors[:user_id].should be_present
+      end 
+    end 
+  end 
 end

@@ -8,7 +8,7 @@ describe DivsController do
       @doc_pmc_sourceid = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => @pmcdoc_id)
       @doc_not_pmc = FactoryGirl.create(:doc, :sourcedb => 'AAA', :sourceid => @pmcdoc_id)
       @project_id = 'project_id'
-      @project = FactoryGirl.create(:project, :name => @project_id)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => @project_id)
     end
     
     context 'when params[:project_id] present' do
@@ -53,7 +53,7 @@ describe DivsController do
       @pmcdoc_id = 'pmc doc id'
       @asciitext = 'aschii text'
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 123, :serial => 0)
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @get_doc_notice = 'get doc notice'
     end
 

@@ -12,7 +12,7 @@ describe RelationsHelper do
       Doc.any_instance.stub(:relations_count).and_return(@doc_relations_count)
       @same_sourceid_relations_count = 'same_sourceid_relations_count'
       Doc.any_instance.stub(:same_sourceid_relations_count).and_return(@same_sourceid_relations_count)
-      @project = FactoryGirl.create(:project, :relations_count => 100)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 100)
       @doc = FactoryGirl.create(:doc)
     end
     

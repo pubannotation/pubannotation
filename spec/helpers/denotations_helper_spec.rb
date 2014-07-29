@@ -8,7 +8,7 @@ describe DenotationsHelper do
       Denotation.stub(:project_denotations_count) do |project_id, denotations|
         [project_id, denotations, @project_denotations_count]
       end
-      @project = FactoryGirl.create(:project, :relations_count => 100)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 100)
       @doc = FactoryGirl.create(:doc)
     end
     
@@ -149,8 +149,8 @@ describe DenotationsHelper do
 
   describe 'get_project_denotations' do
     before do
-      @project_1 = FactoryGirl.create(:project)
-      @project_2 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc)
       @params = {begin: 0, end: 5} 
       @denotations = 'denotations'

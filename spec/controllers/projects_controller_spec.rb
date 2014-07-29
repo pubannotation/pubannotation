@@ -280,8 +280,8 @@ describe ProjectsController do
         
         context 'when associate_projects present' do
           before do
-            @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30, :relations_count => 40)
-            @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2, :denotations_count => 3, :relations_count => 4)
+            @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30, :relations_count => 40)
+            @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 1, :pmcdocs_count => 2, :denotations_count => 3, :relations_count => 4)
             @project_name = 'ansnet name'
           end
           
@@ -513,8 +513,8 @@ describe ProjectsController do
 
           context 'when associate_projects present' do
             before do
-              @associate_project_1 = FactoryGirl.create(:project, :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30, :relations_count => 40)
-              @associate_project_2 = FactoryGirl.create(:project, :pmdocs_count => 1, :pmcdocs_count => 2, :denotations_count => 3, :relations_count => 4)
+              @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30, :relations_count => 40)
+              @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 1, :pmcdocs_count => 2, :denotations_count => 3, :relations_count => 4)
               @project_name = 'ansnet name'
             end
             
@@ -640,7 +640,7 @@ describe ProjectsController do
   
   describe 'search' do
     before do
-      @project = FactoryGirl.create(:project, :name => 'project_name') 
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => 'project_name') 
       controller.stub(:get_project).and_return(@project)
       # PubMed
       @PubMed_sourceid_123_body_abc_serial_0 =   FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => '123',   :body => 'abc', :serial => 0)
@@ -1058,7 +1058,7 @@ describe ProjectsController do
       before do
         @current_user = FactoryGirl.create(:user)
         current_user_stub(@current_user)
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         controller.stub(:params).and_return({:action => 'edit', :id => @project.name})
       end
       
@@ -1130,7 +1130,7 @@ describe ProjectsController do
   
   describe 'destroyable?' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @render_status_error = 'render_status_error'
       controller.stub(:render_status_error).and_return(@render_status_error)
       controller.stub(:params).and_return({:id => @project.name})

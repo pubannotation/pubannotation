@@ -125,7 +125,7 @@ describe Denotation do
     
     describe 'project_pmcdoc_denotations' do
       before do
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         # pmcdoc
         @sourceid = 'si123456'
         @project_pmcdoc_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid)
@@ -301,8 +301,8 @@ describe Denotation do
   
   describe 'self.project_denotations_count' do
     before do
-      @project = FactoryGirl.create(:project)
-      @another_project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @another_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @proejct_denotations_count = 2
       @proejct_denotations_count.times do
         FactoryGirl.create(:denotation, :project => @project, :doc => FactoryGirl.create(:doc))
@@ -324,9 +324,9 @@ describe Denotation do
   
   describe 'update_projects_after_save' do
     before do
-      @project = FactoryGirl.create(:project, :denotations_count => 0, :annotations_updated_at => 10.days.ago)
-      @associate_project_1 = FactoryGirl.create(:project, :denotations_count => 0)
-      @associate_project_2 = FactoryGirl.create(:project, :denotations_count => 0)
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0, :annotations_updated_at => 10.days.ago)
+      @associate_project_1 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_2_denotations_count = 1
       @doc = FactoryGirl.create(:doc)
       @associate_project_2.docs << @doc
@@ -383,9 +383,9 @@ describe Denotation do
   
   describe 'update_projects_before_destroy' do
     before do
-      @project = FactoryGirl.create(:project, :denotations_count => 0)
-      @associate_project_1 = FactoryGirl.create(:project, :denotations_count => 0)
-      @associate_project_2 = FactoryGirl.create(:project, :denotations_count => 0)
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
+      @associate_project_1 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_2_denotations_count = 1
       @doc = FactoryGirl.create(:doc)
       @associate_project_2.docs << @doc      
@@ -449,7 +449,7 @@ describe Denotation do
         @sql = 'select * from denotations;'
         @params = {:sql => @sql}
         @accessible_denotation = FactoryGirl.create(:denotation, :project_id => 1)  
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @project_denotation = FactoryGirl.create(:denotation, :project => @project)  
         Denotation.stub(:accessible_projects).and_return(Denotation.where(:id => @accessible_denotation.id))
         Denotation.stub(:projects_denotations).and_return(Denotation.where(:id => @project_denotation.id))

@@ -1,5 +1,6 @@
 class Project < ActiveRecord::Base
   include AnnotationsHelper
+  after_validation :user_presence
   belongs_to :user
   has_and_belongs_to_many :docs, :after_add => [:increment_docs_counter, :update_annotations_updated_at], :after_remove => [:decrement_docs_counter, :update_annotations_updated_at]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
@@ -422,9 +423,9 @@ class Project < ActiveRecord::Base
       project_params = params_from_json[:project_params]
       user = params_from_json[:user] 
       project = Project.new(project_params)
-      if project.valid? && user.present?
+      project.user = user
+      if project.valid?
         project.save
-        project.user = user
         created_project = project
         messages << I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project'))
       else
@@ -510,5 +511,11 @@ class Project < ActiveRecord::Base
       end
     end  
     return [num_created, num_added, num_failed]   
+  end
+
+  def user_presence
+    if user.blank?
+      errors.add(:user_id, 'is blank') 
+    end
   end
 end

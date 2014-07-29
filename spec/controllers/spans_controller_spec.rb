@@ -10,7 +10,7 @@ describe SpansController do
     context 'when params[:project_id] present' do
       before do
         Denotation.stub(:sql_find).and_return(@sql_find)
-        @project = FactoryGirl.create(:project, :name => 'spans project')
+        @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'spans project')
         @current_user = FactoryGirl.create(:user)
         current_user_stub(@current_user)
       end

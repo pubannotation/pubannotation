@@ -106,7 +106,7 @@ describe Relation do
   describe 'project_pmcdoc_cat_relations' do
     before do
       @sourceid = 'pm123456'
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @pmc_doc_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid)
       @denotation_1 = FactoryGirl.create(:denotation, :doc => @pmc_doc_1, :project => @project)
       @relation_1 = FactoryGirl.create(:subcatrel, :obj => @denotation_1, :project => @project)
@@ -303,11 +303,11 @@ describe Relation do
   
   describe 'self.project_relations_count' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @project_relations_count = 2
       @project_relations_count.times do
         FactoryGirl.create(:relation, :project => @project, :obj_id => 1)
-      @another_project = FactoryGirl.create(:project)
+      @another_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       end
     end
     
@@ -328,6 +328,7 @@ describe Relation do
     before do
       @user_1 = FactoryGirl.create(:user)
       @user_2 = FactoryGirl.create(:user)
+      @user_3 = FactoryGirl.create(:user)
       @project_accessibility_0_user_1 = FactoryGirl.create(:project, :accessibility => 0, :user => @user_1)  
       @relation_accessibility_0_user_1 = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_0_user_1)
       @project_accessibility_1_user_1 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_1)  
@@ -336,9 +337,9 @@ describe Relation do
       @relation_accessibility_0_user_2 = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_0_user_2)
       @project_accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)  
       @relation_accessibility_1_user_2 = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_1_user_2)
-      @project_accessibility_0_user_nil = FactoryGirl.create(:project, :accessibility => 0, :user_id => nil)  
+      @project_accessibility_0_user_nil = FactoryGirl.create(:project, :accessibility => 0, :user => @user_3)  
       @relation_accessibility_0_user_nil = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_0_user_nil)
-      @project_accessibility_1_user_nil = FactoryGirl.create(:project, :accessibility => 1, :user_id => nil)  
+      @project_accessibility_1_user_nil = FactoryGirl.create(:project, :accessibility => 1, :user => @user_3)  
       @relation_accessibility_1_user_nil = FactoryGirl.create(:relation, :obj_id => 1, :project => @project_accessibility_1_user_nil)
     end
     
@@ -427,15 +428,16 @@ describe Relation do
   describe 'increment_subcatrels_count' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :project_id => 1, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project => @project)
       @subcatrels_count = 3
     end
     
     context 'when subj == Denotations' do
       before do
         @subcatrels_count.times do
-          FactoryGirl.create(:subcatrel, :obj => @instance)
+          FactoryGirl.create(:subcatrel, :obj => @instance, project: @project)
         end
         @doc.reload
       end
@@ -448,7 +450,7 @@ describe Relation do
     context 'when subj != Denotations' do
       before do
         @subcatrels_count.times do
-          FactoryGirl.create(:relation, :project_id => 1, :obj => @instance)
+          FactoryGirl.create(:relation, :project => @project, :obj => @instance)
         end
         @doc.reload
       end
@@ -464,7 +466,7 @@ describe Relation do
       @current_user = FactoryGirl.create(:user)
       @accessible_relation = FactoryGirl.create(:relation, :obj_id => 1, :project_id => 1)
       @project_relation = FactoryGirl.create(:relation, :obj_id => 1, :project_id => 1)
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       # stub scope and return all Doc
       @accessible_projects = Relation.where(:id => @accessible_relation.id)
       Relation.stub(:accessible_projects).and_return(@accessible_projects)
@@ -547,9 +549,9 @@ describe Relation do
   
   describe 'increment_project_relations_count' do
     before do
-      @project = FactoryGirl.create(:project, :relations_count => 0)
-      @associate_project_1 = FactoryGirl.create(:project, :relations_count => 0)
-      @associate_project_2 = FactoryGirl.create(:project, :relations_count => 0)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0)
+      @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0)
+      @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0)
       @associate_project_2_relations_count = 1
       @associate_project_2_relations_count.times do
         FactoryGirl.create(:relation, :project => @associate_project_2, :obj_id => 1)

@@ -124,7 +124,7 @@ describe User do
   
   describe 'scope :except_project_associate_maintainers' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @associate_maintainer_user = FactoryGirl.create(:user)
       @not_associate_user = FactoryGirl.create(:user)
     end

@@ -218,7 +218,7 @@ describe AnnotationsHelper do
       
       context  'when project present' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @doc.stub(:hdenotations).and_return(@hdenotations)
           @doc.stub(:hrelations).and_return(@hrelations)
           @doc.stub(:hmodifications).and_return(@hmodifications)
@@ -321,7 +321,7 @@ describe AnnotationsHelper do
 
         context 'when denotations present' do
           before do
-            @project = FactoryGirl.create(:project)
+            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             @annotations = helper.get_annotations_for_json(@project, @doc, doc_spans: 'spans', params: {begin: @params_begin, end: @params_end})
           end
 
@@ -406,7 +406,7 @@ describe AnnotationsHelper do
       @doc.stub(:hmodifications).and_return(@hmodifications)
       @doc.stub(:hdenotations).and_return(@hdenotations)
       @transform_denotations = 'transform_denotations'
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @text = 'doc body'
       @asciitext = 'ascii text'
       @annotations_hash = {}
@@ -525,7 +525,7 @@ describe AnnotationsHelper do
   
   describe 'project_annotations_zip_link_helper' do
     before do
-      @project = FactoryGirl.create(:project, :name => 'project_name', :annotations_updated_at => 1.day.ago)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => 'project_name', :annotations_updated_at => 1.day.ago)
     end
     
     context 'when downloadable = false' do
@@ -603,7 +603,7 @@ describe AnnotationsHelper do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '123', :serial => 0)  
       assigns[:doc] = @doc
-      @project = FactoryGirl.create(:project)  
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))  
       assigns[:project] = @project 
       @begin = '5'
       @end = '10'
@@ -666,7 +666,7 @@ describe AnnotationsHelper do
       @doc = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid, serial: @div_id)
       assigns[:doc] = @doc
       @project_id = 'projectid'
-      @project = FactoryGirl.create(:project, name: @project_id)  
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), name: @project_id)  
       assigns[:project] = @project      
     end
     

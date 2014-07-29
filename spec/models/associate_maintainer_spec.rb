@@ -4,7 +4,7 @@ require 'spec_helper'
 describe AssociateMaintainer do
   before do
     @associate_user = FactoryGirl.create(:user)
-    @associate_project = FactoryGirl.create(:project)   
+    @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))   
   end
   
   describe 'belongs_to' do

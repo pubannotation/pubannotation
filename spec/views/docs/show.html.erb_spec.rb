@@ -15,7 +15,7 @@ describe "docs/show.html.erb" do
 
   context 'when @project present' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       stub_template "annotations/_options" => 'test'
       view.stub(:user_signed_in?).and_return(false)
       assign :project, @project

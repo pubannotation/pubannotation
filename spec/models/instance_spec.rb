@@ -67,10 +67,10 @@ describe Instance do
   
   describe 'has_many modifications' do
     before do
-      @instance = FactoryGirl.create(:instance, :project => FactoryGirl.create(:project), :obj => FactoryGirl.create(:denotation))
-      @instance_2 = FactoryGirl.create(:instance, :project => FactoryGirl.create(:project), :obj => FactoryGirl.create(:denotation))
-      @modification = FactoryGirl.create(:modification, :obj => @instance, :project => FactoryGirl.create(:project))
-      FactoryGirl.create(:modification, :obj => @instance_2, :project => FactoryGirl.create(:project))
+      @instance = FactoryGirl.create(:instance, :project => FactoryGirl.create(:project, :user => FactoryGirl.create(:user)), :obj => FactoryGirl.create(:denotation))
+      @instance_2 = FactoryGirl.create(:instance, :project => FactoryGirl.create(:project, :user => FactoryGirl.create(:user)), :obj => FactoryGirl.create(:denotation))
+      @modification = FactoryGirl.create(:modification, :obj => @instance, :project => FactoryGirl.create(:project, :user => FactoryGirl.create(:user)))
+      FactoryGirl.create(:modification, :obj => @instance_2, :project => FactoryGirl.create(:project, :user => FactoryGirl.create(:user)))
     end
     
     it 'instance should have modifications' do

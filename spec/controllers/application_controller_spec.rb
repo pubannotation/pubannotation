@@ -902,7 +902,7 @@ describe ApplicationController do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @associate_project_denotations_count_1 = FactoryGirl.create(:project, :denotations_count => 0)
+      @associate_project_denotations_count_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_denotations_count_1.docs << @doc
       @associate_project_denotations_count_1.reload
       @di = 1
@@ -912,7 +912,7 @@ describe ApplicationController do
       end
       @associate_project_denotations_count_1.reload
       @doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '12', :serial => 1, :section => 'section', :body => 'doc body')
-      @associate_project_denotations_count_2 = FactoryGirl.create(:project, :denotations_count => 0)
+      @associate_project_denotations_count_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_denotations_count_2.docs << @doc_2
       @associate_project_denotations_count_2.reload
       2.times do
@@ -1166,7 +1166,7 @@ describe ApplicationController do
       
       context 'Project.find_by_name(project_name) present' do
         before do
-          @project_2 = FactoryGirl.create(:project)
+          @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           5.times do |i|
             FactoryGirl.create(:modification, :obj => @denotation, project: @project_2)
           end

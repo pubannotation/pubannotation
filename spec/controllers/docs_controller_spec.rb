@@ -4,7 +4,7 @@ require 'spec_helper'
 describe DocsController do
   describe 'index' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @project_doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 123)
       @project.docs << @project_doc  
       @source_db_id = Doc.all
@@ -70,7 +70,7 @@ describe DocsController do
     
     context 'when params[:project_id] exists' do
       before do
-        @project = FactoryGirl.create(:project)
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @project_id = 'project id'
         @get_project_notice = 'get project notice'
       end
@@ -162,7 +162,7 @@ describe DocsController do
   
   describe 'sourcedb_index' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       # create docs belongs to project
       @project_doc_1 = FactoryGirl.create(:doc, :sourcedb => "sourcedb1")
       @project.docs << @project_doc_1
@@ -197,7 +197,7 @@ describe DocsController do
   
   describe 'sourceid_index' do
     before do
-      @project = FactoryGirl.create(:project, :name => 'project name')
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'project name')
       @sourcedb = 'source db'
       @project_doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => 123)
       @project_doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sdb', :sourceid => 123)
@@ -318,7 +318,7 @@ describe DocsController do
       
       context 'when project_id prsent' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @project.docs << @selial_1
           @project.reload
           get :search, :sourcedb => @selial_1.sourcedb, :project_id => @project.name
@@ -418,7 +418,7 @@ describe DocsController do
       
       context 'when @project present' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           controller.stub(:get_project).and_return([@project, @notice])
           get :show, :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
         end
@@ -443,7 +443,7 @@ describe DocsController do
 
   describe 'spans_index' do
     before do
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       controller.stub(:get_project).and_return([@project, nil])
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :sourcedb => 'PubMed', :serial => 0)
       controller.stub(:get_doc).and_return([@doc, nil])
@@ -570,7 +570,7 @@ describe DocsController do
       @body = 'doc body'
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
       @project = 'project'
-      @project_1 = FactoryGirl.create(:project)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @projects = [@project_1]
       controller.stub(:get_project).and_return([@project, nil])
       @project_denotations_span = {begin: 0, end: 5}
@@ -755,7 +755,7 @@ describe DocsController do
         
         context 'when project present' do
           before do
-            @project = FactoryGirl.create(:project)
+            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
             controller.stub(:get_project).and_return(@project)
             post :create, doc: {body: 'body', sourcedb: 'sourcedb', sourceid: 'sourceid', serial: 0}, :project_id => @project.id
           end
@@ -814,7 +814,7 @@ describe DocsController do
     before do
       controller.class.skip_before_filter :http_basic_authenticate
       controller.class.skip_before_filter :authenticate_user!
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
     
     context 'when params[:project_id] present' do
@@ -1010,7 +1010,7 @@ describe DocsController do
     context 'when params[:project_id] present' do
       context 'format html' do
         before do
-          @project = FactoryGirl.create(:project)
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
           @project.docs << @doc
           @project.reload
         end
@@ -1073,7 +1073,7 @@ describe DocsController do
   describe 'delete_project_docs' do
     before do
       controller.class.skip_before_filter :authenticate_user!
-      @project = FactoryGirl.create(:project)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @sourcedb = 'PMC'
       @sourceid = '123456'
       @project_doc_1  = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid, serial: 0)
