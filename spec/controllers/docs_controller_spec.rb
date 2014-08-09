@@ -224,6 +224,10 @@ describe DocsController do
       it 'should assing @project.docs.where.wheresort_by_params.paginate as @source_docs' do
         assigns[:source_docs].should eql(@paginate)
       end
+
+      it 'should assign search_docs_path as @search_path' do
+        assigns[:search_path].should eql search_docs_path
+      end
     end
   end
   
