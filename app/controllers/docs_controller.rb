@@ -96,6 +96,7 @@ class DocsController < ApplicationController
       docs = @project.docs.where(['sourcedb = ?', params[:sourcedb]])
     else
       docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
+      @search_path = search_docs_path
     end
 
     @sort_order = sort_order(Doc)
