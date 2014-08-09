@@ -1919,7 +1919,7 @@ describe Project do
       @project_user = FactoryGirl.create(:user)
       json = {name: 'name', user_id: 1, created_at: DateTime.now, relations_count: 6, maintainer: @project_user.username}.to_json
       File.stub(:read).and_return(json)
-      @params = Project.params_from_json('')[:project_params]
+      @params = Project.params_from_json('')
     end
 
     it 'should not include not attr_accessible column' do

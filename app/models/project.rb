@@ -389,7 +389,6 @@ class Project < ActiveRecord::Base
     project_attributes = JSON.parse(File.read(json_file))
     user = User.find_by_username(project_attributes['maintainer'])
     project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
-    return {project_params: project_params, user: user}
   end
 
   def self.create_from_zip(zip_file, project_name)

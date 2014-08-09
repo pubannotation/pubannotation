@@ -348,7 +348,8 @@ describe ProjectsController do
           controller.stub(:params).and_return({locale: '', project: double('project', class: ActionDispatch::Http::UploadedFile, tempfile: '')} )
           @name = 'json project'
           @user = FactoryGirl.create(:user)
-          Project.stub(:params_from_json).and_return({project_params: {name: @name}, user: @user})
+          controller.stub(:current_user).and_return(@user)
+          Project.stub(:params_from_json).and_return(name: @name)
           post :create, :format => 'json'
         end
 
