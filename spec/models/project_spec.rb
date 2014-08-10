@@ -2019,20 +2019,44 @@ describe Project do
         @pmc_1 = {"source_id" => "1", "source_db" => "PMC"} 
         @pmc_2 = {"source_id" => "2", "source_db" => "PMC"} 
         @pub_med = {"source_id" => "1", "source_db" => "PubMed"}
-        json = [@pmc_user_1, @pmc_user_2, @pmc_1, @pmc_2, @pub_med]
-        @result = @project.add_docs_from_json(json.to_json)
       end
 
-      it 'should pass ids and source_db for add_docs correctly' do
-        @attributes.should =~ [{source_db: "PMC:user name", ids: "1,1"}, {source_db: "PMC", ids: "1,2"}, {source_db: "PubMed", ids: "1"}]
+      context 'when json is Array' do
+        before do
+          json = [@pmc_user_1, @pmc_user_2, @pmc_1, @pmc_2, @pub_med]
+          @result = @project.add_docs_from_json(json.to_json)
+        end
+
+        it 'should pass ids and source_db for add_docs correctly' do
+          @attributes.should =~ [{source_db: "PMC:user name", ids: "1,1"}, {source_db: "PMC", ids: "1,2"}, {source_db: "PubMed", ids: "1"}]
+        end
+
+        it 'should count up num_created, num_added, num_failed' do
+          @result.should =~ [3, 3, 3]
+        end
+
+        it 'should pass docs_array by sourcedb' do
+          @docs_array.should eql([[@pmc_user_1, @pmc_user_2], [@pmc_1, @pmc_2], [@pub_med]])
+        end
       end
 
-      it 'should count up num_created, num_added, num_failed' do
-        @result.should =~ [3, 3, 3]
-      end
+      context 'when json is Hash' do
+        before do
+          json = @pmc_user_1
+          @result = @project.add_docs_from_json(json.to_json)
+        end
 
-      it 'should pass docs_array by sourcedb' do
-        @docs_array.should eql([[@pmc_user_1, @pmc_user_2], [@pmc_1, @pmc_2], [@pub_med]])
+        it 'should pass ids and source_db for add_docs correctly' do
+          @attributes.should =~ [{source_db: "PMC:user name", ids: "1"}]
+        end
+
+        it 'should count up num_created, num_added, num_failed' do
+          @result.should =~ [1, 1, 1]
+        end
+
+        it 'should pass docs_array by sourcedb' do
+          @docs_array.should eql([[@pmc_user_1]])
+        end
       end
     end
   end

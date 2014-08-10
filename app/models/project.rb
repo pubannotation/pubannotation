@@ -448,6 +448,7 @@ class Project < ActiveRecord::Base
 
   def add_docs_from_json(json)
     json = JSON.parse(json)
+    json = [json] if json.class == Hash
     num_created, num_added, num_failed = 0, 0, 0
     source_dbs = json.group_by{|doc| doc["source_db"]}
     if source_dbs.present?
