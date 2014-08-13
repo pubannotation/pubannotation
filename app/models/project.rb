@@ -391,7 +391,7 @@ class Project < ActiveRecord::Base
     project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
   end
 
-  def self.create_from_zip(zip_file, project_name)
+  def self.create_from_zip(zip_file, project_name, current_user)
     messages = Array.new
     errors = Array.new
     unless Dir.exist?(TempFilePath)
@@ -419,10 +419,9 @@ class Project < ActiveRecord::Base
     if File.exist?(project_json_file)
       params_from_json = Project.params_from_json(project_json_file)
       File.unlink(project_json_file)
-      project_params = params_from_json[:project_params]
-      user = params_from_json[:user] 
+      project_params = params_from_json
       project = Project.new(project_params)
-      project.user = user
+      project.user = current_user
       if project.valid?
         project.save
         created_project = project

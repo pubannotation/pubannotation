@@ -409,6 +409,8 @@ describe ProjectsController do
       before do
         @zip = double(:zip, path: 'path', content_type: 'application/zip', original_filename: 'project.zip')
         controller.stub(:params).and_return({zip: @zip})
+        @current_user = FactoryGirl.create(:user)
+        controller.stub(:current_user).and_return(@current_user)
       end
 
       context 'when messages present' do

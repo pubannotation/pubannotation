@@ -1941,7 +1941,7 @@ describe Project do
       file.close   
       @project_user = FactoryGirl.create(:user)
       @project_name = 'project name'
-      Project.stub(:params_from_json).and_return({project_params: {name: @project_name}, user: @project_user})
+      Project.stub(:params_from_json).and_return({name: @project_name})
       @num_created = 1
       @num_added = 2
       @num_failed = 3
@@ -1951,7 +1951,7 @@ describe Project do
 
     context 'when project successfully saved' do
       before do
-        @messages, @errors = Project.create_from_zip(@zip_file, @project_name)
+        @messages, @errors = Project.create_from_zip(@zip_file, @project_name, @project_user)
       end
 
       it 'should create project' do
@@ -1975,15 +1975,18 @@ describe Project do
       end
 
       it 'should return blank errors' do
-        p @errors
         @errors.should be_blank
+      end
+
+      it 'project.user should be @project_user' do
+        @project_user.projects.should include(Project.find_by_name(@project_name))
       end
     end
 
     context 'when project which has same name exists' do
       before do
         FactoryGirl.create(:project, :user => FactoryGirl.create(:user), name: @project_name)
-        @messages, @errors = Project.create_from_zip(@zip_file, @project_name)
+        @messages, @errors = Project.create_from_zip(@zip_file, @project_name, @project_user)
       end
 
       it 'should return blank messages' do
