@@ -163,7 +163,7 @@ class AnnotationsController < ApplicationController
         end
 
         if annotations
-          notice = save_annotations(annotations, project, doc)
+          notice = Shared.save_annotations(annotations, project, doc)
         else
           notice = t('controllers.annotations.create.no_annotation')
         end
@@ -205,7 +205,7 @@ class AnnotationsController < ApplicationController
       if doc
         annotations = get_annotations(project, doc, :encoding => params[:encoding])
         annotations = gen_annotations(annotations, params[:annotation_server])
-        notice      = save_annotations(annotations, project, doc)
+        notice      = Shared.save_annotations(annotations, project, doc)
       else
         notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => params[:sourcedb], :sourceid => params[:sourceid])
       end

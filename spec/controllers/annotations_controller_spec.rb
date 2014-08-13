@@ -399,7 +399,7 @@ describe AnnotationsController do
         before do
           @project.docs << @doc
           @annotations = {'key' => 'value'} 
-          controller.stub(:save_annotations) do |annotations, project, doc|
+          Shared.stub(:save_annotations) do |annotations, project, doc|
             @attr_annotations = annotations
           end
           @referer_path = docs_path
@@ -552,7 +552,7 @@ describe AnnotationsController do
           @annotations = 'annotations'
           controller.stub(:get_annotations).and_return(nil)
           controller.stub(:gen_annotations).and_return(@annotations)
-          controller.stub(:save_annotations) do |annotations, project, doc|
+          Shared.stub(:save_annotations) do |annotations, project, doc|
             @attr_annotations = annotations
           end
         end

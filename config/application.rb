@@ -23,6 +23,7 @@ module Pubann
     require 'doc_sequencer_pubmed'
     require 'doc_sequencer_pmc'
     require 'doc_sequencer_firstauthor'
+    require 'shared'
 
     config.i18n.enforce_available_locales = true
 

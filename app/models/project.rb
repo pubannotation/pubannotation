@@ -399,17 +399,24 @@ class Project < ActiveRecord::Base
     end
     project_json_file = "#{TempFilePath}#{project_name}-project.json"
     docs_json_file = "#{TempFilePath}#{project_name}-docs.json"
+    doc_annotations_files = Array.new
     # open zip file
     Zip::ZipFile.open(zip_file) do |zipfile|
       zipfile.each do |file|
         file_name = file.name
-        # extract project.json
         if file_name == 'project.json'
+          # extract project.json
           file.extract(project_json_file) unless File.exist?(project_json_file)
-        end
-        # extract docs.json
-        if file_name == 'docs.json'
+        elsif file_name == 'docs.json'
+          # extract docs.json
           file.extract(docs_json_file) unless File.exist?(docs_json_file)
+        else
+          # extract sourcedb-sourdeid-serial-section.json
+          doc_annotations_file = "#{TempFilePath}#{file.name}"
+          unless File.exist?(doc_annotations_file)
+            file.extract(doc_annotations_file)
+            doc_annotations_files << {name: file.name, path: doc_annotations_file}
+          end
         end
       end
     end
@@ -441,6 +448,24 @@ class Project < ActiveRecord::Base
         messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
       end
       File.unlink(docs_json_file) 
+    end
+
+    # save annotations
+    doc_annotations_files.each do |doc_annotations_file|
+      doc_info = doc_annotations_file[:name].split('-')
+      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(doc_info[0], doc_info[1], doc_info[2])
+      doc_params = JSON.parse(File.read(doc_annotations_file[:path])) 
+      File.unlink(doc_annotations_file[:path]) 
+      if doc.present?
+        if doc_params['denotations'].present?
+          annotations = {
+            denotations: doc_params['denotations'],
+            relations: doc_params['relations'],
+            text: doc_params['text']
+          }
+          Shared.save_annotations(annotations, project, doc)
+        end
+      end
     end
     return [messages, errors]
   end
