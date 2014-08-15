@@ -307,6 +307,7 @@ en:
       create_project_docs:
         added_to_document_set: '%{num_added} documents were added to the project, %{project_name}.'
         created_to_document_set: '%{num_created} documents were created and added to the project, %{project_name}.'
+        delay_save_annotations: Annotations will be saved in a few minutes.
       search:
         not_found: No docs found matches conditions
     pmcdocs:

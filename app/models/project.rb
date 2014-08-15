@@ -422,7 +422,6 @@ class Project < ActiveRecord::Base
     end
 
     # create project if [project_name]-project.json exist
-    project = nil
     if File.exist?(project_json_file)
       params_from_json = Project.params_from_json(project_json_file)
       File.unlink(project_json_file)
@@ -431,7 +430,6 @@ class Project < ActiveRecord::Base
       project.user = current_user
       if project.valid?
         project.save
-        created_project = project
         messages << I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project'))
       else
         errors << project.errors.full_messages.join('<br />')
@@ -440,17 +438,27 @@ class Project < ActiveRecord::Base
     end
 
     # create project.docs if [project_name]-project.json exist
-    if File.exist?(docs_json_file)
-      if project.present?
-        num_created, num_added, num_failed = project.add_docs_from_json(File.read(docs_json_file))
-        messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
-        messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
-        messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
+    if project.present?
+      if File.exist?(docs_json_file)
+        if project.present?
+          num_created, num_added, num_failed = project.add_docs_from_json(File.read(docs_json_file))
+          messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
+          messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
+          messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
+        end
+        File.unlink(docs_json_file) 
       end
-      File.unlink(docs_json_file) 
-    end
 
-    # save annotations
+      # save annotations
+      if doc_annotations_files
+        delay.save_annotations(project, doc_annotations_files)
+        messages << I18n.t('controllers.projects.upload_zip.delay_save_annotations')
+      end
+    end
+    return [messages, errors]
+  end
+
+  def self.save_annotations(project, doc_annotations_files)
     doc_annotations_files.each do |doc_annotations_file|
       doc_info = doc_annotations_file[:name].split('-')
       doc = Doc.find_by_sourcedb_and_sourceid_and_serial(doc_info[0], doc_info[1], doc_info[2])
@@ -467,7 +475,6 @@ class Project < ActiveRecord::Base
         end
       end
     end
-    return [messages, errors]
   end
 
   def add_docs_from_json(json)

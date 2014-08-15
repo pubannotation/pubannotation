@@ -367,6 +367,8 @@ ja:
         import: "関連プロジェクトをインポート"
       show:
         pending_associate_projects: "このプロジェクトはプロジェクトのインポート処理中です..."
+      upload_zip:
+        delay_save_annotations: 'アノテーションは数分程度で作成されます'
   views:
     service:
       title: PubAnnotation
