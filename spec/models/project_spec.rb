@@ -1990,7 +1990,7 @@ describe Project do
       end
 
       it 'project.user should be @project_user' do
-        @project_user.projects.should include(Project.find_by_name(@project_name))
+        Project.find_by_name(@project_name).user.should eql(@project_user)
       end
 
       it 'should call save_annotations with project' do

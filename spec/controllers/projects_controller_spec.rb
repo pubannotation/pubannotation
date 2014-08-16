@@ -242,7 +242,8 @@ describe ProjectsController do
   
   describe 'create' do
     before do
-      current_user_stub(FactoryGirl.create(:user))  
+      @user = FactoryGirl.create(:user)
+      current_user_stub(@user)  
       controller.class.skip_before_filter :http_basic_authenticate
     end
     
@@ -256,7 +257,8 @@ describe ProjectsController do
           before do
             @associate_maintainer_user_1 = FactoryGirl.create(:user, :username => 'Associate Maintainer1')
             @associate_maintainer_user_2 = FactoryGirl.create(:user, :username => 'Associate Maintainer2')
-            post :create, :project => {:name => 'ansnet name'}, :usernames => [@associate_maintainer_user_1.username, @associate_maintainer_user_2.username]
+            @name = 'ansnet name'
+            post :create, :project => {:name => @name}, :usernames => [@associate_maintainer_user_1.username, @associate_maintainer_user_2.username]
           end
           
           it 'should redirect to project_path' do
@@ -265,6 +267,10 @@ describe ProjectsController do
           
           it 'should ass associate_maintainers' do
             Project.last.associate_maintainers.collect{|associate_maintainer| associate_maintainer.user}.should =~ [@associate_maintainer_user_1, @associate_maintainer_user_2]
+          end
+
+          it 'shoud set params_from_json user as project.user' do
+            Project.find_by_name(@name).user.should eql(@user)
           end
         end
         
@@ -347,8 +353,6 @@ describe ProjectsController do
         before do
           controller.stub(:params).and_return({locale: '', project: double('project', class: ActionDispatch::Http::UploadedFile, tempfile: '')} )
           @name = 'json project'
-          @user = FactoryGirl.create(:user)
-          controller.stub(:current_user).and_return(@user)
           Project.stub(:params_from_json).and_return(name: @name)
           post :create, :format => 'json'
         end
