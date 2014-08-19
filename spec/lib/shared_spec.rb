@@ -107,14 +107,40 @@ describe Shared do
       end
 
       context 'when denotation exists' do
-        before do
-          @denotation = {:id => 'id', :span => {:begin => @begin, :end => @end}, :obj => 'Category'}
-          @denotations << @denotation
-          @result = Shared.clean_hdenotations(@denotations)
+        context 'when spans has symbolized keys' do
+          before do
+            @denotation = {:id => 'id', :span => {:begin => @begin, :end => @end}, :obj => 'Category'}
+            @denotations << @denotation
+            @result = Shared.clean_hdenotations(@denotations)
+          end
+          
+          it 'should return denotations' do
+            @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+          end
         end
-        
-        it 'should return ' do
-          @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+
+        context 'when spans has string values' do
+          before do
+            @denotation = {:id => 'id', :span => {'begin' => @begin.to_s, 'end' => @end.to_s}, :obj => 'Category'}
+            @denotations << @denotation
+            @result = Shared.clean_hdenotations(@denotations)
+          end
+          
+          it 'should return symbolized denotations' do
+            @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+          end
+        end
+
+        context 'when spans has string keys' do
+          before do
+            @denotation = {:id => 'id', :span => {'begin' => @begin, 'end' => @end}, :obj => 'Category'}
+            @denotations << @denotation
+            @result = Shared.clean_hdenotations(@denotations)
+          end
+          
+          it 'should return symbolized denotations' do
+            @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
+          end
         end
       end
 

@@ -15,9 +15,11 @@ module Shared
         idnum += 1
       end
 
-      if a[:span]
-        a[:span][:begin] = a[:span][:begin].to_i
-        a[:span][:end]   = a[:span][:end].to_i
+      if a[:span].present?
+        a[:span] = a[:span].symbolize_keys
+        if a[:span][:begin].class != Fixnum
+          a[:span] = {begin: a[:span][:begin].to_i, end: a[:span][:end].to_i}
+        end
       else
         a[:span] = Hash.new
         a[:span][:begin] = a.delete(:begin).to_i
