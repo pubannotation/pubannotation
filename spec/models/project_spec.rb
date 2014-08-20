@@ -2135,7 +2135,7 @@ describe Project do
       
       context 'when project docs not include divs.first' do
         before do
-          @result = @project.add_docs(@sourceid, @sourcedb, nil)
+          @result = @project.add_docs(@sourceid, @sourcedb)
           @project.reload
         end
 
