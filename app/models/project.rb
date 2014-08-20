@@ -494,7 +494,7 @@ class Project < ActiveRecord::Base
     return [num_created, num_added, num_failed]   
   end
   
-  def add_docs(ids, sourcedb, docs_array)
+  def add_docs(ids, sourcedb, docs_array = nil)
     num_created, num_added, num_failed = 0, 0, 0
     ids = ids.split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
     ids.each do |sourceid|
