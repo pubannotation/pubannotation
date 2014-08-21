@@ -18,7 +18,3 @@
 <%= link_to_unless_current t('views.docs.list'), docs_src, :class => 'tab inactive_tab' do
 	content_tag :span, t('views.docs.list'), :class => 'tab active_tab'
 end -%>
-
-<%= link_to_unless_current t('views.docs.records'), records_docs_src, :class => 'tab inactive_tab' do
-	content_tag :span, t('views.docs.records'), :class => 'tab active_tab'
-end -%>
