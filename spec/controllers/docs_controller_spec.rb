@@ -818,6 +818,8 @@ describe DocsController do
     before do
       controller.class.skip_before_filter :http_basic_authenticate
       controller.class.skip_before_filter :authenticate_user!
+      @current_user = FactoryGirl.create(:user)
+      current_user_stub(@current_user)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
     
@@ -830,12 +832,19 @@ describe DocsController do
         context 'when num_added > 0' do
           before do
             @num_added = 5
-            @project.stub(:add_docs).and_return([0, @num_added, 0])
+            @project.stub(:add_docs) do |options|
+              @options_ids = options[:ids]
+              @options_sourcedb = options[:sourcedb]
+              @options_user = options[:user]
+              [0, @num_added, 0]
+            end
           end
           
           context 'when format html' do
             before do
-              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMC'
+              @ids = 'ids'
+              @sourcedb = 'PMC'
+              get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb
             end
             
             it 'should set number of documents added to project flash[:notice]' do
@@ -845,12 +854,29 @@ describe DocsController do
             it 'should redirect project_path' do
               response.should redirect_to(project_docs_path(@project.name))
             end
+
+            it 'should call add_docs with args' do
+              @options_ids.should eql @ids
+            end
+
+            it 'should call add_docs with args' do
+              @options_sourcedb.should eql @sourcedb
+            end
+
+            it 'should call add_docs with args' do
+              @options_user.should eql @current_user
+            end
           end
           
           context 'when format json' do
             before do
-              @project.stub(:add_docs_from_json).and_return([1, 0, 0])
-              File.stub(:read).and_return({val: 'val'}.to_json)
+              @project.stub(:add_docs_from_json) do |json, user|
+                @args_json = json
+                @args_user = user
+                [1, 0, 0]
+              end
+              @json = {val: 'val'}.to_json
+              File.stub(:read).and_return(@json)
               post :create_project_docs, 'json' => double('json', tempfile: 'temp'), :format => 'json', :project_id => @project.name, ids: "id", sourcedb: 'PMC'
             end
             
@@ -860,6 +886,14 @@ describe DocsController do
             
             it 'should return project_path as location' do
               response.location.should eql project_path(@project.name)
+            end
+
+            it 'should call add_docs_from_json with args' do
+              @args_json.should eql @json
+            end
+
+            it 'should call add_docs_from_json with args' do
+              @args_user.should eql @current_user
             end
           end
         end

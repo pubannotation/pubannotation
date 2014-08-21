@@ -1776,7 +1776,7 @@ describe Project do
       @project.stub(:maintainer).and_return(@maintainer)
     end
 
-    it 'shoud return @project as json except specific columns and include maintainer' do
+    it 'should return @project as json except specific columns and include maintainer' do
       @project.json.should eql("{\"accessibility\":null,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
     end
   end
@@ -1817,7 +1817,7 @@ describe Project do
         @project = FactoryGirl.create(:project, user: @user) 
       end
 
-      it 'shoud return user.username' do
+      it 'should return user.username' do
         @project.maintainer.should eql(@user.username)
       end
     end
@@ -1828,7 +1828,7 @@ describe Project do
         @project.save(validate: false) 
       end
 
-      it 'shoud be blank' do
+      it 'should be blank' do
         @project.maintainer.should be_blank
       end
     end
@@ -1965,7 +1965,7 @@ describe Project do
         Project.find_by_name(@project_name).should be_present
       end
 
-      it 'messages shoud include project successfully created' do
+      it 'messages should include project successfully created' do
         @messages.should include(I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project')))
       end
 
@@ -2061,9 +2061,10 @@ describe Project do
       before do
         @attributes = Array.new
         @docs_array = Array.new
-        @project.stub(:add_docs) do |ids, source_db, docs_array|  
-          @attributes << {source_db: source_db, ids: ids}
-          @docs_array << docs_array
+        @project.stub(:add_docs) do |options|  
+          @attributes << {source_db: options[:sourcedb], ids: options[:ids]}
+          @docs_array << options[:docs_array]
+          @options_user = options[:user]
           [1, 1, 1]
         end
         @pmc_user_1 = {"source_db" => "PMC:user name", 'source_id' => '1', 'div_id' => 0, 'text' => 'body text'}
@@ -2071,12 +2072,13 @@ describe Project do
         @pmc_1 = {"source_id" => "1", "source_db" => "PMC"} 
         @pmc_2 = {"source_id" => "2", "source_db" => "PMC"} 
         @pub_med = {"source_id" => "1", "source_db" => "PubMed"}
+        @user = FactoryGirl.create(:user)
       end
 
       context 'when json is Array' do
         before do
           json = [@pmc_user_1, @pmc_user_2, @pmc_1, @pmc_2, @pub_med]
-          @result = @project.add_docs_from_json(json.to_json)
+          @result = @project.add_docs_from_json(json.to_json, @user)
         end
 
         it 'should pass ids and source_db for add_docs correctly' do
@@ -2090,12 +2092,16 @@ describe Project do
         it 'should pass docs_array by sourcedb' do
           @docs_array.should eql([[@pmc_user_1, @pmc_user_2], [@pmc_1, @pmc_2], [@pub_med]])
         end
+
+        it 'should passe user as user' do
+          @options_user.should eql @user
+        end
       end
 
       context 'when json is Hash' do
         before do
           json = @pmc_user_1
-          @result = @project.add_docs_from_json(json.to_json)
+          @result = @project.add_docs_from_json(json.to_json, @user)
         end
 
         it 'should pass ids and source_db for add_docs correctly' do
@@ -2118,105 +2124,222 @@ describe Project do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @sourceid = '8424'
       @sourcedb = 'PMC'
+      @user = FactoryGirl.create(:user, username: 'Add Docs User Name')
     end 
     
     context 'when divs present' do
-      before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 0)
-        FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 1)        
-        @project.reload
-      end
-      
-      describe 'before execute' do
-        it '@project should not include @doc' do
-          @project.docs.should_not include(@doc)
-        end
-      end   
-      
-      context 'when project docs not include divs.first' do
+      context 'when sourcedb is current_users sourcedb' do
         before do
-          @result = @project.add_docs(@sourceid, @sourcedb)
-          @project.reload
+          @user_soucedb = "PMC#{Doc::UserSourcedbSeparator}#{@user.username}"
+          @doc_1 = FactoryGirl.create(:doc, :sourcedb => @user_soucedb, :sourceid => @sourceid, :serial => 0)
+          @doc_2 = FactoryGirl.create(:doc, :sourcedb => @user_soucedb, :sourceid => @sourceid, :serial => 1)
+          @docs_array = [
+            # successfully update
+            {'id' => 1, 'text' => 'doc body1', 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
+            {'id' => 2, 'text' => 'doc body2', 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+            # successfully create
+            {'id' => 3, 'text' => 'doc body3', 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 2},
+            # successfully update save serial(div_id) record
+            {'text' => 'doc body4', 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+            # fail create
+            {'id' => 4, 'text' => nil, 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 3},
+            # fail update
+            {'text' => nil, 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0}
+          ]
         end
 
-        it '@project should include @doc' do
-          @project.docs.should include(@doc)
+        describe 'before execute' do
+          it 'project.docs should be_blank' do
+            @project.docs.should be_blank
+          end
         end
-        
-        it 'should increment num_added by added docs size' do
-          @result.should eql [0, Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @sourceid).size, 0]
-        end        
+
+        describe 'after execute' do
+          before do
+            @result = @project.add_docs({ids: @sourceid, sourcedb: @user_soucedb, docs_array: @docs_array, user: @user})
+            @project.reload
+            @doc_1.reload
+            @doc_2.reload
+          end
+
+          it 'should create 1 doc and update 3 times and fail 2 time' do
+            @result.should eql [1, 3, 2]
+          end
+
+          it 'should update exists doc' do
+            @doc_1.body == @docs_array[0]['text'] && @doc_1.sourcedb == @docs_array[0]['source_db'] && @doc_1.source == @docs_array[0]['source_url'] && @doc_1.serial == @docs_array[0]['div_id']
+          end
+
+          it 'should add project.docs' do
+            @project.docs.select{|doc| doc.body == @docs_array[0]['text'] && doc.sourcedb == @docs_array[0]['source_db'] && doc.source == @docs_array[0]['source_url'] && doc.serial == @docs_array[0]['div_id']}.should be_present
+          end
+
+          it 'should add project.docs' do
+            @project.docs.select{|doc| doc.body == @docs_array[2]['text'] && doc.sourcedb == @docs_array[2]['source_db'] && doc.source == @docs_array[2]['source_url'] && doc.serial == @docs_array[2]['div_id']}.should be_present
+          end
+
+          it 'should update exists doc' do
+            @doc_2.body == @docs_array[3]['text'] && @doc_1.sourcedb == @docs_array[3]['source_db'] && @doc_1.source == @docs_array[3]['source_url'] && @doc_1.serial == @docs_array[3]['div_id']
+          end
+
+          it 'should add project.docs' do
+            @project.docs.select{|doc| doc.body == @docs_array[3]['text'] && doc.sourcedb == @docs_array[3]['source_db'] && doc.source == @docs_array[3]['source_url'] && doc.serial == @docs_array[3]['div_id']}.should be_present
+          end
+
+          it 'should add and update project.docs' do
+            @project.docs.select{|doc| doc.body == @docs_array[0]['text'] && doc.sourcedb == @docs_array[0]['source_db'] && doc.source == @docs_array[0]['source_url'] && doc.serial == @docs_array[0]['div_id']}.should be_present
+          end
+        end
       end
 
-      context 'when project docs include divs.first' do
+      context 'when sourcedb is not users sourcedb' do
         before do
-          @project.docs << @doc
+          @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 0)
+          FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 1)        
           @project.reload
         end
         
         describe 'before execute' do
+          it '@project should not include @doc' do
+            @project.docs.should_not include(@doc)
+          end
+        end   
+        
+        context 'when project docs not include divs.first' do
+          before do
+            @result = @project.add_docs({ids: @sourceid, sourcedb: @sourcedb, user: @user})
+            @project.reload
+          end
+
           it '@project should include @doc' do
             @project.docs.should include(@doc)
           end
-        end        
-        
-        before do
-          @result = @project.add_docs(@sourceid, @sourcedb, nil)
-          @project.reload
+          
+          it 'should increment num_added by added docs size' do
+            @result.should eql [0, Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @sourceid).size, 0]
+          end        
         end
 
-        it '@project should include @doc' do
-          @project.docs.should include(@doc)
+        context 'when project docs include divs.first' do
+          before do
+            @project.docs << @doc
+            @project.reload
+          end
+          
+          describe 'before execute' do
+            it '@project should include @doc' do
+              @project.docs.should include(@doc)
+            end
+          end        
+          
+          before do
+            @result = @project.add_docs({ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
+            @project.reload
+          end
+
+          it '@project should include @doc' do
+            @project.docs.should include(@doc)
+          end
+          
+          it 'should not increment num_added' do
+            @result.should eql [0, 0, 0]
+          end      
         end
-        
-        it 'should not increment num_added' do
-          @result.should eql [0, 0, 0]
-        end      
       end
     end
      
     context 'when divs blank' do
       context 'when generate creates doc successfully' do
-        context 'when sourcedb is user sourcedb' do
-          before do
-            @sourcedb = "PMC#{Doc::UserSourcedbSeparator}tanaka"
-            @docs_array = [
-              # successfully create
-              {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
-              {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
-              # fail since same sourcedb, sourceid and serial
-              {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
-            ]
-            @result = @project.add_docs(@sourceid, @sourcedb, @docs_array)
-          end
-          
-          it 'should increment num_created' do
-            @result.should eql [2, 0, 1]
+        context 'when sourcedb include :' do
+          context 'when sourcedb username is current_users username' do
+            before do
+              @sourcedb = "PMC#{Doc::UserSourcedbSeparator}#{@user.username}"
+              @docs_array = [
+                # successfully create
+                {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
+                {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+                # fail since same sourcedb, sourceid and serial
+                {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
+              ]
+              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+            end
+            
+            it 'should increment num_created' do
+              @result.should eql [2, 0, 1]
+            end
+
+            it 'should create doc from docs_array' do
+              Doc.find_by_body_and_sourcedb_and_sourceid_and_source_and_serial(@docs_array[0]['text'], 
+              @docs_array[0]['source_db'], @docs_array[0]['source_id'], @docs_array[0]['source_url'], @docs_array[0]['div_id']).should be_present
+            end
+
+            it 'should create doc from docs_array' do
+              Doc.find_by_body_and_sourcedb_and_sourceid_and_source_and_serial(@docs_array[0]['text'], 
+              @docs_array[1]['source_db'], @docs_array[1]['source_id'], @docs_array[1]['source_url'], @docs_array[1]['div_id']).should be_present
+            end
           end
 
-          it 'shoud create doc from docs_array' do
-            Doc.find_by_body_and_sourcedb_and_sourceid_and_source_and_serial(@docs_array[0]['text'], 
-            @docs_array[0]['source_db'], @docs_array[0]['source_id'], @docs_array[0]['source_url'], @docs_array[0]['div_id']).should be_present
-          end
+          context 'when sourcedb username is not current_users username' do
+            before do
+              @other_users_username
+              @sourcedb = "PMC#{Doc::UserSourcedbSeparator}#{@other_users_username}"
+              @docs_array = [
+                {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
+                {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+                {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
+              ]
+              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+            end
+            
+            it 'should fail 3 times' do
+              @result.should eql [0, 0, @docs_array.size]
+            end
 
-          it 'shoud create doc from docs_array' do
-            Doc.find_by_body_and_sourcedb_and_sourceid_and_source_and_serial(@docs_array[0]['text'], 
-            @docs_array[1]['source_db'], @docs_array[1]['source_id'], @docs_array[1]['source_url'], @docs_array[1]['div_id']).should be_present
+            it 'should not create doc by docs_array sourcedb' do
+              Doc.find_all_by_sourcedb(@sourcedb).should be_blank
+            end
           end
         end
 
         context 'when sourcedb is not user sourcedb' do
-          before do
-            @new_sourceid = 'new sourceid'
-            @generated_doc_1 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 0)
-            @generated_doc_2 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 1)
+          context 'when doc_sequencer_ present' do
+            before do
+              @new_sourceid = 'new sourceid'
+              @generated_doc_1 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 0)
+              @generated_doc_2 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 1)
+              
+              Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
+              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
+            end
             
-            Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
-            @result = @project.add_docs(@sourceid, @sourcedb, nil)
+            it 'should increment num_created' do
+              @result.should eql [Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @new_sourceid).size, 0, 0]
+            end
           end
-          
-          it 'should increment num_created' do
-            @result.should eql [Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @new_sourceid).size, 0, 0]
+
+          context 'when doc_sequencer_ blank' do
+            before do
+              @new_sourceid = 123456
+              @docs_array = [
+                # successfully create
+                {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => @new_sourceid, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
+                {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => @new_sourceid, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+                # fail since same sourcedb, sourceid and serial
+                {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => @new_sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
+              ]
+              Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
+              @sourcedb = 'source_db'
+              @user = FactoryGirl.create(:user, username: 'User Name')
+              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+            end
+            
+            it 'should increment num_created' do
+              @result.should eql [Doc.find_all_by_sourcedb_and_sourceid("#{@sourcedb}#{Doc::UserSourcedbSeparator}#{@user.username}", @new_sourceid).size, 0, 1]
+            end
+
+            it 'should add ' do
+              @project.docs.collect{|d| d.id}.should =~ Doc.find_all_by_sourcedb_and_sourceid("#{@sourcedb}#{Doc::UserSourcedbSeparator}#{@user.username}", @new_sourceid).collect{|d| d.id}
+            end
           end
         end
       end 
@@ -2224,7 +2347,7 @@ describe Project do
       context 'when generate crates doc unsuccessfully' do
         before do
           Doc.stub(:create_divs).and_return(nil)
-          @result = @project.add_docs(@sourceid, @sourcedb, nil)
+          @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
         end
         
         it 'should not increment num_failed' do

@@ -437,11 +437,11 @@ class Project < ActiveRecord::Base
       end
     end
 
-    # create project.docs if [project_name]-project.json exist
+    # create project.docs if [project_name]-docs.json exist
     if project.present?
       if File.exist?(docs_json_file)
         if project.present?
-          num_created, num_added, num_failed = project.add_docs_from_json(File.read(docs_json_file))
+          num_created, num_added, num_failed = project.add_docs_from_json(File.read(docs_json_file), current_user)
           messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
           messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
           messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
@@ -477,7 +477,7 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def add_docs_from_json(json)
+  def add_docs_from_json(json, user)
     json = JSON.parse(json)
     json = [json] if json.class == Hash
     num_created, num_added, num_failed = 0, 0, 0
@@ -485,7 +485,7 @@ class Project < ActiveRecord::Base
     if source_dbs.present?
       source_dbs.each do |source_db, docs_array|docs_array
         ids = docs_array.collect{|doc| doc["source_id"]}.join(",")
-        num_created_t, num_added_t, num_failed_t = self.add_docs(ids, source_db, docs_array)
+        num_created_t, num_added_t, num_failed_t = self.add_docs({ids: ids, sourcedb: source_db, docs_array: docs_array, user: user})
         num_created += num_created_t
         num_added += num_added_t
         num_failed += num_failed_t
@@ -494,44 +494,78 @@ class Project < ActiveRecord::Base
     return [num_created, num_added, num_failed]   
   end
   
-  def add_docs(ids, sourcedb, docs_array = nil)
+  def add_docs(options = {})
     num_created, num_added, num_failed = 0, 0, 0
-    ids = ids.split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
+    ids = options[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
     ids.each do |sourceid|
-      divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+      divs = Doc.find_all_by_sourcedb_and_sourceid(options[:sourcedb], sourceid)
+      is_current_users_sourcedb = (options[:sourcedb] =~ /.#{Doc::UserSourcedbSeparator}#{options[:user].username}\Z/).present?
       if divs.present?
-        unless self.docs.include?(divs.first)
-          self.docs << divs
-          num_added += divs.size
-        end
-      else
-        if sourcedb.include?(Doc::UserSourcedbSeparator)
-          # when sourcedb is user generated
-          divs = Array.new
-          docs_array.each do |doc_array_params|
-            # all of columns insert into database need to be included in this hash.
+        if is_current_users_sourcedb
+          # when sourcedb is user's sourcedb
+          # update or create if not present
+          options[:docs_array].each do |doc_array|
+            # find doc sourcedb sourdeid and serial
+            doc = Doc.find_or_initialize_by_sourcedb_and_sourceid_and_serial(options[:sourcedb], sourceid, doc_array['div_id'])
             mappings = {
               'text' => 'body', 
-              'source_db' => 'sourcedb', 
-              'source_id' => 'sourceid', 
               'section' => 'section', 
               'source_url' => 'source', 
               'div_id' => 'serial'
             }
-            doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
-            doc = Doc.new(doc_params) 
-            if doc.valid?
-              doc.save
-              divs << doc
+            doc_params = Hash[doc_array.map{|key, value| [mappings[key], value]}].select{|key| key.present?}
+            if doc.new_record?
+              # when same sourcedb sourceid serial not present
+              doc.attributes = doc_params
+              if doc.valid?
+                # create
+                doc.save
+                self.docs << doc unless self.docs.include?(doc)
+                num_created += 1
+              else
+                num_failed += 1
+              end
             else
-              num_failed += 1
+              # when same sourcedb sourceid serial present
+              # update
+              if doc.update_attributes(doc_params)
+                self.docs << doc unless self.docs.include?(doc)
+                num_added += 1
+              else
+                num_failed += 1
+              end
             end
           end
         else
+          # when sourcedb is not user's sourcedb
+          unless self.docs.include?(divs.first)
+            self.docs << divs
+            num_added += divs.size
+          end
+        end
+      else
+        if options[:sourcedb].include?(Doc::UserSourcedbSeparator)
+          # when sourcedb include : 
+          if is_current_users_sourcedb
+            # when sourcedb is user's sourcedb
+            divs, num_failed_user_sourcedb_docs = create_user_sourcedb_docs(docs_array: options[:docs_array])
+            num_failed += num_failed_user_sourcedb_docs
+          else
+            # when sourcedb is not user's sourcedb
+            num_failed += options[:docs_array].size
+          end
+        else
           # when sourcedb is not user generated
-          doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
-          divs_hash = doc_sequence.divs
-          divs = Doc.create_divs(divs_hash, :sourcedb => sourcedb, :sourceid => sourceid, :source_url => doc_sequence.source_url)
+          begin
+            # when doc_sequencer_ present
+            doc_sequence = Object.const_get("DocSequencer#{options[:sourcedb]}").new(sourceid)
+            divs_hash = doc_sequence.divs
+            divs = Doc.create_divs(divs_hash, :sourcedb => options[:sourcedb], :sourceid => sourceid, :source_url => doc_sequence.source_url)
+          rescue
+            # when doc_sequencer_ not present
+            divs, num_failed_user_sourcedb_docs = create_user_sourcedb_docs({docs_array: options[:docs_array], sourcedb: "#{options[:sourcedb]}#{Doc::UserSourcedbSeparator}#{options[:user].username}"})
+            num_failed += num_failed_user_sourcedb_docs
+          end
         end
         if divs
           self.docs << divs
@@ -542,6 +576,32 @@ class Project < ActiveRecord::Base
       end
     end  
     return [num_created, num_added, num_failed]   
+  end
+
+  def create_user_sourcedb_docs(options = {})
+    divs = Array.new
+    num_failed = 0
+    options[:docs_array].each do |doc_array_params|
+      # all of columns insert into database need to be included in this hash.
+      doc_array_params['source_db'] = options[:sourcedb] if options[:sourcedb].present?
+      mappings = {
+        'text' => 'body', 
+        'source_db' => 'sourcedb', 
+        'source_id' => 'sourceid', 
+        'section' => 'section', 
+        'source_url' => 'source', 
+        'div_id' => 'serial'
+      }
+      doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
+      doc = Doc.new(doc_params) 
+      if doc.valid?
+        doc.save
+        divs << doc
+      else
+        num_failed += 1
+      end
+    end
+    return [divs, num_failed]
   end
 
   def user_presence
