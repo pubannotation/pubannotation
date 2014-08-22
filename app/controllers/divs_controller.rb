@@ -6,6 +6,8 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs.json
   def index
     @docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], :order => 'serial ASC')
+    rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
+    @docs_hash = @docs.collect{|doc| doc.to_hash}
 
     if params[:project_id]
       @project_name = params[:project_id]
@@ -14,7 +16,7 @@ class DivsController < ApplicationController
 
     respond_to do |format|
       format.html # index.html.erb
-      format.json { render json: @docs }
+      format.json { render json: @docs_hash}
     end
   end
   

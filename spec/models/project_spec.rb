@@ -1794,7 +1794,7 @@ describe Project do
         @doc.stub(:json_hash).and_return(@json_hash)
       end
 
-      it 'should return collect of docs_json_hash of projecs.docs' do
+      it 'should return collect of docs_hash of projecs.docs' do
         @project.docs_json_hash.should eql([@json_hash])
       end
     end

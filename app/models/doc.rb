@@ -285,6 +285,7 @@ class Doc < ActiveRecord::Base
     end  
   end
 
+  # to_be_deprecated in favor to to_hash below
   def json_hash
     json_hash = {
       id: id,
@@ -300,6 +301,17 @@ class Doc < ActiveRecord::Base
     return json_hash
   end
   
+  def to_hash
+    {
+      text: body.gsub(/[\r\n]/, ""),
+      source_db: sourcedb,
+      source_id: sourceid,
+      div_id: serial,
+      section: section,
+      source_url: source
+    }
+  end
+
   def self.sql_find(params, current_user, project)
     if params[:sql].present?
       current_user_id = current_user.present? ? current_user.id : nil

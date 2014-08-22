@@ -15,10 +15,13 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
       @docs = @project.docs
+      rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
+      @docs_hash = @docs.collect{|doc| doc.to_hash}
       @search_path = search_project_docs_path(@project.name)
-      @json_hash = @project.docs_json_hash
     else
       @docs = Doc
+      rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
+      @docs_hash = {message: "too many"}
       @search_path = search_docs_path
     end
 
@@ -27,7 +30,7 @@ class DocsController < ApplicationController
     flash[:sort_order] = @sort_order
     respond_to do |format|
       format.html
-      format.json { render json: @json_hash}
+      format.json { render json: @docs_hash}
     end
   end
  

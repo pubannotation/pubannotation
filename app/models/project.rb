@@ -345,9 +345,7 @@ class Project < ActiveRecord::Base
   end
 
   def docs_json_hash
-    if docs.present?
-      docs.collect{|doc| doc.json_hash}
-    end
+    docs.collect{|doc| doc.to_hash} if docs.present?
   end
 
   def maintainer

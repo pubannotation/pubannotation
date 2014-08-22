@@ -35,19 +35,19 @@ describe DocsController do
         end
       end
 
-      context 'when format html' do
+      context 'when format json' do
         before do
-          @docs_json_hash = {'val' => 'val'} 
-          Project.any_instance.stub(:docs_json_hash).and_return(@docs_json_hash)
+          @docs_hash = {'val' => 'val'} 
+          Project.any_instance.stub(:docs_json_hash).and_return(@docs_hash)
           get :index, format: 'json', :project_id => @project.name
         end
 
-        it 'should assign @json_hash' do
-          assigns[:json_hash].should eql(@docs_json_hash)
+        it 'should assign @docs_hash' do
+          assigns[:docs_hash].should eql(@docs_hash)
         end
 
-        it 'shoud render @project.docs_json_hash to_json' do
-          response.body.should eql(@docs_json_hash.to_json)
+        it 'should render @project.docs_json_hash to_json' do
+          response.body.should eql(@docs_hash.to_json)
         end
       end
     end    
