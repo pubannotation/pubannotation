@@ -189,6 +189,11 @@ class Doc < ActiveRecord::Base
     [prev_text, spans, next_text].compact.join('') 
   end
 
+  def ascii_body
+    self.body = get_ascii_text(self.body)
+  end
+
+
   def to_csv(params)
     focus, left, right = self.spans(params) 
     CSV.generate(col_sep: "\t") do |csv|

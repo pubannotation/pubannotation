@@ -6,7 +6,7 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs.json
   def index
     @docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], :order => 'serial ASC')
-    rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
+    @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
     @docs_hash = @docs.collect{|doc| doc.to_hash}
 
     if params[:project_id]
@@ -39,11 +39,8 @@ class DivsController < ApplicationController
     end
 
     if @doc
-      @text = @doc.body
-      if (params[:encoding] == 'ascii')
-        asciitext = get_ascii_text(@text)
-        @text = asciitext
-      end
+      @doc.ascii_body if (params[:encoding] == 'ascii')
+      @doc_hash = @doc.to_hash
     end
 
     respond_to do |format|
@@ -52,10 +49,8 @@ class DivsController < ApplicationController
           flash[:notice] = notice if notice.present?
           render 'docs/show'
         }
-        format.json {
-          render 'docs/show'
-        }
-        format.txt  { render :text => @text }
+        format.json {render json: @doc_hash}
+        format.txt  { render :text => @doc.body }
       else 
         format.html { redirect_to :back, notice: notice}
         format.json { head :unprocessable_entity }

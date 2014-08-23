@@ -15,12 +15,12 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
       @docs = @project.docs
-      rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
+      @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
       @docs_hash = @docs.collect{|doc| doc.to_hash}
       @search_path = search_project_docs_path(@project.name)
     else
       @docs = Doc
-      rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
+      @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
       @docs_hash = {message: "too many"}
       @search_path = search_docs_path
     end
@@ -48,7 +48,7 @@ class DocsController < ApplicationController
       @new_doc_src = new_doc_path
     end
 
-    rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
+    @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
 
     respond_to do |format|
       if @docs
@@ -148,14 +148,15 @@ class DocsController < ApplicationController
     
     @project, notice = get_project(params[:project_id])
     if @doc.present?
-      @text = @doc.body
+      @doc.ascii_body if (params[:encoding] == 'ascii')
+      @doc_hash = @doc.to_hash
       @sort_order = sort_order(Project)
       @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
       flash[:sort_order] = @sort_order
 
       respond_to do |format|
         format.html # show.html.erb
-        format.json # show.json.erb
+        format.json {render json: @doc_hash}
       end
     elsif docs.present?
       # when same sourcedb and sourceid docs present => redirect to divs#index
@@ -164,7 +165,7 @@ class DocsController < ApplicationController
       else
         redirect_to doc_sourcedb_sourceid_divs_index_path
       end
-      
+
     end
   end
 

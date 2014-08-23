@@ -140,14 +140,6 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def rewrite_ascii (docs)
-    docs.each do |doc|
-      doc.body = get_ascii_text(doc.body)
-    end
-    docs
-  end
-
-
   def archive_texts (docs)
     unless docs.empty?
       file_name = "docs.zip"
