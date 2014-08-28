@@ -14,24 +14,44 @@ describe "docs/spans.html.erb" do
     stub_template 'docs/_path' => @template_docs_path
     @template_docs_span = 'docs/_span'
     stub_template 'docs/_span' => @template_docs_span
+    @template_annotations_summary = 'projects/_list'
+    stub_template 'annotations/_summary_and_view_options' => @template_annotations_summary
     @template_projects_list = 'projects/_list'
     stub_template 'projects/_list' => @template_projects_list
-    render
   end
 
-  it 'should render @annotations_path' do
-    rendered.should include(@annotations_path)
+  context 'when params[:project_id] is present' do
+    before do
+      view.stub(:params).and_return({project_id: '1'})
+      render
+    end
+
+    # check at once
+    it 'should render partial template docs/path' do
+      rendered.should include(@template_docs_path)
+    end
+
+    # check at once
+    it 'should render partial template docs/span' do
+      rendered.should include(@template_docs_span)
+    end
+
+    it 'should render annotations/summary_and_view_options' do
+      rendered.should include(@template_annotations_summary)
+    end
   end
 
-  it 'should render partial template docs/path' do
-    rendered.should include(@template_docs_path)
-  end
+  context 'when params[:project_id] is blank' do
+    before do
+      render
+    end
 
-  it 'should render partial template docs/span' do
-    rendered.should include(@template_docs_span)
-  end
+    it 'should render @annotations_path' do
+      rendered.should include(@annotations_path)
+    end
 
-  it 'should render partial template projects/list' do
-    rendered.should include(@template_projects_list)
+    it 'should render partial template projects/list' do
+      rendered.should include(@template_projects_list)
+    end
   end
 end
