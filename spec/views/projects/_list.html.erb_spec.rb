@@ -45,4 +45,17 @@ describe "projects/_list.html.erb" do
       rendered.should include(@relations_count_helper)
     end
   end  
+
+  describe 'annotations_projects' do
+    before do
+      assign :projects, [@project]
+      view.stub(:scope).and_return(nil)
+      assign :annotations_projects_check, true
+      render
+    end
+
+    it 'should render checkbox for project annotations' do
+      rendered.should have_selector(:input, class: 'annotations_projects_check', type: 'checkbox', value: @project.name)
+    end
+  end
 end

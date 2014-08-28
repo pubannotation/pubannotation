@@ -1,5 +1,32 @@
 <%= render :partial => 'docs/path' -%>
 
 <%= render :partial => 'docs/span' -%>
-
-<%= render :partial => 'docs/project_denotation', :collection => @project_denotations -%>
+<script>
+  var path = "<%= @annotations_path -%>?projects=";
+  var annotationsText = "<%= t('views.shared.annotation') -%>";
+  var projectsArray = [];
+  $(document).ready(
+      function(){
+        $('.annotations_projects_check').change(
+          function(){
+            var projectName = $(this).attr('value');
+            if($(this).is(":checked")) {
+              projectsArray.push(projectName);
+            }else{
+              projectsArray = jQuery.grep(projectsArray, function(value) {
+                return value != projectName;
+              });
+            };
+            var project_names = projectsArray.join(',');
+            if (projectsArray.length > 0){
+              $('#annotations_projects').html("<a href='" + path + project_names + "'>" + annotationsText + "</a>");
+            }else{
+              $('#annotations_projects').html('');
+            }
+          }
+        );
+      }
+  );
+</script>
+<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
+<div id='annotations_projects'></div>

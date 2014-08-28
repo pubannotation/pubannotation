@@ -677,7 +677,7 @@ describe DocsController do
         @project_denotation = 'project denotations'
         @project_denotations = {:denotations => @project_denotation}
         controller.stub(:get_project_denotations).and_return([{project: @project_1, denotations: @project_denotations[:denotations]}])
-        get :spans, :id => @doc.sourceid, :begin => 1, :end => 5
+        get :spans, :id => @doc.id, :begin => 1, :end => 5
       end
       
       it 'should not assign @project' do
@@ -690,6 +690,14 @@ describe DocsController do
       
       it 'should assign @project_denotations' do
         assigns[:project_denotations].should eql([{'project' => @project_1, 'denotations' => @project_denotation}])
+      end
+
+      it 'should assign @annotations_projects_check' do
+        assigns[:annotations_projects_check].should be_present
+      end
+
+      it 'should assign @annotations_path' do
+        assigns[:annotations_path].should eql("#{spans_doc_path(@doc.id, 1, 5)}/annotations")
       end
     end
   end

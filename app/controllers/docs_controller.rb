@@ -182,6 +182,8 @@ class DocsController < ApplicationController
       if @doc.present? && @projects.present?
         @project_denotations = get_project_denotations(@projects, @doc, params)
       end
+      @annotations_projects_check = true
+      @annotations_path = "#{request.fullpath}/annotations"
     end
     @spans, @prev_text, @next_text = @doc.spans(params)
     @text = @doc.text(params)
