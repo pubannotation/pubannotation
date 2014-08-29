@@ -80,6 +80,10 @@ class Doc < ActiveRecord::Base
   }
   
   scope :source_dbs, where(['sourcedb IS NOT ?', nil])
+
+  scope :user_source_db, lambda{|username|
+    where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
+  }
   
   # default sort order 
   DefaultSortArray = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]

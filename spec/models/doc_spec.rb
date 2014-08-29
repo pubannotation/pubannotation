@@ -398,6 +398,23 @@ describe Doc do
     end
   end
 
+  describe 'user_source_db' do
+    before do
+      @username = 'username'
+      @similar_username = 'username1'
+      @doc_username_1 = FactoryGirl.create(:doc, sourcedb: "AA1#{Doc::UserSourcedbSeparator}#{@username}")
+      @doc_username_2 = FactoryGirl.create(:doc, sourcedb: "AA2#{Doc::UserSourcedbSeparator}#{@username}")
+      @doc_similar_username_1 = FactoryGirl.create(:doc, sourcedb: "AA1#{Doc::UserSourcedbSeparator}#{@similar_username}")
+      @doc_similar_username_2 = FactoryGirl.create(:doc, sourcedb: "AA2#{Doc::UserSourcedbSeparator}#{@similar_username}")
+      @doc_similar_username_3 = FactoryGirl.create(:doc, sourcedb: "#{@username}#{Doc::UserSourcedbSeparator}#{@similar_username}")
+      @doc_similar_username_4 = FactoryGirl.create(:doc, sourcedb: @username)
+    end
+
+    it 'should return docs include username after separator' do
+      Doc.user_source_db(@username).should =~ [@doc_username_1, @doc_username_2]
+    end
+  end
+
   describe 'sort_by_params' do
     before do
       @doc_1 = FactoryGirl.create(:doc)
