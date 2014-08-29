@@ -575,12 +575,17 @@ describe DocsController do
       @doc = FactoryGirl.create(:doc, :sourceid => '12345', :body => @body)
       @project = 'project'
       @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @projects = [@project_1]
       controller.stub(:get_project).and_return([@project, nil])
       @project_denotations_span = {begin: 0, end: 5}
       @project_denotations = [denotations: [{id: 'Ts', span: @project_denotations_span}]]
       controller.stub(:get_project_denotations).and_return(@project_denotations)
       @doc.stub(:spans_projects).and_return(@projects)
+      @projects_sort_by_params = [@project_2]
+      Project.stub_chain(:id_in, :sort_by_params).and_return(@projects_sort_by_params)
+      @sort_order = 'sort_order'
+      controller.stub(:sort_order).and_return(@sort_order)
       @text = 'doc text'
       @doc.stub(:text).and_return(@text)
       controller.stub(:get_doc).and_return([@doc, nil])
@@ -677,15 +682,23 @@ describe DocsController do
         @project_denotation = 'project denotations'
         @project_denotations = {:denotations => @project_denotation}
         controller.stub(:get_project_denotations).and_return([{project: @project_1, denotations: @project_denotations[:denotations]}])
-        get :spans, :id => @doc.id, :begin => 1, :end => 5
+        get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
       end
       
       it 'should not assign @project' do
         assigns[:project].should be_nil
       end
+
+      it 'shoud assign @sort_order' do
+        assigns[:sort_order].should eql(@sort_order)
+      end
+
+      it 'shoud assign @sort_order' do
+        flash[:sort_order].should eql(@sort_order)
+      end
       
-      it 'should assign @projects' do
-        assigns[:projects].should eql(@projects)
+      it 'should assign Project.id_in(@doc.spans_projects).sort_by_params @projects' do
+        assigns[:projects].should eql(@projects_sort_by_params)
       end
       
       it 'should assign @project_denotations' do
@@ -696,7 +709,7 @@ describe DocsController do
         assigns[:annotations_projects_check].should be_present
       end
 
-      it 'should assign @annotations_path' do
+      it 'should assign @annotations_path without parameters' do
         assigns[:annotations_path].should eql("#{spans_doc_path(@doc.id, 1, 5)}/annotations")
       end
     end
