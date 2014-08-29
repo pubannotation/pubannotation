@@ -1,4 +1,5 @@
-# encoding: UTF-8
+require 'text_alignment'
+
 module AnnotationsHelper
   def get_annotations (project, doc, options = {})
     if doc.present?
@@ -8,9 +9,8 @@ module AnnotationsHelper
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
-        sequence_alignment = SequenceAlignment.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
-        # sequence_alignment = Aligner.new(text, asciitext)
-        hdenotations = sequence_alignment.transform_denotations(hdenotations)
+        text_alignment = TextAlignment::TextAlignment.new(text, asciitext)
+        hdenotations = text_alignment.transform_denotations(hdenotations)
         # hdenotations = adjust_denotations(hdenotations, asciitext)
         text = asciitext
       end
@@ -62,15 +62,16 @@ module AnnotationsHelper
       text = doc.body
       annotations = Hash.new
       if doc.has_divs?
-        annotations[:target] =Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false)
+        annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false)
       else
         annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
       end
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text(text)
-        text = asciitext
+        annotations[:text] = asciitext
+      else
+        annotations[:text] = text
       end
-      annotations[:text] = text
       # project
       if project.present?
         get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
@@ -86,7 +87,6 @@ module AnnotationsHelper
       end
 
       if options[:doc_spans].present?
-        annotations[:text] = doc.text(options[:params])
         if annotations[:tracks].present?
           annotations[:tracks].each do |track|
             if track[:denotations].present?
@@ -126,8 +126,8 @@ module AnnotationsHelper
     hmodifications = doc.hmodifications(project, options)
     hdenotations = doc.hdenotations(project, options)
     if options[:encoding] == 'ascii'
-      sequence_alignment = SequenceAlignment.new(text, asciitext, [["Δ", "delta"], [" ", " "], ["−", "-"], ["–", "-"], ["′", "'"], ["’", "'"]])
-      hdenotations = sequence_alignment.transform_denotations(hdenotations)
+      text_alignment = TextAlignment::TextAlignment.new(text, asciitext)
+      hdenotations = text_alignment.transform_denotations(hdenotations)
     end
     if options[:discontinuous_annotation] == 'bag'
       hdenotations, hrelations = bag_denotations(hdenotations, hrelations)

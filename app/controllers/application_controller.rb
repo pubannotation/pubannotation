@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'pmcdoc'
 require 'utfrewrite'
-require 'sequence_alignment'
 
 class ApplicationController < ActionController::Base
   include ApplicationHelper
