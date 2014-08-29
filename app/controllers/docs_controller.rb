@@ -293,9 +293,9 @@ class DocsController < ApplicationController
       begin 
         if params['json'].present?
           json = File.read(params['json'].tempfile)
-          num_created, num_added, num_failed = project.add_docs_from_json(json)
+          num_created, num_added, num_failed = project.add_docs_from_json(json, current_user)
         else
-          num_created, num_added, num_failed = project.add_docs(params[:ids], params[:sourcedb])
+          num_created, num_added, num_failed = project.add_docs({ids: params[:ids], sourcedb: params[:sourcedb], user: current_user})
         end
         if num_added > 0
           notice = t('controllers.docs.create_project_docs.added_to_document_set', :num_added => num_added, :project_name => project.name)
