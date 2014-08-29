@@ -72,12 +72,21 @@ class ApplicationController < ActionController::Base
   def get_docspec(params)
     sourcedb = params[:sourcedb]
     sourceid = params[:sourceid]
-    serial   = params[:div_id].present? ? params[:div_id] : 0
+    # logger.debug "sourcedb: #{sourcedb}"
+    # logger.debug "sourceid: #{sourceid}"
+    # logger.debug "has_divs?: #{Doc.has_divs?(sourcedb, sourceid)}"
+
+    serial =  if params[:div_id].present?
+                params[:div_id]
+              elsif Doc.has_divs?(sourcedb, sourceid)
+                Doc.get_div_ids(sourcedb, sourceid)
+              else
+                0
+              end
     id = params[:id] if params[:id]
 
     return sourcedb, sourceid, serial, id
   end
-
 
   def get_project (project_name)
     project = Project.find_by_name(project_name)
