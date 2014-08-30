@@ -19,7 +19,7 @@ class TextAlignment::LCSComparison
 
   private
 
-  def _lcs_comparison(str1, str2, lcs = nil, sdiff = nil)
+  def _lcs_comparison(str1, str2, lcs = nil, msdiff = nil)
     lcs, msdiff = TextAlignment::min_lcs_sdiff(str1, str2) if lcs.nil?
 
     match_initial = msdiff.index{|d| d.action == '='}

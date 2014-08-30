@@ -150,12 +150,16 @@ class AnnotationsController < ApplicationController
     project, notice = get_project(params[:project_id])
 
     if project
-      doc, notice = get_doc(*get_docspec(params))
-      doc = nil if doc and !project.docs.include?(doc)
+      sourcedb, sourceid, divno = get_docspec(params)
+      divnos = divno.respond_to?(:each) ? divno : [divno]
+      divs = divnos.collect{|no| get_doc(sourcedb, sourceid, no)[0]}
+      divs = [] if divs[0].nil? || !project.docs.include?(divs[0])
 
-      if doc
+      unless divs.empty?
+
+        # get annotations
         annotations = if params[:annotations]
-            params[:annotations].symbolize_keys
+          params[:annotations].symbolize_keys
         elsif params[:text] and !params[:text].empty?
           {:text => params[:text], :denotations => params[:denotations], :relations => params[:relations], :modifications => params[:modifications]}
         else
@@ -163,7 +167,7 @@ class AnnotationsController < ApplicationController
         end
 
         if annotations
-          notice = Shared.save_annotations(annotations, project, doc)
+          notice = Shared.store_annotations(annotations, project, divs)
         else
           notice = t('controllers.annotations.create.no_annotation')
         end
@@ -184,7 +188,7 @@ class AnnotationsController < ApplicationController
       }
 
       format.json {
-        if doc and project and annotations
+        if divs && !divs.empty? && project && annotations
           render :json => {:status => :created}, :status => :created
         else
           render :json => {:status => :unprocessable_entity}, :status => :unprocessable_entity

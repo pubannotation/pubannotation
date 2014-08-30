@@ -375,7 +375,11 @@ class Doc < ActiveRecord::Base
     end
     return divs
   end
-  
+
+  def self.has_divs?(sourcedb, sourceid)
+    self.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+  end
+
   def has_divs?
     self.class.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
   end
@@ -385,7 +389,7 @@ class Doc < ActiveRecord::Base
       self.sourcedb = "#{sourcedb}#{UserSourcedbSeparator}#{username}"
     end
   end
-      
+
   # before destroy
   def decrement_docs_counter
     if self.projects.present?

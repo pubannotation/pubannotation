@@ -1,3 +1,5 @@
+require 'text_alignment'
+
 module Shared
   # clean denotations
   def self.clean_hdenotations(denotations)
@@ -32,35 +34,10 @@ module Shared
 
   # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method
-  def self.realign_denotations(denotations, from_text, to_text)
-    return nil if denotations == nil
-
-    position_map = Hash.new
-    numchar, numdiff, diff = 0, 0, 0
-    Diff::LCS.sdiff(from_text, to_text) do |h|
-      position_map[h.old_position] = h.new_position
-      numchar += 1
-      if (h.new_position - h.old_position) != diff
-        numdiff +=1
-        diff = h.new_position - h.old_position
-      end
-    end
-    last = from_text.length
-    position_map[last] = position_map[last - 1] + 1
-
-    # TODO
-    # if (numdiff.to_f / numchar) > 2
-    #   return nil, "The text is too much different from PubMed. The mapping could not be calculated.: #{numdiff}/#{numchar}"
-    # else
-
-    denotations_new = Array.new(denotations)
-
-    (0...denotations.length).each do |i|
-      denotations_new[i][:span][:begin] = position_map[denotations[i][:span][:begin]]
-      denotations_new[i][:span][:end]   = position_map[denotations[i][:span][:end]]
-    end
-
-    denotations_new
+  def self.realign_denotations(denotations, str1, str2)
+    return nil if denotations.nil?
+    align = TextAlignment::TextAlignment.new(str1, str2)
+    denotations_new = align.transform_denotations(denotations)
   end
 
   def self.save_hdenotations(hdenotations, project, doc)
@@ -129,4 +106,32 @@ module Shared
       notice = I18n.t('controllers.application.save_annotations.successfully_saved')
     end
   end
+
+  def self.store_annotations(annotations, project, divs)
+    if divs.length == 1
+      self.save_annotations(annotations, project, divs[0])
+    else
+      div_index = TextAlignment.find_divisions(annotations[:text], divs)
+
+      div_index.each do |i|
+        ann = {}
+        idx = {}
+        ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
+        if annotations[:denotations].present?
+          ann[:denotations] = annotations[:denotations].select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] < i[1][1]}
+          ann[:denotations].each{|a| idx[a[:id]] = true}
+        end
+        if annotations[:relations].present?
+          ann[:relations] = annotations[:relations].select{|a| idx[a[:id]]}
+          ann[:relations].each{|a| idx[a[:id]] = true}
+        end
+        if annotations[:relations].present?
+          ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
+          ann[:modifications].each{|a| idx[a[:id]] = true}
+        end
+        self.save_annotations(ann, project, divs[i[0]])
+      end
+    end
+  end
+
 end

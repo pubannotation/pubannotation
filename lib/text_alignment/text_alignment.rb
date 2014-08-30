@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'diff-lcs'
 require 'text_alignment/min_lcs_sdiff'
+require 'text_alignment/lcs_comparison'
 require 'text_alignment/glcs_alignment'
 
 module TextAlignment; end unless defined? TextAlignment
@@ -38,6 +39,8 @@ end
 class TextAlignment::TextAlignment
   attr_reader :position_map_begin, :position_map_end
   attr_reader :common_elements, :mapped_elements
+  attr_reader :similarity
+  attr_reader :str1_match_initial, :str1_match_final, :str2_match_initial, :str2_match_final
 
   def initialize(str1, str2, mappings = [])
     mappings = TextAlignment::MAPPINGS
@@ -77,6 +80,13 @@ class TextAlignment::TextAlignment
 
   def _compute_mixed_alignment(str1, str2, mappings = [])
     lcs, sdiff = TextAlignment.min_lcs_sdiff(str1, str2)
+
+    cmp = TextAlignment::LCSComparison.new(str1, str2, lcs, sdiff)
+    @similarity = cmp.similarity
+    @str1_match_initial = cmp.str1_match_initial
+    @str1_match_final   = cmp.str1_match_final
+    @str2_match_initial = cmp.str2_match_initial
+    @str2_match_final   = cmp.str2_match_final
 
     posmap_begin, posmap_end = {}, {}
     @common_elements, @mapped_elements = [], []

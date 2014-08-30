@@ -72,9 +72,6 @@ class ApplicationController < ActionController::Base
   def get_docspec(params)
     sourcedb = params[:sourcedb]
     sourceid = params[:sourceid]
-    # logger.debug "sourcedb: #{sourcedb}"
-    # logger.debug "sourceid: #{sourceid}"
-    # logger.debug "has_divs?: #{Doc.has_divs?(sourcedb, sourceid)}"
 
     serial =  if params[:div_id].present?
                 params[:div_id]
