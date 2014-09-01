@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
-require 'text_alignment/approximate_location'
-# require 'text_alignment/approximate_fit'
+require 'text_alignment/approximate_fit'
 require 'text_alignment/lcs_comparison'
 
 module TextAlignment; end unless defined? TextAlignment
@@ -52,16 +51,7 @@ class << TextAlignment
       len2 = str2.length
 
       offset_begin, offset_end = 0, -1
-
-      if (len2 - len1) > len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD)
-        l = approximate_location(str1, str2)
-        buffer_size = (len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD) / 2).to_i
-        offset_begin = l - buffer_size
-        offset_begin = 0 if offset_begin < 0
-        offset_end   = l + len1 + buffer_size
-        offset_end   = len2 if offset_end > len2 
-        # offset_begin, offset_end = approximate_fit(str1, str2)
-      end
+      offset_begin, offset_end = approximate_fit(str1, str2) if (len2 - len1) > len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD)
 
       c = TextAlignment::LCSComparison.new(str1, str2[offset_begin .. offset_end])
 
@@ -71,32 +61,14 @@ class << TextAlignment
       end
     end
 
-    # raise "cannot find" if m.nil?
-    if m.nil?
-      puts "[Cannot find more]"
-      puts target
-      puts "====="
-      sources.each do |s|
-        puts s
-        puts "-----"
-      end
-      return nil
-    end
-
-    # puts "target length: #{target.length}"
-    # puts "sources num: #{sources.length}"
-    # puts "similarity: #{c.similarity}"
+    # return remaining target and sources if m.nil?
+    return [[-1, [target, sources.collect{|s| s[:div_id]}]]] if m.nil?
 
     index = if mode == :t_in_s
       [sources[m][:div_id], [0, target.size]]
     else # :s_in_t
       [sources[m][:div_id], [c.str2_match_initial + offset_begin, c.str2_match_final + offset_begin + 1]]
     end
-
-    # puts sources[m][:text]
-    # puts "-----"
-    # puts target[index[1][0] ... index[1][1]]
-    # puts "====="
 
     next_target = target[0 ... index[1][0]] + target[index[1][1] .. -1]
     sources.delete_at(m)
@@ -105,16 +77,14 @@ class << TextAlignment
       return [index]
     else
       more_index = _find_divisions(next_target, sources)
-      if more_index.nil?
-        return [index]
-      else
-        gap = index[1][1] - index[1][0]
-        more_index.each do |i|
+      gap = index[1][1] - index[1][0]
+      more_index.each do |i|
+        if (i[0] > -1)
           i[1][0] += gap if i[1][0] >= index[1][0]
           i[1][1] += gap if i[1][1] >  index[1][0]
         end
-        return [index] + more_index
       end
+      return [index] + more_index
     end
   end
 end
@@ -122,8 +92,7 @@ end
 if __FILE__ == $0
   require 'json'
   if ARGV.length == 2
-    # target = JSON.parse File.read(ARGV[0]), :symbolize_names => true
-    target = File.read(ARGV[0]).strip
+    target  = File.read(ARGV[0]).strip
     sources = JSON.parse File.read(ARGV[1]), :symbolize_names => true
     div_index = TextAlignment::find_divisions(target, sources)
 
@@ -133,9 +102,13 @@ if __FILE__ == $0
 
     puts "target length: #{target.length}"
     div_index.each do |i|
-      puts "[Div: #{i[0]}] (#{i[1][0]}, #{i[1][1]})"
-      puts target[i[1][0] ... i[1][1]]
-      puts "-----"
+      if i[0] >= 0
+        puts "[Div: #{i[0]}] (#{i[1][0]}, #{i[1][1]})"
+        puts target[i[1][0] ... i[1][1]]
+        puts "=========="
+      else
+        p i
+      end
     end
   end
 end

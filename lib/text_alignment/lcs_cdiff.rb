@@ -51,7 +51,9 @@ if __FILE__ == $0
   end
 
   puts "string 1: #{str1}"
+  puts "-----"
   puts "string 2: #{str2}"
+  puts "-----"
   puts "[cdiff]"
   puts TextAlignment::cdiff(str1, str2)
 end

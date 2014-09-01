@@ -1,40 +1,13 @@
 #!/usr/bin/env ruby
 require 'diff-lcs'
 require 'text_alignment/min_lcs_sdiff'
+require 'text_alignment/find_divisions'
 require 'text_alignment/lcs_comparison'
+require 'text_alignment/lcs_alignment'
 require 'text_alignment/glcs_alignment'
+require 'text_alignment/mappings'
 
 module TextAlignment; end unless defined? TextAlignment
-
-module TextAlignment
-  MAPPINGS = [
-              ["×", "x"],       #U+00D7 (multiplication sign)
-              ["•", "*"],       #U+2022 (bullet)
-              ["Δ", "delta"],   #U+0394 (greek capital letter delta)
-              ["Φ", "phi"],     #U+03A6 (greek capital letter phi)
-              ["α", "alpha"],   #U+03B1 (greek small letter alpha)
-              ["β", "beta"],    #U+03B2 (greek small letter beta)
-              ["γ", "gamma"],   #U+03B3 (greek small letter gamma)
-              ["δ", "delta"],   #U+03B4 (greek small letter delta)
-              ["ε", "epsilon"], #U+03B5 (greek small letter epsilon)
-              ["κ", "kappa"],   #U+03BA (greek small letter kappa)
-              ["λ", "lambda"],  #U+03BB (greek small letter lambda)
-              ["μ", "mu"],      #U+03BC (greek small letter mu)
-              ["χ", "chi"],     #U+03C7 (greek small letter chi)
-              ["ϕ", "phi"],     #U+03D5 (greek phi symbol)
-              [" ", " "],       #U+2009 (thin space)
-              [" ", " "],       #U+200A (hair space)
-              [" ", " "],       #U+00A0 (no-break space)
-              ["　", " "],       #U+3000 (ideographic space)
-              ["−", "-"],       #U+2212 (minus sign)
-              ["–", "-"],       #U+2013 (en dash)
-              ["′", "'"],       #U+2032 (prime)
-              ["‘", "'"],       #U+2018 (left single quotation mark)
-              ["’", "'"],       #U+2019 (right single quotation mark)
-              ["“", '"'],       #U+201C (left double quotation mark)
-              ["”", '"']        #U+201D (right double quotation mark)
-             ]
-end
 
 class TextAlignment::TextAlignment
   attr_reader :position_map_begin, :position_map_end
@@ -43,7 +16,6 @@ class TextAlignment::TextAlignment
   attr_reader :str1_match_initial, :str1_match_final, :str2_match_initial, :str2_match_final
 
   def initialize(str1, str2, mappings = [])
-    mappings = TextAlignment::MAPPINGS
     raise ArgumentError, "nil string" if str1.nil? || str2.nil?
     raise ArgumentError, "nil mappings" if mappings.nil?
 
@@ -82,7 +54,7 @@ class TextAlignment::TextAlignment
     lcs, sdiff = TextAlignment.min_lcs_sdiff(str1, str2)
 
     cmp = TextAlignment::LCSComparison.new(str1, str2, lcs, sdiff)
-    @similarity = cmp.similarity
+    @similarity         = cmp.similarity
     @str1_match_initial = cmp.str1_match_initial
     @str1_match_final   = cmp.str1_match_final
     @str2_match_initial = cmp.str2_match_initial
@@ -106,12 +78,13 @@ class TextAlignment::TextAlignment
         elsif addition.empty? && !deletion.empty?
           deletion.each{|p| posmap_begin[p], posmap_end[p] = p2, p2}
         elsif !addition.empty? && !deletion.empty?
-          if addition.length > 1 && deletion.length > 1
+          if addition.length > 1 || deletion.length > 1
             galign = TextAlignment::GLCSAlignment.new(str1[deletion[0] .. deletion[-1]], str2[addition[0] .. addition[-1]], mappings)
             galign.position_map_begin.each {|k, v| posmap_begin[k + deletion[0]] = v.nil? ? nil : v + addition[0]}
             galign.position_map_end.each   {|k, v|   posmap_end[k + deletion[0]] = v.nil? ? nil : v + addition[0]}
             posmap_begin[p1], posmap_end[p1] = p2, p2
-            @mapped_elements += galign.common_elements + galign.mapped_elements
+            @common_elements += galign.common_elements
+            @mapped_elements += galign.mapped_elements
           else
             posmap_begin[deletion[0]], posmap_end[deletion[0]] = addition[0], addition[0]
             deletion[1..-1].each{|p| posmap_begin[p], posmap_end[p] = nil, nil}
@@ -158,52 +131,15 @@ class TextAlignment::TextAlignment
 end
 
 if __FILE__ == $0
-
-  # str1 = "TGF-β–induced"
-  # str2 = "TGF-beta-induced"
-
-  # str1 = "TGF-beta-induced"
-  # str2 = "TGF-β–induced"
-
-  # str1 = "beta-induced"
-  # str2 = "TGF-beta-induced"
-
-  # str1 = "TGF-beta-induced"
-  # str2 = "beta-induced"
-
-  # str1 = "TGF-β–β induced"
-  # str2 = "TGF-beta-beta induced"
-
-  # str1 = "-βκ-"
-  # str2 = "-betakappa-"
-
-  str1 = '-βκ'
-  str2 = '-betakappa'
-
-  # str1 = "-betakappa-beta-z"
-  # str2 = "-βκ-β–z"
-
-  # str1 = "affect C/EBP-β’s ability"
-  # str2 = "affect C/EBP-beta's ability"
-
-  # str1 = "12 ± 34"
-  # str2 = "12 +/- 34"
-
-  # str1 = "TGF-β–treated"
-  # str2 = "TGF-beta-treated"
-
-  # str1 = "in TGF-β–treated cells"
-  # str2   = "in TGF-beta-treated cells"
-
-  # str1 = "TGF-β–induced"
-  # str2 = "TGF-beta-induced"
+  str1 = '-βκ-'
+  str2 = '-betakappa-'
 
   # anns1 = JSON.parse File.read(ARGV[0]), :symbolize_names => true
   # anns2 = JSON.parse File.read(ARGV[1]), :symbolize_names => true
 
   dictionary = [["β", "beta"]]
   # align = TextAlignment::TextAlignment.new(str1, str2)
-  align = TextAlignment::TextAlignment.new(str1, str2, dictionary)
+  align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
   p align.common_elements
   p align.mapped_elements
 end

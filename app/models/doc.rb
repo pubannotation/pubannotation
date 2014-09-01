@@ -384,6 +384,10 @@ class Doc < ActiveRecord::Base
     self.class.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
   end
 
+  def self.get_div_ids(sourcedb, sourceid)
+    self.same_sourcedb_sourceid(sourcedb, sourceid).select('serial').to_a.map{|d| d.serial}
+  end
+
   def attach_sourcedb_suffix
     if sourcedb.include?(':') == false && username.present?
       self.sourcedb = "#{sourcedb}#{UserSourcedbSeparator}#{username}"

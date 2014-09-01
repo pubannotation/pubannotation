@@ -19,6 +19,7 @@ class << TextAlignment
 
     lcs = sdiff.count{|d| d.action == '='}
     return nil if lcs < clcs
+    return lcs, sdiff if lcs == 0
 
     match_first = sdiff.index{|d| d.action == '='}
     m1_initial  = sdiff[match_first].old_position

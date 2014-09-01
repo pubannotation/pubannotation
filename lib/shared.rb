@@ -36,8 +36,8 @@ module Shared
   # to assume that there is no bag representation to this method
   def self.realign_denotations(denotations, str1, str2)
     return nil if denotations.nil?
-    align = TextAlignment::TextAlignment.new(str1, str2)
-    denotations_new = align.transform_denotations(denotations)
+    align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
+    denotations_new = align.transform_denotations(denotations).select{|a| a[:span][:end] > a[:span][:begin]}
   end
 
   def self.save_hdenotations(hdenotations, project, doc)
@@ -111,25 +111,33 @@ module Shared
     if divs.length == 1
       self.save_annotations(annotations, project, divs[0])
     else
-      div_index = TextAlignment.find_divisions(annotations[:text], divs)
+      divs_hash = divs.collect{|d| d.to_hash}
+      div_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
+      p div_index
+      puts "-=-=-=-=-"
 
       div_index.each do |i|
-        ann = {}
-        idx = {}
-        ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
-        if annotations[:denotations].present?
-          ann[:denotations] = annotations[:denotations].select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] < i[1][1]}
-          ann[:denotations].each{|a| idx[a[:id]] = true}
+        p i
+        if i[0] >= 0
+          ann = {}
+          idx = {}
+          ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
+          if annotations[:denotations].present?
+            ann[:denotations] = annotations[:denotations]
+                                 .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
+                                .collect{|a| {:span => {:begin => a[:span][:begin] - i[1][0], :end => a[:span][:end] - i[1][0]}, :obj=>a[:obj]}}
+            ann[:denotations].each{|a| idx[a[:id]] = true}
+          end
+          if annotations[:relations].present?
+            ann[:relations] = annotations[:relations].select{|a| idx[a[:id]]}
+            ann[:relations].each{|a| idx[a[:id]] = true}
+          end
+          if annotations[:relations].present?
+            ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
+            ann[:modifications].each{|a| idx[a[:id]] = true}
+          end
+          self.save_annotations(ann, project, divs[i[0]])
         end
-        if annotations[:relations].present?
-          ann[:relations] = annotations[:relations].select{|a| idx[a[:id]]}
-          ann[:relations].each{|a| idx[a[:id]] = true}
-        end
-        if annotations[:relations].present?
-          ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
-          ann[:modifications].each{|a| idx[a[:id]] = true}
-        end
-        self.save_annotations(ann, project, divs[i[0]])
       end
     end
   end
