@@ -87,6 +87,7 @@ module AnnotationsHelper
       end
 
       if options[:doc_spans].present?
+        annotations[:text] = doc.text(options[:params])
         if annotations[:tracks].present?
           annotations[:tracks].each do |track|
             if track[:denotations].present?
