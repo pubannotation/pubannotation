@@ -301,15 +301,63 @@ describe AnnotationsController do
     
     context 'when params[:project_id] blank' do
       before do
-        get :annotations, :id => @doc.id, :begin => 1, :end => 10
+        controller.stub(:get_project_denotations) do |projects, doc, params|
+          projects
+        end
+        @project_user = FactoryGirl.create(:user)
+        @project_1 = FactoryGirl.create(:project, user: @project_user)
+        @project_2 = FactoryGirl.create(:project, user: @project_user)
+        @project_3 = FactoryGirl.create(:project, user: @project_user)
+        controller.stub(:get_annotations_for_json).and_return({denotations: nil, relations: nil, modifications: nil})
       end
 
-      it 'should assign @doc' do
-        assigns[:doc].should eql(@doc)
+      context 'when params[:projects] present' do
+        context 'when some projects present' do
+          before do
+            @params_projects = [@project_1, @project_2]
+            Project.stub(:name_in).and_return(@params_projects)
+            get :annotations, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, :begin => 1, :end => 10, projects: @params_projects.collect{|project| project.name}.join(',')
+          end
+
+          # check once in the context params[:project_id] is blank
+          it 'should assign @doc' do
+            assigns[:doc].should eql(@doc)
+          end
+
+          # check once in the context params[:project_id] is blank
+          it 'should assing get_doc notice as flash[:notice]' do
+            flash[:notice].should eql @get_doc_notice
+          end
+
+          it 'should assign @project_denotations only name_in params[:projects]' do
+            assigns[:project_denotations].should =~ @params_projects
+          end
+        end
+
+        context 'when a project present' do
+          before do
+            @params_projects = [@project_1]
+            Project.stub(:name_in).and_return(@params_projects)
+            get :annotations, sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, :begin => 1, :end => 10, projects: @params_projects.collect{|project| project.name}.join(',')
+          end
+
+
+          it 'should assign @project_denotations only name_in params[:projects]' do
+            assigns[:project_denotations].should =~ @params_projects
+          end
+        end
       end
 
-      it 'should assing get_doc notice as flash[:notice]' do
-        flash[:notice].should eql @get_doc_notice
+      context 'when params[:projects] blank' do
+        before do
+          @doc_projects = [@project_1, @project_2, @project_3]
+          @doc.stub(:projects).and_return(@doc_projects)
+          get :annotations, :id => @doc.id, :begin => 1, :end => 10
+        end
+
+        it 'should assign @project_denotations @doc.projects' do
+          assigns[:project_denotations].should =~ @doc_projects
+        end
       end
     end
 

@@ -19,6 +19,8 @@ class User < ActiveRecord::Base
   validate :check_invalid_character
   validate :username_changed, on: :update
 
+  before_destroy :destroy_all_user_sourcedb_docs
+
   scope :except_current_user, lambda { |current_user| where(["id != ?", current_user.id]) }
   scope :except_project_associate_maintainers, lambda{|project_id|
       project = Project.find(project_id)
@@ -51,5 +53,9 @@ class User < ActiveRecord::Base
 
   def username_changed
     errors.add(:username, I18n.t('errors.messages.unupdatable')) if username_changed?
+  end
+
+  def destroy_all_user_sourcedb_docs
+    Doc.user_source_db(self.username).destroy_all
   end
 end

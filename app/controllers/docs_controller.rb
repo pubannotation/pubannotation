@@ -182,10 +182,14 @@ class DocsController < ApplicationController
       end
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
-      @projects = @doc.spans_projects(params)
+      @sort_order = sort_order(Project)
+      @projects = Project.id_in(@doc.spans_projects(params).collect{|project| project.id}).sort_by_params(@sort_order)
+      flash[:sort_order] = @sort_order
       if @doc.present? && @projects.present?
         @project_denotations = get_project_denotations(@projects, @doc, params)
       end
+      @annotations_projects_check = true
+      @annotations_path = "#{url_for(:only_path => true)}/annotations"
     end
     @spans, @prev_text, @next_text = @doc.spans(params)
     @text = @doc.text(params)

@@ -126,7 +126,12 @@ class AnnotationsController < ApplicationController
       end
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
-      @project_denotations = get_project_denotations(@doc.projects, @doc, params)
+      if params[:projects].present?
+        projects = Project.name_in(params[:projects].split(','))
+      else
+        projects = @doc.projects
+      end
+      @project_denotations = get_project_denotations(projects, @doc, params)
     end
 
     if @doc.present?
