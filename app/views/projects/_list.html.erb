@@ -27,6 +27,9 @@
 <% else %>
   <table class="full">
     <tr>
+      <% if @annotations_projects_check -%>
+        <th style="width:1.7em"></th>
+      <% end -%>
       <th style="width:14em"><%= sortable('name', t('activerecord.attributes.project.name')) %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
       <th style="width:8em"><%= sortable('author', t('activerecord.attributes.project.author')) %></th>
@@ -46,6 +49,9 @@
     <% project_path = project_path(project.name) -%>
     <% type = 'P' -%>
     <tr>
+      <% if @annotations_projects_check -%>
+        <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotatons_#{project.id}", class: 'annotations_projects_check'} -%></td>
+      <% end -%>
       <td><%= project.name %></td>
       <td title="<%= project.description -%>"><%= project.description %></td>
       <td><%= project.author %></td>

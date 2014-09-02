@@ -33,7 +33,7 @@ describe User do
   
   describe 'check_invalid_character' do
     context 'when not include invalid character' do
-      it 'shoud not raise validation error' do
+      it 'should not raise validation error' do
         User.new(email: 'email@mail.check.com', password: 'password', username:'user').valid?.should be_true
       end
     end
@@ -43,7 +43,7 @@ describe User do
         @user = User.new(email: 'email', password: 'password', username:'us/er')
       end
 
-      it 'shoud raise validation error' do
+      it 'should raise validation error' do
         @user.valid?
         @user.errors.messages[:username].should eql([I18n.t('errors.messages.invalid_character_included')])
       end
@@ -54,7 +54,7 @@ describe User do
         @user = User.new(email: 'email', password: 'password', username:'us.er')
       end
 
-      it 'shoud raise validation error' do
+      it 'should raise validation error' do
         @user.valid?
         @user.errors.messages[:username].should eql([I18n.t('errors.messages.invalid_character_included')])
       end
@@ -65,7 +65,7 @@ describe User do
         @user = User.new(email: 'email', password: 'password', username:'us?er')
       end
 
-      it 'shoud raise validation error' do
+      it 'should raise validation error' do
         @user.valid?
         @user.errors.messages[:username].should eql([I18n.t('errors.messages.invalid_character_included')])
       end
@@ -76,7 +76,7 @@ describe User do
         @user = User.new(email: 'email', password: 'password', username:'us#er')
       end
 
-      it 'shoud raise validation error' do
+      it 'should raise validation error' do
         @user.valid?
         @user.errors.messages[:username].should eql([I18n.t('errors.messages.invalid_character_included')])
       end
@@ -87,7 +87,7 @@ describe User do
         @user = User.new(email: 'email', password: 'password', username:'us%er')
       end
 
-      it 'shoud raise validation error' do
+      it 'should raise validation error' do
         @user.valid?
         @user.errors.messages[:username].should eql([I18n.t('errors.messages.invalid_character_included')])
       end
@@ -100,7 +100,7 @@ describe User do
       @user.attributes = {username: 'new username'}#.should raise_exception
     end
 
-    it 'shoud not update username' do
+    it 'should not update username' do
       @user.save.should be_false
       @user.errors.messages[:username].should eql([I18n.t('errors.messages.unupdatable')])
     end
@@ -234,6 +234,66 @@ describe User do
     context 'when conditions does not include user name' do
       it '' do
         User.find_first_by_auth_conditions({:id => @user.id}).should eql(@user)
+      end
+    end
+  end
+
+  describe 'destroy_all_user_sourcedb_docs' do
+    before do
+      @user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @user_sourcedb_doc_1 = FactoryGirl.create(:doc, sourcedb: "AA1#{Doc::UserSourcedbSeparator}#{@user.username}")
+      @denotation = FactoryGirl.create(:denotation, :doc => @user_sourcedb_doc_1, project: @project)
+      @sub_relation = FactoryGirl.create(:relation,
+        :subj_id => @denotation.id, 
+        :subj_type => @denotation.class.to_s,
+        :obj_id => 50, 
+        :project_id => 1
+      )
+      @modification = FactoryGirl.create(:modification, :obj => @sub_relation, project: @project)
+      @obj_relation = FactoryGirl.create(:relation,
+        :subj_id => 1, 
+        :subj_type => 'Instance',
+        :obj => @denotation, 
+        :project_id => 1
+      )
+      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project => @project)
+      @user_sourcedb_doc_2 = FactoryGirl.create(:doc, sourcedb: "AA2#{Doc::UserSourcedbSeparator}#{@user.username}")
+      @another_user_sourcedb_doc_1 = FactoryGirl.create(:doc, sourcedb: "AA1#{Doc::UserSourcedbSeparator}someone username")
+      @another_user_sourcedb_doc_2 = FactoryGirl.create(:doc, sourcedb: "AA2#{Doc::UserSourcedbSeparator}someone username")
+      @another_user_sourcedb_doc_3 = FactoryGirl.create(:doc, sourcedb: "AA2")
+    end
+
+    describe 'before exec' do
+      it 'docs include users username should be present' do
+        Doc.user_source_db(@user.username).should =~ [@user_sourcedb_doc_1, @user_sourcedb_doc_2]  
+      end
+    end
+
+    describe 'after exec' do
+      before do
+        @user.destroy
+      end
+
+      it 'should destroy docs include users username' do
+        Doc.user_source_db(@user.username).should be_blank
+      end
+
+      it 'should not destroy docs not include users username' do
+        Doc.all.should =~ [@another_user_sourcedb_doc_1, @another_user_sourcedb_doc_2, @another_user_sourcedb_doc_3]
+      end
+
+      it 'should destroy denotations related to user sourcedb doc' do
+        Denotation.find_by_id(@denotation).should be_nil
+      end
+
+      it 'should destroy relations related to user sourcedb doc.denotations' do
+        Relation.all.should_not include(@sub_relation)
+        Relation.all.should_not include(@obj_relation)
+      end
+
+      it 'should destroy subcatrelmods related to user sourcedb doc' do
+        Modification.all.should_not include(@modification)
       end
     end
   end
