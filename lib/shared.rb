@@ -113,8 +113,6 @@ module Shared
     else
       divs_hash = divs.collect{|d| d.to_hash}
       div_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
-      p div_index
-      puts "-=-=-=-=-"
 
       div_index.each do |i|
         p i
@@ -125,7 +123,7 @@ module Shared
           if annotations[:denotations].present?
             ann[:denotations] = annotations[:denotations]
                                  .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
-                                .collect{|a| {:span => {:begin => a[:span][:begin] - i[1][0], :end => a[:span][:end] - i[1][0]}, :obj=>a[:obj]}}
+                                .collect{|a| {:span => {:begin => a[:span][:begin] - i[1][0], :end => a[:span][:end] - i[1][0]}, :obj => a[:obj]}}
             ann[:denotations].each{|a| idx[a[:id]] = true}
           end
           if annotations[:relations].present?
@@ -139,6 +137,7 @@ module Shared
           self.save_annotations(ann, project, divs[i[0]])
         end
       end
+      div_index
     end
   end
 

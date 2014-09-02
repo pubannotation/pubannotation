@@ -7,20 +7,25 @@ require 'rest_client'
 require 'xml'
 
 class DocSequencerPMC
-  attr_reader :source_url, :divs
+  attr_reader :source_url, :xml, :divs
 
   def initialize (id)
-    raise "'#{id}' is not a valid ID of PMC" unless id =~ /^(PMC)?[:-]?([1-9][0-9]*)$/
-    docid = $2
+    raise "id is nil." if id.nil?
 
-    RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{docid}" do |response, request, result|
+    id = id.strip
+    raise "'#{id}' is not a valid ID of PMC" unless id.match(/^(PMC)?[:-]?([1-9][0-9]*)$/)
+
+    id = id.sub(/^PMC[:-]?/, '')
+
+    RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{id}" do |response, request, result|
       case response.code
       when 200
-        raise "#{docid} does not exist in PMC." if response.index("PMC#{docid} not found")
-          
-        parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)
+        @xml = response
+        raise "#{id} not available from PMC." if @xml.index("PMC#{id} not found")
+
+        parser = XML::Parser.string(@xml, :encoding => XML::Encoding::UTF_8)
         @doc = parser.parse
-        @source_url = 'http://www.ncbi.nlm.nih.gov/pmc/' + docid
+        @source_url = 'http://www.ncbi.nlm.nih.gov/pmc/' + id
         @divs = get_divs
       else
         raise "PMC unreachable."
@@ -28,11 +33,7 @@ class DocSequencerPMC
     end
   end
 
-
-  def empty?
-    (@doc)? false : true
-  end
-
+  private
 
   def get_divs
     title    = get_title
@@ -67,7 +68,7 @@ class DocSequencerPMC
         end
       end
 
-
+      # extract figures and tables
       secs.each do |sec|
         figs = sec.find('.//fig')
         tbls = sec.find('.//table-wrap')
@@ -109,29 +110,25 @@ class DocSequencerPMC
         # remove dummy section
         if subsecs.length == 1
           subsubsecs = subsecs[0].find('./sec')
-          subsecs = subsubsecs
+          subsecs = subsubsecs if subsubsecs.length > 0
         end
 
-        if subsecs.length > 0 and ps.length > 0
-          text = ''
-          ps.each do |p|
-            text += get_text(p)
-          end
-          divs << {:heading => label, :body => text}
-          subsecs.each do |subsec|
-            divs << {:heading => label, :body => get_text(subsec)}
-          end          
-        elsif subsecs.length > 0
-          subsecs.each do |subsec|
-            divs << {:heading => label, :body => get_text(subsec)}
-          end
-        elsif ps.length > 0
+        if subsecs.length == 0
           divs << {:heading => label, :body => get_text(sec)}
         else
-          warn "strange section."
-          return nil
+          if ps.length > 0
+            text = ps.collect{|p| get_text(p)}.join
+            divs << {:heading => label, :body => text}
+          end
+
+          subsecs.each do |subsec|
+            divs << {:heading => label, :body => get_text(subsec)}
+          end
         end
       end
+
+      divs.each{|d| d[:body].strip!}
+      caps.each{|d| d[:body].strip!}
 
       return divs + caps
     else
@@ -232,6 +229,8 @@ class DocSequencerPMC
         title = e.content.strip
         return false unless check_title(e)
       when 'label'
+      when 'disp-formula'
+      when 'list'
       when 'p'
         return false unless check_p(e)
       when 'sec'
@@ -340,22 +339,28 @@ class DocSequencerPMC
   def get_text (node)
     text = ''
     node.each do |e|
-      if e.node_type_name == 'element' and e.name == 'sec'
+      if e.node_type_name == 'element' && (e.name == 'sec' || e.name == 'list' || e.name == 'list-item')
         text += get_text(e)
       else
         text += e.content.strip.gsub(/\n/, ' ').gsub(/ +/, ' ')
       end
-      text += "\n" if e.node_type_name == 'element' and (e.name == 'sec' or e.name == 'title' or e.name == 'p')
+      text += "\n" if e.node_type_name == 'element' && (e.name == 'sec' || e.name == 'title' || e.name == 'p')
     end
-    text.strip
+    text
   end
 
 end
 
 if __FILE__ == $0
+  xmlout = false
+
   require 'optparse'
   optparse = OptionParser.new do |opts|
     opts.banner = "Usage: doc_sequencer_pmc.rb [option(s)] id"
+
+    opts.on('-x', '--xml', 'prints the XML source') do
+      xmlout = true
+    end
 
     opts.on('-h', '--help', 'displays this screen') do
       puts opts
@@ -369,16 +374,19 @@ if __FILE__ == $0
   abnormal = 0
 
   ARGV.each do |id|
+    warn "processing #{id}"
 
     begin
       doc = DocSequencerPMC.new(id)
+      if xmlout
+        puts doc.xml
+      else
+       p doc.divs
+      end
     rescue
       warn $!
       exit
     end
-
-    p doc.source_url
-    puts '======'
-    p doc.divs
+    warn "done----------"
   end
 end

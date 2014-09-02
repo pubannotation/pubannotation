@@ -167,7 +167,7 @@ class AnnotationsController < ApplicationController
         end
 
         if annotations
-          notice = Shared.store_annotations(annotations, project, divs)
+          fits = Shared.store_annotations(annotations, project, divs)
         else
           notice = t('controllers.annotations.create.no_annotation')
         end
@@ -189,7 +189,11 @@ class AnnotationsController < ApplicationController
 
       format.json {
         if divs && !divs.empty? && project && annotations
-          render :json => {:status => :created}, :status => :created
+          if fits.nil?
+            render :json => {:status => :created}, :status => :created
+          else
+            render :json => {:status => :created, :fits => fits}, :status => :created
+          end
         else
           render :json => {:status => :unprocessable_entity}, :status => :unprocessable_entity
         end
