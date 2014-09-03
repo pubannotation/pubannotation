@@ -111,11 +111,11 @@ module Shared
     if divs.length == 1
       self.save_annotations(annotations, project, divs[0])
     else
+      div_index = divs.collect{|d| [d.serial, d]}.to_h
       divs_hash = divs.collect{|d| d.to_hash}
-      div_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
+      fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
 
-      div_index.each do |i|
-        p i
+      fit_index.each do |i|
         if i[0] >= 0
           ann = {}
           idx = {}
@@ -134,10 +134,10 @@ module Shared
             ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
             ann[:modifications].each{|a| idx[a[:id]] = true}
           end
-          self.save_annotations(ann, project, divs[i[0]])
+          self.save_annotations(ann, project, div_index[i[0]])
         end
       end
-      div_index
+      fit_index
     end
   end
 
