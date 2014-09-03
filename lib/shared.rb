@@ -113,6 +113,7 @@ module Shared
     if divs.length == 1
       self.save_annotations(annotations, project, divs[0])
     else
+      div_index = divs.collect{|d| [d.serial, d]}.to_h
       divs_hash = divs.collect{|d| d.to_hash}
       fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
 

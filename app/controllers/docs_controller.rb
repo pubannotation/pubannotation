@@ -291,39 +291,36 @@ class DocsController < ApplicationController
   end
   
   def create_project_docs
-    project, notice = get_project(params[:project_id])
+    project, message = get_project(params[:project_id])
+
+    docs =  if params[:ids].present? && params[:sourcedb].present?
+              params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {source_db:params[:sourcedb], source_id:id}}
+            elsif params[:docs].present?
+              params[:docs].collect{|d| d.symbolize_keys}
+            end
+
     num_created, num_added, num_failed = 0, 0, 0
-    if project
-      begin 
-        if params['json'].present?
-          json = File.read(params['json'].tempfile)
-          num_created, num_added, num_failed = project.add_docs_from_json(json, current_user)
-        else
-          num_created, num_added, num_failed = project.add_docs({ids: params[:ids], sourcedb: params[:sourcedb], user: current_user})
-        end
-        if num_added > 0
-          notice = t('controllers.docs.create_project_docs.added_to_document_set', :num_added => num_added, :project_name => project.name)
-        elsif num_created > 0
-          notice = t('controllers.docs.create_project_docs.created_to_document_set', :num_created => num_created, :project_name => project.name)
-        else
-          notice = t('controllers.docs.create_project_docs.added_to_document_set', :num_added => num_added, :project_name => project.name)
-        end
+    if project && docs
+      begin
+        num_created, num_added, num_failed = project.add_docs_from_json(docs, current_user)
       rescue => e
-        notice = e.message
-        num_failed = 1
+        message = e.message
       end
-    else
-      notice = t('controllers.pmcdocs.create.annotation_set_not_specified')
     end
+    result = {:created => num_created, :added => num_added, :failed => num_failed}
 
     respond_to do |format|
-      if num_created.to_i + num_added.to_i + num_failed.to_i > 0
-        format.html { redirect_to project_docs_path(project.name), :notice => notice }
-        format.json { render :json => nil, status: :created, location: project_path(project.name) }
-      else
-        format.html { redirect_to home_path, :notice => notice }
-        format.json { head :unprocessable_entity }
-      end
+      format.html {
+        notice = result.collect{|k,v| "#{k}: #{v}"}.join(', ')
+        redirect_to project_docs_path(project.name), :notice => notice
+      }
+      format.json {
+        if num_created > 0 || num_added > 0
+          render :json => result, status: :created, location: project_docs_path(project.name)
+        else
+          render :json => result, status: :unprocessable_entity
+        end
+      }
     end  
   end
 
