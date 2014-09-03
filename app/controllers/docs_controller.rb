@@ -315,7 +315,7 @@ class DocsController < ApplicationController
         redirect_to project_docs_path(project.name), :notice => notice
       }
       format.json {
-        if num_added > 0
+        if num_created > 0 || num_added > 0
           render :json => result, status: :created, location: project_docs_path(project.name)
         else
           render :json => result, status: :unprocessable_entity
