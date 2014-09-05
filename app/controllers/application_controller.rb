@@ -176,7 +176,7 @@ class ApplicationController < ActionController::Base
 
 
   def get_conversion (annotation, converter, identifier = nil)
-    RestClient.post converter, {:annotation => annotation.to_json}, :content_type => :json, :accept => :json do |response, request, result|
+    RestClient.post converter, annotation.to_json, :content_type => :json do |response, request, result|
       case response.code
       when 200
         response
