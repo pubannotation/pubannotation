@@ -87,8 +87,6 @@ class AnnotationsController < ApplicationController
           ttl = ''
           header_length = 0
           anncollection.each_with_index do |ann, i|
-            puts header_length
-            puts "-----"
             if i == 0
               ttl = get_conversion(ann, @project.rdfwriter)
               ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
