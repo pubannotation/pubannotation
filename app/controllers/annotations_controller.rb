@@ -85,9 +85,17 @@ class AnnotationsController < ApplicationController
         }
         format.ttl {
           ttl = ''
+          header_length = 0
           anncollection.each_with_index do |ann, i|
-            if i == 0 then ttl = get_conversion(ann, @project.rdfwriter).split("\n")[0..4].join("\n") end
-            ttl += get_conversion(ann, @project.rdfwriter).split("\n")[5..-1].join("\n")
+            puts header_length
+            puts "-----"
+            if i == 0
+              ttl = get_conversion(ann, @project.rdfwriter)
+              ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
+            else
+              ttl += get_conversion(ann, @project.rdfwriter).split(/\n/)[header_length .. -1].join("\n")
+            end
+            ttl += "\n" unless ttl.end_with?("\n")
           end
           render :text => ttl, :content_type => 'application/x-turtle', :filename => @project.name
         }
