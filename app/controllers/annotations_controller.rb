@@ -124,6 +124,7 @@ class AnnotationsController < ApplicationController
 
   def annotations
     sourcedb, sourceid, serial, id = get_docspec(params)
+    params[:project_id] = params[:project] if params[:project].present?
     if params[:project_id].present?
       @project, flash[:notice] = get_project(params[:project_id])
       if @project
@@ -286,13 +287,13 @@ class AnnotationsController < ApplicationController
   def set_access_control_headers
     allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp']
     origin = request.env['HTTP_ORIGIN']
-    if allowed_origins.include?(origin)
+    # if allowed_origins.include?(origin)
       headers['Access-Control-Allow-Origin'] = origin
       headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
       headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Prototype-Version'
       headers['Access-Control-Allow-Credentials'] = 'true'
       headers['Access-Control-Max-Age'] = "1728000"
-    end
+    # end
   end
 
 end
