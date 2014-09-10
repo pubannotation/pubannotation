@@ -31,20 +31,45 @@ title: PubAnnotation
 <section class="quickstart">
 	<div class="grid">
 		<div class="unit golden-small center-on-mobiles">
-			<h3>Access annotation</h3>
+			<h3>Access aligned annotations</h3>
 		</div>
 		<div class="unit golden-large code">
 			<p class="title">URL</p>
 			<div class="shell">
-				<p class="line">http://pubannotation.org/projects/bionlp-st-ge-2013-training/docs/sourcedb/PMC/sourceid/2626671/divs/1 /spans/1753-1870/annotations.json</p>
+				<p class="line">http://pubannotation.org/docs/sourcedb/PubMed /sourceid/10022882/spans/606-710/annotations.json</p>
 			</div>
 		</div>
 		<div class="clear"></div>
-		<div class="unit golden-small center-on-mobiles">
-			<p style="text-align:right">Visual Viewer<br/>(TextAE)</p>
+
+		<div class="unit one-fifth center-on-mobiles">
+			<p style="text-align:right">Gene name grounding<br/>(PubTator)</p>
 		</div>
-		<div class="unit golden-large">
-			<div class="textae-editor" target="http://pubannotation.org/projects/bionlp-st-ge-2013-training/docs/sourcedb/PMC/sourceid/2626671/divs/1/spans/1753-1870/annotations.json" mode="edit" style="background:#fff; color:black; padding:5px; padding-top:80px"></div>
+		<div class="unit four-fifths">
+			<div class="textae-editor" target="http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10022882/spans/606-710/annotations.json?project=pubtator-sample" style="background:#fff; color:black; padding:5px"></div>
+		</div>
+		<div class="clear"></div>
+
+		<div class="unit one-fifth center-on-mobiles">
+			<p style="text-align:right">Semantic annotation<br/>(MetaMap and SemRep)</p>
+		</div>
+		<div class="unit four-fifths">
+			<div class="textae-editor" target="http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10022882/spans/606-710/annotations.json?project=semrep-sample" style="background:#fff; color:black; padding:5px; padding-top:10px"></div>
+		</div>
+		<div class="clear"></div>
+
+		<div class="unit one-fifth center-on-mobiles">
+			<p style="text-align:right">Coreference annotation<br/>(Genia-Medco)</p>
+		</div>
+		<div class="unit four-fifths">
+			<div class="textae-editor" target="http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10022882/spans/606-710/annotations.json?project=genia-medco-coref" style="background:#fff; color:black; padding:5px; padding-top:50px"></div>
+		</div>
+		<div class="clear"></div>
+
+		<div class="unit one-fifth center-on-mobiles">
+			<p style="text-align:right">Dependency parsing<br/>(Enju)</p>
+		</div>
+		<div class="unit four-fifths">
+			<div class="textae-editor" target="http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10022882/spans/606-710/annotations.json?project=pubmed-enju-pas" style="background:#fff; color:black; padding:5px; padding-top:70px"></div>
 		</div>
 		<div class="clear"></div>
 	</div>
@@ -58,7 +83,7 @@ title: PubAnnotation
 		<div class="unit golden-large code">
 			<p class="title">HTTP Post</p>
 			<div class="shell">
-				<p class="line">curl -user username:password -H "content-type:application/json" -d @annotations.json http://pubannotation.org/projects/project_name/ docs/sourcedb/pubmed/sourceid/11111/ annotations.json</p>
+				<p class="line">curl -user username:password -H "content-type:application/json" -d @annotations.json http://pubannotation.org/docs/sourcedb/PubMed /sourceid/10022882/annotations.json</p>
 			</div>
 		</div>
 		<div class="clear"></div>
