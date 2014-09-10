@@ -2,12 +2,74 @@
 layout: default
 title: PubAnnotation
 ---
+<div style="background:#fff">
+<section class="intro">
+	<div class="grid">
+		<div class="unit whole center-on-mobiles">
+			<p>Share your annotation in alignment with others.</p>
+		</div>
+	</div>
+</section>
+<section class="features">
+	<div class="grid">
+		<div class="unit one-third">
+			<h3>Persistent repository</h3>
+			<p>Anyone can upload his/her annotation (to PubMed or the open access set of PMC articles) on PubAnnotation. The uploaders keep full control over their annotation, e.g., revision, deletion and access control.</p>
+		</div>
+		<div class="unit one-third">
+			<h3>Alignment</h3>
+			<p>Annotations are aligned with other annotations, becoming comparable, collectively usable, and so on.</p>
+		</div>
+		<div class="unit one-third">
+			<h3>REST API</h3>
+			<p>Annotations are accessable through REST API.</p>
+		</div>
+		<div class="clear"></div>
+	</div>
+</section>
 
-<div id="main">
-  <h1>News</h1>
+<section class="quickstart">
+	<div class="grid">
+		<div class="unit golden-small center-on-mobiles">
+			<h3>Access annotation</h3>
+		</div>
+		<div class="unit golden-large code">
+			<p class="title">URL</p>
+			<div class="shell">
+				<p class="line">http://pubannotation.org/projects/bionlp-st-ge-2013-training/docs/sourcedb/PMC/sourceid/2626671/divs/1 /spans/1753-1870/annotations.json</p>
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div class="unit golden-small center-on-mobiles">
+			<p style="text-align:right">Visual Viewer<br/>(TextAE)</p>
+		</div>
+		<div class="unit golden-large">
+			<div class="textae-editor" target="http://pubannotation.org/projects/bionlp-st-ge-2013-training/docs/sourcedb/PMC/sourceid/2626671/divs/1/spans/1753-1870/annotations.json" mode="edit" style="background:#fff; color:black; padding:5px; padding-top:80px"></div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</section>
+
+<section class="quickstart">
+	<div class="grid">
+		<div class="unit golden-small center-on-mobiles">
+			<h3>Upload annotation</h3>
+		</div>
+		<div class="unit golden-large code">
+			<p class="title">HTTP Post</p>
+			<div class="shell">
+				<p class="line">curl -user username:password -H "content-type:application/json" -d @annotations.json http://pubannotation.org/projects/project_name/ docs/sourcedb/pubmed/sourceid/11111/ annotations.json</p>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</section>
+
+</div>
+<!--   <h3>News</h3>
   <ul class="posts">
     {% for post in site.posts %}
       <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
     {% endfor %}
   </ul>
-</div>
+ -->

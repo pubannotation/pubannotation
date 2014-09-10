@@ -8,6 +8,8 @@ permalink: /docs/intro/
 * *We are now working on documentation, yet it is largely incomplete.*
 * *We are sorry for the inconvenience you may experience for the moment.*
 
+* PubAnnotation is an open source project. Your any contribution is very welcome.
+
 <!-- ## Motivation
 
 * It would be good if there is a portal place where we can find most of the annotations made to literature.

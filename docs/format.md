@@ -2,7 +2,7 @@
 layout: docs
 title: Format
 prev_section: intro
-next_section: about
+next_section: api
 permalink: /docs/format/
 ---
 

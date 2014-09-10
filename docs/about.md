@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: About
-prev_section: format
+prev_section: api
 permalink: /docs/about/
 ---
 
