@@ -581,7 +581,6 @@ describe DocsController do
       @project_denotations_span = {begin: 0, end: 5}
       @project_denotations = [denotations: [{id: 'Ts', span: @project_denotations_span}]]
       controller.stub(:get_project_denotations).and_return(@project_denotations)
-      @doc.stub(:spans_projects).and_return(@projects)
       @projects_sort_by_params = [@project_2]
       Project.stub_chain(:id_in, :sort_by_params).and_return(@projects_sort_by_params)
       @sort_order = 'sort_order'
@@ -682,35 +681,52 @@ describe DocsController do
         @project_denotation = 'project denotations'
         @project_denotations = {:denotations => @project_denotation}
         controller.stub(:get_project_denotations).and_return([{project: @project_1, denotations: @project_denotations[:denotations]}])
-        get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
-      end
-      
-      it 'should not assign @project' do
-        assigns[:project].should be_nil
       end
 
-      it 'shoud assign @sort_order' do
-        assigns[:sort_order].should eql(@sort_order)
+      context 'when doc.spans_projects(params). present' do
+        before do
+          @doc.stub(:spans_projects).and_return(@projects)
+          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
+        end
+        
+        it 'should not assign @project' do
+          assigns[:project].should be_nil
+        end
+
+        it 'shoud assign @sort_order' do
+          assigns[:sort_order].should eql(@sort_order)
+        end
+
+        it 'shoud assign @sort_order' do
+          flash[:sort_order].should eql(@sort_order)
+        end
+        
+        it 'should assign Project.id_in(@doc.spans_projects).sort_by_params @projects' do
+          assigns[:projects].should eql(@projects_sort_by_params)
+        end
+        
+        it 'should assign @project_denotations' do
+          assigns[:project_denotations].should eql([{'project' => @project_1, 'denotations' => @project_denotation}])
+        end
+
+        it 'should assign @annotations_projects_check' do
+          assigns[:annotations_projects_check].should be_present
+        end
+
+        it 'should assign @annotations_path without parameters' do
+          assigns[:annotations_path].should eql("#{spans_doc_path(@doc.id, 1, 5)}/annotations")
+        end
       end
 
-      it 'shoud assign @sort_order' do
-        flash[:sort_order].should eql(@sort_order)
-      end
-      
-      it 'should assign Project.id_in(@doc.spans_projects).sort_by_params @projects' do
-        assigns[:projects].should eql(@projects_sort_by_params)
-      end
-      
-      it 'should assign @project_denotations' do
-        assigns[:project_denotations].should eql([{'project' => @project_1, 'denotations' => @project_denotation}])
-      end
-
-      it 'should assign @annotations_projects_check' do
-        assigns[:annotations_projects_check].should be_present
-      end
-
-      it 'should assign @annotations_path without parameters' do
-        assigns[:annotations_path].should eql("#{spans_doc_path(@doc.id, 1, 5)}/annotations")
+      context 'when doc.spans_projects(params). present' do
+        before do
+          @doc.stub(:spans_projects).and_return(nil)
+          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
+        end
+        
+        it 'should not assign @projects' do
+          assigns[:projects].should be_blank
+        end
       end
     end
   end
