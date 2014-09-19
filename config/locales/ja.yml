@@ -234,6 +234,7 @@ ja:
         maintainer: 管理者
         reference: 参照
         editor: エディター
+        namespaces: ネームスペース
         rdfwriter: RDFライター
         xmlwriter: XMLライター
         bionlpwriter: BioNLP-STライター

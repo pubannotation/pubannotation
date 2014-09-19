@@ -1774,10 +1774,12 @@ describe Project do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @maintainer = 'maintainer'
       @project.stub(:maintainer).and_return(@maintainer)
+      @parse_namespaces = 'namespaces'
+      @project.stub(:parse_namespaces).and_return(@parse_namespaces)
     end
 
     it 'should return @project as json except specific columns and include maintainer' do
-      @project.json.should eql("{\"accessibility\":null,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
+      @project.json.should eql("{\"accessibility\":null,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"namespaces\":\"#{@parse_namespaces}\",\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
     end
   end
 
@@ -2414,4 +2416,66 @@ describe Project do
       end 
     end 
   end 
+
+  describe 'namespaces' do
+    before do
+      @user = FactoryGirl.create(:user)
+    end
+
+    context 'when namespaces is String' do
+      context 'when value is valid' do
+        before do
+          @base_uri = "http://example.org/"
+          @prefix_1 = 'foaf'
+          @uri_1 = "http://xmlns.com/foaf/0.1/"
+          @prefix_2 = 'wd'
+          @uri_2 = "http://www.wikidata.org/entity/"
+          # DO NOT indent 
+          namespaces = "BASE   <#{@base_uri}>
+PREFIX #{@prefix_1}: <#{@uri_1}>
+PREFIX #{@prefix_2}: <#{@uri_2}>"
+          @project = FactoryGirl.create(:project, namespaces: namespaces, user: @user)
+        end
+
+        it 'should parse namespaces string to Array => Hash' do
+          @project.parse_namespaces.should =~ [{prefix: "_base", uri: @base_uri}, {prefix: @prefix_1, uri: @uri_1}, {prefix: @prefix_2, uri: @uri_2}]
+        end
+      end
+
+      context 'when value is valid' do
+        context 'when BASE or PREFIX not included' do
+          before do
+            namespaces = "nase <http://uri.to>"
+            @project = FactoryGirl.create(:project, namespaces: namespaces, user: @user)
+          end
+
+          it 'should not parse namespaces' do
+            expect(@project.parse_namespaces).to be_blank
+          end
+        end
+
+        context 'when uri not included' do
+          before do
+            namespaces = "BASE (http://uri.to)"
+            @project = FactoryGirl.create(:project, namespaces: namespaces, user: @user)
+          end
+
+          it 'should not parse namespaces' do
+            expect(@project.parse_namespaces).to be_blank
+          end
+        end
+      end
+    end
+
+    context 'when namespaces is not String' do
+      before do
+        @namespaces = [{prefix: 'prefix'}]
+        @project = FactoryGirl.create(:project, namespaces: @namespaces, user: @user)
+      end
+
+      it 'should not parse namespaces' do
+        expect(@project.parse_namespaces).to be_nil
+      end
+    end
+  end
 end
