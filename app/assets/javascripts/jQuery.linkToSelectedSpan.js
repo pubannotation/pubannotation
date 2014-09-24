@@ -14,7 +14,8 @@
       return pos;
     },
     getPosition = function(selection, name) {
-      return getPrevNodesOffset(selection[name + 'Node']) + selection[name + 'Offset'];
+      return getPrevNodesOffset(selection[name + 'Node']) +
+        selection[name + 'Offset'];
     },
     toBeginEnd = function(apos, fpos) {
       return {
@@ -28,8 +29,8 @@
 
       return toBeginEnd(apos, fpos);
     },
-    toSpanString = function(select) {
-      return 'spans/' + select.begin + '-' + select.end;
+    toSelectString = function(select) {
+      return select.begin + '-' + select.end;
     },
     triggerSelect = function(event) {
       var selection = window.getSelection();
@@ -38,7 +39,8 @@
       if (selection.anchorNode.nodeName !== '#text') return;
       if (selection.focusNode.nodeName !== '#text') return;
 
-      $(event.target).trigger('select', toSpanString(getSelectedPosition(selection)));
+      $(event.target)
+        .trigger('select', toSelectString(getSelectedPosition(selection)));
     },
     createLinkSpaceContent = function($target) {
       return $target
@@ -53,7 +55,7 @@
     },
     updateLinkSpaceContent = function($target, select, url) {
       return $target.find('.range')
-        .text(select.begin + '-' + select.end)
+        .text(select)
         .end()
         .find('.link')
         .text('<' + url + '>')
@@ -61,7 +63,7 @@
     },
     Selected = function($linkSpace) {
       return function(event, select) {
-        var url = require('./pathJoin')(location.href, select);
+        var url = require('./pathJoin')(location.href, 'spans/' + select);
         updateLinkSpaceContent($linkSpace, select, url);
       };
     },
