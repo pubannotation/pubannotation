@@ -1790,12 +1790,12 @@ describe Project do
       before do
         @doc = FactoryGirl.create(:doc)
         @project.stub(:docs).and_return([@doc])
-        @json_hash = 'json'
-        @doc.stub(:json_hash).and_return(@json_hash)
+        @to_hash = 'json'
+        @doc.stub(:to_hash).and_return(@to_hash)
       end
 
       it 'should return collect of docs_hash of projecs.docs' do
-        @project.docs_json_hash.should eql([@json_hash])
+        @project.docs_json_hash.should eql([@to_hash])
       end
     end
 

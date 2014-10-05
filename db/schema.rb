@@ -159,7 +159,7 @@ ActiveRecord::Schema.define(:version => 20140712084833) do
     t.integer  "relations_count",                  :default => 0
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
-    t.datetime "annotations_updated_at",           :default => '2014-04-09 12:41:19'
+    t.datetime "annotations_updated_at",           :default => '2014-09-03 11:36:51'
   end
 
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true
@@ -182,8 +182,8 @@ ActiveRecord::Schema.define(:version => 20140712084833) do
   add_index "relations", ["subj_id"], :name => "index_relations_on_subj_id"
 
   create_table "users", :force => true do |t|
-    t.string   "email",                  :default => "", :null => false
-    t.string   "encrypted_password",     :default => "", :null => false
+    t.string   "email",                  :default => "",    :null => false
+    t.string   "encrypted_password",     :default => "",    :null => false
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
@@ -192,9 +192,9 @@ ActiveRecord::Schema.define(:version => 20140712084833) do
     t.datetime "last_sign_in_at"
     t.string   "current_sign_in_ip"
     t.string   "last_sign_in_ip"
-    t.datetime "created_at",                             :null => false
-    t.datetime "updated_at",                             :null => false
-    t.string   "username"
+    t.datetime "created_at",                                :null => false
+    t.datetime "updated_at",                                :null => false
+    t.text     "username",               :default => "",    :null => false
     t.boolean  "root",                   :default => false
   end
 
