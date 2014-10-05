@@ -183,7 +183,7 @@ class DocsController < ApplicationController
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
       @sort_order = sort_order(Project)
-      @projects = Project.id_in(@doc.spans_projects(params).collect{|project| project.id}).sort_by_params(@sort_order)
+      @projects = Project.id_in(@doc.spans_projects(params).collect{|project| project.id}).sort_by_params(@sort_order) if @doc.spans_projects(params).present?
       flash[:sort_order] = @sort_order
       if @doc.present? && @projects.present?
         @project_denotations = get_project_denotations(@projects, @doc, params)
