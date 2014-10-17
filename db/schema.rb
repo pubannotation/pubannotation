@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140712084833) do
+ActiveRecord::Schema.define(:version => 20141017021916) do
 
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
@@ -135,6 +135,13 @@ ActiveRecord::Schema.define(:version => 20140712084833) do
 
   add_index "modifications", ["obj_id"], :name => "index_modifications_on_obj_id"
   add_index "modifications", ["project_id"], :name => "index_modifications_on_project_id"
+
+  create_table "notices", :force => true do |t|
+    t.integer  "project_id"
+    t.datetime "created_at"
+  end
+
+  add_index "notices", ["project_id"], :name => "index_notices_on_project_id"
 
   create_table "projects", :force => true do |t|
     t.string   "name"

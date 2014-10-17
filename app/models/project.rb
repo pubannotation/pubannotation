@@ -29,6 +29,7 @@ class Project < ActiveRecord::Base
   has_many :modifications, :dependent => :destroy
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
+  has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
   
   default_scope where(:type => nil).order('status ASC')
@@ -182,6 +183,10 @@ class Project < ActiveRecord::Base
 
   def destroyable_for?(current_user)
     current_user.root? == true || current_user == user  
+  end
+
+  def notices_destroyable_for?(current_user)
+    current_user && (current_user.root? == true || current_user == user)
   end
   
   def association_for(current_user)
@@ -358,29 +363,33 @@ class Project < ActiveRecord::Base
   
   def save_annotation_zip(options = {})
     require 'fileutils'
-    unless Dir.exist?(Denotation::ZIP_FILE_PATH)
-      FileUtils.mkdir_p(Denotation::ZIP_FILE_PATH)
-    end
-    anncollection = self.anncollection(options[:encoding])
-    if anncollection.present?
-      file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
-      file = File.new(file_path, 'w')
-      Zip::ZipOutputStream.open(file.path) do |z|
-        z.put_next_entry('project.json')
-        z.print self.json
-        z.put_next_entry('docs.json')
-        z.print self.docs_json_hash.to_json
-        anncollection.each do |ann|
-          title = get_doc_info(ann[:target])
-          title.sub!(/\.$/, '')
-          title.gsub!(' ', '_')
-          title += ".json" unless title.end_with?(".json")
-          z.put_next_entry(title)
-          z.print ann.to_json
-        end
+    begin
+      unless Dir.exist?(Denotation::ZIP_FILE_PATH)
+        FileUtils.mkdir_p(Denotation::ZIP_FILE_PATH)
       end
-      file.close   
-    end  
+      anncollection = self.anncollection(options[:encoding])
+      if anncollection.present?
+        file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
+        file = File.new(file_path, 'w')
+        Zip::ZipOutputStream.open(file.path) do |z|
+          z.put_next_entry('project.json')
+          z.print self.json
+          z.put_next_entry('docs.json')
+          z.print self.docs_json_hash.to_json
+          anncollection.each do |ann|
+            title = get_doc_info(ann[:target])
+            title.sub!(/\.$/, '')
+            title.gsub!(' ', '_')
+            title += ".json" unless title.end_with?(".json")
+            z.put_next_entry(title)
+            z.print ann.to_json
+          end
+        end
+        file.close   
+      end  
+    rescue
+      self.notices.create
+    end
   end 
 
   def self.params_from_json(json_file)

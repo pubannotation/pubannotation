@@ -93,6 +93,8 @@
 	<div>
 		<%= project_annotations_zip_link_helper(project) -%>
 	</div>
+
+  <%= notices_list_helper -%>
 	
 	<% if project.associate_projects.present? -%>
 		<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => project.associate_projects, :scope => 'associate_project' } %>

@@ -32,7 +32,7 @@ ja:
     - 土曜日
     formats:
       default: ! '%Y/%m/%d'
-      long: ! '%Y年%m月%d日(%a)'
+      long: ! '%Y年%m月%d日'
       short: ! '%m/%d'
     month_names:
     - 
@@ -125,6 +125,7 @@ ja:
       save_prohibited: '%{model}に%{error}が発生しました。'
       invalid_character_included: 使用不可な文字が含まれています。 
       unupdatable: は変更できません。
+      failed_to_destroy: 削除に失敗しました。
     template:
       body: 次の項目を確認してください。
       header:
@@ -369,6 +370,8 @@ ja:
         pending_associate_projects: "このプロジェクトはプロジェクトのインポート処理中です..."
       upload_zip:
         delay_save_annotations: 'アノテーションは数分程度で作成されます'
+      save_annotation_zip:
+        failed: "アノテーションZIPファイルの作成に失敗しました。 %{created_at}"
   views:
     service:
       title: PubAnnotation

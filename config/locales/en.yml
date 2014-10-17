@@ -132,6 +132,7 @@ en:
       save_prohibited: '%{error} prohibited this %{model} from being saved:'
       invalid_character_included: Invalid character included.
       unupdatable: is unupdatable. 
+      failed_to_destroy: Failed to delete.
     template:
       body: ! 'There were problems with the following fields:'
       header:
@@ -346,6 +347,8 @@ en:
         import: "import associated projects"
       show:
         pending_associate_projects: "This project is processing importing projects"
+      save_annotation_zip:
+        failed: "Failed to creaete annotate ZIP file at %{created_at}"
   views:
     service:
       title: PubAnnotation

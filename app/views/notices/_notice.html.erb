@@ -1,0 +1,4 @@
+<%= div_for(notice) do -%>
+  <%= t('controllers.projects.save_annotation_zip.failed', created_at: I18n.l(notice.created_at, format: :long)) -%>
+  <%= link_to t('views.shared.delete'), notice_path(notice), remote: true, method: :delete, class: 'button' -%>
+<% end -%>
