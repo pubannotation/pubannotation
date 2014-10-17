@@ -490,3 +490,4 @@ ja:
       made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"
       zip:
         delayed_job_present: ZIPファイルは数分程度で作成されます。      
+        download_not_available: アノテーションZIPファイルはダウンロードできません。
