@@ -301,6 +301,7 @@ en:
       create:
         no_project_document: The project, %{project_id}, does not exist, or the document, %{sourcedb}:%{sourceid}, does not belong to the project.
         no_annotation: No annotation in the submission.
+        delayed_job: Task will be finished in a few minutes.
       confirm_create_zip: Are you sure to create zip? It will take a few minutes.
       create_zip: Create annotations ZIP file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
