@@ -15,3 +15,7 @@
 </table>
 
 <%= link_to t('views.shared.edit_model', :model => t('activerecord.models.doc')), edit_doc_path(@doc), :class => 'button'  if @doc.updatable_for?(current_user) -%>
+
+<script>
+  $('.text').linkToSelectedSpan('.linkSpace');
+</script>
