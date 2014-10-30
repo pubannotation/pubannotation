@@ -1,6 +1,8 @@
 Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
+
+  resources :notices, only: :destroy
   
   resources :documentations do
     collection do

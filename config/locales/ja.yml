@@ -32,7 +32,7 @@ ja:
     - 土曜日
     formats:
       default: ! '%Y/%m/%d'
-      long: ! '%Y年%m月%d日(%a)'
+      long: ! '%Y年%m月%d日'
       short: ! '%m/%d'
     month_names:
     - 
@@ -125,6 +125,7 @@ ja:
       save_prohibited: '%{model}に%{error}が発生しました。'
       invalid_character_included: 使用不可な文字が含まれています。 
       unupdatable: は変更できません。
+      failed_to_destroy: 削除に失敗しました。
     template:
       body: 次の項目を確認してください。
       header:
@@ -234,6 +235,7 @@ ja:
         maintainer: 管理者
         reference: 参照
         editor: エディター
+        namespaces: ネームスペース
         rdfwriter: RDFライター
         xmlwriter: XMLライター
         bionlpwriter: BioNLP-STライター
@@ -321,6 +323,7 @@ ja:
       create:
         does_not_include: アノテーションセット%{project_id}は、ドキュメントPubMed:%{sourceid}を含んでいません
         no_annotation: アノテーションが含まれていません
+        delayed_job: タスクは数分程度で実行されます。
       confirm_create_zip: ZIPファイル作成をしますか？※作成は遅延処理で実行されます。
       create_zip: アノテーションZIPファイルの作成
       update_zip: アノテーションZIPファイルの更新
@@ -369,6 +372,8 @@ ja:
         pending_associate_projects: "このプロジェクトはプロジェクトのインポート処理中です..."
       upload_zip:
         delay_save_annotations: 'アノテーションは数分程度で作成されます'
+      save_annotation_zip:
+        failed: "アノテーションZIPファイルの作成に失敗しました。 %{created_at}"
   views:
     service:
       title: PubAnnotation
@@ -487,3 +492,4 @@ ja:
       made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"
       zip:
         delayed_job_present: ZIPファイルは数分程度で作成されます。      
+        download_not_available: アノテーションZIPファイルはダウンロードできません。

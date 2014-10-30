@@ -166,9 +166,7 @@ class AnnotationsController < ApplicationController
       divnos = divno.respond_to?(:each) ? divno : [divno]
       divs = divnos.collect{|no| get_doc(sourcedb, sourceid, no)[0]}
       divs = [] if divs[0].nil? || !project.docs.include?(divs[0])
-
       unless divs.empty?
-
         # get annotations
         annotations = if params[:annotations]
           params[:annotations].symbolize_keys
@@ -179,7 +177,12 @@ class AnnotationsController < ApplicationController
         end
 
         if annotations
-          fits = Shared.store_annotations(annotations, project, divs)
+          if params[:format] == 'json'
+            Shared.delay.store_annotations(annotations, project, divs)
+            fits = t('controllers.annotations.create.delayed_job')
+          else
+            fits = Shared.store_annotations(annotations, project, divs)
+          end
         else
           notice = t('controllers.annotations.create.no_annotation')
         end
@@ -190,7 +193,7 @@ class AnnotationsController < ApplicationController
 
     respond_to do |format|
       format.html {
-        if doc and project
+        if divs.present? and project
           redirect_to :back, notice: notice
         elsif project
           redirect_to project_path(project.name), notice: notice
@@ -201,17 +204,12 @@ class AnnotationsController < ApplicationController
 
       format.json {
         if divs && !divs.empty? && project && annotations
-          if fits.nil?
-            render :json => {:status => :created}, :status => :created
-          else
-            render :json => {:status => :created, :fits => fits}, :status => :created
-          end
+          render :json => {:status => :created, :fits => fits}, :status => :created
         else
           render :json => {:status => :unprocessable_entity}, :status => :unprocessable_entity
         end
       }
     end
-
   end
 
 

@@ -23,12 +23,13 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'project_id',
     :join_table => 'associate_projects_projects'
 
-  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable
+  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces
   has_many :denotations, :dependent => :destroy
   has_many :relations, :dependent => :destroy
   has_many :modifications, :dependent => :destroy
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
+  has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
   
   default_scope where(:type => nil).order('status ASC')
@@ -96,6 +97,32 @@ class Project < ActiveRecord::Base
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
       includes(:user).order(sort_order)
   }
+
+  def parse_namespaces
+    namespace_lines = namespaces.split(/\r?\n/) if namespaces.present?
+    if namespace_lines.present?
+      namespaces_array = Array.new
+      namespace_lines.each do |namespace|
+        # namespace format should be "BASE|PREFIX space (prefix:) <uri>"
+        format = namespace =~ /^(BASE|PREFIX)\s+.+<.+>/i
+        begin_pos = namespace =~ /</
+        end_pos = namespace =~ />/
+        namespace_contents = namespace.split(/\s/)
+        if format.present?
+          # set prefix
+          if namespace =~ /^BASE\s/i
+            prefix = '_base'
+          elsif namespace =~ /^PREFIX\s/i
+            prefix = namespace_contents[1].gsub(':', '')
+          end
+          # set string between < ... > as namespace url
+          uri = namespace[begin_pos + 1 ...end_pos] 
+          namespaces_array << {prefix: prefix, uri: uri}
+        end
+      end
+      self.namespaces = namespaces_array if namespaces_array.present?
+    end
+  end
 
   def status_text
    status_hash = {
@@ -182,6 +209,10 @@ class Project < ActiveRecord::Base
 
   def destroyable_for?(current_user)
     current_user.root? == true || current_user == user  
+  end
+
+  def notices_destroyable_for?(current_user)
+    current_user && (current_user.root? == true || current_user == user)
   end
   
   def association_for(current_user)
@@ -341,6 +372,7 @@ class Project < ActiveRecord::Base
 
   def json
     except_columns = %w(pmdocs_count pmcdocs_count pending_associate_projects_count user_id)
+    self.namespaces = parse_namespaces
     to_json(except: except_columns, methods: :maintainer)
   end
 
@@ -358,29 +390,33 @@ class Project < ActiveRecord::Base
   
   def save_annotation_zip(options = {})
     require 'fileutils'
-    unless Dir.exist?(Denotation::ZIP_FILE_PATH)
-      FileUtils.mkdir_p(Denotation::ZIP_FILE_PATH)
-    end
-    anncollection = self.anncollection(options[:encoding])
-    if anncollection.present?
-      file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
-      file = File.new(file_path, 'w')
-      Zip::ZipOutputStream.open(file.path) do |z|
-        z.put_next_entry('project.json')
-        z.print self.json
-        z.put_next_entry('docs.json')
-        z.print self.docs_json_hash.to_json
-        anncollection.each do |ann|
-          title = get_doc_info(ann[:target])
-          title.sub!(/\.$/, '')
-          title.gsub!(' ', '_')
-          title += ".json" unless title.end_with?(".json")
-          z.put_next_entry(title)
-          z.print ann.to_json
-        end
+    begin
+      unless Dir.exist?(Denotation::ZIP_FILE_PATH)
+        FileUtils.mkdir_p(Denotation::ZIP_FILE_PATH)
       end
-      file.close   
-    end  
+      anncollection = self.anncollection(options[:encoding])
+      if anncollection.present?
+        file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
+        file = File.new(file_path, 'w')
+        Zip::ZipOutputStream.open(file.path) do |z|
+          z.put_next_entry('project.json')
+          z.print self.json
+          z.put_next_entry('docs.json')
+          z.print self.docs_json_hash.to_json
+          anncollection.each do |ann|
+            title = get_doc_info(ann[:target])
+            title.sub!(/\.$/, '')
+            title.gsub!(' ', '_')
+            title += ".json" unless title.end_with?(".json")
+            z.put_next_entry(title)
+            z.print ann.to_json
+          end
+        end
+        file.close   
+      end  
+    rescue
+      self.notices.create
+    end
   end 
 
   def self.params_from_json(json_file)
@@ -480,7 +516,7 @@ class Project < ActiveRecord::Base
     num_created, num_added, num_failed = 0, 0, 0
     source_dbs = json.group_by{|doc| doc[:source_db]}
     if source_dbs.present?
-      source_dbs.each do |source_db, docs_array|docs_array
+      source_dbs.each do |source_db, docs_array|
         ids = docs_array.collect{|doc| doc[:source_id]}.join(",")
         num_created_t, num_added_t, num_failed_t = self.add_docs({ids: ids, sourcedb: source_db, docs_array: docs_array, user: user})
         num_created += num_created_t
@@ -582,12 +618,12 @@ class Project < ActiveRecord::Base
       # all of columns insert into database need to be included in this hash.
       doc_array_params['source_db'] = options[:sourcedb] if options[:sourcedb].present?
       mappings = {
-        'text' => 'body', 
-        'source_db' => 'sourcedb', 
-        'source_id' => 'sourceid', 
-        'section' => 'section', 
-        'source_url' => 'source', 
-        'div_id' => 'serial'
+        :text => :body, 
+        :source_db => :sourcedb, 
+        :source_id => :sourceid, 
+        :section => :section, 
+        :source_url => :source, 
+        :div_id => :serial
       }
       doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
       doc = Doc.new(doc_params) 
