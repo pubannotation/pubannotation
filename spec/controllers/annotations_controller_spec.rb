@@ -428,106 +428,128 @@ describe AnnotationsController do
     end
   end
 
+
   describe 'create' do
     before do
       controller.class.skip_before_filter :authenticate_user!
       @current_user = FactoryGirl.create(:user)
-      current_user_stub(@current_user)
+      # current_user_stub(@current_user)
       @doc = FactoryGirl.create(:doc)
       @project = FactoryGirl.create(:project, name: 'project name', user: @current_user)
     end
 
     context 'when project present' do
       before do
-        controller.stub(:get_doc).and_return(@doc)
         controller.stub(:get_project).and_return(@project)
       end
 
-      context 'when doc present' do
+      context' when divs present' do
         before do
+          controller.stub(:get_docspec).and_return(['sourcedb', 'sourceid', 'divno'])
+          controller.stub(:get_doc).and_return([@doc])
           @project.docs << @doc
-          @annotations = {'key' => 'value'} 
-          Shared.stub(:save_annotations) do |annotations, project, doc|
-            @attr_annotations = annotations
-          end
-          @referer_path = docs_path
-          request.env["HTTP_REFERER"] = @referer_path
         end
 
-        context 'when params[:annotations] present' do
-          context 'when format html' do
-            before do
-              post :create, project_id: @project.id, annotations: @annotations
-            end
-            
-            it 'should set params[:annotations].symblize_keys as annotaitons' do
-              @attr_annotations.should eql(@annotations.symbolize_keys)
-            end
-            
-            it 'should redirect_to :back' do
-              response.should redirect_to @referer_path
-            end
+        context 'when params[:annotaitons] present' do
+          before do
+            @annotations = {'key' => 'value'}
           end
 
-          context 'when format json' do
-            before do
+          context 'when format == json' do
+            it 'should execute store_annotations by delayed_job' do
+              Shared.should_receive(:delay)  
+              Shared.should_receive(:store_annotations).with(@annotations.symbolize_keys, @project, [@doc])  
+              Shared.stub(:delay).and_return(Shared)
               post :create, project_id: @project.id, annotations: @annotations, format: 'json'
             end
-            
-            it 'should return created header' do
-              response.status.should eql(201)
+
+            it 'should return status created , fits delayed_job message' do
+              Shared.stub_chain(:delay, :store_annotations).and_return(nil)
+              post :create, project_id: @project.id, annotations: @annotations, format: 'json'
+              response.body.should eql({'status' => 'created', 'fits' => I18n.t('controllers.annotations.create.delayed_job')}.to_json)
+            end
+          end
+
+          context 'when format == html' do
+            before do
+              @referer_path = docs_path
+              request.env["HTTP_REFERER"] = @referer_path
+            end
+
+            it 'should execute store_annotations without delayed_job with params[:annotaitons] symbolize_keys' do
+              Shared.should_not_receive(:delay)  
+              Shared.should_receive(:store_annotations).with(@annotations.symbolize_keys, @project, [@doc])  
+              post :create, project_id: @project.id, annotations: @annotations, format: 'html'
             end
           end
         end
 
-        context 'when params[:text] present' do
+        context 'when params[:annotaitons] blank and params[:text] present' do
           before do
-            @denotations = 'denotations'
-            @relations = 'relations'
-            @modifications = 'modifications'
-            @text = 'text'
-            post :create, project_id: @project.id, text: @text, denotations: @denotations, relations: @relations, modifications: @modifications
+            @params_text ='text'
+            @params_denotations = 'denotations'
+            @params_relations = 'relations'
+            @params_modifications = 'modifications'
           end
-          
-          it 'should set params text, denotations, relations, modifications as annotaitons' do
-            @attr_annotations.should eql({:text => @text, :denotations => @denotations, :modifications => @modifications, :relations => @relations})
+
+          context 'when format == html' do
+            it 'should execute store_annotations by delayed_job with annotaitons generate by params text, denotations, relations and modifications' do
+              Shared.should_receive(:delay)  
+              Shared.should_receive(:store_annotations).with({text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications}, @project, [@doc])  
+              Shared.stub(:delay).and_return(Shared)
+              post :create, project_id: @project.id, text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications, format: 'json'
+            end
+          end
+
+          context 'when format != json' do
+            before do
+              @referer_path = docs_path
+              request.env["HTTP_REFERER"] = @referer_path
+            end
+
+            it 'should execute store_annotations without delayed_job with params[:annotaitons] symbolize_keys' do
+              Shared.should_not_receive(:delay)  
+              Shared.should_receive(:store_annotations).with({text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications}, @project, [@doc])  
+              post :create, project_id: @project.id, text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications, format: 'html'
+            end
           end
         end
 
-        context 'when params annotations, text is nil' do
+        context 'when params[:annotaitons] blank and params[:text] blank' do
           before do
-            post :create, project_id: @project.id
+            @referer_path = docs_path
+            request.env["HTTP_REFERER"] = @referer_path
+            post :create, project_id: @project.id, format: 'html'
           end
-          
-          it 'should set flash' do
+
+          it 'should set no annotaitons messages as flash[:notice]' do
             flash[:notice].should eql(I18n.t('controllers.annotations.create.no_annotation'))
           end
         end
       end
 
-      context 'when doc blank' do
+      context' when divs blank' do
         before do
-          controller.stub(:get_project).and_return(@project)
-          controller.stub(:get_doc).and_return(@doc)
-          @sourcedb = 'sourcedb'
-          @sourceid = 'sourceid'
-          post :create, project_id: @project.id, sourcedb: @sourcedb, sourceid: @sourceid
+          controller.stub(:get_docspec).and_return(['sourcedb', 'sourceid', 'divno'])
+          controller.stub(:get_doc).and_return([@doc])
+          post :create, project_id: @project.id, format: 'html'
         end
 
-        it 'should set flash' do
-          flash[:notice].should eql(I18n.t('controllers.annotations.create.no_project_document', :project_id => @project.id, :sourcedb => @sourcedb, :sourceid => @sourceid)) 
+        it 'should set error message as flash[:notice]' do
+          flash[:notice].should eql(I18n.t('controllers.annotations.create.no_project_document', :project_id =>@project.id, :sourcedb => nil, :sourceid => nil))
         end
-        
+
         it 'should redirect_to project_path' do
-          response.should redirect_to project_path(@project.name)
+          response.should redirect_to(project_path(@project.name))
         end
-      end
+      end 
     end
 
     context 'when project blank' do
-      context 'when format html' do
+      context 'when format == html' do
         before do
-          post :create, project_id: 0
+          controller.stub(:get_project).and_return(nil)
+          post :create, project_id: 1, format: 'html'
         end
 
         it 'should redirect_to home_path' do
@@ -535,18 +557,19 @@ describe AnnotationsController do
         end
       end
 
-      context 'when format json' do
+      context 'when format == json' do
         before do
-          post :create, project_id: 0, format: 'json'
+          controller.stub(:get_project).and_return(nil)
+          post :create, project_id: 1, format: 'json'
         end
 
-        it 'should return unprocessable' do
-          response.status.should eql 422
+        it 'should return unprocessable_entity json' do
+          response.body.should eql({status: :unprocessable_entity}.to_json)
         end
       end
     end
   end
-  
+
   describe 'set_access_control_headers' do
     context 'when HTTP_ORIGIN includes allowed_origins' do
       before do

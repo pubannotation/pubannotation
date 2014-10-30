@@ -170,7 +170,19 @@ describe Project do
       @project.associate_maintainer_users.to_a.should =~ [@user_1, @user_2]
     end
   end
-  
+
+  describe 'has_many notices' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @notice_1 = FactoryGirl.create(:notice, project: @project)
+      @notice_2 = FactoryGirl.create(:notice, project: @project)
+    end
+
+    it 'should return notices belongs_to project' do
+      @project.notices.to_a.should =~ [@notice_1, @notice_2]
+    end
+  end
+
   describe 'default_scope' do
     before do
       FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "aaa111", :status => 3)
@@ -813,6 +825,50 @@ describe Project do
     context 'when current_user is not project.user nor project.associate_maintainer.user' do
       it 'should return false' do
         @project.destroyable_for?(FactoryGirl.create(:user)).should be_false
+      end
+    end
+  end
+
+  describe 'notices_destroyable_for?' do
+    before do
+      @current_user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, user: @current_user)
+      @notice = FactoryGirl.create(:notice, project: @project)
+    end
+
+    context 'when current.prensent? == true' do
+      context 'when current.root? = true' do
+        before do
+          @current_user.stub(:root?).and_return(true)
+        end
+
+        it 'should return true' do
+          @project.notices_destroyable_for?(@current_user).should be_true 
+        end
+      end
+
+      context 'when current.roo? = false' do
+        before do
+          @current_user.stub(:roo?).and_return(false)
+        end
+
+        context 'when current_user == project.user' do
+          it 'should return true' do
+            @project.notices_destroyable_for?(@current_user).should be_true 
+          end
+        end
+
+        context 'when current_user != project.user' do
+          it 'should return false' do
+            @project.notices_destroyable_for?(FactoryGirl.create(:user)).should be_false 
+          end
+        end
+      end
+    end
+
+    context 'when current.prensent? == false' do
+      it 'should return false' do
+        @project.notices_destroyable_for?(nil).should be_false 
       end
     end
   end
@@ -1870,6 +1926,10 @@ describe Project do
         it 'should call mkdir_p with Denotation::ZIP_FILE_PATH' do
           @path.should eql(Denotation::ZIP_FILE_PATH)
         end
+
+        it 'should not create @project.notices' do
+          expect{ @project.save_annotation_zip }.not_to change{ @project.notices.count }.from(0).to(1)
+        end
       end
 
       context 'when public/annotations directory exist' do
@@ -1912,6 +1972,17 @@ describe Project do
       
       after do
         File.unlink("#{Denotation::ZIP_FILE_PATH}#{@name}.zip")
+      end
+    end
+
+    context 'when error occurred' do
+      before do
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @project.stub(:anncollection).and_raise('error')
+      end
+
+      it 'should create @project.notices' do
+        expect{ @project.save_annotation_zip }.to change{ @project.notices.count }.from(0).to(1)
       end
     end
   end

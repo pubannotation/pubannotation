@@ -184,12 +184,16 @@ module AnnotationsHelper
       else
         # when ZIP file deos not exists 
         delayed_job_tasks = ActiveRecord::Base.connection.execute('SELECT * FROM delayed_jobs').select{|delayed_job| delayed_job['handler'].include?(project.name) && delayed_job['handler'].include?('save_annotation_zip')}
-        if delayed_job_tasks.blank?
-          # when delayed_job exists
-          link_to t('controllers.annotations.create_zip'), project_annotations_path(project.name, :delay => true), :class => 'button', :confirm => t('controllers.annotations.confirm_create_zip')
+        if project.user == current_user
+          if delayed_job_tasks.blank?
+            # when delayed_job exists
+            link_to t('controllers.annotations.create_zip'), project_annotations_path(project.name, :delay => true), :class => 'button', :confirm => t('controllers.annotations.confirm_create_zip')
+          else
+            # delayed_job does not exists
+            t('views.shared.zip.delayed_job_present')
+          end
         else
-          # delayed_job does not exists
-          t('views.shared.zip.delayed_job_present')
+          t('views.shared.zip.download_not_available')
         end
       end    
     end    

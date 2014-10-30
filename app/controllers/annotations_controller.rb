@@ -87,8 +87,6 @@ class AnnotationsController < ApplicationController
           ttl = ''
           header_length = 0
           anncollection.each_with_index do |ann, i|
-            puts header_length
-            puts "-----"
             if i == 0
               ttl = get_conversion(ann, @project.rdfwriter)
               ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
@@ -126,6 +124,7 @@ class AnnotationsController < ApplicationController
 
   def annotations
     sourcedb, sourceid, serial, id = get_docspec(params)
+    params[:project_id] = params[:project] if params[:project].present?
     if params[:project_id].present?
       @project, flash[:notice] = get_project(params[:project_id])
       if @project
@@ -167,9 +166,7 @@ class AnnotationsController < ApplicationController
       divnos = divno.respond_to?(:each) ? divno : [divno]
       divs = divnos.collect{|no| get_doc(sourcedb, sourceid, no)[0]}
       divs = [] if divs[0].nil? || !project.docs.include?(divs[0])
-
       unless divs.empty?
-
         # get annotations
         annotations = if params[:annotations]
           params[:annotations].symbolize_keys
@@ -180,7 +177,12 @@ class AnnotationsController < ApplicationController
         end
 
         if annotations
-          fits = Shared.store_annotations(annotations, project, divs)
+          if params[:format] == 'json'
+            Shared.delay.store_annotations(annotations, project, divs)
+            fits = t('controllers.annotations.create.delayed_job')
+          else
+            fits = Shared.store_annotations(annotations, project, divs)
+          end
         else
           notice = t('controllers.annotations.create.no_annotation')
         end
@@ -191,7 +193,7 @@ class AnnotationsController < ApplicationController
 
     respond_to do |format|
       format.html {
-        if doc and project
+        if divs.present? and project
           redirect_to :back, notice: notice
         elsif project
           redirect_to project_path(project.name), notice: notice
@@ -202,17 +204,12 @@ class AnnotationsController < ApplicationController
 
       format.json {
         if divs && !divs.empty? && project && annotations
-          if fits.nil?
-            render :json => {:status => :created}, :status => :created
-          else
-            render :json => {:status => :created, :fits => fits}, :status => :created
-          end
+          render :json => {:status => :created, :fits => fits}, :status => :created
         else
           render :json => {:status => :unprocessable_entity}, :status => :unprocessable_entity
         end
       }
     end
-
   end
 
 
@@ -288,13 +285,13 @@ class AnnotationsController < ApplicationController
   def set_access_control_headers
     allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp']
     origin = request.env['HTTP_ORIGIN']
-    if allowed_origins.include?(origin)
+    # if allowed_origins.include?(origin)
       headers['Access-Control-Allow-Origin'] = origin
       headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
       headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Prototype-Version'
       headers['Access-Control-Allow-Credentials'] = 'true'
       headers['Access-Control-Max-Age'] = "1728000"
-    end
+    # end
   end
 
 end

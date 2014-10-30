@@ -108,6 +108,8 @@ module Shared
   end
 
   def self.store_annotations(annotations, project, divs)
+    div_index = divs.map{|d| [d.serial, d]}.to_h
+
     if divs.length == 1
       self.save_annotations(annotations, project, divs[0])
     else
