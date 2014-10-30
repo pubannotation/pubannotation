@@ -11,7 +11,7 @@
 		(<%= @doc.serial %> - <%= @doc.section %>)
 	<% end %>
 </th></tr>
-<tr><td class="text"><%= raw @doc.gsub(/\n/, "<br>") if @text.present? %></td><tr>
+<tr><td class="text"><%= raw @doc.body.gsub(/\n/, "<br>") if @doc.present? %></td><tr>
 <tr>
   <td class="linkSpace"></td>
 </tr>
