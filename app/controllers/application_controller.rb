@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'pmcdoc'
 require 'utfrewrite'
-require 'sequence_alignment'
 
 class ApplicationController < ActionController::Base
   include ApplicationHelper
@@ -73,12 +72,18 @@ class ApplicationController < ActionController::Base
   def get_docspec(params)
     sourcedb = params[:sourcedb]
     sourceid = params[:sourceid]
-    serial   = params[:div_id].present? ? params[:div_id] : 0
+
+    serial =  if params[:div_id].present?
+                params[:div_id]
+              elsif Doc.has_divs?(sourcedb, sourceid)
+                Doc.get_div_ids(sourcedb, sourceid)
+              else
+                0
+              end
     id = params[:id] if params[:id]
 
     return sourcedb, sourceid, serial, id
   end
-
 
   def get_project (project_name)
     project = Project.find_by_name(project_name)
@@ -140,14 +145,6 @@ class ApplicationController < ActionController::Base
   end
 
 
-  def rewrite_ascii (docs)
-    docs.each do |doc|
-      doc.body = get_ascii_text(doc.body)
-    end
-    docs
-  end
-
-
   def archive_texts (docs)
     unless docs.empty?
       file_name = "docs.zip"
@@ -179,7 +176,7 @@ class ApplicationController < ActionController::Base
 
 
   def get_conversion (annotation, converter, identifier = nil)
-    RestClient.post converter, {:annotation => annotation.to_json}, :content_type => :json, :accept => :json do |response, request, result|
+    RestClient.post converter, annotation.to_json, :content_type => :json do |response, request, result|
       case response.code
       when 200
         response

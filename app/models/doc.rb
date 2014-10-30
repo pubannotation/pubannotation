@@ -193,6 +193,11 @@ class Doc < ActiveRecord::Base
     [prev_text, spans, next_text].compact.join('') 
   end
 
+  def ascii_body
+    self.body = get_ascii_text(self.body)
+  end
+
+
   def to_csv(params)
     focus, left, right = self.spans(params) 
     CSV.generate(col_sep: "\t") do |csv|
@@ -289,6 +294,7 @@ class Doc < ActiveRecord::Base
     end  
   end
 
+  # to_be_deprecated in favor to to_hash below
   def json_hash
     json_hash = {
       id: id,
@@ -304,6 +310,17 @@ class Doc < ActiveRecord::Base
     return json_hash
   end
   
+  def to_hash
+    {
+      text: body.gsub(/[\r\n]/, ""),
+      source_db: sourcedb,
+      source_id: sourceid,
+      div_id: serial,
+      section: section,
+      source_url: source
+    }
+  end
+
   def self.sql_find(params, current_user, project)
     if params[:sql].present?
       current_user_id = current_user.present? ? current_user.id : nil
@@ -362,9 +379,17 @@ class Doc < ActiveRecord::Base
     end
     return divs
   end
-  
+
+  def self.has_divs?(sourcedb, sourceid)
+    self.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+  end
+
   def has_divs?
     self.class.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+  end
+
+  def self.get_div_ids(sourcedb, sourceid)
+    self.same_sourcedb_sourceid(sourcedb, sourceid).select('serial').to_a.map{|d| d.serial}
   end
 
   def attach_sourcedb_suffix
@@ -372,7 +397,7 @@ class Doc < ActiveRecord::Base
       self.sourcedb = "#{sourcedb}#{UserSourcedbSeparator}#{username}"
     end
   end
-      
+
   # before destroy
   def decrement_docs_counter
     if self.projects.present?

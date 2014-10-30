@@ -41,7 +41,7 @@ describe DivsController do
         end
         
         it 'should render json' do
-          response.body.should eql(assigns[:docs].to_json)
+          response.body.should eql(assigns[:docs].collect{|d| d.to_hash}.to_json)
         end
       end
     end

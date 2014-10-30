@@ -558,25 +558,6 @@ describe ApplicationController do
     end
   end
   
-  describe 'rewrite ascii' do
-    before do
-      @get_ascii_text = 'ASCII TEXT'
-      controller.stub(:get_ascii_text).and_return(@get_ascii_text)
-      @doc = FactoryGirl.create(:doc, :body => 'docment body')
-      @former_doc_body = @doc.body
-      @result = controller.rewrite_ascii([@doc])
-    end
-    
-    it 'should replace document body' do
-      @result[0].body.should_not eql(@former_doc_body)
-      @doc.body.should_not eql(@former_doc_body)
-    end
-    
-    it 'should include passed doc' do
-      @result.should include(@doc)
-    end
-  end
-  
   describe 'archive_texts' do
     before do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid', :serial => 1, :section => 'section')

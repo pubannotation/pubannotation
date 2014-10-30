@@ -126,6 +126,35 @@ describe ProjectsController do
         end
       end
       
+      describe '@notices' do
+        before do
+          @project.pending_associate_projects_count = 1
+        end  
+
+        context 'when project.notices prensent' do
+          before do
+            @notices = 'notices'
+            @project.stub(:notices).and_return(@notices)
+            get :show, :id => @project.id
+          end
+
+          it 'should assign @project.notices as @notices' do
+            assigns[:notices].should eql(@notices)
+          end
+        end
+
+        context 'when project.notices blank' do
+          before do
+            @project.stub(:notices).and_return(nil)
+            get :show, :id => @project.id
+          end
+
+          it 'should not assign @notices' do
+            assigns[:notices].should be_nil
+          end
+        end
+      end
+      
       context 'when format json' do
         before do
           @json = {val: 'val'}

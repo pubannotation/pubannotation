@@ -132,6 +132,7 @@ en:
       save_prohibited: '%{error} prohibited this %{model} from being saved:'
       invalid_character_included: Invalid character included.
       unupdatable: is unupdatable. 
+      failed_to_destroy: Failed to delete.
     template:
       body: ! 'There were problems with the following fields:'
       header:
@@ -300,6 +301,7 @@ en:
       create:
         no_project_document: The project, %{project_id}, does not exist, or the document, %{sourcedb}:%{sourceid}, does not belong to the project.
         no_annotation: No annotation in the submission.
+        delayed_job: Task will be finished in a few minutes.
       confirm_create_zip: Are you sure to create zip? It will take a few minutes.
       create_zip: Create annotations ZIP file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
@@ -346,6 +348,8 @@ en:
         import: "import associated projects"
       show:
         pending_associate_projects: "This project is processing importing projects"
+      save_annotation_zip:
+        failed: "Failed to creaete annotate ZIP file at %{created_at}"
   views:
     service:
       title: PubAnnotation
@@ -457,3 +461,4 @@ en:
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"
       zip:
         delayed_job_present: ZIP file will be created in a few minutes.      
+        download_not_available: Whole download is not available for this project.

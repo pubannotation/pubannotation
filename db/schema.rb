@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140918123210) do
+ActiveRecord::Schema.define(:version => 20141017021916) do
 
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
@@ -160,7 +160,6 @@ ActiveRecord::Schema.define(:version => 20140918123210) do
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
     t.datetime "annotations_updated_at",           :default => '2014-04-09 12:41:19'
-    t.text     "namespaces"
   end
 
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true

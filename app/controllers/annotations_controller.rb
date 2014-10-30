@@ -85,9 +85,15 @@ class AnnotationsController < ApplicationController
         }
         format.ttl {
           ttl = ''
+          header_length = 0
           anncollection.each_with_index do |ann, i|
-            if i == 0 then ttl = get_conversion(ann, @project.rdfwriter).split("\n")[0..4].join("\n") end
-            ttl += get_conversion(ann, @project.rdfwriter).split("\n")[5..-1].join("\n")
+            if i == 0
+              ttl = get_conversion(ann, @project.rdfwriter)
+              ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
+            else
+              ttl += get_conversion(ann, @project.rdfwriter).split(/\n/)[header_length .. -1].join("\n")
+            end
+            ttl += "\n" unless ttl.end_with?("\n")
           end
           render :text => ttl, :content_type => 'application/x-turtle', :filename => @project.name
         }
@@ -118,6 +124,7 @@ class AnnotationsController < ApplicationController
 
   def annotations
     sourcedb, sourceid, serial, id = get_docspec(params)
+    params[:project_id] = params[:project] if params[:project].present?
     if params[:project_id].present?
       @project, flash[:notice] = get_project(params[:project_id])
       if @project
@@ -155,12 +162,14 @@ class AnnotationsController < ApplicationController
     project, notice = get_project(params[:project_id])
 
     if project
-      doc, notice = get_doc(*get_docspec(params))
-      doc = nil if doc and !project.docs.include?(doc)
-
-      if doc
+      sourcedb, sourceid, divno = get_docspec(params)
+      divnos = divno.respond_to?(:each) ? divno : [divno]
+      divs = divnos.collect{|no| get_doc(sourcedb, sourceid, no)[0]}
+      divs = [] if divs[0].nil? || !project.docs.include?(divs[0])
+      unless divs.empty?
+        # get annotations
         annotations = if params[:annotations]
-            params[:annotations].symbolize_keys
+          params[:annotations].symbolize_keys
         elsif params[:text] and !params[:text].empty?
           {:text => params[:text], :denotations => params[:denotations], :relations => params[:relations], :modifications => params[:modifications]}
         else
@@ -168,7 +177,12 @@ class AnnotationsController < ApplicationController
         end
 
         if annotations
-          notice = Shared.save_annotations(annotations, project, doc)
+          if params[:format] == 'json'
+            Shared.delay.store_annotations(annotations, project, divs)
+            fits = t('controllers.annotations.create.delayed_job')
+          else
+            fits = Shared.store_annotations(annotations, project, divs)
+          end
         else
           notice = t('controllers.annotations.create.no_annotation')
         end
@@ -179,7 +193,7 @@ class AnnotationsController < ApplicationController
 
     respond_to do |format|
       format.html {
-        if doc and project
+        if divs.present? and project
           redirect_to :back, notice: notice
         elsif project
           redirect_to project_path(project.name), notice: notice
@@ -189,14 +203,13 @@ class AnnotationsController < ApplicationController
       }
 
       format.json {
-        if doc and project and annotations
-          render :json => {:status => :created}, :status => :created
+        if divs && !divs.empty? && project && annotations
+          render :json => {:status => :created, :fits => fits}, :status => :created
         else
           render :json => {:status => :unprocessable_entity}, :status => :unprocessable_entity
         end
       }
     end
-
   end
 
 
@@ -272,13 +285,13 @@ class AnnotationsController < ApplicationController
   def set_access_control_headers
     allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp']
     origin = request.env['HTTP_ORIGIN']
-    if allowed_origins.include?(origin)
+    # if allowed_origins.include?(origin)
       headers['Access-Control-Allow-Origin'] = origin
       headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
       headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Prototype-Version'
       headers['Access-Control-Allow-Credentials'] = 'true'
       headers['Access-Control-Max-Age'] = "1728000"
-    end
+    # end
   end
 
 end

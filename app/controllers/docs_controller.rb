@@ -15,10 +15,13 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
       @docs = @project.docs
+      @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
+      @docs_hash = @docs.collect{|doc| doc.to_hash}
       @search_path = search_project_docs_path(@project.name)
-      @json_hash = @project.docs_json_hash
     else
       @docs = Doc
+      @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
+      @docs_hash = {message: "too many"}
       @search_path = search_docs_path
     end
 
@@ -27,7 +30,7 @@ class DocsController < ApplicationController
     flash[:sort_order] = @sort_order
     respond_to do |format|
       format.html
-      format.json { render json: @json_hash}
+      format.json { render json: @docs_hash}
     end
   end
  
@@ -45,7 +48,7 @@ class DocsController < ApplicationController
       @new_doc_src = new_doc_path
     end
 
-    rewrite_ascii (@docs) if (params[:encoding] == 'ascii')
+    @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
 
     respond_to do |format|
       if @docs
@@ -145,14 +148,15 @@ class DocsController < ApplicationController
     
     @project, notice = get_project(params[:project_id])
     if @doc.present?
-      @text = @doc.body
+      @doc.ascii_body if (params[:encoding] == 'ascii')
+      @doc_hash = @doc.to_hash
       @sort_order = sort_order(Project)
       @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
       flash[:sort_order] = @sort_order
 
       respond_to do |format|
         format.html # show.html.erb
-        format.json # show.json.erb
+        format.json {render json: @doc_hash}
       end
     elsif docs.present?
       # when same sourcedb and sourceid docs present => redirect to divs#index
@@ -161,7 +165,7 @@ class DocsController < ApplicationController
       else
         redirect_to doc_sourcedb_sourceid_divs_index_path
       end
-      
+
     end
   end
 
@@ -287,39 +291,36 @@ class DocsController < ApplicationController
   end
   
   def create_project_docs
-    project, notice = get_project(params[:project_id])
+    project, message = get_project(params[:project_id])
+
+    docs =  if params[:ids].present? && params[:sourcedb].present?
+              params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {source_db:params[:sourcedb], source_id:id}}
+            elsif params[:docs].present?
+              params[:docs].collect{|d| d.symbolize_keys}
+            end
+
     num_created, num_added, num_failed = 0, 0, 0
-    if project
-      begin 
-        if params['json'].present?
-          json = File.read(params['json'].tempfile)
-          num_created, num_added, num_failed = project.add_docs_from_json(json, current_user)
-        else
-          num_created, num_added, num_failed = project.add_docs({ids: params[:ids], sourcedb: params[:sourcedb], user: current_user})
-        end
-        if num_added > 0
-          notice = t('controllers.docs.create_project_docs.added_to_document_set', :num_added => num_added, :project_name => project.name)
-        elsif num_created > 0
-          notice = t('controllers.docs.create_project_docs.created_to_document_set', :num_created => num_created, :project_name => project.name)
-        else
-          notice = t('controllers.docs.create_project_docs.added_to_document_set', :num_added => num_added, :project_name => project.name)
-        end
+    if project && docs
+      begin
+        num_created, num_added, num_failed = project.add_docs_from_json(docs, current_user)
       rescue => e
-        notice = e.message
-        num_failed = 1
+        message = e.message
       end
-    else
-      notice = t('controllers.pmcdocs.create.annotation_set_not_specified')
     end
+    result = {:created => num_created, :added => num_added, :failed => num_failed}
 
     respond_to do |format|
-      if num_created.to_i + num_added.to_i + num_failed.to_i > 0
-        format.html { redirect_to project_docs_path(project.name), :notice => notice }
-        format.json { render :json => nil, status: :created, location: project_path(project.name) }
-      else
-        format.html { redirect_to home_path, :notice => notice }
-        format.json { head :unprocessable_entity }
-      end
+      format.html {
+        notice = result.collect{|k,v| "#{k}: #{v}"}.join(', ')
+        redirect_to project_docs_path(project.name), :notice => notice
+      }
+      format.json {
+        if num_created > 0 || num_added > 0
+          render :json => result, status: :created, location: project_docs_path(project.name)
+        else
+          render :json => result, status: :unprocessable_entity
+        end
+      }
     end  
   end
 
