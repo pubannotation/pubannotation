@@ -6,7 +6,7 @@ next_section: about
 permalink: /docs/submit-annotations/
 ---
 
-Annotations to a document can be submitted to your project by POSTing a JSON file to your projects.
+Annotations to a document can be submitted to your project by POSTing a JSON file to your project.
 
 ## Example:
 {% highlight bash %}
