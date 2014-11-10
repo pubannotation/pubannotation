@@ -2,7 +2,7 @@
 layout: docs
 title: Add Documents
 prev_section: api
-next_section: about
+next_section: submit-annotations
 permalink: /docs/add-documents/
 ---
 
