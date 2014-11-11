@@ -428,6 +428,7 @@ en:
       add: Add
       account: account
       annotation: annotation
+      annotations: annotations
       edit : edit
       error: error
       delete: delete
