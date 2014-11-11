@@ -179,8 +179,8 @@ class AnnotationsController < ApplicationController
 
         if annotations
           if params[:format] == 'json'
-            # Shared.delay.store_annotations(annotations, project, divs, {:mode => mode})
-            Shared.store_annotations(annotations, project, divs, {:mode => mode})
+            Shared.delay.store_annotations(annotations, project, divs, {:mode => mode})
+            # Shared.store_annotations(annotations, project, divs, {:mode => mode})
             fits = t('controllers.annotations.create.delayed_job')
           else
             fits = Shared.store_annotations(annotations, project, divs, {:mode => mode})
