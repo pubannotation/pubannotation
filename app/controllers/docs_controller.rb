@@ -289,7 +289,7 @@ class DocsController < ApplicationController
       end
     end
   end
-  
+
   def create_project_docs
     project, message = get_project(params[:project_id])
 
