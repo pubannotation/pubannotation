@@ -235,6 +235,7 @@ ja:
         maintainer: 管理者
         reference: 参照
         editor: エディター
+        namespaces: ネームスペース
         rdfwriter: RDFライター
         xmlwriter: XMLライター
         bionlpwriter: BioNLP-STライター
@@ -452,6 +453,7 @@ ja:
       add: 追加
       account: アカウント
       annotation: アノテーション
+      annotations: アノテーション
       back: 戻る
       category: カテゴリー
       edit: 編集

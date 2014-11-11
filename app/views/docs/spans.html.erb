@@ -9,8 +9,25 @@
     var path = "<%= @annotations_path -%>?projects=";
     var annotationsText = "<%= t('views.shared.annotation') -%>";
     var projectsArray = [];
+    var updateLink = function(projectsArray){
+      var project_names = projectsArray.join(',');
+      if (projectsArray.length > 0){
+        // show annotation link
+        $('#annotations_projects').html("<a href='" + path + project_names + "'>" + annotationsText + "</a>");
+      }else{
+        $('#annotations_projects').html("<a href='<%= @annotations_path -%>'>" + annotationsText + "</a>");
+      };
+    };
+    var getCheckedProjects = function(){
+      $('#AnnotationProjectLists :checked').each(function() {
+        projectsArray.push($(this).attr('value'));
+        updateLink(projectsArray);
+      }); 
+    };
+
     $(document).ready(
         function(){
+          getCheckedProjects()
           $('.annotations_projects_check').change(
             function(){
               var projectName = $(this).attr('value');
@@ -23,19 +40,16 @@
                   return value != projectName;
                 });
               };
-              var project_names = projectsArray.join(',');
-              if (projectsArray.length > 0){
-                // show annotation link
-                $('#annotations_projects').html("<a href='" + path + project_names + "'>" + annotationsText + "</a>");
-              }else{
-                // remove annotation link
-                $('#annotations_projects').html('');
-              }
+              updateLink(projectsArray);
             }
           );
         }
     );
   </script>
-  <%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
-  <div id='annotations_projects'></div>
+  <div id="AnnotationProjectLists">
+    <%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
+  </div>
+  <div id='annotations_projects'>
+    <%= link_to t('views.shared.annotations'), @annotations_path -%>
+  </div>
 <% end -%>
