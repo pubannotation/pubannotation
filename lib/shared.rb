@@ -82,9 +82,13 @@ module Shared
     end
   end
 
-  def self.save_annotations(annotations, project, doc)
-    denotations_old = doc.denotations.where(:project_id => project.id)
-    denotations_old.destroy_all
+  def self.save_annotations(annotations, project, doc, options = nil)
+    if !options.nil? && options[:mode].present? && options[:mode] == :addition
+    else
+      denotations_old = doc.denotations.where(:project_id => project.id)
+      denotations_old.destroy_all
+    end
+
     notice = I18n.t('controllers.application.save_annotations.annotation_cleared')
     if annotations.present? && annotations[:denotations].present?
       denotations, notice = clean_hdenotations(annotations[:denotations])
@@ -107,11 +111,11 @@ module Shared
     end
   end
 
-  def self.store_annotations(annotations, project, divs)
+  def self.store_annotations(annotations, project, divs, options = nil)
     div_index = divs.map{|d| [d.serial, d]}.to_h
 
     if divs.length == 1
-      self.save_annotations(annotations, project, divs[0])
+      self.save_annotations(annotations, project, divs[0], options)
     else
       div_index = divs.collect{|d| [d.serial, d]}.to_h
       divs_hash = divs.collect{|d| d.to_hash}
@@ -136,7 +140,7 @@ module Shared
             ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
             ann[:modifications].each{|a| idx[a[:id]] = true}
           end
-          self.save_annotations(ann, project, div_index[i[0]])
+          self.save_annotations(ann, project, div_index[i[0]], options)
         end
       end
       fit_index

@@ -104,7 +104,7 @@ class Project < ActiveRecord::Base
       namespaces_array = Array.new
       namespace_lines.each do |namespace|
         # namespace format should be "BASE|PREFIX space (prefix:) <uri>"
-        format = namespace =~ /^(BASE|PREFIX)\s+.+<.+>/i
+        format = namespace =~ /^(BASE|PREFIX)\s+(.+:)?\s*<.+>/i
         begin_pos = namespace =~ /</
         end_pos = namespace =~ />/
         namespace_contents = namespace.split(/\s/)
@@ -516,7 +516,7 @@ class Project < ActiveRecord::Base
     num_created, num_added, num_failed = 0, 0, 0
     source_dbs = json.group_by{|doc| doc[:source_db]}
     if source_dbs.present?
-      source_dbs.each do |source_db, docs_array|docs_array
+      source_dbs.each do |source_db, docs_array|
         ids = docs_array.collect{|doc| doc[:source_id]}.join(",")
         num_created_t, num_added_t, num_failed_t = self.add_docs({ids: ids, sourcedb: source_db, docs_array: docs_array, user: user})
         num_created += num_created_t
@@ -618,12 +618,12 @@ class Project < ActiveRecord::Base
       # all of columns insert into database need to be included in this hash.
       doc_array_params['source_db'] = options[:sourcedb] if options[:sourcedb].present?
       mappings = {
-        'text' => 'body', 
-        'source_db' => 'sourcedb', 
-        'source_id' => 'sourceid', 
-        'section' => 'section', 
-        'source_url' => 'source', 
-        'div_id' => 'serial'
+        :text => :body, 
+        :source_db => :sourcedb, 
+        :source_id => :sourceid, 
+        :section => :section, 
+        :source_url => :source, 
+        :div_id => :serial
       }
       doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
       doc = Doc.new(doc_params) 

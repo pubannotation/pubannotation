@@ -289,7 +289,7 @@ class DocsController < ApplicationController
       end
     end
   end
-  
+
   def create_project_docs
     project, message = get_project(params[:project_id])
 
@@ -371,7 +371,7 @@ class DocsController < ApplicationController
   private
 
   def set_access_control_headers
-    allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp']
+    allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp', 'http://textae.pubannotation.org']
     origin = request.env['HTTP_ORIGIN']
     if allowed_origins.include?(origin)
       headers['Access-Control-Allow-Origin'] = origin
