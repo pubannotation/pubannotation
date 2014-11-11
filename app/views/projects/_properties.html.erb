@@ -60,24 +60,30 @@
 					<th><%= t('activerecord.attributes.project.editor') %></th>
 					<td><a href="<%= project.editor %>"><%= project.editor %></a></td>
 				</tr>
-			<% end %>
-			<% unless project.rdfwriter.blank? %>
-			<tr>
-				<th><%= t('activerecord.attributes.project.rdfwriter') %></th>
-				<td><a href="<%= project.rdfwriter %>"><%= project.rdfwriter %></a></td>
-			</tr>
-			<% end %>
-			<% unless project.xmlwriter.blank? %>
-			<tr>
-				<th><%= t('activerecord.attributes.project.xmlwriter') %></th>
-				<td><a href="<%= project.xmlwriter %>"><%= project.xmlwriter %></a></td>
-			</tr>
-			<% end %>
-			<% unless project.bionlpwriter.blank? %>
-			<tr>
-				<th><%= t('activerecord.attributes.project.bionlpwriter') %></th>
-				<td><a href="<%= project.bionlpwriter %>"><%= project.bionlpwriter %></a></td>
-			</tr>
+				<% unless project.namespaces.blank? %>
+				<tr>
+					<th><%= t('activerecord.attributes.project.namespaces') %></th>
+					<td><pre><%= project.namespaces %></pre></td>
+				</tr>
+				<% end %>
+				<% unless project.rdfwriter.blank? %>
+				<tr>
+					<th><%= t('activerecord.attributes.project.rdfwriter') %></th>
+					<td><a href="<%= project.rdfwriter %>"><%= project.rdfwriter %></a></td>
+				</tr>
+				<% end %>
+				<% unless project.xmlwriter.blank? %>
+				<tr>
+					<th><%= t('activerecord.attributes.project.xmlwriter') %></th>
+					<td><a href="<%= project.xmlwriter %>"><%= project.xmlwriter %></a></td>
+				</tr>
+				<% end %>
+				<% unless project.bionlpwriter.blank? %>
+				<tr>
+					<th><%= t('activerecord.attributes.project.bionlpwriter') %></th>
+					<td><a href="<%= project.bionlpwriter %>"><%= project.bionlpwriter %></a></td>
+				</tr>
+				<% end %>
 			<% end %>
 		</table>
 		<% if user_signed_in? -%>

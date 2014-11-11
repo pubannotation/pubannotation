@@ -104,7 +104,7 @@ class Project < ActiveRecord::Base
       namespaces_array = Array.new
       namespace_lines.each do |namespace|
         # namespace format should be "BASE|PREFIX space (prefix:) <uri>"
-        format = namespace =~ /^(BASE|PREFIX)\s+.+<.+>/i
+        format = namespace =~ /^(BASE|PREFIX)\s+(.+:)?\s*<.+>/i
         begin_pos = namespace =~ /</
         end_pos = namespace =~ />/
         namespace_contents = namespace.split(/\s/)
