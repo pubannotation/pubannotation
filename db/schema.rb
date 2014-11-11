@@ -136,6 +136,13 @@ ActiveRecord::Schema.define(:version => 20141017021916) do
   add_index "modifications", ["obj_id"], :name => "index_modifications_on_obj_id"
   add_index "modifications", ["project_id"], :name => "index_modifications_on_project_id"
 
+  create_table "notices", :force => true do |t|
+    t.integer  "project_id"
+    t.datetime "created_at"
+  end
+
+  add_index "notices", ["project_id"], :name => "index_notices_on_project_id"
+
   create_table "projects", :force => true do |t|
     t.string   "name"
     t.text     "description"
@@ -159,7 +166,7 @@ ActiveRecord::Schema.define(:version => 20141017021916) do
     t.integer  "relations_count",                  :default => 0
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
-    t.datetime "annotations_updated_at",           :default => '2014-04-09 12:41:19'
+    t.datetime "annotations_updated_at",           :default => '2014-04-05 14:49:44'
     t.text     "namespaces"
   end
 
@@ -183,20 +190,20 @@ ActiveRecord::Schema.define(:version => 20141017021916) do
   add_index "relations", ["subj_id"], :name => "index_relations_on_subj_id"
 
   create_table "users", :force => true do |t|
-    t.string   "email",                  :default => "", :null => false
-    t.string   "encrypted_password",     :default => "", :null => false
+    t.string   "email",                                 :default => "",    :null => false
+    t.string   "encrypted_password",                    :default => "",    :null => false
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
-    t.integer  "sign_in_count",          :default => 0
+    t.integer  "sign_in_count",                         :default => 0
     t.datetime "current_sign_in_at"
     t.datetime "last_sign_in_at"
     t.string   "current_sign_in_ip"
     t.string   "last_sign_in_ip"
-    t.datetime "created_at",                             :null => false
-    t.datetime "updated_at",                             :null => false
-    t.string   "username"
-    t.boolean  "root",                   :default => false
+    t.datetime "created_at",                                               :null => false
+    t.datetime "updated_at",                                               :null => false
+    t.text     "username",               :limit => 255, :default => "",    :null => false
+    t.boolean  "root",                                  :default => false
   end
 
   add_index "users", ["email"], :name => "index_users_on_email", :unique => true
