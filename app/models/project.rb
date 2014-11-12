@@ -120,7 +120,7 @@ class Project < ActiveRecord::Base
           namespaces_array << {prefix: prefix, uri: uri}
         end
       end
-      self.namespaces = namespaces_array if namespaces_array.present?
+      namespaces_array if namespaces_array.present?
     end
   end
 
@@ -372,8 +372,9 @@ class Project < ActiveRecord::Base
 
   def json
     except_columns = %w(pmdocs_count pmcdocs_count pending_associate_projects_count user_id)
-    self.namespaces = parse_namespaces
-    to_json(except: except_columns, methods: :maintainer)
+    jsondata = to_json(except: except_columns, methods: :maintainer)
+    jsondata[:namespaces] = parse_namespaces
+    jsondata
   end
 
   def docs_json_hash
