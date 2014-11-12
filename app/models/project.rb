@@ -415,7 +415,7 @@ class Project < ActiveRecord::Base
         file.close   
       end  
     rescue
-      self.notices.create
+      self.notices.create({successful: false, method: 'save_annotation_zip'})
     end
   end 
 
