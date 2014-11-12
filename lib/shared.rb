@@ -151,7 +151,7 @@ module Shared
     rescue => e
       successful = false
     end
-    project.notices.create({successful: successful, method: 'store_annotations'})
+    project.notices.create({successful: successful, method: 'store_annotations'}) if options[:delayed]
     return fit_index 
   end
 
