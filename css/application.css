@@ -58,6 +58,16 @@ body {
   }
 }
 
+input.bash {
+  width: 100%;
+  padding: 0.5em;
+  line-height: 1.8em;
+  font-family: monospace;
+  font-size: 1.2em;
+  color: white;
+  background-color: #333;
+}
+
 .meta {
     color: #888888;
 }
