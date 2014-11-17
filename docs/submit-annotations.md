@@ -17,6 +17,6 @@ Annotations to a document can be submitted to your project by POSTing a JSON fil
   * __-u "your\_email\_address:your\_password"__ : tells curl to get authenticated using the information.
   * __-H "content-type:application/json"__ : tells curl to add the header in the request.
   * __-d @your_annotation_file.json__ : tells curl to send the data in the specified file.
-  * __http://pubannotation.org/projects/_your_project_name_/docs/sourcedb/PubMed/sourceid/123456/annotations.json__ : The URL for the document, PubMed:123456, in your project.
+  * __http://pubannotation.org/projects/_your-project-name_/docs/sourcedb/PubMed/sourceid/123456/annotations.json__ : The URL for the document, PubMed:123456, in your project.
      * Note that the document needs to be included in advance.
 
