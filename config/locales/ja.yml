@@ -372,8 +372,6 @@ ja:
         pending_associate_projects: "このプロジェクトはプロジェクトのインポート処理中です..."
       upload_zip:
         delay_save_annotations: 'アノテーションは数分程度で作成されます'
-      save_annotation_zip:
-        failed: "アノテーションZIPファイルの作成に失敗しました。 %{created_at}"
   views:
     service:
       title: PubAnnotation
@@ -410,7 +408,7 @@ ja:
       new: 新規作成
     projects:
       project: プロジェクト
-      try_textae: お持ちでない場合はこちらをお試し下さい
+      try_textae: 又は他のRESTfulエディターのURLを指定して下さい。
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
       about_the_project: "<span class='pname'>%{project_name}</span>について"
       project_properties: プロジェクト詳細
@@ -424,6 +422,10 @@ ja:
       associate_project: 関連プロジェクト
       detail: プロジェクト詳細
       select_zip_file: アップロードするzipファイルを選択して下さい。
+      save_annotation_zip:
+        result: "アノテー/うションZIPファイルの作成に%{result}しました。 %{created_at}"
+      store_annotations:
+        result: "アノテーションの作成に%{result}しました。 %{created_at}"
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:
@@ -459,7 +461,7 @@ ja:
       edit: 編集
       error: エラー
       delete: 削除
-      delete_all: 全部削除
+      delete_all: 全て削除
       none: なし
       new_model: 新規%{model}の作成
       create_model: 新規%{model}を作成
@@ -482,6 +484,8 @@ ja:
       pmcdocs: pmcdocs
       see: 表示
       search: 検索
+      successful: 成功
+      unsuccessful: 失敗
       open: 開く
       get: 取得
       divs: divs
@@ -494,3 +498,4 @@ ja:
       zip:
         delayed_job_present: ZIPファイルは数分程度で作成されます。      
         download_not_available: アノテーションZIPファイルはダウンロードできません。
+        result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"

@@ -2,7 +2,11 @@ Pubann::Application.routes.draw do
   devise_for :users
   get "home/index"
 
-  resources :notices, only: :destroy
+  resources :notices, only: :destroy do
+    collection do
+      get 'delete_project_notices/:id' => 'notices#delete_project_notices', as: 'delete_project'
+    end
+  end
   
   resources :documentations do
     collection do

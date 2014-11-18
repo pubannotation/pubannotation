@@ -160,6 +160,7 @@ class AnnotationsController < ApplicationController
   # POST /annotations.json
   def create
     project, notice = get_project(params[:project_id])
+    mode = :addition if params[:mode].present? && params[:mode] == 'addition'
 
     if project
       sourcedb, sourceid, divno = get_docspec(params)
@@ -178,10 +179,11 @@ class AnnotationsController < ApplicationController
 
         if annotations
           if params[:format] == 'json'
-            Shared.delay.store_annotations(annotations, project, divs)
+            Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
+            # Shared.store_annotations(annotations, project, divs, {:mode => mode})
             fits = t('controllers.annotations.create.delayed_job')
           else
-            fits = Shared.store_annotations(annotations, project, divs)
+            fits = Shared.store_annotations(annotations, project, divs, {:mode => mode})
           end
         else
           notice = t('controllers.annotations.create.no_annotation')
@@ -283,7 +285,7 @@ class AnnotationsController < ApplicationController
   private
 
   def set_access_control_headers
-    allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp']
+    allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp', 'http://textae.pubannotation.org']
     origin = request.env['HTTP_ORIGIN']
     # if allowed_origins.include?(origin)
       headers['Access-Control-Allow-Origin'] = origin

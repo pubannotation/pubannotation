@@ -10,4 +10,11 @@ class NoticesController < ApplicationController
     end
     render text: text
   end
+
+  def delete_project_notices
+    project = Project.find(params[:id])
+    project.notices.delete_all
+    text = "$('#project_notices').text('');"
+    render text: text
+  end
 end
