@@ -23,6 +23,8 @@ For example, [cURL](http://curl.haxx.se/) is a versatile command-line tool you c
 
 In fact, [TextAE](http://textae.pubannotation.org) is also a REST client that additionally provides graphical user interface for edition of annotation.
 
+Also, most recent major programming languages have modules for REST access, so you can do it using your favorite programming languages.
+
 Following command shows an example usage of cURL:
 <input type="text" class="bash" value='curl -u your_email_address:your_password -H "content-type:application/json" -d @your_annotation_file.json "http://pubannotation.org/projects/your_project_name/docs/sourcedb/PubMed/sourceid/123456/annotations.json"
 '>

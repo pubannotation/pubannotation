@@ -22,7 +22,10 @@ After creating your project, you can add documents to your project.
 ## Using REST API
 
 You can use any REST client to POST a list of _document specifications_ to the document list of your project.
+
 For example, [cURL](http://curl.haxx.se/) is a versatile command-line tool you can use as a REST client in major OS environments, e.g., _UNIX_, _iOS_, _DOS_.
+
+Also, most recent major programming languages have modules for REST access, so you can do it using your favorite programming languages.
 
 Following command shows an example usage of cURL:
 <input type="text" class="bash" value='curl -u your_email_address:your_password -H "content-type:application/json" -d &apos;{"docs":[{"source_db":"PubMed","source_id":"123456"}]}&apos; http://pubannotation.org/projects/your_project_name/docs.json'>
