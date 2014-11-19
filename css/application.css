@@ -102,7 +102,7 @@ h1 {
 }
 
 h2 {
-    width:20em;
+    width:30em;
     border:solid #001854;
     border-width: 0px 0px 1px 10px;
     padding-left: 5px;
@@ -111,26 +111,33 @@ h2 {
 }
 
 h3 {
+    width: 2em;
+    white-space:nowrap;
+    padding-left: 1em;
+
+    font-size: medium;
+    font-weight:bold;
+    /* fallback (Opera) */
+    background: #001854;
+    /* Mozilla: */
+    background: -moz-linear-gradient(left, #001854, #FFFFFF);
+    /* Chrome, Safari:*/
+    background: -webkit-gradient(linear, left top, right top, from(#001854), to(#FFFFFF));
+    /* MSIE */
+    filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#001854', EndColorStr='#FFFFFF', GradientType=1);
+}
+
+h4 {
     width:20em;
     white-space:nowrap;
     font-size: medium;
 }
 
 h5 {
-    width:35em;
     white-space:nowrap;
-
-    font-size: small;
-    font-weight:bold;
-    /* fallback (Opera) */
-    background: #EECCCC;
-    /* Mozilla: */
-    background: -moz-linear-gradient(left, #00FF00, #FFFFFF);
-    /* Chrome, Safari:*/
-    background: -webkit-gradient(linear, left top, right top, from(#00FF00), to(#FFFFFF));
-    /* MSIE */
-    filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#00FF00', EndColorStr='#FFFFFF', GradientType=1);
+    font-size: medium;
 }
+
 
 div.note {
   margin: 5px;

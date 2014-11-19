@@ -176,13 +176,13 @@ body > footer a:hover img {
   padding: 0px 0;
 }
 
-.quickstart h4 {
+/*.quickstart h4 {
   font-size: 24px;
   line-height: 24px;
   margin-top: 20px;
   text-shadow: 0 1px 3px rgba(0,0,0,.8);
 }
-
+*/
 .quickstart .code {
   font-size: 12px;
   display: block;

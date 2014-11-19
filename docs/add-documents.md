@@ -28,7 +28,7 @@ For example, [cURL](http://curl.haxx.se/) is a versatile command-line tool you c
 Also, most recent major programming languages have modules for REST access, so you can do it using your favorite programming languages.
 
 Following command shows an example usage of cURL:
-<input type="text" class="bash" value='curl -u your_email_address:your_password -H "content-type:application/json" -d &apos;{"docs":[{"source_db":"PubMed","source_id":"123456"}]}&apos; http://pubannotation.org/projects/your_project_name/docs.json'>
+<input type="text" class="bash" value='curl -u your_email_address:your_password -H "content-type:application/json" -d &apos;{"docs":[{"source_db":"PubMed","source_id":"123456"}]}&apos; http://pubannotation.org/projects/your_project/docs.json'>
 
 Following is explanation of the option specification:
 
@@ -42,5 +42,5 @@ Following is explanation of the option specification:
    * "[...]" means an array in JSON, and you can specify multiple documents in it, e.g.,
      `[{"source_db":"PubMed","source_id":"123"},{"source_db":"PMC","source_id":"456"}]`
    * The JSON representation can be stored in a separate file, e.g., example.json, and you can specify the filename by prefixing it with the at-sign(@), e.g., `-d @example.json`.
-* __http://pubannotation.org/projects/_your-project-name_/docs.json__
+* __http://pubannotation.org/projects/_your-project_/docs.json__
    * The URL for the document list of your project.
