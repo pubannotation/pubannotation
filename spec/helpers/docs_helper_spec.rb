@@ -69,7 +69,7 @@ describe DocsHelper do
     end
 
     it 'should return sourcedb array' do
-      expect(helper.sourcedb_options_for_select).to eql([['A', 'A'], ['B', 'B']])
+      helper.sourcedb_options_for_select.should =~ [['A', 'A'], ['B', 'B']]
     end
   end
 end 
