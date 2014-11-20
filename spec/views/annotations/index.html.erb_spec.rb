@@ -9,7 +9,7 @@ describe "annotations/index.html.erb" do
   
   describe 'destroy_all form' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @current_user = FactoryGirl.create(:user)
       view.stub(:current_user).and_return(@current_user)
       assign :text, '1234'
@@ -51,7 +51,7 @@ describe "annotations/index.html.erb" do
         
           context 'when params[:div_id] present' do
             before do
-              view.stub(:params).and_return({:div_id => 1, :sourcedb => 'sourcedb', :sourceid => 123})
+              view.stub(:params).and_return({:div_id => 1, :sourcedb => 'sourcedb', :sourceid => '123'})
               render
             end
             
@@ -62,7 +62,7 @@ describe "annotations/index.html.erb" do
             
           context 'when params[:div_id] blank' do
             before do
-              view.stub(:params).and_return({:sourcedb => 'sourcedb', :sourceid => 123})
+              view.stub(:params).and_return({:sourcedb => 'sourcedb', :sourceid => '123'})
               render
             end
             
