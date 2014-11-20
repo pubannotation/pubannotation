@@ -770,9 +770,9 @@ describe ApplicationController do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation, :project => @project)
       @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
-      @subinsrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+      @subinsrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation, :project => @project)
     end
 
     context 'when doc find by sourcedb and source id and serial exists' do
@@ -849,7 +849,7 @@ describe ApplicationController do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
         @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name2")
         @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation, :project => @project)
       end
       
       context 'and when doc.projects.find_by_name(project_name) exists' do

@@ -85,7 +85,7 @@ describe Instance do
   describe 'get_hash' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
       @instance = FactoryGirl.create(:instance,
         :hid => 'hid',

@@ -15,7 +15,7 @@ describe Relation do
   describe 'belongs_to subj polymorphic true' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @obj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
     end
     
@@ -45,7 +45,7 @@ describe Relation do
   describe 'belongs_to obj polymorphic true' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @subj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
     end
     
@@ -109,13 +109,13 @@ describe Relation do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @pmc_doc_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid)
       @denotation_1 = FactoryGirl.create(:denotation, :doc => @pmc_doc_1, :project => @project)
-      @relation_1 = FactoryGirl.create(:subcatrel, :obj => @denotation_1, :project => @project)
+      @relation_1 = FactoryGirl.create(:subcatrel, :obj => @denotation_1, :subj => @denotation_1, :project => @project)
       @pmc_doc_2 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1, :sourceid => @sourceid)
       @denotation_2 = FactoryGirl.create(:denotation, :doc => @pmc_doc_2, :project => @project)
-      @relation_2 = FactoryGirl.create(:subcatrel, :obj => @denotation_2, :project => @project)
+      @relation_2 = FactoryGirl.create(:subcatrel, :obj => @denotation_2, :subj => @denotation_2, :project => @project)
       @pmc_doc_3 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 2, :sourceid => @sourceid)
       @denotation_3 = FactoryGirl.create(:denotation, :doc => @pmc_doc_3, :project => @project)
-      @relation_3 = FactoryGirl.create(:subcatrel, :obj => @denotation_3, :project => @project)
+      @relation_3 = FactoryGirl.create(:subcatrel, :obj => @denotation_3, :subj => @denotation_3, :project => @project)
     end
     
     it 'should return project_pmcdoc_cat_relations' do
@@ -126,7 +126,7 @@ describe Relation do
   describe 'get_hash' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @denotation_sub = FactoryGirl.create(:denotation, :id => 1, :hid => 'denotation sub hid', :project => @project, :doc => @doc)
       @denotation_obj = FactoryGirl.create(:denotation, :id => 2, :hid => 'denotation rel hid', :project => @project, :doc => @doc)
       @instance_subj = FactoryGirl.create(:instance, :obj_id => 1, :project => @project)
@@ -437,7 +437,7 @@ describe Relation do
     context 'when subj == Denotations' do
       before do
         @subcatrels_count.times do
-          FactoryGirl.create(:subcatrel, :obj => @instance, project: @project)
+          FactoryGirl.create(:subcatrel, :obj => @instance, :subj => @denotation, project: @project)
         end
         @doc.reload
       end
@@ -504,7 +504,7 @@ describe Relation do
         
         context 'when results present' do
           it 'should return nil' do
-            Relation.sql_find({:sql => 'select * from relations where id = 1000'}, @current_user, @project).should be_nil
+            Relation.sql_find({:sql => 'select * from relations where id = 1000'}, @current_user, @project).should be_blank
           end
         end
       end
@@ -534,7 +534,7 @@ describe Relation do
         
         context 'when results present' do
           it 'should return nil' do
-            Relation.sql_find({:sql => 'select * from relations where id = 1000'}, nil, @project).should be_nil
+            Relation.sql_find({:sql => 'select * from relations where id = 1000'}, nil, @project).should be_blank
           end
         end
       end

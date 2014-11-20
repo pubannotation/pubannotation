@@ -1,4 +1,13 @@
+<% if notice_counter == 0 -%>
+  <div id='project_notices'>
+<% end -%>
+
 <%= div_for(notice) do -%>
-  <%= t('controllers.projects.save_annotation_zip.failed', created_at: I18n.l(notice.created_at, format: :long)) -%>
+  <%= t("views.projects.#{ notice.method }.result", :result => t("views.shared.#{ notice.result}"), created_at: I18n.l(notice.created_at, format: :long)) -%>
   <%= link_to t('views.shared.delete'), notice_path(notice), remote: true, method: :delete, class: 'button' -%>
+<% end -%>
+
+<% if notice_counter == @notices.size - 1 -%>
+  <%= link_to t('views.shared.delete_all'), delete_project_notices_path(notice.project), remote: true, class: 'button', confirm: t('controllers.shared.confirm_delete') -%>
+  </div>
 <% end -%>

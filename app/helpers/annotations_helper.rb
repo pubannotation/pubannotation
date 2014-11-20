@@ -75,6 +75,7 @@ module AnnotationsHelper
       # project
       if project.present?
         get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
+        annotations[:namespaces] = project.parse_namespaces
       elsif doc.projects.present?
         annotations[:tracks] = Array.new
         i = 0

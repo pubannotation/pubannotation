@@ -72,7 +72,7 @@ class Doc < ActiveRecord::Base
     order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
     where(['sourcedb IS NOT ? AND sourceid IS NOT ?', nil, nil])
     .select('*, CAST(sourceid AS INT) AS sourceid_int')
-    .group(:sourcedb).group(:sourceid).order(order_key_method)
+    .group(:id).group(:sourcedb).group(:sourceid).order(order_key_method)
   }
   
   scope :same_sourcedb_sourceid, lambda{|sourcedb, sourceid|

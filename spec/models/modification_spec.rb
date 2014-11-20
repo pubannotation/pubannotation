@@ -17,7 +17,7 @@ describe Relation do
   describe 'belongs_to obj' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
       @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
@@ -31,10 +31,10 @@ describe Relation do
   describe 'get_hash' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 1, :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
-      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation, :project => @project)
       @insmod = FactoryGirl.create(:modification, 
         :hid => 'modification hid',
         :pred => 'pred',
