@@ -88,6 +88,7 @@ describe ApplicationHelper do
   end
   
   describe 'get_ascii_text' do
+    require 'utfrewrite'
     before do
       @text = 'α'
       @ascii_text = helper.get_ascii_text(@text)
