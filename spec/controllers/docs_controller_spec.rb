@@ -5,7 +5,7 @@ describe DocsController do
   describe 'index' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => 123)
+      @project_doc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => '123')
       @project.docs << @project_doc  
       @source_db_id = Doc.all
       # Doc.stub(:source_db_id).and_return(@source_db_id)
@@ -13,7 +13,7 @@ describe DocsController do
       Doc.stub(:sort_by_params).and_return(@sort_by_params)
       @paginate = 'paginate'
       @sort_by_params.stub(:paginate).and_return(@paginate)
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => 123)  
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => '123')  
     end
     
     context 'when params[:project_id] present' do
@@ -24,6 +24,14 @@ describe DocsController do
         
         it 'should assign project' do
           assigns[:project].should eql(@project)
+        end
+
+        it 'should assign project.docs as @docs' do
+          assigns[:docs].should =~ @project.docs
+        end
+
+        it 'should assigns project.docs to hash as @docs_hash' do
+          assigns[:docs_hash].should =~ @project.docs.collect{|doc| doc.to_hash.stringify_keys}
         end
 
         it 'should assing sort_by_params.paginate as @source_docs' do
@@ -37,24 +45,31 @@ describe DocsController do
 
       context 'when format json' do
         before do
-          @docs_hash = {'val' => 'val'} 
-          Project.any_instance.stub(:docs_json_hash).and_return(@docs_hash)
+          @docs_hash = @project.docs.collect{|doc| doc.to_hash.stringify_keys}
           get :index, format: 'json', :project_id => @project.name
         end
 
-        it 'should assign @docs_hash' do
-          assigns[:docs_hash].should eql(@docs_hash)
+        it 'should assigns project.docs to hash as @docs_hash' do
+          assigns[:docs_hash].should =~ @docs_hash
         end
 
-        it 'should render @project.docs_json_hash to_json' do
+        it 'should render @docs_hash to_json' do
           response.body.should eql(@docs_hash.to_json)
         end
       end
     end    
     
-    context 'when project blank' do
+    context 'when params[:project_id] blank' do
       before do
         get :index
+      end
+
+      it 'should assign Doc as @docs' do
+        assigns[:docs].should eql(Doc)
+      end
+
+      it 'shoud assign too many message as @doc_hash' do
+        assigns[:docs_hash].should eql({'message' => I18n.t('controllers.docs.index.too_many')})
       end
       
       it 'should assign search_docs_path as @search_path' do
@@ -199,8 +214,8 @@ describe DocsController do
     before do
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'project name')
       @sourcedb = 'source db'
-      @project_doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => 123)
-      @project_doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sdb', :sourceid => 123)
+      @project_doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => '123')
+      @project_doc_2 = FactoryGirl.create(:doc, :sourcedb => 'sdb', :sourceid => '123')
       @paginate = 'paginate'
     end
     
@@ -234,12 +249,12 @@ describe DocsController do
   describe 'search' do
     context 'without pagination' do
       before do
-        @pubmed = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => 234)
-        @selial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1, :sourceid => 123)
-        @sourceid_123 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123)
-        @sourceid_1234 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1234)
-        @sourceid_1123 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1123)
-        @sourceid_234 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234)
+        @pubmed = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => '234')
+        @selial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1, :sourceid => '123')
+        @sourceid_123 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '123')
+        @sourceid_1234 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '1234')
+        @sourceid_1123 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '1123')
+        @sourceid_234 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '234')
       end
       
       context 'when project_id blank' do
@@ -250,7 +265,7 @@ describe DocsController do
           end  
           
           it 'should set sourcedb docs as @source_docs' do
-            assigns[:source_docs].should =~ Doc.where(sourcedb: @sourcedb).group(:sourcedb).group(:sourceid)
+            assigns[:source_docs].should =~ Doc.where(sourcedb: @sourcedb).group(:id).group(:sourcedb).group(:sourceid)
           end
           
           it 'should not include sourcedb not match' do
@@ -265,7 +280,7 @@ describe DocsController do
           end
           
           it 'should include source id like match' do
-            assigns[:source_docs].should =~ Doc.where('sourceid like ?', "#{@search_sourceid}%").group(:sourcedb).group(:sourceid)
+            assigns[:source_docs].should =~ Doc.where('sourceid like ?', "#{@search_sourceid}%").group(:id).group(:sourcedb).group(:sourceid)
           end
           
           it 'should not include source id like not match' do
@@ -279,16 +294,16 @@ describe DocsController do
         
         context 'when params[:body] present' do
           before do
-            @sourceid_123_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123123, :body => 'test')
-            @sourceid_1234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1234123, :body => 'testmatch')
-            @sourceid_234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 234123, :body => 'matchtest')
-            @sourceid_12345_est = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 123123123, :body => 'est')
+            @sourceid_123_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '123123', :body => 'test')
+            @sourceid_1234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '1234123', :body => 'testmatch')
+            @sourceid_234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '234123', :body => 'matchtest')
+            @sourceid_12345_est = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '123123123', :body => 'est')
             @search_text = 'test'
             get :search, :body => @search_text 
           end
           
           it 'should include  body contains body' do
-            assigns[:source_docs].should =~ Doc.where('body like ?', "%#{@search_text}%").group(:sourcedb).group(:sourceid)
+            assigns[:source_docs].should =~ Doc.where('body like ?', "%#{@search_text}%").group(:id).group(:sourcedb).group(:sourceid)
           end
           
           it 'should include body contains body' do
@@ -298,16 +313,16 @@ describe DocsController do
         
         context 'when params[:sourceid] and params[:body] present' do
           before do
-            @sourceid_0_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 0, :body => 'test')
-            @sourceid_1_body_test_and = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 1, :body => 'testand')
-            @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => 2, :body => 'test')
+            @sourceid_0_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '0', :body => 'test')
+            @sourceid_1_body_test_and = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '1', :body => 'testand')
+            @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '2', :body => 'test')
             @search_sourceid = 1
             @search_body = 'test'
             get :search, :sourceid => 1, :body => @search_body
           end
           
           it 'should include sourceid and body matches' do
-            assigns[:source_docs].should =~ Doc.where('sourceid like ?', "#{@search_sourceid}%").where('body like ?', "%#{@search_body}%").group(:sourcedb).group(:sourceid)
+            assigns[:source_docs].should =~ Doc.where('sourceid like ?', "#{@search_sourceid}%").where('body like ?', "%#{@search_body}%").group(:id).group(:sourcedb).group(:sourceid)
           end
           
           it 'should not include body does not match' do
@@ -367,8 +382,8 @@ describe DocsController do
           get :show, :format => 'json', :id => @doc.id
         end
         
-        it 'should render template' do
-          response.should render_template('docs/show') 
+        it 'should render @doc_hash as json' do
+          response.body.should eql(@doc.to_hash.to_json)
         end
       end
     end
@@ -378,6 +393,10 @@ describe DocsController do
         context 'when format html' do
           before do
             get :show, :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
+          end
+
+          it 'shoud assign Doc match sourcedb and sourceid first ad @doc' do
+            assigns[:doc].should eql(@doc)
           end
           
           it 'should render template' do
@@ -390,8 +409,8 @@ describe DocsController do
             get :show, :format => 'json', :sourcedb  => @doc.sourcedb, :sourceid => @doc.sourceid 
           end
           
-          it 'should render template' do
-            response.should render_template('docs/show') 
+          it 'should render @doc_hash as json' do
+            response.body.should eql(@doc.to_hash.to_json)
           end
         end
       end
@@ -858,160 +877,118 @@ describe DocsController do
       @current_user = FactoryGirl.create(:user)
       current_user_stub(@current_user)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @sourcedb = 'PMC'
+      controller.stub(:get_project).and_return([@project, nil])
+      @num_created = 1
+      @num_added = 2
+      @num_failed = 3
+      @project.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
     end
-    
-    context 'when params[:project_id] present' do
-      context 'when project present' do
-        before do
-          controller.stub(:get_project).and_return([@project, nil])
-        end
-        
-        context 'when num_added > 0' do
-          before do
-            @num_added = 5
-            @project.stub(:add_docs) do |options|
-              @options_ids = options[:ids]
-              @options_sourcedb = options[:sourcedb]
-              @options_user = options[:user]
-              [0, @num_added, 0]
-            end
-          end
-          
-          context 'when format html' do
-            before do
-              @ids = 'ids'
-              @sourcedb = 'PMC'
-              get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb
-            end
-            
-            it 'should set number of documents added to project flash[:notice]' do
-              flash[:notice].should eql(I18n.t('controllers.docs.create_project_docs.added_to_document_set', :num_added => @num_added, :project_name => @project.name))
-            end
-            
-            it 'should redirect project_path' do
-              response.should redirect_to(project_docs_path(@project.name))
-            end
 
-            it 'should call add_docs with args' do
-              @options_ids.should eql @ids
-            end
+    context 'when params ids, sourcedb present' do
+      before do
+        @id_1 = 'id_1'
+        @id_2 = 'id_2'
+        @ids = "#{@id_1}, #{@id_2}"
+      end
 
-            it 'should call add_docs with args' do
-              @options_sourcedb.should eql @sourcedb
-            end
-
-            it 'should call add_docs with args' do
-              @options_user.should eql @current_user
-            end
-          end
-          
-          context 'when format json' do
-            before do
-              @project.stub(:add_docs_from_json) do |json, user|
-                @args_json = json
-                @args_user = user
-                [1, 0, 0]
-              end
-              @json = {val: 'val'}.to_json
-              File.stub(:read).and_return(@json)
-              post :create_project_docs, 'json' => double('json', tempfile: 'temp'), :format => 'json', :project_id => @project.name, ids: "id", sourcedb: 'PMC'
-            end
-            
-            it 'should return status 201' do
-              response.status.should eql(201)
-            end
-            
-            it 'should return project_path as location' do
-              response.location.should eql project_path(@project.name)
-            end
-
-            it 'should call add_docs_from_json with args' do
-              @args_json.should eql @json
-            end
-
-            it 'should call add_docs_from_json with args' do
-              @args_user.should eql @current_user
-            end
-          end
-        end
-        
-        context 'when num_added == 0 and num_created > 0' do
-          before do
-            @num_added = 0
-            @num_created = 1
-            @project.stub(:add_docs).and_return([@num_created, @num_added, 0])
-          end
-          
-          context 'when format html' do
-            before do
-              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMC'
-            end
-            
-            it 'should set number of documents added to project flash[:notice]' do
-              flash[:notice].should eql(I18n.t('controllers.docs.create_project_docs.created_to_document_set', :num_created => @num_created, :project_name => @project.name))
-            end
-            
-            it 'should redirect project_path' do
-              response.should redirect_to(project_docs_path(@project.name))
-            end
-          end
-        end
-        
-        context 'when num_added == 0' do
-          before do
-            @num_added = 0
-            @project.stub(:add_docs).and_return([0, @num_added, 0])
-          end
-          
-          context 'when format html' do
-            before do
-              get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMC'
-            end
-            
-            it 'should set number of documents added to project flash[:notice]' do
-              flash[:notice].should eql(I18n.t('controllers.docs.create_project_docs.added_to_document_set', :num_added => @num_added, :project_name => @project.name))
-            end
-            
-            it 'should redirect home_path' do
-              response.should redirect_to(home_path)
-            end
-          end
-          
-          context 'when format json' do
-            before do
-              get :create_project_docs, :format => 'json', :project_id => @project.name, :sourcedb => 'PMC'
-            end
-            
-            it 'should return status 422' do
-              response.status.should eql(422)
-            end
-          end
-        end
-        
-        context 'when error raised' do
-          before do
-            @project.stub(:add_docs).and_raise('eoor')
-            get :create_project_docs, :project_id => @project.name, :sourcedb => 'PMC'
-          end
-          
-          it 'should redirect project_path' do
-            response.should redirect_to(project_docs_path(@project.name))
-          end
+      describe 'docs' do
+        it 'should call project.add_docs_from_json with docs generated from params[:ids] and current_user' do
+          @project.should_receive(:add_docs_from_json).with([{source_db: @sourcedb, source_id: @id_1}, {source_db: @sourcedb, source_id: @id_2}], @current_user)
+          get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb
         end
       end
 
-      context 'when project nil' do
-        before do
-          get :create_project_docs, :project_id => 'invalid'
+      describe 'format' do
+        context 'when format html' do
+          before do
+            get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb
+          end
+
+          it 'should set flash[:notice] from number of created, added and failed' do
+            flash[:notice].should eql("created: #{@num_created}, added: #{@num_added}, failed: #{@num_failed}")
+          end
+
+          it 'should redirect_to project_docs_path' do
+            response.should redirect_to(project_docs_path(@project.name))
+          end
         end
-              
-        it 'should set flash[:notice]' do
-          flash[:notice].should eql(I18n.t('controllers.pmcdocs.create.annotation_set_not_specified'))
+
+        context 'when format json' do
+          context 'when num_created > 0' do
+            before do
+              get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
+            end
+
+            it 'should render result as json' do
+              response.body.should eql({created: @num_created, added: @num_added, failed: @num_failed}.to_json)
+            end
+
+            it 'should return status created' do
+              response.status.should eql(201)
+            end
+
+            it 'should return project_docs_path as location' do
+              response.location.should eql(project_docs_path(@project.name))
+            end
+          end
+
+          context 'when num_created == 0' do
+            before do
+              @num_created = 0
+            end
+
+            context 'when num_added > 0' do
+              before do
+                @project.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
+                get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
+              end
+
+              it 'should render result as json' do
+                response.body.should eql({created: @num_created, added: @num_added, failed: @num_failed}.to_json)
+              end
+
+              it 'should return status created' do
+                response.status.should eql(201)
+              end
+
+              it 'should return project_docs_path as location' do
+                response.location.should eql(project_docs_path(@project.name))
+              end
+            end
+
+            context 'when num_added == 0' do
+              before do
+                @num_added = 0
+                @project.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
+                get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
+              end
+
+              it 'should render result as json' do
+                response.body.should eql({created: @num_created, added: @num_added, failed: @num_failed}.to_json)
+              end
+
+              it 'should return status unprocessable_entity' do
+                response.status.should eql(422)
+              end
+
+              it 'should  not return location' do
+                response.location.should be_nil
+              end
+            end
+          end
         end
-        
-        it 'should redirect home_path' do
-          response.should redirect_to(home_path)
-        end     
+      end
+    end
+
+    context 'when params docs present' do
+      before do
+        @docs = [{id: '1'}]
+      end
+
+      it 'should call project.add_docs_from_json with docs symbolize_keys docs and current_user' do
+        @project.should_receive(:add_docs_from_json).with(@docs.collect{|d| d.symbolize_keys}, @current_user)
+        get :create_project_docs, :project_id => @project.name, docs: @docs
       end
     end
   end

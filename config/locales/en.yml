@@ -306,6 +306,8 @@ en:
       create_zip: Create annotations ZIP file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
     docs:
+      index:
+        too_many: too many
       create_project_docs:
         added_to_document_set: '%{num_added} documents were added to the project, %{project_name}.'
         created_to_document_set: '%{num_created} documents were created and added to the project, %{project_name}.'
