@@ -52,7 +52,7 @@ describe DivsController do
       @id = 'id'
       @pmcdoc_id = 'pmc doc id'
       @asciitext = 'aschii text'
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 123, :serial => 0)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '123', :serial => 0)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @get_doc_notice = 'get doc notice'
     end
@@ -66,52 +66,76 @@ describe DivsController do
       context 'when get_project returns project' do
         before do
           controller.stub(:get_project).and_return([@project, @get_project_notice])
+          controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
+          @annotations = 'annotations'
+          controller.stub(:get_annotations).and_return(@annotations)
         end
-        
-        context 'get_doc return doc' do
-          context 'when format html' do
-            before do
-              controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
-              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
-            end
-            
-            it '@text should same as @doc.body' do
-              assigns[:text].should eql(@doc.body)
-            end
-            
-            it 'should set get_doc notice as flash[:notice]' do
-              flash[:notice].should eql(@get_doc_notice)  
-            end
-            
-            it 'should render template' do
-              response.should render_template('docs/show')
-            end
+
+        describe 'except format' do
+          before do
+            get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
           end
 
-          context 'when encoding ascii' do
+          it 'should set get_doc notice as flash[:notice]' do
+            flash[:notice].should eql(@get_doc_notice)  
+          end
+
+          it 'should set get_project project as @project' do
+            assigns[:project].should eql(@project)
+          end
+
+          it 'should set get_annotations annotations as @annotations' do
+            assigns[:annotations].should eql(@annotations)
+          end
+        end
+
+        describe 'format' do
+          context 'format html' do
             before do
-              controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
-              @asciitext = 'ascii'
-              controller.stub(:get_ascii_text).and_return(@asciitext)
-              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id, :encoding => 'ascii'
+              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
             end
-            
-            it '@text should getr_ascii_text' do
-              assigns[:text].should eql(@asciitext)
+          
+            it 'should render template' do
+              response.should render_template('docs/show')
             end
           end
 
           context 'when format json' do
             before do
-              controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
               get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id, :format => 'json'
             end
+
+            it 'set @doc.to_hash as @doc_hash' do
+              assigns[:doc_hash].should include @doc.to_hash
+            end
             
-            it 'should render template' do
-              response.should render_template('docs/show')
+            it 'should render @doc.to_hash as json' do
+              response.body.should eql(@doc.to_hash.to_json)
             end
           end
-        end     
+
+          context 'when format text' do
+            before do
+              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id, :format => 'txt'
+            end
+            
+            it 'should render doc.body' do
+              response.body.should eql(@doc.body)
+            end
+          end
+
+          context 'when encoding ascii' do
+            before do
+              @asciitext = 'ascii'
+              @doc.stub(:get_ascii_text).and_return(@asciitext)
+              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id, :encoding => 'ascii'
+            end
+            
+            it '@text should getr_ascii_text' do
+              assigns[:doc][:body].should eql(@asciitext)
+            end
+          end
+        end
       end
       
       context 'when get_project does not returns project' do
@@ -166,13 +190,42 @@ describe DivsController do
         controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
         @current_user = FactoryGirl.create(:user)
         current_user_stub(@current_user)
-        @get_projects_notice = 'get projects notice'
-        controller.stub(:get_projects).and_return([@project, @get_projects_notice])
-        controller.stub(:get_ascii_text).and_return(@asciitext)
         @project_1 = FactoryGirl.create(:project, user: @current_user, name: 'project1', author: 'AAA BBB')
         @doc.projects << @project_1
         @project_2 = FactoryGirl.create(:project, user: @current_user, name: 'project2', author: 'BBB CCC')
         @doc.projects << @project_2
+      end
+
+      context 'normal case' do
+        before do
+          @sort_order = 'sort_order'
+          controller.stub(:sort_order).and_return(@sort_order)
+          @sort_projects = 'sort projects'
+          @doc.stub_chain(:projects, :accessible, :sort_by_params).and_return(@sort_projects) 
+          @sourcedb = @doc.sourcedb
+          @sourceid = @doc.sourceid
+          @div_id = @doc.serial
+        end
+
+        it 'should call get_doc with params sourcedb, sourceid and div_id' do
+          controller.should_receive(:get_doc).with(@doc.sourcedb, @doc.sourceid, @doc.serial.to_s)
+          get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
+        end
+
+        it 'should call sort_order with Project' do
+          controller.should_receive(:sort_order).with(Project)
+          get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
+        end
+
+        it 'should set sort_order value ad @sort_order' do
+          get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
+          assigns[:sort_order].should eql(@sort_order)
+        end
+
+        it 'should set @doc.projects.accessible.sort_by_params as @project' do
+          get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
+          assigns[:projects].should eql(@sort_projects)
+        end
       end
 
       context 'when params[:sort_key] present' do
@@ -205,5 +258,8 @@ describe DivsController do
         end
       end
     end
+
+    describe 'format' do
+    end     
   end
 end
