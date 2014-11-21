@@ -461,7 +461,7 @@ describe Project do
         @project_2_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 2, :accessibility => 1)
         @project_1_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 1, :accessibility => 1)
         @project_0_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 0, :accessibility => 1)
-        @projects = Project.order_by(Project, 'order_denotations_count', nil)
+        @projects = Project.order_by(Project, 'denotations_count', nil)
       end
       
       it 'project which has 2 denotations should be @projects[0]' do
@@ -482,7 +482,7 @@ describe Project do
         @project_2_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 2, :accessibility => 1)
         @project_1_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 1, :accessibility => 1)
         @project_0_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0, :accessibility => 1)
-        @projects = Project.order_by(Project, 'order_relations_count', nil)
+        @projects = Project.order_by(Project, 'relations_count', nil)
       end
       
       it 'project which has 2 relation should be @projects[0]' do
