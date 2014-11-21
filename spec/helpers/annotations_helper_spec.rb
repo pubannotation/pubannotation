@@ -132,7 +132,7 @@ describe AnnotationsHelper do
   describe 'get_annotations_for_json' do
     context 'when doc present' do
       before do
-        @doc = FactoryGirl.create(:doc, :sourcedb => 'SDB', :sourceid => 123, :body => 'annotation doc body')
+        @doc = FactoryGirl.create(:doc, :sourcedb => 'SDB', :sourceid => '123', :body => 'annotation doc body')
         @hdenotations = 'hdenotations'
         @hrelations = 'hrelations'
         @hmodifications = 'hmodifications'
@@ -265,17 +265,12 @@ describe AnnotationsHelper do
           before do
             @ascii_text = 'ascii text'
             helper.stub(:get_ascii_text).and_return(@ascii_text)
-            SequenceAlignment.any_instance.stub(:initialize).and_return(nil)
-            SequenceAlignment.any_instance.stub(:transform_denotations).and_return(@hdenotations)
+            helper.stub(:get_annotation_relational_models).and_return(nil)
             @annotations = helper.get_annotations_for_json(@project, @doc, :encoding => 'ascii')
           end
                
           it 'should return asciitext as :text' do
             @annotations[:text].should eql(@ascii_text)
-          end
-               
-          it 'should return equence_alignment.transform_denotations as :hdenotations' do
-            @annotations[:denotations].should eql(@hdenotations)
           end
         end
       end
@@ -398,7 +393,7 @@ describe AnnotationsHelper do
   
   describe 'get_annotation_relational_models' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'SDB', :sourceid => 123, :body => 'annotation doc body')
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'SDB', :sourceid => '123', :body => 'annotation doc body')
       @hrelations = 'hrelations'
       @hmodifications = 'hmodifications'
       @hdenotations = 'hdenotations'
@@ -437,8 +432,7 @@ describe AnnotationsHelper do
     context  'when options[:encoding] == ascii'  do
       before do
         helper.stub(:get_ascii_text).and_return(@asciitext)
-        SequenceAlignment.any_instance.stub(:initialize).and_return(nil)
-        SequenceAlignment.any_instance.stub(:transform_denotations).and_return(@transform_denotations)
+        TextAlignment::TextAlignment.stub_chain(:new, :transform_denotations).and_return(@transform_denotations)
         @annotations = helper.get_annotation_relational_models(@doc, @project, @text, @asciitext, @annotations_hash, :encoding => 'ascii')
       end
            
@@ -599,7 +593,9 @@ describe AnnotationsHelper do
           
           context 'when delayed_job exists' do
             before do
-              ActiveRecord::Base.connection.execute("INSERT INTO delayed_jobs ('attempts', 'created_at', 'failed_at', 'handler', 'last_error', 'locked_at', 'locked_by', 'priority', 'queue', 'run_at', 'updated_at') VALUES(1, 1, 0, '#{@project.name} save_annotation_zip', '', '', '', '', '', '', '') ")
+              ActiveRecord::Base.connection.execute("
+                INSERT INTO delayed_jobs (attempts, created_at, failed_at, handler, last_error, locked_at, locked_by, priority, queue, run_at, updated_at) 
+                  VALUES (1, '2014-06-01', '2014-06-01', '#{@project.name} save_annotation_zip', '', NULL, NULL, 0, '', '2014-06-01', '2014-06-01') ")
               @result = helper.project_annotations_zip_link_helper(@project)
             end
             
