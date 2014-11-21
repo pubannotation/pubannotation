@@ -617,7 +617,7 @@ class Project < ActiveRecord::Base
     num_failed = 0
     options[:docs_array].each do |doc_array_params|
       # all of columns insert into database need to be included in this hash.
-      doc_array_params['source_db'] = options[:sourcedb] if options[:sourcedb].present?
+      doc_array_params[:source_db] = options[:sourcedb] if options[:sourcedb].present?
       mappings = {
         :text => :body, 
         :source_db => :sourcedb, 

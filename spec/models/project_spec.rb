@@ -2482,6 +2482,44 @@ describe Project do
     end
   end
 
+  describe 'create_user_sourcedb_docs' do
+    before do
+      @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
+      @docs_array = [
+        {text: 'text', source_db: 'sdb', source_id: 'sid', section: 'section', source_url: 'http', div_id: 0},
+        {text: 'text', source_db: 'sdb', source_id: nil, section: 'section', source_url: 'http', div_id: 0}
+      ]  
+    end
+
+    context 'when options[:sourcedb] blank' do
+      it 'should save doc once' do
+        expect_any_instance_of(Doc).to receive(:save)
+        @project.create_user_sourcedb_docs({docs_array: @docs_array})
+      end
+
+      it 'should fail once' do
+        expect(@project.create_user_sourcedb_docs({docs_array: @docs_array})[1]).to eql(1)
+      end
+
+      it 'should save doc once' do
+        expect{ @project.create_user_sourcedb_docs({docs_array: @docs_array}) }.to change{ Doc.count }.from(0).to(1)
+      end
+    end
+
+    context 'when options[:sourcedb] prensent' do
+      it 'should save doc once' do
+        docs_array = [
+          {text: 'text', source_db: 'sdb', source_id: 'sid', section: 'section', source_url: 'http', div_id: 0}
+        ]  
+        sourcedb = 'param sdb'
+        nil.stub(:valid?).and_return(true)
+        nil.stub(:save).and_return(true)
+        expect(Doc).to receive(:new).with({body: docs_array[0][:text], sourcedb: sourcedb, sourceid: docs_array[0][:source_id], section: docs_array[0][:section], source: docs_array[0][:source_url], serial: docs_array[0][:div_id]})
+        @project.create_user_sourcedb_docs({docs_array: docs_array, sourcedb: sourcedb})
+      end
+    end
+  end
+
   describe 'user_presence' do
     context 'when user blank' do
       before do
