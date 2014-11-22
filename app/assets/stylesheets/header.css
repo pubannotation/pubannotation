@@ -22,14 +22,14 @@ nav a {
 }
 
 .main-nav li {
-  margin-right: 5px;
+  margin-right: 0;
 }
 
 .main-nav li a {
   border-radius: 5px;
   font-weight: 800;
   font-size: 14px;
-  padding: 0.5em 1em;
+  padding: 0.5em;
   text-shadow: none;
   text-transform: uppercase;
   transition: all .25s;
