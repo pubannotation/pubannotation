@@ -4,7 +4,7 @@ require 'spec_helper'
 describe Shared do
   describe 'save annotations' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
 
@@ -160,7 +160,7 @@ describe Shared do
   
   describe 'save_hdenotations' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @doc = FactoryGirl.create(:doc, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @associate_project_denotations_count_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_denotations_count_1.docs << @doc
@@ -286,7 +286,7 @@ describe Shared do
     context 'when hmodifications[:obj] match /^R/' do
       before do
         @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, subj: @denotation, :project => @project)
         @hmodification = {:id => 'hid', :pred => 'type', :obj => @subcatrel.hid}
         @hmodifications = Array.new
         @hmodifications << @hmodification
@@ -354,6 +354,92 @@ describe Shared do
       
       it 'should change positions' do
         (@result[0][:span][:begin] == @begin && @result[0][:span][:end] == @end).should be_false
+      end
+    end
+  end
+
+  describe 'store_annotations' do
+    before do
+      @text = 'text about'
+      @denotations = [{"span" => {"begin" => 0, "end" => 134}, "obj" => "TOP"}, {"span" => {"begin" => 0, "end" => 134}, "obj" => "TITLE"}]
+      @relations = nil
+      @modifications = nil
+      @annotations = {:text => @text, 
+                      :denotations => @denotations, 
+                      :relations => @relations, 
+                      :modifications => @modifications}
+      user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, user: user)
+      Shared.stub(:save_annotations).and_return(nil)
+    end
+
+    context 'when options[:delayed] == true' do
+      before do
+        @options = {mode: 'mode', delayed: true}
+      end
+
+      context 'when finished without errors' do
+        context 'when divs.length == 1' do
+          before do
+            @div = FactoryGirl.create(:doc)
+            @divs = [@div]
+          end
+
+          it 'should call Shared.save_annotations with annotations, project, divs[0] and options' do
+            Shared.should_receive(:save_annotations).with(@annotations, @project, @div, @options) 
+            Shared.store_annotations(@annotations, @project, @divs, @options)
+          end
+
+          it 'should create project.notices with successful: true, method store_annotations' do
+            @project.notices.should_receive(:create).with({successful: true, method: 'store_annotations'})
+            Shared.store_annotations(@annotations, @project, @divs, @options)
+          end
+        end
+
+        context 'when divs.length !== 1' do
+          before do
+            @div_1 = FactoryGirl.create(:doc)
+            @div_2 = FactoryGirl.create(:doc)
+            @divs = [@div_1, @div_2]
+            @denotations = [{span: {begin: 3, end: 5}}]
+            @annotations = {:text => @text, 
+                            :denotations => @denotations, 
+                            :relations => @relations, 
+                            :modifications => @modifications}
+            @find_divisions = [[1, [0, 3]], [1, [2, 5]]]
+            TextAlignment.stub(:find_divisions).and_return(@find_divisions)
+          end
+
+          it 'should call Shared.save_annotations with annotations, project, divs[0]' do
+            Shared.should_receive(:save_annotations).twice
+            Shared.store_annotations(@annotations, @project, @divs, @options)
+          end
+
+          it 'should create project.notices with successful: true, method store_annotations' do
+            @project.notices.should_receive(:create).with({successful: true, method: 'store_annotations'})
+            Shared.store_annotations(@annotations, @project, @divs, @options)
+          end
+        end
+      end
+
+      context 'when finished without errors' do
+        it 'should create project.notices with successful: false, method store_annotations' do
+          @project.notices.should_receive(:create).with({successful: false, method: 'store_annotations'})
+          Shared.store_annotations(@annotations, @project, nil, @options)
+        end
+      end
+    end
+
+    context 'when options[:delayed] == false' do
+      before do
+        @options = {mode: 'mode'}
+        @div = FactoryGirl.create(:doc)
+        @divs = [@div]
+      end
+
+      it 'should not create project.notices with successful: true, method store_annotations' do
+        @project.notices.should_not_receive(:create).with({successful: true, method: 'store_annotations'})
+        Shared.store_annotations(@annotations, @project, @divs, @options)
       end
     end
   end

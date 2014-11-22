@@ -329,6 +329,8 @@ ja:
       update_zip: アノテーションZIPファイルの更新
       create_zip_delay: アノテーションZIPファイルの作成を受け付けました。数分後に再度このページにアクセスして下さい。
     docs:
+      index:
+        too_many: 件数が多すぎます
       create_project_docs:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'
         created_to_document_set: '%{num_created}個のドキュメントがドキュメントセット %{project_name}に作成されました'
@@ -372,17 +374,15 @@ ja:
         pending_associate_projects: "このプロジェクトはプロジェクトのインポート処理中です..."
       upload_zip:
         delay_save_annotations: 'アノテーションは数分程度で作成されます'
-      save_annotation_zip:
-        failed: "アノテーションZIPファイルの作成に失敗しました。 %{created_at}"
   views:
     service:
       title: PubAnnotation
       slogan: スケーラブルかつ共有可能なテキストアノテーションストレージ
       credit: "アルファバージョンのため機能が不完全な場合がありますが、ご意見を頂戴するため公開しております。<br />ご意見をぜひお寄せください。<br />連絡先: jdkim (at) dbcls (dot) rois (dot) ac (dot) jp"
     menus:
-      overview: 概要
-      features: 特徴
-      formats: フォーマット
+      repository: レポジトリ
+      documentation: 使用案内
+      about: 紹介
     annotations:
       index:
         confirm_destroy_all: "関連するインスタンス、リレーションも全て削除されますがよろしいですか？"
@@ -424,6 +424,10 @@ ja:
       associate_project: 関連プロジェクト
       detail: プロジェクト詳細
       select_zip_file: アップロードするzipファイルを選択して下さい。
+      save_annotation_zip:
+        result: "アノテー/うションZIPファイルの作成に%{result}しました。 %{created_at}"
+      store_annotations:
+        result: "アノテーションの作成に%{result}しました。 %{created_at}"
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:
@@ -459,7 +463,7 @@ ja:
       edit: 編集
       error: エラー
       delete: 削除
-      delete_all: 全部削除
+      delete_all: 全て削除
       none: なし
       new_model: 新規%{model}の作成
       create_model: 新規%{model}を作成
@@ -482,6 +486,8 @@ ja:
       pmcdocs: pmcdocs
       see: 表示
       search: 検索
+      successful: 成功
+      unsuccessful: 失敗
       open: 開く
       get: 取得
       divs: divs
@@ -494,3 +500,4 @@ ja:
       zip:
         delayed_job_present: ZIPファイルは数分程度で作成されます。      
         download_not_available: アノテーションZIPファイルはダウンロードできません。
+        result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"

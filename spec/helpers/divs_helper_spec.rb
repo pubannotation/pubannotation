@@ -4,7 +4,7 @@ require 'spec_helper'
 describe DivsHelper do
   describe 'div_link_helper' do
     before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 123, :serial => 0)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '123', :serial => 0)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) 
       @pmcdoc_id = 123456
     end    

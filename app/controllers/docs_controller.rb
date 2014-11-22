@@ -15,16 +15,15 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
       @docs = @project.docs
-      @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
       @docs_hash = @docs.collect{|doc| doc.to_hash}
       @search_path = search_project_docs_path(@project.name)
     else
       @docs = Doc
-      @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
-      @docs_hash = {message: "too many"}
+      @docs_hash = {message: t('controllers.docs.index.too_many')}
       @search_path = search_docs_path
     end
 
+    @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
     @sort_order = sort_order(Doc)
     @source_docs = @docs.where(serial: 0).sort_by_params(@sort_order).paginate(:page => params[:page])
     flash[:sort_order] = @sort_order
@@ -130,7 +129,7 @@ class DocsController < ApplicationController
       i += 1
     end
     conditions.unshift(columns)
-    @source_docs = docs.where(conditions).group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC').paginate(:page => params[:page])
+    @source_docs = docs.where(conditions).group(:id).group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC').paginate(:page => params[:page])
     flash[:notice] = t('controllers.docs.search.not_found') if @source_docs.blank?
   end
   
@@ -304,7 +303,6 @@ class DocsController < ApplicationController
       begin
         num_created, num_added, num_failed = project.add_docs_from_json(docs, current_user)
       rescue => e
-        message = e.message
       end
     end
     result = {:created => num_created, :added => num_added, :failed => num_failed}

@@ -17,9 +17,9 @@ describe DenotationsHelper do
         before do
           @begin = 0
           @end = 10
-          @denotation_project_1_1 = FactoryGirl.create(:denotation, :project_id => 1, :begin => @begin, :end => @end)
-          @denotation_project_1_2 = FactoryGirl.create(:denotation, :project_id => 1, :begin => @begin, :end => @end)
-          @denotation_project_2 = FactoryGirl.create(:denotation, :project_id => 2, :begin => @begin, :end => @end)
+          @denotation_project_1_1 = FactoryGirl.create(:denotation, doc: @doc, project: @project, :begin => @begin, :end => @end)
+          @denotation_project_1_2 = FactoryGirl.create(:denotation, doc: @doc, project: @project, :begin => @begin, :end => @end)
+          @denotation_project_2 = FactoryGirl.create(:denotation, doc: @doc, project: FactoryGirl.create(:project, user: FactoryGirl.create(:user)), :begin => @begin, :end => @end)
           @within_spans = [@denotation_project_1_1, @denotation_project_1_2, @denotation_project_2]
           helper.stub(:params).and_return({:action => 'spans', :begin => @begin, :end => @end})
           @result = helper.denotations_count_helper(@project, {:doc => @doc, :sourceid => 'sourceid'})

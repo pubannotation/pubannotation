@@ -306,6 +306,8 @@ en:
       create_zip: Create annotations ZIP file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
     docs:
+      index:
+        too_many: too many
       create_project_docs:
         added_to_document_set: '%{num_added} documents were added to the project, %{project_name}.'
         created_to_document_set: '%{num_created} documents were created and added to the project, %{project_name}.'
@@ -356,9 +358,9 @@ en:
       slogan: A scalable and sharable storage of text annotations.
       credit: "Currently, it is in its alpha version and there are many incomplete features.<br />The reason of making it publicaly available at the current stage is to seek your comments.<br />Your any comment about any feature of the service will be highly appreciated.<br />Contact: jdkim at dbcls dot rois dot ac dot jp"
     menus:
-      overview: overview
-      features: features
-      formats: formats
+      repository: repository
+      documentation: documentation
+      about: about
     annotations:
       index:
         confirm_destroy_all: Are you sure? All the instances and relations that belong to this project will be deleted.

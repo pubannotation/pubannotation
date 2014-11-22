@@ -152,6 +152,7 @@ describe AnnotationsController do
   
           context 'when format is ttl' do
             before do
+              @project.docs << FactoryGirl.create(:doc)
               controller.stub(:get_conversion).and_return(
               'line1
               line2
@@ -163,10 +164,20 @@ describe AnnotationsController do
               line8
               line9
               ')
-              get :index, :format => 'ttl', :project_id => @project.name
             end
             
             it 'should returns x-turtle' do
+              @get_conversion = 'get 
+              @
+              conversion'
+              controller.stub(:get_conversion).and_return(@get_conversion)
+              controller.should_receive(:get_conversion).twice
+              get :index, :format => 'ttl', :project_id => @project.name
+              response.body
+            end
+
+            it 'should returns x-turtle' do
+              get :index, :format => 'ttl', :project_id => @project.name
               response.header['Content-Type'].should eql('application/x-turtle; charset=utf-8')
             end
           end
@@ -255,7 +266,7 @@ describe AnnotationsController do
   describe 'annotations' do
     before do
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'project_name')
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 123456)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '123456')
       @get_doc_notice = 'notice'
       controller.stub(:get_doc).and_return([@doc, @get_doc_notice])
       @get_project_notice = 'project notice'
@@ -458,9 +469,9 @@ describe AnnotationsController do
           context 'when format == json' do
             it 'should execute store_annotations by delayed_job' do
               Shared.should_receive(:delay)  
-              Shared.should_receive(:store_annotations).with(@annotations.symbolize_keys, @project, [@doc])  
+              Shared.should_receive(:store_annotations).with(@annotations.symbolize_keys, @project, [@doc], {mode: nil, delayed: true})  
               Shared.stub(:delay).and_return(Shared)
-              post :create, project_id: @project.id, annotations: @annotations, format: 'json'
+              post :create, project_id: @project.id, annotations: @annotations, format: 'json', mode: 'delay'
             end
 
             it 'should return status created , fits delayed_job message' do
@@ -478,7 +489,7 @@ describe AnnotationsController do
 
             it 'should execute store_annotations without delayed_job with params[:annotaitons] symbolize_keys' do
               Shared.should_not_receive(:delay)  
-              Shared.should_receive(:store_annotations).with(@annotations.symbolize_keys, @project, [@doc])  
+              Shared.should_receive(:store_annotations).with(@annotations.symbolize_keys, @project, [@doc], {mode: nil})  
               post :create, project_id: @project.id, annotations: @annotations, format: 'html'
             end
           end
@@ -492,10 +503,10 @@ describe AnnotationsController do
             @params_modifications = 'modifications'
           end
 
-          context 'when format == html' do
+          context 'when format == json' do
             it 'should execute store_annotations by delayed_job with annotaitons generate by params text, denotations, relations and modifications' do
               Shared.should_receive(:delay)  
-              Shared.should_receive(:store_annotations).with({text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications}, @project, [@doc])  
+              Shared.should_receive(:store_annotations).with({text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications}, @project, [@doc], {mode: nil, delayed: true})  
               Shared.stub(:delay).and_return(Shared)
               post :create, project_id: @project.id, text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications, format: 'json'
             end
@@ -509,7 +520,7 @@ describe AnnotationsController do
 
             it 'should execute store_annotations without delayed_job with params[:annotaitons] symbolize_keys' do
               Shared.should_not_receive(:delay)  
-              Shared.should_receive(:store_annotations).with({text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications}, @project, [@doc])  
+              Shared.should_receive(:store_annotations).with({text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications}, @project, [@doc], {mode: nil})  
               post :create, project_id: @project.id, text: @params_text, denotations: @params_denotations, relations: @params_relations, modifications: @params_modifications, format: 'html'
             end
           end

@@ -314,12 +314,36 @@ describe ApplicationController do
     
     context 'when div_id blank' do
       before do
-        @params = {sourcedb: 'sourcedb', sourceid: 'sourceid'}
-        @result = controller.get_docspec(@params)
+        @sourcedb = 'sourcedb'
+        @sourceid = 'sourceid'
+        @params = {sourcedb: @sourcedb, sourceid: @sourceid}
       end
-      
-      it 'should return 0 as serial' do
-        @result.should eql [@params[:sourcedb], @params[:sourceid], 0, nil]
+
+      context 'when Doc.has_divs? == true' do
+        before do
+          Doc.stub(:has_divs?).and_return(true)
+          @get_div_ids = 'div_ids'
+          Doc.stub(:get_div_ids).and_return(@get_div_ids)
+        end
+
+        it 'should call Doc.get_div_ids with params[:sourcedb] and params[:sourceid]' do
+          expect(Doc).to receive(:get_div_ids).with(@sourcedb, @sourceid)
+          controller.get_docspec(@params)
+        end
+        
+        it 'should return Div.get_ids as serial' do
+          expect(controller.get_docspec(@params)).to eql [@params[:sourcedb], @params[:sourceid], @get_div_ids, nil]
+        end
+      end
+
+      context 'when Doc.has_divs? == false' do
+        before do
+          Doc.stub(:has_divs?).and_return(false)
+        end
+        
+        it 'should return 0 as serial' do
+          expect(controller.get_docspec(@params)).to eql [@params[:sourcedb], @params[:sourceid], 0, nil]
+        end
       end
     end
 
@@ -770,9 +794,9 @@ describe ApplicationController do
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
       @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation, :project => @project)
       @instance = FactoryGirl.create(:instance, :project => @project, :obj => @denotation)
-      @subinsrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+      @subinsrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation, :project => @project)
     end
 
     context 'when doc find by sourcedb and source id and serial exists' do
@@ -849,7 +873,7 @@ describe ApplicationController do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
         @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name2")
         @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation, :project => @project)
       end
       
       context 'and when doc.projects.find_by_name(project_name) exists' do

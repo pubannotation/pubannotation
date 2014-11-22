@@ -37,7 +37,7 @@ module Shared
   def self.realign_denotations(denotations, str1, str2)
     return nil if denotations.nil?
     align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-    denotations_new = align.transform_denotations(denotations).select{|a| a[:span][:end] > a[:span][:begin]}
+    denotations_new = align.transform_denotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
   end
 
   def self.save_hdenotations(hdenotations, project, doc)
@@ -112,39 +112,47 @@ module Shared
   end
 
   def self.store_annotations(annotations, project, divs, options = nil)
-    div_index = divs.map{|d| [d.serial, d]}.to_h
+    successful = true
+    fit_index = nil
+    begin
+      div_index = divs.map{|d| [d.serial, d]}.to_h
 
-    if divs.length == 1
-      self.save_annotations(annotations, project, divs[0], options)
-    else
-      div_index = divs.collect{|d| [d.serial, d]}.to_h
-      divs_hash = divs.collect{|d| d.to_hash}
-      fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
+      if divs.length == 1
+        self.save_annotations(annotations, project, divs[0], options)
+      else
+        div_index = divs.collect{|d| [d.serial, d]}.to_h
+        divs_hash = divs.collect{|d| d.to_hash}
+        fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
 
-      fit_index.each do |i|
-        if i[0] >= 0
-          ann = {}
-          idx = {}
-          ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
-          if annotations[:denotations].present?
-            ann[:denotations] = annotations[:denotations]
-                                 .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
-                                .collect{|a| {:span => {:begin => a[:span][:begin] - i[1][0], :end => a[:span][:end] - i[1][0]}, :obj => a[:obj]}}
-            ann[:denotations].each{|a| idx[a[:id]] = true}
+        fit_index.each do |i|
+          if i[0] >= 0
+            ann = {}
+            idx = {}
+            ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
+            if annotations[:denotations].present?
+              ann[:denotations] = annotations[:denotations]
+                                   .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
+                                  .collect{|a| {:span => {:begin => a[:span][:begin] - i[1][0], :end => a[:span][:end] - i[1][0]}, :obj => a[:obj]}}
+              ann[:denotations].each{|a| idx[a[:id]] = true}
+            end
+            if annotations[:relations].present?
+              ann[:relations] = annotations[:relations].select{|a| idx[a[:id]]}
+              ann[:relations].each{|a| idx[a[:id]] = true}
+            end
+            if annotations[:relations].present?
+              ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
+              ann[:modifications].each{|a| idx[a[:id]] = true}
+            end
+            self.save_annotations(ann, project, div_index[i[0]], options)
           end
-          if annotations[:relations].present?
-            ann[:relations] = annotations[:relations].select{|a| idx[a[:id]]}
-            ann[:relations].each{|a| idx[a[:id]] = true}
-          end
-          if annotations[:relations].present?
-            ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
-            ann[:modifications].each{|a| idx[a[:id]] = true}
-          end
-          self.save_annotations(ann, project, div_index[i[0]], options)
         end
+        fit_index
       end
-      fit_index
+    rescue => e
+      successful = false
     end
+    project.notices.create({successful: successful, method: 'store_annotations'}) if options[:delayed]
+    return fit_index 
   end
 
 end

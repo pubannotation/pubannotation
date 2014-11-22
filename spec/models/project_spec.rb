@@ -461,7 +461,7 @@ describe Project do
         @project_2_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 2, :accessibility => 1)
         @project_1_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 1, :accessibility => 1)
         @project_0_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 0, :accessibility => 1)
-        @projects = Project.order_by(Project, 'order_denotations_count', nil)
+        @projects = Project.order_by(Project, 'denotations_count', nil)
       end
       
       it 'project which has 2 denotations should be @projects[0]' do
@@ -482,7 +482,7 @@ describe Project do
         @project_2_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 2, :accessibility => 1)
         @project_1_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 1, :accessibility => 1)
         @project_0_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0, :accessibility => 1)
-        @projects = Project.order_by(Project, 'order_relations_count', nil)
+        @projects = Project.order_by(Project, 'relations_count', nil)
       end
       
       it 'project which has 2 relation should be @projects[0]' do
@@ -518,12 +518,12 @@ describe Project do
       @associate_project_2_pmdocs_count = 2
       @i = 1
       @associate_project_2_pmdocs_count.times do
-        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i)
+        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s)
         @i += 1  
       end
       @associate_project_2_pmcdocs_count = 4
       @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
         @i += 1  
       end
       @associate_project_2.reload
@@ -587,12 +587,14 @@ describe Project do
     end
   end
   
-  describe 'order_author' do
+  describe 'order_maintainer' do
     before do
-      @user = FactoryGirl.create(:user)
-      @project_1 = FactoryGirl.create(:project, :user => @user, :author => 'A')
-      @project_2 = FactoryGirl.create(:project, :user => @user, :author => 'B')
-      @project_3 = FactoryGirl.create(:project, :user => @user, :author => 'C')
+      @user_1 = FactoryGirl.create(:user, username: 'AAA')
+      @user_2 = FactoryGirl.create(:user, username: 'BBB')
+      @user_3 = FactoryGirl.create(:user, username: 'CCC')
+      @project_1 = FactoryGirl.create(:project, :user => @user_1)
+      @project_2 = FactoryGirl.create(:project, :user => @user_2)
+      @project_3 = FactoryGirl.create(:project, :user => @user_3)
       @projects = Project.order_maintainer
     end
     
@@ -1087,12 +1089,12 @@ describe Project do
       @associate_project_1_pmdocs_count = 1
       @i = 1
       @associate_project_1_pmdocs_count.times do
-        @associate_project_1.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
+        @associate_project_1.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s) 
         @i += 1 
       end
       @associate_project_1_pmcdocs_count = 1
       @associate_project_1_pmcdocs_count.times do
-        @associate_project_1.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @associate_project_1.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
         @i += 1 
       end     
       @associate_project_1.reload
@@ -1100,12 +1102,12 @@ describe Project do
       @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2_pmdocs_count = 2
       @associate_project_2_pmdocs_count.times do
-        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
+        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s) 
         @i += 1 
       end
       @associate_project_2_pmcdocs_count = 3
       @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
         @i += 1 
       end     
       @associate_project_2.reload
@@ -1413,7 +1415,7 @@ describe Project do
         end
         @associate_project_pmcdocs_count = 2
         @associate_project_pmcdocs_count.times do |time|
-          @associate_project.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, sourceid: time) 
+          @associate_project.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, sourceid: time.to_s) 
         end  
         @associate_project_relations_count = 3
         @associate_project_relations_count.times do
@@ -1480,7 +1482,7 @@ describe Project do
       end
       @project_pmcdocs_count = 2
       @project_pmcdocs_count.times do |time|
-        doc = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0, sourceid: time)
+        doc = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0, sourceid: time.to_s)
         @project.docs << doc
       end
       @project_denotations_count = 3
@@ -1502,14 +1504,14 @@ describe Project do
       @dup_pmdocs_count = 2
       @i = 1
       @dup_pmdocs_count.times do
-        pmdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed', :sourceid => @i)
+        pmdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed', :sourceid => @i.to_s)
         @i += 1
         @associate_project.docs << pmdoc
       end
 
       @dup_pmcdocs_count = 3
       @dup_pmcdocs_count.times do
-        pmcdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PMC', :serial => 0, :sourceid => @i)
+        pmcdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s)
         @i += 1
         @associate_project.docs << pmcdoc
       end
@@ -1596,13 +1598,13 @@ describe Project do
       before do
         @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         # duplicative docs
-        @same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source', :sourcedb => 'PubMed', :sourceid => 123456, :serial => 1, :section => 'section')
-        @same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source', :sourcedb => 'PMC', :sourceid => 123456, :serial => 0, :section => 'section')
+        @same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source', :sourcedb => 'PubMed', :sourceid => '123456', :serial => 1, :section => 'section')
+        @same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source', :sourcedb => 'PMC', :sourceid => '123456', :serial => 0, :section => 'section')
         @associate_project.docs << @same_doc_1
         @associate_project.docs << @same_doc_2
         # not duplicative docs
-        @not_same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source.another', :sourcedb => 'PubMed', :sourceid => 1234567, :serial => 1, :section => 'section')
-        @not_same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source.another', :sourcedb => 'PMC', :sourceid => 1234567, :serial => 0, :section => 'section')
+        @not_same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source.another', :sourcedb => 'PubMed', :sourceid => '1234567', :serial => 1, :section => 'section')
+        @not_same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source.another', :sourcedb => 'PMC', :sourceid => '1234567', :serial => 0, :section => 'section')
         @associate_project.docs << @not_same_doc_1
         @associate_project.docs << @not_same_doc_2
         @associate_project.reload
@@ -2026,6 +2028,7 @@ describe Project do
         @project = project
         @doc_annotations_files = doc_annotations_files
       end
+      JSON.stub(:parse).and_return(nil)
     end
 
     context 'when project successfully saved' do
@@ -2104,7 +2107,7 @@ describe Project do
     before do
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
       @sourcedb = 'PMC'
-      @sourceid = 100
+      @sourceid = '100'
       @serial = 1
       @doc_annotations_file_name = "#{@sourcedb}-#{@sourceid}-#{@serial}-title.json"
       @doc_annotations_files = [{name: @doc_annotations_file_name, path: "#{TempFilePath}#{@doc_annotations_file_name}"}]
@@ -2329,26 +2332,31 @@ describe Project do
               @sourcedb = "PMC#{Doc::UserSourcedbSeparator}#{@user.username}"
               @docs_array = [
                 # successfully create
-                {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
-                {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+                {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => '123', 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
+                {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => '123', 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
                 # fail since same sourcedb, sourceid and serial
-                {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
+                {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => '123', 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
               ]
-              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+              @user_soucedb_doc = FactoryGirl.create(:doc)
+              @divs = [@user_soucedb_doc]
+              @num_failed_use_sourcedb_docs = 2
+              @project.stub(:create_user_sourcedb_docs).and_return([@divs,  @num_failed_use_sourcedb_docs])
+            end
+
+            it 'should calls create_user_sourcedb_docs with docs_array' do
+              @project.should_receive(:create_user_sourcedb_docs).with(docs_array: @docs_array)
+              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
             end
             
             it 'should increment num_created' do
-              @result.should eql [2, 0, 1]
+              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user}).should eql([@divs.size, 0, @num_failed_use_sourcedb_docs])
             end
 
             it 'should create doc from docs_array' do
-              Doc.find_by_body_and_sourcedb_and_sourceid_and_source_and_serial(@docs_array[0]['text'], 
-              @docs_array[0]['source_db'], @docs_array[0]['source_id'], @docs_array[0]['source_url'], @docs_array[0]['div_id']).should be_present
-            end
-
-            it 'should create doc from docs_array' do
-              Doc.find_by_body_and_sourcedb_and_sourceid_and_source_and_serial(@docs_array[0]['text'], 
-              @docs_array[1]['source_db'], @docs_array[1]['source_id'], @docs_array[1]['source_url'], @docs_array[1]['div_id']).should be_present
+              @project.docs.should_not include(@user_soucedb_doc)
+              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+              @project.reload
+              @project.docs.should include(@user_soucedb_doc)
             end
           end
 
@@ -2392,7 +2400,7 @@ describe Project do
 
           context 'when doc_sequencer_ blank' do
             before do
-              @new_sourceid = 123456
+              @new_sourceid = '123456'
               @docs_array = [
                 # successfully create
                 {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => @new_sourceid, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
@@ -2403,15 +2411,26 @@ describe Project do
               Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
               @sourcedb = 'source_db'
               @user = FactoryGirl.create(:user, username: 'User Name')
-              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+              @user_soucedb_doc = FactoryGirl.create(:doc)
+              @divs = [@user_soucedb_doc]
+              @num_failed_use_sourcedb_docs = 2
+              @project.stub(:create_user_sourcedb_docs).and_return([@divs,  @num_failed_use_sourcedb_docs])
             end
             
-            it 'should increment num_created' do
-              @result.should eql [Doc.find_all_by_sourcedb_and_sourceid("#{@sourcedb}#{Doc::UserSourcedbSeparator}#{@user.username}", @new_sourceid).size, 0, 1]
+            it 'should call create_user_sourcedb_docs with docs_array and sourcedb' do
+              @project.should_receive(:create_user_sourcedb_docs).with({docs_array: @docs_array, sourcedb: "#{@sourcedb}:#{@user.username}"})
+              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
             end
 
-            it 'should add ' do
-              @project.docs.collect{|d| d.id}.should =~ Doc.find_all_by_sourcedb_and_sourceid("#{@sourcedb}#{Doc::UserSourcedbSeparator}#{@user.username}", @new_sourceid).collect{|d| d.id}
+            it 'should increment num_created' do
+              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+              @result.should eql([@divs.size, 0 , @num_failed_use_sourcedb_docs])
+            end
+
+            it 'should add create_user_sourcedb_docs as project.docs' do
+              @project.docs.should_not include(@user_soucedb_doc)
+              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+              @project.docs.should include(@user_soucedb_doc)
             end
           end
         end
@@ -2459,6 +2478,44 @@ describe Project do
       it 'should update projects.annotations_updated_at' do
         @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
         @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
+      end
+    end
+  end
+
+  describe 'create_user_sourcedb_docs' do
+    before do
+      @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
+      @docs_array = [
+        {text: 'text', source_db: 'sdb', source_id: 'sid', section: 'section', source_url: 'http', div_id: 0},
+        {text: 'text', source_db: 'sdb', source_id: nil, section: 'section', source_url: 'http', div_id: 0}
+      ]  
+    end
+
+    context 'when options[:sourcedb] blank' do
+      it 'should save doc once' do
+        expect_any_instance_of(Doc).to receive(:save)
+        @project.create_user_sourcedb_docs({docs_array: @docs_array})
+      end
+
+      it 'should fail once' do
+        expect(@project.create_user_sourcedb_docs({docs_array: @docs_array})[1]).to eql(1)
+      end
+
+      it 'should save doc once' do
+        expect{ @project.create_user_sourcedb_docs({docs_array: @docs_array}) }.to change{ Doc.count }.from(0).to(1)
+      end
+    end
+
+    context 'when options[:sourcedb] prensent' do
+      it 'should save doc once' do
+        docs_array = [
+          {text: 'text', source_db: 'sdb', source_id: 'sid', section: 'section', source_url: 'http', div_id: 0}
+        ]  
+        sourcedb = 'param sdb'
+        nil.stub(:valid?).and_return(true)
+        nil.stub(:save).and_return(true)
+        expect(Doc).to receive(:new).with({body: docs_array[0][:text], sourcedb: sourcedb, sourceid: docs_array[0][:source_id], section: docs_array[0][:section], source: docs_array[0][:source_url], serial: docs_array[0][:div_id]})
+        @project.create_user_sourcedb_docs({docs_array: docs_array, sourcedb: sourcedb})
       end
     end
   end

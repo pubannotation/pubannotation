@@ -168,7 +168,7 @@ describe Doc do
       before do
         @pmcdocs_count = 3
         @pmcdocs_count.times do |time|
-          FactoryGirl.create(:doc, :sourcedb => 'PMC', sourceid: time, serial: 0)
+          FactoryGirl.create(:doc, :sourcedb => 'PMC', sourceid: time.to_s, serial: 0)
         end
         @not_pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
         @serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC')
@@ -332,7 +332,7 @@ describe Doc do
     before do
       @doc_sourcedb_uniq = FactoryGirl.create(:doc, :sourcedb => 'Uniq1', :sourceid => '11')
       @doc_sourceid_uniq_1 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '10')
-      @doc_sourceid_uniq_2 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '123')
+      @doc_sourceid_uniq_2 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '12')
     end
     
     context 'when order_key_method nil' do
@@ -371,11 +371,7 @@ describe Doc do
       end
       
       it 'should order by sourcedb DESC' do
-        @docs.first.should eql @doc_sourceid_uniq_1
-      end
-      
-      it 'should order by sourcedb DESC' do
-        @docs.second.should eql @doc_sourceid_uniq_2
+        @docs.first.sourcedb.should eql (@doc_sourceid_uniq_1.sourcedb)
       end
     end
     
@@ -464,10 +460,10 @@ describe Doc do
       context 'same_sourceid_denotations_count' do
         context 'when sourcedb = PubMed' do
           before do
-            @count_1 = FactoryGirl.create(:doc, :sourceid => 1, :sourcedb => 'PubMed', :denotations_count => 1)
-            @count_2 = FactoryGirl.create(:doc, :sourceid => 2, :sourcedb => 'PubMed', :denotations_count => 2)
-            @count_3 = FactoryGirl.create(:doc, :sourceid => 3, :sourcedb => 'PubMed', :denotations_count => 3)
-            @count_0 = FactoryGirl.create(:doc, :sourceid => 1, :sourcedb => 'PubMed', :denotations_count => 0)
+            @count_1 = FactoryGirl.create(:doc, :sourceid => 1.to_s, :sourcedb => 'PubMed', :denotations_count => 1)
+            @count_2 = FactoryGirl.create(:doc, :sourceid => 2.to_s, :sourcedb => 'PubMed', :denotations_count => 2)
+            @count_3 = FactoryGirl.create(:doc, :sourceid => 3.to_s, :sourcedb => 'PubMed', :denotations_count => 3)
+            @count_0 = FactoryGirl.create(:doc, :sourceid => 1.to_s, :sourcedb => 'PubMed', :denotations_count => 0)
             @docs = Doc.order_by(Doc.pmdocs, 'same_sourceid_denotations_count')
           end
           
@@ -877,17 +873,30 @@ describe Doc do
       end
 
       context 'when encoding is ascii' do
+        before do
+          @prev_text_val = 'prev_text'
+          @next_text_val = 'next_text'
+          @get_ascii_text = 'ascii text is this text about'
+          @doc.stub(:get_ascii_text).and_return(@get_ascii_text)
+        end
+
         context 'when context_size is nil' do
           context 'when middle of body' do
             before do
               @begin = 5
               @end = 10
-              params = {:encoding => 'ascii', :begin => @begin, :end => @end}
-              @spans, @prev_text, @next_text = @doc.spans(params)
+              @spans_val = 'spans'
+              @params = {:encoding => 'ascii', :begin => @begin, :end => @end}
+            end
+
+            it 'should call get_ascii_text with @doc.body[begin_pos...end_pos]' do
+              @doc.should_receive(:get_ascii_text).with(@doc.body[@begin...@end])
+              @doc.spans(@params)
             end
             
-            it 'should set body[begin...end] as spans' do
-              @spans.should eql('spans')
+            it 'should set get_ascii_text as spans' do
+              @spans, @prev_text, @next_text = @doc.spans(@params)
+              @spans.should eql(@get_ascii_text)
             end
           end
         end
@@ -897,20 +906,43 @@ describe Doc do
             before do
               @begin = 5
               @end = 10
-              params = {:encoding => 'ascii', :context_size => 5, :begin => @begin, :end => @end}
+              @context_size = 5
+              params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
               @spans, @prev_text, @next_text = @doc.spans(params)
             end
             
             it 'should set prev_text' do
-              @prev_text.should eql('12345')
+              @prev_text.should eql(@get_ascii_text[(@context_size * -1).. -1])
             end
              
-            it 'should set body[begin...end] as spans' do
-              @spans.should eql('spans')
+            it 'should set get_ascii_text as spans' do
+              @spans.should eql(@get_ascii_text)
             end
             
             it 'should set next_text' do
-              @next_text.should eql('ABCDE')
+              @next_text.should eql(@get_ascii_text[0...@context_size])
+            end
+          end
+
+          context 'when context_size > ascii_prev_text.length' do
+            before do
+              @begin = 0
+              @end = 10
+              @context_size = 50
+              params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
+              @spans, @prev_text, @next_text = @doc.spans(params)
+            end
+            
+            it 'should set prev_text' do
+              @prev_text.should eql(@get_ascii_text[(@get_ascii_text.length * -1).. -1])
+            end
+             
+            it 'should set get_ascii_text as spans' do
+              @spans.should eql(@get_ascii_text)
+            end
+            
+            it 'should set next_text' do
+              @next_text.should eql(@get_ascii_text[0...@context_size])
             end
           end
         end
@@ -947,22 +979,28 @@ describe Doc do
       end
       
       context 'when encoding ascii' do
+        before do
+          @get_ascii_text = 'ascii text is this text about'
+          @doc.stub(:get_ascii_text).and_return(@get_ascii_text)
+        end
+
         context 'when context_size present' do
           before do
-            params = {:encoding => 'ascii', :context_size => 10, :begin => @begin, :end => @end}
+            @context_size = 10
+            params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
             @spans, @prev_text, @next_text = @doc.spans(params)
           end
           
           it 'should set get_ascii_text[begin...end] as spans' do
-            @spans.should eql('345delta7')
+            @spans.should eql(@get_ascii_text)
           end
           
           it 'should set prev_text' do
-            @prev_text.should eql('12')
+            @prev_text.should eql(@get_ascii_text[(@context_size * -1)..-1])
           end
           
           it 'should set next_text' do
-            @next_text.should eql('8901')
+            @next_text.should eql(@get_ascii_text[0...@context_size])
           end
         end
       end
@@ -998,22 +1036,28 @@ describe Doc do
       end
       
       context 'when encoding ascii' do
+        before do
+          @get_ascii_text = 'ascii text is this text about'
+          @doc.stub(:get_ascii_text).and_return(@get_ascii_text)
+        end
+
         context 'when context_size present' do
           before do
-            params = {:encoding => 'ascii', :context_size => 3, :begin => @begin, :end => @end}
+            @context_size = 3
+            params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
             @spans, @prev_text, @next_text = @doc.spans(params)
           end
           
           it 'should set get_ascii_text[begin...end] as spans' do
-            @spans.should eql('123delta567')
+            @spans.should eql(@get_ascii_text)
           end
-          
+
           it 'should set prev_text' do
-            @prev_text.should eql('lta')
+            @prev_text.should eql(@get_ascii_text[(@context_size * -1)..-1])
           end
           
           it 'should set next_text' do
-            @next_text.should eql('del')
+            @next_text.should eql(@get_ascii_text[0...@context_size])
           end
         end
       end
@@ -1046,6 +1090,18 @@ describe Doc do
       it 'should return joined prev_text spans next_text' do
         @doc.text(nil).should eql "#{@prev_text}#{@spans}#{@next_text}" 
       end
+    end
+  end
+
+  describe 'ascii_body' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @get_ascii_text = 'get ascii text'
+      @doc.stub(:get_ascii_text).and_return(@get_ascii_text)
+    end
+
+    it 'should return get_ascii_text' do
+      expect(@doc.ascii_body).to eql(@get_ascii_text)
     end
   end
 
@@ -1217,7 +1273,7 @@ describe Doc do
       @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @denotation_1 = FactoryGirl.create(:denotation, :project_id => @project_1.id)
       @denotation_2 = FactoryGirl.create(:denotation, :project_id => @project_2.id)
-      @doc.stub(:denotation).and_return([@denotation_1, @denotation_2])
+      @doc.stub(:denotations).and_return([@denotation_1, @denotation_2])
       @hdenotaions = 'hdenotations'
       @doc.stub(:hdenotations) do |project|
         "project_id_#{ project.id }"
@@ -1289,13 +1345,13 @@ describe Doc do
         @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
         @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project => @project_1)
-        @relation_1 = FactoryGirl.create(:subcatrel, :obj => @denotation_1, :project => @project_1)
+        @relation_1 = FactoryGirl.create(:subcatrel, :obj => @denotation_1, :subj => @denotation_1, :project => @project_1)
         @relation_2 = FactoryGirl.create(:subinsrel, :obj => @instance_1, :project => @project_1)
 
         @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @denotation_2 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
         @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2, :project => @project_2)
-        @relation_3 = FactoryGirl.create(:subcatrel, :obj => @denotation_2, :project => @project_2)
+        @relation_3 = FactoryGirl.create(:subcatrel, :obj => @denotation_2, :subj => @denotation_2, :project => @project_2)
         @relation_4 = FactoryGirl.create(:subinsrel, :obj => @instance_2, :project => @project_2)
       end
       
@@ -1429,7 +1485,7 @@ describe Doc do
         @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc)
         # @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project => @project_1)
         @modification_1 = FactoryGirl.create(:modification, :hid => 'M1', :obj => @denotation_1, :project => @project_1)
-        @relation_1 = FactoryGirl.create(:subcatrel, :hid => 'r1', :obj => @denotation_1, :project => @project_1)
+        @relation_1 = FactoryGirl.create(:subcatrel, :hid => 'r1', :obj => @denotation_1, :subj => @denotation_1, :project => @project_1)
         @relation_2 = FactoryGirl.create(:subinsrel, :hid => 'r2', :obj => @denotation_1, :project => @project_1)
         @modification_2 = FactoryGirl.create(:modification, :hid => 'M2', :obj => @relation_1, :obj_type => @relation_1.class.to_s, :project => @project_1)
         @modification_3 = FactoryGirl.create(:modification, :hid => 'M3', :obj => @relation_2, :obj_type => @relation_2.class.to_s, :project => @project_1)
@@ -1438,7 +1494,7 @@ describe Doc do
         @denotation_2 = FactoryGirl.create(:denotation, :doc => @doc)
         # @instance_2 = FactoryGirl.create(:instance, :obj => @denotation_2, :project => @project_2)
         @modification_4 = FactoryGirl.create(:modification, :hid => 'M4', :obj => @denotation_2, :project => @project_2)
-        @relation_3 = FactoryGirl.create(:subcatrel, :hid => 'r3', :obj => @denotation_2, :project => @project_2)
+        @relation_3 = FactoryGirl.create(:subcatrel, :hid => 'r3', :obj => @denotation_2, :subj => @denotation_2, :project => @project_2)
         @relation_4 = FactoryGirl.create(:subinsrel, :hid => 'r4', :obj => @denotation_2, :project => @project_2)
         @modification_5 = FactoryGirl.create(:modification, :hid => 'M5', :obj => @relation_3, :obj_type => @relation_3.class.to_s, :project => @project_2)
         @modification_6 = FactoryGirl.create(:modification, :hid => 'M6', :obj => @relation_4, :obj_type => @relation_4.class.to_s, :project => @project_2)
@@ -1451,6 +1507,19 @@ describe Doc do
           {:id => @modification_2.hid, :pred => @modification_2.pred, :obj => @relation_1.hid} 
         ])
       end
+    end
+  end
+
+
+  describe 'to_hash' do
+    before do
+      # DO NOT INDENT
+      @doc = FactoryGirl.create(:doc, sourcedb: 'sdb', sourceid: 'sdi', serial: 0, section: 'section', source: 'http://to.to', body: 'A
+B')
+    end
+
+    it 'should return converted hash' do
+      expect(@doc.to_hash).to eql({text: 'AB', source_db: @doc.sourcedb, source_id: @doc.sourceid, div_id: @doc.serial, section: @doc.section, source_url: @doc.source})
     end
   end
   
@@ -1497,7 +1566,7 @@ describe Doc do
         
         context 'when results blank' do
           it 'should return nil' do
-            Doc.sql_find({:sql => 'select * from docs where id = 1000'}, @current_user, @project).should be_nil
+            Doc.sql_find({:sql => 'select * from docs where id = 1000'}, @current_user, @project).should be_blank
           end
         end
       end
@@ -1531,7 +1600,7 @@ describe Doc do
         
         context 'when results blank' do
           it 'should return nil' do
-            Doc.sql_find({:sql => 'select * from docs where id = 1000'}, nil, @project).should be_nil
+            Doc.sql_find({:sql => 'select * from docs where id = 1000'}, nil, @project).should be_blank
           end
         end
       end
@@ -1629,12 +1698,87 @@ describe Doc do
       @divs.collect{|div| div.sourceid}.uniq.should =~ [@attributes[:sourceid]]
     end
   end
+
+  describe 'self.has_divs?' do
+    before do
+      @sourcedb = 'sourcedb'
+      @sourceid = 'sourceid'
+    end
+
+    context 'when size > 1' do
+      before do
+        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 2}))
+      end
+
+      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
+        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
+        Doc.has_divs?(@sourcedb, @sourceid)
+      end
+
+      it 'should return true' do
+        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_true
+      end
+    end
+
+    context 'when size = 1' do
+      before do
+        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 1}))
+      end
+
+      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
+        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
+        Doc.has_divs?(@sourcedb, @sourceid)
+      end
+
+      it 'should return false' do
+        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_false
+      end
+    end
+  end
+
+  describe 'has_divs?' do
+    before do
+      @sourcedb = 'sourcedb'
+      @sourceid = 'sourceid'
+      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
+    end
+
+    context 'when size > 1' do
+      before do
+        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 2}))
+      end
+
+      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
+        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
+        Doc.has_divs?(@sourcedb, @sourceid)
+      end
+
+      it 'should return true' do
+        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_true
+      end
+    end
+
+    context 'when size = 1' do
+      before do
+        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 1}))
+      end
+
+      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
+        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
+        Doc.has_divs?(@sourcedb, @sourceid)
+      end
+
+      it 'should return false' do
+        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_false
+      end
+    end
+  end
   
   describe 'has_divs?' do
     before do
       @sourcedb = 'sourcedb'
       @sourceid = 123456789
-      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)  
+      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
     end
     
     context 'when same sourcedb and sourceid doc blank' do
@@ -1645,12 +1789,28 @@ describe Doc do
     
     context 'when same sourcedb and sourceid doc present' do
       before do
-        FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)  
+        FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
       end
       
       it 'shoud return true' do
         @doc.has_divs?.should be_true
       end
+    end
+  end
+
+  describe 'self.get_div_ids' do
+    before do
+      @sourcedb = 'sourcedb'
+      @sourceid = 'sourceid'
+      @serial_1 = 1
+      @serial_2 = 2
+      FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid.to_s, serial: @serial_1)  
+      FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid.to_s, serial: @serial_2)  
+      Doc.stub(:same_sourcedb_sourceid).and_return(Doc)
+    end
+
+    it 'should return same_sourcedb_sourceid serials map' do
+      expect(Doc.get_div_ids(@sourcedb, @sourceid)).to match_array([@serial_1, @serial_2])
     end
   end
 
@@ -1706,14 +1866,14 @@ describe Doc do
       @associate_project_1_pmdocs_count = 3
       @i = 1
       @associate_project_1_pmdocs_count.times do
-        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i)
+        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s)
         @i += 1 
       end
       @associate_project_1_pmcdocs_count = 3
-      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i)
+      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s)
       @i += 1 
       @associate_project_1_pmcdocs_count.times do
-        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
         @i += 1 
       end     
       # @associate_project_1.pmcdocs_count 3 => 4
@@ -1723,14 +1883,14 @@ describe Doc do
       @associate_project_2 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
       @associate_project_2_pmdocs_count = 4
       @associate_project_2_pmdocs_count.times do
-        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i) 
+        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s) 
         @i += 1 
       end
       @associate_project_2_pmcdocs_count = 6
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i)
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s)
       @i += 1 
       @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i) 
+        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
         @i += 1 
       end     
       # @associate_project_2.pmdocs_count 4 => 5
