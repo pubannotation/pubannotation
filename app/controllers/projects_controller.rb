@@ -21,7 +21,6 @@ class ProjectsController < ApplicationController
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if @doc
         @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
-        @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
       else
         @projects = nil
         notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
