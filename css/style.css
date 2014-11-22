@@ -55,52 +55,6 @@ nav li {
   display: inline-block;
 }
 
-.mobile-nav ul {
-  overflow: hidden;
-  width: 100%;
-  display: table;
-}
-
-.mobile-nav a {
-  float: left;
-  width: 100%;
-  background: #333;
-  color: #fc0;
-  text-align: center;
-  text-transform: uppercase;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.mobile-nav .current a {
-  background: #fc0;
-  color: #222;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 1px 5px rgba(0,0,0,.5);
-  text-shadow: 0 1px 0 rgba(255,255,255,.3);
-}
-
-.mobile-nav li {
-  display: table-cell;
-  width: 25%;
-  padding: 8px;
-}
-
-@media (max-width: 768px){
-  .main-nav ul {
-    text-align: right;
-  }
-}
-@media (max-width: 830px){
-  .main-nav .show-on-mobiles {
-    display: inline;
-  }
-  .main-nav .hide-on-mobiles {
-    display: none;
-  }
-}
-
 /* Footer */
 
 body > footer {
