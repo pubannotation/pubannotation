@@ -17,7 +17,8 @@ test:
   encoding: unicode
   database: pubannotation_test
   pool: 5
-  username: dbcls
+  username: your_username
+  password: your_password
 
 production:
   adapter: postgresql
