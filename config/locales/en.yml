@@ -358,9 +358,9 @@ en:
       slogan: A scalable and sharable storage of text annotations.
       credit: "Currently, it is in its alpha version and there are many incomplete features.<br />The reason of making it publicaly available at the current stage is to seek your comments.<br />Your any comment about any feature of the service will be highly appreciated.<br />Contact: jdkim at dbcls dot rois dot ac dot jp"
     menus:
-      overview: overview
-      features: features
-      formats: formats
+      repository: repository
+      documentation: documentation
+      about: about
     annotations:
       index:
         confirm_destroy_all: Are you sure? All the instances and relations that belong to this project will be deleted.

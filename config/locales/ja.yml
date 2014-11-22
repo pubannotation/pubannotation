@@ -380,9 +380,9 @@ ja:
       slogan: スケーラブルかつ共有可能なテキストアノテーションストレージ
       credit: "アルファバージョンのため機能が不完全な場合がありますが、ご意見を頂戴するため公開しております。<br />ご意見をぜひお寄せください。<br />連絡先: jdkim (at) dbcls (dot) rois (dot) ac (dot) jp"
     menus:
-      overview: 概要
-      features: 特徴
-      formats: フォーマット
+      repository: レポジトリ
+      documentation: 使用案内
+      about: 紹介
     annotations:
       index:
         confirm_destroy_all: "関連するインスタンス、リレーションも全て削除されますがよろしいですか？"
