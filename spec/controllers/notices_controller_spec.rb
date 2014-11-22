@@ -62,4 +62,23 @@ describe NoticesController do
       end
     end
   end
+
+  describe 'delete_project_notices' do
+    before do
+      controller.class.skip_before_filter :authenticate_user!
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      2.times do
+        FactoryGirl.create(:notice, project: @project)
+      end
+    end
+
+    it '' do
+      post :delete_project_notices, id: @project.id
+      expect(response.body).to eql("$('#project_notices').text('');")
+    end
+
+    it 'should delete all project.notices' do
+      expect{ post :delete_project_notices, id: @project.id }.to change{ @project.notices.count }.from(2).to(0)
+    end
+  end
 end

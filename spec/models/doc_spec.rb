@@ -923,6 +923,28 @@ describe Doc do
               @next_text.should eql(@get_ascii_text[0...@context_size])
             end
           end
+
+          context 'when context_size > ascii_prev_text.length' do
+            before do
+              @begin = 0
+              @end = 10
+              @context_size = 50
+              params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
+              @spans, @prev_text, @next_text = @doc.spans(params)
+            end
+            
+            it 'should set prev_text' do
+              @prev_text.should eql(@get_ascii_text[(@get_ascii_text.length * -1).. -1])
+            end
+             
+            it 'should set get_ascii_text as spans' do
+              @spans.should eql(@get_ascii_text)
+            end
+            
+            it 'should set next_text' do
+              @next_text.should eql(@get_ascii_text[0...@context_size])
+            end
+          end
         end
       end
     end
@@ -1068,6 +1090,18 @@ describe Doc do
       it 'should return joined prev_text spans next_text' do
         @doc.text(nil).should eql "#{@prev_text}#{@spans}#{@next_text}" 
       end
+    end
+  end
+
+  describe 'ascii_body' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @get_ascii_text = 'get ascii text'
+      @doc.stub(:get_ascii_text).and_return(@get_ascii_text)
+    end
+
+    it 'should return get_ascii_text' do
+      expect(@doc.ascii_body).to eql(@get_ascii_text)
     end
   end
 
@@ -1475,6 +1509,19 @@ describe Doc do
       end
     end
   end
+
+
+  describe 'to_hash' do
+    before do
+      # DO NOT INDENT
+      @doc = FactoryGirl.create(:doc, sourcedb: 'sdb', sourceid: 'sdi', serial: 0, section: 'section', source: 'http://to.to', body: 'A
+B')
+    end
+
+    it 'should return converted hash' do
+      expect(@doc.to_hash).to eql({text: 'AB', source_db: @doc.sourcedb, source_id: @doc.sourceid, div_id: @doc.serial, section: @doc.section, source_url: @doc.source})
+    end
+  end
   
   describe 'sql_find' do
     before do
@@ -1651,6 +1698,81 @@ describe Doc do
       @divs.collect{|div| div.sourceid}.uniq.should =~ [@attributes[:sourceid]]
     end
   end
+
+  describe 'self.has_divs?' do
+    before do
+      @sourcedb = 'sourcedb'
+      @sourceid = 'sourceid'
+    end
+
+    context 'when size > 1' do
+      before do
+        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 2}))
+      end
+
+      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
+        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
+        Doc.has_divs?(@sourcedb, @sourceid)
+      end
+
+      it 'should return true' do
+        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_true
+      end
+    end
+
+    context 'when size = 1' do
+      before do
+        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 1}))
+      end
+
+      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
+        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
+        Doc.has_divs?(@sourcedb, @sourceid)
+      end
+
+      it 'should return false' do
+        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_false
+      end
+    end
+  end
+
+  describe 'has_divs?' do
+    before do
+      @sourcedb = 'sourcedb'
+      @sourceid = 'sourceid'
+      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
+    end
+
+    context 'when size > 1' do
+      before do
+        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 2}))
+      end
+
+      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
+        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
+        Doc.has_divs?(@sourcedb, @sourceid)
+      end
+
+      it 'should return true' do
+        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_true
+      end
+    end
+
+    context 'when size = 1' do
+      before do
+        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 1}))
+      end
+
+      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
+        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
+        Doc.has_divs?(@sourcedb, @sourceid)
+      end
+
+      it 'should return false' do
+        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_false
+      end
+    end
+  end
   
   describe 'has_divs?' do
     before do
@@ -1673,6 +1795,22 @@ describe Doc do
       it 'shoud return true' do
         @doc.has_divs?.should be_true
       end
+    end
+  end
+
+  describe 'self.get_div_ids' do
+    before do
+      @sourcedb = 'sourcedb'
+      @sourceid = 'sourceid'
+      @serial_1 = 1
+      @serial_2 = 2
+      FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid.to_s, serial: @serial_1)  
+      FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid.to_s, serial: @serial_2)  
+      Doc.stub(:same_sourcedb_sourceid).and_return(Doc)
+    end
+
+    it 'should return same_sourcedb_sourceid serials map' do
+      expect(Doc.get_div_ids(@sourcedb, @sourceid)).to match_array([@serial_1, @serial_2])
     end
   end
 

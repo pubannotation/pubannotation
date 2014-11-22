@@ -461,7 +461,7 @@ describe Project do
         @project_2_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 2, :accessibility => 1)
         @project_1_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 1, :accessibility => 1)
         @project_0_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 0, :accessibility => 1)
-        @projects = Project.order_by(Project, 'order_denotations_count', nil)
+        @projects = Project.order_by(Project, 'denotations_count', nil)
       end
       
       it 'project which has 2 denotations should be @projects[0]' do
@@ -482,7 +482,7 @@ describe Project do
         @project_2_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 2, :accessibility => 1)
         @project_1_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 1, :accessibility => 1)
         @project_0_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0, :accessibility => 1)
-        @projects = Project.order_by(Project, 'order_relations_count', nil)
+        @projects = Project.order_by(Project, 'relations_count', nil)
       end
       
       it 'project which has 2 relation should be @projects[0]' do
@@ -2478,6 +2478,44 @@ describe Project do
       it 'should update projects.annotations_updated_at' do
         @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
         @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
+      end
+    end
+  end
+
+  describe 'create_user_sourcedb_docs' do
+    before do
+      @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
+      @docs_array = [
+        {text: 'text', source_db: 'sdb', source_id: 'sid', section: 'section', source_url: 'http', div_id: 0},
+        {text: 'text', source_db: 'sdb', source_id: nil, section: 'section', source_url: 'http', div_id: 0}
+      ]  
+    end
+
+    context 'when options[:sourcedb] blank' do
+      it 'should save doc once' do
+        expect_any_instance_of(Doc).to receive(:save)
+        @project.create_user_sourcedb_docs({docs_array: @docs_array})
+      end
+
+      it 'should fail once' do
+        expect(@project.create_user_sourcedb_docs({docs_array: @docs_array})[1]).to eql(1)
+      end
+
+      it 'should save doc once' do
+        expect{ @project.create_user_sourcedb_docs({docs_array: @docs_array}) }.to change{ Doc.count }.from(0).to(1)
+      end
+    end
+
+    context 'when options[:sourcedb] prensent' do
+      it 'should save doc once' do
+        docs_array = [
+          {text: 'text', source_db: 'sdb', source_id: 'sid', section: 'section', source_url: 'http', div_id: 0}
+        ]  
+        sourcedb = 'param sdb'
+        nil.stub(:valid?).and_return(true)
+        nil.stub(:save).and_return(true)
+        expect(Doc).to receive(:new).with({body: docs_array[0][:text], sourcedb: sourcedb, sourceid: docs_array[0][:source_id], section: docs_array[0][:section], source: docs_array[0][:source_url], serial: docs_array[0][:div_id]})
+        @project.create_user_sourcedb_docs({docs_array: docs_array, sourcedb: sourcedb})
       end
     end
   end

@@ -286,7 +286,7 @@ describe Shared do
     context 'when hmodifications[:obj] match /^R/' do
       before do
         @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :project => @project)
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, subj: @denotation, :project => @project)
         @hmodification = {:id => 'hid', :pred => 'type', :obj => @subcatrel.hid}
         @hmodifications = Array.new
         @hmodifications << @hmodification

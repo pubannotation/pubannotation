@@ -152,6 +152,7 @@ describe AnnotationsController do
   
           context 'when format is ttl' do
             before do
+              @project.docs << FactoryGirl.create(:doc)
               controller.stub(:get_conversion).and_return(
               'line1
               line2
@@ -163,10 +164,20 @@ describe AnnotationsController do
               line8
               line9
               ')
-              get :index, :format => 'ttl', :project_id => @project.name
             end
             
             it 'should returns x-turtle' do
+              @get_conversion = 'get 
+              @
+              conversion'
+              controller.stub(:get_conversion).and_return(@get_conversion)
+              controller.should_receive(:get_conversion).twice
+              get :index, :format => 'ttl', :project_id => @project.name
+              response.body
+            end
+
+            it 'should returns x-turtle' do
+              get :index, :format => 'ttl', :project_id => @project.name
               response.header['Content-Type'].should eql('application/x-turtle; charset=utf-8')
             end
           end
