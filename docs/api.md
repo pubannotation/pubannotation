@@ -22,11 +22,11 @@ A document in PubAnnotation can be access through
 
 * all documents
   * `http://pubannotation.org/docs/`
-* all documents that belong to a project *ex_project*
-  * `http://pubannotation.org/projects/ex_project/docs/`
-* The document whose source DB is *ex_DB* and source ID is *ex_ID*
-  * `http://pubannotation.org/docs/sourcedb/ex_DB/sourceid/ex_ID/`
+* all documents that belong to a project *x*
+  * `http://pubannotation.org/projects/x/docs/`
+* The document whose source DB is *PMC* and source ID is *1234*
+  * `http://pubannotation.org/docs/sourcedb/PMC/sourceid/1234/`
 * When a document is long, e.g., full paper, it is divided in to multiple divisions. In the case, the *n*'th division can be accessed as like
-  * `http://pubannotation.org/docs/sourcedb/ex_DB/sourceid/ex_ID/divs/n`
+  * `http://pubannotation.org/docs/sourcedb/PMC/sourceid/1234/divs/n`
 
 
