@@ -3,6 +3,5 @@ class HomeController < ApplicationController
     @source_dbs = Doc.select(:sourcedb).source_dbs.uniq
     @sort_order = sort_order(Project)
     @projects = Project.accessible(current_user).sort_by_params(@sort_order)
-    flash[:sort_order] = @sort_order
   end
 end

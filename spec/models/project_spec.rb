@@ -317,45 +317,59 @@ describe Project do
   end
 
   describe 'sort_by_params' do
-    before do
-      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+    context 'when sort by id' do
+      before do
+        @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      end
+
+      context 'when sort_order is id DESC' do
+        before do
+          @projects = Project.sort_by_params([['id DESC']])
+        end
+
+        it 'should sort project by sort_order' do
+          @projects.first.should eql @project_3
+        end
+
+        it 'should sort project by sort_order' do
+          @projects.second.should eql @project_2
+        end
+        
+        it 'should sort project by sort_order' do
+          @projects.last.should eql @project_1
+        end
+      end
+
+      context 'when sort_order is id ASC' do
+        before do
+          @projects = Project.sort_by_params([['id ASC']])
+        end
+
+        it 'should sort project by sort_order' do
+          @projects.first.should eql @project_1
+        end
+
+        it 'should sort project by sort_order' do
+          @projects.second.should eql @project_2
+        end
+        
+        it 'should sort project by sort_order' do
+          @projects.last.should eql @project_3
+        end
+      end
     end
 
-    context 'when sort_order is id DESC' do
+    context 'sort_by name' do
       before do
-        @projects = Project.sort_by_params([['id DESC']])
+        @project_1 = FactoryGirl.create(:project, name: 'A project spec',  user: FactoryGirl.create(:user))
+        @project_2 = FactoryGirl.create(:project, name: 'B project spec', user: FactoryGirl.create(:user))
+        @project_3 = FactoryGirl.create(:project, name: 'a project spec', user: FactoryGirl.create(:user))
       end
 
-      it 'should sort project by sort_order' do
-        @projects.first.should eql @project_3
-      end
-
-      it 'should sort project by sort_order' do
-        @projects.second.should eql @project_2
-      end
-      
-      it 'should sort project by sort_order' do
-        @projects.last.should eql @project_1
-      end
-    end
-
-    context 'when sort_order is id ASC' do
-      before do
-        @projects = Project.sort_by_params([['id ASC']])
-      end
-
-      it 'should sort project by sort_order' do
-        @projects.first.should eql @project_1
-      end
-
-      it 'should sort project by sort_order' do
-        @projects.second.should eql @project_2
-      end
-      
-      it 'should sort project by sort_order' do
-        @projects.last.should eql @project_3
+      it '' do
+        pp Project.sort_by_params([['LOWER(name) ASC']])
       end
     end
   end

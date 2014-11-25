@@ -87,6 +87,8 @@ class Doc < ActiveRecord::Base
   
   # default sort order 
   DefaultSortArray = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
+  # List of column names ignore case to sort
+  CaseInsensitiveArray = %w(sourcedb)
 
   scope :sort_by_params, lambda{|sort_order|
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')

@@ -30,10 +30,10 @@
       <% if @annotations_projects_check -%>
         <th style="width:1.7em"></th>
       <% end -%>
-      <th style="width:14em"><%= sortable('name', t('activerecord.attributes.project.name')) %></th>
+      <th style="width:14em"><%= sortable(Project, 'name', t('activerecord.attributes.project.name')) %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
-      <th style="width:8em"><%= sortable('author', t('activerecord.attributes.project.author')) %></th>
-      <th style="width:8em"><%= sortable('users.username', t('activerecord.attributes.project.maintainer')) -%></th>
+      <th style="width:8em"><%= sortable(Project, 'author', t('activerecord.attributes.project.author')) %></th>
+      <th style="width:8em"><%= sortable(Project, 'users.username', t('activerecord.attributes.project.maintainer')) -%></th>
 <!-- 
       <th title='Association'><%= link_to_unless_current 'A', url_for(:only_path => true, :projects_order => 'association'), :class => 'sortable-a' %></th>
       <th style="width:1em" title='PubMed abstracts'><%= link_to_unless_current 'P', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>

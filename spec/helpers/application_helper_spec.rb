@@ -106,51 +106,150 @@ describe ApplicationHelper do
   end
 
   describe 'sort_order' do
-    context 'when param[:sort_key] present' do
+    before do
+      @sort_key = 'sort_key'
+      @case_insensitive_array = [@sort_key]
+      # stub_const('StubModel::CaseInsensitiveArray', @case_insensitive_array)
+      @default_sort_key_1 = 'ASC'
+      @default_sort_key_2 = 'DESC'
+      @default_sort_array = [['name_1', @default_sort_key_1], ['name_2', @default_sort_key_2]]
+      stub_const('StubModel::DefaultSortArray', @default_sort_array)
+      @lower_sort_key = 'LOWER'
+      helper.stub(:lower_sort_key).and_return(@lower_sort_key)
+    end
+
+    context 'when param[:sort_key] && params[:sort_direction] present' do
       before do
-        flash[:sort_order] = [['column_1', 'ASC'], ['column_2', 'ASC'], ['column_3', 'ASC']]
-        @params = {sort_key: 'column_2', sort_direction: 'DESC'}
+        @sort_direction = 'DESC'
+        @params = {sort_key: @sort_key, sort_direction: @sort_direction}
         helper.stub(:params).and_return(@params)
-        @sort_order = helper.sort_order(nil)
+        @model = StubModel
       end
 
-      it 'should add sort_key array to top and switch sort_direction' do
-        @sort_order.should eql([["column_2", "DESC"], ["column_1", "ASC"], ["column_3", "ASC"]])
+      it 'should call lower_sort_key with model and params[:sort_key]' do
+        helper.should_receive(:lower_sort_key).with(@model, @sort_key)
+        helper.sort_order(@model)
       end
 
-      it 'flash[:sort_order] should be_set' do
-        flash[:sort_order].should eql @sort_order
+      it 'should return lower_sort_key as sort_key and params[:direction] as sort_direction' do
+        expect(helper.sort_order(StubModel)).to eql([[@lower_sort_key, @sort_direction]])
       end
     end
 
-    context 'when params[:sort_key] blank' do
+    context 'when params[:sort_key] && params[:sort_direction] blank' do
       before do
-        @default_sort_array = 'default sort array'
+        @model = StubModel
+      end
+
+      it 'should call lower_sort_key with model::DefaultSortArray' do
+        helper.should_receive(:lower_sort_key).with(@model, @default_sort_array[0][0])
+        helper.should_receive(:lower_sort_key).with(@model, @default_sort_array[1][0])
+        helper.sort_order(@model)
+      end
+
+      it 'should return model::DefaultSortArray include lower sort key' do
+        expect(helper.sort_order(@model)).to eql([[@lower_sort_key, @default_sort_key_1], [@lower_sort_key, @default_sort_key_2]])
+      end
+    end
+
+    describe 'lower column' do
+      before do
+        @case_insensitive_array = %w(name)
         stub_const('StubModel::DefaultSortArray', @default_sort_array)
-        @sort_order = helper.sort_order(StubModel)
+        stub_const('StubModel::CaseInsensitiveArray', @case_insensitive_array)
       end
 
-      it 'should return model::DefaultSortArray' do
-        @sort_order.should eql(@default_sort_array)
+      context 'when include CaseInsensitive column name' do
+        it 'should return model::DefaultSortArray' do
+          p @sort_order = helper.sort_order(StubModel)
+        end
       end
+    end
+  end
 
-      it 'flash[:sort_order] should eql model::DefaultSortArray' do
-        flash[:sort_order].should eql @default_sort_array
+  describe 'lower_sort_key' do
+    before do
+      @case_insensitive_array = %w(name)
+      stub_const('StubModel::CaseInsensitiveArray', @case_insensitive_array)
+    end
+
+    context 'when included in CaseInsensitive column name' do
+      it 'should return LOWER(sort_key)' do
+        @sort_key = @case_insensitive_array[0]
+        expect(helper.lower_sort_key(StubModel, @sort_key)).to eql("LOWER(#{@sort_key})")
+      end
+    end
+
+    context 'when not included in CaseInsensitive column name' do
+      it 'should return sort_key' do
+        @sort_key = @case_insensitive_array[0] + 'key'
+        expect(helper.lower_sort_key(StubModel, @sort_key)).to eql(@sort_key)
       end
     end
   end
 
   describe 'sortable' do
-    pending 'link path ambiguous' do
-      context 'when title present' do
-        before do
-          @key = 'key'
-          assign :sort_order,  [[@key, 'val2']]
-          @result = helper.sortable(@key, 'title')
+    context 'when title present' do
+      before do
+        @sort_key = 'sort_key'
+        @lower_sort_key = 'LOWER'
+        helper.stub(:lower_sort_key).and_return(@lower_sort_key)
+        @model = double(:model)
+        @title = 'title'
+        helper.stub(:link_to).and_return(nil)
+      end
+
+      context 'when @sort_order present' do
+        context 'when sort_key column is sorted' do
+          context 'when sort direction is ASC' do
+            before do
+              @sort_direction = 'ASC'
+              assign :sort_order, [[@lower_sort_key, @sort_direction]]
+            end
+
+            it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
+              helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'DESC'}, {class: "sortable-#{@sort_direction}"})
+              helper.sortable(@model, @sort_key, @title)
+            end
+          end
+
+          context 'when sort direction is DESC' do
+            before do
+              @sort_direction = 'DESC'
+              assign :sort_order, [[@lower_sort_key, @sort_direction]]
+            end
+
+            it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
+              helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'ASC'}, {class: "sortable-#{@sort_direction}"})
+              helper.sortable(@model, @sort_key, @title)
+            end
+          end
         end
 
-        it '' do
-          @result
+        context 'when sort_key column is not sorted' do
+          context 'when sort direction is ASC' do
+            before do
+              @sort_direction = 'ASC'
+              assign :sort_order, [['key', @sort_direction]]
+            end
+
+            it 'should call link_to with sort_key: lower_sort_key, sort_direction: current_direction, class: sortable-default direction(DESC)' do
+              helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: @sort_direction}, {class: "sortable-DESC"})
+              helper.sortable(@model, @sort_key, @title)
+            end
+          end
+
+          context 'when sort direction is DESC' do
+            before do
+              @sort_direction = 'DESC'
+              assign :sort_order, [['key', @sort_direction]]
+            end
+
+            it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
+              helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'ASC'}, {class: "sortable-DESC"})
+              helper.sortable(@model, @sort_key, @title)
+            end
+          end
         end
       end
     end

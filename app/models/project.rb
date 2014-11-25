@@ -92,10 +92,13 @@ class Project < ActiveRecord::Base
 
   # default sort order 
   DefaultSortArray = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
+
+  # List of column names ignore case to sort
+  CaseInsensitiveArray = %w(name author users.username)
   
   scope :sort_by_params, lambda{|sort_order|
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
-      includes(:user).order(sort_order)
+      unscoped.includes(:user).order(sort_order)
   }
 
   def parse_namespaces
