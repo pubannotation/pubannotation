@@ -32,7 +32,7 @@ class Project < ActiveRecord::Base
   has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
   
-  default_scope where(:type => nil).order('status ASC')
+  default_scope where(:type => nil)
 
   scope :accessible, lambda{|current_user|
     if current_user.present?

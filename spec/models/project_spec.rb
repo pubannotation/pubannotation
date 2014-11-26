@@ -185,29 +185,15 @@ describe Project do
 
   describe 'default_scope' do
     before do
-      FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "aaa111", :status => 3)
-      [4, 3, 2, 1].each do |status|
-        2.times do |time|
-          FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_#{status}_#{time}", :status => status)
-        end
+      2.times do
+        FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        FactoryGirl.create(:project, type: 'Sub', :user => FactoryGirl.create(:user))
       end
       @projects = Project.order('id ASC').order('name DESC')
     end
 
-    it 'should order by status' do
-      @projects[0..1].collect{|project| project.status}.uniq.should eql([1])
-    end
-
-    it 'should order by status' do
-      @projects[2..3].collect{|project| project.status}.uniq.should eql([2])
-    end
-
-    it 'should order by status' do
-      @projects[4..6].collect{|project| project.status}.uniq.should eql([3])
-    end
-
-    it 'should order by status' do
-      @projects[7..8].collect{|project| project.status}.uniq.should eql([4])
+    it 'should not include type present' do
+      @projects.where('type IS NOT NULL').should be_blank
     end
   end
 
