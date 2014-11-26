@@ -103,6 +103,6 @@
   <%= notices_list_helper -%>
 	
 	<% if project.associate_projects.present? -%>
-		<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => project.associate_projects, :scope => 'associate_project' } %>
+		<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => project.associate_projects.sort_by_params(sort_order(Project)), :scope => 'associate_project' } %>
 	<% end -%>
 </div>

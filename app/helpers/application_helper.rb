@@ -113,7 +113,8 @@ module ApplicationHelper
   def sortable(model, sort_key, title = nil)
     title ||= sort_key
     sort_key = lower_sort_key(model, sort_key)
-    current_direction = @sort_order.assoc(sort_key)[1] if @sort_order.present? && @sort_order.assoc(sort_key).present?
+    sort_order = sort_order(model)
+    current_direction = sort_order.assoc(sort_key)[1] if sort_order.present? && sort_order.assoc(sort_key).present?
     current_direction ||= 'DESC'
     css_class = "sortable-" + current_direction
     next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'

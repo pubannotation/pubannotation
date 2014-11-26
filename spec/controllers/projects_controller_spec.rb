@@ -28,15 +28,18 @@ describe ProjectsController do
           end
           
           context 'and when format html' do
-            before do
+            it 'should call sort_order with Project' do
+              controller.should_receive(:sort_order).with(Project)
               get :index
             end
 
             it '@projects should eql @doc.projects.accessible.sort_by_params' do
+              get :index
               assigns[:projects].should eql(@sort_by_params)
             end
             
             it 'should render template' do
+              get :index
               response.should render_template('index')
             end
           end

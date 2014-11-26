@@ -204,7 +204,7 @@ describe ApplicationHelper do
           context 'when sort direction is ASC' do
             before do
               @sort_direction = 'ASC'
-              assign :sort_order, [[@lower_sort_key, @sort_direction]]
+              helper.stub(:sort_order).and_return([[@lower_sort_key, @sort_direction]])
             end
 
             it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
@@ -216,7 +216,7 @@ describe ApplicationHelper do
           context 'when sort direction is DESC' do
             before do
               @sort_direction = 'DESC'
-              assign :sort_order, [[@lower_sort_key, @sort_direction]]
+              helper.stub(:sort_order).and_return([[@lower_sort_key, @sort_direction]])
             end
 
             it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
@@ -230,7 +230,7 @@ describe ApplicationHelper do
           context 'when sort direction is ASC' do
             before do
               @sort_direction = 'ASC'
-              assign :sort_order, [['key', @sort_direction]]
+              helper.stub(:sort_order).and_return([['key', @sort_direction]])
             end
 
             it 'should call link_to with sort_key: lower_sort_key, sort_direction: current_direction, class: sortable-default direction(DESC)' do
@@ -242,7 +242,7 @@ describe ApplicationHelper do
           context 'when sort direction is DESC' do
             before do
               @sort_direction = 'DESC'
-              assign :sort_order, [['key', @sort_direction]]
+              helper.stub(:sort_order).and_return([['key', @sort_direction]])
             end
 
             it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
