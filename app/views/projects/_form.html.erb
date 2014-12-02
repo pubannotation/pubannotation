@@ -22,7 +22,7 @@
     <td>
       <%= f.text_field :license, :class => "input" %>
       <%= hint_helper({:model => :project, :column => :license}) %><br/>
-      <span class="note">e.g., Creative Commons Attribution 3.0 Unported License</span>
+      <span class="note">e.g., <%= "#{Project::LicenseDefault}" -%></span>
     </td>
 
   </tr>
@@ -159,7 +159,7 @@
     <th><%= f.label :editor %></th>
     <td>
       <!-- <%= f.text_field :editor, :class => "input", :value => 'http://bionlp.dbcls.jp/textae-term/', :placeholder => 'URL' %> -->
-      <%= f.text_field :editor, :class => "input", :value => 'http://textae.pubannotation.org/editor.html?mode=editor', :placeholder => 'URL' %>
+      <%= f.text_field :editor, :class => "input", :placeholder => 'URL' %>
       <%= hint_helper({:model => :project, :column => :editor})%>
       <br/>
       <span class="note"><a href="http://textae.pubannotation.org">TextAE</a> <%= t('views.projects.try_textae') %></span>

@@ -212,7 +212,6 @@ describe ProjectsController do
   end
   
   describe 'new' do
-
     context 'when format html' do
       before do
         get :new
@@ -224,6 +223,14 @@ describe ProjectsController do
       
       it 'should set new record' do
         assigns[:project].new_record?.should be_true
+      end
+
+      it 'should set license default value' do
+        assigns[:project][:license].should eql(Project::LicenseDefault)
+      end
+
+      it 'should set editor default value' do
+        assigns[:project][:editor].should eql(Project::EditorDefault)
       end
     end
 

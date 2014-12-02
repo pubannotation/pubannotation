@@ -72,7 +72,8 @@ class ProjectsController < ApplicationController
   # GET /projects/new
   # GET /projects/new.json
   def new
-    @project = Project.new
+    # set dafault value in license and editor
+    @project = Project.new({license: Project::LicenseDefault, editor: Project::EditorDefault})
 
     respond_to do |format|
       format.html # new.html.erb

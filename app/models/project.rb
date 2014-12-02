@@ -95,6 +95,9 @@ class Project < ActiveRecord::Base
 
   # List of column names ignore case to sort
   CaseInsensitiveArray = %w(name author users.username)
+
+  LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
+  EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=editor'
   
   scope :sort_by_params, lambda{|sort_order|
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
