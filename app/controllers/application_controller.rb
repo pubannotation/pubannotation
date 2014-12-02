@@ -188,7 +188,7 @@ class ApplicationController < ActionController::Base
 
 
   def gen_annotations (annotations, annserver)
-    RestClient.post annserver, {:text => annotations[:text], :options => {}.to_json}, :content_type => :json, :accept => :json do |response, request, result|
+    RestClient.post annserver, {:text => annotations[:text]}, :accept => :json do |response, request, result|
       case response.code
       when 200
         result = JSON.parse response, :symbolize_names => true
