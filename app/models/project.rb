@@ -91,7 +91,7 @@ class Project < ActiveRecord::Base
   }
 
   # default sort order 
-  DefaultSortArray = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
+  DefaultSortArray = [['status', 'ASC'], ['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
 
   # List of column names ignore case to sort
   CaseInsensitiveArray = %w(name author users.username)
