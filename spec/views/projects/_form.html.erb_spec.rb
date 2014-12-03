@@ -188,4 +188,46 @@ describe "projects/_form.html.erb" do
       end
     end
   end
+  
+  describe 'namespaces' do
+    before do
+      view.stub(:user_signed_in?).and_return(true)
+      current_user_stub(@project_user)
+    end
+
+    context 'when base_uri present' do
+      before do
+        @base_uri = 'http://base.uri'
+        @project.stub(:base_uri).and_return(@base_uri)
+        render
+      end
+
+      it 'should render input has base_uri value' do
+        rendered.should have_selector :input, type: 'text', value: @base_uri, name: 'project[namespaces][][uri]'
+      end
+    end
+
+    context 'when base_uri nil' do
+      before do
+        @project.stub(:base_uri).and_return()
+        render
+      end
+
+      it 'should render input without base_uri value' do
+        rendered.should have_selector :input, type: 'text', name: 'project[namespaces][][uri]'
+      end
+    end
+  end
+
+  describe 'namespaces_prefixe_input_fields' do
+    before do
+      view.stub(:user_signed_in?).and_return(true)
+      current_user_stub(@project_user)
+    end
+
+    it 'should call namespaces_prefix_input_fields' do
+      view.should_receive(:namespaces_prefix_input_fields)
+      render
+    end
+  end
 end

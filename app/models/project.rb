@@ -1,6 +1,9 @@
 class Project < ActiveRecord::Base
   include AnnotationsHelper
+
+  before_validation :cleanup_namespaces
   after_validation :user_presence
+  serialize :namespaces
   belongs_to :user
   has_and_belongs_to_many :docs, :after_add => [:increment_docs_counter, :update_annotations_updated_at], :after_remove => [:decrement_docs_counter, :update_annotations_updated_at]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
@@ -103,32 +106,6 @@ class Project < ActiveRecord::Base
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
       unscoped.includes(:user).order(sort_order)
   }
-
-  def parse_namespaces
-    namespace_lines = namespaces.split(/\r?\n/) if namespaces.present?
-    if namespace_lines.present?
-      namespaces_array = Array.new
-      namespace_lines.each do |namespace|
-        # namespace format should be "BASE|PREFIX space (prefix:) <uri>"
-        format = namespace =~ /^(BASE|PREFIX)\s+(.+:)?\s*<.+>/i
-        begin_pos = namespace =~ /</
-        end_pos = namespace =~ />/
-        namespace_contents = namespace.split(/\s/)
-        if format.present?
-          # set prefix
-          if namespace =~ /^BASE\s/i
-            prefix = '_base'
-          elsif namespace =~ /^PREFIX\s/i
-            prefix = namespace_contents[1].gsub(':', '')
-          end
-          # set string between < ... > as namespace url
-          uri = namespace[begin_pos + 1 ...end_pos] 
-          namespaces_array << {prefix: prefix, uri: uri}
-        end
-      end
-      self.namespaces = namespaces_array if namespaces_array.present?
-    end
-  end
 
   def status_text
    status_hash = {
@@ -378,7 +355,6 @@ class Project < ActiveRecord::Base
 
   def json
     except_columns = %w(pmdocs_count pmcdocs_count pending_associate_projects_count user_id)
-    self.namespaces = parse_namespaces
     to_json(except: except_columns, methods: :maintainer)
   end
 
@@ -648,5 +624,22 @@ class Project < ActiveRecord::Base
     if user.blank?
       errors.add(:user_id, 'is blank') 
     end
+  end
+
+  def namespaces_base
+    namespaces.find{|namespace| namespace['prefix'] == '_base'} if namespaces.present?
+  end
+
+  def base_uri
+    namespaces_base['uri'] if namespaces_base.present?
+  end
+
+  def namespaces_prefixes
+    namespaces.select{|namespace| namespace['prefix'] != '_base'} if namespaces.present?
+  end
+
+  # delete empty value hashes
+  def cleanup_namespaces
+    namespaces.reject!{|namespace| namespace['prefix'].blank? || namespace['uri'].blank?} if namespaces.present?
   end
 end

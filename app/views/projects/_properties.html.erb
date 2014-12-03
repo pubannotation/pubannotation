@@ -63,7 +63,7 @@
 				<% unless project.namespaces.blank? %>
 				<tr>
 					<th><%= t('activerecord.attributes.project.namespaces') %></th>
-					<td><pre><%= project.namespaces %></pre></td>
+					<td><%= format_namespaces -%></td>
 				</tr>
 				<% end %>
 				<% unless project.rdfwriter.blank? %>

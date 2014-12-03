@@ -167,7 +167,15 @@
   </tr>
   <tr>
     <th><%= f.label :namespaces %></th>
-    <td><%= f.text_area :namespaces, :class => "input", style: 'height: 6em' %></td>
+    <td id="project_namespaces">
+      <%= label_tag 'project[namespaces][][uri]', 'BASE' -%>
+      <%= hidden_field_tag 'project[namespaces][][prefix]', '_base', :class => "input" -%>
+      <%= text_field_tag 'project[namespaces][][uri]', @project.base_uri, :class => "input" -%>
+      <%= namespaces_prefix_input_fields -%>
+      <span id="namespaces_inputs"></span>
+      <br />
+      <span id="add_namespaces_input" class="button">ADD</span>
+    </td>
   </tr>
   <tr>
     <th><%= f.label :rdfwriter %></th>
@@ -191,3 +199,24 @@
 </table>
 <% end %>		
 
+<% content_for :css do -%>
+  <style>
+  .prefix_label:before{
+    content: '\A';
+    white-space: pre;
+  }
+  #project_namespaces input{
+    margin: 2px;
+  }
+  </style>
+<% end -%>
+<% content_for :javascript do -%>
+  <script type="text/javascript">
+    var inputTag = '<%= render(partial: 'namespace_prefix_input') -%>'
+    $(document).ready(function(){
+      $('#add_namespaces_input').click(function(){
+        $('#namespaces_inputs').append(inputTag);
+      })
+    })
+  </script>
+<% end -%>

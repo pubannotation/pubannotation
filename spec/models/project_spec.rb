@@ -1829,15 +1829,13 @@ describe Project do
 
   describe 'json' do
     before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), namespaces: [{'prefix' => '_base', 'uri' => 'http://base.uri'}, { 'prefix' => 'foaf', 'uri' => 'http://foaf.uri' }])
       @maintainer = 'maintainer'
       @project.stub(:maintainer).and_return(@maintainer)
-      @parse_namespaces = 'namespaces'
-      @project.stub(:parse_namespaces).and_return(@parse_namespaces)
     end
 
     it 'should return @project as json except specific columns and include maintainer' do
-      @project.json.should eql("{\"accessibility\":null,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"namespaces\":\"#{@parse_namespaces}\",\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
+      @project.json.should eql("{\"accessibility\":null,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"namespaces\":#{@project.namespaces.to_json},\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
     end
   end
 
@@ -2545,64 +2543,156 @@ describe Project do
     end 
   end 
 
-  describe 'namespaces' do
+  describe 'namespaces_base' do
     before do
       @user = FactoryGirl.create(:user)
     end
 
-    context 'when namespaces is String' do
-      context 'when value is valid' do
+    context 'when namespaces prensent' do
+      context 'when prefix _base present' do
         before do
-          @base_uri = "http://example.org/"
-          @prefix_1 = 'foaf'
-          @uri_1 = "http://xmlns.com/foaf/0.1/"
-          @prefix_2 = 'wd'
-          @uri_2 = "http://www.wikidata.org/entity/"
-          # DO NOT indent 
-          namespaces = "BASE   <#{@base_uri}>
-PREFIX #{@prefix_1}: <#{@uri_1}>
-PREFIX #{@prefix_2}: <#{@uri_2}>"
-          @project = FactoryGirl.create(:project, namespaces: namespaces, user: @user)
+          @namespace_base = {'prefix' => '_base', 'uri' => 'base_uri'}
+          namespaces = [@namespace_base, {'prefix' => 'foaf', 'uri' => 'foaf.uri'}]
+          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
         end
 
-        it 'should parse namespaces string to Array => Hash' do
-          @project.parse_namespaces.should =~ [{prefix: "_base", uri: @base_uri}, {prefix: @prefix_1, uri: @uri_1}, {prefix: @prefix_2, uri: @uri_2}]
+        it 'should return _base hash' do
+          @project.namespaces_base.should eql(@namespace_base)
         end
       end
 
-      context 'when value is valid' do
-        context 'when BASE or PREFIX not included' do
-          before do
-            namespaces = "nase <http://uri.to>"
-            @project = FactoryGirl.create(:project, namespaces: namespaces, user: @user)
-          end
-
-          it 'should not parse namespaces' do
-            expect(@project.parse_namespaces).to be_blank
-          end
+      context 'when prefix _base blank' do
+        before do
+          namespaces = [{'prefix' => 'foaf', 'uri' => 'foaf.uri'}]
+          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
         end
 
-        context 'when uri not included' do
-          before do
-            namespaces = "BASE (http://uri.to)"
-            @project = FactoryGirl.create(:project, namespaces: namespaces, user: @user)
-          end
-
-          it 'should not parse namespaces' do
-            expect(@project.parse_namespaces).to be_blank
-          end
+        it 'should return nil' do
+          @project.namespaces_base.should be_nil
         end
       end
     end
 
-    context 'when namespaces is not String' do
+    context 'when namespaces nil' do
       before do
-        @namespaces = [{prefix: 'prefix'}]
-        @project = FactoryGirl.create(:project, namespaces: @namespaces, user: @user)
+        @project = FactoryGirl.create(:project, user: @user, namespaces: nil)
       end
 
-      it 'should not parse namespaces' do
-        expect(@project.parse_namespaces).to be_nil
+      it 'should return nil' do
+        @project.namespaces_base.should be_nil
+      end
+    end
+  end
+
+  describe 'base_uri' do
+    before do
+      @user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, user: @user)
+    end
+
+    context 'when namespaces_base present' do
+      before do
+        @uri = 'base_uri'
+        @project.stub(:namespaces_base).and_return({'uri' => @uri} )
+      end
+
+      it 'should return uri' do
+        @project.base_uri.should eql(@uri)
+      end
+    end
+
+    context 'when namespaces_base blank' do
+      before do
+        @project.stub(:namespaces_base).and_return(nil)
+      end
+
+      it 'should return nil' do
+        @project.base_uri.should be_nil
+      end
+    end
+  end
+
+  describe 'namespaces_prefixes' do
+    before do
+      @user = FactoryGirl.create(:user)
+      @base = {'prefix' => '_base', 'uri' => 'base_uri'}
+      @prefix_1 = {'prefix' => 'foaf', 'uri' => 'foaf_uri'}
+      @prefix_2 = {'prefix' => 'xml', 'uri' => 'xml_uri'}
+    end
+
+    context 'when namespaces prensent' do
+      context 'when _base present' do
+        before do
+          namespaces = [@base, @prefix_1, @prefix_2]
+          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
+        end
+
+        it 'should return exept _base hash' do
+          @project.namespaces_prefixes.should =~ [@prefix_1, @prefix_2]
+        end
+      end
+
+      context 'when _base blank' do
+        before do
+          namespaces = [@prefix_1, @prefix_2]
+          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
+        end
+
+        it 'should return prefixes' do
+          @project.namespaces_prefixes.should =~ [@prefix_1, @prefix_2]
+        end
+      end
+
+      context 'when _base only' do
+        before do
+          namespaces = [@base]
+          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
+        end
+
+        it 'should return blank' do
+          @project.namespaces_prefixes.should be_blank
+        end
+      end
+    end
+
+    context 'when namespaces nil' do
+      before do
+        @project = FactoryGirl.create(:project, user: @user, namespaces: nil)
+      end
+
+      it 'should return nil' do
+        @project.namespaces_prefixes.should be_nil
+      end
+    end
+  end
+
+  describe 'cleanup_namespaces' do
+    before do
+      @user = FactoryGirl.create(:user)
+    end
+
+    describe 'before_validate' do
+      it 'should call cleanup_namespaces' do
+        Project.any_instance.should_receive(:cleanup_namespaces)
+        FactoryGirl.create(:project, user: @user)
+      end
+    end
+
+    context 'when namespaces prensent' do
+      before do
+        @namespace_1 = {'prefix' => '_base', 'uri' => 'http://xmlns.com/foaf/0.1/'}
+        @namespace_2 = {'prefix' => 'foaf', 'uri' => 'http://xmlns.com/foaf/0.1/'}
+        @namespace_3 = {'prefix' => 'wd', 'uri' => 'http://www.wikidata.org/entity/'}
+        @namespace_4 = {'prefix' => 'wd', 'uri' => ''}
+        @namespace_5 = {'prefix' => '', 'uri' => ''}
+        @namespace_5 = {'prefix' => '', 'uri' => 'uri'}
+        namespaces = [@namespace_1, @namespace_2, @namespace_3, @namespace_4]
+        @project = @user.projects.build(name: 'My Project', namespaces: namespaces)
+      end
+
+      it 'should delete prefix or uri is blank' do
+        @project.cleanup_namespaces 
+        @project.namespaces.should =~ [@namespace_1, @namespace_2, @namespace_3]
       end
     end
   end
