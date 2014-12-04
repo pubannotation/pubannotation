@@ -100,6 +100,7 @@ ja:
     statuses:
       forbidden: 権限がありません
       unauthorized: 権限がありません
+      not_found: お探しのページがみつかりません
     messages:
       accepted: を受諾してください。
       blank: を入力してください。
@@ -505,3 +506,4 @@ ja:
         delayed_job_present: ZIPファイルは数分程度で作成されます。      
         download_not_available: アノテーションZIPファイルはダウンロードできません。
         result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"
+        deleted: "アノテーションZIPファイを削除しました。"

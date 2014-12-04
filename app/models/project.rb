@@ -373,9 +373,13 @@ class Project < ActiveRecord::Base
   def maintainer
     user.present? ? user.username : ''
   end
+
+  def annotations_zip_file_name
+    "#{self.name}-annotations.zip"
+  end
   
   def annotations_zip_path
-    "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
+    "#{Denotation::ZIP_FILE_PATH}#{self.annotations_zip_file_name}"
   end
   
   def save_annotation_zip(options = {})
@@ -386,7 +390,7 @@ class Project < ActiveRecord::Base
       end
       anncollection = self.anncollection(options[:encoding])
       if anncollection.present?
-        file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
+        file_path = self.annotations_zip_path
         file = File.new(file_path, 'w')
         Zip::ZipOutputStream.open(file.path) do |z|
           z.put_next_entry('project.json')

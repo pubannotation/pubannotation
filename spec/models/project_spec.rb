@@ -1913,15 +1913,23 @@ describe Project do
       end
     end
   end
+
+  describe 'annotations_zip_file_name' do
+    it 'should return zip filename' do
+      project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      expect(project.annotations_zip_file_name).should eql("#{project.name}-annotations.zip")
+    end
+  end
   
   describe 'annotations_zip_path' do
     before do
-      @project_name = 'project name'
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => @project_name)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @annotations_zip_file_name = 'annotations.zip'
+      @project.stub(:annotations_zip_file_name).and_return(@annotations_zip_file_name)
     end
     
     it 'should return project annotations zip path' do
-      @project.annotations_zip_path.should eql("#{Denotation::ZIP_FILE_PATH}#{@project_name}.zip")
+      @project.annotations_zip_path.should eql("#{Denotation::ZIP_FILE_PATH}#{@annotations_zip_file_name}")
     end
   end
   
@@ -1989,11 +1997,11 @@ describe Project do
       end
           
       it 'should create ZIP file' do
-        File.exist?("#{Denotation::ZIP_FILE_PATH}#{@name}.zip").should be_true
+        File.exist?("#{Denotation::ZIP_FILE_PATH}#{@name}-annotations.zip").should be_true
       end
       
       after do
-        File.unlink("#{Denotation::ZIP_FILE_PATH}#{@name}.zip")
+        File.unlink("#{Denotation::ZIP_FILE_PATH}#{@name}-annotations.zip")
       end
     end
 

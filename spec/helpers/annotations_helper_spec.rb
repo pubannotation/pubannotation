@@ -537,6 +537,7 @@ describe AnnotationsHelper do
       context 'when ZIP file exists' do
         before do
           File.stub(:exist?).and_return(true)
+          helper.stub(:current_user).and_return(nil)
         end
         
         context 'when ZIP file is up-to-date' do
@@ -546,14 +547,14 @@ describe AnnotationsHelper do
           end
           
           it 'should return ZIP file' do
-            @result.should have_selector :a, :href => "/annotations/#{@project.name}.zip"
+            @result.should have_selector :a, :href => project_annotations_zip_path(@project.name)
           end
           
           it 'should not return update ZIP file link' do
             @result.should_not have_selector :a, :href => project_annotations_path(@project.name, :delay => true, :update => true)
           end
         end
-        
+
         context 'when ZIP file is not up-to-date' do
           before do
             File.stub(:ctime).and_return(2.days.ago)
@@ -561,11 +562,39 @@ describe AnnotationsHelper do
           end
           
           it 'should return ZIP file' do
-            @result.should have_selector :a, :href => "/annotations/#{@project.name}.zip"
+            @result.should have_selector :a, :href => project_annotations_zip_path(@project.name)
           end
           
           it 'should return update ZIP file link' do
             @result.should have_selector :a, :href => project_annotations_path(@project.name, :delay => true, :update => true)
+          end
+        end
+
+        describe 'delete link' do
+          before do
+            @current_user = FactoryGirl.create(:user) 
+            File.stub(:ctime).and_return(DateTime.now)
+            helper.stub(:current_user).and_return(@current_user)
+          end
+
+          context 'when project.user == current_user' do
+            before do
+              @project.stub(:user).and_return(@current_user)
+            end
+
+            it 'should render annotations zip delete link' do
+              expect(helper.project_annotations_zip_link_helper(@project)).to have_selector(:a, href: project_delete_annotations_zip_path(@project.name))
+            end
+          end
+
+          context 'when project.user != current_user' do
+            before do
+              @project.stub(:user).and_return(nil)
+            end
+
+            it 'should not render annotations zip delete link' do
+              expect(helper.project_annotations_zip_link_helper(@project)).not_to have_selector(:a, href: project_delete_annotations_zip_path(@project.name))
+            end
           end
         end
       end
