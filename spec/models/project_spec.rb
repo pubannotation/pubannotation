@@ -352,10 +352,20 @@ describe Project do
         @project_1 = FactoryGirl.create(:project, name: 'A project spec',  user: FactoryGirl.create(:user))
         @project_2 = FactoryGirl.create(:project, name: 'B project spec', user: FactoryGirl.create(:user))
         @project_3 = FactoryGirl.create(:project, name: 'a project spec', user: FactoryGirl.create(:user))
+        @projects = Project.sort_by_params([['LOWER(name) ASC']])
       end
 
-      it '' do
-        pp Project.sort_by_params([['LOWER(name) ASC']])
+      it 'should sort project by name' do
+        @projects.first.should eql(@project_1)
+      end
+
+      it 'should sort project by name' do
+        @projects.first.should eql(@project_1)
+        @projects.second.should eql(@project_3)
+      end
+
+      it 'should sort project by name' do
+        @projects.last.should eql(@project_2)
       end
     end
   end
