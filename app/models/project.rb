@@ -26,7 +26,7 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'project_id',
     :join_table => 'associate_projects_projects'
 
-  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces
+  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
   has_many :denotations, :dependent => :destroy
   has_many :relations, :dependent => :destroy
   has_many :modifications, :dependent => :destroy
@@ -124,6 +124,14 @@ class Project < ActiveRecord::Base
      2 => :Private
    }
    accessibility_hash[self.accessibility]
+  end
+  
+  def process_text
+   process_hash = {
+     1 => I18n.t('activerecord.options.project.process.manual'),
+     2 => I18n.t('activerecord.options.project.process.automatic')
+   }
+   process_hash[self.process]
   end
 
   def self.order_by(projects, order, current_user)

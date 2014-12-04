@@ -234,6 +234,7 @@ en:
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
         annotations_zip_downloadable: Annotation downloadable
+        process: process
       sproject:
         rdfwriter: RDF writer
         xmlwriter: XML writer
@@ -272,6 +273,9 @@ en:
         accessibility:
           public: Public
           private: Private
+        process:
+          manual: manual 
+          automatic: automatic
     errors:
       <<: *errors
   controllers:

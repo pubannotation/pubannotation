@@ -31,6 +31,12 @@
 				</td>
 			</tr>
 			<tr>
+				<th><%= t('activerecord.attributes.project.process') %></th>
+				<td>
+					<%= project.process_text -%>
+				</td>
+			</tr>
+			<tr>
 				<th><%= t('activerecord.attributes.project.maintainer') %></th>
 				<td><%= project.user.username %></td>
 			</tr>

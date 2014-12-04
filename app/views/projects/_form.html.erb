@@ -45,6 +45,14 @@
     		f.object.accessibility) %></td>
   </tr>
   <tr>
+    <th><%= f.label :process %></th>
+    <td><%= f.select :process, 
+    		options_for_select([
+				[t('activerecord.options.project.process.manual'), 1],
+				[t('activerecord.options.project.process.automatic'), 2]],
+    		f.object.process) %></td>
+  </tr>
+  <tr>
     <th><%= f.label :maintainer %></th>
     <td><%= current_user.username %></td>
   </tr>

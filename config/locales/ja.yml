@@ -241,6 +241,7 @@ ja:
         bionlpwriter: BioNLP-STライター
         viewer: ビューア
         annotations_zip_downloadable: アノテーションのダウンロード
+        process: プロセス
       sproject:
         name: 名前
         description: 説明
@@ -290,6 +291,9 @@ ja:
         accessibility:
           public: 公開
           private: プライベート
+        process:
+          manual: 手動
+          automatic: 自動
     errors:
       <<: *errors
   will_paginate:

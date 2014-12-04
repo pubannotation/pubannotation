@@ -414,6 +414,28 @@ describe Project do
     end
   end
   
+  describe 'process_text' do
+    context 'when process == 1' do
+      before do
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :process => 1)
+      end 
+      
+      it 'should return I18n manual' do
+        @project.process_text.should eql(I18n.t('activerecord.options.project.process.manual'))
+      end
+    end
+    
+    context 'when process == 2' do
+      before do
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :process => 2)
+      end 
+      
+      it 'should return I18n automatic' do
+        @project.process_text.should eql(I18n.t('activerecord.options.project.process.automatic'))
+      end
+    end
+  end
+  
   describe 'self.order_by' do
     context 'pmdocs_count' do
       before do
@@ -1835,7 +1857,7 @@ describe Project do
     end
 
     it 'should return @project as json except specific columns and include maintainer' do
-      @project.json.should eql("{\"accessibility\":null,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"namespaces\":#{@project.namespaces.to_json},\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
+      @project.json.should eql("{\"accessibility\":null,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"namespaces\":#{@project.namespaces.to_json},\"process\":null,\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
     end
   end
 

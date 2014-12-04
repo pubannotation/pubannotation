@@ -41,6 +41,22 @@ describe "projects/_form.html.erb" do
       end
     end
   end
+
+  describe 'process' do
+    before do
+      @user = FactoryGirl.create(:user)
+      current_user_stub(@user)
+      render
+    end
+
+    it 'should render process option value: 1 content manual' do
+      rendered.should have_selector(:option, value: '1', content: I18n.t('activerecord.options.project.process.manual'))
+    end
+
+    it 'should render process option value: 1 content automatic' do
+      rendered.should have_selector(:option, value: '2', content: I18n.t('activerecord.options.project.process.automatic'))
+    end
+  end
   
   describe 'usernames' do
     context 'when project.associate_maintenes_addable_for? = true' do
