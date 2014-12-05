@@ -1,5 +1,4 @@
 class ProjectsController < ApplicationController
-  before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :search]
   before_filter :updatable?, :only => [:edit, :update]
   before_filter :destroyable?, :only => :destroy
   before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :search]
