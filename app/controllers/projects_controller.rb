@@ -15,18 +15,19 @@ class ProjectsController < ApplicationController
   # GET /projects
   # GET /projects.json
   def index
-    @sort_order = sort_order(Project)
+    sort_order = sort_order(Project)
     sourcedb, sourceid, serial, id = get_docspec(params)
     if sourcedb
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
       if @doc
-        @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
+        @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+        @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
       else
         @projects = nil
         notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
       end
     else
-      @projects = Project.accessible(current_user).sort_by_params(@sort_order)
+      @projects = Project.accessible(current_user).sort_by_params(sort_order)
     end
 
     respond_to do |format|
@@ -71,7 +72,8 @@ class ProjectsController < ApplicationController
   # GET /projects/new
   # GET /projects/new.json
   def new
-    @project = Project.new
+    # set dafault value in license and editor
+    @project = Project.new({license: Project::LicenseDefault, editor: Project::EditorDefault})
 
     respond_to do |format|
       format.html # new.html.erb

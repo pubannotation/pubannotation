@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :show, :annotations_index,:annotations]
+  before_filter :authenticate_user!, :except => [:index, :show, :annotations_index, :annotations, :project_annotations_zip]
   after_filter :set_access_control_headers
   include DenotationsHelper
 
@@ -249,6 +249,39 @@ class AnnotationsController < ApplicationController
           head :unprocessable_entity
         end
       }
+    end
+  end
+
+  # redirect to project annotations zip
+  def project_annotations_zip
+    project = Project.find_by_name(params[:project_id])
+    if project.present? && File.exist?(project.annotations_zip_path)
+      redirect_to "/annotations/#{project.annotations_zip_file_name}"
+    else
+      render_status_error(:not_found)
+    end
+  end
+
+  def delete_project_annotations_zip
+    begin
+      status_error = false
+      project = Project.find_by_name(params[:project_id])
+      if project.present? && File.exist?(project.annotations_zip_path)
+        if project.user == current_user 
+          File.unlink(project.annotations_zip_path)
+          flash[:notice] = t('views.shared.zip.deleted')
+        else
+          status_error = true
+          render_status_error(:forbidden)
+        end
+      else
+        status_error = true
+        render_status_error(:not_found)
+      end
+    rescue => e
+      flash[:notice] = e.message
+    ensure
+      redirect_to :back if status_error == false
     end
   end
 

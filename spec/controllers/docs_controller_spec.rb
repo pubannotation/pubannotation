@@ -41,6 +41,11 @@ describe DocsController do
         it 'should assign search_project_docs_path as @search_path' do
           assigns[:search_path].should eql search_project_docs_path(@project.name)
         end
+
+        it 'should call sort_order with Doc' do
+          controller.should_receive(:sort_order).with(Doc)
+          get :index, :project_id => @project.name
+        end
       end
 
       context 'when format json' do
@@ -222,11 +227,16 @@ describe DocsController do
     context 'when params[:project_id] present' do
       before do
         Project.any_instance.stub_chain(:docs, :where, :where, :sort_by_params, :paginate).and_return(@paginate)
-        get :sourceid_index, :project_id => @project.name, :sourcedb => @sourcedb
       end
 
       it 'should assing @project.docs.where.wheresort_by_params.paginate as @source_docs' do
+        get :sourceid_index, :project_id => @project.name, :sourcedb => @sourcedb
         assigns[:source_docs].should eql(@paginate)
+      end
+
+      it 'should call sort_order with Doc' do
+        controller.should_receive(:sort_order).with(Doc)
+        get :sourceid_index, :project_id => @project.name, :sourcedb => @sourcedb
       end
     end
     
@@ -425,11 +435,16 @@ describe DocsController do
         # @doc.projects << @project
         @sort_by_params = 'sort_by_params'
         Doc.any_instance.stub_chain(:projects, :accessible, :sort_by_params).and_return(@sort_by_params)
-        get :show, :id => @doc.id
       end
       
       it 'should assign @projects' do
+        get :show, :id => @doc.id
         assigns[:projects].should eql @sort_by_params 
+      end
+
+      it 'should call sort_order with Project' do
+        controller.should_receive(:sort_order).with(Project)
+        get :show, :id => @doc.id
       end
     end
     
@@ -705,34 +720,35 @@ describe DocsController do
       context 'when doc.spans_projects(params). present' do
         before do
           @doc.stub(:spans_projects).and_return(@projects)
-          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
         end
         
         it 'should not assign @project' do
+          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
           assigns[:project].should be_nil
         end
 
-        it 'shoud assign @sort_order' do
-          assigns[:sort_order].should eql(@sort_order)
-        end
-
-        it 'shoud assign @sort_order' do
-          flash[:sort_order].should eql(@sort_order)
+        it 'shoud call sort_order with Project' do
+          controller.should_receive(:sort_order).with(Project)
+          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
         end
         
         it 'should assign Project.id_in(@doc.spans_projects).sort_by_params @projects' do
+          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
           assigns[:projects].should eql(@projects_sort_by_params)
         end
         
         it 'should assign @project_denotations' do
+          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
           assigns[:project_denotations].should eql([{'project' => @project_1, 'denotations' => @project_denotation}])
         end
 
         it 'should assign @annotations_projects_check' do
+          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
           assigns[:annotations_projects_check].should be_present
         end
 
         it 'should assign @annotations_path without parameters' do
+          get :spans, :id => @doc.id, :begin => 1, :end => 5, sort_direction: 'ASC'
           assigns[:annotations_path].should eql("#{spans_doc_path(@doc.id, 1, 5)}/annotations")
         end
       end

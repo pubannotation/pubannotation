@@ -100,6 +100,7 @@ ja:
     statuses:
       forbidden: 権限がありません
       unauthorized: 権限がありません
+      not_found: お探しのページがみつかりません
     messages:
       accepted: を受諾してください。
       blank: を入力してください。
@@ -241,6 +242,7 @@ ja:
         bionlpwriter: BioNLP-STライター
         viewer: ビューア
         annotations_zip_downloadable: アノテーションのダウンロード
+        process: プロセス
       sproject:
         name: 名前
         description: 説明
@@ -290,6 +292,9 @@ ja:
         accessibility:
           public: 公開
           private: プライベート
+        process:
+          manual: 手動
+          automatic: 自動
     errors:
       <<: *errors
   will_paginate:
@@ -501,3 +506,4 @@ ja:
         delayed_job_present: ZIPファイルは数分程度で作成されます。      
         download_not_available: アノテーションZIPファイルはダウンロードできません。
         result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"
+        deleted: "アノテーションZIPファイを削除しました。"

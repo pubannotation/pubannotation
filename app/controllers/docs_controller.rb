@@ -24,9 +24,8 @@ class DocsController < ApplicationController
     end
 
     @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
-    @sort_order = sort_order(Doc)
-    @source_docs = @docs.where(serial: 0).sort_by_params(@sort_order).paginate(:page => params[:page])
-    flash[:sort_order] = @sort_order
+    sort_order = sort_order(Doc)
+    @source_docs = @docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
     respond_to do |format|
       format.html
       format.json { render json: @docs_hash}
@@ -101,9 +100,8 @@ class DocsController < ApplicationController
       @search_path = search_docs_path
     end
 
-    @sort_order = sort_order(Doc)
-    @source_docs = docs.where(serial: 0).sort_by_params(@sort_order).paginate(:page => params[:page])
-    flash[:sort_order] = @sort_order
+    sort_order = sort_order(Doc)
+    @source_docs = docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
   end 
     
   def search
@@ -149,9 +147,8 @@ class DocsController < ApplicationController
     if @doc.present?
       @doc.ascii_body if (params[:encoding] == 'ascii')
       @doc_hash = @doc.to_hash
-      @sort_order = sort_order(Project)
-      @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
-      flash[:sort_order] = @sort_order
+      sort_order = sort_order(Project)
+      @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
 
       respond_to do |format|
         format.html # show.html.erb
@@ -181,9 +178,8 @@ class DocsController < ApplicationController
       end
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
-      @sort_order = sort_order(Project)
-      @projects = Project.id_in(@doc.spans_projects(params).collect{|project| project.id}).sort_by_params(@sort_order) if @doc.spans_projects(params).present?
-      flash[:sort_order] = @sort_order
+      sort_order = sort_order(Project)
+      @projects = Project.id_in(@doc.spans_projects(params).collect{|project| project.id}).sort_by_params(sort_order) if @doc.spans_projects(params).present?
       if @doc.present? && @projects.present?
         @project_denotations = get_project_denotations(@projects, @doc, params)
       end

@@ -705,6 +705,127 @@ describe AnnotationsController do
       end
     end
   end
+
+  describe 'project_annotations_zip' do
+    context 'when project present' do
+      before do
+        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        Project.any_instance.stub(:annotations_zip_path).and_return(nil)
+        @zip_file_name = 'annotations.zip'
+        Project.any_instance.stub(:annotations_zip_file_name).and_return(@zip_file_name)
+      end
+
+      context 'when annotaitons zip present' do
+        before do
+          File.stub(:exist?).and_return(true)
+          get :project_annotations_zip, project_id: @project.name
+        end
+
+        it 'should redirect to project annotations zip path' do
+          response.should redirect_to("/annotations/#{@zip_file_name}")
+        end
+      end
+
+      context 'when annotaitons zip blank' do
+        before do
+          File.stub(:exist?).and_return(false)
+          controller.stub(:render_status_error).and_return(nil)
+          controller.stub(:render).and_return(nil)
+        end
+
+        it 'should call render_status_error' do
+          controller.should_receive(:render_status_error).with(:not_found)
+          get :project_annotations_zip, project_id: @project.name
+        end
+      end
+    end
+  end
+
+  describe 'delete_project_annotations_zip' do
+    before do
+      controller.class.skip_before_filter :authenticate_user!
+      @user = FactoryGirl.create(:user)
+      @refrerer = root_path
+      request.env["HTTP_REFERER"] = @refrerer
+      @project = FactoryGirl.create(:project, user: @user)
+      controller.stub(:render).and_return(nil)
+    end
+
+    context 'when project present' do
+      before do
+        @annotations_zip_path = 'annotations.zip'
+        Project.any_instance.stub(:annotations_zip_path).and_return(@annotations_zip_path)
+      end
+
+      context 'when zip file exists' do
+        before do
+          File.stub(:exist?).and_return(true)
+        end
+
+        context 'when project.user == current_user' do
+          before do
+            controller.stub(:current_user).and_return(@user)
+          end
+
+          context 'when successfully deleted' do
+            before do
+              File.stub(:unlink).and_return(nil)
+            end
+
+            it 'should delete zip file' do
+              File.should_receive(:unlink).with(@annotations_zip_path)
+              get :delete_project_annotations_zip, project_id: @project.name
+            end
+
+            it 'should set deleted message as flash{:notice}' do
+              get :delete_project_annotations_zip, project_id: @project.name
+              flash[:notice].should eql(I18n.t('views.shared.zip.deleted'))
+            end
+
+            it 'should redirect_to previous page' do
+              get :delete_project_annotations_zip, project_id: @project.name
+              response.should redirect_to(@refrerer)
+            end
+          end
+
+          context 'when error raised' do
+            before do
+              @error_message = 'Error'
+              File.stub(:unlink).and_raise(@error_message)
+            end
+
+            it 'should set deleted message as flash{:notice}' do
+              get :delete_project_annotations_zip, project_id: @project.name
+              flash[:notice].should eql(@error_message)
+            end
+
+            it 'should redirect_to previous page' do
+              get :delete_project_annotations_zip, project_id: @project.name
+              response.should redirect_to(@refrerer)
+            end
+          end
+        end
+
+        context 'when project.user != current_user' do
+          before do
+            controller.stub(:current_user).and_return(nil)
+          end
+
+          it 'shoud call render_status_error with forbidden' do
+            controller.should_receive(:render_status_error).with(:forbidden)
+            get :delete_project_annotations_zip, project_id: @project.name
+          end
+        end
+      end
+    end
+
+    context 'when project nil' do
+      it 'shoud call render_status_error with not_found' do
+        controller.should_receive(:render_status_error).with(:not_found)
+        get :delete_project_annotations_zip, project_id: 'invalid'
+      end
+    end
+  end
   
   describe 'destroy_all' do
     before do

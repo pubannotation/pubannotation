@@ -101,6 +101,7 @@ en:
     statuses:
       forbidden: You don't have permission to do this action.
       unauthorized: You don't have permission to do this action.
+      not_found: File not found.
     messages:
       accepted: must be accepted
       blank: can't be blank
@@ -234,6 +235,7 @@ en:
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
         annotations_zip_downloadable: Annotation downloadable
+        process: process
       sproject:
         rdfwriter: RDF writer
         xmlwriter: XML writer
@@ -272,6 +274,9 @@ en:
         accessibility:
           public: Public
           private: Private
+        process:
+          manual: manual 
+          automatic: automatic
     errors:
       <<: *errors
   controllers:
@@ -465,3 +470,4 @@ en:
       zip:
         delayed_job_present: ZIP file will be created in a few minutes.      
         download_not_available: Whole download is not available for this project.
+        deleted: Successfully deleted annnotation zip file.

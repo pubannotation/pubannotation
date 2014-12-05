@@ -12,14 +12,20 @@ describe HomeController do
       Project.stub(:accessible).and_return(@accessble_projects)
       @sort_by_params = 'sort_by_params'
       @accessble_projects.stub(:sort_by_params).and_return(@sort_by_params)
-      get :index
     end
     
     it '@source_dbs should eql Doc.source_dbs' do
+      get :index
       assigns[:source_dbs].should eql @source_dbs
     end
     
+    it 'should call sort_order with Project' do
+      controller.should_receive(:sort_order).with(Project)
+      get :index
+    end
+    
     it '@projects should eql Project.order_by' do
+      get :index
       assigns[:projects].should eql(@sort_by_params)
     end
   end
