@@ -129,35 +129,6 @@ describe ProjectsController do
         end
       end
       
-      describe '@notices' do
-        before do
-          @project.pending_associate_projects_count = 1
-        end  
-
-        context 'when project.notices prensent' do
-          before do
-            @notices = 'notices'
-            @project.stub(:notices).and_return(@notices)
-            get :show, :id => @project.id
-          end
-
-          it 'should assign @project.notices as @notices' do
-            assigns[:notices].should eql(@notices)
-          end
-        end
-
-        context 'when project.notices blank' do
-          before do
-            @project.stub(:notices).and_return(nil)
-            get :show, :id => @project.id
-          end
-
-          it 'should not assign @notices' do
-            assigns[:notices].should be_nil
-          end
-        end
-      end
-      
       context 'when format json' do
         before do
           @json = {val: 'val'}
@@ -207,6 +178,44 @@ describe ProjectsController do
         it '' do
           response.should redirect_to(home_path)
         end
+      end
+    end
+  end
+      
+  describe 'notices' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+    end
+
+    context 'when project.notices prensent' do
+      before do
+        @notices = 'notices'
+        Project.any_instance.stub(:notices).and_return(@notices)
+        get :notices, project_id: @project.name
+      end
+
+      it 'should assign @project.notices as @notices' do
+        assigns[:notices].should eql(@notices)
+      end
+
+      it 'shoud render template' do
+        response.should render_template('notices')
+      end
+    end
+
+    context 'when project.notices blank' do
+      before do
+        @notices = nil
+        Project.any_instance.stub(:notices).and_return(@notices)
+        get :notices, project_id: @project.name
+      end
+
+      it 'should not assign @notices' do
+        assigns[:notices].should be_nil
+      end
+
+      it 'shoud render template' do
+        response.should render_template('notices')
       end
     end
   end
@@ -1090,6 +1099,39 @@ describe ProjectsController do
         it 'should not include another project PMC document' do
           assigns[:pmcdocs].should_not include(@PMC_another_project)
         end
+      end
+    end
+  end
+
+  describe 'is_owner?' do
+    before do
+      @status_error = 'status error'
+      controller.stub(:render_status_error).and_return(@status_error)
+      @current_user = FactoryGirl.create(:user)
+      current_user_stub(@current_user)
+      @project = FactoryGirl.create(:project, user: @current_user)
+    end
+
+    context 'when current_user is project owner' do
+      before do
+        controller.instance_variable_set(:@project, @project)
+      end
+
+      it 'should_not call render_status_error' do
+        controller.should_not_receive(:render_status_error).with(:forbidden)
+        controller.is_owner?
+      end
+    end
+
+    context 'when current_user is not project owner' do
+      before do
+        @project.stub(:user).and_return(FactoryGirl.create(:user))
+        controller.instance_variable_set(:@project, @project)
+      end
+
+      it 'should call render_status_error' do
+        controller.should_receive(:render_status_error).with(:forbidden)
+        controller.is_owner?
       end
     end
   end

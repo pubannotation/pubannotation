@@ -408,6 +408,7 @@ class Project < ActiveRecord::Base
         end
         file.close   
       end  
+      self.notices.create({successful: true, method: 'save_annotation_zip'})
     rescue
       self.notices.create({successful: false, method: 'save_annotation_zip'})
     end

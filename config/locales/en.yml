@@ -221,6 +221,7 @@ en:
       user: user
       associate_maintainer: sub-maintainer
       associate_projects_project: associate project 
+      notice: notice
     attributes:
       doc:
         sourcedb: source DB
@@ -405,6 +406,7 @@ en:
       belongs_to_sproject: Projects belongs to this Sproject
       associate_project: Associate project
       select_zip_file: Select zip file to upload.
+      properties: properties
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:

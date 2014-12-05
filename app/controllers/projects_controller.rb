@@ -45,7 +45,6 @@ class ProjectsController < ApplicationController
   def show
     @project, notice = get_project(params[:id])
     if @project
-      @notices = @project.notices
       sourcedb, sourceid, serial, id = get_docspec(params)
       notice = t('controllers.projects.show.pending_associate_projects') if @project.pending_associate_projects_count > 0
       if sourceid
@@ -106,6 +105,11 @@ class ProjectsController < ApplicationController
         format.json { render json: @project.errors, status: :unprocessable_entity }
       end
     end
+  end
+
+  def notices
+    @project = Project.find_by_name(params[:project_id])
+    @notices = @project.notices
   end
 
   def zip_upload
@@ -176,6 +180,10 @@ class ProjectsController < ApplicationController
       flash[:notice] = notice
       render :template => 'projects/show'
     end
+  end
+
+  def is_owner?
+    render_status_error(:forbidden) unless @project.present? && @project.user == current_user
   end
   
   def updatable?
