@@ -41,7 +41,7 @@ describe Shared do
       end
 
       it 'should return notice message' do
-        @result.should eql('Annotations are successfully created/updated.')
+        @result.should eql(I18n.t('controllers.application.save_annotations.successfully_saved'))
       end
     end
     

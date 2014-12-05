@@ -41,6 +41,22 @@ describe "projects/_form.html.erb" do
       end
     end
   end
+
+  describe 'process' do
+    before do
+      @user = FactoryGirl.create(:user)
+      current_user_stub(@user)
+      render
+    end
+
+    it 'should render process option value: 1 content manual' do
+      rendered.should have_selector(:option, value: '1', content: I18n.t('activerecord.options.project.process.manual'))
+    end
+
+    it 'should render process option value: 1 content automatic' do
+      rendered.should have_selector(:option, value: '2', content: I18n.t('activerecord.options.project.process.automatic'))
+    end
+  end
   
   describe 'usernames' do
     context 'when project.associate_maintenes_addable_for? = true' do
@@ -186,6 +202,48 @@ describe "projects/_form.html.erb" do
       it 'should not render associate project import not checked  hidden import tag checked' do
         rendered.should_not have_selector :input, :type => 'checkbox', :value => 'true', :id => 'associate_projects_import_1', :checked => 'checked'  
       end
+    end
+  end
+  
+  describe 'namespaces' do
+    before do
+      view.stub(:user_signed_in?).and_return(true)
+      current_user_stub(@project_user)
+    end
+
+    context 'when base_uri present' do
+      before do
+        @base_uri = 'http://base.uri'
+        @project.stub(:base_uri).and_return(@base_uri)
+        render
+      end
+
+      it 'should render input has base_uri value' do
+        rendered.should have_selector :input, type: 'text', value: @base_uri, name: 'project[namespaces][][uri]'
+      end
+    end
+
+    context 'when base_uri nil' do
+      before do
+        @project.stub(:base_uri).and_return()
+        render
+      end
+
+      it 'should render input without base_uri value' do
+        rendered.should have_selector :input, type: 'text', name: 'project[namespaces][][uri]'
+      end
+    end
+  end
+
+  describe 'namespaces_prefixe_input_fields' do
+    before do
+      view.stub(:user_signed_in?).and_return(true)
+      current_user_stub(@project_user)
+    end
+
+    it 'should call namespaces_prefix_input_fields' do
+      view.should_receive(:namespaces_prefix_input_fields)
+      render
     end
   end
 end

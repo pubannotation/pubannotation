@@ -34,8 +34,8 @@ class DivsController < ApplicationController
       end
     else
       @doc, notice = get_doc(params[:sourcedb], params[:sourceid], params[:div_id])
-      @sort_order = sort_order(Project)
-      @projects = @doc.projects.accessible(current_user).sort_by_params(@sort_order)
+      sort_order = sort_order(Project)
+      @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
     end
 
     if @doc

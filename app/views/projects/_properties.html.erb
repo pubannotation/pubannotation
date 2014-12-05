@@ -31,6 +31,12 @@
 				</td>
 			</tr>
 			<tr>
+				<th><%= t('activerecord.attributes.project.process') %></th>
+				<td>
+					<%= project.process_text -%>
+				</td>
+			</tr>
+			<tr>
 				<th><%= t('activerecord.attributes.project.maintainer') %></th>
 				<td><%= project.user.username %></td>
 			</tr>
@@ -63,7 +69,7 @@
 				<% unless project.namespaces.blank? %>
 				<tr>
 					<th><%= t('activerecord.attributes.project.namespaces') %></th>
-					<td><pre><%= project.namespaces %></pre></td>
+					<td><%= format_namespaces -%></td>
 				</tr>
 				<% end %>
 				<% unless project.rdfwriter.blank? %>
@@ -103,6 +109,6 @@
   <%= notices_list_helper -%>
 	
 	<% if project.associate_projects.present? -%>
-		<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => project.associate_projects, :scope => 'associate_project' } %>
+		<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => project.associate_projects.sort_by_params(sort_order(Project)), :scope => 'associate_project' } %>
 	<% end -%>
 </div>

@@ -89,24 +89,35 @@ module ApplicationHelper
   end
 
   def sort_order(model)
-    if params[:sort_key]
-      sort_order = flash[:sort_order]
-      sort_order.delete(sort_order.assoc(params[:sort_key]))
-      sort_order.unshift([params[:sort_key], params[:sort_direction]])
+    if params[:sort_key].present? && params[:sort_direction].present?
+      sort_order = [[params[:sort_key], params[:sort_direction]]] 
     else
       sort_order = model::DefaultSortArray
     end
-    flash[:sort_order] = sort_order
+    # LOWER sort key column to ignore case
+    sort_order.each_with_index do |sort_array, index|
+      sort_key = sort_array[0]
+      # Column names ignore case need to be listed in model::CaseInsensitiveArray
+      sort_order[index][0] = lower_sort_key(model, sort_key)
+    end
     return sort_order
   end
 
-  def sortable(key, title = nil)
-    title ||= key
-    current_direction = @sort_order.assoc(key)[1] if @sort_order.present? && @sort_order.assoc(key).present?
+  def lower_sort_key(model, sort_key)
+     if model::CaseInsensitiveArray.include?(sort_key)
+       sort_key = "LOWER(#{sort_key})"
+     end
+     return sort_key
+  end
+
+  def sortable(model, sort_key, title = nil)
+    title ||= sort_key
+    sort_key = lower_sort_key(model, sort_key)
+    sort_order = sort_order(model)
+    current_direction = sort_order.assoc(sort_key)[1] if sort_order.present? && sort_order.assoc(sort_key).present?
     current_direction ||= 'DESC'
     css_class = "sortable-" + current_direction
     next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'
-    link_to title, {:sort_key => key, :sort_direction => next_direction}, {:class => css_class}
+    link_to title, {:sort_key => sort_key, :sort_direction => next_direction}, {:class => css_class}
   end
-
 end

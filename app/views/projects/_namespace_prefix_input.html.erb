@@ -1,0 +1,10 @@
+<% 
+  if namespace_prefix_input.present?
+    prefix = namespace_prefix_input['prefix']
+    uri = namespace_prefix_input['uri']
+  end 
+-%>
+<%= label_tag 'project[namespaces][][prefix]', 'PREFIX', class: 'prefix_label' -%>
+<%= text_field_tag 'project[namespaces][][prefix]', prefix, style: "width: 6em" -%> 
+<%= label_tag 'project[namespaces][][uri]', 'URL' -%>
+<%= text_field_tag 'project[namespaces][][uri]', uri -%>

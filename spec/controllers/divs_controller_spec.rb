@@ -217,9 +217,9 @@ describe DivsController do
           get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
         end
 
-        it 'should set sort_order value ad @sort_order' do
+        it 'should call sort_order with Project' do
+          controller.should_receive(:sort_order).with(Project)
           get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
-          assigns[:sort_order].should eql(@sort_order)
         end
 
         it 'should set @doc.projects.accessible.sort_by_params as @project' do

@@ -22,7 +22,7 @@
     <td>
       <%= f.text_field :license, :class => "input" %>
       <%= hint_helper({:model => :project, :column => :license}) %><br/>
-      <span class="note">e.g., Creative Commons Attribution 3.0 Unported License</span>
+      <span class="note">e.g., <%= "#{Project::LicenseDefault}" -%></span>
     </td>
 
   </tr>
@@ -43,6 +43,14 @@
     			[t('activerecord.options.project.accessibility.public'), 1],
     			[t('activerecord.options.project.accessibility.private'), 2]], 
     		f.object.accessibility) %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :process %></th>
+    <td><%= f.select :process, 
+    		options_for_select([
+				[t('activerecord.options.project.process.manual'), 1],
+				[t('activerecord.options.project.process.automatic'), 2]],
+    		f.object.process) %></td>
   </tr>
   <tr>
     <th><%= f.label :maintainer %></th>
@@ -159,7 +167,7 @@
     <th><%= f.label :editor %></th>
     <td>
       <!-- <%= f.text_field :editor, :class => "input", :value => 'http://bionlp.dbcls.jp/textae-term/', :placeholder => 'URL' %> -->
-      <%= f.text_field :editor, :class => "input", :value => 'http://textae.pubannotation.org/editor.html?mode=editor', :placeholder => 'URL' %>
+      <%= f.text_field :editor, :class => "input", :placeholder => 'URL' %>
       <%= hint_helper({:model => :project, :column => :editor})%>
       <br/>
       <span class="note"><a href="http://textae.pubannotation.org">TextAE</a> <%= t('views.projects.try_textae') %></span>
@@ -167,7 +175,15 @@
   </tr>
   <tr>
     <th><%= f.label :namespaces %></th>
-    <td><%= f.text_area :namespaces, :class => "input", style: 'height: 6em' %></td>
+    <td id="project_namespaces">
+      <%= label_tag 'project[namespaces][][uri]', 'BASE' -%>
+      <%= hidden_field_tag 'project[namespaces][][prefix]', '_base', :class => "input" -%>
+      <%= text_field_tag 'project[namespaces][][uri]', @project.base_uri, :class => "input" -%>
+      <%= namespaces_prefix_input_fields -%>
+      <span id="namespaces_inputs"></span>
+      <br />
+      <span id="add_namespaces_input" class="button">ADD</span>
+    </td>
   </tr>
   <tr>
     <th><%= f.label :rdfwriter %></th>
@@ -191,3 +207,24 @@
 </table>
 <% end %>		
 
+<% content_for :css do -%>
+  <style>
+  .prefix_label:before{
+    content: '\A';
+    white-space: pre;
+  }
+  #project_namespaces input{
+    margin: 2px;
+  }
+  </style>
+<% end -%>
+<% content_for :javascript do -%>
+  <script type="text/javascript">
+    var inputTag = '<%= render(partial: 'namespace_prefix_input') -%>'
+    $(document).ready(function(){
+      $('#add_namespaces_input').click(function(){
+        $('#namespaces_inputs').append(inputTag);
+      })
+    })
+  </script>
+<% end -%>

@@ -28,15 +28,18 @@ describe ProjectsController do
           end
           
           context 'and when format html' do
-            before do
+            it 'should call sort_order with Project' do
+              controller.should_receive(:sort_order).with(Project)
               get :index
             end
 
             it '@projects should eql @doc.projects.accessible.sort_by_params' do
+              get :index
               assigns[:projects].should eql(@sort_by_params)
             end
             
             it 'should render template' do
+              get :index
               response.should render_template('index')
             end
           end
@@ -209,7 +212,6 @@ describe ProjectsController do
   end
   
   describe 'new' do
-
     context 'when format html' do
       before do
         get :new
@@ -221,6 +223,14 @@ describe ProjectsController do
       
       it 'should set new record' do
         assigns[:project].new_record?.should be_true
+      end
+
+      it 'should set license default value' do
+        assigns[:project][:license].should eql(Project::LicenseDefault)
+      end
+
+      it 'should set editor default value' do
+        assigns[:project][:editor].should eql(Project::EditorDefault)
       end
     end
 

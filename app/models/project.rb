@@ -1,6 +1,9 @@
 class Project < ActiveRecord::Base
   include AnnotationsHelper
+
+  before_validation :cleanup_namespaces
   after_validation :user_presence
+  serialize :namespaces
   belongs_to :user
   has_and_belongs_to_many :docs, :after_add => [:increment_docs_counter, :update_annotations_updated_at], :after_remove => [:decrement_docs_counter, :update_annotations_updated_at]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
@@ -23,7 +26,7 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'project_id',
     :join_table => 'associate_projects_projects'
 
-  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces
+  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
   has_many :denotations, :dependent => :destroy
   has_many :relations, :dependent => :destroy
   has_many :modifications, :dependent => :destroy
@@ -32,7 +35,7 @@ class Project < ActiveRecord::Base
   has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
   
-  default_scope where(:type => nil).order('status ASC')
+  default_scope where(:type => nil)
 
   scope :accessible, lambda{|current_user|
     if current_user.present?
@@ -91,38 +94,18 @@ class Project < ActiveRecord::Base
   }
 
   # default sort order 
-  DefaultSortArray = [['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
+  DefaultSortArray = [['status', 'ASC'], ['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
+
+  # List of column names ignore case to sort
+  CaseInsensitiveArray = %w(name author users.username)
+
+  LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
+  EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=editor'
   
   scope :sort_by_params, lambda{|sort_order|
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
-      includes(:user).order(sort_order)
+      unscoped.includes(:user).order(sort_order)
   }
-
-  def parse_namespaces
-    namespace_lines = namespaces.split(/\r?\n/) if namespaces.present?
-    if namespace_lines.present?
-      namespaces_array = Array.new
-      namespace_lines.each do |namespace|
-        # namespace format should be "BASE|PREFIX space (prefix:) <uri>"
-        format = namespace =~ /^(BASE|PREFIX)\s+(.+:)?\s*<.+>/i
-        begin_pos = namespace =~ /</
-        end_pos = namespace =~ />/
-        namespace_contents = namespace.split(/\s/)
-        if format.present?
-          # set prefix
-          if namespace =~ /^BASE\s/i
-            prefix = '_base'
-          elsif namespace =~ /^PREFIX\s/i
-            prefix = namespace_contents[1].gsub(':', '')
-          end
-          # set string between < ... > as namespace url
-          uri = namespace[begin_pos + 1 ...end_pos] 
-          namespaces_array << {prefix: prefix, uri: uri}
-        end
-      end
-      self.namespaces = namespaces_array if namespaces_array.present?
-    end
-  end
 
   def status_text
    status_hash = {
@@ -141,6 +124,14 @@ class Project < ActiveRecord::Base
      2 => :Private
    }
    accessibility_hash[self.accessibility]
+  end
+  
+  def process_text
+   process_hash = {
+     1 => I18n.t('activerecord.options.project.process.manual'),
+     2 => I18n.t('activerecord.options.project.process.automatic')
+   }
+   process_hash[self.process]
   end
 
   def self.order_by(projects, order, current_user)
@@ -372,7 +363,6 @@ class Project < ActiveRecord::Base
 
   def json
     except_columns = %w(pmdocs_count pmcdocs_count pending_associate_projects_count user_id)
-    self.namespaces = parse_namespaces
     to_json(except: except_columns, methods: :maintainer)
   end
 
@@ -383,9 +373,13 @@ class Project < ActiveRecord::Base
   def maintainer
     user.present? ? user.username : ''
   end
+
+  def annotations_zip_file_name
+    "#{self.name}-annotations.zip"
+  end
   
   def annotations_zip_path
-    "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
+    "#{Denotation::ZIP_FILE_PATH}#{self.annotations_zip_file_name}"
   end
   
   def save_annotation_zip(options = {})
@@ -396,7 +390,7 @@ class Project < ActiveRecord::Base
       end
       anncollection = self.anncollection(options[:encoding])
       if anncollection.present?
-        file_path = "#{Denotation::ZIP_FILE_PATH}#{self.name}.zip"
+        file_path = self.annotations_zip_path
         file = File.new(file_path, 'w')
         Zip::ZipOutputStream.open(file.path) do |z|
           z.put_next_entry('project.json')
@@ -642,5 +636,22 @@ class Project < ActiveRecord::Base
     if user.blank?
       errors.add(:user_id, 'is blank') 
     end
+  end
+
+  def namespaces_base
+    namespaces.find{|namespace| namespace['prefix'] == '_base'} if namespaces.present?
+  end
+
+  def base_uri
+    namespaces_base['uri'] if namespaces_base.present?
+  end
+
+  def namespaces_prefixes
+    namespaces.select{|namespace| namespace['prefix'] != '_base'} if namespaces.present?
+  end
+
+  # delete empty value hashes
+  def cleanup_namespaces
+    namespaces.reject!{|namespace| namespace['prefix'].blank? || namespace['uri'].blank?} if namespaces.present?
   end
 end

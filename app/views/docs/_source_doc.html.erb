@@ -14,14 +14,14 @@
 				<% if params[:action] == 'search' -%>
 					<%= t('activerecord.attributes.doc.sourcedb') -%>
 				<% else -%>
-					<%= sortable('sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
+         <%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
 				<% end -%>
 			</th>
 			<th style="width:6em">
 				<% if params[:action] == 'search' -%>
 					<%= t('activerecord.attributes.doc.sourceid') -%>
 				<% else -%>
-					<%= sortable('sourceid', t('activerecord.attributes.doc.sourceid')) %>
+					<%= sortable(Doc, 'sourceid', t('activerecord.attributes.doc.sourceid')) %>
 				<% end -%>
 			</th>
 			<th><%= t('activerecord.attributes.doc.body') %></th>
