@@ -18,3 +18,9 @@
 <%= link_to_unless_current t('views.docs.list'), docs_src, :class => 'tab inactive_tab' do
 	content_tag :span, t('views.docs.list'), :class => 'tab active_tab'
 end -%>
+
+<% if @project.notices.present? && @project.user == current_user -%>
+  <%= link_to_unless_current t('activerecord.models.notice'), project_notices_path(@project.name), :class => 'tab inactive_tab' do
+    content_tag :span, t('activerecord.models.notice'), :class => 'tab active_tab'
+  end -%>
+<% end -%>

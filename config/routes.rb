@@ -91,6 +91,7 @@ Pubann::Application.routes.draw do
     get 'relations/sql' => 'relations#sql'
     get 'annotations.zip' => 'annotations#project_annotations_zip', :as => 'annotations_zip'
     get 'delete_annotations_zip' => 'annotations#delete_project_annotations_zip', :as => 'delete_annotations_zip'
+    get 'notices' => 'projects#notices'
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
     

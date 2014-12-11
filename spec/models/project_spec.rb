@@ -1967,8 +1967,8 @@ describe Project do
           @path.should eql(Denotation::ZIP_FILE_PATH)
         end
 
-        it 'should not create @project.notices' do
-          expect{ @project.save_annotation_zip }.not_to change{ @project.notices.count }.from(0).to(1)
+        it 'should create @project.notices' do
+          expect{ @project.save_annotation_zip }.to change{ @project.notices.count }.from(0).to(1)
         end
       end
 

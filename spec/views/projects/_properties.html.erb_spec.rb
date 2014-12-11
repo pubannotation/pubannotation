@@ -83,14 +83,4 @@ describe "projects/_properties.html.erb" do
       render
     end
   end
-
-  describe 'notices_list_helper' do
-    it 'should render notices_list_helper' do
-      view.stub(:user_signed_in?).and_return(true)
-      view.stub(:current_user).and_return(@current_user)
-      view.stub(:notices_list_helper).and_return(nil)
-      view.should_receive(:notices_list_helper)
-      render
-    end
-  end
 end
