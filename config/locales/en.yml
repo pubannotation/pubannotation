@@ -406,6 +406,14 @@ en:
       belongs_to_sproject: Projects belongs to this Sproject
       associate_project: Associate project
       select_zip_file: Select zip file to upload.
+      start_delay_save_annotation_zip:
+        result: "Create annotations zip file task started. %{created_at}"
+      save_annotation_zip:
+        result: "Create annotations zip file task was %{result} finished. %{created_at}"
+      start_delay_store_annotations:
+        result: "Create annotations task started. %{created_at}"
+      store_annotations:
+        result: "Create annotations task was %{result} finished. %{created_at}"
       properties: properties
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
@@ -461,6 +469,8 @@ en:
       pmdocs: pmdocs
       pmcdocs: pmcdocs
       search: search
+      successful: successfully
+      unsuccessful: unsuccessfullly
       get: get
       divs: divs
       div: div:%{divid}

@@ -430,8 +430,12 @@ ja:
       associate_project: 関連プロジェクト
       detail: プロジェクト詳細
       select_zip_file: アップロードするzipファイルを選択して下さい。
+      start_delay_save_annotation_zip:
+        result: "アノテーションZIPファイルの作成を開始しました。 %{created_at}"
       save_annotation_zip:
         result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"
+      start_delay_store_annotations:
+        result: "アノテーションの作成を開始しました。 %{created_at}"
       store_annotations:
         result: "アノテーションの作成に%{result}しました。 %{created_at}"
       properties: プロパティ

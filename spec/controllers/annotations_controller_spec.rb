@@ -122,10 +122,24 @@ describe AnnotationsController do
                @refrerer = root_path
               request.env["HTTP_REFERER"] = @refrerer
               @project.stub_chain(:delay, :save_annotation_zip).and_return(nil)
+            end
+            
+            it 'should call create notice method' do
+              @project.notices.should_receive(:create).with({method: 'start_delay_save_annotation_zip'})
+              get :index, :delay => true, :project_id => @project.name
+            end
+
+            it 'should create notice' do
+              expect{ get :index, :delay => true, :project_id => @project.name }.to change{ Notice.count }.from(0).to(1)
+            end
+            
+            it 'should call delay.save_annotation_zip' do
+              @project.should_receive(:delay)
               get :index, :delay => true, :project_id => @project.name
             end
             
             it 'should redirect to back' do
+              get :index, :delay => true, :project_id => @project.name
               response.should redirect_to(@refrerer)
             end
           end
@@ -471,7 +485,18 @@ describe AnnotationsController do
               Shared.should_receive(:delay)  
               Shared.should_receive(:store_annotations).with(@annotations.symbolize_keys, @project, [@doc], {mode: nil, delayed: true})  
               Shared.stub(:delay).and_return(Shared)
-              post :create, project_id: @project.id, annotations: @annotations, format: 'json', mode: 'delay'
+              post :create, project_id: @project.id, annotations: @annotations, format: 'json'
+            end
+
+            it 'should create notice' do
+              Shared.stub_chain(:delay, :store_annotations).and_return(nil)
+              expect{ post :create, project_id: @project.id, annotations: @annotations, format: 'json' }.to change{ Notice.count }.from(0).to(1)
+            end
+
+            it 'should call create notices method' do
+              Shared.stub_chain(:delay, :store_annotations).and_return(nil)
+              @project.notices.should_receive(:create)
+              post :create, project_id: @project.id, annotations: @annotations, format: 'json'
             end
 
             it 'should return status created , fits delayed_job message' do
