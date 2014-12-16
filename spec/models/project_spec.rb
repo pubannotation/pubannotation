@@ -2347,6 +2347,10 @@ describe Project do
           end        
           
           before do
+            p @sourceid
+            p @sourcedb
+            p @user
+            puts "------"
             @result = @project.add_docs({ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
             @project.reload
           end
