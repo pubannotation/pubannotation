@@ -324,7 +324,8 @@ describe Denotation do
   
   describe 'update_projects_after_save' do
     before do
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0, :annotations_updated_at => 10.days.ago)
+      @annotations_updated_at = 10.days.ago
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0, :annotations_updated_at => @annotations_updated_at)
       @associate_project_1 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_2 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_2_denotations_count = 1
@@ -375,8 +376,8 @@ describe Denotation do
         @associate_project_2.denotations_count.should eql(2)
       end 
       
-      it '' do
-        @project.annotations_updated_at.to_date.should eql(Date.today)
+      it 'should update project.annotations_updated_at' do
+        @project.annotations_updated_at.utc.should_not eql( @annotations_updated_at.utc )
       end     
     end      
   end
