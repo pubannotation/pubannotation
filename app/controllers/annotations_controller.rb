@@ -27,6 +27,7 @@ class AnnotationsController < ApplicationController
           # delete ZIP file if params[:update]
           File.unlink(@project.annotations_zip_path) if params[:update].present?
           # Creaet ZIP file by delayed_job
+          @project.notices.create({method: 'start_delay_save_annotation_zip'})
           @project.delay.save_annotation_zip(:encoding => params[:encoding])
           redirect_to :back
         else
@@ -179,6 +180,7 @@ class AnnotationsController < ApplicationController
 
         if annotations
           if params[:format] == 'json'
+            project.notices.create({method: 'start_delay_store_annotations'})
             Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
             # Shared.store_annotations(annotations, project, divs, {:mode => mode})
             fits = t('controllers.annotations.create.delayed_job')

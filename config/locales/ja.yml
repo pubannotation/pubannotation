@@ -213,6 +213,7 @@ ja:
       span: スパン
       associate_maintainer: 副管理者
       associate_projects_project: 関連プロジェクト
+      notice: お知らせ
     attributes:
       doc:
         sourcedb: ソースDB
@@ -429,10 +430,15 @@ ja:
       associate_project: 関連プロジェクト
       detail: プロジェクト詳細
       select_zip_file: アップロードするzipファイルを選択して下さい。
+      start_delay_save_annotation_zip:
+        result: "アノテーションZIPファイルの作成を開始しました。 %{created_at}"
       save_annotation_zip:
-        result: "アノテー/うションZIPファイルの作成に%{result}しました。 %{created_at}"
+        result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"
+      start_delay_store_annotations:
+        result: "アノテーションの作成を開始しました。 %{created_at}"
       store_annotations:
         result: "アノテーションの作成に%{result}しました。 %{created_at}"
+      properties: プロパティ
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:

@@ -22,20 +22,14 @@ class DocSequencerPubMed
         result   = doc.find_first('/PubmedArticleSet').content.strip
         return nil if result.empty?
         title    = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/ArticleTitle')
-        # abstract = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText')
-        abstexts = doc.find('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText')
+        abstractTexts = doc.find('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText')
+        abstract = abstractTexts
+                    .collect{|t| t['Label'].nil? ? t.content.strip : t['Label'] + ': ' + t.content.strip}
+                    .join("\n")
 
-        texts = []
-        texts << title.content.strip if title
-        abstexts.each do |abstext|
-          text = abstext.content.strip
-          unless text.empty?
-            texts << abstext[:Label] if abstext[:Label]
-            texts << text
-          end
-        end
-        body = texts.join("\n")
-        puts body
+        body  = ''
+        body += title.content.strip if title
+        body += "\n" + abstract.strip if abstract
 
         @source_url = 'http://www.ncbi.nlm.nih.gov/pubmed/' + docid
         @divs = [{:heading => 'TIAB', :body => body}]
