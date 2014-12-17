@@ -2345,8 +2345,11 @@ describe Project do
               @project.docs.should include(@doc)
             end
           end        
+        end        
           
+        context 'when project docs include divs.first' do
           before do
+            @project.docs << @doc
             @result = @project.add_docs({ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
             @project.reload
           end
