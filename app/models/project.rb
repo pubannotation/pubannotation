@@ -508,6 +508,7 @@ class Project < ActiveRecord::Base
 
   def add_docs_from_json(docs, user)
     num_created, num_added, num_failed = 0, 0, 0
+    docs = [docs] if docs.class == Hash
     source_dbs = docs.group_by{|doc| doc[:source_db]}
     if source_dbs.present?
       source_dbs.each do |source_db, docs_array|
@@ -567,9 +568,6 @@ class Project < ActiveRecord::Base
         else
           # when sourcedb is not user's sourcedb
           unless self.docs.include?(divs.first)
-            p self.docs
-            puts "++++++"
-            p divs
             self.docs << divs
             num_added += divs.size
           end

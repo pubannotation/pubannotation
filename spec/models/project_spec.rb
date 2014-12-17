@@ -2181,18 +2181,18 @@ describe Project do
           @options_user = options[:user]
           [1, 1, 1]
         end
-        @pmc_user_1 = {"source_db" => "PMC:user name", 'source_id' => '1', 'div_id' => 0, 'text' => 'body text'}
-        @pmc_user_2 = {"source_db" => "PMC:user name", 'source_id' => '1', 'div_id' => 1, 'text' => 'body text'} 
-        @pmc_1 = {"source_id" => "1", "source_db" => "PMC"} 
-        @pmc_2 = {"source_id" => "2", "source_db" => "PMC"} 
-        @pub_med = {"source_id" => "1", "source_db" => "PubMed"}
+        @pmc_user_1 = {:source_db => "PMC:user name", :source_id => '1', :div_id => 0, :text => 'body text'}
+        @pmc_user_2 = {:source_db => "PMC:user name", :source_id => '1', :div_id => 1, :text => 'body text'} 
+        @pmc_1 = {:source_id => "1", :source_db => "PMC"} 
+        @pmc_2 = {:source_id => "2", :source_db => "PMC"} 
+        @pub_med = {:source_id => "1", :source_db => "PubMed"}
         @user = FactoryGirl.create(:user)
       end
 
       context 'when json is Array' do
         before do
-          json = [@pmc_user_1, @pmc_user_2, @pmc_1, @pmc_2, @pub_med]
-          @result = @project.add_docs_from_json(json.to_json, @user)
+          docs = [@pmc_user_1, @pmc_user_2, @pmc_1, @pmc_2, @pub_med]
+          @result = @project.add_docs_from_json(docs, @user)
         end
 
         it 'should pass ids and source_db for add_docs correctly' do
@@ -2212,10 +2212,10 @@ describe Project do
         end
       end
 
-      context 'when json is Hash' do
+      context 'when docs is Hash' do
         before do
-          json = @pmc_user_1
-          @result = @project.add_docs_from_json(json.to_json, @user)
+          docs = @pmc_user_1
+          @result = @project.add_docs_from_json(docs, @user)
         end
 
         it 'should pass ids and source_db for add_docs correctly' do
@@ -2347,10 +2347,6 @@ describe Project do
           end        
           
           before do
-            p @sourceid
-            p @sourcedb
-            p @user
-            puts "------"
             @result = @project.add_docs({ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
             @project.reload
           end
