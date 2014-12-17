@@ -329,7 +329,7 @@ ja:
       create:
         does_not_include: アノテーションセット%{project_id}は、ドキュメントPubMed:%{sourceid}を含んでいません
         no_annotation: アノテーションが含まれていません
-        delayed_job: タスクは数分程度で実行されます。
+        delayed_job: アノテーションが提出されました。結果は該当プロジェクトのページからご確認できます。
       confirm_create_zip: ZIPファイル作成をしますか？※作成は遅延処理で実行されます。
       create_zip: アノテーションZIPファイルの作成
       update_zip: アノテーションZIPファイルの更新
