@@ -147,10 +147,10 @@ class ProjectsController < ApplicationController
   # DELETE /projects/:name
   # DELETE /projects/:name.json
   def destroy
-    @project.destroy
-
+    @project.notices.create({successful: nil, method: 'start_destroy_project'})
+    @project.delay.delay_destroy
     respond_to do |format|
-      format.html { redirect_to projects_path, notice: t('controllers.projects.destroy.deleted', :id => params[:id]) }
+      format.html { redirect_to :back, notice: t('controllers.projects.destroy.delay') }
       format.json { head :no_content }
     end
   end

@@ -2739,4 +2739,34 @@ describe Project do
       end
     end
   end
+
+  describe 'delay_destroy' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+    end
+
+    context 'when successfully finished' do
+      it 'should destroy project' do
+        expect{ @project.delay_destroy }.to change{ Project.count }.from(1).to(0)
+      end
+
+      it 'should not create notice' do
+        expect{ @project.delay_destroy }.not_to change{ Notice.count }.from(0).to(1)
+      end
+    end
+
+    context 'when failed' do
+      before do
+        @project.stub(:destroy).and_raise('Error')
+      end
+
+      it 'should not destroy project' do
+        expect{ @project.delay_destroy }.not_to change{ Project.count }.from(1).to(0)
+      end
+
+      it 'should create notice' do
+        expect{ @project.delay_destroy }.to change{ Notice.count }.from(0).to(1)
+      end
+    end
+  end
 end

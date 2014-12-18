@@ -669,19 +669,38 @@ describe ProjectsController do
         current_user = FactoryGirl.create(:user)
         current_user_stub(current_user)
         @project = FactoryGirl.create(:project, :name => 'project_name', :user => current_user)  
+        @project.stub(:destroyable_for?).and_return(true)
+        @referer = project_path(@project.id)
+        request.env["HTTP_REFERER"] = @referer
       end
       
       context 'format html' do
-        before do
+        it 'shoud create notice' do
+          Project.any_instance.stub_chain(:delay, :delay_destroy).and_return(nil)
+          expect{ 
+            delete :destroy, :id => @project.name 
+          }.to change{ Notice.count }.from(0).to(1)
+        end
+
+        it 'should call destroy through delayed_job' do
+          Project.any_instance.stub_chain(:delay, :delay_destroy).and_return(nil)
+          Project.any_instance.should_receive(:delay)
+          delete :destroy, :id => @project.name   
+        end
+
+        it 'should call destroy through delayed_job' do
+          Project.any_instance.stub(:delay).and_return(@project)
+          @project.should_receive(:delay_destroy)
           delete :destroy, :id => @project.name   
         end
         
-        it 'should redirect to projects_path' do
-          response.should redirect_to projects_path
+        it 'should redirect to :back' do
+          delete :destroy, :id => @project.name   
+          response.should redirect_to @referer
         end
       end
       
-      context 'format html' do
+      context 'format json' do
         before do
           delete :destroy, :format => 'json', :id => @project.name   
         end

@@ -655,4 +655,12 @@ class Project < ActiveRecord::Base
   def cleanup_namespaces
     namespaces.reject!{|namespace| namespace['prefix'].blank? || namespace['uri'].blank?} if namespaces.present?
   end
+
+  def delay_destroy
+    begin
+      destroy
+    rescue
+      notices.create({successful: false, method: 'destroy_project'})
+    end
+  end
 end

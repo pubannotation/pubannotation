@@ -352,6 +352,7 @@ en:
         does_not_exist: The document, %{sourcedb}:%{sourceid}, does not exist in PubAnnotation.
       destroy:
         deleted: The project, %{id}, was deleted.
+        delay: Project will be destroyed in a few minutes.
       new:
         import: "import associated projects"
       show:
@@ -414,6 +415,10 @@ en:
         result: "Create annotations task started. %{created_at}"
       store_annotations:
         result: "Create annotations task was %{result} finished. %{created_at}"
+      start_destroy_project:
+        result: "Destroy project task started. %{created_at}"
+      destroy_project:
+        result: "Destroy project task was unsuccessfully finished. %{created_at}"
       properties: properties
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"

@@ -374,6 +374,7 @@ ja:
         does_not_exist: ドキュメント%{sourcedb}:%{sourceid}はPubAnnotation内に存在しません
       destroy:
         deleted: アノテーションセット%{id}を削除しました
+        delay: プロジェクトは数分程度で削除されます
       new:
         import: "関連プロジェクトをインポート"
       show:
@@ -439,6 +440,10 @@ ja:
       store_annotations:
         result: "アノテーションの作成に%{result}しました。 %{created_at}"
       properties: プロパティ
+      start_destroy_project:
+        result: "プロジェクトの削除を開始しました。 %{created_at}"
+      destroy_project:
+        result: "プロジェクトの削除に失敗しました。 %{created_at}"
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:
