@@ -138,9 +138,7 @@ class DocsController < ApplicationController
       @doc = Doc.find(params[:id])
     elsif params[:sourcedb].present? && params[:sourceid].present?
       docs = Doc.where('sourcedb = ? AND sourceid = ?', params[:sourcedb], params[:sourceid])
-      if docs.length == 1
-        @doc = docs.first
-      end
+      @doc = docs.first if docs.length == 1
     end
     
     @project, notice = get_project(params[:project_id])
@@ -153,6 +151,7 @@ class DocsController < ApplicationController
       respond_to do |format|
         format.html # show.html.erb
         format.json {render json: @doc_hash}
+        format.txt  {render :text => @doc.body}
       end
     elsif docs.present?
       # when same sourcedb and sourceid docs present => redirect to divs#index
@@ -161,7 +160,6 @@ class DocsController < ApplicationController
       else
         redirect_to doc_sourcedb_sourceid_divs_index_path
       end
-
     end
   end
 
