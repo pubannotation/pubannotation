@@ -7,7 +7,6 @@ class DivsController < ApplicationController
   def index
     @docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], :order => 'serial ASC')
     @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
-    @docs_hash = @docs.collect{|doc| doc.to_hash}
 
     if params[:project_id]
       @project_name = params[:project_id]
@@ -16,7 +15,14 @@ class DivsController < ApplicationController
 
     respond_to do |format|
       format.html # index.html.erb
-      format.json { render json: @docs_hash}
+      format.json { render json: @docs.collect{|doc| doc.to_hash} }
+      format.txt  {
+        if @project.present?
+          redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, params[:sourcedb], params[:sourceid], format: :txt)
+        else
+          redirect_to doc_sourcedb_sourceid_show_path(@project.name, params[:sourcedb], params[:sourceid], format: :txt)
+        end
+      }
     end
   end
   
@@ -50,11 +56,11 @@ class DivsController < ApplicationController
           render 'docs/show'
         }
         format.json {render json: @doc_hash}
-        format.txt  { render :text => @doc.body }
+        format.txt  {render text: @doc.body}
       else 
-        format.html { redirect_to :back, notice: notice}
-        format.json { head :unprocessable_entity }
-        format.txt  { head :unprocessable_entity }
+        format.html {redirect_to :back, notice: notice}
+        format.json {head :unprocessable_entity}
+        format.txt  {head :unprocessable_entity}
       end
     end
   end

@@ -161,7 +161,7 @@ describe ApplicationHelper do
 
       context 'when include CaseInsensitive column name' do
         it 'should return model::DefaultSortArray' do
-          p @sort_order = helper.sort_order(StubModel)
+          # p @sort_order = helper.sort_order(StubModel)
         end
       end
     end

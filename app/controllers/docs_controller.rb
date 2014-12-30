@@ -137,28 +137,37 @@ class DocsController < ApplicationController
     if params[:id].present?
       @doc = Doc.find(params[:id])
     elsif params[:sourcedb].present? && params[:sourceid].present?
-      docs = Doc.where('sourcedb = ? AND sourceid = ?', params[:sourcedb], params[:sourceid])
+      docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       @doc = docs.first if docs.length == 1
     end
     
     @project, notice = get_project(params[:project_id])
     if @doc.present?
       @doc.ascii_body if (params[:encoding] == 'ascii')
-      @doc_hash = @doc.to_hash
       sort_order = sort_order(Project)
       @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
 
       respond_to do |format|
         format.html # show.html.erb
-        format.json {render json: @doc_hash}
-        format.txt  {render :text => @doc.body}
+        format.json {render json: @doc.to_hash}
+        format.txt  {render text: @doc.body}
       end
     elsif docs.present?
+      docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
+
       # when same sourcedb and sourceid docs present => redirect to divs#index
       if @project.present?
-        redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])
+        respond_to do |format|
+          format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
+          format.json {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid], format: :json)}
+          format.txt  {render text: docs.collect{|doc| doc.body}.join("\n") }
+        end
       else
-        redirect_to doc_sourcedb_sourceid_divs_index_path
+        respond_to do |format|
+          format.html {redirect_to doc_sourcedb_sourceid_divs_index_path}
+          format.json {redirect_to doc_sourcedb_sourceid_divs_index_path(format: :json)}
+          format.txt  {render text: docs.collect{|doc| doc.body}.join("\n") }
+        end
       end
     end
   end
