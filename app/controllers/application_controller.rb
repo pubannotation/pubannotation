@@ -115,11 +115,9 @@ class ApplicationController < ActionController::Base
     end
 
     if doc
-      if project
-        if !doc.projects.include?(project)
-          doc = nil
-          notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
-        end
+      if project && !doc.projects.include?(project)
+        doc = nil
+        notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
       end
     else
       notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
@@ -127,7 +125,6 @@ class ApplicationController < ActionController::Base
 
     return doc, notice
   end
-
 
   def get_divs (sourceid, project = nil)
     divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)

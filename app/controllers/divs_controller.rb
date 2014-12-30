@@ -23,7 +23,7 @@ class DivsController < ApplicationController
   # GET /docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid
   def show
     # TODO compatibility for PMC and Docs
-    params[:div_id]   ||= params[:id]
+    params[:div_id] ||= params[:id]
     if (params[:project_id])
       @project, notice = get_project(params[:project_id])
       if @project
