@@ -204,17 +204,17 @@ class DocsController < ApplicationController
       format.json { 
         if @project_denotations.present?
           @denotations = Array.new
-          @project_denotations.each do  |project_denotation|
-           project_denotation[:denotations].each do |denotation|
-             @denotations << denotation.select{|key| key == :span}
-           end
+          @project_denotations.each do |project_denotation|
+            if project_denotation[:denotations].present?
+              project_denotation[:denotations].each do |denotation|
+                @denotations << denotation.select{|key| key == :span}
+              end
+            end
           end
         end
-        json = {
-          text: @text,
-          focus: get_focus({params: params}) 
-        }
-        render json: json
+        json_hash = {text: @text}
+        json_hash[:focus] = get_focus({params: params}) if params[:context_size].present?
+        render json: json_hash
       }
       format.csv { 
         send_data @doc.to_csv(params)

@@ -49,11 +49,13 @@ module AnnotationsHelper
   end
 
   def get_focus(options)
-    if options.present? && options[:params].present? && options[:params][:begin].present?
-      context_size_value = options[:params][:context_size].to_i
-      end_value = options[:params][:end].to_i - options[:params][:begin].to_i + context_size_value
-      begin_value = 0 + context_size_value
-      {begin: begin_value, end: end_value}
+    if options.present? && options[:params].present? && options[:params][:begin].present? && options[:params][:context_size]
+      sbeg = options[:params][:begin].to_i
+      send = options[:params][:end].to_i
+      context_size = options[:params][:context_size].to_i
+      fbeg = (context_size < sbeg) ? context_size : sbeg
+      fend = send - sbeg + fbeg
+      {begin: fbeg, end: fend}
     end
   end
 
@@ -101,9 +103,8 @@ module AnnotationsHelper
       end
       
       focus = get_focus(options)
-      if focus.present?
-        annotations[:focus] = focus
-      end
+      annotations[:focus] = focus if focus.present?
+
       annotations
     else
       nil
