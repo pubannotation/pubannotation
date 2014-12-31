@@ -1,5 +1,7 @@
 name: PubAnnotation
-markdown: redcarpet
-highlighter: pigments
 baseurl: ''
 relative_permalinks: false
+
+#Build settings
+markdown: kramdown
+highlighter: pigments
