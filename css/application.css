@@ -35,7 +35,22 @@ body {
 
 #main {
   margin:0px;
-  background-color: #eee;
+  background-color: #fff;
+}
+
+.news {
+  display: inline-block;
+  border-width: 2px;
+  border-color: #4466aa;
+  margin: 0.2em;
+  padding: 0 1em 0.5em 1em;
+  color: #4466aa;
+  background-color: #f0f9ff;
+}
+
+.news ul {
+  -webkit-padding-start: 1.5em;
+  color: #000000;
 }
 
 #repository {
@@ -87,12 +102,6 @@ input.bash {
 
 .capitalize_first:first-letter{
   text-transform:capitalize;
-}
-
-.intro p {
-  font-size: 2.8em;
-  font-style: italic;
-  margin: 0;
 }
 
 h1 {

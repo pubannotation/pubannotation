@@ -1,21 +1,3 @@
-/* Base */
-
-* {
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-}
-
-/*body {
-  font-family: Lato, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 21px;
-  font-weight: 300;
-  color: #ddd;
-  background: #333;
-  box-shadow: inset 0 3px 30px rgba(0,0,0,.3);
-  text-shadow: 0 1px 3px rgba(0,0,0,.5);
-}
-*/
 .clear {
   display: block;
 }
@@ -105,15 +87,15 @@ body > footer a:hover img {
   padding: 10px 0 40px;
 }
 
-.intro p {
-  font-size: 1.75em;
-  line-height: 1em;
-  margin: 0;
+.slogan {
+  font-size: 2.8em;
+  font-style: italic;
+  margin-top: 20px;
 }
 
-@media (min-width: 569px){
-  .intro p {
-    font-size: 3.2em;
+@media (max-width: 569px){
+  .slogan {
+    font-size: 2.0em;
   }
 }
 
@@ -280,7 +262,6 @@ body > footer a:hover img {
 }
 
 /* Article - Used for both docs and news */
-
 
 article {
   background: #fff;
@@ -518,16 +499,7 @@ article h2:first-child {
   margin-left: 10px;
 }
 
-.news article + article {
-  margin-top: -10px;
-  border-radius: 0 0 10px 10px;
-  border-top: 1px solid #555;
-  box-shadow: 0 -1px 0 #2f2f2f;
-}
-
 /* Code Highlighting */
-
-
 pre, code {
   white-space: pre;
   display: inline-block;
