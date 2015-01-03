@@ -1,9 +1,9 @@
 ---
 layout: docs
-title: Add Documents
-prev_section: api
-next_section: submit-annotations
-permalink: /docs/add-documents/
+title: Add Document
+prev_section: create-project
+next_section: create-annotation
+permalink: /docs/add-document/
 ---
 
 After creating your project, you can add documents to your project.

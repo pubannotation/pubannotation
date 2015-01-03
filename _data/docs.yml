@@ -1,8 +1,10 @@
 - title: Documentation
   docs:
   - intro
-  - format
   - api
-  - add-documents
-  - submit-annotations
+  - create-project
+  - add-document
+  - create-annotation
+  - format
+  - submit-annotation
   - about

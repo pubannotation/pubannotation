@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: About
-prev_section: add-documents
+prev_section: submit-annotation
 permalink: /docs/about/
 ---
 

@@ -1,8 +1,8 @@
 ---
 layout: docs
 title: API
-prev_section: format
-next_section: add-documents
+prev_section: intro
+next_section: create-project
 permalink: /docs/api/
 ---
 

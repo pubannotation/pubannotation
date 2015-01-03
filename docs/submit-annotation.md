@@ -1,20 +1,17 @@
 ---
 layout: docs
-title: Submit Annotations
-prev_section: add-documents
+title: Submit Annotation
+prev_section: format
 next_section: about
-permalink: /docs/submit-annotations/
+permalink: /docs/submit-annotation/
 ---
 
-You can add annotations to documents that are included in your project.
+You can deposit your annotations to PubAnnotation.
+To do it,
 
-## Using Editor
-
-1. Go to a document page, or a div page in case of PMC document, of your project.
-2. Open the editor. ([TextAE](http://textae.pubannotation.org) is the default editor of PubAnnotation.)
-![open the editor]({{site.baseurl}}/img/open_editor.png)
-3. Creat or edit annotations using the editor.
-4. Save (or upload) the annotation.
+1. You need to [create an annotation project]({{site.baseurl}}/docs/create-project/) on PubAnnotation, and
+2. [add documents]({{site.baseurl}}/docs/add-document/) to the project.
+3. Then, you can '*POST*' your annotations using standard *REST API*.
 
 ## Using REST API
 

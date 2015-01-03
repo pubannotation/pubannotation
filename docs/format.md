@@ -1,8 +1,8 @@
 ---
 layout: docs
 title: Format
-prev_section: intro
-next_section: api
+prev_section: create-annotation
+next_section: submit-annotation
 permalink: /docs/format/
 ---
 
