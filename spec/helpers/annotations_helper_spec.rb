@@ -743,7 +743,7 @@ describe AnnotationsHelper do
         helper.stub(:params).and_return(id: @doc.id)  
       end
       
-      it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
+      it 'should return annotations_create_project_sourcedb_sourceid_divs_docs_path' do
         helper.annotations_form_action_helper.should eql annotations_project_doc_path(@project.name, @doc.id)
       end
     end
@@ -754,8 +754,8 @@ describe AnnotationsHelper do
           helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id)  
         end
         
-        it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
-          helper.annotations_form_action_helper.should eql generate_annotatons_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @div_id)
+        it 'should return annotations_create_project_sourcedb_sourceid_divs_docs_path' do
+          helper.annotations_form_action_helper.should eql annotations_generate_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @div_id)
         end
       end
       
@@ -765,8 +765,8 @@ describe AnnotationsHelper do
           helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid)  
         end
         
-        it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
-          helper.annotations_form_action_helper.should eql generate_annotatons_project_sourcedb_sourceid_docs_path(@project_id, @sourcedb, @sourceid)
+        it 'should return annotations_create_project_sourcedb_sourceid_divs_docs_path' do
+          helper.annotations_form_action_helper.should eql annotations_generate_project_sourcedb_sourceid_docs_path(@project_id, @sourcedb, @sourceid)
         end
       end
     end

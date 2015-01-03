@@ -6,26 +6,25 @@ module Shared
   def self.align_denotations(denotations, str1, str2)
     return nil if denotations.nil?
     align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-
-    p str1
-    puts "----------"
-    p str2
-    puts "=========="
-    p align
-
-    denotations_new = align.transform_denotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
+    align.transform_denotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
   end
 
   def self.save_hdenotations(hdenotations, project, doc)
-    hdenotations.each do |a|
-      ca           = Denotation.new
-      ca.hid       = a[:id]
-      ca.begin     = a[:span][:begin]
-      ca.end       = a[:span][:end]
-      ca.obj  = a[:obj]
-      ca.project_id = project.id
-      ca.doc_id    = doc.id
-      ca.save
+    ActiveRecord::Base.transaction do
+      begin
+        hdenotations.each do |a|
+          ca           = Denotation.new
+          ca.hid       = a[:id]
+          ca.begin     = a[:span][:begin]
+          ca.end       = a[:span][:end]
+          ca.obj  = a[:obj]
+          ca.project_id = project.id
+          ca.doc_id    = doc.id
+          ca.save
+        end
+      rescue => e
+        flash[:notice] = e
+      end
     end
   end
 
@@ -58,28 +57,35 @@ module Shared
   end
 
   def self.save_annotations(annotations, project, doc, options = nil)
-    doc.clear_annotations(project) unless options.present? && options[:mode] == :addition
+    doc.destroy_project_annotations(project) unless options.present? && options[:mode] == :addition
 
     if annotations[:denotations].present?
       denotations = align_denotations(annotations[:denotations], annotations[:text], doc.body)
-      save_hdenotations(denotations, project, doc)
 
-      if annotations[:relations].present?
-        # relations = relations.values if relations.respond_to?(:values)
-        save_hrelations(annotations[:relations], project, doc)
+      if project.present?
+        save_hdenotations(denotations, project, doc)
+
+        if annotations[:relations].present?
+          # relations = relations.values if relations.respond_to?(:values)
+          save_hrelations(annotations[:relations], project, doc)
+        end
+
+        if annotations[:modifications].present?
+          # modifications = modifications.values if modifications.respond_to?(:values)
+          save_hmodifications(annotations[:modifications], project, doc)
+        end
       end
-
-      if annotations[:modifications].present?
-        # modifications = modifications.values if modifications.respond_to?(:values)
-        save_hmodifications(annotations[:modifications], project, doc)
-      end
-
     end
+
+    # return value: saved annotations
+    {text: doc.body, denotations:denotations, relations:annotations[:relations], modifications:annotations[:modifications]}.select{|k,v| !v.nil?}
   end
 
   def self.store_annotations(annotations, project, divs, options = nil)
     successful = true
     fit_index = nil
+
+    result = 
     begin
       div_index = divs.map{|d| [d.serial, d]}.to_h
 
@@ -112,14 +118,16 @@ module Shared
             self.save_annotations(ann, project, div_index[i[0]], options)
           end
         end
-        fit_index
+        {div_index: fit_index}
       end
     rescue => e
-      p e.message
       successful = false
+      {error: e.message}
     end
+
     project.notices.create({successful: successful, method: 'store_annotations'}) if options[:delayed]
-    return fit_index 
+
+    result 
   end
 
 end

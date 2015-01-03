@@ -71,7 +71,7 @@ module AnnotationsHelper
         end
 
         if a[:span].present?
-          a[:span].symbolize_keys!
+          a[:span] = a[:span].symbolize_keys
           a[:span] = {begin: a[:span][:begin].to_i, end: a[:span][:end].to_i}
         else
           a[:span] = {begin: a[:begin].to_i, end: a[:end].to_i}
@@ -81,7 +81,7 @@ module AnnotationsHelper
 
     if annotations[:relations].present?
       raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
-      annotations[:relations].each{|r| r.symbolize_keys!}
+      annotations[:relations].each{|r| r = r.symbolize_keys}
 
       ids = annotations[:relations].collect{|d| r[:id]}.compact
       idnum = 1
@@ -99,7 +99,7 @@ module AnnotationsHelper
 
     if annotations[:modifications].present?
       raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
-      annotations[:modifications].each{|r| r.symbolize_keys!} 
+      annotations[:modifications].each{|m| m = m.symbolize_keys} 
 
       ids = annotations[:modifications].collect{|d| m[:id]}.compact
       idnum = 1
@@ -272,21 +272,6 @@ module AnnotationsHelper
     end    
   end
 
-  def annotations_destroy_all_helper(doc, project)
-    # TODO should be instance method
-    if doc
-      annotations = doc.denotations.where("project_id = ?", project.id)
-      
-      ActiveRecord::Base.transaction do
-        begin
-          annotations.destroy_all
-        rescue => e
-          flash[:notice] = e
-        end
-      end
-    end
-  end
-  
   def annotations_url_helper
     if params[:div_id].present?
       if params[:action] == 'spans'
@@ -308,9 +293,9 @@ module AnnotationsHelper
       annotations_project_doc_path(@project.name, @doc.id)
     else
       if params[:div_id].present?
-        generate_annotatons_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+        annotations_generate_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
       else
-        generate_annotatons_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
+        annotations_generate_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
       end
     end
   end

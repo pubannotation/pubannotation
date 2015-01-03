@@ -289,9 +289,13 @@ class Doc < ActiveRecord::Base
     end
   end
 
-  def clear_annotations(project)
-    denotations = self.denotations.where(:project_id => project.id)
-    denotations.destroy_all
+  def destroy_project_annotations(project)
+    return if project.nil?
+
+    denotations = self.denotations.where(project_id: project.id)
+    ActiveRecord::Base.transaction do
+      denotations.destroy_all
+    end
   end
   
   def spans_projects(params)

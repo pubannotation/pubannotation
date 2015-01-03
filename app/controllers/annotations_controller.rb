@@ -31,7 +31,7 @@ class AnnotationsController < ApplicationController
           @project.delay.save_annotation_zip(:encoding => params[:encoding])
           redirect_to :back
         else
-          # retrieve annotatons to all the documents
+          # retrieve annotations to all the documents
           # anncollection = @project.anncollection(params[:encoding])
           anncollection = Array.new
           if @project.docs.present?
@@ -161,7 +161,7 @@ class AnnotationsController < ApplicationController
   # POST /annotations.json
   def create
     begin
-      project = get_project2(params[:project_id])
+      project = get_project2(params[:project_id]) if params[:project_id].present?
 
       mode = :addition if params[:mode] == 'addition'
 
@@ -183,17 +183,17 @@ class AnnotationsController < ApplicationController
 
       normalize_annotations(annotations)
 
-      if annotations[:text].length < 5000
-        fits = Shared.store_annotations(annotations, project, divs, {:mode => mode})
+      if annotations[:text].length < 5000 || project.nil?
+        result = Shared.store_annotations(annotations, project, divs, {:mode => mode})
       else
-        project.notices.create({method: 'start_delay_store_annotations'})
+        project.notices.create({method: 'start_delay_store_annotations'}) if project.present?
         Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
-        fits = t('controllers.annotations.create.delayed_job')
+        result = {message: t('controllers.annotations.create.delayed_job')}
       end
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}
-        format.json {render :json => {status: :created, fits: fits}, :status => :created}
+        format.json {render :json => result, :status => :created}
       end
 
     rescue ArgumentError => e
@@ -225,7 +225,9 @@ class AnnotationsController < ApplicationController
       if doc
         annotations = get_annotations(project, doc, :encoding => params[:encoding])
         annotations = gen_annotations(annotations, params[:annotation_server])
-        notice      = Shared.save_annotations(annotations, project, doc)
+        normalize_annotations(annotations)
+        result      = Shared.save_annotations(annotations, project, doc)
+        notice      = "annotations were successfully obtained."
       else
         notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => params[:sourcedb], :sourceid => params[:sourceid])
       end
@@ -311,7 +313,11 @@ class AnnotationsController < ApplicationController
     @project = get_project(params[:project_id])[0]
     sourcedb, sourceid, serial, id = get_docspec(params)
     @doc = get_doc(sourcedb, sourceid, serial, @project)[0]
-    annotations_destroy_all_helper(@doc, @project)
+    begin
+      @doc.destroy_project_annotations(@project)
+    rescue => e
+      flash[:notice] = e
+    end
     redirect_to :back
   end
 

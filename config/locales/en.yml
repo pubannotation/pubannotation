@@ -409,11 +409,11 @@ en:
       start_delay_save_annotation_zip:
         result: "Create annotations zip file task started. %{created_at}"
       save_annotation_zip:
-        result: "Create annotations zip file task was %{result} finished. %{created_at}"
+        result: "Create annotations zip file task finished %{result}. %{created_at}"
       start_delay_store_annotations:
         result: "Create annotations task started. %{created_at}"
       store_annotations:
-        result: "Create annotations task was %{result} finished. %{created_at}"
+        result: "Create annotations task finished %{result}. %{created_at}"
       properties: properties
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"

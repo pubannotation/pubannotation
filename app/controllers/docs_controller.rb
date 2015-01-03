@@ -364,7 +364,13 @@ class DocsController < ApplicationController
   def delete_project_docs
     project = Project.find_by_name(params[:project_id])
     docs = project.docs.where(:sourcedb => params[:sourcedb]).where(:sourceid => params[:sourceid])
-    docs.each {|d| annotations_destroy_all_helper(d, project)}
+
+    begin
+      docs.each {|d| d.destroy_project_annotations(@project)}
+    rescue => e
+      flash[:notice] = e
+    end
+
     project.docs.delete(docs) 
     redirect_to :back
   end

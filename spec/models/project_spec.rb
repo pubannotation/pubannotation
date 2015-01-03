@@ -1927,7 +1927,7 @@ describe Project do
   describe 'annotations_zip_file_name' do
     it 'should return zip filename' do
       project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      expect(project.annotations_zip_file_name).should eql("#{project.name}-annotations.zip")
+      expect(project.annotations_zip_file_name).to eql("#{project.name}-annotations.zip")
     end
   end
   

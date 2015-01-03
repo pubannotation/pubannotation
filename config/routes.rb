@@ -63,6 +63,7 @@ Pubann::Application.routes.draw do
           scope ':sourceid' do
             get '/' => 'docs#show', :as =>'show'
             get 'annotations' => 'annotations#annotations_index'
+            post 'annotations' => 'annotations#create'
             get 'spans' => 'docs#spans_index', :as => 'spans_index'
             get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
             get 'spans/:begin-:end/annotations' => 'annotations#annotations'
@@ -73,6 +74,7 @@ Pubann::Application.routes.draw do
               scope ':div_id' do
                 get '/' => 'divs#show', :as => 'show'
                 get 'annotations' => 'annotations#annotations_index'
+                post 'annotations' => 'annotations#create'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
                 get 'spans/:begin-:end/annotations' => 'annotations#annotations'
@@ -129,8 +131,8 @@ Pubann::Application.routes.draw do
               scope ':sourceid' do
                 get '/' => 'docs#show', :as =>'show'
                 get 'annotations' => 'annotations#index'
-                post 'annotations' => 'annotations#create', :as => 'create_annotatons'
-                post 'annotations/generate' => 'annotations#generate', :as => 'generate_annotatons'
+                post 'annotations' => 'annotations#create'
+                post 'annotations/generate' => 'annotations#generate'
                 post 'annotations/destroy_all' => 'annotations#destroy_all'
                 get 'spans' => 'docs#spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
@@ -143,8 +145,8 @@ Pubann::Application.routes.draw do
                   scope ':div_id' do
                     get '/' => 'divs#show', :as => 'show'
                     get 'annotations' => 'annotations#index'
-                    post 'annotations' => 'annotations#create', :as => 'create_annotatons'
-                    post 'annotations/generate' => 'annotations#generate', :as => 'generate_annotatons'
+                    post 'annotations' => 'annotations#create'
+                    post 'annotations/generate' => 'annotations#generate'
                     post 'annotations/destroy_all' => 'annotations#destroy_all'
                     get 'spans' => 'docs#spans_index', :as => 'spans_index'
                     get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
