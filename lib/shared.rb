@@ -1,42 +1,18 @@
 require 'text_alignment'
 
 module Shared
-  # clean denotations
-  def self.clean_hdenotations(denotations)
-    denotations = denotations.collect {|d| d.symbolize_keys}
-    ids = denotations.collect {|d| d[:id]}
-    ids.compact!
-
-    idnum = 1
-    denotations.each do |a|
-      return nil, "format error #{p a}" unless (a[:span] or (a[:begin] and a[:end])) and a[:obj]
-
-      unless a.has_key? :id
-        idnum += 1 until !ids.include?('T' + idnum.to_s)
-        a[:id] = 'T' + idnum.to_s
-        idnum += 1
-      end
-
-      if a[:span].present?
-        a[:span] = a[:span].symbolize_keys
-        if a[:span][:begin].class != Fixnum
-          a[:span] = {begin: a[:span][:begin].to_i, end: a[:span][:end].to_i}
-        end
-      else
-        a[:span] = Hash.new
-        a[:span][:begin] = a.delete(:begin).to_i
-        a[:span][:end]   = a.delete(:end).to_i
-      end
-    end
-
-    [denotations, nil]
-  end
-
   # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method
-  def self.realign_denotations(denotations, str1, str2)
+  def self.align_denotations(denotations, str1, str2)
     return nil if denotations.nil?
     align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
+
+    p str1
+    puts "----------"
+    p str2
+    puts "=========="
+    p align
+
     denotations_new = align.transform_denotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
   end
 
@@ -54,7 +30,6 @@ module Shared
   end
 
   def self.save_hrelations(hrelations, project, doc)
-    hrelations = hrelations.collect{|r| r.symbolize_keys}
     hrelations.each do |a|
       ra           = Relation.new
       ra.hid       = a[:id]
@@ -83,31 +58,22 @@ module Shared
   end
 
   def self.save_annotations(annotations, project, doc, options = nil)
-    if !options.nil? && options[:mode].present? && options[:mode] == :addition
-    else
-      denotations_old = doc.denotations.where(:project_id => project.id)
-      denotations_old.destroy_all
-    end
+    doc.clear_annotations(project) unless options.present? && options[:mode] == :addition
 
-    notice = I18n.t('controllers.application.save_annotations.annotation_cleared')
-    if annotations.present? && annotations[:denotations].present?
-      denotations, notice = clean_hdenotations(annotations[:denotations])
-      denotations = realign_denotations(denotations, annotations[:text], doc.body)
+    if annotations[:denotations].present?
+      denotations = align_denotations(annotations[:denotations], annotations[:text], doc.body)
       save_hdenotations(denotations, project, doc)
 
       if annotations[:relations].present?
-        relations = annotations[:relations]
-        relations = relations.values if relations.respond_to?(:values)
-        save_hrelations(relations, project, doc)
+        # relations = relations.values if relations.respond_to?(:values)
+        save_hrelations(annotations[:relations], project, doc)
       end
 
       if annotations[:modifications].present?
-        modifications = annotations[:modifications]
-        modifications = modifications.values if modifications.respond_to?(:values)
-        save_hmodifications(modifications, project, doc)
+        # modifications = modifications.values if modifications.respond_to?(:values)
+        save_hmodifications(annotations[:modifications], project, doc)
       end
 
-      notice = I18n.t('controllers.application.save_annotations.successfully_saved')
     end
   end
 
@@ -149,6 +115,7 @@ module Shared
         fit_index
       end
     rescue => e
+      p e.message
       successful = false
     end
     project.notices.create({successful: successful, method: 'store_annotations'}) if options[:delayed]

@@ -48,6 +48,74 @@ module AnnotationsHelper
     end
   end
 
+  # normalize annotations passed by an HTTP call
+  def normalize_annotations(annotations)
+    raise ArgumentError, "annotations must be a hash." unless annotations.class == Hash
+    raise ArgumentError, "annotations must include a 'text'"  unless annotations[:text].present?
+
+    if annotations[:denotations].present?
+      raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
+      annotations[:denotations].each{|d| d = d.symbolize_keys}
+
+      ids = annotations[:denotations].collect{|d| d[:id]}.compact
+      idnum = 1
+
+      annotations[:denotations].each do |a|
+        raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'." unless a[:span].present? || (a[:begin].present? && a[:end].present?)
+        raise ArgumentError, "a denotation must have an 'obj'." unless a[:obj].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('T' + idnum.to_s)
+          a[:id] = 'T' + idnum.to_s
+          idnum += 1
+        end
+
+        if a[:span].present?
+          a[:span].symbolize_keys!
+          a[:span] = {begin: a[:span][:begin].to_i, end: a[:span][:end].to_i}
+        else
+          a[:span] = {begin: a[:begin].to_i, end: a[:end].to_i}
+        end
+      end
+    end
+
+    if annotations[:relations].present?
+      raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
+      annotations[:relations].each{|r| r.symbolize_keys!}
+
+      ids = annotations[:relations].collect{|d| r[:id]}.compact
+      idnum = 1
+
+      annotations[:relations].each do |a|
+        raise ArgumentError, "a relation must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('R' + idnum.to_s)
+          a[:id] = 'R' + idnum.to_s
+          idnum += 1
+        end
+      end
+    end
+
+    if annotations[:modifications].present?
+      raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
+      annotations[:modifications].each{|r| r.symbolize_keys!} 
+
+      ids = annotations[:modifications].collect{|d| m[:id]}.compact
+      idnum = 1
+
+      annotations[:modifications].each do |a|
+        raise ArgumentError, "a modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('M' + idnum.to_s)
+          a[:id] = 'M' + idnum.to_s
+          idnum += 1
+        end
+      end
+    end
+  end
+
   def get_focus(options)
     if options.present? && options[:params].present? && options[:params][:begin].present? && options[:params][:context_size]
       sbeg = options[:params][:begin].to_i

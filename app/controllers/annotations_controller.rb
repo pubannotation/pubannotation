@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :show, :annotations_index, :annotations, :project_annotations_zip]
+  before_filter :authenticate_user!, :except => [:index, :show, :create, :annotations_index, :annotations, :project_annotations_zip]
   after_filter :set_access_control_headers
   include DenotationsHelper
 
@@ -160,59 +160,57 @@ class AnnotationsController < ApplicationController
   # POST /annotations
   # POST /annotations.json
   def create
-    project, notice = get_project(params[:project_id])
-    mode = :addition if params[:mode].present? && params[:mode] == 'addition'
+    begin
+      project = get_project2(params[:project_id])
 
-    if project
+      mode = :addition if params[:mode] == 'addition'
+
       sourcedb, sourceid, divno = get_docspec(params)
       divnos = divno.respond_to?(:each) ? divno : [divno]
       divs = divnos.collect{|no| get_doc(sourcedb, sourceid, no)[0]}
-      divs = [] if divs[0].nil? || !project.docs.include?(divs[0])
-      unless divs.empty?
-        # get annotations
-        annotations = if params[:annotations]
-          params[:annotations].symbolize_keys
-        elsif params[:text] and !params[:text].empty?
-          {:text => params[:text], :denotations => params[:denotations], :relations => params[:relations], :modifications => params[:modifications]}
-        else
-          nil
-        end
+      raise ArgumentError, t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => params[:sourcedb], :sourceid => params[:sourceid]) if divs[0].nil? || (project.present? && !project.docs.include?(divs[0]))
 
-        if annotations
-          if params[:format] == 'json'
-            project.notices.create({method: 'start_delay_store_annotations'})
-            Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
-            # Shared.store_annotations(annotations, project, divs, {:mode => mode})
-            fits = t('controllers.annotations.create.delayed_job')
-          else
-            fits = Shared.store_annotations(annotations, project, divs, {:mode => mode})
-          end
-        else
-          notice = t('controllers.annotations.create.no_annotation')
-        end
+      if params[:annotations]
+        annotations = params[:annotations].symbolize_keys
+      elsif params[:text].present?
+        annotations = {:text => params[:text]}
+        annotations[:denotations] = params[:denotations] if params[:denotations].present?
+        annotations[:relations] = params[:relations] if params[:relations].present?
+        annotations[:modifications] = params[:modifications] if params[:modifications].present?
       else
-        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => params[:sourcedb], :sourceid => params[:sourceid])
+        raise ArgumentError, t('controllers.annotations.create.no_annotation')
       end
-    end
 
-    respond_to do |format|
-      format.html {
-        if divs.present? and project
-          redirect_to :back, notice: notice
-        elsif project
-          redirect_to project_path(project.name), notice: notice
-        else
-          redirect_to home_path, notice: notice
-        end
-      }
+      normalize_annotations(annotations)
 
-      format.json {
-        if divs && !divs.empty? && project && annotations
-          render :json => {:status => :created, :fits => fits}, :status => :created
-        else
-          render :json => {:status => :unprocessable_entity}, :status => :unprocessable_entity
-        end
-      }
+      if annotations[:text].length < 5000
+        fits = Shared.store_annotations(annotations, project, divs, {:mode => mode})
+      else
+        project.notices.create({method: 'start_delay_store_annotations'})
+        Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
+        fits = t('controllers.annotations.create.delayed_job')
+      end
+
+      respond_to do |format|
+        format.html {redirect_to :back, notice: notice}
+        format.json {render :json => {status: :created, fits: fits}, :status => :created}
+      end
+
+    rescue ArgumentError => e
+
+      respond_to do |format|
+        format.html {
+          if project
+            redirect_to project_path(project.name), notice: e.message
+          else
+            redirect_to home_path, notice: e.message
+          end
+        }
+        format.json {
+          render :json => {error: e.message}, :status => :unprocessable_entity
+        }
+      end
+
     end
   end
 
