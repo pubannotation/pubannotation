@@ -59,11 +59,14 @@ module Shared
   def self.save_annotations(annotations, project, doc, options = nil)
     doc.destroy_project_annotations(project) unless options.present? && options[:mode] == :addition
 
+    original_text = annotations[:text]
+    annotations[:text] = doc.body
+
     if annotations[:denotations].present?
-      denotations = align_denotations(annotations[:denotations], annotations[:text], doc.body)
+      annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
 
       if project.present?
-        save_hdenotations(denotations, project, doc)
+        save_hdenotations(annotations[:denotations], project, doc)
 
         if annotations[:relations].present?
           # relations = relations.values if relations.respond_to?(:values)
@@ -78,7 +81,7 @@ module Shared
     end
 
     # return value: saved annotations
-    {text: doc.body, denotations:denotations, relations:annotations[:relations], modifications:annotations[:modifications]}.select{|k,v| !v.nil?}
+    annotations.select{|k,v| v.present?}
   end
 
   def self.store_annotations(annotations, project, divs, options = nil)
@@ -98,7 +101,7 @@ module Shared
 
         fit_index.each do |i|
           if i[0] >= 0
-            ann = {}
+            ann = {div_id:i[0]}
             idx = {}
             ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
             if annotations[:denotations].present?
