@@ -2,16 +2,23 @@
 layout: docs
 title: Submit Annotation
 prev_section: format
-next_section: about
+next_section: align-annotation
 permalink: /docs/submit-annotation/
 ---
 
 You can deposit your annotations to PubAnnotation.
+
 To do it,
 
-1. You need to [create an annotation project]({{site.baseurl}}/docs/create-project/) on PubAnnotation, and
+1. First, [create an annotation project]({{site.baseurl}}/docs/create-project/) on PubAnnotation, and
 2. [add documents]({{site.baseurl}}/docs/add-document/) to the project.
-3. Then, you can '*POST*' your annotations using standard *REST API*.
+3. Then, you can '*POST*' your annotations to those documents using standard *REST API*.
+
+During registration, your annotations will be aligned to others already on PubAnnotation.
+
+If you don't want to deposit your annotations but still want to get your annotations aligned,
+you can skip the steps 1 and 2, and just *POST* your annotations without specifying a project.
+See [Align Annotation]({{site.baseurl}}/docs/align-annotation/)
 
 ## Using REST API
 
