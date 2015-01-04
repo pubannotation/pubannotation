@@ -114,6 +114,8 @@ module AnnotationsHelper
         end
       end
     end
+
+    annotations
   end
 
   def get_focus(options)

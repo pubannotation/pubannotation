@@ -8,14 +8,13 @@ describe Shared do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
 
-    context 'when denotations exists' do
+    context 'when denotations exist' do
       before do
         @relations = 'relations'
         @modification = 'modification'
         @annotations = {:denotations => 'denotations', :instances => ['instance'], :relations => @relations, :modifications => @modification}
-        Shared.stub(:clean_hdenotations).and_return('clean_hdenotations')
-        @align_denotations = 'aligned_denotations'
-        Shared.stub(:align_denotations).and_return(@align_denotations)
+        @aligned_denotations = 'aligned_denotations'
+        Shared.stub(:align_denotations).and_return(@aligned_denotations)
         Shared.stub(:save_hdenotations) do |denotations, project, doc|
           @denotations = denotations
         end
@@ -29,26 +28,17 @@ describe Shared do
       end
 
       it 'should exec save_hdenotations' do
-        @denotations.should eql(@align_denotations)
+        @denotations.should eql(@aligned_denotations)
       end
 
-      it 'should exec save_hrelations' do
-        @relations.should eql(@relations)
-      end
-
-      it 'should exec save_hdenotations' do
-        @modifications.should eql(@modifications)
-      end
-
-      it 'should return notice message' do
+      it 'should return aligned annotations' do
         @result.should eql({text:"doc body", denotations:"aligned_denotations", relations:"relations", modifications:"modification"})
       end
     end
     
     context 'denotations does not exists' do
       before do
-        @annotations = {:denotations => nil} 
-        Shared.stub(:clean_hdenotations).and_return(nil)
+        @annotations = {text:"doc body"}
         @result = Shared.save_annotations(@annotations, @project, @doc)
       end
       

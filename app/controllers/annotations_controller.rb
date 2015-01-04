@@ -181,7 +181,7 @@ class AnnotationsController < ApplicationController
         raise ArgumentError, t('controllers.annotations.create.no_annotation')
       end
 
-      normalize_annotations(annotations)
+      annotations = normalize_annotations(annotations)
 
       if annotations[:text].length < 5000 || project.nil?
         result = Shared.store_annotations(annotations, project, divs, {:mode => mode})

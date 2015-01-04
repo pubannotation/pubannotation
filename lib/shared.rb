@@ -85,13 +85,13 @@ module Shared
     successful = true
     fit_index = nil
 
-    result = 
     begin
       div_index = divs.map{|d| [d.serial, d]}.to_h
 
       if divs.length == 1
-        self.save_annotations(annotations, project, divs[0], options)
+        result = self.save_annotations(annotations, project, divs[0], options)
       else
+        result = []
         div_index = divs.collect{|d| [d.serial, d]}.to_h
         divs_hash = divs.collect{|d| d.to_hash}
         fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
@@ -104,7 +104,8 @@ module Shared
             if annotations[:denotations].present?
               ann[:denotations] = annotations[:denotations]
                                    .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
-                                  .collect{|a| {:span => {:begin => a[:span][:begin] - i[1][0], :end => a[:span][:end] - i[1][0]}, :obj => a[:obj]}}
+                                  .collect{|a| a.dup}
+                                     .each{|a| a[:span][:begin] -= i[1][0]; a[:span][:end] -= i[1][0]}
               ann[:denotations].each{|a| idx[a[:id]] = true}
             end
             if annotations[:relations].present?
@@ -115,7 +116,7 @@ module Shared
               ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
               ann[:modifications].each{|a| idx[a[:id]] = true}
             end
-            self.save_annotations(ann, project, div_index[i[0]], options)
+            result << self.save_annotations(ann, project, div_index[i[0]], options)
           end
         end
         {div_index: fit_index}
