@@ -237,6 +237,7 @@ en:
         bionlpwriter: BioNLP-ST_writer
         annotations_zip_downloadable: Annotation downloadable
         process: process
+        updated_at: last update
       sproject:
         rdfwriter: RDF writer
         xmlwriter: XML writer
@@ -350,6 +351,7 @@ en:
     projects:
       index:
         does_not_exist: The document, %{sourcedb}:%{sourceid}, does not exist in PubAnnotation.
+        not_found: No projecs found matches conditions.
       destroy:
         deleted: The project, %{id}, was deleted.
         delay: Project will be destroyed in a few minutes.
@@ -401,6 +403,7 @@ en:
       that_annotate_a_doc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubannotation: "Annotation projects <span class='meta'>in PubAnnotation</span>"
+      list: project list
       confirm_delete: Are you sure? All the annotations that belong to this project will be deleted.
       user_projects: Your projects
       associate_maintain_projects: Associated projects 

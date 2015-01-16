@@ -45,6 +45,9 @@ class Project < ActiveRecord::Base
     end
   }
 
+  # scope for home#index
+  scope :index, order('status ASC').order('denotations_count DESC').order('updated_at DESC').limit(10)
+
   scope :not_id_in, lambda{|project_ids|
     where('projects.id NOT IN (?)', project_ids)
   }
@@ -93,8 +96,8 @@ class Project < ActiveRecord::Base
     end
   }
 
-  # default sort order 
-  DefaultSortArray = [['status', 'ASC'], ['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
+  # default sort order priority : left > right
+  DefaultSortArray = [['status', 'ASC'], ['denotations_count', 'DESC'], ['projects.updated_at', 'DESC'], ['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
 
   # List of column names ignore case to sort
   CaseInsensitiveArray = %w(name author users.username)

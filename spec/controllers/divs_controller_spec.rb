@@ -227,39 +227,6 @@ describe DivsController do
           assigns[:projects].should eql(@sort_projects)
         end
       end
-
-      context 'when params[:sort_key] present' do
-        before do
-          controller.stub(:flash).and_return({:sort_order=> [['projects.id', 'DESC']]})
-          get :show, :sort_key => 'name', :sort_direction => 'DESC', :sort_order => 'DESC', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @doc.serial
-        end
-
-        it 'should order @projects by sort key, order' do
-          assigns[:projects][0].should eql @project_2
-        end
-
-        it 'should order @projects by sort key, order' do
-          assigns[:projects][1].should eql @project_1
-        end
-      end
-
-      context 'when params[:sort_key] blank' do
-        before do
-          controller.stub(:flash).and_return({:sort_order=> [['projects.id', 'DESC']]})
-          get :show, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @doc.serial
-        end
-
-        it 'should order @projects by name ASC author ASC' do
-          assigns[:projects][0].should eql @project_1
-        end
-
-        it 'should order @projects by name ASC author ASC' do
-          assigns[:projects][1].should eql @project_2
-        end
-      end
     end
-
-    describe 'format' do
-    end     
   end
 end

@@ -111,14 +111,33 @@ module ApplicationHelper
   end
 
   def sortable(model, sort_key, title = nil)
-    title ||= sort_key
-    sort_key = lower_sort_key(model, sort_key)
-    sort_order = sort_order(model)
-    current_direction = sort_order.assoc(sort_key)[1] if sort_order.present? && sort_order.assoc(sort_key).present?
-    current_direction ||= 'DESC'
-    css_class = "sortable-" + current_direction
-    next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'
-    link_to title, {:sort_key => sort_key, :sort_direction => next_direction}, {:class => css_class}
+    if params[:controller] == 'home'
+      # disable sorting 
+      title
+    else
+      # enable sorting 
+      title ||= sort_key
+      sort_key = lower_sort_key(model, sort_key)
+      sort_order = sort_order(model)
+      current_direction = sort_order.assoc(sort_key)[1] if sort_order.present? && sort_order.assoc(sort_key).present?
+      current_direction ||= 'DESC'
+      css_class = "sortable-" + current_direction
+      next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'
+
+      if params[:search_projects]
+        search_word = 'sort_direction'
+        sort_params_in_url = request.fullpath.match(search_word)
+        if sort_params_in_url.present?
+          sort_params_string = '&' + search_word + sort_params_in_url.post_match
+          current_path_without_sort_params = request.fullpath.gsub(sort_params_string, '')
+        else
+          current_path_without_sort_params = request.fullpath
+        end
+        link_to title, current_path_without_sort_params + '&' + {:sort_key => sort_key, :sort_direction => next_direction}.to_param, {:class => css_class}
+      else
+        link_to title, {:sort_key => sort_key, :sort_direction => next_direction}, {:class => css_class}
+      end
+    end
   end
 
   def get_project2 (project_name)

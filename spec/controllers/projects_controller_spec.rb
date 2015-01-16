@@ -83,19 +83,42 @@ describe ProjectsController do
         @user = FactoryGirl.create(:user)
         current_user_stub(@user)
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @accessble_projects = double(:accessible)
-        Project.stub(:accessible).and_return(@accessble_projects)
-        @sort_by_params = 'sort_by_params'
-        @accessble_projects.stub(:sort_by_params).and_return(@sort_by_params)
-        get :index
+        @paginate_projects = double(:projects)
       end
 
-      it '@projects should eql Project.accessible.sort_by_params' do
-        assigns[:projects].should eql(@sort_by_params)
+      context 'when parans[:search_projects] blank' do
+        before do
+          @params = {name: 'name', description: 'description', author: 'author', user: 'user'}
+          @projects_stub = double(:projects)
+          Project.stub_chain(:accessible, :includes).and_return(@projects_stub)
+          @projects_stub.stub_chain(:where, :group, :sort_by_params, :paginate).and_return(@paginate_projects)
+        end
+
+        it 'should search projects with params conditions' do
+          @projects_stub.should_receive(:where).with(["name like ? AND description like ? AND author like ? AND users.username like ?", "%#{@params[:name]}%", "%#{@params[:description]}%", "%#{@params[:author]}%", "%#{@params[:user]}%"])
+          get :index, search_projects: true, name: @params[:name], description: @params[:description], author: @params[:author], user: @params[:user]
+        end
+
+        it 'should set accessible, includes(:user), where(conditions), group sort_by_params and paginate as @projects' do
+          get :index, search_projects: true, name: @params[:name], description: @params[:description], author: @params[:author], user: @params[:user]
+          assigns[:projects].should eql(@paginate_projects) 
+        end
       end
-      
-      it 'should render template' do
-        response.should render_template('index')
+
+      context 'when parans[:search_projects] blank' do
+        before do
+          @sort_by_params = 'sort_by_params'
+          Project.stub_chain(:accessible, :sort_by_params, :paginate).and_return(@paginate_projects)
+          get :index
+        end
+
+        it '@projects should eql Project.accessible.sort_by_params.paginate' do
+          assigns[:projects].should eql(@paginate_projects)
+        end
+        
+        it 'should render template' do
+          response.should render_template('index')
+        end
       end
     end
     

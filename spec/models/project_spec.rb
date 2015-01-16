@@ -265,6 +265,25 @@ describe Project do
       end
     end
   end
+
+  describe 'scope index' do
+    before do
+      user = FactoryGirl.create(:user)
+      (1..11).each do |n|
+        FactoryGirl.create(:project, user: user, denotations_count: n, created_at: n.days.ago)
+      end
+
+      @projects = Project.index
+    end
+
+    it 'size should be 10' do
+      @projects.size.should eql(10)
+    end
+
+    it 'denotations_count should prior to created_at' do
+      @projects.first.denotations_count.should eql(11)
+    end
+  end
   
   describe 'scope not_id_in' do
     before do
