@@ -1,60 +1,34 @@
 require 'text_alignment'
 
 module Shared
-  # clean denotations
-  def self.clean_hdenotations(denotations)
-    denotations = denotations.collect {|d| d.symbolize_keys}
-    ids = denotations.collect {|d| d[:id]}
-    ids.compact!
-
-    idnum = 1
-    denotations.each do |a|
-      return nil, "format error #{p a}" unless (a[:span] or (a[:begin] and a[:end])) and a[:obj]
-
-      unless a.has_key? :id
-        idnum += 1 until !ids.include?('T' + idnum.to_s)
-        a[:id] = 'T' + idnum.to_s
-        idnum += 1
-      end
-
-      if a[:span].present?
-        a[:span] = a[:span].symbolize_keys
-        if a[:span][:begin].class != Fixnum
-          a[:span] = {begin: a[:span][:begin].to_i, end: a[:span][:end].to_i}
-        end
-      else
-        a[:span] = Hash.new
-        a[:span][:begin] = a.delete(:begin).to_i
-        a[:span][:end]   = a.delete(:end).to_i
-      end
-    end
-
-    [denotations, nil]
-  end
-
   # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method
-  def self.realign_denotations(denotations, str1, str2)
+  def self.align_denotations(denotations, str1, str2)
     return nil if denotations.nil?
     align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-    denotations_new = align.transform_denotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
+    align.transform_denotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
   end
 
   def self.save_hdenotations(hdenotations, project, doc)
-    hdenotations.each do |a|
-      ca           = Denotation.new
-      ca.hid       = a[:id]
-      ca.begin     = a[:span][:begin]
-      ca.end       = a[:span][:end]
-      ca.obj  = a[:obj]
-      ca.project_id = project.id
-      ca.doc_id    = doc.id
-      ca.save
+    ActiveRecord::Base.transaction do
+      begin
+        hdenotations.each do |a|
+          ca           = Denotation.new
+          ca.hid       = a[:id]
+          ca.begin     = a[:span][:begin]
+          ca.end       = a[:span][:end]
+          ca.obj  = a[:obj]
+          ca.project_id = project.id
+          ca.doc_id    = doc.id
+          ca.save
+        end
+      rescue => e
+        flash[:notice] = e
+      end
     end
   end
 
   def self.save_hrelations(hrelations, project, doc)
-    hrelations = hrelations.collect{|r| r.symbolize_keys}
     hrelations.each do |a|
       ra           = Relation.new
       ra.hid       = a[:id]
@@ -83,56 +57,58 @@ module Shared
   end
 
   def self.save_annotations(annotations, project, doc, options = nil)
-    if !options.nil? && options[:mode].present? && options[:mode] == :addition
-    else
-      denotations_old = doc.denotations.where(:project_id => project.id)
-      denotations_old.destroy_all
+    doc.destroy_project_annotations(project) unless options.present? && options[:mode] == :addition
+
+    original_text = annotations[:text]
+    annotations[:text] = doc.body
+
+    if annotations[:denotations].present?
+      annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
+
+      if project.present?
+        save_hdenotations(annotations[:denotations], project, doc)
+
+        if annotations[:relations].present?
+          # relations = relations.values if relations.respond_to?(:values)
+          save_hrelations(annotations[:relations], project, doc)
+        end
+
+        if annotations[:modifications].present?
+          # modifications = modifications.values if modifications.respond_to?(:values)
+          save_hmodifications(annotations[:modifications], project, doc)
+        end
+      end
     end
 
-    notice = I18n.t('controllers.application.save_annotations.annotation_cleared')
-    if annotations.present? && annotations[:denotations].present?
-      denotations, notice = clean_hdenotations(annotations[:denotations])
-      denotations = realign_denotations(denotations, annotations[:text], doc.body)
-      save_hdenotations(denotations, project, doc)
-
-      if annotations[:relations].present?
-        relations = annotations[:relations]
-        relations = relations.values if relations.respond_to?(:values)
-        save_hrelations(relations, project, doc)
-      end
-
-      if annotations[:modifications].present?
-        modifications = annotations[:modifications]
-        modifications = modifications.values if modifications.respond_to?(:values)
-        save_hmodifications(modifications, project, doc)
-      end
-
-      notice = I18n.t('controllers.application.save_annotations.successfully_saved')
-    end
+    # return value: saved annotations
+    annotations.select{|k,v| v.present?}
   end
 
   def self.store_annotations(annotations, project, divs, options = nil)
     successful = true
     fit_index = nil
+
     begin
       div_index = divs.map{|d| [d.serial, d]}.to_h
 
       if divs.length == 1
-        self.save_annotations(annotations, project, divs[0], options)
+        result = self.save_annotations(annotations, project, divs[0], options)
       else
+        result = []
         div_index = divs.collect{|d| [d.serial, d]}.to_h
         divs_hash = divs.collect{|d| d.to_hash}
         fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
 
         fit_index.each do |i|
           if i[0] >= 0
-            ann = {}
+            ann = {div_id:i[0]}
             idx = {}
             ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
             if annotations[:denotations].present?
               ann[:denotations] = annotations[:denotations]
                                    .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
-                                  .collect{|a| {:span => {:begin => a[:span][:begin] - i[1][0], :end => a[:span][:end] - i[1][0]}, :obj => a[:obj]}}
+                                  .collect{|a| a.dup}
+                                     .each{|a| a[:span][:begin] -= i[1][0]; a[:span][:end] -= i[1][0]}
               ann[:denotations].each{|a| idx[a[:id]] = true}
             end
             if annotations[:relations].present?
@@ -143,16 +119,19 @@ module Shared
               ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
               ann[:modifications].each{|a| idx[a[:id]] = true}
             end
-            self.save_annotations(ann, project, div_index[i[0]], options)
+            result << self.save_annotations(ann, project, div_index[i[0]], options)
           end
         end
-        fit_index
+        {div_index: fit_index}
       end
     rescue => e
       successful = false
+      {error: e.message}
     end
+
     project.notices.create({successful: successful, method: 'store_annotations'}) if options[:delayed]
-    return fit_index 
+
+    result 
   end
 
 end

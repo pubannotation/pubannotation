@@ -288,6 +288,15 @@ class Doc < ActiveRecord::Base
       hmodifications = modifications.collect {|ma| ma.get_hash}
     end
   end
+
+  def destroy_project_annotations(project)
+    return if project.nil?
+
+    denotations = self.denotations.where(project_id: project.id)
+    ActiveRecord::Base.transaction do
+      denotations.destroy_all
+    end
+  end
   
   def spans_projects(params)
     self_denotations = self.denotations

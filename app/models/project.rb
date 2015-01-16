@@ -100,7 +100,7 @@ class Project < ActiveRecord::Base
   CaseInsensitiveArray = %w(name author users.username)
 
   LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
-  EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=editor'
+  EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=edit'
   
   scope :sort_by_params, lambda{|sort_order|
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
@@ -506,14 +506,13 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def add_docs_from_json(json, user)
+  def add_docs_from_json(docs, user)
     num_created, num_added, num_failed = 0, 0, 0
-    json = JSON.parse(json)
-    json = [json] if json.class == Hash
-    source_dbs = json.group_by{|doc| doc["source_db"]}
+    docs = [docs] if docs.class == Hash
+    source_dbs = docs.group_by{|doc| doc[:source_db]}
     if source_dbs.present?
       source_dbs.each do |source_db, docs_array|
-        ids = docs_array.collect{|doc| doc["source_id"]}.join(",")
+        ids = docs_array.collect{|doc| doc[:source_id]}.join(",")
         num_created_t, num_added_t, num_failed_t = self.add_docs({ids: ids, sourcedb: source_db, docs_array: docs_array, user: user})
         num_created += num_created_t
         num_added += num_added_t
@@ -542,6 +541,7 @@ class Project < ActiveRecord::Base
               'source_url' => 'source', 
               'div_id' => 'serial'
             }
+
             doc_params = Hash[doc_array.map{|key, value| [mappings[key], value]}].select{|key| key.present?}
             if doc.new_record?
               # when same sourcedb sourceid serial not present

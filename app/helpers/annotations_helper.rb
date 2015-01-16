@@ -48,12 +48,84 @@ module AnnotationsHelper
     end
   end
 
+  # normalize annotations passed by an HTTP call
+  def normalize_annotations(annotations)
+    raise ArgumentError, "annotations must be a hash." unless annotations.class == Hash
+    raise ArgumentError, "annotations must include a 'text'"  unless annotations[:text].present?
+
+    if annotations[:denotations].present?
+      raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
+      annotations[:denotations].each{|d| d = d.symbolize_keys}
+
+      ids = annotations[:denotations].collect{|d| d[:id]}.compact
+      idnum = 1
+
+      annotations[:denotations].each do |a|
+        raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'." unless a[:span].present? || (a[:begin].present? && a[:end].present?)
+        raise ArgumentError, "a denotation must have an 'obj'." unless a[:obj].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('T' + idnum.to_s)
+          a[:id] = 'T' + idnum.to_s
+          idnum += 1
+        end
+
+        if a[:span].present?
+          a[:span] = a[:span].symbolize_keys
+          a[:span] = {begin: a[:span][:begin].to_i, end: a[:span][:end].to_i}
+        else
+          a[:span] = {begin: a[:begin].to_i, end: a[:end].to_i}
+        end
+      end
+    end
+
+    if annotations[:relations].present?
+      raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
+      annotations[:relations].each{|r| r = r.symbolize_keys}
+
+      ids = annotations[:relations].collect{|d| r[:id]}.compact
+      idnum = 1
+
+      annotations[:relations].each do |a|
+        raise ArgumentError, "a relation must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('R' + idnum.to_s)
+          a[:id] = 'R' + idnum.to_s
+          idnum += 1
+        end
+      end
+    end
+
+    if annotations[:modifications].present?
+      raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
+      annotations[:modifications].each{|m| m = m.symbolize_keys} 
+
+      ids = annotations[:modifications].collect{|d| m[:id]}.compact
+      idnum = 1
+
+      annotations[:modifications].each do |a|
+        raise ArgumentError, "a modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('M' + idnum.to_s)
+          a[:id] = 'M' + idnum.to_s
+          idnum += 1
+        end
+      end
+    end
+
+    annotations
+  end
+
   def get_focus(options)
-    if options.present? && options[:params].present? && options[:params][:begin].present?
-      context_size_value = options[:params][:context_size].to_i
-      end_value = options[:params][:end].to_i - options[:params][:begin].to_i + context_size_value
-      begin_value = 0 + context_size_value
-      {begin: begin_value, end: end_value}
+    if options.present? && options[:params].present? && options[:params][:begin].present? && options[:params][:context_size]
+      sbeg = options[:params][:begin].to_i
+      send = options[:params][:end].to_i
+      context_size = options[:params][:context_size].to_i
+      fbeg = (context_size < sbeg) ? context_size : sbeg
+      fend = send - sbeg + fbeg
+      {begin: fbeg, end: fend}
     end
   end
 
@@ -101,9 +173,8 @@ module AnnotationsHelper
       end
       
       focus = get_focus(options)
-      if focus.present?
-        annotations[:focus] = focus
-      end
+      annotations[:focus] = focus if focus.present?
+
       annotations
     else
       nil
@@ -203,21 +274,6 @@ module AnnotationsHelper
     end    
   end
 
-  def annotations_destroy_all_helper(doc, project)
-    # TODO should be instance method
-    if doc
-      annotations = doc.denotations.where("project_id = ?", project.id)
-      
-      ActiveRecord::Base.transaction do
-        begin
-          annotations.destroy_all
-        rescue => e
-          flash[:notice] = e
-        end
-      end
-    end
-  end
-  
   def annotations_url_helper
     if params[:div_id].present?
       if params[:action] == 'spans'
@@ -239,9 +295,9 @@ module AnnotationsHelper
       annotations_project_doc_path(@project.name, @doc.id)
     else
       if params[:div_id].present?
-        generate_annotatons_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+        annotations_generate_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
       else
-        generate_annotatons_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
+        annotations_generate_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
       end
     end
   end

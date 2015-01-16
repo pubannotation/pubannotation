@@ -8,14 +8,13 @@ describe Shared do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
 
-    context 'when denotations exists' do
+    context 'when denotations exist' do
       before do
         @relations = 'relations'
         @modification = 'modification'
         @annotations = {:denotations => 'denotations', :instances => ['instance'], :relations => @relations, :modifications => @modification}
-        Shared.stub(:clean_hdenotations).and_return('clean_hdenotations')
-        @realign_denotations = 'realign_denotations'
-        Shared.stub(:realign_denotations).and_return(@realign_denotations)
+        @aligned_denotations = 'aligned_denotations'
+        Shared.stub(:align_denotations).and_return(@aligned_denotations)
         Shared.stub(:save_hdenotations) do |denotations, project, doc|
           @denotations = denotations
         end
@@ -29,131 +28,22 @@ describe Shared do
       end
 
       it 'should exec save_hdenotations' do
-        @denotations.should eql(@realign_denotations)
+        @denotations.should eql(@aligned_denotations)
       end
 
-      it 'should exec save_hrelations' do
-        @relations.should eql(@relations)
-      end
-
-      it 'should exec save_hdenotations' do
-        @modifications.should eql(@modifications)
-      end
-
-      it 'should return notice message' do
-        @result.should eql(I18n.t('controllers.application.save_annotations.successfully_saved'))
+      it 'should return aligned annotations' do
+        @result.should eql({text:"doc body", denotations:"aligned_denotations", relations:"relations", modifications:"modification"})
       end
     end
     
     context 'denotations does not exists' do
       before do
-        @annotations = {:denotations => nil} 
-        Shared.stub(:clean_hdenotations).and_return(nil)
+        @annotations = {text:"doc body"}
         @result = Shared.save_annotations(@annotations, @project, @doc)
       end
       
       it 'should return nil' do
-        @result.should be_nil
-      end
-    end
-  end
-  
-  describe 'clean_hdenotations' do
-    context 'when format error' do
-      context 'when denotation and begin does not present' do
-        before do
-          @denotation = {:id => 'id', :end => '5', :obj => 'Category'}
-          denotations = Array.new
-          denotations << @denotation
-          @result = Shared.clean_hdenotations(denotations)
-        end
-        
-        it 'should return nil and format error' do
-          @result.should eql([nil, "format error #{@denotation}"])
-        end
-      end
-  
-      context 'when obj does not present' do
-        before do
-          @denotation = {:id => 'id', :begin => '`1', :end => '5', :obj => nil}
-          denotations = Array.new
-          denotations << @denotation
-          @result = Shared.clean_hdenotations(denotations)
-        end
-        
-        it 'should return nil and format error' do
-          @result.should eql([nil, "format error #{@denotation}"])
-        end
-      end
-    end
-    
-    context 'when correct format' do
-      before do
-        @begin = '1'
-        @end = '5'
-        @denotations = Array.new
-      end
-
-      context 'when id is nil' do
-        before do
-          @denotation = {:span => {:begin => @begin, :end => @end}, :obj => 'Category'}
-          @denotations << @denotation
-          @result = Shared.clean_hdenotations(@denotations)
-        end
-        
-        it 'should return T + num id' do
-          @result[0][0][:id].should eql('T1')
-        end
-      end
-
-      context 'when denotation exists' do
-        context 'when spans has symbolized keys' do
-          before do
-            @denotation = {:id => 'id', :span => {:begin => @begin, :end => @end}, :obj => 'Category'}
-            @denotations << @denotation
-            @result = Shared.clean_hdenotations(@denotations)
-          end
-          
-          it 'should return denotations' do
-            @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
-          end
-        end
-
-        context 'when spans has string values' do
-          before do
-            @denotation = {:id => 'id', :span => {'begin' => @begin.to_s, 'end' => @end.to_s}, :obj => 'Category'}
-            @denotations << @denotation
-            @result = Shared.clean_hdenotations(@denotations)
-          end
-          
-          it 'should return symbolized denotations' do
-            @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
-          end
-        end
-
-        context 'when spans has string keys' do
-          before do
-            @denotation = {:id => 'id', :span => {'begin' => @begin, 'end' => @end}, :obj => 'Category'}
-            @denotations << @denotation
-            @result = Shared.clean_hdenotations(@denotations)
-          end
-          
-          it 'should return symbolized denotations' do
-            @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
-          end
-        end
-      end
-
-      context 'when denotation does not exists' do
-        before do
-          @denotation = {:id => 'id', :begin => @begin, :end => @end, :obj => 'Category'}
-          @denotations << @denotation
-          @result = Shared.clean_hdenotations(@denotations)
-        end
-        
-        it 'should return with denotation' do
-          @result.should eql([[{:id => @denotation[:id], :obj => @denotation[:obj], :span => {:begin => @begin.to_i, :end => @end.to_i}}], nil])
-        end
+        @result.should eql({text:"doc body"})
       end
     end
   end
@@ -331,10 +221,10 @@ describe Shared do
     end
   end
   
-  describe 'realign_denotations' do
+  describe 'align_denotations' do
     context 'when denotations is nil' do
       before do
-        @result = Shared.realign_denotations(nil, '', '')
+        @result = Shared.align_denotations(nil, '', '')
       end
       
       it 'should return nil' do
@@ -349,7 +239,7 @@ describe Shared do
         @denotation = {:span => {:begin => @begin, :end => @end}}
         @denotations = Array.new
         @denotations << @denotation
-        @result = Shared.realign_denotations(@denotations, 'from text', 'end of text')
+        @result = Shared.align_denotations(@denotations, 'from text', 'end of text')
       end
       
       it 'should change positions' do

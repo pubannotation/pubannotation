@@ -628,8 +628,8 @@ describe DocsController do
       @doc.stub(:spans).and_return([@spans, @prev_text, @next_text])
     end
     
-    context 'when params[:project_id] present' do
-      context 'when format html' do
+    context 'when params[:project_id] presents' do
+      context 'when the format is html' do
         before do
           get :spans, :project_id => 1, :id => @doc.sourceid, :begin => 1, :end => 5
         end
@@ -671,7 +671,7 @@ describe DocsController do
         end
       end
 
-      context 'when format text' do
+      context 'when the format is text' do
         before do
           @text = 'doc text'
           @doc.stub(:text).and_return(@text)
@@ -683,17 +683,26 @@ describe DocsController do
         end
       end
 
-      context 'when format json' do
+      context 'when the format is json' do
         before do
           @params_begin = 1
           @params_end = 5
           @get_focus = 'get_focus'
           controller.stub(:get_focus).and_return(@get_focus)
-          get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => @params_begin, :end => @params_end 
         end
 
-        it 'should render json' do
-          expect(response.body).to eql({text: @text, focus: @get_focus}.to_json)
+        context 'when the context_size is not specified' do
+          it 'should render json without focus' do
+            get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => @params_begin, :end => @params_end 
+            expect(response.body).to eql({text: @text}.to_json)
+          end
+        end
+
+        context 'when the context_size is specified' do
+          it 'should render json with focus' do
+            get :spans, :format => 'json', :project_id => 1, :id => @doc.sourceid, :begin => @params_begin, :end => @params_end, :context_size => 5 
+            expect(response.body).to eql({text: @text, focus: @get_focus}.to_json)
+          end
         end
       end
 

@@ -292,7 +292,7 @@ en:
         invalid: Invalid SQL
     application:
       get_project:
-        private: The project, %{project_name}, is specified as private.
+        private: The project, %{project_name}, is not accessible.
         not_exist: The project, %{project_name}, does not exist.        
       get_doc:
         not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the project, %{project_name}.
@@ -305,9 +305,9 @@ en:
         successfully_saved: Annotations are successfully created/updated.
     annotations:
       create:
-        no_project_document: The project, %{project_id}, does not exist, or the document, %{sourcedb}:%{sourceid}, does not belong to the project.
+        no_project_document: The document, %{sourcedb}:%{sourceid}, does not exist or belong to the project, %{project_id}.
         no_annotation: No annotation in the submission.
-        delayed_job: Task will be finished in a few minutes.
+        delayed_job: Annotation is submitted for registration. It may take a few minutes depending on the length of the text. You can check the result in your project page.
       confirm_create_zip: Are you sure to create zip? It will take a few minutes.
       create_zip: Create annotations ZIP file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
@@ -365,9 +365,9 @@ en:
       slogan: A scalable and sharable storage of text annotations.
       credit: "Currently, it is in its alpha version and there are many incomplete features.<br />The reason of making it publicaly available at the current stage is to seek your comments.<br />Your any comment about any feature of the service will be highly appreciated.<br />Contact: jdkim at dbcls dot rois dot ac dot jp"
     menus:
-      overview: overview
-      features: features
-      formats: formats
+      repository: repository
+      documentation: documentation
+      about: about
     annotations:
       index:
         confirm_destroy_all: Are you sure? All the instances and relations that belong to this project will be deleted.
@@ -410,7 +410,7 @@ en:
       start_delay_save_annotation_zip:
         result: "Create annotations zip file task started. %{created_at}"
       save_annotation_zip:
-        result: "Create annotations zip file task was %{result} finished. %{created_at}"
+        result: "Create annotations zip file task finished %{result}. %{created_at}"
       start_delay_store_annotations:
         result: "Create annotations task started. %{created_at}"
       store_annotations:

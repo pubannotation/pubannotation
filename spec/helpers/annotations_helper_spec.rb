@@ -95,36 +95,51 @@ describe AnnotationsHelper do
   end  
 
   describe 'annotaitons[:focus]' do
-    context 'when context_size blank' do
+    context 'when context_size dose not present' do
       before do
         @params_begin = 1
         @params_end = 5
-        @annotations = helper.get_focus(params: {begin: @params_begin, end: @params_end})
+        @focus = helper.get_focus(params: {begin: @params_begin, end: @params_end})
       end
 
-      it 'annotaitons[:focus][:begin] should be 0' do
-        expect(@annotations[:begin]).to eql(0) 
-      end
-
-      it 'annotaitons[:focus][:end] should equal gap of begin - end' do
-        expect(@annotations[:end]).to eql(@params_end - @params_begin) 
+      it 'annotaitons[:focus] should not present' do
+        @focus.should be_nil
       end
     end
 
-    context 'when context_size present' do
-      before do
-        @params_begin = 1
-        @params_end = 5
-        @context_size = 6
-        @annotations = helper.get_focus(params: {begin: @params_begin, end: @params_end, context_size: @context_size})
+    context 'when context_size presents' do
+      context 'when context_size is bigger than begin' do
+        before do
+          @params_begin = 1
+          @params_end = 5
+          @context_size = 6
+          @focus = helper.get_focus(params: {begin: @params_begin, end: @params_end, context_size: @context_size})
+        end
+
+        it 'annotaitons[:focus][:begin] should be params[:begin]' do
+          expect(@focus[:begin]).to eql(@params_begin) 
+        end
+
+        it 'annotaitons[:focus][:end] should equal to begin - end + params[:begin]' do
+          expect(@focus[:end]).to eql(@params_end - @params_begin + @params_begin) 
+        end
       end
 
-      it 'annotaitons[:focus][:begin] should be params[:context_size]' do
-        expect(@annotations[:begin]).to eql(@context_size) 
-      end
+      context 'when context_size is smaller than begin' do
+        before do
+          @params_begin = 5
+          @params_end = 10
+          @context_size = 3
+          @focus = helper.get_focus(params: {begin: @params_begin, end: @params_end, context_size: @context_size})
+        end
 
-      it 'annotaitons[:focus][:end] should equal gap of begin - end + params[:context_size]' do
-        expect(@annotations[:end]).to eql(@params_end - @params_begin + @context_size) 
+        it 'annotaitons[:focus][:begin] should be params[:context_size]' do
+          expect(@focus[:begin]).to eql(@context_size) 
+        end
+
+        it 'annotaitons[:focus][:end] should equal gap of begin - end + params[:context_size]' do
+          expect(@focus[:end]).to eql(@params_end - @params_begin + @context_size) 
+        end
       end
     end
   end
@@ -728,7 +743,7 @@ describe AnnotationsHelper do
         helper.stub(:params).and_return(id: @doc.id)  
       end
       
-      it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
+      it 'should return annotations_create_project_sourcedb_sourceid_divs_docs_path' do
         helper.annotations_form_action_helper.should eql annotations_project_doc_path(@project.name, @doc.id)
       end
     end
@@ -739,8 +754,8 @@ describe AnnotationsHelper do
           helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id)  
         end
         
-        it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
-          helper.annotations_form_action_helper.should eql generate_annotatons_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @div_id)
+        it 'should return annotations_create_project_sourcedb_sourceid_divs_docs_path' do
+          helper.annotations_form_action_helper.should eql annotations_generate_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @div_id)
         end
       end
       
@@ -750,8 +765,8 @@ describe AnnotationsHelper do
           helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid)  
         end
         
-        it 'should return create_annotatons_project_sourcedb_sourceid_divs_docs_path' do
-          helper.annotations_form_action_helper.should eql generate_annotatons_project_sourcedb_sourceid_docs_path(@project_id, @sourcedb, @sourceid)
+        it 'should return annotations_create_project_sourcedb_sourceid_divs_docs_path' do
+          helper.annotations_form_action_helper.should eql annotations_generate_project_sourcedb_sourceid_docs_path(@project_id, @sourcedb, @sourceid)
         end
       end
     end

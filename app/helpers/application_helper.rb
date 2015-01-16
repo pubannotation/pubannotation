@@ -120,4 +120,12 @@ module ApplicationHelper
     next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'
     link_to title, {:sort_key => sort_key, :sort_direction => next_direction}, {:class => css_class}
   end
+
+  def get_project2 (project_name)
+    authenticate_user!
+    project = Project.find_by_name(project_name)
+    raise ArgumentError, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name) unless project.present?
+    raise ArgumentError, I18n.t('controllers.application.get_project.private', :project_name => project_name) unless (project.accessibility == 1 || (user_signed_in? && project.user == current_user))
+    project
+  end
 end

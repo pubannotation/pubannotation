@@ -50,7 +50,7 @@
     <% type = 'P' -%>
     <tr>
       <% if @annotations_projects_check -%>
-        <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotatons_#{project.id}", class: 'annotations_projects_check'} -%></td>
+        <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotations_#{project.id}", class: 'annotations_projects_check'} -%></td>
       <% end -%>
       <td><%= project.name %></td>
       <td title="<%= project.description -%>"><%= project.description %></td>
