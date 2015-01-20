@@ -409,6 +409,7 @@ ja:
       sourceid_list: ソースID一覧
       list: ドキュメント一覧
       add_new_documents: ドキュメント追加
+      total_number: "全%{total_number}ドキュメント"
     documentations:
       Overview: 概要
       Features: 特徴

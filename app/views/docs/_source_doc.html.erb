@@ -7,6 +7,10 @@
 		<%= text_field_tag :body, params[:body], value: params[:body] -%>
 		<%= submit_tag t('views.shared.search') -%>
 	<% end %>
+
+  <div style="float:right">
+    <%= t('views.docs.total_number', total_number: @source_docs.size) -%>
+  </div>
 	
 	<table class="full">		
 		<tr>

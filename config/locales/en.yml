@@ -386,6 +386,7 @@ en:
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
       add_new_documents: Add new documents
+      total_number: "Total %{total_number} documents"
     documentations:
       Overview: Overview
       Features: Features
