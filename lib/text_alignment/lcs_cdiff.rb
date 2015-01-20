@@ -42,12 +42,13 @@ class << TextAlignment
 end
 
 if __FILE__ == $0
+  require 'json'
   str1 = 'abcde'
   str2 = 'naxbyzabcdexydzem'
 
   if ARGV.length == 2
-    str1 = File.read(ARGV[0])
-    str2 = File.read(ARGV[1])
+    str1 = JSON.parse(File.read(ARGV[0]).strip)["text"]
+    str2 = JSON.parse(File.read(ARGV[1]).strip)["text"]
   end
 
   puts "string 1: #{str1}"
