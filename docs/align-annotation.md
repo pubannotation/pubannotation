@@ -1,8 +1,8 @@
 ---
 layout: docs
-title: Align Annotation
+title: Align annotation
 prev_section: submit-annotation
-next_section: about
+next_section: example-1
 permalink: /docs/align-annotation/
 ---
 
