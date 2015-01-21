@@ -15,7 +15,7 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
       @docs = @project.docs
-      @docs_hash = @docs.collect{|doc| doc.to_hash}
+      @docs_hash = @docs.collect{|doc| doc.to_list_hash('doc')}
       @search_path = search_project_docs_path(@project.name)
     else
       @docs = Doc
@@ -29,6 +29,7 @@ class DocsController < ApplicationController
     respond_to do |format|
       format.html
       format.json { render json: @docs_hash}
+      format.tsv { render text: Doc.to_tsv(@docs, 'doc') }
     end
   end
  

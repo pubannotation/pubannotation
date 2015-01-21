@@ -15,12 +15,13 @@ class DivsController < ApplicationController
 
     respond_to do |format|
       format.html # index.html.erb
-      format.json { render json: @docs.collect{|doc| doc.to_hash} }
-      format.txt  {
+      format.json { render json: @docs.collect{|doc| doc.to_list_hash('div')} }
+      format.tsv { render text: Doc.to_tsv(@docs, 'div') }
+      format.txt {
         if @project.present?
           redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, params[:sourcedb], params[:sourceid], format: :txt)
         else
-          redirect_to doc_sourcedb_sourceid_show_path(@project.name, params[:sourcedb], params[:sourceid], format: :txt)
+          redirect_to doc_sourcedb_sourceid_show_path(params[:project_id], params[:sourcedb], params[:sourceid], format: :txt)
         end
       }
     end
