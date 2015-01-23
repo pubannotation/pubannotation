@@ -265,6 +265,25 @@ describe Project do
       end
     end
   end
+
+  describe 'scope index' do
+    before do
+      user = FactoryGirl.create(:user)
+      (1..11).each do |n|
+        FactoryGirl.create(:project, user: user, denotations_count: n, created_at: n.days.ago)
+      end
+
+      @projects = Project.index
+    end
+
+    it 'size should be 10' do
+      @projects.size.should eql(10)
+    end
+
+    it 'denotations_count should prior to created_at' do
+      @projects.first.denotations_count.should eql(11)
+    end
+  end
   
   describe 'scope not_id_in' do
     before do
@@ -2736,6 +2755,36 @@ describe Project do
       it 'should delete prefix or uri is blank' do
         @project.cleanup_namespaces 
         @project.namespaces.should =~ [@namespace_1, @namespace_2, @namespace_3]
+      end
+    end
+  end
+
+  describe 'delay_destroy' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+    end
+
+    context 'when successfully finished' do
+      it 'should destroy project' do
+        expect{ @project.delay_destroy }.to change{ Project.count }.from(1).to(0)
+      end
+
+      it 'should not create notice' do
+        expect{ @project.delay_destroy }.not_to change{ Notice.count }.from(0).to(1)
+      end
+    end
+
+    context 'when failed' do
+      before do
+        @project.stub(:destroy).and_raise('Error')
+      end
+
+      it 'should not destroy project' do
+        expect{ @project.delay_destroy }.not_to change{ Project.count }.from(1).to(0)
+      end
+
+      it 'should create notice' do
+        expect{ @project.delay_destroy }.to change{ Notice.count }.from(0).to(1)
       end
     end
   end

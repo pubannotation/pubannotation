@@ -331,6 +331,39 @@ class Doc < ActiveRecord::Base
       source_url: source
     }
   end
+  
+  def to_list_hash(doc_type)
+    hash = {
+      source_db: sourcedb,
+      source_id: sourceid,
+    }
+    # switch url or div_url
+    case doc_type
+    when 'doc'
+      hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(self.sourcedb, self.sourceid)
+    when 'div'
+      hash[:div_id] = serial
+      hash[:section] = section
+      hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_index_url(self.sourcedb, self.sourceid)
+    end
+    return hash
+  end
+
+  def self.to_tsv(docs, doc_type)
+    headers = docs.first.to_list_hash(doc_type).keys
+    tsv = CSV.generate(col_sep:"\t") do |csv|
+      # headers
+      csv << headers
+      docs.each do |doc|
+        doc_values = Array.new
+        headers.each do |key|
+          doc_values << doc.to_list_hash(doc_type)[key]
+        end
+        csv << doc_values
+      end
+    end
+    return tsv
+  end
 
   def self.sql_find(params, current_user, project)
     if params[:sql].present?

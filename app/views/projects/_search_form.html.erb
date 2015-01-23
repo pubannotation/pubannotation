@@ -1,0 +1,23 @@
+<%= form_tag projects_path, method: 'get' do -%>
+  <table>
+    <tr>
+      <td><%= label_tag :name, t('activerecord.attributes.project.name') -%></td>
+      <td><%= text_field_tag :name, params[:name] -%></td>
+    </tr>
+    <tr>
+      <td><%= label_tag :description, t('activerecord.attributes.project.description') -%></td>
+      <td><%= text_field_tag :description, params[:description] -%></td>
+    </tr>
+    <tr>
+      <td><%= label_tag :author, t('activerecord.attributes.project.author') -%></td>
+      <td><%= text_field_tag :author, params[:author] -%></td>
+    </tr>
+    <tr>
+      <td><%= label_tag :user, t('activerecord.attributes.project.maintainer') -%></td>
+      <td><%= text_field_tag :user, params[:user] -%></td>
+    </tr>
+  </table>
+
+  <%= hidden_field_tag :search_projects, true -%>
+  <%= submit_tag t('views.shared.search') -%>
+<% end -%>

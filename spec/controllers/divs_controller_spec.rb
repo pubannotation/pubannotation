@@ -9,6 +9,8 @@ describe DivsController do
       @doc_not_pmc = FactoryGirl.create(:doc, :sourcedb => 'AAA', :sourceid => @pmcdoc_id)
       @project_id = 'project_id'
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => @project_id)
+      @tsv = 'tsv'
+      Doc.stub(:to_tsv).and_return(@tsv)
     end
     
     context 'when params[:project_id] present' do
@@ -41,7 +43,47 @@ describe DivsController do
         end
         
         it 'should render json' do
-          response.body.should eql(assigns[:docs].collect{|d| d.to_hash}.to_json)
+          response.body.should eql(assigns[:docs].collect{|d| d.to_list_hash('div')}.to_json)
+        end
+      end
+  
+      context 'when format tsv' do
+        before do
+          @docs = [FactoryGirl.create(:doc)]
+          Doc.stub(:find_all_by_sourcedb_and_sourceid).and_return(@docs)
+        end
+        
+        it 'should call to_tsv with docsa and div doc_type' do
+          Doc.should_receive(:to_tsv).with(@docs, 'div')
+          get :index, :format => 'tsv', :sourcedb => @doc_pmc_sourceid.sourcedb, :sourceid => @doc_pmc_sourceid.sourceid, :project_id => @project_id
+        end
+        
+        it 'should render tsv' do
+          get :index, :format => 'tsv', :sourcedb => @doc_pmc_sourceid.sourcedb, :sourceid => @doc_pmc_sourceid.sourceid, :project_id => @project_id
+          response.body.should eql(@tsv)
+        end
+      end
+  
+      context 'when format txt' do
+        context 'when @project present' do
+          before do
+            get :index, :format => 'txt', :sourcedb => @doc_pmc_sourceid.sourcedb, :sourceid => @doc_pmc_sourceid.sourceid, :project_id => @project_id
+          end
+
+          it 'should redirect' do
+            response.should redirect_to(show_project_sourcedb_sourceid_docs_path(@project.name, @doc_pmc_sourceid.sourcedb, @doc_pmc_sourceid.sourceid, format: :txt))
+          end
+        end
+
+        context 'when @project is nil' do
+          before do
+            @project_name = 'invalid'
+            get :index, :format => 'txt', :sourcedb => @doc_pmc_sourceid.sourcedb, :sourceid => @doc_pmc_sourceid.sourceid, :project_id => @project_name
+          end
+
+          it 'should redirect' do
+            response.should redirect_to(doc_sourcedb_sourceid_show_path(@project_name, @doc_pmc_sourceid.sourcedb, @doc_pmc_sourceid.sourceid, format: :txt))
+          end
         end
       end
     end
@@ -227,39 +269,6 @@ describe DivsController do
           assigns[:projects].should eql(@sort_projects)
         end
       end
-
-      context 'when params[:sort_key] present' do
-        before do
-          controller.stub(:flash).and_return({:sort_order=> [['projects.id', 'DESC']]})
-          get :show, :sort_key => 'name', :sort_direction => 'DESC', :sort_order => 'DESC', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @doc.serial
-        end
-
-        it 'should order @projects by sort key, order' do
-          assigns[:projects][0].should eql @project_2
-        end
-
-        it 'should order @projects by sort key, order' do
-          assigns[:projects][1].should eql @project_1
-        end
-      end
-
-      context 'when params[:sort_key] blank' do
-        before do
-          controller.stub(:flash).and_return({:sort_order=> [['projects.id', 'DESC']]})
-          get :show, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @doc.serial
-        end
-
-        it 'should order @projects by name ASC author ASC' do
-          assigns[:projects][0].should eql @project_1
-        end
-
-        it 'should order @projects by name ASC author ASC' do
-          assigns[:projects][1].should eql @project_2
-        end
-      end
     end
-
-    describe 'format' do
-    end     
   end
 end

@@ -189,69 +189,187 @@ describe ApplicationHelper do
   end
 
   describe 'sortable' do
-    context 'when title present' do
-      before do
-        @sort_key = 'sort_key'
-        @lower_sort_key = 'LOWER'
-        helper.stub(:lower_sort_key).and_return(@lower_sort_key)
-        @model = double(:model)
-        @title = 'title'
-        helper.stub(:link_to).and_return(nil)
-      end
+    context 'when params[:controller] is not home' do
+      context 'when title present' do
+        before do
+          @sort_key = 'sort_key'
+          @lower_sort_key = 'LOWER'
+          helper.stub(:lower_sort_key).and_return(@lower_sort_key)
+          @model = double(:model)
+          @title = 'title'
+          helper.stub(:link_to).and_return(nil)
+        end
 
-      context 'when @sort_order present' do
-        context 'when sort_key column is sorted' do
-          context 'when sort direction is ASC' do
-            before do
-              @sort_direction = 'ASC'
-              helper.stub(:sort_order).and_return([[@lower_sort_key, @sort_direction]])
+        context 'when @sort_order present' do
+          context 'when sort_key column is sorted' do
+            context 'when sort direction is ASC' do
+              before do
+                @sort_direction = 'ASC'
+                helper.stub(:sort_order).and_return([[@lower_sort_key, @sort_direction]])
+              end
+
+              context 'when params[:search_projects] is true' do
+                context 'when sort params present' do
+                  before do
+                    helper.stub(:params).and_return({search_projects: true})
+                    @request_full_path = '?name=&description=&author=&user=&commit=search'
+                    helper.stub_chain(:request, :fullpath).and_return(@request_full_path)
+                  end
+
+                  it 'should call link_to with search_projects params and sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                    helper.should_receive(:link_to).with(@title, "#{@request_full_path}&sort_direction=DESC&sort_key=#{@lower_sort_key}", {class: "sortable-#{@sort_direction}"})
+                    helper.sortable(@model, @sort_key, @title)
+                  end
+                end
+
+                context 'when sort params is nil' do
+                  before do
+                    helper.stub(:params).and_return({search_projects: true})
+                  end
+
+                  it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                    helper.should_receive(:link_to).with(@title, "&sort_direction=DESC&sort_key=#{@lower_sort_key}", {class: "sortable-#{@sort_direction}"})
+                    helper.sortable(@model, @sort_key, @title)
+                  end
+                end
+              end
+
+              context 'when params[:search_projects] is nil' do
+                it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                  helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'DESC'}, {class: "sortable-#{@sort_direction}"})
+                  helper.sortable(@model, @sort_key, @title)
+                end
+              end
             end
 
-            it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
-              helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'DESC'}, {class: "sortable-#{@sort_direction}"})
-              helper.sortable(@model, @sort_key, @title)
+            context 'when sort direction is DESC' do
+              before do
+                @sort_direction = 'DESC'
+                helper.stub(:sort_order).and_return([[@lower_sort_key, @sort_direction]])
+              end
+
+              context 'when params[:search_projects] is true' do
+                context 'when sort params present' do
+                  before do
+                    helper.stub(:params).and_return({search_projects: true})
+                    @request_full_path = '?name=&description=&author=&user=&commit=search'
+                    helper.stub_chain(:request, :fullpath).and_return(@request_full_path)
+                  end
+
+                  it 'should call link_to with search_projects params and sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                    helper.should_receive(:link_to).with(@title, "#{@request_full_path}&sort_direction=ASC&sort_key=#{@lower_sort_key}", {class: "sortable-#{@sort_direction}"})
+                    helper.sortable(@model, @sort_key, @title)
+                  end
+                end
+
+                context 'when sort params is nil' do
+                  before do
+                    helper.stub(:params).and_return({search_projects: true})
+                  end
+
+                  it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                    helper.should_receive(:link_to).with(@title, "&sort_direction=ASC&sort_key=#{@lower_sort_key}", {class: "sortable-#{@sort_direction}"})
+                    helper.sortable(@model, @sort_key, @title)
+                  end
+                end
+              end
+
+              context 'when params[:search_projects] is nil' do
+                it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                  helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'ASC'}, {class: "sortable-#{@sort_direction}"})
+                  helper.sortable(@model, @sort_key, @title)
+                end
+              end
             end
           end
 
-          context 'when sort direction is DESC' do
-            before do
-              @sort_direction = 'DESC'
-              helper.stub(:sort_order).and_return([[@lower_sort_key, @sort_direction]])
+          context 'when sort_key column is not sorted' do
+            context 'when sort direction is ASC' do
+              before do
+                @sort_direction = 'ASC'
+                helper.stub(:sort_order).and_return([['key', @sort_direction]])
+              end
+
+              context 'when params[:search_projects] is true' do
+                context 'when sort params present' do
+                  before do
+                    helper.stub(:params).and_return({search_projects: true})
+                    @request_full_path = '?name=&description=&author=&user=&commit=search'
+                    helper.stub_chain(:request, :fullpath).and_return(@request_full_path)
+                  end
+
+                  it 'should call link_to with search_projects params and sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                    helper.should_receive(:link_to).with(@title, "#{@request_full_path}&sort_direction=ASC&sort_key=#{@lower_sort_key}", {class: "sortable-DESC"})
+                    helper.sortable(@model, @sort_key, @title)
+                  end
+                end
+
+                context 'when sort params is nil' do
+                  before do
+                    helper.stub(:params).and_return({search_projects: true})
+                  end
+
+                  it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                    helper.should_receive(:link_to).with(@title, "&sort_direction=ASC&sort_key=#{@lower_sort_key}", {class: "sortable-DESC"})
+                    helper.sortable(@model, @sort_key, @title)
+                  end
+                end
+              end
+
+              context 'when params[:search_projects] is nil' do
+                it 'should call link_to with sort_key: lower_sort_key, sort_direction: current_direction, class: sortable-default direction(DESC)' do
+                  helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: @sort_direction}, {class: "sortable-DESC"})
+                  helper.sortable(@model, @sort_key, @title)
+                end
+              end
             end
 
-            it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
-              helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'ASC'}, {class: "sortable-#{@sort_direction}"})
-              helper.sortable(@model, @sort_key, @title)
+            context 'when sort direction is DESC' do
+              before do
+                @sort_direction = 'DESC'
+                helper.stub(:sort_order).and_return([['key', @sort_direction]])
+              end
+
+              context 'when params[:search_projects] is true' do
+                context 'when sort params present' do
+                  before do
+                    helper.stub(:params).and_return({search_projects: true})
+                    @request_full_path = '?name=&description=&author=&user=&commit=search'
+                    helper.stub_chain(:request, :fullpath).and_return(@request_full_path)
+                  end
+
+                  it 'should call link_to with search_projects params and sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                    helper.should_receive(:link_to).with(@title, "#{@request_full_path}&sort_direction=ASC&sort_key=#{@lower_sort_key}", {class: "sortable-DESC"})
+                    helper.sortable(@model, @sort_key, @title)
+                  end
+                end
+
+                context 'when sort params is nil' do
+                  before do
+                    helper.stub(:params).and_return({search_projects: true})
+                  end
+
+                  it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                    helper.should_receive(:link_to).with(@title, "&sort_direction=ASC&sort_key=#{@lower_sort_key}", {class: "sortable-DESC"})
+                    helper.sortable(@model, @sort_key, @title)
+                  end
+                end
+              end
+
+              context 'when params[:search_projects] is nil' do
+                it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
+                  helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'ASC'}, {class: "sortable-DESC"})
+                  helper.sortable(@model, @sort_key, @title)
+                end
+              end
             end
           end
         end
-
-        context 'when sort_key column is not sorted' do
-          context 'when sort direction is ASC' do
-            before do
-              @sort_direction = 'ASC'
-              helper.stub(:sort_order).and_return([['key', @sort_direction]])
-            end
-
-            it 'should call link_to with sort_key: lower_sort_key, sort_direction: current_direction, class: sortable-default direction(DESC)' do
-              helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: @sort_direction}, {class: "sortable-DESC"})
-              helper.sortable(@model, @sort_key, @title)
-            end
-          end
-
-          context 'when sort direction is DESC' do
-            before do
-              @sort_direction = 'DESC'
-              helper.stub(:sort_order).and_return([['key', @sort_direction]])
-            end
-
-            it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, clas: sortable-current_direction' do
-              helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'ASC'}, {class: "sortable-DESC"})
-              helper.sortable(@model, @sort_key, @title)
-            end
-          end
-        end
       end
+    end
+
+    context 'when params[:controller] is home' do
+
     end
   end
 end

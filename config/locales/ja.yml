@@ -244,6 +244,7 @@ ja:
         viewer: ビューア
         annotations_zip_downloadable: アノテーションのダウンロード
         process: プロセス
+        updated_at: 最終更新日
       sproject:
         name: 名前
         description: 説明
@@ -372,8 +373,10 @@ ja:
     projects:
       index:
         does_not_exist: ドキュメント%{sourcedb}:%{sourceid}はPubAnnotation内に存在しません
+        not_found: 条件に合うプロジェクトがみつかりませんでした。
       destroy:
         deleted: アノテーションセット%{id}を削除しました
+        delay: プロジェクトは数分程度で削除されます
       new:
         import: "関連プロジェクトをインポート"
       show:
@@ -406,6 +409,7 @@ ja:
       sourceid_list: ソースID一覧
       list: ドキュメント一覧
       add_new_documents: ドキュメント追加
+      total_number: "全%{total_number}ドキュメント"
     documentations:
       Overview: 概要
       Features: 特徴
@@ -423,6 +427,7 @@ ja:
       that_annotate_a_doc: "<span class='pname'>%{sourcedb}:%{sourceid}</span>用の<a href='%{href}'>アノテーションプロジェクト</a>"
       that_annotate_a_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョンをアノテートする<a href='%{href}'>プロジェクト</a>"
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>アノテーションプロジェクト"
+      list: プロジェクト一覧
       confirm_delete: このアノテーションセットのアノテーションが全て削除されますがよろしいですか？
       user_projects: 管理中のプロジェクト
       associate_maintain_projects: 関係しているプロジェクト
@@ -439,6 +444,10 @@ ja:
       store_annotations:
         result: "アノテーションの作成に%{result}しました。 %{created_at}"
       properties: プロパティ
+      start_destroy_project:
+        result: "プロジェクトの削除を開始しました。 %{created_at}"
+      destroy_project:
+        result: "プロジェクトの削除に失敗しました。 %{created_at}"
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:

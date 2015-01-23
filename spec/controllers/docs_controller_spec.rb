@@ -31,7 +31,7 @@ describe DocsController do
         end
 
         it 'should assigns project.docs to hash as @docs_hash' do
-          assigns[:docs_hash].should =~ @project.docs.collect{|doc| doc.to_hash.stringify_keys}
+          assigns[:docs_hash].should =~ @project.docs.collect{|doc| doc.to_list_hash('doc').stringify_keys}
         end
 
         it 'should assing sort_by_params.paginate as @source_docs' do
@@ -50,7 +50,7 @@ describe DocsController do
 
       context 'when format json' do
         before do
-          @docs_hash = @project.docs.collect{|doc| doc.to_hash.stringify_keys}
+          @docs_hash = @project.docs.collect{|doc| doc.to_list_hash('doc').stringify_keys}
           get :index, format: 'json', :project_id => @project.name
         end
 
@@ -60,6 +60,18 @@ describe DocsController do
 
         it 'should render @docs_hash to_json' do
           response.body.should eql(@docs_hash.to_json)
+        end
+      end
+
+      context 'when format tsv' do
+        before do
+          @tsv = 'tsv'
+          Doc.stub(:to_tsv).and_return(@tsv)
+          get :index, format: 'tsv', :project_id => @project.name
+        end
+
+        it 'should render @docs_hash to_tsv' do
+          response.body.should eql(@tsv)
         end
       end
     end    

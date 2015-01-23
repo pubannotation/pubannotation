@@ -1522,6 +1522,40 @@ B')
       expect(@doc.to_hash).to eql({text: 'AB', source_db: @doc.sourcedb, source_id: @doc.sourceid, div_id: @doc.serial, section: @doc.section, source_url: @doc.source})
     end
   end
+
+  describe 'to_list_hash' do
+    before do
+      @doc = FactoryGirl.create(:doc, sourcedb: 'sdb', sourceid: 'sdi', serial: 0, section: 'section', source: 'http://to.to', body: 'AB')
+    end
+
+    context 'when doc_type is doc' do
+      it 'should return source_db, source_id, url' do
+        @doc.to_list_hash('doc').should eql({source_db: @doc.sourcedb, source_id: @doc.sourceid, url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(@doc.sourcedb, @doc.sourceid)})
+      end
+    end
+
+    context 'when doc_type is div' do
+      it 'should return source_db, source_id, div_url' do
+        @doc.to_list_hash('div').should eql({source_db: @doc.sourcedb, source_id: @doc.sourceid, div_id: @doc.serial, section: @doc.section, url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_index_url(@doc.sourcedb, @doc.sourceid)})
+      end
+    end
+  end
+
+  describe 'self.to_tsv' do
+    before do
+      @doc_1 = double(:doc_1)
+      @list_hash_1 = {key_1: 'val_1_1', key_2: 'val_1_2'}
+      @doc_1.stub(:to_list_hash).and_return(@list_hash_1)
+      @doc_2 = double(:doc_2)
+      @list_hash_2 = {key_1: 'val_2_1', key_2: 'val_2_2'}
+      @doc_2.stub(:to_list_hash).and_return(@list_hash_2)
+      @docs = [@doc_1, @doc_2]
+    end
+
+    it 'should return doc.to_list_hash as tab separated csv' do
+      Doc.to_tsv(@docs, 'doc_type').should eql("#{@list_hash_1.keys.first}\t#{@list_hash_1.keys.last}\n#{@list_hash_1[:key_1]}\t#{@list_hash_1[:key_2]}\n#{@list_hash_2[:key_1]}\t#{@list_hash_2[:key_2]}\n")
+    end
+  end
   
   describe 'sql_find' do
     before do

@@ -8,10 +8,8 @@ describe HomeController do
       current_user_stub(@current_user)
       @source_dbs = ['source_dbs']
       Doc.stub(:source_dbs).and_return(@source_dbs)
-      @accessble_projects = double(:accessible)
-      Project.stub(:accessible).and_return(@accessble_projects)
-      @sort_by_params = 'sort_by_params'
-      @accessble_projects.stub(:sort_by_params).and_return(@sort_by_params)
+      @index_projects = double(:index)
+      Project.stub_chain(:accessible, :index).and_return(@index_projects)
     end
     
     it '@source_dbs should eql Doc.source_dbs' do
@@ -19,14 +17,9 @@ describe HomeController do
       assigns[:source_dbs].should eql @source_dbs
     end
     
-    it 'should call sort_order with Project' do
-      controller.should_receive(:sort_order).with(Project)
+    it '@projects should eql Project.accessible.index' do
       get :index
-    end
-    
-    it '@projects should eql Project.order_by' do
-      get :index
-      assigns[:projects].should eql(@sort_by_params)
+      assigns[:projects].should eql(@index_projects)
     end
   end
 end

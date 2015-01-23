@@ -83,19 +83,42 @@ describe ProjectsController do
         @user = FactoryGirl.create(:user)
         current_user_stub(@user)
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @accessble_projects = double(:accessible)
-        Project.stub(:accessible).and_return(@accessble_projects)
-        @sort_by_params = 'sort_by_params'
-        @accessble_projects.stub(:sort_by_params).and_return(@sort_by_params)
-        get :index
+        @paginate_projects = double(:projects)
       end
 
-      it '@projects should eql Project.accessible.sort_by_params' do
-        assigns[:projects].should eql(@sort_by_params)
+      context 'when parans[:search_projects] blank' do
+        before do
+          @params = {name: 'name', description: 'description', author: 'author', user: 'user'}
+          @projects_stub = double(:projects)
+          Project.stub_chain(:accessible, :includes).and_return(@projects_stub)
+          @projects_stub.stub_chain(:where, :group, :sort_by_params, :paginate).and_return(@paginate_projects)
+        end
+
+        it 'should search projects with params conditions' do
+          @projects_stub.should_receive(:where).with(["name like ? AND description like ? AND author like ? AND users.username like ?", "%#{@params[:name]}%", "%#{@params[:description]}%", "%#{@params[:author]}%", "%#{@params[:user]}%"])
+          get :index, search_projects: true, name: @params[:name], description: @params[:description], author: @params[:author], user: @params[:user]
+        end
+
+        it 'should set accessible, includes(:user), where(conditions), group sort_by_params and paginate as @projects' do
+          get :index, search_projects: true, name: @params[:name], description: @params[:description], author: @params[:author], user: @params[:user]
+          assigns[:projects].should eql(@paginate_projects) 
+        end
       end
-      
-      it 'should render template' do
-        response.should render_template('index')
+
+      context 'when parans[:search_projects] blank' do
+        before do
+          @sort_by_params = 'sort_by_params'
+          Project.stub_chain(:accessible, :sort_by_params, :paginate).and_return(@paginate_projects)
+          get :index
+        end
+
+        it '@projects should eql Project.accessible.sort_by_params.paginate' do
+          assigns[:projects].should eql(@paginate_projects)
+        end
+        
+        it 'should render template' do
+          response.should render_template('index')
+        end
       end
     end
     
@@ -669,19 +692,38 @@ describe ProjectsController do
         current_user = FactoryGirl.create(:user)
         current_user_stub(current_user)
         @project = FactoryGirl.create(:project, :name => 'project_name', :user => current_user)  
+        @project.stub(:destroyable_for?).and_return(true)
+        @referer = project_path(@project.id)
+        request.env["HTTP_REFERER"] = @referer
       end
       
       context 'format html' do
-        before do
+        it 'shoud create notice' do
+          Project.any_instance.stub_chain(:delay, :delay_destroy).and_return(nil)
+          expect{ 
+            delete :destroy, :id => @project.name 
+          }.to change{ Notice.count }.from(0).to(1)
+        end
+
+        it 'should call destroy through delayed_job' do
+          Project.any_instance.stub_chain(:delay, :delay_destroy).and_return(nil)
+          Project.any_instance.should_receive(:delay)
+          delete :destroy, :id => @project.name   
+        end
+
+        it 'should call destroy through delayed_job' do
+          Project.any_instance.stub(:delay).and_return(@project)
+          @project.should_receive(:delay_destroy)
           delete :destroy, :id => @project.name   
         end
         
-        it 'should redirect to projects_path' do
-          response.should redirect_to projects_path
+        it 'should redirect to :back' do
+          delete :destroy, :id => @project.name   
+          response.should redirect_to @referer
         end
       end
       
-      context 'format html' do
+      context 'format json' do
         before do
           delete :destroy, :format => 'json', :id => @project.name   
         end

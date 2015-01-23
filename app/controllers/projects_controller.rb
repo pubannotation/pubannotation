@@ -26,7 +26,29 @@ class ProjectsController < ApplicationController
         notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
       end
     else
-      @projects = Project.accessible(current_user).sort_by_params(sort_order)
+      if params[:search_projects]
+        conditions_array = Array.new
+        conditions_array << ['name like ?', "%#{params[:name]}%"] if params[:name].present?
+        conditions_array << ['description like ?', "%#{params[:description]}%"] if params[:description].present?
+        conditions_array << ['author like ?', "%#{params[:author]}%"] if params[:author].present?
+        conditions_array << ['users.username like ?', "%#{params[:user]}%"] if params[:user].present?
+        
+        # Build condition
+        i = 0
+        conditions = Array.new
+        columns = ''
+        conditions_array.each do |key, val|
+          key = " AND #{key}" if i > 0
+          columns += key
+          conditions[i] = val
+          i += 1
+        end
+        conditions.unshift(columns)
+        @projects = Project.accessible(current_user).includes(:user).where(conditions).group('projects.id').sort_by_params(sort_order).paginate(:page => params[:page])
+        flash[:notice] = t('controllers.projects.index.not_found') if @projects.blank?
+      else
+        @projects = Project.accessible(current_user).sort_by_params(sort_order).paginate(:page => params[:page])
+      end
     end
 
     respond_to do |format|
@@ -147,10 +169,10 @@ class ProjectsController < ApplicationController
   # DELETE /projects/:name
   # DELETE /projects/:name.json
   def destroy
-    @project.destroy
-
+    @project.notices.create({successful: nil, method: 'start_destroy_project'})
+    @project.delay.delay_destroy
     respond_to do |format|
-      format.html { redirect_to projects_path, notice: t('controllers.projects.destroy.deleted', :id => params[:id]) }
+      format.html { redirect_to :back, notice: t('controllers.projects.destroy.delay') }
       format.json { head :no_content }
     end
   end
