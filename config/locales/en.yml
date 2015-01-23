@@ -232,6 +232,11 @@ en:
         body: body
         documentation_category_id: category
       project:
+        name: Name
+        description: Description
+        author: Author
+        maintainer: Maintainer
+        status: Status
         rdfwriter: RDF writer
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
