@@ -47,7 +47,7 @@
       <th style="width:1em" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
       <th style="width:1em" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
  -->
-      <th style="width:8em"><%= sortable(Project, 'updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
+      <th style="width:8em"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
       <th style="width:8em"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
     </tr>
 
