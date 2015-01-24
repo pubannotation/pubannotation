@@ -2365,22 +2365,6 @@ describe Project do
             end
           end        
         end        
-          
-        context 'when project docs include divs.first' do
-          before do
-            @project.docs << @doc
-            @result = @project.add_docs({ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
-            @project.reload
-          end
-
-          it '@project should include @doc' do
-            @project.docs.should include(@doc)
-          end
-          
-          it 'should not increment num_added' do
-            @result.should eql [0, 0, 0]
-          end      
-        end
       end
     end
      

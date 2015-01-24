@@ -8,7 +8,9 @@ describe "docs/_source_doc.html.erb" do
       before do
         @project_id = 'project_id'
         @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => 'sourceid')
-        assign :source_docs, [@doc]
+        @source_docs = [@doc]
+        assign :source_docs, @source_docs
+        @source_docs.stub(:total_entries).and_return(nil)
         view.stub(:source_doc_counter).and_return(0)
         view.stub(:source_doc).and_return(@doc)
         view.stub(:will_paginate).and_return(nil)

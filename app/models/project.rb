@@ -46,7 +46,7 @@ class Project < ActiveRecord::Base
   }
 
   # scope for home#index
-  scope :index, order('status ASC').order('denotations_count DESC').order('updated_at DESC').limit(10)
+  scope :index, order('status ASC').order('denotations_count DESC').order('projects.updated_at DESC').limit(10)
 
   scope :not_id_in, lambda{|project_ids|
     where('projects.id NOT IN (?)', project_ids)
