@@ -141,7 +141,7 @@ class DocsController < ApplicationController
       docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       @doc = docs.first if docs.length == 1
     end
-    
+
     @project, notice = get_project(params[:project_id])
     if @doc.present?
       @doc.ascii_body if (params[:encoding] == 'ascii')
@@ -169,6 +169,13 @@ class DocsController < ApplicationController
           format.json {redirect_to doc_sourcedb_sourceid_divs_index_path(format: :json)}
           format.txt  {render text: docs.collect{|doc| doc.body}.join("\n") }
         end
+      end
+    else # when the specified document does not exist
+      notice  = 'The specified document does not exist' + (@project.present? ? ' in the project.' : '.')
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: notice}
+        format.json {render json: {message:notice}, status: :unprocessable_entity}
+        format.txt  {render text: notice, status: :unprocessable_entity}
       end
     end
   end
