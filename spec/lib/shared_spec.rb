@@ -32,7 +32,7 @@ describe Shared do
       end
 
       it 'should return aligned annotations' do
-        @result.should eql({denotations: @aligned_denotations, instances: ["instance"], relations: @relations, modifications: @modification, text: @doc[:body]})
+        @result.should eql({denotations: @aligned_denotations, relations: @relations, modifications: @modification, text: @doc[:body]})
       end
     end
     
