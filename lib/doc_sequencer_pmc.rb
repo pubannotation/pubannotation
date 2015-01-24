@@ -10,10 +10,10 @@ class DocSequencerPMC
   attr_reader :source_url, :xml, :divs
 
   def initialize (id)
-    raise "id is nil." if id.nil?
+    raise ArgumentError, "id is nil." if id.nil?
 
     id = id.strip
-    raise "'#{id}' is not a valid ID of PMC" unless id.match(/^(PMC)?[:-]?([1-9][0-9]*)$/)
+    raise ArgumentError, "'#{id}' is not a valid ID of PMC" unless id.match(/^(PMC)?[:-]?([1-9][0-9]*)$/)
 
     id = id.sub(/^PMC[:-]?/, '')
 
@@ -21,7 +21,7 @@ class DocSequencerPMC
       case response.code
       when 200
         @xml = response
-        raise "#{id} not available from PMC." if @xml.index("PMC#{id} not found")
+        raise ArgumentError, "#{id} not found in PMC." if @xml.index("PMC#{id} not found")
 
         parser = XML::Parser.string(@xml, :encoding => XML::Encoding::UTF_8)
         @doc = parser.parse
@@ -41,37 +41,17 @@ class DocSequencerPMC
     secs     = get_secs
     psec     = (secs and secs[0].is_a?(Array))? secs.shift : nil 
 
-    if title and abstract and secs
+    raise 'could not find the title' if title.nil?
+    raise 'could not find the abstract' if abstract.nil?
+    raise 'could not find a section' if secs.nil? || secs.empty?
 
-      # extract captions
-      caps = []
+    # extract captions
+    caps = []
 
-      if psec
-        psec.each do |p|
-          figs = p.find('.//fig')
-          tbls = p.find('.//table-wrap')
-
-          figs.each do |f|
-            label   = f.find_first('./label').content.strip
-            caption = f.find_first('./caption')
-            caps << {:heading => 'Caption-' + label, :body => get_text(caption)}
-          end
-
-          tbls.each do |t|
-            label   = t.find_first('./label').content.strip
-            caption = t.find_first('./caption')
-            caps << {:heading => 'Caption-' + label, :body => get_text(caption)}
-          end
-
-          figs.each {|f| f.remove!}
-          tbls.each {|t| t.remove!}
-        end
-      end
-
-      # extract figures and tables
-      secs.each do |sec|
-        figs = sec.find('.//fig')
-        tbls = sec.find('.//table-wrap')
+    if psec
+      psec.each do |p|
+        figs = p.find('.//fig')
+        tbls = p.find('.//table-wrap')
 
         figs.each do |f|
           label   = f.find_first('./label').content.strip
@@ -88,52 +68,71 @@ class DocSequencerPMC
         figs.each {|f| f.remove!}
         tbls.each {|t| t.remove!}
       end
-
-      divs = []
-
-      divs << {:heading =>'TIAB', :body => get_text(title) + "\n" + get_text(abstract)}
-
-      if psec
-        text = ''
-        psec.each {|p| text += get_text(p)}
-        divs << {:heading => "INTRODUCTION", :body => text}
-      end
-
-      secs.each do |sec|
-        stitle  = sec.find_first('./title')
-        label   = stitle.content.strip
-        stitle.remove!
-
-        ps      = sec.find('./p')
-        subsecs = sec.find('./sec')
-
-        # remove dummy section
-        if subsecs.length == 1
-          subsubsecs = subsecs[0].find('./sec')
-          subsecs = subsubsecs if subsubsecs.length > 0
-        end
-
-        if subsecs.length == 0
-          divs << {:heading => label, :body => get_text(sec)}
-        else
-          if ps.length > 0
-            text = ps.collect{|p| get_text(p)}.join
-            divs << {:heading => label, :body => text}
-          end
-
-          subsecs.each do |subsec|
-            divs << {:heading => label, :body => get_text(subsec)}
-          end
-        end
-      end
-
-      divs.each{|d| d[:body].strip!}
-      caps.each{|d| d[:body].strip!}
-
-      return divs + caps
-    else
-      return nil
     end
+
+    # extract figures and tables
+    secs.each do |sec|
+      figs = sec.find('.//fig')
+      tbls = sec.find('.//table-wrap')
+
+      figs.each do |f|
+        label   = f.find_first('./label').content.strip
+        caption = f.find_first('./caption')
+        caps << {:heading => 'Caption-' + label, :body => get_text(caption)}
+      end
+
+      tbls.each do |t|
+        label   = t.find_first('./label').content.strip
+        caption = t.find_first('./caption')
+        caps << {:heading => 'Caption-' + label, :body => get_text(caption)}
+      end
+
+      figs.each {|f| f.remove!}
+      tbls.each {|t| t.remove!}
+    end
+
+    divs = []
+
+    divs << {:heading =>'TIAB', :body => get_text(title) + "\n" + get_text(abstract)}
+
+    if psec
+      text = ''
+      psec.each {|p| text += get_text(p)}
+      divs << {:heading => "INTRODUCTION", :body => text}
+    end
+
+    secs.each do |sec|
+      stitle  = sec.find_first('./title')
+      label   = stitle.content.strip
+      stitle.remove!
+
+      ps      = sec.find('./p')
+      subsecs = sec.find('./sec')
+
+      # remove dummy section
+      if subsecs.length == 1
+        subsubsecs = subsecs[0].find('./sec')
+        subsecs = subsubsecs if subsubsecs.length > 0
+      end
+
+      if subsecs.length == 0
+        divs << {:heading => label, :body => get_text(sec)}
+      else
+        if ps.length > 0
+          text = ps.collect{|p| get_text(p)}.join
+          divs << {:heading => label, :body => text}
+        end
+
+        subsecs.each do |subsec|
+          divs << {:heading => label, :body => get_text(subsec)}
+        end
+      end
+    end
+
+    divs.each{|d| d[:body].strip!}
+    caps.each{|d| d[:body].strip!}
+
+    return divs + caps
   end
 
 
@@ -143,33 +142,28 @@ class DocSequencerPMC
       title = titles.first
       return (check_title(title))? title : nil
     else
-      warn "more than one titles."
-      return nil
+      raise "more than one titles."
     end
   end
 
 
   def get_abstract
     abstracts = @doc.find('/pmc-articleset/article/front/article-meta/abstract')
+    raise "no abstract" if abstracts.nil? || abstracts.empty?
 
     if abstracts.length == 1
       abstract = abstracts.first
-    elsif abstracts.length > 1
+    else
       abstracts.each do |a|
         unless a['abstract-type']
           abstract = a
           break
         end
       end
-    else
-      warn "no abstract."
     end
 
-    if abstract and check_abstract(abstract)
-      return abstract
-    else
-      return nil
-    end
+    return abstract if abstract && check_abstract(abstract)
+    raise "something wrong in getting the abstract."
   end
 
 
@@ -186,8 +180,7 @@ class DocSequencerPMC
           if secs.empty?
             psec << e
           else
-            warn "<p> element between <sec> elements"
-            return nil
+            raise "a <p> element between <sec> elements"
           end
         when 'sec'
           secs << psec if secs.empty? and !psec.empty?
@@ -200,12 +193,12 @@ class DocSequencerPMC
             if check_sec(e)
               secs << e
             else
-              return nil
+              raise "a unexpected structure of <sec>"
             end
           end
         when 'supplementary-material'
         else
-          warn "element out of sec: #{e.name}"
+          raise "an element out of sec: #{e.name}"
           return nil
         end
       end
@@ -238,7 +231,7 @@ class DocSequencerPMC
       when 'fig', 'table-wrap'
         return false unless check_float(e)
       else
-        warn "unexpected element in sec (#{title}): #{e.name}"
+        raise "a unexpected element in sec (#{title}): #{e.name}"
         return false
       end
     end
@@ -257,7 +250,7 @@ class DocSequencerPMC
       when 'fig', 'table-wrap'
         return false unless check_float(e)
       else
-        warn "unexpected element in subsec: #{e.name}"
+        raise "a unexpected element in subsec: #{e.name}"
         return false
       end
     end
@@ -275,7 +268,7 @@ class DocSequencerPMC
       when 'sec'
         return false unless check_subsec(e)
       else
-        warn "unexpected element in abstract: #{e.name}"
+        raise "a unexpected element in abstract: #{e.name}"
         return false
       end
     end
@@ -288,7 +281,7 @@ class DocSequencerPMC
       case e.name
       when 'italic', 'bold', 'sup', 'sub', 'underline'
       else
-        warn "unexpected element in title: #{e.name}"
+        raise "a unexpected element in title: #{e.name}"
         return false
       end
     end
@@ -325,7 +318,7 @@ class DocSequencerPMC
         when 'p'
           return false unless check_p(e)
         else
-          warn "unexpected element in caption: #{e.name}"
+          raise "a unexpected element in caption: #{e.name}"
           return false
         end
       end
@@ -381,7 +374,7 @@ if __FILE__ == $0
       if xmlout
         puts doc.xml
       else
-       p doc.divs
+        p doc.divs
       end
     rescue
       warn $!
