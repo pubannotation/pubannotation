@@ -264,10 +264,14 @@ class DocsController < ApplicationController
   # GET /docs/new.json
   def new
     @doc = Doc.new
-    @project, notice = get_project(params[:project_id])
+    begin 
+      @project = get_project2(params[:project_id])
+    rescue => e
+      notice = e.message
+    end
     respond_to do |format|
       format.html # new.html.erb
-      format.json { render json: @doc }
+      format.json {render json: @doc.to_hash}
     end
   end
 
@@ -300,14 +304,92 @@ class DocsController < ApplicationController
     end
   end
 
+  # add new docs to a project
+  def add
+    # get the docspecs list
+    docspecs =  if params["_json"] && params["_json"].class == Array
+                  params["_json"].collect{|d| d.symbolize_keys}
+                elsif params["sourcedb"].present? && params["sourceid"].present?
+                  [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
+                elsif params[:ids].present? && params[:sourcedb].present?
+                  params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
+                end
+
+    # get the project
+    begin 
+      project = get_project2(params[:project_id])
+    rescue => e
+      message = e.message
+    end
+
+    p params
+    puts "-----"
+
+    messages = []
+    imported, added, failed = 0, 0, 0
+    if user_signed_in? && project.user == current_user
+      docspecs.each do |docspec|
+        begin
+          unless Doc.exist?(docspec)
+            imported += 1 unless Doc.import(docspec).nil?
+          end
+          added += project.add_doc(docspec) unless project.nil?
+        rescue => e
+          failed += 1
+          messages << e.message
+        end
+      end
+    else
+      messages << "you are not authorized to add documents to the project."
+    end
+
+    respond_to do |format|
+      format.html {redirect_to project_docs_path(project.name), notice:"imported:#{imported}, added:#{added}, failed:#{failed}"}
+      format.json {render json:{imported:imported, added:added, failed:failed, messages:messages}, status:(added > 0 ? :created : :unprocessable_entity)}
+    end
+  end
+
+  def uptodate
+    # get the docspecs list
+    docspecs =  if params["_json"] && params["_json"].class == Array
+                  params["_json"].collect{|d| d.symbolize_keys}
+                elsif params["sourcedb"].present? && params["sourceid"].present?
+                  [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
+                elsif params[:ids].present? && params[:sourcedb].present?
+                  params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
+                end
+
+    docspecs.each do |docspec|
+      doc = Doc.get_doc(docspec)
+      p doc.projects
+      # divs.each do |div|
+      #   p div.projects
+      # end
+      puts "-----------"
+    end
+
+    respond_to do |format|
+      format.html {redirect_to project_docs_path(project.name), notice:"imported:#{imported}, added:#{added}, failed:#{failed}"}
+      format.json {render json:{imported:imported, added:added, failed:failed, messages:messages}, status:(added > 0 ? :created : :unprocessable_entity)}
+    end
+
+  end
+
   def create_project_docs
-    project, message = get_project(params[:project_id])
+    # preprocessing for JSON array
+    params[:docs] = params["_json"] if params["_json"]
 
     docs =  if params[:ids].present? && params[:sourcedb].present?
               params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {source_db:params[:sourcedb], source_id:id}}
             elsif params[:docs].present?
               params[:docs].collect{|d| d.symbolize_keys}
             end
+
+    begin 
+      project = get_project2(params[:project_id])
+    rescue => e
+      message = e.message
+    end
 
     num_created, num_added, num_failed = 0, 0, 0
     if project && docs

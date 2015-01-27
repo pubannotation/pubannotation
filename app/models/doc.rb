@@ -95,6 +95,48 @@ class Doc < ActiveRecord::Base
       order(sort_order)
   }
   
+
+  def self.get_doc(docspec)
+    if docspec[:id].present?
+      Doc.find(docspec[:id])
+    elsif docspec[:sourcedb].present? && docspec[:sourceid].present?
+      Doc.find_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:serial].present? ? docspec[:serial] : 0)
+    else
+      nil
+    end
+  end
+
+  def self.exist?(docspec)
+    !self.get_doc(docspec).nil?
+  end
+
+  def self.import(docspec)
+    if docspec[:sourcedb] && docspec[:sourceid]
+      begin
+        doc_sequence = Object.const_get("DocSequencer#{docspec[:sourcedb]}").new(docspec[:sourceid])
+        divs_hash = doc_sequence.divs
+
+        divs_hash.each_with_index do |div_hash, i|
+          doc = Doc.new(
+            {
+              :body     => div_hash[:body],
+              :section  => div_hash[:heading],
+              :source   => doc_sequence.source_url,
+              :sourcedb => docspec[:sourcedb],
+              :sourceid => docspec[:sourceid],
+              :serial   => i
+            }
+          )
+          raise "could not save" unless doc.save
+        end
+
+        divs_hash
+      rescue => e
+        raise e
+      end
+    end
+  end
+
   def self.order_by(docs, order)
     if docs.present?
       case order
@@ -224,9 +266,9 @@ class Doc < ActiveRecord::Base
     "#{prev_text}<span class='highlight'>#{spans}</span>#{next_text}"   
   end
   
-  def hdenotations(project, options = {})
-    if options.present? && options[:spans].present?
-      denotations = self.denotations.where("project_id = ?", project.id).within_spans(options[:spans][:begin_pos], options[:spans][:end_pos])
+  def hdenotations(span, project)
+    if span.present?
+      denotations = self.denotations.where("project_id = ?", project.id).within_spans(span[:begin_pos], span[:end_pos])
     else
       if project.associate_projects.blank?
         denotations = self.denotations.where("project_id = ?", project.id)
@@ -251,9 +293,9 @@ class Doc < ActiveRecord::Base
     end
   end
   
-  def hrelations(project, options = {})
-    if options.present? && options[:spans].present?
-      denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
+  def hrelations(span, project)
+    if span.present?
+      denotation_ids = self.denotations.within_spans(span[:begin_pos], span[:end_pos]).collect{|denotation| denotation.id}
       if project.blank?
         relations = Relation.where(["subj_id IN(?) AND obj_id IN (?) AND subj_type = 'Denotation' AND obj_type = 'Denotation'", denotation_ids, denotation_ids])
       else
@@ -268,10 +310,9 @@ class Doc < ActiveRecord::Base
     end
   end
   
-  def hmodifications(project, options = {})
-    if options.present? && options[:spans].present?
-      self.denotations
-      denotation_ids = self.denotations.within_spans(options[:spans][:begin_pos], options[:spans][:end_pos]).collect{|denotation| denotation.id}
+  def hmodifications(span, project)
+    if span.present?
+      denotation_ids = self.denotations.within_spans(span[:begin_pos], span[:end_pos]).collect{|denotation| denotation.id}
       # SELECT "modifications".* FROM "modifications" INNER JOIN "instances" ON "modifications"."obj_id" = "instances"."id" AND "modifications"."obj_type" = 'Instance' WHERE "instances"."obj_id" = 1750
       # modifications = Modification.
       #   joins('INNER JOIN instances ON modifications.obj_id = instances.id')
@@ -323,7 +364,7 @@ class Doc < ActiveRecord::Base
   
   def to_hash
     {
-      text: body.gsub(/[\r\n]/, ""),
+      text: body.nil? ? nil : body.gsub(/[\r\n]/, ''),
       source_db: sourcedb,
       source_id: sourceid,
       div_id: serial,
@@ -404,6 +445,27 @@ class Doc < ActiveRecord::Base
     end
   end
   
+  def self.create_doc(doc_hash, attributes = {})
+    if divs_hash.present?
+      divs = Array.new
+      divs_hash.each_with_index do |div_hash, i|
+        doc = Doc.new(
+          {
+            :body     => doc_hash[:body],
+            :section  => doc_hash[:heading],
+            :source   => attributes[:source_url],
+            :sourcedb => attributes[:sourcedb],
+            :sourceid => attributes[:sourceid],
+            :serial   => i
+          }
+        )
+        divs << doc if doc.save
+      end
+    end
+    return divs
+  end
+
+
   def self.create_divs(divs_hash, attributes = {})
     if divs_hash.present?
       divs = Array.new
@@ -449,5 +511,40 @@ class Doc < ActiveRecord::Base
         project.decrement_docs_counter(self)
       end
     end
+  end
+
+  def get_annotations (span = nil, projects = nil)
+    hdenotations = self.hdenotations(span, projects)
+    hrelations = self.hrelations(span, projects)
+    hmodifications = self.hmodifications(span, projects)
+    text = self.body
+    if (options[:encoding] == 'ascii')
+      asciitext = get_ascii_text (text)
+      text_alignment = TextAlignment::TextAlignment.new(text, asciitext)
+      hdenotations = text_alignment.transform_denotations(hdenotations)
+      text = asciitext
+    end
+
+    if (options[:discontinuous_annotation] == 'bag')
+      # TODO: convert to hash representation
+      hdenotations, hrelations = bag_denotations(hdenotations, hrelations)
+    end
+
+    annotations = Hash.new
+    
+    # project
+    annotations[:project] = project[:name] if project.present?
+
+    # doc
+    annotations[:sourcedb] = doc.sourcedb
+    annotations[:sourceid] = doc.sourceid
+    annotations[:divid] = doc.serial
+    annotations[:section] = doc.section
+    annotations[:text] = text
+    # doc.relational_models
+    annotations[:denotations] = hdenotations if hdenotations
+    annotations[:relations] = hrelations if hrelations
+    annotations[:modifications] = hmodifications if hmodifications
+    annotations
   end
 end

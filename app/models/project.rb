@@ -610,6 +610,16 @@ class Project < ActiveRecord::Base
     return [num_created, num_added, num_failed]   
   end
 
+  def add_doc (docspec)
+    divs = Doc.find_all_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
+    if self.docs.include?(divs.first)
+      0
+    else
+      self.docs << divs
+      1
+    end
+  end
+
   def create_user_sourcedb_docs(options = {})
     divs = Array.new
     num_failed = 0

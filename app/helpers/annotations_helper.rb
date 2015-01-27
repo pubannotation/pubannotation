@@ -1,6 +1,7 @@
 require 'text_alignment'
 
 module AnnotationsHelper
+  # To be deprecated in favor of doc.get_annotations
   def get_annotations (project, doc, options = {})
     if doc.present?
       hdenotations = doc.hdenotations(project, options)
@@ -21,17 +22,10 @@ module AnnotationsHelper
       end
 
       annotations = Hash.new
-      # if doc.sourcedb == 'PudMed'
-      #   annotations[:pmdoc_id] = doc.sourceid
-      # elsif doc.sourcedb == 'PMC'
-      #   annotations[:pmcdoc_id] = doc.sourceid
-      #   annotations[:div_id] = doc.serial
-      # end
       
       # project
-      if project.present?
-        annotations[:project] = project[:name]
-      end 
+      annotations[:project] = project[:name] if project.present?
+
       # doc
       annotations[:source_db] = doc.sourcedb
       annotations[:source_id] = doc.sourceid

@@ -161,7 +161,10 @@ class AnnotationsController < ApplicationController
   # POST /annotations.json
   def create
     begin
-      project = get_project2(params[:project_id]) if params[:project_id].present?
+      project = if params[:project_id].present?
+        authenticate_user!
+        get_project2(params[:project_id])
+      end
 
       mode = :addition if params[:mode] == 'addition'
 

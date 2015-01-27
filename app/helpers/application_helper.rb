@@ -139,12 +139,4 @@ module ApplicationHelper
       end
     end
   end
-
-  def get_project2 (project_name)
-    authenticate_user!
-    project = Project.find_by_name(project_name)
-    raise ArgumentError, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name) unless project.present?
-    raise ArgumentError, I18n.t('controllers.application.get_project.private', :project_name => project_name) unless (project.accessibility == 1 || (user_signed_in? && project.user == current_user))
-    project
-  end
 end
