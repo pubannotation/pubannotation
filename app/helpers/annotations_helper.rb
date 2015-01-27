@@ -83,7 +83,7 @@ module AnnotationsHelper
       raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
       annotations[:relations].each{|r| r = r.symbolize_keys}
 
-      ids = annotations[:relations].collect{|d| r[:id]}.compact
+      ids = annotations[:relations].collect{|r| r[:id]}.compact
       idnum = 1
 
       annotations[:relations].each do |a|
