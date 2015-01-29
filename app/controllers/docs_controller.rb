@@ -7,6 +7,8 @@ class DocsController < ApplicationController
   # JSON POST
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
+
+  autocomplete :docs, :sourcedb
   include DenotationsHelper
 
   # GET /docs
@@ -374,6 +376,10 @@ class DocsController < ApplicationController
 
     project.docs.delete(docs) 
     redirect_to :back
+  end
+
+  def autocomplete_sourcedb
+    render :json => Doc.where(['sourcedb like ?', "%#{params[:term]}%"]).collect{|doc| doc.sourcedb}.uniq
   end
 
   private

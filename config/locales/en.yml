@@ -455,6 +455,7 @@ en:
       account: account
       annotation: annotation
       annotations: annotations
+      clear: clear
       edit : edit
       error: error
       delete: delete

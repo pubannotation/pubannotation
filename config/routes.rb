@@ -39,6 +39,7 @@ Pubann::Application.routes.draw do
       # list sourcedb
       get 'sourcedb' => 'docs#sourcedb_index'
       get 'search' => 'docs#search'
+      get :autocomplete_sourcedb
     end  
     member do
       get 'annotations' => 'annotations#annotations_index'

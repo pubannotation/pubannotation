@@ -1205,7 +1205,32 @@ describe DocsController do
     end
   end 
 
-  describe '' do
+  describe 'autocomplete_sourcedb' do
+    before do
+      @source_dbs = %w(sdb1 sdb2 sdb3)
+      @source_dbs.each do |source_db|
+        2.times do |time|
+          FactoryGirl.create(:doc, sourcedb: source_db, sourceid: time.to_s )
+        end
+      end
+    end
+
+    context 'when matched' do
+      it 'should return unique source_dbs as json' do
+        get :autocomplete_sourcedb, term: 'sdb'
+        expect(response.body).to eql @source_dbs.to_json
+      end
+    end
+
+    context 'when not matched' do
+      it 'should blank array as json' do
+        get :autocomplete_sourcedb, term: 'AAA'
+        expect(response.body).to eql [].to_json
+      end
+    end
+  end
+
+  describe 'set_access_control_headers' do
     before do
       @controller = DocsController.new
       @headers = {'Access-Control-Allow-Origin' => nil}
