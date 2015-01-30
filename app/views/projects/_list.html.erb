@@ -29,6 +29,10 @@
 <% if projects.blank? %>
   <p>none</p>
 <% else %>
+  <div style="float:right">
+    <%= total_number(projects, 'projects') -%>
+  </div>
+
   <table class="full">
     <tr>
       <% if @annotations_projects_check -%>

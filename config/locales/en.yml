@@ -413,6 +413,7 @@ en:
       belongs_to_sproject: Projects belongs to this Sproject
       associate_project: Associate project
       select_zip_file: Select zip file to upload.
+      total_number: "Total %{total_number} projecs"
       start_delay_save_annotation_zip:
         result: "Create annotations zip file task started. %{created_at}"
       save_annotation_zip:

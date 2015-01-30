@@ -29,7 +29,7 @@
 	<% end %>
 
   <div style="float:right">
-    <%= t('views.docs.total_number', total_number: @source_docs.total_entries) -%>
+    <%= total_number(@source_docs, 'docs') -%>
   </div>
 	
 	<table class="full">		

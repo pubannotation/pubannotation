@@ -436,6 +436,7 @@ ja:
       belongs_to_sproject: このSprojectに含まれるプロジェクト
       associate_project: 関連プロジェクト
       detail: プロジェクト詳細
+      total_number: "全%{total_number}プロジェクト"
       select_zip_file: アップロードするzipファイルを選択して下さい。
       start_delay_save_annotation_zip:
         result: "アノテーションZIPファイルの作成を開始しました。 %{created_at}"
