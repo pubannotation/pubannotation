@@ -34,14 +34,14 @@
 	
 	<table class="full">		
 		<tr>
-			<th style="width:6em">
+      <th class="docs_header_sourcedb">
 				<% if params[:action] == 'search' -%>
 					<%= t('activerecord.attributes.doc.sourcedb') -%>
 				<% else -%>
          <%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
 				<% end -%>
 			</th>
-			<th style="width:6em">
+      <th class="docs_header_sourceid">
 				<% if params[:action] == 'search' -%>
 					<%= t('activerecord.attributes.doc.sourceid') -%>
 				<% else -%>
