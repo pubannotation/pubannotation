@@ -39,6 +39,17 @@ describe "projects/_list.html.erb" do
           @params[:action] = 'index'
         end
 
+        context 'when params[:sort_direction] and params[:search_projects] nil' do
+          before do
+            view.stub(:params).and_return(@params)
+            render 
+          end
+
+          it 'should not include projects_path link' do
+            expect(rendered).not_to have_selector(:a, href: projects_path)
+          end
+        end
+
         context 'when params[:sort_direction] present' do
           before do
             @params[:sort_direction] = 'ASC'
@@ -51,14 +62,15 @@ describe "projects/_list.html.erb" do
           end
         end
 
-        context 'when params[:sort_direction] nil' do
+        context 'when params[:search_projects] == true' do
           before do
+            @params[:search_projects] = true
             view.stub(:params).and_return(@params)
             render 
           end
 
-          it 'should not include projects_path link' do
-            expect(rendered).not_to have_selector(:a, href: projects_path)
+          it 'should include projects_path link' do
+            expect(rendered).to have_selector(:a, href: projects_path)
           end
         end
       end
@@ -70,20 +82,17 @@ describe "projects/_list.html.erb" do
           render 
         end
 
-        it 'should include projects_path link' do
-          expect(rendered).to have_selector(:a, href: projects_path)
+        it 'should not include projects_path link' do
+          expect(rendered).not_to have_selector(:a, href: projects_path)
         end
       end
     end
 
     context 'when params[:controller] != projects' do
-      before do
-        @params = {controller: 'home'}
-        view.stub(:params).and_return(@params)
-      end
-
-      context 'whene @doc blank' do
+      context 'when params[:controller] == home' do
         before do
+          @params = {controller: 'home'}
+          view.stub(:params).and_return(@params)
           render 
         end
 
@@ -92,13 +101,14 @@ describe "projects/_list.html.erb" do
         end
       end
 
-      context 'whene @doc present' do
+      context 'when params[:controller] != home' do
         before do
-          assign :doc, FactoryGirl.create(:doc)
+          @params = {controller: 'docs', action: 'show'}
+          view.stub(:params).and_return(@params)
           render 
         end
 
-        it 'should include projects_path link' do
+        it 'should not include projects_path link' do
           expect(rendered).not_to have_selector(:a, href: projects_path)
         end
       end

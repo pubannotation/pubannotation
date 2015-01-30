@@ -22,7 +22,7 @@
   <% end %>
 </h1>
 
-<%= link_to_unless ((params[:controller] == 'projects' && params[:action] == 'index' && params[:sort_direction].blank?) || @doc.present?), t('views.projects.list'), projects_path, {class: 'tab inactive_tab'} do
+<%= link_to_if (params[:controller] == 'projects' && params[:action] == 'index' && (params[:sort_direction].present? || params[:search_projects])) || params[:controller] == 'home', t('views.projects.list'), projects_path, {class: 'tab inactive_tab'} do
   nil
 end -%>
 
