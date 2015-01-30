@@ -22,7 +22,9 @@
   <% end %>
 </h1>
 
-<%= link_to t('views.projects.list'), projects_path, :class => 'tab inactive_tab' -%>
+<%= link_to_unless ((params[:controller] == 'projects' && params[:action] == 'index' && params[:sort_direction].blank?) || @doc.present?), t('views.projects.list'), projects_path, {class: 'tab inactive_tab'} do
+  nil
+end -%>
 
 <%= render :partial => 'projects/search_form' if params[:controller] == 'projects' -%>
 
