@@ -373,6 +373,8 @@ en:
     annotations:
       index:
         confirm_destroy_all: Are you sure? All the instances and relations that belong to this project will be deleted.
+      see_in_visualizaion: See in visualization
+      visualization_link_disabled: Visualization link is disabled because this document is too large.
     divs:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
       div: Div.

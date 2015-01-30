@@ -312,4 +312,19 @@ module AnnotationsHelper
     end
     docinfo   = (div_id == nil)? "#{source_db}-#{source_id}" : "#{source_db}-#{source_id}-#{div_id}-#{section}"
   end
+
+  def visualization_link
+    if params[:action] == 'spans'
+      if @doc.body.length < 500
+        annotations_url = if params[:div_id].present?
+          spans_annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, params[:begin], params[:end])
+        else
+          spans_annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, params[:begin], params[:end])
+        end
+        content_tag(:td, link_to(t('views.annotations.see_in_visualizaion'), annotations_url))
+      else
+        content_tag(:td, content_tag(:span, t('views.annotations.see_in_visualizaion')), title: t('views.annotations.visualization_link_disabled'), style: 'color: #999')
+      end
+    end
+  end
 end

@@ -50,6 +50,6 @@
     <%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
   </div>
   <div id='annotations_projects'>
-    <%= link_to t('views.shared.annotations'), @annotations_path -%>
+    <%= link_to t('views.annotations.see_in_visualizaion'), @annotations_path, class: 'button' -%>
   </div>
 <% end -%>

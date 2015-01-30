@@ -395,6 +395,8 @@ ja:
     annotations:
       index:
         confirm_destroy_all: "関連するインスタンス、リレーションも全て削除されますがよろしいですか？"
+      see_in_visualizaion: ビジュアライゼーションで見る
+      visualization_link_disabled: 本文が長すぎるためビジュアライゼーションリンクは無効です。
     divs:
       document_divs: "<span class='meta'>ドキュメント、 <span class='pname'>%{sourcedb}:%{sourceid}</span>の</span>ディビジョン"
       div: デイビジョン

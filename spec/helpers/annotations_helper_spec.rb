@@ -811,4 +811,66 @@ describe AnnotationsHelper do
       end
     end
   end
+
+  describe 'visualization_link' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      assign :project, @project
+      assign :doc, @doc
+    end
+
+    context 'when params[:actin] == spans' do
+      before do
+        @params = {action: 'spans', begin: '0', end: '10'}
+      end
+
+      context 'when @doc.body.length < limit' do
+        before do
+          @doc.stub_chain(:body, :length).and_return(1)
+        end
+
+        context 'when params div_id present' do
+          before do
+            @params[:div_id] = '0'
+            helper.stub(:params).and_return(@params)
+          end
+
+          it 'should return annotaitons for div link include spans' do
+            expect(helper.visualization_link).to have_selector(:a, href: spans_annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, @params[:begin], @params[:end]))
+          end
+        end
+
+        context 'when params div_id blank' do
+          before do
+            helper.stub(:params).and_return(@params)
+          end
+
+          it 'should return annotaitons for doc link include spans' do
+            expect(helper.visualization_link).to have_selector(:a, href: spans_annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @params[:begin], @params[:end]))
+          end
+        end
+      end
+
+      context 'when @doc.body.length < limit' do
+        before do
+          @doc.stub_chain(:body, :length).and_return(1000)
+        end
+
+        it 'shoud not include ancor tag' do
+          expect(helper.visualization_link).not_to have_selector(:a)
+        end
+      end
+    end
+
+    context 'when params[:actin] != spans' do
+      before do
+        @params = {action: 'action', begin: '0', end: '10'}
+      end
+
+      it 'shoud return nil' do
+        expect(helper.visualization_link).to be_nil 
+      end
+    end
+  end
 end

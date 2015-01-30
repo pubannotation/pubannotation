@@ -25,6 +25,7 @@
 	<td>in</td>
 	<td>[<%= link_to "Table", annotation_url %>]</td>
 	<td>[<%= link_to "JSON",  annotation_url + '.json' %>]</td>
+  <%= visualization_link -%>
 </tr>
 
 <% unless @project.editor.blank? %>
