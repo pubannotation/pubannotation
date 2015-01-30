@@ -84,4 +84,59 @@ describe ProjectsHelper do
       end
     end
   end
+
+  describe 'link_to_project' do
+    context 'when @doc, sourcedb and sourceid present' do
+      before do
+        @doc = FactoryGirl.create(:doc)
+        @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      end
+
+      context 'when @doc has_divs?' do
+        before do
+          @doc.stub(:has_divs?).and_return(true)
+        end
+
+        context 'params begin-end present' do
+          before do
+            @params = {begin: 0, end: 1}
+            helper.stub(:params).and_return(@params)
+          end
+
+          it 'shoud return path include div and span begin-end' do
+            expect(helper.link_to_project(@project)).to have_selector(:a, href: spans_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, @params[:begin], @params[:end]) )
+          end
+        end
+
+        context 'params begin-end blank' do
+          it 'shoud return path include div' do
+            expect(helper.link_to_project(@project)).to have_selector(:a, href: show_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial))
+          end
+        end
+      end
+
+      context 'when @doc has_divs? == false' do
+        before do
+          @doc.stub(:has_divs?).and_return(false)
+        end
+
+        context 'params begin-end present' do
+          before do
+            @params = {begin: 0, end: 1}
+            helper.stub(:params).and_return(@params)
+          end
+
+          it 'shoud return path include doc and span begin-end' do
+            expect(helper.link_to_project(@project)).to have_selector(:a, href: spans_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @params[:begin], @params[:end]))
+          end
+        end
+
+        context 'params begin-end blank' do
+          it 'shoud return path include doc' do
+            expect(helper.link_to_project(@project)).to have_selector(:a, href: show_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid))
+          end
+        end
+      end
+    end
+  end
 end
