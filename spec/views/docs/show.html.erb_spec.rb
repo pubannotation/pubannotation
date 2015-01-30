@@ -39,4 +39,33 @@ describe "docs/show.html.erb" do
       end
     end
   end
+
+  describe 'annotaitons link' do
+    before do
+      @params = {sourcedb: 'sourcedb', sourceid: 'sourceid'}
+    end
+
+    context 'when params[:div_id] present' do
+      before do
+        @params[:div_id] = @doc.serial
+        view.stub(:params).and_return(@params)
+        render
+      end
+
+      it 'should have annotation link include div' do
+        expect(rendered).to have_selector(:a, href: doc_sourcedb_sourceid_divs_annotations_path(@doc[:sourcedb], @doc[:sourceid], @doc[:serial]))
+      end
+    end
+
+    context 'when params[:div_id] nil' do
+      before do
+        view.stub(:params).and_return(@params)
+        render
+      end
+
+      it 'should have annotation link without div' do
+        expect(rendered).to have_selector(:a, href: doc_sourcedb_sourceid_annotations_path(@doc[:sourcedb], @doc[:sourceid]))
+      end
+    end
+  end
 end

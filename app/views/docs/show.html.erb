@@ -13,3 +13,10 @@
 <% else %>
 	<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
 <% end %>
+
+<% if params[:div_id] -%>
+  <%= link_to t('views.shared.annotations'), doc_sourcedb_sourceid_divs_annotations_path(@doc.sourcedb, @doc.sourceid, @doc.serial), class: 'button' -%>
+<% else %>
+  <%= link_to t('views.shared.annotations'), doc_sourcedb_sourceid_annotations_path(@doc.sourcedb, @doc.sourceid), class: 'button' -%>
+<% end %>
+
