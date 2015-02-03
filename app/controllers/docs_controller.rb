@@ -194,7 +194,7 @@ class DocsController < ApplicationController
         @project_denotations = get_project_denotations(@projects, @doc, params)
       end
       @annotations_projects_check = true
-      @annotations_path = "#{url_for(:only_path => true)}/annotations"
+      @annotations_path = annotations_url_helper
     end
     @spans, @prev_text, @next_text = @doc.spans(params)
     @text = @doc.text(params)

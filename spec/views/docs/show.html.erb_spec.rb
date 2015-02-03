@@ -11,6 +11,8 @@ describe "docs/show.html.erb" do
     assign :doc, @doc
     assign :text, 'text'
     view.stub(:current_user).and_return(nil)
+    @annotation_url = '/annotations'
+    view.stub(:annotations_url_helper).and_return(@annotation_url)
   end
 
   context 'when @project present' do
@@ -41,30 +43,25 @@ describe "docs/show.html.erb" do
   end
 
   describe 'annotaitons link' do
-    before do
-      @params = {sourcedb: 'sourcedb', sourceid: 'sourceid'}
-    end
-
-    context 'when params[:div_id] present' do
+    context 'when @project.blank?' do
       before do
-        @params[:div_id] = @doc.serial
-        view.stub(:params).and_return(@params)
         render
       end
 
-      it 'should have annotation link include div' do
-        expect(rendered).to have_selector(:a, href: doc_sourcedb_sourceid_divs_annotations_path(@doc[:sourcedb], @doc[:sourceid], @doc[:serial]))
+      it 'should render annotaitons link' do
+        expect(rendered).to have_selector(:a, href: @annotation_url, content: I18n.t('views.shared.annotations'))
       end
     end
 
-    context 'when params[:div_id] nil' do
+    context 'when @project.present' do
       before do
-        view.stub(:params).and_return(@params)
+        assign :project, FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+        view.stub(:user_signed_in?).and_return(false)
         render
       end
 
-      it 'should have annotation link without div' do
-        expect(rendered).to have_selector(:a, href: doc_sourcedb_sourceid_annotations_path(@doc[:sourcedb], @doc[:sourceid]))
+      it 'should not  render annotaitons link' do
+        expect(rendered).not_to have_selector(:a, href: @annotation_url, content: I18n.t('views.shared.annotations'))
       end
     end
   end

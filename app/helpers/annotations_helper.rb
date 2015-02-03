@@ -274,21 +274,21 @@ module AnnotationsHelper
     end    
   end
 
-  def annotations_url_helper
-    if params[:div_id].present?
-      if params[:action] == 'spans'
-        spans_annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, params[:begin], params[:end])
+  def annotations_url_helper(options = {})
+    url = "#{url_for(:only_path => true)}/annotations"
+    url.gsub!(/spans\/\d+-\d+\//, '') if options && options[:without_spans]
+    return url
+  end  
+
+  def visualization_link(options = {})
+    if params[:action] == 'spans'
+      if @doc.body.length < 500
+        link_to(t('views.annotations.see_in_visualizaion'), annotations_url_helper, class: options[:class])
       else
-        annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
-      end      
-    else
-      if params[:action] == 'spans'
-        spans_annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, params[:begin], params[:end])
-      else
-        annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid)
+        content_tag(:span, t('views.annotations.see_in_visualizaion'), title: t('views.annotations.visualization_link_disabled'), style: 'color: #999')
       end
     end
-  end  
+  end
 
   def annotations_form_action_helper
     if params[:id].present?
@@ -311,20 +311,5 @@ module AnnotationsHelper
       section   = doc.section.to_s if doc.present?
     end
     docinfo   = (div_id == nil)? "#{source_db}-#{source_id}" : "#{source_db}-#{source_id}-#{div_id}-#{section}"
-  end
-
-  def visualization_link
-    if params[:action] == 'spans'
-      if @doc.body.length < 500
-        annotations_url = if params[:div_id].present?
-          spans_annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, params[:begin], params[:end])
-        else
-          spans_annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, params[:begin], params[:end])
-        end
-        content_tag(:td, link_to(t('views.annotations.see_in_visualizaion'), annotations_url))
-      else
-        content_tag(:td, content_tag(:span, t('views.annotations.see_in_visualizaion')), title: t('views.annotations.visualization_link_disabled'), style: 'color: #999')
-      end
-    end
   end
 end

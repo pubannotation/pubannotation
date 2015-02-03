@@ -23,9 +23,11 @@
 <tr>
 	<th><%= t('views.shared.see') %></th>
 	<td>in</td>
-	<td>[<%= link_to "Table", annotation_url %>]</td>
+  <td>[<%= link_to "Table", annotations_url_helper({without_spans: true}) -%>]</td>
 	<td>[<%= link_to "JSON",  annotation_url + '.json' %>]</td>
-  <%= visualization_link -%>
+  <% if params[:action] == 'spans' -%>
+    <td><%= visualization_link -%></td>
+  <% end %>
 </tr>
 
 <% unless @project.editor.blank? %>

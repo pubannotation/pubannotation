@@ -39,6 +39,11 @@ describe "docs/spans.html.erb" do
     it 'should render annotations/summary_and_view_options' do
       rendered.should include(@template_annotations_summary)
     end
+
+    it 'should_not call visualization_link' do
+      expect(view).not_to receive(:visualization_link)
+      render
+    end
   end
 
   context 'when params[:project_id] is blank' do
@@ -52,6 +57,11 @@ describe "docs/spans.html.erb" do
 
     it 'should render partial template projects/list' do
       rendered.should include(@template_projects_list)
+    end
+
+    it 'should call visualization_link' do
+      expect(view).to receive(:visualization_link)
+      render
     end
   end
 end
