@@ -232,10 +232,12 @@ en:
         body: body
         documentation_category_id: category
       project:
+        author: author
         rdfwriter: RDF writer
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
         annotations_zip_downloadable: Annotation downloadable
+        maintainer: maintainer
         process: process
         updated_at: last update
       sproject:
