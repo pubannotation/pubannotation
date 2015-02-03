@@ -105,6 +105,7 @@ Pubann::Application.routes.draw do
     collection do
       # auto complete path which use scope and scope argument required :scope_argument param
       get 'autocomplete_project_name/:scope_argument'  => 'projects#autocomplete_project_name', :as => 'autocomplete_project_name'
+      get 'autocomplete_project_author'  => 'projects#autocomplete_project_author', :as => 'autocomplete_project_author'
       get 'zip_upload' => 'projects#zip_upload'
       post 'create_from_zip' => 'projects#create_from_zip'
     end

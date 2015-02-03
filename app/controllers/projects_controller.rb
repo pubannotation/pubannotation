@@ -1,7 +1,7 @@
 class ProjectsController < ApplicationController
   before_filter :updatable?, :only => [:edit, :update]
   before_filter :destroyable?, :only => :destroy
-  before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :search]
+  before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :autocomplete_project_author, :search]
   # JSON POST
   before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
@@ -10,6 +10,7 @@ class ProjectsController < ApplicationController
   autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
   autocomplete :user, :username
   autocomplete :project, :name, :full => true, :scopes => [:id_in => :project_ids]
+  autocomplete :project, :author
 
   # GET /projects
   # GET /projects.json
@@ -202,6 +203,10 @@ class ProjectsController < ApplicationController
       flash[:notice] = notice
       render :template => 'projects/show'
     end
+  end
+
+  def autocomplete_project_author
+    render json: Project.where(['author like ?', "%#{params[:term]}%"]).collect{|project| project.author}.uniq
   end
 
   def is_owner?
