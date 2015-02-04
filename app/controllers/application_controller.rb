@@ -85,6 +85,7 @@ class ApplicationController < ActionController::Base
     return sourcedb, sourceid, serial, id
   end
 
+  # to be deprecated in favor for get_project2
   def get_project (project_name)
     project = Project.find_by_name(project_name)
     if project
@@ -98,6 +99,12 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def get_project2 (project_name)
+    project = Project.find_by_name(project_name)
+    raise ArgumentError, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name) unless project.present?
+    raise ArgumentError, I18n.t('controllers.application.get_project.private', :project_name => project_name) unless (project.accessibility == 1 || (user_signed_in? && project.user == current_user))
+    project
+  end
 
   def get_projects (options = {})
     projects = (options.present? && options[:doc].present?)? options[:doc].projects : Project.where('id > ?', 0)
@@ -108,16 +115,19 @@ class ApplicationController < ActionController::Base
 
 
   def get_doc (sourcedb, sourceid, serial = 0, project = nil, id = nil)
-    if id
-      doc = Doc.find(id)
+    doc = if id
+      Doc.find(id)
     else
-      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
+      Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
     end
 
     if doc
-      if project && !doc.projects.include?(project)
-        doc = nil
-        notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
+      if project
+        projects = project.respond_to?(:each) ? project : [project]
+        if (doc.projects & projects).empty?
+          doc = nil
+          notice = I18n.t('controllers.application.get_doc.not_belong_to', :sourcedb => sourcedb, :sourceid => sourceid, :project_name => project.name)
+        end
       end
     else
       notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
@@ -202,35 +212,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  ## get denotations
-  def get_denotations (project_name, sourcedb, sourceid, serial = 0)
-    denotations = []
-
-    if sourcedb and sourceid and doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if project_name and project = doc.projects.find_by_name(project_name)
-        denotations = doc.denotations.where("project_id = ?", project.id).order('begin ASC')
-      else
-        denotations = doc.denotations
-      end
-    else
-      if project_name and project = Project.find_by_name(project_name)
-        denotations = project.denotations
-      else
-        denotations = Denotation.all
-      end
-    end
-
-    denotations
-  end
-
-
-  # get denotations (hash version)
-  def get_hdenotations (project_name, sourcedb, sourceid, serial = 0)
-    denotations = get_denotations(project_name, sourcedb, sourceid, serial)
-    hdenotations = denotations.collect {|ca| ca.get_hash}
-    hdenotations
-  end
-
   def chain_denotations (denotations_s)
     # This method is not called anywhere.
     # And just returns denotations_s array.
@@ -241,7 +222,6 @@ class ApplicationController < ActionController::Base
       end
     end
   end
-
 
   ## get relations
   def get_relations (project_name, sourcedb, sourceid, serial = 0)

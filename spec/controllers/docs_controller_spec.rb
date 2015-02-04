@@ -907,7 +907,7 @@ describe DocsController do
     end
   end
   
-  describe 'create_project_docs' do
+  describe 'add' do
     before do
       controller.class.skip_before_filter :http_basic_authenticate
       controller.class.skip_before_filter :authenticate_user!
@@ -922,7 +922,7 @@ describe DocsController do
       @project.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
     end
 
-    context 'when params ids, sourcedb present' do
+    context 'when the params, sourcedb and ids, present' do
       before do
         @id_1 = 'id_1'
         @id_2 = 'id_2'
@@ -931,15 +931,16 @@ describe DocsController do
 
       describe 'docs' do
         it 'should call project.add_docs_from_json with docs generated from params[:ids] and current_user' do
-          @project.should_receive(:add_docs_from_json).with([{source_db: @sourcedb, source_id: @id_1}, {source_db: @sourcedb, source_id: @id_2}], @current_user)
-          get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb
+          @project.should_receive(:add_doc).with({source_db: @sourcedb, source_id: @id_1}, @current_user)
+          @project.should_receive(:add_doc).with({source_db: @sourcedb, source_id: @id_2}, @current_user)
+          get :add, project_id: @project.name, sourcedb: @sourcedb, ids: @ids
         end
       end
 
       describe 'format' do
         context 'when format html' do
           before do
-            get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb
+            get :add, project_id: @project.name, sourcedb: @sourcedb, ids: @ids
           end
 
           it 'should set flash[:notice] from number of created, added and failed' do
@@ -954,7 +955,7 @@ describe DocsController do
         context 'when format json' do
           context 'when num_created > 0' do
             before do
-              get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
+              get :add, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
             end
 
             it 'should render result as json' do
@@ -978,7 +979,7 @@ describe DocsController do
             context 'when num_added > 0' do
               before do
                 @project.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
-                get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
+                get :add, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
               end
 
               it 'should render result as json' do
@@ -998,7 +999,7 @@ describe DocsController do
               before do
                 @num_added = 0
                 @project.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
-                get :create_project_docs, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
+                get :add, :project_id => @project.name, ids: @ids, sourcedb: @sourcedb, format: 'json'
               end
 
               it 'should render result as json' do
@@ -1025,7 +1026,7 @@ describe DocsController do
 
       it 'should call project.add_docs_from_json with docs symbolize_keys docs and current_user' do
         @project.should_receive(:add_docs_from_json).with(@docs.collect{|d| d.symbolize_keys}, @current_user)
-        get :create_project_docs, :project_id => @project.name, docs: @docs
+        get :add, :project_id => @project.name, docs: @docs
       end
     end
   end

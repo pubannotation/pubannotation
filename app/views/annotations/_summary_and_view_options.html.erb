@@ -1,6 +1,6 @@
 <h2>
 	<% if params[:action] == 'spans' -%>
-		<%= t('views.docs.annotation_within_spans', :spans => "#{params[:begin]} - #{params[:end]}").html_safe %>
+		<%= t('views.docs.annotation_within_span', :spans => "#{params[:begin]} - #{params[:end]}").html_safe %>
 	<% else -%>
 		<%= t('views.docs.annotation_within_project', :project_name => @project.name).html_safe %>
 	<% end -%>
@@ -8,11 +8,11 @@
 <ul>
 	<li>
 		<%= t('activerecord.models.denotations') %>:
-		<%= denotations_count_helper(@project, {:doc => @doc})%>
+		<%= @annotations[:denotations].present? ? @annotations[:denotations].length : 0 %>
 	</li>
 	<li>
 		<%= t('activerecord.models.relations') %>:
-		<%= relations_count_helper(@project, {:doc => @doc})%>
+		<%= @annotations[:relations].present? ? @annotations[:relations].length : 0 %>
 		<br />
 	</li>
 </ul>

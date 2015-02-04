@@ -1,11 +1,12 @@
 require 'text_alignment'
 
 module AnnotationsHelper
+  # To be deprecated in favor of doc.get_annotations
   def get_annotations (project, doc, options = {})
     if doc.present?
-      hdenotations = doc.hdenotations(project, options)
-      hrelations = doc.hrelations(project, options)
-      hmodifications = doc.hmodifications(project, options)
+      hdenotations = doc.hdenotations(project)
+      hrelations = doc.hrelations(project)
+      hmodifications = doc.hmodifications(project)
       text = doc.body
       if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text (text)
@@ -29,9 +30,8 @@ module AnnotationsHelper
       # end
       
       # project
-      if project.present?
-        annotations[:project] = project[:name]
-      end 
+      annotations[:project] = project[:name] if project.present?
+
       # doc
       annotations[:source_db] = doc.sourcedb
       annotations[:source_id] = doc.sourceid
@@ -81,9 +81,9 @@ module AnnotationsHelper
 
     if annotations[:relations].present?
       raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
-      annotations[:relations].each{|r| r = r.symbolize_keys}
+      annotations[:relations].each{|a| a = a.symbolize_keys}
 
-      ids = annotations[:relations].collect{|r| r[:id]}.compact
+      ids = annotations[:relations].collect{|a| a[:id]}.compact
       idnum = 1
 
       annotations[:relations].each do |a|
@@ -99,9 +99,9 @@ module AnnotationsHelper
 
     if annotations[:modifications].present?
       raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
-      annotations[:modifications].each{|m| m = m.symbolize_keys} 
+      annotations[:modifications].each{|a| a = a.symbolize_keys} 
 
-      ids = annotations[:modifications].collect{|d| m[:id]}.compact
+      ids = annotations[:modifications].collect{|a| a[:id]}.compact
       idnum = 1
 
       annotations[:modifications].each do |a|
@@ -133,17 +133,19 @@ module AnnotationsHelper
     if doc.present?
       text = doc.body
       annotations = Hash.new
-      if doc.has_divs?
-        annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false)
+
+      annotations[:target] = if doc.has_divs?
+        Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false)
       else
-        annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
+        Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
       end
-      if (options[:encoding] == 'ascii')
+
+      annotations[:text] = if (options[:encoding] == 'ascii')
         asciitext = get_ascii_text(text)
-        annotations[:text] = asciitext
       else
-        annotations[:text] = text
+        text
       end
+
       # project
       if project.present?
         get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
@@ -195,9 +197,9 @@ module AnnotationsHelper
   
   def get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
     annotations[:project] = Rails.application.routes.url_helpers.project_path(project.name, :only_path => false)
-    hrelations = doc.hrelations(project, options)
-    hmodifications = doc.hmodifications(project, options)
-    hdenotations = doc.hdenotations(project, options)
+    hrelations = doc.hrelations(project)
+    hmodifications = doc.hmodifications(project)
+    hdenotations = doc.hdenotations(project)
     if options[:encoding] == 'ascii'
       text_alignment = TextAlignment::TextAlignment.new(text, asciitext)
       hdenotations = text_alignment.transform_denotations(hdenotations)
@@ -276,7 +278,7 @@ module AnnotationsHelper
 
   def annotations_url_helper(options = {})
     url = "#{url_for(:only_path => true)}/annotations"
-    url.gsub!(/spans\/\d+-\d+\//, '') if options && options[:without_spans]
+    url.gsub!(/span_show\/\d+-\d+\//, '') if options && options[:without_spans]
     return url
   end  
 
@@ -284,8 +286,8 @@ module AnnotationsHelper
     if params[:action] == 'spans'
       link_to(t('views.annotations.see_in_visualizaion'), annotations_url_helper, class: options[:class])
     else
-      if @doc.body.length < 500
-        link_to(t('views.annotations.see_in_visualizaion'), annotations_url_helper, class: options[:class])
+      if params[:action] == 'span_show'
+        span_annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, params[:begin], params[:end])
       else
         content_tag(:span, t('views.annotations.see_in_visualizaion'), title: t('views.annotations.visualization_link_disabled'), style: 'color: #999')
       end

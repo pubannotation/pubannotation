@@ -1,10 +1,10 @@
-<% if @denotations.present? -%>
-	<%= render :partial => 'denotations/denotation', :collection => @denotations, :locals => {:project => @project} -%>
+<% if @annotations[:denotations].present? -%>
+	<%= render :partial => 'denotations/denotation', :collection => @annotations[:denotations], :locals => {:project => @project} -%>
 <% else -%>
 	<%= t('controllers.shared.not_exists', :model => t('views.shared.annotation')) %>
 <% end -%>
 
-<% if @relations and !@relations.empty? %>
+<% if @annotations[:relations].present? %>
   <h2>Relations</h2>
   <table class="ann">
     <tr>
@@ -14,7 +14,7 @@
       <th>Object</th>
     </tr>
 
-  <% @relations.each do |relation| %>
+  <% @annotations[:relations].each do |relation| %>
     <tr>
       <td><%= relation[:id] %></td>
       <td><%= relation[:pred] %></td>
@@ -25,7 +25,7 @@
   </table>
 <% end %>
 
-<% if @modifications and !@modifications.empty? %>
+<% if @annotations[:modifications].present? %>
   <h2>Modifications</h2>
   <table class="ann">
     <tr>
@@ -34,7 +34,7 @@
       <th>Object</th>
     </tr>
 
-  <% @modifications.each do |modification| %>
+  <% @annotations[:modifications].each do |modification| %>
     <tr>
       <td><%= modification[:id] %></td>
       <td><%= modification[:pred] %></td>

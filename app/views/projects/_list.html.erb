@@ -59,7 +59,6 @@ end -%>
 
   <% projects.each do |project| %>
     <% project_path = project_path(project.name) -%>
-    <% type = 'P' -%>
     <tr>
       <% if @annotations_projects_check -%>
         <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotations_#{project.id}", class: 'annotations_projects_check'} -%></td>

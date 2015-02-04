@@ -1,4 +1,4 @@
-<% collection_size = local_assigns[:size].present? ? local_assigns[:size] : @denotations.size-%>
+<% collection_size = local_assigns[:size].present? ? local_assigns[:size] : @annotations[:denotations].size-%>
 
 <% if denotation_counter == 0 -%>
   <h2><%= t('activerecord.models.denotation') %></h2>
@@ -25,7 +25,7 @@
     <% unless denotation[:span].respond_to?(:keys) %>
       <% denotation[:span].each_with_index do |s, i| %><% unless i == 0 %>,<% end %><%= s[:begin] %>:<%= s[:end] %><% end %>
     <% else %>
-        <%= spans_link_helper(@doc, denotation) -%>
+        <%= span_link_helper(@doc, denotation[:span]) -%>
     <% end %>
   </td>
   <td>denote</td>

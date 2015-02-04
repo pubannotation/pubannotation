@@ -5,18 +5,22 @@ class DivsController < ApplicationController
   # GET /pmcdocs/:pmcid/divs
   # GET /pmcdocs/:pmcid/divs.json
   def index
-    @docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], :order => 'serial ASC')
-    @docs.each{|doc| doc.ascii_body} if (params[:encoding] == 'ascii')
+    @divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], :order => 'serial ASC')
+    @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
 
     if params[:project_id]
       @project_name = params[:project_id]
       @project = Project.find_by_name(@project_name)
     end
 
+    span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+    @annotations = @divs.map{|div| div.hannotations(@project, span)}
+
     respond_to do |format|
       format.html # index.html.erb
-      format.json { render json: @docs.collect{|doc| doc.to_list_hash('div')} }
-      format.tsv { render text: Doc.to_tsv(@docs, 'div') }
+      format.json { render json: @divs.collect{|div| div.to_list_hash('div')} }
+      format.tsv { render text: Doc.to_tsv(@divs, 'div') }
       format.txt {
         if @project.present?
           redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, params[:sourcedb], params[:sourceid], format: :txt)
@@ -46,7 +50,7 @@ class DivsController < ApplicationController
     end
 
     if @doc
-      @doc.ascii_body if (params[:encoding] == 'ascii')
+      @doc.set_ascii_body if (params[:encoding] == 'ascii')
       @doc_hash = @doc.to_hash
     end
 
