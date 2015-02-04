@@ -20,6 +20,13 @@
 				<% end -%>
 			</th>
 			<th><%= t('activerecord.attributes.doc.body') %></th>
+      <th style="width:6em">
+				<% if params[:action] == 'search' -%>
+					<%= t('activerecord.models.project') -%>
+				<% else -%>
+					<%= sortable(Doc, 'projects_count', t('activerecord.models.project')) %>
+				<% end -%>
+      </th>
 			<th style="width:12em"></th>
 		</tr>
 <% end -%>
@@ -28,6 +35,7 @@
 	<td><%= sourceid_index_link_helper(source_doc) -%></td>
 	<td><%= source_doc.sourceid -%></td>
 	<td><%= source_doc.body -%></td>
+  <td><%= source_doc.projects.count -%></td>
 	<td>
         <span class="button">
         	<% if  params[:project_id].present? -%>
