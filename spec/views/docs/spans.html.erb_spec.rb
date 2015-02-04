@@ -18,6 +18,7 @@ describe "docs/spans.html.erb" do
     stub_template 'annotations/_summary_and_view_options' => @template_annotations_summary
     @template_projects_list = 'projects/_list'
     stub_template 'projects/_list' => @template_projects_list
+    view.stub(:visualization_link).and_return(nil)
   end
 
   context 'when params[:project_id] is present' do

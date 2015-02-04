@@ -34,22 +34,13 @@ describe "annotations/_summary_and_view_options.html.erb" do
   end
 
   describe 'visualization_link' do
-    context 'when params[:action] == spand' do
-      before do
-        view.stub(:params).and_return({action: 'spans'})
-      end
-
-      it 'should call visualization_link' do
-        view.should_receive(:visualization_link)
-        render
-      end
+    before do
+      view.stub(:params).and_return({action: 'spans'})
     end
 
-    context 'when params[:action] != spand' do
-      it 'should_not call visualization_link' do
-        view.should_not_receive(:visualization_link)
-        render
-      end
+    it 'should call visualization_link' do
+      view.should_receive(:visualization_link)
+      render
     end
   end
 end

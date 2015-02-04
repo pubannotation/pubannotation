@@ -282,6 +282,8 @@ module AnnotationsHelper
 
   def visualization_link(options = {})
     if params[:action] == 'spans'
+      link_to(t('views.annotations.see_in_visualizaion'), annotations_url_helper, class: options[:class])
+    else
       if @doc.body.length < 500
         link_to(t('views.annotations.see_in_visualizaion'), annotations_url_helper, class: options[:class])
       else

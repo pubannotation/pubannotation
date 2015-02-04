@@ -803,6 +803,18 @@ describe AnnotationsHelper do
     context 'when params[:actin] == spans' do
       before do
         @params = {action: 'spans', begin: '0', end: '10'}
+        @params[:div_id] = '0'
+        helper.stub(:params).and_return(@params)
+      end
+
+      it 'should return annotaitons for div link include spans' do
+        expect(helper.visualization_link).to have_selector(:a, href: @annotation_url_helper)
+      end
+    end
+
+    context 'when params[:actin] != spans' do
+      before do
+        @params = {action: 'action', begin: '0', end: '10'}
       end
 
       context 'when @doc.body.length < limit' do
@@ -825,16 +837,6 @@ describe AnnotationsHelper do
         it 'shoud not include ancor tag' do
           expect(helper.visualization_link).not_to have_selector(:a)
         end
-      end
-    end
-
-    context 'when params[:actin] != spans' do
-      before do
-        @params = {action: 'action', begin: '0', end: '10'}
-      end
-
-      it 'shoud return nil' do
-        expect(helper.visualization_link).to be_nil 
       end
     end
   end
