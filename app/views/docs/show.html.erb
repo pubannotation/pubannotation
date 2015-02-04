@@ -13,3 +13,5 @@
 <% else %>
 	<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
 <% end %>
+
+<%= link_to t('views.shared.annotations'), annotations_url_helper, class: 'button' if @project.blank? -%>

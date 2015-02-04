@@ -5,6 +5,7 @@
 <h1>
 	<span><%= t('views.shared.stored_in', :content => t('activerecord.models.doc').pluralize.capitalize, :pname => t('views.service.title')).html_safe %></span>
 </h1>
+<%= link_to t('views.docs.list'), docs_path, {class: 'tab inactive_tab'} -%>
 
 <%= render :partial => "docs/source_db", collection: @source_dbs -%>
 

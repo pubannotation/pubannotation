@@ -668,60 +668,38 @@ describe AnnotationsHelper do
   end
 
   describe 'annotations_url_helper' do
-    before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '123', :serial => 0)  
-      assigns[:doc] = @doc
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))  
-      assigns[:project] = @project 
-      @begin = '5'
-      @end = '10'
-    end
-    
-    context 'when params[:div_id] present' do
+    context 'when options nil' do
       before do
-        @div_id = '123'
+        @url_for = '/projects/project_id'
+        helper.stub(:url_for).and_return(@url_for)
       end
-      
-      context 'whern action == spans' do
-        before do
-          helper.stub(:params).and_return(:action => 'spans', :div_id => @div_id, :begin => @begin, :end => @end)  
-        end
-        
-        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
-          helper.annotations_url_helper.should eql spans_annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, @begin, @end)   
-        end  
-      end
-      
-      context 'whern action != spans' do
-        before do
-          helper.stub(:params).and_return(:action => 'doc', :div_id => @div_id)  
-        end
-        
-        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
-          helper.annotations_url_helper.should eql annotations_project_sourcedb_sourceid_divs_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)   
-        end  
+
+      it 'should return url and annotations' do
+         expect(helper.annotations_url_helper).to eql(@url_for + '/annotations')
       end
     end
-    
-    context 'when params[:div_id] blank' do
-      context 'whern action == spans' do
+
+    context 'when options[:without_spans] present' do
+      context 'when url include spans' do
         before do
-          helper.stub(:params).and_return(:action => 'spans', :begin => @begin, :end => @end)  
+          @url_for = '/projects/project_id/spans/0-100'
+          helper.stub(:url_for).and_return(@url_for)
         end
-        
-        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
-          helper.annotations_url_helper.should eql spans_annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid, @begin, @end)   
-        end  
+
+        it 'should return url and annotations' do
+          expect(helper.annotations_url_helper).to eql(@url_for + '/annotations')
+        end
       end
-      
-      context 'whern action != spans' do
+
+      context 'when url not include spans' do
         before do
-          helper.stub(:params).and_return(:action => 'doc')  
+          @url_for = '/projects/project_id/'
+          helper.stub(:url_for).and_return(@url_for)
         end
-        
-        it 'should return spans_annotations_project_sourcedb_sourceid_divs_docs_url' do
-          helper.annotations_url_helper.should eql annotations_project_sourcedb_sourceid_docs_url(@project.name, @doc.sourcedb, @doc.sourceid)   
-        end  
+
+        it 'should return url and annotations' do
+          expect(helper.annotations_url_helper).to eql(@url_for + '/annotations')
+        end
       end
     end
   end
@@ -808,6 +786,57 @@ describe AnnotationsHelper do
 
       it 'should include source_db' do
         @doc_info.should eql("-") 
+      end
+    end
+  end
+
+  describe 'visualization_link' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      assign :project, @project
+      assign :doc, @doc
+      @annotation_url_helper = '/annotations'
+      helper.stub(:annotations_url_helper).and_return(@annotation_url_helper)
+    end
+
+    context 'when params[:actin] == spans' do
+      before do
+        @params = {action: 'spans', begin: '0', end: '10'}
+        @params[:div_id] = '0'
+        helper.stub(:params).and_return(@params)
+      end
+
+      it 'should return annotaitons for div link include spans' do
+        expect(helper.visualization_link).to have_selector(:a, href: @annotation_url_helper)
+      end
+    end
+
+    context 'when params[:actin] != spans' do
+      before do
+        @params = {action: 'action', begin: '0', end: '10'}
+      end
+
+      context 'when @doc.body.length < limit' do
+        before do
+          @doc.stub_chain(:body, :length).and_return(1)
+          @params[:div_id] = '0'
+          helper.stub(:params).and_return(@params)
+        end
+
+        it 'should return annotaitons for div link include spans' do
+          expect(helper.visualization_link).to have_selector(:a, href: @annotation_url_helper)
+        end
+      end
+
+      context 'when @doc.body.length < limit' do
+        before do
+          @doc.stub_chain(:body, :length).and_return(1000)
+        end
+
+        it 'shoud not include ancor tag' do
+          expect(helper.visualization_link).not_to have_selector(:a)
+        end
       end
     end
   end

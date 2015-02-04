@@ -108,17 +108,28 @@ describe User do
 
   describe 'scope except_current_user' do
     before do
-      @current_user = FactoryGirl.create(:user)
       @anothers_user = FactoryGirl.create(:user)
-      @users = User.except_current_user(@current_user)
     end
-    
-    it 'should include not current_user' do
-      @users.should include(@anothers_user)
+
+    context 'when current_user present' do
+      before do
+        @current_user = FactoryGirl.create(:user)
+        @users = User.except_current_user(@current_user)
+      end
+
+      it 'should include not current_user' do
+        @users.should include(@anothers_user)
+      end
+      
+      it 'should not include current_user' do
+        @users.should_not include(@current_user)
+      end
     end
-    
-    it 'should not include current_user' do
-      @users.should_not include(@current_user)
+
+    context 'when current_user nil' do
+      it 'should eql User.all' do
+        expect(User.except_current_user(nil)).to match_array(User.all)
+      end
     end
   end
   

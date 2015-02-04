@@ -372,4 +372,26 @@ describe ApplicationHelper do
 
     end
   end
+
+  describe 'total_number' do
+    context 'when list respond_to total_entries' do
+      before do
+        @list = double(:list, total_entries: 30, size: 10)
+      end
+
+      it 'should return list.total_entries' do
+        expect(helper.total_number(@list, 'projects')).to eql(t('views.projects.total_number', total_number: @list.total_entries))
+      end
+    end
+    
+    context 'when list not respond_to total_entries' do
+      before do
+        @list = double(:list, size: 10)
+      end
+
+      it 'should return list.size' do
+        expect(helper.total_number(@list, 'projects')).to eql(t('views.projects.total_number', total_number: @list.size))
+      end
+    end
+  end
 end

@@ -395,6 +395,8 @@ ja:
     annotations:
       index:
         confirm_destroy_all: "関連するインスタンス、リレーションも全て削除されますがよろしいですか？"
+      see_in_visualizaion: ビジュアライゼーションで見る
+      visualization_link_disabled: 本文が長すぎるためビジュアライゼーションリンクは無効です。
     divs:
       document_divs: "<span class='meta'>ドキュメント、 <span class='pname'>%{sourcedb}:%{sourceid}</span>の</span>ディビジョン"
       div: デイビジョン
@@ -434,6 +436,7 @@ ja:
       belongs_to_sproject: このSprojectに含まれるプロジェクト
       associate_project: 関連プロジェクト
       detail: プロジェクト詳細
+      total_number: "全%{total_number}プロジェクト"
       select_zip_file: アップロードするzipファイルを選択して下さい。
       start_delay_save_annotation_zip:
         result: "アノテーションZIPファイルの作成を開始しました。 %{created_at}"
@@ -480,6 +483,7 @@ ja:
       annotations: アノテーション
       back: 戻る
       category: カテゴリー
+      clear: クリア
       edit: 編集
       error: エラー
       delete: 削除

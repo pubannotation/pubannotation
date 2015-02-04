@@ -12,6 +12,7 @@
 <% end %>
 
 <h2><%= t('views.docs.list').capitalize -%></h2>
+<%= render partial: 'docs/search_form' -%>
 <%= render :partial => 'source_doc', :collection => @source_docs -%>
 
 <% if user_signed_in? && @project.present? && current_user == @project.user %>

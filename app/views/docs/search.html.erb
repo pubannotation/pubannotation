@@ -9,4 +9,6 @@
   <% end %>
   > <%= t('views.shared.search') -%>
 <% end -%>
+
+<%= render partial: 'docs/search_form' -%>
 <%= render partial: 'source_doc', collection: @source_docs -%>

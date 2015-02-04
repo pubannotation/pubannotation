@@ -147,4 +147,13 @@ module ApplicationHelper
     raise ArgumentError, I18n.t('controllers.application.get_project.private', :project_name => project_name) unless (project.accessibility == 1 || (user_signed_in? && project.user == current_user))
     project
   end
+
+  def total_number(list, model)
+    total_number = if list.respond_to?(:total_entries)
+      list.total_entries
+    else
+      list.size
+    end
+    t("views.#{ model }.total_number", total_number: total_number)
+  end
 end

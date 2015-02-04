@@ -21,7 +21,13 @@ class User < ActiveRecord::Base
 
   before_destroy :destroy_all_user_sourcedb_docs
 
-  scope :except_current_user, lambda { |current_user| where(["id != ?", current_user.id]) }
+  scope :except_current_user, lambda { |current_user| 
+    if current_user.present?
+      where(["id != ?", current_user.id]) 
+    else
+      all
+    end
+  }
   scope :except_project_associate_maintainers, lambda{|project_id|
       project = Project.find(project_id)
       associate_maintainers_ids = project.associate_maintainers.collect{|associate_maintainer| associate_maintainer.user_id}

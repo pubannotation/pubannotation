@@ -418,3 +418,26 @@ $indicator_size : 100px;
   display: none;
   z-index: 9999;
 }
+
+.projects_header_name{
+  width: 14em;
+}
+.projects_header_denotations_count,
+.projects_header_relations_count{
+  width: 4em;
+}
+.projects_header_author,
+.projects_header_user{
+  width: 8em;
+}
+#projects_search{
+  width: 100%;
+}
+#projects_search input,
+#docs_search input{
+  width: 90%;
+}
+.docs_header_sourcedb,
+.docs_header_sourceid{
+  width: 8em;
+}

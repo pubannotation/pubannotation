@@ -1145,6 +1145,32 @@ describe ProjectsController do
     end
   end
 
+  describe 'autocomplete_project_author' do
+    before do
+      @author_1 = 'search author'
+      @author_2 = 'search author2'
+      user = FactoryGirl.create(:user)
+      FactoryGirl.create(:project, user: user, author: @author_1)
+      FactoryGirl.create(:project, user: user, author: @author_1)
+      FactoryGirl.create(:project, user: user, author: @author_2)
+      FactoryGirl.create(:project, user: user, author: 'AAB')
+    end
+
+    context 'when term matched' do
+      it 'should return matched uniq author names as json' do
+        get :autocomplete_project_author, term: @author_1
+        expect(response.body).to eql([@author_1, @author_2].to_json) 
+      end
+    end
+
+    context 'when term not matched' do
+      it 'should return blank array as json' do
+        get :autocomplete_project_author, term: '888'
+        expect(response.body).to eql([].to_json) 
+      end
+    end
+  end
+
   describe 'is_owner?' do
     before do
       @status_error = 'status error'
