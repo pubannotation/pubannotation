@@ -20,5 +20,12 @@
 
   <%= hidden_field_tag :search_projects, true -%>
   <%= submit_tag t('views.shared.search') -%>
-  <%= submit_tag t('views.shared.clear'), type: 'reset' -%>
+  <%= submit_tag t('views.shared.clear'), id: 'reset' -%>
 <% end -%>
+
+<script>
+  $("#reset").click(function(){
+   $(this).closest('form').find("input[type=text], textarea").val("");
+    return false
+  });
+</script>

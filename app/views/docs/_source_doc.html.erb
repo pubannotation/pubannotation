@@ -1,33 +1,4 @@
 <% if source_doc_counter == 0 -%>
-	<%= form_tag(@search_path, method: 'get')  do -%>
-    <table id="docs_search" class="full">		
-      <tr>
-        <th class="docs_header_sourcedb">
-          <%= label_tag :sourcedb, t('activerecord.attributes.doc.sourcedb') -%>
-        </th>
-        <th class="docs_header_sourceid">
-          <%= label_tag :sourceid, t('activerecord.attributes.doc.sourceid') -%>
-        </th>
-        <th>
-          <%= label_tag :sourceid, t('activerecord.attributes.doc.body') -%>
-        </th>
-      </tr>
-      <tr>
-        <td>
-          <%= autocomplete_field_tag :sourcedb, '', "#{ autocomplete_sourcedb_docs_path }" -%>
-        </td>
-        <td>
-          <%= text_field_tag :sourceid, params[:body], value: params[:sourceid] -%>
-        </td>
-        <td>
-          <%= text_field_tag :body, params[:body], value: params[:body] -%>
-        </td>
-      </tr>
-    </table>
-    <%= submit_tag t('views.shared.search') -%>
-    <%= submit_tag t('views.shared.clear'), type: 'reset' -%>
-	<% end %>
-
   <div style="float:right">
     <%= total_number(@source_docs, 'docs') -%>
   </div>
