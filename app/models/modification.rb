@@ -15,4 +15,8 @@ class Modification < ActiveRecord::Base
     hmodification[:obj] = obj.hid
     hmodification
   end
+
+  scope :from_projects, -> (projects) {
+    where('modifications.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
+  }
 end

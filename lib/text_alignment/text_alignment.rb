@@ -44,11 +44,16 @@ class TextAlignment::TextAlignment
     spans.map{|span| transform_a_span(span)}
   end
 
-  def transform_denotations(denotations)
-    return nil if denotations == nil
-    denotations_new = Array.new(denotations)
-    (0...denotations.length).each {|i| denotations_new[i][:span] = transform_a_span(denotations[i][:span])}
-    denotations_new
+  def transform_denotations!(denotations)
+    denotations.map!{|d| d.begin = @position_map_begin[d.begin]; d.end = @position_map_end[d.end]; d} unless denotations.nil?
+  end
+
+  def transform_hdenotations(hdenotations)
+    unless hdenotations.nil?
+      hdenotations_new = Array.new(hdenotations)
+      (0...hdenotations.length).each {|i| hdenotations_new[i][:span] = transform_a_span(hdenotations[i][:span])}
+      hdenotations_new
+    end
   end
 
   private

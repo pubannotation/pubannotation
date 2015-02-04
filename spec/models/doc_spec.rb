@@ -1266,6 +1266,43 @@ describe Doc do
     end
   end
   
+  describe 'denotations_in_tracks' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_1.add_doc(@doc)
+      @project_2.add_doc(@doc)
+      @denotation_1 = FactoryGirl.create(:denotation, :project_id => @project_1.id)
+      @denotation_2 = FactoryGirl.create(:denotation, :project_id => @project_2.id)
+      @hdenotaions = 'hdenotations'
+      @doc.stub(:hdenotations) do |project|
+        if project == @project_1
+          @denotation_1
+        elsif project == @project_2
+          @denotation_2
+        end
+      end
+      @denotations_in_tracks = @doc.denotations_in_tracks
+    end
+    
+    it 'should return project' do
+      @denotations_in_tracks[0][:project].should eql(@project_1.name)
+    end
+    
+    it 'should return denotations' do
+      @denotations_in_tracks[0][:denotations].should eql(@denotation_1)
+    end
+    
+    it 'should return project' do
+      @denotations_in_tracks[1][:project].should eql(@project_2.name)
+    end
+    
+    it 'should return denotations' do
+      @denotations_in_tracks[1][:denotations].should eql(@denotation_2)
+    end
+  end
+
   describe 'project_denotations' do
     before do
       @doc = FactoryGirl.create(:doc)
@@ -1298,7 +1335,7 @@ describe Doc do
       @project_denotaions[1][:denotations].should eql("project_id_#{ @project_2.id }")
     end
   end
-  
+
   describe 'hrelations' do
     before do
       @doc = FactoryGirl.create(:doc)

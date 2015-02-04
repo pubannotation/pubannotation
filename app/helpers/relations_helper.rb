@@ -1,7 +1,7 @@
 module RelationsHelper
   def relations_count_helper(project, options = {})
     if params[:action] == 'spans'
-      relations = @doc.hrelations(project, {:spans => {:begin_pos => params[:begin], :end_pos => params[:end]}})
+      relations = @doc.hrelations(project, {:begin => params[:begin], :end => params[:end]})
       relations.present? ? relations.size : 0
     else 
       if project.present?

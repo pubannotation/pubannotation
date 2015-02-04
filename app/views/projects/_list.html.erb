@@ -40,20 +40,12 @@
       <th style="width:4em"><%= sortable(Project, 'relations_count', 'R') -%></th>
       <th style="width:8em"><%= sortable(Project, 'author', t('activerecord.attributes.project.author')) %></th>
       <th style="width:8em"><%= sortable(Project, 'users.username', t('activerecord.attributes.project.maintainer')) -%></th>
-<!-- 
-      <th title='Association'><%= link_to_unless_current 'A', url_for(:only_path => true, :projects_order => 'association'), :class => 'sortable-a' %></th>
-      <th style="width:1em" title='PubMed abstracts'><%= link_to_unless_current 'P', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>
-      <th style="width:1em" title='PubMed Central documents'><%= link_to_unless_current 'C', url_for(:only_path => true, :projects_order => 'pmcdocs_count'), :class => 'sortable-a' %></th>
-      <th style="width:1em" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
-      <th style="width:1em" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
- -->
       <th style="width:8em"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
       <th style="width:8em"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
     </tr>
 
   <% projects.each do |project| %>
     <% project_path = project_path(project.name) -%>
-    <% type = 'P' -%>
     <tr>
       <% if @annotations_projects_check -%>
         <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotations_#{project.id}", class: 'annotations_projects_check'} -%></td>
@@ -78,7 +70,6 @@
       <td><%= project.association_for(current_user) -%></td>
       <td style="text-align:right"><%= project.pmdocs_count -%></td>
       <td style="text-align:right"><%= project.pmcdocs_count -%></td>
-      <td style="text-align:right"><%= denotations_count_helper(project, {:doc => doc}) %></td>
       <td style="text-align:right"><%= relations_count_helper(project, {:doc => doc}) %></td>
       <td><%= project.associate_projects.size -%></td>
  -->

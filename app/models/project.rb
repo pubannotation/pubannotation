@@ -37,7 +37,7 @@ class Project < ActiveRecord::Base
   
   default_scope where(:type => nil)
 
-  scope :accessible, lambda{|current_user|
+  scope :accessible, -> (current_user) {
     if current_user.present?
       includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
     else
@@ -56,7 +56,7 @@ class Project < ActiveRecord::Base
     where('projects.id IN (?)', project_ids)
   }
   
-  scope :name_in, lambda{|project_names|
+  scope :name_in, -> (project_names) {
     where('projects.name IN (?)', project_names) if project_names.present?
   }
 

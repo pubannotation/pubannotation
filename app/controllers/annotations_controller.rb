@@ -6,20 +6,20 @@ class AnnotationsController < ApplicationController
   after_filter :set_access_control_headers
   include DenotationsHelper
 
-  def index
+  def index2
     @project, notice = get_project(params[:project_id])
+    @project = params[:projects].split(',').map{|n| Projects.accessible(current_user).find_by_name(n)} if params[:projects].present?
+
+    span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
 
     if @project
 
-      if (params[:pmdoc_id] || params[:pmcdoc_id] || params[:id] || (params[:sourcedb] && params[:sourceid]))
+      if (params[:id] || (params[:sourcedb] && params[:sourceid]))
         sourcedb, sourceid, serial, id = get_docspec(params)
         @doc, notice = get_doc(sourcedb, sourceid, serial, @project, id)
         if @doc
-          annotations = get_annotations_for_json(@project, @doc, :encoding => params[:encoding])
-          @text = annotations[:text]
-          @denotations = annotations[:denotations]
-          @relations = annotations[:relations]
-          @modifications = annotations[:modifications]
+          @doc.set_ascii_body if (params[:encoding] == 'ascii')
+          @annotations = @doc.hannotations(@project, span)
         end
 
       else
@@ -36,9 +36,10 @@ class AnnotationsController < ApplicationController
           anncollection = Array.new
           if @project.docs.present?
             @project.docs.each do |doc|
+              doc.set_ascii_body if (params[:encoding] == 'ascii')
               # puts "#{doc.sourceid}:#{doc.serial} <======="
               # anncollection.push (get_annotations(self, doc, :encoding => encoding))
-              anncollection.push (get_annotations_for_json(@project, doc, :encoding => params[:encoding]))
+              anncollection.push(doc.hannotations(@project, span))
             end
           end
         end
@@ -46,10 +47,10 @@ class AnnotationsController < ApplicationController
     end
 
     respond_to do |format|
-      if @project and @text
+      if @project and @doc
 
-        format.html { flash[:notice] = notice }
-        format.json { render :json => annotations, :callback => params[:callback] }
+        format.html {flash[:notice] = notice}
+        format.json {render :json => @annotations, :callback => params[:callback]}
         format.ttl  {
           if @project.rdfwriter.empty?
             head :unprocessable_entity
@@ -109,28 +110,99 @@ class AnnotationsController < ApplicationController
   end
 
   # annotations for doc without project
-  def annotations_index
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
-    if @doc
-      @denotations = @doc.project_denotations
-      annotations = get_annotations_for_json(nil, @doc, :encoding => params[:encoding])
-    end
+  def index
+    begin
+      if params[:project_id].present?
+        @project = Project.accessible(current_user).find_by_name(params[:project_id])
+        raise "There is no project named '#{params[:project_id]}'." unless @project.present?
 
-    respond_to do |format|
-      format.html {}
-      format.json { render :json => annotations, :callback => params[:callback] }
+        if params[:id].present?
+          @doc = @project.docs.find(params[:id])
+          raise "There is no such document in the project." unless @doc.present?
+        elsif params[:div_id].present?
+          @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+          raise "There is no such document in the project." unless @doc.present?
+        elsif params[:sourcedb].present? && params[:sourceid].present?
+          divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+          raise "There is no such document in the project." unless divs.present?
+
+          if divs.length > 1
+            respond_to do |format|
+              format.html {
+                flash[:notice] = 'Please specify the division id (div_id).'
+                redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])
+              }
+            end
+            return
+          end
+
+          @doc = divs[0]
+        end
+
+        span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+        @doc.set_ascii_body if (params[:encoding] == 'ascii')
+        @annotations = @doc.hannotations(@project, span)
+
+        respond_to do |format|
+          format.html
+          format.json {render json: @annotations.to_hash}
+        end
+
+      else
+
+        if params[:id].present?
+          @doc = Doc.find(params[:id])
+          raise "There is no such document." unless @doc.present?
+        elsif params[:sourcedb].present? && params[:sourceid].present?
+          divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+          raise "There is no such document." unless divs.present?
+
+          if divs.length > 1
+            respond_to do |format|
+              format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
+            end
+            return
+          end
+
+          @doc = divs[0]
+        end
+
+        span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+        @doc.set_ascii_body if params[:encoding] == 'ascii'
+        @annotations = @doc.hannotations(nil, span)
+        @project_annotations_index = @annotations[:tracks].inject({}) {|index, track| index[track[:project]] = track}
+
+        sort_order = sort_order(Project)
+        @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+
+        respond_to do |format|
+          format.html
+          format.json {render json: @annotations}
+        end
+      end
+
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
     end
   end
 
   def annotations
     sourcedb, sourceid, serial, id = get_docspec(params)
     params[:project_id] = params[:project] if params[:project].present?
+    @project = params[:projects].split(',').map{|n| Projects.accessible(current_user).find_by_name(n)} if params[:projects].present?
+
+    span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
     if params[:project_id].present?
       @project, flash[:notice] = get_project(params[:project_id])
       if @project
         @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
-        @project_denotations = get_project_denotations([@project], @doc, params)
+        @project_denotations = @doc.denotations_in_tracks(@project, span)
       end
     else
       @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
@@ -139,12 +211,12 @@ class AnnotationsController < ApplicationController
       else
         projects = @doc.projects
       end
-      @project_denotations = get_project_denotations(projects, @doc, params)
+      @project_denotations = @doc.denotations_in_tracks(projects, span)
     end
 
     if @doc.present?
       @spans, @prev_text, @next_text = @doc.spans(params)
-      annotations = get_annotations_for_json(@project, @doc, :spans => {:begin_pos => params[:begin], :end_pos => params[:end]}, :projects => params[:projects], :project_denotations => @project_denotations, doc_spans: @spans, params: params)
+      annotations = @doc.hannotations(@project, span)
 
       # ToDo: to process tracks
       @denotations = annotations[:denotations]
