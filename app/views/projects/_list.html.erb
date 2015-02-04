@@ -42,17 +42,9 @@ end -%>
       <% end -%>
       <th class="projects_header_name"><%= sortable(Project, 'name', t('activerecord.attributes.project.name')) %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
-      <th class="projects_header_denotations_count"><%= sortable(Project, 'denotations_count', 'D') -%></th>
-      <th class="projects_header_relations_count"><%= sortable(Project, 'relations_count', 'R') -%></th>
+      <th class="projects_header_denotations_count"><%= sortable(Project, 'denotations_count', '#Denotations') -%></th>
       <th class="projects_header_author"><%= sortable(Project, 'author', t('activerecord.attributes.project.author')) %></th>
       <th class="projects_header_user"><%= sortable(Project, 'users.username', t('activerecord.attributes.project.maintainer')) -%></th>
-<!-- 
-      <th title='Association'><%= link_to_unless_current 'A', url_for(:only_path => true, :projects_order => 'association'), :class => 'sortable-a' %></th>
-      <th style="width:1em" title='PubMed abstracts'><%= link_to_unless_current 'P', url_for(:only_path => true, :projects_order => 'pmdocs_count'), :class => 'sortable-a' %></th>
-      <th style="width:1em" title='PubMed Central documents'><%= link_to_unless_current 'C', url_for(:only_path => true, :projects_order => 'pmcdocs_count'), :class => 'sortable-a' %></th>
-      <th style="width:1em" title="<%= t('activerecord.models.denotations') %>"><%= link_to_unless_current 'D', url_for(:only_path => true, :projects_order => 'denotations_count'), :class => 'sortable-a' %></th>
-      <th style="width:1em" title="<%= t('activerecord.models.relations') %>"><%= link_to_unless_current 'R', url_for(:only_path => true, :projects_order => 'relations_count'), :class => 'sortable-a' %></th>
- -->
       <th style="width:8em"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
       <th style="width:8em"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
     </tr>
@@ -67,18 +59,9 @@ end -%>
         <%= link_to_project(project) -%>
       </td>
       <td title="<%= project.description -%>"><%= project.description %></td>
-      <td><%= project.denotations_count -%></td>
-      <td><%= project.relations_count -%></td>
+      <td><%= denotations_count_helper(project, @doc, @span) -%></td>
       <td><%= project.author %></td>
       <td><%= project.user.username %></td>
-<!-- 
-      <td><%= project.association_for(current_user) -%></td>
-      <td style="text-align:right"><%= project.pmdocs_count -%></td>
-      <td style="text-align:right"><%= project.pmcdocs_count -%></td>
-      <td style="text-align:right"><%= denotations_count_helper(project, {:doc => doc}) %></td>
-      <td style="text-align:right"><%= relations_count_helper(project, {:doc => doc}) %></td>
-      <td><%= project.associate_projects.size -%></td>
- -->
       <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
       <td><%= project.status_text -%></td>
     </tr>

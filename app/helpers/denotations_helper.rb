@@ -1,4 +1,12 @@
 module DenotationsHelper
+  def denotations_count_helper(project, doc, span)
+    if doc.present?
+      doc.get_denotations_count(project, span)
+    else
+      project.denotations_count
+    end
+  end
+
   def span_link_url_helper(doc, span)
     if doc.has_divs?
       Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_span_show_url(doc.sourcedb, doc.sourceid, doc.serial, span[:begin], span[:end])

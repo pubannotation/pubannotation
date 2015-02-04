@@ -46,7 +46,7 @@
 		    <% if (params[:begin] && params[:end]) || params[:action] == 'spans_index' -%>
 			    <%= link_to_unless_current "> spans", doc_sourcedb_sourceid_spans_index_path(@doc.sourcedb, @doc.sourceid) %>
 			    <% if params[:begin] && params[:end] -%>
-					<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", doc_sourcedb_sourceid_spans_path(@doc.sourcedb, @doc.serial, params[:begin], params[:end]) -%>
+					<%= link_to_unless_current "> #{params[:begin]}-#{params[:end]}", doc_sourcedb_sourceid_span_show_path(@doc.sourcedb, @doc.serial, params[:begin], params[:end]) -%>
 				<% end %>
 			<% end %>
 		<% end %>

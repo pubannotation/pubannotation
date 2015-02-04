@@ -288,7 +288,24 @@ class Doc < ActiveRecord::Base
   end
 
   def get_denotations_count(project = nil, span = nil)
-    self.get_denotations(project, span).size
+    if project.nil? && span.nil?
+      doc.denotations.size
+    else
+      self.get_denotations(project, span).size
+    end
+  end
+
+  def annotations_count(project = nil, span = nil)
+    if project.nil? && span.nil?
+      doc.denotations.size + doc.relations.size + doc.modifications.size
+    else
+      hdenotations = self.hdenotations(project, span)
+      ids =  hdenotations.collect{|d| d[:id]}
+      hrelations = self.hrelations(project, ids)
+      ids += hrelations.collect{|d| d[:id]}
+      hmodifications = self.hmodifications(project, ids)
+      hdenotations.size + hrelations.size + hmodifications.size
+    end
   end
 
   # the first argument, project, may be a project or an array of projects.

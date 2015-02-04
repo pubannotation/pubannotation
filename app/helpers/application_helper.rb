@@ -139,7 +139,6 @@ module ApplicationHelper
       end
     end
   end
-<<<<<<< HEAD
 
   def get_project2 (project_name)
     authenticate_user!
@@ -157,6 +156,4 @@ module ApplicationHelper
     end
     t("views.#{ model }.total_number", total_number: total_number)
   end
-=======
->>>>>>> doc_controller_refactoring
 end

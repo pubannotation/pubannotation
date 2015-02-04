@@ -1,6 +1,14 @@
 require 'text_alignment'
 
 module AnnotationsHelper
+  def annotations_count_helper(project, doc, span)
+    if doc.present?
+      doc.annotations_count(project, span)
+    else
+      project.denotations_count + project.relations_count # TODO + project.modifications_count
+    end
+  end
+
   # To be deprecated in favor of doc.get_annotations
   def get_annotations (project, doc, options = {})
     if doc.present?
@@ -283,7 +291,7 @@ module AnnotationsHelper
   end  
 
   def visualization_link(options = {})
-    if params[:action] == 'spans'
+    if params[:action] == 'span_show'
       link_to(t('views.annotations.see_in_visualizaion'), annotations_url_helper, class: options[:class])
     else
       if params[:action] == 'span_show'

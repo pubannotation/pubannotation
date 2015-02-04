@@ -378,6 +378,8 @@ en:
     annotations:
       index:
         confirm_destroy_all: Are you sure? All the instances and relations that belong to this project will be deleted.
+      see_in_visualizaion: Visualization
+      visualization_link_disabled: Choose a span to see. Otherwise, the text is too long to show in visualization.
     divs:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
       div: Div.
@@ -460,6 +462,7 @@ en:
       account: account
       annotation: annotation
       annotations: annotations
+      clear: clear
       edit : edit
       error: error
       delete: delete

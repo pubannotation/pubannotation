@@ -39,12 +39,11 @@
 		<tr>
 			<th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
 			<th style="width:6em"><%= t('activerecord.attributes.doc.sourceid')%></th>
-			<th style="width:3em" class="sortable-ASC"><%= t('views.divs.div')%></th>
+			<th style="width:4em" class="sortable-ASC"><%= t('views.divs.div')%></th>
 			<th style="width:14em"><%= t('activerecord.attributes.doc.section') %></th>
 			<th><%= t('activerecord.attributes.doc.body') %></th>
-			<th style="width:3em"><%= t('views.shared.size') %></th>
-			<th style="width:2em" class="sortable-ASC" title="<%= t('activerecord.models.denotations') %>">D</th>
-			<th style="width:2em" class="sortable-ASC" title="<%= t('activerecord.models.relations') %>">R</th>
+			<th style="width:9em"><%= t('views.shared.size') %></th>
+			<th style="width:9em" class="sortable-ASC" title="<%= t('activerecord.models.denotations') %>">#Denotations</th>
 			<th style="width:4em"></th>
 		</tr>
 	</thead>
@@ -59,7 +58,6 @@
 			    <td style="text-align:left"><%= div.body %></td>
 			    <td style="text-align:right"><%= div.body.length %></td>
 			    <td style="text-align:right"><%= div.get_denotations_count(@project) %></td>
-			    <td style="text-align:right"><%= div.hrelations(@project).count %></td>
 		    	<td><span class="button"><%= div_link_helper(@project, div) -%></span></td>
 		    </tr>
 		<% end %>

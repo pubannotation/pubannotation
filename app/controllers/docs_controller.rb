@@ -304,7 +304,13 @@ class DocsController < ApplicationController
 
         @doc.set_ascii_body if params[:encoding] == 'ascii'
         @annotations = @doc.hannotations(nil, span)
-        @project_annotations_index = @annotations[:tracks].inject({}){|index, track| i[track[]]}
+        p @annotations
+        puts "====="
+        @project_annotations_index = if @annotations[:denotations].present?
+          {}
+        elsif annotations[:tracks].present?
+          @annotations[:tracks].inject({}){|index, track| i[track[]]}
+        end
 
         sort_order = sort_order(Project)
         @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
