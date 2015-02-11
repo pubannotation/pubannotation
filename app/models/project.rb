@@ -1,5 +1,6 @@
 class Project < ActiveRecord::Base
   include AnnotationsHelper
+  DOWNLOADS_PATH = "/downloads/"
 
   before_validation :cleanup_namespaces
   after_validation :user_presence
@@ -105,7 +106,7 @@ class Project < ActiveRecord::Base
   LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
   EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=edit'
   
-  scope :sort_by_params, lambda{|sort_order|
+  scope :sort_by_params, -> (sort_order) {
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
       unscoped.includes(:user).order(sort_order)
   }
@@ -352,16 +353,12 @@ class Project < ActiveRecord::Base
       :relations_count => - associate_project.relations.count
   end
   
-  def anncollection(encoding)
-    anncollection = Array.new
+  def annotations_collection(encoding = nil)
     if self.docs.present?
-      docs.each do |doc|
-        # puts "#{doc.sourceid}:#{doc.serial} <======="
-        # anncollection.push (get_annotations(self, doc, :encoding => encoding))
-        anncollection.push (get_annotations_for_json(self, doc, :encoding => encoding))
-      end
+      self.docs.collect{|doc| doc.set_ascii_body if encoding == 'ascii'; doc.hannotations(self)}
+    else
+      []
     end
-    return anncollection
   end
 
   def json
@@ -369,51 +366,57 @@ class Project < ActiveRecord::Base
     to_json(except: except_columns, methods: :maintainer)
   end
 
-  def docs_json_hash
-    docs.collect{|doc| doc.to_hash} if docs.present?
+  def docs_list_hash
+    docs.collect{|doc| doc.to_list_hash} if docs.present?
   end
 
   def maintainer
     user.present? ? user.username : ''
   end
 
-  def annotations_zip_file_name
-    "#{self.name}-annotations.zip"
+  def downloads_system_path
+    "#{Rails.root}/public#{Project::DOWNLOADS_PATH}" 
   end
-  
+
+  def annotations_zip_filename
+    "#{self.name.gsub(' ', '_')}-annotations.zip"
+  end
+
   def annotations_zip_path
-    "#{Denotation::ZIP_FILE_PATH}#{self.annotations_zip_file_name}"
+    "#{Project::DOWNLOADS_PATH}" + self.annotations_zip_filename
   end
-  
-  def save_annotation_zip(options = {})
+
+  def annotations_zip_system_path
+    self.downloads_system_path + self.annotations_zip_filename
+  end
+
+  def create_annotations_zip(encoding = nil)
     require 'fileutils'
+
     begin
-      unless Dir.exist?(Denotation::ZIP_FILE_PATH)
-        FileUtils.mkdir_p(Denotation::ZIP_FILE_PATH)
-      end
-      anncollection = self.anncollection(options[:encoding])
-      if anncollection.present?
-        file_path = self.annotations_zip_path
-        file = File.new(file_path, 'w')
-        Zip::ZipOutputStream.open(file.path) do |z|
-          z.put_next_entry('project.json')
-          z.print self.json
-          z.put_next_entry('docs.json')
-          z.print self.docs_json_hash.to_json
-          anncollection.each do |ann|
-            title = get_doc_info(ann[:target])
-            title.sub!(/\.$/, '')
-            title.gsub!(' ', '_')
-            title += ".json" unless title.end_with?(".json")
-            z.put_next_entry(title)
-            z.print ann.to_json
-          end
+      p self.downloads_system_path
+      puts "=============="
+
+      annotations_collection = self.annotations_collection(encoding)
+
+      FileUtils.mkdir_p(self.downloads_system_path) unless Dir.exist?(self.downloads_system_path)
+      file = File.new(self.annotations_zip_system_path, 'w')
+      Zip::ZipOutputStream.open(file.path) do |z|
+        # z.put_next_entry('project.json')
+        # z.print self.json
+        # z.put_next_entry('docs.json')
+        # z.print self.docs_list_hash.to_json
+        annotations_collection.each do |annotations|
+          title = get_doc_info(annotations[:target]).sub(/\.$/, '').gsub(' ', '_')
+          title += ".json" unless title.end_with?(".json")
+          z.put_next_entry(title)
+          z.print annotations.to_json
         end
-        file.close   
-      end  
-      self.notices.create({successful: true, method: 'save_annotation_zip'})
-    rescue
-      self.notices.create({successful: false, method: 'save_annotation_zip'})
+      end
+      file.close   
+      self.notices.create({successful: true, method: 'create_annotations_zip'})
+    # rescue => e
+    #   self.notices.create({successful: false, method: 'create_annotations_zip'})
     end
   end 
 
@@ -422,6 +425,64 @@ class Project < ActiveRecord::Base
     user = User.find_by_username(project_attributes['maintainer'])
     project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
   end
+
+  def self.create_annotations_from_zip(zip_file, project_name, current_user)
+    messages = Array.new
+    errors = Array.new
+    unless Dir.exist?(TempFilePath)
+      FileUtils.mkdir_p(TempFilePath)
+    end
+
+    doc_annotations_files = Array.new
+    # open zip file
+    Zip::ZipFile.open(zip_file) do |zipfile|
+      zipfile.each do |file|
+        # extract sourcedb-sourdeid-serial-section.json
+        doc_annotations_file = "#{TempFilePath}#{file.name}"
+        unless File.exist?(doc_annotations_file)
+          file.extract(doc_annotations_file)
+          doc_annotations_files << {name: file.name, path: doc_annotations_file}
+        end
+      end
+    end
+
+    # create project if [project_name]-project.json exist
+    if File.exist?(project_json_file)
+      params_from_json = Project.params_from_json(project_json_file)
+      File.unlink(project_json_file)
+      project_params = params_from_json
+      project = Project.new(project_params)
+      project.user = current_user
+      if project.valid?
+        project.save
+        messages << I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project'))
+      else
+        errors << project.errors.full_messages.join('<br />')
+        project = nil
+      end
+    end
+
+    # create project.docs if [project_name]-docs.json exist
+    if project.present?
+      if File.exist?(docs_json_file)
+        if project.present?
+          num_created, num_added, num_failed = project.add_docs_from_json(JSON.parse(File.read(docs_json_file), :symbolize_names => true), current_user)
+          messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
+          messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
+          messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
+        end
+        File.unlink(docs_json_file) 
+      end
+
+      # save annotations
+      if doc_annotations_files
+        delay.save_annotations(project, doc_annotations_files)
+        messages << I18n.t('controllers.projects.upload_zip.delay_save_annotations')
+      end
+    end
+    return [messages, errors]
+  end
+
 
   def self.create_from_zip(zip_file, project_name, current_user)
     messages = Array.new

@@ -3,10 +3,13 @@
 <% end %>
 
 <h1>
-	<span><%= t('views.shared.stored_in', :content => t('activerecord.models.doc').pluralize.capitalize, :pname => t('views.service.title')).html_safe %></span>
+	<%= t('activerecord.models.doc').pluralize.capitalize.html_safe %>
+	<%= link_to t('views.shared.full_list'), docs_path, {class: 'button'} -%>
 </h1>
-<%= link_to t('views.docs.list'), docs_path, {class: 'tab inactive_tab'} -%>
-
 <%= render :partial => "docs/source_db", collection: @source_dbs -%>
 
+<h1>
+	<%= t('activerecord.models.project').pluralize.capitalize.html_safe %>
+	<%= link_to t('views.shared.full_list'), projects_path, {class: 'button'} -%>
+</h1>
 <%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects, :scope => nil } %>

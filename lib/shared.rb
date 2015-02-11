@@ -6,7 +6,7 @@ module Shared
   def self.align_denotations(denotations, str1, str2)
     return nil if denotations.nil?
     align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-    align.transform_denotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
+    align.transform_hdenotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
   end
 
   def self.save_hdenotations(hdenotations, project, doc)
@@ -57,7 +57,7 @@ module Shared
   end
 
   def self.save_annotations(annotations, project, doc, options = nil)
-    doc.destroy_project_annotations(project) unless options.present? && options[:mode] == :addition
+    doc.destroy_project_annotations(project) unless options.present? && (options[:mode] == :addition || options[:mode] == :add)
 
     original_text = annotations[:text]
     annotations[:text] = doc.body

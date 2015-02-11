@@ -1,3 +1,34 @@
+<h1>
+  <% if scope.present? -%>
+    <%= t("views.projects.#{scope}").html_safe -%>
+  <% else -%>
+    <% if @doc %>
+      <% if @doc.has_divs? %>
+        <%= t('views.projects.that_annotate_a_division', :href => projects_path, :serial => @doc.serial, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+      <% else %>
+        <%= t('views.projects.that_annotate_a_doc', :href => projects_path, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid).html_safe %>
+      <% end %>
+	  <% else %>
+    	<%= t('views.projects.in_pubannotation').html_safe %>
+    	<% new_path = new_project_path -%>
+	  <% end %>
+  <% end %>
+</h1>
+
+<% if params[:action] == 'index' -%>
+  <% if user_signed_in?%>
+      <span class="button"><%= link_to t('views.shared.create_model', :model => t("activerecord.models.project")), new_path %></span>
+  <% else %>
+    <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
+  <% end %>
+<% end %>
+
+<%= link_to_if (params[:controller] == 'projects' && params[:action] == 'index' && (params[:sort_direction].present? || params[:search_projects])) || params[:controller] == 'home', t('views.projects.list'), projects_path, {class: 'tab inactive_tab'} do
+  nil
+end -%>
+
+<%= render :partial => 'projects/search_form' if params[:controller] == 'projects' -%>
+
 <% if projects.blank? %>
   <p>none</p>
 <% else %>

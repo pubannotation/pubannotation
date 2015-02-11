@@ -70,11 +70,7 @@ class ProjectsController < ApplicationController
     if @project
       sourcedb, sourceid, serial, id = get_docspec(params)
       notice = t('controllers.projects.show.pending_associate_projects') if @project.pending_associate_projects_count > 0
-      if sourceid
-        @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
-      else
-        docs = @project.docs
-      end
+      @search_path = search_project_docs_path(@project.name)
     end
     respond_to do |format|
       if @project
@@ -140,6 +136,10 @@ class ProjectsController < ApplicationController
 
   def create_from_zip
     zip_file = params[:zip].path
+
+    p zip_file
+    puts "====================="
+
     if zip_file.present? && params[:zip].content_type == 'application/zip'
       project_name = File.basename(params[:zip].original_filename, ".*")
       messages, errors = Project.create_from_zip(zip_file, project_name, current_user)

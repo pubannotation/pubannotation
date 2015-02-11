@@ -5,6 +5,6 @@ module DivsHelper
     else
       href = doc_sourcedb_sourceid_divs_show_path(params[:sourcedb], params[:sourceid], doc.serial)
     end
-    link_to t('views.shared.show'),  href
+    link_to t('views.shared.show'), href
   end
 end

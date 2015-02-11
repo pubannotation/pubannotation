@@ -1,0 +1,16 @@
+<%= render :partial => 'docs/path'-%>
+<%= render :partial => 'projects/title_and_links' -%>
+<%= render :partial => 'docs/content'-%>
+
+<%
+	postfix = if @span.present?
+		t('views.annotations.to_this_span')
+	else
+		t('views.annotations.to_this_document')
+	end
+-%>
+<%= render :partial => 'annotations/title_with_options', locals: {postfix: postfix} -%>
+<%= render :partial => 'annotations/summary' -%>
+
+<%= render :partial => 'annotations/get_annotation' if user_signed_in? and current_user == @project.user-%>
+<%= link_to t('views.shared.annotations'), annotations_url, class: 'button' if @project.blank? -%>

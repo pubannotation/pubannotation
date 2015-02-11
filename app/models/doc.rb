@@ -3,7 +3,7 @@ class Doc < ActiveRecord::Base
   before_destroy :decrement_docs_counter
   before_validation :attach_sourcedb_suffix
   include ApplicationHelper
-  
+
   attr_accessor :username, :original_body, :text_aligner
   attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid, :username
   has_many :denotations, :dependent => :destroy
@@ -196,44 +196,41 @@ class Doc < ActiveRecord::Base
     Doc.where(:sourceid => self.sourceid).sum('subcatrels_count')
   end
   
-  def spans(params)
-    begin_pos = params[:begin].to_i
-    end_pos = params[:end].to_i
-    context_size = params[:context_size].to_i
-    spans = self.body[begin_pos...end_pos]
+  def span(params)
+    span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
     body = self.body
     if params[:context_size].present?
-      prev_begin_pos = begin_pos - context_size
-      prev_end_pos = begin_pos
-      if prev_begin_pos < 0
-        prev_begin_pos = 0
-      end
-      prev_text = body[prev_begin_pos...prev_end_pos] 
-      next_begin_pos = end_pos
-      next_end_pos = end_pos + context_size
-      next_text = body[next_begin_pos...next_end_pos] 
-      if params[:format] == 'txt'
-        prev_text = "#{prev_text}" if prev_text.present?
-        spans = "#{spans}" if next_text.present?
-      end
+      context_size = params[:context_size].to_i
+      prev = {
+        :begin => (span[:begin] < context_size)? 0 : span[:begin] - context_size,
+        :end => span[:begin]
+      }
+      post = {
+        :begin => span[:end],
+        :end => (body.length - span[:end] < context_size)? body.length : span[:end] + context_size
+      }
+      prev_text = body[prev[:begin]...prev[:end]]
+      post_text = body[post[:begin]...post[:end]]
     end
-    if params[:encoding] == 'ascii'
-      spans = get_ascii_text(spans)
-      if params[:context_size].present?
-        next_text = get_ascii_text(next_text)[0...context_size]
-        ascii_prev_text = get_ascii_text(prev_text) 
-        if context_size > ascii_prev_text.length
-          context_size = ascii_prev_text.length
-        end
-        prev_text = ascii_prev_text[(context_size * -1)..-1]
-      end
-    end
-    return [spans, prev_text, next_text]    
+    return [prev_text, body[span[:begin]...span[:end]], post_text]
   end
 
+  def span_url(span)
+    if self.has_divs?
+      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_span_show_url(self.sourcedb, self.sourceid, self.serial, span[:begin], span[:end])
+    else
+      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_span_show_url(self.sourcedb, self.sourceid, span[:begin], span[:end])
+    end
+  end
+
+  def spans_index(project = nil)
+    self.hdenotations(project).map{|d| {id:d[:id], span:d[:span], obj:self.span_url(d[:span])}}.uniq{|d| d[:span]}
+  end
+
+
   def text(params)
-    spans, prev_text, next_text = self.spans(params)
-    [prev_text, spans, next_text].compact.join('') 
+    prev_text, span, next_text = self.span(params)
+    [prev_text, span, next_text].compact.join('') 
   end
 
   def set_ascii_body
@@ -256,9 +253,9 @@ class Doc < ActiveRecord::Base
     end
   end  
   
-  def spans_highlight(params)
-    begin_pos = params[:begin].to_i
-    end_pos = params[:end].to_i
+  def highlight_span(span)
+    begin_pos = span[:begin].to_i
+    end_pos = span[:end].to_i
     prev_text = self.body[0...begin_pos]
     spans = self.body[begin_pos...end_pos]
     next_text = self.body[end_pos..self.body.length]
@@ -297,7 +294,7 @@ class Doc < ActiveRecord::Base
 
   def annotations_count(project = nil, span = nil)
     if project.nil? && span.nil?
-      doc.denotations.size + doc.relations.size + doc.modifications.size
+      self.denotations.size + self.subcatrels.size + self.catmods.size + self.subcatrelmods.size
     else
       hdenotations = self.hdenotations(project, span)
       ids =  hdenotations.collect{|d| d[:id]}
@@ -313,7 +310,7 @@ class Doc < ActiveRecord::Base
     projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
     relations = self.subcatrels.from_projects(projects)
     hrelations = relations.collect {|ra| ra.get_hash}
-    hrelations.select!{|r| base_ids.include?(r[:subject]) && base_ids.include?(r[:object])} unless base_ids.nil?
+    hrelations.select!{|r| base_ids.include?(r[:subj]) && base_ids.include?(r[:obj])} unless base_ids.nil?
     hrelations.sort!{|r1, r2| r1[:id] <=> r2[:id]}
   end
   
@@ -326,8 +323,6 @@ class Doc < ActiveRecord::Base
   end
 
   def hannotations(project = nil, span = nil, context_size = nil)
-    projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-
     annotations = {}
 
     annotations[:target] = if self.has_divs?
@@ -336,32 +331,38 @@ class Doc < ActiveRecord::Base
       Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(self.sourcedb, self.sourceid, :only_path => false)
     end
 
-    annotations[:text] = self.body
-    if context_size.present?
-      annotations[:focus] = get_focus(context_size)
+    annotations[:text] = if span.present?
+      self.body[span[:begin]...span[:end]]
+    else
+      self.body
     end
 
-    if projects.length == 1
-      project = projects[0]
+    if project.present? && !project.respond_to?(:each)
       annotations[:project] = project.name
-      annotations[:denotations] = self.hdenotations(projects, span)
+      annotations[:denotations] = self.hdenotations(project, span)
+      annotations[:denotations].each{|d| d[:span][:begin] -= span[:begin]; d[:span][:end] -= span[:begin]} if span.present?
       ids = annotations[:denotations].collect{|d| d[:id]}
-      annotations[:relations] = self.hrelations(projects, ids)
+      annotations[:relations] = self.hrelations(project, ids)
       ids += annotations[:relations].collect{|r| r[:id]}
-      annotations[:modifications] = self.hmodifications(projects, ids)
+      annotations[:modifications] = self.hmodifications(project, ids)
       annotations[:namespaces] = project.namespaces
       annotations.select!{|k, v| v.present?}
     else
+      projects = project.present? ? project : self.projects
       annotations[:tracks] = projects.inject([]) do |tracks, project|
         hdenotations = self.hdenotations(project, span)
+        hdenotations.each{|d| d[:span][:begin] -= span[:begin]; d[:span][:end] -= span[:begin]} if span.present?
         ids =  hdenotations.collect{|d| d[:id]}
         hrelations = self.hrelations(project, ids)
         ids += hrelations.collect{|d| d[:id]}
         hmodifications = self.hmodifications(project, ids)
-        # track = {project:project.name, denotations:hdenotations, relations:hrelations, modificationss:hmodifications, namespaces:project.namespaces}
-        track = {denotations:hdenotations, relations:hrelations, modificationss:hmodifications, namespaces:project.namespaces}
+        track = {project:project.name, denotations:hdenotations, relations:hrelations, modificationss:hmodifications, namespaces:project.namespaces}
         track.select!{|k, v| v.present?}
-        tracks << track
+        if track[:denotations].present?
+          tracks << track
+        else
+          tracks
+        end
       end
     end
 
@@ -481,6 +482,7 @@ class Doc < ActiveRecord::Base
         else
         # TODO When not belongs to project, how to detect updatable or not  ?
         end
+        false
       end
     else
       false

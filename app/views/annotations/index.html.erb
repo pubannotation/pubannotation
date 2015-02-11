@@ -12,25 +12,37 @@
     <% end %>
     > annotations
   <% else %>
+    > <%= link_to "docs", docs_path %>
+    <% if @doc.has_divs? %>
+        > <%= link_to t('views.shared.a_doc_id', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid), doc_sourcedb_sourceid_divs_index_path(@doc.sourcedb, @doc.sourceid) %>
+        > <%= link_to t('views.shared.div', :divid => @doc.serial), doc_sourcedb_sourceid_divs_show_path(@doc.sourcedb, @doc.sourceid, @doc.serial) %>
+    <% else %>
+        > <%= link_to t('views.shared.a_doc_id', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid), doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) %>
+    <% end %>
+    > annotations
   <% end %>
 <% end %>
 
-<h1 class="capitalize_first">
-	<%= t('views.shared.annotation') %>
-	<% if @project.present? -%>
-		<% if @annotations[:denotations].present? && params[:sourcedb] && params[:sourceid] && user_signed_in? && @project.user == current_user %>
-			<% if params[:div_id].present? %>
-				<% destroy_all_path = annotations_destroy_all_project_sourcedb_sourceid_divs_docs_path -%>
-			<% else -%>
-				<% destroy_all_path = annotations_destroy_all_project_sourcedb_sourceid_docs_path -%>
-			<% end %>
-			
-			<%= form_tag(destroy_all_path, :style => 'display:inline') do%>
-				<%= submit_tag t('views.shared.delete_all'), :confirm => t('views.annotations.index.confirm_destroy_all') %>
-			<% end %>
-		<% end %>
-	<% end %>
-</h1>
+<%= render :partial => 'annotations/title_with_options' -%>
+
 <!--p>to <= @denotations.first.doc_sourcedb %>:<= @denotations.first.doc_sourceid %></p-->
 
-<%= render :partial => 'annotations/annotations'-%>
+<% if @project.present? -%>
+	<% if @annotations[:denotations].present? && params[:sourcedb] && params[:sourceid] && user_signed_in? && @project.user == current_user %>
+		<% if params[:div_id].present? %>
+			<% destroy_all_path = annotations_destroy_all_project_sourcedb_sourceid_divs_docs_path -%>
+		<% else -%>
+			<% destroy_all_path = annotations_destroy_all_project_sourcedb_sourceid_docs_path -%>
+		<% end %>
+		
+		<%= form_tag(destroy_all_path, :style => 'display:inline') do%>
+			<%= submit_tag t('views.shared.delete_all'), :confirm => t('views.annotations.index.confirm_destroy_all') %>
+		<% end %>
+	<% end %>
+<% end %>
+
+<% if @annotations[:tracks].present? -%>
+	<%= render partial: 'annotations', collection: @annotations[:tracks], locals: {doc: @doc, body: @annotations[:text]} -%>
+<% else -%>
+	<%= t('controllers.shared.not_exists', model: t('views.shared.annotation')) %>
+<% end -%>

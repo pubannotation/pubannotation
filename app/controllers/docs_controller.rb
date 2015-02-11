@@ -11,27 +11,34 @@ class DocsController < ApplicationController
   autocomplete :docs, :sourcedb
   include DenotationsHelper
 
-  # GET /docs
-  # GET /docs.json
   def index
-    if params[:project_id].present?
-      @project = Project.includes(:docs).where(['name =?', params[:project_id]]).first
-      @docs = @project.docs
-      @docs_hash = @docs.collect{|doc| doc.to_list_hash('doc')}
-      @search_path = search_project_docs_path(@project.name)
-    else
-      @docs = Doc
-      @docs_hash = {message: t('controllers.docs.index.too_many')}
-      @search_path = search_docs_path
-    end
+    begin
+      if params[:project_id]
+        @project = Project.accessible(current_user).find_by_name(params[:project_id])
+        raise "There is no such project." unless @project.present?
+        docs = @project.docs
+        @search_path = search_project_docs_path(@project.name)
+      else
+        docs = Doc
+        @search_path = search_docs_path
+      end
 
-    @docs.each{|doc| doc.set_ascii_body} if (params[:encoding] == 'ascii')
-    sort_order = sort_order(Doc)
-    @source_docs = @docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
-    respond_to do |format|
-      format.html
-      format.json { render json: @docs_hash}
-      format.tsv { render text: Doc.to_tsv(@docs, 'doc') }
+      # docs.each{|doc| doc.set_ascii_body} if (params[:encoding] == 'ascii')
+      sort_order = sort_order(Doc)
+      @source_docs = docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
+      docs_list_hash = @source_docs.collect{|doc| doc.to_list_hash('doc')}
+
+      respond_to do |format|
+        format.html
+        format.json {render json: docs_list_hash}
+        format.tsv  {render text: Doc.to_tsv(docs, 'doc')}
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render text: message, status: :unprocessable_entity}
+      end
     end
   end
  
@@ -98,6 +105,7 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.find_by_name(params[:project_id]) 
       docs = @project.docs.where(['sourcedb = ?', params[:sourcedb]])
+      @search_path = search_project_docs_path(@project.name)
     else
       docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
       @search_path = search_docs_path
@@ -106,111 +114,90 @@ class DocsController < ApplicationController
     sort_order = sort_order(Doc)
     @source_docs = docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
   end 
-    
+
   def search
-    if params[:project_id].present?
-      @project = Project.find_by_name(params[:project_id])
-      docs = @project.docs
-    else
-      docs = Doc
-    end
-    conditions_array = Array.new
-    conditions_array << ['sourcedb = ?', "#{params[:sourcedb]}"] if params[:sourcedb].present?
-    conditions_array << ['sourceid like ?', "#{params[:sourceid]}%"] if params[:sourceid].present?
-    conditions_array << ['body like ?', "%#{params[:body]}%"] if params[:body].present?
+    begin
+      if params[:project_id]
+        @project = Project.accessible(current_user).find_by_name(params[:project_id])
+        raise "There is no such project." unless @project.present?
+        docs = @project.docs
+      else
+        docs = Doc
+      end
+
+      conditions_array = Array.new
+      conditions_array << ['sourcedb = ?', "#{params[:sourcedb]}"] if params[:sourcedb].present?
+      conditions_array << ['sourceid like ?', "#{params[:sourceid]}%"] if params[:sourceid].present?
+      conditions_array << ['body like ?', "%#{params[:body]}%"] if params[:body].present?
     
-    # Build condition
-    i = 0
-    conditions = Array.new
-    columns = ''
-    conditions_array.each do |key, val|
-      key = " AND #{key}" if i > 0
-      columns += key
-      conditions[i] = val
-      i += 1
+      # Build condition
+      i = 0
+      conditions = Array.new
+      columns = ''
+      conditions_array.each do |key, val|
+        key = " AND #{key}" if i > 0
+        columns += key
+        conditions[i] = val
+        i += 1
+      end
+      conditions.unshift(columns)
+
+      search_docs = docs.where(conditions).group(:id).group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
+
+      if search_docs.length < 5000
+        search_docs_list = search_docs.map{|d| {source_db: d.sourcedb, source_id:d.sourceid}}.uniq
+        search_docs = search_docs_list.map{|d| docs.find_by_sourcedb_and_sourceid_and_serial(d[:source_db], d[:source_id], 0)}
+        search_docs_list = search_docs.map{|d| d.to_list_hash('doc')}
+      else
+        search_docs_list = []
+      end
+
+      @search_docs_number = search_docs_list.length
+      @source_docs = search_docs.paginate(:page => params[:page])
+
+      respond_to do |format|
+        format.html
+        format.json {render json: search_docs_list}
+        format.tsv  {render text: Doc.to_tsv(search_docs, 'doc')}
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_path(@project.name) : docs_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render text: message, status: :unprocessable_entity}
+      end
     end
-    conditions.unshift(columns)
-    @source_docs = docs.where(conditions).group(:id).group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC').paginate(:page => params[:page])
-    flash[:notice] = t('controllers.docs.search.not_found') if @source_docs.blank?
   end
-  
-  # GET /docs/1
-  # GET /docs/1.json
+
   def show
     begin
-      if params[:project_id].present?
-        @project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no project named '#{params[:project_id]}'." unless @project.present?
+      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document." unless divs.present?
 
-        if params[:id].present?
-          @doc = @project.docs.find(params[:id])
-          raise "There is no such document in the project." unless @doc.present?
-        elsif params[:sourcedb].present? && params[:sourceid].present?
-          divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-          raise "There is no such document in the project." unless divs.present?
-
-          if divs.length > 1
-            respond_to do |format|
-              format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
-              format.json {
-                divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-                render json: divs.collect{|div| div.body}
-              }
-              format.txt {
-                divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-                render text: divs.collect{|div| div.body}.join("\n")
-              }
-            end
-            return
-          end
-
-          @doc = divs[0]
-        end
-
-        @doc.set_ascii_body if (params[:encoding] == 'ascii')
-        @annotations = @doc.hannotations(@project)
-
+      if divs.length > 1
         respond_to do |format|
-          format.html # show.html.erb
-          format.json {render json: @doc.to_hash}
-          format.txt  {render text: @doc.body}
+          format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
+          format.json {
+            divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
+            render json: divs.collect{|div| div.body}
+          }
+          format.txt {
+            divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
+            render text: divs.collect{|div| div.body}.join("\n")
+          }
         end
-
       else
-
-        if params[:id].present?
-          @doc = Doc.find(params[:id])
-          raise "There is no such document." unless @doc.present?
-        elsif params[:sourcedb].present? && params[:sourceid].present?
-          divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-          raise "There is no such document." unless divs.present?
-
-          if divs.length > 1
-            respond_to do |format|
-              format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
-              format.json {
-                divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-                render json: divs.collect{|div| div.body}
-              }
-              format.txt {
-                divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-                render text: divs.collect{|div| div.body}.join("\n")
-              }
-            end
-            return
-          end
-
-          @doc = divs[0]
-        end
+        @doc = divs[0]
 
         @doc.set_ascii_body if params[:encoding] == 'ascii'
+        @content = @doc.body.gsub(/\n/, "<br>")
         @annotations = @doc.hannotations
 
         sort_order = sort_order(Project)
         @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
 
         respond_to do |format|
-          format.html # show.html.erb
+          format.html
           format.json {render json: @doc.to_hash}
           format.txt  {render text: @doc.body}
         end
@@ -225,104 +212,35 @@ class DocsController < ApplicationController
     end
   end
 
-  def divs_index
-  end
-
-  def span_show
+  def project_doc_show
     begin
-      if params[:project_id].present?
-        @project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no such project." unless @project.present?
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
 
-        if params[:id].present?
-          @doc = @project.docs.find(params[:id])
-          raise "There is no such document in the project." unless @doc.present?
-        elsif params[:div_id].present?
-          @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
-          raise "There is no such document in the project." unless @doc.present?
-        elsif params[:sourcedb].present? && params[:sourceid].present?
-          divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-          raise "There is no such document in the project." unless divs.present?
+      divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless divs.present?
 
-          if divs.length > 1
-            respond_to do |format|
-              format.txt  {
-                divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-                render text: divs.collect{|div| div.body}.join("\n")
-              }
-              format.any(:html, :json) {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
-              return
-            end
-          end
-
-          @doc = divs[0]
+      if divs.length > 1
+        respond_to do |format|
+          format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
+          format.json {
+            divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
+            render json: divs.collect{|div| div.body}
+          }
+          format.txt {
+            divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
+            render text: divs.collect{|div| div.body}.join("\n")
+          }
         end
-
-        span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+      else
+        @doc = divs[0]
 
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
-        @annotations = @doc.hannotations(@project, span)
-
-        @annotations_projects_check = true
-        @annotations_path = "#{url_for(:only_path => true)}/annotations"
-        @spans, @prev_text, @next_text = @doc.spans(params)
-        @text = @doc.text(params)
-        @highlight_text = @doc.spans_highlight(params)
+        @annotations = @doc.hannotations(@project)
+        @content = @doc.body.gsub(/\n/, "<br>")
 
         respond_to do |format|
-          format.html
-          format.txt  {render text: @text}
-          format.json {render json: @annotations}
-          format.csv  {send_data @doc.to_csv(params)}
-        end
-
-      else
-
-        if params[:id].present?
-          @doc = Doc.find(params[:id])
-          raise "There is no such document." unless @doc.present?
-        elsif params[:div_id].present?
-          @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
-          raise "There is no such document in the project." unless @doc.present?
-        elsif params[:sourcedb].present? && params[:sourceid].present?
-          divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-          raise "There is no such document." unless divs.present?
-
-          if divs.length > 1
-            respond_to do |format|
-              format.txt  {
-                divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-                render text: divs.collect{|div| div.body}.join("\n")
-              }
-              format.any(:xml, :html) {redirect_to doc_sourcedb_sourceid_divs_index_path params}
-            end
-            return
-          end
-
-          @doc = divs[0]
-        end
-
-        @doc.set_ascii_body if params[:encoding] == 'ascii'
-        @annotations = @doc.hannotations(nil, span)
-        p @annotations
-        puts "====="
-        @project_annotations_index = if @annotations[:denotations].present?
-          {}
-        elsif annotations[:tracks].present?
-          @annotations[:tracks].inject({}){|index, track| i[track[]]}
-        end
-
-        sort_order = sort_order(Project)
-        @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
-
-        @annotations_projects_check = true
-        @annotations_path = "#{url_for(:only_path => true)}/annotations"
-        @spans, @prev_text, @next_text = @doc.spans(params)
-        @text = @doc.text(params)
-        @highlight_text = @doc.spans_highlight(params)
-
-        respond_to do |format|
-          format.html # show.html.erb
+          format.html {render 'show_in_project'}
           format.json {render json: @doc.to_hash}
           format.txt  {render text: @doc.body}
         end
@@ -332,90 +250,9 @@ class DocsController < ApplicationController
     #   respond_to do |format|
     #     format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
     #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render text: message, status: :unprocessable_entity}
+    #     format.txt  {render status: :unprocessable_entity}
     #   end
     end
-  end
-
-  def span_show2
-
-    @doc = nil if @project.present? && @doc.projects.include?(@project.id)
-
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
- 
-    if @doc.present?
-      if @project.present?
-        @project_denotations = @doc.denotations_in_tracks(@project, span)
-      end
-    else
-      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
-      sort_order = sort_order(Project)
-      @projects = Project.id_in(@doc.projects_within_span(span)).collect{|project| project.id}.sort_by_params(sort_order)
-      if @doc.present? && @projects.present?
-        @project_denotations = @doc.denotations_in_tracks(@projects, span)
-      end
-      @annotations_projects_check = true
-      @annotations_path = annotations_url_helper
-    end
-    @spans, @prev_text, @next_text = @doc.spans(params)
-    @text = @doc.text(params)
-    @highlight_text = @doc.spans_highlight(params)
-    respond_to do |format|
-      format.html {render 'docs/spans'}
-      format.txt  {render text: @text}
-      format.json { 
-        if @project_denotations.present?
-          @denotations = Array.new
-          @project_denotations.each do |project_denotation|
-            if project_denotation[:denotations].present?
-              project_denotation[:denotations].each do |denotation|
-                @denotations << denotation.select{|key| key == :span}
-              end
-            end
-          end
-        end
-        json_hash = {text: @text}
-        json_hash[:focus] = get_focus({params: params}) if params[:context_size].present?
-        render json: json_hash
-      }
-      format.csv { 
-        send_data @doc.to_csv(params)
-      }
-    end
-  end
-
-  def spans_index
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    if params[:project_id].present?
-      @project, flash[:notice] = get_project(params[:project_id])
-      if @project
-        @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
-        if @doc
-          annotations = get_annotations(@project, @doc, :encoding => params[:encoding], :format => params[:format])
-          @denotations = annotations[:denotations]
-        end
-      end
-    else
-      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
-      if @doc
-        @denotations = @doc.denotations.order('begin ASC').collect {|ca| ca.get_hash}
-      end
-    end
-    if @denotations.present?
-      @denotations = @denotations.uniq{|denotation| denotation[:span]}
-    end
-    respond_to do |format|
-      format.html
-      format.json { 
-        annotations_json = get_annotations_for_json(@project, @doc, :encoding => params[:encoding])
-        denotations = annotations_json[:denotations] || []
-        annotations_json[:tracks].each{|t| denotations += t[:denotations]} if annotations_json[:tracks].present?
-        span_index = get_span_index(@doc, denotations)
-        json = {text: annotations_json[:text], denotations: span_index} 
-        render :json => json
-      }
-    end    
   end
 
   # GET /docs/new
@@ -473,6 +310,8 @@ class DocsController < ApplicationController
                   params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
                 end
 
+    docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
+
     # get the project
     begin 
       project = get_project2(params[:project_id])
@@ -499,7 +338,7 @@ class DocsController < ApplicationController
     end
 
     respond_to do |format|
-      format.html {redirect_to project_docs_path(project.name), notice:"imported:#{imported}, added:#{added}, failed:#{failed}"}
+      format.html {redirect_to project_path(project.name), notice:"imported:#{imported}, added:#{added}, failed:#{failed}"}
       format.json {render json:{imported:imported, added:added, failed:failed, messages:messages}, status:(added > 0 ? :created : :unprocessable_entity)}
     end
   end

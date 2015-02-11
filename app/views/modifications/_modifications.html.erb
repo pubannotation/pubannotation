@@ -1,0 +1,13 @@
+<% if modifications.present? -%>
+  <h3>Modificationss</h3>
+  <table class="ann">
+    <tr>
+      <th>Id</th>
+      <th>Subject</th>
+      <th>Predicate</th>
+      <th>Object</th>
+    </tr>
+
+    <%= render partial: 'modifications/modification', collection: modifications, locals: {doc: doc, body: body} -%>
+  </table>
+<% end -%>

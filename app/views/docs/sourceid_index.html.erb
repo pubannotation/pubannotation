@@ -11,5 +11,7 @@
 	<%= render :partial => 'projects/title_and_links' -%>
 <% end %>
 
-<h2><%= t('views.docs.list') -%></h2>
-<%= render :partial => 'source_doc', :collection => @source_docs -%>
+<%= render :partial => 'source_docs' -%>
+
+<h3>Search documents</h3>
+<%= render partial: 'docs/search_form' -%>

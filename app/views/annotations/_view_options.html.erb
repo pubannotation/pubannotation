@@ -1,31 +1,11 @@
-<h2>
-	<% if params[:action] == 'spans' -%>
-		<%= t('views.docs.annotation_within_span', :spans => "#{params[:begin]} - #{params[:end]}").html_safe %>
-	<% else -%>
-		<%= t('views.docs.annotation_within_project', :project_name => @project.name).html_safe %>
-	<% end -%>
-</h2>
-<ul>
-	<li>
-		<%= t('activerecord.models.denotations') %>:
-		<%= @annotations[:denotations].present? ? @annotations[:denotations].length : 0 %>
-	</li>
-	<li>
-		<%= t('activerecord.models.relations') %>:
-		<%= @annotations[:relations].present? ? @annotations[:relations].length : 0 %>
-		<br />
-	</li>
-</ul>
-
-<% annotation_url = annotations_url_helper %>
-
+<h2>See the annotations in</h2>
 <table style="border-color:#FFFFFF; margin-left:20px">
 <tr>
 	<th><%= t('views.shared.see') %></th>
 	<td>in</td>
-  <td>[<%= link_to "Table", annotations_url_helper({without_spans: true}) -%>]</td>
-	<td>[<%= link_to "JSON",  annotation_url + '.json' %>]</td>
-  <td>[<%= visualization_link -%>]</td>
+  <td>[<%= link_to "Table", annotations_url -%>]</td>
+	<td>[<%= link_to "JSON",  annotations_url + '.json' %>]</td>
+  <td>[<%= visualization_link(@span) -%>]</td>
 </tr>
 
 <% unless @project.editor.blank? %>
@@ -33,9 +13,9 @@
 		<th><%= t('views.shared.open') %></th>
 		<td>in</td>
 		<% if @project.editor.include?('?') %>
-			<td>[<a href="<%= @project.editor %>&target=<%= annotation_url + '.json' %>">Editor</a>]</td>
+			<td>[<a href="<%= @project.editor %>&target=<%= annotations_url + '.json' %>">Editor</a>]</td>
 		<% else %>
-			<td>[<a href="<%= @project.editor %>?target=<%= annotation_url + '.json' %>">Editor</a>]</td>
+			<td>[<a href="<%= @project.editor %>?target=<%= annotations_url + '.json' %>">Editor</a>]</td>
 		<% end %>
 	</tr>
 <% end %>
@@ -45,11 +25,11 @@
 		<th><%= t('views.shared.get') %></th>
 		<td>in</td>
 		<% unless @project.rdfwriter.blank? %>
-			<td>[<%= link_to "RDF",  annotation_url + '.ttl' %>]</td>
+			<td>[<%= link_to "RDF",  annotations_url + '.ttl' %>]</td>
 		<% end %>
 
 		<% unless @project.xmlwriter.blank? %>
-			<td>[<%= link_to "XML",  annotation_url + '.xml' %>]</td>
+			<td>[<%= link_to "XML",  annotations_url + '.xml' %>]</td>
 		<% end %>
 
 		<% unless @project.bionlpwriter.blank? %>
@@ -57,7 +37,7 @@
 			<!--script type="text/javascript">
 				// function getconversion(name) {
 				// 	xmlhttp = new XMLHttpRequest();
-				// 	xmlhttp.open('GET', '<%= annotation_url %>' + '.json', false);
+				// 	xmlhttp.open('GET', '<%= annotations_url %>' + '.json', false);
 				// 	xmlhttp.send();
 				// 	var json = xmlhttp.responseText;
 				// 	document.getElementById(name).children[2].setAttribute("value", json);

@@ -1,0 +1,55 @@
+<% level = if @project.present? then 2 else 1 end -%>
+
+<%
+	postfix ||= nil
+	if postfix.nil?
+
+		if @project.present?
+			doc_path = show_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
+			div_path = show_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+			if @span.present?
+				span_path = if @doc.has_divs?
+					span_show_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, @span[:begin], @span[:end])
+				else
+					span_show_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @span[:begin], @span[:end])
+				end
+			end
+		else
+			doc_path = doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid)
+			div_path = doc_sourcedb_sourceid_divs_show_path(@doc.sourcedb, @doc.sourceid, @doc.serial)
+			if @span.present?
+				span_path = if @doc.has_divs?
+					doc_sourcedb_sourceid_divs_span_show_path(@doc.sourcedb, @doc.sourceid, @doc.serial, @span[:begin], @span[:end])
+				else
+					doc_sourcedb_sourceid_span_show_path(@doc.sourcedb, @doc.sourceid, @span[:begin], @span[:end])
+				end
+			end
+		end
+
+		postfix  = ' to ' + link_to("#{@doc.sourcedb}:#{@doc.sourceid}", doc_path)
+		postfix += ' (' + link_to_unless_current("#{@doc.serial}", div_path) + ')' if @doc.has_divs?
+		postfix += ' / ' + link_to_unless_current("#{@span[:begin]}-#{@span[:end]}", span_path) if @span.present?
+	end
+-%>
+
+<h<%=level%>>
+<%= t('views.shared.annotation').pluralize.capitalize.html_safe %>
+<span class='meta'><%= postfix.html_safe -%></span>
+
+<span class='tab-bar'>
+<!--	<span class='label'>UTF</span>-->
+	<%= link_to_unless_current 'VIEW', annotations_url + '?encoding=utf', :class => 'tab' -%>
+	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab' -%>
+	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab' if @span.present? && !@project.present? -%>
+	<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab' if @project.present? && @project.editor.present? -%>
+</span>
+
+<!--
+<span class='tab-bar'>
+	<span class='label'>ASCII</span>
+	<%= link_to_unless_current 'VIEW', annotations_url + '?encoding=ascii', :class => 'tab' -%>
+	<%= link_to_unless_current 'JSON', annotations_url + '.json?encoding=ascii', :class => 'tab' -%>
+	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize?encoding=ascii', :class => 'tab' if @span.present? -%>
+</span>
+-->
+</h<%=level%>>

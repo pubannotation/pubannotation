@@ -2,93 +2,23 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :show, :create, :annotations_index, :annotations, :project_annotations_zip]
+  before_filter :authenticate_user!, :except => [:index, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :show, :create, :annotations_index, :annotations, :project_annotations_zip]
   after_filter :set_access_control_headers
   include DenotationsHelper
 
-  def index2
-    @project, notice = get_project(params[:project_id])
-    @project = params[:projects].split(',').map{|n| Projects.accessible(current_user).find_by_name(n)} if params[:projects].present?
+  def project_annotations_index
+    begin
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
 
-    span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+      # retrieve annotations to all the documents
+      annotations_collection = @project.annotations_collection(params[:encoding])
 
-    if @project
-
-      if (params[:id] || (params[:sourcedb] && params[:sourceid]))
-        sourcedb, sourceid, serial, id = get_docspec(params)
-        @doc, notice = get_doc(sourcedb, sourceid, serial, @project, id)
-        if @doc
-          @doc.set_ascii_body if (params[:encoding] == 'ascii')
-          @annotations = @doc.hannotations(@project, span)
-        end
-
-      else
-        if params[:delay].present?
-          # delete ZIP file if params[:update]
-          File.unlink(@project.annotations_zip_path) if params[:update].present?
-          # Creaet ZIP file by delayed_job
-          @project.notices.create({method: 'start_delay_save_annotation_zip'})
-          @project.delay.save_annotation_zip(:encoding => params[:encoding])
-          redirect_to :back
-        else
-          # retrieve annotations to all the documents
-          # anncollection = @project.anncollection(params[:encoding])
-          anncollection = Array.new
-          if @project.docs.present?
-            @project.docs.each do |doc|
-              doc.set_ascii_body if (params[:encoding] == 'ascii')
-              # puts "#{doc.sourceid}:#{doc.serial} <======="
-              # anncollection.push (get_annotations(self, doc, :encoding => encoding))
-              anncollection.push(doc.hannotations(@project, span))
-            end
-          end
-        end
-      end
-    end
-
-    respond_to do |format|
-      if @project and @doc
-
-        format.html {flash[:notice] = notice}
-        format.json {render :json => @annotations, :callback => params[:callback]}
-        format.ttl  {
-          if @project.rdfwriter.empty?
-            head :unprocessable_entity
-          else
-            render :text => get_conversion(annotations, @project.rdfwriter), :content_type => 'application/x-turtle'
-          end
-        }
-        format.xml  {
-          if @project.xmlwriter.empty?
-            head :unprocessable_entity
-          else
-            render :text => get_conversion(annotations, @project.xmlwriter, serial), :content_type => 'application/xml;charset=urf-8'
-          end
-        }
-      elsif anncollection && anncollection[0].class == Hash
-
-        format.json {
-          file_name = (@project)? @project.name + ".zip" : "annotations.zip"
-          t = Tempfile.new("pubann-temp-filename-#{Time.now}")
-          Zip::ZipOutputStream.open(t.path) do |z|
-            anncollection.each do |ann|
-              title = get_doc_info(ann[:target])
-              title.sub!(/\.$/, '')
-              title.gsub!(' ', '_')
-              title += ".json" unless title.end_with?(".json")
-              z.put_next_entry(title)
-              z.print ann.to_json
-            end
-          end
-          send_file t.path, :type => 'application/zip',
-                            :disposition => 'attachment',
-                            :filename => file_name
-          t.close
-        }
+      respond_to do |format|
         format.ttl {
           ttl = ''
           header_length = 0
-          anncollection.each_with_index do |ann, i|
+          annotations_collection.each_with_index do |ann, i|
             if i == 0
               ttl = get_conversion(ann, @project.rdfwriter)
               ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
@@ -99,86 +29,34 @@ class AnnotationsController < ApplicationController
           end
           render :text => ttl, :content_type => 'application/x-turtle', :filename => @project.name
         }
-
-      else
-        format.html { flash[:notice] = notice }
-        format.json { head :unprocessable_entity }
-        format.ttl  { head :unprocessable_entity }
       end
     end
-
   end
 
   # annotations for doc without project
-  def index
+  def doc_annotations_index
     begin
-      if params[:project_id].present?
-        @project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no project named '#{params[:project_id]}'." unless @project.present?
+      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document." unless divs.present?
 
-        if params[:id].present?
-          @doc = @project.docs.find(params[:id])
-          raise "There is no such document in the project." unless @doc.present?
-        elsif params[:div_id].present?
-          @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
-          raise "There is no such document in the project." unless @doc.present?
-        elsif params[:sourcedb].present? && params[:sourceid].present?
-          divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-          raise "There is no such document in the project." unless divs.present?
-
-          if divs.length > 1
-            respond_to do |format|
-              format.html {
-                flash[:notice] = 'Please specify the division id (div_id).'
-                redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])
-              }
-            end
-            return
-          end
-
-          @doc = divs[0]
-        end
-
-        span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
-        @doc.set_ascii_body if (params[:encoding] == 'ascii')
-        @annotations = @doc.hannotations(@project, span)
-
+      if divs.length > 1
         respond_to do |format|
-          format.html
-          format.json {render json: @annotations.to_hash}
+          format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
         end
-
       else
-
-        if params[:id].present?
-          @doc = Doc.find(params[:id])
-          raise "There is no such document." unless @doc.present?
-        elsif params[:sourcedb].present? && params[:sourceid].present?
-          divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-          raise "There is no such document." unless divs.present?
-
-          if divs.length > 1
-            respond_to do |format|
-              format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
-            end
-            return
-          end
-
-          @doc = divs[0]
-        end
-
-        span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+        @doc = divs[0]
+        @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
 
         @doc.set_ascii_body if params[:encoding] == 'ascii'
-        @annotations = @doc.hannotations(nil, span)
-        @project_annotations_index = @annotations[:tracks].inject({}) {|index, track| index[track[:project]] = track}
+        @annotations = @doc.hannotations(nil, @span)
+        tracks = @annotations[:tracks] || []
+        @project_annotations_index = tracks.inject({}) {|index, track| index[track[:project]] = track; index}
 
         sort_order = sort_order(Project)
         @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
 
         respond_to do |format|
-          format.html
+          format.html {render 'index'}
           format.json {render json: @annotations}
         end
       end
@@ -186,6 +64,162 @@ class AnnotationsController < ApplicationController
     rescue => e
       respond_to do |format|
         format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
+    end
+  end
+
+  # annotations for doc without project
+  def div_annotations_index
+    begin
+      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      raise "There is no such document." unless @doc.present?
+
+      @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+      @doc.set_ascii_body if params[:encoding] == 'ascii'
+      @annotations = @doc.hannotations(nil, @span)
+
+      tracks = @annotations[:tracks] || []
+      @project_annotations_index = tracks.inject({}) {|index, track| index[track[:project]] = track; index}
+
+      sort_order = sort_order(Project)
+      @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+
+      respond_to do |format|
+        format.html {render 'index'}
+        format.json {render json: @annotations}
+      end
+
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
+    end
+  end
+
+  def project_doc_annotations_index
+    begin
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
+
+      divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless divs.present?
+
+      if divs.length > 1
+        respond_to do |format|
+          format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
+          format.json {
+            divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
+            render json: divs.collect{|div| div.hannotations}
+          }
+        end
+      else
+        @doc = divs[0]
+
+        @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+        @doc.set_ascii_body if (params[:encoding] == 'ascii')
+        # @content = @doc.body.gsub(/\n/, "<br>")
+        @annotations = @doc.hannotations(@project, @span)
+
+        respond_to do |format|
+          format.html {render 'index_in_project'}
+          format.json {render json: @annotations}
+        end
+      end
+
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
+    end
+  end
+
+  def project_div_annotations_index
+    begin
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
+
+      @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      raise "There is no such document in the project." unless @doc.present?
+
+      @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+      @doc.set_ascii_body if (params[:encoding] == 'ascii')
+      @annotations = @doc.hannotations(@project, @span)
+
+      respond_to do |format|
+        format.html {render 'index_in_project'}
+        format.json {render json: @annotations}
+      end
+
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
+    end
+  end
+
+  def doc_annotations_visualize
+    begin
+      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless divs.present?
+
+      if divs.length > 1
+        respond_to do |format|
+          format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
+        end
+      else
+        @doc = divs[0]
+        raise "There is no such document." unless @doc.present?
+
+        @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+        @doc.set_ascii_body if params[:encoding] == 'ascii'
+        @annotations = @doc.hannotations(nil, @span)
+
+        @track_annotations = @annotations[:tracks]
+        @track_annotations.each {|a| a[:text] = @annotations[:text]}
+
+        respond_to do |format|
+          format.html {render 'visualize_tracks'}
+          format.json {render json: @annotations}
+        end
+      end
+
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to docs_path, notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
+    end
+  end
+
+  def div_annotations_visualize
+    begin
+      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      raise "There is no such document." unless @doc.present?
+
+      @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+      @doc.set_ascii_body if params[:encoding] == 'ascii'
+      @annotations = @doc.hannotations(nil, @span)
+
+      @track_annotations = @annotations[:tracks]
+      @track_annotations.each {|a| a[:text] = @annotations[:text]}
+
+      respond_to do |format|
+        format.html {render 'visualize_tracks'}
+        format.json {render json: @annotations}
+      end
+
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to docs_path, notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
       end
     end
@@ -256,7 +290,7 @@ class AnnotationsController < ApplicationController
         raise ArgumentError, t('controllers.annotations.create.no_annotation')
       end
 
-      annotations = normalize_annotations(annotations)
+      annotations = normalize_annotations!(annotations)
 
       if annotations[:text].length < 5000 || project.nil?
         result = Shared.store_annotations(annotations, project, divs, {:mode => mode})
@@ -289,63 +323,99 @@ class AnnotationsController < ApplicationController
     end
   end
 
-
-  # POST /annotations
-  # POST /annotations.json
   def generate
-    project = Project.accessible(current_user).find_by_name(params[:project_id])
+    begin
+      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless project.present?
 
-    if project
-      doc, notice = get_doc(*get_docspec(params))
-      if doc
-        annotations = get_annotations(project, doc, :encoding => params[:encoding])
-        annotations = gen_annotations(annotations, params[:annotation_server])
-        normalize_annotations(annotations)
-        result      = Shared.save_annotations(annotations, project, doc)
-        notice      = "annotations were successfully obtained."
+      doc = if params[:div_id].present?
+        project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
       else
-        notice = t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => params[:sourcedb], :sourceid => params[:sourceid])
+        project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      end
+      raise "There is no such document in the project." unless doc.present?
+
+      span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+      doc.set_ascii_body if (params[:encoding] == 'ascii')
+      annotations = doc.hannotations(project, span)
+
+      annotations = gen_annotations(annotations, params[:annotation_server])
+      normalize_annotations!(annotations)
+      result      = Shared.save_annotations(annotations, project, doc)
+      notice      = "annotations were successfully obtained."
+
+      respond_to do |format|
+        format.html {redirect_to :back, notice: notice}
+        format.json {}
       end
     end
+  end
 
-    respond_to do |format|
-      format.html {
-        if doc and project
-          redirect_to :back, notice: notice
-        elsif project
-          redirect_to project_path(project.name), notice: notice
-        else
-          redirect_to home_path, notice: notice
-        end
-      }
+  def create_from_zip
+    begin
+      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless project.present?
 
-      format.json {
-        if doc and project and annotations
-          head :no_content, :content_type => ''
-        else
-          head :unprocessable_entity
+      zip_file = params[:zip].path
+      if zip_file.present? && params[:zip].content_type == 'application/zip'
+        project_name = File.basename(params[:zip].original_filename, ".*")
+        messages, errors = Project.create_from_zip(zip_file, project_name, current_user)
+        # 結果をうけとってメッセージに表示
+        if messages.present?
+          flash[:notice] = messages.join('<br />')
+        else errors.present?
+          flash[:notice] = errors.join('<br />')
         end
-      }
+      end
+    rescue => e
+      render_status_error(:not_found)
     end
   end
 
   # redirect to project annotations zip
   def project_annotations_zip
-    project = Project.find_by_name(params[:project_id])
-    if project.present? && File.exist?(project.annotations_zip_path)
-      redirect_to "/annotations/#{project.annotations_zip_file_name}"
-    else
+    begin
+      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless project.present?
+
+      if File.exist?(project.annotations_zip_system_path)
+        # redirect_to "/annotations/#{project.annotations_zip_file_name}"
+        redirect_to project.annotations_zip_path
+      else
+        raise "annotation zip file does not exist."
+      end
+    rescue => e
       render_status_error(:not_found)
     end
+  end
+
+  def create_project_annotations_zip
+    begin
+      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless project.present?
+
+      # delete ZIP file if params[:update]
+      File.unlink(project.annotations_zip_path) if params[:update].present?
+      # Creaet ZIP file by delayed_job
+      project.notices.create({method: 'start_delay_create_annotations_zip'})
+      project.delay.create_annotations_zip(:encoding => params[:encoding])
+      # project.create_annotations_zip(:encoding => params[:encoding])
+    # rescue => e
+    #   flash[:notice] = notice
+    end
+    redirect_to :back
   end
 
   def delete_project_annotations_zip
     begin
       status_error = false
-      project = Project.find_by_name(params[:project_id])
-      if project.present? && File.exist?(project.annotations_zip_path)
+      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless project.present?
+
+      if File.exist?(project.annotations_zip_system_path)
         if project.user == current_user 
-          File.unlink(project.annotations_zip_path)
+          File.unlink(project.annotations_zip_system_path)
           flash[:notice] = t('views.shared.zip.deleted')
         else
           status_error = true

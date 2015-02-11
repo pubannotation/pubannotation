@@ -1,20 +1,18 @@
 <%= render :partial => 'docs/path' -%>
-
 <%= render :partial => 'shared/textae_css_js'-%>
-
 <%= render :partial => 'shared/textae_div', locals:{target_json_url: "#{request.url}.json" } -%>
 
-<% if @denotations.present? -%>
+<% if @spans_index.present? -%>
 	<table>
 		<tr>
 			<th>
 				Span
 			</th>
 		</tr>
-		<% @denotations.each do | denotation | -%>
+		<% @spans_index.each do |span| -%>
 			<tr>
 				<td>
-					<%= span_link_helper(@doc, denotation[:span]) -%>
+					<%= link_to "#{span[:span][:begin]}-#{span[:span][:end]}", span[:obj] -%>
 				</td>
 			</tr>
 		<% end -%>

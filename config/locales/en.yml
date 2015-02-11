@@ -241,7 +241,7 @@ en:
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
         annotations_zip_downloadable: Annotation downloadable
-        process: process
+        process: Type
         updated_at: last update
       sproject:
         rdfwriter: RDF writer
@@ -293,6 +293,7 @@ en:
       successfully_destroyed: '%{model} was successfully deleted.'
       confirm_delete: Are you sure to delete?
       last_modified_at: Modified at
+      created_at: Created at
       not_exists: There is no %{model}
       sql:
         invalid: Invalid SQL
@@ -364,8 +365,8 @@ en:
         import: "import associated projects"
       show:
         pending_associate_projects: "This project is processing importing projects"
-      save_annotation_zip:
-        failed: "Failed to creaete annotate ZIP file at %{created_at}"
+      create_annotationt_zip:
+        failed: "The task, 'create annotation ZIP', failed. %{created_at}"
   views:
     service:
       title: PubAnnotation
@@ -379,21 +380,27 @@ en:
       index:
         confirm_destroy_all: Are you sure? All the instances and relations that belong to this project will be deleted.
       see_in_visualizaion: Visualization
+      to_this_doc: to this document
+      to_this_span: to this span
       visualization_link_disabled: Choose a span to see. Otherwise, the text is too long to show in visualization.
     divs:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
       div: Div.
+      list_button: List all the divisions
     docs:
-      annotation_within_project: "Annotations <span class='meta'> made to this document</span><span class='meta'> within the project, <span class='pname'>%{project_name}</span></span>"
+      annotation_within_project: "Annotations <span class='meta'> from the project, <span class='pname'>%{project_name}</span></span>"
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
-      projects_made_to_document: "Projects <span class='meta'>that annotate to this document</span>"
+      projects_that_annotates_this: "Projects <span class='meta'>that have annotated to this document</span>"
       automatic_annotation: Get automatic annotation
       records: doc records
       list: documents
+      list_button: List all the documents
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
       add_new_documents: Add new documents
       total_number: "Total %{total_number} documents"
+    spans:
+      projects_that_annotates_this: "Projects <span class='meta'>that have annotated to this span</span>"
     documentations:
       Overview: Overview
       Features: Features
@@ -402,12 +409,13 @@ en:
 
     paths:
       home: top
+      docs: docs
     projects:
       project: project
       try_textae: "is the default, but you can use any other RESTful editor." 
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this project</span></span>"
-      about_the_project: "About the project, <span class='pname'>%{project_name}</span>"
       properties: properties
+      contents: Contents
       that_annotate_a_doc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubannotation: "Annotation projects <span class='meta'>in PubAnnotation</span>"
@@ -418,10 +426,10 @@ en:
       belongs_to_sproject: Projects belongs to this Sproject
       associate_project: Associate project
       select_zip_file: Select zip file to upload.
-      start_delay_save_annotation_zip:
-        result: "Create annotations zip file task started. %{created_at}"
-      save_annotation_zip:
-        result: "Create annotations zip file task finished %{result}. %{created_at}"
+      start_delay_create_annotations_zip:
+        result: "The task, 'create annotation zip', started. %{created_at}"
+      create_annotations_zip:
+        result: "The task, 'create annotation zip', finished %{result}. %{created_at}"
       start_delay_store_annotations:
         result: "Create annotations task started. %{created_at}"
       store_annotations:
@@ -446,15 +454,6 @@ en:
       sign_up: Signup
       sign_out: Logout
       send_reset_password_instructions: Send me reset password instructions
-    pmdocs:
-      pmdocs_in_a_project: "PubMed documents <span class='meta'>in the project, <span class='pname'>%{project_name}</span></span>"
-      pmdocs_in_pubannotation: "PubMed documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
-      confirm_delete: Are you sure? All the annotations to this document in the project will be deleted.
-    pmcdocs:
-      pmc_ids: PMC ids
-      pmcdocs_in_a_project: "PMC documents <span class='meta'>in the annotation project, <span class='pname'>%{project_name}</span>"
-      pmcdocs_in_pubannotation: "PMC documents <span class='meta'>in <span class='pname'>PubAnnotation</span></span>"
-      add_pmc_documents: Add PMC documents
     shared:
       confirm:
         delete_model: "Are you sure to delete %{model}?"      
@@ -473,6 +472,7 @@ en:
       edit_model: Editing %{model}
       add_model: Add %{model}
       delete_model: Delete %{model}
+      full_list: '>full list'
       permit: permit
       show: show
       remove: remove
@@ -483,11 +483,10 @@ en:
       update: update
       pubmed: PubMed
       a_doc_id: "%{sourcedb}:%{sourceid}"
-      pmdocs: pmdocs
-      pmcdocs: pmcdocs
       search: search
       successful: successfully
       unsuccessful: unsuccessfullly
+      total_number: total number
       get: get
       divs: divs
       div: div:%{divid}
@@ -499,4 +498,4 @@ en:
       zip:
         delayed_job_present: ZIP file will be created in a few minutes.      
         download_not_available: Whole download is not available for this project.
-        deleted: Successfully deleted annnotation zip file.
+        deleted: Successfully deleted the annotation zip file.

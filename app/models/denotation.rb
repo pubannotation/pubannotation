@@ -2,7 +2,6 @@ require 'zip/zip'
 
 class Denotation < ActiveRecord::Base
   include DenotationsHelper
-  ZIP_FILE_PATH = "#{Rails.root}/public/annotations/"
   
   belongs_to :project, :counter_cache => true
   belongs_to :doc, :counter_cache => true

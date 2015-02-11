@@ -1,0 +1,48 @@
+<h2>
+  <%= title %>
+  <span class='info'>(<%= total_number(divs, 'docs') -%>)</span>
+  <% if @project.present? || params[:action] == 'search' -%>
+    <span class='tab-bar'>
+      <%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
+      <%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
+    </span>
+  <% end -%>
+</h2>
+<% if divs.present? -%>
+	<% content_for :javascript do %>
+		<script type="text/javascript">
+			$(document).ready(function() 
+			    { 
+			        $("#divisions").tablesorter({
+			        	sortInitialOrder: 'desc',
+			        	// set sortable headers
+			        	headers: { 
+				            0: { sorter: false }, 
+				            1: { sorter: false }, 
+				            3: { sorter: false }, 
+				            4: { sorter: false }, 
+				            5: { sorter: false },
+				            8: { sorter: false }
+				        }
+			        });
+			    } 
+			); 	
+		</script>
+	<% end %>
+
+	<table class="full">
+		<thead>
+			<tr>
+				<th style="width:4em" class="sortable-ASC"><%= t('views.divs.div')%></th>
+				<th style="width:14em"><%= t('activerecord.attributes.doc.section') %></th>
+				<th><%= t('activerecord.attributes.doc.body') %></th>
+				<th style="width:9em"><%= t('views.shared.size') %></th>
+				<th style="width:9em" class="sortable-ASC" title="<%= t('activerecord.models.denotations') %>">#Denotations</th>
+				<th style="width:4em"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<%= render partial: 'div', collection: divs -%>
+		</tbody>
+	</table>
+<% end -%>

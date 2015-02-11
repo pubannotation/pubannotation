@@ -7,6 +7,9 @@
   <% else -%>
     > <%= link_to t('views.paths.docs'), docs_path -%>
   <% end %>
+
+  > <%= link_to t('views.shared.a_doc_id', :sourcedb => params[:sourcedb], :sourceid => params[:sourceid]) + '> divs', index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid]) %>
+
   > <%= t('views.shared.search') -%>
 <% end -%>
 
@@ -14,14 +17,10 @@
   <%= render :partial => 'projects/title_and_links' -%>
 <% end -%>
 
-<%= render partial: 'source_docs' -%>
+<%= render partial: 'divs', locals: {title: "Division search results of #{params[:sourcedb]}:#{params[:sourceid]}", divs: @search_divs} -%>
 
 <h3>Search documents</h3>
-<%= render partial: 'docs/search_form' -%>
+<%= render partial: 'divs/search_form' -%>
 
 <h3>List</h3>
-<% if @search_docs_number.present? && @search_docs_number < 5000 -%>
-  <%= link_to t('views.docs.list_button'), @project.present? ? project_docs_path(@project.name) : docs_path, {class: 'button'} -%>
-<% else -%>
-Too many documents to list them all. Please use search.
-<% end -%>
+<%= link_to t('views.divs.list_button'), url_for.sub(/\/search/, ''), {class: 'button'} -%>

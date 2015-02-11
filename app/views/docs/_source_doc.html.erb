@@ -1,33 +1,8 @@
-<% if source_doc_counter == 0 -%>
-  <div style="float:right">
-    <%= total_number(@source_docs, 'docs') -%>
-  </div>
-	
-	<table class="full">		
-		<tr>
-      <th class="docs_header_sourcedb">
-				<% if params[:action] == 'search' -%>
-					<%= t('activerecord.attributes.doc.sourcedb') -%>
-				<% else -%>
-         <%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
-				<% end -%>
-			</th>
-      <th class="docs_header_sourceid">
-				<% if params[:action] == 'search' -%>
-					<%= t('activerecord.attributes.doc.sourceid') -%>
-				<% else -%>
-					<%= sortable(Doc, 'sourceid', t('activerecord.attributes.doc.sourceid')) %>
-				<% end -%>
-			</th>
-			<th><%= t('activerecord.attributes.doc.body') %></th>
-			<th style="width:12em"></th>
-		</tr>
-<% end -%>
-
 <tr>
 	<td><%= sourceid_index_link_helper(source_doc) -%></td>
 	<td><%= source_doc.sourceid -%></td>
 	<td><%= source_doc.body -%></td>
+	<td style="text-align:right"><%= source_doc.projects.size -%></td>
 	<td>
         <span class="button">
         	<% if  params[:project_id].present? -%>
@@ -50,8 +25,3 @@
 	    <% end %>
 	</td>
 </tr>
-
-<% if source_doc_counter == @source_docs.size - 1 -%>
-	</table>
-	<%= will_paginate @source_docs -%>
-<% end -%>
