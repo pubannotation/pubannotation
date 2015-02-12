@@ -212,7 +212,7 @@ describe DocsController do
       end  
       
       it 'should include project.docs sourcedb' do
-        assigns[:source_dbs].collect{|doc| doc.sourcedb}.uniq.should =~ @project.docs.collect{|doc| doc.sourcedb}
+        assigns[:sourcedbs].collect{|doc| doc.sourcedb}.uniq.should =~ @project.docs.collect{|doc| doc.sourcedb}
       end    
     end
 
@@ -222,7 +222,7 @@ describe DocsController do
       end  
       
       it 'should not contatin blank sourcedb' do
-        assigns[:source_dbs].select{|doc| doc.sourcedb == nil || doc.sourcedb == ''}.should be_blank
+        assigns[:sourcedbs].select{|doc| doc.sourcedb == nil || doc.sourcedb == ''}.should be_blank
       end    
     end
   end
@@ -596,7 +596,7 @@ describe DocsController do
         context 'when docs.lengs > 1' do
           before do
             @doc_2 = FactoryGirl.create(:doc, :sourceid => @doc.sourceid, :sourcedb => @doc.sourcedb, :serial => @doc.serial.to_i + 1 )
-            get :spans_index, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @doc.serial
+            get :spans_index, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @doc.serial
           end
           
           it 'should assign @doc' do
@@ -931,8 +931,8 @@ describe DocsController do
 
       describe 'docs' do
         it 'should call project.add_docs_from_json with docs generated from params[:ids] and current_user' do
-          @project.should_receive(:add_doc).with({source_db: @sourcedb, source_id: @id_1}, @current_user)
-          @project.should_receive(:add_doc).with({source_db: @sourcedb, source_id: @id_2}, @current_user)
+          @project.should_receive(:add_doc).with({sourcedb: @sourcedb, sourceid: @id_1}, @current_user)
+          @project.should_receive(:add_doc).with({sourcedb: @sourcedb, sourceid: @id_2}, @current_user)
           get :add, project_id: @project.name, sourcedb: @sourcedb, ids: @ids
         end
       end
@@ -1208,18 +1208,18 @@ describe DocsController do
 
   describe 'autocomplete_sourcedb' do
     before do
-      @source_dbs = %w(sdb1 sdb2 sdb3)
-      @source_dbs.each do |source_db|
+      @sourcedbs = %w(sdb1 sdb2 sdb3)
+      @sourcedbs.each do |sourcedb|
         2.times do |time|
-          FactoryGirl.create(:doc, sourcedb: source_db, sourceid: time.to_s )
+          FactoryGirl.create(:doc, sourcedb: sourcedb, sourceid: time.to_s )
         end
       end
     end
 
     context 'when matched' do
-      it 'should return unique source_dbs as json' do
+      it 'should return unique sourcedbs as json' do
         get :autocomplete_sourcedb, term: 'sdb'
-        expect(response.body).to eql @source_dbs.to_json
+        expect(response.body).to eql @sourcedbs.to_json
       end
     end
 

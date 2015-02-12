@@ -31,7 +31,7 @@ class SpansController < ApplicationController
 
   def div_spans_index
     begin
-      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document." unless @doc.present?
 
       @doc.set_ascii_body if params[:encoding] == 'ascii'
@@ -87,7 +87,7 @@ class SpansController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      @doc = @project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = @project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document in the project." unless @doc.present?
 
       @doc.set_ascii_body if params[:encoding] == 'ascii'
@@ -152,7 +152,7 @@ class SpansController < ApplicationController
 
   def div_span_show
     begin
-      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document in the project." unless @doc.present?
 
       @span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
@@ -231,7 +231,7 @@ class SpansController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document in the project." unless @doc.present?
 
       @span = {:begin => params[:begin].to_i, :end => params[:end].to_i}

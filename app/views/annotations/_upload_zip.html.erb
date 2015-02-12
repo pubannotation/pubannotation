@@ -1,0 +1,7 @@
+<h3>Batch upload</h3>
+
+<%= form_tag project_create_annotations_from_zip_path(@project.name), multipart: true do -%>
+	<label for="zipfile">Upload a zip file containing annotation json files:</label>
+	<%= file_field_tag 'zipfile', accept: 'application/zip' -%>
+	<%= submit_tag t('views.shared.upload') -%>
+<% end -%>

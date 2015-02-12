@@ -6,15 +6,15 @@ describe HomeController do
     before do
       @current_user = FactoryGirl.create(:user)
       current_user_stub(@current_user)
-      @source_dbs = ['source_dbs']
-      Doc.stub(:source_dbs).and_return(@source_dbs)
+      @sourcedbs = ['sourcedbs']
+      Doc.stub(:sourcedbs).and_return(@sourcedbs)
       @index_projects = double(:index)
       Project.stub_chain(:accessible, :index).and_return(@index_projects)
     end
     
-    it '@source_dbs should eql Doc.source_dbs' do
+    it '@sourcedbs should eql Doc.sourcedbs' do
       get :index
-      assigns[:source_dbs].should eql @source_dbs
+      assigns[:sourcedbs].should eql @sourcedbs
     end
     
     it '@projects should eql Project.accessible.index' do

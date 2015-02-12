@@ -72,7 +72,7 @@ class AnnotationsController < ApplicationController
   # annotations for doc without project
   def div_annotations_index
     begin
-      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document." unless @doc.present?
 
       @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
@@ -130,11 +130,11 @@ class AnnotationsController < ApplicationController
         end
       end
 
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
-        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-      end
+    # rescue => e
+    #   respond_to do |format|
+    #     format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+    #   end
     end
   end
 
@@ -143,7 +143,7 @@ class AnnotationsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document in the project." unless @doc.present?
 
       @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
@@ -201,7 +201,7 @@ class AnnotationsController < ApplicationController
 
   def div_annotations_visualize
     begin
-      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document." unless @doc.present?
 
       @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
@@ -267,17 +267,18 @@ class AnnotationsController < ApplicationController
   # POST /annotations.json
   def create
     begin
-      project = if params[:project_id].present?
+      if params[:project_id].present?
         authenticate_user!
-        get_project2(params[:project_id])
+        project = Project.editable(current_user).find_by_name(params[:project_id])
+        raise "There is no such project in your management." unless project.present?
       end
 
-      mode = :addition if params[:mode] == 'addition'
+      mode = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
 
       sourcedb, sourceid, divno = get_docspec(params)
       divnos = divno.respond_to?(:each) ? divno : [divno]
       divs = divnos.collect{|no| get_doc(sourcedb, sourceid, no)[0]}
-      raise ArgumentError, t('controllers.annotations.create.no_project_document', :project_id => params[:project_id], :sourcedb => params[:sourcedb], :sourceid => params[:sourceid]) if divs[0].nil? || (project.present? && !project.docs.include?(divs[0]))
+      raise ArgumentError, "There is no such document." if divs[0].nil? || (project.present? && !project.docs.include?(divs[0]))
 
       if params[:annotations]
         annotations = params[:annotations].symbolize_keys
@@ -325,11 +326,11 @@ class AnnotationsController < ApplicationController
 
   def generate
     begin
-      project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless project.present?
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
 
-      doc = if params[:div_id].present?
-        project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      doc = if params[:divid].present?
+        project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       else
         project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       end
@@ -354,22 +355,21 @@ class AnnotationsController < ApplicationController
 
   def create_from_zip
     begin
-      project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless project.present?
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
 
-      zip_file = params[:zip].path
-      if zip_file.present? && params[:zip].content_type == 'application/zip'
-        project_name = File.basename(params[:zip].original_filename, ".*")
-        messages, errors = Project.create_from_zip(zip_file, project_name, current_user)
-        # 結果をうけとってメッセージに表示
-        if messages.present?
-          flash[:notice] = messages.join('<br />')
-        else errors.present?
-          flash[:notice] = errors.join('<br />')
-        end
+      if params[:zipfile].present? && params[:zipfile].content_type == 'application/zip'
+        project.notices.create({method: 'start_annotations_batch_upload'})
+        messages = project.delay.create_annotations_from_zip(params[:zipfile].path)
+        project.notices.create({method: 'annotations_batch_upload'})
       end
-    rescue => e
-      render_status_error(:not_found)
+
+      respond_to do |format|
+        format.html {redirect_to :back, notice: notice}
+        format.json {}
+      end
+    # rescue => e
+    #   render_status_error(:not_found)
     end
   end
 
@@ -392,14 +392,14 @@ class AnnotationsController < ApplicationController
 
   def create_project_annotations_zip
     begin
-      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless project.present?
 
       # delete ZIP file if params[:update]
       File.unlink(project.annotations_zip_path) if params[:update].present?
       # Creaet ZIP file by delayed_job
       project.notices.create({method: 'start_delay_create_annotations_zip'})
-      project.delay.create_annotations_zip(:encoding => params[:encoding])
+      project.delay.create_annotations_zip(params[:encoding])
       # project.create_annotations_zip(:encoding => params[:encoding])
     # rescue => e
     #   flash[:notice] = notice
@@ -410,7 +410,7 @@ class AnnotationsController < ApplicationController
   def delete_project_annotations_zip
     begin
       status_error = false
-      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless project.present?
 
       if File.exist?(project.annotations_zip_system_path)
@@ -432,38 +432,29 @@ class AnnotationsController < ApplicationController
     end
   end
 
-
-  # DELETE /projects/:hid
-  # DELETE /projects/:hid.json
-  # def destroy
-    # @project, notice = get_project(params[:project_id])
-    # if @project
-      # if (params[:pmdoc_id] || params[:pmcdoc_id])
-        # sourcedb, sourceid, serial = get_docspec(params)
-        # @doc, notice = get_doc(sourcedb, sourceid, serial, @project)
-        # if @doc
-          # annotations = get_annotations(@project, @doc, :encoding => params[:encoding])
-        # end
-      # end
-    # end
-    # @annotations.destroy
-# 
-    # respond_to do |format|
-      # format.html { redirect_to projects_path, notice: t('controller.projects.destroy.deleted', :id => params[:id]) }
-      # format.json { head :no_content }
-    # end
-  # end
-
-  def destroy_all
-    @project = get_project(params[:project_id])[0]
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    @doc = get_doc(sourcedb, sourceid, serial, @project)[0]
+  def destroy
     begin
-      @doc.destroy_project_annotations(@project)
-    rescue => e
-      flash[:notice] = e
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
+
+      doc = if params[:divid].present?
+        project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
+      else
+        project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      end
+      raise "There is no such document in the project." unless doc.present?
+
+      span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+      doc.set_ascii_body if (params[:encoding] == 'ascii')
+      denotations = doc.get_denotations(project, span)
+      denotations.each{|d| d.destroy}
+
+      respond_to do |format|
+        format.html {redirect_to :back, notice: notice}
+        format.json {render status: :no_content}
+      end
     end
-    redirect_to :back
   end
 
   private

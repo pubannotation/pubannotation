@@ -79,7 +79,7 @@ class Doc < ActiveRecord::Base
     where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
   }
   
-  scope :source_dbs, where(['sourcedb IS NOT ?', nil])
+  scope :sourcedbs, where(['sourcedb IS NOT ?', nil])
 
   scope :user_source_db, lambda{|username|
     where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
@@ -109,29 +109,28 @@ class Doc < ActiveRecord::Base
     !self.get_doc(docspec).nil?
   end
 
-  def self.import(docspec)
-    if docspec[:sourcedb] && docspec[:sourceid]
+  def self.import(sourcedb, sourceid)
+    if sourcedb.present? && sourceid.present?
       begin
-        doc_sequence = Object.const_get("DocSequencer#{docspec[:sourcedb]}").new(docspec[:sourceid])
+        doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
         divs_hash = doc_sequence.divs
 
-        divs_hash.each_with_index do |div_hash, i|
-          doc = Doc.new(
+        divs = divs_hash.map.with_index do |div_hash, i|
+          Doc.new(
             {
               :body     => div_hash[:body],
               :section  => div_hash[:heading],
               :source   => doc_sequence.source_url,
-              :sourcedb => docspec[:sourcedb],
-              :sourceid => docspec[:sourceid],
+              :sourcedb => sourcedb,
+              :sourceid => sourceid,
               :serial   => i
             }
           )
-          raise "could not save" unless doc.save
         end
 
-        divs_hash
-      rescue => e
-        raise e
+        divs.each{|div| raise "could not save" unless div.save}
+
+        divs
       end
     end
   end
@@ -331,6 +330,10 @@ class Doc < ActiveRecord::Base
       Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(self.sourcedb, self.sourceid, :only_path => false)
     end
 
+    annotations[:sourcedb] = self.sourcedb
+    annotations[:sourceid] = self.sourceid
+    annotations[:divid] = self.serial if self.has_divs?
+
     annotations[:text] = if span.present?
       self.body[span[:begin]...span[:end]]
     else
@@ -394,13 +397,13 @@ class Doc < ActiveRecord::Base
     json_hash = {
       id: id,
       text: body.gsub(/[\r\n]/, ""),
-      source_db: sourcedb,
-      source_id: sourceid,
+      sourcedb: sourcedb,
+      sourceid: sourceid,
       section: section,
       source_url: source
     }
     # if has_divs?
-      json_hash[:div_id] = serial
+      json_hash[:divid] = serial
     # end
     return json_hash
   end
@@ -408,9 +411,9 @@ class Doc < ActiveRecord::Base
   def to_hash
     {
       text: body.nil? ? nil : body.gsub(/[\r\n]/, ''),
-      source_db: sourcedb,
-      source_id: sourceid,
-      div_id: serial,
+      sourcedb: sourcedb,
+      sourceid: sourceid,
+      divid: serial,
       section: section,
       source_url: source
     }
@@ -418,15 +421,15 @@ class Doc < ActiveRecord::Base
   
   def to_list_hash(doc_type)
     hash = {
-      source_db: sourcedb,
-      source_id: sourceid,
+      sourcedb: sourcedb,
+      sourceid: sourceid,
     }
     # switch url or div_url
     case doc_type
     when 'doc'
       hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(self.sourcedb, self.sourceid)
     when 'div'
-      hash[:div_id] = serial
+      hash[:divid] = serial
       hash[:section] = section
       hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_index_url(self.sourcedb, self.sourceid)
     end

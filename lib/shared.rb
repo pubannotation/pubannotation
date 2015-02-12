@@ -57,7 +57,7 @@ module Shared
   end
 
   def self.save_annotations(annotations, project, doc, options = nil)
-    doc.destroy_project_annotations(project) unless options.present? && (options[:mode] == :addition || options[:mode] == :add)
+    doc.destroy_project_annotations(project) unless options.present? && options[:mode] == :addition
 
     original_text = annotations[:text]
     annotations[:text] = doc.body
@@ -101,7 +101,7 @@ module Shared
 
         fit_index.each do |i|
           if i[0] >= 0
-            ann = {div_id:i[0]}
+            ann = {divid:i[0]}
             idx = {}
             ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
             if annotations[:denotations].present?

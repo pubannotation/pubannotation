@@ -2017,8 +2017,8 @@ describe Project do
       before do
         Project.any_instance.stub(:anncollection).and_return(
           [{
-            :source_db => 'source_db',
-            :source_id => 'source_id',
+            :sourcedb => 'sourcedb',
+            :sourceid => 'sourceid',
             :division_id => 1,
             :section => 'section',
          }])
@@ -2190,21 +2190,21 @@ describe Project do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) 
     end
     
-    context 'when source_dbs prensent' do
+    context 'when sourcedbs prensent' do
       before do
         @attributes = Array.new
         @docs_array = Array.new
         @project.stub(:add_docs) do |options|  
-          @attributes << {source_db: options[:sourcedb], ids: options[:ids]}
+          @attributes << {sourcedb: options[:sourcedb], ids: options[:ids]}
           @docs_array << options[:docs_array]
           @options_user = options[:user]
           [1, 1, 1]
         end
-        @pmc_user_1 = {:source_db => "PMC:user name", :source_id => '1', :div_id => 0, :text => 'body text'}
-        @pmc_user_2 = {:source_db => "PMC:user name", :source_id => '1', :div_id => 1, :text => 'body text'} 
-        @pmc_1 = {:source_id => "1", :source_db => "PMC"} 
-        @pmc_2 = {:source_id => "2", :source_db => "PMC"} 
-        @pub_med = {:source_id => "1", :source_db => "PubMed"}
+        @pmc_user_1 = {:sourcedb => "PMC:user name", :sourceid => '1', :divid => 0, :text => 'body text'}
+        @pmc_user_2 = {:sourcedb => "PMC:user name", :sourceid => '1', :divid => 1, :text => 'body text'} 
+        @pmc_1 = {:sourceid => "1", :sourcedb => "PMC"} 
+        @pmc_2 = {:sourceid => "2", :sourcedb => "PMC"} 
+        @pub_med = {:sourceid => "1", :sourcedb => "PubMed"}
         @user = FactoryGirl.create(:user)
       end
 
@@ -2214,8 +2214,8 @@ describe Project do
           @result = @project.add_docs_from_json(docs, @user)
         end
 
-        it 'should pass ids and source_db for add_docs correctly' do
-          @attributes.should =~ [{source_db: "PMC:user name", ids: "1,1"}, {source_db: "PMC", ids: "1,2"}, {source_db: "PubMed", ids: "1"}]
+        it 'should pass ids and sourcedb for add_docs correctly' do
+          @attributes.should =~ [{sourcedb: "PMC:user name", ids: "1,1"}, {sourcedb: "PMC", ids: "1,2"}, {sourcedb: "PubMed", ids: "1"}]
         end
 
         it 'should count up num_created, num_added, num_failed' do
@@ -2237,8 +2237,8 @@ describe Project do
           @result = @project.add_docs_from_json(docs, @user)
         end
 
-        it 'should pass ids and source_db for add_docs correctly' do
-          @attributes.should =~ [{source_db: "PMC:user name", ids: "1"}]
+        it 'should pass ids and sourcedb for add_docs correctly' do
+          @attributes.should =~ [{sourcedb: "PMC:user name", ids: "1"}]
         end
 
         it 'should count up num_created, num_added, num_failed' do
@@ -2268,16 +2268,16 @@ describe Project do
           @doc_2 = FactoryGirl.create(:doc, :sourcedb => @user_soucedb, :sourceid => @sourceid, :serial => 1)
           @docs_array = [
             # successfully update
-            {'id' => 1, 'text' => 'doc body1', 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
-            {'id' => 2, 'text' => 'doc body2', 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+            {'id' => 1, 'text' => 'doc body1', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
+            {'id' => 2, 'text' => 'doc body2', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
             # successfully create
-            {'id' => 3, 'text' => 'doc body3', 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 2},
-            # successfully update save serial(div_id) record
-            {'text' => 'doc body4', 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+            {'id' => 3, 'text' => 'doc body3', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 2},
+            # successfully update save serial(divid) record
+            {'text' => 'doc body4', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
             # fail create
-            {'id' => 4, 'text' => nil, 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 3},
+            {'id' => 4, 'text' => nil, 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 3},
             # fail update
-            {'text' => nil, 'source_db' => @user_soucedb, 'source_id' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0}
+            {'text' => nil, 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 0}
           ]
         end
 
@@ -2300,27 +2300,27 @@ describe Project do
           end
 
           it 'should update exists doc' do
-            @doc_1.body == @docs_array[0]['text'] && @doc_1.sourcedb == @docs_array[0]['source_db'] && @doc_1.source == @docs_array[0]['source_url'] && @doc_1.serial == @docs_array[0]['div_id']
+            @doc_1.body == @docs_array[0]['text'] && @doc_1.sourcedb == @docs_array[0]['sourcedb'] && @doc_1.source == @docs_array[0]['source_url'] && @doc_1.serial == @docs_array[0]['divid']
           end
 
           it 'should add project.docs' do
-            @project.docs.select{|doc| doc.body == @docs_array[0]['text'] && doc.sourcedb == @docs_array[0]['source_db'] && doc.source == @docs_array[0]['source_url'] && doc.serial == @docs_array[0]['div_id']}.should be_present
+            @project.docs.select{|doc| doc.body == @docs_array[0]['text'] && doc.sourcedb == @docs_array[0]['sourcedb'] && doc.source == @docs_array[0]['source_url'] && doc.serial == @docs_array[0]['divid']}.should be_present
           end
 
           it 'should add project.docs' do
-            @project.docs.select{|doc| doc.body == @docs_array[2]['text'] && doc.sourcedb == @docs_array[2]['source_db'] && doc.source == @docs_array[2]['source_url'] && doc.serial == @docs_array[2]['div_id']}.should be_present
+            @project.docs.select{|doc| doc.body == @docs_array[2]['text'] && doc.sourcedb == @docs_array[2]['sourcedb'] && doc.source == @docs_array[2]['source_url'] && doc.serial == @docs_array[2]['divid']}.should be_present
           end
 
           it 'should update exists doc' do
-            @doc_2.body == @docs_array[3]['text'] && @doc_1.sourcedb == @docs_array[3]['source_db'] && @doc_1.source == @docs_array[3]['source_url'] && @doc_1.serial == @docs_array[3]['div_id']
+            @doc_2.body == @docs_array[3]['text'] && @doc_1.sourcedb == @docs_array[3]['sourcedb'] && @doc_1.source == @docs_array[3]['source_url'] && @doc_1.serial == @docs_array[3]['divid']
           end
 
           it 'should add project.docs' do
-            @project.docs.select{|doc| doc.body == @docs_array[3]['text'] && doc.sourcedb == @docs_array[3]['source_db'] && doc.source == @docs_array[3]['source_url'] && doc.serial == @docs_array[3]['div_id']}.should be_present
+            @project.docs.select{|doc| doc.body == @docs_array[3]['text'] && doc.sourcedb == @docs_array[3]['sourcedb'] && doc.source == @docs_array[3]['source_url'] && doc.serial == @docs_array[3]['divid']}.should be_present
           end
 
           it 'should add and update project.docs' do
-            @project.docs.select{|doc| doc.body == @docs_array[0]['text'] && doc.sourcedb == @docs_array[0]['source_db'] && doc.source == @docs_array[0]['source_url'] && doc.serial == @docs_array[0]['div_id']}.should be_present
+            @project.docs.select{|doc| doc.body == @docs_array[0]['text'] && doc.sourcedb == @docs_array[0]['sourcedb'] && doc.source == @docs_array[0]['source_url'] && doc.serial == @docs_array[0]['divid']}.should be_present
           end
         end
       end
@@ -2376,10 +2376,10 @@ describe Project do
               @sourcedb = "PMC#{Doc::UserSourcedbSeparator}#{@user.username}"
               @docs_array = [
                 # successfully create
-                {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => '123', 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
-                {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => '123', 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+                {'id' => 1, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => '123', 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
+                {'id' => 2, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => '123', 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
                 # fail since same sourcedb, sourceid and serial
-                {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => '123', 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
+                {'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => '123', 'source_url' => 'http://user.sourcedb/', 'divid' => 1}
               ]
               @user_soucedb_doc = FactoryGirl.create(:doc)
               @divs = [@user_soucedb_doc]
@@ -2409,9 +2409,9 @@ describe Project do
               @other_users_username
               @sourcedb = "PMC#{Doc::UserSourcedbSeparator}#{@other_users_username}"
               @docs_array = [
-                {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
-                {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
-                {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => 123, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
+                {'id' => 1, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => 123, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
+                {'id' => 2, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => 123, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
+                {'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => 123, 'source_url' => 'http://user.sourcedb/', 'divid' => 1}
               ]
               @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
             end
@@ -2447,13 +2447,13 @@ describe Project do
               @new_sourceid = '123456'
               @docs_array = [
                 # successfully create
-                {'id' => 1, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => @new_sourceid, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'div_id' => 0},
-                {'id' => 2, 'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => @new_sourceid, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1},
+                {'id' => 1, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => @new_sourceid, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
+                {'id' => 2, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => @new_sourceid, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
                 # fail since same sourcedb, sourceid and serial
-                {'text' => 'doc body', 'source_db' => @sourcedb, 'source_id' => @new_sourceid, 'source_url' => 'http://user.sourcedb/', 'div_id' => 1}
+                {'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => @new_sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 1}
               ]
               Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
-              @sourcedb = 'source_db'
+              @sourcedb = 'sourcedb'
               @user = FactoryGirl.create(:user, username: 'User Name')
               @user_soucedb_doc = FactoryGirl.create(:doc)
               @divs = [@user_soucedb_doc]
@@ -2530,8 +2530,8 @@ describe Project do
     before do
       @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
       @docs_array = [
-        {text: 'text', source_db: 'sdb', source_id: 'sid', section: 'section', source_url: 'http', div_id: 0},
-        {text: 'text', source_db: 'sdb', source_id: nil, section: 'section', source_url: 'http', div_id: 0}
+        {text: 'text', sourcedb: 'sdb', sourceid: 'sid', section: 'section', source_url: 'http', divid: 0},
+        {text: 'text', sourcedb: 'sdb', sourceid: nil, section: 'section', source_url: 'http', divid: 0}
       ]  
     end
 
@@ -2553,12 +2553,12 @@ describe Project do
     context 'when options[:sourcedb] prensent' do
       it 'should save doc once' do
         docs_array = [
-          {text: 'text', source_db: 'sdb', source_id: 'sid', section: 'section', source_url: 'http', div_id: 0}
+          {text: 'text', sourcedb: 'sdb', sourceid: 'sid', section: 'section', source_url: 'http', divid: 0}
         ]  
         sourcedb = 'param sdb'
         nil.stub(:valid?).and_return(true)
         nil.stub(:save).and_return(true)
-        expect(Doc).to receive(:new).with({body: docs_array[0][:text], sourcedb: sourcedb, sourceid: docs_array[0][:source_id], section: docs_array[0][:section], source: docs_array[0][:source_url], serial: docs_array[0][:div_id]})
+        expect(Doc).to receive(:new).with({body: docs_array[0][:text], sourcedb: sourcedb, sourceid: docs_array[0][:sourceid], section: docs_array[0][:section], source: docs_array[0][:source_url], serial: docs_array[0][:divid]})
         @project.create_user_sourcedb_docs({docs_array: docs_array, sourcedb: sourcedb})
       end
     end

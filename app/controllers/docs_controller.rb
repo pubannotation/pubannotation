@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_docs]
+  before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_doc]
   after_filter :set_access_control_headers
   # JSON POST
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
@@ -98,7 +98,7 @@ class DocsController < ApplicationController
     else
       docs = Doc
     end
-    @source_dbs = docs.select(:sourcedb).source_dbs.uniq
+    @sourcedbs = docs.select(:sourcedb).sourcedbs.uniq
   end 
  
   def sourceid_index
@@ -145,8 +145,8 @@ class DocsController < ApplicationController
       search_docs = docs.where(conditions).group(:id).group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
 
       if search_docs.length < 5000
-        search_docs_list = search_docs.map{|d| {source_db: d.sourcedb, source_id:d.sourceid}}.uniq
-        search_docs = search_docs_list.map{|d| docs.find_by_sourcedb_and_sourceid_and_serial(d[:source_db], d[:source_id], 0)}
+        search_docs_list = search_docs.map{|d| {sourcedb: d.sourcedb, sourceid:d.sourceid}}.uniq
+        search_docs = search_docs_list.map{|d| docs.find_by_sourcedb_and_sourceid_and_serial(d[:sourcedb], d[:sourceid], 0)}
         search_docs_list = search_docs.map{|d| d.to_list_hash('doc')}
       else
         search_docs_list = []
@@ -301,40 +301,28 @@ class DocsController < ApplicationController
 
   # add new docs to a project
   def add
-    # get the docspecs list
-    docspecs =  if params["_json"] && params["_json"].class == Array
-                  params["_json"].collect{|d| d.symbolize_keys}
-                elsif params["sourcedb"].present? && params["sourceid"].present?
-                  [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
-                elsif params[:ids].present? && params[:sourcedb].present?
-                  params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
-                end
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
 
-    docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
+      # get the docspecs list
+      docspecs =  if params["_json"] && params["_json"].class == Array
+                    params["_json"].collect{|d| d.symbolize_keys}
+                  elsif params["sourcedb"].present? && params["sourceid"].present?
+                    [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
+                  elsif params[:ids].present? && params[:sourcedb].present?
+                    params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
+                  end
 
-    # get the project
-    begin 
-      project = get_project2(params[:project_id])
-    rescue => e
-      message = e.message
-    end
+      docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
 
-    messages = []
-    imported, added, failed = 0, 0, 0
-    if user_signed_in? && project.user == current_user
+      imported, added, failed, messages = 0, 0, 0, []
       docspecs.each do |docspec|
-        begin
-          unless Doc.exist?(docspec)
-            imported += 1 unless Doc.import(docspec).nil?
-          end
-          added += project.add_doc(docspec) unless project.nil?
-        rescue => e
-          failed += 1
-          messages << e.message
-        end
+        i, a, f, m = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
+        imported += i; added += a; failed += f; messages << m
       end
-    else
-      messages << "you are not authorized to add documents to the project."
+    rescue => e
+      messages << e.message
     end
 
     respond_to do |format|
@@ -374,7 +362,7 @@ class DocsController < ApplicationController
     params[:docs] = params["_json"] if params["_json"]
 
     docs =  if params[:ids].present? && params[:sourcedb].present?
-              params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {source_db:params[:sourcedb], source_id:id}}
+              params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
             elsif params[:docs].present?
               params[:docs].collect{|d| d.symbolize_keys}
             end
@@ -445,17 +433,20 @@ class DocsController < ApplicationController
     end
   end
   
-  def delete_project_docs
-    project = Project.find_by_name(params[:project_id])
-    docs = project.docs.where(:sourcedb => params[:sourcedb]).where(:sourceid => params[:sourceid])
-
+  def delete_project_doc
     begin
-      docs.each {|d| d.destroy_project_annotations(@project)}
-    rescue => e
-      flash[:notice] = e
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
+
+      divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless divs.present?
+
+      divs.each{|d| d.destroy_project_annotations(project)}
+    # rescue => e
+    #   flash[:notice] = e
     end
 
-    project.docs.delete(docs) 
+    project.docs.delete(divs) 
     redirect_to :back
   end
 

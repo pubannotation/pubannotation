@@ -114,8 +114,8 @@ describe AnnotationsController do
             before do
                Project.any_instance.stub(:anncollection).and_return(
                 [{
-                  :source_db => 'source_db',
-                  :source_id => 'source_id',
+                  :sourcedb => 'sourcedb',
+                  :sourceid => 'sourceid',
                   :division_id => 1,
                   :section => 'section',
                }])
@@ -148,8 +148,8 @@ describe AnnotationsController do
             before do
                Project.any_instance.stub(:anncollection).and_return(
                 [{
-                  :source_db => 'source_db',
-                  :source_id => 'source_id',
+                  :sourcedb => 'sourcedb',
+                  :sourceid => 'sourceid',
                   :division_id => 1,
                   :section => 'section',
                }])

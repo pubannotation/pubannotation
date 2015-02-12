@@ -378,7 +378,8 @@ en:
       about: about
     annotations:
       index:
-        confirm_destroy_all: Are you sure? All the instances and relations that belong to this project will be deleted.
+        confirm_destroy_all: Are you sure? All the annotations will be deleted.
+        confirm_destroy: Are you sure? All the annotations will be deleted.
       see_in_visualizaion: Visualization
       to_this_doc: to this document
       to_this_span: to this span
@@ -438,6 +439,10 @@ en:
         result: "Destroy project task started. %{created_at}"
       destroy_project:
         result: "Destroy project task was unsuccessfully finished. %{created_at}"
+      start_annotations_batch_upload:
+        result: "Annotationos batch upload started. %{created_at}"
+      annotations_batch_upload:
+        result: "Annotationos batch upload finished. %{created_at}"
       properties: properties
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
@@ -497,5 +502,5 @@ en:
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"
       zip:
         delayed_job_present: ZIP file will be created in a few minutes.      
-        download_not_available: Whole download is not available for this project.
+        download_not_available: Not available. Please contact the maintainer of the project.
         deleted: Successfully deleted the annotation zip file.

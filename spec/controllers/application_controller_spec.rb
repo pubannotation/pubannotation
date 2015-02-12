@@ -301,18 +301,18 @@ describe ApplicationController do
   end
   
   describe 'get_docspec' do
-    context 'when div_id present' do
+    context 'when divid present' do
       before do
-        @params = {sourcedb: 'sourcedb', sourceid: 'sourceid', div_id: 1}
+        @params = {sourcedb: 'sourcedb', sourceid: 'sourceid', divid: 1}
         @result = controller.get_docspec(@params)
       end
       
-      it 'should return params[:div_id] as serial' do
-        @result.should eql [@params[:sourcedb], @params[:sourceid], @params[:div_id], nil]
+      it 'should return params[:divid] as serial' do
+        @result.should eql [@params[:sourcedb], @params[:sourceid], @params[:divid], nil]
       end
     end
     
-    context 'when div_id blank' do
+    context 'when divid blank' do
       before do
         @sourcedb = 'sourcedb'
         @sourceid = 'sourceid'

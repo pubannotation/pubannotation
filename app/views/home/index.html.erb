@@ -6,7 +6,7 @@
 	<%= t('activerecord.models.doc').pluralize.capitalize.html_safe %>
 	<%= link_to t('views.shared.full_list'), docs_path, {class: 'button'} -%>
 </h1>
-<%= render :partial => "docs/source_db", collection: @source_dbs -%>
+<%= render :partial => "docs/sourcedb", collection: @sourcedbs -%>
 
 <h1>
 	<%= t('activerecord.models.project').pluralize.capitalize.html_safe %>

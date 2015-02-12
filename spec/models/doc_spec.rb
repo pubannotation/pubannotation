@@ -226,7 +226,7 @@ describe Doc do
     end
   end
   
-  describe 'source_dbs' do
+  describe 'sourcedbs' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       # create docs belongs to project
@@ -236,7 +236,7 @@ describe Doc do
       2.times do
         FactoryGirl.create(:doc, :sourcedb => 'sdb')
       end
-      @docs = Doc.source_dbs   
+      @docs = Doc.sourcedbs   
     end
     
     it 'should not include sourcedb is nil or blank' do
@@ -1463,11 +1463,11 @@ describe Doc do
       end
 
       it 'should return doc.sourcedb' do
-        @json_hash[:source_db].should eql(@doc.sourcedb) 
+        @json_hash[:sourcedb].should eql(@doc.sourcedb) 
       end
 
       it 'should return doc.sourceid' do
-        @json_hash[:source_id].should eql(@doc.sourceid) 
+        @json_hash[:sourceid].should eql(@doc.sourceid) 
       end
 
       it 'should return doc.section' do
@@ -1479,19 +1479,19 @@ describe Doc do
       end
 
       it 'should return doc.serial' do
-        @json_hash[:div_id].should eql(@doc.serial) 
+        @json_hash[:divid].should eql(@doc.serial) 
       end
     end
 
     context 'when has_divs? == false' do
-      pending 'div_id is required when create docs from json' do
+      pending 'divid is required when create docs from json' do
         before do
           @doc.stub(:has_divs?).and_return(false)
           @json_hash = @doc.json_hash
         end
 
         it 'should return doc.serial' do
-          @json_hash[:div_id].should be_nil
+          @json_hash[:divid].should be_nil
         end
       end
     end
@@ -1556,7 +1556,7 @@ B')
     end
 
     it 'should return converted hash' do
-      expect(@doc.to_hash).to eql({text: 'AB', source_db: @doc.sourcedb, source_id: @doc.sourceid, div_id: @doc.serial, section: @doc.section, source_url: @doc.source})
+      expect(@doc.to_hash).to eql({text: 'AB', sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, divid: @doc.serial, section: @doc.section, source_url: @doc.source})
     end
   end
 
@@ -1566,14 +1566,14 @@ B')
     end
 
     context 'when doc_type is doc' do
-      it 'should return source_db, source_id, url' do
-        @doc.to_list_hash('doc').should eql({source_db: @doc.sourcedb, source_id: @doc.sourceid, url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(@doc.sourcedb, @doc.sourceid)})
+      it 'should return sourcedb, sourceid, url' do
+        @doc.to_list_hash('doc').should eql({sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(@doc.sourcedb, @doc.sourceid)})
       end
     end
 
     context 'when doc_type is div' do
-      it 'should return source_db, source_id, div_url' do
-        @doc.to_list_hash('div').should eql({source_db: @doc.sourcedb, source_id: @doc.sourceid, div_id: @doc.serial, section: @doc.section, url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_index_url(@doc.sourcedb, @doc.sourceid)})
+      it 'should return sourcedb, sourceid, div_url' do
+        @doc.to_list_hash('div').should eql({sourcedb: @doc.sourcedb, sourceid: @doc.sourceid, divid: @doc.serial, section: @doc.section, url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_index_url(@doc.sourcedb, @doc.sourceid)})
       end
     end
   end
@@ -1888,7 +1888,7 @@ B')
   describe 'attach_sourcedb_suffix' do
     context 'when sourcedb include : == false' do
       before do
-        @sourcedb = 'source_db'
+        @sourcedb = 'sourcedb'
         @username = 'user name'
       end
 
@@ -1917,7 +1917,7 @@ B')
 
     context 'when sourcedb include : == true' do
       before do
-        @sourcedb = 'source_db:username'
+        @sourcedb = 'sourcedb:username'
         @doc = FactoryGirl.build(:doc, sourcedb: @sourcedb)
       end
 

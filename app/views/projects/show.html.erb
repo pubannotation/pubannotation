@@ -75,7 +75,9 @@ Too many documents to list them all. Please use search.
 
 <h2>Annotations <span class='info'>(<%= annotations_count(@project) %>)</span></h2>
 
-<br/>
+<h3>Batch download</h3>
 <div>
 	<%= project_annotations_zip_link_helper(@project) -%>
 </div>
+
+<%= render partial: 'annotations/upload_zip' -%>

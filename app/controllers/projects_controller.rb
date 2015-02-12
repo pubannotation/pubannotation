@@ -137,9 +137,6 @@ class ProjectsController < ApplicationController
   def create_from_zip
     zip_file = params[:zip].path
 
-    p zip_file
-    puts "====================="
-
     if zip_file.present? && params[:zip].content_type == 'application/zip'
       project_name = File.basename(params[:zip].original_filename, ".*")
       messages, errors = Project.create_from_zip(zip_file, project_name, current_user)

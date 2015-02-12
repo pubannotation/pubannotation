@@ -48,15 +48,15 @@ module AnnotationsHelper
       #   annotations[:pmdoc_id] = doc.sourceid
       # elsif doc.sourcedb == 'PMC'
       #   annotations[:pmcdoc_id] = doc.sourceid
-      #   annotations[:div_id] = doc.serial
+      #   annotations[:divid] = doc.serial
       # end
       
       # project
       annotations[:project] = project[:name] if project.present?
 
       # doc
-      annotations[:source_db] = doc.sourcedb
-      annotations[:source_id] = doc.sourceid
+      annotations[:sourcedb] = doc.sourcedb
+      annotations[:sourceid] = doc.sourceid
       annotations[:division_id] = doc.serial
       annotations[:section] = doc.section
       annotations[:text] = text
@@ -286,7 +286,7 @@ module AnnotationsHelper
         if project.user == current_user
           if delayed_job_tasks.blank?
             # when delayed_job exists
-            link_to t('controllers.annotations.create_zip'), project_create_annotations_zip_path(project.name), :method => :post, :class => 'button', :confirm => t('controllers.annotations.confirm_create_zip')
+            link_to t('controllers.annotations.create_zip'), project_create_annotations_zip_path(project.name), :class => 'button', :confirm => t('controllers.annotations.confirm_create_zip')
           else
             # delayed_job does not exists
             t('views.shared.zip.delayed_job_present')
@@ -310,7 +310,7 @@ module AnnotationsHelper
     if params[:id].present?
       annotations_project_doc_path(@project.name, @doc.id)
     else
-      if params[:div_id].present?
+      if params[:divid].present?
         annotations_generate_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
       else
         annotations_generate_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
@@ -319,13 +319,13 @@ module AnnotationsHelper
   end
 
   def get_doc_info (doc_uri)
-    source_db = (doc_uri =~ %r|/sourcedb/([^/]+)|)? $1 : nil
-    source_id = (doc_uri =~ %r|/sourceid/([^/]+)|)? $1 : nil
-    div_id    = (doc_uri =~ %r|/divs/([^/]+)|)? $1 : nil
-    if div_id.present?
-      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(source_db, source_id, div_id.to_i)
+    sourcedb = (doc_uri =~ %r|/sourcedb/([^/]+)|)? $1 : nil
+    sourceid = (doc_uri =~ %r|/sourceid/([^/]+)|)? $1 : nil
+    divid    = (doc_uri =~ %r|/divs/([^/]+)|)? $1 : nil
+    if divid.present?
+      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, divid.to_i)
       section   = doc.section.to_s if doc.present?
     end
-    docinfo   = (div_id == nil)? "#{source_db}-#{source_id}" : "#{source_db}-#{source_id}-#{div_id}-#{section}"
+    docinfo   = (divid == nil)? "#{sourcedb}-#{sourceid}" : "#{sourcedb}-#{sourceid}-#{divid}-#{section}"
   end
 end

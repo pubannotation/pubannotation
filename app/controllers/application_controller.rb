@@ -73,8 +73,8 @@ class ApplicationController < ActionController::Base
     sourcedb = params[:sourcedb]
     sourceid = params[:sourceid]
 
-    serial =  if params[:div_id].present?
-                params[:div_id]
+    serial =  if params[:divid].present?
+                params[:divid]
               elsif Doc.has_divs?(sourcedb, sourceid)
                 Doc.get_div_ids(sourcedb, sourceid)
               else

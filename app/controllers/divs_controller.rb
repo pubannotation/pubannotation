@@ -87,9 +87,9 @@ class DivsController < ApplicationController
   # GET /docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid
   def show
     # TODO compatibility for PMC and Docs
-    # params[:div_id] ||= params[:id]
+    # params[:divid] ||= params[:id]
     begin
-      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document." unless @doc.present?
 
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
@@ -119,7 +119,7 @@ class DivsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:div_id])
+      @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document in the project." unless @doc.present?
 
       @doc.set_ascii_body if (params[:encoding] == 'ascii')

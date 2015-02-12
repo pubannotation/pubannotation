@@ -399,6 +399,7 @@ ja:
     annotations:
       index:
         confirm_destroy_all: "関連するインスタンス、リレーションも全て削除されますがよろしいですか？"
+        confirm_destroy: "アノテーションが削除されますがよろしいですか？"
       see_in_visualizaion: ビジュアライゼーションで見る
       to_this_doc: to this document
       to_this_span: to this span
@@ -460,6 +461,10 @@ ja:
         result: "プロジェクトの削除を開始しました。 %{created_at}"
       destroy_project:
         result: "プロジェクトの削除に失敗しました。 %{created_at}"
+      start_annotations_batch_upload:
+        result: "Annotationos batch upload started. %{created_at}"
+      annotations_batch_upload:
+        result: "Annotationos batch upload finished. %{created_at}"
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:
