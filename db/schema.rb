@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141204024637) do
+ActiveRecord::Schema.define(:version => 20150213022002) do
 
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
@@ -172,6 +172,7 @@ ActiveRecord::Schema.define(:version => 20141204024637) do
     t.datetime "annotations_updated_at",           :default => '2014-04-05 14:49:44'
     t.text     "namespaces"
     t.integer  "process"
+    t.integer  "annotations_count",                :default => 0
   end
 
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true

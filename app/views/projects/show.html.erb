@@ -73,7 +73,7 @@ Too many documents to list them all. Please use search.
     <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
 <% end %>
 
-<h2>Annotations <span class='info'>(<%= annotations_count(@project) %>)</span></h2>
+<h2>Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span></h2>
 
 <h3>Batch download</h3>
 <div>

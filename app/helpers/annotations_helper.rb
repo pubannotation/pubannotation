@@ -1,7 +1,7 @@
 require 'text_alignment'
 
 module AnnotationsHelper
-  def annotations_count(project, doc = nil, span = nil)
+  def annotations_count_helper(project, doc = nil, span = nil)
     if doc.present?
       doc.annotations_count(project, span)
     else
