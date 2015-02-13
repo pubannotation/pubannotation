@@ -56,7 +56,7 @@
 <% end %>
 
 
-<h2><%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info">(<%= total_number(@project.docs, 'docs') -%>)</span></h2>
+<h2><%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info">(<%= total_number(@project.docs) -%>)</span></h2>
 
 <h3>Search</h3>
 <%= render partial: 'docs/search_form' -%>
@@ -68,10 +68,10 @@
 Too many documents to list them all. Please use search.
 <% end -%>
 
-<% if user_signed_in? && @project.present? && current_user == @project.user %>
+<% if user_signed_in? && @project.updatable_for?(current_user) -%>
 	<h3><%= t('views.docs.add_new_documents') -%></h3>
     <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
-<% end %>
+<% end -%>
 
 <h2>Annotations <span class='info'>(<%= annotations_count(@project) %>)</span></h2>
 
@@ -80,4 +80,6 @@ Too many documents to list them all. Please use search.
 	<%= project_annotations_zip_link_helper(@project) -%>
 </div>
 
-<%= render partial: 'annotations/upload_zip' -%>
+<% if user_signed_in? && @project.updatable_for?(current_user) -%>
+	<%= render partial: 'annotations/upload_zip' -%>
+<% end -%>

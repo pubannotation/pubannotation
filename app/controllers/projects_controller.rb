@@ -66,21 +66,20 @@ class ProjectsController < ApplicationController
   # GET /projects/:name
   # GET /projects/:name.json
   def show
-    @project, notice = get_project(params[:id])
-    if @project
-      sourcedb, sourceid, serial, id = get_docspec(params)
-      notice = t('controllers.projects.show.pending_associate_projects') if @project.pending_associate_projects_count > 0
+    begin
+      @project = Project.accessible(current_user).find_by_name(params[:id])
+      raise "There is no such project." unless @project.present?
+
       @search_path = search_project_docs_path(@project.name)
-    end
-    respond_to do |format|
-      if @project
-        format.html { flash.now[:notice] = notice if notice.present? }
-        format.json { render json: @project.json} 
-      else
-        format.html {
-          redirect_to home_path, :notice => notice
-        }
-        format.json { head :unprocessable_entity }
+
+      respond_to do |format|
+        format.html
+        format.json {render json: @project.json} 
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to home_path, :notice => e.message}
+        format.json {head :unprocessable_entity}
       end
     end
   end
