@@ -309,6 +309,8 @@ class DocsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
+      messages = []
+
       # get the docspecs list
       docspecs =  if params["_json"] && params["_json"].class == Array
                     params["_json"].collect{|d| d.symbolize_keys}
@@ -316,11 +318,15 @@ class DocsController < ApplicationController
                     [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
                   elsif params[:ids].present? && params[:sourcedb].present?
                     params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
+                  else
+                    []
                   end
 
-      docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
-
       imported, added, failed, messages = 0, 0, 0, []
+
+      raise ArgumentError, "no valid document specification found." if docspecs.empty?
+
+      docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
       docspecs.each do |docspec|
         i, a, f, m = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
         imported += i; added += a; failed += f; messages << m
