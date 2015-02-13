@@ -366,7 +366,6 @@ class Project < ActiveRecord::Base
       self.denotations.count
     else
       if span.nil?
-        # begin from the doc because it should be faster.
         doc.denotations.where("denotations.project_id = ?", self.id).count
       else
         doc.hdenotations(self, span).length

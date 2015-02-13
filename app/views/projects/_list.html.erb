@@ -30,7 +30,7 @@
         <%= link_to_project(project) -%>
       </td>
       <td title="<%= project.description -%>"><%= project.description %></td>
-      <td style="text-align:right"><%= denotations_count_helper(project, @doc, @span) -%></td>
+      <td style="text-align:right"><%= project.denotations_count(@doc, @span) -%></td>
       <td><%= project.author %></td>
       <td><%= project.user.username %></td>
       <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>

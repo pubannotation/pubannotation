@@ -28,10 +28,6 @@ class Doc < ActiveRecord::Base
       :conditions => ['projects.name =?', project_name]
     }
   }
-  scope :denotations_count,
-    joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id").
-    group('docs.id').
-    order("count(denotations.id) DESC")
 
   scope :relations_count,
     # LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN instances ON instances.obj_id = denotations.id LEFT OUTER JOIN relations ON relations.subj_id = instances.id AND relations.subj_type = 'Instance'
@@ -264,8 +260,15 @@ class Doc < ActiveRecord::Base
   # TODO: to take care of associate projects
   # the first argument, project, may be a project or an array of projects.
   def get_denotations(project = nil, span = nil)
-    projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-    denotations = self.denotations.from_projects(projects)
+    denotations = if project.present?
+      if project.respond_to?(:each)
+        self.denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
+      else
+        self.denotations.where('denotations.project_id == ?', project.id)
+      end
+    else
+      self.denotations
+    end
     self.text_aligner = TextAlignment::TextAlignment.new(self.original_body, self.body, TextAlignment::MAPPINGS) unless self.original_body.nil?
     self.text_aligner.transform_denotations!(denotations) if self.text_aligner.present?
     denotations.select!{|d| d.begin >= span[:begin] && d.end <= span[:end]} if span.present?
@@ -283,9 +286,11 @@ class Doc < ActiveRecord::Base
     _projects.inject([]){|t, p| t << {project:p.name, denotations:self.hdenotations(p, span)}}
   end
 
-  def get_denotations_count(project = nil, span = nil)
+  def denotations_count(project = nil, span = nil)
     if project.nil? && span.nil?
-      doc.denotations.size
+      self.denotations.count
+    elsif span.nil?
+      self.denotations.where("denotations.project_id = ?", project.id).count
     else
       self.get_denotations(project, span).size
     end

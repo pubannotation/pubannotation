@@ -44,12 +44,12 @@ class DivsController < ApplicationController
         format.tsv  {render text: Doc.to_tsv(@divs, 'div') }
         format.txt  {redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, params[:sourcedb], params[:sourceid], format: :txt)}
       end
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to project_docs_path(@project.name), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render status: :unprocessable_entity}
+      end
     end
   end
 
@@ -77,7 +77,7 @@ class DivsController < ApplicationController
       end
     # rescue => e
     #   respond_to do |format|
-    #     format.html {redirect_to (@project.present? ? project_path(@project.name) : divs_path), notice: e.message}
+    #     format.html {redirect_to (@project.present? ? index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid]) : doc_sourcedb_sourceid_divs_index_path(params[:sourcedb], params[:sourceid])), notice: e.message}
     #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
     #     format.txt  {render text: message, status: :unprocessable_entity}
     #   end
@@ -132,12 +132,12 @@ class DivsController < ApplicationController
         format.txt  {render text: @doc.body}
       end
 
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
-        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-        format.txt  {render status: :unprocessable_entity}
-      end
+    # rescue => e
+    #   respond_to do |format|
+    #     format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+    #     format.txt  {render status: :unprocessable_entity}
+    #   end
     end
   end
 end
