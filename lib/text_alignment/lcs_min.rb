@@ -13,16 +13,16 @@ end
 class TextAlignment::LCSMin
   attr_reader :sdiff, :lcs, :m1_initial, :m1_final, :m2_initial, :m2_final
 
-  PLACAHOLDER_CHAR = '_'
+  PLACEHOLDER_CHAR = '_'
 
   def initialize (str1, str2)
-    raise ArgumentError, "nil string" if str1 == nil || str2 == nil
+    raise ArgumentError, "nil string" if str1.nil? || str2.nil?
 
     # str1 is copied as it is.
     # str2 is copied with w/s characters replaced with the placeholder characters,
     # to avoid overfitting to w/s characters during LCS computation.
     @str1 = str1
-    @str2 = str2.gsub(/\s/, PLACAHOLDER_CHAR)
+    @str2 = str2.gsub(/\s/, PLACEHOLDER_CHAR)
 
     # find the corresponding minimal range of the two strings
     @m1_initial, @m1_final, @m2_initial, @m2_final = _find_min_range(0, @str1.length - 1, 0, @str2.length - 1)
