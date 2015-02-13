@@ -2,6 +2,43 @@
 require 'spec_helper'
 
 describe AnnotationsHelper do
+  describe 'annotaitons_count_helper' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), annotations_count: 5)
+      @doc = FactoryGirl.create(:doc)
+    end
+
+    context 'when params[:begin], params[:end] present' do
+      context 'when doc present' do
+        before do
+          @begin = 0
+          @end = 10
+          helper.stub(:params).and_return({begin: @begin, end: @end})
+        end
+
+        it 'should call doc.annotaitons_count with project and spans' do
+          @doc.should_receive(:annotations_count).with(@project, {begin: @begin, end: @end})
+          helper.annotations_count_helper(@project, @doc)
+        end
+      end
+    end
+
+    context 'when params[:begin], params[:end] blank' do
+      context 'when doc present' do
+        it 'should call doc.annotaitons_count with project and nil' do
+          @doc.should_receive(:annotations_count).with(@project, nil)
+          helper.annotations_count_helper(@project, @doc)
+        end
+      end
+
+      context 'when doc blank' do
+        it 'should return project.annotaitons_count' do
+          expect( helper.annotations_count_helper(@project, nil) ).to eql(@project.annotations_count)
+        end
+      end
+    end
+  end
+
   describe 'get_annotations' do
     context 'when doc exists' do
       context 'when hdenotations, hrelations, hmodifications exists' do
