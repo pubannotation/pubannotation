@@ -359,8 +359,9 @@ class AnnotationsController < ApplicationController
       raise "There is no such project in your management." unless project.present?
 
       if params[:zipfile].present? && params[:zipfile].content_type == 'application/zip'
+        options = {mode: :addition} if params[:mode] == 'addition' || params[:mode] == 'add'
         project.notices.create({method: 'start_annotations_batch_upload'})
-        messages = project.delay.create_annotations_from_zip(params[:zipfile].path)
+        messages = project.delay.create_annotations_from_zip(params[:zipfile].path, options)
         project.notices.create({method: 'annotations_batch_upload'})
       end
 

@@ -55,7 +55,7 @@ class Project < ActiveRecord::Base
   }
 
   # scope for home#index
-  scope :index, order('status ASC').order('denotations_count DESC').order('projects.updated_at DESC').limit(10)
+  scope :top, order('status ASC').order('denotations_count DESC').order('projects.updated_at DESC').limit(10)
 
   scope :not_id_in, lambda{|project_ids|
     where('projects.id NOT IN (?)', project_ids)
@@ -431,7 +431,7 @@ class Project < ActiveRecord::Base
     project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
   end
 
-  def create_annotations_from_zip(zip_file_path)
+  def create_annotations_from_zip(zip_file_path, options)
     annotations_collection = Zip::ZipFile.open(zip_file_path) do |zip|
       zip.collect{|entry| JSON.parse(entry.get_input_stream.read, symbolize_names:true)}
     end
@@ -445,7 +445,7 @@ class Project < ActiveRecord::Base
       serial = annotations[:divid].present? ? annotations[:divid].to_i : 0
 
       doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], serial)
-      Shared.save_annotations(annotations, self, doc)
+      Shared.save_annotations(annotations, self, doc, options)
     end
 
     messages << "annotations loaded to #{annotations_collection.length} documents"

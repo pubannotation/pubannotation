@@ -10,6 +10,7 @@
 
 <h1>
 	<%= t('activerecord.models.project').pluralize.capitalize.html_safe %>
+	<span class='info'>(<%= @projects_number -%>)</span>
 	<%= link_to t('views.shared.full_list'), projects_path, {class: 'button'} -%>
 </h1>
-<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects, :scope => nil } %>
+<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects_top, :scope => nil } %>
