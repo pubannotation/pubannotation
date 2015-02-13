@@ -79,7 +79,7 @@ Note that PubAnnotation does not enforce any specific annotation scheme,
 e.g., the labels for *obj* in denotations and those for *pred* in relations,
 and it is fully up to the producer of annotation
 how to design the scheme of his/her annotation.
-For example, while the way of annotation in above example may be familiar to the community which seeks informatin on protein-protein interaction, another community, e.g., BioNLP Shared Task, may be more familiar with a much fine-grained annotation.
+For example, while the way of annotation in above example may be familiar to the community which seeks informatin on protein-protein interaction, another community, e.g., BioNLP Shared Task, may be more familiar with a finer-grained annotation.
 
 {% highlight json %}
 {

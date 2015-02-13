@@ -35,8 +35,8 @@ Following command shows an example usage of cURL:
 
 Following is explanation of the option specification:
 
-* __-u your\_email\_address_:_your\_password__
-   * Specifies your login information. Login is required to protect your project: only you can add documents to your project.
+* __-u "_your\_email\_address_:_your\_password_"__
+   * Specifies your login information.
 * __-H "content-type:application/json"__
    * Tells cURL to add the header in the request.
 * __-d @your\_annotation\_file.json__
@@ -44,10 +44,9 @@ Following is explanation of the option specification:
    * To learn how to prepare an annotation data file, please refer to [Format]({{site.baseurl}}/docs/format/).
 * __http://pubannotation.org/projects/_your-project_/docs/sourcedb/PubMed/sourceid/123456/annotations.json__
    * The URL for the document, _PubMed:123456_, in your project.
-   * Note that the document needs to be included in advance.
 
 ## Two ways to POST annotations to a PMC document
-As a full paper is long, a PMC document is maintained in multiple divs (divisions).
+As a full paper is long, PubAnnotation maintains a full paper in multiple divivions (divs).
 When you upload annotations to a PMC document, you have two options.
 
 ### 1. POSTing annotations to a specific div
@@ -59,5 +58,5 @@ You can POST annotations to a specific div, e.g.,
  
 You can also POST annotations without specification of div, e.g., 
 `http://pubannotation.org/projects/your-project/docs/sourcedb/PMC/sourceid/123456/annotations.json`
-In the case, the divs corresponding to the _text_ in your JSON will be automatically found.
+In the case, the divs corresponding to the _text_ in your JSON data will be automatically found.
 It may take a bit of time (several minutes).
