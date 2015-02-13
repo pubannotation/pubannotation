@@ -2,7 +2,7 @@
 	<%= t('views.docs.sourcedb_list')-%>
 </h1>
 
-<%= render :partial => "docs/sourcedb" -%>
+<%= render :partial => "docs/sourcedbs" -%>
 
 <% if user_signed_in? && @project.present? && current_user == @project.user %>
 	<h2><%= t('views.docs.add_new_documents') -%></h2>

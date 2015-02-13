@@ -94,23 +94,24 @@ class DocsController < ApplicationController
   def sourcedb_index
     if params[:project_id].present?
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless @project.present?
+      raise "There is no such project." unless @project.present?
     end
 
     @sourcedb_doc_counts = if @project.present?
-      @project.docs.group(:sourcedb).count
+      @project.docs.where("serial = ?", 0).group(:sourcedb).count
     else
-      Doc.group(:sourcedb).count
+      Doc.where("serial = ?", 0).group(:sourcedb).count
     end
   end 
  
   def sourceid_index
     if params[:project_id].present?
-      @project = Project.find_by_name(params[:project_id]) 
-      docs = @project.docs.where(['sourcedb = ?', params[:sourcedb]])
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
+      docs = @project.docs.where('sourcedb = ?', params[:sourcedb])
       @search_path = search_project_docs_path(@project.name)
     else
-      docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
+      docs = Doc.where('sourcedb = ?', params[:sourcedb])
       @search_path = search_docs_path
     end
 

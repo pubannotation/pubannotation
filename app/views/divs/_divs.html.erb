@@ -1,6 +1,6 @@
 <h2>
   <%= title %>
-  <span class='info'>(<%= total_number(divs, 'docs') -%>)</span>
+  <span class='info'>(<%= total_number(divs) -%>)</span>
   <% if @project.present? || params[:action] == 'search' -%>
     <span class='tab-bar'>
       <%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>

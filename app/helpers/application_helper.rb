@@ -149,6 +149,12 @@ module ApplicationHelper
   end
 
   def total_number(list, model = nil)
-    list.respond_to?(:total_entries) ? list.total_entries : list.length
+    if list.respond_to?(:total_entries)
+      list.total_entries
+    elsif list.respond_to?(:count)
+      list.count
+    else
+      list.length
+    end
   end
 end
