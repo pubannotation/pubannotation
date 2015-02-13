@@ -56,4 +56,50 @@ describe Relation do
       @get_hash[:obj].should eql(@instance[:hid])
     end
   end
+
+  describe 'increment_project_annotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
+      @modification = FactoryGirl.create(:modification, 
+        :hid => 'modification hid',
+        :pred => 'pred',
+        :obj => @instance, 
+        :project => @project
+      )
+      @project.reload
+    end
+
+    it 'should increment project.annotations_count' do
+      expect{  
+        @modification.increment_project_annotations_count
+        @project.reload
+      }.to change{ @project.annotations_count }.from(2).to(3)
+    end
+  end
+
+  describe 'decrement_project_annotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
+      @modification = FactoryGirl.create(:modification, 
+        :hid => 'modification hid',
+        :pred => 'pred',
+        :obj => @instance, 
+        :project => @project
+      )
+      @project.reload
+    end
+
+    it 'should decrement project.annotations_count' do
+      expect{  
+        @modification.decrement_project_annotations_count
+        @project.reload
+      }.to change{ @project.annotations_count }.from(2).to(1)
+    end
+  end
 end

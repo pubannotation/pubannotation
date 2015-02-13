@@ -321,6 +321,35 @@ describe Denotation do
       end
     end
   end
+
+  describe 'after_save' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @denotation = FactoryGirl.build(:denotation, :project => @project) 
+    end
+
+    it 'should exec update_projects_after_save' do
+      @denotation.should_receive(:update_projects_after_save)
+      @denotation.save
+    end
+
+    it 'should exec increment_project_annotations_count' do
+      @denotation.should_receive(:increment_project_annotations_count)
+      @denotation.save
+    end
+  end
+
+  describe 'after_destroy' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @denotation = FactoryGirl.create(:denotation, :project => @project) 
+    end
+
+    it 'should exec update_projects_after_save' do
+      @denotation.should_receive(:decrement_project_annotations_count)
+      @denotation.destroy
+    end
+  end
   
   describe 'update_projects_after_save' do
     before do
@@ -380,6 +409,36 @@ describe Denotation do
         @project.annotations_updated_at.utc.should_not eql( @annotations_updated_at.utc )
       end     
     end      
+  end
+
+  describe 'increment_project_annotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @denotation = FactoryGirl.create(:denotation, :project => @project) 
+      @project.reload
+    end
+
+    it 'should increment project.annotations_count' do
+      expect{  
+        @denotation.increment_project_annotations_count
+        @project.reload
+      }.to change{ @project.annotations_count }.from(1).to(2)
+    end
+  end
+
+  describe 'decrement_project_annotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @denotation = FactoryGirl.create(:denotation, :project => @project) 
+      @project.reload
+    end
+
+    it 'should decrement project.annotations_count' do
+      expect{  
+        @denotation.decrement_project_annotations_count
+        @project.reload
+      }.to change{ @project.annotations_count }.from(1).to(0)
+    end
   end
   
   describe 'update_projects_before_destroy' do
