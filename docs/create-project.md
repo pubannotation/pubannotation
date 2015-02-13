@@ -14,4 +14,4 @@ To create an annotation project,
 
 1. Create your login account.
 2. Once you are logged in,
-3. you will see the '*Create a New Project*' button in the [top](http://pubannotation.org/) page of PubAnnotation.
+3. you will see the '*Create a New Project*' button in the [projects](http://pubannotation.org/projects) page of PubAnnotation.

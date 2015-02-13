@@ -10,17 +10,12 @@ You can deposit your annotations to PubAnnotation.
 
 To do it,
 
-1. First, [create an annotation project]({{site.baseurl}}/docs/create-project/) on PubAnnotation, and
-2. [add documents]({{site.baseurl}}/docs/add-document/) to the project.
-3. Then, you can '*POST*' your annotations to those documents using standard *REST API*.
+1. First, __prepare your annotations in [JSON](http://json.org/)__ files, following the guidelines in [Format]({{site.baseurl}}/docs/format/).
+Once an annotation file is prepared, your are recommended to open it in the [TextAE editor](http://textae.pubannotation.org/editor.html?mode=edit). Then, you will immediately see if the annotation file is well prepared as you intend or not.
+2. __[Create an annotation project]({{site.baseurl}}/docs/create-project/)__ on PubAnnotation.
+3. Then, you can store your annotations in your project.
 
-During registration, your annotations will be aligned to others already on PubAnnotation.
-
-If you don't want to deposit your annotations but still want to get your annotations aligned,
-you can skip the steps 1 and 2, and just *POST* your annotations without specifying a project.
-See [Align Annotation]({{site.baseurl}}/docs/align-annotation/)
-
-## Using REST API
+## Submit annotations, method 1
 
 You can use any REST client to POST annotations to a document in your project.
 For example, [cURL](http://curl.haxx.se/) is a versatile command-line tool you can use as a REST client in major OS environments, e.g., _UNIX_, _iOS_, _DOS_.
@@ -30,8 +25,9 @@ In fact, [TextAE](http://textae.pubannotation.org) is also a REST client that ad
 Also, most recent major programming languages have modules for REST access, so you can do it using your favorite programming languages.
 
 Following command shows an example usage of cURL:
-<input type="text" class="bash" value='curl -u your_email_address:your_password -H "content-type:application/json" -d @your_annotation_file.json "http://pubannotation.org/projects/your_project/docs/sourcedb/PubMed/sourceid/123456/annotations.json"
-'>
+<textarea class="bash" style="width:100%; height:6em; background-color:#333333; color:#eeeeee">
+curl -u "your_email_address:your_password" -H "content-type:application/json" -d @your_annotation_file.json http://pubannotation.org/projects/your_project/docs/sourcedb/PubMed/sourceid/123456/annotations.json
+</textarea>
 
 Following is explanation of the option specification:
 
@@ -45,18 +41,80 @@ Following is explanation of the option specification:
 * __http://pubannotation.org/projects/_your-project_/docs/sourcedb/PubMed/sourceid/123456/annotations.json__
    * The URL for the document, _PubMed:123456_, in your project.
 
-## Two ways to POST annotations to a PMC document
-As a full paper is long, PubAnnotation maintains a full paper in multiple divivions (divs).
+## Submit annotations, method 2
+
+Note that in the above method, the destination (the document) of the annotations is specified by two parameters, _sourcedb_ and _sourceid_, which are encoded in the URL.
+
+Alternatively, you can encode the parameters in the annotation file, as a meta data of your annotation.
+With it, the annotation file may look like as follows:
+{% highlight json %}
+{
+   "text": "IRF-4 expression in CML may be induced by IFN-α therapy",
+   "sourcedb": "PubMed",
+   "sourceid": "123456",
+   "denotations": [
+      {"id": "T1", "span": {"begin": 0, "end": 5}, "obj": "Protein"},
+      {"id": "T2", "span": {"begin": 42, "end": 47}, "obj": "Protein"}
+   ]
+}
+{% endhighlight %}
+
+Once the parameters are encoded in the annotation file, they do not need to be encoded again in the URL, and the cURL comman may be shortened as follows:
+<textarea class="bash" style="width:100%; height:4em; background-color:#333333; color:#eeeeee">
+curl -u "your_email_address:your_password" -H "content-type:application/json" -d @your_annotation_file.json http://pubannotation.org/projects/your_project/annotations.json
+</textarea>
+
+## Submit annotations, method 3 (batch upload)
+
+When you have many annotation files to upload, 'POSTing' them individually may take a long time
+because it requires the HTTP connection to be made as many times as the number of files.
+
+In the case, you can archive the annotation files in a __zip__ file, and upload it.
+It will require the HTTP connection only once.
+
+Note that, for a bacth upload, the '__sourcedb__' and '__sourceid__' (also '__divid__', see below) parameters
+need to be encoded __in the annotation file__ as described in 'method 2'.
+
+Once you are logged in, you can find the interface for batch upload __in your project page__.
+
+## Submit annotations to PMC documents (full papers)
+
+As a full paper is long, PubAnnotation maintains a full paper in multiple divisions (divs).
 When you upload annotations to a PMC document, you have two options.
 
-### 1. POSTing annotations to a specific div
+### 1. POSTing annotations to a specific division
 
-You can POST annotations to a specific div, e.g., 
-`http://pubannotation.org/projects/your-project/docs/sourcedb/PMC/sourceid/123456/div/0/annotations.json`
+You can POST annotations to a specific division, e.g., 
+`http://pubannotation.org/projects/your-project/docs/sourcedb/PMC/sourceid/123456/divs/0/annotations.json`
+
+Note that, in URL, a division is specified as `divs/division_number`.
+
+When it is encoded in a JSON file, it is specified as `"div_id":division_number`, where _division_number_ is an integer value.
+
+Below is an example:
+{% highlight json %}
+{
+   "text": "IRF-4 expression in CML may be induced by IFN-α therapy",
+   "sourcedb": "PMC",
+   "sourceid": "123456",
+   "div_id": 10,
+   "denotations": [
+      {"id": "T1", "span": {"begin": 0, "end": 5}, "obj": "Protein"},
+      {"id": "T2", "span": {"begin": 42, "end": 47}, "obj": "Protein"}
+   ]
+}
+{% endhighlight %}
+
+Note (again) that the value of "div_id" is an integer value (without quotes around it).
 
 ### 2. POSTing annotations without specification of div
  
-You can also POST annotations without specification of div, e.g., 
+You can also POST annotations without specification of a division, e.g., 
 `http://pubannotation.org/projects/your-project/docs/sourcedb/PMC/sourceid/123456/annotations.json`
-In the case, the divs corresponding to the _text_ in your JSON data will be automatically found.
-It may take a bit of time (several minutes).
+
+In the case, the division will be automatically found base on the _text_ in your JSON file.
+
+Note that it may take a bit of time (several minutes, sometimes).
+
+Also, the text need to be reasonably long (at least, one or two sentences).
+

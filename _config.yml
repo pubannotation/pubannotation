@@ -4,4 +4,4 @@ relative_permalinks: false
 
 #Build settings
 markdown: kramdown
-highlighter: pigments
+highlighter: pygments
