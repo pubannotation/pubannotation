@@ -21,6 +21,7 @@
 <% if @project.description.present? -%>
 	<div><%= @project.description.html_safe %></div>
 <% end -%>
+
 <br/>
 
 <table>
@@ -43,7 +44,6 @@
 			<td><a href="<%= @project.reference %>"><%= @project.reference %></a></td>
 		</tr>
 	<% end %>
-
 </table>
 
 <% if user_signed_in? -%>
@@ -56,13 +56,13 @@
 <% end %>
 
 
-<h2><%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info">(<%= total_number(@project.docs) -%>)</span></h2>
+<h2><%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info">(<%= @project_docs_count -%> entries)</span></h2>
 
 <h3>Search</h3>
 <%= render partial: 'docs/search_form' -%>
 
 <h3>List</h3>
-<% if @project.docs.size < 5000 -%>
+<% if @project_docs_count < 5000 -%>
 <%= link_to t('views.docs.list_button'), project_docs_path(@project.name), {class: 'button'} -%>
 <% else -%>
 Too many documents to list them all. Please use search.
@@ -73,7 +73,8 @@ Too many documents to list them all. Please use search.
     <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
 <% end -%>
 
-<h2>Annotations <span class='info'>(<%= annotations_count(@project) %>)</span></h2>
+
+<h2>Annotations <span class='info'>(<%= @project.annotations_count %>)</span></h2>
 
 <h3>Batch download</h3>
 <div>

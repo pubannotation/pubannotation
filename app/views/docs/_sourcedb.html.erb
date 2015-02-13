@@ -1,12 +1,13 @@
-<% if sourcedb_counter == 0 -%>
-	<ul>
-<% end -%>
-	
+<ul>
+<% @sourcedb_doc_counts.each do |sourcedb, doc_count| -%>
 <li>
-	<%= sourceid_index_link_helper(sourcedb) -%>
-	<%= "(#{Doc.where(:sourcedb => sourcedb.sourcedb).count(:sourceid, :distinct => true)})" -%>
+	<% if @project.present? -%>
+    	<%= link_to sourcedb, sourceid_index_project_sourcedb_docs_path(@project.name, sourcedb) %>
+	<% else -%>
+    	<%= link_to sourcedb, doc_sourcedb_sourceid_index_path(sourcedb) %>
+	<% end -%>
+	(<%= (doc_count) -%>)
 </li>
-
-<% if sourcedb_counter == @sourcedbs.size-1 -%>
-	</ul>
 <% end -%>
+
+</ul>

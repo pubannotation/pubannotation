@@ -361,6 +361,24 @@ class Project < ActiveRecord::Base
       :relations_count => - associate_project.relations.count
   end
   
+  def annotations_count(doc = nil, span = nil)
+    if doc.nil?
+      self.denotations.count + self.relations.count + self.modifications.count
+    else
+      if span.nil?
+        # begin from the doc because it should be faster.
+        doc.denotations.where("project_id = ?", doc.id).count + doc.subcatrels.where("project_id = ?", doc.id).count + doc.catmods.where("project_id = ?", doc.id).count + doc.subcatrelmods.where("project_id = ?", doc.id).count
+      else
+        hdenotations = doc.hdenotations(self, span)
+        ids =  hdenotations.collect{|d| d[:id]}
+        hrelations = doc.hrelations(self, ids)
+        ids += hrelations.collect{|d| d[:id]}
+        hmodifications = doc.hmodifications(self, ids)
+        hdenotations.size + hrelations.size + hmodifications.size
+      end
+    end
+  end
+
   def annotations_collection(encoding = nil)
     if self.docs.present?
       self.docs.collect{|doc| doc.set_ascii_body if encoding == 'ascii'; doc.hannotations(self)}

@@ -93,12 +93,15 @@ class DocsController < ApplicationController
  
   def sourcedb_index
     if params[:project_id].present?
-      project = Project.find_by_name(params[:project_id]) 
-      docs = project.docs
-    else
-      docs = Doc
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless @project.present?
     end
-    @sourcedbs = docs.select(:sourcedb).sourcedbs.uniq
+
+    @sourcedb_doc_counts = if @project.present?
+      @project.docs.group(:sourcedb).count
+    else
+      Doc.group(:sourcedb).count
+    end
   end 
  
   def sourceid_index

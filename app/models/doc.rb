@@ -293,7 +293,7 @@ class Doc < ActiveRecord::Base
 
   def annotations_count(project = nil, span = nil)
     if project.nil? && span.nil?
-      self.denotations.size + self.subcatrels.size + self.catmods.size + self.subcatrelmods.size
+      self.denotations.count + self.subcatrels.count + self.catmods.count + self.subcatrelmods.count
     else
       hdenotations = self.hdenotations(project, span)
       ids =  hdenotations.collect{|d| d[:id]}
