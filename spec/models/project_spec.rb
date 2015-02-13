@@ -1522,6 +1522,30 @@ describe Project do
       end
     end
   end
+
+  describe 'increment_annotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+    end
+
+    describe 'before add denotations, relations or modifications' do
+      it 'annotations_count should equal 0' do
+        expect( @project.annotations_count ).to eql 0
+      end
+    end
+
+    context '' do
+      before do
+        denotation = FactoryGirl.create(:denotation)
+        FactoryGirl.create(:relation, project: @project, :obj => denotation)
+        @project.reload
+      end
+
+      it '' do
+        expect( @project.annotations_count ).to eql 1
+      end
+    end
+  end
   
   describe 'add associate projects' do
     before do

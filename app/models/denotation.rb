@@ -48,8 +48,9 @@ class Denotation < ActiveRecord::Base
     order('denotations.id ASC') 
   }
   
-  after_save :update_projects_after_save
+  after_save :update_projects_after_save, :increment_project_annotations_count
   before_destroy :update_projects_before_destroy
+  after_destroy :decrement_project_annotations_count
   
   def get_hash
     hdenotation = Hash.new
@@ -75,6 +76,10 @@ class Denotation < ActiveRecord::Base
       Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
     end
   end
+
+  def increment_project_annotations_count
+    Project.increment_counter(:annotations_count, project.id) if self.project.present?
+  end
   
   # before destroy
   def update_projects_before_destroy
@@ -91,6 +96,10 @@ class Denotation < ActiveRecord::Base
       # update project annotations_updated_at
       Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
     end
+  end
+
+  def decrement_project_annotations_count
+    Project.decrement_counter(:annotations_count, project.id) if self.project.present?
   end
   
   def self.sql_find(params, current_user, project)
