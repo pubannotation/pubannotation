@@ -7,7 +7,7 @@ permalink: /docs/intro/
 
 PubAnnotation is a repository of text annotations, especially those made to literature of life sciences, e.g., PubMed or PMC articles.
 If one has such annotations, they can be registered in PubAnnotation.
-When annotations are registered, PubAnnotation align them to the canonical text that is taken from PubMed and PMC,
+When annotations are registered, PubAnnotation aligns them to the canonical text that is taken from PubMed and PMC,
 which means all the annotations in PubAnnotation are linked to each other through canonical texts.
 It is a new way of publishing or sharing text annotations using recent web technology:
 annotations will become accessible and searchable through standard web protocol, e.g., REST API.
