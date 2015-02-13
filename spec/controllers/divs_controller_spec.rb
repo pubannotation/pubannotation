@@ -115,7 +115,7 @@ describe DivsController do
 
         describe 'except format' do
           before do
-            get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
+            get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @id
           end
 
           it 'should set get_doc notice as flash[:notice]' do
@@ -134,7 +134,7 @@ describe DivsController do
         describe 'format' do
           context 'format html' do
             before do
-              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
+              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @id
             end
           
             it 'should render template' do
@@ -144,7 +144,7 @@ describe DivsController do
 
           context 'when format json' do
             before do
-              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id, :format => 'json'
+              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @id, :format => 'json'
             end
 
             it 'set @doc.to_hash as @doc_hash' do
@@ -158,7 +158,7 @@ describe DivsController do
 
           context 'when format text' do
             before do
-              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id, :format => 'txt'
+              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @id, :format => 'txt'
             end
             
             it 'should render doc.body' do
@@ -170,7 +170,7 @@ describe DivsController do
             before do
               @asciitext = 'ascii'
               @doc.stub(:get_ascii_text).and_return(@asciitext)
-              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id, :encoding => 'ascii'
+              get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @id, :encoding => 'ascii'
             end
             
             it '@text should getr_ascii_text' do
@@ -189,7 +189,7 @@ describe DivsController do
           before do
             @refrerer = root_path
             request.env["HTTP_REFERER"] = @refrerer
-            get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
+            get :show, :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @id
           end
 
           it '@doc should be nil' do
@@ -207,7 +207,7 @@ describe DivsController do
         
         context 'when format json' do
           before do
-            get :show, :format => 'json', :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
+            get :show, :format => 'json', :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @id
           end
 
           it 'should returns status 422' do
@@ -217,7 +217,7 @@ describe DivsController do
         
         context 'when format txt' do
           before do
-            get :show, :format => 'txt', :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :div_id => @id
+            get :show, :format => 'txt', :project_id => @project_id, :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid, :divid => @id
           end
 
           it 'should returns status 422' do
@@ -246,26 +246,26 @@ describe DivsController do
           @doc.stub_chain(:projects, :accessible, :sort_by_params).and_return(@sort_projects) 
           @sourcedb = @doc.sourcedb
           @sourceid = @doc.sourceid
-          @div_id = @doc.serial
+          @divid = @doc.serial
         end
 
-        it 'should call get_doc with params sourcedb, sourceid and div_id' do
+        it 'should call get_doc with params sourcedb, sourceid and divid' do
           controller.should_receive(:get_doc).with(@doc.sourcedb, @doc.sourceid, @doc.serial.to_s)
-          get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
+          get :show, sourcedb: @sourcedb, sourceid: @sourceid, divid: @divid
         end
 
         it 'should call sort_order with Project' do
           controller.should_receive(:sort_order).with(Project)
-          get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
+          get :show, sourcedb: @sourcedb, sourceid: @sourceid, divid: @divid
         end
 
         it 'should call sort_order with Project' do
           controller.should_receive(:sort_order).with(Project)
-          get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
+          get :show, sourcedb: @sourcedb, sourceid: @sourceid, divid: @divid
         end
 
         it 'should set @doc.projects.accessible.sort_by_params as @project' do
-          get :show, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id
+          get :show, sourcedb: @sourcedb, sourceid: @sourceid, divid: @divid
           assigns[:projects].should eql(@sort_projects)
         end
       end

@@ -1,26 +1,12 @@
-<% if @project -%>
-	<h1><%= t('views.projects.project').capitalize %>, <span class="pname"><%= @project.name %></span></h1>
-
-	<%= link_to_unless_current t('views.projects.properties'), project_path(@project.name) , :class => 'tab inactive_tab' do 
-		content_tag :span, t('views.projects.properties'), :class => 'tab active_tab' 
-	end -%>
-	<% 
-		docs_src = project_docs_path(@project.name)
-		records_docs_src = records_project_docs_path(@project.name)
-	-%>
-<% else -%>
-	<% 
-		docs_src = docs_path
-		records_docs_src = records_docs_path
-	-%>
-<% end -%>
-
-<%= link_to_unless_current t('views.docs.list'), docs_src, :class => 'tab inactive_tab' do
-	content_tag :span, t('views.docs.list'), :class => 'tab active_tab'
-end -%>
-
-<% if @project.notices.present? && @project.user == current_user -%>
-  <%= link_to_unless_current t('activerecord.models.notice'), project_notices_path(@project.name), :class => 'tab inactive_tab' do
-    content_tag :span, t('activerecord.models.notice').pluralize, :class => 'tab active_tab'
-  end -%>
-<% end -%>
+<h1 class='title'>
+	<%= link_to_unless_current @project.name, project_path(@project.name) -%>
+	<% if @project.process_text == 'manual' -%><span class = 'badge'>Manual annotation</span><% end -%>
+	<% if @project.process_text == 'automatic' -%><span class = 'badge'>Automatic annotation</span><% end -%>
+	<% if @project.notices.present? && @project.user == current_user -%>
+		<span class = 'tab-bar'>
+			<%= link_to_unless_current t('activerecord.models.notice'), project_notices_path(@project.name), :class => 'tab inactive_tab' do
+		    	content_tag :span, t('activerecord.models.notice').pluralize, :class => 'tab active_tab'
+			end -%>
+		</span>
+	<% end -%>
+</h1>

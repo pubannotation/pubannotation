@@ -3,12 +3,25 @@
   <% if @project -%>
     > <%= link_to t('activerecord.models.project'), projects_path -%>
     > <%= link_to @project.name, project_path(@project.name) -%>
-    > <%= link_to t('views.docs.list'), project_docs_path(@project.name) -%>
+    > <%= link_to t('views.paths.docs'), project_docs_path(@project.name) -%>
   <% else -%>
-    > <%= link_to t('views.docs.list'), docs_path -%>
+    > <%= link_to t('views.paths.docs'), docs_path -%>
   <% end %>
   > <%= t('views.shared.search') -%>
 <% end -%>
 
+<% if @project.present? -%>
+  <%= render :partial => 'projects/title_and_links' -%>
+<% end -%>
+
+<%= render partial: 'source_docs' -%>
+
+<h3>Search documents</h3>
 <%= render partial: 'docs/search_form' -%>
-<%= render partial: 'source_doc', collection: @source_docs -%>
+
+<h3>List</h3>
+<% if @search_docs_number.present? && @search_docs_number < 5000 -%>
+  <%= link_to t('views.docs.list_button'), @project.present? ? project_docs_path(@project.name) : docs_path, {class: 'button'} -%>
+<% else -%>
+Too many documents to list them all. Please use search.
+<% end -%>

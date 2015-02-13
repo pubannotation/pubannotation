@@ -1,0 +1,42 @@
+<h2>
+	<% if params[:action] == 'search' -%>
+		Document search results
+	<% else -%>
+		<%= t('views.docs.list').capitalize -%>
+	<% end -%>
+	<span class='info'>(<%= total_number(@source_docs, 'docs') -%>)</span>
+	<% if @project.present? || params[:action] == 'search' -%>
+		<span class='tab-bar'>
+			<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
+			<%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
+		</span>
+	<% end -%>
+</h2>
+
+<% if @source_docs.present? -%>
+	<table class="full">
+		<tr>
+	    	<th class="docs_header_sourcedb">
+				<% if params[:action] == 'search' -%>
+					<%= t('activerecord.attributes.doc.sourcedb') -%>
+				<% else -%>
+	        		<%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
+				<% end -%>
+			</th>
+			<th class="docs_header_sourceid">
+				<% if params[:action] == 'search' -%>
+					<%= t('activerecord.attributes.doc.sourceid') -%>
+				<% else -%>
+					<%= sortable(Doc, 'sourceid', t('activerecord.attributes.doc.sourceid')) %>
+				<% end -%>
+			</th>
+			<th><%= t('activerecord.attributes.doc.body') %></th>
+			<th class="docs_header_projects_number">#Projects</th>
+			<th style="width:12em"></th>
+		</tr>
+
+	<%= render partial: 'source_doc', collection: @source_docs -%>
+
+	</table>
+	<%= will_paginate @source_docs -%>
+<% end -%>

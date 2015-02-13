@@ -28,8 +28,8 @@ describe AnnotationsHelper do
           it 'should return doc params and ascii encoded text' do
             @result.should eql({
               :project => @project.name,
-              :source_db => @doc.sourcedb, 
-              :source_id => @doc.sourceid, 
+              :sourcedb => @doc.sourcedb, 
+              :sourceid => @doc.sourceid, 
               :division_id => @doc.serial, 
               :section => @doc.section, 
               :text => @get_ascii_text})
@@ -50,8 +50,8 @@ describe AnnotationsHelper do
           it 'should return doc params' do
             @result.should eql({
               :project => @project.name,
-              :source_db => @doc.sourcedb, 
-              :source_id => @doc.sourceid, 
+              :sourcedb => @doc.sourcedb, 
+              :sourceid => @doc.sourceid, 
               :division_id => @doc.serial, 
               :section => @doc.section, 
               :text => @doc.body,
@@ -69,8 +69,8 @@ describe AnnotationsHelper do
           it 'should returns doc params, denotations, instances, relations and modifications' do
             @result.should eql({
               :project => @project.name,
-              :source_db => @doc.sourcedb, 
-              :source_id => @doc.sourceid, 
+              :sourcedb => @doc.sourcedb, 
+              :sourceid => @doc.sourceid, 
               :division_id => @doc.serial, 
               :section => @doc.section, 
               :text => @doc.body,
@@ -708,8 +708,8 @@ describe AnnotationsHelper do
     before do
       @sourcedb = 'PMC'
       @sourceid = '123'
-      @div_id = '123'
-      @doc = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid, serial: @div_id)
+      @divid = '123'
+      @doc = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid, serial: @divid)
       assigns[:doc] = @doc
       @project_id = 'projectid'
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), name: @project_id)  
@@ -727,19 +727,19 @@ describe AnnotationsHelper do
     end
     
     context 'when params[:id] blank' do
-      context 'when params[:div_id] present' do
+      context 'when params[:divid] present' do
         before do
-          helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid, div_id: @div_id)  
+          helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid, divid: @divid)  
         end
         
         it 'should return annotations_create_project_sourcedb_sourceid_divs_docs_path' do
-          helper.annotations_form_action_helper.should eql annotations_generate_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @div_id)
+          helper.annotations_form_action_helper.should eql annotations_generate_project_sourcedb_sourceid_divs_docs_path(@project_id, @sourcedb, @sourceid, @divid)
         end
       end
       
-      context 'when params[:div_id] blank' do
+      context 'when params[:divid] blank' do
         before do
-          @div_id = '123'
+          @divid = '123'
           helper.stub(:params).and_return(project_id: @project_id, sourcedb: @sourcedb, sourceid: @sourceid)  
         end
         
@@ -752,30 +752,30 @@ describe AnnotationsHelper do
 
   describe 'get_doc_info' do
     before do
-      @source_db = 'sourcedb'
-      @source_id = 'sourceid'
-      @div_id = 3
+      @sourcedb = 'sourcedb'
+      @sourceid = 'sourceid'
+      @divid = 3
       @section = 'section'
-      @doc = FactoryGirl.create(:doc, sourcedb: @source_db, sourceid: @source_id, serial: @div_id, section: @section)
+      @doc = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid, serial: @divid, section: @section)
     end
 
     context 'when sourcedb sourceid divs section present' do
       before do
-        @doc_info = helper.get_doc_info("/sourcedb/#{@source_db}/sourceid/#{@source_id}/divs/#{@div_id}")
+        @doc_info = helper.get_doc_info("/sourcedb/#{@sourcedb}/sourceid/#{@sourceid}/divs/#{@divid}")
       end
 
-      it 'should return source_db, source_id, div_id and section' do
-        @doc_info.should eql("#{@source_db}-#{@source_id}-#{@div_id}-#{@section}")
+      it 'should return sourcedb, sourceid, divid and section' do
+        @doc_info.should eql("#{@sourcedb}-#{@sourceid}-#{@divid}-#{@section}")
       end
     end
 
-    context 'when sourcedb sourceid section present and divs(div_id) blank' do
+    context 'when sourcedb sourceid section present and divs(divid) blank' do
       before do
-        @doc_info = helper.get_doc_info("/sourcedb/#{@source_db}/sourceid/#{@source_id}")
+        @doc_info = helper.get_doc_info("/sourcedb/#{@sourcedb}/sourceid/#{@sourceid}")
       end
 
-      it 'should return source_db and source_id' do
-        @doc_info.should eql("#{@source_db}-#{@source_id}")
+      it 'should return sourcedb and sourceid' do
+        @doc_info.should eql("#{@sourcedb}-#{@sourceid}")
       end
     end
 
@@ -784,7 +784,7 @@ describe AnnotationsHelper do
         @doc_info = helper.get_doc_info(nil)
       end
 
-      it 'should include source_db' do
+      it 'should include sourcedb' do
         @doc_info.should eql("-") 
       end
     end
@@ -803,7 +803,7 @@ describe AnnotationsHelper do
     context 'when params[:actin] == spans' do
       before do
         @params = {action: 'spans', begin: '0', end: '10'}
-        @params[:div_id] = '0'
+        @params[:divid] = '0'
         helper.stub(:params).and_return(@params)
       end
 
@@ -820,7 +820,7 @@ describe AnnotationsHelper do
       context 'when @doc.body.length < limit' do
         before do
           @doc.stub_chain(:body, :length).and_return(1)
-          @params[:div_id] = '0'
+          @params[:divid] = '0'
           helper.stub(:params).and_return(@params)
         end
 

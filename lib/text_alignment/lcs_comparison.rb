@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
-require 'diff-lcs'
-require 'text_alignment/min_lcs_sdiff'
+require 'text_alignment/lcs_min'
 
 module TextAlignment; end unless defined? TextAlignment
 
@@ -20,7 +19,11 @@ class TextAlignment::LCSComparison
   private
 
   def _lcs_comparison(str1, str2, lcs = nil, sdiff = nil)
-    lcs, sdiff = TextAlignment::min_lcs_sdiff(str1, str2) if lcs.nil?
+    if lcs.nil?
+      lcsmin = TextAlignment::LCSMin.new(str1, str2)
+      lcs = lcsmin.lcs
+      sdiff = lcsmin.sdiff
+    end
 
     if lcs > 0
       match_initial = sdiff.index{|d| d.action == '='}
@@ -42,11 +45,12 @@ class TextAlignment::LCSComparison
 end
 
 if __FILE__ == $0
+  require 'json'
   str1 = 'naxbyzabcdexydzem'
   str2 = 'abcde'
   if ARGV.length == 2
-    str1 = File.read(ARGV[0]).strip
-    str2 = File.read(ARGV[1]).strip
+    str1 = JSON.parse(File.read(ARGV[0]).strip)["text"]
+    str2 = JSON.parse(File.read(ARGV[1]).strip)["text"]
   end
   comparison = TextAlignment::LCSComparison.new(str1, str2)
   puts "Similarity: #{comparison.similarity}"

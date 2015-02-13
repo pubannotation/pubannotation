@@ -1,45 +1,12 @@
-<% if @denotations.present? -%>
-	<%= render :partial => 'denotations/denotation', :collection => @denotations, :locals => {:project => @project} -%>
-<% else -%>
-	<%= t('controllers.shared.not_exists', :model => t('views.shared.annotation')) %>
-<% end -%>
-
-<% if @relations and !@relations.empty? %>
-  <h2>Relations</h2>
-  <table class="ann">
-    <tr>
-      <th>Id</th>
-      <th>Predicate</th>
-      <th>Subject</th>
-      <th>Object</th>
-    </tr>
-
-  <% @relations.each do |relation| %>
-    <tr>
-      <td><%= relation[:id] %></td>
-      <td><%= relation[:pred] %></td>
-      <td><%= relation[:subj] %></td>
-      <td><%= relation[:obj] %></td>
-    </tr>
-  <% end %>
-  </table>
+<% unless @project.present? %>
+	<h2><%= annotations[:project] -%></h2>
 <% end %>
 
-<% if @modifications and !@modifications.empty? %>
-  <h2>Modifications</h2>
-  <table class="ann">
-    <tr>
-      <th>Id</th>
-      <th>Predicate</th>
-      <th>Object</th>
-    </tr>
+<%= render partial: 'denotations/denotations',
+  locals: {denotations:annotations[:denotations], doc: doc, body: body} -%>
 
-  <% @modifications.each do |modification| %>
-    <tr>
-      <td><%= modification[:id] %></td>
-      <td><%= modification[:pred] %></td>
-      <td><%= modification[:obj] %></td>
-    </tr>
-  <% end %>
-  </table>
-<% end %>
+<%= render partial: 'relations/relations',
+  locals: {relations:annotations[:relations], doc: doc, body: body} -%>
+
+<%= render partial: 'modifications/modifications',
+  locals: {modifications:annotations[:modifications], doc: doc, body: body} -%>

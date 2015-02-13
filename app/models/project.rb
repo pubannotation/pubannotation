@@ -1,5 +1,6 @@
 class Project < ActiveRecord::Base
   include AnnotationsHelper
+  DOWNLOADS_PATH = "/downloads/"
 
   before_validation :cleanup_namespaces
   after_validation :user_presence
@@ -37,11 +38,19 @@ class Project < ActiveRecord::Base
   
   default_scope where(:type => nil)
 
-  scope :accessible, lambda{|current_user|
+  scope :accessible, -> (current_user) {
     if current_user.present?
       includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
     else
-      where(:accessibility => 1)
+      where(accessibility: 1)
+    end
+  }
+
+  scope :editable, -> (current_user) {
+    if current_user.present?
+      includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id)
+    else
+      where(accessibility: 10)
     end
   }
 
@@ -56,7 +65,7 @@ class Project < ActiveRecord::Base
     where('projects.id IN (?)', project_ids)
   }
   
-  scope :name_in, lambda{|project_names|
+  scope :name_in, -> (project_names) {
     where('projects.name IN (?)', project_names) if project_names.present?
   }
 
@@ -105,7 +114,7 @@ class Project < ActiveRecord::Base
   LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
   EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=edit'
   
-  scope :sort_by_params, lambda{|sort_order|
+  scope :sort_by_params, -> (sort_order) {
       sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
       unscoped.includes(:user).order(sort_order)
   }
@@ -352,16 +361,12 @@ class Project < ActiveRecord::Base
       :relations_count => - associate_project.relations.count
   end
   
-  def anncollection(encoding)
-    anncollection = Array.new
+  def annotations_collection(encoding = nil)
     if self.docs.present?
-      docs.each do |doc|
-        # puts "#{doc.sourceid}:#{doc.serial} <======="
-        # anncollection.push (get_annotations(self, doc, :encoding => encoding))
-        anncollection.push (get_annotations_for_json(self, doc, :encoding => encoding))
-      end
+      self.docs.collect{|doc| doc.set_ascii_body if encoding == 'ascii'; doc.hannotations(self)}
+    else
+      []
     end
-    return anncollection
   end
 
   def json
@@ -369,51 +374,54 @@ class Project < ActiveRecord::Base
     to_json(except: except_columns, methods: :maintainer)
   end
 
-  def docs_json_hash
-    docs.collect{|doc| doc.to_hash} if docs.present?
+  def docs_list_hash
+    docs.collect{|doc| doc.to_list_hash} if docs.present?
   end
 
   def maintainer
     user.present? ? user.username : ''
   end
 
-  def annotations_zip_file_name
-    "#{self.name}-annotations.zip"
+  def downloads_system_path
+    "#{Rails.root}/public#{Project::DOWNLOADS_PATH}" 
   end
-  
+
+  def annotations_zip_filename
+    "#{self.name.gsub(' ', '_')}-annotations.zip"
+  end
+
   def annotations_zip_path
-    "#{Denotation::ZIP_FILE_PATH}#{self.annotations_zip_file_name}"
+    "#{Project::DOWNLOADS_PATH}" + self.annotations_zip_filename
   end
-  
-  def save_annotation_zip(options = {})
+
+  def annotations_zip_system_path
+    self.downloads_system_path + self.annotations_zip_filename
+  end
+
+  def create_annotations_zip(encoding = nil)
     require 'fileutils'
+
     begin
-      unless Dir.exist?(Denotation::ZIP_FILE_PATH)
-        FileUtils.mkdir_p(Denotation::ZIP_FILE_PATH)
-      end
-      anncollection = self.anncollection(options[:encoding])
-      if anncollection.present?
-        file_path = self.annotations_zip_path
-        file = File.new(file_path, 'w')
-        Zip::ZipOutputStream.open(file.path) do |z|
-          z.put_next_entry('project.json')
-          z.print self.json
-          z.put_next_entry('docs.json')
-          z.print self.docs_json_hash.to_json
-          anncollection.each do |ann|
-            title = get_doc_info(ann[:target])
-            title.sub!(/\.$/, '')
-            title.gsub!(' ', '_')
-            title += ".json" unless title.end_with?(".json")
-            z.put_next_entry(title)
-            z.print ann.to_json
-          end
+      annotations_collection = self.annotations_collection(encoding)
+
+      FileUtils.mkdir_p(self.downloads_system_path) unless Dir.exist?(self.downloads_system_path)
+      file = File.new(self.annotations_zip_system_path, 'w')
+      Zip::ZipOutputStream.open(file.path) do |z|
+        # z.put_next_entry('project.json')
+        # z.print self.json
+        # z.put_next_entry('docs.json')
+        # z.print self.docs_list_hash.to_json
+        annotations_collection.each do |annotations|
+          title = get_doc_info(annotations[:target]).sub(/\.$/, '').gsub(' ', '_')
+          title += ".json" unless title.end_with?(".json")
+          z.put_next_entry(title)
+          z.print annotations.to_json
         end
-        file.close   
-      end  
-      self.notices.create({successful: true, method: 'save_annotation_zip'})
-    rescue
-      self.notices.create({successful: false, method: 'save_annotation_zip'})
+      end
+      file.close   
+      self.notices.create({successful: true, method: 'create_annotations_zip'})
+    # rescue => e
+    #   self.notices.create({successful: false, method: 'create_annotations_zip'})
     end
   end 
 
@@ -421,6 +429,40 @@ class Project < ActiveRecord::Base
     project_attributes = JSON.parse(File.read(json_file))
     user = User.find_by_username(project_attributes['maintainer'])
     project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
+  end
+
+  def create_annotations_from_zip(zip_file_path)
+    annotations_collection = Zip::ZipFile.open(zip_file_path) do |zip|
+      zip.collect{|entry| JSON.parse(entry.get_input_stream.read, symbolize_names:true)}
+    end
+
+    imported, added, failed, messages = 0, 0, 0, []
+    annotations_collection.each do |annotations|
+      i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
+      imported += i; added += a; failed += f
+      messages << m if m.present?
+
+      serial = annotations[:divid].present? ? annotations[:divid].to_i : 0
+
+      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], serial)
+      Shared.save_annotations(annotations, self, doc)
+    end
+
+    messages << "annotations loaded to #{annotations_collection.length} documents"
+  end
+
+  def save_annotations(annotations_files)
+    annotations_files.each do |annotations_file|
+      annotations = JSON.parse(File.read(annotations_file))
+      File.unlink(annotations_file) 
+
+      serial = annotations[:divid].present? ? annotations[:divid].to_i : 0
+      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], serial)
+
+      if doc.present?
+        Shared.save_annotations(annotations, self, doc) 
+      end
+    end
   end
 
   def self.create_from_zip(zip_file, project_name, current_user)
@@ -512,11 +554,11 @@ class Project < ActiveRecord::Base
   def add_docs_from_json(docs, user)
     num_created, num_added, num_failed = 0, 0, 0
     docs = [docs] if docs.class == Hash
-    source_dbs = docs.group_by{|doc| doc[:source_db]}
-    if source_dbs.present?
-      source_dbs.each do |source_db, docs_array|
-        ids = docs_array.collect{|doc| doc[:source_id]}.join(",")
-        num_created_t, num_added_t, num_failed_t = self.add_docs({ids: ids, sourcedb: source_db, docs_array: docs_array, user: user})
+    sourcedbs = docs.group_by{|doc| doc[:sourcedb]}
+    if sourcedbs.present?
+      sourcedbs.each do |sourcedb, docs_array|
+        ids = docs_array.collect{|doc| doc[:sourceid]}.join(",")
+        num_created_t, num_added_t, num_failed_t = self.add_docs({ids: ids, sourcedb: sourcedb, docs_array: docs_array, user: user})
         num_created += num_created_t
         num_added += num_added_t
         num_failed += num_failed_t
@@ -537,12 +579,12 @@ class Project < ActiveRecord::Base
           # update or create if not present
           options[:docs_array].each do |doc_array|
             # find doc sourcedb sourdeid and serial
-            doc = Doc.find_or_initialize_by_sourcedb_and_sourceid_and_serial(options[:sourcedb], sourceid, doc_array['div_id'])
+            doc = Doc.find_or_initialize_by_sourcedb_and_sourceid_and_serial(options[:sourcedb], sourceid, doc_array['divid'])
             mappings = {
               'text' => 'body', 
               'section' => 'section', 
               'source_url' => 'source', 
-              'div_id' => 'serial'
+              'divid' => 'serial'
             }
 
             doc_params = Hash[doc_array.map{|key, value| [mappings[key], value]}].select{|key| key.present?}
@@ -610,19 +652,40 @@ class Project < ActiveRecord::Base
     return [num_created, num_added, num_failed]   
   end
 
+  def add_doc(sourcedb, sourceid)
+    imported, added, failed, message = 0, 0, 0
+    begin
+      divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+      unless divs.present?
+        divs = Doc.import(sourcedb, sourceid)
+        imported += 1 if divs.present?
+      end
+      if divs.present? and !self.docs.include?(divs.first)
+        self.docs << divs
+        added += 1
+      end
+    rescue => e
+      failed += 1
+      message = e.message
+    end
+
+    [imported, added, failed, message]
+  end
+
+
   def create_user_sourcedb_docs(options = {})
     divs = Array.new
     num_failed = 0
     options[:docs_array].each do |doc_array_params|
       # all of columns insert into database need to be included in this hash.
-      doc_array_params[:source_db] = options[:sourcedb] if options[:sourcedb].present?
+      doc_array_params[:sourcedb] = options[:sourcedb] if options[:sourcedb].present?
       mappings = {
         :text => :body, 
-        :source_db => :sourcedb, 
-        :source_id => :sourceid, 
+        :sourcedb => :sourcedb, 
+        :sourceid => :sourceid, 
         :section => :section, 
         :source_url => :source, 
-        :div_id => :serial
+        :divid => :serial
       }
       doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
       doc = Doc.new(doc_params) 

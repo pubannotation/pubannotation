@@ -214,11 +214,11 @@ if __FILE__ == $0
     ## filename checking : needs to be configured.
     fpath = ff.sub(/\.(txt|a1|a2)$/, '')
     fname = fpath.split(/\//).last
-    prefix, docid, div_id, section = fname.split(/[-.]/)
+    prefix, docid, divid, section = fname.split(/[-.]/)
     next unless (((prefix == 'PMID') || (prefix == 'PMC')) && (docid =~ /^[0-9]+$/))
 
     if (docid != last_docid) then div_num = 0 else div_num += 1 end
-    div_id = "%02d" % div_num
+    divid = "%02d" % div_num
 
     ## read files
     txt = File.read(fpath + '.txt')
@@ -242,7 +242,7 @@ if __FILE__ == $0
     elsif (hosturl)
       post_path = case prefix
                     when 'PMID' then "/projects/#{annset}/docs/sourcedb/pubmed/sourceid/#{docid}/annotations.json"
-                    when 'PMC'  then "/projects/#{annset}/docs/sourcedb/PMC/sourceid/#{docid}/divs/#{div_id}/annotations.json"
+                    when 'PMC'  then "/projects/#{annset}/docs/sourcedb/PMC/sourceid/#{docid}/divs/#{divid}/annotations.json"
                   end
       puts "post path: #{post_path}"
       pubann_resource[post_path].post({:annotations => annotations}.to_json) do |response, request, result|

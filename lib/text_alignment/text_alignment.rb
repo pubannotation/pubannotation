@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 require 'diff-lcs'
-require 'text_alignment/min_lcs_sdiff'
+require 'text_alignment/lcs_min'
 require 'text_alignment/find_divisions'
 require 'text_alignment/lcs_comparison'
 require 'text_alignment/lcs_alignment'
@@ -9,7 +9,10 @@ require 'text_alignment/mappings'
 
 module TextAlignment; end unless defined? TextAlignment
 
+TextAlignment::SIGNATURE_NGRAM = 5 unless defined? TextAlignment::SIGNATURE_NGRAM
+
 class TextAlignment::TextAlignment
+  attr_reader :sdiff
   attr_reader :position_map_begin, :position_map_end
   attr_reader :common_elements, :mapped_elements
   attr_reader :similarity
@@ -41,19 +44,26 @@ class TextAlignment::TextAlignment
     spans.map{|span| transform_a_span(span)}
   end
 
-  def transform_denotations(denotations)
-    return nil if denotations == nil
-    denotations_new = Array.new(denotations)
-    (0...denotations.length).each {|i| denotations_new[i][:span] = transform_a_span(denotations[i][:span])}
-    denotations_new
+  def transform_denotations!(denotations)
+    denotations.map!{|d| d.begin = @position_map_begin[d.begin]; d.end = @position_map_end[d.end]; d} unless denotations.nil?
+  end
+
+  def transform_hdenotations(hdenotations)
+    unless hdenotations.nil?
+      hdenotations_new = Array.new(hdenotations)
+      (0...hdenotations.length).each {|i| hdenotations_new[i][:span] = transform_a_span(hdenotations[i][:span])}
+      hdenotations_new
+    end
   end
 
   private
 
   def _compute_mixed_alignment(str1, str2, mappings = [])
-    lcs, sdiff = TextAlignment.min_lcs_sdiff(str1, str2)
+    lcsmin = TextAlignment::LCSMin.new(str1, str2)
+    lcs = lcsmin.lcs
+    @sdiff = lcsmin.sdiff
 
-    cmp = TextAlignment::LCSComparison.new(str1, str2, lcs, sdiff)
+    cmp = TextAlignment::LCSComparison.new(str1, str2, lcs, @sdiff)
     @similarity         = cmp.similarity
     @str1_match_initial = cmp.str1_match_initial
     @str1_match_final   = cmp.str1_match_final
@@ -65,7 +75,7 @@ class TextAlignment::TextAlignment
 
     addition, deletion = [], []
 
-    sdiff.each do |h|
+    @sdiff.each do |h|
       case h.action
       when '='
         p1, p2 = h.old_position, h.new_position
@@ -117,7 +127,8 @@ class TextAlignment::TextAlignment
         galign.position_map_begin.each {|k, v| posmap_begin[k + deletion[0]] = v.nil? ? nil : v + addition[0]}
         galign.position_map_end.each   {|k, v|   posmap_end[k + deletion[0]] = v.nil? ? nil : v + addition[0]}
         posmap_begin[p1], posmap_end[p1] = p2, p2
-        @mapped_elements += galign.common_elements + galign.mapped_elements
+        @common_elements += galign.common_elements
+        @mapped_elements += galign.mapped_elements
       else
         posmap_begin[deletion[0]], posmap_end[deletion[0]] = addition[0], addition[0]
         deletion[1..-1].each{|p| posmap_begin[p], posmap_end[p] = nil, nil}
@@ -131,15 +142,32 @@ class TextAlignment::TextAlignment
 end
 
 if __FILE__ == $0
-  str1 = '-βκ-'
-  str2 = '-betakappa-'
+  require 'json'
+  require 'text_alignment/lcs_cdiff'
+
+  str1 = "TI  - Identification of a region which directs the monocytic activity of the\n      colony-stimulating factor 1 (macrophage colony-stimulating factor) receptor\n      promoter and binds PEBP2/CBF (AML1)."
+  str2 = "Identification of a region which directs the monocytic activity of the colony-stimulating factor 1 (macrophage colony-stimulating factor) receptor promoter and binds PEBP2/CBF (AML1).\nThe receptor for the macrophage colony-stimulating factor (or colony-stimulating factor 1 [CSF-1]) is expressed from different promoters in monocytic cells and placental trophoblasts. We have demonstrated that the monocyte-specific expression of the CSF-1 receptor is regulated at the level of transcription by a tissue-specific promoter whose activity is stimulated by the monocyte/B-cell-specific transcription factor PU.1 (D.-E. Zhang, C.J. Hetherington, H.-M. Chen, and D.G. Tenen, Mol. Cell. Biol. 14:373-381, 1994). Here we report that the tissue specificity of this promoter is also mediated by sequences in a region II (bp -88 to -59), which lies 10 bp upstream from the PU.1-binding site. When analyzed by DNase footprinting, region II was protected preferentially in monocytic cells. Electrophoretic mobility shift assays confirmed that region II interacts specifically with nuclear proteins from monocytic cells. Two gel shift complexes (Mono A and Mono B) were formed with separate sequence elements within this region. Competition and supershift experiments indicate that Mono B contains a member of the polyomavirus enhancer-binding protein 2/core-binding factor (PEBP2/CBF) family, which includes the AML1 gene product, while Mono A is a distinct complex preferentially expressed in monocytic cells. Promoter constructs with mutations in these sequence elements were no longer expressed specifically in monocytes. Furthermore, multimerized region II sequence elements enhanced the activity of a heterologous thymidine kinase promoter in monocytic cells but not other cell types tested. These results indicate that the monocyte/B-cell-specific transcription factor PU.1 and the Mono A and Mono B protein complexes act in concert to regulate monocyte-specific transcription of the CSF-1 receptor."
 
   # anns1 = JSON.parse File.read(ARGV[0]), :symbolize_names => true
   # anns2 = JSON.parse File.read(ARGV[1]), :symbolize_names => true
 
-  dictionary = [["β", "beta"]]
+  if ARGV.length == 2
+    str1  = JSON.parse(File.read(ARGV[0]).strip)["text"]
+    spans = JSON.parse(File.read(ARGV[0]).strip, symbolize_names:true)[:denotations]
+    str2  = JSON.parse(File.read(ARGV[1]).strip)["text"]
+  end
+
+  # dictionary = [["β", "beta"]]
   # align = TextAlignment::TextAlignment.new(str1, str2)
   align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-  p align.common_elements
-  p align.mapped_elements
+
+  # p align.common_elements
+  # puts "---------------"
+  # p align.mapped_elements
+  puts TextAlignment::sdiff2cdiff(align.sdiff)
+
+  new_spans = align.transform_spans(spans)
+  new_spans.each do |s|
+    puts str2[s[:begin]...s[:end]]
+  end
 end

@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
-require 'diff-lcs'
-require 'text_alignment/min_lcs_sdiff'
-require 'text_alignment/lcs_comparison'
+require 'text_alignment/lcs_min'
 
 class TextAlignment::LCSAlignment
   attr_reader :position_map_begin, :position_map_end
@@ -11,7 +9,7 @@ class TextAlignment::LCSAlignment
   # Exception is raised when nil given passed to either str1, str2 or dictionary
   def initialize(str1, str2, lcs = nil, sdiff = nil)
     raise ArgumentError, "nil string" if str1 == nil || str2 == nil
-    lcs, sdiff = TextAlignment.min_lcs_sdiff(str1, str2) if lcs.nil?
+    sdiff = TextAlignment::LCSMin.new(str1, str2).sdiff if sdiff.nil?
     _compute_position_map(str1, str2, sdiff)
   end
 

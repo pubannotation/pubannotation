@@ -310,6 +310,7 @@ ja:
       successfully_destroyed: '%{model}を削除しました'
       confirm_delete: 削除してよろしいですか？
       last_modified_at: 最終更新日時
+      created_at: 作成日時
       not_exists: "%{model}はありません"
       sql:
         invalid: 無効なSQL文が入力されました
@@ -383,6 +384,9 @@ ja:
         pending_associate_projects: "このプロジェクトはプロジェクトのインポート処理中です..."
       upload_zip:
         delay_save_annotations: 'アノテーションは数分程度で作成されます'
+      create_annotations_zip:
+        failed: "Failed to create annotation ZIP file. %{created_at}"
+
   views:
     service:
       title: PubAnnotation
@@ -395,16 +399,20 @@ ja:
     annotations:
       index:
         confirm_destroy_all: "関連するインスタンス、リレーションも全て削除されますがよろしいですか？"
+        confirm_destroy: "アノテーションが削除されますがよろしいですか？"
       see_in_visualizaion: ビジュアライゼーションで見る
+      to_this_doc: to this document
+      to_this_span: to this span
       visualization_link_disabled: 本文が長すぎるためビジュアライゼーションリンクは無効です。
     divs:
       document_divs: "<span class='meta'>ドキュメント、 <span class='pname'>%{sourcedb}:%{sourceid}</span>の</span>ディビジョン"
       div: デイビジョン
+      list_button: List all the divisions
     docs:
       annotation_within_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクトでこのドキュメントに付けられた</span>アノテーション"
       annotation_within_spans: "<span class='meta'><span class='pname'>SPAN %{spans}</span>に付けられた</span>アノテーション"
       document_content: ドキュメントのコンテンツ
-      projects_made_to_document: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
+      projects_that_annotates_this: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       automatic_annotation: 自動アノテーションの取得
       records: ドキュメントレコード一覧
       sourcedb_list: ソースDB一覧
@@ -412,6 +420,8 @@ ja:
       list: ドキュメント一覧
       add_new_documents: ドキュメント追加
       total_number: "全%{total_number}ドキュメント"
+    spans:
+      projects_that_annotates_this: "<span class='meta'>このspanにアノテーションを付ける</span>プロジェクト"
     documentations:
       Overview: 概要
       Features: 特徴
@@ -419,12 +429,12 @@ ja:
       API: API
     paths:
       home: ホーム
+      docs: docs
       new: 新規作成
     projects:
       project: プロジェクト
       try_textae: 又は他のRESTfulエディターのURLを指定して下さい。
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
-      about_the_project: "<span class='pname'>%{project_name}</span>について"
       project_properties: プロジェクト詳細
       that_annotate_a_doc: "<span class='pname'>%{sourcedb}:%{sourceid}</span>用の<a href='%{href}'>アノテーションプロジェクト</a>"
       that_annotate_a_division: "<span class='pname'>%{sourcedb}:%{sourceid}</span>の%{serial}番目のディビジョンをアノテートする<a href='%{href}'>プロジェクト</a>"
@@ -438,9 +448,9 @@ ja:
       detail: プロジェクト詳細
       total_number: "全%{total_number}プロジェクト"
       select_zip_file: アップロードするzipファイルを選択して下さい。
-      start_delay_save_annotation_zip:
+      start_delay_create_annotations_zip:
         result: "アノテーションZIPファイルの作成を開始しました。 %{created_at}"
-      save_annotation_zip:
+      create_annotations_zip:
         result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"
       start_delay_store_annotations:
         result: "アノテーションの作成を開始しました。 %{created_at}"
@@ -451,6 +461,10 @@ ja:
         result: "プロジェクトの削除を開始しました。 %{created_at}"
       destroy_project:
         result: "プロジェクトの削除に失敗しました。 %{created_at}"
+      start_annotations_batch_upload:
+        result: "Annotationos batch upload started. %{created_at}"
+      annotations_batch_upload:
+        result: "Annotationos batch upload finished. %{created_at}"
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:
@@ -466,14 +480,6 @@ ja:
       sign_up: 新規登録
       sign_out: ログアウト
       send_reset_password_instructions: パスワードのリセット用メールを送信
-    pmdocs:
-      pmdocs_in_a_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクト内の</span>PubMedドキュメント"
-      pmdocs_in_pubannotation: "<span class='meta'><span class='pname'>PubAnnotation</span>内の</span>PubMedドキュメント"
-      confirm_delete: このプロジェクト内のドキュメントのアノテーションが全て削除されますがよろしいですか？
-    pmcdocs:
-      pmcdocs_in_a_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクトの</span>PMCドキュメント"
-      pmcdocs_in_pubannotation: "<span class='meta'><span class='pname'>PubAnnotation</span>内の</span>PMCドキュメント"
-      add_pmc_documents: PMCドキュメントを追加
     shared:
       confirm:
         delete_model: "%{model}を削除しますか？"
@@ -512,6 +518,7 @@ ja:
       search: 検索
       successful: 成功
       unsuccessful: 失敗
+      total_number: 総数
       open: 開く
       get: 取得
       divs: divs

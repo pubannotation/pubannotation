@@ -1,0 +1,21 @@
+<%= form_tag(@search_path, method: 'get')  do -%>
+  <table class="search">		
+    <tr>
+      <th><%= label_tag :sourceid, t('activerecord.attributes.doc.body') -%></th>
+    </tr>
+    <tr>
+      <td><%= text_field_tag :body, params[:body], value: params[:body] -%></td>
+      <td>
+        <%= submit_tag t('views.shared.search'), class: :button -%>
+        <%= submit_tag t('views.shared.clear'), id: 'reset', class: :button -%>
+      </td>
+    </tr>
+  </table>
+<% end %>
+
+<script>
+  $("#reset").click(function(){
+   $(this).closest('form').find("input[type=text], textarea").val("");
+    return false
+  });
+</script>

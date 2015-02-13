@@ -1,0 +1,7 @@
+<%= render :partial => 'docs/path'-%>
+
+<%= render :partial => 'shared/textae_css_js'-%>
+
+<%= render :partial => 'annotations/title_with_options', locals:{level:1} -%>
+
+<%= render :partial => 'visualize_track', :collection => @track_annotations -%>

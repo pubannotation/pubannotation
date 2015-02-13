@@ -1,0 +1,27 @@
+<%= render :partial => 'docs/path'-%>
+<%= render :partial => 'projects/title_and_links' -%>
+<%= render :partial => 'annotations/title_with_options' -%>
+
+<% if @annotations[:denotations].present? && params[:sourceid].present? && user_signed_in? && @project.user == current_user -%>
+	<%
+		destroy_path = if params[:divid].present?
+			if params[:begin].present?
+				destroy_annotations_in_span_project_sourcedb_sourceid_divs_docs
+			else
+				destroy_annotations_project_sourcedb_sourceid_divs_docs_path
+			end
+		else
+			if params[:begin].present?
+				destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
+			else
+				destroy_annotations_project_sourcedb_sourceid_docs_path
+			end
+		end
+	-%>
+		
+	<%= form_tag(destroy_path, method: :delete, style: 'display:inline') do%>
+		<%= submit_tag t('views.shared.delete_all'), :confirm => t('views.annotations.index.confirm_destroy_all') %>
+	<% end %>
+<% end -%>
+
+<%= render :partial => 'annotations/annotations', locals: {annotations:@annotations, doc: @doc, body: @annotations[:text]} -%>

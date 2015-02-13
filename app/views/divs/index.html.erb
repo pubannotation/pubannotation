@@ -5,63 +5,16 @@
 		> <%= link_to @project.name, project_path(@project.name) %>
 		> <%= link_to 'docs', project_docs_path(@project.name) -%>
 	<% end %>
-	> <%= t('views.shared.a_doc_id', :sourcedb => @docs.first.sourcedb, :sourceid => @docs.first.sourceid) %>
+	> <%= t('views.shared.a_doc_id', :sourcedb => @divs.first.sourcedb, :sourceid => @divs.first.sourceid) %>
+	> divs
 <% end %>
 
-<h1>
-	<%= t('views.divs.document_divs', :sourcedb => @docs.first.sourcedb, :sourceid => @docs.first.sourceid).html_safe %>
-</h1>
+<% if @project.present? -%>
+  <%= render :partial => 'projects/title_and_links' -%>
+<% end -%>
 
-<!-- tablesorter js -->
-<% content_for :javascript do %>
-	<script type="text/javascript">
-		$(document).ready(function() 
-		    { 
-		        $("#divisions").tablesorter({
-		        	sortInitialOrder: 'desc',
-		        	// set sortable headers
-		        	headers: { 
-			            0: { sorter: false }, 
-			            1: { sorter: false }, 
-			            3: { sorter: false }, 
-			            4: { sorter: false }, 
-			            5: { sorter: false },
-			            8: { sorter: false }
-			        }
-		        });
-		    } 
-		); 	
-	</script>
-<% end %>
+<%= render partial: 'divs', locals: {title: "Divisions of #{params[:sourcedb]}:#{params[:sourceid]}", divs: @divs} -%>
 
-<table id="divisions" class="tablesorter full">
-	<thead>
-		<tr>
-			<th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
-			<th style="width:6em"><%= t('activerecord.attributes.doc.sourceid')%></th>
-			<th style="width:3em" class="sortable-ASC"><%= t('views.divs.div')%></th>
-			<th style="width:14em"><%= t('activerecord.attributes.doc.section') %></th>
-			<th><%= t('activerecord.attributes.doc.body') %></th>
-			<th style="width:3em"><%= t('views.shared.size') %></th>
-			<th style="width:2em" class="sortable-ASC" title="<%= t('activerecord.models.denotations') %>">D</th>
-			<th style="width:2em" class="sortable-ASC" title="<%= t('activerecord.models.relations') %>">R</th>
-			<th style="width:4em"></th>
-		</tr>
-	</thead>
+<h3>Search divisions</h3>
+<%= render partial: 'search_form' -%>
 
-	<tbody>
-		<% @docs.each_with_index do |doc, i| %>
-			<tr>
-			    <td style="text-align:center"><%= doc.sourcedb %></td>
-			    <td style="text-align:center"><a href="<%= doc.source %>"><%= doc.sourceid %></a></td>
-			    <td style="text-align:center"><%= doc.serial %></td>
-			    <td style="text-align:center"><%= doc.section %></td>
-			    <td style="text-align:left"><%= doc.body %></td>
-			    <td style="text-align:right"><%= doc.body.length %></td>
-			    <td style="text-align:right"><%= denotations_count_helper(@project, {:doc => doc}) %></td>
-			    <td style="text-align:right"><%= relations_count_helper(@project, {:doc => doc})%></td>
-		    	<td><span class="button"><%= div_link_helper(@project, doc) -%></span></td>
-		    </tr>
-		<% end %>
-	</tbody>
-</table>

@@ -1,5 +1,5 @@
 <% if @project and user_signed_in? && current_user == @project.user && @project.class == Project %>
-	<%= form_tag(project_docs_project_docs_path(@project.name), :method => "post") do %>
+	<%= form_tag(add_project_docs_path(@project.name), :method => "post") do %>
 	  <table>
 	    <tr>
 		    <th><%= t('activerecord.attributes.doc.sourcedb')%></th>

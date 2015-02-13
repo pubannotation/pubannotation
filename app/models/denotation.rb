@@ -2,7 +2,6 @@ require 'zip/zip'
 
 class Denotation < ActiveRecord::Base
   include DenotationsHelper
-  ZIP_FILE_PATH = "#{Rails.root}/public/annotations/"
   
   belongs_to :project, :counter_cache => true
   belongs_to :doc, :counter_cache => true
@@ -21,48 +20,45 @@ class Denotation < ActiveRecord::Base
   validates :project_id, :presence => true
   validates :doc_id,    :presence => true
 
-  scope :project_denotations, select(:id).group(:project_id) 
-  scope :project_pmcdoc_denotations, lambda{|sourceid|
-    joins(:doc).
-    where("docs.sourcedb = 'PMC' AND docs.sourceid = ?", sourceid)
-  }  
-  scope :projects_denotations, lambda {|project_ids|
-    where('project_id IN (?)', project_ids)
+  scope :from_projects, -> (projects) {
+    where('project_id IN (?)', projects.map{|p| p.id}) if projects.present?
   }
-  scope :within_spans, lambda{|begin_pos, end_pos|
-    where(['denotations.begin >= ? AND denotations.end <= ?', begin_pos, end_pos])  
+
+  scope :within_span, -> (span) {
+    where('denotations.begin >= ? AND denotations.end <= ?', span[:begin], span[:end]) if span.present?
+  }
+
+  scope :after_alignment, -> (aligner) {
+    if aligner.present?
+      all.map do |d|
+        new_span = aligner.transform_a_span({:begin => d.begin, :end => d.end})
+        d.begin, d.end = new_span[:begin], new_span[:end]
+        d
+      end
+    end
   }
 
   scope :accessible_projects, lambda{|current_user_id|
-      joins([:project, :doc]).
-      where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
+    joins([:project, :doc]).
+    where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
   }
   
   scope :sql, lambda{|ids|
-      where('denotations.id IN(?)', ids).
-      order('denotations.id ASC') 
+    where('denotations.id IN(?)', ids).
+    order('denotations.id ASC') 
   }
   
   after_save :update_projects_after_save
   before_destroy :update_projects_before_destroy
   
-  def get_hash(options = {})
+  def get_hash
     hdenotation = Hash.new
-    hdenotation[:id]       = hid
-    hdenotation[:span]     = {:begin => self.begin, :end => self.end}
-    hdenotation[:obj] = obj
-    if options.present? && options[:format].present?
-      hdenotation.delete(:id)
-      hdenotation[:obj] = spans_link_url_helper(options[:doc], hdenotation) 
-    end
+    hdenotation[:id]   = hid
+    hdenotation[:span] = {:begin => self.begin, :end => self.end}
+    hdenotation[:obj]  = obj
     hdenotation
   end
 
-  # returns denotations count which belongs to project and doc
-  def self.project_denotations_count(project_id, denotations)
-    denotations.project_denotations.count[project_id].to_i  
-  end  
-  
   # after save
   def update_projects_after_save
     project_ids = Array.new
@@ -104,12 +100,7 @@ class Denotation < ActiveRecord::Base
       results = self.connection.execute(sanitized_sql, :includes => [:project])
       if results.present?
         ids = results.collect{|result| result['id']}
-        if project.present?
-          #results = results.select{|result| result['project_id'] == project.id}
-          denotations = self.accessible_projects(current_user_id).projects_denotations([project.id]).sql(ids)
-        else
-          denotations = self.accessible_projects(current_user_id).sql(ids)
-        end
+        denotations = self.accessible_projects(current_user_id).from_projects([project]).sql(ids)
       end       
     end
   end

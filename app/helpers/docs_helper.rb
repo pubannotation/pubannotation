@@ -19,7 +19,7 @@ module DocsHelper
   end
 
   def sourcedb_options_for_select
-    docs = Doc.select(:sourcedb).source_dbs.uniq
+    docs = Doc.select(:sourcedb).sourcedbs.uniq
     docs.collect{|doc| [doc.sourcedb, doc.sourcedb]}
   end
 end

@@ -13,6 +13,10 @@ class Relation < ActiveRecord::Base
   validates :obj_id,  :presence => true
   validate :validate
 
+  scope :from_projects, -> (projects) {
+    where('relations.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
+  }
+
   scope :project_relations, select(:id).group("relations.project_id")
   scope :project_pmcdoc_cat_relations, lambda{|sourceid|
     joins("INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation' INNER JOIN docs ON docs.id = denotations.doc_id AND docs.sourcedb = 'PMC'").

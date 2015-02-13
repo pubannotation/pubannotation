@@ -1,0 +1,11 @@
+<ul>
+	<li>
+		<%= t('activerecord.models.denotations') %>:
+		<%= @annotations[:denotations].present? ? @annotations[:denotations].length : 0 %>
+	</li>
+	<li>
+		<%= t('activerecord.models.relations') %>:
+		<%= @annotations[:relations].present? ? @annotations[:relations].length : 0 %>
+		<br />
+	</li>
+</ul>

@@ -12,7 +12,7 @@ describe Shared do
       before do
         @relations = 'relations'
         @modification = 'modification'
-        @annotations = {:denotations => 'denotations', :instances => ['instance'], :relations => @relations, :modifications => @modification}
+        @annotations = {:denotations => 'denotations', :relations => @relations, :modifications => @modification}
         @aligned_denotations = 'aligned_denotations'
         Shared.stub(:align_denotations).and_return(@aligned_denotations)
         Shared.stub(:save_hdenotations) do |denotations, project, doc|
@@ -32,7 +32,7 @@ describe Shared do
       end
 
       it 'should return aligned annotations' do
-        @result.should eql({denotations: @aligned_denotations, instances: ["instance"], relations: @relations, modifications: @modification, text: @doc[:body]})
+        @result.should eql({denotations: @aligned_denotations, relations: @relations, modifications: @modification, text: @doc[:body]})
       end
     end
     

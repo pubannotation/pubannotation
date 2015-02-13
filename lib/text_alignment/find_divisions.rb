@@ -62,12 +62,12 @@ class << TextAlignment
     end
 
     # return remaining target and sources if m.nil?
-    return [[-1, [target, sources.collect{|s| s[:div_id]}]]] if m.nil?
+    return [[-1, [target, sources.collect{|s| s[:divid]}]]] if m.nil?
 
     index = if mode == :t_in_s
-      [sources[m][:div_id], [0, target.size]]
+      [sources[m][:divid], [0, target.size]]
     else # :s_in_t
-      [sources[m][:div_id], [c.str2_match_initial + offset_begin, c.str2_match_final + offset_begin + 1]]
+      [sources[m][:divid], [c.str2_match_initial + offset_begin, c.str2_match_final + offset_begin + 1]]
     end
 
     next_target = target[0 ... index[1][0]] + target[index[1][1] .. -1]

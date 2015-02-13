@@ -6,7 +6,7 @@ module Shared
   def self.align_denotations(denotations, str1, str2)
     return nil if denotations.nil?
     align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-    align.transform_denotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
+    align.transform_hdenotations(denotations).select{|a| a[:span][:end].to_i > a[:span][:begin].to_i}
   end
 
   def self.save_hdenotations(hdenotations, project, doc)
@@ -101,7 +101,7 @@ module Shared
 
         fit_index.each do |i|
           if i[0] >= 0
-            ann = {div_id:i[0]}
+            ann = {divid:i[0]}
             idx = {}
             ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
             if annotations[:denotations].present?

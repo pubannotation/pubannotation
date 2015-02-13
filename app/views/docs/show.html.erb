@@ -1,17 +1,21 @@
 <%= render :partial => 'docs/path'-%>
-
 <%= render :partial => 'docs/content'-%>
 
-<% if @project.present? -%>
-
-	<%= render :partial => 'annotations/summary_and_view_options'-%>
-
-	<% if user_signed_in? and current_user == @project.user %>
-		<%= render :partial => 'annotations/get_annotation'-%>
+<h2>
+	<% if @span.present? -%>
+		<%= t('views.spans.projects_that_annotates_this').html_safe %>
+	<% else %>
+		<%= t('views.docs.projects_that_annotates_this').html_safe %>
 	<% end %>
+</h2>
+<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil} %>
 
-<% else %>
-	<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil } %>
-<% end %>
 
-<%= link_to t('views.shared.annotations'), annotations_url_helper, class: 'button' if @project.blank? -%>
+<%
+	postfix = if @span.present?
+		t('views.annotations.to_this_span')
+	else
+		t('views.annotations.to_this_document')
+	end
+-%>
+<%= render :partial => 'annotations/title_with_options', locals: {postfix: postfix} -%>

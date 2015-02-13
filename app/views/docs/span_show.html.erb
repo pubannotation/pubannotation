@@ -3,7 +3,16 @@
 <%= render :partial => 'docs/span' -%>
 
 <% if params[:project_id].present? -%>
-	<%= render :partial => 'annotations/summary_and_view_options'-%>
+
+  <h2>
+    <% if params[:action] == 'spans' -%>
+      <%= t('views.docs.annotation_within_span', :spans => "#{params[:begin]} - #{params[:end]}").html_safe %>
+    <% else -%>
+      <%= t('views.docs.annotation_within_project', :project_name => @project.name).html_safe %>
+    <% end -%>
+  </h2>
+  <%= render :partial => 'annotations/summary'-%>
+  <%= render :partial => 'annotations/view_options'-%>
 <% else -%>
   <script>
     var path = "<%= @annotations_path -%>?projects=";

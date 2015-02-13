@@ -49,9 +49,9 @@ describe "annotations/index.html.erb" do
             assign :project, @project
           end
         
-          context 'when params[:div_id] present' do
+          context 'when params[:divid] present' do
             before do
-              view.stub(:params).and_return({:div_id => 1, :sourcedb => 'sourcedb', :sourceid => '123'})
+              view.stub(:params).and_return({:divid => 1, :sourcedb => 'sourcedb', :sourceid => '123'})
               render
             end
             
@@ -60,7 +60,7 @@ describe "annotations/index.html.erb" do
             end
           end
             
-          context 'when params[:div_id] blank' do
+          context 'when params[:divid] blank' do
             before do
               view.stub(:params).and_return({:sourcedb => 'sourcedb', :sourceid => '123'})
               render

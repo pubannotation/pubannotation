@@ -9,14 +9,11 @@ class TextAlignment::GLCSAlignment
   # The mapping function from str1 to str2
   attr_reader :position_map_begin, :position_map_end
 
+  # The position initial and final position of matching on str1 and str2
+  attr_reader :str1_match_begin, :str1_match_end, :str2_match_begin, :str2_match_end
+
   # The length of GLCS
   attr_reader :length
-
-  # The size of the overflow at the front when str1 is mapped into str2.
-  attr_reader :front_overflow
-
-  # The size of overflow at the rear when str1 is mapped into str2.
-  attr_reader :rear_overflow
 
   # the elements that are common in the two strings, str1 and str2
   attr_reader :common_elements
@@ -27,11 +24,12 @@ class TextAlignment::GLCSAlignment
   # the string of non-mapped characters
   attr_reader :diff_strings
 
+  attr_reader :similarity
+
   # It initializes the GLCS table for the given two strings, str1 and str2.
   # When the array, mappings, is given, general suffix comparision is performed based on the mappings.
   # Exception is raised when nil given passed to either str1, str2 or dictionary
   def initialize(str1, str2, mappings = [])
-
     raise ArgumentError, "nil string"     if str1 == nil || str2 == nil
     raise ArgumentError, "nil dictionary" if mappings == nil
 
@@ -173,8 +171,8 @@ class TextAlignment::GLCSAlignment
 
         if !addition.empty? && deletion.empty?
           # If an addition is found in the front or the rear, it is a case of underflow
-          @front_overflow = -addition.length if p1 == 0
-          @rear_overflow  = -addition.length if p1 == @len1
+          @str2_match_begin = addition.length if p1 == 0
+          @str2_match_end = l2 - addition.length if p1 == @len1
 
           if p1 == 0
             # leave as it is
@@ -188,8 +186,8 @@ class TextAlignment::GLCSAlignment
           end
         elsif addition.empty? && !deletion.empty?
           # If a deletion is found in the front or the rear, it is a case of overflow
-          @front_overflow = deletion.length if p1 == deletion.length
-          @rear_overflow  = deletion.length if p1 == @len1
+          @str1_match_begin = deletion.length if p1 == deletion.length
+          @str1_match_end = l1 - deletion.length if p1 == @len1
 
           deletion.each{|p| @position_map_begin[p], @position_map_end[p] = p2, p2}
         elsif !addition.empty? && !deletion.empty?
@@ -241,6 +239,10 @@ end
 if __FILE__ == $0
 
   dictionary = [
+                ["×", "x"],       #U+00D7 (multiplication sign)
+                ["•", "*"],       #U+2022 (bullet)
+                ["Δ", "delta"],   #U+0394 (greek capital letter delta)
+                ["Φ", "phi"],     #U+03A6 (greek capital letter phi)
                 ["α", "alpha"],   #U+03B1 (greek small letter alpha)
                 ["β", "beta"],    #U+03B2 (greek small letter beta)
                 ["γ", "gamma"],   #U+03B3 (greek small letter gamma)
@@ -248,8 +250,9 @@ if __FILE__ == $0
                 ["ε", "epsilon"], #U+03B5 (greek small letter epsilon)
                 ["κ", "kappa"],   #U+03BA (greek small letter kappa)
                 ["λ", "lambda"],  #U+03BB (greek small letter lambda)
+                ["μ", "mu"],      #U+03BC (greek small letter mu)
                 ["χ", "chi"],     #U+03C7 (greek small letter chi)
-                ["Δ", "delta"],   #U+0394 (greek capital letter delta)
+                ["ϕ", "phi"],     #U+03D5 (greek phi symbol)
                 [" ", " "],       #U+2009 (thin space)
                 [" ", " "],       #U+200A (hair space)
                 [" ", " "],       #U+00A0 (no-break space)

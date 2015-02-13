@@ -128,16 +128,22 @@ body {
 }
 
 .meta {
-    color: #888888;
+  color: #888888;
+}
+
+.info {
+  font-size: smaller;
+  font-weight: normal;
+  text-decoration: none;
 }
 
 .pname {
-    font-style: italic;
+  font-style: italic;
 }
 
 .credit {
-    font-style:italic;
-    text-align:center;
+  font-style:italic;
+  text-align:center;
 }
 
 .capitalize{
@@ -155,39 +161,50 @@ body {
 }
 
 h1 {
-    width:43em;
-    border:solid $main_color;
-    border-width: 0px 0px 1px 5px;
-    padding-left: 10px;
-    margin-top: 20px;
-    font-size: medium;
+  width:700px;
+  border:solid $main_color;
+  border-width: 0px 0px 1px 5px;
+  padding-left: 10px;
+  margin-top: 20px;
+  font-size: large;
+}
+
+h1.title {
+  width:500px;
+  border-width: 0px 0px 2px 10px;
+  font-size: x-large; 
 }
 
 h2 {
-    width:43em;
-    margin-top:25px;
-    margin-bottom:10px;
-    margin-left:4px;
-    padding:0px 2px;
-    border-bottom: 1px solid $main_color;
-    font-size: medium;
+  width:700px;
+  margin-top:25px;
+  margin-bottom:10px;
+  padding:0px 2px 1px 4px;
+  border: solid $main_color;
+  border-width: 0 0 1px 5px;
+  border-top-left-radius:7px;
+  border-bottom-left-radius:7px;
+  font-size: medium;
 }
 
 
 h3 {
-    width:35em;
+    width:3em;
+    margin-top:15px;
+    margin-bottom:10px;
     white-space:nowrap;
+    padding:2px;
 
     font-size:small;
     font-weight:bold;
     /* fallback (Opera) */
     background: #EECCCC;
     /* Mozilla: */
-    background: -moz-linear-gradient(left, #00FF00, #FFFFFF);
+    background: -moz-linear-gradient(left, #9999FF, #FFFFFF);
     /* Chrome, Safari:*/
-    background: -webkit-gradient(linear, left top, right top, from(#00FF00), to(#FFFFFF));
+    background: -webkit-gradient(linear, left top, right top, from(#9999FF), to(#FFFFFF));
     /* MSIE */
-    filter: progid:DXImageTransform.Microsoft.Gradient(  StartColorStr='#00FF00', EndColorStr='#FFFFFF', GradientType=1);
+    filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#9999FF', EndColorStr='#FFFFFF', GradientType=1);
 }
 
 span.note {
@@ -223,6 +240,11 @@ table.full td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+table.view_options {
+  display:inline-block;
+  border-color:#FFFFFF;
 }
 
 th {
@@ -310,17 +332,48 @@ li {
     top:1px;
 }
 
-.tab{
-  border: 1px solid $main_color;
-  border-radius: 3px;
-  padding: 1px 5px; 
+h1 .button {
+  margin-left:20px;
 }
 
-.active_tab{
+h1 .badge {
+  position: relative;
+  top: -2px;
+  margin-left:10px;
+  -webkit-border-radius: 3;
+  -moz-border-radius: 3;
+  border-radius: 3px;
+  font-family: Arial;
+  font-size: small;
+  font-style: italic;
+  background: $sub-color;
+  padding: 2px 10px 2px 10px;
+  text-decoration: none;
+}
+
+.tab-bar{
+  position: relative;
+  top: -2px;
+  margin-left:20px;
+  font-size: small;
+  font-weight: normal;
+  text-decoration: none;
+}
+.tab-bar .label{
+  color: $sub_color;
+  background-color: $main_color;
+}
+.tab {
+  border: 1px solid $main_color;
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.active_tab {
   background-color: $sub_color;
 }
 
-.inactive_tab{
+.inactive_tab {
 }
 
 .input {
@@ -422,9 +475,10 @@ $indicator_size : 100px;
 .projects_header_name{
   width: 14em;
 }
+.projects_header_annotations_count,
 .projects_header_denotations_count,
 .projects_header_relations_count{
-  width: 4em;
+  width: 9em;
 }
 .projects_header_author,
 .projects_header_user{
@@ -433,11 +487,37 @@ $indicator_size : 100px;
 #projects_search{
   width: 100%;
 }
+
 #projects_search input,
 #docs_search input{
-  width: 90%;
+  width: 98%;
 }
+
 .docs_header_sourcedb,
-.docs_header_sourceid{
+.docs_header_sourceid,
+.docs_header_projects_number{
   width: 8em;
 }
+
+.docs_header_text {
+  width: 15em
+}
+
+
+.annotation_header_id {width: 5em}
+.annotation_header_span {width: 7em}
+.annotation_header_predicate {width: 7em}
+.annotation_header_object {width: 7em}
+
+table.search {
+  width:45em;
+}
+
+table.search input{
+  width: 98%;
+}
+
+table.search .button {
+  width:80px;
+}
+
