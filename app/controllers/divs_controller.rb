@@ -4,7 +4,7 @@ class DivsController < ApplicationController
 
   def index
     begin
-      @divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]).order('serial ASC')
+      @divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], order: :serial)
       raise "There is no such document." unless @divs.present?
 
       @search_path = doc_sourcedb_sourceid_divs_search_path(params[:sourcedb], params[:sourceid])
@@ -75,12 +75,12 @@ class DivsController < ApplicationController
         format.json {render json: @search_divs.collect{|d| d.to_list_hash('div')}}
         format.tsv  {render text: Doc.to_tsv(@search_divs, 'div')}
       end
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to (@project.present? ? index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid]) : doc_sourcedb_sourceid_divs_index_path(params[:sourcedb], params[:sourceid])), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render text: message, status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid]) : doc_sourcedb_sourceid_divs_index_path(params[:sourcedb], params[:sourceid])), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render text: message, status: :unprocessable_entity}
+      end
     end
   end
 
