@@ -31,7 +31,7 @@ class DivsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      @divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      @divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], order: :serial)
       raise "There is no such document in the project." unless @divs.present?
 
       @search_path = search_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])
