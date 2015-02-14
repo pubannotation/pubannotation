@@ -128,9 +128,8 @@ class SpansController < ApplicationController
         elsif @annotations[:tracks].present?
           @annotations[:tracks].inject({}){|index, track| index[track[:project]] = track; index}
         end
-
-        @projects = @project_annotations_index.keys.map{|p| Project.find_by_name(p)}
-
+        sort_order = sort_order(Project)
+        @projects = Project.where('name IN (?)', @project_annotations_index.keys).sort_by_params(sort_order)
         @annotations_projects_check = true
         @annotations_path = "#{url_for(:only_path => true)}/annotations"
 
@@ -172,7 +171,8 @@ class SpansController < ApplicationController
         {}
       end
 
-      @projects = @project_annotations_index.keys.map{|p| Project.find_by_name(p)}
+      sort_order = sort_order(Project)
+      @projects = Project.where('name IN (?)', @project_annotations_index.keys).sort_by_params(sort_order)
 
       @annotations_projects_check = true
       @annotations_path = "#{url_for(:only_path => true)}/annotations"
