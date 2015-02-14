@@ -236,6 +236,7 @@ en:
         description: Description
         author: Author
         maintainer: Maintainer
+        reference: Home
         status: Status
         rdfwriter: RDF writer
         xmlwriter: XML writer

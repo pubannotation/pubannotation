@@ -37,13 +37,6 @@
 		<th><%= t('activerecord.attributes.project.license') %></th>
 		<td><%= @project.license %></td>
 	</tr>
-
-	<% if @project.reference.present? %>
-		<tr>
-			<th><%= t('activerecord.attributes.project.reference') %></th>
-			<td><a href="<%= @project.reference %>"><%= @project.reference %></a></td>
-		</tr>
-	<% end %>
 </table>
 
 <% if user_signed_in? -%>
