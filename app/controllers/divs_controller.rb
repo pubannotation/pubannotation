@@ -4,7 +4,7 @@ class DivsController < ApplicationController
 
   def index
     begin
-      @divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      @divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]).order('serial ASC')
       raise "There is no such document." unless @divs.present?
 
       @search_path = doc_sourcedb_sourceid_divs_search_path(params[:sourcedb], params[:sourceid])
