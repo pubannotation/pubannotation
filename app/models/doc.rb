@@ -264,7 +264,7 @@ class Doc < ActiveRecord::Base
       if project.respond_to?(:each)
         self.denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
       else
-        self.denotations.where('denotations.project_id == ?', project.id)
+        self.denotations.where('denotations.project_id = ?', project.id)
       end
     else
       self.denotations
