@@ -126,7 +126,7 @@ class DocsController < ApplicationController
       end
 
       conditions_array = Array.new
-      conditions_array << ['sourcedb = ?', "#{params[:sourcedb]}"] if params[:sourcedb].present?
+      conditions_array << ['LOWER(sourcedb) = ?', "#{params[:sourcedb].downcase}"] if params[:sourcedb].present?
       conditions_array << ['sourceid like ?', "#{params[:sourceid]}%"] if params[:sourceid].present?
       conditions_array << ['body like ?', "%#{params[:body]}%"] if params[:body].present?
     
@@ -451,7 +451,7 @@ class DocsController < ApplicationController
   end
 
   def autocomplete_sourcedb
-    render :json => Doc.where(['sourcedb like ?', "%#{params[:term]}%"]).collect{|doc| doc.sourcedb}.uniq
+    render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
   end
 
   private

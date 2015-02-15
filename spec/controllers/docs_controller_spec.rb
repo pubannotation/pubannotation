@@ -1208,7 +1208,7 @@ describe DocsController do
 
   describe 'autocomplete_sourcedb' do
     before do
-      @sourcedbs = %w(sdb1 sdb2 sdb3)
+      @sourcedbs = %w(sdb1 sdb2 SDB3)
       @sourcedbs.each do |sourcedb|
         2.times do |time|
           FactoryGirl.create(:doc, sourcedb: sourcedb, sourceid: time.to_s )
