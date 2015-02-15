@@ -127,6 +127,8 @@ class SpansController < ApplicationController
           {@annotations[:project] => @annotations}
         elsif @annotations[:tracks].present?
           @annotations[:tracks].inject({}){|index, track| index[track[:project]] = track; index}
+        else
+          {}
         end
 
         @projects = @project_annotations_index.keys.map{|p| Project.find_by_name(p)}
@@ -141,12 +143,12 @@ class SpansController < ApplicationController
         end
       end
 
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render text: message, status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render text: message, status: :unprocessable_entity}
+      end
     end
   end
 
@@ -160,9 +162,6 @@ class SpansController < ApplicationController
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
       @annotations = @doc.hannotations(@project, @span)
       @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
-
-      p @annotations
-      puts "====="
 
       @project_annotations_index = if @annotations[:denotations].present?
         {@annotations[:project] => @annotations}
@@ -182,12 +181,12 @@ class SpansController < ApplicationController
         format.txt  {render text: @annotations[:text]}
         format.json {render json: {text: @annotations[:text]}}
       end
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to docs_path, notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to docs_path, notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render status: :unprocessable_entity}
+      end
     end
   end
 
@@ -217,12 +216,12 @@ class SpansController < ApplicationController
           format.json {render json: {text: @annotations[:text]}}
         end
       end
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to project_docs_path(@project.name), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render status: :unprocessable_entity}
+      end
     end
   end
 
@@ -251,52 +250,6 @@ class SpansController < ApplicationController
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render status: :unprocessable_entity}
       end
-    end
-  end
-
-  def span_show2
-    @doc = nil if @project.present? && @doc.projects.include?(@project.id)
-
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
- 
-    if @doc.present?
-      if @project.present?
-        @project_denotations = @doc.denotations_in_tracks(@project, span)
-      end
-    else
-      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial)
-      sort_order = sort_order(Project)
-      @projects = Project.id_in(@doc.projects_within_span(span)).collect{|project| project.id}.sort_by_params(sort_order)
-      if @doc.present? && @projects.present?
-        @project_denotations = @doc.denotations_in_tracks(@projects, span)
-      end
-      @annotations_projects_check = true
-    end
-    @spans, @prev_text, @next_text = @doc.spans(params)
-    @text = @doc.text(params)
-    @highlight_text = @doc.spans_highlight(params)
-    respond_to do |format|
-      format.html {render 'docs/spans'}
-      format.txt  {render text: @text}
-      format.json { 
-        if @project_denotations.present?
-          @denotations = Array.new
-          @project_denotations.each do |project_denotation|
-            if project_denotation[:denotations].present?
-              project_denotation[:denotations].each do |denotation|
-                @denotations << denotation.select{|key| key == :span}
-              end
-            end
-          end
-        end
-        json_hash = {text: @text}
-        json_hash[:focus] = get_focus({params: params}) if params[:context_size].present?
-        render json: json_hash
-      }
-      format.csv { 
-        send_data @doc.to_csv(params)
-      }
     end
   end
   
