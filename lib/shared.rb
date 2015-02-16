@@ -110,13 +110,12 @@ module Shared
         end
         {div_index: fit_index}
       end
-    rescue => e
-      successful = false
-      {error: e.message}
+    # rescue => e
+    #   successful = false
+    #   {error: e.message}
     end
 
-    project.notices.create({successful: successful, method: 'store_annotations'}) if options[:delayed]
-
+    project.notices.create({method: "upload annotations: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful})
     result 
   end
 

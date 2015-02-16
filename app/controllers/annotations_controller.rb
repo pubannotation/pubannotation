@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :show, :create, :annotations_index, :annotations, :project_annotations_zip]
+  before_filter :authenticate_user!, :except => [:index, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :show, :annotations_index, :annotations, :project_annotations_zip]
   after_filter :set_access_control_headers
   include DenotationsHelper
 
@@ -267,6 +267,77 @@ class AnnotationsController < ApplicationController
   # POST /annotations.json
   def create
     begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
+
+      if params[:annotations]
+        annotations = params[:annotations].symbolize_keys
+      elsif params[:text].present?
+        annotations = {:text => params[:text]}
+        annotations[:denotations] = params[:denotations] if params[:denotations].present?
+        annotations[:relations] = params[:relations] if params[:relations].present?
+        annotations[:modifications] = params[:modifications] if params[:modifications].present?
+      else
+        raise ArgumentError, t('controllers.annotations.create.no_annotation')
+      end
+
+      annotations = normalize_annotations!(annotations)
+
+      mode = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+
+      if params[:divid].present?
+        doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
+        raise "There is no such document in the project." unless doc.present?
+      else
+        divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        raise "There is no such document in the project." unless divs.present?
+
+        if divs.length == 1
+          doc = divs[0]
+        else
+          project.notices.create({method: "upload annotations: #{params[:sourcedb]}:#{params[:sourceid]}"})
+          # Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
+          Shared.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
+          result = {message: "The task, 'upload annotations: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
+          respond_to do |format|
+            format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(project.name, params[:sourcedb], params[:sourceid])}
+            format.json {render json: result}
+          end
+          return
+        end
+      end
+
+      result = Shared.save_annotations(annotations, project, doc, {:mode => mode})
+      notice = "annotations"
+
+      respond_to do |format|
+        format.html {redirect_to :back, notice: notice}
+        format.json {render json: result, status: :created}
+      end
+
+    rescue ArgumentError => e
+
+      respond_to do |format|
+        format.html {
+          if project
+            redirect_to project_path(project.name), notice: e.message
+          else
+            redirect_to home_path, notice: e.message
+          end
+        }
+        format.json {
+          render :json => {error: e.message}, :status => :unprocessable_entity
+        }
+      end
+
+    end
+  end
+
+
+  # POST /annotations
+  # POST /annotations.json
+  def create_backup
+    begin
       if params[:project_id].present?
         authenticate_user!
         project = Project.editable(current_user).find_by_name(params[:project_id])
@@ -296,7 +367,7 @@ class AnnotationsController < ApplicationController
       if annotations[:text].length < 5000 || project.nil?
         result = Shared.store_annotations(annotations, project, divs, {:mode => mode})
       else
-        project.notices.create({method: 'start_delay_store_annotations'}) if project.present?
+        project.notices.create({method: "upload annotations: #{}"}) if project.present?
         Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
         result = {message: t('controllers.annotations.create.delayed_job')}
       end

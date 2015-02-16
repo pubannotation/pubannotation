@@ -53,7 +53,7 @@ class << TextAlignment
       offset_begin, offset_end = 0, -1
       offset_begin, offset_end = approximate_fit(str1, str2) if (len2 - len1) > len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD)
 
-      if (offset_begin < offset_end)
+      if offset_begin.present? && (offset_begin < offset_end)
         c = TextAlignment::LCSComparison.new(str1, str2[offset_begin .. offset_end])
 
         if ((len1 - (c.str1_match_final - c.str1_match_initial + 1)) < len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD)) && (c.similarity > TextAlignment::SIMILARITY_THRESHOLD)
