@@ -10,21 +10,15 @@ module Shared
   end
 
   def self.save_hdenotations(hdenotations, project, doc)
-    ActiveRecord::Base.transaction do
-      begin
-        hdenotations.each do |a|
-          ca           = Denotation.new
-          ca.hid       = a[:id]
-          ca.begin     = a[:span][:begin]
-          ca.end       = a[:span][:end]
-          ca.obj  = a[:obj]
-          ca.project_id = project.id
-          ca.doc_id    = doc.id
-          ca.save
-        end
-      rescue => e
-        flash[:notice] = e
-      end
+    hdenotations.each do |a|
+      ca           = Denotation.new
+      ca.hid       = a[:id]
+      ca.begin     = a[:span][:begin]
+      ca.end       = a[:span][:end]
+      ca.obj  = a[:obj]
+      ca.project_id = project.id
+      ca.doc_id    = doc.id
+      raise "could not save #{ra.hid}" unless ca.save
     end
   end
 
@@ -36,7 +30,7 @@ module Shared
       ra.subj      = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:subj])
       ra.obj       = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
       ra.project_id = project.id
-      ra.save
+      raise "could not save #{ra.hid}" unless ra.save
     end
   end
 
@@ -52,35 +46,27 @@ module Shared
           Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, project.id, a[:obj])
       end
       ma.project_id = project.id
-      ma.save
+      raise "could not save #{ma.hid}" unless ma.save
     end
   end
 
   def self.save_annotations(annotations, project, doc, options = nil)
-    doc.destroy_project_annotations(project) unless options.present? && options[:mode] == :addition
+    if project.present? && doc.present?
+      doc.destroy_project_annotations(project) unless options.present? && options[:mode] == :addition
 
-    original_text = annotations[:text]
-    annotations[:text] = doc.body
+      original_text = annotations[:text]
+      annotations[:text] = doc.body
 
-    if annotations[:denotations].present?
-      annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
-
-      if project.present?
-        save_hdenotations(annotations[:denotations], project, doc)
-
-        if annotations[:relations].present?
-          # relations = relations.values if relations.respond_to?(:values)
-          save_hrelations(annotations[:relations], project, doc)
-        end
-
-        if annotations[:modifications].present?
-          # modifications = modifications.values if modifications.respond_to?(:values)
-          save_hmodifications(annotations[:modifications], project, doc)
+      if annotations[:denotations].present?
+        annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
+        ActiveRecord::Base.transaction do
+          save_hdenotations(annotations[:denotations], project, doc)
+          save_hrelations(annotations[:relations], project, doc) if annotations[:relations].present?
+          save_hmodifications(annotations[:modifications], project, doc) if annotations[:modifications].present?
         end
       end
     end
 
-    # return value: saved annotations
     annotations.select{|k,v| v.present?}
   end
 

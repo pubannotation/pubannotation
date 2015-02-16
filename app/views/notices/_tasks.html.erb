@@ -1,0 +1,11 @@
+<div id='project_notices'>
+	<% if @tasks.present? -%>
+		<table>
+		<tr><th>Task</th><th>Registered at</th><th>Finished at</th><th>Result</th></tr>
+		<%= render partial: 'task', collection: @tasks -%>
+		</table>
+		<%= link_to t('views.shared.delete_all'), delete_project_notices_path(@project), remote: true, class: 'button', confirm: t('controllers.shared.confirm_delete') if @complete -%>
+	<% else -%>
+		none
+	<% end -%>
+</div>

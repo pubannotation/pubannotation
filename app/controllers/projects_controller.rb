@@ -126,11 +126,6 @@ class ProjectsController < ApplicationController
     end
   end
 
-  def notices
-    @project = Project.find_by_name(params[:project_id])
-    @notices = @project.notices
-  end
-
   def zip_upload
   end
 
@@ -164,14 +159,28 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def destroy_annotations
+    begin
+      @project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless @project.present?
+
+      @project.destroy_annotations
+
+      respond_to do |format|
+        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "All the annotations in the project have been deleted."}
+        format.json {render status: :no_content}
+      end
+    end
+  end
+
   # DELETE /projects/:name
   # DELETE /projects/:name.json
   def destroy
-    @project.notices.create({successful: nil, method: 'start_destroy_project'})
+    @project.notices.create({method: 'destroy the project'})
     @project.delay.delay_destroy
     respond_to do |format|
-      format.html { redirect_to :back, notice: t('controllers.projects.destroy.delay') }
-      format.json { head :no_content }
+      format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, is being deleted."}
+      format.json {head :no_content }
     end
   end
   

@@ -437,10 +437,6 @@ class Project < ActiveRecord::Base
       FileUtils.mkdir_p(self.downloads_system_path) unless Dir.exist?(self.downloads_system_path)
       file = File.new(self.annotations_zip_system_path, 'w')
       Zip::ZipOutputStream.open(file.path) do |z|
-        # z.put_next_entry('project.json')
-        # z.print self.json
-        # z.put_next_entry('docs.json')
-        # z.print self.docs_list_hash.to_json
         annotations_collection.each do |annotations|
           title = get_doc_info(annotations[:target]).sub(/\.$/, '').gsub(' ', '_')
           title += ".json" unless title.end_with?(".json")
@@ -449,9 +445,9 @@ class Project < ActiveRecord::Base
         end
       end
       file.close   
-      self.notices.create({successful: true, method: 'create_annotations_zip'})
-    # rescue => e
-    #   self.notices.create({successful: false, method: 'create_annotations_zip'})
+      self.notices.create({method: "create annotations zip", successful: true})
+    rescue => e
+      self.notices.create({method: "create annotations zip", successful: false})
     end
   end 
 
@@ -466,18 +462,25 @@ class Project < ActiveRecord::Base
       zip.collect{|entry| JSON.parse(entry.get_input_stream.read, symbolize_names:true)}
     end
 
+    total_number = annotations_collection.length
+
     imported, added, failed, messages = 0, 0, 0, []
-    annotations_collection.each do |annotations|
+    annotations_collection.each_with_index do |annotations, index|
+      docspec = annotations[:divid].present? ? "#{annotations[:sourcedb]}:#{annotations[:sourceid]}-#{annotations[:divid]}" : "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+      self.notices.create({method:"> annotations upload (#{index}/#{total_number}): #{docspec}"})
+
       i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
       imported += i; added += a; failed += f
       messages << m if m.present?
 
       serial = annotations[:divid].present? ? annotations[:divid].to_i : 0
-
       doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], serial)
-      Shared.save_annotations(annotations, self, doc, options)
+      result = Shared.save_annotations(annotations, self, doc, options)
+      successful = result.nil? ? false : true
+      self.notices.create({method:"> annotations upload (#{index}/#{total_number}): #{docspec}", successful:successful})
     end
 
+    self.notices.create({method:'annotations batch upload', successful:true})
     messages << "annotations loaded to #{annotations_collection.length} documents"
   end
 
@@ -752,11 +755,15 @@ class Project < ActiveRecord::Base
     namespaces.reject!{|namespace| namespace['prefix'].blank? || namespace['uri'].blank?} if namespaces.present?
   end
 
+  def destroy_annotations
+    self.denotations.destroy_all
+  end
+
   def delay_destroy
     begin
       destroy
     rescue
-      notices.create({successful: false, method: 'destroy_project'})
+      notices.create({method: 'destroy the project', successful: false})
     end
   end
 end

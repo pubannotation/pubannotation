@@ -100,7 +100,8 @@ Pubann::Application.routes.draw do
     get 'annotations.zip/create' => 'annotations#create_project_annotations_zip', :as => 'create_annotations_zip'
     post 'annotations.zip' => 'annotations#create_from_zip', :as => 'create_annotations_from_zip'
     get 'delete_annotations_zip' => 'annotations#delete_project_annotations_zip', :as => 'delete_annotations_zip'
-    get 'notices' => 'projects#notices'
+    get 'notices' => 'notices#index'
+    get 'tasks' => 'notices#tasks'
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
     
@@ -119,6 +120,7 @@ Pubann::Application.routes.draw do
 
   resources :projects do
     post 'annotations' => 'annotations#create'
+    delete 'annotations' => 'projects#destroy_annotations', as: 'destroy_annotations'
 
     resources :docs do
       collection do

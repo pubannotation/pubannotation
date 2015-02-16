@@ -76,4 +76,5 @@ Too many documents to list them all. Please use search.
 
 <% if user_signed_in? && @project.updatable_for?(current_user) -%>
 	<%= render partial: 'annotations/upload_zip' -%>
+	<%= render partial: 'delete_annotations' -%>
 <% end -%>

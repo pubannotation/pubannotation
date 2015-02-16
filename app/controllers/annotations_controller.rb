@@ -360,9 +360,8 @@ class AnnotationsController < ApplicationController
 
       if params[:zipfile].present? && params[:zipfile].content_type == 'application/zip'
         options = {mode: :addition} if params[:mode] == 'addition' || params[:mode] == 'add'
-        project.notices.create({method: 'start_annotations_batch_upload'})
+        project.notices.create({method: 'annotations batch upload'})
         messages = project.delay.create_annotations_from_zip(params[:zipfile].path, options)
-        project.notices.create({method: 'annotations_batch_upload'})
       end
 
       respond_to do |format|
@@ -394,16 +393,12 @@ class AnnotationsController < ApplicationController
   def create_project_annotations_zip
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless project.present?
+      raise "There is no such project in your management." unless project.present?
 
-      # delete ZIP file if params[:update]
-      File.unlink(project.annotations_zip_path) if params[:update].present?
-      # Creaet ZIP file by delayed_job
-      project.notices.create({method: 'start_delay_create_annotations_zip'})
+      project.notices.create({method: "create annotations zip"})
       project.delay.create_annotations_zip(params[:encoding])
-      # project.create_annotations_zip(:encoding => params[:encoding])
-    # rescue => e
-    #   flash[:notice] = notice
+    rescue => e
+      flash[:notice] = notice
     end
     redirect_to :back
   end
@@ -452,7 +447,7 @@ class AnnotationsController < ApplicationController
       denotations.each{|d| d.destroy}
 
       respond_to do |format|
-        format.html {redirect_to :back, notice: notice}
+        format.html {redirect_to :back, status: :see_other, notice: "annotations deleted"}
         format.json {render status: :no_content}
       end
     end

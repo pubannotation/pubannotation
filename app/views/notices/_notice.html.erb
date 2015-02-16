@@ -3,7 +3,7 @@
 <% end -%>
 
 <%= div_for(notice) do -%>
-  <%= t("views.projects.#{ notice.method }.result", :result => t("views.shared.#{ notice.result}"), created_at: I18n.l(notice.created_at, format: :long)) -%>
+  <%= t("views.projects.#{ notice.method }.result", :result => t("views.shared.#{notice.result}"), created_at: I18n.l(notice.created_at, format: :long)) -%>
   <%= link_to t('views.shared.delete'), notice_path(notice), remote: true, method: :delete, class: 'button' -%>
 <% end -%>
 
