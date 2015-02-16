@@ -164,10 +164,11 @@ class ProjectsController < ApplicationController
       @project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless @project.present?
 
-      @project.destroy_annotations
+      @project.notices.create({method: 'delete all annotations'})
+      @project.delay.destroy_annotations
 
       respond_to do |format|
-        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "All the annotations in the project have been deleted."}
+        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'Delete all annotations', is created."}
         format.json {render status: :no_content}
       end
     end

@@ -756,7 +756,12 @@ class Project < ActiveRecord::Base
   end
 
   def destroy_annotations
-    self.denotations.destroy_all
+    begin
+      self.denotations.destroy_all
+      notices.create({method: 'delete all annotations', successful: true})
+    rescue
+      notices.create({method: 'delete all annotations', successful: false})
+    end
   end
 
   def delay_destroy
