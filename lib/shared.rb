@@ -70,13 +70,11 @@ module Shared
     annotations.select{|k,v| v.present?}
   end
 
-  def self.store_annotations(annotations, project, divs, options = nil)
+  def self.store_annotations(annotations, project, divs, options = {})
     successful = true
     fit_index = nil
 
     begin
-      div_index = divs.map{|d| [d.serial, d]}.to_h
-
       if divs.length == 1
         result = self.save_annotations(annotations, project, divs[0], options)
       else
@@ -115,7 +113,7 @@ module Shared
     #   {error: e.message}
     end
 
-    project.notices.create({method: "upload annotations: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful})
+    project.notices.create({method: "- upload annotations: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
     result 
   end
 

@@ -296,8 +296,7 @@ class AnnotationsController < ApplicationController
           doc = divs[0]
         else
           project.notices.create({method: "upload annotations: #{params[:sourcedb]}:#{params[:sourceid]}"})
-          # Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
-          Shared.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
+          Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
           result = {message: "The task, 'upload annotations: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
           respond_to do |format|
             format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(project.name, params[:sourcedb], params[:sourceid])}

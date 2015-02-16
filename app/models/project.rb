@@ -466,6 +466,45 @@ class Project < ActiveRecord::Base
 
     imported, added, failed, messages = 0, 0, 0, []
     annotations_collection.each_with_index do |annotations, index|
+      index1 = index + 1
+      docspec = annotations[:divid].present? ? "#{annotations[:sourcedb]}:#{annotations[:sourceid]}-#{annotations[:divid]}" : "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+
+      self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{docspec}"})
+
+      i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
+
+      if annotations[:divid].present?
+        doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
+      else
+        divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
+        doc = divs[0] if divs.length == 1
+      end
+
+      result = if doc.present?
+        Shared.save_annotations(annotations, self, doc, options)
+      elsif divs.present?
+        Shared.store_annotations(annotations, self, divs, options)
+      else
+        nil
+      end
+      successful = result.nil? ? false : true
+      self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{docspec}", successful:successful})
+    end
+
+    self.notices.create({method:'annotations batch upload', successful:true})
+    messages << "annotations loaded to #{annotations_collection.length} documents"
+  end
+
+
+  def create_annotations_from_zip_backup(zip_file_path, options)
+    annotations_collection = Zip::ZipFile.open(zip_file_path) do |zip|
+      zip.collect{|entry| JSON.parse(entry.get_input_stream.read, symbolize_names:true)}
+    end
+
+    total_number = annotations_collection.length
+
+    imported, added, failed, messages = 0, 0, 0, []
+    annotations_collection.each_with_index do |annotations, index|
       docspec = annotations[:divid].present? ? "#{annotations[:sourcedb]}:#{annotations[:sourceid]}-#{annotations[:divid]}" : "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
       self.notices.create({method:"> annotations upload (#{index}/#{total_number}): #{docspec}"})
 
