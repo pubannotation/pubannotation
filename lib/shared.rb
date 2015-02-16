@@ -114,7 +114,7 @@ module Shared
       result = nil
     end
 
-    project.notices.create({method: "- upload annotations: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
+    project.notices.create({method: "annotations upload: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
     result 
   end
 

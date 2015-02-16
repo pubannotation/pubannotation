@@ -137,11 +137,11 @@ class AnnotationsController < ApplicationController
         end
       end
 
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to project_docs_path(@project.name), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
     end
   end
 
@@ -232,44 +232,6 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  def annotations
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    params[:project_id] = params[:project] if params[:project].present?
-    @project = params[:projects].split(',').map{|n| Projects.accessible(current_user).find_by_name(n)} if params[:projects].present?
-
-    span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
-    if params[:project_id].present?
-      @project, flash[:notice] = get_project(params[:project_id])
-      if @project
-        @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
-        @project_denotations = @doc.denotations_in_tracks(@project, span)
-      end
-    else
-      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
-      if params[:projects].present?
-        projects = Project.name_in(params[:projects].split(','))
-      else
-        projects = @doc.projects
-      end
-      @project_denotations = @doc.denotations_in_tracks(projects, span)
-    end
-
-    if @doc.present?
-      @spans, @prev_text, @next_text = @doc.spans(params)
-      annotations = @doc.hannotations(@project, span)
-
-      # ToDo: to process tracks
-      @denotations = annotations[:denotations]
-      @relations = annotations[:relations]
-      @modifications = annotations[:modifications]
-      respond_to do |format|
-        format.html { render 'annotations'}
-        format.json { render :json => annotations, :callback => params[:callback] }
-      end
-    end
-  end
-
   # POST /annotations
   # POST /annotations.json
   def create
@@ -302,9 +264,9 @@ class AnnotationsController < ApplicationController
         if divs.length == 1
           doc = divs[0]
         else
-          project.notices.create({method: "upload annotations: #{params[:sourcedb]}:#{params[:sourceid]}"})
+          project.notices.create({method: "annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}"})
           Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
-          result = {message: "The task, 'upload annotations: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
+          result = {message: "The task, 'annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
           respond_to do |format|
             format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(project.name, params[:sourcedb], params[:sourceid])}
             format.json {render json: result}
@@ -322,20 +284,10 @@ class AnnotationsController < ApplicationController
       end
 
     rescue ArgumentError => e
-
       respond_to do |format|
-        format.html {
-          if project
-            redirect_to project_path(project.name), notice: e.message
-          else
-            redirect_to home_path, notice: e.message
-          end
-        }
-        format.json {
-          render :json => {error: e.message}, :status => :unprocessable_entity
-        }
+        format.html {redirect_to (project.present? ? project_path(project.name) : home_path), notice: e.message}
+        format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
       end
-
     end
   end
 
@@ -445,8 +397,8 @@ class AnnotationsController < ApplicationController
         format.html {redirect_to :back, notice: notice}
         format.json {}
       end
-    # rescue => e
-    #   render_status_error(:not_found)
+    rescue => e
+      render_status_error(:not_found)
     end
   end
 
