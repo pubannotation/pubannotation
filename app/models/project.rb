@@ -457,7 +457,7 @@ class Project < ActiveRecord::Base
     project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
   end
 
-  def create_annotations_from_zip(zip_file_path, options)
+  def create_annotations_from_zip(zip_file_path, options = {})
     annotations_collection = Zip::ZipFile.open(zip_file_path) do |zip|
       zip.collect{|entry| JSON.parse(entry.get_input_stream.read, symbolize_names:true)}
     end

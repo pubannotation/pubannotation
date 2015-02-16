@@ -71,6 +71,7 @@ module Shared
   end
 
   def self.store_annotations(annotations, project, divs, options = {})
+    options ||= {}
     successful = true
     fit_index = nil
 
@@ -108,9 +109,9 @@ module Shared
         end
         {div_index: fit_index}
       end
-    # rescue => e
-    #   successful = false
-    #   {error: e.message}
+    rescue => e
+      successful = false
+      result = nil
     end
 
     project.notices.create({method: "- upload annotations: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
