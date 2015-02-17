@@ -70,7 +70,7 @@ class ProjectsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:id])
       raise "There is no such project." unless @project.present?
 
-      @project_docs_count = @project.docs.where("serial = ?", 0).count
+      @project_docs_count = @project.pmdocs_count + @project.pmcdocs_count
       @search_path = search_project_docs_path(@project.name)
 
       respond_to do |format|
