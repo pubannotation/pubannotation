@@ -361,9 +361,9 @@ class Project < ActiveRecord::Base
       :relations_count => - associate_project.relations.count
   end
   
-  def denotations_count(doc = nil, span = nil)
+  def get_denotations_count(doc = nil, span = nil)
     if doc.nil?
-      self.denotations.count
+      self.denotations_count
     else
       if span.nil?
         doc.denotations.where("denotations.project_id = ?", self.id).count

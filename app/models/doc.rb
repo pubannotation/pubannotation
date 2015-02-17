@@ -286,9 +286,9 @@ class Doc < ActiveRecord::Base
     _projects.inject([]){|t, p| t << {project:p.name, denotations:self.hdenotations(p, span)}}
   end
 
-  def denotations_count(project = nil, span = nil)
+  def get_denotations_count(project = nil, span = nil)
     if project.nil? && span.nil?
-      self.denotations.count
+      self.denotations_count
     elsif span.nil?
       self.denotations.where("denotations.project_id = ?", project.id).count
     else
