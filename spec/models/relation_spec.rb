@@ -578,4 +578,41 @@ describe Relation do
       @associate_project_2.relations_count.should eql(2)
     end      
   end  
+
+  describe 'after_save' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0)
+      @relation = FactoryGirl.create(:relation, :project => @project, :obj_id => 1)
+    end
+
+    it 'should call increment_subcatrels_count' do
+      @relation.should_receive(:increment_subcatrels_count)
+      @relation.save 
+    end
+
+    it 'should call increment_project_relations_count' do
+      @relation.should_receive(:increment_project_relations_count)
+      @relation.save 
+    end
+
+    it 'should call increment_project_annotations_count' do
+      @relation.should_receive(:increment_project_annotations_count)
+      @relation.save 
+    end
+  end
+
+  describe 'increment_project_annotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0)
+      @relation = FactoryGirl.create(:relation, :project => @project, :obj_id => 1)
+      @project.reload
+    end
+
+    it 'should increment project.annotations_count' do
+      expect{  
+        @relation.increment_project_annotations_count
+        @project.reload
+      }.to change{ @project.annotations_count }.from(1).to(2)
+    end
+  end
 end

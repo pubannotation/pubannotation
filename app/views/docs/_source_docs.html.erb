@@ -14,26 +14,29 @@
 </h2>
 
 <% if @source_docs.present? -%>
-	<table class="full">
-		<tr>
-	    	<th class="docs_header_sourcedb">
-				<% if params[:action] == 'search' -%>
-					<%= t('activerecord.attributes.doc.sourcedb') -%>
-				<% else -%>
-	        		<%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
-				<% end -%>
-			</th>
-			<th class="docs_header_sourceid">
-				<% if params[:action] == 'search' -%>
-					<%= t('activerecord.attributes.doc.sourceid') -%>
-				<% else -%>
-					<%= sortable(Doc, 'sourceid', t('activerecord.attributes.doc.sourceid')) %>
-				<% end -%>
-			</th>
-			<th><%= t('activerecord.attributes.doc.body') %></th>
-			<th class="docs_header_projects_number">#Projects</th>
-			<th style="width:12em"></th>
-		</tr>
+  <table class="full">
+  <tr>
+    <th class="docs_header_sourcedb">
+      <% if params[:action] == 'search' -%>
+        <%= t('activerecord.attributes.doc.sourcedb') -%>
+      <% else -%>
+        <%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
+      <% end -%>
+    </th>
+    <th class="docs_header_sourceid">
+      <% if params[:action] == 'search' -%>
+        <%= t('activerecord.attributes.doc.sourceid') -%>
+      <% else -%>
+        <%= sortable(Doc, 'sourceid', t('activerecord.attributes.doc.sourceid')) %>
+      <% end -%>
+    </th>
+    <th><%= t('activerecord.attributes.doc.body') %></th>
+    <th class="docs_header_projects_number">#Projects</th>
+    <th style="width:8em">
+      <%= t('views.shared.annotations') -%>
+    </th>
+    <th style="width:12em"></th>
+  </tr>
 
 	<%= render partial: 'source_doc', collection: @source_docs -%>
 

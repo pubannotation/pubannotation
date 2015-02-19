@@ -21,7 +21,6 @@
 <% if @project.description.present? -%>
 	<div><%= @project.description.html_safe %></div>
 <% end -%>
-
 <br/>
 
 <table>
@@ -61,13 +60,12 @@
 Too many documents to list them all. Please use search.
 <% end -%>
 
-<% if user_signed_in? && @project.updatable_for?(current_user) -%>
+<% if user_signed_in? && @project.present? && current_user == @project.user %>
 	<h3><%= t('views.docs.add_new_documents') -%></h3>
     <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
 <% end -%>
 
-
-<h2>Annotations <span class='info'>(<%= @project.annotations_count %>)</span></h2>
+<h2>Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span></h2>
 
 <h3>Batch download</h3>
 <div>

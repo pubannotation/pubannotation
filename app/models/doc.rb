@@ -87,8 +87,17 @@ class Doc < ActiveRecord::Base
   CaseInsensitiveArray = %w(sourcedb)
 
   scope :sort_by_params, lambda{|sort_order|
-    sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
-    order(sort_order)
+    sort_key = sort_order[0][0]
+    if sort_key == 'projects_count'
+      sort_direction = sort_order[0][1]
+      # PostgreSQL raise error on Arel 
+      joins("LEFT OUTER JOIN docs_projects ON docs_projects.doc_id = docs.id LEFT OUTER JOIN projects ON projects.id = docs_projects.project_id").
+      group('docs.id').
+      order("count(projects.id) #{sort_direction}")
+    else
+      sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
+      order(sort_order)
+    end
   }
 
   def self.get_doc(docspec)
