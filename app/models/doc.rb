@@ -486,24 +486,14 @@ class Doc < ActiveRecord::Base
   
   def updatable_for?(current_user)
     if current_user.present?
-      if current_user.root? == true
-        true
-      else
-        if self.projects.present?
-          project_users = Array.new
-          self.projects.each do |project|
-            project_users << project.user
-            project_users = project_users | project.associate_maintainer_users if project.associate_maintainer_users.present?
-          end
-          project_users.include?(current_user)
-        else
-        # TODO When not belongs to project, how to detect updatable or not  ?
-        end
-        false
-      end
+      (current_user.root? || created_by?(current_user))
     else
       false
     end
+  end
+
+  def created_by?(current_user)
+    sourcedb.include?(':') && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
   end
   
   def self.create_doc(doc_hash, attributes = {})
