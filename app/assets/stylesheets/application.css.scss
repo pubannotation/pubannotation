@@ -263,6 +263,14 @@ td.text {
   white-space: normal
 }
 
+.linkSpace {
+  font-style: italic;
+}
+
+.linkSpace .message {
+  color: $sub_color;
+}
+
 td * {
     vertical-align: middle;
 }
@@ -359,7 +367,7 @@ h1 .badge {
 .tab-bar{
   position: relative;
   top: -2px;
-  margin-left:20px;
+  margin-left:10px;
   font-size: small;
   font-weight: normal;
   text-decoration: none;
@@ -371,7 +379,7 @@ h1 .badge {
 .tab {
   border: 1px solid $main_color;
   border-radius: 3px;
-  padding: 1px 5px;
+  padding: 1px 3px;
 }
 
 .active_tab {
