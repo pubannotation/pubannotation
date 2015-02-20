@@ -36,14 +36,6 @@
 		<th><%= t('activerecord.attributes.project.license') %></th>
 		<td><%= @project.license %></td>
 	</tr>
-
-	<% if @project.reference.present? %>
-		<tr>
-			<th><%= t('activerecord.attributes.project.reference') %></th>
-			<td><a href="<%= @project.reference %>"><%= @project.reference %></a></td>
-		</tr>
-	<% end %>
-
 </table>
 
 <% if user_signed_in? -%>
@@ -56,13 +48,13 @@
 <% end %>
 
 
-<h2><%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info">(<%= total_number(@project.docs, 'docs') -%>)</span></h2>
+<h2><%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info">(<%= @project_docs_count -%>)</span></h2>
 
 <h3>Search</h3>
 <%= render partial: 'docs/search_form' -%>
 
 <h3>List</h3>
-<% if @project.docs.size < 5000 -%>
+<% if @project_docs_count < 5000 -%>
 <%= link_to t('views.docs.list_button'), project_docs_path(@project.name), {class: 'button'} -%>
 <% else -%>
 Too many documents to list them all. Please use search.
@@ -71,7 +63,7 @@ Too many documents to list them all. Please use search.
 <% if user_signed_in? && @project.present? && current_user == @project.user %>
 	<h3><%= t('views.docs.add_new_documents') -%></h3>
     <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
-<% end %>
+<% end -%>
 
 <h2>Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span></h2>
 
@@ -80,4 +72,7 @@ Too many documents to list them all. Please use search.
 	<%= project_annotations_zip_link_helper(@project) -%>
 </div>
 
-<%= render partial: 'annotations/upload_zip' -%>
+<% if user_signed_in? && @project.updatable_for?(current_user) -%>
+	<%= render partial: 'annotations/upload_zip' -%>
+	<%= render partial: 'delete_annotations' -%>
+<% end -%>

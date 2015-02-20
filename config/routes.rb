@@ -44,7 +44,6 @@ Pubann::Application.routes.draw do
       get 'spans' => 'spans#spans_index', :as => 'spans_index'
       # get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
       get 'spans/:begin-:end' => 'spans#span_show', :as => 'span_show'
-      # get 'spans/:begin-:end/annotations' => 'annotations#annotations'    
       get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'    
     end
   end
@@ -63,10 +62,9 @@ Pubann::Application.routes.draw do
           scope ':sourceid' do
             get '/' => 'docs#show', :as =>'show'
             get 'annotations' => 'annotations#doc_annotations_index'
-            post 'annotations' => 'annotations#create'
+            # post 'annotations' => 'annotations#create'
             get 'spans' => 'spans#doc_spans_index'
             get 'spans/:begin-:end' => 'spans#doc_span_show', :as => 'span_show'
-            # get 'spans/:begin-:end/annotations' => 'annotations#annotations'
             get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'
             get 'spans/:begin-:end/annotations/visualize' => 'annotations#doc_annotations_visualize'
             
@@ -77,10 +75,9 @@ Pubann::Application.routes.draw do
               scope ':divid' do
                 get '/' => 'divs#show', :as => 'show'
                 get 'annotations' => 'annotations#div_annotations_index'
-                post 'annotations' => 'annotations#create'
+                # post 'annotations' => 'annotations#create'
                 get 'spans' => 'spans#div_spans_index'
                 get 'spans/:begin-:end' => 'spans#div_span_show', :as => 'span_show'
-                # get 'spans/:begin-:end/annotations' => 'annotations#annotations'
                 get 'spans/:begin-:end/annotations' => 'annotations#div_annotations_index'
                 get 'spans/:begin-:end/annotations/visualize' => 'annotations#div_annotations_visualize'
               end  
@@ -100,7 +97,8 @@ Pubann::Application.routes.draw do
     get 'annotations.zip/create' => 'annotations#create_project_annotations_zip', :as => 'create_annotations_zip'
     post 'annotations.zip' => 'annotations#create_from_zip', :as => 'create_annotations_from_zip'
     get 'delete_annotations_zip' => 'annotations#delete_project_annotations_zip', :as => 'delete_annotations_zip'
-    get 'notices' => 'projects#notices'
+    get 'notices' => 'notices#index'
+    get 'tasks' => 'notices#tasks'
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
     
@@ -119,6 +117,7 @@ Pubann::Application.routes.draw do
 
   resources :projects do
     post 'annotations' => 'annotations#create'
+    delete 'annotations' => 'projects#destroy_annotations', as: 'destroy_annotations'
 
     resources :docs do
       collection do
@@ -179,7 +178,6 @@ Pubann::Application.routes.draw do
         get 'annotations' => 'annotations#project_doc_annotations_index'
         get 'spans' => 'spans#spans_index', :as => 'spans_index'
         get 'spans/:begin-:end' => 'spans#span_show', :as => 'span_show'
-        # get 'spans/:begin-:end/annotations' => 'annotations#annotations'    
         get 'spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index'    
       end
       resources :annotations do

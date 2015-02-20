@@ -149,12 +149,12 @@ module ApplicationHelper
   end
 
   def total_number(list, model = nil)
-    total_number = if list.respond_to?(:total_entries)
+    if list.respond_to?(:total_entries)
       list.total_entries
+    elsif list.respond_to?(:count)
+      list.count
     else
       list.length
     end
-    # "#{t("views.shared.total_number")}: #{total_number}"
-    total_number
   end
 end
