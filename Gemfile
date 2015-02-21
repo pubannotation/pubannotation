@@ -17,9 +17,9 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
-group :production do
-  gem 'pg'
-end
+gem 'pg'
+gem 'mysql2'
+gem 'thinking-sphinx'
 
 group :development do
   gem 'guard'
@@ -27,7 +27,6 @@ group :development do
 end
 
 group :test, :development do
-  gem 'sqlite3'
   gem 'rspec-rails', '~> 2.0'
 end
 
