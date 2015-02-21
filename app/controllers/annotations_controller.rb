@@ -256,10 +256,18 @@ class AnnotationsController < ApplicationController
 
       if params[:divid].present?
         doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
-        raise "There is no such document in the project." unless doc.present?
+        unless doc.present?
+          project.add_doc(params[:sourcedb], params[:sourceid])
+          doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
+        end
+        raise "Could not add the document in the project." unless doc.present?
       else
         divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        raise "There is no such document in the project." unless divs.present?
+        unless divs.present?
+          project.add_doc(params[:sourcedb], params[:sourceid])
+          divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        end
+        raise "Could not add the document in the project." unless divs.present?
 
         if divs.length == 1
           doc = divs[0]
