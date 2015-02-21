@@ -152,60 +152,6 @@ module AnnotationsHelper
     end
   end
 
-  def get_annotations_for_json(project, doc, options = {})
-    if doc.present?
-      text = doc.body
-      annotations = Hash.new
-
-      annotations[:target] = if doc.has_divs?
-        Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, :only_path => false)
-      else
-        Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, :only_path => false)
-      end
-
-      annotations[:text] = if (options[:encoding] == 'ascii')
-        asciitext = get_ascii_text(text)
-      else
-        text
-      end
-
-      # project
-      if project.present?
-        get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
-        annotations[:namespaces] = project.namespaces
-      elsif doc.projects.present?
-        annotations[:tracks] = Array.new
-        i = 0
-        project_names = options[:projects].split(',') if options[:projects].present?
-        doc.projects.name_in(project_names).each do |project|
-          annotations[:tracks][i] = Hash.new
-          get_annotation_relational_models(doc, project, text, asciitext, annotations[:tracks][i], options)
-          i += 1
-        end
-      end
-
-      if options[:doc_spans].present?
-        annotations[:text] = doc.text(options[:params])
-        if annotations[:tracks].present?
-          annotations[:tracks].each do |track|
-            if track[:denotations].present?
-              track[:denotations] = set_denotations_begin_end(track[:denotations], options)
-            end
-          end
-        elsif annotations[:denotations].present?
-          annotations[:denotations] = set_denotations_begin_end(annotations[:denotations], options)
-        end
-      end
-      
-      focus = get_focus(options)
-      annotations[:focus] = focus if focus.present?
-
-      annotations
-    else
-      nil
-    end
-  end
-
   def set_denotations_begin_end(denotations, options)
     denotations.each do |d|
       d[:span][:begin] -= options[:params][:begin].to_i
