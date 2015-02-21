@@ -22,6 +22,7 @@ class DocSequencerPMC
       when 200
         @xml = response
         raise ArgumentError, "#{id} not found in PMC." if @xml.index("PMC#{id} not found")
+        raise ArgumentError, "#{id} not found in PMC." if @xml.index("PMCID is not available")
 
         parser = XML::Parser.string(@xml, :encoding => XML::Encoding::UTF_8)
         @doc = parser.parse
