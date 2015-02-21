@@ -467,6 +467,7 @@ en:
       account: account
       annotation: annotation
       annotations: annotations
+      annotations_count: '#annotations'
       clear: clear
       edit : edit
       error: error

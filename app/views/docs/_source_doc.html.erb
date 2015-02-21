@@ -3,7 +3,7 @@
 	<td><%= source_doc.sourceid -%></td>
 	<td><%= source_doc.body -%></td>
 	<td style="text-align:right"><%= source_doc.projects.size -%></td>
-  <td><%= annotations_count_helper(@project, source_doc) -%></td>
+  <td style="text-align:right"><%= annotations_count_helper(@project, source_doc) -%></td>
   <td>
     <span class="button">
       <% if  params[:project_id].present? -%>

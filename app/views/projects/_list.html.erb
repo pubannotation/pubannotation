@@ -16,7 +16,7 @@
       <!--
       <th class="projects_header_denotations_count"><%#= sortable(Project, 'denotations_count', '#Denotations') -%></th>
       -->
-      <th class="projects_header_denotations_count"><%= sortable(Project, 'annotations_count', t('views.shared.annotations')) -%></th>
+      <th class="projects_header_denotations_count"><%= sortable(Project, 'annotations_count', t('views.shared.annotations_count')) -%></th>
       <th class="projects_header_author"><%= sortable(Project, 'author', t('activerecord.attributes.project.author')) %></th>
       <th class="projects_header_user"><%= sortable(Project, 'users.username', t('activerecord.attributes.project.maintainer')) -%></th>
       <th style="width:8em"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
@@ -36,7 +36,7 @@
       <!--
       <td style="text-align:right"><%#= denotations_count_helper(project, @doc, @span) -%></td>
       -->
-      <td><%= project.annotations_count -%></td>
+      <td style="text-align:right"><%= project.annotations_count -%></td>
       <td><%= project.author %></td>
       <td><%= project.user.username %></td>
       <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
