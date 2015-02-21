@@ -444,7 +444,7 @@ class Project < ActiveRecord::Base
           z.print annotations.to_json
         end
       end
-      file.close   
+      file.close
       self.notices.create({method: "create annotations zip", successful: true})
     rescue => e
       self.notices.create({method: "create annotations zip", successful: false})
@@ -746,26 +746,28 @@ class Project < ActiveRecord::Base
 
 
   def create_user_sourcedb_docs(options = {})
-    divs = Array.new
+    divs = []
     num_failed = 0
-    options[:docs_array].each do |doc_array_params|
-      # all of columns insert into database need to be included in this hash.
-      doc_array_params[:sourcedb] = options[:sourcedb] if options[:sourcedb].present?
-      mappings = {
-        :text => :body, 
-        :sourcedb => :sourcedb, 
-        :sourceid => :sourceid, 
-        :section => :section, 
-        :source_url => :source, 
-        :divid => :serial
-      }
-      doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
-      doc = Doc.new(doc_params) 
-      if doc.valid?
-        doc.save
-        divs << doc
-      else
-        num_failed += 1
+    if options[:docs_array].present?
+      options[:docs_array].each do |doc_array_params|
+        # all of columns insert into database need to be included in this hash.
+        doc_array_params[:sourcedb] = options[:sourcedb] if options[:sourcedb].present?
+        mappings = {
+          :text => :body, 
+          :sourcedb => :sourcedb, 
+          :sourceid => :sourceid, 
+          :section => :section, 
+          :source_url => :source, 
+          :divid => :serial
+        }
+        doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
+        doc = Doc.new(doc_params) 
+        if doc.valid?
+          doc.save
+          divs << doc
+        else
+          num_failed += 1
+        end
       end
     end
     return [divs, num_failed]
