@@ -75,7 +75,11 @@ It will require the HTTP connection only once.
 Note that, for a bacth upload, the '__sourcedb__' and '__sourceid__' (also '__divid__', see below) parameters
 need to be encoded __in the annotation file__ as described in 'method 2'.
 
-Once you are logged in, you can find the interface for batch upload __in your project page__.
+Once you are logged in, you can find the form for batch upload __in your project page__.
+
+Once the zip file is uploaded, you can check the progress of the annotation registration in the _notices_ page
+which you can open by clicking the __notices button__ next to the title of the project:
+
 
 ## Submit annotations to PMC documents (full papers)
 
