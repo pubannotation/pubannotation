@@ -9,7 +9,7 @@ class Modification < ActiveRecord::Base
   validates :obj, :presence => true
 
   after_save :increment_project_annotations_count
-  after_destroy :decremen_projectt_annotations_count
+  after_destroy :decrement_project_annotations_count
 
   def get_hash
     hmodification = Hash.new

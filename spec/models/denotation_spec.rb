@@ -69,7 +69,7 @@ describe Denotation do
   end
   
   describe 'scope' do
-    describe 'within_spans' do
+    describe 'within_span' do
       before do
         @denotation_0_9 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1, :begin => 0, :end => 9)
         @denotation_5_15 = FactoryGirl.create(:denotation, :doc_id => 2, :project_id => 2, :begin => 5, :end => 15)
@@ -79,7 +79,7 @@ describe Denotation do
         @denotation_15_19 = FactoryGirl.create(:denotation, :doc_id => 5, :project_id => 5, :begin => 15, :end => 19)
         @denotation_15_25 = FactoryGirl.create(:denotation, :doc_id => 6, :project_id => 6, :begin => 15, :end => 25)
         @denotation_20_30 = FactoryGirl.create(:denotation, :doc_id => 7, :project_id => 7, :begin => 20, :end => 30)
-        @denotations = Denotation.within_spans(10, 20)
+        @denotations = Denotation.within_span({:begin => 10, :end => 20})
       end
       
       it 'should not include begin and end are out of spans' do
@@ -110,46 +110,6 @@ describe Denotation do
         @denotations.should_not include(@denotation_15_25)
       end
     end
-   
-    describe 'projects_denotations' do
-      before do
-        @denotation_project_1 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
-        @denotation_project_2 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 2)
-        @denotation_project_3 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 3)
-      end
-      
-      it 'should include project_id included in project_ids' do
-        Denotation.projects_denotations([1,2]).should =~ [@denotation_project_1, @denotation_project_2]
-      end
-    end
-    
-    describe 'project_pmcdoc_denotations' do
-      before do
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        # pmcdoc
-        @sourceid = 'si123456'
-        @project_pmcdoc_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid)
-        @project_denotation_1 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmcdoc_1)
-        @project_pmcdoc_2 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1, :sourceid => @sourceid)
-        @project_denotation_2 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmcdoc_2)
-        @project_pmcdoc_3 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 2, :sourceid => @sourceid)
-        @project_denotation_3 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmcdoc_3)
-        # pmdoc
-        @project_pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => @sourceid)
-        @project_denotation_4 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmdoc)
-        # other sourceid
-        @project_pmcdoc_5 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @sourceid + '0')
-        @project_denotation_5 = FactoryGirl.create(:denotation, :project => @project, :doc => @project_pmcdoc_5)
-      end
-      
-      it 'project denotations should return proejct.denotations' do
-        @project.denotations.to_a.should =~ [@project_denotation_1, @project_denotation_2, @project_denotation_3, @project_denotation_4, @project_denotation_5]
-      end
-      
-      it 'should return project.denotations belongs to PMC and same sourceid' do
-        Denotation.project_pmcdoc_denotations(@sourceid).should =~ [@project_denotation_1, @project_denotation_2, @project_denotation_3]
-      end
-    end 
     
     describe 'accessible_projects' do
       before do
@@ -252,7 +212,7 @@ describe Denotation do
       )
     end
     
-    context 'when options blank' do
+    context 'when called' do
       before do
         @get_hash = @denotation.get_hash
       end
@@ -271,53 +231,6 @@ describe Denotation do
       
       it 'should set obj as obj' do
         @get_hash[:obj].should eql(@denotation[:obj])
-      end
-    end
-   
-    context 'when options present' do
-      before do
-        @spans_link_url_helper = 'spans_link_url_helper'
-        @denotation.stub(:spans_link_url_helper).and_return(@spans_link_url_helper)
-        @get_hash = @denotation.get_hash({format: 'json'})
-      end
-
-      it 'should not set id' do
-        @get_hash[:id].should be_nil
-      end
-      
-      it 'should set begin as denotation:begin' do
-        @get_hash[:span][:begin].should eql(@denotation[:begin])
-      end
-      
-      it 'should set end as denotation:end' do
-        @get_hash[:span][:end].should eql(@denotation[:end])
-      end
-      
-      it 'should set spans_link_url_helper as obj' do
-        @get_hash[:obj].should eql(@spans_link_url_helper)
-      end
-    end
-  end
-  
-  describe 'self.project_denotations_count' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @another_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @proejct_denotations_count = 2
-      @proejct_denotations_count.times do
-        FactoryGirl.create(:denotation, :project => @project, :doc => FactoryGirl.create(:doc))
-      end
-    end
-    
-    context 'when project have denotations' do
-      it 'should return denotations count' do
-        Denotation.project_denotations_count(@project.id, Denotation).should eql(@proejct_denotations_count)
-      end
-    end
-    
-    context 'when project does not have denotations' do
-      it 'should return denotations count' do
-        Denotation.project_denotations_count(@another_project.id, Denotation).should eql(0)
       end
     end
   end
@@ -411,7 +324,7 @@ describe Denotation do
     end      
   end
 
-  describe 'increment_project_annotations_count' do
+  describe '#increment_project_annotations_count' do
     before do
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
       @denotation = FactoryGirl.create(:denotation, :project => @project) 
@@ -500,77 +413,79 @@ describe Denotation do
   end
   
   describe 'self.sql_find' do
-    before do
-    end
-    
-    context 'when params[:sql] present' do
+    pending do
       before do
-        @current_user = FactoryGirl.create(:user)
-        @sql = 'select * from denotations;'
-        @params = {:sql => @sql}
-        @accessible_denotation = FactoryGirl.create(:denotation, :project_id => 1)  
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @project_denotation = FactoryGirl.create(:denotation, :project => @project)  
-        Denotation.stub(:accessible_projects).and_return(Denotation.where(:id => @accessible_denotation.id))
-        Denotation.stub(:projects_denotations).and_return(Denotation.where(:id => @project_denotation.id))
       end
       
-      context 'when current_user blank' do
-        context 'when results.present' do
-          context 'when project.present' do
-            before do
-              @denotations = Denotation.sql_find(@params, nil, @project)
+      context 'when params[:sql] present' do
+        before do
+          @current_user = FactoryGirl.create(:user)
+          @sql = 'select * from denotations;'
+          @params = {:sql => @sql}
+          @accessible_denotation = FactoryGirl.create(:denotation, :project_id => 1)  
+          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+          @project_denotation = FactoryGirl.create(:denotation, :project => @project)  
+          Denotation.stub(:accessible_projects).and_return(Denotation.where(:id => @accessible_denotation.id))
+          Denotation.stub(:projects_denotations).and_return(Denotation.where(:id => @project_denotation.id))
+        end
+        
+        context 'when current_user blank' do
+          context 'when results.present' do
+            context 'when project.present' do
+              before do
+                @denotations = Denotation.sql_find(@params, nil, @project)
+              end
+              
+              it "should return project's denotations" do
+                @denotations.should =~ [@project_denotation]
+              end
             end
             
-            it "should return project's denotations" do
-              @denotations.should =~ [@project_denotation]
+            context 'when project.blank' do
+              before do
+                @denotations = Denotation.sql_find(@params, nil, nil)
+              end
+              
+              it "should return accessible project's denotations" do
+                @denotations.should =~ [@accessible_denotation]
+              end
             end
           end
-          
-          context 'when project.blank' do
-            before do
-              @denotations = Denotation.sql_find(@params, nil, nil)
+        end
+        
+        context 'when current_user present' do
+          context 'when results.present' do
+            context 'when project.present' do
+              before do
+                @denotations = Denotation.sql_find(@params, @current_user, @project)
+              end
+              
+              it "should return project's denotations" do
+                @denotations.should =~ [@project_denotation]
+              end
             end
             
-            it "should return accessible project's denotations" do
-              @denotations.should =~ [@accessible_denotation]
+            context 'when project.blank' do
+              before do
+                @denotations = Denotation.sql_find(@params, @current_user, nil)
+              end
+              
+              it "should return accessible project's denotations" do
+                @denotations.should =~ [@accessible_denotation]
+              end
             end
           end
         end
       end
-      
-      context 'when current_user present' do
-        context 'when results.present' do
-          context 'when project.present' do
-            before do
-              @denotations = Denotation.sql_find(@params, @current_user, @project)
-            end
-            
-            it "should return project's denotations" do
-              @denotations.should =~ [@project_denotation]
-            end
-          end
-          
-          context 'when project.blank' do
-            before do
-              @denotations = Denotation.sql_find(@params, @current_user, nil)
-            end
-            
-            it "should return accessible project's denotations" do
-              @denotations.should =~ [@accessible_denotation]
-            end
-          end
-        end
-      end
-    end
 
-    context 'when params[:sql] blank' do
-      before do
-        @denotations = Denotation.sql_find({}, nil, nil)
-      end
-      
-      it 'should return blank' do
-        @denotations.should be_blank
+      context 'when params[:sql] blank' do
+        before do
+          @denotations = Denotation.sql_find({}, nil, nil)
+        end
+        
+        it 'should return blank' do
+          @denotations.should be_blank
+        end
       end
     end
   end
