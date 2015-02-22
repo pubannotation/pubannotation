@@ -481,9 +481,9 @@ class Project < ActiveRecord::Base
       end
 
       result = if doc.present?
-        Shared.save_annotations(annotations, self, doc, options)
+        self.save_annotations(annotations, doc, options)
       elsif divs.present?
-        Shared.store_annotations(annotations, self, divs, options)
+        self.store_annotations(annotations, divs, options)
       else
         nil
       end
@@ -514,7 +514,7 @@ class Project < ActiveRecord::Base
 
       serial = annotations[:divid].present? ? annotations[:divid].to_i : 0
       doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], serial)
-      result = Shared.save_annotations(annotations, self, doc, options)
+      result = self.save_annotations(annotations, doc, options)
       successful = result.nil? ? false : true
       self.notices.create({method:"> annotations upload (#{index}/#{total_number}): #{docspec}", successful:successful})
     end
@@ -523,19 +523,19 @@ class Project < ActiveRecord::Base
     messages << "annotations loaded to #{annotations_collection.length} documents"
   end
 
-  def save_annotations(annotations_files)
-    annotations_files.each do |annotations_file|
-      annotations = JSON.parse(File.read(annotations_file))
-      File.unlink(annotations_file) 
+  # def save_annotations(annotations_files)
+  #   annotations_files.each do |annotations_file|
+  #     annotations = JSON.parse(File.read(annotations_file))
+  #     File.unlink(annotations_file) 
 
-      serial = annotations[:divid].present? ? annotations[:divid].to_i : 0
-      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], serial)
+  #     serial = annotations[:divid].present? ? annotations[:divid].to_i : 0
+  #     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], serial)
 
-      if doc.present?
-        Shared.save_annotations(annotations, self, doc) 
-      end
-    end
-  end
+  #     if doc.present?
+  #       self.save_annotations(annotations, doc) 
+  #     end
+  #   end
+  # end
 
   def self.create_from_zip(zip_file, project_name, current_user)
     messages = Array.new
@@ -604,24 +604,24 @@ class Project < ActiveRecord::Base
     return [messages, errors]
   end
 
-  def self.save_annotations(project, doc_annotations_files)
-    doc_annotations_files.each do |doc_annotations_file|
-      doc_info = doc_annotations_file[:name].split('-')
-      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(doc_info[0], doc_info[1], doc_info[2])
-      doc_params = JSON.parse(File.read(doc_annotations_file[:path])) 
-      File.unlink(doc_annotations_file[:path]) 
-      if doc.present?
-        if doc_params['denotations'].present?
-          annotations = {
-            denotations: doc_params['denotations'],
-            relations: doc_params['relations'],
-            text: doc_params['text']
-          }
-          Shared.save_annotations(annotations, project, doc)
-        end
-      end
-    end
-  end
+  # def self.save_annotations(project, doc_annotations_files)
+  #   doc_annotations_files.each do |doc_annotations_file|
+  #     doc_info = doc_annotations_file[:name].split('-')
+  #     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(doc_info[0], doc_info[1], doc_info[2])
+  #     doc_params = JSON.parse(File.read(doc_annotations_file[:path])) 
+  #     File.unlink(doc_annotations_file[:path]) 
+  #     if doc.present?
+  #       if doc_params['denotations'].present?
+  #         annotations = {
+  #           denotations: doc_params['denotations'],
+  #           relations: doc_params['relations'],
+  #           text: doc_params['text']
+  #         }
+  #         self.save_annotations(annotations, doc)
+  #       end
+  #     end
+  #   end
+  # end
 
   def add_docs_from_json(docs, user)
     num_created, num_added, num_failed = 0, 0, 0
@@ -773,6 +773,120 @@ class Project < ActiveRecord::Base
     return [divs, num_failed]
   end
 
+  def save_hdenotations(hdenotations, doc)
+    hdenotations.each do |a|
+      ca           = Denotation.new
+      ca.hid       = a[:id]
+      ca.begin     = a[:span][:begin]
+      ca.end       = a[:span][:end]
+      ca.obj       = a[:obj]
+      ca.project_id = self.id
+      ca.doc_id    = doc.id
+      raise "could not save #{ca.hid}" unless ca.save
+    end
+  end
+
+  def save_hrelations(hrelations, doc)
+    hrelations.each do |a|
+      ra           = Relation.new
+      ra.hid       = a[:id]
+      ra.pred      = a[:pred]
+      ra.subj      = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:subj])
+      ra.obj       = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
+      ra.project_id = self.id
+      raise "could not save #{ra.hid}" unless ra.save
+    end
+  end
+
+  def save_hmodifications(hmodifications, doc)
+    hmodifications.each do |a|
+      ma        = Modification.new
+      ma.hid    = a[:id]
+      ma.pred   = a[:pred]
+      ma.obj    = case a[:obj]
+        when /^R/
+          doc.subcatrels.find_by_project_id_and_hid(self.id, a[:obj])
+        else
+          Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
+      end
+      ma.project_id = self.id
+      raise "could not save #{ma.hid}" unless ma.save
+    end
+  end
+
+  def save_annotations(annotations, doc, options = nil)
+    begin
+      raise ArgumentError, "nil document" unless doc.present?
+      doc.destroy_project_annotations(self) unless options.present? && options[:mode] == :addition
+
+      original_text = annotations[:text]
+      annotations[:text] = doc.body
+
+      if annotations[:denotations].present?
+        annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
+        ActiveRecord::Base.transaction do
+          self.save_hdenotations(annotations[:denotations], doc)
+          self.save_hrelations(annotations[:relations], doc) if annotations[:relations].present?
+          self.save_hmodifications(annotations[:modifications], doc) if annotations[:modifications].present?
+        end
+      end
+      result = annotations.select{|k,v| v.present?}
+    rescue
+      result = nil
+    end
+    result
+  end
+
+  def store_annotations(annotations, divs, options = {})
+    options ||= {}
+    successful = true
+    fit_index = nil
+
+    annotations = normalize_annotations!(annotations)
+
+    begin
+      if divs.length == 1
+        result = self.save_annotations(annotations, divs[0], options)
+      else
+        result = []
+        div_index = divs.collect{|d| [d.serial, d]}.to_h
+        divs_hash = divs.collect{|d| d.to_hash}
+        fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
+
+        fit_index.each do |i|
+          if i[0] >= 0
+            ann = {divid:i[0]}
+            idx = {}
+            ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
+            if annotations[:denotations].present?
+              ann[:denotations] = annotations[:denotations]
+                                   .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
+                                  .collect{|a| a.dup}
+                                     .each{|a| a[:span][:begin] -= i[1][0]; a[:span][:end] -= i[1][0]}
+              ann[:denotations].each{|a| idx[a[:id]] = true}
+            end
+            if annotations[:relations].present?
+              ann[:relations] = annotations[:relations].select{|a| idx[a[:id]]}
+              ann[:relations].each{|a| idx[a[:id]] = true}
+            end
+            if annotations[:relations].present?
+              ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
+              ann[:modifications].each{|a| idx[a[:id]] = true}
+            end
+            result << self.save_annotations(ann, div_index[i[0]], options)
+          end
+        end
+        {div_index: fit_index}
+      end
+    rescue => e
+      successful = false
+      result = nil
+    end
+
+    self.notices.create({method: "annotations upload: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
+    result 
+  end
+
   def user_presence
     if user.blank?
       errors.add(:user_id, 'is blank') 
@@ -794,6 +908,17 @@ class Project < ActiveRecord::Base
   # delete empty value hashes
   def cleanup_namespaces
     namespaces.reject!{|namespace| namespace['prefix'].blank? || namespace['uri'].blank?} if namespaces.present?
+  end
+
+  def delete_annotations
+    begin
+      self.modifications.delete_all
+      self.relations.delete_all
+      self.denotations.delete_all
+      notices.create({method: 'delete all annotations', successful: true})
+    rescue
+      notices.create({method: 'delete all annotations', successful: false})
+    end
   end
 
   def destroy_annotations

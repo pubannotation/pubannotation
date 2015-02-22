@@ -25,17 +25,22 @@ class NoticesController < ApplicationController
           tasks[notice.method][:method] = notice.method
           tasks[notice.method][:registered_at] = notice.created_at
         else
+          unless tasks[notice.method].present?
+            tasks[notice.method] = {} 
+            tasks[notice.method][:method] = notice.method
+            tasks[notice.method][:registered_at] = 'deleted'
+          end
           tasks[notice.method][:finished_at] = notice.created_at
           tasks[notice.method][:result] = notice.successful
         end
         tasks
       end.values
 
-      @complete = true
-      @tasks.each{|t| if t[:finished_at].nil? then @complete = false; break end}
+      # @complete = true
+      # @tasks.each{|t| if t[:finished_at].nil? then @complete = false; break end}
 
-    rescue ArgumentError => e
-      format.html {redirect_to home_path, :notice => e.message}
+    # rescue ArgumentError => e
+    #   format.html {redirect_to home_path, :notice => e.message}
     end
   end
 

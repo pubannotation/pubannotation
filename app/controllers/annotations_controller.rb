@@ -273,7 +273,7 @@ class AnnotationsController < ApplicationController
           doc = divs[0]
         else
           project.notices.create({method: "annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}"})
-          Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
+          project.delay.store_annotations(annotations, divs, {mode: mode, delayed: true})
           result = {message: "The task, 'annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
           respond_to do |format|
             format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(project.name, params[:sourcedb], params[:sourceid])}
@@ -283,7 +283,7 @@ class AnnotationsController < ApplicationController
         end
       end
 
-      result = Shared.save_annotations(annotations, project, doc, {:mode => mode})
+      result = project.save_annotations(annotations, doc, {:mode => mode})
       notice = "annotations"
 
       respond_to do |format|
@@ -331,10 +331,10 @@ class AnnotationsController < ApplicationController
       annotations = normalize_annotations!(annotations)
 
       if annotations[:text].length < 5000 || project.nil?
-        result = Shared.store_annotations(annotations, project, divs, {:mode => mode})
+        result = project.store_annotations(annotations, divs, {:mode => mode})
       else
         project.notices.create({method: "upload annotations: #{}"}) if project.present?
-        Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
+        project.delay.store_annotations(annotations, divs, {mode: mode, delayed: true})
         result = {message: t('controllers.annotations.create.delayed_job')}
       end
 
@@ -380,7 +380,7 @@ class AnnotationsController < ApplicationController
 
       annotations = gen_annotations(annotations, params[:annotation_server])
       normalize_annotations!(annotations)
-      result      = Shared.save_annotations(annotations, project, doc)
+      result      = project.save_annotations(annotations, doc)
       notice      = "annotations were successfully obtained."
 
       respond_to do |format|
@@ -399,6 +399,7 @@ class AnnotationsController < ApplicationController
         options = {mode: :addition} if params[:mode] == 'addition' || params[:mode] == 'add'
         project.notices.create({method: 'annotations batch upload'})
         messages = project.delay.create_annotations_from_zip(params[:zipfile].path, options)
+        # messages = project.create_annotations_from_zip(params[:zipfile].path, options)
       end
 
       respond_to do |format|

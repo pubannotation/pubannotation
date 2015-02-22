@@ -165,7 +165,8 @@ class ProjectsController < ApplicationController
       raise "There is no such project in your management." unless @project.present?
 
       @project.notices.create({method: 'delete all annotations'})
-      @project.delay.destroy_annotations
+      # @project.delay.destroy_annotations
+      @project.delay.delete_annotations
 
       respond_to do |format|
         format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'Delete all annotations', is created."}
