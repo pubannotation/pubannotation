@@ -67,7 +67,7 @@ class DivsController < ApplicationController
         base = Doc
       end
 
-      conditions = ['sourcedb = ? AND sourceid = ? AND body like ?', params[:sourcedb], params[:sourceid], "%#{params[:body]}%"] if params[:body].present?
+      conditions = ['sourcedb = ? AND sourceid = ? AND body ILIKE ?', params[:sourcedb], params[:sourceid], "%#{params[:body]}%"] if params[:body].present?
       @search_divs = base.where(conditions).order('serial ASC')
 
       respond_to do |format|
