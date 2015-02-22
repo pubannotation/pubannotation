@@ -1,11 +1,7 @@
 <ul>
 <% @sourcedb_doc_counts.each do |sourcedb, doc_count| -%>
 <li>
-	<% if @project.present? -%>
-    	<%= link_to sourcedb, sourceid_index_project_sourcedb_docs_path(@project.name, sourcedb) %>
-	<% else -%>
-    	<%= link_to sourcedb, doc_sourcedb_sourceid_index_path(sourcedb) %>
-	<% end -%>
+	<%= sourcedb %>
 	(<%= (doc_count) -%>)
 </li>
 <% end -%>
