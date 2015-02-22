@@ -2,23 +2,31 @@
 	<td><%= sourceid_index_link_helper(source_doc) -%></td>
 	<td><%= source_doc.sourceid -%></td>
 	<td><%= source_doc.body -%></td>
-	<td style="text-align:right"><%= source_doc.projects.size -%></td>
+	<td style="text-align:right">
+    <% if params[:project_id].present? -%>
+      <% if source_doc.has_divs? -%>
+        <%= link_to source_doc.projects.size, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
+      <% else -%>
+        <%= link_to source_doc.projects.size, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
+      <% end -%>
+    <% end -%>
+  </td>
   <td style="text-align:right"><%= annotations_count_helper(@project, source_doc) -%></td>
   <td>
     <span class="button">
       <% if  params[:project_id].present? -%>
         <% if source_doc.has_divs? -%>
-        <%= link_to t('views.shared.show_divisions'), index_project_sourcedb_sourceid_divs_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
-    <% else -%>
-        <%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
-    <% end -%>
-    <% else -%>
+          <%= link_to t('views.shared.show_divisions'), index_project_sourcedb_sourceid_divs_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
+        <% else -%>
+          <%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid) -%>
+        <% end -%>
+      <% else -%>
         <% if source_doc.has_divs? -%>
-        <%= link_to t('views.shared.show_divisions'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
-    <% else -%>
-        <%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
-    <% end -%>
-    <% end -%>
+          <%= link_to t('views.shared.show_divisions'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
+        <% else -%>
+          <%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
+        <% end -%>
+      <% end -%>
     </span>
 
     <% if @project.present? && user_signed_in? && @project.user == current_user %>

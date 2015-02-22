@@ -373,9 +373,9 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def annotations_count(doc = nil, span = nil)
+  def get_annotations_count(doc = nil, span = nil)
     if doc.nil?
-      self.denotations_count + self.relations_count #+ self.modifications.count
+      self.annotations_count
     else
       if span.nil?
         # begin from the doc because it should be faster.

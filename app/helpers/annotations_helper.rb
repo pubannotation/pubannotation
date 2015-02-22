@@ -2,7 +2,6 @@ require 'text_alignment'
 
 module AnnotationsHelper
   def annotations_count_helper(project, doc = nil, span = nil)
-    span = {begin: params[:begin], end: params[:end]} if params[:begin] && params[:end]
     if doc.present?
       doc.annotations_count(project, span)
     else
