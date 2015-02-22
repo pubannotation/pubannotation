@@ -5,8 +5,10 @@
 	<ol>
 	<li><%= file_field_tag 'zipfile', accept: 'application/zip', required: true -%></li>
 	<li>Choose Mode:
-		<input type="radio" name="mode" value="replace" checked="checked">replace</input>
-		<input type="radio" name="mode" value="add">addition</input>
+		<ul>
+		<li><input type="radio" name="mode" value="replace" checked="checked">replace: <span class="info">existing annotations in the target document are all deleted before the uploaded annotations are registered.</span></input>
+		<li><input type="radio" name="mode" value="add">add: <span class="info">the uploaded annotations are added to the existing annotations.</span></input>
+		</ul>
 	</li>
 	<li><%= submit_tag t('views.shared.upload') -%></li>
 	</ol>
