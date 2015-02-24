@@ -40,9 +40,8 @@
 <!--	<span class='label'>UTF</span>-->
 	<%= link_to_unless_current 'VIEW', annotations_url, :class => 'tab' -%>
 	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab' -%>
-	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab' -%>
-	<!-- <%= link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab' if @span.present? && !@project.present? -%> -->
-	<!-- <%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab' -%> -->
+	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab' if @span.present? && !@project.present? -%>
+	<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab' if @project.present? -%>
 
 </span>
 
