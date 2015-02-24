@@ -18,7 +18,7 @@ module AnnotationsHelper
   end  
 
   def textae_url(project, source_url)
-    return '' unless project.present? && source_url.present?
+    return "http://textae.pubannotation.org/editor.html?target=#{source_url}.json" unless project.present? && source_url.present?
     connector = if project.editor.include?('?') then '&' else '?' end
     "#{project.editor}#{connector}target=#{source_url}.json"
   end
