@@ -93,7 +93,7 @@ You can POST annotations to a specific division, e.g.,
 
 Note that, in URL, a division is specified as `divs/division_number`.
 
-When it is encoded in a JSON file, it is specified as `"div_id":division_number`, where _division_number_ is an integer value.
+When it is encoded in a JSON file, it is specified as `"divid":division_number`, where _division_number_ is an integer value.
 
 Below is an example:
 {% highlight json %}
@@ -101,7 +101,7 @@ Below is an example:
    "text": "IRF-4 expression in CML may be induced by IFN-α therapy",
    "sourcedb": "PMC",
    "sourceid": "123456",
-   "div_id": 10,
+   "divid": 10,
    "denotations": [
       {"id": "T1", "span": {"begin": 0, "end": 5}, "obj": "Protein"},
       {"id": "T2", "span": {"begin": 42, "end": 47}, "obj": "Protein"}
@@ -109,7 +109,7 @@ Below is an example:
 }
 {% endhighlight %}
 
-Note (again) that the value of "div_id" is an integer value (without quotes around it).
+Note (again) that the value of "divid" is an integer value (without quotes around it).
 
 ### 2. POSTing annotations without specification of div
  
