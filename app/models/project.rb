@@ -861,7 +861,7 @@ class Project < ActiveRecord::Base
             if annotations[:denotations].present?
               ann[:denotations] = annotations[:denotations]
                                    .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
-                                  .collect{|a| a.dup}
+                                  .collect{|a| n = a.dup; n[:span] = a[:span].dup; n}
                                      .each{|a| a[:span][:begin] -= i[1][0]; a[:span][:end] -= i[1][0]}
               ann[:denotations].each{|a| idx[a[:id]] = true}
             end

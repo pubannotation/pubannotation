@@ -36,14 +36,14 @@ class << TextAlignment
   def _find_divisions(target, sources)
     mode, m, c, offset_begin = nil, nil, nil, nil
 
-    (0...sources.size).each do |i|
-      if target.size < sources[i][:text].size
+    sources.each_with_index do |source, index|
+      if target.size < source[:text].size
         mode = :t_in_s
         str1 = target
-        str2 = sources[i][:text]
+        str2 = source[:text]
       else
         mode = :s_in_t
-        str1 = sources[i][:text]
+        str1 = source[:text]
         str2 = target
       end
 
@@ -53,11 +53,10 @@ class << TextAlignment
       offset_begin, offset_end = 0, -1
       offset_begin, offset_end = approximate_fit(str1, str2) if (len2 - len1) > len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD)
 
-      if offset_begin.present? && (offset_begin < offset_end)
+      if offset_begin.present?
         c = TextAlignment::LCSComparison.new(str1, str2[offset_begin .. offset_end])
-
-        if ((len1 - (c.str1_match_final - c.str1_match_initial + 1)) < len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD)) && (c.similarity > TextAlignment::SIMILARITY_THRESHOLD)
-          m = i
+        if (c.similarity > TextAlignment::SIMILARITY_THRESHOLD) && ((len1 - (c.str1_match_final - c.str1_match_initial + 1)) < len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD))
+          m = index
           break
         end
       end

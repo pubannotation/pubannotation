@@ -62,6 +62,7 @@ Pubann::Application.routes.draw do
           scope ':sourceid' do
             get '/' => 'docs#show', :as =>'show'
             get 'annotations' => 'annotations#doc_annotations_index'
+            get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
             # post 'annotations' => 'annotations#create'
             get 'spans' => 'spans#doc_spans_index'
             get 'spans/:begin-:end' => 'spans#doc_span_show', :as => 'span_show'
@@ -75,6 +76,7 @@ Pubann::Application.routes.draw do
               scope ':divid' do
                 get '/' => 'divs#show', :as => 'show'
                 get 'annotations' => 'annotations#div_annotations_index'
+                get 'annotations/visualize' => 'annotations#div_annotations_visualize'
                 # post 'annotations' => 'annotations#create'
                 get 'spans' => 'spans#div_spans_index'
                 get 'spans/:begin-:end' => 'spans#div_span_show', :as => 'span_show'
@@ -141,6 +143,7 @@ Pubann::Application.routes.draw do
               scope ':sourceid' do
                 get '/' => 'docs#project_doc_show', :as =>'show'
                 get 'annotations' => 'annotations#project_doc_annotations_index'
+                get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
                 post 'annotations' => 'annotations#create'
                 post 'annotations/generate' => 'annotations#generate'
                 delete 'annotations' => 'annotations#destroy', as: 'destroy_annotations'
@@ -153,11 +156,13 @@ Pubann::Application.routes.draw do
                 
                 scope 'divs', :as => 'divs' do
                   get '/' => 'divs#project_divs_index', :as => 'index'
+                  get 'annotations/visualize' => 'annotations#div_annotations_visualize'
                   get 'search' => 'divs#search'
     
                   scope ':divid' do
                     get '/' => 'divs#project_div_show', :as => 'show'
                     get 'annotations' => 'annotations#project_div_annotations_index'
+                    get 'annotations/visualize' => 'annotations#div_annotations_visualize'
                     post 'annotations' => 'annotations#create'
                     post 'annotations/generate' => 'annotations#generate'
                     delete 'annotations' => 'annotations#destroy', as: 'destroy_annotations'
