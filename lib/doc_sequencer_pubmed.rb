@@ -22,6 +22,7 @@ class DocSequencerPubMed
         result   = doc.find_first('/PubmedArticleSet').content.strip
         return nil if result.empty?
         title    = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/ArticleTitle')
+        vtitle   = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/VernacularTitle')
         abstractTexts = doc.find('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText')
         abstract = abstractTexts
                     .collect{|t| t['Label'].nil? ? t.content.strip : t['Label'] + ': ' + t.content.strip}
@@ -29,6 +30,7 @@ class DocSequencerPubMed
 
         body  = ''
         body += title.content.strip if title
+        body += "\n" + vtitle.content.strip if vtitle
         body += "\n" + abstract.strip if abstract
 
         @source_url = 'http://www.ncbi.nlm.nih.gov/pubmed/' + docid
