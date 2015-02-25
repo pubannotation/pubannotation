@@ -392,7 +392,12 @@ class AnnotationsController < ApplicationController
 
   def create_from_zip
     begin
-      project = Project.editable(current_user).find_by_name(params[:project_id])
+      project = if current_user.root? == true
+        Project.find_by_name(params[:project_id])
+      else
+        Project.editable(current_user).find_by_name(params[:project_id])
+      end
+
       raise "There is no such project in your management." unless project.present?
 
       if params[:zipfile].present? && params[:zipfile].content_type == 'application/zip'
@@ -407,7 +412,10 @@ class AnnotationsController < ApplicationController
         format.json {}
       end
     rescue => e
-      render_status_error(:not_found)
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
+        format.json {}
+      end
     end
   end
 
