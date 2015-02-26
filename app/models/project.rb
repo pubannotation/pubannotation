@@ -451,6 +451,80 @@ class Project < ActiveRecord::Base
     end
   end 
 
+  def get_conversion (annotation, converter, identifier = nil)
+    RestClient.post converter, annotation.to_json, :content_type => :json do |response, request, result|
+      case response.code
+      when 200
+        response
+      else
+        nil
+      end
+    end
+  end
+
+  # def store_rdf (ttl)
+  #   server = "http://rdf.pubannotation.org/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/projects/#{self.name}"
+  #   rdfstore = RestClient::Resource.new(server, {:user => 'dba', :password => 'dba', :X => 'POST', :headers => {:content_type => 'application.x-turtle'}})
+  #   rdfstore.post ttl do |response, request, result|
+  #     case response.code
+  #     when 200
+  #       return true
+  #     else
+  #       return nil
+  #     end
+  #   end
+  # end
+
+  def store_rdf (ttl)
+    require 'fileutils'
+
+    begin
+      FileUtils.mkdir_p(self.downloads_system_path) unless Dir.exist?(self.downloads_system_path)
+      file = File.new(self.annotations_rdf_system_path, 'w')
+      Zip::ZipOutputStream.open(file.path) do |z|
+        z.put_next_entry(self.name + '.ttl')
+        z.print ttl
+      end
+      file.close
+    end
+  end
+
+  def annotations_rdf_filename
+    "#{self.name.gsub(' ', '_')}-annotations-rdf.zip"
+  end
+
+  def annotations_rdf_path
+    "#{Project::DOWNLOADS_PATH}" + self.annotations_rdf_filename
+  end
+
+  def annotations_rdf_system_path
+    self.downloads_system_path + self.annotations_rdf_filename
+  end
+
+  def create_annotations_rdf(encoding = nil)
+    rdfwriter = 'http://bionlp.dbcls.jp/tao_rdfizer'
+    begin
+      annotations_collection = self.annotations_collection(encoding)
+
+      ttl = ''
+      header_length = 0
+      annotations_collection.each_with_index do |ann, i|
+        if i == 0
+          ttl = self.get_conversion(ann, self.rdfwriter)
+          ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
+        else
+          ttl += self.get_conversion(ann, self.rdfwriter).split(/\n/)[header_length .. -1].join("\n")
+        end
+        ttl += "\n" unless ttl.end_with?("\n")
+      end
+      result = store_rdf(ttl)
+      self.notices.create({method: "create annotations rdf", successful: true})
+    rescue => e
+      self.notices.create({method: "create annotations rdf", successful: false})
+    end
+    ttl
+  end 
+
   def self.params_from_json(json_file)
     project_attributes = JSON.parse(File.read(json_file))
     user = User.find_by_username(project_attributes['maintainer'])

@@ -99,6 +99,9 @@ Pubann::Application.routes.draw do
     get 'annotations.zip/create' => 'annotations#create_project_annotations_zip', :as => 'create_annotations_zip'
     post 'annotations.zip' => 'annotations#create_from_zip', :as => 'create_annotations_from_zip'
     get 'delete_annotations_zip' => 'annotations#delete_project_annotations_zip', :as => 'delete_annotations_zip'
+    get 'annotations.rdf' => 'annotations#project_annotations_rdf', :as => 'annotations_rdf'
+    get 'annotations.rdf/create' => 'annotations#create_project_annotations_rdf', :as => 'create_annotations_rdf'
+    get 'delete_annotations_rdf' => 'annotations#delete_project_annotations_rdf', :as => 'delete_annotations_rdf'
     get 'notices' => 'notices#index'
     get 'tasks' => 'notices#tasks'
     resources :annotations

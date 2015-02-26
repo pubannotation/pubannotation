@@ -7,8 +7,8 @@
 	<% elsif @doc and @doc.sourcedb == 'PMC' %>
 		> <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
 		> <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
-		> <%= link_to t('views.shared.divs'),    pmcdoc_divs_path(@doc.sourceid) %>
-		> <%= link_to @doc.serial,   pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
+		> <%= link_to t('views.shared.divs'), pmcdoc_divs_path(@doc.sourceid) %>
+		> <%= link_to @doc.serial, pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
 	 	> <%= link_to t('activerecord.models.project').pluralize, pmcdoc_div_projects_path(@doc.sourceid, @doc.serial) %>
 	<% else %>
  		> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
@@ -70,6 +70,9 @@ Too many documents to list them all. Please use search.
 <h3>Batch download</h3>
 <div>
 	<%= project_annotations_zip_link_helper(@project) -%>
+</div>
+<div>
+	<%= project_annotations_rdf_link_helper(@project) -%>
 </div>
 
 <% if user_signed_in? && @project.updatable_for?(current_user) -%>

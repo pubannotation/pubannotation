@@ -474,6 +474,63 @@ class AnnotationsController < ApplicationController
     end
   end
 
+  def project_annotations_rdf
+    begin
+      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless project.present?
+
+      if File.exist?(project.annotations_rdf_system_path)
+        # redirect_to "/annotations/#{project.annotations_rdf_file_name}"
+        redirect_to project.annotations_rdf_path
+      else
+        raise "annotation rdf file does not exist."
+      end
+    rescue => e
+      render_status_error(:not_found)
+    end
+  end
+
+  def delete_project_annotations_rdf
+    begin
+      status_error = false
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless project.present?
+
+      if File.exist?(project.annotations_rdf_system_path)
+        if project.user == current_user 
+          File.unlink(project.annotations_rdf_system_path)
+          flash[:notice] = t('views.shared.rdf.deleted')
+        else
+          status_error = true
+          render_status_error(:forbidden)
+        end
+      else
+        status_error = true
+        render_status_error(:not_found)
+      end
+    rescue => e
+      flash[:notice] = e.message
+    ensure
+      redirect_to :back if status_error == false
+    end
+  end
+
+
+  def create_project_annotations_rdf
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
+
+      project.notices.create({method: "create annotations rdf"})
+      # project.delay.create_annotations_rdf(params[:encoding])
+      ttl = project.delay.create_annotations_rdf(params[:encoding])
+      # render :text => ttl, :content_type => 'application/x-turtle', :filename => project.name
+    rescue => e
+      flash[:notice] = notice
+    end
+    redirect_to :back
+  end
+
   def destroy
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])

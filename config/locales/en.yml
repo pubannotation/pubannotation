@@ -242,6 +242,7 @@ en:
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
         annotations_zip_downloadable: Annotation downloadable
+        annotations_RDF_downloadable: Annotation RDF downloadable
         process: Type
         updated_at: last update
       sproject:
@@ -319,6 +320,9 @@ en:
       confirm_create_zip: Are you sure to create zip? It will take a few minutes.
       create_zip: Create annotations ZIP file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
+      confirm_create_rdf: Are you sure to create rdf? It will take a few minutes.
+      create_rdf: Create annotations RDF file.
+      create_rdf_delay: RDF will be created after a few minutes and then please come back to this page.
     docs:
       index:
         too_many: too many
@@ -366,8 +370,8 @@ en:
         import: "import associated projects"
       show:
         pending_associate_projects: "This project is processing importing projects"
-      create_annotationt_zip:
-        failed: "The task, 'create annotation ZIP', failed. %{created_at}"
+      create_annotationt_rdf:
+        failed: "The task, 'create annotation RDF', failed. %{created_at}"
   views:
     service:
       title: PubAnnotation
@@ -506,3 +510,7 @@ en:
         delayed_job_present: ZIP file will be created in a few minutes.      
         download_not_available: Not available. Please contact the maintainer of the project.
         deleted: Successfully deleted the annotation zip file.
+      rdf:
+        delayed_job_present: RDF file will be created in a few minutes.      
+        download_not_available: Not available. Please contact the maintainer of the project.
+        deleted: Successfully deleted the annotation rdf file.
