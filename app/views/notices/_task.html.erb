@@ -1,0 +1,6 @@
+<tr>
+<td><%= task[:method] -%></td>
+<td><%= task[:registered_at] -%></td>
+<td><%= task[:finished_at] -%></td>
+<td><%= task[:result].nil? ? '' : (task[:result] ? 'success' : 'fail') -%></td>
+</tr>

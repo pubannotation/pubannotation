@@ -9,7 +9,6 @@ class DocsController < ApplicationController
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
   autocomplete :docs, :sourcedb
-  include DenotationsHelper
 
   def index
     begin
@@ -25,13 +24,15 @@ class DocsController < ApplicationController
 
       # docs.each{|doc| doc.set_ascii_body} if (params[:encoding] == 'ascii')
       sort_order = sort_order(Doc)
-      @source_docs = docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
-      docs_list_hash = @source_docs.collect{|doc| doc.to_list_hash('doc')}
+      source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
+      docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
+
+      @source_docs = source_docs_all.paginate(:page => params[:page])
 
       respond_to do |format|
         format.html
         format.json {render json: docs_list_hash}
-        format.tsv  {render text: Doc.to_tsv(docs, 'doc')}
+        format.tsv  {render text: Doc.to_tsv(source_docs_all, 'doc')}
       end
     rescue => e
       respond_to do |format|
@@ -93,21 +94,25 @@ class DocsController < ApplicationController
  
   def sourcedb_index
     if params[:project_id].present?
-      project = Project.find_by_name(params[:project_id]) 
-      docs = project.docs
-    else
-      docs = Doc
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
     end
-    @sourcedbs = docs.select(:sourcedb).sourcedbs.uniq
+
+    @sourcedb_doc_counts = if @project.present?
+      @project.docs.where("serial = ?", 0).group(:sourcedb).count
+    else
+      Doc.where("serial = ?", 0).group(:sourcedb).count
+    end
   end 
  
   def sourceid_index
     if params[:project_id].present?
-      @project = Project.find_by_name(params[:project_id]) 
-      docs = @project.docs.where(['sourcedb = ?', params[:sourcedb]])
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
+      docs = @project.docs.where('sourcedb = ?', params[:sourcedb])
       @search_path = search_project_docs_path(@project.name)
     else
-      docs = Doc.where(['sourcedb = ?', params[:sourcedb]])
+      docs = Doc.where('sourcedb = ?', params[:sourcedb])
       @search_path = search_docs_path
     end
 
@@ -297,6 +302,8 @@ class DocsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
+      messages = []
+
       # get the docspecs list
       docspecs =  if params["_json"] && params["_json"].class == Array
                     params["_json"].collect{|d| d.symbolize_keys}
@@ -304,11 +311,15 @@ class DocsController < ApplicationController
                     [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
                   elsif params[:ids].present? && params[:sourcedb].present?
                     params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
+                  else
+                    []
                   end
 
-      docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
-
       imported, added, failed, messages = 0, 0, 0, []
+
+      raise ArgumentError, "no valid document specification found." if docspecs.empty?
+
+      docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
       docspecs.each do |docspec|
         i, a, f, m = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
         imported += i; added += a; failed += f; messages << m

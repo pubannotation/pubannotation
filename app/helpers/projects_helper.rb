@@ -18,6 +18,11 @@ module ProjectsHelper
     html.html_safe
   end
 
+  def home_button
+    # link_to t('activerecord.attributes.project.reference'), @project.reference, :class => 'home_button' if @project.reference.present?
+    link_to image_tag('home-24.png', :alt => 'Home', :class => 'home_button'), @project.reference, :class => 'home_button' if @project.reference.present?
+  end
+
   def link_to_project(project)
     if @doc and @doc.sourcedb and @doc.sourceid 
       if @doc.has_divs? 

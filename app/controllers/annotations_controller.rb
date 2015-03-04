@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :show, :create, :annotations_index, :annotations, :project_annotations_zip]
+  before_filter :authenticate_user!, :except => [:index, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :show, :annotations_index, :annotations, :project_annotations_zip]
   after_filter :set_access_control_headers
   include DenotationsHelper
 
@@ -46,9 +46,16 @@ class AnnotationsController < ApplicationController
       else
         @doc = divs[0]
         @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
         @doc.set_ascii_body if params[:encoding] == 'ascii'
-        @annotations = @doc.hannotations(nil, @span)
+
+        project = if params[:project].present?
+          params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
+        else
+          nil
+        end
+
+        project = project[0] if project.present? && project.length == 1
+        @annotations = @doc.hannotations(project, @span)
         tracks = @annotations[:tracks] || []
         @project_annotations_index = tracks.inject({}) {|index, track| index[track[:project]] = track; index}
 
@@ -130,11 +137,11 @@ class AnnotationsController < ApplicationController
         end
       end
 
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to project_docs_path(@project.name), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
     end
   end
 
@@ -225,47 +232,69 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  def annotations
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    params[:project_id] = params[:project] if params[:project].present?
-    @project = params[:projects].split(',').map{|n| Projects.accessible(current_user).find_by_name(n)} if params[:projects].present?
+  # POST /annotations
+  # POST /annotations.json
+  def create
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
 
-    span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
-    if params[:project_id].present?
-      @project, flash[:notice] = get_project(params[:project_id])
-      if @project
-        @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, @project)
-        @project_denotations = @doc.denotations_in_tracks(@project, span)
-      end
-    else
-      @doc, flash[:notice] = get_doc(sourcedb, sourceid, serial, nil, id)
-      if params[:projects].present?
-        projects = Project.name_in(params[:projects].split(','))
+      if params[:annotations]
+        annotations = params[:annotations].symbolize_keys
+      elsif params[:text].present?
+        annotations = {:text => params[:text]}
+        annotations[:denotations] = params[:denotations] if params[:denotations].present?
+        annotations[:relations] = params[:relations] if params[:relations].present?
+        annotations[:modifications] = params[:modifications] if params[:modifications].present?
       else
-        projects = @doc.projects
+        raise ArgumentError, t('controllers.annotations.create.no_annotation')
       end
-      @project_denotations = @doc.denotations_in_tracks(projects, span)
-    end
 
-    if @doc.present?
-      @spans, @prev_text, @next_text = @doc.spans(params)
-      annotations = @doc.hannotations(@project, span)
+      annotations = normalize_annotations!(annotations)
 
-      # ToDo: to process tracks
-      @denotations = annotations[:denotations]
-      @relations = annotations[:relations]
-      @modifications = annotations[:modifications]
+      mode = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+
+      if params[:divid].present?
+        doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
+        raise "There is no such document in the project." unless doc.present?
+      else
+        divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        raise "There is no such document in the project." unless divs.present?
+
+        if divs.length == 1
+          doc = divs[0]
+        else
+          project.notices.create({method: "annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}"})
+          Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
+          result = {message: "The task, 'annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
+          respond_to do |format|
+            format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(project.name, params[:sourcedb], params[:sourceid])}
+            format.json {render json: result}
+          end
+          return
+        end
+      end
+
+      result = Shared.save_annotations(annotations, project, doc, {:mode => mode})
+      notice = "annotations"
+
       respond_to do |format|
-        format.html { render 'annotations'}
-        format.json { render :json => annotations, :callback => params[:callback] }
+        format.html {redirect_to :back, notice: notice}
+        format.json {render json: result, status: :created}
+      end
+
+    rescue ArgumentError => e
+      respond_to do |format|
+        format.html {redirect_to (project.present? ? project_path(project.name) : home_path), notice: e.message}
+        format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
       end
     end
   end
 
+
   # POST /annotations
   # POST /annotations.json
-  def create
+  def create_backup
     begin
       if params[:project_id].present?
         authenticate_user!
@@ -296,7 +325,7 @@ class AnnotationsController < ApplicationController
       if annotations[:text].length < 5000 || project.nil?
         result = Shared.store_annotations(annotations, project, divs, {:mode => mode})
       else
-        project.notices.create({method: 'start_delay_store_annotations'}) if project.present?
+        project.notices.create({method: "upload annotations: #{}"}) if project.present?
         Shared.delay.store_annotations(annotations, project, divs, {mode: mode, delayed: true})
         result = {message: t('controllers.annotations.create.delayed_job')}
       end
@@ -359,17 +388,17 @@ class AnnotationsController < ApplicationController
       raise "There is no such project in your management." unless project.present?
 
       if params[:zipfile].present? && params[:zipfile].content_type == 'application/zip'
-        project.notices.create({method: 'start_annotations_batch_upload'})
-        messages = project.delay.create_annotations_from_zip(params[:zipfile].path)
-        project.notices.create({method: 'annotations_batch_upload'})
+        options = {mode: :addition} if params[:mode] == 'addition' || params[:mode] == 'add'
+        project.notices.create({method: 'annotations batch upload'})
+        messages = project.delay.create_annotations_from_zip(params[:zipfile].path, options)
       end
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}
         format.json {}
       end
-    # rescue => e
-    #   render_status_error(:not_found)
+    rescue => e
+      render_status_error(:not_found)
     end
   end
 
@@ -393,16 +422,12 @@ class AnnotationsController < ApplicationController
   def create_project_annotations_zip
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless project.present?
+      raise "There is no such project in your management." unless project.present?
 
-      # delete ZIP file if params[:update]
-      File.unlink(project.annotations_zip_path) if params[:update].present?
-      # Creaet ZIP file by delayed_job
-      project.notices.create({method: 'start_delay_create_annotations_zip'})
+      project.notices.create({method: "create annotations zip"})
       project.delay.create_annotations_zip(params[:encoding])
-      # project.create_annotations_zip(:encoding => params[:encoding])
-    # rescue => e
-    #   flash[:notice] = notice
+    rescue => e
+      flash[:notice] = notice
     end
     redirect_to :back
   end
@@ -451,7 +476,7 @@ class AnnotationsController < ApplicationController
       denotations.each{|d| d.destroy}
 
       respond_to do |format|
-        format.html {redirect_to :back, notice: notice}
+        format.html {redirect_to :back, status: :see_other, notice: "annotations deleted"}
         format.json {render status: :no_content}
       end
     end

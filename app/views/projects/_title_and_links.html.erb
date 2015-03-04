@@ -1,10 +1,11 @@
 <h1 class='title'>
 	<%= link_to_unless_current @project.name, project_path(@project.name) -%>
+	<%= home_button -%>
 	<% if @project.process_text == 'manual' -%><span class = 'badge'>Manual annotation</span><% end -%>
 	<% if @project.process_text == 'automatic' -%><span class = 'badge'>Automatic annotation</span><% end -%>
 	<% if @project.notices.present? && @project.user == current_user -%>
 		<span class = 'tab-bar'>
-			<%= link_to_unless_current t('activerecord.models.notice'), project_notices_path(@project.name), :class => 'tab inactive_tab' do
+			<%= link_to_unless_current t('activerecord.models.notice'), project_tasks_path(@project.name), :class => 'tab inactive_tab' do
 		    	content_tag :span, t('activerecord.models.notice').pluralize, :class => 'tab active_tab'
 			end -%>
 		</span>

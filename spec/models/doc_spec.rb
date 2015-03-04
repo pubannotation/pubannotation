@@ -1770,40 +1770,50 @@ B')
         @doc.updatable_for?(@user).should be_true
       end
     end
+    
+    context 'when user.root is false' do
+      before do
+        @user = FactoryGirl.create(:user, root: false)
+      end
 
-    context 'when doc.projects present' do 
-      context 'when doc.projects present' do 
+      context 'when doc.created_by? == true' do
         before do
-          @project_user = FactoryGirl.create(:user)
-          @project = FactoryGirl.create(:project, :user => @project_user)
-          @associate_maintainer_user_1 = FactoryGirl.create(:user)
-          @project.associate_maintainers.create({:user_id => @associate_maintainer_user_1.id})
-          @project.docs << @doc
+          @doc.stub(:created_by?).and_return(true)
         end
-        
-        context 'when current_user is doc.projects.user' do
-          it 'should return true' do
-            @doc.updatable_for?(@project_user).should be_true
-          end
+
+        it 'should return true' do
+          @doc.updatable_for?(@user).should be_true
         end
-        
-        context 'when current_user is project.associate_maintainer.user' do
-          it 'should return true' do
-            @doc.updatable_for?(@associate_maintainer_user_1).should be_true
-          end
+      end
+
+      context 'when doc.created_by? == false' do
+        before do
+          @doc.stub(:created_by?).and_return(false)
         end
-        
-        context 'when current_user is not project.user nor project.associate_maintainer.user' do
-          it 'should return false' do
-            @doc.updatable_for?(FactoryGirl.create(:user)).should be_false
-          end
+
+        it 'should return false' do
+          @doc.updatable_for?(@user).should be_false
         end
-        
-        context 'when current_user is blank' do
-          it 'should return false' do
-            @doc.updatable_for?(nil).should be_false
-          end
-        end
+      end
+    end
+  end
+
+  describe 'created_by?' do
+    let(:current_user) { FactoryGirl.create(:user) }
+
+    context 'when created_by current_user' do
+      let(:doc) { FactoryGirl.create(:doc, sourcedb: "sdb#{Doc::UserSourcedbSeparator}#{current_user.username}") }
+
+      it 'should return true' do
+        expect(doc.created_by?(current_user)).to be_true
+      end
+    end
+
+    context 'when not created_by current_user' do
+      let(:doc) { FactoryGirl.create(:doc, sourcedb: "sdb") }
+
+      it 'should return false' do
+        expect(doc.created_by?(current_user)).to be_false
       end
     end
   end

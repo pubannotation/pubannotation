@@ -17,7 +17,7 @@
   > <%= t('activerecord.models.notice') -%>
 <% end %>
 
-<%= render :partial => 'title_and_links' -%>
+<%= render :partial => 'projects/title_and_links' -%>
 
-<h2><%= t('activerecord.models.notice').capitalize -%></h2>
-<%= notices_list_helper -%>
+<h2>Background tasks</h2>
+<%= render partial: 'tasks' if @project.notices_destroyable_for?(current_user) -%>

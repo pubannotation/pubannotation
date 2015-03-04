@@ -24,7 +24,7 @@ class << TextAlignment
 
     # approximate the beginning of the fit
     signature_ngram = ngram_shared.detect{|g| ngram2.count(g) == 1}
-    raise "no signature ngram" if signature_ngram.nil?
+    return nil, nil if signature_ngram.nil? #raise "no signature ngram"
     offset = str1.index(signature_ngram)
     fit_begin = str2.index(signature_ngram) - offset - (offset * TextAlignment::BUFFER_RATE).to_i
     fit_begin = 0 if fit_begin < 0    
@@ -33,7 +33,7 @@ class << TextAlignment
     ngram_shared_reverse = ngram_shared.reverse
     ngram2_reverse = ngram2.reverse
     signature_ngram = ngram_shared_reverse.detect{|g| ngram2_reverse.count(g) == 1}
-    raise "no signature ngram" if signature_ngram.nil?
+    return nil, nil if signature_ngram.nil? # raise "no signature ngram" 
     offset = str1.length - str1.rindex(signature_ngram)
     fit_end = str2.rindex(signature_ngram) + offset + (offset * TextAlignment::BUFFER_RATE).to_i
     fit_end = str2.length if fit_end > str2.length

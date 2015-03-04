@@ -1,14 +1,15 @@
 <% content_for :path do -%>
   > <%= link_to t('views.paths.home'), home_path -%>
-  <% if @project -%>
+  <% if @project.present? -%>
     > <%= link_to t('activerecord.models.project'), projects_path -%>
     > <%= link_to @project.name, project_path(@project.name) -%>
     > <%= link_to t('views.paths.docs'), project_docs_path(@project.name) -%>
+    > <%= link_to t('views.shared.a_doc_id', :sourcedb => params[:sourcedb], :sourceid => params[:sourceid]) + '> divs', index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid]) %>
   <% else -%>
     > <%= link_to t('views.paths.docs'), docs_path -%>
+    > <%= link_to t('views.shared.a_doc_id', :sourcedb => params[:sourcedb], :sourceid => params[:sourceid]) + '> divs', doc_sourcedb_sourceid_divs_index_path(params[:sourcedb], params[:sourceid]) %>
   <% end %>
 
-  > <%= link_to t('views.shared.a_doc_id', :sourcedb => params[:sourcedb], :sourceid => params[:sourceid]) + '> divs', index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid]) %>
 
   > <%= t('views.shared.search') -%>
 <% end -%>

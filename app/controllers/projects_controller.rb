@@ -66,21 +66,21 @@ class ProjectsController < ApplicationController
   # GET /projects/:name
   # GET /projects/:name.json
   def show
-    @project, notice = get_project(params[:id])
-    if @project
-      sourcedb, sourceid, serial, id = get_docspec(params)
-      notice = t('controllers.projects.show.pending_associate_projects') if @project.pending_associate_projects_count > 0
+    begin
+      @project = Project.accessible(current_user).find_by_name(params[:id])
+      raise "There is no such project." unless @project.present?
+
+      @project_docs_count = @project.pmdocs_count + @project.pmcdocs_count
       @search_path = search_project_docs_path(@project.name)
-    end
-    respond_to do |format|
-      if @project
-        format.html { flash.now[:notice] = notice if notice.present? }
-        format.json { render json: @project.json} 
-      else
-        format.html {
-          redirect_to home_path, :notice => notice
-        }
-        format.json { head :unprocessable_entity }
+
+      respond_to do |format|
+        format.html
+        format.json {render json: @project.json} 
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to home_path, :notice => e.message}
+        format.json {head :unprocessable_entity}
       end
     end
   end
@@ -126,11 +126,6 @@ class ProjectsController < ApplicationController
     end
   end
 
-  def notices
-    @project = Project.find_by_name(params[:project_id])
-    @notices = @project.notices
-  end
-
   def zip_upload
   end
 
@@ -164,14 +159,29 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def destroy_annotations
+    begin
+      @project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless @project.present?
+
+      @project.notices.create({method: 'delete all annotations'})
+      @project.delay.destroy_annotations
+
+      respond_to do |format|
+        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'Delete all annotations', is created."}
+        format.json {render status: :no_content}
+      end
+    end
+  end
+
   # DELETE /projects/:name
   # DELETE /projects/:name.json
   def destroy
-    @project.notices.create({successful: nil, method: 'start_destroy_project'})
+    @project.notices.create({method: 'destroy the project'})
     @project.delay.delay_destroy
     respond_to do |format|
-      format.html { redirect_to :back, notice: t('controllers.projects.destroy.delay') }
-      format.json { head :no_content }
+      format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, is being deleted."}
+      format.json {head :no_content }
     end
   end
   
