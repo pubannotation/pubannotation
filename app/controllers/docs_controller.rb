@@ -125,35 +125,27 @@ class DocsController < ApplicationController
         docs = Doc
       end
 
-      conditions_array = Array.new
-      conditions_array << ['LOWER(sourcedb) = ?', "#{params[:sourcedb].downcase}"] if params[:sourcedb].present?
-      conditions_array << ['sourceid like ?', "#{params[:sourceid]}%"] if params[:sourceid].present?
-      conditions_array << ['body like ?', "%#{params[:body]}%"] if params[:body].present?
-    
-      # Build condition
-      i = 0
-      conditions = Array.new
-      columns = ''
-      conditions_array.each do |key, val|
-        key = " AND #{key}" if i > 0
-        columns += key
-        conditions[i] = val
-        i += 1
-      end
-      conditions.unshift(columns)
+      # TODO cannot cannot CAST sourceid
+      search_docs = docs.search(
+        conditions: {sourcedb: "#{ params[:sourcedb] }*", sourceid: "#{ params[:sourceid] }*", body: "#{ params[:body] }*"}, 
+        group_by: 'sourcedb, sourceid',
+        order: 'sourcedb ASC, sourceid ASC',
+        page: params[:page], 
+        per_page: 10
+      )
 
-      search_docs = docs.where(conditions).group(:id).group(:sourcedb).group(:sourceid).order('sourcedb ASC').order('CAST(sourceid AS INT) ASC')
-
-      if search_docs.length < 5000
-        search_docs_list = search_docs.map{|d| {sourcedb: d.sourcedb, sourceid:d.sourceid}}.uniq
-        search_docs = search_docs_list.map{|d| docs.find_by_sourcedb_and_sourceid_and_serial(d[:sourcedb], d[:sourceid], 0)}
+      # TODO search_docs.count is the number of docs matches conditions group by same sourcedb and sourceid.
+      if search_docs.count < 5000
+        # search_docs_list = search_docs.map{|d| {sourcedb: d.sourcedb, sourceid:d.sourceid}}.uniq
+        # This line will execute SQL queries so many times
+        # search_docs = search_docs_list.map{|d| docs.find_by_sourcedb_and_sourceid_and_serial(d[:sourcedb], d[:sourceid], 0)}
         search_docs_list = search_docs.map{|d| d.to_list_hash('doc')}
       else
         search_docs_list = []
       end
 
-      @search_docs_number = search_docs_list.length
-      @source_docs = search_docs.paginate(:page => params[:page])
+      @search_docs_number = search_docs.count
+      @source_docs = search_docs 
 
       respond_to do |format|
         format.html
@@ -163,8 +155,8 @@ class DocsController < ApplicationController
     rescue => e
       respond_to do |format|
         format.html {redirect_to (@project.present? ? project_path(@project.name) : docs_path), notice: e.message}
-        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-        format.txt  {render text: message, status: :unprocessable_entity}
+        format.json {render json: {notice: e.message}, status: :unprocessable_entity}
+        format.tsv  {render text: e.message, status: :unprocessable_entity}
       end
     end
   end

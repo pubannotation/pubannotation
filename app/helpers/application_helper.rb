@@ -152,7 +152,7 @@ module ApplicationHelper
     total_number = if list.respond_to?(:total_entries)
       list.total_entries
     else
-      list.length
+      list.length if list.present?
     end
     # "#{t("views.shared.total_number")}: #{total_number}"
     total_number
