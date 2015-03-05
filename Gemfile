@@ -39,6 +39,7 @@ group :test do
   gem 'vcr'
   gem 'webmock', '< 1.10.0'
   gem 'webrat'
+  gem 'database_cleaner'
 end
 
 gem 'jquery-rails'

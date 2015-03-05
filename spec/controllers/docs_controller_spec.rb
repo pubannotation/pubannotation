@@ -310,7 +310,7 @@ describe DocsController do
         post :search, project_id: @project.name, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
       end
 
-      pending 'sphinx not work properly' do
+      # pending 'sphinx not work properly' do
         it 'should search from @project.docs with params by Sphinx' do
           post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
           assigns[:source_docs].should =~ [@doc_1, @doc_2, @doc_3, @doc_4]
