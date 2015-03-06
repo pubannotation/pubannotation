@@ -18,8 +18,6 @@ group :assets do
 end
 
 gem 'pg'
-gem 'mysql2'
-gem 'thinking-sphinx'
 
 group :development do
   gem 'guard'
@@ -57,6 +55,8 @@ gem 'rails3-jquery-autocomplete'
 gem 'delayed_job_active_record'
 gem 'backup'
 gem 'whenever', :require => false
+gem 'mysql2',          '~> 0.3.13', :platform => :ruby
+gem 'thinking-sphinx', '~> 3.1.3'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

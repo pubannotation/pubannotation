@@ -169,7 +169,7 @@ ActiveRecord::Schema.define(:version => 20150213022002) do
     t.integer  "relations_count",                  :default => 0
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
-    t.datetime "annotations_updated_at",           :default => '2015-02-21 18:02:59'
+    t.datetime "annotations_updated_at",           :default => '2015-03-06 06:13:40'
     t.text     "namespaces"
     t.integer  "process"
     t.integer  "annotations_count",                :default => 0
