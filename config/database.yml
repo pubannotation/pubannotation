@@ -7,6 +7,8 @@ development:
   adapter: postgresql
   encoding: unicode
   database: pubannotation_dev
+  username: your_username
+  password: your_password
   pool: 5
 
 # Warning: The database defined as "test" will be erased and
@@ -16,6 +18,8 @@ test:
   adapter: postgresql
   encoding: unicode
   database: pubannotation_test
+  username: your_username
+  password: your_password
   pool: 5
 
 production:
