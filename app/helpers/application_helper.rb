@@ -154,7 +154,7 @@ module ApplicationHelper
     elsif list.respond_to?(:count)
       list.count
     else
-      list.length
+      list.length if list.present?
     end
   end
 end

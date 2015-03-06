@@ -11,7 +11,7 @@
 /db/*.sqlite3
 
 # Ignore all logfiles and tempfiles.
-/log/*.log
+/log/*
 /tmp/*
 /coverage
 
@@ -24,6 +24,10 @@
 
 # Ignore generated annotations ZIP files
 /public/annotations/*.zip
+
+# spinx
+db/sphinx/*
+config/*.sphinx.conf
 
 # Ignore devise config file
 #/config/initializers/devise.rb

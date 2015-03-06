@@ -267,6 +267,204 @@ describe DocsController do
       end
     end
   end
+
+  describe 'search' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'project name')
+      @doc_1 = FactoryGirl.create(:doc, sourcedb: 'sdb1', sourceid: '123456', serial: 0)
+      @doc_2 = FactoryGirl.create(:doc, sourcedb: 'sdb1', sourceid: '123456', serial: 1)
+      @doc_3 = FactoryGirl.create(:doc, sourcedb: 'sdb2', sourceid: '223456', serial: 0)
+      @doc_4 = FactoryGirl.create(:doc, sourcedb: 'sdb2', sourceid: '223456', serial: 1)
+      @project.docs << @doc_1
+      @project.docs << @doc_2
+      @project.docs << @doc_3
+      @project.docs << @doc_4
+      FactoryGirl.create(:doc, sourcedb: 'sdb3', sourceid: '323456', serial: 0)
+      FactoryGirl.create(:doc, sourcedb: 'sdb4', sourceid: '423456', serial: 0)
+      @current_user = nil
+      current_user_stub(@current_user)
+    end
+
+    context 'when params[:project_id] present' do
+      before do
+        Project.stub_chain(:accessible, :find_by_name).and_return(@project)
+      end
+
+      it 'should call Project.accessible scope' do
+        expect(Project).to receive(:accessible).with(@current_user)
+        post :search, project_id: @project.name
+      end
+
+      it 'should find project by project_id(project.name) from Project.accessible' do
+        expect(Project.accessible).to receive(:find_by_name).with(@project.name)
+        post :search, project_id: @project.name
+      end
+
+      it 'should set Project.accessible(current_user).find_by_name(params[:project_id]) as @project' do
+        post :search, project_id: @project.name
+        expect(assigns[:project]).to eql(@project)
+      end
+
+      it 'should search from Doc with params by Sphinx' do
+        expect(@project.docs).to receive(:search).with({conditions: {sourcedb: "#{ @sourcedb }*", sourceid: "#{ @sourceid }*", body: "#{ @body }*"}, group_by: "sourcedb, sourceid", order: "sourcedb ASC, sourceid ASC", page: nil, per_page: 10})
+        post :search, project_id: @project.name, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
+      end
+
+      pending 'sphinx not work properly' do
+        it 'should search from @project.docs with params by Sphinx' do
+          post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
+          assigns[:source_docs].should =~ [@doc_1, @doc_2, @doc_3, @doc_4]
+        end
+      end
+    end
+
+    context 'when params[:project_id] blank' do
+      before do
+        @sourcedb = 'sdb'
+        @sourceid = '123'
+        @body = 'body'
+      end
+
+      it 'should search from Doc with params by Sphinx' do
+        expect(Doc).to receive(:search).with({conditions: {sourcedb: "#{ @sourcedb }*", sourceid: "#{ @sourceid }*", body: "#{ @body }*"}, group_by: "sourcedb, sourceid", order: "sourcedb ASC, sourceid ASC", page: nil, per_page: 10})
+        post :search, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
+      end
+
+      pending 'sphinx not work properly' do
+        it 'should search from @project.docs with params by Sphinx' do
+          post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
+          assigns[:source_docs].should =~ [@doc_1, @doc_2, @doc_3, @doc_4]
+        end
+      end
+    end
+
+    describe 'search_docs count' do
+      before do
+        @search_docs = double(:docs)
+        Doc.stub_chain(:search).and_return(@search_docs)
+      end
+
+      context 'when search_docs.count < 5000' do
+        before do
+          @search_docs_count = 1
+          @search_docs.stub(:count).and_return(@search_docs_count)
+          @list_hash = {val: 1}
+          @search_docs.stub(:map).and_return(@list_hash)
+        end
+
+        it 'should map search_docs to_list_hash' do
+          expect(@search_docs).to receive(:map)
+          post :search
+        end
+
+        it 'should assign search_docs.count as @search_docs_number' do
+          post :search
+          expect(assigns[:search_docs_number]).to eql(@search_docs_count)
+        end
+
+        it 'should assign search_docs as @source_docs' do
+          post :search
+          expect(assigns[:source_docs]).to eql(@search_docs)
+        end
+
+        describe 'format' do
+          context 'when format html' do
+            it 'should render doc.to_list_hash as json' do
+              post :search
+              expect(response).to render_template('search')
+            end
+          end
+
+          context 'when format json' do
+            it 'should render doc.to_list_hash as json' do
+              post :search, format: 'json'
+              expect(response.body).to eql(@list_hash.to_json)
+            end
+          end
+
+          context 'when format tsv' do
+            it 'should render Doc.to_tsv as text' do
+              to_tsv = 'tsv'
+              Doc.stub(:to_tsv).and_return(to_tsv)
+              expect(Doc).to receive(:to_tsv).with(@search_docs, 'doc')
+              post :search, format: 'tsv'
+            end
+          end
+        end
+      end
+
+      context 'when search_docs.count > 5000' do
+        before do
+          @search_docs.stub(:count).and_return(10000)
+        end
+
+        it 'should render blank array as json' do
+          post :search, format: 'json'
+          expect(response.body).to eql([].to_json)
+        end
+      end
+    end
+
+    describe 'when error raised' do
+      before do
+        @error = 'error'
+        Doc.stub(:search).and_raise(@error)
+      end
+
+      context 'when format html' do
+        context 'when @project.present' do
+          before do
+            Project.stub_chain(:accessible, :find_by_name).and_return(@project)
+            @project.stub(:docs).and_raise('error')
+            post :search, project_id: @project.name
+          end
+
+          it 'should set error.message as flash[:notice]' do
+            expect(flash[:notice]).to eql(@error)
+          end
+
+          it 'should redirect_to @project' do
+            expect(response).to redirect_to(project_path(@project.name))
+          end
+        end
+
+        context 'when @project.blank' do
+          it 'should redirect_to docs_path' do
+            post :search
+            expect(response).to redirect_to(docs_path)
+          end
+        end
+      end
+
+      context 'when format json' do
+        before do
+          post :search, format: 'json'
+        end
+
+        it 'should render error as json' do
+          expect(response.body).to eql({notice: @error}.to_json)
+        end
+
+        it 'should return status 422' do
+          expect(response.status).to eql(422)
+        end
+      end
+
+      context 'when format tsv' do
+        before do
+          post :search, format: 'tsv'
+        end
+
+        it 'should render error as json' do
+          expect(response.body).to eql(@error)
+        end
+
+        it 'should return status 422' do
+          expect(response.status).to eql(422)
+        end
+      end
+    end
+  end
   
   describe 'search' do
     context 'without pagination' do
