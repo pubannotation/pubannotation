@@ -19,13 +19,11 @@ RSpec.configure do |config|
     # Configure and start Sphinx, and automatically
     # stop Sphinx at the end of the test suite.
     ThinkingSphinx::Test.start_with_autostop
-    ThinkingSphinx::Test.index
   end
 
   config.before(:each) do
     # Index data when running an acceptance spec.
     index if example.metadata[:js]
     ThinkingSphinx::Deltas.suspend!
-    ThinkingSphinx::Test.index
   end
 end

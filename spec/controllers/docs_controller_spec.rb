@@ -311,8 +311,6 @@ describe DocsController do
       end
 
       it 'should search from @project.docs with params by Sphinx' do
-        ThinkingSphinx::Test.index
-        sleep(2)
         post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
         assigns[:source_docs].should =~ [@doc_1, @doc_3]
       end
@@ -323,8 +321,6 @@ describe DocsController do
         @sourcedb = 'sdb'
         @sourceid = '123'
         @body = 'body'
-        ThinkingSphinx::Test.index
-        sleep(2)
       end
 
       it 'should search from Doc with params by Sphinx' do

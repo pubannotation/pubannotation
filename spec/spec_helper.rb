@@ -67,6 +67,7 @@ Spork.prefork do
     config.around(:each) do |example|
       DatabaseCleaner.cleaning do
         example.run
+        ThinkingSphinx::Test.index
       end
     end
   end
