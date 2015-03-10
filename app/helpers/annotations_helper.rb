@@ -253,7 +253,7 @@ module AnnotationsHelper
   end
 
   def project_annotations_rdf_link_helper(project)
-    if project.annotations_zip_downloadable == true
+    if project.annotations_zip_downloadable == true && project.rdfwriter.present?
       file_path = project.annotations_rdf_system_path
       
       if File.exist?(file_path) == true
