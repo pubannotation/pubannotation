@@ -406,25 +406,9 @@ class Doc < ActiveRecord::Base
     end  
   end
 
-  # to_be_deprecated in favor to to_hash below
-  def json_hash
-    json_hash = {
-      id: id,
-      text: body.gsub(/[\r\n]/, ""),
-      sourcedb: sourcedb,
-      sourceid: sourceid,
-      section: section,
-      source_url: source
-    }
-    # if has_divs?
-      json_hash[:divid] = serial
-    # end
-    return json_hash
-  end
-  
   def to_hash
     {
-      text: body.nil? ? nil : body.gsub(/[\r\n]/, ''),
+      text: body.nil? ? nil : body,
       sourcedb: sourcedb,
       sourceid: sourceid,
       divid: serial,
