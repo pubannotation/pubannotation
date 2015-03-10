@@ -279,8 +279,8 @@ describe DocsController do
       @project.docs << @doc_2
       @project.docs << @doc_3
       @project.docs << @doc_4
-      FactoryGirl.create(:doc, sourcedb: 'sdb3', sourceid: '323456', serial: 0)
-      FactoryGirl.create(:doc, sourcedb: 'sdb4', sourceid: '423456', serial: 0)
+      @doc_5 = FactoryGirl.create(:doc, sourcedb: 'sdb3', sourceid: '323456', serial: 0)
+      @doc_6 = FactoryGirl.create(:doc, sourcedb: 'sdb4', sourceid: '423456', serial: 0)
       @current_user = nil
       current_user_stub(@current_user)
     end
@@ -310,11 +310,11 @@ describe DocsController do
         post :search, project_id: @project.name, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
       end
 
-      # pending 'sphinx not work properly' do
-        it 'should search from @project.docs with params by Sphinx' do
-          post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
-          assigns[:source_docs].should =~ [@doc_1, @doc_2, @doc_3, @doc_4]
-        end
+      it 'should search from @project.docs with params by Sphinx' do
+        ThinkingSphinx::Test.index
+        sleep(2)
+        post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
+        assigns[:source_docs].should =~ [@doc_1, @doc_3]
       end
     end
 
@@ -323,6 +323,8 @@ describe DocsController do
         @sourcedb = 'sdb'
         @sourceid = '123'
         @body = 'body'
+        ThinkingSphinx::Test.index
+        sleep(2)
       end
 
       it 'should search from Doc with params by Sphinx' do
@@ -330,11 +332,9 @@ describe DocsController do
         post :search, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
       end
 
-      pending 'sphinx not work properly' do
-        it 'should search from @project.docs with params by Sphinx' do
-          post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
-          assigns[:source_docs].should =~ [@doc_1, @doc_2, @doc_3, @doc_4]
-        end
+      it 'should search from @project.docs with params by Sphinx' do
+        post :search, sourcedb: 'sdb', sourceid: '', body: ''
+        assigns[:source_docs].should =~ [@doc_1, @doc_3, @doc_5, @doc_6]
       end
     end
 
