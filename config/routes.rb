@@ -117,6 +117,7 @@ Pubann::Application.routes.draw do
       get 'autocomplete_project_author'  => 'projects#autocomplete_project_author', :as => 'autocomplete_project_author'
       get 'zip_upload' => 'projects#zip_upload'
       post 'create_from_zip' => 'projects#create_from_zip'
+      get 'index_annotations_rdf' => 'projects#index_annotations_rdf'
     end
   end
 

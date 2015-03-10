@@ -38,6 +38,9 @@ class Project < ActiveRecord::Base
   
   default_scope where(:type => nil)
 
+  scope :public, where(accessibility: 1)
+  scope :for_index, where('accessibility = 1 AND status < 4')
+
   scope :accessible, -> (current_user) {
     if current_user.present?
       includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
@@ -462,18 +465,6 @@ class Project < ActiveRecord::Base
     end
   end
 
-  # def store_rdf (ttl)
-  #   server = "http://rdf.pubannotation.org/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/projects/#{self.name}"
-  #   rdfstore = RestClient::Resource.new(server, {:user => 'dba', :password => 'dba', :X => 'POST', :headers => {:content_type => 'application.x-turtle'}})
-  #   rdfstore.post ttl do |response, request, result|
-  #     case response.code
-  #     when 200
-  #       return true
-  #     else
-  #       return nil
-  #     end
-  #   end
-  # end
 
   def store_rdf (ttl)
     require 'fileutils'
@@ -524,6 +515,98 @@ class Project < ActiveRecord::Base
     end
     ttl
   end 
+
+
+  def index_annotations_rdf
+    # rdfwriter = 'http://bionlp.dbcls.jp/tao_rdfizer'
+    rdfizer = 'http://bionlp.dbcls.jp/tao_rdfizer'
+    rdfizer_annotations = "#{rdfizer}?mode=annotations"
+    rdfizer_spans       = "#{rdfizer}?mode=spans"
+
+    projects = Project.for_index
+    total_number = projects.length
+
+    docs = []
+    projects.each_with_index do |project, index|
+      index1 = index + 1
+      self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}"})
+      begin
+        annotations_collection = project.annotations_collection
+        docs += project.docs
+
+        ttl = ''
+        header_length = 0
+        annotations_collection.each_with_index do |ann, i|
+          if i == 0
+            ttl = self.get_conversion(ann, rdfizer_annotations)
+            ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
+          else
+            ttl += self.get_conversion(ann, rdfizer_annotations).split(/\n/)[header_length .. -1].join("\n")
+          end
+          ttl += "\n" unless ttl.end_with?("\n")
+        end
+        result = index_rdf(project.name, ttl)
+        raise "sparql-graph-crud failed" unless result
+        self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}", successful: true})
+      rescue => e
+        self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}", successful: false})
+      end
+    end
+
+    # TODO: repeated. make it DRY!
+    begin
+      self.notices.create({method:"- spans rdf index"})
+      docs.uniq!
+      annotations_collection = docs.collect{|doc| doc.hannotations}
+      ttl = ''
+      header_length = 0
+      annotations_collection.each_with_index do |ann, i|
+        if i == 0
+          ttl = self.get_conversion(ann, rdfizer_spans)
+          ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
+        else
+          ttl += self.get_conversion(ann, rdfizer_spans).split(/\n/)[header_length .. -1].join("\n")
+        end
+        ttl += "\n" unless ttl.end_with?("\n")
+      end
+      result = index_rdf(nil, ttl)
+      raise "sparql-graph-crud failed" unless result
+      self.notices.create({method:"- spans rdf index", successful: true})
+    rescue => e
+      self.notices.create({method:"- spans rdf index", successful: false})
+    end
+  end 
+
+  def index_rdf(project_name = nil, ttl)
+    require 'open3'
+
+    ttl_file = if project_name.nil?
+      Tempfile.new("spans-rdf.ttl")
+    else
+      Tempfile.new("project-#{project_name}-annotations-rdf.ttl")
+    end
+    ttl_file.write(ttl)
+    ttl_file.close
+
+    # server = 'http://pubann.dbcls.jp'
+    server = 'http://localhost:8890'
+    destination = if project_name.nil?
+      "#{server}/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/docs"
+    else
+      "#{server}/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/projects/#{project_name}"
+    end
+    cmd = %[curl --digest --user dba:dba --verbose --url #{destination} -X PUT -T #{ttl_file.path}]
+    puts ttl
+    puts "+++++++++++++++++"
+    puts cmd
+    puts "--------------------"
+    message, error, state = Open3.capture3(cmd)
+    ttl_file.unlink
+    puts error
+    puts "=============================="
+    return state.success?
+  end
+
 
   def self.params_from_json(json_file)
     project_attributes = JSON.parse(File.read(json_file))
