@@ -28,10 +28,11 @@ class NoticesController < ApplicationController
           unless tasks[notice.method].present?
             tasks[notice.method] = {} 
             tasks[notice.method][:method] = notice.method
-            tasks[notice.method][:registered_at] = 'deleted'
+            tasks[notice.method][:registered_at] = 'unknown'
           end
           tasks[notice.method][:finished_at] = notice.created_at
           tasks[notice.method][:result] = notice.successful
+          tasks[notice.method][:message] = notice.message
         end
         tasks
       end.values

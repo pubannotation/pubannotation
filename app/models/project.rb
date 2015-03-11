@@ -546,10 +546,10 @@ class Project < ActiveRecord::Base
           ttl += "\n" unless ttl.end_with?("\n")
         end
         result = index_rdf(project.name, ttl)
-        raise "sparql-graph-crud failed" unless result
+        raise IOError, "sparql-graph-crud failed" unless result
         self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}", successful: true})
       rescue => e
-        self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}", successful: false})
+        self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}", successful: false, message: e.message})
       end
     end
 
@@ -573,7 +573,7 @@ class Project < ActiveRecord::Base
       raise "sparql-graph-crud failed" unless result
       self.notices.create({method:"- spans rdf index", successful: true})
     rescue => e
-      self.notices.create({method:"- spans rdf index", successful: false})
+      self.notices.create({method:"- spans rdf index", successful: false, message: e.message})
     end
   end 
 
@@ -596,14 +596,8 @@ class Project < ActiveRecord::Base
       "#{server}/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/projects/#{project_name}"
     end
     cmd = %[curl --digest --user dba:dba --verbose --url #{destination} -X PUT -T #{ttl_file.path}]
-    puts ttl
-    puts "+++++++++++++++++"
-    puts cmd
-    puts "--------------------"
     message, error, state = Open3.capture3(cmd)
     ttl_file.unlink
-    puts error
-    puts "=============================="
     return state.success?
   end
 
