@@ -2517,6 +2517,36 @@ describe Project do
     end
   end
 
+  describe 'increment_docs_projects_counter' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+    end
+
+    it 'should increment doc.projects_count' do
+      expect{ 
+        @project.docs << @doc 
+        @doc.reload
+      }.to change{ @doc.projects_count }.from(0).to(1)
+    end
+  end
+
+  describe 'decrement_docs_projects_counter' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project.docs << @doc 
+      @doc.reload
+    end
+
+    it 'should decrement doc.projects_count' do
+      expect{ 
+        @project.docs.delete(@doc)
+        @doc.reload
+      }.to change{ @doc.projects_count }.from(1).to(0)
+    end
+  end
+
   describe 'update_annotations_updated_at' do
     before do
       @doc = FactoryGirl.create(:doc)

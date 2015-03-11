@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150310095307) do
+ActiveRecord::Schema.define(:version => 20150311050417) do
 
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
@@ -87,6 +87,7 @@ ActiveRecord::Schema.define(:version => 20150310095307) do
     t.integer  "denotations_count", :default => 0
     t.integer  "subcatrels_count",  :default => 0
     t.boolean  "delta",             :default => true, :null => false
+    t.integer  "projects_count",    :default => 0
   end
 
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
