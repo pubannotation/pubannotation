@@ -236,7 +236,7 @@ class Doc < ActiveRecord::Base
   end
 
   def to_csv(params)
-    focus, left, right = self.spans(params) 
+    focus, left, right = self.span(params) 
     CSV.generate(col_sep: "\t") do |csv|
       if params[:context_size].present?
         headers = %w(left focus right)
@@ -324,7 +324,7 @@ class Doc < ActiveRecord::Base
     projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
     modifications = self.catmods.from_projects(projects) + self.subcatrelmods.from_projects(projects)
     hmodifications = modifications.collect {|m| m.get_hash}
-    hmodifications.select!{|m| base_ids.include?(m[:object])} unless base_ids.nil?
+    hmodifications.select!{|m| base_ids.include?(m[:obj])} unless base_ids.nil?
     hmodifications.sort!{|m1, m2| m1[:id] <=> m2[:id]}
   end
 

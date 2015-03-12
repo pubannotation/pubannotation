@@ -735,7 +735,7 @@ class Project < ActiveRecord::Base
   end
 
   def add_doc(sourcedb, sourceid)
-    imported, added, failed, message = 0, 0, 0
+    imported, added, failed, message = 0, 0, 0, ''
     begin
       divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
       unless divs.present?

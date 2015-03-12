@@ -524,7 +524,7 @@ describe Doc do
           FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_1.id, :project_id => @project.id)
           FactoryGirl.create(:denotation, :project => @project, :doc => @doc_denotations_1)
           @doc_denotations_0 = FactoryGirl.create(:doc)
-          @docs = Doc.order_by(Doc, 'denotations_count')
+          @docs = Doc.order_by(Doc.all, 'get_denotations_count')
         end
         
         it 'doc which has most denotations should be docs[0]' do
@@ -761,7 +761,7 @@ describe Doc do
     end
   end
   
-  describe 'spans' do
+  describe 'span' do
     context 'when body not includes ascii text' do
       before do
         @body = '12345spansABCDE'
@@ -775,11 +775,11 @@ describe Doc do
           context 'when context is nil' do
             before do
               params = {:begin => @begin, :end => @end}
-              @spans, @prev_text, @next_text = @doc.spans(params)
+              @prev_text, @span, @next_text = @doc.span(params)
             end
             
             it 'should return body[begin...end] as spans' do
-              @spans.should eql('spans')
+              @span.should eql('spans')
             end
           end
           
@@ -789,15 +789,15 @@ describe Doc do
                 @begin = 0
                 @end = 5
                 params = {:context_size => 5, :begin => @begin, :end => @end}
-                @spans, @prev_text, @next_text = @doc.spans(params)
+                @prev_text, @span, @next_text = @doc.span(params)
               end
               
               it 'should set prev_text' do
                 @prev_text.should eql('')
               end
                
-              it 'should set body[begin...end] as spans' do
-                @spans.should eql('12345')
+              it 'should set body[begin...end] as span' do
+                @span.should eql('12345')
               end
               
               it 'should set next_text' do
@@ -810,15 +810,15 @@ describe Doc do
                 @begin = 5
                 @end = 10
                 params = {:context_size => 5, :begin => @begin, :end => @end}
-                 @spans, @prev_text, @next_text = @doc.spans(params)
+                 @prev_text, @span, @next_text = @doc.span(params)
               end
               
               it 'should set prev_text' do
                 @prev_text.should eql('12345')
               end
                
-              it 'should set body[begin...end] as spans' do
-                @spans.should eql('spans')
+              it 'should set body[begin...end] as span' do
+                @span.should eql('spans')
               end
               
               it 'should set next_text' do
@@ -828,19 +828,19 @@ describe Doc do
             
             context 'when end of body' do
               before do
-                # '12345spansABCDE'
+                # '12345spanABCDE'
                 @begin = 10
                 @end = 15
                 params = {:context_size => 5, :begin => @begin, :end => @end}
-                @spans, @prev_text, @next_text = @doc.spans(params)
+                @prev_text, @span, @next_text = @doc.span(params)
               end
               
               it 'should set prev_text' do
                 @prev_text.should eql('spans')
               end
                
-              it 'should set body[begin...end] as spans' do
-                @spans.should eql('ABCDE')
+              it 'should set body[begin...end] as span' do
+                @span.should eql('ABCDE')
               end
               
               it 'should set next_text' do
@@ -853,96 +853,20 @@ describe Doc do
                 @begin = 5
                 @end = 10
                 params = {:format => 'txt', :context_size => 5, :begin => @begin, :end => @end}
-                @spans, @prev_text, @next_text = @doc.spans(params)
+                @prev_text, @span, @next_text = @doc.span(params)
               end
               
               it 'should set prev_text includes tab' do
                 @prev_text.should eql("12345")
               end
                
-              it 'should set body[begin...end] as spans includes tab' do
-                @spans.should eql("spans")
+              it 'should set body[begin...end] as span includes tab' do
+                @span.should eql("spans")
               end
               
               it 'should set next_text' do
                 @next_text.should eql('ABCDE')
               end
-            end
-          end
-        end
-      end
-
-      context 'when encoding is ascii' do
-        before do
-          @prev_text_val = 'prev_text'
-          @next_text_val = 'next_text'
-          @get_ascii_text = 'ascii text is this text about'
-          @doc.stub(:get_ascii_text).and_return(@get_ascii_text)
-        end
-
-        context 'when context_size is nil' do
-          context 'when middle of body' do
-            before do
-              @begin = 5
-              @end = 10
-              @spans_val = 'spans'
-              @params = {:encoding => 'ascii', :begin => @begin, :end => @end}
-            end
-
-            it 'should call get_ascii_text with @doc.body[begin_pos...end_pos]' do
-              @doc.should_receive(:get_ascii_text).with(@doc.body[@begin...@end])
-              @doc.spans(@params)
-            end
-            
-            it 'should set get_ascii_text as spans' do
-              @spans, @prev_text, @next_text = @doc.spans(@params)
-              @spans.should eql(@get_ascii_text)
-            end
-          end
-        end
-        
-        context 'when context_size is present' do
-          context 'when middle of body' do
-            before do
-              @begin = 5
-              @end = 10
-              @context_size = 5
-              params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
-              @spans, @prev_text, @next_text = @doc.spans(params)
-            end
-            
-            it 'should set prev_text' do
-              @prev_text.should eql(@get_ascii_text[(@context_size * -1).. -1])
-            end
-             
-            it 'should set get_ascii_text as spans' do
-              @spans.should eql(@get_ascii_text)
-            end
-            
-            it 'should set next_text' do
-              @next_text.should eql(@get_ascii_text[0...@context_size])
-            end
-          end
-
-          context 'when context_size > ascii_prev_text.length' do
-            before do
-              @begin = 0
-              @end = 10
-              @context_size = 50
-              params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
-              @spans, @prev_text, @next_text = @doc.spans(params)
-            end
-            
-            it 'should set prev_text' do
-              @prev_text.should eql(@get_ascii_text[(@get_ascii_text.length * -1).. -1])
-            end
-             
-            it 'should set get_ascii_text as spans' do
-              @spans.should eql(@get_ascii_text)
-            end
-            
-            it 'should set next_text' do
-              @next_text.should eql(@get_ascii_text[0...@context_size])
             end
           end
         end
@@ -959,21 +883,23 @@ describe Doc do
       
       context 'when encoding nil' do
         context 'when context_size present' do
-          before do
-            params = {:context_size => 10, :begin => @begin, :end => @end}
-            @spans, @prev_text, @next_text = @doc.spans(params)
-          end
-          
-          it 'should set get_ascii_text[begin...end] as spans' do
-            @spans.should eql('345Δ7')
-          end
-          
-          it 'should set prev_text' do
-            @prev_text.should eql('12')
-          end
-          
-          it 'should set next_text' do
-            @next_text.should eql('8901')
+          pending do
+            before do
+              params = {:context_size => 10, :begin => @begin, :end => @end}
+              @span, @prev_text, @next_text = @doc.span(params)
+            end
+            
+            it 'should set get_ascii_text[begin...end] as span' do
+              @span.should eql('345Δ7')
+            end
+            
+            it 'should set prev_text' do
+              @prev_text.should eql('12')
+            end
+            
+            it 'should set next_text' do
+              @next_text.should eql('8901')
+            end
           end
         end
       end
@@ -985,22 +911,24 @@ describe Doc do
         end
 
         context 'when context_size present' do
-          before do
-            @context_size = 10
-            params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
-            @spans, @prev_text, @next_text = @doc.spans(params)
-          end
-          
-          it 'should set get_ascii_text[begin...end] as spans' do
-            @spans.should eql(@get_ascii_text)
-          end
-          
-          it 'should set prev_text' do
-            @prev_text.should eql(@get_ascii_text[(@context_size * -1)..-1])
-          end
-          
-          it 'should set next_text' do
-            @next_text.should eql(@get_ascii_text[0...@context_size])
+          pending do
+            before do
+              @context_size = 10
+              params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
+              @span, @prev_text, @next_text = @doc.span(params)
+            end
+            
+            it 'should set get_ascii_text[begin...end] as span' do
+              @span.should eql(@get_ascii_text)
+            end
+            
+            it 'should set prev_text' do
+              @prev_text.should eql(@get_ascii_text[(@context_size * -1)..-1])
+            end
+            
+            it 'should set next_text' do
+              @next_text.should eql(@get_ascii_text[0...@context_size])
+            end
           end
         end
       end
@@ -1016,21 +944,23 @@ describe Doc do
       
       context 'when encoding nil' do
         context 'when context_size present' do
-          before do
-            params = {:context_size => 3, :begin => @begin, :end => @end}
-            @spans, @prev_text, @next_text = @doc.spans(params)
-          end
-          
-          it 'should set get_ascii_text[begin...end] as spans' do
-            @spans.should eql('123Δ567')
-          end
-          
-          it 'should set prev_text' do
-            @prev_text.should eql('->Δ')
-          end
-          
-          it 'should set next_text' do
-            @next_text.should eql('Δ<-')
+          pending do
+            before do
+              params = {:context_size => 3, :begin => @begin, :end => @end}
+              @span, @prev_text, @next_text = @doc.span(params)
+            end
+            
+            it 'should set get_ascii_text[begin...end] as span' do
+              @span.should eql('123Δ567')
+            end
+            
+            it 'should set prev_text' do
+              @prev_text.should eql('->Δ')
+            end
+            
+            it 'should set next_text' do
+              @next_text.should eql('Δ<-')
+            end
           end
         end
       end
@@ -1042,74 +972,55 @@ describe Doc do
         end
 
         context 'when context_size present' do
-          before do
-            @context_size = 3
-            params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
-            @spans, @prev_text, @next_text = @doc.spans(params)
-          end
-          
-          it 'should set get_ascii_text[begin...end] as spans' do
-            @spans.should eql(@get_ascii_text)
-          end
+          pending do
+            before do
+              @context_size = 3
+              params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
+              @span, @prev_text, @next_text = @doc.span(params)
+            end
+            
+            it 'should set get_ascii_text[begin...end] as span' do
+              @span.should eql(@get_ascii_text)
+            end
 
-          it 'should set prev_text' do
-            @prev_text.should eql(@get_ascii_text[(@context_size * -1)..-1])
-          end
-          
-          it 'should set next_text' do
-            @next_text.should eql(@get_ascii_text[0...@context_size])
+            it 'should set prev_text' do
+              @prev_text.should eql(@get_ascii_text[(@context_size * -1)..-1])
+            end
+            
+            it 'should set next_text' do
+              @next_text.should eql(@get_ascii_text[0...@context_size])
+            end
           end
         end
       end
     end    
   end
 
-  describe 'text' do
+  describe '#set_ascii_body' do
     before do
-      @doc = FactoryGirl.create(:doc)
-      @spans = 'spans'
-      @prev_text = 'prev_text'
-      @next_text = 'next_text'
+      @utf_text = 'utf_text'
+      @ascii_text = 'ascii_text'
+      @doc = FactoryGirl.create(:doc, body: @utf_text)
+      @doc.stub(:get_ascii_text).and_return(@ascii_text)
+      @doc.set_ascii_body
     end
 
-    context 'when prev, next text is nil' do
-      before do
-        @doc.stub(:spans).and_return([@spans, nil, nil])
+    context 'when called' do
+      it 'should set original_body' do
+        expect(@doc.original_body).to eql(@utf_text)
       end
 
-      it 'should return spans text' do
-        @doc.text(nil).should eql @spans 
+      it 'should set the body with ascii text' do
+        expect(@doc.body).to eql(@ascii_text)
       end
-    end
-
-    context 'when prev, next text prev' do
-      before do
-        @doc.stub(:spans).and_return([@spans, @prev_text, @next_text])
-      end
-
-      it 'should return joined prev_text spans next_text' do
-        @doc.text(nil).should eql "#{@prev_text}#{@spans}#{@next_text}" 
-      end
-    end
-  end
-
-  describe 'ascii_body' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @get_ascii_text = 'get ascii text'
-      @doc.stub(:get_ascii_text).and_return(@get_ascii_text)
-    end
-
-    it 'should return get_ascii_text' do
-      expect(@doc.ascii_body).to eql(@get_ascii_text)
     end
   end
 
   describe 'to_csv' do
     before do
       @doc = FactoryGirl.create(:doc)
-      @spans =['spans', 'prev', 'next']
-      @doc.stub(:spans).and_return(@spans)
+      @span =['span', 'prev', 'next']
+      @doc.stub(:span).and_return(@span)
     end
 
     context 'when params[:context_size] not present' do
@@ -1118,7 +1029,7 @@ describe Doc do
       end
 
       it 'should return csv data' do
-        @csv.should eql("left\tfocus\tright\n#{@spans[1]}\t#{@spans[0]}\t#{@spans[2]}\n")
+        @csv.should eql("left\tfocus\tright\n#{@span[1]}\t#{@span[0]}\t#{@span[2]}\n")
       end
     end
 
@@ -1128,7 +1039,7 @@ describe Doc do
       end
 
       it 'should return csv data' do
-        @csv.should eql("focus\n#{@spans[0]}\n")
+        @csv.should eql("focus\n#{@span[0]}\n")
       end
     end
   end
@@ -1140,7 +1051,7 @@ describe Doc do
       @body = 'ABCDE12345ABCDE1234567890'
 
       @doc = FactoryGirl.create(:doc, body: @body)
-      @spans_highlight = @doc.spans_highlight({begin: @begin, end: @end})
+      @spans_highlight = @doc.highlight_span({begin: @begin, end: @end})
     end
     
     it 'should return prev, span, next text' do
@@ -1191,52 +1102,54 @@ describe Doc do
       end
 
       context 'when project.associate_projects present' do
-        before do
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @project.associate_projects << @project_1
-          @project.associate_projects << @project_2
-          @project_denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc_1, :begin => 4, :end => 10)
-          @denotations = @doc_1.hdenotations(@project)
-        end
-        
-        it 'should return denotation belongs to doc, project and associate_proejct, and copied form associate_projects' do
-          @denotations.size.should eql(7)
-        end
-        
-        it 'should return @project.associate_projects.denotations project match' do
-          @denotations[0].should eql(
-          {
-            :id => @doc_1_project_1_denotation_0_9.hid,
-            :obj => @doc_1_project_1_denotation_0_9.obj,
-            :span => {:begin => @doc_1_project_1_denotation_0_9.begin, :end => @doc_1_project_1_denotation_0_9.end}
-          })
-        end
-        
-        it 'should return @project.associate_projects.denotations project match' do
-          @denotations[2].should eql(
-          {
-            :id => @doc_1_project_1_denotation_1_9.hid,
-            :obj => @doc_1_project_1_denotation_1_9.obj,
-            :span => {:begin => @doc_1_project_1_denotation_1_9.begin, :end => @doc_1_project_1_denotation_1_9.end}
-          })
-        end
-        
-        it 'should return @project.associate_projects.denotations project match' do
-          @denotations[4].should eql(
-          {
-            :id => @doc_1_project_2_denotation.hid,
-            :obj => @doc_1_project_2_denotation.obj,
-            :span => {:begin => @doc_1_project_2_denotation.begin, :end => @doc_1_project_2_denotation.end}
-          })
-        end
-        
-        it 'should return @project.associate_projects.denotations project match' do
-          @denotations[6].should eql(
-          {
-            :id => @project_denotation.hid,
-            :obj => @project_denotation.obj,
-            :span => {:begin => @project_denotation.begin, :end => @project_denotation.end}
-          })
+        pending do
+          before do
+            @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+            @project.associate_projects << @project_1
+            @project.associate_projects << @project_2
+            @project_denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc_1, :begin => 4, :end => 10)
+            @denotations = @doc_1.hdenotations(@project)
+          end
+          
+          it 'should return denotation belongs to doc, project and associate_proejct, and copied form associate_projects' do
+            @denotations.size.should eql(7)
+          end
+          
+          it 'should return @project.associate_projects.denotations project match' do
+            @denotations[0].should eql(
+            {
+              :id => @doc_1_project_1_denotation_0_9.hid,
+              :obj => @doc_1_project_1_denotation_0_9.obj,
+              :span => {:begin => @doc_1_project_1_denotation_0_9.begin, :end => @doc_1_project_1_denotation_0_9.end}
+            })
+          end
+          
+          it 'should return @project.associate_projects.denotations project match' do
+            @denotations[2].should eql(
+            {
+              :id => @doc_1_project_1_denotation_1_9.hid,
+              :obj => @doc_1_project_1_denotation_1_9.obj,
+              :span => {:begin => @doc_1_project_1_denotation_1_9.begin, :end => @doc_1_project_1_denotation_1_9.end}
+            })
+          end
+          
+          it 'should return @project.associate_projects.denotations project match' do
+            @denotations[4].should eql(
+            {
+              :id => @doc_1_project_2_denotation.hid,
+              :obj => @doc_1_project_2_denotation.obj,
+              :span => {:begin => @doc_1_project_2_denotation.begin, :end => @doc_1_project_2_denotation.end}
+            })
+          end
+          
+          it 'should return @project.associate_projects.denotations project match' do
+            @denotations[6].should eql(
+            {
+              :id => @project_denotation.hid,
+              :obj => @project_denotation.obj,
+              :span => {:begin => @project_denotation.begin, :end => @project_denotation.end}
+            })
+          end
         end
       end
     end
@@ -1245,7 +1158,7 @@ describe Doc do
       before do
         @denotation_within_span_1 = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_1, :begin => 40, :end => 49)
         @denotation_within_span_2 = FactoryGirl.create(:denotation, :project => @project_1, :doc => @doc_1, :begin => 41, :end => 49)
-        @denotations = @doc_1.hdenotations(@project_1, :spans => {:begin_pos => 40, :end_pos => 50})  
+        @denotations = @doc_1.hdenotations(@project_1, {:begin => 40, :end => 50})
       end
       
       it 'should return @doc.denotations.within.spans' do
@@ -1266,13 +1179,13 @@ describe Doc do
     end
   end
   
-  describe 'denotations_in_tracks' do
+  describe '#denotations_in_tracks' do
     before do
       @doc = FactoryGirl.create(:doc)
       @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_1.add_doc(@doc)
-      @project_2.add_doc(@doc)
+      @project_1.docs << @doc
+      @project_2.docs << @doc
       @denotation_1 = FactoryGirl.create(:denotation, :project_id => @project_1.id)
       @denotation_2 = FactoryGirl.create(:denotation, :project_id => @project_2.id)
       @hdenotaions = 'hdenotations'
@@ -1303,39 +1216,6 @@ describe Doc do
     end
   end
 
-  describe 'project_denotations' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @denotation_1 = FactoryGirl.create(:denotation, :project_id => @project_1.id)
-      @denotation_2 = FactoryGirl.create(:denotation, :project_id => @project_2.id)
-      @doc.stub(:denotations).and_return([@denotation_1, @denotation_2])
-      @hdenotaions = 'hdenotations'
-      @doc.stub(:hdenotations) do |project|
-        "project_id_#{ project.id }"
-      end
-      #and_return(@hdenotaions)
-      @project_denotaions = @doc.project_denotations
-    end
-    
-    it 'should return project' do
-      @project_denotaions[0][:project].should eql(@project_1)
-    end
-    
-    it 'should return denotations' do
-      @project_denotaions[0][:denotations].should eql("project_id_#{ @project_1.id }")
-    end
-    
-    it 'should return project' do
-      @project_denotaions[1][:project].should eql(@project_2)
-    end
-    
-    it 'should return denotations' do
-      @project_denotaions[1][:denotations].should eql("project_id_#{ @project_2.id }")
-    end
-  end
-
   describe 'hrelations' do
     before do
       @doc = FactoryGirl.create(:doc)
@@ -1344,15 +1224,16 @@ describe Doc do
     
     context 'when options[:spans] present' do
       before do
-        @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @relation_1 = FactoryGirl.create(:relation, project: @project, :hid => 'H1', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
-        @relation_2 = FactoryGirl.create(:relation, project: @project, :hid => 'H2', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
+        @denotation_1 = FactoryGirl.create(:denotation, :hid=> 'T1', :doc => @doc, :begin => 2, :end => 4)
+        @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+        @relation_1 = FactoryGirl.create(:relation, project: @project_1, :hid => 'H1', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
+        @relation_2 = FactoryGirl.create(:relation, project: @project_2, :hid => 'H2', :subj_id => @denotation_1.id, :obj_id => @denotation_1.id, :obj_type => 'Denotation', :subj_type => 'Denotation')
       end
       
       context 'when project blank' do
         before do
-          @hrelations  = @doc.hrelations(nil, {:spans => {:begin_pos => 1, :end_pos => 5}} )
+          @hrelations  = @doc.hrelations(nil, ['T1'])
         end
 
         it 'should return doc.denotations subjrels && objrels' do
@@ -1365,13 +1246,13 @@ describe Doc do
       
       context 'when project present' do
         before do
-          @project.stub_chain(:relations, :where).and_return([@relation_2])
-          @hrelations  = @doc.hrelations(@project, {:spans => {:begin_pos => 1, :end_pos => 5}} )
+          @project_1.stub_chain(:relations, :where).and_return([@relation_2])
+          @hrelations  = @doc.hrelations(@project_1, ['T1'] )
         end
 
         it 'should return project.relations' do
           @hrelations.should eql([
-              {:id => @relation_2.hid, :pred => @relation_2.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid} 
+              {:id => @relation_1.hid, :pred => @relation_1.pred, :subj => @denotation_1.hid, :obj => @denotation_1.hid} 
           ])
         end
       end
@@ -1434,7 +1315,7 @@ describe Doc do
       @denotation_3 = FactoryGirl.create(:denotation, :project_id => 1000, :doc => @doc)
       @denotations = double(:denotations)
       @doc.stub(:denotations).and_return(@denotations)
-      @denotations.stub(:within_spans).and_return([@denotation_1, @denotation_2, @denotation_3])
+      @denotations.stub(:within_span).and_return([@denotation_1, @denotation_2, @denotation_3])
       @projects = @doc.spans_projects({:begin => nil, :end => nil})
     end
     
@@ -1500,18 +1381,18 @@ describe Doc do
   describe 'hmodifications' do
     before do
       @doc = FactoryGirl.create(:doc)
-      FactoryGirl.create(:user)
+      @user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, :user => @user)
     end
       
-    context 'when options[:spans] present' do
+    context 'when base_ids present' do
       before do
-        @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc, :begin => 2, :end => 4)
-        @instance_1 = FactoryGirl.create(:instance, :obj => @denotation_1, :project_id => 1)
-        @modification_1 = FactoryGirl.create(:modification, :hid => 'HID', :pred => 'PRED', :obj_type => 'Denotation', :obj => @denotation_1, project: FactoryGirl.create(:project, user: FactoryGirl.create(:user)))
-        @hmodifications = @doc.hmodifications(@project,  {:spans => {:begin_pos => 1, :end_pos => 5}})
+        @denotation_1 = FactoryGirl.create(:denotation, :project => @project, :hid => 'T1', :doc => @doc, :begin => 2, :end => 4)
+        @modification_1 = FactoryGirl.create(:modification, :project => @project, :obj => @denotation_1)
+        @hmodifications = @doc.hmodifications(@project,  ['T1'])
       end
       
-      it 'should return denotations.within_spans.modifications' do
+      it 'should return denotations.within_span.modifications' do
         @hmodifications.should eql([{:id => @modification_1.hid, :pred => @modification_1.pred, :obj => @denotation_1.hid}])
       end
     end
@@ -1780,7 +1661,7 @@ B')
     end
   end
 
-  describe 'self.has_divs?' do
+  describe '.has_divs?' do
     before do
       @sourcedb = 'sourcedb'
       @sourceid = 'sourceid'
