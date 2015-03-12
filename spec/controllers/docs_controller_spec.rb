@@ -279,8 +279,8 @@ describe DocsController do
       @project.docs << @doc_2
       @project.docs << @doc_3
       @project.docs << @doc_4
-      FactoryGirl.create(:doc, sourcedb: 'sdb3', sourceid: '323456', serial: 0)
-      FactoryGirl.create(:doc, sourcedb: 'sdb4', sourceid: '423456', serial: 0)
+      @doc_5 = FactoryGirl.create(:doc, sourcedb: 'sdb3', sourceid: '323456', serial: 0)
+      @doc_6 = FactoryGirl.create(:doc, sourcedb: 'sdb4', sourceid: '423456', serial: 0)
       @current_user = nil
       current_user_stub(@current_user)
     end
@@ -310,11 +310,9 @@ describe DocsController do
         post :search, project_id: @project.name, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
       end
 
-      pending 'sphinx not work properly' do
-        it 'should search from @project.docs with params by Sphinx' do
-          post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
-          assigns[:source_docs].should =~ [@doc_1, @doc_2, @doc_3, @doc_4]
-        end
+      it 'should search from @project.docs with params by Sphinx' do
+        post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
+        assigns[:source_docs].should =~ [@doc_1, @doc_3]
       end
     end
 
@@ -330,11 +328,9 @@ describe DocsController do
         post :search, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
       end
 
-      pending 'sphinx not work properly' do
-        it 'should search from @project.docs with params by Sphinx' do
-          post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
-          assigns[:source_docs].should =~ [@doc_1, @doc_2, @doc_3, @doc_4]
-        end
+      it 'should search from @project.docs with params by Sphinx' do
+        post :search, sourcedb: 'sdb', sourceid: '', body: ''
+        assigns[:source_docs].should =~ [@doc_1, @doc_3, @doc_5, @doc_6]
       end
     end
 
@@ -461,120 +457,6 @@ describe DocsController do
 
         it 'should return status 422' do
           expect(response.status).to eql(422)
-        end
-      end
-    end
-  end
-  
-  describe 'search' do
-    context 'without pagination' do
-      before do
-        @pubmed = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :serial => 0, :sourceid => '234')
-        @selial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1, :sourceid => '123')
-        @sourceid_123 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '123')
-        @sourceid_1234 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '1234')
-        @sourceid_1123 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '1123')
-        @sourceid_234 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '234')
-      end
-      
-      context 'when project_id blank' do
-        context 'when params[:sourceid] and params[:body] is nil' do
-          before do
-            @sourcedb = 'PMC'
-            get :search, sourcedb: 'PMC'
-          end  
-          
-          it 'should set sourcedb docs as @source_docs' do
-            assigns[:source_docs].should =~ Doc.where(sourcedb: @sourcedb).group(:id).group(:sourcedb).group(:sourceid)
-          end
-          
-          it 'should not include sourcedb not match' do
-            assigns[:source_docs].should_not include @pubmed
-          end
-        end
-        
-        context 'when params[:sourceid] present' do
-          before do
-            @search_sourceid = '123'
-            get :search, :sourceid => @search_sourceid
-          end
-          
-          it 'should include source id like match' do
-            assigns[:source_docs].should =~ Doc.where('sourceid like ?', "#{@search_sourceid}%").group(:id).group(:sourcedb).group(:sourceid)
-          end
-          
-          it 'should not include source id like not match' do
-            assigns[:source_docs].should_not include(@pubmed)
-          end
-    
-          it 'should not include sourceid not include 123' do
-            assigns[:source_docs].should_not include(@sourceid_234)
-          end
-        end
-        
-        context 'when params[:body] present' do
-          before do
-            @sourceid_123_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '123123', :body => 'test')
-            @sourceid_1234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '1234123', :body => 'testmatch')
-            @sourceid_234_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '234123', :body => 'matchtest')
-            @sourceid_12345_est = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '123123123', :body => 'est')
-            @search_text = 'test'
-            get :search, :body => @search_text 
-          end
-          
-          it 'should include  body contains body' do
-            assigns[:source_docs].should =~ Doc.where('body like ?', "%#{@search_text}%").group(:id).group(:sourcedb).group(:sourceid)
-          end
-          
-          it 'should include body contains body' do
-            assigns[:source_docs].should_not include(@sourceid_12345_est)
-          end
-        end
-        
-        context 'when params[:sourceid] and params[:body] present' do
-          before do
-            @sourceid_0_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '0', :body => 'test')
-            @sourceid_1_body_test_and = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '1', :body => 'testand')
-            @sourceid_2_body_test = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => '2', :body => 'test')
-            @search_sourceid = 1
-            @search_body = 'test'
-            get :search, :sourceid => 1, :body => @search_body
-          end
-          
-          it 'should include sourceid and body matches' do
-            assigns[:source_docs].should =~ Doc.where('sourceid like ?', "#{@search_sourceid}%").where('body like ?', "%#{@search_body}%").group(:id).group(:sourcedb).group(:sourceid)
-          end
-          
-          it 'should not include body does not match' do
-            assigns[:source_docs].should_not include(@sourceid_1_body_nil)
-          end
-          
-          it 'should not include sourceid does not match' do
-            assigns[:source_docs].should_not include(@sourceid_2_body_test)
-          end
-        end
-      end
-      
-      context 'when project_id prsent' do
-        before do
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @project.docs << @selial_1
-          @project.reload
-          get :search, :sourcedb => @selial_1.sourcedb, :project_id => @project.name
-        end
-        
-        it 'should docs condition match included in project' do
-          assigns[:source_docs].should =~ [@selial_1]
-        end
-      end
-      
-      context 'when docs not found' do
-        before do
-          get :search, :sourcedb => 'invalid'
-        end
-        
-        it 'should set flash[:notice]' do
-          flash[:notice].should be_present
         end
       end
     end

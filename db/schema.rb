@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150311050401) do
+ActiveRecord::Schema.define(:version => 20150311050417) do
 
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
@@ -142,7 +142,6 @@ ActiveRecord::Schema.define(:version => 20150311050401) do
     t.boolean  "successful"
     t.text     "uri"
     t.string   "method"
-    t.string   "message"
   end
 
   add_index "notices", ["project_id"], :name => "index_notices_on_project_id"

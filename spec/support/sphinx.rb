@@ -24,5 +24,6 @@ RSpec.configure do |config|
   config.before(:each) do
     # Index data when running an acceptance spec.
     index if example.metadata[:js]
+    ThinkingSphinx::Deltas.suspend!
   end
 end

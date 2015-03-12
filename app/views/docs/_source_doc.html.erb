@@ -2,16 +2,8 @@
 	<td><%= sourceid_index_link_helper(source_doc) -%></td>
 	<td><%= source_doc.sourceid -%></td>
 	<td><%= source_doc.body -%></td>
-	<td style="text-align:right">
-    <% if params[:project_id].present? -%>
-      <% if source_doc.has_divs? -%>
-        <%= link_to source_doc.projects.size, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
-      <% else -%>
-        <%= link_to source_doc.projects.size, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
-      <% end -%>
-    <% end -%>
-  </td>
-  <td style="text-align:right"><%= annotations_count_helper(@project, source_doc) -%></td>
+	<td style="text-align:right"><%= source_doc.projects_count -%></td>
+  <td><%= annotations_count_helper(@project, source_doc) -%></td>
   <td>
     <span class="button">
       <% if  params[:project_id].present? -%>

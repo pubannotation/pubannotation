@@ -1,4 +1,4 @@
-ThinkingSphinx::Index.define :doc, with: :active_record do
+ThinkingSphinx::Index.define :doc, with: :active_record, delta: true do
   indexes sourcedb, sortable: true
   indexes sourceid, sortable: true
   indexes body, sortable: true
