@@ -528,7 +528,6 @@ class Project < ActiveRecord::Base
 
 
   def index_annotations_rdf
-    # rdfwriter = 'http://bionlp.dbcls.jp/tao_rdfizer'
     rdfizer = 'http://bionlp.dbcls.jp/tao_rdfizer'
     rdfizer_annotations = "#{rdfizer}?mode=annotations"
     rdfizer_spans       = "#{rdfizer}?mode=spans"
@@ -598,14 +597,14 @@ class Project < ActiveRecord::Base
     ttl_file.write(ttl)
     ttl_file.close
 
-    # server = 'http://pubann.dbcls.jp'
     server = 'http://localhost:8890'
+    auth = 'dba:dba'
     destination = if project_name.nil?
       "#{server}/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/docs"
     else
       "#{server}/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/projects/#{project_name}"
     end
-    cmd = %[curl --digest --user dba:dba --verbose --url #{destination} -X PUT -T #{ttl_file.path}]
+    cmd = %[curl --digest --user #{auth} --verbose --url #{destination} -X PUT -T #{ttl_file.path}]
     message, error, state = Open3.capture3(cmd)
     ttl_file.unlink
     return state.success?
