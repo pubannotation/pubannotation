@@ -1,6 +1,8 @@
 class Doc < ActiveRecord::Base
   UserSourcedbSeparator = ':'
+  after_save :expire_page_cache
   before_destroy :decrement_docs_counter
+  after_destroy :expire_page_cache
   before_validation :attach_sourcedb_suffix
   include ApplicationHelper
 
@@ -544,6 +546,10 @@ class Doc < ActiveRecord::Base
     if sourcedb.include?(':') == false && username.present?
       self.sourcedb = "#{sourcedb}#{UserSourcedbSeparator}#{username}"
     end
+  end
+
+  def expire_page_cache
+    ActionController::Base.new.expire_fragment('sourcedbs')
   end
 
   # before destroy

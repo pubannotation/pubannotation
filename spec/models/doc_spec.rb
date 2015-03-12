@@ -1937,6 +1937,24 @@ B')
       end
     end
   end
+
+  describe 'expire_page_cache' do
+    context 'when after_save' do
+      it 'should call expire_page_cache' do
+        @doc = FactoryGirl.build(:doc)
+        @doc.should_receive(:expire_page_cache)
+        @doc.save
+      end
+    end
+
+    context 'when after_destroy' do
+      it 'should call expire_page_cache' do
+        @doc = FactoryGirl.create(:doc)
+        @doc.should_receive(:expire_page_cache)
+        @doc.destroy
+      end
+    end
+  end
    
   describe 'decrement_docs_counter' do
     before do
