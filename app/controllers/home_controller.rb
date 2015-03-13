@@ -13,9 +13,9 @@ class HomeController < ApplicationController
 	    raise RuntimeError, "Not authorized" unless current_user.root? == true
 	    system = Project.find_by_name('system-maintenance')
 	    system.notices.create({method: "index projects annotations rdf"})
-	    system.index_projects_annotations_rdf
-	  # rescue => e
-	  #   flash[:notice] = e.message
+	    system.delay.index_projects_annotations_rdf
+	  rescue => e
+	    flash[:notice] = e.message
 	  end
 	  redirect_to project_path('system-maintenance')
 	end
@@ -25,7 +25,7 @@ class HomeController < ApplicationController
 	    raise "Not authorized" unless current_user.root? == true
 	    system = Project.find_by_name('system-maintenance')
 	    system.notices.create({method: "index docs rdf"})
-	    system.index_docs_rdf
+	    system.delay.index_docs_rdf
 	  rescue => e
 	    flash[:notice] = e.message
 	  end
