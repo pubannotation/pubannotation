@@ -93,6 +93,12 @@ class Doc < ActiveRecord::Base
     order(sort_order)
   }
 
+  def self.descriptor
+    descriptor  = self.sourcedb + ':' + self.sourceid
+    descriptor += '-' + self.divid if self.has_divs?
+    descriptor
+  end
+
   def self.get_doc(docspec)
     if docspec[:id].present?
       Doc.find(docspec[:id])

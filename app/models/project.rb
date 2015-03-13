@@ -475,21 +475,6 @@ class Project < ActiveRecord::Base
     end
   end
 
-
-  def store_rdf (ttl)
-    require 'fileutils'
-
-    begin
-      FileUtils.mkdir_p(self.downloads_system_path) unless Dir.exist?(self.downloads_system_path)
-      file = File.new(self.annotations_rdf_system_path, 'w')
-      Zip::ZipOutputStream.open(file.path) do |z|
-        z.put_next_entry(self.name + '.ttl')
-        z.print ttl
-      end
-      file.close
-    end
-  end
-
   def annotations_rdf_filename
     "#{self.name.gsub(' ', '_')}-annotations-rdf.zip"
   end
@@ -503,22 +488,9 @@ class Project < ActiveRecord::Base
   end
 
   def create_annotations_rdf(encoding = nil)
-    rdfwriter = 'http://bionlp.dbcls.jp/tao_rdfizer'
     begin
-      annotations_collection = self.annotations_collection(encoding)
-
-      ttl = ''
-      header_length = 0
-      annotations_collection.each_with_index do |ann, i|
-        if i == 0
-          ttl = self.get_conversion(ann, self.rdfwriter)
-          ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
-        else
-          ttl += self.get_conversion(ann, self.rdfwriter).split(/\n/)[header_length .. -1].join("\n")
-        end
-        ttl += "\n" unless ttl.end_with?("\n")
-      end
-      result = store_rdf(ttl)
+      ttl = rdfize_docs(self.annotations_collection(encoding), Pubann::Application.config.rdfizer_annotations)
+      result = create_rdf_zip(ttl)
       self.notices.create({method: "create annotations rdf", successful: true})
     rescue => e
       self.notices.create({method: "create annotations rdf", successful: false})
@@ -526,90 +498,89 @@ class Project < ActiveRecord::Base
     ttl
   end 
 
+  def create_rdf_zip (ttl)
+    require 'fileutils'
+    begin
+      FileUtils.mkdir_p(self.downloads_system_path) unless Dir.exist?(self.downloads_system_path)
+      file = File.new(self.annotations_rdf_system_path, 'w')
+      Zip::ZipOutputStream.open(file.path) do |z|
+        z.put_next_entry(self.name + '.ttl')
+        z.print ttl
+      end
+      file.close
+    end
+  end
 
-  def index_annotations_rdf
-    rdfizer = 'http://bionlp.dbcls.jp/tao_rdfizer'
-    rdfizer_annotations = "#{rdfizer}?mode=annotations"
-    rdfizer_spans       = "#{rdfizer}?mode=spans"
-
+  def index_projects_annotations_rdf
     projects = Project.for_index
     total_number = projects.length
-
-    docs = []
     projects.each_with_index do |project, index|
       index1 = index + 1
       self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}"})
       begin
-        annotations_collection = project.annotations_collection
-        docs += project.docs
-
-        ttl = ''
-        header_length = 0
-        annotations_collection.each_with_index do |ann, i|
-          if i == 0
-            ttl = self.get_conversion(ann, rdfizer_annotations)
-            ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
-          else
-            ttl += self.get_conversion(ann, rdfizer_annotations).split(/\n/)[header_length .. -1].join("\n")
-          end
-          ttl += "\n" unless ttl.end_with?("\n")
-        end
-        result = index_rdf(project.name, ttl)
-        raise IOError, "sparql-graph-crud failed" unless result
+        index_project_annotations_rdf(project)
         self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}", successful: true})
       rescue => e
         self.notices.create({method:"- annotations rdf index (#{index1}/#{total_number}): #{project.name}", successful: false, message: e.message})
       end
     end
+    self.notices.create({method: "index projects annotations rdf", successful: true})
+  end
 
-    # TODO: repeated. make it DRY!
+  def index_project_annotations_rdf(project)
+    ttl = rdfize_docs(project.annotations_collection, Pubann::Application.config.rdfizer_annotations)
+    store_rdf(project.name, ttl)
+  end
+
+  def index_docs_rdf
     begin
-      self.notices.create({method:"- spans rdf index"})
-      docs.uniq!
+      projects = Project.for_index
+      docs = projects.inject([]){|sum, p| sum + p.docs}.uniq
       annotations_collection = docs.collect{|doc| doc.hannotations}
-      ttl = ''
-      header_length = 0
-      annotations_collection.each_with_index do |ann, i|
-        if i == 0
-          ttl = self.get_conversion(ann, rdfizer_spans)
-          ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
-        else
-          ttl += self.get_conversion(ann, rdfizer_spans).split(/\n/)[header_length .. -1].join("\n")
-        end
-        ttl += "\n" unless ttl.end_with?("\n")
-      end
-      result = index_rdf(nil, ttl)
-      raise "sparql-graph-crud failed" unless result
-      self.notices.create({method:"- spans rdf index", successful: true})
-    rescue => e
-      self.notices.create({method:"- spans rdf index", successful: false, message: e.message})
+      ttl = rdfize_docs(annotations_collection, Pubann::Application.config.rdfizer_spans)
+      store_rdf(nil, ttl)
+      self.notices.create({method: "index docs rdf", successful: true})
+    rescue
+      self.notices.create({method: "index docs rdf", successful: false, message: e.message})
     end
   end 
 
-  def index_rdf(project_name = nil, ttl)
+  def rdfize_docs(annotations_collection, rdfizer)
+    ttl = ''
+    header_length = 0
+    annotations_collection.each_with_index do |annotations, i|
+      begin
+        doc_ttl = self.get_conversion(annotations, rdfizer)
+        if i == 0
+          doc_ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
+        else
+          doc_ttl = doc_ttl.split(/\n/)[header_length .. -1].join("\n")
+        end
+        doc_ttl += "\n" unless doc_ttl.end_with?("\n")
+        ttl += doc_ttl
+      rescue => e
+        self.notices.create({method:"  - index annotations rdf failed with #{doc.descriptor}", successful: false, message: e.message})
+        next
+      end
+    end
+    ttl
+  end
+
+  def store_rdf(project_name = nil, ttl)
     require 'open3'
 
-    ttl_file = if project_name.nil?
-      Tempfile.new("spans-rdf.ttl")
-    else
-      Tempfile.new("project-#{project_name}-annotations-rdf.ttl")
-    end
+    ttl_file = Tempfile.new("temporary.ttl")
     ttl_file.write(ttl)
     ttl_file.close
 
-    server = 'http://localhost:8890'
-    auth = 'dba:dba'
-    destination = if project_name.nil?
-      "#{server}/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/docs"
-    else
-      "#{server}/sparql-graph-crud-auth?graph-uri=http://pubannotation.org/projects/#{project_name}"
-    end
-    cmd = %[curl --digest --user #{auth} --verbose --url #{destination} -X PUT -T #{ttl_file.path}]
+    graph_uri = project_name.nil? ? "http://pubannotation.org/docs" : "http://pubannotation.org/projects/#{project_name}"
+    destination = "#{Pubann::Application.config.sparql_end_point}/sparql-graph-crud-auth?graph-uri=#{graph_uri}"
+    cmd = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -X PUT -T #{ttl_file.path}]
     message, error, state = Open3.capture3(cmd)
-    ttl_file.unlink
-    return state.success?
-  end
 
+    ttl_file.unlink
+    raise IOError, "sparql-graph-crud failed" unless state.success?
+  end
 
   def self.params_from_json(json_file)
     project_attributes = JSON.parse(File.read(json_file))

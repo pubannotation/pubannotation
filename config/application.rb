@@ -67,5 +67,11 @@ module Pubann
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
 
+    # for TAO RDF indexing
+    config.rdfizer = 'http://bionlp.dbcls.jp/tao_rdfizer'
+    config.rdfizer_annotations = "#{config.rdfizer}?mode=annotations"
+    config.rdfizer_spans       = "#{config.rdfizer}?mode=spans"
+    config.sparql_end_point = 'http://localhost:8890'
+    config.sparql_end_point_auth = 'dba:dba'
   end
 end

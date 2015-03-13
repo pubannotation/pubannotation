@@ -117,7 +117,6 @@ Pubann::Application.routes.draw do
       get 'autocomplete_project_author'  => 'projects#autocomplete_project_author', :as => 'autocomplete_project_author'
       get 'zip_upload' => 'projects#zip_upload'
       post 'create_from_zip' => 'projects#create_from_zip'
-      get 'index_annotations_rdf' => 'projects#index_annotations_rdf'
     end
   end
 
@@ -250,6 +249,8 @@ Pubann::Application.routes.draw do
   # just remember to delete public/index.html.
   root :to => 'home#index'
   match '/' => 'home#index', :as => :home
+  match '/index_projects_annotations_rdf' => 'home#index_projects_annotations_rdf'
+  match '/index_docs_rdf' => 'home#index_docs_rdf'
 
   # See how all your routes lay out with "rake routes"
 
