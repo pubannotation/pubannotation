@@ -175,25 +175,11 @@ class ApplicationController < ActionController::Base
     end
   end
 
-
   def archive_annotation (project_name, format = 'json')
     project = Project.find_by_name(project_name)
     project.docs.each do |d|
     end
   end
-
-
-  def get_conversion (annotation, converter, identifier = nil)
-    RestClient.post converter, annotation.to_json, :content_type => :json do |response, request, result|
-      case response.code
-      when 200
-        response
-      else
-        nil
-      end
-    end
-  end
-
 
   def gen_annotations (annotations, annserver)
     RestClient.post annserver, {:text => annotations[:text]}, :accept => :json do |response, request, result|
@@ -327,7 +313,6 @@ class ApplicationController < ActionController::Base
 
     denotations_new
   end
-
 
   def get_navigator ()
     navigator = []
