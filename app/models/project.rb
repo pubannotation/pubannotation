@@ -540,7 +540,7 @@ class Project < ActiveRecord::Base
       ttl = rdfize_docs(annotations_collection, Pubann::Application.config.rdfizer_spans)
       store_rdf(nil, ttl)
       self.notices.create({method: "index docs rdf", successful: true})
-    rescue
+    rescue => e
       self.notices.create({method: "index docs rdf", successful: false, message: e.message})
     end
   end 
@@ -559,7 +559,9 @@ class Project < ActiveRecord::Base
         doc_ttl += "\n" unless doc_ttl.end_with?("\n")
         ttl += doc_ttl
       rescue => e
-        self.notices.create({method:"  - index annotations rdf failed with #{doc.descriptor}", successful: false, message: e.message})
+        doc_description  = annotations[:sourcedb] + annotations[:sourceid]
+        doc_description += annotations[:divid] if annotations[:divid]
+        self.notices.create({method:"  - index annotations rdf failed with #{doc_description}", successful: false, message: e.message})
         next
       end
     end
