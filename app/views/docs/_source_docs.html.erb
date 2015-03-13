@@ -33,9 +33,9 @@
     <th><%= t('activerecord.attributes.doc.body') %></th>
     <th class="docs_header_projects_number">
       <% if params[:action] == 'search' -%>
-        <%= t('activerecord.models.project') -%>
+        '#projects' -%>
       <% else -%>
-        <%= sortable(Doc, 'projects_count', t('activerecord.models.project')) -%>
+        <%= sortable(Doc, 'projects_count', '#projects') -%>
       <% end -%>
     </th>
     <th style="width:8em">
