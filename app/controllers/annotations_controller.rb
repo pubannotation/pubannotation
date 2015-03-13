@@ -6,33 +6,6 @@ class AnnotationsController < ApplicationController
   after_filter :set_access_control_headers
   include DenotationsHelper
 
-  def project_annotations_index
-    begin
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless @project.present?
-
-      # retrieve annotations to all the documents
-      annotations_collection = @project.annotations_collection(params[:encoding])
-
-      respond_to do |format|
-        format.ttl {
-          ttl = ''
-          header_length = 0
-          annotations_collection.each_with_index do |ann, i|
-            if i == 0
-              ttl = get_conversion(ann, @project.rdfwriter)
-              ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
-            else
-              ttl += get_conversion(ann, @project.rdfwriter).split(/\n/)[header_length .. -1].join("\n")
-            end
-            ttl += "\n" unless ttl.end_with?("\n")
-          end
-          render :text => ttl, :content_type => 'application/x-turtle', :filename => @project.name
-        }
-      end
-    end
-  end
-
   # annotations for doc without project
   def doc_annotations_index
     begin
