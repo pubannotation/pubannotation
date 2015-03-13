@@ -575,6 +575,8 @@ class Project < ActiveRecord::Base
     ttl_file.write(ttl)
     ttl_file.close
 
+    File.open("docs-spans.ttl", 'w') {|f| f.write(ttl)}
+
     graph_uri = project_name.nil? ? "http://pubannotation.org/docs" : "http://pubannotation.org/projects/#{project_name}"
     destination = "#{Pubann::Application.config.sparql_end_point}/sparql-graph-crud-auth?graph-uri=#{graph_uri}"
     cmd = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -X PUT -T #{ttl_file.path}]
