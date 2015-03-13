@@ -10,6 +10,7 @@ development:
   username: your_username
   password: your_password
   pool: 5
+  port: 5433
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".

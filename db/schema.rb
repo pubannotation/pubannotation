@@ -82,10 +82,12 @@ ActiveRecord::Schema.define(:version => 20150311050417) do
     t.string   "sourceid"
     t.integer  "serial"
     t.string   "section"
-    t.datetime "created_at",                       :null => false
-    t.datetime "updated_at",                       :null => false
+    t.datetime "created_at",                          :null => false
+    t.datetime "updated_at",                          :null => false
     t.integer  "denotations_count", :default => 0
     t.integer  "subcatrels_count",  :default => 0
+    t.boolean  "delta",             :default => true, :null => false
+    t.integer  "projects_count",    :default => 0
   end
 
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
@@ -142,6 +144,7 @@ ActiveRecord::Schema.define(:version => 20150311050417) do
     t.boolean  "successful"
     t.text     "uri"
     t.string   "method"
+    t.string   "message"
   end
 
   add_index "notices", ["project_id"], :name => "index_notices_on_project_id"
