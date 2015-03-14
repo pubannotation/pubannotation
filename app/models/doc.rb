@@ -260,9 +260,9 @@ class Doc < ActiveRecord::Base
     begin_pos = span[:begin].to_i
     end_pos = span[:end].to_i
     prev_text = self.body[0...begin_pos]
-    spans = self.body[begin_pos...end_pos]
+    focus_text = self.body[begin_pos...end_pos]
     next_text = self.body[end_pos..self.body.length]
-    "#{prev_text}<span class='highlight'>#{spans}</span>#{next_text}"   
+    "<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"   
   end
   
   # TODO: to take care of associate projects

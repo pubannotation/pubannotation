@@ -2,9 +2,17 @@
 > <%= t('views.paths.home') %>
 <% end %>
 
-<h1>
-	<%= t('activerecord.models.doc').pluralize.capitalize.html_safe %>
-</h1>
+<div class="two-columns">
+<div class="column-left">
+<h1>left</h1>
+</div>
+<div class="column-right">
+<h1>Test</h1>
+</div>
+</div>
+
+
+<h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1>
 <% cache 'sourcedbs' do -%>
   <%= render :partial => "docs/sourcedbs" -%>
 <% end %>

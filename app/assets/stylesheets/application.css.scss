@@ -12,119 +12,12 @@
  *= require_tree .
  */
 
-$main_color: #002266;
-$sub_color: lighten(#112266, 60%);
-$base_margin: 15px;
+@import 'variables';
 
 body {
   margin: 0px;
   font-family: Meiryo, "メイリオ", "MS PGothic","MS Pゴシック", osaka, Verdana, Geneva, sans-serif;
   font-size: small;
-}
-
-.frame {
-  position:relative;
-  padding: 10px;
-  background-color: $main_color;
-  color: #aaaaaa;
-  a {
-    color: #aaaaff;
-  }
-}
-
-#footer {
-  margin-top: 20px;
-}
-
-#top-ribbon {
-  position: relative;
-  margin:0px;
-  padding: 1px 5px;
-  background-color: $sub_color;
-  .left {
-    position: static;
-    div {
-      display: inline;
-    }
-  }
-  .right {
-    position: absolute;
-    top: 0px;
-    right: 5px;
-    div {
-      display: inline;
-    }
-  }
-}
-
-#path {
-  font-size:x-small;
-  font-style:italic;
-}
-
-#account{
-  font-size:small;
-  color: #fff;
-  a{
-    color: #fff;
-  }
-}
-
-.menu {
-  ul {
-    display: inline;
-    padding: 0;
-    margin: 0;
-  }
-  li {
-    display: inline;
-    margin-left: 0.5em;
-  }
-  a {
-    background-color: $sub_color;
-    border-radius: 3px;
-    color: $main_color;
-  }
-}
-
-#notice {
-  margin:0px 5px;
-  font-size:small;
-  color:red;
-}
-
-.notice {
-  ul {
-    -webkit-margin-before: 0em;
-    -webkit-margin-after: 0em;
-    -webkit-margin-start: 0px;
-    -webkit-margin-end: 0px;
-    -webkit-padding-start: 20px;
-    -webkit-padding-start: 0px;
-
-    li {
-      margin: 0px;
-      padding: 0px;
-    }
-  }
-}
-
-#main {
-  margin:0px $base_margin;
-}
-
-#footer_navigation{
-  list-style: none;
-  margin-top:20px;
-  text-align: center;
-  li{
-    display: inline;
-    border-right: 1px solid $main_color;
-    padding: 0.2em $base_margin;
-  }
-  li:last-child{
-    border: none;
-  }
 }
 
 .meta {
@@ -137,15 +30,6 @@ body {
   text-decoration: none;
 }
 
-.pname {
-  font-style: italic;
-}
-
-.credit {
-  font-style:italic;
-  text-align:center;
-}
-
 .capitalize{
   text-transform:capitalize;
 }
@@ -154,25 +38,19 @@ body {
   text-transform:capitalize;
 }
 
-.highlight{
-  background-color: lighten(#ccc, 13%);
-  font-weight: bold;
-  padding: 0.1em 0;
+h1.title {
+  width:550px;
+  border-width: 0px 0px 2px 10px;
+  font-size: x-large; 
 }
 
 h1 {
-  width:700px;
+  width:400px;
   border:solid $main_color;
   border-width: 0px 0px 1px 5px;
   padding-left: 10px;
   margin-top: 20px;
   font-size: large;
-}
-
-h1.title {
-  width:550px;
-  border-width: 0px 0px 2px 10px;
-  font-size: x-large; 
 }
 
 h2 {
@@ -186,7 +64,6 @@ h2 {
   border-bottom-left-radius:7px;
   font-size: medium;
 }
-
 
 h3 {
     width:3em;
@@ -261,18 +138,6 @@ td {
 
 td.text {
   white-space: normal
-}
-
-.linkSpace {
-  font-style: italic;
-}
-
-.linkSpace .message {
-  color: $sub_color;
-}
-
-td * {
-    vertical-align: middle;
 }
 
 table.ann {
