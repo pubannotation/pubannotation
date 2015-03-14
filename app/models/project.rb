@@ -538,7 +538,7 @@ class Project < ActiveRecord::Base
       docs = projects.inject([]){|sum, p| sum + p.docs}.uniq
       annotations_collection = docs.collect{|doc| doc.hannotations}
       ttl = rdfize_docs(annotations_collection, Pubann::Application.config.rdfizer_spans)
-      store_rdf(nil, ttl)
+      # store_rdf(nil, ttl)
       self.notices.create({method: "index docs rdf", successful: true})
     rescue => e
       self.notices.create({method: "index docs rdf", successful: false, message: e.message})
@@ -548,8 +548,14 @@ class Project < ActiveRecord::Base
   def rdfize_docs(annotations_collection, rdfizer)
     ttl = ''
     header_length = 0
+    total_number = annotations_collection.length
     annotations_collection.each_with_index do |annotations, i|
+      index1 = i + 1
+      doc_description  = annotations[:sourcedb] + annotations[:sourceid]
+      doc_description += annotations[:divid].to_s if annotations[:divid]
+
       begin
+        self.notices.create({method:"  - index doc rdf (#{index1}/#{total_number}): #{doc_description}"})
         doc_ttl = self.get_conversion(annotations, rdfizer)
         if i == 0
           doc_ttl.each_line{|l| break unless l.start_with?('@'); header_length += 1}
@@ -557,11 +563,11 @@ class Project < ActiveRecord::Base
           doc_ttl = doc_ttl.split(/\n/)[header_length .. -1].join("\n")
         end
         doc_ttl += "\n" unless doc_ttl.end_with?("\n")
+        post_rdf(nil, doc_ttl)
         ttl += doc_ttl
+        self.notices.create({method:"  - index doc rdf (#{index1}/#{total_number}): #{doc_description}", successful: true})
       rescue => e
-        doc_description  = annotations[:sourcedb] + annotations[:sourceid]
-        doc_description += annotations[:divid] if annotations[:divid]
-        self.notices.create({method:"  - index annotations rdf failed with #{doc_description}", successful: false, message: e.message})
+        self.notices.create({method:"  - index doc rdf (#{index1}/#{total_number}): #{doc_description}", successful: false, message: e.message})
         next
       end
     end
@@ -580,6 +586,23 @@ class Project < ActiveRecord::Base
     graph_uri = project_name.nil? ? "http://pubannotation.org/docs" : "http://pubannotation.org/projects/#{project_name}"
     destination = "#{Pubann::Application.config.sparql_end_point}/sparql-graph-crud-auth?graph-uri=#{graph_uri}"
     cmd = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -X PUT -T #{ttl_file.path}]
+    message, error, state = Open3.capture3(cmd)
+
+    ttl_file.unlink
+    raise IOError, "sparql-graph-crud failed" unless state.success?
+  end
+
+
+  def post_rdf(project_name = nil, ttl)
+    require 'open3'
+
+    ttl_file = Tempfile.new("temporary.ttl")
+    ttl_file.write(ttl)
+    ttl_file.close
+
+    graph_uri = project_name.nil? ? "http://pubannotation.org/docs" : "http://pubannotation.org/projects/#{project_name}"
+    destination = "#{Pubann::Application.config.sparql_end_point}/sparql-graph-crud-auth?graph-uri=#{graph_uri}"
+    cmd = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -X POST -T #{ttl_file.path}]
     message, error, state = Open3.capture3(cmd)
 
     ttl_file.unlink
