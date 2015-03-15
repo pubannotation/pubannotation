@@ -1,9 +1,7 @@
-<ul>
+<ul style="margin:0; margin-right:1em; padding:0; padding-left:1.5em">
 <% @sourcedb_doc_counts.each do |sourcedb, doc_count| -%>
 <li>
-	<%= sourcedb %>
-	(<%= (doc_count) -%>)
+	<%= sourcedb %> (<%= (doc_count) -%>)
 </li>
 <% end -%>
-
 </ul>
