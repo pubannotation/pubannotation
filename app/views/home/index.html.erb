@@ -2,15 +2,27 @@
 > <%= t('views.paths.home') %>
 <% end %>
 
-<h1>
-	<%= t('activerecord.models.doc').pluralize.capitalize.html_safe %>
-</h1>
-<% cache 'sourcedbs' do -%>
-  <%= render :partial => "docs/sourcedbs" -%>
-<% end %>
+<div class="two-columns">
+	<div class="column-left">
+		<!-- <h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1> -->
+		<h1><%= link_to t('activerecord.models.doc').pluralize.capitalize.html_safe, docs_path %></h1>
+		<% cache 'sourcedbs' do -%>
+		<%= render :partial => "docs/sourcedbs" -%>
+		<% end %>
+	</div>
+
+	<div class="column-right">
+		<fieldset id="announcements">
+		<legend>Notice</legend>
+		<ul>
+		<li>Next maintenance is scheduled for 18 March (7AM - 9AM UTC).</li>
+		</ul>
+		</fieldset>
+	</div>
+</div>
 
 <h1>
-	<%= t('activerecord.models.project').pluralize.capitalize.html_safe %>
+	<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
 	<span class='info'>(<%= @projects_number -%>)</span>
 	<%= link_to t('views.shared.full_list'), projects_path, {class: 'button'} -%>
 </h1>
