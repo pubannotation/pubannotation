@@ -99,7 +99,7 @@ a:hover {
 }
 
 table, th, td{
-  border:1px solid $main_color;
+  border:1px solid lighten($main_color, 20%);
 }
 
 table {
@@ -128,7 +128,7 @@ th {
   padding:5px;
   text-align:center;
   font-weight:bold;
-  background-color: $sub_color;
+  background-color: lighten($main_color, 75%);
 }
 
 td {
