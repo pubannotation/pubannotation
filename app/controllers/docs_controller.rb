@@ -453,6 +453,22 @@ class DocsController < ApplicationController
     redirect_to :back
   end
 
+  def index_rdf
+    begin
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+
+      divs = params[:sourceid].present? ? Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]) : nil
+      raise ArgumentError, "There is no such document." if params[:sourceid].present? && !divs.present?
+
+      system = Project.find_by_name('system-maintenance')
+      system.notices.create({method: "index docs rdf"})
+      system.delay.index_docs_rdf(divs)
+    rescue => e
+      flash[:notice] = e.message
+    end
+    redirect_to project_path('system-maintenance')
+  end
+
   def autocomplete_sourcedb
     render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
   end

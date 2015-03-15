@@ -37,6 +37,8 @@ Pubann::Application.routes.draw do
       # list sourcedb
       get 'sourcedb' => 'docs#sourcedb_index'
       get 'search' => 'docs#search'
+      get 'index_rdf' => 'docs#index_rdf'
+
       get :autocomplete_sourcedb
     end  
     member do
@@ -64,6 +66,7 @@ Pubann::Application.routes.draw do
             get 'annotations' => 'annotations#doc_annotations_index'
             get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
             # post 'annotations' => 'annotations#create'
+            get 'index_rdf' => 'docs#index_rdf'
             get 'spans' => 'spans#doc_spans_index'
             get 'spans/:begin-:end' => 'spans#doc_span_show', :as => 'span_show'
             get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'
@@ -250,7 +253,6 @@ Pubann::Application.routes.draw do
   root :to => 'home#index'
   match '/' => 'home#index', :as => :home
   match '/index_projects_annotations_rdf' => 'home#index_projects_annotations_rdf'
-  match '/index_docs_rdf' => 'home#index_docs_rdf'
 
   # See how all your routes lay out with "rake routes"
 

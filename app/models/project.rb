@@ -513,6 +513,7 @@ class Project < ActiveRecord::Base
 
   def index_projects_annotations_rdf
     projects = Project.for_index
+    projects.rejects!{|p| p.name =~ /Allie/}
     total_number = projects.length
     projects.each_with_index do |project, index|
       index1 = index + 1
@@ -532,10 +533,13 @@ class Project < ActiveRecord::Base
     store_rdf(project.name, ttl)
   end
 
-  def index_docs_rdf
+  def index_docs_rdf(docs = nil)
     begin
-      projects = Project.for_index
-      docs = projects.inject([]){|sum, p| sum + p.docs}.uniq
+      if docs.nil?
+        projects = Project.for_index
+        projects.rejects!{|p| p.name =~ /Allie/}
+        docs = projects.inject([]){|sum, p| sum + p.docs}.uniq
+      end
       annotations_collection = docs.collect{|doc| doc.hannotations}
       ttl = rdfize_docs(annotations_collection, Pubann::Application.config.rdfizer_spans)
       # store_rdf(nil, ttl)
@@ -551,8 +555,8 @@ class Project < ActiveRecord::Base
     total_number = annotations_collection.length
     annotations_collection.each_with_index do |annotations, i|
       index1 = i + 1
-      doc_description  = annotations[:sourcedb] + annotations[:sourceid]
-      doc_description += annotations[:divid].to_s if annotations[:divid]
+      doc_description  = annotations[:sourcedb] + '-' + annotations[:sourceid]
+      doc_description += '-' + annotations[:divid].to_s if annotations[:divid]
 
       begin
         self.notices.create({method:"  - index doc rdf (#{index1}/#{total_number}): #{doc_description}"})
@@ -592,7 +596,6 @@ class Project < ActiveRecord::Base
     raise IOError, "sparql-graph-crud failed" unless state.success?
   end
 
-
   def post_rdf(project_name = nil, ttl)
     require 'open3'
 
@@ -603,6 +606,7 @@ class Project < ActiveRecord::Base
     graph_uri = project_name.nil? ? "http://pubannotation.org/docs" : "http://pubannotation.org/projects/#{project_name}"
     destination = "#{Pubann::Application.config.sparql_end_point}/sparql-graph-crud-auth?graph-uri=#{graph_uri}"
     cmd = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -X POST -T #{ttl_file.path}]
+
     message, error, state = Open3.capture3(cmd)
 
     ttl_file.unlink

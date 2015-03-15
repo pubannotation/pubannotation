@@ -19,16 +19,4 @@ class HomeController < ApplicationController
 	  end
 	  redirect_to project_path('system-maintenance')
 	end
-
-  def index_docs_rdf
-	  begin
-	    raise "Not authorized" unless current_user.root? == true
-	    system = Project.find_by_name('system-maintenance')
-	    system.notices.create({method: "index docs rdf"})
-	    system.delay.index_docs_rdf
-	  rescue => e
-	    flash[:notice] = e.message
-	  end
-	  redirect_to project_path('system-maintenance')
-	end
 end
