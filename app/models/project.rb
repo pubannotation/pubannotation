@@ -513,7 +513,7 @@ class Project < ActiveRecord::Base
 
   def index_projects_annotations_rdf
     projects = Project.for_index
-    projects.rejects!{|p| p.name =~ /Allie/}
+    projects.reject!{|p| p.name =~ /Allie/}
     total_number = projects.length
     projects.each_with_index do |project, index|
       index1 = index + 1
@@ -537,7 +537,7 @@ class Project < ActiveRecord::Base
     begin
       if docs.nil?
         projects = Project.for_index
-        projects.rejects!{|p| p.name =~ /Allie/}
+        projects.reject!{|p| p.name =~ /Allie/}
         docs = projects.inject([]){|sum, p| sum + p.docs}.uniq
       end
       annotations_collection = docs.collect{|doc| doc.hannotations}
