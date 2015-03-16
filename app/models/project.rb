@@ -530,7 +530,7 @@ class Project < ActiveRecord::Base
 
   def index_project_annotations_rdf(project)
     begin
-      rdfize_docs(project.annotations_collection, Pubann::Application.config.rdfizer_annotations)
+      rdfize_docs(project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name)
       self.notices.create({method: "index project annotations rdf: #{project.name}", successful: true})
     rescue => e
       self.notices.create({method: "index project annotations rdf: #{project.name}", successful: false, message: e.message})
@@ -553,7 +553,7 @@ class Project < ActiveRecord::Base
     end
   end 
 
-  def rdfize_docs(annotations_collection, rdfizer)
+  def rdfize_docs_backup(annotations_collection, rdfizer, project_name=nil)
     ttl = ''
     header_length = 0
     total_number = annotations_collection.length
@@ -571,7 +571,7 @@ class Project < ActiveRecord::Base
           doc_ttl = doc_ttl.split(/\n/)[header_length .. -1].join("\n")
         end
         doc_ttl += "\n" unless doc_ttl.end_with?("\n")
-        post_rdf(nil, doc_ttl)
+        post_rdf(project_name, doc_ttl)
         ttl += doc_ttl
         self.notices.create({method:"  - index doc rdf (#{index1}/#{total_number}): #{doc_description}", successful: true})
       rescue => e
@@ -580,6 +580,25 @@ class Project < ActiveRecord::Base
       end
     end
     ttl
+  end
+
+  def rdfize_docs(annotations_collection, rdfizer, project_name=nil)
+    total_number = annotations_collection.length
+    annotations_collection.each_with_index do |annotations, i|
+      index1 = i + 1
+      doc_description  = annotations[:sourcedb] + '-' + annotations[:sourceid]
+      doc_description += '-' + annotations[:divid].to_s if annotations[:divid]
+
+      begin
+        self.notices.create({method:"  - index doc rdf (#{index1}/#{total_number}): #{doc_description}"})
+        doc_ttl = self.get_conversion(annotations, rdfizer)
+        post_rdf(project_name, doc_ttl)
+        self.notices.create({method:"  - index doc rdf (#{index1}/#{total_number}): #{doc_description}", successful: true})
+      rescue => e
+        self.notices.create({method:"  - index doc rdf (#{index1}/#{total_number}): #{doc_description}", successful: false, message: e.message})
+        next
+      end
+    end
   end
 
   def store_rdf(project_name = nil, ttl)
