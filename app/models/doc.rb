@@ -3,7 +3,7 @@ class Doc < ActiveRecord::Base
   after_save :expire_page_cache
   before_destroy :decrement_docs_counter
   after_destroy :expire_page_cache
-  before_validation :attach_sourcedb_suffix
+  # before_validation :attach_sourcedb_suffix
   include ApplicationHelper
 
   attr_accessor :username, :original_body, :text_aligner
@@ -93,9 +93,9 @@ class Doc < ActiveRecord::Base
     order(sort_order)
   }
 
-  def self.descriptor
+  def descriptor
     descriptor  = self.sourcedb + ':' + self.sourceid
-    descriptor += '-' + self.divid if self.has_divs?
+    descriptor += '-' + self.serial.to_s if self.has_divs?
     descriptor
   end
 
@@ -115,27 +115,51 @@ class Doc < ActiveRecord::Base
 
   def self.import(sourcedb, sourceid)
     if sourcedb.present? && sourceid.present?
-      begin
-        doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
-        divs_hash = doc_sequence.divs
+      doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
+      divs_hash = doc_sequence.divs
 
-        divs = divs_hash.map.with_index do |div_hash, i|
-          Doc.new(
-            {
-              :body     => div_hash[:body],
-              :section  => div_hash[:heading],
-              :source   => doc_sequence.source_url,
-              :sourcedb => sourcedb,
-              :sourceid => sourceid,
-              :serial   => i
-            }
-          )
-        end
-
-        divs.each{|div| raise "could not save" unless div.save}
-
-        divs
+      divs = divs_hash.map.with_index do |div_hash, i|
+        Doc.new(
+          {
+            :body     => div_hash[:body],
+            :section  => div_hash[:heading],
+            :source   => doc_sequence.source_url,
+            :sourcedb => sourcedb,
+            :sourceid => sourceid,
+            :serial   => i
+          }
+        )
       end
+
+      divs.each{|div| raise "could not save" unless div.save}
+
+      divs
+    end
+  end
+
+  def revise(body)
+    return if body == self.body
+
+    text_aligner = TextAlignment::TextAlignment.new(self.body, body, TextAlignment::MAPPINGS)
+    raise RuntimeError, "cannot get alignment."     if text_aligner.nil?
+    raise RuntimeError, "texts too much different: #{text_aligner.similarity}." if text_aligner.similarity < 0.8
+    self.body = body
+    self.save
+    denotations = self.denotations
+    text_aligner.transform_denotations!(denotations)
+    denotations.each{|d| d.save}
+  end
+
+  def self.uptodate(divs)
+    sourcedb = divs[0].sourcedb
+    sourceid = divs[0].sourceid
+    new_divs = Object.const_get("DocSequencer#{sourcedb}").new(sourceid).divs
+    raise RuntimeError, "Number of divs mismatch" unless new_divs.size == divs.size
+
+    divs.sort!{|a, b| a.serial <=> b.serial}
+
+    ActiveRecord::Base.transaction do
+      divs.each_with_index{|div, i| div.revise(new_divs[i][:body])}
     end
   end
 

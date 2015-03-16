@@ -168,7 +168,11 @@ class DocsController < ApplicationController
 
   def show
     begin
-      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      divs = if params[:id].present?
+        [Doc.find(params[:id])]
+      else
+        Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      end
       raise "There is no such document." unless divs.present?
 
       if divs.length > 1
@@ -335,29 +339,18 @@ class DocsController < ApplicationController
   end
 
   def uptodate
-    # get the docspecs list
-    docspecs =  if params["_json"] && params["_json"].class == Array
-                  params["_json"].collect{|d| d.symbolize_keys}
-                elsif params["sourcedb"].present? && params["sourceid"].present?
-                  [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
-                elsif params[:ids].present? && params[:sourcedb].present?
-                  params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
-                end
+    begin
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-    docspecs.each do |docspec|
-      doc = Doc.get_doc(docspec)
-      p doc.projects
-      # divs.each do |div|
-      #   p div.projects
-      # end
-      puts "-----------"
+      divs = params[:sourceid].present? ? Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]) : nil
+      raise ArgumentError, "There is no such document." if params[:sourceid].present? && !divs.present?
+
+      Doc.uptodate(divs)
+      flash[:notice] = "The document #{divs[0].descriptor} is successfully updated."
+    rescue => e
+      flash[:notice] = e.message
     end
-
-    respond_to do |format|
-      format.html {redirect_to project_docs_path(project.name), notice:"imported:#{imported}, added:#{added}, failed:#{failed}"}
-      format.json {render json:{imported:imported, added:added, failed:failed, messages:messages}, status:(added > 0 ? :created : :unprocessable_entity)}
-    end
-
+    redirect_to home_path
   end
 
   def create_project_docs
