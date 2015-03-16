@@ -1,0 +1,11 @@
+@import 'variables';
+
+#announcements {
+	margin-top: 10px;
+	border: $main_color 1px solid;
+	box-shadow: 2px 2px 2px;
+	background-color: #fff0f0;
+	ul {
+		padding-left: 1em;
+	}
+}

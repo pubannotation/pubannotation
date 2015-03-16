@@ -1,0 +1,106 @@
+@import 'variables';
+
+.frame {
+  position:relative;
+  padding: 10px;
+  background-color: $main_color;
+  color: #aaaaaa;
+  a {
+    color: #aaaaff;
+  }
+}
+
+#footer {
+  margin-top: 20px;
+}
+
+#top-ribbon {
+  position: relative;
+  margin:0px;
+  padding: 1px 5px;
+  background-color: $sub_color;
+  .left {
+    position: static;
+    div {
+      display: inline;
+    }
+  }
+  .right {
+    position: absolute;
+    top: 0px;
+    right: 5px;
+    div {
+      display: inline;
+    }
+  }
+}
+
+#path {
+  font-size:x-small;
+  font-style:italic;
+}
+
+#account{
+  font-size:small;
+  color: #fff;
+  a{
+    color: #fff;
+  }
+}
+
+.menu {
+  ul {
+    display: inline;
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    display: inline;
+    margin-left: 0.5em;
+  }
+  a {
+    background-color: $sub_color;
+    border-radius: 3px;
+    color: $main_color;
+  }
+}
+
+#notice {
+  margin:0px 5px;
+  font-size:small;
+  color:red;
+}
+
+.notice {
+  ul {
+    -webkit-margin-before: 0em;
+    -webkit-margin-after: 0em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 20px;
+    -webkit-padding-start: 0px;
+
+    li {
+      margin: 0px;
+      padding: 0px;
+    }
+  }
+}
+
+#main {
+  margin:0px $base_margin;
+}
+
+#footer_navigation{
+  list-style: none;
+  margin-top:20px;
+  text-align: center;
+  li{
+    display: inline;
+    border-right: 1px solid $main_color;
+    padding: 0.2em $base_margin;
+  }
+  li:last-child{
+    border: none;
+  }
+}

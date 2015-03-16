@@ -1,0 +1,34 @@
+.two-columns {
+    text-align: justify; 
+
+     /* IE special */  
+    width: 100%;  
+    -ms-text-justify: distribute-all-lines;
+    text-justify: distribute-all-lines;
+}
+ .two-columns:after{
+    content: '';
+    display: inline-block;
+    width: 100%;
+    height: 0;
+    font-size:0;
+    line-height:0;
+}
+
+.column-left {
+    display: inline-block;
+    /* ie 7*/ 
+    *display: inline;
+    *zoom: 1;
+    *text-align: left; 
+}
+
+.column-right {
+    display: inline-block;
+    vertical-align: top; 
+    
+    /* ie 7*/
+    *display: inline;
+    *zoom:1;
+    *text-align: right;
+}
