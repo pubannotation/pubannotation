@@ -66,6 +66,7 @@ Pubann::Application.routes.draw do
             get 'annotations' => 'annotations#doc_annotations_index'
             get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
             # post 'annotations' => 'annotations#create'
+            get 'uptodate' => 'docs#uptodate'
             get 'index_rdf' => 'docs#index_rdf'
             get 'spans' => 'spans#doc_spans_index'
             get 'spans/:begin-:end' => 'spans#doc_span_show', :as => 'span_show'
@@ -130,7 +131,6 @@ Pubann::Application.routes.draw do
     resources :docs do
       collection do
         post 'add' => 'docs#add'
-        post 'uptodate' => 'docs#uptodate'
         # post 'project_docs' => 'docs#create_project_docs'
         get 'records' => 'docs#records'
         get 'search' => 'docs#search'
@@ -196,10 +196,10 @@ Pubann::Application.routes.draw do
     end
   end
   
-  match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divs_id/annotations' => 'annotations#project_div_annotations_index', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/annotations' => 'annotations#project_doc_annotations_index', :via => ["OPTIONS"]
-  match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divs_id/spans/:begin-:end/annotations' => 'annotations#project_div_annotations_index', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index', :via => ["OPTIONS"]
+  match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid/annotations' => 'annotations#project_div_annotations_index', :via => ["OPTIONS"]
+  match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid/spans/:begin-:end/annotations' => 'annotations#project_div_annotations_index', :via => ["OPTIONS"]
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
