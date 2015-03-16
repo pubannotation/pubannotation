@@ -468,7 +468,7 @@ class Project < ActiveRecord::Base
     RestClient.post converter, annotation.to_json, :content_type => :json do |response, request, result|
       case response.code
       when 200
-        response
+        response.force_encoding(Encoding::UTF_8)
       else
         nil
       end
