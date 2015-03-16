@@ -529,8 +529,12 @@ class Project < ActiveRecord::Base
   end
 
   def index_project_annotations_rdf(project)
-    ttl = rdfize_docs(project.annotations_collection, Pubann::Application.config.rdfizer_annotations)
-    store_rdf(project.name, ttl)
+    begin
+      rdfize_docs(project.annotations_collection, Pubann::Application.config.rdfizer_annotations)
+      self.notices.create({method: "index project annotations rdf: #{project.name}", successful: true})
+    rescue => e
+      self.notices.create({method: "index project annotations rdf: #{project.name}", successful: false, message: e.message})
+    end
   end
 
   def index_docs_rdf(docs = nil)

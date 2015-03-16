@@ -159,9 +159,24 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def index_project_annotations_rdf
+    begin
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+      project = Project.find_by_name(params[:id])
+      raise ArgumentError, "There is no such project." unless project.present?
+
+      system = Project.find_by_name('system-maintenance')
+      system.notices.create({method: "index project annotations rdf: #{project.name}"})
+      system.delay.index_project_annotations_rdf(project)
+    rescue => e
+      flash[:notice] = e.message
+    end
+    redirect_to project_path('system-maintenance')
+  end
+
   def index_annotations_rdf
     begin
-      raise "Not authorized" unless current_user.root? == true
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
       system = Project.find_by_name('system-maintenance')
       system.notices.create({method: "index annotations rdf"})
       system.delay.index_annotations_rdf

@@ -112,7 +112,8 @@ Pubann::Application.routes.draw do
     resources :associate_maintainers, :only => [:destroy]
     
     member do
-      get :search  
+      get :search
+      get 'index_rdf' => 'projects#index_project_annotations_rdf'
     end
     
     collection do
