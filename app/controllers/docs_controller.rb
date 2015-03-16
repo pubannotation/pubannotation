@@ -17,17 +17,17 @@ class DocsController < ApplicationController
         raise "There is no such project." unless @project.present?
         docs = @project.docs
         @search_path = search_project_docs_path(@project.name)
+
+        # docs.each{|doc| doc.set_ascii_body} if (params[:encoding] == 'ascii')
+        sort_order = sort_order(Doc)
+        source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
+        docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
+
+        @source_docs = source_docs_all.paginate(:page => params[:page])
       else
         docs = Doc
         @search_path = search_docs_path
       end
-
-      # docs.each{|doc| doc.set_ascii_body} if (params[:encoding] == 'ascii')
-      sort_order = sort_order(Doc)
-      source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
-      docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
-
-      @source_docs = source_docs_all.paginate(:page => params[:page])
 
       respond_to do |format|
         format.html
@@ -247,12 +247,12 @@ class DocsController < ApplicationController
         end
       end
 
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render status: :unprocessable_entity}
+      end
     end
   end
 
