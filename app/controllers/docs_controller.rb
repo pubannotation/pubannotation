@@ -438,8 +438,8 @@ class DocsController < ApplicationController
       raise "There is no such document in the project." unless divs.present?
 
       divs.each{|d| d.destroy_project_annotations(project)}
-    # rescue => e
-    #   flash[:notice] = e
+    rescue => e
+      flash[:notice] = e
     end
 
     project.docs.delete(divs) 
