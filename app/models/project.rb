@@ -38,7 +38,7 @@ class Project < ActiveRecord::Base
   has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
 
-  is_impressionable counter_cache: true
+  is_impressionable counter_cache: true, unique: :all
   
   default_scope where(:type => nil)
 

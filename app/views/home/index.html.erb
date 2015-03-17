@@ -16,3 +16,35 @@
 	<%= link_to t('views.shared.full_list'), projects_path, {class: 'button'} -%>
 </h1>
 <%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects_top, :scope => nil } %>
+
+<div style="width:45%; float:left;">
+  <h2>
+    Popular projects
+  </h2>
+  <% @popular_project_impressions.each do |impression| %>
+    <%= link_to impression.impressionable.name, project_path(impression.impressionable.name) if impression.impressionable -%><br />
+  <% end %>
+</div>
+
+<div style="width:45%; float:left;">
+  <h2>
+    Popular docs
+  </h2>
+  <table class='full'>
+    <% @popular_docs.each do |impression| %>
+      <tr>
+        <td style="width:7em"><%= impression.impressionable.sourcedb -%></td>
+        <td>
+          <% doc = impression.impressionable -%>
+          <% if doc.has_divs? -%>
+            <%= link_to doc.body, doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial) -%>
+        	<% else -%>
+            <%= link_to doc.body, doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid) -%>
+        	<% end -%>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+
+<br style="clear: both"/>
