@@ -68,6 +68,7 @@ class ProjectsController < ApplicationController
   def show
     begin
       @project = Project.accessible(current_user).find_by_name(params[:id])
+      impressionist(@project)
       raise "There is no such project." unless @project.present?
 
       @project_docs_count = @project.pmdocs_count + @project.pmcdocs_count

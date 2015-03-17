@@ -22,6 +22,8 @@ class Doc < ActiveRecord::Base
   validates :sourceid, :presence => true
   validates :serial,   :presence => true
   validates_uniqueness_of :serial, scope: [:sourcedb, :sourceid]
+
+  is_impressionable counter_cache: true
   
   scope :pmdocs, where(:sourcedb => 'PubMed')
   scope :pmcdocs, where(:sourcedb => 'PMC', :serial => 0)

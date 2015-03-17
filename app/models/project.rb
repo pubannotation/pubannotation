@@ -37,6 +37,8 @@ class Project < ActiveRecord::Base
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
+
+  is_impressionable counter_cache: true
   
   default_scope where(:type => nil)
 

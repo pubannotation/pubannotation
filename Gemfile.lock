@@ -93,7 +93,11 @@ GEM
     hike (1.2.3)
     htmlentities (4.3.1)
     http_parser.rb (0.5.3)
+    httpclient (2.6.0.1)
     i18n (0.6.9)
+    impressionist (1.5.1)
+      httpclient (~> 2.2)
+      nokogiri (~> 1.5)
     innertube (1.1.0)
     joiner (0.2.0)
       activerecord (>= 3.1.0, < 4.1.0)
@@ -257,6 +261,7 @@ DEPENDENCIES
   guard
   guard-livereload
   htmlentities
+  impressionist
   jquery-rails
   libxml-ruby
   mysql2 (~> 0.3.13)

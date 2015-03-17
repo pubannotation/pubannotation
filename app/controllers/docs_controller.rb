@@ -185,6 +185,7 @@ class DocsController < ApplicationController
         end
       else
         @doc = divs[0]
+        impressionist(@doc)
 
         @doc.set_ascii_body if params[:encoding] == 'ascii'
         @content = @doc.body.gsub(/\n/, "<br>")
