@@ -360,6 +360,11 @@ class AnnotationsController < ApplicationController
         format.html {redirect_to :back, notice: notice}
         format.json {}
       end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
+        format.json {render status: :service_unavailable}
+      end
     end
   end
 
