@@ -70,7 +70,7 @@ class ProjectsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:id])
       raise "There is no such project." unless @project.present?
 
-      @project_docs_count = @project.pmdocs_count + @project.pmcdocs_count
+      @docs = @project.docs.where(serial: 0)
       @search_path = search_project_docs_path(@project.name)
 
       respond_to do |format|
@@ -192,8 +192,7 @@ class ProjectsController < ApplicationController
       raise "There is no such project in your management." unless @project.present?
 
       @project.notices.create({method: 'delete all annotations'})
-      # @project.delay.destroy_annotations
-      @project.delay.delete_annotations
+      @project.delay.destroy_annotations
 
       respond_to do |format|
         format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'Delete all annotations', is created."}
