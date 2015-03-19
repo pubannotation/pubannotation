@@ -23,7 +23,7 @@ class DocSequencerPMC
         @xml = response
         raise ArgumentError, "#{id} not found in PMC." if @xml.index("PMC#{id} not found")
         raise ArgumentError, "#{id} not found in PMC." if @xml.index("PMCID is not available")
-
+        puts @xml
         parser = XML::Parser.string(@xml, :encoding => XML::Encoding::UTF_8)
         @doc = parser.parse
         @source_url = 'http://www.ncbi.nlm.nih.gov/pmc/' + id
@@ -224,6 +224,7 @@ class DocSequencerPMC
         return false unless check_title(e)
       when 'label'
       when 'disp-formula'
+      when 'graphic'
       when 'list'
       when 'p'
         return false unless check_p(e)
@@ -296,7 +297,9 @@ class DocSequencerPMC
       when 'italic', 'bold', 'sup', 'sub', 'underline', 'sc'
       when 'xref', 'ext-link', 'named-content'
       when 'fig', 'table-wrap'
+      when 'inline-graphic' # TODO: check if it can be ignored.
       else
+        raise "a unexpected element in p: #{e.name}"
         return false
       end
     end
