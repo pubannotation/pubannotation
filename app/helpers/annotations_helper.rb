@@ -91,7 +91,7 @@ module AnnotationsHelper
       idnum = 1
 
       annotations[:denotations].each do |a|
-        raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'." unless a[:span].present? || (a[:begin].present? && a[:end].present?)
+        raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'." unless (a[:span].present? && a[:span][:begin].present? && a[:span][:end].present?) || (a[:begin].present? && a[:end].present?)
         raise ArgumentError, "a denotation must have an 'obj'." unless a[:obj].present?
 
         unless a.has_key? :id
@@ -100,12 +100,10 @@ module AnnotationsHelper
           idnum += 1
         end
 
-        if a[:span].present?
-          a[:span] = a[:span].symbolize_keys
-          a[:span] = {begin: a[:span][:begin].to_i, end: a[:span][:end].to_i}
-        else
-          a[:span] = {begin: a[:begin].to_i, end: a[:end].to_i}
-        end
+        a[:span] = {begin: a[:begin], end: a[:end]} if !a[:span].present? && a[:begin].present? && a[:end].present?
+
+        a[:span][:begin] = a[:span][:begin].to_i if a[:span][:begin].is_a? String
+        a[:span][:end]   = a[:span][:end].to_i   if a[:span][:end].is_a? String
       end
     end
 
