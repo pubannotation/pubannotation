@@ -643,37 +643,46 @@ class Project < ActiveRecord::Base
   end
 
   def create_annotations_from_zip(zip_file_path, options = {})
-    annotations_collection = Zip::ZipFile.open(zip_file_path) do |zip|
-      zip.collect{|entry| JSON.parse(entry.get_input_stream.read, symbolize_names:true)}
+    files = Zip::ZipFile.open(zip_file_path) do |zip|
+      zip.collect{|entry| {name:entry.name, content:entry.get_input_stream.read}}
     end
 
-    total_number = annotations_collection.length
+    total_number = files.length
 
     imported, added, failed, messages = 0, 0, 0, []
-    annotations_collection.each_with_index do |annotations, index|
-      index1 = index + 1
-      docspec = annotations[:divid].present? ? "#{annotations[:sourcedb]}:#{annotations[:sourceid]}-#{annotations[:divid]}" : "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+    files.each_with_index do |file, index|
+      begin
+        index1 = index + 1
+        self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{file[:name]}"})
 
-      self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{docspec}"})
+        begin
+          annotations = JSON.parse(file[:content], symbolize_names:true)
+        rescue
+          raise IOError, "JSON parse error"
+        end
+  
+        i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
 
-      i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
+        if annotations[:divid].present?
+          doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
+        else
+          divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
+          doc = divs[0] if divs.length == 1
+        end
 
-      if annotations[:divid].present?
-        doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
-      else
-        divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-        doc = divs[0] if divs.length == 1
+        result = if doc.present?
+          self.save_annotations(annotations, doc, options)
+        elsif divs.present?
+          self.store_annotations(annotations, divs, options)
+        else
+          raise IOError, "document does not exist"
+        end
+
+        self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{file[:name]}", successful:true})
+      rescue => e
+        self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{file[:name]}", successful:false, message: e.message})
+        next
       end
-
-      result = if doc.present?
-        self.save_annotations(annotations, doc, options)
-      elsif divs.present?
-        self.store_annotations(annotations, divs, options)
-      else
-        nil
-      end
-      successful = result.nil? ? false : true
-      self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{docspec}", successful:successful})
     end
 
     self.notices.create({method:'annotations batch upload', successful:true})
@@ -1000,26 +1009,21 @@ class Project < ActiveRecord::Base
   end
 
   def save_annotations(annotations, doc, options = nil)
-    begin
-      raise ArgumentError, "nil document" unless doc.present?
-      doc.destroy_project_annotations(self) unless options.present? && options[:mode] == :addition
+    raise ArgumentError, "nil document" unless doc.present?
+    doc.destroy_project_annotations(self) unless options.present? && options[:mode] == :addition
 
-      original_text = annotations[:text]
-      annotations[:text] = doc.body
+    original_text = annotations[:text]
+    annotations[:text] = doc.body
 
-      if annotations[:denotations].present?
-        annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
-        ActiveRecord::Base.transaction do
-          self.save_hdenotations(annotations[:denotations], doc)
-          self.save_hrelations(annotations[:relations], doc) if annotations[:relations].present?
-          self.save_hmodifications(annotations[:modifications], doc) if annotations[:modifications].present?
-        end
+    if annotations[:denotations].present?
+      annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
+      ActiveRecord::Base.transaction do
+        self.save_hdenotations(annotations[:denotations], doc)
+        self.save_hrelations(annotations[:relations], doc) if annotations[:relations].present?
+        self.save_hmodifications(annotations[:modifications], doc) if annotations[:modifications].present?
       end
-      result = annotations.select{|k,v| v.present?}
-    rescue
-      result = nil
     end
-    result
+    result = annotations.select{|k,v| v.present?}
   end
 
   def store_annotations(annotations, divs, options = {})
@@ -1027,9 +1031,9 @@ class Project < ActiveRecord::Base
     successful = true
     fit_index = nil
 
-    annotations = normalize_annotations!(annotations)
-
     begin
+      annotations = normalize_annotations!(annotations)
+
       if divs.length == 1
         result = self.save_annotations(annotations, divs[0], options)
       else
@@ -1063,13 +1067,12 @@ class Project < ActiveRecord::Base
         end
         {div_index: fit_index}
       end
+      self.notices.create({method: "annotations upload: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
+      result
     rescue => e
-      successful = false
-      result = nil
+      self.notices.create({method: "annotations upload: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
+      raise e
     end
-
-    self.notices.create({method: "annotations upload: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
-    result 
   end
 
   def user_presence
@@ -1107,12 +1110,20 @@ class Project < ActiveRecord::Base
   end
 
   def destroy_annotations
-    begin
-      self.denotations.destroy_all
-      notices.create({method: 'delete all annotations', successful: true})
-    rescue
-      notices.create({method: 'delete all annotations', successful: false})
+    num_success = 0
+    self.docs.each do |doc|
+      begin
+        notices.create({method: "delete annotations: #{doc.descriptor}"})
+        doc.destroy_project_annotations(self)
+        notices.create({method: "delete annotations: #{doc.descriptor}", successful: true})
+        num_success += 1
+      rescue => e
+        notices.create({method: "delete annotations: #{doc.descriptor}", successful: false, message: e.message})
+      end
     end
+
+    successful = (num_success > 0)? true : false
+    notices.create({method: 'delete all annotations', successful: successful})
   end
 
   def delay_destroy
