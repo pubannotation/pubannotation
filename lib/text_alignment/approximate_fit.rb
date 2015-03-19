@@ -19,7 +19,7 @@ class << TextAlignment
     ngram2 = (0 .. str2.length - TextAlignment::SIGNATURE_NGRAM).collect{|i| str2[i, TextAlignment::SIGNATURE_NGRAM]}
     ngram_shared = ngram1 & ngram2
 
-    # If there is no shared n-gram found, it means there is no serious overlap in between the two strings
+    # If there is no shared n-gram found, it means there is no serious overlap between the two strings
     return nil, nil if ngram_shared.empty?
 
     # approximate the beginning of the fit
@@ -38,6 +38,7 @@ class << TextAlignment
     fit_end = str2.rindex(signature_ngram) + offset + (offset * TextAlignment::BUFFER_RATE).to_i
     fit_end = str2.length if fit_end > str2.length
 
+    return nil, nil if fit_begin >= fit_end
     return fit_begin, fit_end
   end
 end
