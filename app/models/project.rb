@@ -649,11 +649,12 @@ class Project < ActiveRecord::Base
 
     total_number = files.length
 
+    interval = (total_number > 100000)? 100 : 10
+
     imported, added, failed, messages = 0, 0, 0, []
-    files.each_with_index do |file, index|
+    files.each_with_index do |file, i|
       begin
-        index1 = index + 1
-        self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{file[:name]}"})
+        self.notices.create({method:"- annotations upload (#{i}/#{total_number} docs)", successful:true, message: "finished"}) if (i != 0) && (i % interval == 0)
 
         begin
           annotations = JSON.parse(file[:content], symbolize_names:true)
@@ -678,9 +679,8 @@ class Project < ActiveRecord::Base
           raise IOError, "document does not exist"
         end
 
-        self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{file[:name]}", successful:true})
       rescue => e
-        self.notices.create({method:"- annotations upload (#{index1}/#{total_number}): #{file[:name]}", successful:false, message: e.message})
+        self.notices.create({method:"- annotations upload: #{file[:name]}", successful:false, message: e.message})
         next
       end
     end
@@ -1103,19 +1103,20 @@ class Project < ActiveRecord::Base
       self.modifications.delete_all
       self.relations.delete_all
       self.denotations.delete_all
-      notices.create({method: 'delete all annotations', successful: true})
+      notices.create({method: 'delete all annotations in the project', successful: true})
     rescue
-      notices.create({method: 'delete all annotations', successful: false})
+      notices.create({method: 'delete all annotations in the project', successful: false})
     end
   end
 
   def destroy_annotations
+    docs = self.docs
+    num_total = docs.length
     num_success = 0
-    self.docs.each do |doc|
+    docs.each_with_index do |doc, i|
       begin
-        notices.create({method: "delete annotations: #{doc.descriptor}"})
+        notices.create({method: "delete annotations (#{i}/#{num_total} docs)", successful:true, message:"finished"}) if (i != 0) && (i % 100 == 0)
         doc.destroy_project_annotations(self)
-        notices.create({method: "delete annotations: #{doc.descriptor}", successful: true})
         num_success += 1
       rescue => e
         notices.create({method: "delete annotations: #{doc.descriptor}", successful: false, message: e.message})
@@ -1123,7 +1124,7 @@ class Project < ActiveRecord::Base
     end
 
     successful = (num_success > 0)? true : false
-    notices.create({method: 'delete all annotations', successful: successful})
+    notices.create({method: 'delete all annotations in the project', successful: successful})
   end
 
   def delay_destroy
