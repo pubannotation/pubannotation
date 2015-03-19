@@ -93,6 +93,7 @@ class DivsController < ApplicationController
       raise "There is no such document." unless @doc.present?
 
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
+      impressionist(@doc)
       @content = @doc.body.gsub(/\n/, "<br>")
       @annotations = @doc.hannotations
 
@@ -121,6 +122,7 @@ class DivsController < ApplicationController
 
       @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document in the project." unless @doc.present?
+      impressionist(@doc)
 
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
       @content = @doc.body.gsub(/\n/, "<br>")

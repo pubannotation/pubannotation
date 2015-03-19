@@ -234,6 +234,7 @@ class DocsController < ApplicationController
         @doc = divs[0]
 
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
+        impressionist(@doc)
         @annotations = @doc.hannotations(@project)
         @content = @doc.body.gsub(/\n/, "<br>")
 
