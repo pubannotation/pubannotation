@@ -29,6 +29,9 @@ class << TextAlignment
     fit_begin = str2.index(signature_ngram) - offset - (offset * TextAlignment::BUFFER_RATE).to_i
     fit_begin = 0 if fit_begin < 0    
 
+    # to change the order according to ngram2
+    ngram_shared = ngram2 & ngram1
+
     # approximate the end of the fit
     ngram_shared_reverse = ngram_shared.reverse
     ngram2_reverse = ngram2.reverse
