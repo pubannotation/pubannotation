@@ -377,7 +377,6 @@ class AnnotationsController < ApplicationController
         options = {mode: :addition} if params[:mode] == 'addition' || params[:mode] == 'add'
         project.notices.create({method: 'annotations batch upload'})
         messages = project.delay.create_annotations_from_zip(params[:zipfile].path, options)
-        # messages = project.create_annotations_from_zip(params[:zipfile].path, options)
       end
 
       respond_to do |format|
