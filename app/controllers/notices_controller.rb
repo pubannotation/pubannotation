@@ -28,7 +28,7 @@ class NoticesController < ApplicationController
           unless tasks[notice.method].present?
             tasks[notice.method] = {} 
             tasks[notice.method][:method] = notice.method
-            tasks[notice.method][:registered_at] = 'unknown'
+            tasks[notice.method][:registered_at] = '-'
           end
           tasks[notice.method][:finished_at] = notice.created_at
           tasks[notice.method][:result] = notice.successful
