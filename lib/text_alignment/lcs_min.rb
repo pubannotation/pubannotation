@@ -17,6 +17,7 @@ class TextAlignment::LCSMin
 
   def initialize (str1, str2)
     raise ArgumentError, "nil string" if str1.nil? || str2.nil?
+    raise ArgumentError, "empty string" if str1.empty? || str2.empty?
 
     # str1 is copied as it is.
     # str2 is copied with w/s characters replaced with the placeholder characters,
@@ -27,29 +28,34 @@ class TextAlignment::LCSMin
     # find the corresponding minimal range of the two strings
     @m1_initial, @m1_final, @m2_initial, @m2_final = _find_min_range(0, @str1.length - 1, 0, @str2.length - 1)
 
-    # compute sdiff and lcs
-    # here the original str2 is used with all the w/s characters preserved.
-    @sdiff = Diff::LCS.sdiff(@str1[@m1_initial..@m1_final], str2[@m2_initial..@m2_final])
-    @lcs = @sdiff.count{|d| d.action == '='}
+    if @m1_initial.nil?
+      @sdiff = nil
+      @lcs = 0
+    else
+      # compute sdiff and lcs
+      # here the original str2 is used with all the w/s characters preserved.
+      @sdiff = Diff::LCS.sdiff(@str1[@m1_initial..@m1_final], str2[@m2_initial..@m2_final])
+      @lcs = @sdiff.count{|d| d.action == '='}
 
-    # adjust the position values of sdiff
-    @sdiff.each do |h|
-      h.old_position += @m1_initial unless h.old_position.nil?
-      h.new_position += @m2_initial unless h.new_position.nil?
+      # adjust the position values of sdiff
+      @sdiff.each do |h|
+        h.old_position += @m1_initial unless h.old_position.nil?
+        h.new_position += @m2_initial unless h.new_position.nil?
+      end
+
+      (0 ... @m2_initial).reverse_each{|i| @sdiff.unshift(Diff::LCS::ContextChange.new('+', nil, nil, i, @str2[i]))}
+      (0 ... @m1_initial).reverse_each{|i| @sdiff.unshift(Diff::LCS::ContextChange.new('-', i, @str1[i], nil, nil))}
+      (@m1_final + 1 ... @str1.length).each{|i| @sdiff.push(Diff::LCS::ContextChange.new('-', i, @str1[i], nil, nil))}
+      (@m2_final + 1 ... @str2.length).each{|i| @sdiff.push(Diff::LCS::ContextChange.new('+', nil, nil, i, @str2[i]))}
     end
-
-    (0 ... @m2_initial).reverse_each{|i| @sdiff.unshift(Diff::LCS::ContextChange.new('+', nil, nil, i, @str2[i]))}
-    (0 ... @m1_initial).reverse_each{|i| @sdiff.unshift(Diff::LCS::ContextChange.new('-', i, @str1[i], nil, nil))}
-    (@m1_final + 1 ... @str1.length).each{|i| @sdiff.push(Diff::LCS::ContextChange.new('-', i, @str1[i], nil, nil))}
-    (@m2_final + 1 ... @str2.length).each{|i| @sdiff.push(Diff::LCS::ContextChange.new('+', nil, nil, i, @str2[i]))}
   end
 
   def _find_min_range (m1_initial, m1_final, m2_initial, m2_final, clcs = 0)
     return nil if (m1_final - m1_initial < 0) || (m2_final - m2_initial < 0)
-
     sdiff = Diff::LCS.sdiff(@str1[m1_initial..m1_final], @str2[m2_initial..m2_final])
     lcs = sdiff.count{|d| d.action == '='}
 
+    return nil if lcs == 0
     return nil if lcs < clcs
 
     match_last  = sdiff.rindex{|d| d.action == '='}
