@@ -460,6 +460,46 @@ describe Relation do
       end
     end
   end
+  
+  describe 'decrement_subcatrels_count' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project => @project)
+    end
+    
+    context 'when subj == Denotations' do
+      before do
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @instance, :subj => @denotation, project: @project)
+        @doc.reload
+      end
+      
+      it 'should call decrement_counter' do
+        expect(Doc).to receive(:decrement_counter).with(:subcatrels_count, @doc.id)
+        @subcatrel.destroy 
+      end
+      
+      it 'should call decrement_counter' do
+        expect{
+          @subcatrel.destroy
+          @doc.reload
+        }.to change{@doc.subcatrels_count}.from(1).to(0)
+        @doc.subcatrels_count
+      end
+    end
+    
+    context 'when subj != Denotations' do
+      before do
+        @subcatrel = FactoryGirl.create(:relation, :project => @project, :obj => @instance, :subj_type => '')
+      end
+
+      it 'should not call decrement_counter' do
+        expect( Doc ).not_to receive(:decrement_counter)
+        @subcatrel.destroy 
+      end
+    end
+  end
 
   describe 'sql_find' do
     before do
@@ -601,6 +641,28 @@ describe Relation do
     end
   end
 
+  describe 'after_destroy' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0)
+      @relation = FactoryGirl.create(:relation, :project => @project, :obj_id => 1)
+    end
+
+    it 'should call increment_subcatrels_count' do
+      @relation.should_receive(:decrement_subcatrels_count)
+      @relation.destroy 
+    end
+
+    it 'should call decrement_project_relations_count' do
+      @relation.should_receive(:decrement_project_relations_count)
+      @relation.destroy 
+    end
+
+    it 'should call decrement_project_annotations_count' do
+      @relation.should_receive(:decrement_project_annotations_count)
+      @relation.destroy 
+    end
+  end
+
   describe 'increment_project_annotations_count' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0)
@@ -613,6 +675,21 @@ describe Relation do
         @relation.increment_project_annotations_count
         @project.reload
       }.to change{ @project.annotations_count }.from(1).to(2)
+    end
+  end
+
+  describe 'decrement_project_annotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0)
+      @relation = FactoryGirl.create(:relation, :project => @project, :obj_id => 1)
+      @project.reload
+    end
+
+    it 'should decrement project.annotations_count' do
+      expect{  
+        @relation.decrement_project_annotations_count
+        @project.reload
+      }.to change{ @project.annotations_count }.from(1).to(0)
     end
   end
 end

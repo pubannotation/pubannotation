@@ -37,6 +37,7 @@ class Relation < ActiveRecord::Base
   }
     
   after_save :increment_subcatrels_count, :increment_project_relations_count, :increment_project_annotations_count
+  after_destroy :decrement_subcatrels_count, :decrement_project_relations_count, :decrement_project_annotations_count
   
   def get_hash
     hrelation = Hash.new
@@ -64,6 +65,12 @@ class Relation < ActiveRecord::Base
   def increment_subcatrels_count
     if self.subj_type == 'Denotation'
       Doc.increment_counter(:subcatrels_count, subj.doc_id)
+    end
+  end
+  
+  def decrement_subcatrels_count
+    if self.subj_type == 'Denotation'
+      Doc.decrement_counter(:subcatrels_count, subj.doc_id)
     end
   end
   
@@ -96,5 +103,17 @@ class Relation < ActiveRecord::Base
 
   def increment_project_annotations_count
     Project.increment_counter(:annotations_count, project.id) if self.project.present?
+  end
+
+  def decrement_project_relations_count
+    if self.project.present? && self.project.projects.present?
+      project.projects.each do |project|
+        Project.decrement_counter(:relations_count, project.id)
+      end
+    end
+  end
+
+  def decrement_project_annotations_count
+    Project.decrement_counter(:annotations_count, project.id) if self.project.present?
   end
 end
