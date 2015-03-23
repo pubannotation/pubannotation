@@ -127,6 +127,7 @@ Pubann::Application.routes.draw do
 
   resources :projects do
     post 'annotations' => 'annotations#create'
+    delete 'docs' => 'docs#project_delete_all_docs', as: 'delete_all_docs'
     delete 'annotations' => 'projects#destroy_annotations', as: 'destroy_annotations'
 
     resources :docs do
@@ -149,6 +150,7 @@ Pubann::Application.routes.draw do
               
               scope ':sourceid' do
                 get '/' => 'docs#project_doc_show', :as =>'show'
+                delete '/' => 'docs#project_delete_doc', :as=>'delete'
                 get 'annotations' => 'annotations#project_doc_annotations_index'
                 get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
                 post 'annotations' => 'annotations#create'
@@ -159,7 +161,6 @@ Pubann::Application.routes.draw do
                 get 'spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index', :as => 'span_annotations'
                 post 'spans/:begin-:end/annotations' => 'annotations#create'
                 delete 'spans/:begin-:end/annotations' => 'annotations#destroy', as: 'destroy_annotations_in_span'
-                delete 'delete_project_doc' => 'docs#delete_project_doc'
                 
                 scope 'divs', :as => 'divs' do
                   get '/' => 'divs#project_divs_index', :as => 'index'
