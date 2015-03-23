@@ -429,7 +429,7 @@ class DocsController < ApplicationController
     end
   end
   
-  def delete_project_doc
+  def project_delete_doc
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
@@ -437,13 +437,26 @@ class DocsController < ApplicationController
       divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       raise "There is no such document in the project." unless divs.present?
 
-      divs.each{|d| d.destroy_project_annotations(project)}
+      divs.each{|div| project.delete_doc(div)}
     rescue => e
       flash[:notice] = e
     end
-
-    project.docs.delete(divs) 
     redirect_to :back
+  end
+
+  def project_delete_all_docs
+    begin
+      @project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless @project.present?
+
+      @project.notices.create({method: 'delete all the documents in the project'})
+      @project.delay.delete_all_docs
+
+      respond_to do |format|
+        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'delete all the documents in the project', is created."}
+        format.json {render status: :no_content}
+      end
+    end
   end
 
   def index_rdf
