@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Create Project
+title: Creating projects
 prev_section: api
 next_section: add-document
 permalink: /docs/create-project/

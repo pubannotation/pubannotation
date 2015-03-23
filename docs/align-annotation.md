@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Align annotation
+title: Aligning annotations
 prev_section: submit-annotation
 next_section: example-1
 permalink: /docs/align-annotation/

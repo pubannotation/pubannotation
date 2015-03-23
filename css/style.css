@@ -316,23 +316,7 @@ aside ul:first-child {
 
 aside li {
   list-style-type: none;
-}
-
-aside li a {
-  font-size: 16px;
-  position: relative
-}
-
-aside li.current a:before {
-  content: "";
-  border-color: transparent transparent transparent #fff;
-  border-style: solid;
-  border-width: 10px;
-  width: 0;
-  height: 0;
-  position: absolute;
-  top: 0;
-  left: -30px;
+  font-size: 14px;
 }
 
 /* Documentation */
@@ -604,6 +588,19 @@ blockquote {
   font-weight: 500;
 }
 
+.boxtip {
+  display:block;
+  border: 2px solid #aaaa88;
+  margin:5px;
+  padding:5px;
+  background-color: #ffffdd;
+}
+
+.boxtip .console {
+  padding: 1px;
+  background-color: #333333;
+  color: #eeeeee;
+}
 
 /* Tables */
 

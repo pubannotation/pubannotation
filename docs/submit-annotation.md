@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Submit Annotation
+title: Submitting annotations
 prev_section: format
 next_section: align-annotation
 permalink: /docs/submit-annotation/
@@ -40,6 +40,10 @@ Following is explanation of the option specification:
    * To learn how to prepare an annotation data file, please refer to [Format]({{site.baseurl}}/docs/format/).
 * __http://pubannotation.org/projects/_your-project_/docs/sourcedb/PubMed/sourceid/123456/annotations.json__
    * The URL for the document, _PubMed:123456_, in your project.
+
+<div class="boxtip">
+<b>Note</b> that the default behavior of submitting a set of annotations is <i>replacement</i>, meaning that the submitted set of annotations will <em>replace</em> the pre-existing annotations to the document. Alternatively, the behavior can be changed to <i>addition</i> mode by giving the option <i>mode=addition</i> in the end of the URL, e.g., <span class="console">.../annotations.json?mode=addition</span>, which will add the submitted annotations, preserving the pre-existing ones.
+</div>
 
 ## Submit annotations, method 2
 

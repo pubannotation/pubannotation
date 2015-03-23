@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Add Document
+title: Adding documents
 prev_section: create-project
 next_section: create-annotation
 permalink: /docs/add-document/
