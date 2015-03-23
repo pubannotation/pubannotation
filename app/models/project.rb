@@ -658,6 +658,7 @@ class Project < ActiveRecord::Base
 
         begin
           annotations = JSON.parse(file[:content], symbolize_names:true)
+          annotations = normalize_annotations!(annotations)
         rescue
           raise IOError, "JSON parse error"
         end
@@ -1017,6 +1018,7 @@ class Project < ActiveRecord::Base
 
     if annotations[:denotations].present?
       annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
+
       ActiveRecord::Base.transaction do
         self.save_hdenotations(annotations[:denotations], doc)
         self.save_hrelations(annotations[:relations], doc) if annotations[:relations].present?
@@ -1032,8 +1034,6 @@ class Project < ActiveRecord::Base
     fit_index = nil
 
     begin
-      annotations = normalize_annotations!(annotations)
-
       if divs.length == 1
         result = self.save_annotations(annotations, divs[0], options)
       else
@@ -1098,15 +1098,34 @@ class Project < ActiveRecord::Base
     namespaces.reject!{|namespace| namespace['prefix'].blank? || namespace['uri'].blank?} if namespaces.present?
   end
 
-  def delete_annotations
-    begin
-      self.modifications.delete_all
-      self.relations.delete_all
-      self.denotations.delete_all
-      notices.create({method: 'delete all annotations in the project', successful: true})
-    rescue
-      notices.create({method: 'delete all annotations in the project', successful: false})
+  def delete_doc(doc)
+    raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
+    doc.destroy_project_annotations(self)
+    self.docs.delete(doc)
+  end
+
+  def delete_all_docs
+    docs = self.docs
+    num_total = docs.length
+    num_success = 0
+    docs.each_with_index do |doc, i|
+      begin
+        notices.create({method: "delete documents (#{i}/#{num_total} docs)", successful:true, message:"finished"}) if (i != 0) && (i % 100 == 0)
+        delete_doc(doc)
+        num_success += 1
+      rescue => e
+        notices.create({method: "delete document: #{doc.descriptor}", successful: false, message: e.message})
+      end
     end
+
+    successful = if (self.denotations.length + self.relations.length + self.modifications.length == 0)
+      self.update_attribute(:annotations_count, 0)
+      self.docs.clear
+      true
+    else
+      false
+    end
+    notices.create({method: 'delete all the documents in the project', successful: successful})
   end
 
   def destroy_annotations
@@ -1123,8 +1142,13 @@ class Project < ActiveRecord::Base
       end
     end
 
-    successful = (num_success > 0)? true : false
-    notices.create({method: 'delete all annotations in the project', successful: successful})
+    successful = if (self.denotations.length + self.relations.length + self.modifications.length == 0)
+      self.update_attribute(:annotations_count, 0)
+      true
+    else
+      false
+    end
+    notices.create({method: 'delete all the annotations in the project', successful: successful})
   end
 
   def delay_destroy
