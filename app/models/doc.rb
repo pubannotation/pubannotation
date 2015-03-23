@@ -3,7 +3,7 @@ class Doc < ActiveRecord::Base
   after_save :expire_page_cache
   before_destroy :decrement_docs_counter
   after_destroy :expire_page_cache
-  # before_validation :attach_sourcedb_suffix
+  before_validation :attach_sourcedb_suffix
   include ApplicationHelper
 
   attr_accessor :username, :original_body, :text_aligner
