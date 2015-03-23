@@ -63,6 +63,8 @@
 <% if user_signed_in? && @project.present? && current_user == @project.user %>
 	<h3><%= t('views.docs.add_new_documents') -%></h3>
     <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
+
+	<%= render partial: 'delete_docs' -%>
 <% end -%>
 
 <h2>Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span></h2>

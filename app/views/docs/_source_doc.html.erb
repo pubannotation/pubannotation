@@ -28,7 +28,7 @@
     </span>
 
     <% if @project.present? && user_signed_in? && @project.user == current_user %>
-      <%= link_to t('views.shared.delete'), delete_project_doc_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: 'button' -%>
+      <%= link_to t('views.shared.delete'), delete_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: 'button' -%>
   <% end %>
   </td>
 </tr>
