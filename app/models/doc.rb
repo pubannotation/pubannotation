@@ -410,12 +410,8 @@ class Doc < ActiveRecord::Base
   end
 
   def destroy_project_annotations(project)
-    return if project.nil?
-
-    denotations = self.denotations.where(project_id: project.id)
-    ActiveRecord::Base.transaction do
-      denotations.destroy_all
-    end
+    raise RuntimeError, "nil project" if project.nil?
+    self.denotations.where(project_id: project.id).destroy_all
   end
 
   def projects_within_span(span)
