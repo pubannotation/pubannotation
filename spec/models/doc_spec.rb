@@ -1428,6 +1428,37 @@ describe Doc do
     end
   end
 
+  describe 'destroy_project_annotations' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @modification_1 = FactoryGirl.create(:modification, :hid => 'M1', :obj => @denotation, :project => @project)
+      @relation_1 = FactoryGirl.create(:subcatrel, :hid => 'r1', :obj => @denotation, :subj => @denotation, :project => @project)
+      @relation_2 = FactoryGirl.create(:subinsrel, :hid => 'r2', :obj => @denotation, :project => @project)
+      @modification_2 = FactoryGirl.create(:modification, :hid => 'M2', :obj => @relation_1, :obj_type => @relation_1.class.to_s, :project => @project)
+      @modification_3 = FactoryGirl.create(:modification, :hid => 'M3', :obj => @relation_2, :obj_type => @relation_2.class.to_s, :project => @project)
+      @project.reload
+    end
+
+    context 'when project present' do
+      it 'should call destroy_all' do
+        denotations = double(:denotations)
+        denotations.stub(:destroy_all).and_return(nil)
+        @doc.stub_chain(:denotations, :where).and_return(denotations)
+        denotations.should_receive(:destroy_all)
+        @doc.destroy_project_annotations(@project) 
+      end
+
+      it 'should reset project.annotations_count' do
+        expect{ 
+          @doc.destroy_project_annotations(@project) 
+          @project.reload
+        }.to change{ @project.annotations_count }.from(6).to(0)
+      end
+    end
+  end
+
 
   describe 'to_hash' do
     before do
