@@ -6,8 +6,8 @@
 	<li><%= file_field_tag 'zipfile', accept: 'application/zip', required: true -%></li>
 	<li>Choose Mode:
 		<ul>
-		<li><input type="radio" name="mode" value="replace" checked="checked">replace: <span class="info">existing annotations in the target document are all deleted before the uploaded annotations are registered.</span></input>
-		<li><input type="radio" name="mode" value="add">add: <span class="info">the uploaded annotations are added to the existing annotations.</span></input>
+		<li><input type="radio" name="mode" value="replace" checked="checked">replace: <span class="info">the upload annotations will replace the pre-existing annotations. (the pre-exsiting ones will be deleted.)</span></input>
+		<li><input type="radio" name="mode" value="add">add: <span class="info">the uploaded annotations will be added to the pre-existing annotations.</span></input>
 		</ul>
 	</li>
 	<li><%= submit_tag t('views.shared.upload') -%></li>
