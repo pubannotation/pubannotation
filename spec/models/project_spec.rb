@@ -2564,6 +2564,27 @@ describe Project do
     end
   end
 
+  describe 'update_delta_index' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
+    end
+
+    describe 'after_add' do
+      it 'should update delta indexing' do
+        @project.should_receive(:update_delta_index)
+        @project.docs << @doc
+      end
+    end
+
+    describe 'after_remove' do
+      it 'should update delta indexing' do
+        @project.should_receive(:update_delta_index)
+        @project.docs.delete(@doc)
+      end
+    end
+  end
+
   describe 'create_user_sourcedb_docs' do
     before do
       @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
