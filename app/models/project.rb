@@ -1055,11 +1055,11 @@ class Project < ActiveRecord::Base
               ann[:denotations].each{|a| idx[a[:id]] = true}
             end
             if annotations[:relations].present?
-              ann[:relations] = annotations[:relations].select{|a| idx[a[:id]]}
+              ann[:relations] = annotations[:relations].select{|a| idx[a[:subj]] && idx[a[:obj]]}
               ann[:relations].each{|a| idx[a[:id]] = true}
             end
-            if annotations[:relations].present?
-              ann[:modifications] = annotations[:modifications].select{|a| idx[a[:id]]}
+            if annotations[:modifications].present?
+              ann[:modifications] = annotations[:modifications].select{|a| idx[a[:obj]]}
               ann[:modifications].each{|a| idx[a[:id]] = true}
             end
             result << self.save_annotations(ann, div_index[i[0]], options)
