@@ -6,10 +6,10 @@ next_section: submit-annotation
 permalink: /docs/format/
 ---
 
-PubAnnotation uses [JSON](http://json.org/) as its default format to contain annotations.
+PubAnnotation uses [JSON](http://json.org/) as its default format to store annotations.
 This document describes how annotations are represented in JSON in PubAnnotation.
 
-PubAnnotation JSON annotation format supports three different types of information. accomodates supports three different types of annotation:
+PubAnnotation JSON annotation format supports three different types of information:
 
 * *denotation*,
 * *relation*, and
