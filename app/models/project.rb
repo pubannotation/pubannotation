@@ -977,7 +977,7 @@ class Project < ActiveRecord::Base
       ca.obj       = a[:obj]
       ca.project_id = self.id
       ca.doc_id    = doc.id
-      raise "could not save #{ca.hid}" unless ca.save
+      raise ArgumentError, "Invalid representation of denotation: #{ca.hid}" unless ca.save
     end
   end
 
@@ -989,7 +989,7 @@ class Project < ActiveRecord::Base
       ra.subj      = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:subj])
       ra.obj       = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
       ra.project_id = self.id
-      raise "could not save #{ra.hid}" unless ra.save
+      raise ArgumentError, "Invalid representation of relation: #{ra.hid}" unless ra.save
     end
   end
 
@@ -1005,7 +1005,7 @@ class Project < ActiveRecord::Base
           Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
       end
       ma.project_id = self.id
-      raise "could not save #{ma.hid}" unless ma.save
+      raise ArgumentError, "Invalid representatin of modification: #{ma.hid}" unless ma.save
     end
   end
 
