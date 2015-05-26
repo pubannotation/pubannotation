@@ -81,8 +81,14 @@ class AnnotationsController < ApplicationController
 
   def project_doc_annotations_index
     begin
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      @project = Project.find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
+
+      unless @project.public?
+        authenticate_user!
+        @project = Project.accessible(current_user).find_by_name(params[:project_id])
+        raise "There is no such project in your management." unless @project.present?
+      end
 
       divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       raise "There is no such document in the project." unless divs.present?
