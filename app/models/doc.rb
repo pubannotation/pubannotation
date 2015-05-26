@@ -114,27 +114,32 @@ class Doc < ActiveRecord::Base
   end
 
   def self.import(sourcedb, sourceid)
-    if sourcedb.present? && sourceid.present?
+    raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
+    raise ArgumentError, "sourceid is empty" unless sourceid.present?
+
+    begin
       doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
-      divs_hash = doc_sequence.divs
-
-      divs = divs_hash.map.with_index do |div_hash, i|
-        Doc.new(
-          {
-            :body     => div_hash[:body],
-            :section  => div_hash[:heading],
-            :source   => doc_sequence.source_url,
-            :sourcedb => sourcedb,
-            :sourceid => sourceid,
-            :serial   => i
-          }
-        )
-      end
-
-      divs.each{|div| raise "could not save" unless div.save}
-
-      divs
+    rescue => e
+      raise IOError, "Failed to get the document #{sourcedb}:#{sourceid} from the source."
     end
+
+    divs_hash = doc_sequence.divs
+
+    divs = divs_hash.map.with_index do |div_hash, i|
+      Doc.new(
+        {
+          :body     => div_hash[:body],
+          :section  => div_hash[:heading],
+          :source   => doc_sequence.source_url,
+          :sourcedb => sourcedb,
+          :sourceid => sourceid,
+          :serial   => i
+        }
+      )
+    end
+
+    divs.each{|div| raise "Failed to save the document #{sourcedb}:#{sourceid}." unless div.save}
+    divs
   end
 
   def revise(body)

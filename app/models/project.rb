@@ -124,6 +124,10 @@ class Project < ActiveRecord::Base
       unscoped.includes(:user).order(sort_order)
   }
 
+  def public?
+    accessibility == 1
+  end
+
   def status_text
    status_hash = {
      1 => I18n.t('activerecord.options.project.status.released'),
@@ -923,9 +927,23 @@ class Project < ActiveRecord::Base
     imported, added, failed, message = 0, 0, 0, ''
     begin
       divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
-      unless divs.present?
+
+      if divs.present?
+        if self.docs.include?(divs.first)
+          raise "The document #{sourcedb}:#{sourceid} already exists."
+        else
+          self.docs << divs
+          added += 1
+        end
+      else
         divs = Doc.import(sourcedb, sourceid)
-        imported += 1 if divs.present?
+        if divs.present?
+          imported += 1
+          self.docs << divs
+          added += 1
+        else
+          raise "Failed to get the document #{sourcedb}:#{sourceid} from the source."
+        end
       end
       if divs.present? and !self.docs.include?(divs.first)
         self.docs << divs

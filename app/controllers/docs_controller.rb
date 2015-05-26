@@ -326,7 +326,8 @@ class DocsController < ApplicationController
       docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
       docspecs.each do |docspec|
         i, a, f, m = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
-        imported += i; added += a; failed += f; messages << m
+        imported += i; added += a; failed += f;
+        messages << m if m.present?
       end
     rescue => e
       messages << e.message
