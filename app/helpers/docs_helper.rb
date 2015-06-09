@@ -20,6 +20,15 @@ module DocsHelper
 
   def sourcedb_options_for_select
     docs = Doc.select(:sourcedb).sourcedbs.uniq
+
+    if current_user
+      docs.delete_if do |doc|
+        doc.sourcedb.include?(Doc::UserSourcedbSeparator) && doc.sourcedb.split(Doc::UserSourcedbSeparator)[1] != current_user.username
+      end
+    else
+      docs.delete_if{|doc| doc.sourcedb.include?(Doc::UserSourcedbSeparator)}
+    end
+
     docs.collect{|doc| [doc.sourcedb, doc.sourcedb]}
   end
 end
