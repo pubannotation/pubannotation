@@ -405,10 +405,15 @@ $indicator_size : 100px;
   width: 98%;
 }
 
-.docs_header_sourcedb,
-.docs_header_sourceid,
+.docs_header_sourcedb {
+  width: 10em;
+}
+
+.docs_header_sourceid {
+  width: 7em;
+}
 .docs_header_projects_number{
-  width: 8em;
+  width: 7em;
 }
 
 .docs_header_text {
