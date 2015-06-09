@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :only => [:new, :edit, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_doc]
+  before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_doc]
   after_filter :set_access_control_headers
   # JSON POST
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
@@ -109,15 +109,15 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
-      docs = @project.docs.where('sourcedb = ?', params[:sourcedb])
+      docs = @project.docs.where(sourcedb: params[:sourcedb], serial: 0)
       @search_path = search_project_docs_path(@project.name)
     else
-      docs = Doc.where('sourcedb = ?', params[:sourcedb])
+      docs = Doc.where(sourcedb: params[:sourcedb], serial: 0)
       @search_path = search_docs_path
     end
 
     sort_order = sort_order(Doc)
-    @source_docs = docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
+    @source_docs = docs.sort_by_params(sort_order).paginate(:page => params[:page])
   end 
 
   def search
@@ -273,13 +273,67 @@ class DocsController < ApplicationController
 
   # GET /docs/1/edit
   def edit
+    begin
+      @project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
+
+      divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless divs.present?
+
+      if divs.length > 1
+        respond_to do |format|
+          format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
+        end
+      else
+        @doc = divs[0]
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+      end
+    end
+
     @doc = Doc.find(params[:id])
   end
 
   # POST /docs
   # POST /docs.json
+  # Creation of document is only allowed for single division documents.
   def create
-    @doc = Doc.new(params[:doc])
+    raise ArgumentError, "project id has to be specified." unless params[:project_id].present?
+
+    project = Project.editable(current_user).find_by_name(params[:project_id])
+    raise ArgumentError, "There is no such project in your management." unless project.present?
+
+    doc_hash = if params[:doc].present?
+      params[:doc] 
+    else
+      {
+        source: params[:source],
+        sourcedb: params[:sourcedb] || '',
+        sourceid: params[:sourceid],
+        serial: params[:divid] || 0,
+        section: params[:section],
+        body: params[:text]
+      }
+    end
+
+    # sourcedb control
+    if doc_hash[:sourcedb].include?(Doc::UserSourcedbSeparator)
+      parts = doc_hash[:sourcedb].split(Doc::UserSourcedbSeparator)
+      raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
+      raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
+    else
+      doc_hash[:sourcedb] += "#{Doc::UserSourcedbSeparator}#{current_user.username}"
+    end
+
+    # sourceid control
+    unless doc_hash[:sourceid].present?
+      lastdoc = project.docs.where('sourcedb = ?', doc_hash[:sourcedb]).order("sourceid ASC").last
+      doc_hash[:sourceid] = "#{lastdoc.sourceid.to_i + 1}"
+    end
+
+    @doc = Doc.new(doc_hash)
     respond_to do |format|
       if @doc.save
         @project, notice = get_project(params[:project_id])
@@ -287,7 +341,8 @@ class DocsController < ApplicationController
         get_project(params[:project_id])
         format.html { 
           if @project.present?
-            redirect_to project_doc_path(@project.name, @doc), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
+            redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, doc_hash[:sourcedb], doc_hash[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
+            # redirect_to project_doc_path(@project.name, @doc), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
           else
             redirect_to @doc, notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
           end 
