@@ -1,5 +1,16 @@
-<h1><%= t('views.shared.new_model', :model => t('activerecord.models.doc')) %></h1>
+<% content_for :path do -%>
+  > <%= link_to t('views.paths.home'), home_path -%>
+  <% if @project -%>
+    > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+    > <%= link_to @project.name, project_path(@project.name) -%>
+    > <%= link_to "docs", project_docs_path(@project.name) %>
+  <% end -%>
+  > new
+<% end -%>
+
+<% if @project.present? -%>
+	<%= render partial: 'projects/title_and_links' -%>
+<% end %>
+<h2><%= t('views.shared.new_model', :model => t('activerecord.models.doc')) %></h2>
 
 <%= render 'form' %>
-
-<%= link_to t('views.shared.back'), docs_path %>

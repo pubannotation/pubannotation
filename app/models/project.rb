@@ -124,6 +124,10 @@ class Project < ActiveRecord::Base
       unscoped.includes(:user).order(sort_order)
   }
 
+  def public?
+    accessibility == 1
+  end
+
   def status_text
    status_hash = {
      1 => I18n.t('activerecord.options.project.status.released'),
@@ -205,6 +209,7 @@ class Project < ActiveRecord::Base
 
   def decrement_docs_projects_counter(doc)
     Doc.decrement_counter(:projects_count, doc.id)
+    doc.reload
   end
 
   def update_annotations_updated_at(doc)
@@ -923,9 +928,23 @@ class Project < ActiveRecord::Base
     imported, added, failed, message = 0, 0, 0, ''
     begin
       divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
-      unless divs.present?
+
+      if divs.present?
+        if self.docs.include?(divs.first)
+          raise "The document #{sourcedb}:#{sourceid} already exists."
+        else
+          self.docs << divs
+          added += 1
+        end
+      else
         divs = Doc.import(sourcedb, sourceid)
-        imported += 1 if divs.present?
+        if divs.present?
+          imported += 1
+          self.docs << divs
+          added += 1
+        else
+          raise "Failed to get the document #{sourcedb}:#{sourceid} from the source."
+        end
       end
       if divs.present? and !self.docs.include?(divs.first)
         self.docs << divs
@@ -1098,20 +1117,21 @@ class Project < ActiveRecord::Base
     namespaces.reject!{|namespace| namespace['prefix'].blank? || namespace['uri'].blank?} if namespaces.present?
   end
 
-  def delete_doc(doc)
+  def delete_doc(doc, current_user)
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
     doc.destroy_project_annotations(self)
     self.docs.delete(doc)
+    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
   end
 
-  def delete_all_docs
+  def delete_all_docs(current_user)
     docs = self.docs
     num_total = docs.length
     num_success = 0
     docs.each_with_index do |doc, i|
       begin
         notices.create({method: "delete documents (#{i}/#{num_total} docs)", successful:true, message:"finished"}) if (i != 0) && (i % 100 == 0)
-        delete_doc(doc)
+        delete_doc(doc, current_user)
         num_success += 1
       rescue => e
         notices.create({method: "delete document: #{doc.descriptor}", successful: false, message: e.message})

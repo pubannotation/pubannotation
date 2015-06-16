@@ -403,7 +403,8 @@ en:
       list_button: List all the documents
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
-      add_new_documents: Add new documents
+      add_documents: Add documents
+      create_a_new_document: Create a new document
       total_number: "Total %{total_number} documents"
     spans:
       projects_that_annotates_this: "Projects <span class='meta'>that have annotated to this span</span>"

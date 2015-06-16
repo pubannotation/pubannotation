@@ -418,7 +418,8 @@ ja:
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
       list: ドキュメント一覧
-      add_new_documents: ドキュメント追加
+      add_documents: ドキュメント追加
+      create_a_new_document: ドキュメント生成
       total_number: "全%{total_number}ドキュメント"
     spans:
       projects_that_annotates_this: "<span class='meta'>このspanにアノテーションを付ける</span>プロジェクト"

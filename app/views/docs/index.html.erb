@@ -8,7 +8,7 @@
 <% end -%>
 
 <% if @project.present? -%>
-	<%= render :partial => 'projects/title_and_links' -%>
+	<%= render partial: 'projects/title_and_links' -%>
 	<%= render partial: 'source_docs' -%>
 <% else -%>
 	<h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1>
