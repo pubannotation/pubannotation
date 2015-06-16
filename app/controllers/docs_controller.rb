@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :generate, :create_project_docs, :update, :destroy, :delete_project_doc]
+  before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :generate, :create_project_docs, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
   after_filter :set_access_control_headers
   # JSON POST
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
@@ -493,7 +493,7 @@ class DocsController < ApplicationController
       divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       raise "There is no such document in the project." unless divs.present?
 
-      divs.each{|div| project.delete_doc(div)}
+      divs.each{|div| project.delete_doc(div, current_user)}
     rescue => e
       flash[:notice] = e
     end
@@ -506,7 +506,7 @@ class DocsController < ApplicationController
       raise "There is no such project in your management." unless @project.present?
 
       @project.notices.create({method: 'delete all the documents in the project'})
-      @project.delay.delete_all_docs
+      @project.delay.delete_all_docs(current_user)
 
       respond_to do |format|
         format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'delete all the documents in the project', is created."}
