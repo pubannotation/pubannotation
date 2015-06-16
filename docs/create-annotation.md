@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Creating Annotations
-prev_section: add-document
+prev_section: create-document
 next_section: format
 permalink: /docs/create-annotation/
 ---

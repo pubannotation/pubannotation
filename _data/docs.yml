@@ -4,6 +4,7 @@
   - api
   - create-project
   - add-document
+  - create-document
   - create-annotation
   - format
   - submit-annotation

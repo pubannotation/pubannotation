@@ -73,7 +73,7 @@ body {
   }
 }
 
-input.bash {
+.bash {
   width: 100%;
   padding: 0.5em;
   line-height: 1.8em;
@@ -81,6 +81,7 @@ input.bash {
   font-size: 1.2em;
   color: white;
   background-color: #333;
+  overflow: hidden;
 }
 
 .meta {
