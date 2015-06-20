@@ -1,7 +1,7 @@
 PubAnnotation
 =============
 
-*A scalable and sharable storage of literature annotation.*
+*A scalable and sharable storage system of literature annotation.*
 
 It is based on a production level DBMS, e.g., PostgreSQL, which makes it *scaleable*.
 Annotation data on PubAnnotation are *shareable* and *comparable* even if they come from different annotation projects.
