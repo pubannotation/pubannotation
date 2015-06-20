@@ -4,7 +4,9 @@
     > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
     > <%= link_to @project.name, project_path(@project.name) %>
   <% end %>
-  > docs
+  > <%= link_to "docs", docs_path %>
+  > <%= link_to "sourcedb", sourcedb_docs_path %>
+  > <%= @sourcedb %>
 <% end %>
 
 <% if @project.present? -%>
