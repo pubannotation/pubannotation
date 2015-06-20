@@ -106,13 +106,14 @@ class DocsController < ApplicationController
   end 
  
   def sourceid_index
+    @sourcedb = params[:sourcedb]
     if params[:project_id].present?
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
-      docs = @project.docs.where(sourcedb: params[:sourcedb], serial: 0)
+      docs = @project.docs.where(sourcedb: @sourcedb, serial: 0)
       @search_path = search_project_docs_path(@project.name)
     else
-      docs = Doc.where(sourcedb: params[:sourcedb], serial: 0)
+      docs = Doc.where(sourcedb: @sourcedb, serial: 0)
       @search_path = search_docs_path
     end
 
