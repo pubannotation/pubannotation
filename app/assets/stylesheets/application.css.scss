@@ -55,6 +55,10 @@ h1 {
   font-size: large;
 }
 
+h1:first-letter{
+  text-transform:capitalize;
+}
+
 h2 {
   width:700px;
   margin-top:25px;

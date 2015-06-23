@@ -459,12 +459,13 @@ en:
         reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation/project that provides a comprehensive description of it.
         editor: Specify URL of the  editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
     users:
-      forgot_password: reset password
-      sign_in: Login
+      forgot_password: I forgot my password!
+      reset_password: reset password
+      sign_in: login
       sign_in_to_create_model: Login to create your %{model}
       sign_up: Signup
       sign_out: Logout
-      send_reset_password_instructions: Send me reset password instructions
+      send_reset_password_instructions: Send me instructions
     shared:
       confirm:
         delete_model: "Are you sure to delete %{model}?"      

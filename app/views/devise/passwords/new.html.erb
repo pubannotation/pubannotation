@@ -1,12 +1,24 @@
-<h2><%= t('views.users.forgot_password') %></h2>
+<% content_for :path do %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to t('views.users.sign_in'), new_user_session_path %> 
+	> <%= t('views.users.reset_password') %>
+<% end %>
+
+<h1><%= t('views.users.reset_password') %></h1>
 
 <%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post }) do |f| %>
   <%= devise_error_messages! %>
 
-  <div><%= f.label :login %><br />
-  <%= f.text_field :login %></div>
+  <table>
+  <tr>
+  	<th><%= f.label :login %></th>
+  	<td><%= f.text_field :login %></td>
+  </tr>
+  <tr>
+  	<td colspan="2" style="text-align:center"><%= f.submit t('views.users.send_reset_password_instructions') %></td>
+  </tr>
+  </table>
 
-  <div><%= f.submit t('views.users.send_reset_password_instructions') %></div>
 <% end %>
-
+<br/>
 <%= render "devise/shared/links" %>

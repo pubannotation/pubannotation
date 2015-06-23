@@ -475,12 +475,13 @@ ja:
         reference: PubAnnotationはアノテーションのストレージは提供しますが、このアノテーションセットのホームページは別途必要です
         editor: アノテーションセットの編集に利用するアノテーションエディターのURLを指定してください。エディタがPubAnnotationでサポートされていない場合はご連絡下さい。
     users:
-      forgot_password: パスワードのリセット
+      forgot_password: パスワードを忘れた時
+      reset_password: パスワードの再設定
       sign_in: ログイン
       sign_in_to_create_model: ログインして%{model}を作成
       sign_up: 新規登録
       sign_out: ログアウト
-      send_reset_password_instructions: パスワードのリセット用メールを送信
+      send_reset_password_instructions: パスワード再設定のメールを送信
     shared:
       confirm:
         delete_model: "%{model}を削除しますか？"
