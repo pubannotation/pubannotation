@@ -30,6 +30,7 @@ end
 
 group :test do
   gem 'rspec'
+  gem 'cucumber'
   gem 'spork-rails'
   gem 'factory_girl_rails'
   gem 'simplecov', :require => false
