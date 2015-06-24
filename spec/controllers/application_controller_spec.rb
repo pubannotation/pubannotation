@@ -206,6 +206,19 @@ describe ApplicationController do
         session[:after_sign_in_path].should eql(@request_full_path)
       end
     end
+
+    context 'when request.fullpath contains password' do
+      before do
+        requested_full_path = '/password'
+        controller.stub(:url_for).and_return(requested_full_path)
+        controller.stub(:request).and_return(double(:fullpath => requested_full_path, :method => 'GET'))
+        controller.store_location
+      end
+      
+      it 'request.fullpath should not stored as redirect_path' do
+        session[:after_sign_in_path].should be_nil
+      end
+    end
   end
 
   describe 'http_basic_authenticate' do
