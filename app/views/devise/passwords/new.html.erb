@@ -12,10 +12,10 @@
   <table>
   <tr>
   	<th><%= f.label :login %></th>
-  	<td><%= f.text_field :login %></td>
+  	<td><%= f.text_field :login, :placeholder => "Your username or e-mail address" %></td>
   </tr>
   <tr>
-  	<td colspan="2" style="text-align:center"><%= f.submit t('views.users.send_reset_password_instructions') %></td>
+  	<th colspan="2" style="text-align:center"><%= f.submit t('views.users.send_reset_password_instructions') %></th>
   </tr>
   </table>
 

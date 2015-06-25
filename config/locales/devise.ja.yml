@@ -7,8 +7,8 @@ ja:
       already_confirmed: は既に登録済みです
       not_locked: は凍結されていません
       not_saved:
-        one: "1 つのエラーにより %{resource} は保存されませんでした:"
-        other: "%{count} つのエラーにより %{resource} は保存されませんでした:"
+        one: "1 つのエラーにより実行されませんでした:"
+        other: "%{count} つのエラーにより実行されませんでした:"
       confirmation_period_expired: は%{period}以内に確認が必要です。もう一度要求してください。
 
   devise:
@@ -48,11 +48,11 @@ ja:
       updated: アカウント情報を更新しました。
       update_needs_confirmation: アカウント情報を変更しました。しかし、メールアドレスを確認する必要があります。メール内のリンクで新しいメールアドレスを確認してください。
       destroyed: アカウントを削除しました。またのご利用をお待ちしております。
-      full_name: （フルネーム）
-      password_leave_blank: (変更したくない場合は空欄)
-      current_password: (変更を確認するために現在のパスワードを入力)
+      full_name: フルネーム
+      password_leave_blank: 変更したくない場合は空欄
+      current_password: 変更を確認するために現在のパスワードを入力
       delete_my_account: アカウントの削除
-      notice_before_delete: (注意：あなたのデータが全て削除されます)
+      notice_before_delete: 注意：あなたのデータが全て削除されます
     unlocks:
       send_instructions: アカウントの凍結解除方法を数分以内にメールでご連絡します。
       unlocked: アカウントを凍結解除しました。続けるにはログインしてください。
@@ -69,9 +69,9 @@ ja:
       reset_password_instructions:
         subject: パスワードの再設定
         hello: '%{email}さん'
-        requested: 'パスワードのリセットが要求されました。パスワードのリセットは以下のリンクから行うことができます。'
-        change_my_password: 'パスワードの変更'
-        description: '万が一パスワードのリセットを要求していない場合は、このメールを無視して下さい。<br />以下のリンクにアクセスするまでパスワードは変更されません。'
+        requested: 'パスワードの再設定が要求されました。パスワードの再設定は以下のリンクから行うことができます。'
+        change_my_password: 'パスワードの再設定'
+        description: '万が一パスワードの再設定を要求していない場合は、このメールを無視して下さい。'
       unlock_instructions:
         subject: アカウントの凍結解除
         hello: '%{email}さん'

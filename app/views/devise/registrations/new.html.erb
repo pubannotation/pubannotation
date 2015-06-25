@@ -1,26 +1,34 @@
 <% content_for :path do %>
   > <%= link_to t('views.paths.home'), home_path %>
-  > sign-up
+  > <%= t('views.users.sign_up') %>
 <% end %>
 
 <h1 class="capitalize_first"><%= t('views.users.sign_up') %></h1>
 
 <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name)) do |f| %>
   <%= devise_error_messages! %>
-
-  <div><%= f.label :username %><br />
-  <%= f.text_field :username %></div>
-
-  <div><%= f.label :email %><br />
-  <%= f.email_field :email %></div>
-
-  <div><%= f.label :password %><br />
-  <%= f.password_field :password %></div>
-
-  <div><%= f.label :password_confirmation %><br />
-  <%= f.password_field :password_confirmation %></div>
-
-  <div><%= f.submit t('views.users.sign_up'), :class => 'capitalize_first' %></div>
+  <table style="border:none">
+    <tr>
+      <th><%= f.label :username %></th>
+      <td><%= f.text_field :username %></td>
+      <td style="border:none"><span class="meta"><%= t('devise.registrations.full_name') %></span></td>
+    </tr>
+    <tr>
+      <th><%= f.label :email %></th>
+      <td><%= f.email_field :email %></td>
+    </tr>
+    <tr>
+      <th><%= f.label :password %></th>
+      <td><%= f.password_field :password %></td>
+    </tr>
+    <tr>
+      <th><%= f.label :password_confirmation %></th>
+      <td><%= f.password_field :password_confirmation %></td>
+    </tr>
+    <tr>
+      <th colspan="2" style="text-align:center"><%= f.submit t('views.users.sign_up'), :class => 'capitalize_first' %></th>
+    </tr>
+   </table>
 <% end %>
-
+<br/>
 <%= render "devise/shared/links" %>
