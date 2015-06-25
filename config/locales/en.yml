@@ -255,7 +255,7 @@ en:
         password: password
         password_confirmation: password confirmation
         remember_me: remember me
-        username: Username (your full name)
+        username: Username
         last_sign_in_at: Last sign in datetime
     placeholders:
       project:
@@ -463,8 +463,8 @@ en:
       reset_password: reset password
       sign_in: login
       sign_in_to_create_model: Login to create your %{model}
-      sign_up: Signup
-      sign_out: Logout
+      sign_up: signup
+      sign_out: logout
       send_reset_password_instructions: Send me instructions
     shared:
       confirm:
@@ -482,7 +482,7 @@ en:
       none: no entry
       new_model: New %{model}
       create_model: Create a New %{model}
-      edit_model: Editing %{model}
+      edit_model: editing %{model}
       add_model: Add %{model}
       delete_model: Delete %{model}
       full_list: '>full list'
