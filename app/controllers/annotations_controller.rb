@@ -2,8 +2,7 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :show, :annotations_index, :annotations, :project_annotations_zip]
-  after_filter :set_access_control_headers
+  before_filter :authenticate_user!, :except => [:doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_zip]
   include DenotationsHelper
 
   # annotations for doc without project
@@ -86,8 +85,7 @@ class AnnotationsController < ApplicationController
 
       unless @project.public?
         authenticate_user!
-        @project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no such project in your management." unless @project.present?
+        raise "There is no such project in your access." unless @project.accessible?(current_user)
       end
 
       divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
@@ -126,8 +124,13 @@ class AnnotationsController < ApplicationController
 
   def project_div_annotations_index
     begin
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      @project = Project.find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
+
+      unless @project.public?
+        authenticate_user!
+        raise "There is no such project in your access." unless @project.accessible?(current_user)
+      end
 
       @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document in the project." unless @doc.present?
@@ -537,20 +540,6 @@ class AnnotationsController < ApplicationController
         format.json {render status: :no_content}
       end
     end
-  end
-
-  private
-
-  def set_access_control_headers
-    allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp', 'http://textae.pubannotation.org']
-    origin = request.env['HTTP_ORIGIN']
-    # if allowed_origins.include?(origin)
-      headers['Access-Control-Allow-Origin'] = origin
-      headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
-      headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Prototype-Version'
-      headers['Access-Control-Allow-Credentials'] = 'true'
-      headers['Access-Control-Max-Age'] = "1728000"
-    # end
   end
 
 end

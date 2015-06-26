@@ -73,5 +73,15 @@ module Pubann
     config.rdfizer_spans       = "#{config.rdfizer}?mode=spans"
     config.sparql_end_point = 'http://localhost:8890'
     config.sparql_end_point_auth = 'dba:dba'
+
+    # Ensure Rack::Cors to run before Warden::Manager used by Devise
+    config.middleware.insert_before Warden::Manager, Rack::Cors do
+        allow do
+            origins '*'
+            resource '*',
+            :headers => :any,
+            :methods => [:get, :post, :options]
+        end
+    end
   end
 end

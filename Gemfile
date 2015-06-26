@@ -41,6 +41,7 @@ group :test do
 end
 
 gem 'jquery-rails'
+gem 'rack-cors', :require => 'rack/cors'
 
 gem 'rest-client'
 gem 'htmlentities'

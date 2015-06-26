@@ -3,7 +3,6 @@ require 'zip/zip'
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
   before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :generate, :create_project_docs, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
-  after_filter :set_access_control_headers
   # JSON POST
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
@@ -534,20 +533,6 @@ class DocsController < ApplicationController
 
   def autocomplete_sourcedb
     render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
-  end
-
-  private
-
-  def set_access_control_headers
-    allowed_origins = ['http://localhost', 'http://localhost:8000', 'http://bionlp.dbcls.jp', 'http://textae.pubannotation.org']
-    origin = request.env['HTTP_ORIGIN']
-    # if allowed_origins.include?(origin)
-      headers['Access-Control-Allow-Origin'] = origin
-      headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
-      headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Prototype-Version'
-      headers['Access-Control-Allow-Credentials'] = 'true'
-      headers['Access-Control-Max-Age'] = "1728000"
-    # end
   end
 
 end
