@@ -128,6 +128,10 @@ class Project < ActiveRecord::Base
     accessibility == 1
   end
 
+  def accessible?(current_user)
+    self.accessibility == 1 || self.user == current_user
+  end
+
   def status_text
    status_hash = {
      1 => I18n.t('activerecord.options.project.status.released'),
