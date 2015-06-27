@@ -116,8 +116,11 @@ class DocsController < ApplicationController
       @search_path = search_docs_path
     end
 
-    sort_order = sort_order(Doc)
-    @source_docs = docs.sort_by_params(sort_order).paginate(:page => params[:page])
+    @source_docs = if docs.size < 1000
+      docs.sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+    end
+
+    @source_docs_size = docs.size
   end 
 
   def search

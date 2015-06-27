@@ -4,7 +4,7 @@
 	<% else -%>
 		<%= t('views.docs.list').capitalize -%>
 	<% end -%>
-	<span class='info'>(<%= total_number(@source_docs) -%>)</span>
+	<span class='info'>(<%= @source_docs_size -%>)</span>
 	<% if @project.present? || params[:action] == 'search' -%>
 		<span class='tab-bar'>
 			<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
@@ -48,4 +48,6 @@
 
 	</table>
 	<%= will_paginate @source_docs -%>
+<% else %>
+<span class="meta">Listing the documents is disabled as there are too many of them.</span>
 <% end -%>
