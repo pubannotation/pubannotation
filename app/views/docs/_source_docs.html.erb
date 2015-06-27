@@ -4,7 +4,7 @@
 	<% else -%>
 		<%= t('views.docs.list').capitalize -%>
 	<% end -%>
-	<span class='info'>(<%= @source_docs_size -%>)</span>
+	<span class='info'>(<%= @docs_size -%>)</span>
 	<% if @project.present? || params[:action] == 'search' -%>
 		<span class='tab-bar'>
 			<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
