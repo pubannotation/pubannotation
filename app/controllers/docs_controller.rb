@@ -109,14 +109,14 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
-      @docs_size = @project.docs.where(sourcedb: @sourcedb, serial: 0).size
-      docs = @project.docs.where(sourcedb: @sourcedb, serial: 0) if @docs_size < 500
+      docs = @project.docs.sourcedb_0(@sourcedb)
       @search_path = search_project_docs_path(@project.name)
     else
-      @docs_size = Doc.where(sourcedb: @sourcedb, serial: 0).size
-      docs = Doc.where(sourcedb: @sourcedb, serial: 0) if @docs_size < 500
+      docs = Doc.sourcedb_0(@sourcedb)
       @search_path = search_docs_path
     end
+    @docs_size = docs.size
+    docs = nil if @docs_size > 500
 
     @source_docs = docs.sort_by_params(sort_order(Doc)).paginate(:page => params[:page]) if docs.present?
   end 

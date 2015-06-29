@@ -25,6 +25,9 @@ class Doc < ActiveRecord::Base
   
   scope :pmdocs, where(:sourcedb => 'PubMed')
   scope :pmcdocs, where(:sourcedb => 'PMC', :serial => 0)
+  scope :sourcedb_0, lambda{|sourcedb|
+    where(sourcedb: sourcedb, serial: 0)
+  }
   scope :project_name, lambda{|project_name|
     {:joins => :projects,
       :conditions => ['projects.name =?', project_name]
