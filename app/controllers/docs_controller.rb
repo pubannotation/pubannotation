@@ -150,7 +150,7 @@ class DocsController < ApplicationController
         search_docs_list = []
       end
 
-      @search_docs_number = search_docs.count
+      @docs_size = search_docs.count
       @source_docs = search_docs 
 
       respond_to do |format|
