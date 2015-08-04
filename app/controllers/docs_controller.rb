@@ -22,9 +22,9 @@ class DocsController < ApplicationController
         source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
         docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
 
+        @docs_size = source_docs_all.count
         @source_docs = source_docs_all.paginate(:page => params[:page])
       else
-        docs = Doc
         @search_path = search_docs_path
       end
 
