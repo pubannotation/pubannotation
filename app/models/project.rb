@@ -1,4 +1,5 @@
 class Project < ActiveRecord::Base
+  include ApplicationHelper
   include AnnotationsHelper
   DOWNLOADS_PATH = "/downloads/"
 
@@ -1096,6 +1097,29 @@ class Project < ActiveRecord::Base
       self.notices.create({method: "annotations upload: #{divs[0].sourcedb}:#{divs[0].sourceid}", successful: successful}) if options[:delayed]
       raise e
     end
+  end
+
+  def obtain_annotations(doc, annotation_server_url)
+    annotations = doc.hannotations(self)
+    annotations = gen_annotations(annotations, annotation_server_url)
+    normalize_annotations!(annotations)
+    result = self.save_annotations(annotations, doc)
+  end
+
+  def obtain_annotations_all_docs(annotation_server_url)
+    docs = self.docs
+    num_total = docs.length
+    num_success = 0
+    docs.each_with_index do |doc, i|
+      begin
+        notices.create({method: "obtain annotations (#{i}/#{num_total} docs)", successful:true, message:"finished"})
+        self.obtain_annotations(doc, annotation_server_url)
+        num_success += 1
+      rescue => e
+        notices.create({method: "obtain annotations #{doc.descriptor}", successful: false, message: e.message})
+      end
+    end
+    notices.create({method: 'obtain annotations for all the project documents', successful: num_total == num_success})
   end
 
   def user_presence

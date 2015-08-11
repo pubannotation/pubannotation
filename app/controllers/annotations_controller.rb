@@ -360,10 +360,8 @@ class AnnotationsController < ApplicationController
       doc.set_ascii_body if (params[:encoding] == 'ascii')
       annotations = doc.hannotations(project, span)
 
-      annotations = gen_annotations(annotations, params[:annotation_server])
-      normalize_annotations!(annotations)
-      result      = project.save_annotations(annotations, doc)
-      notice      = "annotations were successfully obtained."
+      project.obtain_annotations(doc, params[:annotation_server])
+      notice = "annotations were successfully obtained."
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}
