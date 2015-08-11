@@ -181,24 +181,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def gen_annotations (annotations, annserver)
-    RestClient.post annserver, {:text => annotations[:text]}.to_json, :content_type => :json, :accept => :json do |response, request, result|
-      case response.code
-      when 200
-        result = JSON.parse response, :symbolize_names => true
-        if result.respond_to?(:has_key?) && result.has_key?(:denotations)
-          annotations[:denotations] = result[:denotations]
-          annotations[:relations] = result[:relations] if defined? result[:relations]
-        elsif result.respond_to?(:first) && result.first.respond_to?(:has_key?) && result.first.has_key?(:obj)
-          annotations[:denotations] = result
-        end
-        annotations
-      else
-        raise IOError, "Bad gateway"
-      end
-    end
-  end
-
   def chain_denotations (denotations_s)
     # This method is not called anywhere.
     # And just returns denotations_s array.
