@@ -2,6 +2,7 @@
   docs:
   - intro
   - api
+  - spans
   - create-project
   - add-document
   - create-document

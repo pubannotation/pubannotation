@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Creating projects
-prev_section: api
+prev_section: spans
 next_section: add-document
 permalink: /docs/create-project/
 ---

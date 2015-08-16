@@ -286,9 +286,10 @@ article {
 
 @media (min-width: 768px){
   article {
-    padding: 40px 40px 30px;
+    padding: 40px;
   }
 }
+
 
 /* Right-side nav - used by both docs and news */
 
