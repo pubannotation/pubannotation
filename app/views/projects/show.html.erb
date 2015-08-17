@@ -18,6 +18,8 @@
 
 <%= render :partial => 'title_and_links' -%>
 
+<fieldset class="pane description">
+<legend>Description</legend>
 <% if @project.description.present? -%>
 	<div><%= @project.description.html_safe %></div>
 <% end -%>
@@ -25,43 +27,59 @@
 
 <table>
 	<tr>
-		<th><%= t('activerecord.attributes.project.maintainer') %></th>
-		<td><%= @project.user.username %></td>
 		<th><%= t('activerecord.attributes.project.status') %></th>
 		<td><%= @project.status_text -%></td>
 	</tr>
 	<tr>
+		<th><%= t('activerecord.attributes.project.maintainer') %></th>
+		<td><%= @project.user.username %></td>
+	</tr>
+	<tr>
 		<th><%= t('activerecord.attributes.project.author') %></th>
 		<td><%= @project.author %></td>
+	</tr>
+	<tr>
 		<th><%= t('activerecord.attributes.project.license') %></th>
-		<td><%= @project.license %></td>
+		<td><%= license_display_helper(@project.license).html_safe %></td>
 	</tr>
 </table>
-
 <% if user_signed_in? -%>
 	<% if @project.updatable_for?(current_user) -%>
 		<% edit_path = edit_project_path(@project.name) -%> <span class="button"> <%= link_to t('views.shared.edit'), edit_path, :class => 'capitalize_first' -%> </span>
 	<% end -%>
+
 	<% if @project.destroyable_for?(current_user) -%> 
 		<span class="button"><%= link_to t('views.shared.delete'), @project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
 	<% end -%>
 <% end %>
+</fieldset>
 
+<% if @project.sample.present? -%>
+	<fieldset class="pane sample">
+	<legend>Sample</legend>
+		<%= render :partial => 'shared/textae_css_js'-%>
+		<div class="textae-editor" style="border-style:none; background-color:white" source="<%= @project.sample -%>"></div>
+	</fieldset>
+<% end -%>
 
-<h2>
+<fieldset class="pane documents">
+<legend>
 	<%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info" style="margin-right:10px">(<%= total_number(@docs) -%>)</span>
-	<% if total_number(@docs) < 5000 -%>
-		<%= link_to t('views.shared.full_list'), project_docs_path(@project.name), {class: 'button'} -%>
-	<% else -%>
-		<span class="button_disabled" title="disabled due to too many documents to list"><%= t('views.shared.full_list') %></span>
-	<% end -%>
-</h2>
+</legend>
+
+<h3>
+<% if total_number(@docs) < 5000 -%>
+	<%= link_to 'List all >', project_docs_path(@project.name) -%>
+<% else -%>
+	<span class="button_disabled" title="disabled due to too many documents to list">'List all >' %></span>
+<% end -%>
+</h3>
 
 <h3>Search</h3>
 <%= render partial: 'docs/search_form' -%>
 
 <% if user_signed_in? && @project.present? && current_user == @project.user %>
-	<h3><%= t('views.docs.add_documents') -%></h3>
+	<h3><%= t('views.shared.add') -%></h3>
     <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
 
     <h3><%= link_to 'Create a new document >', new_project_doc_path(@project.name) -%></h3>
@@ -69,12 +87,20 @@
 	<%= render partial: 'delete_docs' -%>
 <% end -%>
 
-<h2>Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span></h2>
+</fieldset>
 
-<h3>Batch download</h3>
-<div>
-	<%= project_annotations_zip_link_helper(@project) -%>
-</div>
+<fieldset class="pane annotations">
+<legend>
+Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span>
+</legend>
+
+<% if @project.annotations_zip_downloadable == true -%>
+	<h3>Batch download</h3>
+	<div>
+		<%= project_annotations_zip_link_helper(@project) -%>
+	</div>
+<% end %>
+
 <!-- <div>
 	<%= project_annotations_rdf_link_helper(@project) -%>
 </div>
@@ -84,3 +110,4 @@
 	<%= render partial: 'obtain_annotations' -%>
 	<%= render partial: 'delete_annotations' -%>
 <% end -%>
+</fieldset>

@@ -261,8 +261,10 @@ en:
       project:
         name: Name of the project (up to 20 characters)
         description: Short description of the project
-        author: The name of author of this project
-        reference: URL to an external page that describes this project 
+        author: Name of the original author (or the project name)
+        license: Name of the license condition
+        reference: URL to an external page that describes this project
+        sample: URL to a sample annotation
         pmids: PubMed IDs
         username: sub-maintainers name
         associate_project_name: Enter associate project name.
@@ -403,7 +405,7 @@ en:
       list_button: List all the documents
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
-      add_documents: Add documents
+      import: Import
       create_a_new_document: Create a new document
       total_number: "Total %{total_number} documents"
     spans:
@@ -454,10 +456,11 @@ en:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:
       project:
-        author: specify the official author/project of the annotations, in case you are uploading annotations produced by someone else
-        license: \'CC-BY\' is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.
+        author: Leave it blank if you yourself is the author of the annotation.
+        license: CC-BY is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.
         reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation/project that provides a comprehensive description of it.
-        editor: Specify URL of the  editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
+        editor: Specify the URL of the editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
+        sample: Specify the URL of a sample annotation you want to show in your project front page.
     users:
       forgot_password: I forgot my password!
       reset_password: reset password
@@ -485,7 +488,6 @@ en:
       edit_model: editing %{model}
       add_model: Add %{model}
       delete_model: Delete %{model}
-      full_list: '>full list'
       permit: permit
       show: show
       remove: remove

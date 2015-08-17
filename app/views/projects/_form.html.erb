@@ -1,4 +1,4 @@
-<%= form_for(@project, :html => {:class => 'IndicatorForm'}) do |f| %>
+<%= form_for(@project, :html => {:class => 'IndicatorForm', :id => 'project_form'}) do |f| %>
 	<%= errors_helper(@project) %>
 
 <table style="table-layout:auto">
@@ -20,11 +20,66 @@
   <tr>
     <th><%= f.label :license %></th>
     <td>
-      <%= f.text_field :license, :class => "input" %>
-      <%= hint_helper({:model => :project, :column => :license}) %><br/>
-      <span class="note">e.g., <%= "#{Project::LicenseDefault}" -%></span>
-    </td>
+      <table style="border-style:none">
+      <tr>
+        <td style="border-style:none">
+          <%= f.radio_button(:license, 'CC-BY') %>
+          <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY</a>*
+        </td>
+        <td style="border-style:none">
+          <%= f.radio_button(:license, 'BY-SA') %>
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/">BY-SA</a>*
+        </td>
+        <td style="border-style:none">
+          <%= f.radio_button(:license, 'BY-ND') %>
+          <a href="https://creativecommons.org/licenses/by-nd/4.0/">BY-ND</a>
+        </td>
+      </tr>
+      <tr>
+        <td style="border-style:none">
+          <%= f.radio_button(:license, 'BY-NC') %>
+          <a href="https://creativecommons.org/licenses/by-nc/4.0/">BY-NC</a>
+        </td>
+        <td style="border-style:none">
+          <%= f.radio_button(:license, 'BY-NC-SA') %>
+          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">BY-NC-SA</a>
+        </td>
+        <td style="border-style:none">
+          <%= f.radio_button(:license, 'BY-NC-ND') %>
+          <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">BY-NC-ND</a>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-style:none">
+          <% if @project[:license].nil? || @project[:license].empty? || ['CC-BY', 'BY-SA', 'BY-ND', 'BY-NC', 'BY-NC-SA', 'BY-NC-ND'].include?(@project[:license]) %>
+            <%= f.radio_button(:license, 'other') %>
+            <%= text_field_tag :license, nil, placeholder: "Name of license condition", style: "width:200px" %>
+          <% else %>
+            <%= f.radio_button(:license, 'other', :checked => true) %>
+            <%= text_field_tag :license, @project[:license], placeholder: "Name of license condition", style: "width:200px" %>
+          <% end %>
 
+          <script type="text/javascript">
+            $(function() {
+                $('#project_form').submit(function() {
+                  if ($('input[type="radio"]:checked', '#project_form').val() == 'other') {
+                    $('input[type="radio"]:checked', '#project_form').val($('#license').val());
+                  }
+                  return true;
+                });
+            });
+          </script>
+
+        </td>
+      </tr>
+
+      </table>
+      <ul class="note">
+      <li>*: <a href="http://creativecommons.org/freeworks">free culture licenses</a>.</li>
+      <li>PubAnnotation advocates <a href="http://creativecommons.org/freeworks">free culture works</a>.</li>
+      <li>The license terms are to be applied only to the annotations.</li>
+      </ul>
+    </td>
   </tr>
   <tr>
     <th><%= f.label :status %></th>
@@ -112,6 +167,16 @@
 	  <%= hint_helper({:model => :project, :column => :reference}) %>
     </td>
   </tr>
+
+  <tr>
+    <th><%= f.label :sample %></th>
+    <td>
+      <%= f.text_field :sample, :class => "input", :placeholder => t('activerecord.placeholders.project.sample') %>
+      <%= hint_helper({:model => :project, :column => :sample}) %><br/>
+      <span class="note">See <a href="http://www.pubannotation.org/docs/spans/">this help page (<i>Spans</i>)</a> to learn how-to.</span>
+    </td>
+  </tr>
+
 
 	<!-- associate projects search and add field -->
 <!-- 	<tr>

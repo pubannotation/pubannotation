@@ -89,8 +89,8 @@ class ProjectsController < ApplicationController
   # GET /projects/new
   # GET /projects/new.json
   def new
-    # set dafault value in license and editor
-    @project = Project.new({license: Project::LicenseDefault, editor: Project::EditorDefault})
+    # set the dafault value for editor
+    @project = Project.new({editor: Project::EditorDefault})
 
     respond_to do |format|
       format.html # new.html.erb
@@ -100,7 +100,8 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1/edit
   def edit
-    @sourcedb, @sourceid, @serial, @id = get_docspec(params)
+    p @project
+    puts "-=-=-=-=-"
   end
 
   # POST /projects

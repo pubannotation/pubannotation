@@ -274,6 +274,7 @@ ja:
         description: プロジェクトに関しての簡単な説明
         author: プロジェクトの著者名
         reference: このプロジェクトの参照URL
+        sample: サンプルの参照URL
         pmids: PubMedのID
         username: 副管理者名
         associate_project_name: 関連プロジェクト名を入力
@@ -418,7 +419,7 @@ ja:
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
       list: ドキュメント一覧
-      add_documents: ドキュメント追加
+      import: ドキュメント追加
       create_a_new_document: ドキュメント生成
       total_number: "全%{total_number}ドキュメント"
     spans:
@@ -474,6 +475,7 @@ ja:
         license: CC-BYが推奨デフォルト値ですが、その他の値も入力可能
         reference: PubAnnotationはアノテーションのストレージは提供しますが、このアノテーションセットのホームページは別途必要です
         editor: アノテーションセットの編集に利用するアノテーションエディターのURLを指定してください。エディタがPubAnnotationでサポートされていない場合はご連絡下さい。
+        sample: Specify the URL of a sample annotation you want to show in your project description.
     users:
       forgot_password: パスワードを忘れた時
       reset_password: パスワードの再設定
