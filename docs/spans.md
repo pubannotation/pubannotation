@@ -57,7 +57,7 @@ for HTML rendering, or
 
 for JSON representation.
 
-The URI for the JSON representation may be set as the sample annotation of a project:
+The latter can be supplied to a project specification as a sample annotation.
 
 ![caret positions]({{site.baseurl}}/img/sample-in-project.png)
 

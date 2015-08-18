@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Format
-prev_section: create-annotation
+prev_section: obtain-annotation
 next_section: submit-annotation
 permalink: /docs/format/
 ---

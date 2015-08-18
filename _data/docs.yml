@@ -7,6 +7,7 @@
   - add-document
   - create-document
   - create-annotation
+  - obtain-annotation
   - format
   - submit-annotation
   - align-annotation
