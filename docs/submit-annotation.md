@@ -42,7 +42,7 @@ Following is explanation of the option specification:
    * The URL for the document, _PubMed:123456_, in your project.
 
 <div class="boxtip">
-<b>Note</b> that the default behavior of submitting a set of annotations is <i>replacement</i>, meaning that the submitted set of annotations will <em>replace</em> the pre-existing annotations to the document. Alternatively, the behavior can be changed to <i>addition</i> mode by giving the option <i>mode=addition</i> in the end of the URL, e.g., <span class="console">.../annotations.json?mode=addition</span>, which will add the submitted annotations, preserving the pre-existing ones.
+<b>Note</b> that the default behavior of submitting a set of annotations is <i>replacement</i>, meaning that the submitted set of annotations will <em>replace</em> the pre-existing annotations to the document. Alternatively, the behavior can be changed to <i>add</i> mode by giving the option <i>mode=add</i> in the end of the URL, e.g., <span class="console">.../annotations.json?mode=add</span>, which will add the submitted annotations, preserving the pre-existing ones.
 </div>
 
 ## Submit annotations, method 2
