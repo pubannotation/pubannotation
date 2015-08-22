@@ -166,6 +166,7 @@ module ApplicationHelper
         if result.respond_to?(:has_key?) && result.has_key?(:denotations)
           annotations[:denotations] = result[:denotations]
           annotations[:relations] = result[:relations] if defined? result[:relations]
+          annotations[:modifications] = result[:modifications] if defined? result[:modifications]
         elsif result.respond_to?(:first) && result.first.respond_to?(:has_key?) && result.first.has_key?(:obj)
           annotations[:denotations] = result
         end
