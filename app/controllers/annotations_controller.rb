@@ -234,7 +234,9 @@ class AnnotationsController < ApplicationController
 
       annotations = normalize_annotations!(annotations)
 
-      mode = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+      options = {}
+      options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+      options[:prefix] = params[:prefix] if params[:prefix].present?
 
       if params[:divid].present?
         doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
@@ -265,7 +267,7 @@ class AnnotationsController < ApplicationController
         end
       end
 
-      result = project.save_annotations(annotations, doc, {:mode => mode})
+      result = project.save_annotations(annotations, doc, options)
       notice = "annotations"
 
       respond_to do |format|
@@ -281,67 +283,6 @@ class AnnotationsController < ApplicationController
     end
   end
 
-
-  # POST /annotations
-  # POST /annotations.json
-  def create_backup
-    begin
-      if params[:project_id].present?
-        authenticate_user!
-        project = Project.editable(current_user).find_by_name(params[:project_id])
-        raise "There is no such project in your management." unless project.present?
-      end
-
-      mode = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
-
-      sourcedb, sourceid, divno = get_docspec(params)
-      divnos = divno.respond_to?(:each) ? divno : [divno]
-      divs = divnos.collect{|no| get_doc(sourcedb, sourceid, no)[0]}
-      raise ArgumentError, "There is no such document." if divs[0].nil? || (project.present? && !project.docs.include?(divs[0]))
-
-      if params[:annotations]
-        annotations = params[:annotations].symbolize_keys
-      elsif params[:text].present?
-        annotations = {:text => params[:text]}
-        annotations[:denotations] = params[:denotations] if params[:denotations].present?
-        annotations[:relations] = params[:relations] if params[:relations].present?
-        annotations[:modifications] = params[:modifications] if params[:modifications].present?
-      else
-        raise ArgumentError, t('controllers.annotations.create.no_annotation')
-      end
-
-      annotations = normalize_annotations!(annotations)
-
-      if annotations[:text].length < 5000 || project.nil?
-        result = project.store_annotations(annotations, divs, {:mode => mode})
-      else
-        project.notices.create({method: "upload annotations: #{}"}) if project.present?
-        project.delay.store_annotations(annotations, divs, {mode: mode, delayed: true})
-        result = {message: t('controllers.annotations.create.delayed_job')}
-      end
-
-      respond_to do |format|
-        format.html {redirect_to :back, notice: notice}
-        format.json {render :json => result, :status => :created}
-      end
-
-    rescue ArgumentError => e
-
-      respond_to do |format|
-        format.html {
-          if project
-            redirect_to project_path(project.name), notice: e.message
-          else
-            redirect_to home_path, notice: e.message
-          end
-        }
-        format.json {
-          render :json => {error: e.message}, :status => :unprocessable_entity
-        }
-      end
-
-    end
-  end
 
   def generate
     begin
@@ -360,8 +301,12 @@ class AnnotationsController < ApplicationController
       doc.set_ascii_body if (params[:encoding] == 'ascii')
       annotations = doc.hannotations(project, span)
 
-      project.obtain_annotations(doc, params[:annotation_server])
-      notice = "annotations were successfully obtained."
+      options = {}
+      options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+      options[:prefix] = params[:prefix] if params[:prefix].present?
+
+      project.obtain_annotations(doc, params[:annotation_server], options)
+      notice = "annotations are successfully obtained."
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}

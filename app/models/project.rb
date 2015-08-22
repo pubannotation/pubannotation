@@ -1035,7 +1035,15 @@ class Project < ActiveRecord::Base
 
   def save_annotations(annotations, doc, options = nil)
     raise ArgumentError, "nil document" unless doc.present?
+
     doc.destroy_project_annotations(self) unless options.present? && options[:mode] == :addition
+
+    if options[:prefix].present?
+      prefix = options[:prefix]
+      annotations[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if annotations[:denotations].present?
+      annotations[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:relations].present?
+      annotations[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:modifications].present?
+    end
 
     original_text = annotations[:text]
     annotations[:text] = doc.body
@@ -1099,21 +1107,21 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def obtain_annotations(doc, annotation_server_url)
+  def obtain_annotations(doc, annotation_server_url, options = nil)
     annotations = doc.hannotations(self)
     annotations = gen_annotations(annotations, annotation_server_url)
     normalize_annotations!(annotations)
-    result = self.save_annotations(annotations, doc)
+    result = self.save_annotations(annotations, doc, options)
   end
 
-  def obtain_annotations_all_docs(annotation_server_url)
+  def obtain_annotations_all_docs(annotation_server_url, options = nil)
     docs = self.docs
     num_total = docs.length
     num_success = 0
     docs.each_with_index do |doc, i|
       begin
         notices.create({method: "obtain annotations (#{i}/#{num_total} docs)", successful:true, message:"finished"})
-        self.obtain_annotations(doc, annotation_server_url)
+        self.obtain_annotations(doc, annotation_server_url, options)
         num_success += 1
       rescue => e
         notices.create({method: "obtain annotations #{doc.descriptor}", successful: false, message: e.message})
