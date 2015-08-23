@@ -304,6 +304,7 @@ class AnnotationsController < ApplicationController
       options = {}
       options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
       options[:prefix] = params[:prefix] if params[:prefix].present?
+      options[:method] = params[:method] if params[:method].present?
 
       project.obtain_annotations(doc, params[:annotation_server], options)
       notice = "annotations are successfully obtained."

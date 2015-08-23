@@ -1109,7 +1109,7 @@ class Project < ActiveRecord::Base
 
   def obtain_annotations(doc, annotation_server_url, options = nil)
     annotations = doc.hannotations(self)
-    annotations = gen_annotations(annotations, annotation_server_url)
+    annotations = gen_annotations(annotations, annotation_server_url, options)
     normalize_annotations!(annotations)
     result = self.save_annotations(annotations, doc, options)
   end

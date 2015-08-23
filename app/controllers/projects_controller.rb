@@ -192,8 +192,13 @@ class ProjectsController < ApplicationController
       @project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless @project.present?
 
+      options = {}
+      options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+      options[:prefix] = params[:prefix] if params[:prefix].present?
+      options[:method] = params[:method] if params[:method].present?
+
       @project.notices.create({method: 'obtain annotations for all the project documents'})
-      @project.delay.obtain_annotations_all_docs(params[:annotation_server])
+      @project.delay.obtain_annotations_all_docs(params[:annotation_server], options)
 
       respond_to do |format|
         format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'obtain annotations for all the project documents', is created."}

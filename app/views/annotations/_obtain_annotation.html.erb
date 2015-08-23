@@ -12,9 +12,9 @@
    		<tr>
 	   		<th>Annotation server</th>
 	   		<td style="text-align:center">
-				<%= text_field_tag :annotation_server, nil, :placeholder => "URL of annotation server" %>
+				<%= text_field_tag :annotation_server, nil, placeholder: "URL of annotation server", size: 30 %>
 			</td>
-			<td rowspan="3">
+			<td rowspan="4">
 				<%= submit_tag('Request annotation') %>
 			</td>
 		</tr>
@@ -22,7 +22,15 @@
 		<tr>
 			<th title="You can prefix the id of all the annotations from the server to avoid confliction with other annotations.">Prefix</th>
 	   		<td style="text-align:center">
-				<%= text_field_tag :prefix, nil, :placeholder => "a unique short character string" %>
+				<%= text_field_tag :prefix, nil, placeholder: "a unique short character string", size: 30 %>
+			</td>
+		</tr>
+
+		<tr>
+			<th>Method</th>
+			<td>
+				<input type="radio" name="method" value="get"><span title="Choose it when you do not need to send the text to the server">GET</span></input>
+				<input type="radio" name="method" value="post" checked="checked"><span title="Choose it when you need to send the text to the server">POST</span></input>
 			</td>
 		</tr>
 

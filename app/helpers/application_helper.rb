@@ -158,23 +158,34 @@ module ApplicationHelper
     end
   end
 
-  def gen_annotations (annotations, annserver)
-    RestClient.post annserver, {:text => annotations[:text]}.to_json, :content_type => :json, :accept => :json do |response, request, result|
-      case response.code
-      when 200
-        result = JSON.parse response, :symbolize_names => true
-        if result.respond_to?(:has_key?) && result.has_key?(:denotations)
-          annotations[:denotations] = result[:denotations]
-          annotations[:relations] = result[:relations] if defined? result[:relations]
-          annotations[:modifications] = result[:modifications] if defined? result[:modifications]
-        elsif result.respond_to?(:first) && result.first.respond_to?(:has_key?) && result.first.has_key?(:obj)
-          annotations[:denotations] = result
-        end
-        annotations
-      else
-        raise IOError, "Bad gateway"
-      end
+  def gen_annotations (annotations, annserver, options = nil)
+    response = if options && options[:method] == 'get'
+      RestClient.get annserver, {:params => {:sourcedb => annotations[:sourcedb], :sourceid => annotations[:sourceid]}, :accept => :json}
+    else
+      RestClient.post annserver, {:text => annotations[:text]}.to_json, :content_type => :json, :accept => :json
     end
+
+    raise IOError, "Bad gateway" unless response.code == 200
+
+    result = JSON.parse response, :symbolize_names => true
+
+    ann = {}
+
+    ann[:text] = if result[:text].present?
+      result[:text]
+    else
+      annotations[:text]
+    end
+
+    if result.respond_to?(:has_key?) && result.has_key?(:denotations)
+      ann[:denotations] = result[:denotations]
+      ann[:relations] = result[:relations] if defined? result[:relations]
+      ann[:modifications] = result[:modifications] if defined? result[:modifications]
+    elsif result.respond_to?(:first) && result.first.respond_to?(:has_key?) && result.first.has_key?(:obj)
+      ann[:denotations] = result
+    end
+
+    ann
   end
 
 end
