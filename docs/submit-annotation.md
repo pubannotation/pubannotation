@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Submitting annotations
-prev_section: format
+prev_section: annotation-editor
 next_section: align-annotation
 permalink: /docs/submit-annotation/
 ---

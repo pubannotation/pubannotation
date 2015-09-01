@@ -166,11 +166,11 @@ span.note {
 
 a {
   text-decoration:none;
-  color: #4444bb;
+  color: #3333bb;
 }
 
 a:hover {
-  color: #8888ff;
+  color: #aaaaff;
 }
 
 table, th, td{
@@ -262,7 +262,7 @@ table.frame {
 }
 
 li {
-    margin-top:5px;
+    margin-top:10px;
 }
 
 .button {

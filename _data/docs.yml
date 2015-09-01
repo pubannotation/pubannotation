@@ -7,8 +7,9 @@
   - add-document
   - create-document
   - create-annotation
-  - obtain-annotation
   - format
+  - automatic-annotator
+  - annotation-editor
   - submit-annotation
   - align-annotation
   - example-1

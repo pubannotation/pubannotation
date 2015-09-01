@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: About
-prev_section: align-annotation
+prev_section: example-1
 permalink: /docs/about/
 ---
 

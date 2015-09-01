@@ -1,9 +1,9 @@
 ---
 layout: docs
-title: Obtaining Annotations
-prev_section: create-annotation
-next_section: format
-permalink: /docs/obtain-annotation/
+title: Automatic annotators
+prev_section: format
+next_section: annotation-editor
+permalink: /docs/automatic-annotator/
 ---
 
 For a document in PubAnnotation, you can obtain annotations from a REST service of automatic annotation.
