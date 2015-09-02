@@ -171,7 +171,7 @@ module ApplicationHelper
 
     ann = {}
 
-    ann[:text] = if result[:text].present?
+    ann[:text] = if result.respond_to?(:has_key) && result.has_key?(:text)
       result[:text]
     else
       annotations[:text]
