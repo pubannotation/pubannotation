@@ -10,8 +10,9 @@ For a document in PubAnnotation, you can obtain annotations from a REST service 
 
 To obtain annotations, PubAnnotation can talk with a web service which
 
-* takes a piece of text through the parameter _text_, and
-* responses with annotations in the [PubAnnotation JSON format]({{site.baseurl}}/docs/format/).
+* takes a piece of text through the parameter, _text_, and
+* responses with annotations to the text.
+  * for PubAnnotation to understand the response, annotations need to be in the [PubAnnotation JSON format]({{site.baseurl}}/docs/format/).
 
 To obtain automatic annotations for a document
 
@@ -28,7 +29,22 @@ If your are logged in and the document belongs to one of your projects, you will
   * In the _add_ mode, current annotations will be preserved and the obtained annotations will be additionally stored. 
 5. Click the button, **Request annotation**, then PubAnnotation will "post" the text of the document to the web service, receive the response, and store it in your project, if the response is verified as valid annotations.
 
-## Example of annotation web service
+## PubAnnotation-compatible annotation web services
+
+For an annotation web service to be compatible with PubAnnotation, it has to take either
+
+* a piece of text through the parameter variable, _text_, e.g.
+<textarea class="bash" style="width:100%; height:3em; background-color:#333333; color:#eeeeee">
+curl -d text="example text" URL_of_annotation_web_service
+* or, a combination of source DB and source Id, e.g.
+<textarea class="bash" style="width:100%; height:3em; background-color:#333333; color:#eeeeee">
+curl -d sourcedb="PubMed" -d sourceid="123456" URL_of_annotation_web_service
+
+The verb of the request may be either POST (the above examples), or GET (put the option "-G" to the above examples).
+
+In either case, the response has to be annotations encoded in the [PubAnnotation JSON format]({{site.baseurl}}/docs/format/).
+
+## Annotation web service example
 
 [PubDictionaries](http://pubdictionaries.org) is an example of annotation web service which conforms the specification of PubAnnotation. Through its [_REST API_ interface](http://pubdictionaries.org/mapping/text_annotation),
 the URL of a dictionary-based text annotation service can be obtained. The URL can then be copied into the input box described above.

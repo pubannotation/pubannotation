@@ -22,13 +22,15 @@ An annotation editor to edit the annotations will then
 * 'get' the annotations from the URL, and
 * 'post' the annotations to the same URL after edition.
 
-To simulate the IO, one can simply use the cURL command:
+One can simply use
+the standard [unix](http://www.unix.org/)/[linux](https://en.wikipedia.org/wiki/Linux) commands,
+[cURL](http://curl.haxx.se/) and [vi](https://en.wikipedia.org/wiki/Vi), to simulate the IO:
 
 1. __curl _the-URL-of-annotations_ > annotations.json__
-2. edit the file, _annotations.json_, using an editor, e.g. _vi_
+2. __vi annotations.json__ (to make a change to the file)
 3. __curl -H "content-type:application/json" -u "_username_:_password_" -d @annotations.json _the-URL-of-annotations___
 
-An editor to be compatible with PubAnnotation, besides the API,
+For an editor to be compatible with PubAnnotation, besides the API,
 it also needs to understand the [PubAnnotation JSON format]({{site.baseurl}}/docs/format/).
 
 [TextAE](http://textae.pubannotation.org) is a web-based graphcial annotation editor,
