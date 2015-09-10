@@ -331,7 +331,7 @@ class DocsController < ApplicationController
     # sourceid control
     unless doc_hash[:sourceid].present?
       lastdoc = project.docs.where('sourcedb = ?', doc_hash[:sourcedb]).order("sourceid ASC").last
-      doc_hash[:sourceid] = "#{lastdoc.sourceid.to_i + 1}"
+      doc_hash[:sourceid] = lastdoc.nil? ? '1' : "#{lastdoc.sourceid.to_i + 1}"
     end
 
     @doc = Doc.new(doc_hash)
