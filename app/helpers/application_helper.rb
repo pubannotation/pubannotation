@@ -162,12 +162,17 @@ module ApplicationHelper
     response = if options && options[:method] == 'get'
       RestClient.get annserver, {:params => {:sourcedb => annotations[:sourcedb], :sourceid => annotations[:sourceid]}, :accept => :json}
     else
-      RestClient.post annserver, {:text => annotations[:text]}.to_json, :content_type => :json, :accept => :json
+      # RestClient.post annserver, {:text => annotations[:text]}.to_json, :content_type => :json, :accept => :json
+      RestClient.post annserver, :text => annotations[:text], :accept => :json
     end
 
     raise IOError, "Bad gateway" unless response.code == 200
 
-    result = JSON.parse response, :symbolize_names => true
+    begin
+      result = JSON.parse response, :symbolize_names => true
+    rescue => e
+      raise IOError, "Received a non-JSON object: [#{response}]"
+    end
 
     ann = {}
 

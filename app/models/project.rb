@@ -654,25 +654,47 @@ class Project < ActiveRecord::Base
 
   def create_annotations_from_zip(zip_file_path, options = {})
     files = Zip::ZipFile.open(zip_file_path) do |zip|
-      zip.collect{|entry| {name:entry.name, content:entry.get_input_stream.read}}
+      zip.collect do |entry|
+        next if entry.ftype == :directory
+       {name:entry.name, content:entry.get_input_stream.read}
+     end.compact!
     end
 
-    total_number = files.length
+    error_files = []
+    annotations_collection = files.inject([]) do |m, file|
+      begin
+        as = JSON.parse(file[:content], symbolize_names:true)
+        if as.is_a?(Array)
+          m + as
+        else
+          m + [as]
+        end
+      rescue => e
+        error_files << file[:name]
+        m
+      end
+    end
 
+    raise IOError, "Invalid JSON files: #{error_files.join(', ')}" unless error_files.empty?
+
+    error_anns = []
+    annotations_collection.each do |annotations|
+      begin
+        normalize_annotations!(annotations)
+      rescue => e
+        error_anns << "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+      end
+    end
+    raise IOError, "Invalid annotations: #{error_anns.join(', ')}" unless error_anns.empty?
+
+    total_number = annotations_collection.length
     interval = (total_number > 100000)? 100 : 10
 
     imported, added, failed, messages = 0, 0, 0, []
-    files.each_with_index do |file, i|
+    annotations_collection.each_with_index do |annotations, i|
       begin
         self.notices.create({method:"- annotations upload (#{i}/#{total_number} docs)", successful:true, message: "finished"}) if (i != 0) && (i % interval == 0)
 
-        begin
-          annotations = JSON.parse(file[:content], symbolize_names:true)
-          annotations = normalize_annotations!(annotations)
-        rescue
-          raise IOError, "JSON parse error"
-        end
-  
         i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
 
         if annotations[:divid].present?
@@ -691,7 +713,7 @@ class Project < ActiveRecord::Base
         end
 
       rescue => e
-        self.notices.create({method:"- annotations upload: #{file[:name]}", successful:false, message: e.message})
+        self.notices.create({method:"- annotations upload: #{annotations[:sourcedb]}:#{annotations[:sourceid]}", successful:false, message: e.message})
         next
       end
     end
@@ -1035,6 +1057,7 @@ class Project < ActiveRecord::Base
 
   def save_annotations(annotations, doc, options = nil)
     raise ArgumentError, "nil document" unless doc.present?
+    options ||= {}
 
     doc.destroy_project_annotations(self) unless options.present? && options[:mode] == :addition
 

@@ -100,8 +100,6 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1/edit
   def edit
-    p @project
-    puts "-=-=-=-=-"
   end
 
   # POST /projects
