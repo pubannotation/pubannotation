@@ -68,7 +68,7 @@
 </legend>
 
 <h3>
-<% if total_number(@docs) < 5000 -%>
+<% if total_number(@docs) < 10000 -%>
 	<%= link_to 'List all >', project_docs_path(@project.name) -%>
 <% else -%>
 	<span class="button_disabled" title="disabled due to too many documents to list">List all</span>
