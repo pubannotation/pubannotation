@@ -866,6 +866,16 @@ class Project < ActiveRecord::Base
     return [num_created, num_added, num_failed]   
   end
 
+  def add_docs2(docspecs)
+    imported, added, failed, messages = 0, 0, 0, []
+    docspecs.each do |docspec|
+      i, a, f, m = self.add_doc(docspec[:sourcedb], docspec[:sourceid])
+      imported += i; added += a; failed += f;
+      messages << m if m.present?
+    end
+    notices.create({method: "add documents to the project", successful: true, message:"imported:#{imported}, added:#{added}, failed:#{failed}"})
+  end
+
   def add_docs(options = {})
     num_created, num_added, num_failed = 0, 0, 0
     ids = options[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}

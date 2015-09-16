@@ -370,27 +370,23 @@ class DocsController < ApplicationController
                   elsif params["sourcedb"].present? && params["sourceid"].present?
                     [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
                   elsif params[:ids].present? && params[:sourcedb].present?
-                    params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
+                    params[:ids].split(/[ ,"':|\t\n\r]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
                   else
                     []
                   end
 
-      imported, added, failed, messages = 0, 0, 0, []
-
       raise ArgumentError, "no valid document specification found." if docspecs.empty?
 
       docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
-      docspecs.each do |docspec|
-        i, a, f, m = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
-        imported += i; added += a; failed += f;
-        messages << m if m.present?
-      end
+
+      project.notices.create({method: 'add documents to the project'})
+      project.delay.add_docs2(docspecs)
     rescue => e
       messages << e.message
     end
 
     respond_to do |format|
-      format.html {redirect_to project_path(project.name), notice:"imported:#{imported}, added:#{added}, failed:#{failed}"}
+      format.html {redirect_to project_path(project.name), notice: "The task, 'add documents to the project', is created."}
       format.json {render json:{imported:imported, added:added, failed:failed, messages:messages}, status:(added > 0 ? :created : :unprocessable_entity)}
     end
   end
