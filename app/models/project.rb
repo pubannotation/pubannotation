@@ -31,9 +31,9 @@ class Project < ActiveRecord::Base
     :join_table => 'associate_projects_projects'
 
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
-  has_many :denotations, :dependent => :destroy
-  has_many :relations, :dependent => :destroy
-  has_many :modifications, :dependent => :destroy
+  has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
+  has_many :relations, :dependent => :destroy, after_add: :update_updated_at
+  has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :notices, dependent: :destroy
@@ -1250,5 +1250,9 @@ class Project < ActiveRecord::Base
 
   def update_doc_delta_index(doc)
     doc.save
+  end
+
+  def update_updated_at(model)
+    self.update_attribute(:updated_at, DateTime.now)
   end
 end
