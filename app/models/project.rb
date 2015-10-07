@@ -8,7 +8,7 @@ class Project < ActiveRecord::Base
   serialize :namespaces
   belongs_to :user
   has_and_belongs_to_many :docs, 
-    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter], 
+    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter, :update_doc_delta_index], 
     :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
@@ -1246,5 +1246,9 @@ class Project < ActiveRecord::Base
     rescue
       notices.create({method: 'destroy the project', successful: false})
     end
+  end
+
+  def update_doc_delta_index(doc)
+    doc.save
   end
 end

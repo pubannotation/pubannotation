@@ -2534,20 +2534,23 @@ describe Project do
   describe 'update_annotations_updated_at' do
     before do
       @doc = FactoryGirl.create(:doc)
+      @doc.stub(:update_doc_delta_index).and_return(nil)
       @annotations_updated_at = 5.days.ago
       @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
       @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
     end
 
     describe 'after_add' do
-      before do
+      it 'should update projects.annotations_updated_at' do
         @project_1.docs << @doc
         @project_2.docs << @doc
-      end
-
-      it 'should update projects.annotations_updated_at' do
         @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
         @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
+      end
+
+      it 'should call update_doc_delta_index' do
+        expect(@project_1).to receive(:update_doc_delta_index)
+        @project_1.docs << @doc
       end
     end
 
@@ -2808,6 +2811,16 @@ describe Project do
       it 'should create notice' do
         expect{ @project.delay_destroy }.to change{ Notice.count }.from(0).to(1)
       end
+    end
+  end
+
+  describe 'update_doc_delta_index' do
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:doc) { FactoryGirl.create(:doc) }
+
+    it 'should save doc' do
+      expect(doc).to receive(:save)
+      project.update_doc_delta_index(doc)
     end
   end
 end
