@@ -20,6 +20,9 @@ Pubann::Application.configure do
   # Generate digests for assets URLs
   config.assets.digest = true
 
+  # Rotate log file daily, weekly monthly
+  config.logger = Logger.new("#{Rails.root}/log/production.log", 30, 'daily')
+
   # Defaults to nil and saved in location specified by config.assets.prefix
   # config.assets.manifest = YOUR_PATH
 
