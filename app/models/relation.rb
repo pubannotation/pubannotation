@@ -36,8 +36,8 @@ class Relation < ActiveRecord::Base
       order('relations.id ASC') 
   }
     
-  after_save :increment_subcatrels_count, :increment_project_relations_count, :increment_project_annotations_count
-  after_destroy :decrement_subcatrels_count, :decrement_project_relations_count, :decrement_project_annotations_count
+  after_save :increment_subcatrels_count, :increment_project_relations_count, :increment_project_annotations_count, :update_project_updated_at
+  after_destroy :decrement_subcatrels_count, :decrement_project_relations_count, :decrement_project_annotations_count, :update_project_updated_at
   
   def get_hash
     hrelation = Hash.new
@@ -115,5 +115,9 @@ class Relation < ActiveRecord::Base
 
   def decrement_project_annotations_count
     Project.decrement_counter(:annotations_count, project.id) if self.project.present?
+  end
+
+  def update_project_updated_at
+    project.update_attribute(:updated_at, DateTime.now) if self.project.present?
   end
 end

@@ -267,7 +267,7 @@ describe Denotation do
   describe 'update_projects_after_save' do
     before do
       @annotations_updated_at = 10.days.ago
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0, :annotations_updated_at => @annotations_updated_at)
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0, :annotations_updated_at => @annotations_updated_at, updated_at: @updated_at)
       @associate_project_1 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_2 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
       @associate_project_2_denotations_count = 1
@@ -304,11 +304,14 @@ describe Denotation do
         @project.reload
         @associate_project_1.reload
         @associate_project_2.reload
+        @project_stub = double('Project') 
+        Project.stub(:where).and_return(@project_stub)
       end
           
       it 'should increment project.denotations_count' do
         @project.denotations_count.should eql((@associate_project_2_denotations_count * 2) + 1)
       end      
+          
       
       it 'should increment associate_project.denotations_count' do
         @associate_project_1.denotations_count.should eql(0)
@@ -322,6 +325,18 @@ describe Denotation do
         @project.annotations_updated_at.utc.should_not eql( @annotations_updated_at.utc )
       end     
     end      
+
+    describe 'update project.updated_at' do
+      let( :project_stub ) { double('Project')  }
+      let( :updated_at ) { 10.days.ago }
+      let( :project ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0, updated_at: updated_at) }
+
+      it 'should update project.updated_at' do
+        FactoryGirl.create(:denotation, :project => project, :doc_id => 1)
+        project.reload
+        expect(project.updated_at).not_to eql(updated_at)
+      end      
+    end
   end
 
   describe '#increment_project_annotations_count' do
@@ -410,6 +425,19 @@ describe Denotation do
         @associate_project_2.denotations_count.should eql(1)
       end      
     end      
+
+    describe 'update project.updated_at' do
+      let( :project_stub ) { double('Project')  }
+      let( :updated_at ) { 10.days.ago }
+      let( :project ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0, updated_at: updated_at) }
+      let( :denotation ) { FactoryGirl.create(:denotation, :project => project, :doc_id => 1) }
+
+      it 'should update project.updated_at' do
+        denotation.destroy
+        project.reload
+        expect(project.updated_at).not_to eql(updated_at)
+      end      
+    end
   end
   
   describe 'self.sql_find' do

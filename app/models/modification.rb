@@ -8,8 +8,8 @@ class Modification < ActiveRecord::Base
   validates :pred, :presence => true
   validates :obj, :presence => true
 
-  after_save :increment_project_annotations_count
-  after_destroy :decrement_project_annotations_count
+  after_save :increment_project_annotations_count, :update_project_updated_at
+  after_destroy :decrement_project_annotations_count, :update_project_updated_at
 
   def get_hash
     hmodification = Hash.new
@@ -25,6 +25,10 @@ class Modification < ActiveRecord::Base
 
   def increment_project_annotations_count
     Project.increment_counter(:annotations_count, project.id) if self.project.present?
+  end
+
+  def update_project_updated_at
+    project.update_attribute(:updated_at, DateTime.now) if self.project.present?
   end
 
   def decrement_project_annotations_count

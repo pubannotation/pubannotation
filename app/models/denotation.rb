@@ -74,6 +74,7 @@ class Denotation < ActiveRecord::Base
       end
       # update project annotations_updated_at
       Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
+      Project.where("projects.id IN (?)", project_ids).update_all(updated_at: DateTime.now)
     end
   end
 
@@ -95,6 +96,7 @@ class Denotation < ActiveRecord::Base
       end
       # update project annotations_updated_at
       Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
+      Project.where("projects.id IN (?)", project_ids).update_all(updated_at: DateTime.now)
     end
   end
 

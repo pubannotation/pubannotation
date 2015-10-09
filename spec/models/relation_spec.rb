@@ -639,6 +639,11 @@ describe Relation do
       @relation.should_receive(:increment_project_annotations_count)
       @relation.save 
     end
+
+    it 'should call update_project_updated_at' do
+      @relation.should_receive(:update_project_updated_at)
+      @relation.save 
+    end
   end
 
   describe 'after_destroy' do
@@ -659,6 +664,11 @@ describe Relation do
 
     it 'should call decrement_project_annotations_count' do
       @relation.should_receive(:decrement_project_annotations_count)
+      @relation.destroy 
+    end
+
+    it 'should call update_project_updated_at' do
+      @relation.should_receive(:update_project_updated_at)
       @relation.destroy 
     end
   end

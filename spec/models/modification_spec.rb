@@ -27,6 +27,44 @@ describe Relation do
       @modification.obj.should eql(@instance)
     end
   end
+
+  describe 'after_save' do
+    let( :updated_at ) { 10.days.ago }
+    let( :project ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user), updated_at: updated_at) }
+    let( :doc ) { FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body') }
+    let( :denotation ) { FactoryGirl.create(:denotation, :project => project, :doc => doc) }
+    let( :instance ) { FactoryGirl.create(:instance, :hid => 'instance hid', :project => project, :obj => denotation) }
+    let( :modification ) { FactoryGirl.create(:modification, :hid => 'modification hid', :pred => 'pred', :obj => instance, :project => project) }
+
+    it 'should call increment_project_annotations_count' do
+      expect( modification ).to receive(:increment_project_annotations_count)
+      modification.save
+    end
+
+    it 'should call update_project_updated_at' do
+      expect( modification ).to receive(:update_project_updated_at)
+      modification.save
+    end
+  end
+
+  describe 'after_destroy' do
+    let( :updated_at ) { 10.days.ago }
+    let( :project ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user), updated_at: updated_at) }
+    let( :doc ) { FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body') }
+    let( :denotation ) { FactoryGirl.create(:denotation, :project => project, :doc => doc) }
+    let( :instance ) { FactoryGirl.create(:instance, :hid => 'instance hid', :project => project, :obj => denotation) }
+    let( :modification ) { FactoryGirl.create(:modification, :hid => 'modification hid', :pred => 'pred', :obj => instance, :project => project) }
+
+    it 'should call increment_project_annotations_count' do
+      expect( modification ).to receive(:decrement_project_annotations_count)
+      modification.destroy
+    end
+
+    it 'should call update_project_updated_at' do
+      expect( modification ).to receive(:update_project_updated_at)
+      modification.destroy
+    end
+  end
   
   describe 'get_hash' do
     before do
@@ -80,6 +118,20 @@ describe Relation do
     end
   end
 
+  describe 'update_project_updated_at' do
+    let( :updated_at ) { 10.days.ago }
+    let( :project ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user), updated_at: updated_at) }
+    let( :doc ) { FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body') }
+    let( :denotation ) { FactoryGirl.create(:denotation, :project => project, :doc => doc) }
+    let( :instance ) { FactoryGirl.create(:instance, :hid => 'instance hid', :project => project, :obj => denotation) }
+    let( :modification ) { FactoryGirl.create(:modification, :hid => 'modification hid', :pred => 'pred', :obj => instance, :project => project) }
+
+    it 'should update project.updated_at' do
+      modification.update_project_updated_at
+      expect( project.updated_at ).not_to eql(updated_at)
+    end
+  end
+
   describe 'decrement_project_annotations_count' do
     before do
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
@@ -102,4 +154,5 @@ describe Relation do
       }.to change{ @project.annotations_count }.from(2).to(1)
     end
   end
+
 end
