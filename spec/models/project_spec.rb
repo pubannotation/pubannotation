@@ -230,16 +230,6 @@ describe Project do
     end
   end
 
-  describe 'docs after_add' do
-    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
-    let(:doc) { FactoryGirl.create(:doc) }
-
-    it 'should call update_doc_delta_index' do
-      expect(project).to receive(:update_doc_delta_index)
-      project.docs << doc
-    end
-  end
-
   describe 'default_scope' do
     before do
       2.times do
@@ -2618,6 +2608,27 @@ describe Project do
     end
   end
 
+  describe 'update_delta_index' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
+    end
+
+    describe 'after_add' do
+      it 'should update delta indexing' do
+        @project.should_receive(:update_delta_index)
+        @project.docs << @doc
+      end
+    end
+
+    describe 'after_remove' do
+      it 'should update delta indexing' do
+        @project.should_receive(:update_delta_index)
+        @project.docs.delete(@doc)
+      end
+    end
+  end
+
   describe 'create_user_sourcedb_docs' do
     before do
       @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
@@ -2862,16 +2873,6 @@ describe Project do
       it 'should create notice' do
         expect{ @project.delay_destroy }.to change{ Notice.count }.from(0).to(1)
       end
-    end
-  end
-
-  describe 'update_doc_delta_index' do
-    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
-    let(:doc) { FactoryGirl.create(:doc) }
-
-    it 'should save doc' do
-      expect(doc).to receive(:save)
-      project.update_doc_delta_index(doc)
     end
   end
 
