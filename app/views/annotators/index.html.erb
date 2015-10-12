@@ -1,0 +1,30 @@
+<% content_for :path do -%>
+  > <%= link_to t('views.paths.home'), home_path -%>
+  > annotators
+<% end -%>
+
+<h1>Automatic annotators</h1>
+
+<table>
+  <tr>
+    <th>Abbrev</th>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Home</th>
+    <th>Maintainer</th>
+  </tr>
+
+<% @annotators.each do |annotator| %>
+  <tr>
+    <td><%= link_to annotator.abbrev, annotator %></td>
+    <td><%= annotator.name %></td>
+    <td><%= annotator.description %></td>
+    <td><%= annotator.home %></td>
+    <td><%= annotator.user.username %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Annotator', new_annotator_path %>

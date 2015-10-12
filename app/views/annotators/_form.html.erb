@@ -1,0 +1,61 @@
+<%= form_for(@annotator) do |f| %>
+  <% if @annotator.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@annotator.errors.count, "error") %> prohibited this annotator from being saved:</h2>
+
+      <ul>
+      <% @annotator.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :user %><br />
+    <%= current_user.username %>
+  </div>
+  <div class="field">
+    <%= f.label :abbrev %><br />
+    <%= f.text_field :abbrev %>
+  </div>
+  <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </div>
+  <div class="field">
+    <%= f.label :description %><br />
+    <%= f.text_area :description %>
+  </div>
+  <div class="field">
+    <%= f.label :home %><br />
+    <%= f.text_field :home %>
+  </div>
+  <div class="field">
+    <%= f.label :url %><br />
+    <%= f.text_field :url %>
+  </div>
+  <div class="field">
+    <%= f.label :params %><br />
+    <%= f.text_area :params %>
+  </div>
+  <div class="field">
+    <%= f.label :method %><br />
+    <%= f.number_field :method %>
+  </div>
+  <div class="field">
+    <%= f.label :url2 %><br />
+    <%= f.text_field :url2 %>
+  </div>
+  <div class="field">
+    <%= f.label :params2 %><br />
+    <%= f.text_area :params2 %>
+  </div>
+  <div class="field">
+    <%= f.label :method2 %><br />
+    <%= f.number_field :method2 %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
