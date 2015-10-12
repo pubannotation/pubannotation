@@ -1,4 +1,6 @@
 Pubann::Application.routes.draw do
+  resources :annotators
+
   devise_for :users
   get "home/index"
 
@@ -156,6 +158,7 @@ Pubann::Application.routes.draw do
                 get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
                 post 'annotations' => 'annotations#create'
                 post 'annotations/generate' => 'annotations#generate'
+                get 'annotations/request' => 'annotations#request'
                 delete 'annotations' => 'annotations#destroy', as: 'destroy_annotations'
                 get 'spans' => 'spans#project_doc_spans_index', :as => 'spans_index'
                 get 'spans/:begin-:end' => 'spans#project_doc_span_show', :as => 'span_show'
@@ -174,6 +177,7 @@ Pubann::Application.routes.draw do
                     get 'annotations/visualize' => 'annotations#div_annotations_visualize'
                     post 'annotations' => 'annotations#create'
                     post 'annotations/generate' => 'annotations#generate'
+                    get 'annotations/request' => 'annotations#request'
                     delete 'annotations' => 'annotations#destroy', as: 'destroy_annotations'
                     get 'spans' => 'spans#project_div_spans_index', :as => 'spans_index'
                     get 'spans/:begin-:end' => 'spans#project_div_span_show', :as => 'span_show'

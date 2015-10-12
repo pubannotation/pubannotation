@@ -1140,7 +1140,59 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def obtain_annotations(doc, annotation_server_url, options = nil)
+  def request_annotations(doc, annotator, options = nil)
+    annotations = doc.hannotations(self)
+    annotations = gen_annotations(annotations, annotation_server_url, options)
+    normalize_annotations!(annotations)
+    result = self.save_annotations(annotations, doc, options)
+  end
+
+  def obtain_annotations(doc, annotator, options = nil)
+    params = annotator[:params]
+    url = annotator[:url]
+    url.gsub!('_text_', doc.body)
+    url.gsub!('_sourcedb_', doc.sourcedb)
+    url.gsub!('_sourceid_', doc.sourceid)
+
+    params.each_value do |v|
+      v.gsub!('_text_', doc.body)
+      v.gsub!('_sourcedb_', doc.sourcedb)
+      v.gsub!('_sourceid_', doc.sourceid)
+    end
+
+    response = if annotator[:method] == 'get'
+      RestClient.get url, {:params => params, :accept => :json}
+    else
+      RestClient.get url, {:params => params, :accept => :json}
+    end
+
+    raise IOError, "Bad gateway" unless response.code == 200
+
+    begin
+      result = JSON.parse response, :symbolize_names => true
+    rescue => e
+      raise IOError, "Received a non-JSON object: [#{response}]"
+    end
+
+    ann = {}
+    ann[:text] = if result.respond_to?(:has_key) && result.has_key?(:text)
+      result[:text]
+    else
+      annotations[:text]
+    end
+
+    if result.respond_to?(:has_key?) && result.has_key?(:denotations)
+      ann[:denotations] = result[:denotations]
+      ann[:relations] = result[:relations] if defined? result[:relations]
+      ann[:modifications] = result[:modifications] if defined? result[:modifications]
+    elsif result.respond_to?(:first) && result.first.respond_to?(:has_key?) && result.first.has_key?(:obj)
+      ann[:denotations] = result
+    end
+
+    ann
+  end
+
+  def obtain_annotations0(doc, annotation_server_url, options = nil)
     annotations = doc.hannotations(self)
     annotations = gen_annotations(annotations, annotation_server_url, options)
     normalize_annotations!(annotations)

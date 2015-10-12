@@ -18,6 +18,7 @@ group :assets do
 end
 
 gem 'pg'
+gem 'friendly_id'
 
 group :development do
   gem 'guard'

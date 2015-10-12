@@ -79,6 +79,8 @@ class AnnotationsController < ApplicationController
   end
 
   def project_doc_annotations_index
+    puts "here <==============="
+
     begin
       @project = Project.find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
@@ -114,11 +116,11 @@ class AnnotationsController < ApplicationController
         end
       end
 
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
-        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-      end
+    # rescue => e
+    #   respond_to do |format|
+    #     format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+    #   end
     end
   end
 
@@ -283,6 +285,42 @@ class AnnotationsController < ApplicationController
     end
   end
 
+  def request
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
+
+      doc = if params[:divid].present?
+        project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
+      else
+        project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      end
+      raise "There is no such document in the project." unless doc.present?
+
+      span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+
+      doc.set_ascii_body if (params[:encoding] == 'ascii')
+      annotations = doc.hannotations(project, span)
+
+      annotator = Annotator.find(params[:annotator])
+
+      options = {}
+      options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+
+      project.request_annotations(doc, annotator, options)
+      notice = "annotations are successfully obtained."
+
+      respond_to do |format|
+        format.html {redirect_to :back, notice: notice}
+        format.json {}
+      end
+    # rescue => e
+    #   respond_to do |format|
+    #     format.html {redirect_to :back, notice: e.message}
+    #     format.json {render status: :service_unavailable}
+    #   end
+    end
+  end
 
   def generate
     begin
@@ -306,7 +344,7 @@ class AnnotationsController < ApplicationController
       options[:prefix] = params[:prefix] if params[:prefix].present?
       options[:method] = params[:method] if params[:method].present?
 
-      project.obtain_annotations(doc, params[:annotation_server], options)
+      project.obtain_annotations0(doc, params[:annotation_server], options)
       notice = "annotations are successfully obtained."
 
       respond_to do |format|

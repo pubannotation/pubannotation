@@ -7,12 +7,12 @@
 </a>
 </h2>
 
-<%= form_tag annotations_form_action_helper, :method => "post" do %>
+<%= form_tag annotations_obtain_path, :method => "get" do %>
    	<table style="border-color:#FFFFFF; margin-left:20px">
    		<tr>
-	   		<th>Annotation server</th>
+	   		<th>Annotator</th>
 	   		<td style="text-align:center">
-				<%= text_field_tag :annotation_server, nil, placeholder: "URL of annotation server", size: 30 %>
+				<%= select_tag(:annotator, options_for_select(@annotator_options)) %>
 			</td>
 			<td rowspan="4">
 				<%= submit_tag('Request annotation') %>
@@ -20,25 +20,10 @@
 		</tr>
 
 		<tr>
-			<th title="You can prefix the id of all the annotations from the server to avoid confliction with other annotations.">Prefix</th>
-	   		<td style="text-align:center">
-				<%= text_field_tag :prefix, nil, placeholder: "a unique short character string", size: 30 %>
-			</td>
-		</tr>
-
-		<tr>
-			<th>Method</th>
+			<th>Clear existing annotations?</th>
 			<td>
-				<input type="radio" name="method" value="get"><span title="Choose it when you do not need to send the text to the server">GET</span></input>
-				<input type="radio" name="method" value="post" checked="checked"><span title="Choose it when you need to send the text to the server">POST</span></input>
-			</td>
-		</tr>
-
-		<tr>
-			<th>Storing mode</th>
-			<td>
-				<input type="radio" name="mode" value="replace" checked="checked"><span title="The obtained annotations will replace the existing ones. (CAUTION: All the exsiting annotations will be deleted.)">replace</span></input>
-				<input type="radio" name="mode" value="add"><span title="The obtained annotations will be added to the existing ones. (CAUTION: It may cause cross-boundarying annotations which will not be properly shown in TextAE.)">add</span></input>
+				<input type="radio" name="mode" value="replace" checked="checked"><span title="The obtained annotations will replace the existing ones. (CAUTION: All the exsiting annotations will be deleted.)">Yes</span></input>
+				<input type="radio" name="mode" value="add"><span title="The obtained annotations will be added to the existing ones. (CAUTION: It may cause boundary-crossing annotations which will not be properly shown in TextAE.)">No</span></input>
 			</td>
 		</tr>
 	</table>

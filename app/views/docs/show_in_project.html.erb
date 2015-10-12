@@ -13,4 +13,6 @@
 <%= render :partial => 'annotations/summary' -%>
 
 <%= render :partial => 'annotations/obtain_annotation' if user_signed_in? and current_user == @project.user-%>
+<%= render :partial => 'annotations/obtain_annotation0' if user_signed_in? and current_user == @project.user-%>
+
 <%= link_to t('views.shared.annotations'), annotations_url, class: 'button' if @project.blank? -%>
