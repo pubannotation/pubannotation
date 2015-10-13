@@ -1,5 +1,4 @@
 development:
-  port: 9306
   mysql41: 9312
 test:
   port: 9307
