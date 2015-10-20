@@ -10,21 +10,60 @@
 <%= form_tag annotations_obtain_path, :method => "get" do %>
    	<table style="border-color:#FFFFFF; margin-left:20px">
    		<tr>
-	   		<th>Annotator</th>
-	   		<td style="text-align:center">
-				<%= select_tag(:annotator, options_for_select(@annotator_options)) %>
-			</td>
-			<td rowspan="4">
-				<%= submit_tag('Request annotation') %>
+	   		<th>Choose a predefined annotator</th>
+	   		<td>
+				<%= select_tag(:annotator, options_for_select(@annotator_options), prompt: 'choose one') %>
 			</td>
 		</tr>
 
 		<tr>
-			<th>Clear existing annotations?</th>
+			<th>... or, define one</th>
 			<td>
-				<input type="radio" name="mode" value="replace" checked="checked"><span title="The obtained annotations will replace the existing ones. (CAUTION: All the exsiting annotations will be deleted.)">Yes</span></input>
-				<input type="radio" name="mode" value="add"><span title="The obtained annotations will be added to the existing ones. (CAUTION: It may cause boundary-crossing annotations which will not be properly shown in TextAE.)">No</span></input>
+
+		   	<table>
+				<tr>
+					<th title="Specify a short (unique) identifier of the annotations to avoid confliction with other existing annotations.">Identifier</th>
+			   		<td style="text-align:center">
+						<%= text_field_tag :abbrev, nil, placeholder: "a short unique character string", size: 30 %>
+					</td>
+				</tr>
+
+		   		<tr>
+			   		<th>URL</th>
+			   		<td style="text-align:center">
+						<%= text_field_tag :url, nil, placeholder: "URL of annotation server", size: 30 %>
+					</td>
+				</tr>
+
+				<tr>
+					<th>Method</th>
+					<td>
+					    <%= radio_button_tag :method, 0 %>
+						<%= label_tag :method_0, :GET, value: 0 %>
+					    <%= radio_button_tag :method, 1, checked: true %>
+					    <%= label_tag :method_1, :POST, value: 1 %>
+					</td>
+				</tr>
+
+			</table>
+			
+		</td></tr>
+
+		<tr>
+			<th>
+				Clear existing annotations?
+			</th>
+			<td>
+				<%= radio_button_tag :mode, :replace %>
+				<%= label_tag :mode_replace, :Yes, value: :replace %>
+			    <%= radio_button_tag :mode, :add, checked: true %>
+			    <%= label_tag :mode_add, :No, value: :add %>
 			</td>
+		</tr>
+		<tr>
+			<th colspan="2">
+				<%= submit_tag('Request annotation') %>
+			</th>
 		</tr>
 	</table>
 <% end %>

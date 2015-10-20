@@ -2,7 +2,7 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :generate, :create_project_docs, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
+  before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :create_project_docs, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
   # JSON POST
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}

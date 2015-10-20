@@ -1071,13 +1071,6 @@ class Project < ActiveRecord::Base
 
     doc.destroy_project_annotations(self) unless options.present? && options[:mode] == :addition
 
-    if options[:prefix].present?
-      prefix = options[:prefix]
-      annotations[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if annotations[:denotations].present?
-      annotations[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:relations].present?
-      annotations[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:modifications].present?
-    end
-
     original_text = annotations[:text]
     annotations[:text] = doc.body
 
@@ -1140,14 +1133,13 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def request_annotations(doc, annotator, options = nil)
-    annotations = doc.hannotations(self)
-    annotations = gen_annotations(annotations, annotation_server_url, options)
+  def obtain_annotations(doc, annotator, options = nil)
+    annotations = inquire_annotations(doc, annotator, options)
     normalize_annotations!(annotations)
     result = self.save_annotations(annotations, doc, options)
   end
 
-  def obtain_annotations(doc, annotator, options = nil)
+  def inquire_annotations(doc, annotator, options = nil)
     params = annotator[:params]
     url = annotator[:url]
     url.gsub!('_text_', doc.body)
@@ -1160,12 +1152,15 @@ class Project < ActiveRecord::Base
       v.gsub!('_sourceid_', doc.sourceid)
     end
 
-    response = if annotator[:method] == 'get'
-      RestClient.get url, {:params => params, :accept => :json}
-    else
-      RestClient.get url, {:params => params, :accept => :json}
+    response = begin
+      if annotator[:method] == 0 # 'get'
+        RestClient.get url, {:params => params, :accept => :json}
+      else
+        RestClient.post url, params.merge({:accept => :json})
+      end
+    rescue => e
+      raise IOError, "Invalid connection"
     end
-
     raise IOError, "Bad gateway" unless response.code == 200
 
     begin
@@ -1178,7 +1173,7 @@ class Project < ActiveRecord::Base
     ann[:text] = if result.respond_to?(:has_key) && result.has_key?(:text)
       result[:text]
     else
-      annotations[:text]
+      doc.body
     end
 
     if result.respond_to?(:has_key?) && result.has_key?(:denotations)
@@ -1188,6 +1183,11 @@ class Project < ActiveRecord::Base
     elsif result.respond_to?(:first) && result.first.respond_to?(:has_key?) && result.first.has_key?(:obj)
       ann[:denotations] = result
     end
+
+    prefix = annotator.abbrev
+    ann[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if ann[:denotations].present?
+    ann[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if ann[:relations].present?
+    ann[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if ann[:modifications].present?
 
     ann
   end

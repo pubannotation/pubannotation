@@ -11,51 +11,63 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :user %><br />
-    <%= current_user.username %>
-  </div>
-  <div class="field">
-    <%= f.label :abbrev %><br />
-    <%= f.text_field :abbrev %>
-  </div>
-  <div class="field">
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </div>
-  <div class="field">
-    <%= f.label :description %><br />
-    <%= f.text_area :description %>
-  </div>
-  <div class="field">
-    <%= f.label :home %><br />
-    <%= f.text_field :home %>
-  </div>
-  <div class="field">
-    <%= f.label :url %><br />
-    <%= f.text_field :url %>
-  </div>
-  <div class="field">
-    <%= f.label :params %><br />
-    <%= f.text_area :params %>
-  </div>
-  <div class="field">
-    <%= f.label :method %><br />
-    <%= f.number_field :method %>
-  </div>
-  <div class="field">
-    <%= f.label :url2 %><br />
-    <%= f.text_field :url2 %>
-  </div>
-  <div class="field">
-    <%= f.label :params2 %><br />
-    <%= f.text_area :params2 %>
-  </div>
-  <div class="field">
-    <%= f.label :method2 %><br />
-    <%= f.number_field :method2 %>
-  </div>
-  <div class="actions">
+  <div>
     <%= f.submit %>
   </div>
+  <table class='column-head'>
+  <tr>
+    <th style="width:6em"><%= f.label :user %></th>
+    <td><%= current_user.username %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :abbrev %></th>
+    <td><%= f.text_field :abbrev %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :name %></th>
+    <td><%= f.text_field :name %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :description %></th>
+    <td><%= f.text_area :description %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :home %></th>
+    <td><%= f.text_field :home %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :url, :URL %></th>
+    <td><%= f.text_field :url %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :params %></th>
+    <td><%= f.text_area :params %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :method %></th>
+    <td><%= f.label :method, :GET, :value => 0 %>
+    <%= f.radio_button :method, 0, checked: true %>
+    <%= f.label :method, :POST, :value => 1 %>
+    <%= f.radio_button :method, 1 %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :url2, :URL2 %></th>
+    <td><%= f.text_field :url2 %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :params2 %></th>
+    <td><%= f.text_area :params2 %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :method2 %></th>
+    <td><%= f.label :method2, :GET, :value => 0 %>
+    <%= f.radio_button :method2, 0, checked: true %>
+    <%= f.label :method2, :POST, :value => 1 %>
+    <%= f.radio_button :method2, 1 %></td>
+  </tr>
+  </table>
+  <div>
+    <%= f.submit %>
+  </div>
+
 <% end %>

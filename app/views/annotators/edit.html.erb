@@ -1,6 +1,10 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to 'annotators', annotators_path %>
+  > <%= link_to @annotator.abbrev, @annotator %>
+  > <%= :edit %>
+<% end %>
+
 <h1>Editing annotator</h1>
 
 <%= render 'form' %>
-
-<%= link_to 'Show', @annotator %> |
-<%= link_to 'Back', annotators_path %>

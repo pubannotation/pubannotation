@@ -6,7 +6,7 @@
 
 <table class="column-head">
 <tr>
-  <th>Abbrev:</th>
+  <th style="width:6em">Abbrev:</th>
   <td><%= @annotator.abbrev %></td>
 </tr>
 
@@ -42,7 +42,7 @@
 
 <tr>
   <th>Method:</th>
-  <td><%= @annotator.method %></td>
+  <td><%= case @annotator.method when 0; :GET when 1; :POST end%></td>
 </tr>
 
 <tr>
@@ -57,7 +57,7 @@
 
 <tr>
   <th>Method2:</th>
-  <td><%= @annotator.method2 %></td>
+  <td><%= case @annotator.method2 when 0; :GET when 1; :POST end%></td>
 </tr>
 </table>
 

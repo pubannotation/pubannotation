@@ -234,6 +234,11 @@ td.text {
   white-space: normal
 }
 
+td th {
+  background-color: lighten($main_color, 50%);
+}
+
+
 table.ann {
     text-align: center;
 }
@@ -359,10 +364,6 @@ h1 .button {
 .inactive_tab {
 }
 
-.input {
-    width:300px;
-}
-
 #path{
   /*text-transform: lowercase;*/
 }
@@ -473,7 +474,7 @@ $indicator_size : 100px;
 
 #projects_search input,
 #docs_search input{
-  width: 98%;
+  width: 96%;
 }
 
 .docs_header_sourcedb {
@@ -497,15 +498,16 @@ $indicator_size : 100px;
 .annotation_header_predicate {width: 7em}
 .annotation_header_object {width: 7em}
 
-table.search {
-  width:45em;
-}
-
-table.search input{
-  width: 98%;
-}
-
 table.search .button {
   width:80px;
+}
+
+td input[type=text], textarea {
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+td textarea {
+  height: 5em;
 }
 

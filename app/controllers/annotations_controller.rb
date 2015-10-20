@@ -285,7 +285,7 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  def request
+  def obtain
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
@@ -302,23 +302,27 @@ class AnnotationsController < ApplicationController
       doc.set_ascii_body if (params[:encoding] == 'ascii')
       annotations = doc.hannotations(project, span)
 
-      annotator = Annotator.find(params[:annotator])
+      annotator = if params[:annotator].present?
+        Annotator.find(params[:annotator])
+      else
+        Annotator.new({abbrev:params[:abbrev], url:params[:url], method:params[:method], params:{"text"=>"_text_", "sourcedb"=>"_sourcedb_", "sourceid"=>"_sourceid_"}})
+      end
 
       options = {}
       options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
 
-      project.request_annotations(doc, annotator, options)
-      notice = "annotations are successfully obtained."
+      project.obtain_annotations(doc, annotator, options)
+      notice = "annotations were successfully obtained."
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}
         format.json {}
       end
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to :back, notice: e.message}
-    #     format.json {render status: :service_unavailable}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
+        format.json {render status: :service_unavailable}
+      end
     end
   end
 
