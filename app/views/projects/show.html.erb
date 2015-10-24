@@ -107,7 +107,7 @@ Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span
  -->
 <% if user_signed_in? && @project.updatable_for?(current_user) -%>
 	<%= render partial: 'annotations/upload_zip' -%>
-	<%= render partial: 'obtain_annotations' -%>
+	<%= render partial: 'annotations/obtain_annotation' -%>
 	<%= render partial: 'delete_annotations' -%>
 <% end -%>
 </fieldset>

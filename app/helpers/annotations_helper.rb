@@ -293,10 +293,14 @@ module AnnotationsHelper
   end
 
   def annotations_obtain_path
-    if params[:divid].present?
-      annotations_obtain_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+    if params[:sourceid].present?
+      if params[:divid].present?
+        annotations_obtain_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
+      else
+        annotations_obtain_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
+      end
     else
-      annotations_obtain_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
+      project_annotations_obtain_path(@project.name)
     end
   end
 

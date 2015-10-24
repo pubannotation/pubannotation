@@ -1133,6 +1133,22 @@ class Project < ActiveRecord::Base
     end
   end
 
+  def obtain_annotations_all_docs(annotator, options = nil)
+    docs = self.docs
+    num_total = docs.length
+    num_success = 0
+    docs.each_with_index do |doc, i|
+      begin
+        notices.create({method: "obtain annotations (#{i}/#{num_total} docs)", successful:true, message:"finished"})
+        self.obtain_annotations(doc, annotator, options)
+        num_success += 1
+      rescue => e
+        notices.create({method: "obtain annotations #{doc.descriptor}", successful: false, message: e.message})
+      end
+    end
+    notices.create({method: 'obtain annotations for all the project documents', successful: num_total == num_success})
+  end
+
   def obtain_annotations(doc, annotator, options = nil)
     annotations = inquire_annotations(doc, annotator, options)
     normalize_annotations!(annotations)
@@ -1190,29 +1206,6 @@ class Project < ActiveRecord::Base
     ann[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if ann[:modifications].present?
 
     ann
-  end
-
-  def obtain_annotations0(doc, annotation_server_url, options = nil)
-    annotations = doc.hannotations(self)
-    annotations = gen_annotations(annotations, annotation_server_url, options)
-    normalize_annotations!(annotations)
-    result = self.save_annotations(annotations, doc, options)
-  end
-
-  def obtain_annotations_all_docs(annotation_server_url, options = nil)
-    docs = self.docs
-    num_total = docs.length
-    num_success = 0
-    docs.each_with_index do |doc, i|
-      begin
-        notices.create({method: "obtain annotations (#{i}/#{num_total} docs)", successful:true, message:"finished"})
-        self.obtain_annotations(doc, annotation_server_url, options)
-        num_success += 1
-      rescue => e
-        notices.create({method: "obtain annotations #{doc.descriptor}", successful: false, message: e.message})
-      end
-    end
-    notices.create({method: 'obtain annotations for all the project documents', successful: num_total == num_success})
   end
 
   def user_presence

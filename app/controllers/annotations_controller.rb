@@ -326,39 +326,31 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  def generate
+  def obtain_project_annotations
     begin
-      project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
+      @project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless @project.present?
 
-      doc = if params[:divid].present?
-        project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
+      annotator = if params[:annotator].present?
+        Annotator.find(params[:annotator])
       else
-        project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        Annotator.new({abbrev:params[:abbrev], url:params[:url], method:params[:method], params:{"text"=>"_text_", "sourcedb"=>"_sourcedb_", "sourceid"=>"_sourceid_"}})
       end
-      raise "There is no such document in the project." unless doc.present?
-
-      span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
-      doc.set_ascii_body if (params[:encoding] == 'ascii')
-      annotations = doc.hannotations(project, span)
 
       options = {}
       options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
-      options[:prefix] = params[:prefix] if params[:prefix].present?
-      options[:method] = params[:method] if params[:method].present?
 
-      project.obtain_annotations0(doc, params[:annotation_server], options)
-      notice = "annotations are successfully obtained."
+      @project.notices.create({method: 'obtain annotations for all the project documents'})
+      project.obtain_annotations_all_docs(annotator, options)
 
       respond_to do |format|
-        format.html {redirect_to :back, notice: notice}
-        format.json {}
+        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'obtain annotations for all the project documents', is created."}
+        format.json {render status: :no_content} # TODO: need to be revised
       end
     rescue => e
       respond_to do |format|
         format.html {redirect_to :back, notice: e.message}
-        format.json {render status: :service_unavailable}
+        format.json {}
       end
     end
   end

@@ -73,6 +73,9 @@ class ProjectsController < ApplicationController
       @docs = @project.docs.where(serial: 0)
       @search_path = search_project_docs_path(@project.name)
 
+      @annotators = Annotator.all
+      @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
+
       respond_to do |format|
         format.html
         format.json {render json: @project.json} 
@@ -183,26 +186,6 @@ class ProjectsController < ApplicationController
       flash[:notice] = e.message
     end
     redirect_to project_path('system-maintenance')
-  end
-
-  def obtain_annotations
-    begin
-      @project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless @project.present?
-
-      options = {}
-      options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
-      options[:prefix] = params[:prefix] if params[:prefix].present?
-      options[:method] = params[:method] if params[:method].present?
-
-      @project.notices.create({method: 'obtain annotations for all the project documents'})
-      @project.delay.obtain_annotations_all_docs(params[:annotation_server], options)
-
-      respond_to do |format|
-        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'obtain annotations for all the project documents', is created."}
-        format.json {render status: :no_content} # TODO: need to be revised
-      end
-    end
   end
 
   def destroy_annotations
