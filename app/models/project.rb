@@ -8,8 +8,8 @@ class Project < ActiveRecord::Base
   serialize :namespaces
   belongs_to :user
   has_and_belongs_to_many :docs, 
-    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter], 
-    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter]
+    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter, :update_delta_index], 
+    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter, :update_delta_index]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
   
@@ -31,9 +31,9 @@ class Project < ActiveRecord::Base
     :join_table => 'associate_projects_projects'
 
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
-  has_many :denotations, :dependent => :destroy
-  has_many :relations, :dependent => :destroy
-  has_many :modifications, :dependent => :destroy
+  has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
+  has_many :relations, :dependent => :destroy, after_add: :update_updated_at
+  has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :notices, dependent: :destroy
@@ -203,6 +203,10 @@ class Project < ActiveRecord::Base
         end          
       end
     end
+  end
+
+  def update_delta_index(doc)
+    doc.save
   end
 
   def increment_docs_projects_counter(doc)
@@ -1259,5 +1263,9 @@ class Project < ActiveRecord::Base
     rescue
       notices.create({method: 'destroy the project', successful: false})
     end
+  end
+
+  def update_updated_at(model)
+    self.update_attribute(:updated_at, DateTime.now)
   end
 end
