@@ -20,4 +20,4 @@
 <%= render :partial => 'projects/title_and_links' -%>
 
 <h2>Background tasks</h2>
-<%= render partial: 'tasks' if @project.notices_destroyable_for?(current_user) -%>
+<%= render partial: 'tasks' if @project.editable?(current_user) -%>

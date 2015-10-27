@@ -5,7 +5,7 @@ class AssociateMaintainersController < ApplicationController
     if @associate_maintainer.destroy
       flash[:notice] = t('controllers.shared.successfully_destroyed', :model => t('activerecord.models.associate_maintainer'))
     end
-    if @associate_maintainer.project.updatable_for?(current_user)
+    if @associate_maintainer.project.editable?(current_user)
       # when maintainer destroyed 
       redirect_to(edit_project_path(@associate_maintainer.project.name))  
     else

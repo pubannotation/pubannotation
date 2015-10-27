@@ -47,7 +47,7 @@ class NoticesController < ApplicationController
 
   def destroy
     notice = Notice.find_by_id(params[:id])
-    if notice.present? && notice.project.notices_destroyable_for?(current_user) && notice.delete
+    if notice.present? && notice.project.editable?(current_user) && notice.delete
        text = "$('#notice_#{params[:id]}').hide();"
     else
       text = "$('#notice_#{params[:id]}').text('#{t('errors.messages.failed_to_destroy')}');"

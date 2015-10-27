@@ -91,6 +91,7 @@ class ProjectsController < ApplicationController
   def new
     # set the dafault value for editor
     @project = Project.new({editor: Project::EditorDefault})
+    @project.user = current_user
 
     respond_to do |format|
       format.html # new.html.erb
@@ -100,6 +101,7 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1/edit
   def edit
+    @project = Project.editable(current_user).find_by_name(params[:id])
   end
 
   # POST /projects
@@ -278,14 +280,14 @@ class ProjectsController < ApplicationController
         @project.build_associate_maintainers(params[:usernames])
       end
     end
-    unless @project.updatable_for?(current_user)
+    unless @project.editable?(current_user)
       render_status_error(:forbidden)
     end
   end
   
   def destroyable?
     @project = Project.find_by_name(params[:id])
-    unless @project.destroyable_for?(current_user)
+    unless @project.destroyable?(current_user)
       render_status_error(:forbidden)
     end  
   end

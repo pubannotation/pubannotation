@@ -46,7 +46,10 @@ class Project < ActiveRecord::Base
 
   scope :accessible, -> (current_user) {
     if current_user.present?
-      includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
+      if current_user.root?
+      else
+        includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
+      end
     else
       where(accessibility: 1)
     end
@@ -54,7 +57,10 @@ class Project < ActiveRecord::Base
 
   scope :editable, -> (current_user) {
     if current_user.present?
-      includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id)
+      if current_user.root?
+      else
+        includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id)
+      end
     else
       where(accessibility: 10)
     end
@@ -130,7 +136,15 @@ class Project < ActiveRecord::Base
   end
 
   def accessible?(current_user)
-    self.accessibility == 1 || self.user == current_user
+    self.accessibility == 1 || self.user == current_user || current_user.root?
+  end
+
+  def editable?(current_user)
+    current_user.present? && (current_user.root? || current_user == user || self.associate_maintainer_users.include?(current_user))
+  end
+
+  def destroyable?(current_user)
+    current_user.root? || current_user == user  
   end
 
   def status_text
@@ -227,18 +241,6 @@ class Project < ActiveRecord::Base
     else
       current_user.root? == true || current_user == self.user
     end
-  end
-  
-  def updatable_for?(current_user)
-    current_user.root? == true || (current_user == self.user || self.associate_maintainer_users.include?(current_user))
-  end
-
-  def destroyable_for?(current_user)
-    current_user.root? == true || current_user == user  
-  end
-
-  def notices_destroyable_for?(current_user)
-    current_user && (current_user.root? == true || current_user == user)
   end
   
   def association_for(current_user)
