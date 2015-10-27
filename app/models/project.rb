@@ -655,73 +655,84 @@ class Project < ActiveRecord::Base
   end
 
   def create_annotations_from_zip(zip_file_path, options = {})
-    files = Zip::ZipFile.open(zip_file_path) do |zip|
-      zip.collect do |entry|
-        next if entry.ftype == :directory
-       {name:entry.name, content:entry.get_input_stream.read}
-     end.compact!
-    end
-
-    error_files = []
-    annotations_collection = files.inject([]) do |m, file|
-      begin
-        as = JSON.parse(file[:content], symbolize_names:true)
-        if as.is_a?(Array)
-          m + as
-        else
-          m + [as]
-        end
-      rescue => e
-        error_files << file[:name]
-        m
+    begin
+      files = Zip::ZipFile.open(zip_file_path) do |zip|
+        zip.collect do |entry|
+          next if entry.ftype == :directory
+          {name:entry.name, content:entry.get_input_stream.read}
+        end.delete_if{|e| e.nil?}
       end
-    end
 
-    raise IOError, "Invalid JSON files: #{error_files.join(', ')}" unless error_files.empty?
-
-    error_anns = []
-    annotations_collection.each do |annotations|
-      begin
-        normalize_annotations!(annotations)
-      rescue => e
-        error_anns << "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
-      end
-    end
-    raise IOError, "Invalid annotations: #{error_anns.join(', ')}" unless error_anns.empty?
-
-    total_number = annotations_collection.length
-    interval = (total_number > 100000)? 100 : 10
-
-    imported, added, failed, messages = 0, 0, 0, []
-    annotations_collection.each_with_index do |annotations, i|
-      begin
-        self.notices.create({method:"- annotations upload (#{i}/#{total_number} docs)", successful:true, message: "finished"}) if (i != 0) && (i % interval == 0)
-
-        i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
-
-        if annotations[:divid].present?
-          doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
-        else
-          divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-          doc = divs[0] if divs.length == 1
+      error_files = []
+      annotations_collection = files.inject([]) do |m, file|
+        begin
+          as = JSON.parse(file[:content], symbolize_names:true)
+          if as.is_a?(Array)
+            m + as
+          else
+            m + [as]
+          end
+        rescue => e
+          error_files << file[:name]
+          m
         end
-
-        result = if doc.present?
-          self.save_annotations(annotations, doc, options)
-        elsif divs.present?
-          self.store_annotations(annotations, divs, options)
-        else
-          raise IOError, "document does not exist"
-        end
-
-      rescue => e
-        self.notices.create({method:"- annotations upload: #{annotations[:sourcedb]}:#{annotations[:sourceid]}", successful:false, message: e.message})
-        next
       end
-    end
+      raise IOError, "Invalid JSON files: #{error_files.join(', ')}" unless error_files.empty?
 
-    self.notices.create({method:'annotations batch upload', successful:true})
-    messages << "annotations loaded to #{annotations_collection.length} documents"
+      error_anns = []
+      annotations_collection.each do |annotations|
+        if annotations[:text].present? && annotations[:denotations].present? && annotations[:sourcedb].present? && annotations[:sourceid].present?
+        else
+          raise IOError, "Invalid annotation found: an annotation has to include at least the four components, text, denotation, sourcedb, and sourceid."
+        end
+      end
+
+      error_anns = []
+      annotations_collection.each do |annotations|
+        begin
+          normalize_annotations!(annotations)
+        rescue => e
+          error_anns << "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+        end
+      end
+      raise IOError, "Invalid annotations: #{error_anns.join(', ')}" unless error_anns.empty?
+
+      total_number = annotations_collection.length
+      interval = (total_number > 100000)? 100 : 10
+
+      imported, added, failed, messages = 0, 0, 0, []
+      annotations_collection.each_with_index do |annotations, i|
+        begin
+          self.notices.create({method:"- annotations upload (#{i}/#{total_number} docs)", successful:true, message: "finished"}) if (i != 0) && (i % interval == 0)
+
+          i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
+
+          if annotations[:divid].present?
+            doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
+          else
+            divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
+            doc = divs[0] if divs.length == 1
+          end
+
+          result = if doc.present?
+            self.save_annotations(annotations, doc, options)
+          elsif divs.present?
+            self.store_annotations(annotations, divs, options)
+          else
+            raise IOError, "document does not exist"
+          end
+
+        rescue => e
+          self.notices.create({method:"- annotations upload: #{annotations[:sourcedb]}:#{annotations[:sourceid]}", successful:false, message: e.message})
+          next
+        end
+      end
+
+      self.notices.create({method:'annotations batch upload', successful:true})
+      messages << "annotations loaded to #{annotations_collection.length} documents"
+    rescue => e
+      self.notices.create({method:'annotations batch upload', successful:false, message: e.message})
+    end
   end
 
 
