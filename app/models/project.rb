@@ -663,9 +663,12 @@ class Project < ActiveRecord::Base
       files = Zip::ZipFile.open(zip_file_path) do |zip|
         zip.collect do |entry|
           next if entry.ftype == :directory
+          next unless entry.name.end_with?('.json')
           {name:entry.name, content:entry.get_input_stream.read}
         end.delete_if{|e| e.nil?}
       end
+
+      raise IOError, "No JSON file found" unless files.length > 0
 
       error_files = []
       annotations_collection = files.inject([]) do |m, file|
@@ -685,11 +688,18 @@ class Project < ActiveRecord::Base
 
       error_anns = []
       annotations_collection.each do |annotations|
-        if annotations[:text].present? && annotations[:denotations].present? && annotations[:sourcedb].present? && annotations[:sourceid].present?
+        if annotations[:text].present? && annotations[:sourcedb].present? && annotations[:sourceid].present?
         else
-          raise IOError, "Invalid annotation found: an annotation has to include at least the four components, text, denotation, sourcedb, and sourceid."
+          error_anns << if annotations[:sourcedb].present? && annotations[:sourceid].present?
+            "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+          elsif annotations[:text].present?
+            annotations[:text][0..10] + "..."
+          else
+            '???'
+          end
         end
       end
+      raise IOError, "Invalid annotation found. An annotation has to include at least the four components, text, denotation, sourcedb, and sourceid: #{error_anns.join(', ')}" unless error_anns.empty?
 
       error_anns = []
       annotations_collection.each do |annotations|
