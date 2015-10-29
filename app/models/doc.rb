@@ -1,20 +1,19 @@
 class Doc < ActiveRecord::Base
+  include ApplicationHelper
   UserSourcedbSeparator = '@'
+
   after_save :expire_page_cache
   before_destroy :decrement_docs_counter
   after_destroy :expire_page_cache
   # before_validation :attach_sourcedb_suffix
-  include ApplicationHelper
 
   attr_accessor :username, :original_body, :text_aligner
   attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid, :username
+
   has_many :denotations, :dependent => :destroy
-
   has_many :subcatrels, :class_name => 'Relation', :through => :denotations, :source => :subrels
-
   has_many :catmods, :class_name => 'Modification', :through => :denotations, :source => :modifications
   has_many :subcatrelmods, :class_name => 'Modification', :through => :subcatrels, :source => :modifications
-
   has_and_belongs_to_many :projects
 
   validates :body,     :presence => true
@@ -25,6 +24,7 @@ class Doc < ActiveRecord::Base
   
   scope :pmdocs, where(:sourcedb => 'PubMed')
   scope :pmcdocs, where(:sourcedb => 'PMC', :serial => 0)
+
   scope :project_name, lambda{|project_name|
     {:joins => :projects,
       :conditions => ['projects.name =?', project_name]
@@ -32,13 +32,9 @@ class Doc < ActiveRecord::Base
   }
 
   scope :relations_count,
-    # LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN instances ON instances.obj_id = denotations.id LEFT OUTER JOIN relations ON relations.subj_id = instances.id AND relations.subj_type = 'Instance'
-    #joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN instances ON instances.obj_id = denotations.id LEFT OUTER JOIN relations ON relations.subj_id = instances.id AND relations.subj_type = 'Instance' LEFT OUTER JOIN denotations denotations_docs_join ON denotations_docs_join.doc_id = docs.id LEFT OUTER JOIN relations subcatrels_docs ON subcatrels_docs.subj_id = denotations_docs_join.id AND subcatrels_docs.subj_type = 'Denotation'").
-    #joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
-    # order by subcatrels only
-    joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
-    .group('docs.id')
-    .order('count(relations.id) DESC')
+    includes(:subcatrels)
+    .group('docs.id, annotations.id')
+    .order('count(annotations.id) DESC')
 
   scope :projects_docs, lambda{|project_ids|
     {
@@ -52,20 +48,12 @@ class Doc < ActiveRecord::Base
     joins([:projects]).
     where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
   }
-  
+
   scope :sql, lambda{|ids|
     where('docs.id IN(?)', ids).
     order('docs.id ASC')
   }
   
-  # scope :source_db_id, lambda{|order_key_method|
-  #   # source id should cast as integer
-  #   order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
-  #   where(['sourcedb NOT ? AND sourcedb != ? AND sourceid NOT ? AND sourceid != ?', nil, '', nil, ''])
-  #   .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count, CAST(sourceid AS INT) AS sourceid_int')
-  #   .group(:sourcedb).group(:sourceid).order(order_key_method)
-  # }
-    
   scope :source_db_id, lambda{|order_key_method|
     order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
     where(['sourcedb IS NOT ? AND sourceid IS NOT ?', nil, nil])
@@ -299,9 +287,9 @@ class Doc < ActiveRecord::Base
   def get_denotations(project = nil, span = nil)
     denotations = if project.present?
       if project.respond_to?(:each)
-        self.denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
+        self.denotations.from_projects(project)
       else
-        self.denotations.where('denotations.project_id = ?', project.id)
+        self.denotations.from_projects([ project ])
       end
     else
       self.denotations
@@ -327,7 +315,7 @@ class Doc < ActiveRecord::Base
     if project.nil? && span.nil?
       self.denotations_count
     elsif span.nil?
-      self.denotations.where("denotations.project_id = ?", project.id).count
+      self.denotations.from_projects([ project ]).count
     else
       self.get_denotations(project, span).size
     end
@@ -416,7 +404,8 @@ class Doc < ActiveRecord::Base
 
   def destroy_project_annotations(project)
     raise RuntimeError, "nil project" if project.nil?
-    self.denotations.where(project_id: project.id).destroy_all
+    # self.denotations.where(project_id: project.id).destroy_all
+    self.denotations.from_projects([project]).destroy_all
   end
 
   def projects_within_span(span)
@@ -426,7 +415,7 @@ class Doc < ActiveRecord::Base
   def spans_projects(params)
     self_denotations = self.denotations
     if self_denotations.present?
-      self_denotations.within_span({:begin => params[:begin], :end => params[:end]}).collect{|denotation| denotation.project}.uniq.compact
+      self_denotations.within_span({:begin => params[:begin], :end => params[:end]}).collect{|denotation| denotation.projects}.flatten.uniq.compact
     end  
   end
 
@@ -501,7 +490,7 @@ class Doc < ActiveRecord::Base
   end
 
   def created_by?(current_user)
-    sourcedb.include?(':') && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
+    sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
   end
   
   def self.create_doc(doc_hash, attributes = {})

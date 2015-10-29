@@ -12,6 +12,8 @@ class Project < ActiveRecord::Base
     :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
+  has_many :annotations_projects
+  has_many :annotations, through: :annotations_projects
   
   # Project to Proejct associations
   # parent project => associate projects = @project.associate_projects
@@ -197,6 +199,7 @@ class Project < ActiveRecord::Base
   
   # after_remove doc
   def decrement_docs_counter(doc)
+    p 'HERE'
     if doc.sourcedb == 'PMC' && doc.serial == 0
       counter_column = :pmcdocs_count
     elsif doc.sourcedb == 'PubMed'
@@ -1246,5 +1249,9 @@ class Project < ActiveRecord::Base
     rescue
       notices.create({method: 'destroy the project', successful: false})
     end
+  end
+
+  def check_annotations
+    p 'HERE'
   end
 end

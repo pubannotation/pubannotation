@@ -6,14 +6,11 @@ FactoryGirl.define do
     c.obj_id {|relation| relation.association(:obj)}
     c.obj_type 'Denotation'
     c.pred 'coreferenceOf'
-    c.project_id {|relation| relation.association(:project)}
-    c.created_at 1.hour.ago
-    c.updated_at 1.hour.ago
   end
   
   factory :subcatrel, :parent => :relation do |c|
     c.obj_id {|obj| obj.association(:obj)}
-    c.subj_type 'Denotation'
+    c.subj_type 'Annotation'
     c.obj_type 'Denotation'
     c.pred 'coreferenceOf'
   end

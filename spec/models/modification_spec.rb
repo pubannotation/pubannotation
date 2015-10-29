@@ -1,26 +1,15 @@
 require 'spec_helper'
 
 describe Relation do
-  describe 'belongs_to project' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-      @modification = FactoryGirl.create(:modification, :obj => @denotation, :project => @project)
-    end
-    
-    it 'modification should belongs to project' do
-      @modification.project.should eql(@project)
-    end
-  end
-
   describe 'belongs_to obj' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
       @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
-      @modification = FactoryGirl.create(:modification, :obj => @instance, :project => @project)
+      Modification.any_instance.stub(:increment_project_annotations_count).and_return(nil)
+      @modification = FactoryGirl.create(:modification, :obj => @instance)
+      FactoryGirl.create(:annotations_project, project: @project , annotation: @modification )
     end
     
     it 'modification should belongs to obj' do
@@ -32,15 +21,18 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      FactoryGirl.create(:annotations_project, project: @project , annotation: @denotation)
       @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
-      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation, :project => @project)
+      @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, :subj => @denotation)
+      FactoryGirl.create(:annotations_project, project: @project , annotation: @subcatrel)
+      Modification.any_instance.stub(:increment_project_annotations_count).and_return(nil)
       @insmod = FactoryGirl.create(:modification, 
         :hid => 'modification hid',
         :pred => 'pred',
-        :obj => @instance, 
-        :project => @project
+        :obj => @instance 
       )
+      FactoryGirl.create(:annotations_project, project: @project , annotation: @insmod)
       @get_hash = @insmod.get_hash
     end
     
@@ -61,14 +53,15 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      FactoryGirl.create(:annotations_project, project: @project , annotation: @denotation)
       @instance = FactoryGirl.create(:instance, :hid => 'instance hid', :project => @project, :obj => @denotation)
       @modification = FactoryGirl.create(:modification, 
         :hid => 'modification hid',
         :pred => 'pred',
-        :obj => @instance, 
-        :project => @project
+        :obj => @instance 
       )
+      FactoryGirl.create(:annotations_project, project: @project , annotation: @insmod)
       @project.reload
     end
 

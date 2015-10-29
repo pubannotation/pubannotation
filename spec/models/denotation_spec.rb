@@ -1,84 +1,105 @@
 require 'spec_helper'
 
 describe Denotation do
-  describe 'belongs_to project' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => FactoryGirl.create(:doc))
+  describe 'belongs_to doc' do
+    let( :doc ) { FactoryGirl.create(:doc) }
+    let( :denotation ) { FactoryGirl.create(:denotation, doc: doc) }
+
+    it 'should belongs_to doc' do
+      expect( denotation.doc ).to eql(doc)
     end
+
+    it 'doc should count up doc.denotations_count' do
+      doc.reload
+      denotation.reload
+      expect( doc.denotations_count ).to eql(1)
+    end  
+  end
+
+  describe 'has_many modifications' do
+    let( :project ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let( :denotation ) { FactoryGirl.create(:denotation, doc_id: 1) }
+    let( :instance) { FactoryGirl.create(:instance, obj: denotation, project: project) }
+    let( :modification) { FactoryGirl.create(:modification, obj_type: 'Denotation', obj: denotation) }
+
+    it 'should include modification as modifications' do
+      expect( denotation.modifications ).to include(modification)
+    end
+
+    it 'modification should belongs_to denotation as obj' do
+      expect( modification.obj ).to eql(denotation)
+    end
+  end
+
+  describe 'has_many subrels' do
+    let( :user ) { FactoryGirl.create(:user) }
+    let( :project ) { FactoryGirl.create(:project, user: user) }
+    let( :denotation ) { FactoryGirl.create(:denotation, doc_id: 1) }
+    let( :relation) { FactoryGirl.create(:relation, subj_type: 'Annotation', subj_id: denotation.id, obj_id: 1, project: project) }
+
+    it 'should has_many subrels' do
+      expect( denotation.subrels ).to include(relation)
+    end
+  end
+
+  describe 'has_many obrels' do
+    let( :user ) { FactoryGirl.create(:user) }
+    let( :project ) { FactoryGirl.create(:project, user: user) }
+    let( :denotation ) { FactoryGirl.create(:denotation, doc_id: 1) }
+    let( :relation) { FactoryGirl.create(:relation, subj_type: 'Modification', subj_id: denotation.id, obj_type: 'Annotation', obj_id: denotation.id, project: project) }
+
+    it 'should has_many objrels' do
+      expect( denotation.objrels ).to include(relation)
+    end
+  end
+  
+  describe 'has_many projects through annotations_projects' do
+    let( :project ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let( :denotation ) { FactoryGirl.create(:denotation, doc_id: 1) }
+    let( :annotations_project) { FactoryGirl.create(:annotations_project, annotation: denotation, project: project) }
     
     it 'denotation.should belongs to project' do
-      @denotation.project.should eql(@project)
-    end
-  end
-  
-  describe 'belongs_to doc' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project_id => 1)
-      @doc.reload
-    end
-    
-    it 'denotation should belongs to doc' do
-      @denotation.doc.should eql(@doc)
-    end  
-    
-    it 'doc should count up doc.denotations_count' do
-      @doc.denotations_count.should eql(1)
-    end  
-  end
-  
-  describe 'has_many subrels' do
-    before do
-      @denotation = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
-      @relation = FactoryGirl.create(:relation,
-        :subj_id => @denotation.id, 
-        :subj_type => @denotation.class.to_s,
-        :obj_id => 50, 
-        :project_id => 1
-      )
-    end
-    
-    it 'denotation.resmods should preset' do
-      @denotation.subrels.should be_present 
-    end
-    
-    it 'denotation.resmods should include relation' do
-      (@denotation.subrels - [@relation]).should be_blank 
-    end
-  end
-  
-  describe 'has_many objrels' do
-    before do
-      @denotation = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1)
-      @relation = FactoryGirl.create(:relation,
-        :subj_id => 1, 
-        :subj_type => 'Instance',
-        :obj => @denotation, 
-        :project_id => 1
-      )
-    end
-    
-    it 'denotation.objrels should preset' do
-      @denotation.objrels.should be_present 
-    end
-    
-    it 'denotation.resmods should include relation' do
-      (@denotation.objrels - [@relation]).should be_blank 
+      annotations_project.reload
+      denotation.reload
+      denotation.projects.should include(project)
     end
   end
   
   describe 'scope' do
+    describe 'from_projects' do
+      let( :denotation_1 ) { FactoryGirl.create(:denotation, doc_id: 1) }
+      let( :denotation_2 ) { FactoryGirl.create(:denotation, doc_id: 1) }
+      let( :project_1 ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+      let( :project_2 ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+      let( :annotations_project_1) { FactoryGirl.create(:annotations_project, annotation: denotation_1, project: project_1) }
+      let( :annotations_project_2) { FactoryGirl.create(:annotations_project, annotation: denotation_1, project: project_2) }
+      let( :annotations_project_3) { FactoryGirl.create(:annotations_project, annotation: denotation_2, project: project_2) }
+
+      before do
+        annotations_project_1.reload
+        annotations_project_2.reload
+        annotations_project_3.reload
+      end
+
+      it 'should include denotation belongs_to project' do
+        expect( Denotation.from_projects([project_1, project_2]) ).to include(denotation_1)
+      end
+
+      it 'should include denotation belongs_to project' do
+        expect( Denotation.from_projects([project_1, project_2]) ).to include(denotation_2)
+      end
+    end
+
     describe 'within_span' do
       before do
-        @denotation_0_9 = FactoryGirl.create(:denotation, :doc_id => 1, :project_id => 1, :begin => 0, :end => 9)
-        @denotation_5_15 = FactoryGirl.create(:denotation, :doc_id => 2, :project_id => 2, :begin => 5, :end => 15)
-        @denotation_10_15 = FactoryGirl.create(:denotation, :doc_id => 3, :project_id => 3, :begin => 10, :end => 15)
-        @denotation_10_19 = FactoryGirl.create(:denotation, :doc_id => 4, :project_id => 4, :begin => 10, :end => 19)
-        @denotation_10_20 = FactoryGirl.create(:denotation, :doc_id => 4, :project_id => 4, :begin => 10, :end => 20)
-        @denotation_15_19 = FactoryGirl.create(:denotation, :doc_id => 5, :project_id => 5, :begin => 15, :end => 19)
-        @denotation_15_25 = FactoryGirl.create(:denotation, :doc_id => 6, :project_id => 6, :begin => 15, :end => 25)
-        @denotation_20_30 = FactoryGirl.create(:denotation, :doc_id => 7, :project_id => 7, :begin => 20, :end => 30)
+        @denotation_0_9 = FactoryGirl.create(:denotation, :doc_id => 1, :begin => 0, :end => 9)
+        @denotation_5_15 = FactoryGirl.create(:denotation, :doc_id => 2, :begin => 5, :end => 15)
+        @denotation_10_15 = FactoryGirl.create(:denotation, :doc_id => 3, :begin => 10, :end => 15)
+        @denotation_10_19 = FactoryGirl.create(:denotation, :doc_id => 4, :begin => 10, :end => 19)
+        @denotation_10_20 = FactoryGirl.create(:denotation, :doc_id => 4, :begin => 10, :end => 20)
+        @denotation_15_19 = FactoryGirl.create(:denotation, :doc_id => 5, :begin => 15, :end => 19)
+        @denotation_15_25 = FactoryGirl.create(:denotation, :doc_id => 6, :begin => 15, :end => 25)
+        @denotation_20_30 = FactoryGirl.create(:denotation, :doc_id => 7, :begin => 20, :end => 30)
         @denotations = Denotation.within_span({:begin => 10, :end => 20})
       end
       
@@ -110,7 +131,7 @@ describe Denotation do
         @denotations.should_not include(@denotation_15_25)
       end
     end
-    
+
     describe 'accessible_projects' do
       before do
         # User
@@ -129,11 +150,16 @@ describe Denotation do
         @doc_4 = FactoryGirl.create(:doc)
         
         # Denotation
-        @current_user_project_denotation_1 = FactoryGirl.create(:denotation, :project => @current_user_project_1, :doc => @doc_1)
-        @current_user_project_denotation_2 = FactoryGirl.create(:denotation, :project => @current_user_project_2, :doc => @doc_2)
-        @current_user_project_denotation_no_doc = FactoryGirl.create(:denotation, :project => @current_user_project_2, :doc_id => 100000)
-        @another_user_project_denotation_1 = FactoryGirl.create(:denotation, :project => @another_user_project_1, :doc => @doc_3)
-        @another_user_accessible_project_denotation = FactoryGirl.create(:denotation, :project => @another_user_project_accessible, :doc => @doc_4)
+        @current_user_project_denotation_1 = FactoryGirl.create(:denotation, :doc => @doc_1)
+        FactoryGirl.create(:annotations_project, project: @current_user_project_1, annotation: @current_user_project_denotation_1)
+        @current_user_project_denotation_2 = FactoryGirl.create(:denotation, :doc => @doc_2)
+        FactoryGirl.create(:annotations_project, project: @current_user_project_2, annotation: @current_user_project_denotation_2)
+        @current_user_project_denotation_no_doc = FactoryGirl.create(:denotation, :doc_id => 100000)
+        FactoryGirl.create(:annotations_project, project: @current_user_project_2, annotation: @current_user_project_denotation_no_doc)
+        @another_user_project_denotation_1 = FactoryGirl.create(:denotation, :doc => @doc_3)
+        FactoryGirl.create(:annotations_project, project: @current_user_project_1, annotation: @current_user_project_denotation_1)
+        @another_user_accessible_project_denotation = FactoryGirl.create(:denotation, :doc => @doc_4)
+        FactoryGirl.create(:annotations_project, project: @another_user_project_accessible, annotation: @another_user_accessible_project_denotation)
         
         ids = Denotation.all.collect{|d| d.id}
       end
@@ -187,10 +213,14 @@ describe Denotation do
     
     describe 'sql' do
       before do
-        @denotation_1 = FactoryGirl.create(:denotation, :project_id => 1, :doc_id => 1)
-        @denotation_2 = FactoryGirl.create(:denotation, :project_id => 1, :doc_id => 1)
-        @denotation_3 = FactoryGirl.create(:denotation, :project_id => 1, :doc_id => 1)
-        FactoryGirl.create(:denotation, :project_id => 1, :doc_id => 1)
+        @denotation_1 = FactoryGirl.create(:denotation, :doc_id => 1)
+        FactoryGirl.create(:annotations_project, project_id: 1, annotation_id: @denotation_1.id)
+        @denotation_2 = FactoryGirl.create(:denotation, :doc_id => 1)
+        FactoryGirl.create(:annotations_project, project_id: 1, annotation_id: @denotation_2.id)
+        @denotation_3 = FactoryGirl.create(:denotation, :doc_id => 1)
+        FactoryGirl.create(:annotations_project, project_id: 1, annotation_id: @denotation_3.id)
+        denotation_4 = FactoryGirl.create(:denotation, :doc_id => 1)
+        FactoryGirl.create(:annotations_project, project_id: 1, annotation_id: denotation_4.id)
         @denotations = Denotation.sql([@denotation_1.id, @denotation_2.id])
       end
       
@@ -207,7 +237,6 @@ describe Denotation do
         :begin => 1,
         :end => 5,
         :obj => 'obj',
-        :project_id => 'project_id',
         :doc_id => 3
       )
     end
@@ -237,25 +266,22 @@ describe Denotation do
 
   describe 'after_save' do
     before do
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
-      @denotation = FactoryGirl.build(:denotation, :project => @project) 
+      Denotation.any_instance.stub(:update_projects_after_save).and_return(nil)
+      @denotation = FactoryGirl.build(:denotation, doc_id: 1) 
     end
 
     it 'should exec update_projects_after_save' do
       @denotation.should_receive(:update_projects_after_save)
       @denotation.save
     end
-
-    it 'should exec increment_project_annotations_count' do
-      @denotation.should_receive(:increment_project_annotations_count)
-      @denotation.save
-    end
   end
 
   describe 'after_destroy' do
     before do
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
-      @denotation = FactoryGirl.create(:denotation, :project => @project) 
+      Denotation.any_instance.stub(:decrement_project_annotations_count).and_return(nil)
+      Denotation.any_instance.stub(:update_projects_after_save).and_return(nil)
+      Denotation.any_instance.stub(:update_projects_before_destroy).and_return(nil)
+      @denotation = FactoryGirl.create(:denotation, doc_id: 1) 
     end
 
     it 'should exec update_projects_after_save' do
@@ -264,8 +290,11 @@ describe Denotation do
     end
   end
   
+  # TODO
   describe 'update_projects_after_save' do
     before do
+      Project.any_instance.stub(:increment_counters).and_return(nil)
+      Project.any_instance.stub(:copy_associate_project_relational_models).and_return(nil)
       @annotations_updated_at = 10.days.ago
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0, :annotations_updated_at => @annotations_updated_at)
       @associate_project_1 = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
@@ -274,7 +303,8 @@ describe Denotation do
       @doc = FactoryGirl.create(:doc)
       @associate_project_2.docs << @doc
       @associate_project_2_denotations_count.times do
-        FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => @doc.id)
+        annotation = FactoryGirl.create(:denotation, :doc_id => @doc.id)
+        FactoryGirl.create(:annotations_project, project: @associate_project_2, annotation: annotation)
       end
       @associate_project_2.reload
       @project.associate_projects << @associate_project_1
@@ -300,7 +330,8 @@ describe Denotation do
     
     describe 'after create' do
       before do
-        @denotation = FactoryGirl.create(:denotation, :project => @associate_project_2, :doc_id => 1)
+        @denotation = FactoryGirl.create(:denotation, :doc_id => 1)
+        FactoryGirl.create(:annotations_project, project: @associate_project_2, annotation: @denotation)
         @project.reload
         @associate_project_1.reload
         @associate_project_2.reload
@@ -339,21 +370,6 @@ describe Denotation do
     end
   end
 
-  describe 'decrement_project_annotations_count' do
-    before do
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
-      @denotation = FactoryGirl.create(:denotation, :project => @project) 
-      @project.reload
-    end
-
-    it 'should decrement project.annotations_count' do
-      expect{  
-        @denotation.decrement_project_annotations_count
-        @project.reload
-      }.to change{ @project.annotations_count }.from(1).to(0)
-    end
-  end
-  
   describe 'update_projects_before_destroy' do
     before do
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :denotations_count => 0)
@@ -364,11 +380,13 @@ describe Denotation do
       @associate_project_2.docs << @doc      
       @di = 1
       @associate_project_2_denotations_count.times do
-        FactoryGirl.create(:denotation, :project => @associate_project_2, :begin => @di, :doc_id => @doc.id)
+        denotation = FactoryGirl.create(:denotation, :begin => @di, :doc_id => @doc.id)
+        FactoryGirl.create(:annotations_project, project: @associate_project_2, annotation: denotation)
         @di += 1
       end
       @associate_project_2.reload
-      @denotation = FactoryGirl.create(:denotation, :begin => @di, :project => @associate_project_2, :doc_id => @doc.id)
+      @denotation = FactoryGirl.create(:denotation, :begin => @di, :doc_id => @doc.id)
+      FactoryGirl.create(:annotations_project, project: @associate_project_2, annotation: @denotation)
       @associate_project_1.reload
       @associate_project_2.reload
       @project.associate_projects << @associate_project_1
@@ -410,6 +428,23 @@ describe Denotation do
         @associate_project_2.denotations_count.should eql(1)
       end      
     end      
+  end
+  
+
+  describe 'decrement_project_annotations_count' do
+    before do
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @denotation = FactoryGirl.create(:denotation, doc_id: 1) 
+      FactoryGirl.create(:annotations_project, project: @project, annotation: @denotation)
+      @project.reload
+    end
+
+    it 'should decrement project.annotations_count' do
+      expect{  
+        @denotation.decrement_project_annotations_count
+        @project.reload
+      }.to change{ @project.annotations_count }.from(1).to(0)
+    end
   end
   
   describe 'self.sql_find' do

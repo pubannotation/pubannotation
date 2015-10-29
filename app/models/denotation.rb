@@ -1,31 +1,24 @@
 require 'zip/zip'
 
-class Denotation < ActiveRecord::Base
+class Denotation < Annotation
   include DenotationsHelper
   
-  belongs_to :project, :counter_cache => true
-  belongs_to :doc, :counter_cache => true
+  belongs_to :doc, counter_cache: :denotations_count
 
-  has_many :modifications, :as => :obj, :dependent => :destroy
-
+  has_many :modifications, as: :obj, dependent: :destroy
   has_many :subrels, :class_name => 'Relation', :as => :subj, :dependent => :destroy
   has_many :objrels, :class_name => 'Relation', :as => :obj, :dependent => :destroy
+  has_many :annotations_projects, foreign_key: 'annotation_id'
+  has_many :projects, through: :annotations_projects
+  # belongs_to :project, :counter_cache => true
 
-  attr_accessible :hid, :begin, :end, :obj
+  # attr_accessible :obj
 
-  validates :hid,       :presence => true
-  validates :begin,     :presence => true
-  validates :end,       :presence => true
-  validates :obj,       :presence => true
-  validates :project_id, :presence => true
+  # validates :obj,       :presence => true
   validates :doc_id,    :presence => true
 
-  scope :from_projects, -> (projects) {
-    where('project_id IN (?)', projects.map{|p| p.id}) if projects.present?
-  }
-
   scope :within_span, -> (span) {
-    where('denotations.begin >= ? AND denotations.end <= ?', span[:begin], span[:end]) if span.present?
+    where('annotations.begin >= ? AND annotations.end <= ?', span[:begin], span[:end]) if span.present?
   }
 
   scope :after_alignment, -> (aligner) {
@@ -39,7 +32,7 @@ class Denotation < ActiveRecord::Base
   }
 
   scope :accessible_projects, lambda{|current_user_id|
-    joins([:project, :doc]).
+    joins([:projects, :doc]).
     where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
   }
   
@@ -48,7 +41,7 @@ class Denotation < ActiveRecord::Base
     order('denotations.id ASC') 
   }
   
-  after_save :update_projects_after_save, :increment_project_annotations_count
+  after_save :update_projects_after_save
   before_destroy :update_projects_before_destroy
   after_destroy :decrement_project_annotations_count
   
@@ -63,8 +56,8 @@ class Denotation < ActiveRecord::Base
   # after save
   def update_projects_after_save
     project_ids = Array.new
-    if self.project.present? 
-      project_ids << self.project.id
+    if self.projects.present? 
+      project_ids << self.projects.collect{|project| project.id}
       if self.project.projects.present?
         # increment projects.denotations_count
         project.projects.each do |project|
@@ -77,29 +70,25 @@ class Denotation < ActiveRecord::Base
     end
   end
 
-  def increment_project_annotations_count
-    Project.increment_counter(:annotations_count, project.id) if self.project.present?
-  end
-  
   # before destroy
   def update_projects_before_destroy
-    project_ids = Array.new
-    if self.project.present? 
-      project_ids << self.project.id
-      if self.project.projects.present?
-        project.projects.each do |project|
-          # decrement projects_denotations_count
-          Project.decrement_counter(:denotations_count, project.id)
-          project_ids << project.id
-        end
-      end
-      # update project annotations_updated_at
-      Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
-    end
+    # project_ids = Array.new
+    # if self.project.present? 
+    #   project_ids << self.project.id
+    #   if self.project.projects.present?
+    #     project.projects.each do |project|
+    #       # decrement projects_denotations_count
+    #       Project.decrement_counter(:denotations_count, project.id)
+    #       project_ids << project.id
+    #     end
+    #   end
+    #   # update project annotations_updated_at
+    #   Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
+    # end
   end
 
   def decrement_project_annotations_count
-    Project.decrement_counter(:annotations_count, project.id) if self.project.present?
+    # Project.decrement_counter(:annotations_count, project.id) if self.project.present?
   end
   
   def self.sql_find(params, current_user, project)
