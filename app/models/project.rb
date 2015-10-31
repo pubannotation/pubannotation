@@ -719,6 +719,10 @@ class Project < ActiveRecord::Base
         begin
           self.notices.create({method:"- annotations upload (#{i}/#{total_number} docs)", successful:true, message: "finished"}) if (i != 0) && (i % interval == 0)
 
+          annotations[:sourcedb] = 'PubMed' if annotations[:sourcedb].downcase == 'pubmed'
+          annotations[:sourcedb] = 'PMC' if annotations[:sourcedb].downcase == 'pmc'
+          annotations[:sourcedb] = 'FirstAuthor' if annotations[:sourcedb].downcase == 'firstauthor'
+
           i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
 
           if annotations[:divid].present?
@@ -748,7 +752,6 @@ class Project < ActiveRecord::Base
       self.notices.create({method:'annotations batch upload', successful:false, message: e.message})
     end
   end
-
 
   def create_annotations_from_zip_backup(zip_file_path, options)
     annotations_collection = Zip::ZipFile.open(zip_file_path) do |zip|
