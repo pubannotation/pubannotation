@@ -261,6 +261,10 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def search_projects
+    @projects = Project.where('name like ?', "%#{ params[:project_name].downcase }%")
+  end
+
   def autocomplete_project_author
     render json: Project.where(['author like ?', "%#{params[:term]}%"]).collect{|project| project.author}.uniq
   end

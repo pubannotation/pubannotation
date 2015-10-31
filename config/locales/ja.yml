@@ -278,6 +278,7 @@ ja:
         pmids: PubMedのID
         username: 副管理者名
         associate_project_name: 関連プロジェクト名を入力
+        project_name: プロジェクト名を入力
       doc:
         annotation_server: アノテーションサーバーのURL
         ids: ドキュメントのID(複数の場合は空白もしくはコンマで区切る)
@@ -470,6 +471,8 @@ ja:
         result: "Annotationos batch upload started. %{created_at}"
       annotations_batch_upload:
         result: "Annotationos batch upload finished. %{created_at}"
+      search_projects:
+        title: 'プロジェクト検索'
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
     hints:
