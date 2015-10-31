@@ -90,6 +90,21 @@ describe Project do
       (@project.denotations - [@denotation]).should be_blank
     end
   end
+
+  describe 'denotations after_add' do
+    let( :project ) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) }
+    let( :doc ) { FactoryGirl.create(:doc) }
+    let( :denotation ) { FactoryGirl.create(:denotation, :project => project, :doc => doc) }
+
+    before do
+      project.stub(:update_updated_at).and_return(nil)
+    end
+
+    it 'should call update_updated_at when add denotations' do
+      expect(project).to receive(:update_updated_at)
+      project.denotations << denotation 
+    end
+  end
   
   describe 'has_many relations' do
     before do
@@ -103,6 +118,20 @@ describe Project do
     
     it 'project.relations should include related relation' do
       (@project.relations - [@relation]).should be_blank
+    end
+  end
+
+  describe 'relations after_add' do
+    let( :project ) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) }
+    let( :relation ) { FactoryGirl.create(:relation, project: project, obj_id: 5) }
+
+    before do
+      project.stub(:update_updated_at).and_return(nil)
+    end
+
+    it 'should call update_updated_at when add relations' do
+      expect(project).to receive(:update_updated_at)
+      project.relations << relation 
     end
   end
   
@@ -121,6 +150,22 @@ describe Project do
     
     it 'project.modifications should include related modification' do
       (@project.modifications - [@modification]).should be_blank
+    end
+  end
+
+  describe 'modification after_add' do
+    let( :project ) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) }
+    let( :doc ) { FactoryGirl.create(:doc) }
+    let( :denotation ) { FactoryGirl.create(:denotation, :project => project, :doc => doc) }
+    let( :modification ) { FactoryGirl.create(:modification, :obj => denotation, project: nil) }
+
+    before do
+      project.stub(:update_updated_at).and_return(nil)
+    end
+
+    it 'should call update_updated_at when add modifications' do
+      expect(project).to receive(:update_updated_at)
+      project.modifications << modification
     end
   end
   
@@ -2534,21 +2579,20 @@ describe Project do
   describe 'update_annotations_updated_at' do
     before do
       @doc = FactoryGirl.create(:doc)
+      @doc.stub(:update_doc_delta_index).and_return(nil)
       @annotations_updated_at = 5.days.ago
       @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
       @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
     end
 
     describe 'after_add' do
-      before do
+      it 'should update projects.annotations_updated_at' do
         @project_1.docs << @doc
         @project_2.docs << @doc
-      end
-
-      it 'should update projects.annotations_updated_at' do
         @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
         @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
       end
+
     end
 
     describe 'after_remove' do
@@ -2560,6 +2604,27 @@ describe Project do
       it 'should update projects.annotations_updated_at' do
         @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
         @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
+      end
+    end
+  end
+
+  describe 'update_delta_index' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
+    end
+
+    describe 'after_add' do
+      it 'should update delta indexing' do
+        @project.should_receive(:update_delta_index)
+        @project.docs << @doc
+      end
+    end
+
+    describe 'after_remove' do
+      it 'should update delta indexing' do
+        @project.should_receive(:update_delta_index)
+        @project.docs.delete(@doc)
       end
     end
   end
@@ -2808,6 +2873,16 @@ describe Project do
       it 'should create notice' do
         expect{ @project.delay_destroy }.to change{ Notice.count }.from(0).to(1)
       end
+    end
+  end
+
+  describe 'update_updated_at' do
+    let(:updated_at) { 10.days.ago }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user), updated_at: updated_at) }
+
+    it 'should update updated_at' do
+      project.update_updated_at(nil)
+      expect(project.updated_at).not_to eql(updated_at)
     end
   end
 end

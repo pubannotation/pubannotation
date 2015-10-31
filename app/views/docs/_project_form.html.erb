@@ -1,4 +1,4 @@
-<% if @project and user_signed_in? && current_user == @project.user && @project.class == Project %>
+<% if @project and user_signed_in? && @project.editable?(current_user) %>
 	<%= form_tag(add_project_docs_path(@project.name), :method => "post") do %>
 	  <table>
 	    <tr>

@@ -8,8 +8,8 @@ class Project < ActiveRecord::Base
   serialize :namespaces
   belongs_to :user
   has_and_belongs_to_many :docs, 
-    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter], 
-    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter]
+    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter, :update_delta_index], 
+    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter, :update_delta_index]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
   
@@ -31,9 +31,9 @@ class Project < ActiveRecord::Base
     :join_table => 'associate_projects_projects'
 
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
-  has_many :denotations, :dependent => :destroy
-  has_many :relations, :dependent => :destroy
-  has_many :modifications, :dependent => :destroy
+  has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
+  has_many :relations, :dependent => :destroy, after_add: :update_updated_at
+  has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :notices, dependent: :destroy
@@ -46,7 +46,10 @@ class Project < ActiveRecord::Base
 
   scope :accessible, -> (current_user) {
     if current_user.present?
-      includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
+      if current_user.root?
+      else
+        includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
+      end
     else
       where(accessibility: 1)
     end
@@ -54,7 +57,10 @@ class Project < ActiveRecord::Base
 
   scope :editable, -> (current_user) {
     if current_user.present?
-      includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id)
+      if current_user.root?
+      else
+        includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id)
+      end
     else
       where(accessibility: 10)
     end
@@ -130,7 +136,15 @@ class Project < ActiveRecord::Base
   end
 
   def accessible?(current_user)
-    self.accessibility == 1 || self.user == current_user
+    self.accessibility == 1 || self.user == current_user || current_user.root?
+  end
+
+  def editable?(current_user)
+    current_user.present? && (current_user.root? || current_user == user || self.associate_maintainer_users.include?(current_user))
+  end
+
+  def destroyable?(current_user)
+    current_user.root? || current_user == user  
   end
 
   def status_text
@@ -191,6 +205,10 @@ class Project < ActiveRecord::Base
     end
   end
 
+  def update_delta_index(doc)
+    doc.save
+  end
+
   def increment_docs_projects_counter(doc)
     Doc.increment_counter(:projects_count, doc.id)
   end
@@ -227,18 +245,6 @@ class Project < ActiveRecord::Base
     else
       current_user.root? == true || current_user == self.user
     end
-  end
-  
-  def updatable_for?(current_user)
-    current_user.root? == true || (current_user == self.user || self.associate_maintainer_users.include?(current_user))
-  end
-
-  def destroyable_for?(current_user)
-    current_user.root? == true || current_user == user  
-  end
-
-  def notices_destroyable_for?(current_user)
-    current_user && (current_user.root? == true || current_user == user)
   end
   
   def association_for(current_user)
@@ -653,75 +659,99 @@ class Project < ActiveRecord::Base
   end
 
   def create_annotations_from_zip(zip_file_path, options = {})
-    files = Zip::ZipFile.open(zip_file_path) do |zip|
-      zip.collect do |entry|
-        next if entry.ftype == :directory
-       {name:entry.name, content:entry.get_input_stream.read}
-     end.compact!
-    end
-
-    error_files = []
-    annotations_collection = files.inject([]) do |m, file|
-      begin
-        as = JSON.parse(file[:content], symbolize_names:true)
-        if as.is_a?(Array)
-          m + as
-        else
-          m + [as]
-        end
-      rescue => e
-        error_files << file[:name]
-        m
+    begin
+      files = Zip::ZipFile.open(zip_file_path) do |zip|
+        zip.collect do |entry|
+          next if entry.ftype == :directory
+          next unless entry.name.end_with?('.json')
+          {name:entry.name, content:entry.get_input_stream.read}
+        end.delete_if{|e| e.nil?}
       end
-    end
 
-    raise IOError, "Invalid JSON files: #{error_files.join(', ')}" unless error_files.empty?
+      raise IOError, "No JSON file found" unless files.length > 0
 
-    error_anns = []
-    annotations_collection.each do |annotations|
-      begin
-        normalize_annotations!(annotations)
-      rescue => e
-        error_anns << "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
-      end
-    end
-    raise IOError, "Invalid annotations: #{error_anns.join(', ')}" unless error_anns.empty?
-
-    total_number = annotations_collection.length
-    interval = (total_number > 100000)? 100 : 10
-
-    imported, added, failed, messages = 0, 0, 0, []
-    annotations_collection.each_with_index do |annotations, i|
-      begin
-        self.notices.create({method:"- annotations upload (#{i}/#{total_number} docs)", successful:true, message: "finished"}) if (i != 0) && (i % interval == 0)
-
-        i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
-
-        if annotations[:divid].present?
-          doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
-        else
-          divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-          doc = divs[0] if divs.length == 1
+      error_files = []
+      annotations_collection = files.inject([]) do |m, file|
+        begin
+          as = JSON.parse(file[:content], symbolize_names:true)
+          if as.is_a?(Array)
+            m + as
+          else
+            m + [as]
+          end
+        rescue => e
+          error_files << file[:name]
+          m
         end
-
-        result = if doc.present?
-          self.save_annotations(annotations, doc, options)
-        elsif divs.present?
-          self.store_annotations(annotations, divs, options)
-        else
-          raise IOError, "document does not exist"
-        end
-
-      rescue => e
-        self.notices.create({method:"- annotations upload: #{annotations[:sourcedb]}:#{annotations[:sourceid]}", successful:false, message: e.message})
-        next
       end
-    end
+      raise IOError, "Invalid JSON files: #{error_files.join(', ')}" unless error_files.empty?
 
-    self.notices.create({method:'annotations batch upload', successful:true})
-    messages << "annotations loaded to #{annotations_collection.length} documents"
+      error_anns = []
+      annotations_collection.each do |annotations|
+        if annotations[:text].present? && annotations[:sourcedb].present? && annotations[:sourceid].present?
+        else
+          error_anns << if annotations[:sourcedb].present? && annotations[:sourceid].present?
+            "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+          elsif annotations[:text].present?
+            annotations[:text][0..10] + "..."
+          else
+            '???'
+          end
+        end
+      end
+      raise IOError, "Invalid annotation found. An annotation has to include at least the four components, text, denotation, sourcedb, and sourceid: #{error_anns.join(', ')}" unless error_anns.empty?
+
+      error_anns = []
+      annotations_collection.each do |annotations|
+        begin
+          normalize_annotations!(annotations)
+        rescue => e
+          error_anns << "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+        end
+      end
+      raise IOError, "Invalid annotations: #{error_anns.join(', ')}" unless error_anns.empty?
+
+      total_number = annotations_collection.length
+      interval = (total_number > 100000)? 100 : 10
+
+      imported, added, failed, messages = 0, 0, 0, []
+      annotations_collection.each_with_index do |annotations, i|
+        begin
+          self.notices.create({method:"- annotations upload (#{i}/#{total_number} docs)", successful:true, message: "finished"}) if (i != 0) && (i % interval == 0)
+
+          annotations[:sourcedb] = 'PubMed' if annotations[:sourcedb].downcase == 'pubmed'
+          annotations[:sourcedb] = 'PMC' if annotations[:sourcedb].downcase == 'pmc'
+          annotations[:sourcedb] = 'FirstAuthor' if annotations[:sourcedb].downcase == 'firstauthor'
+
+          i, a, f, m = self.add_doc(annotations[:sourcedb], annotations[:sourceid])
+
+          if annotations[:divid].present?
+            doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
+          else
+            divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
+            doc = divs[0] if divs.length == 1
+          end
+
+          result = if doc.present?
+            self.save_annotations(annotations, doc, options)
+          elsif divs.present?
+            self.store_annotations(annotations, divs, options)
+          else
+            raise IOError, "document does not exist"
+          end
+
+        rescue => e
+          self.notices.create({method:"- annotations upload: #{annotations[:sourcedb]}:#{annotations[:sourceid]}", successful:false, message: e.message})
+          next
+        end
+      end
+
+      self.notices.create({method:'annotations batch upload', successful:true})
+      messages << "annotations loaded to #{annotations_collection.length} documents"
+    rescue => e
+      self.notices.create({method:'annotations batch upload', successful:false, message: e.message})
+    end
   end
-
 
   def create_annotations_from_zip_backup(zip_file_path, options)
     annotations_collection = Zip::ZipFile.open(zip_file_path) do |zip|
@@ -1291,5 +1321,9 @@ class Project < ActiveRecord::Base
     rescue
       notices.create({method: 'destroy the project', successful: false})
     end
+  end
+
+  def update_updated_at(model)
+    self.update_attribute(:updated_at, DateTime.now)
   end
 end

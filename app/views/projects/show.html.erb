@@ -44,11 +44,11 @@
 	</tr>
 </table>
 <% if user_signed_in? -%>
-	<% if @project.updatable_for?(current_user) -%>
+	<% if @project.editable?(current_user) -%>
 		<% edit_path = edit_project_path(@project.name) -%> <span class="button"> <%= link_to t('views.shared.edit'), edit_path, :class => 'capitalize_first' -%> </span>
 	<% end -%>
 
-	<% if @project.destroyable_for?(current_user) -%> 
+	<% if @project.destroyable?(current_user) -%> 
 		<span class="button"><%= link_to t('views.shared.delete'), @project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
 	<% end -%>
 <% end %>
@@ -78,7 +78,7 @@
 <h3>Search</h3>
 <%= render partial: 'docs/search_form' -%>
 
-<% if user_signed_in? && @project.present? && current_user == @project.user %>
+<% if user_signed_in? && @project.editable?(current_user) %>
 	<h3><%= t('views.shared.add') -%></h3>
     <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
 
@@ -105,7 +105,7 @@ Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span
 	<%= project_annotations_rdf_link_helper(@project) -%>
 </div>
  -->
-<% if user_signed_in? && @project.updatable_for?(current_user) -%>
+<% if user_signed_in? && @project.editable?(current_user) -%>
 	<%= render partial: 'annotations/upload_zip' -%>
 	<%= render partial: 'annotations/obtain_annotation' -%>
 	<%= render partial: 'delete_annotations' -%>

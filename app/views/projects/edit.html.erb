@@ -19,8 +19,10 @@
  	> edit
 <% end %>
 
+<%= render :partial => 'title_and_links' -%>
+
 <h1>
-	<%= t('views.shared.edit_model', :model => "#{t('views.shared.annotation_sets')}/#{t('activerecord.models.project')}") %>
+	Properties
 </h1>
 
 <%= render :partial => 'form' -%>
