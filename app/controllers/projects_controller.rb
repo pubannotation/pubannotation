@@ -99,11 +99,6 @@ class ProjectsController < ApplicationController
     end
   end
 
-  # GET /projects/1/edit
-  def edit
-    @project = Project.editable(current_user).find_by_name(params[:id])
-  end
-
   # POST /projects
   # POST /projects.json
   def create
@@ -127,6 +122,27 @@ class ProjectsController < ApplicationController
     end
   end
 
+  # GET /projects/1/edit
+  def edit
+    @project = Project.editable(current_user).find_by_name(params[:id])
+  end
+
+  # PUT /projects/:name
+  # PUT /projects/:name.json
+  def update
+    @project.user = current_user unless current_user.root?
+    respond_to do |format|
+      if @project.update_attributes(params[:project])
+        @project.add_associate_projects(params[:associate_projects], current_user)
+        format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @project.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
   def zip_upload
   end
 
@@ -141,21 +157,6 @@ class ProjectsController < ApplicationController
         flash[:notice] = messages.join('<br />')
       else errors.present?
         flash[:notice] = errors.join('<br />')
-      end
-    end
-  end
-
-  # PUT /projects/:name
-  # PUT /projects/:name.json
-  def update
-    respond_to do |format|
-      if @project.update_attributes(params[:project])
-        @project.add_associate_projects(params[:associate_projects], current_user)
-        format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
-        format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
-        format.json { render json: @project.errors, status: :unprocessable_entity }
       end
     end
   end
