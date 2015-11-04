@@ -861,25 +861,6 @@ class Project < ActiveRecord::Base
     return [messages, errors]
   end
 
-  # def self.save_annotations(project, doc_annotations_files)
-  #   doc_annotations_files.each do |doc_annotations_file|
-  #     doc_info = doc_annotations_file[:name].split('-')
-  #     doc = Doc.find_by_sourcedb_and_sourceid_and_serial(doc_info[0], doc_info[1], doc_info[2])
-  #     doc_params = JSON.parse(File.read(doc_annotations_file[:path])) 
-  #     File.unlink(doc_annotations_file[:path]) 
-  #     if doc.present?
-  #       if doc_params['denotations'].present?
-  #         annotations = {
-  #           denotations: doc_params['denotations'],
-  #           relations: doc_params['relations'],
-  #           text: doc_params['text']
-  #         }
-  #         self.save_annotations(annotations, doc)
-  #       end
-  #     end
-  #   end
-  # end
-
   def add_docs_from_json(docs, user)
     num_created, num_added, num_failed = 0, 0, 0
     docs = [docs] if docs.class == Hash
