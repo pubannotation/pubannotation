@@ -409,46 +409,6 @@ class DocsController < ApplicationController
     redirect_to home_path
   end
 
-  def create_project_docs
-    # preprocessing for JSON array
-    params[:docs] = params["_json"] if params["_json"]
-
-    docs =  if params[:ids].present? && params[:sourcedb].present?
-              params[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
-            elsif params[:docs].present?
-              params[:docs].collect{|d| d.symbolize_keys}
-            end
-
-    begin 
-      project = get_project2(params[:project_id])
-    rescue => e
-      message = e.message
-    end
-
-    num_created, num_added, num_failed = 0, 0, 0
-    if project && docs
-      begin
-        num_created, num_added, num_failed = project.add_docs_from_json(docs, current_user)
-      rescue => e
-      end
-    end
-    result = {:created => num_created, :added => num_added, :failed => num_failed}
-
-    respond_to do |format|
-      format.html {
-        notice = result.collect{|k,v| "#{k}: #{v}"}.join(', ')
-        redirect_to project_docs_path(project.name), :notice => notice
-      }
-      format.json {
-        if num_created > 0 || num_added > 0
-          render :json => result, status: :created, location: project_docs_path(project.name)
-        else
-          render :json => result, status: :unprocessable_entity
-        end
-      }
-    end  
-  end
-
   # PUT /docs/1
   # PUT /docs/1.json
   def update
