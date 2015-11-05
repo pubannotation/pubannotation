@@ -22,15 +22,9 @@
 
 </div>
 
-<%= render partial: 'my_projects' -%>
-
 <h1>
 	<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
 	<span class='info'>(<%= @projects_number -%>)</span>
 	<%= link_to t('views.shared.full_list'), projects_path, {class: 'button'} -%>
 </h1>
-<%= form_tag(search_projects_projects_path) do -%>
-  <%= autocomplete_field_tag :project_name, nil, "/projects/autocomplete_project_name/#{ Project.all.collect{|p| p.id} }", id: 'associate_project_name', placeholder: t('activerecord.placeholders.project.project_name') -%>
-  <%= submit_tag t('views.shared.search') -%>
-<% end -%>
 <%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects_top, :scope => nil } %>

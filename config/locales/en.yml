@@ -384,9 +384,6 @@ en:
       repository: repository
       documentation: documentation
       about: about
-    home:
-      index:
-        my_projects: my projecs
     annotations:
       index:
         confirm_destroy_all: Are you sure? All the annotations will be deleted.
