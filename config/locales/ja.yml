@@ -436,6 +436,7 @@ ja:
       new: 新規作成
     projects:
       project: プロジェクト
+      my_projects: マイプロジェクト
       try_textae: 又は他のRESTfulエディターのURLを指定して下さい。
       annotation_within_annotation_set: "<span class='meta'>このアノテーションセット内にあるドキュメント<span class='pname'>%{sourcedb}:%{sourceid}</span></span>のアノテーションセット"
       project_properties: プロジェクト詳細

@@ -63,4 +63,11 @@ module ProjectsHelper
       link_to project.name, project_path(project.name) 
     end 
   end
+
+  def is_my_project?(project, current_user)
+    if project.user == current_user
+      css_class = 'check-circle'
+      content_tag(:i, nil, class: "fa fa-#{css_class}")
+    end
+  end
 end

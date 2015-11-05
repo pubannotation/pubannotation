@@ -139,4 +139,26 @@ describe ProjectsHelper do
       end
     end
   end
+
+  describe 'is_my_project?' do
+    let ( :user ) { FactoryGirl.create(:user)} 
+    let ( :another_user ) { FactoryGirl.create(:user)} 
+    let ( :project ) { FactoryGirl.create(:project, user: user)} 
+
+    before do
+      helper.stub(:current_user).and_return(user)
+    end
+
+    context 'when project.user == current_user' do
+      it 'should return  i tag' do
+        helper.is_my_project?(project, user).should have_selector(:i)
+      end
+    end
+
+    context 'when project.user == current_user' do
+      it 'should return  i tag' do
+        helper.is_my_project?(project, another_user).should_not have_selector(:i)
+      end
+    end
+  end
 end

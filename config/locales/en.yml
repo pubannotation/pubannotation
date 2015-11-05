@@ -422,6 +422,7 @@ en:
       docs: docs
     projects:
       project: project
+      my_projects: my projecs
       try_textae: "is the default, but you can use any other RESTful editor." 
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this project</span></span>"
       properties: properties

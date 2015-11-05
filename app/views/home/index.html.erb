@@ -27,4 +27,5 @@
 	<span class='info'>(<%= @projects_number -%>)</span>
 	<%= link_to t('views.shared.full_list'), projects_path, {class: 'button'} -%>
 </h1>
+<%= render partial: 'projects/search_all_form' -%>
 <%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects_top, :scope => nil } %>

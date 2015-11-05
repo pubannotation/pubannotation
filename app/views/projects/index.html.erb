@@ -16,11 +16,13 @@
   <%= t('activerecord.models.project').pluralize.capitalize.html_safe %>
   <span class='info'>(<%= total_number(@projects) -%>)</span>
 
+	<%= link_to t('views.shared.full_list'), projects_path, {class: 'button'} -%>
   <% if user_signed_in?%>
       <span class="button"><%= link_to t('views.shared.create_model', :model => t("activerecord.models.project")), new_project_path %></span>
   <% else %>
     <span class="button"><%= link_to t('views.users.sign_in_to_create_model', :model => t('activerecord.models.project')), new_user_session_path %></span>
   <% end %>
 </h1>
+<%= render partial: 'search_all_form' -%>
 <%= render :partial => "list", :locals => {:doc => @doc, :projects => @projects, :scope => nil} %>
 

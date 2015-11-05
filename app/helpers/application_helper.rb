@@ -90,10 +90,16 @@ module ApplicationHelper
 
   def sort_order(model)
     if params[:sort_key].present? && params[:sort_direction].present?
-      sort_order = [[params[:sort_key], params[:sort_direction]]] 
+      if params[:sort_key] == 'my_project'
+        sort_order = [["CASE WHEN projects.user_id = #{current_user.id} THEN 1 WHEN projects.user_id != #{current_user.id} THEN 0 END", params[:sort_direction]]]
+      else
+        sort_order = [[params[:sort_key], params[:sort_direction]]] 
+      end
     else
       sort_order = model::DefaultSortArray
     end
+
+
     # LOWER sort key column to ignore case
     sort_order.each_with_index do |sort_array, index|
       sort_key = sort_array[0]
@@ -119,12 +125,14 @@ module ApplicationHelper
       title ||= sort_key
       sort_key = lower_sort_key(model, sort_key)
       sort_order = sort_order(model)
+
+      sort_order[0][0] = 'my_project' if ( sort_order[0][0] =~ /CASE WHEN/ ) == 0 
       current_direction = sort_order.assoc(sort_key)[1] if sort_order.present? && sort_order.assoc(sort_key).present?
       current_direction ||= 'DESC'
       css_class = "sortable-" + current_direction
       next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'
 
-      if params[:search_projects]
+      if params[:text]
         search_word = 'sort_direction'
         sort_params_in_url = request.fullpath.match(search_word)
         if sort_params_in_url.present?
