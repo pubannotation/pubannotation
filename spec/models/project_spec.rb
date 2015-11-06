@@ -315,20 +315,44 @@ describe Project do
 
   describe 'scope top' do
     before do
-      user = FactoryGirl.create(:user)
-      (1..11).each do |n|
-        FactoryGirl.create(:project, user: user, denotations_count: n, created_at: n.days.ago)
+      @user = FactoryGirl.create(:user)
+      @my_projects_max_denotations_count = 6
+      (1..@my_projects_max_denotations_count).each do |n|
+        FactoryGirl.create(:project, user: @user, denotations_count: n, updated_at: n.days.ago)
       end
 
-      @projects = Project.top
+      another_user = FactoryGirl.create(:user)
+      (1..11).each do |n|
+        FactoryGirl.create(:project, user: another_user, denotations_count: 11, updated_at: 1.month.ago)
+      end
     end
 
-    it 'size should be 10' do
-      @projects.size.should eql(10)
+    context 'when user nil' do
+      before do
+        @projects = Project.top(nil)
+      end
+
+      it 'size should be 10' do
+        @projects.size.should eql(10)
+      end
+
+      it 'denotations_count should prior to updated_at' do
+        @projects.first.denotations_count.should eql(11)
+      end
     end
 
-    it 'denotations_count should prior to created_at' do
-      @projects.first.denotations_count.should eql(11)
+    context 'when user prensent' do
+      before do
+        @projects = Project.top(@user)
+      end
+
+      it 'size should be 10' do
+        @projects.size.should eql(10)
+      end
+
+      it 'my_project should prior to denotations_count' do
+        @projects.first.denotations_count.should eql(@my_projects_max_denotations_count)
+      end
     end
   end
   
@@ -2883,6 +2907,14 @@ describe Project do
     it 'should update updated_at' do
       project.update_updated_at(nil)
       expect(project.updated_at).not_to eql(updated_at)
+    end
+  end
+
+  describe 'sort_by_my_projects' do
+    let (:user_id) { 1 }
+
+    it 'should return case conditions' do
+      Project.sort_by_my_projects(user_id).should eql("CASE WHEN projects.user_id = #{user_id} THEN 1 WHEN projects.user_id != #{user_id} THEN 0 END")
     end
   end
 end

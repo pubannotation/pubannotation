@@ -67,7 +67,14 @@ class Project < ActiveRecord::Base
   }
 
   # scope for home#index
-  scope :top, order('status ASC').order('denotations_count DESC').order('projects.updated_at DESC').limit(10)
+  scope :top, lambda {|user|
+    if user
+      user_id = user.id
+    else
+      user_id = 0
+    end
+    order('status ASC').order("#{sort_by_my_projects(user_id)} DESC").order('denotations_count DESC').order('projects.updated_at DESC').limit(10)
+  }
 
   scope :not_id_in, lambda{|project_ids|
     where('projects.id NOT IN (?)', project_ids)
@@ -1277,5 +1284,9 @@ class Project < ActiveRecord::Base
 
   def update_updated_at(model)
     self.update_attribute(:updated_at, DateTime.now)
+  end
+
+  def self.sort_by_my_projects(user_id)
+    "CASE WHEN projects.user_id = #{user_id} THEN 1 WHEN projects.user_id != #{user_id} THEN 0 END"
   end
 end

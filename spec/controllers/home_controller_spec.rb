@@ -6,12 +6,15 @@ describe HomeController do
     before do
       @current_user = FactoryGirl.create(:user)
       current_user_stub(@current_user)
-      @sourcedb_doc_counts = 0
+      @sourcedb_doc_counts = {'abc' => 2}
       Doc.stub_chain(:where, :group, :count).and_return(@sourcedb_doc_counts)
-      @projects_number = 1
-      Project.stub_chain(:accessible, :length).and_return(@projects_number)
+      @projects_accessible = 'top'
       @projects_top = 'top'
-      Project.stub_chain(:accessible, :top).and_return(@projects_top)
+      Project.stub(:accessible).and_return(@projects_accessible)
+      @projects_number = 1
+      # Project.stub_chain(:accessible, :length).and_return(@projects_number)
+      @projects_accessible.stub(:length).and_return(@projects_number)
+      @projects_accessible.stub(:top).and_return(@projects_top)
     end
     
     describe 'sourcedbs page cache' do
@@ -40,8 +43,9 @@ describe HomeController do
     end
     
     it '@projects_top should eql Project.accessible.top' do
+      Project.should_receive(:accessible)
+      @projects_accessible.should_receive(:top).with(@current_user)
       get :index
-      assigns[:projects_top].should eql(@projects_top)
     end
   end
 end

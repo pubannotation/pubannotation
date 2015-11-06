@@ -130,10 +130,11 @@ describe ApplicationHelper do
           helper.stub(:params).and_return(@params)
           @current_user = FactoryGirl.create(:user)
           helper.stub(:current_user).and_return(@current_user)
+          Project.stub(:sort_by_my_projects).and_return(@current_user.id)
         end
 
         it 'should call lower_sort_key with model and params[:sort_key]' do
-          helper.should_receive(:lower_sort_key).with(@model, "CASE WHEN projects.user_id = #{@current_user.id} THEN 1 WHEN projects.user_id != 1 THEN 0 END")
+          helper.should_receive(:lower_sort_key).with(@model, @current_user.id)
           helper.sort_order(@model)
         end
 

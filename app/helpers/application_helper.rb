@@ -91,7 +91,7 @@ module ApplicationHelper
   def sort_order(model)
     if params[:sort_key].present? && params[:sort_direction].present?
       if params[:sort_key] == 'my_project'
-        sort_order = [["CASE WHEN projects.user_id = #{current_user.id} THEN 1 WHEN projects.user_id != #{current_user.id} THEN 0 END", params[:sort_direction]]]
+        sort_order = [[Project.sort_by_my_projects( current_user.id ), params[:sort_direction]]]
       else
         sort_order = [[params[:sort_key], params[:sort_direction]]] 
       end
