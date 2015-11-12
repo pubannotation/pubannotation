@@ -1,5 +1,4 @@
-Pubann::Application.routes.draw do
-  resources :annotators
+Pubann::Application.routes.draw do  resources :annotators
 
   devise_for :users
   get "home/index"
@@ -39,7 +38,7 @@ Pubann::Application.routes.draw do
       # list sourcedb
       get 'sourcedb' => 'docs#sourcedb_index'
       get 'search' => 'docs#search'
-      get 'index_rdf' => 'docs#index_rdf'
+      get 'store_span_rdf' => 'docs#store_span_rdf'
 
       get :autocomplete_sourcedb
     end  
@@ -69,7 +68,6 @@ Pubann::Application.routes.draw do
             get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
             # post 'annotations' => 'annotations#create'
             get 'uptodate' => 'docs#uptodate'
-            get 'index_rdf' => 'docs#index_rdf'
             get 'spans' => 'spans#doc_spans_index'
             get 'spans/:begin-:end' => 'spans#doc_span_show', :as => 'span_show'
             get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'
@@ -107,16 +105,18 @@ Pubann::Application.routes.draw do
     get 'delete_annotations_zip' => 'annotations#delete_project_annotations_zip', :as => 'delete_annotations_zip'
     get 'annotations.rdf' => 'annotations#project_annotations_rdf', :as => 'annotations_rdf'
     get 'annotations.rdf/create' => 'annotations#create_project_annotations_rdf', :as => 'create_annotations_rdf'
-    get 'annotations/obtain' => 'annotations#obtain_project_annotations'
+    get 'annotations/obtain' => 'annotations#obtain'
     get 'delete_annotations_rdf' => 'annotations#delete_project_annotations_rdf', :as => 'delete_annotations_rdf'
     get 'notices' => 'notices#index'
     get 'tasks' => 'notices#tasks'
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
+    resources :jobs
+
     
     member do
       get :search
-      get 'index_rdf' => 'projects#index_project_annotations_rdf'
+      get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
     end
     
     collection do
@@ -125,13 +125,15 @@ Pubann::Application.routes.draw do
       get 'autocomplete_project_author'  => 'projects#autocomplete_project_author', :as => 'autocomplete_project_author'
       get 'zip_upload' => 'projects#zip_upload'
       post 'create_from_zip' => 'projects#create_from_zip'
+      get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
     end
   end
 
   resources :projects do
     post 'annotations' => 'annotations#create'
-    delete 'docs' => 'docs#project_delete_all_docs', as: 'delete_all_docs'
-    delete 'annotations' => 'projects#destroy_annotations', as: 'destroy_annotations'
+    delete 'docs' => 'projects#delete_all_docs', as: 'delete_all_docs'
+    delete 'annotations' => 'projects#destroy_all_annotations', as: 'destroy_all_annotations'
+    delete 'jobs' => 'projects#clear_jobs', as: 'clear_jobs'
 
     resources :docs do
       collection do
@@ -256,7 +258,6 @@ Pubann::Application.routes.draw do
   # just remember to delete public/index.html.
   root :to => 'home#index'
   match '/' => 'home#index', :as => :home
-  match '/index_projects_annotations_rdf' => 'home#index_projects_annotations_rdf'
 
   # See how all your routes lay out with "rake routes"
 

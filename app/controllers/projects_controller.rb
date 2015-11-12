@@ -146,9 +146,6 @@ class ProjectsController < ApplicationController
     end
   end
 
-  def zip_upload
-  end
-
   def create_from_zip
     zip_file = params[:zip].path
 
@@ -164,57 +161,91 @@ class ProjectsController < ApplicationController
     end
   end
 
-  def index_project_annotations_rdf
+  def store_annotation_rdf
     begin
       raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
-      project = Project.find_by_name(params[:id])
-      raise ArgumentError, "There is no such project." unless project.present?
+
+      projects = if params[:id].present?
+        project = Project.find_by_name(params[:id])
+        raise ArgumentError, "There is no such project." unless project.present?
+        [project]
+      else
+        Project.for_index
+      end
 
       system = Project.find_by_name('system-maintenance')
-      system.notices.create({method: "index project annotations rdf: #{project.name}"})
-      system.delay.index_project_annotations_rdf(project)
+
+      projects.each do |project|
+        delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name)
+        Job.create({name:"Store REDized annotations - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
+      end
     rescue => e
       flash[:notice] = e.message
     end
     redirect_to project_path('system-maintenance')
   end
 
-  def index_annotations_rdf
+  def delete_all_docs
     begin
-      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
-      system = Project.find_by_name('system-maintenance')
-      system.notices.create({method: "index annotations rdf"})
-      system.delay.index_annotations_rdf
-    rescue => e
-      flash[:notice] = e.message
-    end
-    redirect_to project_path('system-maintenance')
-  end
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
 
-  def destroy_annotations
-    begin
-      @project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless @project.present?
-
-      @project.notices.create({method: 'delete all the annotations in the project'})
-      @project.delay.destroy_annotations
+      message = if project.docs.present?
+        delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project, current_user)
+        Job.create({name:'Delete all documents from project', project_id:project.id, delayed_job_id:delayed_job.id})
+        "The task, 'delete all documents from project', is created."
+      else
+        "There is no document in the project."
+      end
 
       respond_to do |format|
-        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'delete all the annotations in the project', is created."}
+        format.html {redirect_to project_path(project.name), status: :see_other, notice: message}
         format.json {render status: :no_content}
       end
     end
   end
 
+  def destroy_all_annotations
+    begin
+      @project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless @project.present?
+
+      delayed_job = Delayed::Job.enqueue DeleteAllAnnotationsFromProjectJob.new(@project)
+      Job.create({name:'Delete all annotations from project', project_id:@project.id, delayed_job_id:delayed_job.id})
+
+      respond_to do |format|
+        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'delete all annotations from project', is created."}
+        format.json {render status: :no_content}
+      end
+    end
+  end
 
   # DELETE /projects/:name
   # DELETE /projects/:name.json
   def destroy
-    @project.notices.create({method: 'destroy the project'})
-    @project.delay.delay_destroy
+    project = Project.editable(current_user).find_by_name(params[:project_id])
+    raise "There is no such project." unless project.present?
+
+    delayed_job = Delayed::Job.enqueue DestroyProjectJob.new(project)
+    Job.create({name:'Destroy project', project_id:project.id, delayed_job_id:delayed_job.id})
+
     respond_to do |format|
       format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, is being deleted."}
       format.json {head :no_content }
+    end
+  end
+
+  def clear_jobs
+    project = Project.editable(current_user).find_by_name(params[:project_id])
+    raise "There is no such project." unless project.present?
+
+    project.jobs.each do |job|
+      job.destroy_if_not_running
+    end
+
+    respond_to do |format|
+      format.html { redirect_to project_jobs_path(project.name) }
+      format.json { head :no_content }
     end
   end
   

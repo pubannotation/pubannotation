@@ -126,6 +126,9 @@ class DivsController < ApplicationController
       @content = @doc.body.gsub(/\n/, "<br>")
       @annotations = @doc.hannotations(@project)
 
+      @annotators = Annotator.all
+      @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
+
       respond_to do |format|
         format.html {render 'docs/show_in_project'}
         format.json {render json: @doc.to_hash}

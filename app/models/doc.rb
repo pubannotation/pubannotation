@@ -100,12 +100,22 @@ class Doc < ActiveRecord::Base
   end
 
   def self.get_doc(docspec)
-    if docspec[:id].present?
-      Doc.find(docspec[:id])
-    elsif docspec[:sourcedb].present? && docspec[:sourceid].present?
-      Doc.find_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:serial].present? ? docspec[:serial] : 0)
+    if docspec[:sourcedb].present? && docspec[:sourceid].present?
+      Doc.find_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:divid].present? ? docspec[:divid] : 0)
     else
       nil
+    end
+  end
+
+  def self.get_divs(docspec)
+    if docspec[:sourcedb].present? && docspec[:sourceid].present?
+      if docspec[:div_id].present?
+        Doc.find_all_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:divid])
+      else
+        Doc.find_all_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
+      end
+    else
+      []
     end
   end
 
@@ -120,7 +130,7 @@ class Doc < ActiveRecord::Base
     begin
       doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
     rescue => e
-      raise IOError, "Failed to get the document #{sourcedb}:#{sourceid} from the source."
+      raise IOError, "Failed to get the document"
     end
 
     divs_hash = doc_sequence.divs
@@ -138,7 +148,7 @@ class Doc < ActiveRecord::Base
       )
     end
 
-    divs.each{|div| raise "Failed to save the document #{sourcedb}:#{sourceid}." unless div.save}
+    divs.each{|div| raise IOError, "Failed to save the document" unless div.save}
     divs
   end
 
@@ -412,11 +422,6 @@ class Doc < ActiveRecord::Base
     end
 
     annotations
-  end
-
-  def destroy_project_annotations(project)
-    raise RuntimeError, "nil project" if project.nil?
-    self.denotations.where(project_id: project.id).destroy_all
   end
 
   def projects_within_span(span)

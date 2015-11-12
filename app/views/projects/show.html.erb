@@ -68,10 +68,14 @@
 </legend>
 
 <h3>
-<% if total_number(@docs) < 10000 -%>
-	<%= link_to 'List all >', project_docs_path(@project.name) -%>
+<% if total_number(@docs) > 0 -%>
+	<% if total_number(@docs) < 10000 -%>
+		<%= link_to 'List all >', project_docs_path(@project.name) -%>
+	<% else -%>
+		<span title="disabled due to too many documents to list">List all</span>
+	<% end -%>
 <% else -%>
-	<span class="button_disabled" title="disabled due to too many documents to list">List all</span>
+	<span title="no document">List all</span>
 <% end -%>
 </h3>
 
@@ -107,7 +111,17 @@ Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span
  -->
 <% if user_signed_in? && @project.editable?(current_user) -%>
 	<%= render partial: 'annotations/upload_zip' -%>
+
+	<h3>
+	<%= t('views.docs.automatic_annotation') %>
+	<a href="http://www.pubannotation.org/docs/obtain-annotation/">
+	<%= image_tag("hint.png",
+    				:size => "16x16",
+      				:title => "click for help") %>
+	</a>
+	</h3>
 	<%= render partial: 'annotations/obtain_annotation' -%>
+
 	<%= render partial: 'delete_annotations' -%>
 <% end -%>
 </fieldset>

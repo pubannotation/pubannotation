@@ -79,8 +79,6 @@ class AnnotationsController < ApplicationController
   end
 
   def project_doc_annotations_index
-    puts "here <==============="
-
     begin
       @project = Project.find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
@@ -234,11 +232,17 @@ class AnnotationsController < ApplicationController
         raise ArgumentError, t('controllers.annotations.create.no_annotation')
       end
 
+      annotations[:sourcedb] = params[:sourcedb]
+      annotations[:sourceid] = params[:sourceid]
+      annotations[:divid]    = params[:divid]
+
       annotations = normalize_annotations!(annotations)
 
       options = {}
-      options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+      options[:mode] = :add if params[:mode] == 'add'
       options[:prefix] = params[:prefix] if params[:prefix].present?
+
+      annotations_collection = [annotations]
 
       if params[:divid].present?
         doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
@@ -258,8 +262,9 @@ class AnnotationsController < ApplicationController
         if divs.length == 1
           doc = divs[0]
         else
-          project.notices.create({method: "annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}"})
-          project.delay.store_annotations(annotations, divs, {mode: mode, delayed: true})
+          delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, {mode: mode})
+          Job.create({name:'Store annotations', project_id:project.id, delayed_job_id:delayed_job.id})
+
           result = {message: "The task, 'annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
           respond_to do |format|
             format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(project.name, params[:sourcedb], params[:sourceid])}
@@ -290,29 +295,33 @@ class AnnotationsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      doc = if params[:divid].present?
-        project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
-      else
-        project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      end
-      raise "There is no such document in the project." unless doc.present?
-
-      span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
-      doc.set_ascii_body if (params[:encoding] == 'ascii')
-      annotations = doc.hannotations(project, span)
-
       annotator = if params[:annotator].present?
         Annotator.find(params[:annotator])
-      else
+      elsif params[:url].present?
         Annotator.new({abbrev:params[:abbrev], url:params[:url], method:params[:method], params:{"text"=>"_text_", "sourcedb"=>"_sourcedb_", "sourceid"=>"_sourceid_"}})
+      else
+        raise ArgumentError, "Annotator URL is not specified"
+      end
+
+      docs = if params[:sourceid].present?
+        doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid].present? ? params[:divid] : 0)
+        [doc]
+      elsif params[:ids].present? && params[:sourcedb].present?
+        docspecs = params[:ids].split(/[ ,"':|\t\n\r]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
+        docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
+        docspecs.uniq!
+        docspecs.inject([]) {|col, docspec| col += project.add_doc(docspec[:sourcedb], docspec[:sourceid])}
+      else
+        project.docs
       end
 
       options = {}
-      options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
+      options[:mode] = :add if params[:mode] == 'add'
+      options[:encoding] = :ascii if params[:encoding] == 'ascii'
 
-      project.obtain_annotations(doc, annotator, options)
-      notice = "annotations were successfully obtained."
+      delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docs, annotator, options)
+      Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
+      notice = "The task 'Obtain annotations' is created."
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}
@@ -326,60 +335,28 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  def obtain_project_annotations
-    begin
-      @project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless @project.present?
-
-      annotator = if params[:annotator].present?
-        Annotator.find(params[:annotator])
-      else
-        Annotator.new({abbrev:params[:abbrev], url:params[:url], method:params[:method], params:{"text"=>"_text_", "sourcedb"=>"_sourcedb_", "sourceid"=>"_sourceid_"}})
-      end
-
-      options = {}
-      options[:mode] = :addition if params[:mode] == 'addition' || params[:mode] == 'add'
-
-      @project.notices.create({method: 'obtain annotations for all the project documents'})
-      project.obtain_annotations_all_docs(annotator, options)
-
-      respond_to do |format|
-        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'obtain annotations for all the project documents', is created."}
-        format.json {render status: :no_content} # TODO: need to be revised
-      end
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to :back, notice: e.message}
-        format.json {}
-      end
-    end
-  end
-
   def create_from_zip
     begin
-      project = if current_user.root? == true
-        Project.find_by_name(params[:project_id])
-      else
-        Project.editable(current_user).find_by_name(params[:project_id])
-      end
-
+      project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
       if params[:zipfile].present? && params[:zipfile].content_type == 'application/zip'
-        options = {mode: :addition} if params[:mode] == 'addition' || params[:mode] == 'add'
-        project.notices.create({method: 'annotations batch upload'})
-        messages = project.delay.create_annotations_from_zip(params[:zipfile].path, options)
-      end
+        options = {mode: :add} if params[:mode] == 'add'
 
-      respond_to do |format|
-        format.html {redirect_to :back, notice: notice}
-        format.json {}
+        files = get_files_from_zip(params[:zipfile].path)
+        annotations_collection = get_annotations_collection(files)
+
+        delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionJob.new(annotations_collection, project, options)
+        Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
+        notice = "The task, 'Upload annotations', is created."
       end
     rescue => e
-      respond_to do |format|
-        format.html {redirect_to :back, notice: e.message}
-        format.json {}
-      end
+      notice = e.message
+    end
+
+    respond_to do |format|
+      format.html {redirect_to :back, notice: notice}
+      format.json {}
     end
   end
 
@@ -405,8 +382,8 @@ class AnnotationsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      project.notices.create({method: "create annotations zip"})
-      project.delay.create_annotations_zip(params[:encoding])
+      delayed_job = Delayed::Job.enqueue CreateAnnotationsZipJob.new(project)
+      Job.create({name:'Create annotations zip', project_id:project.id, delayed_job_id:delayed_job.id})
     rescue => e
       flash[:notice] = notice
     end
@@ -479,21 +456,19 @@ class AnnotationsController < ApplicationController
     end
   end
 
+  # def create_project_annotations_rdf
+  #   begin
+  #     project = Project.editable(current_user).find_by_name(params[:project_id])
+  #     raise "There is no such project in your management." unless project.present?
 
-  def create_project_annotations_rdf
-    begin
-      project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
-
-      project.notices.create({method: "create annotations rdf"})
-      # project.delay.create_annotations_rdf(params[:encoding])
-      ttl = project.delay.create_annotations_rdf(params[:encoding])
-      # render :text => ttl, :content_type => 'application/x-turtle', :filename => project.name
-    rescue => e
-      flash[:notice] = notice
-    end
-    redirect_to :back
-  end
+  #     project.notices.create({method: "create annotations rdf"})
+  #     ttl = project.create_annotations_rdf(params[:encoding])
+  #     # render :text => ttl, :content_type => 'application/x-turtle', :filename => project.name
+  #   rescue => e
+  #     flash[:notice] = notice
+  #   end
+  #   redirect_to :back
+  # end
 
   def destroy
     begin
@@ -518,6 +493,65 @@ class AnnotationsController < ApplicationController
         format.json {render status: :no_content}
       end
     end
+  end
+
+  private
+
+  def get_files_from_zip(zip_file_path)
+    files = Zip::ZipFile.open(zip_file_path) do |zip|
+      zip.collect do |entry|
+        next if entry.ftype == :directory
+        next unless entry.name.end_with?('.json')
+        {name:entry.name, content:entry.get_input_stream.read}
+      end.delete_if{|e| e.nil?}
+    end
+    raise IOError, "No JSON file found" unless files.length > 0
+    files
+  end
+
+  def get_annotations_collection(files)
+    error_files = []
+    annotations_collection = files.inject([]) do |m, file|
+      begin
+        as = JSON.parse(file[:content], symbolize_names:true)
+        if as.is_a?(Array)
+          m + as
+        else
+          m + [as]
+        end
+      rescue => e
+        error_files << file[:name]
+        m
+      end
+    end
+    raise IOError, "Invalid JSON files: #{error_files.join(', ')}" unless error_files.empty?
+
+    error_anns = []
+    annotations_collection.each do |annotations|
+      if annotations[:text].present? && annotations[:sourcedb].present? && annotations[:sourceid].present?
+      else
+        error_anns << if annotations[:sourcedb].present? && annotations[:sourceid].present?
+          "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+        elsif annotations[:text].present?
+          annotations[:text][0..10] + "..."
+        else
+          '???'
+        end
+      end
+    end
+    raise IOError, "Invalid annotation found. An annotation has to include at least the four components, text, denotation, sourcedb, and sourceid: #{error_anns.join(', ')}" unless error_anns.empty?
+
+    error_anns = []
+    annotations_collection.each do |annotations|
+      begin
+        normalize_annotations!(annotations)
+      rescue => e
+        error_anns << "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+      end
+    end
+    raise IOError, "Invalid annotations: #{error_anns.join(', ')}" unless error_anns.empty?
+
+    annotations_collection
   end
 
 end

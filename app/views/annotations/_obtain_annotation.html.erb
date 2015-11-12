@@ -1,12 +1,3 @@
-<h2>
-<%= t('views.docs.automatic_annotation') %>
-<a href="http://www.pubannotation.org/docs/obtain-annotation/">
-<%= image_tag("hint.png",
-      :size => "16x16",
-      :title => "click for help") %>
-</a>
-</h2>
-
 <%= form_tag annotations_obtain_path, :method => "get" do %>
    	<table style="border-color:#FFFFFF; margin-left:20px">
    		<tr>
@@ -22,8 +13,8 @@
 
 		   	<table>
 				<tr>
-					<th title="Specify a short (unique) identifier of the annotations to avoid confliction with other existing annotations.">Identifier</th>
-			   		<td style="text-align:center">
+					<th title="Specify a short (unique) identifier of the annotations to avoid confliction with other existing annotations." style="width:6em">Identifier</th>
+			   		<td style="text-align:center; width:17em">
 						<%= text_field_tag :abbrev, nil, placeholder: "a short unique character string", size: 30 %>
 					</td>
 				</tr>
@@ -48,6 +39,27 @@
 			</table>
 			
 		</td></tr>
+
+		<% unless params[:sourceid].present? %>
+		<tr>
+			<th>
+				and, specify the documents<br>to be annotated<br>
+				* <i>leave blank to annotate<br>all the documents in the project</i>
+			</th>
+			<td>
+			  <table>
+			    <tr>
+				    <th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
+			    	<td style="width:17em"><%= select_tag(:sourcedb, options_for_select(sourcedb_options_for_select)) -%></td>
+				</tr>
+				<tr>
+				    <th><%= t('activerecord.attributes.doc.sourceid')%></th>
+			        <td><%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids')) %></td>
+			    </tr>
+			  </table>
+			</td>
+		</tr>
+		<% end %>
 
 		<tr>
 			<th>

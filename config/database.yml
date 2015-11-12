@@ -30,3 +30,4 @@ production:
   pool: 5
   username: your_username
   password: your_password
+  port: 5433
