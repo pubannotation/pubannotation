@@ -4,9 +4,9 @@
 	<% if @project.accessibility == 2 -%><span class = 'badge' title='Private project'>P</span><% end -%>
 	<% if @project.process_text == 'manual' -%><span class = 'badge' title = 'Manual annotation'>M</span><% end -%>
 	<% if @project.process_text == 'automatic' -%><span class = 'badge' title = 'Automatic annotation'>A</span><% end -%>
-	<% if @project.notices.present? && @project.editable?(current_user) -%>
+	<% if @project.jobs.present? && @project.editable?(current_user) -%>
 		<span class = 'tab-bar'>
-			<%= link_to_unless_current t('activerecord.models.notice'), project_tasks_path(@project.name), :class => 'tab inactive_tab' do
+			<%= link_to_unless_current 'tasks', project_jobs_path(@project.name), :class => 'tab inactive_tab' do
 		    	content_tag :span, t('activerecord.models.notice').pluralize, :class => 'tab active_tab'
 			end -%>
 		</span>

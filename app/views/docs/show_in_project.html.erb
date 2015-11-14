@@ -12,6 +12,14 @@
 <%= render :partial => 'annotations/title_with_options', locals: {postfix: postfix} -%>
 <%= render :partial => 'annotations/summary' -%>
 
-<%= render :partial => 'annotations/obtain_annotation' if user_signed_in? and current_user == @project.user-%>
+<h2>
+<%= t('views.docs.automatic_annotation') %>
+<a href="http://www.pubannotation.org/docs/obtain-annotation/">
+<%= image_tag("hint.png",
+      :size => "16x16",
+      :title => "click for help") %>
+</a>
+</h2>
+<%= render :partial => 'annotations/obtain_annotation' if user_signed_in? and @project.editable?(current_user) -%>
 
 <%= link_to t('views.shared.annotations'), annotations_url, class: 'button' if @project.blank? -%>

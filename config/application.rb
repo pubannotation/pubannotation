@@ -18,6 +18,7 @@ module Pubann
 
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
+    config.autoload_paths += %W(#{config.root}/app/jobs)
     
     # Rquire lib/
     require 'doc_sequencer_pubmed'

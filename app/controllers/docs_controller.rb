@@ -381,9 +381,10 @@ class DocsController < ApplicationController
       raise ArgumentError, "no valid document specification found." if docspecs.empty?
 
       docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
+      docspecs.uniq!
 
-      project.notices.create({method: 'add documents to the project'})
-      project.delay.add_docs2(docspecs)
+      delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project)
+      Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
     rescue => e
       messages << e.message
     end
@@ -460,31 +461,14 @@ class DocsController < ApplicationController
     redirect_to :back
   end
 
-  def project_delete_all_docs
-    begin
-      @project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless @project.present?
-
-      @project.notices.create({method: 'delete all the documents in the project'})
-      @project.delay.delete_all_docs(current_user)
-
-      respond_to do |format|
-        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'delete all the documents in the project', is created."}
-        format.json {render status: :no_content}
-      end
-    end
-  end
-
-  def index_rdf
+  def store_span_rdf
     begin
       raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-      divs = params[:sourceid].present? ? Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]) : nil
-      raise ArgumentError, "There is no such document." if params[:sourceid].present? && !divs.present?
-
       system = Project.find_by_name('system-maintenance')
-      system.notices.create({method: "index docs rdf"})
-      system.delay.index_docs_rdf(divs)
+
+      delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, Pubann::Application.config.rdfizer_spans)
+      Job.create({name:"Store RDFized spans for selected projects", project_id:system.id, delayed_job_id:delayed_job.id})
     rescue => e
       flash[:notice] = e.message
     end

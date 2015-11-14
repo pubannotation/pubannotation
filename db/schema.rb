@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151006142218) do
+ActiveRecord::Schema.define(:version => 20151108135607) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -143,6 +143,32 @@ ActiveRecord::Schema.define(:version => 20151006142218) do
 
   add_index "instances", ["obj_id"], :name => "index_instances_on_obj_id"
   add_index "instances", ["project_id"], :name => "index_instances_on_project_id"
+
+  create_table "jobs", :force => true do |t|
+    t.integer  "project_id"
+    t.integer  "delayed_job_id"
+    t.integer  "num_items"
+    t.integer  "num_dones"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+    t.string   "name"
+    t.datetime "begun_at"
+    t.datetime "ended_at"
+    t.datetime "registered_at"
+  end
+
+  add_index "jobs", ["delayed_job_id"], :name => "index_jobs_on_delayed_job_id"
+  add_index "jobs", ["project_id"], :name => "index_jobs_on_project_id"
+
+  create_table "messages", :force => true do |t|
+    t.text     "body"
+    t.integer  "job_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+    t.string   "item"
+  end
+
+  add_index "messages", ["job_id"], :name => "index_messages_on_job_id"
 
   create_table "modifications", :force => true do |t|
     t.string   "hid"

@@ -83,6 +83,12 @@ module AnnotationsHelper
     raise ArgumentError, "annotations must be a hash." unless annotations.class == Hash
     raise ArgumentError, "annotations must include a 'text'"  unless annotations[:text].present?
 
+    if annotations[:sourcedb].present?
+      annotations[:sourcedb] = 'PubMed' if annotations[:sourcedb].downcase == 'pubmed'
+      annotations[:sourcedb] = 'PMC' if annotations[:sourcedb].downcase == 'pmc'
+      annotations[:sourcedb] = 'FirstAuthor' if annotations[:sourcedb].downcase == 'firstauthor'
+    end
+
     if annotations[:denotations].present?
       raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
       annotations[:denotations].each{|d| d = d.symbolize_keys}
@@ -316,10 +322,10 @@ module AnnotationsHelper
     end
   end
 
-  def get_doc_info (doc_uri)
-    sourcedb = (doc_uri =~ %r|/sourcedb/([^/]+)|)? $1 : nil
-    sourceid = (doc_uri =~ %r|/sourceid/([^/]+)|)? $1 : nil
-    divid    = (doc_uri =~ %r|/divs/([^/]+)|)? $1 : nil
+  def get_doc_info (annotations)
+    sourcedb = annotations[:sourcedb]
+    sourceid = annotations[:sourceid]
+    divid    = annotations[:divid]
     if divid.present?
       doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, divid.to_i)
       section   = doc.section.to_s if doc.present?
