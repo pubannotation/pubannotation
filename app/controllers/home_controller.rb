@@ -12,7 +12,7 @@ class HomeController < ApplicationController
       end
     end
     @projects_number = Project.accessible(current_user).length
-    @projects_top = Project.accessible(current_user).top
+    @projects_top = Project.accessible(current_user).top(current_user)
   end
 
   def index_projects_annotations_rdf

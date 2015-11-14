@@ -268,6 +268,7 @@ en:
         pmids: PubMed IDs
         username: sub-maintainers name
         associate_project_name: Enter associate project name.
+        project_name: Enter project name.
       doc:
         annotation_server: URL of annotation server
         ids: space-or-comma-separated IDs
@@ -421,6 +422,7 @@ en:
       docs: docs
     projects:
       project: project
+      my_projects: my projecs
       try_textae: "is the default, but you can use any other RESTful editor." 
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this project</span></span>"
       properties: properties
@@ -452,6 +454,8 @@ en:
       annotations_batch_upload:
         result: "Annotationos batch upload finished. %{created_at}"
       properties: properties
+      search_projects:
+        title: projects search
     sprojects:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:

@@ -16,6 +16,9 @@
       <!--
       <th class="projects_header_denotations_count"><%#= sortable(Project, 'denotations_count', '#Denotations') -%></th>
       -->
+      <% if user_signed_in? -%>
+        <th style="width: 2.5em" title="<%= t('views.projects.my_projects') -%>"><%= sortable(Project, 'my_project', content_tag(:i, nil, class: 'fa fa-star')) -%></th>
+      <% end -%>
       <th class="projects_header_denotations_count"><%= sortable(Project, 'annotations_count', t('views.shared.annotations_count')) -%></th>
       <th class="projects_header_author"><%= sortable(Project, 'author', t('activerecord.attributes.project.author')) %></th>
       <th class="projects_header_user"><%= sortable(Project, 'users.username', t('activerecord.attributes.project.maintainer')) -%></th>
@@ -33,6 +36,9 @@
         <%= link_to_project(project) -%>
       </td>
       <td title="<%= project.description -%>"><%= project.description %></td>
+      <% if user_signed_in? -%>
+        <td style="text-align:center"><%= is_my_project?(project, current_user)  -%></td>
+      <% end -%>
       <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
       <td><%= project.author %></td>
       <td><%= project.user.username %></td>

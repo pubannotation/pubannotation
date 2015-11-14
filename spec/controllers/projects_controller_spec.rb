@@ -86,26 +86,26 @@ describe ProjectsController do
         @paginate_projects = double(:projects)
       end
 
-      context 'when parans[:search_projects] blank' do
+      context 'when params[:text] present' do
         before do
-          @params = {name: 'name', description: 'description', author: 'author', user: 'user'}
+          @text = 'text'
           @projects_stub = double(:projects)
           Project.stub_chain(:accessible, :includes).and_return(@projects_stub)
-          @projects_stub.stub_chain(:where, :group, :sort_by_params, :paginate).and_return(@paginate_projects)
+          @projects_stub.stub_chain(:where, :sort_by_params, :paginate).and_return(@paginate_projects)
         end
 
         it 'should search projects with params conditions' do
-          @projects_stub.should_receive(:where).with(["name like ? AND description like ? AND author like ? AND users.username like ?", "%#{@params[:name]}%", "%#{@params[:description]}%", "%#{@params[:author]}%", "%#{@params[:user]}%"])
-          get :index, search_projects: true, name: @params[:name], description: @params[:description], author: @params[:author], user: @params[:user]
+          @projects_stub.should_receive(:where).with(["LOWER( name ) like ? OR LOWER( description ) like ? OR LOWER( author ) like ? OR LOWER( users.username ) like ?", "%#{@text}%", "%#{@text}%", "%#{@text}%", "%#{@text}%"])
+          get :index, text: @text
         end
 
         it 'should set accessible, includes(:user), where(conditions), group sort_by_params and paginate as @projects' do
-          get :index, search_projects: true, name: @params[:name], description: @params[:description], author: @params[:author], user: @params[:user]
+          get :index, text: @text
           assigns[:projects].should eql(@paginate_projects) 
         end
       end
 
-      context 'when parans[:search_projects] blank' do
+      context 'when params[:text] blank' do
         before do
           @sort_by_params = 'sort_by_params'
           Project.stub_chain(:accessible, :sort_by_params, :paginate).and_return(@paginate_projects)

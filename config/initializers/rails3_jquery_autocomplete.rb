@@ -30,6 +30,15 @@ module Rails3JQueryAutocomplete
   
   module Orm
     module ActiveRecord
+      def get_autocomplete_order(method, options, model)
+        case model.to_s
+        when 'Project'
+          'name ASC'
+        else
+          'id ASC'
+        end
+      end
+
       def get_autocomplete_items(parameters)
         model   = parameters[:model]
         term    = parameters[:term]

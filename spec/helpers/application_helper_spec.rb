@@ -107,7 +107,6 @@ describe ApplicationHelper do
 
   describe 'sort_order' do
     before do
-      @sort_key = 'sort_key'
       @case_insensitive_array = [@sort_key]
       # stub_const('StubModel::CaseInsensitiveArray', @case_insensitive_array)
       @default_sort_key_1 = 'ASC'
@@ -121,18 +120,44 @@ describe ApplicationHelper do
     context 'when param[:sort_key] && params[:sort_direction] present' do
       before do
         @sort_direction = 'DESC'
-        @params = {sort_key: @sort_key, sort_direction: @sort_direction}
-        helper.stub(:params).and_return(@params)
         @model = StubModel
       end
 
-      it 'should call lower_sort_key with model and params[:sort_key]' do
-        helper.should_receive(:lower_sort_key).with(@model, @sort_key)
-        helper.sort_order(@model)
+      context 'when param[:sort_key] == my_project' do
+        before do
+          @sort_key = 'my_project'
+          @params = {sort_key: @sort_key, sort_direction: @sort_direction}
+          helper.stub(:params).and_return(@params)
+          @current_user = FactoryGirl.create(:user)
+          helper.stub(:current_user).and_return(@current_user)
+          Project.stub(:sort_by_my_projects).and_return(@current_user.id)
+        end
+
+        it 'should call lower_sort_key with model and params[:sort_key]' do
+          helper.should_receive(:lower_sort_key).with(@model, @current_user.id)
+          helper.sort_order(@model)
+        end
+
+        it 'should return lower_sort_key as sort_key and params[:direction] as sort_direction' do
+          expect(helper.sort_order(StubModel)).to eql([[@lower_sort_key, @sort_direction]])
+        end
       end
 
-      it 'should return lower_sort_key as sort_key and params[:direction] as sort_direction' do
-        expect(helper.sort_order(StubModel)).to eql([[@lower_sort_key, @sort_direction]])
+      context 'when param[:sort_key] != my_project' do
+        before do
+          @sort_key = 'sort_key'
+          @params = {sort_key: @sort_key, sort_direction: @sort_direction}
+          helper.stub(:params).and_return(@params)
+        end
+
+        it 'should call lower_sort_key with model and params[:sort_key]' do
+          helper.should_receive(:lower_sort_key).with(@model, @sort_key)
+          helper.sort_order(@model)
+        end
+
+        it 'should return lower_sort_key as sort_key and params[:direction] as sort_direction' do
+          expect(helper.sort_order(StubModel)).to eql([[@lower_sort_key, @sort_direction]])
+        end
       end
     end
 
@@ -208,10 +233,10 @@ describe ApplicationHelper do
                 helper.stub(:sort_order).and_return([[@lower_sort_key, @sort_direction]])
               end
 
-              context 'when params[:search_projects] is true' do
+              context 'when params[:text] is present' do
                 context 'when sort params present' do
                   before do
-                    helper.stub(:params).and_return({search_projects: true})
+                    helper.stub(:params).and_return({text: 'text'})
                     @request_full_path = '?name=&description=&author=&user=&commit=search'
                     helper.stub_chain(:request, :fullpath).and_return(@request_full_path)
                   end
@@ -224,7 +249,7 @@ describe ApplicationHelper do
 
                 context 'when sort params is nil' do
                   before do
-                    helper.stub(:params).and_return({search_projects: true})
+                    helper.stub(:params).and_return({text: 'text'})
                   end
 
                   it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
@@ -234,7 +259,7 @@ describe ApplicationHelper do
                 end
               end
 
-              context 'when params[:search_projects] is nil' do
+              context 'when params[:text] is nil' do
                 it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
                   helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'DESC'}, {class: "sortable-#{@sort_direction}"})
                   helper.sortable(@model, @sort_key, @title)
@@ -248,10 +273,10 @@ describe ApplicationHelper do
                 helper.stub(:sort_order).and_return([[@lower_sort_key, @sort_direction]])
               end
 
-              context 'when params[:search_projects] is true' do
+              context 'when params[:text] is prensent' do
                 context 'when sort params present' do
                   before do
-                    helper.stub(:params).and_return({search_projects: true})
+                    helper.stub(:params).and_return({text: 'text'})
                     @request_full_path = '?name=&description=&author=&user=&commit=search'
                     helper.stub_chain(:request, :fullpath).and_return(@request_full_path)
                   end
@@ -264,7 +289,7 @@ describe ApplicationHelper do
 
                 context 'when sort params is nil' do
                   before do
-                    helper.stub(:params).and_return({search_projects: true})
+                    helper.stub(:params).and_return({text: 'text'})
                   end
 
                   it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
@@ -274,7 +299,7 @@ describe ApplicationHelper do
                 end
               end
 
-              context 'when params[:search_projects] is nil' do
+              context 'when params[:text] is nil' do
                 it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
                   helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'ASC'}, {class: "sortable-#{@sort_direction}"})
                   helper.sortable(@model, @sort_key, @title)
@@ -290,10 +315,10 @@ describe ApplicationHelper do
                 helper.stub(:sort_order).and_return([['key', @sort_direction]])
               end
 
-              context 'when params[:search_projects] is true' do
+              context 'when params[:text] is prensent' do
                 context 'when sort params present' do
                   before do
-                    helper.stub(:params).and_return({search_projects: true})
+                    helper.stub(:params).and_return({text: 'text'})
                     @request_full_path = '?name=&description=&author=&user=&commit=search'
                     helper.stub_chain(:request, :fullpath).and_return(@request_full_path)
                   end
@@ -306,7 +331,7 @@ describe ApplicationHelper do
 
                 context 'when sort params is nil' do
                   before do
-                    helper.stub(:params).and_return({search_projects: true})
+                    helper.stub(:params).and_return({text: 'text'})
                   end
 
                   it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
@@ -316,7 +341,7 @@ describe ApplicationHelper do
                 end
               end
 
-              context 'when params[:search_projects] is nil' do
+              context 'when params[:text] is nil' do
                 it 'should call link_to with sort_key: lower_sort_key, sort_direction: current_direction, class: sortable-default direction(DESC)' do
                   helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: @sort_direction}, {class: "sortable-DESC"})
                   helper.sortable(@model, @sort_key, @title)
@@ -330,10 +355,10 @@ describe ApplicationHelper do
                 helper.stub(:sort_order).and_return([['key', @sort_direction]])
               end
 
-              context 'when params[:search_projects] is true' do
+              context 'when params[:text] is prensent' do
                 context 'when sort params present' do
                   before do
-                    helper.stub(:params).and_return({search_projects: true})
+                    helper.stub(:params).and_return({text: 'text'})
                     @request_full_path = '?name=&description=&author=&user=&commit=search'
                     helper.stub_chain(:request, :fullpath).and_return(@request_full_path)
                   end
@@ -346,7 +371,7 @@ describe ApplicationHelper do
 
                 context 'when sort params is nil' do
                   before do
-                    helper.stub(:params).and_return({search_projects: true})
+                    helper.stub(:params).and_return({text: 'text'})
                   end
 
                   it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
@@ -356,7 +381,7 @@ describe ApplicationHelper do
                 end
               end
 
-              context 'when params[:search_projects] is nil' do
+              context 'when params[:text] is nil' do
                 it 'should call link_to with sort_key: lower_sort_key, sort_direction: another direction, class: sortable-current_direction' do
                   helper.should_receive(:link_to).with(@title, {sort_key: @lower_sort_key, sort_direction: 'ASC'}, {class: "sortable-DESC"})
                   helper.sortable(@model, @sort_key, @title)
