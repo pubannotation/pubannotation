@@ -5,6 +5,11 @@ class UsersController < ApplicationController
     @users = User.all.paginate(:page => params[:page]) 
   end
 
+  def show
+    @user = User.find_by_username(params[:name])
+    @projects = Project.mine(@user)
+  end
+
   def autocomplete_username
     if params[:project_id].blank?
       # when search with new project
