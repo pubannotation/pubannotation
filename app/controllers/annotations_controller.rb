@@ -301,7 +301,7 @@ class AnnotationsController < ApplicationController
         Annotator.new({abbrev:params[:abbrev], url:params[:url], method:params[:method], params:{"text"=>"_text_", "sourcedb"=>"_sourcedb_", "sourceid"=>"_sourceid_"}})
       else
         raise ArgumentError, "Annotator URL is not specified"
-      end
+      end.as_json
 
       docs = if params[:sourceid].present?
         doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid].present? ? params[:divid] : 0)
