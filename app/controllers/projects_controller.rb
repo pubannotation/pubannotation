@@ -169,6 +169,34 @@ class ProjectsController < ApplicationController
     redirect_to project_path('system-maintenance')
   end
 
+  def clean
+    begin
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+
+      projects = if params[:id].present?
+        project = Project.find_by_name(params[:id])
+        raise ArgumentError, "There is no such project." unless project.present?
+        [project]
+      else
+        Project.all
+      end
+
+      system = Project.find_by_name('system-maintenance')
+
+      projects.each do |project|
+        project.clean
+      end
+
+      # projects.each do |project|
+      #   delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name)
+      #   Job.create({name:"Store REDized annotations - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
+      # end
+    # rescue => e
+    #   flash[:notice] = e.message
+    end
+    redirect_to project_path('system-maintenance')
+  end
+
   def delete_all_docs
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
