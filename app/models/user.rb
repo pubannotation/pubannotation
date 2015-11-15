@@ -16,6 +16,7 @@ class User < ActiveRecord::Base
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
   validates_uniqueness_of :username
+  validates_format_of :username, :with => /\A[a-z0-9-_]+\z/i
   validate :check_invalid_character
   validate :username_changed, on: :update
 
