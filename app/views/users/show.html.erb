@@ -1,0 +1,46 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > users
+  > <%= @user.username %>
+<% end %>
+
+<h1>
+User '<%= @user.username %>'
+<% if @user == current_user %>
+  <%= link_to 'Edit', edit_user_registration_path, :class => :button %>
+<% end %>
+</h1>
+<% if @user == current_user %>
+<table>
+<tr>
+<th>E-mail</th>
+<td><%= @user.email -%></td>
+</tr>
+<tr>
+<th>Last login</th>
+<td><%= @user.last_sign_in_at -%></td>
+</tr>
+</table>
+<% end %>
+
+<h2>Projects</h2>
+<table>
+<tr>
+  <th class="projects_header_name"><%= t('activerecord.attributes.project.name') %></th>
+  <th><%= t('activerecord.attributes.project.description') %></th>
+  <th class="projects_header_denotations_count"><%= t('views.shared.annotations_count') -%></th>
+  <th class="projects_header_author"><%= t('activerecord.attributes.project.author') %></th>
+  <th style="width:8em"><%= t('activerecord.attributes.project.updated_at') -%></th>
+  <th style="width:8em"><%= t('activerecord.attributes.project.status') -%></th>
+</tr>
+<% @projects.each do |project| %>
+  <tr>
+  <td><%= link_to_project(project) -%></td>
+  <td title="<%= project.description -%>"><%= project.description %></td>
+  <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
+  <td><%= project.author %></td>
+  <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
+  <td><%= project.status_text -%></td>
+  </tr>
+<% end %>
+</table>

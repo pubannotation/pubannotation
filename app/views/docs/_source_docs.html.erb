@@ -1,4 +1,4 @@
-<h2>
+<h1>
 	<% if params[:action] == 'search' -%>
 		Document search results
 	<% else -%>
@@ -11,7 +11,7 @@
 			<%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
 		</span>
 	<% end -%>
-</h2>
+</h1>
 
 <% if @source_docs.present? -%>
   <table class="full">

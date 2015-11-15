@@ -1,42 +1,15 @@
-<% if projects.blank? %>
-  <p>none</p>
-<% else %>
-  <div style="float:right">
-    <%= total_number(projects, 'projects') -%>
-  </div>
-
-  <table class="full">
-    <tr>
-      <% if @annotations_projects_check -%>
-        <th style="width:1.7em"></th>
-      <% end -%>
-      <th class="projects_header_name"><%= sortable(Project, 'name', t('activerecord.attributes.project.name')) %></th>
-      <th><%= t('activerecord.attributes.project.description') %></th>
-      <th class="projects_header_denotations_count"><%= sortable(Project, 'denotations_count', '#Denotations') -%></th>
-      <th class="projects_header_author"><%= sortable(Project, 'author', t('activerecord.attributes.project.author')) %></th>
-      <th class="projects_header_user"><%= sortable(Project, 'users.username', t('activerecord.attributes.project.maintainer')) -%></th>
-      <th style="width:8em"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
-      <th style="width:8em"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
-    </tr>
-
-  <% projects.each do |project| %>
-    <% project_path = project_path(project.name) -%>
-    <tr>
-      <% if @annotations_projects_check -%>
-        <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotations_#{project.id}", class: 'annotations_projects_check'} -%></td>
-      <% end -%>
-      <td>
-        <%= link_to_project(project) -%>
-      </td>
-      <td title="<%= project.description -%>"><%= project.description %></td>
-      <td style="text-align:right"><%= project.get_denotations_count(@doc, @span) -%></td>
-      <td><%= project.author %></td>
-      <td><%= project.user.username %></td>
-      <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
-      <td><%= project.status_text -%></td>
-    </tr>
-  <% end %>
-  </table>
-
-	<%= will_paginate @projects if @projects.respond_to?('total_pages') -%>
-<% end %>
+<% project_path = project_path(project.name) -%>
+<tr>
+  <% if @annotations_projects_check -%>
+    <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotations_#{project.id}", class: 'annotations_projects_check'} -%></td>
+  <% end -%>
+  <td>
+    <%= link_to_project(project) -%>
+  </td>
+  <td title="<%= project.description -%>"><%= project.description %></td>
+  <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
+  <td><%= project.author %></td>
+  <td><%= link_to project.user.username, show_user_path(project.user.username) %></td>
+  <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
+  <td><%= project.status_text -%></td>
+</tr>

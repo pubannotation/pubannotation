@@ -1,5 +1,6 @@
 <%= render :partial => 'docs/path'-%>
-<%= render :partial => 'projects/title_and_links' -%>
+<%= render :partial => 'projects/titlebar' -%>
+<%= render :partial => 'docs/titlebar' -%>
 <%= render :partial => 'docs/content'-%>
 
 <%
@@ -9,9 +10,10 @@
 		t('views.annotations.to_this_document')
 	end
 -%>
-<%= render :partial => 'annotations/title_with_options', locals: {postfix: postfix} -%>
+<%= render :partial => 'annotations/titlebar' -%>
 <%= render :partial => 'annotations/summary' -%>
 
+<% if user_signed_in? and @project.editable?(current_user) %>
 <h2>
 <%= t('views.docs.automatic_annotation') %>
 <a href="http://www.pubannotation.org/docs/obtain-annotation/">
@@ -20,6 +22,7 @@
       :title => "click for help") %>
 </a>
 </h2>
-<%= render :partial => 'annotations/obtain_annotation' if user_signed_in? and @project.editable?(current_user) -%>
+<%= render :partial => 'annotations/obtain_annotation' -%>
+<% end %>
 
 <%= link_to t('views.shared.annotations'), annotations_url, class: 'button' if @project.blank? -%>

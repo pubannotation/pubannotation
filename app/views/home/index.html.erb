@@ -25,7 +25,15 @@
 <h1>
 	<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
 	<span class='info'>(<%= @projects_number -%>)</span>
-	<%= link_to t('views.shared.full_list'), projects_path, {class: 'button'} -%>
+	<span class='control'><%= render partial: 'projects/search_all_form' -%></span>
+	<%= link_to t('views.shared.show_all'), projects_path, {:class=> 'control button'} -%>
 </h1>
-<%= render partial: 'projects/search_all_form' -%>
-<%= render :partial => "projects/list", :locals => {:doc => nil, :projects => @projects_top, :scope => nil } %>
+
+<div style="display:inline-block; margin-right:5px">
+<h3>With most annotations</h3>
+<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_annotations_count, :scope => nil } %>
+</div>
+<div style="display:inline-block">
+<h3>Recently updated</h3>
+<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_recent, :scope => nil } %>
+</div>

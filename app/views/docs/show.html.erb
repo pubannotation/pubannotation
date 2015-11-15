@@ -1,21 +1,17 @@
 <%= render :partial => 'docs/path'-%>
+<%= render :partial => 'docs/titlebar' -%>
 <%= render :partial => 'docs/content'-%>
 
 <h2>
+	Projects
+	<span class='meta'>
 	<% if @span.present? -%>
-		<%= t('views.spans.projects_that_annotates_this').html_safe %>
+		that have annotations to this span
 	<% else %>
-		<%= t('views.docs.projects_that_annotates_this').html_safe %>
+		that include this document
 	<% end %>
+	</span>
 </h2>
 <%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil} %>
-
-
-<%
-	postfix = if @span.present?
-		t('views.annotations.to_this_span')
-	else
-		t('views.annotations.to_this_document')
-	end
--%>
-<%= render :partial => 'annotations/title_with_options', locals: {postfix: postfix} -%>
+<%= render :partial => 'annotations/titlebar' -%>
+<%= render :partial => 'annotations/summary' -%>

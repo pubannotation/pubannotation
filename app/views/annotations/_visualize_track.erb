@@ -1,4 +1,4 @@
-<h2><%= visualize_track[:project] -%></h2>
+<h3><%= visualize_track[:project] -%></h3>
 
 <%
 	annotation_url = url_for(only_path:false)
@@ -6,4 +6,4 @@
 	annotation_url.sub!('/visualize', '.json')
 -%>
 
-<%= render partial: 'shared/textae_div', locals: {target_json_url: annotation_url} if annotations_url.present? -%>
+<%= render partial: 'shared/textae_div1', locals: {target_json_url: annotation_url} if annotations_url.present? -%>

@@ -1,0 +1,22 @@
+<% if projects.blank? %>
+  <p>none</p>
+<% else %>
+  <table>
+    <tr>
+      <th class="projects_header_name"><%= sortable(Project, 'name', t('activerecord.attributes.project.name')) %></th>
+      <th class="projects_header_annotations_count"><%= sortable(Project, 'annotations_count', t('views.shared.annotations_count')) -%></th>
+      <th style="width:6em"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
+      <th style="width:6em"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
+    </tr>
+
+    <% projects.each do |project| %>
+      <% project_path = project_path(project.name) -%>
+      <tr>
+        <td><%= link_to_project(project) -%></td>
+        <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
+        <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
+        <td><%= project.status_text -%></td>
+      </tr>
+    <% end %>
+  </table>
+<% end %>

@@ -1,11 +1,6 @@
 <% if projects.blank? %>
   <p>none</p>
 <% else %>
-<!--
-  <div style="float:right">
-    <%= total_number(projects, 'projects') -%>
-  </div>
--->
   <table class="full">
     <tr>
       <% if @annotations_projects_check -%>
@@ -13,12 +8,6 @@
       <% end -%>
       <th class="projects_header_name"><%= sortable(Project, 'name', t('activerecord.attributes.project.name')) %></th>
       <th><%= t('activerecord.attributes.project.description') %></th>
-      <!--
-      <th class="projects_header_denotations_count"><%#= sortable(Project, 'denotations_count', '#Denotations') -%></th>
-      -->
-      <% if user_signed_in? -%>
-        <th style="width: 2.5em" title="<%= t('views.projects.my_projects') -%>"><%= sortable(Project, 'my_project', content_tag(:i, nil, class: 'fa fa-star')) -%></th>
-      <% end -%>
       <th class="projects_header_denotations_count"><%= sortable(Project, 'annotations_count', t('views.shared.annotations_count')) -%></th>
       <th class="projects_header_author"><%= sortable(Project, 'author', t('activerecord.attributes.project.author')) %></th>
       <th class="projects_header_user"><%= sortable(Project, 'users.username', t('activerecord.attributes.project.maintainer')) -%></th>
@@ -26,27 +15,9 @@
       <th style="width:8em"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
     </tr>
 
-  <% projects.each do |project| %>
-    <% project_path = project_path(project.name) -%>
-    <tr>
-      <% if @annotations_projects_check -%>
-        <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotations_#{project.id}", class: 'annotations_projects_check'} -%></td>
-      <% end -%>
-      <td>
-        <%= link_to_project(project) -%>
-      </td>
-      <td title="<%= project.description -%>"><%= project.description %></td>
-      <% if user_signed_in? -%>
-        <td style="text-align:center"><%= is_my_project?(project, current_user)  -%></td>
-      <% end -%>
-      <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
-      <td><%= project.author %></td>
-      <td><%= project.user.username %></td>
-      <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
-      <td><%= project.status_text -%></td>
-    </tr>
-  <% end %>
+
+    <%= render partial: 'projects/project', collection: projects -%>
   </table>
 
-	<%= will_paginate @projects if @projects.respond_to?('total_pages') -%>
+	<%= will_paginate projects if projects.respond_to?('total_pages') -%>
 <% end %>

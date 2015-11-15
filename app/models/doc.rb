@@ -387,7 +387,10 @@ class Doc < ActiveRecord::Base
     annotations[:divid] = self.serial if self.has_divs?
 
     annotations[:text] = if span.present?
-      self.body[span[:begin]...span[:end]]
+      context_size ||= 0
+      b = (span[:begin] - context_size) >= 0 ? span[:begin] - context_size : 0
+      e = (span[:end] + context_size) <= self.body.length ? span[:end] + context_size : self.body.length
+      self.body[b...e]
     else
       self.body
     end

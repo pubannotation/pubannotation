@@ -1,0 +1,42 @@
+<h2>
+<%= t('views.shared.annotation').pluralize.capitalize.html_safe %>
+
+<span class='tab-bar'>
+<!--	<span class='label'>UTF</span>-->
+	<%= link_to_unless_current 'VIEW', annotations_url, :class => 'tab' -%>
+	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab' -%>
+	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab' if !@project.present? -%>
+	<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab' if @project.present? -%>
+
+</span>
+
+<!--
+<span class='tab-bar'>
+	<span class='label'>ASCII</span>
+	<%= link_to_unless_current 'VIEW', annotations_url + '?encoding=ascii', :class => 'tab' -%>
+	<%= link_to_unless_current 'JSON', annotations_url + '.json?encoding=ascii', :class => 'tab' -%>
+	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize?encoding=ascii', :class => 'tab' if @span.present? -%>
+</span>
+-->
+
+
+<% if @project.present? && @project.user == current_user && @annotations[:denotations].present? && params[:sourceid].present? -%>
+	<% destroy_path = if params[:divid].present?
+			if params[:begin].present?
+				destroy_annotations_in_span_project_sourcedb_sourceid_divs_docs
+			else
+				destroy_annotations_project_sourcedb_sourceid_divs_docs_path
+			end
+		else
+			if params[:begin].present?
+				destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
+			else
+				destroy_annotations_project_sourcedb_sourceid_docs_path
+			end
+		end
+	-%>
+	<%= form_tag(destroy_path, method: :delete, style: 'display:inline') do%>
+		<%= submit_tag t('views.shared.delete_all'), :confirm => t('views.annotations.index.confirm_destroy_all', :class => 'control button') %>
+	<% end %>
+<% end %>
+</h2>

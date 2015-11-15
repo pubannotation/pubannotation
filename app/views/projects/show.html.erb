@@ -16,7 +16,7 @@
  	> <%= @project.name %>
 <% end %>
 
-<%= render :partial => 'title_and_links' -%>
+<%= render :partial => 'titlebar' -%>
 
 <fieldset class="pane description">
 <legend>Description</legend>
@@ -70,7 +70,7 @@
 <h3>
 <% if total_number(@docs) > 0 -%>
 	<% if total_number(@docs) < 10000 -%>
-		<%= link_to 'List all >', project_docs_path(@project.name) -%>
+		<%= link_to 'Show all >', project_docs_path(@project.name) -%>
 	<% else -%>
 		<span title="disabled due to too many documents to list">List all</span>
 	<% end -%>

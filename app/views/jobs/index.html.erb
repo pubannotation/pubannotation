@@ -17,10 +17,10 @@
   > <%= t('activerecord.models.notice') -%>
 <% end %>
 
-<%= render :partial => 'projects/title_and_links' -%>
+<%= render :partial => 'projects/titlebar' -%>
 
 <h1>Background tasks
-<%= link_to 'Clear finished jobs', project_clear_jobs_path(@project.name), method: :delete, :class => :button %>
+<%= link_to 'clear finished tasks', project_clear_jobs_path(@project.name), method: :delete, :class => 'control button' %>
 </h1>
 
 <table>
