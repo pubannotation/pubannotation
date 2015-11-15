@@ -120,8 +120,9 @@ class SpansController < ApplicationController
         @span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 
         @doc.set_ascii_body if params[:encoding] == 'ascii'
-        @annotations = @doc.hannotations(nil, @span)
         @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
+
+        @annotations = @doc.hannotations(nil, @span)
 
         @project_annotations_index = if @annotations[:denotations].present?
           {@annotations[:project] => @annotations}
@@ -132,8 +133,14 @@ class SpansController < ApplicationController
         end
         sort_order = sort_order(Project)
         @projects = Project.where('name IN (?)', @project_annotations_index.keys).sort_by_params(sort_order)
-        @annotations_projects_check = true
+        # @annotations_projects_check = true
         @annotations_path = "#{url_for(:only_path => true)}/annotations"
+
+        if @annotations[:tracks].present?
+          @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
+          @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
+          @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
+        end
 
         respond_to do |format|
           format.html {render 'docs/show'}
@@ -173,7 +180,7 @@ class SpansController < ApplicationController
       sort_order = sort_order(Project)
       @projects = Project.where('name IN (?)', @project_annotations_index.keys).sort_by_params(sort_order)
 
-      @annotations_projects_check = true
+      # @annotations_projects_check = true
       @annotations_path = "#{url_for(:only_path => true)}/annotations"
 
       respond_to do |format|
@@ -209,6 +216,9 @@ class SpansController < ApplicationController
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
         @annotations = @doc.hannotations(@project, @span)
         @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
+
+        @annotators = Annotator.all
+        @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
 
         respond_to do |format|
           format.html {render 'docs/show_in_project'}
