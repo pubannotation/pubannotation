@@ -39,7 +39,8 @@ class Project < ActiveRecord::Base
   has_many :jobs, :dependent => :destroy
   has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
-  
+  validates_format_of :name, :with => /\A[a-z0-9-_]+\z/i
+
   default_scope where(:type => nil)
 
   scope :for_index, where('accessibility = 1 AND status < 3')
@@ -66,15 +67,18 @@ class Project < ActiveRecord::Base
     end
   }
 
-  # scope for home#index
-  scope :top, lambda {|user|
-    if user
-      user_id = user.id
-    else
-      user_id = 0
+  scope :mine, -> (current_user) {
+    if current_user.present?
+      includes(:associate_maintainers).where('projects.user_id = ? OR associate_maintainers.user_id = ?', current_user.id, current_user.id)
     end
-    order('status ASC').order("#{sort_by_my_projects(user_id)} DESC").order('denotations_count DESC').order('projects.updated_at DESC').limit(10)
   }
+
+  # scope for home#index
+  scope :top_annotations_count,
+    order('annotations_count DESC').order('projects.updated_at DESC').order('status ASC').limit(10)
+
+  scope :top_recent,
+    order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
 
   scope :not_id_in, lambda{|project_ids|
     where('projects.id NOT IN (?)', project_ids)
@@ -908,17 +912,23 @@ class Project < ActiveRecord::Base
   def obtain_annotations(doc, annotator, options = nil)
     annotations = inquire_annotations(doc, annotator, options)
     normalize_annotations!(annotations)
+
+    prefix = annotator['abbrev']
+    annotations[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if annotations[:denotations].present?
+    annotations[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:relations].present?
+    annotations[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:modifications].present?
+
     result = self.save_annotations(annotations, doc, options)
   end
 
   def inquire_annotations(doc, annotator, options = nil)
-    url = annotator[:url]
+    url = annotator['url']
       .gsub('_text_', doc.body)
       .gsub('_sourcedb_', doc.sourcedb)
       .gsub('_sourceid_', doc.sourceid)
 
     params = {}
-    annotator[:params].each do |k, v|
+    annotator['params'].each do |k, v|
       params[k] = v
         .gsub('_text_', doc.body)
         .gsub('_sourcedb_', doc.sourcedb)
@@ -926,7 +936,7 @@ class Project < ActiveRecord::Base
     end
 
     response = begin
-      if annotator[:method] == 0 # 'get'
+      if annotator['method'] == 0 # 'get'
         RestClient.get url, {:params => params, :accept => :json}
       else
         RestClient.post url, params.merge({:accept => :json})
@@ -956,11 +966,6 @@ class Project < ActiveRecord::Base
     elsif result.respond_to?(:first) && result.first.respond_to?(:has_key?) && result.first.has_key?(:obj)
       ann[:denotations] = result
     end
-
-    prefix = annotator.abbrev
-    ann[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if ann[:denotations].present?
-    ann[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if ann[:relations].present?
-    ann[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if ann[:modifications].present?
 
     ann
   end
@@ -1005,5 +1010,19 @@ class Project < ActiveRecord::Base
 
   def self.sort_by_my_projects(user_id)
     "CASE WHEN projects.user_id = #{user_id} THEN 1 WHEN projects.user_id != #{user_id} THEN 0 END"
+  end
+
+  def clean
+    annotations_collection = self.annotations_collection
+    denotations_count = annotations_collection.inject(0){|sum, ann| sum += (ann[:denotations].present? ? ann[:denotations].length : 0)}
+    relations_count = annotations_collection.inject(0){|sum, ann| sum += (ann[:relations].present? ? ann[:relations].length : 0)}
+    pmdocs_count = docs.where("sourcedb=?", "PubMed").count
+    pmcdocs_count = docs.where("sourcedb=?", "PMC").count
+    Project.update_counters self.id,
+      :pmdocs_count => pmdocs_count,
+      :pmcdocs_count => pmcdocs_count,
+      :denotations_count => denotations_count,
+      :relations_count => relations_count,
+      :annotations_count => denotations_count + relations_count
   end
 end
