@@ -480,7 +480,7 @@ en:
       account: account
       annotation: annotation
       annotations: annotations
-      annotations_count: '#annotations'
+      annotations_count: '#anno.'
       clear: clear
       edit : edit
       error: error
@@ -488,12 +488,13 @@ en:
       delete_all: delete all
       none: no entry
       new_model: New %{model}
-      create_model: Create a New %{model}
+      create: create
       edit_model: editing %{model}
       add_model: Add %{model}
       delete_model: Delete %{model}
       permit: permit
       show: show
+      show_all: show all
       remove: remove
       show_divisions: Show divisions
       uploader: uploader

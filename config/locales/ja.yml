@@ -505,7 +505,7 @@ ja:
       delete_all: 全て削除
       none: なし
       new_model: 新規%{model}の作成
-      create_model: 新規%{model}を作成
+      create: 新規作成
       edit_model: '%{model}の編集'
       add_model: '%{model}の追加'
       delete_model: '%{model}の削除'
@@ -513,6 +513,7 @@ ja:
       section: セクション
       size: サイズ
       show: 表示
+      show_all: 全体表示
       remove: 削除
       show_divisions: ディビジョン表示
       text: テキスト
