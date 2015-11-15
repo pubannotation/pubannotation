@@ -1,6 +1,7 @@
 Pubann::Application.routes.draw do  resources :annotators
 
   devise_for :users
+
   get "home/index"
 
   resources :notices, only: :destroy do
@@ -8,13 +9,7 @@ Pubann::Application.routes.draw do  resources :annotators
       get 'delete_project_notices/:id' => 'notices#delete_project_notices', as: 'delete_project'
     end
   end
-  
-  resources :documentations do
-    collection do
-      get 'category/:name' => 'documentations#category', :as => 'documentations_category'
-    end
-  end
-  
+
   namespace :relations do
     get :sql
   end
@@ -31,6 +26,8 @@ Pubann::Application.routes.draw do  resources :annotators
     get '/' => 'users#index'
     get :autocomplete_username, :on => :collection
   end
+
+  match '/users/:name' => 'users#show', :as => 'show_user'
 
   resources :docs do
     collection do
@@ -112,11 +109,11 @@ Pubann::Application.routes.draw do  resources :annotators
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
     resources :jobs
-
     
     member do
       get :search
       get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
+      get 'clean' => 'projects#clean'
     end
     
     collection do
@@ -126,6 +123,7 @@ Pubann::Application.routes.draw do  resources :annotators
       get 'zip_upload' => 'projects#zip_upload'
       post 'create_from_zip' => 'projects#create_from_zip'
       get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
+      get 'clean' => 'projects#clean'
     end
   end
 
