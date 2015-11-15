@@ -194,6 +194,9 @@ class DocsController < ApplicationController
         @doc.set_ascii_body if params[:encoding] == 'ascii'
         @content = @doc.body.gsub(/\n/, "<br>")
         @annotations = @doc.hannotations
+        @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
+        @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
+        @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
 
         sort_order = sort_order(Project)
         @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
