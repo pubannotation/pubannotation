@@ -39,7 +39,7 @@ class Project < ActiveRecord::Base
   has_many :jobs, :dependent => :destroy
   has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
-  validates_format_of :name, :with => /\A[a-z0-9-_]+\z/i
+  validates_format_of :name, :with => /\A[a-z0-9\-_]+\z/i
 
   default_scope where(:type => nil)
 
