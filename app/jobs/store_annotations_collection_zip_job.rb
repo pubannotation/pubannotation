@@ -1,4 +1,4 @@
-class StoreAnnotationsCollectionJob < Struct.new(:collection, :project, :options)
+class StoreAnnotationsCollectionZipJob < Struct.new(:collection, :project, :options)
 	include StateManagement
 
 	def perform
