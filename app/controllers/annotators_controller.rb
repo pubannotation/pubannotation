@@ -50,8 +50,8 @@ class AnnotatorsController < ApplicationController
   def create
     @annotator = Annotator.new(params[:annotator])
     @annotator.user = current_user
-    @annotator.params = @annorator.params.split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h
-    @annotator.params2 = @annorator.params2.split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h
+    @annotator.params = @annotator.params.split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h
+    @annotator.params2 = @annotator.params2.split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h
 
     respond_to do |format|
       if @annotator.save
