@@ -114,11 +114,11 @@ class AnnotationsController < ApplicationController
         end
       end
 
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to project_docs_path(@project.name), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
     end
   end
 
@@ -262,7 +262,7 @@ class AnnotationsController < ApplicationController
         if divs.length == 1
           doc = divs[0]
         else
-          delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, {mode: mode})
+          delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, options)
           Job.create({name:'Store annotations', project_id:project.id, delayed_job_id:delayed_job.id})
 
           result = {message: "The task, 'annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
