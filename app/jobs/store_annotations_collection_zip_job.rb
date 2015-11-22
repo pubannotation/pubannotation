@@ -1,7 +1,11 @@
-class StoreAnnotationsCollectionZipJob < Struct.new(:collection, :project, :options)
+class StoreAnnotationsCollectionZipJob < Struct.new(:filename, :project, :options)
 	include StateManagement
 
 	def perform
+    files = Annotation.get_files_from_zip(filename)
+    collection = Annotation.get_annotations_collection(files)
+    File.unlink(filename)
+
 		@job.update_attribute(:num_items, collection.length)
     @job.update_attribute(:num_dones, 0)
 
