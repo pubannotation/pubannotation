@@ -5,7 +5,7 @@ class JobsController < ApplicationController
     begin
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
-      @jobs = @project.jobs
+      @jobs = @project.jobs.order("created_at DESC")
 
       respond_to do |format|
         format.html # index.html.erb
@@ -13,7 +13,7 @@ class JobsController < ApplicationController
       end
     rescue
       respond_to do |format|
-        format.html { redirect_to projects_path }
+        format.html { redirect_to project_path(@project.name) }
         format.json { render status: :no_content }
       end
     end
