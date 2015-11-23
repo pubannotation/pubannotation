@@ -4,7 +4,6 @@ class StoreAnnotationsCollectionZipJob < Struct.new(:filename, :project, :option
 	def perform
     files = Annotation.get_files_from_zip(filename)
     collection = Annotation.get_annotations_collection(files)
-    File.unlink(filename)
 
 		@job.update_attribute(:num_items, collection.length)
     @job.update_attribute(:num_dones, 0)
@@ -32,5 +31,6 @@ class StoreAnnotationsCollectionZipJob < Struct.new(:filename, :project, :option
       end
 			@job.update_attribute(:num_dones, i + 1)
     end
+    File.unlink(filename)
 	end
 end
