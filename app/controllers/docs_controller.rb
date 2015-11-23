@@ -368,8 +368,6 @@ class DocsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      messages = []
-
       # get the docspecs list
       docspecs =  if params["_json"] && params["_json"].class == Array
                     params["_json"].collect{|d| d.symbolize_keys}
@@ -386,15 +384,27 @@ class DocsController < ApplicationController
       docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
       docspecs.uniq!
 
-      delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project)
-      Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
+      if docspecs.length == 1
+        docspec = docspecs.first
+        begin
+          project.add_doc(docspec[:sourcedb], docspec[:sourceid], true)
+          message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - added."
+        rescue => e
+          message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
+        end
+      else
+        delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project)
+        Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
+        message = "The task, 'add documents to the project', is created."
+      end
+
     rescue => e
-      messages << e.message
+      message = e.message
     end
 
     respond_to do |format|
-      format.html {redirect_to project_path(project.name), notice: "The task, 'add documents to the project', is created."}
-      format.json {render json:{imported:imported, added:added, failed:failed, messages:messages}, status:(added > 0 ? :created : :unprocessable_entity)}
+      format.html {redirect_to project_path(project.name), notice: message}
+      format.json {render json:{message:message}}
     end
   end
 
