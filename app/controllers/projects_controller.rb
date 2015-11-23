@@ -54,7 +54,10 @@ class ProjectsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:id])
       raise "There is no such project." unless @project.present?
 
-      @docs = @project.docs.where(serial: 0)
+      # TODO: needs to be elaborated more
+      @docs_count = @project.pmdocs_count + @project.pmcdocs_count
+      @docs_count = @project.docs.where(serial: 0).count if @docs_count < 1000
+
       @search_path = search_project_docs_path(@project.name)
 
       @annotators = Annotator.all

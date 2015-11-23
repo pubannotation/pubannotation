@@ -64,12 +64,12 @@
 
 <fieldset class="pane documents">
 <legend>
-	<%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info" style="margin-right:10px">(<%= total_number(@docs) -%>)</span>
+	<%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info" style="margin-right:10px">(<%= @docs_count -%>)</span>
 </legend>
 
 <h3>
-<% if total_number(@docs) > 0 -%>
-	<% if total_number(@docs) < 10000 -%>
+<% if @docs_count > 0 -%>
+	<% if @docs_count < 10000 -%>
 		<%= link_to 'Show all >', project_docs_path(@project.name) -%>
 	<% else -%>
 		<span title="disabled due to too many documents to list">List all</span>
