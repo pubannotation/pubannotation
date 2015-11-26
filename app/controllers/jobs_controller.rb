@@ -5,7 +5,7 @@ class JobsController < ApplicationController
     begin
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
-      @jobs = @project.jobs.order("created_at DESC")
+      @jobs = @project.jobs.order(:created_at)
 
       respond_to do |format|
         format.html # index.html.erb
