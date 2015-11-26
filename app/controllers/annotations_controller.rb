@@ -342,14 +342,20 @@ class AnnotationsController < ApplicationController
       raise "There is no such project in your management." unless project.present?
 
       if params[:zipfile].present? && params[:zipfile].content_type == 'application/zip'
-        options = {mode: :add} if params[:mode] == 'add'
+        if project.jobs.count < 3
+          options = {mode: :add} if params[:mode] == 'add'
 
-        filename = File.join(Rails.root, 'tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.zip")
-        FileUtils.mv params[:zipfile].path, filename
+          filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.zip")
+          FileUtils.mv params[:zipfile].path, filepath
 
-        delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionZipJob.new(filename, project, options)
-        Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
-        notice = "The task, 'Upload annotations', is created."
+          delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionZipJob.new(filepath, project, options)
+          Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
+          notice = "The task, 'Upload annotations', is created."
+        else
+          notice = "Upto 3 tasks can be maintained per a project. Please clean your tasks page."
+        end
+      else
+        notice = "Unknown file type"
       end
     rescue => e
       notice = e.message
