@@ -132,6 +132,7 @@ class Doc < ActiveRecord::Base
     rescue => e
       raise IOError, "Failed to get the document"
     end
+    raise IOError, "Failed to get the document" if doc_sequence.divs.nil?
 
     divs_hash = doc_sequence.divs
 
