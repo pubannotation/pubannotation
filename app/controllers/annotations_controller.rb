@@ -283,7 +283,7 @@ class AnnotationsController < ApplicationController
         format.json {render json: result, status: :created}
       end
 
-    rescue ArgumentError => e
+    rescue => e
       respond_to do |format|
         format.html {redirect_to (project.present? ? project_path(project.name) : home_path), notice: e.message}
         format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
