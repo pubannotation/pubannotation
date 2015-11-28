@@ -420,7 +420,7 @@ class DocsController < ApplicationController
     rescue => e
       flash[:notice] = e.message
     end
-    redirect_to home_path
+    redirect_to :back
   end
 
   # PUT /docs/1
