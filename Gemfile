@@ -56,6 +56,7 @@ gem 'devise'
 gem 'rubyzip'
 gem 'zip-zip'
 gem 'rails3-jquery-autocomplete'
+gem 'daemons'
 gem 'delayed_job_active_record'
 gem 'backup'
 gem 'whenever', :require => false
