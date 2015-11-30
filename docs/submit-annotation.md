@@ -71,18 +71,21 @@ curl -u "your_email_address:your_password" -H "content-type:application/json" -d
 ## Submit annotations, method 3 (batch upload)
 
 When you have many annotation files to upload, 'POSTing' them individually may take a long time
-because it requires the HTTP connection to be made as many times as the number of files.
+because it requires HTTP connections to be made as many times as the number of files.
 
-In the case, you can archive the annotation files in a __zip__ file, and upload it.
-It will require the HTTP connection only once.
+In the case, you can archive the annotation files in a __tgz__ file (gzip-compressed tar file),
+and upload it. It will require an HTTP connection to be made only once per a tgz file.
 
-Note that, for a bacth upload, the '__sourcedb__' and '__sourceid__' (also '__divid__', see below) parameters
+Note that, for a bacth upload,
+the '__sourcedb__' and '__sourceid__' (also '__divid__', see below) parameters
 need to be encoded __in the annotation file__ as described in 'method 2'.
 
 Once you are logged in, you can find the form for batch upload __in your project page__.
 
-Once the zip file is uploaded, you can check the progress of the annotation registration in the _notices_ page
-which you can open by clicking the __notices button__ next to the title of the project:
+Once an annotation tgz file is uploaded,
+a background job is created for alignment and storage of all the annotations in the file.
+You can check the progress of a job in the __Jobs__ page,
+for which the button will appear next to the title of a project if the project has at least one job.
 
 
 ## Submit annotations to PMC documents (full papers)
