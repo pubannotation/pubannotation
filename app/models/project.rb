@@ -859,7 +859,9 @@ class Project < ActiveRecord::Base
     annotations[:text] = doc.body
 
     if annotations[:denotations].present?
+      num = annotations[:denotations].length
       annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
+      raise "Alignment failed. Text may be too much different." if annotations[:denotations].length < num
 
       ActiveRecord::Base.transaction do
         self.save_hdenotations(annotations[:denotations], doc)
