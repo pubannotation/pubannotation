@@ -394,7 +394,7 @@ class DocsController < ApplicationController
         end
       else
         priority = project.jobs.unfinished.count
-        delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project), priority: priority
+        delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project), priority: priority, queue: :general
         Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
         message = "The task, 'add documents to the project', is created."
       end
@@ -481,7 +481,7 @@ class DocsController < ApplicationController
 
       system = Project.find_by_name('system-maintenance')
 
-      delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, Pubann::Application.config.rdfizer_spans)
+      delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, Pubann::Application.config.rdfizer_spans), queue: :general
       Job.create({name:"Store RDFized spans for selected projects", project_id:system.id, delayed_job_id:delayed_job.id})
     rescue => e
       flash[:notice] = e.message

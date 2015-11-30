@@ -163,7 +163,7 @@ class ProjectsController < ApplicationController
       system = Project.find_by_name('system-maintenance')
 
       projects.each do |project|
-        delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name)
+        delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name), queue: :general
         Job.create({name:"Store REDized annotations - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
       end
     rescue => e
@@ -191,7 +191,7 @@ class ProjectsController < ApplicationController
       end
 
       # projects.each do |project|
-      #   delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name)
+      #   delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name), queue: :general
       #   Job.create({name:"Store REDized annotations - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
       # end
     # rescue => e
@@ -207,7 +207,7 @@ class ProjectsController < ApplicationController
 
       message = if project.docs.present?
         priority = project.jobs.unfinished.count
-        delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project, current_user), priority: priority
+        delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project, current_user), priority: priority, queue: :general
         Job.create({name:'Delete all documents from project', project_id:project.id, delayed_job_id:delayed_job.id})
         "The task, 'delete all documents from project', is created."
       else
@@ -227,7 +227,7 @@ class ProjectsController < ApplicationController
       raise "There is no such project in your management." unless @project.present?
 
       priority = @project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue DeleteAllAnnotationsFromProjectJob.new(@project), priority: priority
+      delayed_job = Delayed::Job.enqueue DeleteAllAnnotationsFromProjectJob.new(@project), priority: priority, queue: :general
       Job.create({name:'Delete all annotations from project', project_id:@project.id, delayed_job_id:delayed_job.id})
 
       respond_to do |format|
@@ -244,7 +244,7 @@ class ProjectsController < ApplicationController
     raise "There is no such project." unless project.present?
 
     priority = project.jobs.unfinished.count
-    delayed_job = Delayed::Job.enqueue DestroyProjectJob.new(project), priority: priority
+    delayed_job = Delayed::Job.enqueue DestroyProjectJob.new(project), priority: priority, queue: :general
     Job.create({name:'Destroy project', project_id:project.id, delayed_job_id:delayed_job.id})
 
     respond_to do |format|

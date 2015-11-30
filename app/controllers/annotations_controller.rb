@@ -264,7 +264,7 @@ class AnnotationsController < ApplicationController
           doc = divs[0]
         else
           priority = project.jobs.unfinished.count
-          delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, options), priority: priority
+          delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, options), priority: priority, queue: :general
           Job.create({name:'Store annotations', project_id:project.id, delayed_job_id:delayed_job.id})
 
           result = {message: "The task, 'annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
@@ -322,7 +322,7 @@ class AnnotationsController < ApplicationController
       options[:encoding] = :ascii if params[:encoding] == 'ascii'
 
       priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docs, annotator, options), priority: priority
+      delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docs, annotator, options), priority: priority, queue: :upload
       Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
       notice = "The task 'Obtain annotations' is created."
 
@@ -351,11 +351,11 @@ class AnnotationsController < ApplicationController
           FileUtils.mv params[:tgzfile].path, filepath
 
           priority = project.jobs.unfinished.count
-          delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionTgzJob.new(filepath, project, options), priority: priority
+          delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionTgzJob.new(filepath, project, options), priority: priority, queue: :upload
           Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
           notice = "The task, 'Upload annotations', is created."
         else
-          notice = "Upto 10 jobs can be registered per a project. Please clean your jobs page."
+          notice = "Up to 10 jobs can be registered per a project. Please clean your jobs page."
         end
       else
         notice = "Unknown file type"
@@ -393,7 +393,7 @@ class AnnotationsController < ApplicationController
       raise "There is no such project in your management." unless project.present?
 
       priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue CreateAnnotationsZipJob.new(project), priority: priority
+      delayed_job = Delayed::Job.enqueue CreateAnnotationsZipJob.new(project), priority: priority, queue: :general
       Job.create({name:'Create annotations zip', project_id:project.id, delayed_job_id:delayed_job.id})
     rescue => e
       flash[:notice] = notice
