@@ -110,7 +110,7 @@ Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span
 </div>
  -->
 <% if user_signed_in? && @project.editable?(current_user) -%>
-	<%= render partial: 'annotations/upload_zip' -%>
+	<%= render partial: 'annotations/upload_tgz' -%>
 
 	<h3>
 	<%= t('views.docs.automatic_annotation') %>

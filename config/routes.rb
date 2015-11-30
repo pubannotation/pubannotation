@@ -98,7 +98,7 @@ Pubann::Application.routes.draw do  resources :annotators
     get 'relations/sql' => 'relations#sql'
     get 'annotations.zip' => 'annotations#project_annotations_zip', :as => 'annotations_zip'
     get 'annotations.zip/create' => 'annotations#create_project_annotations_zip', :as => 'create_annotations_zip'
-    post 'annotations.zip' => 'annotations#create_from_zip', :as => 'create_annotations_from_zip'
+    post 'annotations.tgz' => 'annotations#create_from_tgz', :as => 'create_annotations_from_tgz'
     get 'delete_annotations_zip' => 'annotations#delete_project_annotations_zip', :as => 'delete_annotations_zip'
     get 'annotations.rdf' => 'annotations#project_annotations_rdf', :as => 'annotations_rdf'
     get 'annotations.rdf/create' => 'annotations#create_project_annotations_rdf', :as => 'create_annotations_rdf'
@@ -121,7 +121,7 @@ Pubann::Application.routes.draw do  resources :annotators
       get 'autocomplete_project_name/:scope_argument'  => 'projects#autocomplete_project_name', :as => 'autocomplete_project_name'
       get 'autocomplete_project_author'  => 'projects#autocomplete_project_author', :as => 'autocomplete_project_author'
       get 'zip_upload' => 'projects#zip_upload'
-      post 'create_from_zip' => 'projects#create_from_zip'
+      post 'create_from_tgz' => 'projects#create_from_tgz'
       get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
       get 'clean' => 'projects#clean'
     end
@@ -131,7 +131,7 @@ Pubann::Application.routes.draw do  resources :annotators
     post 'annotations' => 'annotations#create'
     delete 'docs' => 'projects#delete_all_docs', as: 'delete_all_docs'
     delete 'annotations' => 'projects#destroy_all_annotations', as: 'destroy_all_annotations'
-    delete 'jobs' => 'projects#clear_jobs', as: 'clear_jobs'
+    delete 'jobs' => 'projects#clear_finished_jobs', as: 'clear_finished_jobs'
 
     resources :docs do
       collection do

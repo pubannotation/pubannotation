@@ -14,37 +14,50 @@
         > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
     <% end %>
   > <%= link_to @project.name, project_path(@project.name) %>
-  > <%= t('activerecord.models.notice') -%>
+  > jobs
 <% end %>
 
 <%= render :partial => 'projects/titlebar' -%>
 
-<h1>Background tasks
-<%= link_to 'clear finished tasks', project_clear_jobs_path(@project.name), method: :delete, :class => 'control button' %>
+<h1>Background jobs
+<%= link_to 'Clear finished jobs', project_clear_finished_jobs_path(@project.name), method: :delete, :class => 'control button' %>
 </h1>
 
 <table>
+<tr>
+<th>Current time</th>
+<td><%= Time.now.getlocal %></td>
+</tr>
+</table>
+<table>
   <tr>
-    <th>Id.</th>
-    <th>Name</th>
+    <th>#</th>
+    <th>Job type</th>
     <th>Created at</th>
     <th>State</th>
     <th>Progress</th>
-    <th># Messages</th>
-    <th></th>
-    <th></th>
+    <th>#Messages</th>
   </tr>
 
-<% @jobs.each do |job| %>
-  <tr>
-    <td><%= job.delayed_job_id %></td>
+<% @jobs.each_with_index do |job, i| %>
+  <tr
+    <%=
+        if job.running?
+            'style=background-color:#ffcccc'
+        elsif job.finished?
+            'style=color:#888888'
+        end
+    %>>
+    <td><%= i + 1 %></td>
     <td><%= job.name %></td>
-    <td><%= job.created_at %></td>
+    <td><%= job.created_at.getlocal %></td>
     <td><%= state(job) %></td>
-    <td style="text-align:right"><%= job.num_dones %> / <%= job.num_items %></td>
+    <td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
     <td style="text-align:right"><%= job.messages.length %></td>
-    <td><%= link_to 'Show', project_job_path(@project.name, job) %></td>
-    <td><%= link_to 'Destroy', project_job_path(@project.name, job), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+    <td>
+        <%= link_to 'Show', project_job_path(@project.name, job), :class => :button %>
+        <%= link_to 'Remove', project_job_path(@project.name, job), method: :delete, data: { confirm: 'Are you sure?' }, :class => :button unless job.running? %>
+    </td>
   </tr>
 <% end %>
 </table>

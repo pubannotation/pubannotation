@@ -1,12 +1,12 @@
 require 'fileutils'
 include AnnotationsHelper
 
-class StoreAnnotationsCollectionZipJob < Struct.new(:filepath, :project, :options)
+class StoreAnnotationsCollectionTgzJob < Struct.new(:filepath, :project, :options)
 	include StateManagement
 
 	def perform
     dirpath = File.join('tmp', File.basename(filepath, ".*"))
-    unpack_cmd = "unzip #{filepath} -d #{dirpath}"
+    unpack_cmd = "mkdir #{dirpath}; tar -xzf #{filepath} -C #{dirpath}"
     unpack_success_p = system(unpack_cmd)
     raise IOError, "Could not unpack the archive file." unless unpack_success_p
     jsonfiles = Dir.glob(File.join(dirpath, '**', '*.json'))
@@ -45,7 +45,6 @@ class StoreAnnotationsCollectionZipJob < Struct.new(:filepath, :project, :option
           else
             raise IOError, "document does not exist"
           end
-
         rescue => e
           annotations[:sourcedb] = '-' unless annotations[:sourcedb].present?
           annotations[:sourceid] = '-' unless annotations[:sourceid].present?
@@ -54,7 +53,7 @@ class StoreAnnotationsCollectionZipJob < Struct.new(:filepath, :project, :option
       end
     	@job.update_attribute(:num_dones, i + 1)
     end
-    File.unlink(filepath)
-    FileUtils.rm_rf(dirpath)
+    # File.unlink(filepath)
+    # FileUtils.rm_rf(dirpath)
 	end
 end

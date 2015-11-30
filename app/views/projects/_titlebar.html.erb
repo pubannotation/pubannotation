@@ -6,8 +6,8 @@
 	<% if @project.process_text == 'automatic' -%><span class = 'badge' title = 'Automatic annotation'>A</span><% end -%>
 	<% if @project.jobs.present? && @project.editable?(current_user) -%>
 		<span class = 'tab-bar'>
-			<%= link_to_unless_current 'tasks', project_jobs_path(@project.name), :class => 'tab inactive_tab' do
-		    	content_tag :span, t('activerecord.models.notice').pluralize, :class => 'tab active_tab'
+			<%= link_to_unless_current 'Jobs', project_jobs_path(@project.name), :class => 'tab inactive_tab' do
+		    	content_tag :span, 'Jobs', :class => 'tab active_tab'
 			end -%>
 		</span>
 	<% end -%>
