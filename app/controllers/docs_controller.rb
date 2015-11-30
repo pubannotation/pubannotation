@@ -393,7 +393,8 @@ class DocsController < ApplicationController
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
         end
       else
-        delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project)
+        priority = project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project), priority: priority
         Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
         message = "The task, 'add documents to the project', is created."
       end

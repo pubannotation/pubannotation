@@ -263,7 +263,8 @@ class AnnotationsController < ApplicationController
         if divs.length == 1
           doc = divs[0]
         else
-          delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, options)
+          priority = project.jobs.unfinished.count
+          delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, options), priority: priority
           Job.create({name:'Store annotations', project_id:project.id, delayed_job_id:delayed_job.id})
 
           result = {message: "The task, 'annotations upload: #{params[:sourcedb]}:#{params[:sourceid]}', created."}
@@ -320,7 +321,8 @@ class AnnotationsController < ApplicationController
       options[:mode] = :add if params[:mode] == 'add'
       options[:encoding] = :ascii if params[:encoding] == 'ascii'
 
-      delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docs, annotator, options)
+      priority = project.jobs.unfinished.count
+      delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docs, annotator, options), priority: priority
       Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
       notice = "The task 'Obtain annotations' is created."
 
@@ -336,23 +338,24 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  def create_from_zip
+  def create_from_tgz
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      if params[:zipfile].present? && params[:zipfile].content_type == 'application/zip'
-        if project.jobs.count < 3
+      if params[:tgzfile].present? && ['application/x-compressed-tar', 'application/gzip', 'application/x-gtar'].include?(params[:tgzfile].content_type)
+        if project.jobs.count < 10
           options = {mode: :add} if params[:mode] == 'add'
 
-          filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.zip")
-          FileUtils.mv params[:zipfile].path, filepath
+          filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.tgz")
+          FileUtils.mv params[:tgzfile].path, filepath
 
-          delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionZipJob.new(filepath, project, options)
+          priority = project.jobs.unfinished.count
+          delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionTgzJob.new(filepath, project, options), priority: priority
           Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
           notice = "The task, 'Upload annotations', is created."
         else
-          notice = "Upto 3 tasks can be maintained per a project. Please clean your tasks page."
+          notice = "Upto 10 jobs can be registered per a project. Please clean your jobs page."
         end
       else
         notice = "Unknown file type"
@@ -389,7 +392,8 @@ class AnnotationsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      delayed_job = Delayed::Job.enqueue CreateAnnotationsZipJob.new(project)
+      priority = project.jobs.unfinished.count
+      delayed_job = Delayed::Job.enqueue CreateAnnotationsZipJob.new(project), priority: priority
       Job.create({name:'Create annotations zip', project_id:project.id, delayed_job_id:delayed_job.id})
     rescue => e
       flash[:notice] = notice

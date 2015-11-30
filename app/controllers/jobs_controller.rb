@@ -8,7 +8,7 @@ class JobsController < ApplicationController
       @jobs = @project.jobs.order(:created_at)
 
       respond_to do |format|
-        format.html # index.html.erb
+        format.html { redirect_to project_path(@project.name) if @jobs.length == 0}
         format.json { render json: @jobs }
       end
     rescue

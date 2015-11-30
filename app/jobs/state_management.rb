@@ -6,6 +6,7 @@ module StateManagement
 
 	def after
 		@job.update_attribute(:ended_at, Time.now)
+		@job.update_related_priority
 	end
 
   def error(job, exception)
