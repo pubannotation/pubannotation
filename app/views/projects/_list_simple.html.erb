@@ -12,7 +12,7 @@
     <% projects.each do |project| %>
       <% project_path = project_path(project.name) -%>
       <tr>
-        <td><%= link_to_project(project) -%></td>
+        <td nowrap><%= link_to_project(project) -%></td>
         <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
         <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
         <td><%= project.status_text -%></td>
