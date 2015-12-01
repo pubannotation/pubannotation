@@ -3,10 +3,22 @@
 
 <span class='tab-bar'>
 <!--	<span class='label'>UTF</span>-->
-	<%= link_to_unless_current 'VIEW', annotations_url, :class => 'tab' -%>
+	<%=
+		link_to_unless_current 'VIEW', annotations_url, :class => 'tab inactive_tab' do
+	    	content_tag :span, 'VIEW', :class => 'tab active_tab'
+	    end
+	%>
+
 	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab' -%>
-	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab' if !@project.present? -%>
-	<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab' if @project.present? -%>
+	<% if @project.present? -%>
+		<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab' -%>	
+	<% else -%>
+		<%=
+			link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab inactive_tab' do
+		    	content_tag :span, 'TextAE', :class => 'tab active_tab'
+		    end
+		%>
+	<% end -%>
 
 </span>
 
