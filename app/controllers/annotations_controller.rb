@@ -343,7 +343,7 @@ class AnnotationsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      if params[:tgzfile].present? && ['application/x-compressed-tar', 'application/gzip', 'application/x-gtar'].include?(params[:tgzfile].content_type)
+      if params[:tgzfile].present? && ['application/x-compressed-tar', 'application/x-gzip', 'application/gzip', 'application/x-gtar'].include?(params[:tgzfile].content_type)
         if project.jobs.count < 10
           options = {mode: :add} if params[:mode] == 'add'
 
