@@ -76,6 +76,10 @@ because it requires HTTP connections to be made as many times as the number of f
 In the case, you can archive the annotation files in a __tgz__ file (gzip-compressed tar file),
 and upload it. It will require an HTTP connection to be made only once per a tgz file.
 
+<div class="boxtip">
+<b>Note</b> The batch upload function has been found to be okay with tgz files up to the scale around 0.5 GB size with 1M PubMed abstracts, through a stress test. However, users are recommended to split their annotation files into smaller archive files than that, e.g. less than 250 MB with 0.5M abstracts.
+</div>
+
 Note that, for a bacth upload,
 the '__sourcedb__' and '__sourceid__' (also '__divid__', see below) parameters
 need to be encoded __in the annotation file__ as described in 'method 2'.
@@ -86,6 +90,11 @@ Once an annotation tgz file is uploaded,
 a background job is created for alignment and storage of all the annotations in the file.
 You can check the progress of a job in the __Jobs__ page,
 for which the button will appear next to the title of a project if the project has at least one job.
+
+<div class="boxtip">
+<b>Note</b> During batch upload, there is a chance that you will see some error messages. A typical one is "<i>Failed to get the document</i>". It happens when PubAnnotation fails to get the article from the source DB. It sometimes happens when there is a connection problem or server problem with PubMed or PMC. If you see the message, you can simply collect the failed articles, and submit them again. In most cases, the problem will disappear. Another probable error message is "<i>Alignment failed. Text may be too much different</i>". The message is shown when the alignment algorithm of PubAnnotation determines that there is a chance of annotation loss during alignment process. If you see the message, please first check if your text is very different from the version in PubAnnotation. If you do not find particular problem in your text, please report the case to us (admin@pubannotation.org). Your report will be very useful for us to improve the alignment algorithm.
+</div>
+
 
 
 ## Submit annotations to PMC documents (full papers)
