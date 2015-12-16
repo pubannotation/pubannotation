@@ -1,4 +1,9 @@
+require 'elasticsearch/model'
+
 class Doc < ActiveRecord::Base
+  include Elasticsearch::Model
+  include Elasticsearch::Model::Callbacks
+
   UserSourcedbSeparator = '@'
   after_save :expire_page_cache
   before_destroy :decrement_docs_counter

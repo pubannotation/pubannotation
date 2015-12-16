@@ -127,18 +127,48 @@ class DocsController < ApplicationController
         @project = Project.accessible(current_user).find_by_name(params[:project_id])
         raise "There is no such project." unless @project.present?
         docs = @project.docs
+        doc_ids = docs.collect{|d| d.id}
       else
         docs = Doc
+        doc_ids = Doc.all.collect{|d| d.id}
       end
 
-      # TODO cannot cannot CAST sourceid
+      minimum_should_match = 0
+      minimum_should_match += 1 if params[:sourcedb].present?
+      minimum_should_match += 1 if params[:sourceid].present?
+      minimum_should_match += 1 if params[:body].present?
+
       search_docs = docs.search(
-        conditions: {sourcedb: "#{ params[:sourcedb] }*", sourceid: "#{ params[:sourceid] }*", body: "#{ params[:body] }*"}, 
-        group_by: 'sourcedb, sourceid',
-        order: 'sourcedb ASC, sourceid ASC',
-        page: params[:page], 
-        per_page: 10
-      )
+        query: {
+          bool:{
+            should: [ 
+              {match: {
+                  sourcedb: {
+                    query: params[:sourcedb],
+                    fuzziness: 2
+                  }
+                }
+              },
+              {match: {
+                  sourceid: {
+                    query: params[:sourceid],
+                    fuzziness: 2
+                  }
+                }
+              },
+              {match: {
+                  body: {
+                    query: params[:body],
+                    fuzziness: 'AUTO'
+                  }
+                }
+              }
+            ],
+            minimum_should_match: minimum_should_match,
+          }
+        },
+        size: docs.count
+      ).records.order('sourcedb ASC, sourceid ASC').where(['id IN (?)', doc_ids]).paginate(page: params[:page], per_page: 10)
 
       # TODO search_docs.count is the number of docs matches conditions group by same sourcedb and sourceid.
       if search_docs.count < 5000

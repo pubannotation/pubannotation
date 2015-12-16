@@ -61,7 +61,8 @@ gem 'delayed_job_active_record'
 gem 'backup'
 gem 'whenever', :require => false
 gem 'mysql2',          '~> 0.3.13', :platform => :ruby
-gem 'thinking-sphinx', '~> 3.1.3'
+gem 'elasticsearch-model', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
+gem 'elasticsearch-rails', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
