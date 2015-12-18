@@ -128,6 +128,7 @@ class DocsController < ApplicationController
         raise "There is no such project." unless @project.present?
         docs = @project.docs
         doc_ids = docs.collect{|d| d.id}
+        project_id = @project.id
       else
         docs = Doc
         doc_ids = Doc.all.collect{|d| d.id}
@@ -162,12 +163,15 @@ class DocsController < ApplicationController
                     fuzziness: 'AUTO'
                   }
                 }
+              },
+              {match: 
+               {'project.id' => project_id}
               }
             ],
             minimum_should_match: minimum_should_match,
           }
         },
-        size: docs.count
+        size: 5000,
       ).records.order('sourcedb ASC, sourceid ASC').where(['id IN (?)', doc_ids]).paginate(page: params[:page], per_page: 10)
 
       # TODO search_docs.count is the number of docs matches conditions group by same sourcedb and sourceid.

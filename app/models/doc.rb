@@ -4,6 +4,48 @@ class Doc < ActiveRecord::Base
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
 
+  settings index: {
+    analysis: {
+      tokenizer: {
+        ngram_tokenizer: {
+          type: "nGram",
+          min_gram: "2",
+          max_gram: "3",
+          token_chars: [
+            "letter",
+            "digit",
+            "punctuation"
+          ]
+        }
+      },
+      analyzer: {
+        ngram_analyzer: {
+          tokenizer: "ngram_tokenizer"
+        }
+      },
+    },
+  } do
+      mappings do
+        indexes :sourcedb, type: 'string', analyzer: 'ngram_analyzer'
+        indexes :sourceid, type: 'string', analyzer: 'ngram_analyzer'
+        indexes :body, type: 'string', analyzer: 'ngram_analyzer'
+        indexes :docs_projects do
+          indexes :doc_id
+          indexes :project_id
+        end
+        indexes :projects do
+          indexes :id, index: :not_analyzed
+        end
+      end
+  end
+
+  def as_indexed_json(options={})
+    as_json(
+      only: [:id, :sourcedb, :sourceid, :body],
+      include: [:projects]  
+    )
+  end
+  
   UserSourcedbSeparator = '@'
   after_save :expire_page_cache
   before_destroy :decrement_docs_counter
