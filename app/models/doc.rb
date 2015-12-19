@@ -41,12 +41,13 @@ class Doc < ActiveRecord::Base
         indexes :sourceid, type: 'string', analyzer: 'ngram_analyzer'
         indexes :body, type: 'string', analyzer: 'ngram_analyzer'
 
-        indexes :docs_projects, type: 'nested' do
+        # indexes :docs_projects, type: 'nested' do
+        indexes :docs_projects do
           indexes :doc_id
           indexes :project_id
         end
 
-        indexes :projects, type: 'nested' do
+        indexes :projects do
           indexes :id, index: :not_analyzed
         end
       end
