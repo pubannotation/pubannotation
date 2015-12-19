@@ -270,19 +270,13 @@ describe DocsController do
 
   describe 'search' do
     before do
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user), :name => 'project name')
-      @doc_1 = FactoryGirl.create(:doc, sourcedb: 'sdb1', sourceid: '123456', serial: 0)
-      @doc_2 = FactoryGirl.create(:doc, sourcedb: 'sdb1', sourceid: '123456', serial: 1)
-      @doc_3 = FactoryGirl.create(:doc, sourcedb: 'sdb2', sourceid: '223456', serial: 0)
-      @doc_4 = FactoryGirl.create(:doc, sourcedb: 'sdb2', sourceid: '223456', serial: 1)
-      @project.docs << @doc_1
-      @project.docs << @doc_2
-      @project.docs << @doc_3
-      @project.docs << @doc_4
-      @doc_5 = FactoryGirl.create(:doc, sourcedb: 'sdb3', sourceid: '323456', serial: 0)
-      @doc_6 = FactoryGirl.create(:doc, sourcedb: 'sdb4', sourceid: '423456', serial: 0)
+      user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, user: user)
       @current_user = nil
       current_user_stub(@current_user)
+      @sourcedb = 'sdb'
+      @sourceid = '123456'
+      @body = 'body'
     end
 
     context 'when params[:project_id] present' do
@@ -305,98 +299,80 @@ describe DocsController do
         expect(assigns[:project]).to eql(@project)
       end
 
-      it 'should search from Doc with params by Sphinx' do
-        expect(@project.docs).to receive(:search).with({conditions: {sourcedb: "#{ @sourcedb }*", sourceid: "#{ @sourceid }*", body: "#{ @body }*"}, group_by: "sourcedb, sourceid", order: "sourcedb ASC, sourceid ASC", page: nil, per_page: 10})
+      it 'should search_docs with project_id' do
+        expect(Doc).to receive(:search_docs).with({sourcedb: @sourcedb, sourceid: @sourceid, body: @body, project_id: @project.id})
         post :search, project_id: @project.name, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
-      end
-
-      it 'should search from @project.docs with params by Sphinx' do
-        post :search, project_id: @project.name, sourcedb: 'sdb', sourceid: '', body: ''
-        assigns[:source_docs].should =~ [@doc_1, @doc_3]
       end
     end
 
     context 'when params[:project_id] blank' do
-      before do
-        @sourcedb = 'sdb'
-        @sourceid = '123'
-        @body = 'body'
-      end
-
-      it 'should search from Doc with params by Sphinx' do
-        expect(Doc).to receive(:search).with({conditions: {sourcedb: "#{ @sourcedb }*", sourceid: "#{ @sourceid }*", body: "#{ @body }*"}, group_by: "sourcedb, sourceid", order: "sourcedb ASC, sourceid ASC", page: nil, per_page: 10})
+      it 'should search_docs without project_id' do
+        expect(Doc).to receive(:search_docs).with({sourcedb: @sourcedb, sourceid: @sourceid, body: @body, project_id: nil})
         post :search, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
       end
+    end
 
-      it 'should search from @project.docs with params by Sphinx' do
-        post :search, sourcedb: 'sdb', sourceid: '', body: ''
-        assigns[:source_docs].should =~ [@doc_1, @doc_3, @doc_5, @doc_6]
+    describe 'search_results[:total]' do
+      context 'when results greater hant Doc::SEARCH_SIZE' do
+        before do
+          @total_size = Doc::SEARCH_SIZE + 1
+          docs = double(:docs)
+          docs.stub(:paginate).and_return(docs)
+          docs.stub(:count).and_return(1)
+          docs.stub(:map).and_return(1)
+          Doc.stub(:search_docs).and_return({docs: docs, total: @total_size})
+        end
+
+        it 'should set flash[:notice]' do
+          post :search, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
+          flash[:notice].should eql(I18n.t('controllers.docs.search.greater_than_search_size', total: @total_size, search_size: Doc::SEARCH_SIZE))
+        end
       end
     end
 
     describe 'search_docs count' do
-      before do
-        @search_docs = double(:docs)
-        Doc.stub_chain(:search).and_return(@search_docs)
-      end
-
-      context 'when search_docs.count < 5000' do
+      context 'when results greater hant Doc::SEARCH_SIZE' do
         before do
-          @search_docs_count = 1
-          @search_docs.stub(:count).and_return(@search_docs_count)
-          @list_hash = {val: 1}
-          @search_docs.stub(:map).and_return(@list_hash)
+          @total_size = Doc::SEARCH_SIZE + 1
+          @docs = double(:docs)
+          @docs.stub(:paginate).and_return(@docs)
+          @docs.stub(:map).and_return(1)
+          Doc.stub(:search_docs).and_return({docs: @docs, total: @total_size})
         end
 
-        it 'should map search_docs to_list_hash' do
-          expect(@search_docs).to receive(:map)
-          post :search
-        end
-
-        it 'should assign search_docs.count as @search_docs_number' do
-          post :search
-          expect(assigns[:search_docs_number]).to eql(@search_docs_count)
-        end
-
-        it 'should assign search_docs as @source_docs' do
-          post :search
-          expect(assigns[:source_docs]).to eql(@search_docs)
-        end
-
-        describe 'format' do
-          context 'when format html' do
-            it 'should render doc.to_list_hash as json' do
-              post :search
-              expect(response).to render_template('search')
-            end
+        context 'when search_docs.count < 5000' do
+          before do
+            @search_docs_count = 1
+            @docs.stub(:count).and_return(@search_docs_count)
           end
 
-          context 'when format json' do
-            it 'should render doc.to_list_hash as json' do
-              post :search, format: 'json'
-              expect(response.body).to eql(@list_hash.to_json)
-            end
+          it 'should map search_docs to_list_hash' do
+            expect(@docs).to receive(:map)
+            post :search, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
           end
 
-          context 'when format tsv' do
-            it 'should render Doc.to_tsv as text' do
-              to_tsv = 'tsv'
-              Doc.stub(:to_tsv).and_return(to_tsv)
-              expect(Doc).to receive(:to_tsv).with(@search_docs, 'doc')
-              post :search, format: 'tsv'
-            end
+          it 'should assign search_docs.count as @search_docs_number' do
+            post :search, sourcedb: @sourcedb, sourceid: @sourceid, body: @body
+            expect(assigns[:docs_size]).to eql(@search_docs_count)
+          end
+
+          it 'should assign search_docs as @source_docs' do
+            post :search
+            expect(assigns[:source_docs]).to eql(@docs)
           end
         end
-      end
 
-      context 'when search_docs.count > 5000' do
-        before do
-          @search_docs.stub(:count).and_return(10000)
-        end
+        context 'when search_docs.count > 5000' do
+          before do
+            @search_docs_count = 6000
+            @docs.stub(:count).and_return(@search_docs_count)
+          end
 
-        it 'should render blank array as json' do
-          post :search, format: 'json'
-          expect(response.body).to eql([].to_json)
+
+          it 'should render blank array as json' do
+            post :search, format: 'json'
+            expect(response.body).to eql([].to_json)
+          end
         end
       end
     end
@@ -404,7 +380,7 @@ describe DocsController do
     describe 'when error raised' do
       before do
         @error = 'error'
-        Doc.stub(:search).and_raise(@error)
+        Doc.stub(:search_docs).and_raise(@error)
       end
 
       context 'when format html' do

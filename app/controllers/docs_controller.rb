@@ -126,59 +126,18 @@ class DocsController < ApplicationController
       if params[:project_id]
         @project = Project.accessible(current_user).find_by_name(params[:project_id])
         raise "There is no such project." unless @project.present?
-        docs = @project.docs
-        doc_ids = docs.collect{|d| d.id}
         project_id = @project.id
-      else
-        docs = Doc
-        doc_ids = Doc.all.collect{|d| d.id}
       end
 
-      minimum_should_match = 0
-      minimum_should_match += 1 if params[:sourcedb].present?
-      minimum_should_match += 1 if params[:sourceid].present?
-      minimum_should_match += 1 if params[:body].present?
+      search_results = Doc.search_docs({sourcedb: params[:sourcedb], sourceid: params[:sourceid], body: params[:body], project_id: project_id})
+      search_docs = search_results[:docs].paginate(page: params[:page], per_page: 10)
 
-      search_docs = docs.search(
-        query: {
-          bool:{
-            should: [ 
-              {match: {
-                  sourcedb: {
-                    query: params[:sourcedb],
-                    fuzziness: 2
-                  }
-                }
-              },
-              {match: {
-                  sourceid: {
-                    query: params[:sourceid],
-                    fuzziness: 2
-                  }
-                }
-              },
-              {match: {
-                  body: {
-                    query: params[:body],
-                    fuzziness: 'AUTO'
-                  }
-                }
-              },
-              {match: 
-               {'project.id' => project_id}
-              }
-            ],
-            minimum_should_match: minimum_should_match,
-          }
-        },
-        size: 5000,
-      ).records.order('sourcedb ASC, sourceid ASC').where(['id IN (?)', doc_ids]).paginate(page: params[:page], per_page: 10)
+      if search_results[:total] > Doc::SEARCH_SIZE
+        flash[:notice] = t('controllers.docs.search.greater_than_search_size', total: search_results[:total], search_size: Doc::SEARCH_SIZE)
+      end
 
       # TODO search_docs.count is the number of docs matches conditions group by same sourcedb and sourceid.
       if search_docs.count < 5000
-        # search_docs_list = search_docs.map{|d| {sourcedb: d.sourcedb, sourceid:d.sourceid}}.uniq
-        # This line will execute SQL queries so many times
-        # search_docs = search_docs_list.map{|d| docs.find_by_sourcedb_and_sourceid_and_serial(d[:sourcedb], d[:sourceid], 0)}
         search_docs_list = search_docs.map{|d| d.to_list_hash('doc')}
       else
         search_docs_list = []
@@ -374,9 +333,11 @@ class DocsController < ApplicationController
       doc_hash[:sourceid] = lastdoc.nil? ? '1' : "#{lastdoc.sourceid.to_i + 1}"
     end
 
+    date_time_since = DateTime.now
     @doc = Doc.new(doc_hash)
     respond_to do |format|
       if @doc.save
+        Doc.index_diff(date_time_since)
         @project, notice = get_project(params[:project_id])
         @project.docs << @doc if @project.present?
         get_project(params[:project_id])

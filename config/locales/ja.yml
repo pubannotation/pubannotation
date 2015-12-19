@@ -346,6 +346,7 @@ ja:
         created_to_document_set: '%{num_created}個のドキュメントがドキュメントセット %{project_name}に作成されました'
       search:
         not_found: 条件に合うドキュメントがみつかりませんでした。
+        greater_than_search_size: '全%{total}件のうち上位%{search_size}件のみを表示しています'
     pmcdocs:
       create:
         added_to_document_set: '%{num_added}個のドキュメントがドキュメントセット %{project_name}に追加されました'

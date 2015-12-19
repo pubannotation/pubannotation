@@ -64,10 +64,10 @@ Spork.prefork do
       DatabaseCleaner.clean_with(:truncation)
     end
 
-    config.around(:each) do |example|
-      DatabaseCleaner.cleaning do
-        example.run
-        ThinkingSphinx::Test.index
+    # Elasticsearch spec
+    config.before(:each) do
+      [Doc].each do |model|
+        model.__elasticsearch__.create_index!(force: true)
       end
     end
   end

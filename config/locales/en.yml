@@ -335,6 +335,7 @@ en:
         delay_save_annotations: Annotations will be saved in a few minutes.
       search:
         not_found: No docs found matches conditions
+        greater_than_search_size: 'show %{search_size} results in %{total}results'
     pmcdocs:
       create:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'

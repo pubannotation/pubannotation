@@ -4,6 +4,17 @@ class Doc < ActiveRecord::Base
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
 
+  # max search size for Elasticsearch
+  # this value must lower equal to Elasticsearch.max_result_window value
+  # set Elasticsearch.max_result_window value command
+  # curl -XPUT 'localhost:9200/docs/_settings' -d '
+  # {
+  #     "index" : {
+  #         "max_result_window" : 50000(value)
+  #     }
+  # }'
+  SEARCH_SIZE = 5000
+
   settings index: {
     analysis: {
       tokenizer: {
@@ -29,11 +40,13 @@ class Doc < ActiveRecord::Base
         indexes :sourcedb, type: 'string', analyzer: 'ngram_analyzer'
         indexes :sourceid, type: 'string', analyzer: 'ngram_analyzer'
         indexes :body, type: 'string', analyzer: 'ngram_analyzer'
-        indexes :docs_projects do
+
+        indexes :docs_projects, type: 'nested' do
           indexes :doc_id
           indexes :project_id
         end
-        indexes :projects do
+
+        indexes :projects, type: 'nested' do
           indexes :id, index: :not_analyzed
         end
       end
@@ -42,7 +55,7 @@ class Doc < ActiveRecord::Base
   def as_indexed_json(options={})
     as_json(
       only: [:id, :sourcedb, :sourceid, :body],
-      include: [:projects]  
+      include: { projects: {only: :id} }  
     )
   end
   
@@ -140,6 +153,63 @@ class Doc < ActiveRecord::Base
     order(sort_order)
   }
 
+  scope :diff, lambda{|date_time_since|
+    where(['created_at > ?', date_time_since])
+  }
+
+  def self.search_docs(attributes = {})
+    minimum_should_match = 0
+    minimum_should_match += 1 if attributes[:sourcedb].present?
+    minimum_should_match += 1 if attributes[:sourceid].present?
+    minimum_should_match += 1 if attributes[:body].present?
+
+    if attributes[:project_id].present?
+      must_array = [
+        {match: {
+            'projects.id' => attributes[:project_id]
+          }
+        }
+      ] 
+    end
+
+    docs = search(
+      query: {
+        bool:{
+          must: must_array,
+          should: [ 
+            {match: {
+              sourcedb: {
+                query: attributes[:sourcedb],
+                fuzziness: 0
+              }
+            }
+            },
+            {match: {
+              sourceid: {
+                query: attributes[:sourceid],
+                fuzziness: 0
+              }
+            }
+            },
+            {match: {
+              body: {
+                query: attributes[:body],
+                fuzziness: 'AUTO'
+              }
+            }
+            },
+          ],
+          minimum_should_match: minimum_should_match
+        }
+      },
+      size: SEARCH_SIZE,
+    )
+    return {
+      total: docs.results.total,
+      docs: docs.records.order('sourcedb ASC, sourceid ASC')
+    }
+  end
+
   def descriptor
     descriptor  = self.sourcedb + ':' + self.sourceid
     descriptor += '-' + self.serial.to_s if self.has_divs?
@@ -170,7 +240,8 @@ class Doc < ActiveRecord::Base
     !self.get_doc(docspec).nil?
   end
 
-  def self.import(sourcedb, sourceid)
+  def self.import_from_sequence(sourcedb, sourceid)
+    date_time_since = DateTime.now
     raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
     raise ArgumentError, "sourceid is empty" unless sourceid.present?
 
@@ -197,6 +268,7 @@ class Doc < ActiveRecord::Base
     end
 
     divs.each{|div| raise IOError, "Failed to save the document" unless div.save}
+    index_diff(date_time_since)
     divs
   end
 
@@ -561,6 +633,8 @@ class Doc < ActiveRecord::Base
   end
   
   def self.create_doc(doc_hash, attributes = {})
+    date_time_since = DateTime.now
+    # TODO div_hash always nil
     if divs_hash.present?
       divs = Array.new
       divs_hash.each_with_index do |div_hash, i|
@@ -577,11 +651,13 @@ class Doc < ActiveRecord::Base
         divs << doc if doc.save
       end
     end
+    index_diff(date_time_since)
     return divs
   end
 
 
   def self.create_divs(divs_hash, attributes = {})
+    date_time_since = DateTime.now
     if divs_hash.present?
       divs = Array.new
       divs_hash.each_with_index do |div_hash, i|
@@ -598,6 +674,7 @@ class Doc < ActiveRecord::Base
         divs << doc if doc.save
       end
     end
+    index_diff(date_time_since)
     return divs
   end
 
@@ -665,5 +742,15 @@ class Doc < ActiveRecord::Base
     annotations[:relations] = hrelations if hrelations
     annotations[:modifications] = hmodifications if hmodifications
     annotations
+  end
+
+  def self.index_diff(date_time_since)
+    Delayed::Job.enqueue(DelayedRake.new("elasticsearch:import:model", class: 'Doc', scope: "diff(#{ date_time_since })"))
+  end
+
+  def self.dummy(repeat_times)
+    repeat_times.times do |t|
+      create({sourcedb: 'FFIK', body: "body is #{ t }", sourceid: t.to_s, serial: 0})
+    end
   end
 end

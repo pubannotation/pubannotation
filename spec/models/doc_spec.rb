@@ -454,6 +454,70 @@ describe Doc do
       end
     end
   end
+
+  describe 'search_docs' do
+    let(:sourcedb) { 'sdb' }
+    let(:sourceid) { '123456' }
+    let(:body) { 'body' }
+    let(:doc_1) { FactoryGirl.create(:doc, sourceid: sourceid, sourcedb: sourcedb, body: body) }
+
+    context 'when params sourcedb, sourceid and body present' do
+      it '' do
+        expect(Doc).to receive(:search)
+        Doc.search_docs({sourcedb: sourcedb, sourceid: sourceid, body: body})
+      end
+    end
+  end
+
+  describe 'import_from_sequence' do
+    # TODO just assserting about call index_diff
+    let(:divs) { [{body: 'b', heading: 'heading'}] }
+    let(:doc_sequence) { double(:doc_sequence, divs: divs, source_url: 'src')}
+    let(:date_time_now) { DateTime.now }
+
+    before do
+      divs.stub(:source_url).and_return('src')
+      Object.stub_chain(:const_get, :new).and_return(doc_sequence)
+      Doc.stub(:index_diff).and_return(nil)
+      DateTime.stub(:now).and_return(date_time_now)
+    end
+
+    it 'should call index_diff' do
+      expect(Doc).to receive(:index_diff).with(date_time_now)
+      Doc.import_from_sequence('PMC', '123456')
+    end
+  end
+
+  describe 'create_doc' do
+    # TODO just assserting about call index_diff
+    let(:date_time_now) { DateTime.now }
+
+    before do
+      Doc.stub(:index_diff).and_return(nil)
+      Doc.stub(:divs_hash).and_return(nil)
+      DateTime.stub(:now).and_return(date_time_now)
+    end
+
+    it 'should call index_diff' do
+      expect(Doc).to receive(:index_diff).with(date_time_now)
+      Doc.create_doc(nil)
+    end
+  end
+
+  describe 'create_divs' do
+    # TODO just assserting about call index_diff
+    let(:date_time_now) { DateTime.now }
+
+    before do
+      Doc.stub(:index_diff).and_return(nil)
+      DateTime.stub(:now).and_return(date_time_now)
+    end
+
+    it 'should call index_diff' do
+      expect(Doc).to receive(:index_diff).with(date_time_now)
+      Doc.create_divs(nil)
+    end
+  end
   
   describe 'self.order_by' do
     context 'when docs present' do

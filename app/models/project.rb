@@ -773,7 +773,7 @@ class Project < ActiveRecord::Base
         self.docs << divs
       end
     else
-      divs = Doc.import(sourcedb, sourceid)
+      divs = Doc.import_from_sequence(sourcedb, sourceid)
       raise IOError, "Failed to get the document" unless divs.present?
       self.docs << divs
     end
@@ -785,6 +785,7 @@ class Project < ActiveRecord::Base
     divs = []
     num_failed = 0
     if options[:docs_array].present?
+      date_time_since = DateTime.now
       options[:docs_array].each do |doc_array_params|
         # all of columns insert into database need to be included in this hash.
         doc_array_params[:sourcedb] = options[:sourcedb] if options[:sourcedb].present?
@@ -801,6 +802,7 @@ class Project < ActiveRecord::Base
         if doc.valid?
           doc.save
           divs << doc
+          Doc.index_diff(date_time_since)
         else
           num_failed += 1
         end

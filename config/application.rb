@@ -18,12 +18,12 @@ module Pubann
 
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
-    config.autoload_paths += %W(#{config.root}/app/jobs)
+    config.autoload_paths += %W(#{config.root}/app/jobs #{Rails.root}/lib)
     
     # Rquire lib/
-    require 'doc_sequencer_pubmed'
-    require 'doc_sequencer_pmc'
-    require 'doc_sequencer_firstauthor'
+    # require 'doc_sequencer_pubmed'
+    # require 'doc_sequencer_pmc'
+    # require 'doc_sequencer_firstauthor'
 
     config.i18n.enforce_available_locales = true
 
