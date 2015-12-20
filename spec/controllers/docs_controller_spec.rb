@@ -268,7 +268,7 @@ describe DocsController do
     end
   end
 
-  describe 'search' do
+  describe 'search', elasticsearch: true do
     before do
       user = FactoryGirl.create(:user)
       @project = FactoryGirl.create(:project, user: user)

@@ -2570,20 +2570,18 @@ describe Project do
     end
   end
 
-  describe 'create_user_sourcedb_docs' do
+  describe 'create_user_sourcedb_docs', elasticsearch: true do
     # TODO just assserting about call index_diff
     let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user))}
-    let(:date_time_now) { DateTime.now }
     let(:docs_array) { {sourcedb: ''} }
 
     before do
       Doc.stub(:index_diff).and_return(nil)
       Doc.any_instance.stub(:valid?).and_return(true)
-      DateTime.stub(:now).and_return(date_time_now)
     end
 
     it 'should call index_diff' do
-      expect(Doc).to receive(:index_diff).with(date_time_now)
+      expect(Doc).to receive(:index_diff)
       project.create_user_sourcedb_docs({docs_array: docs_array})  
     end
   end

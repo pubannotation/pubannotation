@@ -469,52 +469,46 @@ describe Doc do
     end
   end
 
-  describe 'import_from_sequence' do
+  describe 'import_from_sequence', elasticsearch: true do
     # TODO just assserting about call index_diff
     let(:divs) { [{body: 'b', heading: 'heading'}] }
     let(:doc_sequence) { double(:doc_sequence, divs: divs, source_url: 'src')}
-    let(:date_time_now) { DateTime.now }
 
     before do
       divs.stub(:source_url).and_return('src')
       Object.stub_chain(:const_get, :new).and_return(doc_sequence)
       Doc.stub(:index_diff).and_return(nil)
-      DateTime.stub(:now).and_return(date_time_now)
     end
 
     it 'should call index_diff' do
-      expect(Doc).to receive(:index_diff).with(date_time_now)
+      expect(Doc).to receive(:index_diff)
       Doc.import_from_sequence('PMC', '123456')
     end
   end
 
-  describe 'create_doc' do
+  describe 'create_doc', elasticsearch: true do
     # TODO just assserting about call index_diff
-    let(:date_time_now) { DateTime.now }
 
     before do
       Doc.stub(:index_diff).and_return(nil)
       Doc.stub(:divs_hash).and_return(nil)
-      DateTime.stub(:now).and_return(date_time_now)
     end
 
     it 'should call index_diff' do
-      expect(Doc).to receive(:index_diff).with(date_time_now)
+      expect(Doc).to receive(:index_diff)
       Doc.create_doc(nil)
     end
   end
 
-  describe 'create_divs' do
+  describe 'create_divs', elasticsearch: true do
     # TODO just assserting about call index_diff
-    let(:date_time_now) { DateTime.now }
 
     before do
       Doc.stub(:index_diff).and_return(nil)
-      DateTime.stub(:now).and_return(date_time_now)
     end
 
     it 'should call index_diff' do
-      expect(Doc).to receive(:index_diff).with(date_time_now)
+      expect(Doc).to receive(:index_diff)
       Doc.create_divs(nil)
     end
   end
