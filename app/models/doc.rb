@@ -153,10 +153,10 @@ class Doc < ActiveRecord::Base
     sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
     order(sort_order)
   }
+  # NOTE scope for elasticsearch:import:model
+  # cannot use argument (raise error)
+  scope :diff, where(['created_at > ?', 1.hour.ago])
 
-  scope :diff, lambda{|date_time_since|
-    where(['created_at > ?', date_time_since])
-  }
 
   def self.search_docs(attributes = {})
     minimum_should_match = 0
@@ -242,7 +242,6 @@ class Doc < ActiveRecord::Base
   end
 
   def self.import_from_sequence(sourcedb, sourceid)
-    date_time_since = DateTime.now
     raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
     raise ArgumentError, "sourceid is empty" unless sourceid.present?
 
@@ -269,7 +268,7 @@ class Doc < ActiveRecord::Base
     end
 
     divs.each{|div| raise IOError, "Failed to save the document" unless div.save}
-    index_diff(date_time_since)
+    index_diff
     divs
   end
 
@@ -634,7 +633,6 @@ class Doc < ActiveRecord::Base
   end
   
   def self.create_doc(doc_hash, attributes = {})
-    date_time_since = DateTime.now
     # TODO div_hash always nil
     if divs_hash.present?
       divs = Array.new
@@ -652,13 +650,12 @@ class Doc < ActiveRecord::Base
         divs << doc if doc.save
       end
     end
-    index_diff(date_time_since)
+    index_diff
     return divs
   end
 
 
   def self.create_divs(divs_hash, attributes = {})
-    date_time_since = DateTime.now
     if divs_hash.present?
       divs = Array.new
       divs_hash.each_with_index do |div_hash, i|
@@ -675,7 +672,7 @@ class Doc < ActiveRecord::Base
         divs << doc if doc.save
       end
     end
-    index_diff(date_time_since)
+    index_diff
     return divs
   end
 
@@ -745,8 +742,8 @@ class Doc < ActiveRecord::Base
     annotations
   end
 
-  def self.index_diff(date_time_since)
-    Delayed::Job.enqueue(DelayedRake.new("elasticsearch:import:model", class: 'Doc', scope: "diff(#{ date_time_since })"))
+  def self.index_diff
+    Delayed::Job.enqueue(DelayedRake.new("elasticsearch:import:model", class: 'Doc', scope: "diff"))
   end
 
   def self.dummy(repeat_times)

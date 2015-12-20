@@ -333,11 +333,10 @@ class DocsController < ApplicationController
       doc_hash[:sourceid] = lastdoc.nil? ? '1' : "#{lastdoc.sourceid.to_i + 1}"
     end
 
-    date_time_since = DateTime.now
     @doc = Doc.new(doc_hash)
     respond_to do |format|
       if @doc.save
-        Doc.index_diff(date_time_since)
+        Doc.index_diff
         @project, notice = get_project(params[:project_id])
         @project.docs << @doc if @project.present?
         get_project(params[:project_id])
