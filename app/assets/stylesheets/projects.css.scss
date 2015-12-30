@@ -1,0 +1,50 @@
+@import 'variables';
+
+.project-title {
+  display: inline-block;
+  position: relative;
+  left: -10px;
+  margin: 10px 0 10px 0;
+  padding: 4px;
+  border-style: ridge;
+  border-width: 5px;
+  font-size: x-large;
+  font-weight: bold;
+  background: repeating-linear-gradient(
+    45deg,
+    #a0adec,
+    #a0adec 10px,
+    #96a2d8 10px,
+    #96a2d8 20px
+  );
+}
+
+.projects_header_name{
+  width: 10em;
+}
+
+.projects_header_annotations_count {
+  width: 6em;
+}
+
+.projects_header_annotations_count {
+  width: 6em;
+}
+
+.projects_header_author,
+.projects_header_user{
+  width: 8em;
+}
+
+.projects_header_status {
+  width: 6em;
+}
+
+.projects_header_date {
+  width: 6em;
+}
+
+
+#projects_search{
+  width: 100%;
+}

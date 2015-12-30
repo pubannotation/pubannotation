@@ -74,6 +74,9 @@ class Project < ActiveRecord::Base
     end
   }
 
+  scope :manual, where('process = 1')
+  scope :automatic, where('process = 2')
+
   # scope for home#index
   scope :top_annotations_count,
     order('annotations_count DESC').order('projects.updated_at DESC').order('status ASC').limit(10)

@@ -1,5 +1,43 @@
 @import 'variables';
 
+
+
+@media (max-width: 1350px) {
+}
+
+@media (min-width: 1351px) {
+}
+
+.group {
+  display: inline-block;
+  width: 845px;
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.panel {
+  display: inline-block;
+  width: 400px;
+  border-width: 0;
+  margin: 0;
+  margin-left: 5px;
+  padding: 0;
+  padding-left: 5px;
+  vertical-align: top;
+}
+
+.panel-long {
+  display: inline-block;
+  width: 810px;
+  border-width: 0;
+  margin: 0;
+  margin-left: 5px;
+  padding: 0;
+  padding-left: 5px;
+  vertical-align: top;
+}
+
 #announcements {
 	margin-top: 10px;
 	border: $main_color 1px solid;

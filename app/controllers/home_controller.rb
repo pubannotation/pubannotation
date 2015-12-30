@@ -12,7 +12,9 @@ class HomeController < ApplicationController
       end
     end
     @projects_number = Project.accessible(current_user).length
-    @projects_top_annotations_count = Project.accessible(current_user).for_home.top_annotations_count
-    @projects_top_recent = Project.accessible(current_user).for_home.top_recent
+    @projects_top_manual_annotations_count = Project.accessible(current_user).for_home.manual.top_annotations_count
+    @projects_top_manual_recent = Project.accessible(current_user).for_home.manual.top_recent
+    @projects_top_automatic_annotations_count = Project.accessible(current_user).for_home.automatic.top_annotations_count
+    @projects_top_automatic_recent = Project.accessible(current_user).for_home.automatic.top_recent
   end
 end

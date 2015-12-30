@@ -39,25 +39,6 @@ body {
   text-transform:capitalize;
 }
 
-.project-title {
-  display: inline-block;
-  position: relative;
-  left: -10px;
-  margin: 10px 0 10px 0;
-  padding: 4px;
-  border-style: ridge;
-  border-width: 5px;
-  font-size: x-large;
-  font-weight: bold;
-  background: repeating-linear-gradient(
-    45deg,
-    #a0adec,
-    #a0adec 10px,
-    #96a2d8 10px,
-    #96a2d8 20px
-  );
-}
-
 .home_button {
   margin: 0;
   border-width: 0;
@@ -111,57 +92,6 @@ body {
 .pane h3 {
   position: relative;
   left: -10px;
-}
-
-h1 {
-  position: relative;
-  left: -5px;
-  width:600px;
-  border:solid $main_color;
-  border-width: 0px 0px 1px 7px;
-  padding-left: 6px;
-  margin-top: 20px;
-  font-family: sans-serif;
-  font-size: large;
-}
-
-h1:first-letter{
-  text-transform:capitalize;
-}
-
-h2 {
-  white-space: nowrap;
-  width:500px;
-  margin-top:25px;
-  margin-bottom:10px;
-  padding:0px 2px 1px 4px;
-  border: solid $main_color;
-  border-width: 0 0 1px 7px;
-  border-top-left-radius:7px;
-  border-bottom-left-radius:7px;
-  font-size: small;
-}
-
-h3 {
-  position: relative;
-  width:0.4em;
-  white-space:nowrap;
-
-  border-style: solid;
-  border-color: $main_color;
-  border-width: 0 0 0 1px;
-  border-top-left-radius: 5px;
-  margin: 8px 0;
-  padding: 0 8px;
-  font-size: small;
-  /* fallback (Opera) */
-  background: $main_color;
-  /* Mozilla: */
-  background: -moz-linear-gradient(left, $main_color, #FFFFFF);
-  /* Chrome, Safari:*/
-  background: -webkit-gradient(linear, left top, right top, from($main_color), to(#FFFFFF));
-  /* MSIE */
-  filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='$main_color', EndColorStr='#FFFFFF', GradientType=1);
 }
 
 ul.note {
@@ -461,21 +391,6 @@ $indicator_size : 100px;
   z-index: 9999;
 }
 
-.projects_header_name{
-  width: 12em;
-}
-.projects_header_annotations_count,
-.projects_header_denotations_count,
-.projects_header_relations_count{
-  width: 6em;
-}
-.projects_header_author,
-.projects_header_user{
-  width: 8em;
-}
-#projects_search{
-  width: 100%;
-}
 
 #projects_search input,
 #docs_search input{

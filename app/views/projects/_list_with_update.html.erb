@@ -1,0 +1,20 @@
+<% if projects.blank? %>
+  <p>none</p>
+<% else %>
+  <table style="width:300px; table-layout:fixed">
+    <tr>
+      <th class="projects_header_name"><%= t('activerecord.attributes.project.name') -%></th>
+      <th class="projects_header_date"><%= t('activerecord.attributes.project.updated_at') -%></th>
+      <th class="projects_header_status"><%= t('activerecord.attributes.project.status') -%></th>
+    </tr>
+
+    <% projects.each do |project| %>
+      <% project_path = project_path(project.name) -%>
+      <tr>
+        <td style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis"><%= link_to_project(project) -%></td>
+        <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
+        <td><%= project.status_text -%></td>
+      </tr>
+    <% end %>
+  </table>
+<% end %>
