@@ -1,11 +1,56 @@
 @import 'variables';
 
-#announcements {
-	margin-top: 10px;
+#news {
+	margin: 10px;
+	width: 450px;
 	border: $main_color 1px solid;
 	box-shadow: 2px 2px 2px;
 	background-color: #fff0f0;
 	ul {
 		padding-left: 1em;
 	}
+}
+
+#news legend {
+	font-family: sans-serif;
+	font-size: medium;
+	font-weight: bold;
+}
+
+.panel {
+	display: inline-block;
+	width: 500px;
+	vertical-align: top;
+}
+
+.show-on-mobiles {
+  display: none;
+}
+
+/* Responsive Stuff */
+@media screen and (max-width: 568px) {
+  /* Stack anything that isn’t full-width on smaller screens */
+  .grid .unit {
+    width: 100% !important;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .unit .grid .unit {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  /* Sometimes, you just want to be different on small screens */
+  .center-on-mobiles {
+    text-align: center !important;
+  }
+  .hide-on-mobiles {
+    display: none !important;
+  }
+  .show-on-mobiles {
+    display: block !important;
+  }
+  a .show-on-mobiles {
+    display: inline !important;
+  }
 }

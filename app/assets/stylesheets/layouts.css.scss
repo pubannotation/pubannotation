@@ -1,7 +1,7 @@
 @import 'variables';
 
 .frame {
-  position:relative;
+  position: relative;
   padding: 10px;
   background-color: $main_color;
   color: #aaaaaa;
@@ -88,6 +88,7 @@
 }
 
 #main {
+  position: relative;
   margin:0px $base_margin;
 }
 

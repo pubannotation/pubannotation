@@ -1,7 +1,29 @@
-#logo{
+#logo {
   display: inline-block;
   vertical-align: middle;
   margin-right: 10px;
+}
+
+.corner-menu {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 0;
+  font-size: smaller;
+}
+
+.corner-menu .section {
+  display: inline-block;
+}
+
+.corner-menu .section ul {
+  margin: 0 4px;
+  padding: 0;
+}
+
+.corner-menu .section li {
+  display: inline-block;
+  margin: 0 4px;
 }
 
 nav ul {

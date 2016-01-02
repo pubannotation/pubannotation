@@ -2,24 +2,20 @@
 > <%= t('views.paths.home') %>
 <% end %>
 
-<div class="two-columns">
-	<div class="column-left">
-		<!-- <h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1> -->
-		<h1><%= link_to t('activerecord.models.doc').pluralize.capitalize.html_safe, docs_path %></h1>
-		<% cache 'sourcedbs' do -%>
-		<%= render :partial => "docs/sourcedbs" -%>
-		<% end %>
-	</div>
+<div class="panel show-on-mobiles">
+	<%= render :partial => "news" %>
+</div>
 
-	<div class="column-right">
-<!-- 		<fieldset id="announcements">
-		<legend>Notice</legend>
-		<ul>
-		<li>Next maintenance is scheduled for 29 March (7AM - 9AM UTC).</li>
-		</ul>
-		</fieldset>
- -->	</div>
+<div class="panel">
+	<!-- <h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1> -->
+	<h1><%= link_to t('activerecord.models.doc').pluralize.capitalize.html_safe, docs_path %></h1>
+	<% cache 'sourcedbs' do -%>
+	<%= render :partial => "docs/sourcedbs" -%>
+	<% end %>
+</div>
 
+<div class="panel hide-on-mobiles">
+	<%= render :partial => "news" %>
 </div>
 
 <h1>
@@ -29,11 +25,11 @@
 	<%= link_to t('views.shared.show_all'), projects_path, {:class=> 'control button'} -%>
 </h1>
 
-<div style="display:inline-block; margin-right:5px">
+<div class="panel">
 <h3>With most annotations</h3>
 <%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_annotations_count, :scope => nil } %>
 </div>
-<div style="display:inline-block">
+<div class="panel">
 <h3>Recently updated</h3>
 <%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_recent, :scope => nil } %>
 </div>

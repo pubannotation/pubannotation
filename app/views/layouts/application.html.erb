@@ -22,18 +22,6 @@
 					<%= yield :path -%>
 				</div>
 			</div>
-			<div class="right menu">
-				<div id="language menu">
-					<%= language_switch_helper.html_safe %>
-				</div>
-
-				<div id="account menu">
-					<ul>
-						<li><%= render 'devise/menu/registration_items' %></li>
-						<li><%= render 'devise/menu/login_items' %></li>
-					</ul>
-				</div>
-			</div>
 		</div>
 		<div id="notice">
 			<%= notice.html_safe if notice -%>
