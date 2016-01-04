@@ -73,10 +73,24 @@
 .mobile-nav li {
   display: table-cell;
   width: 25%;
-  padding: 8px;
+  padding: 7px;
 }
 
-@media (max-width: 723px){
+.notice {
+  margin: 5px 0;
+}
+
+.notice ul {
+  margin: 0;
+  padding: 0 0 0 20px;
+}
+
+.notice ul li {
+  margin: 5px 0 0 0;
+  padding: 0;
+}
+
+@media (max-width: 723px) {
   #header {
     text-align: center;
   }
