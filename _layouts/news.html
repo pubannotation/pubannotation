@@ -2,18 +2,17 @@
 layout: default
 ---
 
-  <section class="news">
-    <div class="grid">
+<section class="docs">
 
-      {% include news_contents_mobile.html %}
+	<div class="side-contents hide-on-mobiles">
+	  <aside>
+		{% include news_contents.html %}
+	  </aside>
+	</div>
 
-      <div class="unit four-fifths">
-        {{ content }}
-      </div>
-
-      {% include news_contents.html %}
-
-      <div class="clear"></div>
-
+    <div class="content">
+		{{ content }}
     </div>
-  </section>
+
+    <div class="clear"></div>
+</section>

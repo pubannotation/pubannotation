@@ -264,11 +264,11 @@ body > footer a:hover img {
 /* Article - Used for both docs and news */
 
 article {
-  background: #fff;
+  background: #fafafa;
   border-radius: 10px;
   padding: 20px;
-  margin: 0 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,.1);
+  margin: 5px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.2);
   font-size: small;
 }
 
@@ -302,13 +302,12 @@ aside h4 {
   font-size: 14px;
   font-weight: 700;
   padding: 0 0 10px 30px;
-  margin-left: -30px;
-  display: inline-block;
+  margin-left: -2em;
   border-bottom: 1px solid #c00;
 }
 
 aside ul {
-  padding-left: 0;
+  padding-left: 2em;
 }
 
 aside ul:first-child {
@@ -317,13 +316,20 @@ aside ul:first-child {
 
 aside li {
   font-size: 14px;
+  margin-top: 0;
+  padding: 5px 0;
 }
+
+aside li.current {
+  background-color: #77f;
+}
+
+aside li.current a {
+  color: #fff;
+}
+
 
 /* Documentation */
-
-.docs article {
-  min-height: 800px;
-}
 
 .docs .content {
   padding: 0;
@@ -437,6 +443,7 @@ article h2:first-child {
   text-transform: uppercase;
   font-weight: bold;
   text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+  color: #ffffff;
 }
 
 @media (max-width: 568px){
