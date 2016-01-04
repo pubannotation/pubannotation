@@ -1,0 +1,28 @@
+.side-contents {
+  padding-left: 4px;
+  display: block;
+  width: 20%;
+  max-width: 15em;
+  float: left;
+}
+
+.content {
+  display: block;
+  width: 78%;
+  max-width: 80em;
+  float: left;
+}
+
+.label {
+  float: left;
+  text-transform: uppercase;
+  font-weight: bold;
+  text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+}
+
+
+@media screen and (max-width: 568px) {
+  .doc-content {
+    width:100%;
+  }
+}
