@@ -18,59 +18,6 @@ body > header, body > section, body > footer {
   clear: both;
 }
 
-/* Header */
-
-body > header h1, body > header nav {
-  display: inline-block;
-}
-
-body > header h1 span {
-  display: none;
-}
-
-nav ul {
-  padding: 0;
-  margin: 0;
-}
-
-nav li {
-  display: inline-block;
-}
-
-/* Footer */
-
-body > footer {
-  background: #222;
-  font-size: 16px;
-  padding-bottom: 5px;
-  color: #888;
-  margin-top: 40px;
-}
-
-body > footer a {
-  color: #fff;
-}
-
-body > footer .align-right p, body > footer img {
-  display: inline-block;
-}
-
-body > footer img {
-  position: relative;
-  top: 8px;
-  margin-left: 5px;
-  width: 100px;
-  height: 30px;
-  opacity: .8;
-  padding: 1px;
-  -webkit-transition: opacity .2s;
-  -moz-transition: opacity .2s;
-  transition: opacity .2s;
-}
-
-body > footer a:hover img {
-  opacity: 1;
-}
 
 @media (max-width: 568px){
   footer .one-third p {

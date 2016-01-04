@@ -12,9 +12,12 @@ body {
 }
 
 .frame a {
-    color: #aaaaff;
+  color: #aaaaff;
 }
 
+.frame a:hover {
+  color: #ccccff;
+}
 #footer {
   margin-top: 20px;
 }
