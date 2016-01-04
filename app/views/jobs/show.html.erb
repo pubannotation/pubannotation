@@ -19,6 +19,7 @@
 
 <% end %>
 
+<section>
 <%= render :partial => 'projects/titlebar' -%>
 
 <h1>
@@ -52,6 +53,7 @@ Background job #<%= @job.delayed_job_id %>: <%= @job.name %>
 </table>
 
 <% unless @job.messages.empty? %>
+<section>
 <h2>Problem reports (<%= @job.messages.count %>)</h2>
 <p class="note">The following items were rejected due to the reported reasons.</p>
 <table>
@@ -68,4 +70,6 @@ Background job #<%= @job.delayed_job_id %>: <%= @job.name %>
 </tr>
 <% end %>
 </table>
+</section>
 <% end %>
+</section>

@@ -3,19 +3,21 @@
 <% else %>
   <table>
     <tr>
-      <th class="projects_header_name"><%= sortable(Project, 'name', t('activerecord.attributes.project.name')) %></th>
+      <th><%= sortable(Project, 'name', t('activerecord.attributes.project.name')) %></th>
+      <th class="projects_header_type"></th>
       <th class="projects_header_annotations_count"><%= sortable(Project, 'annotations_count', t('views.shared.annotations_count')) -%></th>
-      <th style="width:6em"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
-      <th style="width:6em"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
+      <th class="projects_header_date"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
+      <th class="projects_header_status"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
     </tr>
 
     <% projects.each do |project| %>
       <% project_path = project_path(project.name) -%>
       <tr>
-        <td nowrap><%= link_to_project(project) -%></td>
+        <td><%= link_to_project(project) -%></td>
+        <td style="text-align:center"><%= type_badge(project).html_safe %></td>
         <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
-        <td><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
-        <td><%= project.status_text -%></td>
+        <td style="text-align:center"><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
+        <td style="text-align:center"><%= project.status_text -%></td>
       </tr>
     <% end %>
   </table>

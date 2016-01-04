@@ -12,11 +12,19 @@
 <% end -%>
 
 <% if @project.present? -%>
-  <%= render :partial => 'projects/titlebar' -%>
+	<section>
+		<%= render :partial => 'projects/titlebar' -%>
 <% end -%>
 
+<section>
 <%= render partial: 'divs', locals: {title: "Divisions of #{params[:sourcedb]}:#{params[:sourceid]}", divs: @divs} -%>
 
+<section>
 <h3>Search divisions</h3>
 <%= render partial: 'search_form' -%>
+</section>
+</section>
 
+<% if @project.present? -%>
+	</section>
+<% end -%>

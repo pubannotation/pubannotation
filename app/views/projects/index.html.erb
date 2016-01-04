@@ -12,6 +12,7 @@
   > <%= t('activerecord.models.project').pluralize %>
 <% end %>
 
+<section>
 <h1>
   <%= t('activerecord.models.project').pluralize.capitalize.html_safe %>
   <span class='info'>(<%= total_number(@projects) -%>)</span>
@@ -24,4 +25,4 @@
   <% end %>
 </h1>
 <%= render :partial => "list", :locals => {:doc => @doc, :projects => @projects, :scope => nil} %>
-
+</section>

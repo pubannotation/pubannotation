@@ -17,8 +17,10 @@
   > jobs
 <% end %>
 
+<section>
 <%= render :partial => 'projects/titlebar' -%>
 
+<section>
 <h1>Background jobs
 <%= link_to 'Clear finished jobs', project_clear_finished_jobs_path(@project.name), method: :delete, :class => 'control button' %>
 </h1>
@@ -61,3 +63,5 @@
   </tr>
 <% end %>
 </table>
+</section>
+</section>

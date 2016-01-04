@@ -1,28 +1,36 @@
 <%= render :partial => 'docs/path'-%>
-<%= render :partial => 'projects/titlebar' -%>
-<%= render :partial => 'docs/titlebar' -%>
-<%= render :partial => 'docs/content'-%>
 
-<%
-	postfix = if @span.present?
-		t('views.annotations.to_this_span')
-	else
-		t('views.annotations.to_this_document')
-	end
--%>
-<%= render :partial => 'annotations/titlebar' -%>
-<%= render :partial => 'annotations/summary' -%>
-
-<% if user_signed_in? and @project.editable?(current_user) %>
-<h2>
-<%= t('views.docs.automatic_annotation') %>
-<a href="http://www.pubannotation.org/docs/obtain-annotation/">
-<%= image_tag("hint.png",
-      :size => "16x16",
-      :title => "click for help") %>
-</a>
-</h2>
-<%= render :partial => 'annotations/obtain_annotation' -%>
+<% if @project.present? -%>
+	<section>
+		<%= render :partial => 'projects/titlebar' -%>
 <% end %>
 
-<%= link_to t('views.shared.annotations'), annotations_url, class: 'button' if @project.blank? -%>
+<section>
+	<%= render :partial => 'docs/titlebar' -%>
+	<%= render :partial => 'docs/content'-%>
+
+	<section>
+		<%= render :partial => 'annotations/titlebar' -%>
+		<%= render :partial => 'annotations/summary' -%>
+	</section>
+
+	<% if user_signed_in? and @project.editable?(current_user) %>
+		<section>
+			<h2>
+				<%= t('views.docs.automatic_annotation') %>
+				<a href="http://www.pubannotation.org/docs/obtain-annotation/">
+				<%= image_tag("hint.png",
+				      :size => "16x16",
+				      :title => "click for help") %>
+				</a>
+			</h2>
+			<%= render :partial => 'annotations/obtain_annotation' -%>
+		</section>
+	<% end %>
+
+	<%= link_to t('views.shared.annotations'), annotations_url, class: 'button' if @project.blank? -%>
+</section>
+
+<% if @project.present? -%>
+	</section>
+<% end %>

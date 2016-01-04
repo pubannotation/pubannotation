@@ -1,8 +1,19 @@
 @import 'variables';
 
+.panel {
+	display: inline-block;
+	vertical-align: top;
+	width: 480px;
+}
+
+.panel table {
+	table-layout: fixed;
+	width: 100%;
+}
+
 #news {
 	margin: 10px;
-	width: 450px;
+	width: 440px;
 	border: $main_color 1px solid;
 	box-shadow: 2px 2px 2px;
 	background-color: #fff0f0;
@@ -17,18 +28,19 @@
 	font-weight: bold;
 }
 
-.panel {
-	display: inline-block;
-	width: 500px;
-	vertical-align: top;
-}
-
 .show-on-mobiles {
   display: none;
 }
 
+
+
 /* Responsive Stuff */
-@media screen and (max-width: 568px) {
+// @media screen and (max-width: 568px) {
+@media screen and (max-width: 1019px) {
+	.panel {
+		display: block;
+	}
+
   /* Stack anything that isn’t full-width on smaller screens */
   .grid .unit {
     width: 100% !important;

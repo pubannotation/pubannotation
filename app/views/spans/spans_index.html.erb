@@ -1,20 +1,27 @@
 <%= render :partial => 'docs/path' -%>
-<%= render :partial => 'shared/textae_css_js'-%>
-<%= render :partial => 'shared/textae_div', locals:{target_json_url: "#{request.url}.json" } -%>
 
-<% if @spans_index.present? -%>
-	<table>
-		<tr>
-			<th>
-				Span
-			</th>
-		</tr>
-		<% @spans_index.each do |span| -%>
-			<tr>
-				<td>
-					<%= link_to "#{span[:span][:begin]}-#{span[:span][:end]}", span[:obj] -%>
-				</td>
-			</tr>
+<section>
+	<%= render :partial => 'docs/titlebar' -%>
+	<section>
+		<h2>Spans</h2>
+		<%= render :partial => 'shared/textae_css_js'-%>
+		<%= render :partial => 'shared/textae_div', locals:{target_json_url: "#{request.url}.json" } -%>
+
+		<% if @spans_index.present? -%>
+			<table>
+				<tr>
+					<th>
+						Span
+					</th>
+				</tr>
+				<% @spans_index.each do |span| -%>
+					<tr>
+						<td>
+							<%= link_to "#{span[:span][:begin]}-#{span[:span][:end]}", span[:obj] -%>
+						</td>
+					</tr>
+				<% end -%>
+			</table>
 		<% end -%>
-	</table>
-<% end -%>
+	</section>
+</section>

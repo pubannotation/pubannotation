@@ -14,10 +14,12 @@
 	
 	<body>
 		<div id="header" class="frame">
-			<%= render :partial => 'layouts/header' -%>
+			<div class="content">
+				<%= render :partial => 'layouts/header' -%>
+			</div>
 		</div>
 		<div id="top-ribbon">
-			<div class="left">
+			<div class="content">
 				<div id="path">
 					<%= yield :path -%>
 				</div>
@@ -29,10 +31,14 @@
 		</div>
 		
 		<div id="main">
-			<%= yield -%>
+			<div class="content">
+				<%= yield -%>
+			</div>
 		</div>
 		<div id="footer" class="frame">
-			<%= render :partial => 'layouts/footer' -%>
+			<div class="content">
+				<%= render :partial => 'layouts/footer' -%>
+			</div>
 		</div>
 		<div id='Indicator'></div>
 	</body>

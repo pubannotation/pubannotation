@@ -7,29 +7,35 @@
 </div>
 
 <div class="panel">
-	<!-- <h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1> -->
-	<h1><%= link_to t('activerecord.models.doc').pluralize.capitalize.html_safe, docs_path %></h1>
-	<% cache 'sourcedbs' do -%>
-	<%= render :partial => "docs/sourcedbs" -%>
-	<% end %>
+	<section>
+		<h1><%= link_to t('activerecord.models.doc').pluralize.capitalize.html_safe, docs_path %></h1>
+		<% cache 'sourcedbs' do -%>
+		<%= render :partial => "docs/sourcedbs" -%>
+		<% end %>
+	</section>
 </div>
 
 <div class="panel hide-on-mobiles">
 	<%= render :partial => "news" %>
 </div>
 
-<h1>
-	<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
-	<span class='info'>(<%= @projects_number -%>)</span>
-	<span class='control'><%= render partial: 'projects/search_all_form' -%></span>
-	<%= link_to t('views.shared.show_all'), projects_path, {:class=> 'control button'} -%>
-</h1>
+<section>
+	<h1>
+		<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
+		<span class='info'>(<%= @projects_number -%>)</span>
+		<span class='control'><%= render partial: 'projects/search_all_form' -%></span>
+	</h1>
 
-<div class="panel">
-<h3>With most annotations</h3>
-<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_annotations_count, :scope => nil } %>
-</div>
-<div class="panel">
-<h3>Recently updated</h3>
-<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_recent, :scope => nil } %>
-</div>
+	<div class="panel">
+		<section>
+			<h3>With most annotations</h3>
+			<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_annotations_count, :scope => nil } %>
+		</section>
+	</div>
+		<div class="panel">
+		<section>
+			<h3>Recently updated</h3>
+			<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_recent, :scope => nil } %>
+		</section>
+	</div>
+</section>

@@ -23,6 +23,16 @@ module ProjectsHelper
     link_to image_tag('home-24.png', alt: 'Home', title: 'Home', class: 'home_button'), @project.reference, :class => 'home_button' if @project.reference.present?
   end
 
+  def type_badge(project)
+    badge, btitle = case project.process_text
+      when 'manual', '手動' then [t('views.shared.manual_annotation_initial'), t('views.shared.manual_annotation')]
+      when 'automatic', '自動' then [t('views.shared.automatic_annotation_initial'), t('views.shared.automatic_annotation')]
+      else ['', '']
+    end
+
+    "<span class='badge' title='#{btitle}'>#{badge}</span>"
+  end
+
   def license_display_helper(license)
     case license
     when 'CC-BY'

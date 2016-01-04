@@ -1,12 +1,30 @@
 @import 'variables';
 
+body {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-family: Meiryo, "メイリオ", "MS PGothic","MS Pゴシック", osaka, Verdana, Geneva, sans-serif;
+  font-size: small;
+}
+
+.content {
+  position: relative;
+  margin: 0 auto;
+  max-width: 1010px;
+  text-align: left;
+  padding: 5px;
+}
+
 .frame {
   position: relative;
-  padding: 10px;
   background-color: $main_color;
   color: #aaaaaa;
   a {
     color: #aaaaff;
+  }
+  a:hover {
+    color: #ccccff;
   }
 }
 
@@ -15,23 +33,10 @@
 }
 
 #top-ribbon {
-  position: relative;
-  margin:0px;
-  padding: 1px 5px;
   background-color: $sub_color;
-  .left {
-    position: static;
-    div {
-      display: inline;
-    }
-  }
-  .right {
-    position: absolute;
-    top: 0px;
-    right: 5px;
-    div {
-      display: inline;
-    }
+
+  .content {
+    padding: 2px $base_padding;
   }
 }
 
@@ -69,39 +74,4 @@
   margin:0px 5px;
   font-size:small;
   color:red;
-}
-
-.notice {
-  ul {
-    -webkit-margin-before: 0em;
-    -webkit-margin-after: 0em;
-    -webkit-margin-start: 0px;
-    -webkit-margin-end: 0px;
-    -webkit-padding-start: 20px;
-    -webkit-padding-start: 0px;
-
-    li {
-      margin: 0px;
-      padding: 0px;
-    }
-  }
-}
-
-#main {
-  position: relative;
-  margin:0px $base_margin;
-}
-
-#footer_navigation{
-  list-style: none;
-  margin-top:20px;
-  text-align: center;
-  li{
-    display: inline;
-    border-right: 1px solid $main_color;
-    padding: 0.2em $base_margin;
-  }
-  li:last-child{
-    border: none;
-  }
 }

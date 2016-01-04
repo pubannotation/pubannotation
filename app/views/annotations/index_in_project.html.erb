@@ -1,5 +1,13 @@
 <%= render :partial => 'docs/path'-%>
-<%= render :partial => 'projects/titlebar' -%>
-<%= render :partial => 'docs/titlebar' -%>
-<%= render :partial => 'annotations/titlebar' -%>
-<%= render :partial => 'annotations/annotations', locals: {annotations:@annotations, doc: @doc, body: @annotations[:text]} -%>
+<section>
+	<%= render :partial => 'projects/titlebar' -%>
+	<section>
+		<%= render :partial => 'docs/titlebar' -%>
+		<section>
+			<%= render :partial => 'annotations/titlebar' -%>
+			<section>
+				<%= render :partial => 'annotations/annotations', locals: {annotations:@annotations, doc: @doc, body: @annotations[:text]} -%>
+			</section>
+		</section>
+	</section>
+</section>

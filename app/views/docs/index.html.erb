@@ -7,12 +7,18 @@
   > docs
 <% end -%>
 
-<% if @project.present? -%>
-	<%= render partial: 'projects/titlebar' -%>
-	<%= render partial: 'source_docs' -%>
-<% else -%>
-	<h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1>
-<% end -%>
+<section>
+	<% if @project.present? -%>
+		<%= render partial: 'projects/titlebar' -%>
+		<section>
+			<%= render partial: 'source_docs' -%>
+		</section>
+	<% else -%>
+		<h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1>
+	<% end -%>
 
-<h3>Search documents</h3>
-<%= render partial: 'docs/search_form' -%>
+	<section>
+		<h3>Search documents</h3>
+		<%= render partial: 'docs/search_form' -%>
+	</section>
+</section>

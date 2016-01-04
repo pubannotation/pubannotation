@@ -23,13 +23,15 @@
   <% end %>
 <% end %>
 
-<%= render :partial => 'docs/titlebar' -%>
-<%= render :partial => 'annotations/titlebar' -%>
+<section>
+    <%= render :partial => 'docs/titlebar' -%>
+    <%= render :partial => 'annotations/titlebar' -%>
 
-<!--p>to <= @denotations.first.doc_sourcedb %>:<= @denotations.first.doc_sourceid %></p-->
+    <!--p>to <= @denotations.first.doc_sourcedb %>:<= @denotations.first.doc_sourceid %></p-->
 
-<% if @annotations[:tracks].present? -%>
-	<%= render partial: 'annotations', collection: @annotations[:tracks], locals: {doc: @doc, body: @annotations[:text]} -%>
-<% else -%>
-	<%= t('controllers.shared.not_exists', model: t('views.shared.annotation')) %>
-<% end -%>
+    <% if @annotations[:tracks].present? -%>
+    	<%= render partial: 'annotations', collection: @annotations[:tracks], locals: {doc: @doc, body: @annotations[:text]} -%>
+    <% else -%>
+    	<%= t('controllers.shared.not_exists', model: t('views.shared.annotation')) %>
+    <% end -%>
+</section>

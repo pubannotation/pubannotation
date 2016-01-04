@@ -482,6 +482,10 @@ en:
       annotation: annotation
       annotations: annotations
       annotations_count: '#anno.'
+      automatic_annotation_initial: A
+      automatic_annotation: Automatic annotation
+      manual_annotation_initial: M
+      manual_annotation: Manual annotation
       clear: clear
       edit : edit
       error: error

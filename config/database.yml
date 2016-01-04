@@ -19,15 +19,16 @@ test:
   adapter: postgresql
   encoding: unicode
   database: pubannotation_test
-  pool: 5
   username: your_username
   password: your_password
+  pool: 5
+  port: 5433
 
 production:
   adapter: postgresql
   encoding: unicode
   database: pubannotation
-  pool: 5
   username: your_username
   password: your_password
+  pool: 5
   port: 5433

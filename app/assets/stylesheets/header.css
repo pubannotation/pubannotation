@@ -1,7 +1,6 @@
 #logo {
   display: inline-block;
   vertical-align: middle;
-  margin-right: 10px;
 }
 
 .corner-menu {
@@ -26,25 +25,18 @@
   margin: 0 4px;
 }
 
-nav ul {
+.main-nav {
+  display: inline-block;
+  margin: 0 5px;
+}
+
+.main-nav ul {
   padding: 0;
   margin: 0;
 }
 
-nav li {
-  display: inline-block;
-}
-
-nav a {
-  text-decoration:none;
-  color: #ffff00;
-}
-
-.main-nav {
-  display: inline-block;
-}
-
 .main-nav li {
+  display: inline-block;
   margin: 0;
 }
 
@@ -52,16 +44,17 @@ nav a {
   border-radius: 5px;
   font-weight: 800;
   font-size: 14px;
-  padding: 0.5em;
+  padding: 5px;
   text-shadow: none;
   text-transform: uppercase;
+  text-decoration: none;
   transition: all .25s;
   -moz-transition: all .25s;
   -webkit-transition: all .25s;
 }
 
 .main-nav li a:hover {
-  background: #252525;
+  background: #202020;
   box-shadow: inset 0 1px 3px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.1);
   text-shadow: 0 1px 3px rgba(0,0,0,.5);
 }
@@ -71,4 +64,18 @@ nav a {
   color: #222;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 1px 5px rgba(0,0,0,.5);
   text-shadow: 0 1px 0 rgba(255,255,255,.3);
+}
+
+.notice {
+  margin: 5px 0;
+}
+
+.notice ul {
+  margin: 0;
+  padding: 0 0 0 20px;
+}
+
+.notice ul li {
+  margin: 5px 0 0 0;
+  padding: 0;
 }

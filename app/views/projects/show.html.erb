@@ -16,6 +16,7 @@
  	> <%= @project.name %>
 <% end %>
 
+<section>
 <%= render :partial => 'titlebar' -%>
 
 <fieldset class="pane description">
@@ -63,65 +64,81 @@
 <% end -%>
 
 <fieldset class="pane documents">
-<legend>
-	<%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info" style="margin-right:10px">(<%= @docs_count -%>)</span>
-</legend>
+	<legend>
+		<%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info" style="margin-right:10px">(<%= @docs_count -%>)</span>
+	</legend>
 
-<h3>
-<% if @docs_count > 0 -%>
-	<% if @docs_count < 10000 -%>
-		<%= link_to 'Show all >', project_docs_path(@project.name) -%>
-	<% else -%>
-		<span title="disabled due to too many documents to list">List all</span>
+	<section>
+		<h3>
+		<% if @docs_count > 0 -%>
+			<% if @docs_count < 10000 -%>
+				<%= link_to 'Show all >', project_docs_path(@project.name) -%>
+			<% else -%>
+				<span title="disabled due to too many documents to list">List all</span>
+			<% end -%>
+		<% else -%>
+			<span title="no document">Show all</span>
+		<% end -%>
+		</h3>
+	</section>
+
+	<section>
+		<h3>Search</h3>
+		<%= render partial: 'docs/search_form' -%>
+	</section>
+
+	<% if user_signed_in? && @project.editable?(current_user) %>
+		<section>
+			<h3><%= t('views.shared.add') -%></h3>
+		    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
+		</section>
+
+		<section>
+		    <h3><%= link_to 'Create a new document >', new_project_doc_path(@project.name) -%></h3>
+	    </section>
+
+	    <section>
+			<%= render partial: 'delete_docs' -%>
+		</section>
 	<% end -%>
-<% else -%>
-	<span title="no document">List all</span>
-<% end -%>
-</h3>
-
-<h3>Search</h3>
-<%= render partial: 'docs/search_form' -%>
-
-<% if user_signed_in? && @project.editable?(current_user) %>
-	<h3><%= t('views.shared.add') -%></h3>
-    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
-
-    <h3><%= link_to 'Create a new document >', new_project_doc_path(@project.name) -%></h3>
-
-	<%= render partial: 'delete_docs' -%>
-<% end -%>
-
 </fieldset>
 
 <fieldset class="pane annotations">
-<legend>
-Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span>
-</legend>
+	<legend>
+	Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span>
+	</legend>
 
-<% if @project.annotations_zip_downloadable == true -%>
-	<h3>Batch download</h3>
-	<div>
-		<%= project_annotations_zip_link_helper(@project) -%>
+	<% if @project.annotations_zip_downloadable == true -%>
+		<section>
+			<h3>Batch download</h3>
+			<div><%= project_annotations_zip_link_helper(@project) -%></div>
+		</section>
+	<% end %>
+
+	<!-- <div>
+		<%= project_annotations_rdf_link_helper(@project) -%>
 	</div>
-<% end %>
+	 -->
+	<% if user_signed_in? && @project.editable?(current_user) -%>
+		<section>
+			<%= render partial: 'annotations/upload_tgz' -%>
+		</section>
 
-<!-- <div>
-	<%= project_annotations_rdf_link_helper(@project) -%>
-</div>
- -->
-<% if user_signed_in? && @project.editable?(current_user) -%>
-	<%= render partial: 'annotations/upload_tgz' -%>
+		<section>
+			<h3>
+				<%= t('views.docs.automatic_annotation') %>
+				<a href="http://www.pubannotation.org/docs/obtain-annotation/">
+					<%= image_tag("hint.png",
+				    				:size => "16x16",
+				      				:title => "click for help") %>
+				</a>
+			</h3>
+			<%= render partial: 'annotations/obtain_annotation' -%>
+		</section>
 
-	<h3>
-	<%= t('views.docs.automatic_annotation') %>
-	<a href="http://www.pubannotation.org/docs/obtain-annotation/">
-	<%= image_tag("hint.png",
-    				:size => "16x16",
-      				:title => "click for help") %>
-	</a>
-	</h3>
-	<%= render partial: 'annotations/obtain_annotation' -%>
-
-	<%= render partial: 'delete_annotations' -%>
-<% end -%>
+		<section>
+			<%= render partial: 'delete_annotations' -%>
+		</section>
+	<% end -%>
 </fieldset>
+</section>

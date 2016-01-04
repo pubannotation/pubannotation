@@ -497,6 +497,10 @@ ja:
       annotation: アノテーション
       annotations: アノテーション
       annotations_count: アノテーション数
+      automatic_annotation_initial: 自
+      automatic_annotation: 自動アノテーション
+      manual_annotation_initial: 手
+      manual_annotation: 手動アノテーション
       back: 戻る
       category: カテゴリー
       clear: クリア
