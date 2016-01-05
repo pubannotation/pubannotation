@@ -26,8 +26,10 @@
 			</div>
 		</div>
 		<div id="notice">
-			<%= notice.html_safe if notice -%>
-			<%= alert -%>
+			<div class="content">
+				<%= notice.html_safe if notice -%>
+				<%= alert -%>
+			</div>
 		</div>
 		
 		<div id="main">
