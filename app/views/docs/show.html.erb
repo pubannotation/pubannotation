@@ -7,11 +7,11 @@
 		<h2>
 			Projects
 			<span class='meta'>
-			<% if @span.present? -%>
-				that have annotations to this span
-			<% else %>
-				that include this document
-			<% end %>
+				<% if @span.present? -%>
+					that have annotations to this span
+				<% else %>
+					that include this document
+				<% end %>
 			</span>
 		</h2>
 		<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil} %>
