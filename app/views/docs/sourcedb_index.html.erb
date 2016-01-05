@@ -10,17 +10,21 @@
 	> sourcedb
 <% end %>
 
-<h1>
-	<%= t('views.docs.sourcedb_list')-%>
-</h1>
+<section>
+	<h1>
+		<%= t('views.docs.sourcedb_list')-%>
+	</h1>
 
-<%= render :partial => "docs/sourcedbs" -%>
+	<%= render :partial => "docs/sourcedbs" -%>
 
-<% if user_signed_in? && @project.present? && current_user == @project.user %>
-	<h2><%= t('views.docs.add_new_documents') -%></h2>
-	<ul>
-	  <li>by getting from a public database<br/>
-	    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
-	  </li>
-	</ul>
-<% end %>
+	<% if user_signed_in? && @project.present? && current_user == @project.user %>
+		<section>
+			<h2><%= t('views.docs.add_new_documents') -%></h2>
+			<ul>
+			  <li>by sourcing from a public database<br/>
+			    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
+			  </li>
+			</ul>
+		</section>
+	<% end %>
+</section>
