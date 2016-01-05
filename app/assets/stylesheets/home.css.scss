@@ -13,7 +13,7 @@
 
 #news {
 	margin: 10px;
-	width: 440px;
+	width: 92%;
 	border: $main_color 1px solid;
 	box-shadow: 2px 2px 2px;
 	background-color: #fff0f0;
@@ -34,8 +34,15 @@
 
 /* Responsive Stuff */
 /* @media screen and (max-width: 568px) { */
-@media screen and (max-width: 1019px) {
+@media screen and (max-width: 1018px) {
+  .panel {
+    width: 49%;
+  }
+}
+
+@media screen and (max-width: 800px) {
 	.panel {
+    width: 530px;
 		display: block;
 	}
 
