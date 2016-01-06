@@ -31,3 +31,6 @@ config/*.sphinx.conf
 
 # Ignore devise config file
 #/config/initializers/devise.rb
+
+public/downloads/
+spec/vcr/lib/
