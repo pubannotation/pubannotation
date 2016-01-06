@@ -1,5 +1,6 @@
 class Annotation < ActiveRecord::Base
   attr_accessible :hid, :subj_id, :subj_type, :pred_id, :obj_id, :obj_type, :type, :doc_id, :begin, :end
+  belongs_to :obj
 
   has_many :annotations_projects
   has_many :projects, through: :annotations_projects
