@@ -1028,15 +1028,24 @@ class Project < ActiveRecord::Base
   end
 
   def save_hdenotations(hdenotations, doc)
-    hdenotations.each do |a|
-      ca           = Denotation.new
-      ca.hid       = a[:id]
-      ca.begin     = a[:span][:begin]
-      ca.end       = a[:span][:end]
-      ca.obj       = a[:obj]
-      ca.project_id = self.id
-      ca.doc_id    = doc.id
-      raise ArgumentError, "Invalid representation of denotation: #{ca.hid}" unless ca.save
+    ActiveRecord::Base.transaction do
+      hdenotations.each do |a|
+        ca           = Denotation.new
+        ca.hid       = a[:id]
+        ca.begin     = a[:span][:begin]
+        ca.end       = a[:span][:end]
+        ca.doc_id    = doc.id
+        if a[:obj].present?
+          obj = Obj.find_or_create_by_name(a[:obj])
+          ca.obj_type  = obj.class.to_s
+          ca.obj_id    = obj.id
+        end
+        if ca.save
+          ca.projects << self
+        else
+          raise ArgumentError, "Invalid representation of denotation: #{ca.hid}" 
+        end
+      end
     end
   end
 
@@ -1045,10 +1054,21 @@ class Project < ActiveRecord::Base
       ra           = Relation.new
       ra.hid       = a[:id]
       ra.pred      = a[:pred]
-      ra.subj      = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:subj])
-      ra.obj       = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
-      ra.project_id = self.id
-      raise ArgumentError, "Invalid representation of relation: #{ra.hid}" unless ra.save
+      if a[:subj].present?
+        subj = a[:subj].camelize.constantize.find(a[:subj_id])
+        ra.subj_type = subj.class.to_s
+        ra.subj_id = subj.id
+      end
+      if a[:obj].present?
+        obj = Obj.find_or_create_by_name(a[:obj])
+        ra.obj_type  = obj.class.to_s
+        ra.obj_id    = obj.id
+      end
+      if ra.save
+        ra.projects << self
+      else
+        raise ArgumentError, "Invalid representation of relation: #{ra.hid}" 
+      end
     end
   end
 
@@ -1069,7 +1089,7 @@ class Project < ActiveRecord::Base
   end
 
   def save_annotations(annotations, doc, options = nil)
-    raise ArgumentError, "nil document" unless doc.present?
+    raise ArgumentError, "nil document" if doc.blank?
     options ||= {}
 
     doc.destroy_project_annotations(self) unless options.present? && options[:mode] == :addition

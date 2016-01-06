@@ -2166,6 +2166,125 @@ describe Project do
   end
 
   describe 'save_annotations' do
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:doc) { FactoryGirl.create(:doc) }
+    let(:annotaitons) { {text: 'text'} }
+    let(:align_denotations) { 'align_denotations' }
+    let(:save_hdenotations) { 'save_hdenotations' }
+    let(:save_hrelations) { 'save_hrelations' }
+    let(:save_hmodifications) { 'save_hmodifications' }
+    let(:denotations) { [{id: 'denotation_id'}] }
+    let(:relations) { [{id: 'relation_id', subj: 'subj', obj: 'obj'}] }
+    let(:modifications) { [{id: 'modification_id'}] }
+
+    before do
+      project.stub(:align_denotations).and_return(align_denotations)
+      project.stub(:save_hdenotations).and_return(save_hdenotations)
+      project.stub(:save_hrelations).and_return(save_hrelations)
+      project.stub(:save_hmodifications).and_return(save_hmodifications)
+    end
+
+    context 'when doc blank' do
+      it 'should raise error' do
+        expect{ project.save_annotations('annotaitons', nil) }.to raise_error
+      end
+    end
+
+    context 'when options blank && options[:mode] == :addition' do
+      it 'should call destroy_project_annotations' do
+        expect(doc).to receive(:destroy_project_annotations).with(project)
+        project.save_annotations(annotaitons, doc, {mode: :other})
+      end
+    end
+
+    context 'when options[:prefix] present' do
+      let(:options) { {prefix: 'Prefix'} }
+
+      context 'when annotaitons[:denotations] present' do
+        let(:annotaitions) { {text: 'text', denotations: denotations} }
+
+        it 'should replace id with prefix id' do
+          expect( project ).to receive(:align_denotations).with([{id: "#{options[:prefix]}_#{denotations[0][:id]}"}], annotaitions[:text], doc.body)
+          project.save_annotations(annotaitions, doc, options) 
+        end
+      end
+
+      context 'when annotaitons[:denotations] nil' do
+        let(:annotaitions) { {text: 'text'} }
+
+        it 'should not replace id with prefix id' do
+          expect( denotations ).not_to receive(:each)
+          project.save_annotations(annotaitions, doc, options) 
+        end
+      end
+
+      context 'when annotaitons[:relations] present' do
+        let(:annotaitions) { {text: 'text', relations: relations} }
+
+        it 'should replace id with prefix id' do
+          expect( relations ).to receive(:each)
+          project.save_annotations(annotaitions, doc, options) 
+        end
+      end
+
+      context 'when annotaitons[:relations] nil' do
+        let(:annotaitions) { {text: 'text'} }
+
+        it 'should not replace id with prefix id' do
+          expect( relations ).not_to receive(:each)
+          project.save_annotations(annotaitions, doc, options) 
+        end
+      end
+    end
+
+    context 'when annotaitons[:denotations] present' do
+      let(:annotaitions) { {text: 'text', denotations: denotations} }
+
+      it 'should call align_denotations and save_hdenotations' do
+        expect( project ).to receive(:align_denotations).with([{id: denotations[0][:id]}], annotaitions[:text], doc.body)
+        expect( project ).to receive(:save_hdenotations).with(align_denotations, doc)
+        expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations})
+      end
+
+      context 'when annotaitons[:relations] present' do
+        let(:annotaitions) { {text: 'text', denotations: denotations, relations: relations} }
+
+        it 'should call save_hrelations and return annotaitions with relations' do
+          expect( project ).to receive(:save_hrelations).with(annotaitions[:relations], doc)
+          expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations, relations: relations})
+        end
+      end
+
+      context 'when annotaitons[:relations] nil' do
+        let(:annotaitions) { {text: 'text', denotations: denotations, relations: nil} }
+
+        it 'should not call save_hrelations and return annotaitions without relations' do
+          expect( project ).not_to receive(:save_hrelations).with(annotaitions[:relations], doc)
+          expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations})
+        end
+      end
+
+      context 'when annotaitons[:modifications] present' do
+        let(:annotaitions) { {text: 'text', denotations: denotations, modifications: modifications} }
+
+        it 'should call save_hmodifications and return annotaitions with modifications' do
+          expect( project ).to receive(:save_hmodifications).with(annotaitions[:modifications], doc)
+          expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations, modifications: modifications})
+        end
+      end
+
+      context 'when annotaitons[:modifications] nil' do
+        let(:annotaitions) { {text: 'text', denotations: denotations, modifications: nil} }
+
+        it 'should not call save_hmodifications and return annotaitions without modifications' do
+          expect( project ).not_to receive(:save_hmodifications).with(annotaitions[:modifications], doc)
+          expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations})
+        end
+      end
+    end
+  end
+
+  describe 'old save_annotations' do
     before do
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
       @sourcedb = 'PMC'
@@ -2181,12 +2300,98 @@ describe Project do
       @text = 'text'
       @doc_params = {'denotations' => @denotations, 'relations' => @relations, 'text' => @text}
       JSON.stub(:parse).and_return(@doc_params)
-      Shared.stub(:save_annotations).and_return(nil)
+      @project.stub(:save_annotations).and_return(nil)
     end
 
     it '' do
-      Shared.should_receive(:save_annotations).with({denotations: @denotations, relations: @relations, text: @text}, @project, @doc)
+      @project.should_receive(:save_annotations).with({denotations: @denotations, relations: @relations, text: @text}, @project, @doc)
       Project.save_annotations(@project, @doc_annotations_files)
+    end
+  end
+
+  describe 'store_annotations' do
+    before do
+      @text = 'text about'
+      @denotations = [{"span" => {"begin" => 0, "end" => 134}, "obj" => "TOP"}, {"span" => {"begin" => 0, "end" => 134}, "obj" => "TITLE"}]
+      @relations = nil
+      @modifications = nil
+      @annotations = {:text => @text, 
+                      :denotations => @denotations, 
+                      :relations => @relations, 
+                      :modifications => @modifications}
+      user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, user: user)
+      @project.stub(:save_annotations).and_return(nil)
+    end
+
+    context 'when options[:delayed] == true' do
+      before do
+        @options = {mode: 'mode', delayed: true}
+      end
+
+      context 'when finished without errors' do
+        context 'when divs.length == 1' do
+          before do
+            @div = FactoryGirl.create(:doc)
+            @divs = [@div]
+          end
+
+          it 'should call @project.save_annotations with annotations, project, divs[0] and options' do
+            @project.should_receive(:save_annotations).with(@annotations, @project, @div, @options) 
+            @project.store_annotations(@annotations, @project, @divs, @options)
+          end
+
+          it 'should create project.notices with successful: true, method store_annotations' do
+            @project.notices.should_receive(:create).with({successful: true, method: 'store_annotations'})
+            @project.store_annotations(@annotations, @project, @divs, @options)
+          end
+        end
+
+        context 'when divs.length !== 1' do
+          before do
+            @div_1 = FactoryGirl.create(:doc)
+            @div_2 = FactoryGirl.create(:doc)
+            @divs = [@div_1, @div_2]
+            @denotations = [{span: {begin: 3, end: 5}}]
+            @annotations = {:text => @text, 
+                            :denotations => @denotations, 
+                            :relations => @relations, 
+                            :modifications => @modifications}
+            @find_divisions = [[1, [0, 3]], [1, [2, 5]]]
+            TextAlignment.stub(:find_divisions).and_return(@find_divisions)
+          end
+
+          it 'should call @project.save_annotations with annotations, project, divs[0]' do
+            @project.should_receive(:save_annotations).twice
+            @project.store_annotations(@annotations, @project, @divs, @options)
+          end
+
+          it 'should create project.notices with successful: true, method store_annotations' do
+            @project.notices.should_receive(:create).with({successful: true, method: 'store_annotations'})
+            @project.store_annotations(@annotations, @project, @divs, @options)
+          end
+        end
+      end
+
+      context 'when finished without errors' do
+        it 'should create project.notices with successful: false, method store_annotations' do
+          @project.notices.should_receive(:create).with({successful: false, method: 'store_annotations'})
+          @project.store_annotations(@annotations, @project, nil, @options)
+        end
+      end
+    end
+
+    context 'when options[:delayed] == false' do
+      before do
+        @options = {mode: 'mode'}
+        @div = FactoryGirl.create(:doc)
+        @divs = [@div]
+      end
+
+      it 'should not create project.notices with successful: true, method store_annotations' do
+        @project.notices.should_not_receive(:create).with({successful: true, method: 'store_annotations'})
+        @project.store_annotations(@annotations, @project, @divs, @options)
+      end
     end
   end
 
@@ -2564,6 +2769,165 @@ describe Project do
     end
   end
 
+  describe 'save_hdenotations' do
+    let(:doc) { FactoryGirl.create(:doc, :section => 'section', :body => 'doc body') }
+    let(:project) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name") }
+    let(:obj_name) { 'Category' }
+    let(:hdenotation) { {id: 'hid', span: {begin: 1, end: 10}, obj: obj_name } }
+    let(:hdenotations) { Array.new }
+
+    before do
+      hdenotations << hdenotation
+    end
+
+    describe 'obj' do
+      context 'when obj not present' do
+        it 'should create obj' do
+          expect{ project.save_hdenotations(hdenotations, doc) }.to change{ Obj.count }.from(0).to(1)
+        end
+      end
+
+      context 'when obj present' do
+        let(:obj) { FactoryGirl.create(:obj , name: obj_name) }
+
+        before do
+          obj
+        end
+
+        it 'should not create obj' do
+          expect{ project.save_hdenotations(hdenotations, doc) }.not_to change{ Obj.count }.by(1)
+        end
+      end
+    end
+    
+    context 'save successfully' do
+      let(:denotation) { Denotation.find_by_hid(hdenotation[:id]) }
+
+      before do
+        project.save_hdenotations(hdenotations, doc)
+      end
+
+      it 'should save hdenotation[:id] as hid' do
+        expect( denotation.hid ).to eql(hdenotation[:id])
+      end
+      
+      it 'should save hdenotation[:span][:begin] as begin' do
+        expect( denotation.begin ).to eql(hdenotation[:span][:begin])
+      end
+      
+      it 'should save hdenotation[:span][:end] as end' do
+        expect( denotation.end).to eql(hdenotation[:span][:end])
+      end
+      
+      it 'should save hdenotation[:obj] as obj' do
+        expect( denotation.obj ).to eql(Obj.find_by_name(hdenotation[:obj]))
+      end
+
+      it 'should add project to denotation.projects' do
+        expect( denotation.projects ).to include(project)
+      end
+
+      it 'should save doc.id as doc_id' do
+        expect( denotation.doc_id ).to eql(doc.id)
+      end
+    end
+
+    context 'save failed' do
+      let(:hdenotation) { {id: 'hid', obj: obj_name } }
+
+      it 'should raise error' do
+        expect{ project.save_hdenotations(hdenotations, doc) }.to raise_error
+      end
+    end
+  end
+
+  describe 'save_hrelations' do
+    before do
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      @obj = 'Denotation'
+      FactoryGirl.create(:obj, name: @obj)
+      @hrelations = Array.new
+    end
+
+    before do
+      @hrelation = {id: 'hid', pred: 'pred', subj: 'Denotation', subj_id: @denotation.id, obj: @obj}
+      @hrelations << @hrelation
+    end
+
+    it 'should set subj_type and subj_id' do
+      @project.save_hrelations(@hrelations, @doc)
+      expect( @project.annotations.last.subj_type).to eql(@hrelation[:subj])    
+      expect( @project.annotations.last.subj_id).to eql(@denotation.id)
+    end
+
+    it 'should set obj_type and obj_id' do
+      @project.save_hrelations(@hrelations, @doc)
+      expect( @project.annotations.last.obj_type).to eql('Obj')    
+      expect( @project.annotations.last.obj_id).to eql(@denotation.id)
+    end
+
+    it 'should create relation' do
+      expect{ @project.save_hrelations(@hrelations, @doc) }.to change{ Relation.count }.from(0).to(1)
+    end
+  end
+
+  describe 'save_hmodifications' do
+    before do
+      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+    end
+    
+    context 'when hmodifications[:obj] match /^R/' do
+      before do
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, subj: @denotation)
+        FactoryGirl.create(:annotations_project, annotation: @subcatrel, project: @project)
+        @hmodification = {:id => 'hid', :pred => 'type', :obj => @subcatrel.hid}
+        @hmodifications = Array.new
+        @hmodifications << @hmodification
+        @result = @project.save_hmodifications(@hmodifications, @project, @doc)
+      end
+      
+      it 'should save successfully' do
+        @result.should be_true
+      end
+      
+      it 'should save Modification from hmodifications params and doc.instances' do
+        Modification.where(
+          :hid => @hmodification[:id],
+          :pred => @hmodification[:pred],
+          :obj_id => @subcatrel.id,
+          :obj_type => @subcatrel.class
+        ).should be_present
+      end
+    end
+
+    context 'when hmodifications[:obj] not match /^R/' do
+      before do
+        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @hmodification = {:id => 'hid', :pred => 'type', :obj => @denotation.hid}
+        @hmodifications = Array.new
+        @hmodifications << @hmodification
+        @result = @project.save_hmodifications(@hmodifications, @project, @doc)
+      end
+      
+      it 'should save successfully' do
+        @result.should be_true
+      end
+      
+      it 'should save Modification from hmodifications params and doc.instances' do
+        Modification.where(
+          :hid => @hmodification[:id],
+          :pred => @hmodification[:pred],
+          :obj_id => @denotation.id,
+          :obj_type => @denotation.class
+        ).should be_present
+      end
+    end
+  end
+
   describe 'create_user_sourcedb_docs' do
     before do
       @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
@@ -2599,6 +2963,72 @@ describe Project do
         expect(Doc).to receive(:new).with({body: docs_array[0][:text], sourcedb: sourcedb, sourceid: docs_array[0][:sourceid], section: docs_array[0][:section], source: docs_array[0][:source_url], serial: docs_array[0][:divid]})
         @project.create_user_sourcedb_docs({docs_array: docs_array, sourcedb: sourcedb})
       end
+    end
+  end
+
+  describe 'save_hdenotations' do
+    before do
+      @doc = FactoryGirl.create(:doc, :section => 'section', :body => 'doc body')
+      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
+      @di = 1
+      1.times do
+        denotation = FactoryGirl.create(:denotation, :begin => @di, :doc_id => @doc.id)
+        FactoryGirl.create(:annotations_project, project_id: @associate_project_denotations_count_1.id, annotation: denotation)
+        @di += 1
+      end
+      @result = ave_hdenotations(@hdenotations, @associate_project_denotations_count_1, @doc) 
+      @denotation = Denotation.find_by_hid(@hdenotation[:id])
+    end
+    
+    it 'should save successfully' do
+      @result.should be_true
+    end
+    
+    it 'should save hdenotation[:id] as hid' do
+      @denotation.hid.should eql(@hdenotation[:id])
+    end
+    
+    it 'should save hdenotation[:span][:begin] as begin' do
+      @denotation.begin.should eql(@hdenotation[:span][:begin])
+    end
+    
+    it 'should save hdenotation[:span][:end] as end' do
+      @denotation.end.should eql(@hdenotation[:span][:end])
+    end
+    
+    it 'should save hdenotation[:obj] as obj' do
+      @denotation.obj.should eql(@hdenotation[:obj])
+    end
+
+    it 'should save project.id as project_id' do
+      @denotation.project_id.should eql(@associate_project_denotations_count_1.id)
+    end
+
+    it 'should save doc.id as doc_id' do
+      @denotation.doc_id.should eql(@doc.id)
+    end
+    
+    it 'should project.denotations_count should equal 0 before save' do
+      @project.denotations_count.should eql(0)
+    end
+
+    it 'should incliment project.denotations_count after denotation saved' do
+      @project.reload
+      @project.denotations_count.should eql((@associate_project_denotations_count_1.denotations_count + @associate_project_denotations_count_2.denotations_count) *2  + 1)
+    end
+      
+    it 'associate_projectproject.denotations_count should equal 1 before save' do
+      @associate_project_denotations_count_1.denotations_count.should eql(1)
+    end
+    
+    it 'associate_projectproject.denotations_count should incremented after save' do
+      @associate_project_denotations_count_1.reload
+      @associate_project_denotations_count_1.denotations_count.should eql(2)
+    end
+    
+    it 'associate_projectproject.denotations_count should remain' do
+      @associate_project_denotations_count_2.reload
+      @associate_project_denotations_count_2.denotations_count.should eql(2)
     end
   end
 
