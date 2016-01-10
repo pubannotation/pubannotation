@@ -506,10 +506,13 @@ class Doc < ActiveRecord::Base
     annotations[:sourceid] = self.sourceid
     annotations[:divid] = self.serial if self.has_divs?
 
+    context_size ||= 0
+    b = span[:begin] - context_size
+    e = span[:end] + context_size
+    b = 0 if b < 0
+    e = self.body.length if e > self.body.length
+
     annotations[:text] = if span.present?
-      context_size ||= 0
-      b = (span[:begin] - context_size) >= 0 ? span[:begin] - context_size : 0
-      e = (span[:end] + context_size) <= self.body.length ? span[:end] + context_size : self.body.length
       self.body[b...e]
     else
       self.body
@@ -518,7 +521,7 @@ class Doc < ActiveRecord::Base
     if project.present? && !project.respond_to?(:each)
       annotations[:project] = project.name
       annotations[:denotations] = self.hdenotations(project, span)
-      annotations[:denotations].each{|d| d[:span][:begin] -= span[:begin]; d[:span][:end] -= span[:begin]} if span.present?
+      annotations[:denotations].each{|d| d[:span][:begin] -= b; d[:span][:end] -= b} if span.present?
       ids = annotations[:denotations].collect{|d| d[:id]}
       annotations[:relations] = self.hrelations(project, ids)
       ids += annotations[:relations].collect{|r| r[:id]}
@@ -529,7 +532,7 @@ class Doc < ActiveRecord::Base
       projects = project.present? ? project : self.projects
       annotations[:tracks] = projects.inject([]) do |tracks, project|
         hdenotations = self.hdenotations(project, span)
-        hdenotations.each{|d| d[:span][:begin] -= span[:begin]; d[:span][:end] -= span[:begin]} if span.present?
+        hdenotations.each{|d| d[:span][:begin] -= b; d[:span][:end] -= b} if span.present?
         ids =  hdenotations.collect{|d| d[:id]}
         hrelations = self.hrelations(project, ids)
         ids += hrelations.collect{|d| d[:id]}

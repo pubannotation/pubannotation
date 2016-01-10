@@ -107,7 +107,9 @@ class AnnotationsController < ApplicationController
 
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
         # @content = @doc.body.gsub(/\n/, "<br>")
-        @annotations = @doc.hannotations(@project, @span)
+
+        context_size = params[:context_size].present? ? params[:context_size].to_i : 0
+        @annotations = @doc.hannotations(@project, @span, context_size)
 
         respond_to do |format|
           format.html {render 'index_in_project'}
