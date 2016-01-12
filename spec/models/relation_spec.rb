@@ -4,11 +4,14 @@ describe Relation do
   describe 'belongs_to project' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @relation = FactoryGirl.create(:relation, :obj_id => 10, :project => @project)
+      @relation = FactoryGirl.create(:relation, :obj_id => 10)
+      FactoryGirl.create(:annotations_project, project: @project, annotation: @relation)
+      @project.reload
+      @relation.reload
     end
     
-    it 'relation belongs to project' do
-      @relation.project.should eql(@project)
+    it 'relation.projects include project' do
+      @relation.projects.should include(@project)
     end
   end
   
@@ -16,12 +19,14 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @obj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @obj = FactoryGirl.create(:denotation, :doc => @doc)
+      FactoryGirl.create(:annotations_project, project: @project, annotation: @relation)
     end
     
     context 'Denotation' do
       before do
-        @subj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+        @subj = FactoryGirl.create(:denotation, :doc => @doc)
+        FactoryGirl.create(:annotations_project, project: @project, annotation: @subj)
         @relation = FactoryGirl.create(:relation, :subj_id => @subj.id, :subj_type => @subj.class.to_s, :obj => @obj, :project => @project)
       end
       
@@ -33,7 +38,8 @@ describe Relation do
     context 'Instance' do
       before do
         @subj = FactoryGirl.create(:instance, :project => @project, :obj_id => 1)
-        @relation = FactoryGirl.create(:relation, :subj_id => @subj.id, :subj_type => @subj.class.to_s, :obj => @obj, :project => @project)
+        @relation = FactoryGirl.create(:relation, :subj_id => @subj.id, :subj_type => @subj.class.to_s, :obj => @obj)
+        FactoryGirl.create(:annotations_project, project: @project, annotation: @relation)
       end
       
       it 'relation.subj should equal Instance' do
@@ -46,13 +52,13 @@ describe Relation do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @subj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
+      @subj = FactoryGirl.create(:denotation, :doc => @doc)
     end
     
     context 'Denotation' do
       before do
-        @obj = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @relation = FactoryGirl.create(:relation, :subj => @subj, :obj => @obj, :obj_type => @obj.class.to_s, :project => @project)
+        @obj = FactoryGirl.create(:denotation, :doc => @doc)
+        @relation = FactoryGirl.create(:relation, :subj => @subj, :obj => @obj, :obj_type => @obj.class.to_s)
       end
       
       it 'relation.obj should equal Denotation' do
@@ -63,7 +69,7 @@ describe Relation do
     context 'Insaan' do
       before do
         @obj = FactoryGirl.create(:instance, :project => @project, :obj_id => 1)
-        @relation = FactoryGirl.create(:relation, :subj => @subj, :obj => @obj, :obj_type => @obj.class.to_s, :project => @project)
+        @relation = FactoryGirl.create(:relation, :subj => @subj, :obj => @obj, :obj_type => @obj.class.to_s)
       end
       
       it 'relation.subj should equal Instance' do
@@ -74,8 +80,9 @@ describe Relation do
   
   describe 'has_many modifications' do
     before do
-      @relation = FactoryGirl.create(:relation, :subj_id => 1, :obj_id => 2, :project_id => 1)
-      @modification = FactoryGirl.create(:modification, :obj => @relation, :project_id => 1)
+      @relation = FactoryGirl.create(:relation, :subj_id => 1, :obj_id => 2)
+      Modification.any_instance.stub(:increment_project_annotations_count).and_return(nil)
+      @modification = FactoryGirl.create(:modification, :obj => @relation)
     end
     
     it 'relation.modifications should be present' do
@@ -93,9 +100,12 @@ describe Relation do
   
   describe 'scope projects_reletions' do
     before do
-      @relation_project_1 = FactoryGirl.create(:relation, :obj_id => 1, :project_id => 1)
-      @relation_project_2 = FactoryGirl.create(:relation, :obj_id => 1, :project_id => 2)
-      @relation_project_3 = FactoryGirl.create(:relation, :obj_id => 1, :project_id => 3)
+      @relation_project_1 = FactoryGirl.create(:relation, :obj_id => 1)
+      FactoryGirl.create(:annotations_project, annotation: @relation_project_1, project_id: 1)
+      @relation_project_2 = FactoryGirl.create(:relation, :obj_id => 1)
+      FactoryGirl.create(:annotations_project, annotation: @relation_project_2, project_id: 2)
+      @relation_project_3 = FactoryGirl.create(:relation, :obj_id => 1)
+      FactoryGirl.create(:annotations_project, annotation: @relation_project_3, project_id: 3)
     end
     
     it 'should include project_id included in project_ids' do

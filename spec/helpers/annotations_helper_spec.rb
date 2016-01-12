@@ -131,6 +131,28 @@ describe AnnotationsHelper do
     end
   end  
 
+  describe 'align_denotations' do
+    context 'when denotations is nil' do
+      it 'should return nil' do
+        expect( helper.align_denotations(nil, '', '')).to be_nil
+      end
+    end
+    
+    context 'when canann exists' do
+      let(:span_end_greater_than_begin) { {span: {begin: '0', end: '1'}} }
+      let(:span_end_smaller_than_begin) { {span: {begin: '2', end: '1'}} }
+
+      before do
+        TextAlignment::TextAlignment.stub_chain(:new, :transform_hdenotations).and_return([span_end_greater_than_begin, span_end_smaller_than_begin])
+      end
+      
+      it 'should return TextAlignment::TextAlignment.new.transform_hdenotations.select span[:end] greater than span[:begin]' do
+        expect(helper.align_denotations('denotations', 'from text', 'end of text')).to include(span_end_greater_than_begin)
+        expect(helper.align_denotations('denotations', 'from text', 'end of text')).not_to include(span_end_smaller_than_begin)
+      end
+    end
+  end
+
   describe 'annotaitons[:focus]' do
     context 'when context_size dose not present' do
       before do

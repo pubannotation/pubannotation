@@ -12,7 +12,6 @@
 # It's strongly recommended to check this file into your version control system.
 
 ActiveRecord::Schema.define(:version => 20151108135607) do
-
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
     t.string   "name"
@@ -31,6 +30,32 @@ ActiveRecord::Schema.define(:version => 20151108135607) do
 
   add_index "annotators", ["abbrev"], :name => "index_annotators_on_abbrev", :unique => true
   add_index "annotators", ["user_id"], :name => "index_annotators_on_user_id"
+
+  create_table "annotations", :force => true do |t|
+    t.string  "type"
+    t.string  "hid"
+    t.string  "pred"
+    t.string  "obj_type"
+    t.integer "obj_id"
+    t.string  "subj_type"
+    t.integer "subj_id"
+    t.integer "doc_id"
+    t.integer "pred_id"
+    t.integer "begin"
+    t.integer "end"
+  end
+
+  add_index "annotations", ["doc_id"], :name => "index_annotations_on_doc_id"
+  add_index "annotations", ["obj_id"], :name => "index_annotations_on_obj_id"
+  add_index "annotations", ["subj_id"], :name => "index_annotations_on_subj_id"
+
+  create_table "annotations_projects", :force => true do |t|
+    t.integer "annotation_id"
+    t.integer "project_id"
+  end
+
+  add_index "annotations_projects", ["annotation_id"], :name => "index_annotations_projects_on_annotation_id"
+  add_index "annotations_projects", ["project_id"], :name => "index_annotations_projects_on_project_id"
 
   create_table "associate_maintainers", :force => true do |t|
     t.integer  "user_id"
@@ -107,6 +132,7 @@ ActiveRecord::Schema.define(:version => 20151108135607) do
     t.integer  "subcatrels_count",  :default => 0
     t.boolean  "delta",             :default => true, :null => false
     t.integer  "projects_count",    :default => 0
+    t.integer  "impressions_count", :default => 0
   end
 
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
@@ -131,6 +157,31 @@ ActiveRecord::Schema.define(:version => 20151108135607) do
   end
 
   add_index "documentations", ["documentation_category_id"], :name => "index_documentations_on_documentation_category_id"
+
+  create_table "impressions", :force => true do |t|
+    t.string   "impressionable_type"
+    t.integer  "impressionable_id"
+    t.integer  "user_id"
+    t.string   "controller_name"
+    t.string   "action_name"
+    t.string   "view_name"
+    t.string   "request_hash"
+    t.string   "ip_address"
+    t.string   "session_hash"
+    t.text     "message"
+    t.text     "referrer"
+    t.datetime "created_at",          :null => false
+    t.datetime "updated_at",          :null => false
+  end
+
+  add_index "impressions", ["controller_name", "action_name", "ip_address"], :name => "controlleraction_ip_index"
+  add_index "impressions", ["controller_name", "action_name", "request_hash"], :name => "controlleraction_request_index"
+  add_index "impressions", ["controller_name", "action_name", "session_hash"], :name => "controlleraction_session_index"
+  add_index "impressions", ["impressionable_type", "impressionable_id", "ip_address"], :name => "poly_ip_index"
+  add_index "impressions", ["impressionable_type", "impressionable_id", "request_hash"], :name => "poly_request_index"
+  add_index "impressions", ["impressionable_type", "impressionable_id", "session_hash"], :name => "poly_session_index"
+  add_index "impressions", ["impressionable_type", "message", "impressionable_id"], :name => "impressionable_type_message_index"
+  add_index "impressions", ["user_id"], :name => "index_impressions_on_user_id"
 
   create_table "instances", :force => true do |t|
     t.string   "hid"
@@ -194,6 +245,14 @@ ActiveRecord::Schema.define(:version => 20151108135607) do
 
   add_index "notices", ["project_id"], :name => "index_notices_on_project_id"
 
+  create_table "objs", :force => true do |t|
+    t.string "name"
+  end
+
+  create_table "preds", :force => true do |t|
+    t.string "name"
+  end
+
   create_table "projects", :force => true do |t|
     t.string   "name"
     t.text     "description"
@@ -217,9 +276,10 @@ ActiveRecord::Schema.define(:version => 20151108135607) do
     t.integer  "relations_count",                  :default => 0
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
-    t.datetime "annotations_updated_at",           :default => '2015-03-06 06:13:40'
+    t.datetime "annotations_updated_at",           :default => '2015-02-23 05:39:37'
     t.text     "namespaces"
     t.integer  "process"
+    t.integer  "impressions_count",                :default => 0
     t.integer  "annotations_count",                :default => 0
     t.string   "sample"
   end

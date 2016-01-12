@@ -34,3 +34,6 @@ public/downloads/*
 
 # Ignore devise config file
 #/config/initializers/devise.rb
+
+public/downloads/
+spec/vcr/lib/

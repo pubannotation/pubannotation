@@ -1,4 +1,4 @@
-class Relation < ActiveRecord::Base
+class Relation < Annotation
   belongs_to :project, :counter_cache => true
   belongs_to :subj, :polymorphic => true
   belongs_to :obj, :polymorphic => true
@@ -7,10 +7,10 @@ class Relation < ActiveRecord::Base
 
   attr_accessible :hid, :pred
 
-  validates :hid,     :presence => true
+  # validates :hid,     :presence => true
   validates :pred,    :presence => true
-  validates :subj_id, :presence => true
-  validates :obj_id,  :presence => true
+  # validates :subj_id, :presence => true
+  # validates :obj_id,  :presence => true
   validate :validate
 
   scope :from_projects, -> (projects) {
@@ -23,7 +23,8 @@ class Relation < ActiveRecord::Base
     where("docs.sourceid = ?", sourceid)
   }
   scope :projects_relations, lambda{|project_ids|
-    where('project_id IN (?)', project_ids)
+    includes(:annotations_projects => :project).
+    where('annotations_projects.project_id IN (?)', project_ids) if project_ids.present?
   }
 
   scope :accessible_projects, lambda{|current_user_id|
