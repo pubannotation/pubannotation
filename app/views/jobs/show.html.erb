@@ -24,7 +24,7 @@
 
   <section>
     <h1>
-    Background job #<%= @job.delayed_job_id %>: <%= @job.name %>
+    Job #<%= @job.delayed_job_id %>: <%= @job.name %>
     <%= link_to 'Remove', project_job_path(@project.name, @job), method: :delete, data: { confirm: 'Are you sure?' }, :class => :button unless @job.running? %>
     </h1>
 
