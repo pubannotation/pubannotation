@@ -7,7 +7,6 @@ class ObtainAnnotationsJob < Struct.new(:project, :docs, :annotator, :options)
 
     docs.each_with_index do |doc, i|
       begin
-        doc.set_ascii_body if options[:encoding] == 'ascii'
         project.obtain_annotations(doc, annotator, options)
       rescue => e
 				@job.messages << Message.create({item: "#{doc.sourcedb}:#{doc.sourceid}-#{doc.serial}", body: e.message})

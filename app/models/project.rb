@@ -858,7 +858,7 @@ class Project < ActiveRecord::Base
     self.delete_annotations(doc) unless options.present? && options[:mode] == :add
 
     original_text = annotations[:text]
-    annotations[:text] = doc.body
+    annotations[:text] = doc.original_body.nil? ? doc.body : doc.original_body
 
     if annotations[:denotations].present?
       num = annotations[:denotations].length
@@ -926,6 +926,8 @@ class Project < ActiveRecord::Base
   end
 
   def inquire_annotations(doc, annotator, options = nil)
+    doc.set_ascii_body if options[:encoding] == :ascii
+
     url = annotator['url']
       .gsub('_text_', doc.body)
       .gsub('_sourcedb_', doc.sourcedb)

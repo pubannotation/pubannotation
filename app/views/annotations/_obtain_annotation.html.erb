@@ -72,6 +72,19 @@
 			    <%= label_tag :mode_add, :No, value: :add %>
 			</td>
 		</tr>
+
+		<tr>
+			<th>
+				Change unicode to ASCII?
+			</th>
+			<td>
+				<%= radio_button_tag :encoding, :ascii %>
+				<%= label_tag :encoding_ascii, :Yes, value: :ascii %>
+			    <%= radio_button_tag :encoding, :unicode, checked: true %>
+			    <%= label_tag :encoding_unicode, :No, value: :unicode %>
+			</td>
+		</tr>
+
 		<tr>
 			<th colspan="2">
 				<%= submit_tag('Request annotation') %>
