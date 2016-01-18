@@ -506,11 +506,15 @@ class Doc < ActiveRecord::Base
     annotations[:sourceid] = self.sourceid
     annotations[:divid] = self.serial if self.has_divs?
 
-    context_size ||= 0
-    b = span[:begin] - context_size
-    e = span[:end] + context_size
-    b = 0 if b < 0
-    e = self.body.length if e > self.body.length
+    b, e = 0, 0
+
+    if span.present?
+      context_size ||= 0
+      b = span[:begin] - context_size
+      e = span[:end] + context_size
+      b = 0 if b < 0
+      e = self.body.length if e > self.body.length
+    end
 
     annotations[:text] = if span.present?
       self.body[b...e]
