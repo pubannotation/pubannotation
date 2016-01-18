@@ -1,7 +1,4 @@
 #!/usr/bin/env ruby
-#encoding: UTF-8
-Encoding.default_external="UTF-8"
-Encoding.default_internal="UTF-8"
 
 module Utfrewrite
 	@@charmap = {
@@ -266,6 +263,26 @@ module Utfrewrite
 		0x2236 => ":",
 		0x2709 => " ",
 		0x20DE => " ",
+		0x2070 => "0", # superscript
+		0x00B9 => "1",
+		0x00B2 => "2",
+		0x00B3 => "3",
+		0x2074 => "4",
+		0x2075 => "5",
+		0x2076 => "6",
+		0x2077 => "7",
+		0x2078 => "8",
+		0x2079 => "9",
+		0x2080 => "0", # subscript
+		0x2081 => "1",
+		0x2082 => "2",
+		0x2083 => "3",
+		0x2084 => "4",
+		0x2085 => "5",
+		0x2086 => "6",
+		0x2087 => "7",
+		0x2088 => "8",
+		0x2089 => "9",
 	}
 
 	def Utfrewrite.utf8_to_ascii(text)
