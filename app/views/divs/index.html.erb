@@ -16,14 +16,18 @@
 		<%= render :partial => 'projects/titlebar' -%>
 <% end -%>
 
-<section>
-<%= render partial: 'divs', locals: {title: "Divisions of #{params[:sourcedb]}:#{params[:sourceid]}", divs: @divs} -%>
+	<section>
+		<%= render :partial => 'docs/titlebar' -%>
 
-<section>
-<h3>Search divisions</h3>
-<%= render partial: 'search_form' -%>
-</section>
-</section>
+		<section>
+			<%= render partial: 'divs', locals: {divs: @divs} -%>
+
+			<section>
+				<h3>Search divisions</h3>
+				<%= render partial: 'search_form' -%>
+			</section>
+		</section>
+	</section>
 
 <% if @project.present? -%>
 	</section>

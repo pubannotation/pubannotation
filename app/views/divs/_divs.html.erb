@@ -1,12 +1,12 @@
 <h2>
-  <%= title %>
-  <span class='info'>(<%= total_number(divs) -%>)</span>
-  <% if @project.present? || params[:action] == 'search' -%>
-    <span class='tab-bar'>
-      <%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
-      <%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
-    </span>
-  <% end -%>
+	Divisions
+	(<%= total_number(divs) -%>)
+	<% if @project.present? || params[:action] == 'search' -%>
+		<span class='tab-bar'>
+			<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
+			<%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
+		</span>
+	<% end -%>
 </h2>
 <% if divs.present? -%>
 	<% content_for :javascript do %>
@@ -33,11 +33,18 @@
 	<table class="full">
 		<thead>
 			<tr>
-				<th style="width:4em" class="sortable-ASC"><%= t('views.divs.div')%></th>
+				<th style="width:4em" class="sortable-ASC">div.</th>
 				<th style="width:14em"><%= t('activerecord.attributes.doc.section') %></th>
 				<th><%= t('activerecord.attributes.doc.body') %></th>
-				<th style="width:9em"><%= t('views.shared.size') %></th>
-        		<th style="width:9em"><%= t('views.shared.annotations_count') -%></th>
+			    <th class="docs_header_projects_number">
+					<span title="number of projects"><%= t('views.shared.projects_count') -%></span>
+			    </th>
+				<th class="docs_header_annotations_number">
+        			<span title="number of annotations"><%= t('views.shared.length') -%></span>
+				</th>
+        		<th class="docs_header_annotations_number">
+        			<span title="number of annotations"><%= t('views.shared.annotations_count') -%></span>
+        		</th>
 				<th style="width:4em"></th>
 			</tr>
 		</thead>

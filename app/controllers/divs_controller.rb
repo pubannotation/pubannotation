@@ -10,6 +10,7 @@ class DivsController < ApplicationController
       @search_path = doc_sourcedb_sourceid_divs_search_path(params[:sourcedb], params[:sourceid])
 
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
+      @doc = @divs.first
 
       respond_to do |format|
         format.html
@@ -37,6 +38,7 @@ class DivsController < ApplicationController
       @search_path = search_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])
 
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
+      @doc = @divs.first
 
       respond_to do |format|
         format.html {render 'index'}

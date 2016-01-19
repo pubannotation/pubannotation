@@ -226,6 +226,7 @@ en:
       doc:
         sourcedb: source DB
         sourceid: source ID
+        section: section
         body: text
       documentation:
         title: title
@@ -395,7 +396,7 @@ en:
       visualization_link_disabled: Choose a span to see. Otherwise, the text is too long to show in visualization.
     divs:
       document_divs: "Divisions <span class='meta'>of the document, <span class='pname'>%{sourcedb}:%{sourceid}</span></span>"
-      div: Div.
+      div: div.
       list_button: List all the divisions
     docs:
       annotation_within_project: "Annotations <span class='meta'> from the project, <span class='pname'>%{project_name}</span></span>"
@@ -482,6 +483,8 @@ en:
       annotation: annotation
       annotations: annotations
       annotations_count: '#anno.'
+      length: length
+      projects_count: '#proj.'
       automatic_annotation_initial: A
       automatic_annotation: Automatic annotation
       manual_annotation_initial: M

@@ -2,6 +2,9 @@
         <td style="text-align:center"><%= div.serial %></td>
         <td style="text-align:center"><%= div.section %></td>
         <td style="text-align:left"><%= div.body %></td>
+		<td style="text-align:right">
+			<%= link_to div.projects_count, doc_sourcedb_sourceid_divs_show_path(div.sourcedb, div.sourceid, div.serial) -%>
+		</td>
         <td style="text-align:right"><%= div.body.length %></td>
         <td style="text-align:right"><%= annotations_count_helper(@project, div) %></td>
         <td><span class='button'><%= div_link_helper(@project, div) -%></span></td>

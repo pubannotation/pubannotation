@@ -32,14 +32,18 @@
     </th>
     <th><%= t('activerecord.attributes.doc.body') %></th>
     <th class="docs_header_projects_number">
-      <% if params[:action] == 'search' -%>
-        <%= '#projects' -%>
-      <% else -%>
-        <%= sortable(Doc, 'projects_count', '#projects') -%>
-      <% end -%>
+      <span title="number of projects">
+        <% if params[:action] == 'search' -%>
+          #proj.
+        <% else -%>
+          <%= sortable(Doc, 'projects_count', '#proj.') -%>
+        <% end -%>
+      </span>
     </th>
-    <th style="width:7em">
-      <%= t('views.shared.annotations_count') -%>
+    <th class="docs_header_annotations_number">
+      <span title="number of annotations">
+        <%= t('views.shared.annotations_count') -%>
+      </span>
     </th>
     <th style="width:12em"></th>
   </tr>
