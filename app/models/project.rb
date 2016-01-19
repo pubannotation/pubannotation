@@ -165,6 +165,8 @@ class Project < ActiveRecord::Base
      2 => I18n.t('activerecord.options.project.status.beta'),
      3 => I18n.t('activerecord.options.project.status.developing'),
      4 => I18n.t('activerecord.options.project.status.testing')
+     8 => I18n.t('activerecord.options.project.status.developing'),
+     9 => I18n.t('activerecord.options.project.status.testing')
    }
 
    status_hash[self.status]
