@@ -44,7 +44,7 @@ class Project < ActiveRecord::Base
   default_scope where(:type => nil)
 
   scope :for_index, where('accessibility = 1 AND status < 3')
-  scope :for_home, where('accessibility = 1 AND status < 3')
+  scope :for_home, where('accessibility = 1 AND status < 4')
 
   scope :accessible, -> (current_user) {
     if current_user.present?
