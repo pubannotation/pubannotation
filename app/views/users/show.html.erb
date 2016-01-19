@@ -6,23 +6,23 @@
 
 <section>
   <h1>
-  User '<%= @user.username %>'
-  <% if @user == current_user %>
-    <%= link_to 'Edit', edit_user_registration_path, :class => :button %>
-  <% end %>
+    User '<%= @user.username %>'
+    <% if @user == current_user %>
+      <%= link_to 'Edit', edit_user_registration_path, :class => :button %>
+    <% end %>
   </h1>
   
   <% if @user == current_user %>
-  <table>
-  <tr>
-  <th>E-mail</th>
-  <td><%= @user.email -%></td>
-  </tr>
-  <tr>
-  <th>Last login</th>
-  <td><%= @user.last_sign_in_at -%></td>
-  </tr>
-  </table>
+    <table>
+    <tr>
+    <th>E-mail</th>
+    <td><%= @user.email -%></td>
+    </tr>
+    <tr>
+    <th>Last login</th>
+    <td><%= @user.last_sign_in_at -%></td>
+    </tr>
+    </table>
   <% end %>
 
   <section>
@@ -47,5 +47,8 @@
       </tr>
     <% end %>
     </table>
+    <% if @user == current_user %>
+      <%= link_to t('views.shared.create'), new_project_path, {:class=> 'control button'} %>
+    <% end %>
   </section>
 </section>
