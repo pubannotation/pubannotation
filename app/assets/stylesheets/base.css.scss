@@ -513,6 +513,10 @@ td textarea {
 }
 
 div.oneline {
-    white-space: nowrap;
-    width: auto;
+  float: left;
+  white-space: nowrap;
+}
+
+.clear {
+  clear: both;
 }

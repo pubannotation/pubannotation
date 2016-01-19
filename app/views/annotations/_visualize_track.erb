@@ -1,9 +1,7 @@
-<h3><%= link_to visualize_track[:project], project_path(visualize_track[:project]) -%></h3>
-
-<%
-	annotation_url = url_for(only_path:false)
-	annotation_url.sub!('/docs/', "/projects/#{visualize_track[:project]}/docs/")
-	annotation_url.sub!('/visualize', '.json')
--%>
-
-<%= render partial: 'shared/textae_div1', locals: {target_json_url: annotation_url} if annotations_url.present? -%>
+<section>
+	<h3><%= link_to visualize_track[:project], project_path(visualize_track[:project]) -%></h3>
+	<div class="textae-editor oneline">
+		<%= visualize_track.to_json %>
+	</div>
+	<div class="clear"></div>
+</section>

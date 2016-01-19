@@ -175,7 +175,7 @@ class AnnotationsController < ApplicationController
         @annotations = @doc.hannotations(nil, @span)
 
         @track_annotations = @annotations[:tracks]
-        @track_annotations.each {|a| a[:text] = @annotations[:text]}
+        @track_annotations.each {|a| a[:text] = @annotations[:text].gsub("\n", " ")}
 
         respond_to do |format|
           format.html {render 'visualize_tracks'}

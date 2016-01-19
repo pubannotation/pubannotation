@@ -1,5 +1,9 @@
 <%= render :partial => 'docs/path'-%>
 <%= render :partial => 'shared/textae_css_js'-%>
-<%= render :partial => 'docs/titlebar' -%>
-<%= render :partial => 'annotations/titlebar' -%>
-<%= render :partial => 'visualize_track', :collection => @track_annotations -%>
+<section>
+	<%= render :partial => 'docs/titlebar' -%>
+	<section>
+		<%= render :partial => 'annotations/titlebar' -%>
+		<%= render :partial => 'visualize_track', :collection => @track_annotations -%>
+	</section>
+</section>
