@@ -205,7 +205,7 @@ class ProjectsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      message = if project.docs.present?
+      message = if project.docs.exists?
         priority = project.jobs.unfinished.count
         delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project, current_user), priority: priority, queue: :general
         Job.create({name:'Delete all documents from project', project_id:project.id, delayed_job_id:delayed_job.id})
