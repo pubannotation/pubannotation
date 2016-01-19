@@ -291,6 +291,7 @@ ja:
         status:
           released: 公開中
           beta: ベータ
+          uploading: アップロード中
           developing: 開発中
           testing: テスト中
         accessibility:

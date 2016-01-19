@@ -282,6 +282,7 @@ en:
         status:
           released: Released
           beta: Beta
+          uploading: Uploading
           developing: Developing
           testing: Testing
         accessibility:

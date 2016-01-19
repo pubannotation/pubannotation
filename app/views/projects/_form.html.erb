@@ -84,12 +84,13 @@
   <tr>
     <th><%= f.label :status %></th>
     <td><%= f.select :status, 
-    		options_for_select([
-				[t('activerecord.options.project.status.released'), 1],
-				[t('activerecord.options.project.status.beta'), 2],
-				[t('activerecord.options.project.status.developing'), 3],
-        [t('activerecord.options.project.status.testing'), 4]],
-    		f.object.status) %></td>
+          options_for_select([
+            [t('activerecord.options.project.status.released'), 1],
+            [t('activerecord.options.project.status.beta'), 2],
+            [t('activerecord.options.project.status.uploading'), 3],
+            [t('activerecord.options.project.status.developing'), 8],
+            [t('activerecord.options.project.status.testing'), 9]],
+            f.object.status) %></td>
   </tr>
   <tr>
     <th><%= f.label :accessibility %></th>
