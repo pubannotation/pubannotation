@@ -242,8 +242,8 @@ en:
         rdfwriter: RDF writer
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
-        annotations_zip_downloadable: Annotation downloadable
-        annotations_RDF_downloadable: Annotation RDF downloadable
+        annotations_zip_downloadable: Anno. download
+        annotations_RDF_downloadable: Anno. RDF download
         process: Type
         updated_at: last update
       sproject:

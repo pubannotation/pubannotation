@@ -83,14 +83,27 @@
   </tr>
   <tr>
     <th><%= f.label :status %></th>
-    <td><%= f.select :status, 
-          options_for_select([
-            [t('activerecord.options.project.status.released'), 1],
-            [t('activerecord.options.project.status.beta'), 2],
-            [t('activerecord.options.project.status.uploading'), 3],
-            [t('activerecord.options.project.status.developing'), 8],
-            [t('activerecord.options.project.status.testing'), 9]],
-            f.object.status) %></td>
+    <td>
+      <%= f.radio_button(:status, 1) %>
+      <%= f.label :status, t('activerecord.options.project.status.released'), value: 1 %>
+      <span class="note">- annotation is finalized.</span>
+      <br/>
+      <%= f.radio_button(:status, 2) %>
+      <%= f.label :status, t('activerecord.options.project.status.beta'), value: 2 %>
+      <span class="note">- release candidate.</span>
+      <br/>
+      <%= f.radio_button(:status, 3) %>
+      <%= f.label :status, t('activerecord.options.project.status.uploading'), value: 3 %>
+      <span class="note">- annotation is done, but uploading may take time.</span>
+      <br/>
+      <%= f.radio_button(:status, 8) %>
+      <%= f.label :status, t('activerecord.options.project.status.developing'), value: 8 %>
+      <span class="note">- under development. will be frequent changed.</span>
+      <br/>
+      <%= f.radio_button(:status, 9, checked: true) %>
+      <%= f.label :status, t('activerecord.options.project.status.testing'), value: 9 %>
+      <span class="note">- testing purpose. (may be removed after a while)</span>
+    </td>
   </tr>
   <tr>
     <th><%= f.label :accessibility %></th>
