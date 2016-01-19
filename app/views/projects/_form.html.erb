@@ -100,7 +100,7 @@
       <%= f.label :status, t('activerecord.options.project.status.developing'), value: 8 %>
       <span class="note">- under development. will be frequent changed.</span>
       <br/>
-      <%= f.radio_button(:status, 9, checked: true) %>
+      <%= f.radio_button(:status, 9) %>
       <%= f.label :status, t('activerecord.options.project.status.testing'), value: 9 %>
       <span class="note">- testing purpose. (may be removed after a while)</span>
     </td>
