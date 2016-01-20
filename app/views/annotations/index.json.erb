@@ -1,0 +1,21 @@
+<% if @annotations -%>
+  {
+    "annotations": [
+    <% @annotations.each_with_index do |annotation, index| -%>
+      {
+        "type":"<%= annotation.type -%>",
+        "hid": "<%= annotation.hid -%>",
+        "pred": "<%= annotation.pred.name if annotation.pred.present? -%>",
+        "obj": "<%= annotation.obj.name if annotation.obj.present? -%>",
+        "subj": "<%= annotation.subj if annotation.subj.present? -%>",
+        "begin": "<%= annotation.begin -%>",
+        "end": "<%= annotation.end-%>"
+      <% if index + 1 != @annotations.size -%>
+        },
+      <% else -%>
+        }
+      <% end -%>
+    <% end -%>
+    ] 
+  }
+<% end -%>

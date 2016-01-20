@@ -6,6 +6,24 @@ class AnnotationsController < ApplicationController
   before_filter :authenticate_user!, :except => [:doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_zip]
   include DenotationsHelper
 
+  def index
+    @project, notice = get_project(params[:project_id])
+    case request.format.symbol
+    when :json
+      per_page = 10000
+    else :html
+      per_page = 10
+    end
+    if @project
+      @annotations = @project.annotations.paginate(page: params[:page], per_page: per_page)
+    end
+
+    respond_to do |format|
+      format.html
+      format.json
+    end
+  end
+
   # annotations for doc without project
   def doc_annotations_index
     begin
