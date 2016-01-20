@@ -63,7 +63,7 @@
             $(function() {
                 $('#project_form').submit(function() {
                   if ($('input[type="radio"]:checked', '#project_form').val() == 'other') {
-                    $('input[type="radio"]:checked', '#project_form').val($('#license').val());
+                    $('input[id="project_license_other"]', '#project_form').val($('#license').val());
                   }
                   return true;
                 });
