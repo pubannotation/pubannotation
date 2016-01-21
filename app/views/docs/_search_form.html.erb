@@ -6,9 +6,9 @@
       <th><%= label_tag :sourceid, t('activerecord.attributes.doc.body') -%></th>
     </tr>
     <tr>
-      <td><%= autocomplete_field_tag :sourcedb, params[:sourcedb], "#{autocomplete_sourcedb_docs_path}" -%></td>
-      <td><%= text_field_tag :sourceid, params[:sourceid], value: params[:sourceid] -%></td>
-      <td><%= text_field_tag :body, params[:body], value: params[:body] -%></td>
+      <td><%= autocomplete_field_tag :sourcedb, params[:sourcedb], "#{autocomplete_sourcedb_docs_path}", style: "width:95%" -%></td>
+      <td><%= text_field_tag :sourceid, params[:sourceid], value: params[:sourceid], style: "width:95%" -%></td>
+      <td><%= text_field_tag :body, params[:body], value: params[:body], style: "width:97%" -%></td>
       <td>
         <%= submit_tag t('views.shared.search'), class: :button -%>
         <%= submit_tag t('views.shared.clear'), id: 'reset', class: :button -%>
