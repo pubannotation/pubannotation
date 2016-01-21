@@ -108,7 +108,11 @@ Pubann::Application.routes.draw do  resources :annotators
     get 'tasks' => 'notices#tasks'
     resources :annotations
     resources :associate_maintainers, :only => [:destroy]
-    resources :jobs
+    resources :jobs do
+      member do
+        get 'messages' => 'messages#index'
+      end
+    end
     
     member do
       get :search

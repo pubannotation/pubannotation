@@ -54,21 +54,21 @@
 
     <% unless @job.messages.empty? %>
       <section>
-        <h2>Problem reports (<%= @job.messages.count %>)</h2>
+        <h2>
+          Problem reports (<%= @job.messages.count %>)
+          <span class='tab-bar'>
+            <%= link_to_unless_current 'JSON', params.merge(controller: :messages, action: :index, format: :json), :class => 'tab' -%>
+            <%= link_to_unless_current 'TSV', params.merge(controller: :messages, action: :index, format: :tsv), :class => 'tab' -%>
+            </span>
+        </h2>
         <p class="note">The following items were rejected due to the reported reasons.</p>
         <table>
-        <tr>
+          <tr>
           <th>Item</th>
           <th>Error message</th>
           <th>Reported at</th>
-        </tr>
-        <% @job.messages.order(:created_at).each do |m| %>
-        <tr>
-          <td><%= m.item %></td>
-          <td><%= m.body %></td>
-          <td><%= m.created_at %></td>
-        </tr>
-        <% end %>
+          </tr>
+          <%= render partial: 'messages/message', collection: @messages -%>
         </table>
       </section>
     <% end %>

@@ -275,7 +275,7 @@ class DocsController < ApplicationController
   def edit
     begin
       @project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless @project.present?
+      raise "There is no such project in your management." unless @project.present?
 
       divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       raise "There is no such document in the project." unless divs.present?

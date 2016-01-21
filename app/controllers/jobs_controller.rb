@@ -26,6 +26,7 @@ class JobsController < ApplicationController
     raise "There is no such project." unless @project.present?
 
     @job = Job.find(params[:id])
+    @messages = @job.messages.order(:created_at)
 
     respond_to do |format|
       format.html # show.html.erb
