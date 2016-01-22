@@ -3,9 +3,6 @@ class Modification < Annotation
 
   attr_accessible :hid, :pred
 
-  validates :hid, :presence => true
-  validates :pred, :presence => true
-
   def get_hash
     hmodification = Hash.new
     hmodification[:id] = hid
