@@ -1,25 +1,26 @@
 class MigrateDenotations < ActiveRecord::Migration
   def up
     # Create obj master table
-    Denotation.all.collect{|d| d.obj}.uniq.each do |obj_name|
+    denotations = ActiveRecord::Base.connection.exec_query('SELECT * FROM Denotations').to_hash
+    denotations.collect{|d| d['obj_type']}.uniq.each do |obj_name|
       Obj.create(name: obj_name)
     end
 
-    Denotation.all.each do |denotation|
+    denotations.each do |denotation|
       annotation = Annotation.create(
         {
           type: 'Denotation',
-          hid: denotation.hid,
+          hid: denotation['hid'],
           pred: nil,
-          obj_id: Obj.find_by_name(denotation.obj).id,
+          obj_id: Obj.find_by_name(denotation['obj']).id,
           obj_type: 'Obj',
-          begin: denotation.begin,
-          end: denotation.end
+          begin: denotation['begin'],
+          end: denotation['end']
         }
       )
-      if denotation.project_id.present?
-        if Project.where(id: denotation.project_id).present?
-          AnnotationsProject.create(annotation_id: denotation.id, project_id: denotation.project_id)
+      if denotation['project_id'].present?
+        if Project.where(id: denotation['project_id']).present?
+          AnnotationsProject.create(annotation_id: denotation['id'], project_id: denotation['project_id'])
         end
       end
     end
