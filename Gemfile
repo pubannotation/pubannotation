@@ -23,6 +23,7 @@ gem 'friendly_id'
 group :development do
   gem 'guard'
   gem 'guard-livereload'
+  gem 'rails-erd'
 end
 
 group :test, :development do
