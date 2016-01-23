@@ -14,12 +14,12 @@
 
 <section>
 <h1>
-  <%= t('activerecord.models.project').pluralize.capitalize.html_safe %>
-  <span class='info'>(<%= total_number(@projects) -%>)</span>
+  <%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
+  <span class='info'>
+    (<%= "#{total_number(@projects)}/" if params[:commit].present? -%><%= @projects_total_number -%>)
+  </span>
   <span class='control'><%= render partial: 'search_all_form' -%></span>
-  <% if params[:commit].present? %>
-  	<%= link_to t('views.shared.show_all'), projects_path, {:class=> 'control button'} -%>
-  <% end %>
+
   <% if user_signed_in?%>
     <%= link_to t('views.shared.create'), new_project_path, {:class=> 'control button'} %>
   <% end %>

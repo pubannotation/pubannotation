@@ -36,6 +36,8 @@ class ProjectsController < ApplicationController
       end
     end
 
+    @projects_total_number = Project.accessible(current_user).length
+
     respond_to do |format|
       format.html {
         if @doc and @projects.blank?
