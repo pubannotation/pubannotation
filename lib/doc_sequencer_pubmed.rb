@@ -21,9 +21,9 @@ class DocSequencerPubMed
 
         result   = doc.find_first('/PubmedArticleSet').content.strip
         return nil if result.empty?
-        title    = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/ArticleTitle')
-        vtitle   = doc.find_first('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/VernacularTitle')
-        abstractTexts = doc.find('/PubmedArticleSet/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText')
+        title    = doc.find_first('/PubmedArticleSet//ArticleTitle')
+        vtitle   = doc.find_first('/PubmedArticleSet//VernacularTitle')
+        abstractTexts = doc.find('/PubmedArticleSet//Abstract/AbstractText')
         abstract = abstractTexts
                     .collect{|t| t['Label'].nil? ? t.content.strip : t['Label'] + ': ' + t.content.strip}
                     .join("\n")
