@@ -3,7 +3,7 @@ layout: docs
 title: Annotation server API
 prev_section: obtain-annotation
 next_section: annotation-editor
-permalink: /docs/annotation-server/
+permalink: /docs/annotation-server-api/
 ---
 
 PubAnnotation defines REST API for interoperability
@@ -65,46 +65,55 @@ If possible, the _Retry-After_ header should contain the estimated time before r
 
 After annotations are delivered to the client, if the server removes the annotations,
 the annotations will not be available any more from the server.
-In the case, it has to respond to the request for the annotations with the statud code 404 (Bad request).
+In the case, it has to respond to the request for the annotations with the status code 404 (Bad request).
 
 ## Example
 
 For an annotation server to be interoperable with PubAnnotation,
 it has to respond **at least one** of the example calls shown below.
 
+Note that all the examples below are shown as [cURL](http://curl.haxx.se/) commands,
+so that annotation servers can be easily tested.
+
+Note also that PubAnnotation will add _"Accept:application/json"_ header to every request it will made,
+so that annotation servers which implement content negotiation can respond with annotation in JSON format.
+The servers which do not implement content negotiation can simply ignore the header.
+
 ### a POST request with a piece of text
 <textarea class="bash" style="width:100%; height:3em; background-color:#333333; color:#eeeeee">
-curl -H "Accept:application/json" -d text="example text" URL_of_annotation_server
+curl -d text="example text" URL_of_annotation_server
 </textarea>
 
-Note that the header _"Accept:application/json"_ is added for the case where the annotation server relies on the header to determine the output format. If the server does not use content negotiation, it can simply ignore the header.
+Note that when the _-d_ option is used to specify parameters, cURL will make it into a POST request.
 
 ### a GET request with a piece of text
 <textarea class="bash" style="width:100%; height:3em; background-color:#333333; color:#eeeeee">
-curl -G -H "Accept:application/json" -d text="example text" URL_of_annotation_server
+curl -G -d text="example text" URL_of_annotation_server
 </textarea>
 
-Note that the _-G_ option will make it into a GET request: the parameter specification will be appended to the URL.
+Note that the _-G_ option will force it to be a GET request: the parameter specification will be appended to the URL.
 
 ### a POST request with a piece of text (in JSON body)
 
 <textarea class="bash" style="width:100%; height:3em; background-color:#333333; color:#eeeeee">
-curl -H "Accept:application/json" -H "Content-type:Application/json" -d '{"text":"example text"} URL_of_annotation_server
+curl -H "Content-type:Application/json" -d '{"text":"example text"} URL_of_annotation_server
 </textarea>
 
 Note that the header _"Content-Type:application/json"_ is added to inform the annotation server that the body of the request is a JSON object.
 
+Note that the three examples above essentially represent the same request in different ways.
+
 ### a POST request with _sourcedb_/_sourceid_ specification
 <textarea class="bash" style="width:100%; height:3em; background-color:#333333; color:#eeeeee">
-curl -H "Accept:application/json" -d sourcedb="PubMed" -d sourceid="12345" URL_of_annotation_server
+curl -d sourcedb="PubMed" -d sourceid="12345" URL_of_annotation_server
 </textarea>
 
 ### a GET request with _sourcedb_/_sourceid_ specification
 <textarea class="bash" style="width:100%; height:3em; background-color:#333333; color:#eeeeee">
-curl -G -H "Accept:application/json" -d sourcedb="PubMed" -d sourceid="12345" URL_of_annotation_server
+curl -G -d sourcedb="PubMed" -d sourceid="12345" URL_of_annotation_server
 </textarea>
 
 ### a POST request with _sourcedb_/_sourceid_ specification in JSON.
 <textarea class="bash" style="width:100%; height:3em; background-color:#333333; color:#eeeeee">
-curl -H "Accept:application/json" -H "Content-type:Application/json" -d '{"sourcedb":"PubMed","sourceid":"12345"}'' URL_of_annotation_server
+curl -H "Content-type:Application/json" -d '{"sourcedb":"PubMed","sourceid":"12345"}'' URL_of_annotation_server
 </textarea>

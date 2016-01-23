@@ -9,7 +9,7 @@
   - create-annotation
   - annotation-format
   - obtain-annotation
-  - annotation-server
+  - annotation-server-api
   - annotation-editor
   - submit-annotation
   - align-annotation

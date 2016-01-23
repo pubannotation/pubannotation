@@ -2,7 +2,7 @@
 layout: docs
 title: Obtaining annotations
 prev_section: annotation-format
-next_section: annotation-server
+next_section: annotation-server-api
 permalink: /docs/obtain-annotation/
 ---
 

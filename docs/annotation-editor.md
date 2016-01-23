@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Annotation editors
-prev_section: annotation-server
+prev_section: annotation-server-api
 next_section: submit-annotation
 permalink: /docs/annotation-editor/
 ---
