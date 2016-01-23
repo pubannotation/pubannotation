@@ -1,9 +1,9 @@
 ---
 layout: docs
-title: Format
+title: Annotation format
 prev_section: create-annotation
-next_section: automatic-annotator
-permalink: /docs/format/
+next_section: obtain-annotation
+permalink: /docs/annotation-format/
 ---
 
 PubAnnotation uses [JSON](http://json.org/) as its default format to store annotations.

@@ -1,13 +1,12 @@
 ---
 layout: docs
-title: Automatic annotators
-prev_section: format
-next_section: annotation-editor
-permalink: /docs/automatic-annotator/
+title: Obtaining annotations
+prev_section: annotation-format
+next_section: annotation-server
+permalink: /docs/obtain-annotation/
 ---
 
-For a document in PubAnnotation, you can obtain annotations from a REST service of automatic annotation.
-
+For documents in PubAnnotation, annotations can be obtained from REST web services.
 To obtain annotations, PubAnnotation can talk with a web service which
 
 * takes a piece of text through the parameter, _text_, and
@@ -17,7 +16,7 @@ To obtain annotations, PubAnnotation can talk with a web service which
 To obtain automatic annotations for a document
 
 1. Go to a document page (or a division page in case of PMC document) of your project.<br/>
-If your are logged in and the document belongs to one of your projects, you will find the interface to request annotations from a web service.
+If your are logged in and the document belongs to one of your projects, you will find the interface to request annotations from a web service.<br/>
 ![open the editor]({{site.baseurl}}/img/obtain_annotation.png)
 2. Enter the **URL** of an annotation service. If you do not know one, see below.
 3. Enter the **prefix** for the annotations from the annotation service.
