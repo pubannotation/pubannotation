@@ -7,10 +7,16 @@ class DivsController < ApplicationController
       @divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], order: :serial)
       raise "There is no such document." unless @divs.present?
 
-      @search_path = doc_sourcedb_sourceid_divs_search_path(params[:sourcedb], params[:sourceid])
+      @divs_count = @divs.count
+      @doc = @divs.first
+
+      if params[:keywords].present?
+        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], sourceid: params[:sourceid], page:params[:page]})
+        @search_count = search_results[:total]
+        @divs = @search_count > 0 ? search_results[:docs] : []
+      end
 
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
-      @doc = @divs.first
 
       respond_to do |format|
         format.html
@@ -27,7 +33,7 @@ class DivsController < ApplicationController
     end
   end
 
-  def project_divs_index
+  def index_in_project
     begin
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
@@ -35,10 +41,16 @@ class DivsController < ApplicationController
       @divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid], order: :serial)
       raise "There is no such document in the project." unless @divs.present?
 
-      @search_path = search_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])
+      @divs_count = @divs.count
+      @doc = @divs.first
+
+      if params[:keywords].present?
+        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, sourcedb: params[:sourcedb], sourceid: params[:sourceid], page:params[:page]})
+        @search_count = search_results[:total]
+        @divs = @search_count > 0 ? search_results[:docs] : []
+      end
 
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
-      @doc = @divs.first
 
       respond_to do |format|
         format.html {render 'index'}
@@ -51,37 +63,6 @@ class DivsController < ApplicationController
         format.html {redirect_to project_docs_path(@project.name), notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render status: :unprocessable_entity}
-      end
-    end
-  end
-
-  def search
-    begin
-      if params[:project_id]
-        @project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no such project." unless @project.present?
-
-        divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        raise "There is no such document in the project." unless divs.present?
-
-        base = @project.docs
-      else
-        base = Doc
-      end
-
-      conditions = ['sourcedb = ? AND sourceid = ? AND body ILIKE ?', params[:sourcedb], params[:sourceid], "%#{params[:body]}%"] if params[:body].present?
-      @search_divs = base.where(conditions).order('serial ASC')
-
-      respond_to do |format|
-        format.html
-        format.json {render json: @search_divs.collect{|d| d.to_list_hash('div')}}
-        format.tsv  {render text: Doc.to_tsv(@search_divs, 'div')}
-      end
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to (@project.present? ? index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid]) : doc_sourcedb_sourceid_divs_index_path(params[:sourcedb], params[:sourceid])), notice: e.message}
-        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-        format.txt  {render text: message, status: :unprocessable_entity}
       end
     end
   end
@@ -137,12 +118,12 @@ class DivsController < ApplicationController
         format.txt  {render text: @doc.body}
       end
 
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render status: :unprocessable_entity}
+      end
     end
   end
 end

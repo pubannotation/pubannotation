@@ -7,26 +7,31 @@ class DocsController < ApplicationController
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
-  autocomplete :docs, :sourcedb
+  autocomplete :doc, :sourcedb
 
   def index
     begin
-      if params[:project_id]
-        @project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no such project." unless @project.present?
-        docs = @project.docs
-        @search_path = search_project_docs_path(@project.name)
+      @docs_count = Doc.where(serial: 0).count
 
-        # docs.each{|doc| doc.set_ascii_body} if (params[:encoding] == 'ascii')
-        sort_order = sort_order(Doc)
-        source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
-        docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
+      if params[:keywords].present?
+        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, page:params[:page]})
 
-        @docs_size = source_docs_all.count
-        @source_docs = source_docs_all.paginate(:page => params[:page])
+        @search_count = search_results[:total]
+        @docs = search_results[:docs]
+        if @search_count > Doc::LIST_MAX_SIZE
+          flash[:notice] = t('views.docs.list_only', count: Doc::LIST_MAX_SIZE)
+        end
       else
-        @search_path = search_docs_path
+        @docs = if @docs_count > Doc::LIST_MAX_SIZE
+          flash[:notice] = t('views.docs.list_disabled')
+          []
+        else
+          sort_order = sort_order(Doc)
+          Doc.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
+        end
       end
+
+      @sourcedbs = Doc.select(:sourcedb).distinct
 
       respond_to do |format|
         format.html
@@ -42,6 +47,55 @@ class DocsController < ApplicationController
     end
   end
  
+  def index_in_project
+    begin
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless @project.present?
+
+      @docs_count = @project.docs.where(serial: 0).count
+
+      if params[:keywords].present?
+        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, page:params[:page]})
+
+        @search_count = search_results[:total]
+        @docs = search_results[:docs]
+        if @search_count > Doc::LIST_MAX_SIZE
+          flash[:notice] = t('views.docs.list_only', count: Doc::LIST_MAX_SIZE)
+        end
+      else
+        @docs = if @docs_count > Doc::LIST_MAX_SIZE
+          flash[:notice] = t('views.docs.list_disabled')
+          []
+        else
+          sort_order = sort_order(Doc)
+          @project.docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
+        end
+      end
+
+      @sourcedbs = @project.docs.pluck(:sourcedb).uniq
+
+      respond_to do |format|
+        format.html
+        format.json {
+          source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
+          docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
+          render json: docs_list_hash
+        }
+        format.tsv  {
+          source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
+          render text: Doc.to_tsv(source_docs_all, 'doc')
+        }
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render text: message, status: :unprocessable_entity}
+      end
+    end
+  end
+
+
   def records
     if params[:project_id]
       @project, notice = get_project(params[:project_id])
@@ -120,45 +174,6 @@ class DocsController < ApplicationController
 
     @source_docs = docs.sort_by_params(sort_order(Doc)).paginate(:page => params[:page]) if docs.present?
   end 
-
-  def search
-    begin
-      if params[:project_id]
-        @project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no such project." unless @project.present?
-        project_id = @project.id
-      end
-
-      search_results = Doc.search_docs({sourcedb: params[:sourcedb], sourceid: params[:sourceid], body: params[:body], project_id: project_id})
-      search_docs = search_results[:docs].paginate(page: params[:page], per_page: 10)
-
-      if search_results[:total] > Doc::SEARCH_SIZE
-        flash[:notice] = t('controllers.docs.search.greater_than_search_size', total: search_results[:total], search_size: Doc::SEARCH_SIZE)
-      end
-
-      # TODO search_docs.count is the number of docs matches conditions group by same sourcedb and sourceid.
-      if search_docs.count < 5000
-        search_docs_list = search_docs.map{|d| d.to_list_hash('doc')}
-      else
-        search_docs_list = []
-      end
-
-      @docs_size = search_docs.count
-      @source_docs = search_docs 
-
-      respond_to do |format|
-        format.html
-        format.json {render json: search_docs_list}
-        format.tsv  {render text: Doc.to_tsv(search_docs, 'doc')}
-      end
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_path(@project.name) : docs_path), notice: e.message}
-        format.json {render json: {notice: e.message}, status: :unprocessable_entity}
-        format.tsv  {render text: e.message, status: :unprocessable_entity}
-      end
-    end
-  end
 
   def show
     begin
@@ -252,6 +267,24 @@ class DocsController < ApplicationController
         format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render status: :unprocessable_entity}
+      end
+    end
+  end
+
+  def open
+    begin
+      project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "There is no such project." unless project.present?
+
+      divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless divs.present?
+
+      respond_to do |format|
+        format.html {redirect_to show_project_sourcedb_sourceid_docs_path(params[:project_id], params[:sourcedb], params[:sourceid])}
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
       end
     end
   end
@@ -483,8 +516,8 @@ class DocsController < ApplicationController
     redirect_to project_path('system-maintenance')
   end
 
-  def autocomplete_sourcedb
-    render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
-  end
+  # def autocomplete_sourcedb
+  #   render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
+  # end
 
 end

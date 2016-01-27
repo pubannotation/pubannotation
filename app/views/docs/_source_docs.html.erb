@@ -1,57 +1,51 @@
 <h1>
-	<% if params[:action] == 'search' -%>
-		Document search results
-	<% else -%>
-		<%= t('views.docs.list').capitalize -%>
-	<% end -%>
-	<span class='info'>(<%= @docs_size -%>)</span>
+  <% @docs_path = @project.present? ? project_docs_path(@project.name) : docs_path -%>
+	<%= link_to t('views.docs.list').capitalize, @docs_path -%>
+	<span class='info'>(<%= @search_count.to_s + '/' if @search_count.present? -%><%= @docs_count -%>)</span>
 	<% if @project.present? || params[:action] == 'search' -%>
 		<span class='tab-bar'>
 			<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
 			<%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
 		</span>
 	<% end -%>
+  <%= render partial: 'docs/search_form' -%>
 </h1>
 
-<% if @source_docs.present? -%>
-  <table class="full">
-  <tr>
-    <th class="docs_header_sourcedb">
-      <% if params[:action] == 'search' -%>
-        <%= t('activerecord.attributes.doc.sourcedb') -%>
+<table class="full">
+<tr>
+  <th class="docs_header_sourcedb">
+    <% if params[:keywords].present? -%>
+      <%= t('activerecord.attributes.doc.sourcedb') -%>
+    <% else -%>
+      <%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
+    <% end -%>
+  </th>
+  <th class="docs_header_sourceid">
+    <% if params[:keywords].present? -%>
+      <%= t('activerecord.attributes.doc.sourceid') -%>
+    <% else -%>
+      <%= sortable(Doc, 'sourceid', t('activerecord.attributes.doc.sourceid')) %>
+    <% end -%>
+  </th>
+  <th><%= t('activerecord.attributes.doc.body') %></th>
+  <th class="docs_header_projects_number">
+    <span title="number of projects">
+      <% if params[:keywords].present? -%>
+        <%= t('views.shared.projects_count') -%>
       <% else -%>
-        <%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
+        <%= sortable(Doc, 'projects_count', t('views.shared.projects_count')) -%>
       <% end -%>
-    </th>
-    <th class="docs_header_sourceid">
-      <% if params[:action] == 'search' -%>
-        <%= t('activerecord.attributes.doc.sourceid') -%>
-      <% else -%>
-        <%= sortable(Doc, 'sourceid', t('activerecord.attributes.doc.sourceid')) %>
-      <% end -%>
-    </th>
-    <th><%= t('activerecord.attributes.doc.body') %></th>
-    <th class="docs_header_projects_number">
-      <span title="number of projects">
-        <% if params[:action] == 'search' -%>
-          #proj.
-        <% else -%>
-          <%= sortable(Doc, 'projects_count', '#proj.') -%>
-        <% end -%>
-      </span>
-    </th>
-    <th class="docs_header_annotations_number">
-      <span title="number of annotations">
-        <%= t('views.shared.annotations_count') -%>
-      </span>
-    </th>
-    <th style="width:12em"></th>
-  </tr>
+    </span>
+  </th>
+  <th class="docs_header_annotations_number">
+    <span title="number of annotations">
+      <%= t('views.shared.annotations_count') -%>
+    </span>
+  </th>
+  <th style="width:12em"></th>
+</tr>
 
-	<%= render partial: 'source_doc', collection: @source_docs -%>
+<%= render partial: 'source_doc', collection: @docs -%>
 
-	</table>
-	<%= will_paginate @source_docs -%>
-<% else %>
-<span class="meta">Listing the documents is disabled since there are too many.</span>
-<% end -%>
+</table>
+<%= will_paginate @docs -%>

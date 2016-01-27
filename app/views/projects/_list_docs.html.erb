@@ -1,0 +1,9 @@
+<% if @docs_count > 0 -%>
+	<% if @docs_count < 10000 -%>
+		<%= link_to t('views.shared.show'), project_docs_path(@project.name), class: 'button' -%>
+	<% else -%>
+		<span title="disabled due to too many documents to list">List all</span>
+	<% end -%>
+<% else -%>
+	<span title="no document">Show all</span>
+<% end -%>

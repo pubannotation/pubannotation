@@ -37,7 +37,7 @@ Pubann::Application.routes.draw do  resources :annotators
       get 'search' => 'docs#search'
       get 'store_span_rdf' => 'docs#store_span_rdf'
 
-      get :autocomplete_sourcedb
+      get :autocomplete_doc_sourcedb
     end  
     member do
       get 'annotations' => 'annotations#doc_annotations_index'
@@ -118,6 +118,9 @@ Pubann::Application.routes.draw do  resources :annotators
       get :search
       get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
       get 'clean' => 'projects#clean'
+      get 'obtain_annotations' => 'projects#obtain_annotations'
+      get 'upload_annotations' => 'projects#upload_annotations'
+      get 'autocomplete_sourcedb' => 'projects#autocomplete_sourcedb'
     end
     
     collection do
@@ -139,9 +142,11 @@ Pubann::Application.routes.draw do  resources :annotators
 
     resources :docs do
       collection do
+        get 'index' => 'docs#index_in_project'
         post 'add' => 'docs#add'
         get 'records' => 'docs#records'
         get 'search' => 'docs#search'
+        get 'open' => 'docs#open'
         scope 'sourcedb', :as => 'sourcedb' do
           # list sourcedb
           get '/' => 'docs#sourcedb_index' 
@@ -169,7 +174,7 @@ Pubann::Application.routes.draw do  resources :annotators
                 delete 'spans/:begin-:end/annotations' => 'annotations#destroy', as: 'destroy_annotations_in_span'
                 
                 scope 'divs', :as => 'divs' do
-                  get '/' => 'divs#project_divs_index', :as => 'index'
+                  get '/' => 'divs#index_in_project', :as => 'index'
                   get 'annotations/visualize' => 'annotations#div_annotations_visualize'
                   get 'search' => 'divs#search'
     

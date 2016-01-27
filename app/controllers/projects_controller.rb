@@ -62,6 +62,9 @@ class ProjectsController < ApplicationController
 
       @search_path = search_project_docs_path(@project.name)
 
+      @sourcedbs = Doc.select(:sourcedb).uniq.pluck(:sourcedb)
+      @sourcedbs_active = @project.docs.select(:sourcedb).uniq.pluck(:sourcedb)
+
       @annotators = Annotator.all
       @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
 
@@ -148,6 +151,16 @@ class ProjectsController < ApplicationController
         flash[:notice] = errors.join('<br />')
       end
     end
+  end
+
+  def obtain_annotations
+    @project = Project.editable(current_user).find_by_name(params[:id])
+    @annotators = Annotator.all
+    @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
+  end
+
+  def upload_annotations
+    @project = Project.editable(current_user).find_by_name(params[:id])
   end
 
   def store_annotation_rdf
@@ -242,7 +255,7 @@ class ProjectsController < ApplicationController
   # DELETE /projects/:name
   # DELETE /projects/:name.json
   def destroy
-    project = Project.editable(current_user).find_by_name(params[:project_id])
+    project = Project.editable(current_user).find_by_name(params[:id])
     raise "There is no such project." unless project.present?
 
     priority = project.jobs.unfinished.count
@@ -298,6 +311,11 @@ class ProjectsController < ApplicationController
 
   def autocomplete_project_author
     render json: Project.where(['author like ?', "%#{params[:term]}%"]).collect{|project| project.author}.uniq
+  end
+
+  def autocomplete_sourcedb
+    project = Project.accessible(current_user).find_by_name(params[:id])
+    render :json => project.docs.where("sourcedb ILIKE ?", "%#{params[:term]}%").pluck(:sourcedb).uniq
   end
 
   def is_owner?

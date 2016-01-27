@@ -1,3 +1,4 @@
-<h3><%= link_to 'Delete all annotations >', project_destroy_all_annotations_path(@project.name),
+<%= link_to 'Delete all annotations', project_destroy_all_annotations_path(@project.name),
 method: :delete,
-confirm: "Are you sure? All the annotations in the project will be deleted." %></h3>
+confirm: "Are you sure? All the annotations in the project will be deleted.",
+class: 'button long_button' %>

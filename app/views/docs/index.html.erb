@@ -1,24 +1,8 @@
 <% content_for :path do -%>
   > <%= link_to t('views.paths.home'), home_path -%>
-  <% if @project -%>
-    > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
-    > <%= link_to @project.name, project_path(@project.name) -%>
-  <% end -%>
   > docs
 <% end -%>
 
 <section>
-	<% if @project.present? -%>
-		<%= render partial: 'projects/titlebar' -%>
-		<section>
-			<%= render partial: 'source_docs' -%>
-		</section>
-	<% else -%>
-		<h1><%= t('activerecord.models.doc').pluralize.capitalize.html_safe %></h1>
-	<% end -%>
-
-	<section>
-		<h3>Search documents</h3>
-		<%= render partial: 'docs/search_form' -%>
-	</section>
+	<%= render partial: 'source_docs' -%>
 </section>

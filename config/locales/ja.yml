@@ -417,7 +417,7 @@ ja:
       annotation_within_spans: "<span class='meta'><span class='pname'>SPAN %{spans}</span>に付けられた</span>アノテーション"
       document_content: ドキュメントのコンテンツ
       projects_that_annotates_this: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
-      automatic_annotation: 自動アノテーションの取得
+      obtain_annotations: アノテーションの取得
       records: ドキュメントレコード一覧
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
@@ -499,13 +499,16 @@ ja:
       annotations: アノテーション
       annotations_count: anno.数
       length: 長さ
-      projects_count: "#proj.数"
+      projects_count: "proj.数"
       automatic_annotation_initial: 自
       automatic_annotation: 自動アノテーション
       manual_annotation_initial: 手
       manual_annotation: 手動アノテーション
       back: 戻る
       category: カテゴリー
+      keyword: キーワード
+      keywords: キーワード
+      list: 目録
       clear: クリア
       edit: 編集
       error: エラー
@@ -543,6 +546,9 @@ ja:
       div: div:%{divid}
       annotation: アノテーション
       annotation_sets: アノテーションセット
+      download: ダウンロード
+      upload: アップロード
+      obtain: 取得
       stored_in: "<span class='meta'><span>%{pname}</span>内の</span>%{content}"   
       made_to: "<span class='meta'><span class='pname'>%{pname}</span>用の</span>%{content}"
       made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"

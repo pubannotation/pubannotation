@@ -235,7 +235,7 @@ module AnnotationsHelper
           html += link_to t('controllers.annotations.update_zip'), project_create_annotations_zip_path(project.name, :update => true), :class => 'button', :style => "margin-left: 0.5em", :confirm => t('controllers.annotations.confirm_create_zip')
         end
         if project.user == current_user
-          html += link_to t('views.shared.delete'), project_delete_annotations_zip_path(project.name), confirm: t('controllers.shared.confirm_delete'), :class => 'button'
+          html += link_to t('views.shared.delete'), project_delete_annotations_zip_path(project.name), confirm: t('controllers.shared.confirm_delete'), :class => 'button long_button'
         end
         html
       else
@@ -244,7 +244,7 @@ module AnnotationsHelper
         if project.user == current_user
           if delayed_job_tasks.blank?
             # when delayed_job exists
-            link_to t('controllers.annotations.create_zip'), project_create_annotations_zip_path(project.name), :class => 'button', :confirm => t('controllers.annotations.confirm_create_zip')
+            link_to t('controllers.annotations.create_zip'), project_create_annotations_zip_path(project.name), :class => 'button long_button', :confirm => t('controllers.annotations.confirm_create_zip')
           else
             # delayed_job does not exists
             t('views.shared.zip.delayed_job_present')

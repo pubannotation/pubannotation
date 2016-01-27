@@ -1,12 +1,13 @@
 <h2>
-	Divisions
-	(<%= total_number(divs) -%>)
+	<%= link_to 'Divisions', request.path -%>
+	(<%= @search_count.to_s + '/' if @search_count.present? -%><%= @divs_count -%>)
 	<% if @project.present? || params[:action] == 'search' -%>
 		<span class='tab-bar'>
 			<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
 			<%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
 		</span>
 	<% end -%>
+	<span style="margin-left:7px"><%= render partial: 'docs/search_form' -%></span>
 </h2>
 <% if divs.present? -%>
 	<% content_for :javascript do %>
@@ -52,4 +53,6 @@
 			<%= render partial: 'div', collection: divs -%>
 		</tbody>
 	</table>
+<% else %>
+	none
 <% end -%>

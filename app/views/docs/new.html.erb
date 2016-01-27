@@ -9,8 +9,15 @@
 <% end -%>
 
 <% if @project.present? -%>
-	<%= render partial: 'projects/titlebar' -%>
+	<section>
+		<%= render partial: 'projects/titlebar' -%>
 <% end %>
-<h2><%= t('views.shared.new_model', :model => t('activerecord.models.doc')) %></h2>
 
-<%= render 'form' %>
+		<section>
+			<h2><%= t('views.shared.new_model', :model => t('activerecord.models.doc')) %></h2>
+			<%= render 'form' %>
+		</section>
+
+<% if @project.present? -%>
+	</section>
+<% end %>

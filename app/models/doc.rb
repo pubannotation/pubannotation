@@ -13,49 +13,49 @@ class Doc < ActiveRecord::Base
   #         "max_result_window" : 50000(value)
   #     }
   # }'
-  SEARCH_SIZE = 5000
+  LIST_MAX_SIZE = 5000
 
   settings index: {
     analysis: {
-      tokenizer: {
-        ngram_tokenizer: {
-          type: "nGram",
-          min_gram: "2",
-          max_gram: "3",
-          token_chars: [
-            "letter",
-            "digit",
-            "punctuation"
-          ]
+      filter: {
+        snowball_en: {
+          type: "snowball",
+          language: "English"
+        },
+        asciifolding_preserve: {
+          type: "asciifolding",
+          preserve_original: true
         }
       },
       analyzer: {
-        ngram_analyzer: {
-          tokenizer: "ngram_tokenizer"
+        standard_english: {
+          type: "standard",
+          filter: ["standard", "lowercase", :asciifolding_preserve, :snowball_en]
         }
-      },
-    },
+      }
+    }
   } do
-      mappings do
-        indexes :sourcedb, type: 'string', analyzer: 'ngram_analyzer'
-        indexes :sourceid, type: 'string', analyzer: 'ngram_analyzer'
-        indexes :body, type: 'string', analyzer: 'ngram_analyzer'
+    mappings do
+      indexes :sourcedb, index: :not_analyzed
+      indexes :sourceid, index: :not_analyzed
+      indexes :serial,   index: :not_analyzed
+      indexes :body,     type: 'string',  analyzer: :standard_english
 
-        # indexes :docs_projects, type: 'nested' do
-        indexes :docs_projects do
-          indexes :doc_id
-          indexes :project_id
-        end
-
-        indexes :projects do
-          indexes :id, index: :not_analyzed
-        end
+      # indexes :docs_projects, type: 'nested' do
+      indexes :docs_projects do
+        indexes :doc_id
+        indexes :project_id
       end
+
+      indexes :projects do
+        indexes :id, index: :not_analyzed
+      end
+    end
   end
 
   def as_indexed_json(options={})
     as_json(
-      only: [:id, :sourcedb, :sourceid, :body],
+      only: [:id, :sourcedb, :sourceid, :serial, :body],
       include: { projects: {only: :id} }  
     )
   end
@@ -157,57 +157,44 @@ class Doc < ActiveRecord::Base
   # cannot use argument (raise error)
   scope :diff, where(['created_at > ?', 1.hour.ago])
 
-
   def self.search_docs(attributes = {})
-    minimum_should_match = 0
-    minimum_should_match += 1 if attributes[:sourcedb].present?
-    minimum_should_match += 1 if attributes[:sourceid].present?
-    minimum_should_match += 1 if attributes[:body].present?
+    filter_condition = []
+    filter_condition << {term: {'serial' => 0}} unless attributes[:sourceid].present?
+    filter_condition << {term: {'projects.id' => attributes[:project_id]}} if attributes[:project_id].present?
+    filter_condition << {term: {'sourcedb' => attributes[:sourcedb].downcase}} if attributes[:sourcedb].present?
+    filter_condition << {term: {'sourceid' => attributes[:sourceid]}} if attributes[:sourceid].present?
 
-    if attributes[:project_id].present?
-      must_array = [
-        {match: {
-            'projects.id' => attributes[:project_id]
-          }
-        }
-      ] 
-    end
+    filter_phrase = {
+      bool: {
+        must: filter_condition
+      }
+    }
 
     docs = search(
       query: {
-        bool:{
-          must: must_array,
-          should: [ 
-            {match: {
-              sourcedb: {
-                query: attributes[:sourcedb],
-                fuzziness: 0
-              }
-            }
-            },
-            {match: {
-              sourceid: {
-                query: attributes[:sourceid],
-                fuzziness: 0
-              }
-            }
-            },
-            {match: {
+        filtered: {
+          query: {
+            match: {
               body: {
                 query: attributes[:body],
-                fuzziness: 'AUTO'
+                operator: "and",
+                fuzziness: "AUTO"
               }
             }
-            },
-          ],
-          minimum_should_match: minimum_should_match
+          },
+          filter: filter_phrase
         }
       },
-      size: SEARCH_SIZE,
-    )
+      sort: [
+        sourcedb: :asc,
+        sourceid: :asc,
+        serial: :asc
+      ],
+    ).page(attributes[:page])
+
     return {
       total: docs.results.total,
-      docs: docs.records.order('sourcedb ASC, sourceid ASC')
+      docs: docs.records
     }
   end
 

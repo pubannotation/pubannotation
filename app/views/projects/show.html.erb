@@ -68,77 +68,63 @@
 		<%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info" style="margin-right:10px">(<%= @docs_count -%>)</span>
 	</legend>
 
-	<section>
-		<h3>
-		<% if @docs_count > 0 -%>
-			<% if @docs_count < 10000 -%>
-				<%= link_to 'Show all >', project_docs_path(@project.name) -%>
-			<% else -%>
-				<span title="disabled due to too many documents to list">List all</span>
-			<% end -%>
-		<% else -%>
-			<span title="no document">Show all</span>
+	<table>
+		<tr>
+			<th><%= t('views.shared.list') %></th>
+			<td><%= render partial: 'list_docs' -%></td>
+		</tr>
+		<tr>
+			<th><%= t('views.shared.search') %></th>
+			<td style="text-align:right"><%= render partial: 'docs/search_form' -%></td>
+		</tr>
+		<tr>
+			<th><%= t('views.shared.open') %></th>
+			<td><%= render partial: 'docs/open_form' -%></td>
+		</tr>
+		<% if user_signed_in? && @project.editable?(current_user) %>
+			<tr>
+				<th><%= t('views.shared.add') %></th>
+				<td><%= render partial: 'add_docs' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.create') %></th>
+				<td><%= link_to 'Create a new document', new_project_doc_path(@project.name),
+					class: 'button long_button' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.delete') %></th>
+				<td><%= render partial: 'delete_docs' -%></td>
+			</tr>
 		<% end -%>
-		</h3>
-	</section>
-
-	<section>
-		<h3>Search</h3>
-		<%= render partial: 'docs/search_form' -%>
-	</section>
-
-	<% if user_signed_in? && @project.editable?(current_user) %>
-		<section>
-			<h3><%= t('views.shared.add') -%></h3>
-		    <%= render :partial => "docs/project_form", :locals => {:model => @project} if @project.present? -%>
-		</section>
-
-		<section>
-		    <h3><%= link_to 'Create a new document >', new_project_doc_path(@project.name) -%></h3>
-	    </section>
-
-	    <section>
-			<%= render partial: 'delete_docs' -%>
-		</section>
-	<% end -%>
+	</table>
 </fieldset>
 
 <fieldset class="pane annotations">
 	<legend>
-	Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span>
+		Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span>
 	</legend>
 
-	<% if @project.annotations_zip_downloadable == true -%>
-		<section>
-			<h3>Batch download</h3>
-			<div><%= project_annotations_zip_link_helper(@project) -%></div>
-		</section>
-	<% end %>
+	<table>
+		<tr>
+			<th><%= t('views.shared.download') %></th>
+			<td><%= project_annotations_zip_link_helper(@project) -%></td>
+		</tr>
+		<% if user_signed_in? && @project.editable?(current_user) -%>
+			<tr>
+				<th><%= t('views.shared.upload') %></th>
+				<td><%= link_to t('views.docs.upload_annotations'), upload_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.obtain') %></th>
+				<td><%= link_to t('views.docs.obtain_annotations'), obtain_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.delete') %></th>
+				<td><%= render partial: 'delete_annotations' -%></td>
+			</tr>
+		<% end -%>
+	</table>
 
-	<!-- <div>
-		<%= project_annotations_rdf_link_helper(@project) -%>
-	</div>
-	 -->
-	<% if user_signed_in? && @project.editable?(current_user) -%>
-		<section>
-			<%= render partial: 'annotations/upload_tgz' -%>
-		</section>
-
-		<section>
-			<h3>
-				<%= t('views.docs.automatic_annotation') %>
-				<a href="http://www.pubannotation.org/docs/obtain-annotation/">
-					<%= image_tag("hint.png",
-				    				:size => "16x16",
-				      				:title => "click for help") %>
-				</a>
-			</h3>
-			<%= render partial: 'annotations/obtain_annotation' -%>
-		</section>
-
-		<section>
-			<%= render partial: 'delete_annotations' -%>
-		</section>
-	<% end -%>
 </fieldset>
+
 </section>

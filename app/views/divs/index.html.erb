@@ -1,34 +1,13 @@
 <% content_for :path do -%>
 	> <%= link_to t('views.paths.home'), home_path -%>
-	<% if @project.present? -%>
-		> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
-		> <%= link_to @project.name, project_path(@project.name) -%>
-		> <%= link_to 'docs', project_docs_path(@project.name) -%>
-	<% else -%>
-	    > <%= link_to "docs", docs_path %>
-	<% end -%>
-	> <%= t('views.shared.a_doc_id', :sourcedb => @divs.first.sourcedb, :sourceid => @divs.first.sourceid) -%>
+	> <%= link_to "docs", docs_path %>
+	> <%= t('views.shared.a_doc_id', :sourcedb => params[:sourcedb], :sourceid => params[:sourceid]) -%>
 	> divs
 <% end -%>
 
-<% if @project.present? -%>
+<section>
+	<%= render :partial => 'docs/titlebar' -%>
 	<section>
-		<%= render :partial => 'projects/titlebar' -%>
-<% end -%>
-
-	<section>
-		<%= render :partial => 'docs/titlebar' -%>
-
-		<section>
-			<%= render partial: 'divs', locals: {divs: @divs} -%>
-
-			<section>
-				<h3>Search divisions</h3>
-				<%= render partial: 'search_form' -%>
-			</section>
-		</section>
+		<%= render partial: 'divs', locals: {divs: @divs} -%>
 	</section>
-
-<% if @project.present? -%>
-	</section>
-<% end -%>
+</section>

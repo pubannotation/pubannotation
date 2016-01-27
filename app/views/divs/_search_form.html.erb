@@ -1,3 +1,11 @@
+
+<%= form_tag(@docs_path, method: 'get', style:"display:inline-block") do -%>
+  <%= text_field_tag :keywords, params[:keywords], style: "width:7em", placeholder: t('views.shared.keywords') -%>
+  <%= submit_tag t('views.shared.search'), class: :button -%>
+<% end %>
+
+<% @divs_path = @project.present? ? project_divs_path(@project.name) : divs_path -%>
+
 <%= form_tag(@search_path, method: 'get')  do -%>
   <table class="search">		
     <tr>

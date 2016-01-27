@@ -1,0 +1,22 @@
+{
+  "index": {
+    "analysis": {
+      "filter": {
+        "snowball_en": {
+          "type": "snowball",
+          "language": "English"
+        },
+        "asciifolding_preserve": {
+          "type": "asciifolding",
+          "preserve_original": true
+        }
+      },
+      "analyzer": {
+        "standard_english": {
+          "type": "standard",
+          "filter": ["standard", "lowercase", "asciifolding_preserve", "snowball_en"]
+        }
+      }
+    }
+  }
+}

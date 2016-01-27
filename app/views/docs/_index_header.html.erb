@@ -1,0 +1,12 @@
+<% if params[:action] == 'search' -%>
+	Document search results
+<% else -%>
+	<%= t('views.docs.list').capitalize -%>
+<% end -%>
+<span class='info'>(<%= @docs_size -%>)</span>
+<% if @project.present? || params[:action] == 'search' -%>
+	<span class='tab-bar'>
+		<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
+		<%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
+	</span>
+<% end -%>

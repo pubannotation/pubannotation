@@ -266,15 +266,12 @@ en:
         license: Name of the license condition
         reference: URL to an external page that describes this project
         sample: URL to a sample annotation
-        pmids: PubMed IDs
         username: sub-maintainers name
         associate_project_name: Enter associate project name.
         project_name: Enter project name.
       doc:
         annotation_server: URL of annotation server
-        ids: space-or-comma-separated IDs
-        pmcids: PMC IDs
-        pmids: PubMed IDs
+        ids: source IDs
       sproject:
         project_name: Enter related project name.
     options:
@@ -323,7 +320,7 @@ en:
         no_annotation: No annotation in the submission.
         delayed_job: Annotation is submitted for registration. It may take a few minutes depending on the length of the text. You can check the result in your project page.
       confirm_create_zip: Are you sure to create zip? It will take a few minutes.
-      create_zip: Create annotations ZIP file.
+      create_zip: Create annotations ZIP file
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
       confirm_create_rdf: Are you sure to create rdf? It will take a few minutes.
       create_rdf: Create annotations RDF file.
@@ -403,10 +400,12 @@ en:
       annotation_within_project: "Annotations <span class='meta'> from the project, <span class='pname'>%{project_name}</span></span>"
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_that_annotates_this: "Projects <span class='meta'>that have annotated to this document</span>"
-      automatic_annotation: Obtain automatic annotations
+      obtain_annotations: obtain annotations
       records: doc records
       list: documents
       list_button: List all the documents
+      list_only: "Too many. List only %{count} documents"
+      list_diabled: "Too many. List disabled"
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
       import: Import
@@ -479,7 +478,7 @@ en:
     shared:
       confirm:
         delete_model: "Are you sure to delete %{model}?"      
-      add: Add
+      add: add
       account: account
       annotation: annotation
       annotations: annotations
@@ -490,6 +489,10 @@ en:
       automatic_annotation: Automatic annotation
       manual_annotation_initial: M
       manual_annotation: Manual annotation
+      keyword: keyword
+      keywords: keywords
+      list: list
+      open: open
       clear: clear
       edit : edit
       error: error
@@ -505,7 +508,7 @@ en:
       show: show
       show_all: show all
       remove: remove
-      show_divisions: Show divisions
+      show_divisions: divisions
       uploader: uploader
       upload: upload
       maintainer: maintainer
@@ -521,6 +524,9 @@ en:
       div: div:%{divid}
       annotation: annnotation
       annotation_sets: project
+      download: download
+      upload: upload
+      obtain: obtain
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
       made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"
