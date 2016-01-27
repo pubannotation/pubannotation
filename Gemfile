@@ -31,7 +31,7 @@ group :test, :development do
 end
 
 group :test do
-  gem 'rspec'
+  gem 'rspec', '2.14'
   gem 'cucumber'
   gem 'spork-rails'
   gem 'factory_girl_rails'

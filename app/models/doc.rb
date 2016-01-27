@@ -114,13 +114,6 @@ class Doc < ActiveRecord::Base
     order('docs.id ASC')
   }
   
-  scope :source_db_id, lambda{|order_key_method|
-    order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
-    where(['sourcedb IS NOT ? AND sourceid IS NOT ?', nil, nil])
-    .select('*, CAST(sourceid AS INT) AS sourceid_int')
-    .group(:id).group(:sourcedb).group(:sourceid).order(order_key_method)
-  }
-  
   scope :same_sourcedb_sourceid, lambda{|sourcedb, sourceid|
     where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
   }
@@ -521,7 +514,7 @@ class Doc < ActiveRecord::Base
         hrelations = self.hrelations(project, ids)
         ids += hrelations.collect{|d| d[:id]}
         hmodifications = self.hmodifications(project, ids)
-        track = {project:project.name, denotations:hdenotations, relations:hrelations, modificationss:hmodifications, namespaces:project.namespaces}
+        track = {project:project.name, denotations:hdenotations, relations:hrelations, modifications:hmodifications, namespaces:project.namespaces}
         track.select!{|k, v| v.present?}
         if track[:denotations].present?
           tracks << track
@@ -625,11 +618,10 @@ class Doc < ActiveRecord::Base
     sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
   end
   
-  def self.create_doc(doc_hash, attributes = {})
-    # TODO div_hash always nil
-    if divs_hash.present?
-      divs = Array.new
-      divs_hash.each_with_index do |div_hash, i|
+  def self.create_doc(docs_hash, attributes = {})
+    if docs_hash.present?
+      docs = Array.new
+      docs_hash.each_with_index do |doc_hash, i|
         doc = Doc.new(
           {
             :body     => doc_hash[:body],
@@ -640,11 +632,11 @@ class Doc < ActiveRecord::Base
             :serial   => i
           }
         )
-        divs << doc if doc.save
+        docs << doc if doc.save
       end
     end
     index_diff
-    return divs
+    return docs
   end
 
 

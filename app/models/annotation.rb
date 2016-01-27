@@ -31,4 +31,13 @@ class Annotation < ActiveRecord::Base
       end
     end
   end
+
+  def self.insert_test_data
+    limit(1000).each do |a|
+      annotations_project = a.annotations_projects.build(project_id: 1)
+      if annotations_project.valid?
+        annotations_project.save
+      end
+    end
+  end
 end

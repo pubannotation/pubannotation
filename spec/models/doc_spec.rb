@@ -82,21 +82,6 @@ describe Doc do
     end
   end
   
-  describe 'has_many subinsrels' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
-      @instance = FactoryGirl.create(:instance, :obj => @denotation, :project_id => 1)
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @subinsrel = FactoryGirl.create(:relation,
-        :subj_id => @instance.id,
-        :subj_type => @instance.class.to_s,
-        :obj_id => 20,
-        :project => @project
-      ) 
-    end
-  end
-  
   describe 'has_many subcatrelmods' do
     before do
       @doc = FactoryGirl.create(:doc)
@@ -119,11 +104,12 @@ describe Doc do
   describe 'has_and_belongs_to_many projects' do
     before do
       @doc_1 = FactoryGirl.create(:doc)
-      @project_1 = FactoryGirl.create(:project, :id => 5, :user => FactoryGirl.create(:user))
-      @project_2 = FactoryGirl.create(:project, :id => 7, :user => FactoryGirl.create(:user))
+      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       FactoryGirl.create(:docs_project, :project_id => @project_1.id, :doc_id => @doc_1.id)
       FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => @doc_1.id)
       FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => FactoryGirl.create(:doc).id)
+      @doc_1.reload
     end
     
     it 'doc.projects should include @project_1' do
@@ -171,16 +157,17 @@ describe Doc do
   end
   
   describe 'scope pmdocs' do
-    before do
+    before(:all) do
+      Doc.delete_all
       @pmdocs_count = 3
       @pmdocs_count.times do |time|
-        FactoryGirl.create(:doc, :sourcedb => 'PubMed', serial: time)
+        FactoryGirl.create(:doc, :sourcedb => 'PubMed', serial: time + 1)
       end
       @not_pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC')
       @pmdocs = Doc.pmdocs
     end
 
-    it 'should match doc where sourcedb == PubMed size' do
+    it 'should match doc where sourcedb == PubMed size ' do
       @pmdocs.size.should eql(@pmdocs_count)
     end
 
@@ -190,7 +177,7 @@ describe Doc do
   end
 
   describe 'scope pmcdocs' do
-    before do
+    before(:all) do
       @pmcdocs_count = 3
       @pmcdocs_count.times do |time|
         FactoryGirl.create(:doc, :sourcedb => 'PMC', sourceid: time.to_s, serial: 0)
@@ -232,36 +219,49 @@ describe Doc do
   end
 
   describe 'scope relations_count' do
-    # has 1 relations
-    let!(:doc_1) { FactoryGirl.create(:doc) } 
-    let!(:denotationa_doc_1_1) { FactoryGirl.create(:denotation, doc_id: doc_1.id) }
-    let!(:relation_denotation_1) { FactoryGirl.create(:relation, subj_id: denotationa_doc_1_1.id, subj_type: 'Annotation', obj: denotationa_doc_1_1) }
+    before do
+      Doc.delete_all
+      # has 1 relations
+      @doc_1 = FactoryGirl.create(:doc) 
+      @denotation_doc_1_1 = FactoryGirl.create(:denotation, doc_id: @doc_1.id)
+      @relation_denotation_1 = FactoryGirl.create(:relation, subj_id: @denotation_doc_1_1.id, subj_type: 'Annotation', obj: @denotation_doc_1_1)
 
-    # has 3 relations
-    let!(:doc_2) { FactoryGirl.create(:doc) } 
-    let!(:denotationa_doc_2_1) { FactoryGirl.create(:denotation, doc_id: doc_2.id) }
-    let!(:relation_denotation_2) { FactoryGirl.create(:relation, subj_id: denotationa_doc_2_1.id, subj_type: 'Annotation', obj: denotationa_doc_1_1) }
-    let!(:denotationa_doc_2_2) { FactoryGirl.create(:denotation, doc_id: doc_2.id) }
-    let!(:relation_denotation_3) { FactoryGirl.create(:relation, subj_id: denotationa_doc_2_2.id, subj_type: 'Annotation', obj: denotationa_doc_1_1) }
-    let!(:denotationa_doc_2_3) { FactoryGirl.create(:denotation, doc_id: doc_2.id) }
-    let!(:relation_denotation_4) { FactoryGirl.create(:relation, subj_id: denotationa_doc_2_3.id, subj_type: 'Annotation', obj: denotationa_doc_1_1) }
+      # has 3 relations
+      @doc_2 = FactoryGirl.create(:doc) 
+      @denotation_doc_2_1 = FactoryGirl.create(:denotation, doc_id: @doc_2.id)
+      @relation_denotation_2 = FactoryGirl.create(:relation, subj_id: @denotation_doc_2_1.id, subj_type: 'Annotation', obj: @denotation_doc_1_1)
+      @denotation_doc_2_2 = FactoryGirl.create(:denotation, doc_id: @doc_2.id)
+      @relation_denotation_3 = FactoryGirl.create(:relation, subj_id: @denotation_doc_2_2.id, subj_type: 'Annotation', obj: @denotation_doc_1_1)
+      @denotation_doc_2_3 = FactoryGirl.create(:denotation, doc_id: @doc_2.id)
+      @relation_denotation_4 = FactoryGirl.create(:relation, subj_id: @denotation_doc_2_3.id, subj_type: 'Annotation', obj: @denotation_doc_1_1)
 
-    # has 4 relations
-    let!(:doc_3) { FactoryGirl.create(:doc) } 
-    let!(:denotationa_doc_3_1) { FactoryGirl.create(:denotation, doc_id: doc_3.id) }
-    let!(:relation_denotation_5) { FactoryGirl.create(:relation, subj_id: denotationa_doc_3_1.id, subj_type: 'Annotation', obj: denotationa_doc_1_1) }
-    let!(:denotationa_doc_3_2) { FactoryGirl.create(:denotation, doc_id: doc_3.id) }
-    let!(:relation_denotation_6) { FactoryGirl.create(:relation, subj_id: denotationa_doc_3_2.id, subj_type: 'Annotation', obj: denotationa_doc_1_1) }
-    let!(:relation_denotation_7) { FactoryGirl.create(:relation, subj_id: denotationa_doc_3_2.id, subj_type: 'Annotation', obj: denotationa_doc_1_1) }
-    let!(:relation_denotation_8) { FactoryGirl.create(:relation, subj_id: denotationa_doc_3_2.id, subj_type: 'Annotation', obj: denotationa_doc_1_1) }
+      # has 4 relations
+      @doc_3 = FactoryGirl.create(:doc) 
+      @denotation_doc_3_1 = FactoryGirl.create(:denotation, doc_id: @doc_3.id)
+      @relation_denotation_5 = FactoryGirl.create(:relation, subj_id: @denotation_doc_3_1.id, subj_type: 'Annotation', obj: @denotation_doc_1_1)
+      @denotation_doc_3_2 = FactoryGirl.create(:denotation, doc_id: @doc_3.id)
+      @relation_denotation_6 = FactoryGirl.create(:relation, subj_id: @denotation_doc_3_2.id, subj_type: 'Annotation', obj: @denotation_doc_1_1)
+      @relation_denotation_7 = FactoryGirl.create(:relation, subj_id: @denotation_doc_3_2.id, subj_type: 'Annotation', obj: @denotation_doc_1_1)
+      @relation_denotation_8 = FactoryGirl.create(:relation, subj_id: @denotation_doc_3_2.id, subj_type: 'Annotation', obj: @denotation_doc_1_1)
+      @doc_4 = FactoryGirl.create(:doc) 
+      @denotation_doc_1_1.reload
+      @denotation_doc_2_1.reload
+      @denotation_doc_2_2.reload
+      @denotation_doc_2_3.reload
+      @denotation_doc_3_1.reload
+      @denotation_doc_3_2.reload
+      @doc_1.reload
+      @doc_2.reload
+      @doc_3.reload
+      @doc_4.reload
+    end
 
     # has 0 relations
-    let!(:doc_4) { FactoryGirl.create(:doc) } 
 
     it 'should order Docs by count of relations' do
-      expect( Doc.relations_count.first ).to eql(doc_3)
-      expect( Doc.relations_count.second ).to eql(doc_2)
-      expect( Doc.relations_count.last ).to eql(doc_4)
+      expect( Doc.relations_count.first ).to eql(@doc_3)
+      expect( Doc.relations_count.second ).to eql(@doc_2)
+      expect( Doc.relations_count.last ).to eql(@doc_4)
     end
   end
 
@@ -285,102 +285,38 @@ describe Doc do
   end
 
   describe 'scope accessible_projects' do
-    let!(:user) { FactoryGirl.create(:user) } 
-    let!(:current_user) { FactoryGirl.create(:user) } 
-    let!(:doc_1) { FactoryGirl.create(:doc) } 
-    let!(:doc_2) { FactoryGirl.create(:doc) } 
-    let!(:doc_3) { FactoryGirl.create(:doc) } 
-    let!(:doc_4) { FactoryGirl.create(:doc) } 
-    let!(:project_accessibility_0_user) { FactoryGirl.create(:project, accessibility: 0, user: user) } 
-    let!(:docs_project_1) { FactoryGirl.create(:docs_project, doc_id: doc_1.id, project_id: project_accessibility_0_user.id) } 
-    let!(:project_accessibility_1_user) { FactoryGirl.create(:project, accessibility: 1, user: user) } 
-    let!(:docs_project_2) { FactoryGirl.create(:docs_project, doc_id: doc_2.id, project_id: project_accessibility_1_user.id) } 
-    let!(:project_accessibility_0_currrent_user) { FactoryGirl.create(:project, accessibility: 0, user: current_user) } 
-    let!(:docs_project_3) { FactoryGirl.create(:docs_project, doc_id: doc_3.id, project_id: project_accessibility_0_currrent_user.id) } 
-    let!(:project_accessibility_1_currrent_user) { FactoryGirl.create(:project, accessibility: 1, user: current_user) } 
-    let!(:docs_project_4) { FactoryGirl.create(:docs_project, doc_id: doc_4.id, project_id: project_accessibility_1_currrent_user.id) } 
+    before do
+      @user = FactoryGirl.create(:user) 
+      @current_user = FactoryGirl.create(:user) 
+      @doc_1 = FactoryGirl.create(:doc) 
+      @doc_2 = FactoryGirl.create(:doc) 
+      @doc_3 = FactoryGirl.create(:doc) 
+      @doc_4 = FactoryGirl.create(:doc) 
+      @project_accessibility_0_user = FactoryGirl.create(:project, accessibility: 0, user: @user) 
+      @docs_project_1 = FactoryGirl.create(:docs_project, doc_id: @doc_1.id, project_id: @project_accessibility_0_user.id) 
+      @project_accessibility_1_user = FactoryGirl.create(:project, accessibility: 1, user: @user) 
+      @docs_project_2 = FactoryGirl.create(:docs_project, doc_id: @doc_2.id, project_id: @project_accessibility_1_user.id) 
+      @project_accessibility_0_currrent_user = FactoryGirl.create(:project, accessibility: 0, user: @current_user) 
+      @docs_project_3 = FactoryGirl.create(:docs_project, doc_id: @doc_3.id, project_id: @project_accessibility_0_currrent_user.id) 
+      @project_accessibility_1_currrent_user = FactoryGirl.create(:project, accessibility: 1, user: @current_user) 
+      @docs_project_4 = FactoryGirl.create(:docs_project, doc_id: @doc_4.id, project_id: @project_accessibility_1_currrent_user.id) 
+    end
 
     it 'should include project.accessibility == 1 OR user_id == current_user.id' do
-      expect( Doc.accessible_projects(current_user) ).to include(doc_2)
-      expect( Doc.accessible_projects(current_user) ).to include(doc_3)
-      expect( Doc.accessible_projects(current_user) ).to include(doc_4)
+      expect( Doc.accessible_projects(@current_user) ).to include(@doc_2)
+      expect( Doc.accessible_projects(@current_user) ).to include(@doc_3)
+      expect( Doc.accessible_projects(@current_user) ).to include(@doc_4)
     end
   end
 
   describe 'scope sql' do
-    let!(:doc_1) { FactoryGirl.create(:doc) } 
-    let!(:doc_2) { FactoryGirl.create(:doc) } 
-    let!(:doc_3) { FactoryGirl.create(:doc) } 
+    let(:doc_1) { FactoryGirl.create(:doc) } 
+    let(:doc_2) { FactoryGirl.create(:doc) } 
+    let(:doc_3) { FactoryGirl.create(:doc) } 
 
     it 'should return docs id included in array and order by id asc' do
       expect( Doc.sql([doc_1.id, doc_2.id, doc_3.id]).first ).to eql(doc_1)
       expect( Doc.sql([doc_1.id, doc_2.id, doc_3.id]).last ).to eql(doc_3)
-    end
-  end
-
-  describe 'scope source_db_id' do
-    before do
-      @doc_sourcedb_uniq = FactoryGirl.create(:doc, :sourcedb => 'Uniq1', :sourceid => '11')
-      @doc_sourceid_uniq_1 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '10')
-      @doc_sourceid_uniq_2 = FactoryGirl.create(:doc, :sourcedb => 'Uniq2', :sourceid => '12')
-    end
-    
-    context 'when order_key_method nil' do
-      before do
-        @docs = Doc.source_db_id(nil)
-      end
-      
-      it 'should include has no same sourcedb docs' do
-        @docs.should include(@doc_sourcedb_uniq)
-      end
-      
-      it 'should include has no same sourcedb docs' do
-        @docs.should include(@doc_sourceid_uniq_2)
-      end
-      
-      it 'should order by sourcedb ASC sourceid ASC' do
-        @docs.first.should eql @doc_sourcedb_uniq
-      end
-      
-      it 'should order by sourcedb ASC sourceid ASC' do
-        @docs.second.should eql @doc_sourceid_uniq_1
-      end
-      
-      it 'should order by sourcedb ASC sourceid ASC' do
-        @docs.last.should eql @doc_sourceid_uniq_2
-      end
-    end
-    
-    context 'when order_key sourcedb method DESC' do
-      before do
-        @docs = Doc.source_db_id('sourcedb DESC')
-      end
-      
-      it 'should order by sourcedb DESC' do
-        @docs.last.should eql @doc_sourcedb_uniq
-      end
-      
-      it 'should order by sourcedb DESC' do
-        @docs.first.sourcedb.should eql (@doc_sourceid_uniq_1.sourcedb)
-      end
-    end
-    
-    context 'when order_key sourceid_int method DESC' do
-      before do
-        @docs = Doc.source_db_id('sourceid_int DESC')
-      end
-      
-      it 'should order by sourceid_int DESC' do
-        @docs.second.should eql @doc_sourcedb_uniq
-      end
-      
-      it 'should order by sourceid_int DESC' do
-        @docs.last.should eql @doc_sourceid_uniq_1
-      end
-      
-      it 'should order by sourceid_int DESC' do
-        @docs.first.should eql @doc_sourceid_uniq_2
-      end
     end
   end
 
@@ -391,7 +327,8 @@ describe Doc do
     let!(:doc_sourcedb_pdc_sourceid_2_1) { FactoryGirl.create(:doc, sourcedb: 'PDC', sourceid: '1') } 
 
     it 'should return same sourcedb and sourceid docs' do
-      expect( Doc.same_sourcedb_sourceid('PMC', '1') ).to match_array([ doc_sourcedb_pmc_sourceid_1_1, doc_sourcedb_pmc_sourceid_1_2 ])
+      expect( Doc.same_sourcedb_sourceid('PMC', '1').collect{|d| d.sourcedb}.uniq ).to match_array([ 'PMC' ])
+      expect( Doc.same_sourcedb_sourceid('PMC', '1').collect{|d| d.sourceid}.uniq ).to match_array([ '1' ])
     end
   end
 
@@ -409,7 +346,7 @@ describe Doc do
     end
 
     it 'should not include sourcedb is nil or blank' do
-      @docs.select{|doc| doc.sourcedb == nil || doc.sourcedb == ''}.should be_blank
+      expect( @docs.select{|doc| doc.sourcedb == nil || doc.sourcedb == ''} ).to be_blank
     end
   end
 
@@ -432,15 +369,14 @@ describe Doc do
 
   describe 'sort_by_params' do
     before do
+      Doc.delete_all
       @doc_1 = FactoryGirl.create(:doc, body: 'doc_1')
       @doc_2 = FactoryGirl.create(:doc, body: 'doc_2')
       @doc_3 = FactoryGirl.create(:doc, body: 'doc_3')
+      @docs  = Doc.sort_by_params([['id DESC']])
     end
 
     context 'when sort_order is id DESC' do
-      before do
-        @docs = Doc.sort_by_params([['id DESC']])
-      end
 
       it 'should sort doc by sort_order' do
         @docs.first.should eql @doc_3
@@ -474,22 +410,194 @@ describe Doc do
     end
   end
 
+  describe 'scope diff' do
+    let(:created_2hours_ago) { FactoryGirl.create(:doc, created_at: 2.hours.ago)}
+    let(:created_30minutes_ago){ FactoryGirl.create(:doc, created_at: 30.minutes.ago)}
+
+    it 'should not inclde created before specific hour ago' do
+      expect(Doc.diff).not_to include(created_2hours_ago)
+    end
+
+    it 'should inclde created after specific hour ago' do
+      expect(Doc.diff).to include(created_30minutes_ago)
+    end
+  end
+
   describe 'search_docs' do
     let(:sourcedb) { 'sdb' }
     let(:sourceid) { '123456' }
     let(:body) { 'body' }
     let(:doc_1) { FactoryGirl.create(:doc, sourceid: sourceid, sourcedb: sourcedb, body: body) }
+    let(:total) { 'total' }
+    let(:docs) { 'docs' }
+    let(:search_size) { 5 }
+
+    before do
+      Doc.stub_chain(:search, :results, :total).and_return(total)
+      Doc.stub_chain(:search, :records, :order).and_return(docs)
+      stub_const('Doc::SEARCH_SIZE', search_size)
+    end
 
     context 'when params sourcedb, sourceid and body present' do
-      it '' do
-        expect(Doc).to receive(:search)
+      it 'should return search results and records with hash' do
+        expect(Doc.search_docs({sourcedb: sourcedb, sourceid: sourceid, body: body})).to eql({total: total, docs: docs})
+        
+      end
+
+      it 'should search with sourcedb, sourceid and body' do
+        expect(Doc).to receive(:search).with(
+          {query: 
+           {bool: 
+            {must: nil, 
+             should: [
+               {match: {sourcedb: {query: sourcedb, fuzziness: 0}}}, 
+               {match: {sourceid: {query: sourceid, fuzziness: 0}}}, 
+               {match: {body: {query: body, fuzziness: "AUTO"}}}], 
+             minimum_should_match: 3}}, size: search_size}
+        )
         Doc.search_docs({sourcedb: sourcedb, sourceid: sourceid, body: body})
+      end
+    end
+
+    context 'when params sourcedb, sourceid and body nil' do
+      it 'should search without attributes' do
+        expect(Doc).to receive(:search).with(
+          {query: 
+           {bool: 
+            {must: nil, 
+             should: [
+               {match: {sourcedb: {query: nil, fuzziness: 0}}}, 
+               {match: {sourceid: {query: nil, fuzziness: 0}}}, 
+               {match: {body: {query: nil, fuzziness: "AUTO"}}}], 
+             minimum_should_match: 0}}, size: search_size}
+        )
+        Doc.search_docs({})
+      end
+    end
+
+    context 'when project_id present' do
+      let(:project_id) { 1 }
+      it 'should search with project_id' do
+        expect(Doc).to receive(:search).with(
+          {query: 
+           {bool: 
+            {must: [{match: {"projects.id"=>1}}], 
+             should: [
+               {match: {sourcedb: {query: nil, fuzziness: 0}}}, 
+               {match: {sourceid: {query: nil, fuzziness: 0}}}, 
+               {match: {body: {query: nil, fuzziness: "AUTO"}}}], 
+             minimum_should_match: 0}}, size: search_size}
+        )
+        Doc.search_docs({project_id: project_id})
+      end
+    end
+  end
+
+  describe 'descriptor' do
+    let(:doc) { FactoryGirl.create(:doc) }
+    
+    context 'when has_divs? true' do
+      before do
+        doc.stub(:has_divs?).and_return(true)
+      end
+
+      it 'should return string includes sourcedb, sourceid and serial' do
+        expect( doc.descriptor ).to eql("#{doc.sourcedb}:#{doc.sourceid}-#{doc.serial}")
+      end
+    end
+
+    context 'when has_divs? false' do
+      before do
+        doc.stub(:has_divs?).and_return(false)
+      end
+
+      it 'should return string includes sourcedb and sourceid' do
+        expect( doc.descriptor ).to eql("#{doc.sourcedb}:#{doc.sourceid}")
+      end
+    end
+  end
+
+  describe 'get_doc' do
+    let(:sourcedb) { 'sdb' }
+    let(:sourceid) { '123456' }
+    let(:divid) { 'divid' }
+
+    context 'when docspec sourcedb sourceid present' do
+      context 'when divid present' do
+        it 'should call find_by_sourcedb_and_sourceid_and_serial' do
+          expect(Doc).to receive(:find_by_sourcedb_and_sourceid_and_serial).with(sourcedb, sourceid, divid)
+          Doc.get_doc({sourcedb: sourcedb, sourceid: sourceid, divid: divid })
+        end
+      end
+
+      context 'when divid nil' do
+        it 'should call find_by_sourcedb_and_sourceid_and_serial' do
+          expect(Doc).to receive(:find_by_sourcedb_and_sourceid_and_serial).with(sourcedb, sourceid, 0)
+          Doc.get_doc({sourcedb: sourcedb, sourceid: sourceid})
+        end
+      end
+    end
+
+    context 'when docspec sourcedb sourceid nil' do
+      it 'should return nil' do
+        expect( Doc.get_doc({}) ).to be_nil
+      end
+    end
+  end
+
+  describe 'get_divs' do
+    let(:sourcedb) { 'sdb' }
+    let(:sourceid) { '123456' }
+    let(:divid) { 'divid' }
+
+    context 'when docspec sourcedb sourceid present' do
+      context 'when div_id present' do
+        it 'should call find_al_by_sourcedb_and_sourceid_and_serial' do
+          expect(Doc).to receive(:find_all_by_sourcedb_and_sourceid_and_serial)#.with(sourcedb, sourceid, divid)
+          Doc.get_divs({sourcedb: sourcedb, sourceid: sourceid, div_id: divid })
+        end
+      end
+
+      context 'when divid nil' do
+        it 'should call find_all_by_sourcedb_and_sourceid' do
+          expect(Doc).to receive(:find_all_by_sourcedb_and_sourceid).with(sourcedb, sourceid)
+          Doc.get_divs({sourcedb: sourcedb, sourceid: sourceid})
+        end
+      end
+    end
+
+    context 'when docspec sourcedb sourceid nil' do
+      it 'should return nil' do
+        expect( Doc.get_divs({}) ).to be_blank
+      end
+    end
+  end
+
+  describe 'exist?' do
+    let(:doc) { FactoryGirl.create(:doc) }
+
+    context 'when get_doc is not nil' do
+      before do
+        doc.stub(:get_doc).and_return([])
+      end
+
+      it 'should return true' do
+        expect(doc.get_doc).to be_true
+      end
+    end
+
+    context 'when get_doc is nil' do
+      before do
+        doc.stub(:get_doc).and_return(nil)
+      end
+
+      it 'should return false' do
+        expect(doc.get_doc).to be_false
       end
     end
   end
 
   describe 'import_from_sequence', elasticsearch: true do
-    # TODO just assserting about call index_diff
     let(:divs) { [{body: 'b', heading: 'heading'}] }
     let(:doc_sequence) { double(:doc_sequence, divs: divs, source_url: 'src')}
 
@@ -499,134 +607,188 @@ describe Doc do
       Doc.stub(:index_diff).and_return(nil)
     end
 
-    it 'should call index_diff' do
-      expect(Doc).to receive(:index_diff)
-      Doc.import_from_sequence('PMC', '123456')
+    context 'when sourcedb is nil' do
+      it 'should raise ArgumentError' do
+        expect{ Doc.import_from_sequence(nil, '123456') }.to raise_error(ArgumentError)
+      end
+    end
+
+    context 'when sourceid is nil' do
+      it 'should raise ArgumentError' do
+        expect{ Doc.import_from_sequence('sourcedb', nil) }.to raise_error(ArgumentError)
+      end
+    end   
+
+    describe 'doc_sequence' do
+      context 'when successful' do
+        let(:sourcedb) { 'sourcedb' }
+        let(:sourceid) { 'sourceid' }
+
+        before do
+          Doc.any_instance.stub(:save).and_return(true)
+        end
+
+        it 'should call index_diff' do
+          expect(Doc).to receive(:index_diff)
+          Doc.import_from_sequence('sdb', sourceid)
+        end
+
+        it 'should return divs' do
+          expect( Doc.import_from_sequence(sourcedb, sourceid) ).to be_present
+        end
+
+        it 'should call index_diff' do
+          expect(Doc).to receive(:new).with({body: divs[0][:body], section: divs[0][:heading], source: doc_sequence.source_url, sourcedb: sourcedb, sourceid: sourceid, serial: 0})
+          NilClass.any_instance.stub(:save).and_return(true)
+          Doc.import_from_sequence(sourcedb, sourceid)
+        end
+      end
     end
   end
 
-  describe 'create_doc', elasticsearch: true do
-    # TODO just assserting about call index_diff
+  describe 'revise' do
+    let(:doc) { FactoryGirl.create(:doc) }
+    let(:body) { 'new body' }
 
-    before do
-      Doc.stub(:index_diff).and_return(nil)
-      Doc.stub(:divs_hash).and_return(nil)
+    context 'when body == self.body' do
+      it 'should return nil' do
+        expect(doc.revise(doc.body)).to be_nil
+      end
     end
 
-    it 'should call index_diff' do
-      expect(Doc).to receive(:index_diff)
-      Doc.create_doc(nil)
+    context 'when text_aligner is nil' do
+      before do
+        TextAlignment::TextAlignment.stub(:new).and_return(nil)
+      end
+
+      it 'should return nil' do
+        expect{ doc.revise(body) }.to raise_error
+      end
+    end
+
+    context 'when text_aligner similarity is too low' do
+      before do
+        TextAlignment::TextAlignment.stub(:new).and_return(double(:text_aligner, similarity: 0.1))
+      end
+
+      it 'should return nil' do
+        expect{ doc.revise(body) }.to raise_error
+      end
+    end
+
+    context 'successfully finished' do
+      let(:denotation) { double(:denotation) }
+      let(:denotations) { [denotation] }
+      let(:text_aligner) { double(:text_aligner, similarity: 1) }
+
+      before do
+        doc.stub(:denotations).and_return(denotations)
+        denotation.stub(:save).and_return(true)
+        TextAlignment::TextAlignment.stub(:new).and_return(text_aligner)
+        text_aligner.stub(:transform_denotations!).and_return(denotations)
+      end
+
+      it 'should update body' do
+        doc.revise(body) 
+        expect( doc.body ).to eql(body)
+      end
+
+      it 'should call transform_denotations!' do
+        expect( text_aligner ).to receive(:transform_denotations!).with(denotations)
+        doc.revise(body) 
+      end
+
+      it 'should call transform_denotations!' do
+        expect( denotation ).to receive(:save)
+        doc.revise(body) 
+      end
     end
   end
 
-  describe 'create_divs', elasticsearch: true do
-    # TODO just assserting about call index_diff
+  describe 'uptodate' do
+    let(:div) { double(:div, body: 'div body', sourcedb: 'sourcedb', sourceid: 'sourceid') }
+    let(:divs) { [div] }
 
-    before do
-      Doc.stub(:index_diff).and_return(nil)
+    context 'when new_divs.size != divs size' do
+      before do
+        Object.stub_chain(:const_get, :new, :divs).and_return(5)
+      end
+
+      it 'should raise error' do
+        expect{ Doc.uptodate(divs) }.to raise_error
+      end
     end
 
-    it 'should call index_diff' do
-      expect(Doc).to receive(:index_diff)
-      Doc.create_divs(nil)
+    context 'when new_divs.size == divs size' do
+      let(:new_divs) { [{body: 'new body'}] }
+      before do
+        Object.stub_chain(:const_get, :new, :divs).and_return(new_divs)
+      end
+
+      it 'should call revise' do
+        expect(div).to receive(:revise).with(new_divs[0][:body])
+        Doc.uptodate(divs) 
+      end
     end
   end
-  
+
   describe 'self.order_by' do
     context 'when docs present' do
+      context 'denotations_count' do
+        let(:docs) { double(:docs) }
+        let(:denotations_count) { double(:denotations_count) }
+
+        before do
+          docs.stub(:denotations_count).and_return(denotations_count)
+        end
+
+        it 'should return docs.denotations_count' do
+          expect(Doc.order_by(docs, 'denotations_count')).to eql(denotations_count)
+        end
+      end
+
       context 'same_sourceid_denotations_count' do
-        context 'when sourcedb = PubMed' do
+        context 'when docs.first.sourcedb = PubMed' do
+          let( :pubmed_count_1 ) { FactoryGirl.create(:doc, sourceid: 1.to_s, sourcedb: 'PubMed', denotations_count: 1) }
+          let( :pubmed_count_2 ) { FactoryGirl.create(:doc, sourceid: 2.to_s, sourcedb: 'PubMed', denotations_count: 2) }
+          let( :pubmed_count_3 ) { FactoryGirl.create(:doc, sourceid: 3.to_s, sourcedb: 'PubMed', denotations_count: 3) }
+          let( :pubmed_count_0 ) { FactoryGirl.create(:doc, sourceid: 1.to_s, sourcedb: 'PubMed', denotations_count: 0) }
+
           before do
-            @count_1 = FactoryGirl.create(:doc, :sourceid => 1.to_s, :sourcedb => 'PubMed', :denotations_count => 1)
-            @count_2 = FactoryGirl.create(:doc, :sourceid => 2.to_s, :sourcedb => 'PubMed', :denotations_count => 2)
-            @count_3 = FactoryGirl.create(:doc, :sourceid => 3.to_s, :sourcedb => 'PubMed', :denotations_count => 3)
-            @count_0 = FactoryGirl.create(:doc, :sourceid => 1.to_s, :sourcedb => 'PubMed', :denotations_count => 0)
-            @docs = Doc.order_by(Doc.pmdocs, 'same_sourceid_denotations_count')
+            pubmed_count_0
+            pubmed_count_1
+            pubmed_count_2
+            pubmed_count_3
+            @docs = Doc.order_by(Doc.where('id IN (?)', [pubmed_count_0.id, pubmed_count_1.id, pubmed_count_2.id, pubmed_count_3.id]), 'same_sourceid_denotations_count')
           end
-          
-          it 'docs.first should most same_sourceid_denotations_count' do
-            @docs[0].should eql(@count_3)
-          end
-          
-          it 'docs.first should second most same_sourceid_denotations_count' do
-            @docs[1].should eql(@count_2)
-          end
-          
-          it 'docs.first should second most same_sourceid_denotations_count' do
-            @docs[2].should eql(@count_1)
-          end
-          
-          it 'docs.first should least same_sourceid_denotations_count' do
-            @docs.last.should eql(@count_0)
+
+          it 'should order by denotations_count' do
+            expect(@docs.first.denotations_count).to eql(3)
+            expect(@docs.last.denotations_count).to eql(0)
           end
         end
-        
-        context 'when sourcedb = PMC' do
+
+        context 'when docs.first.sourcedb != PubMed' do
+          let(:pmc_count_1) {  double(:doc, same_sourceid_denotations_count: 1, sourcedb: 'PMC') }
+          let(:pmc_count_2) {  double(:doc, same_sourceid_denotations_count: 2, sourcedb: 'PMC') }
+          let(:pmc_count_3) {  double(:doc, same_sourceid_denotations_count: 3, sourcedb: 'PMC') }
+
           before do
-            @count_1 = double(:same_sourceid_denotations_count => 1, :sourcedb => 'PMC')
-            @count_2 = double(:same_sourceid_denotations_count => 2, :sourcedb => 'PMC')
-            @count_3 = double(:same_sourceid_denotations_count => 3, :sourcedb => 'PMC')
-            docs = [@count_1, @count_2, @count_3]
+            docs = [pmc_count_1, pmc_count_2, pmc_count_3]
             @docs = Doc.order_by(docs, 'same_sourceid_denotations_count')
           end
           
           it 'docs.first should most same_sourceid_denotations_count' do
-            @docs[0].should eql(@count_3)
-          end
-          
-          it 'docs.first should second most same_sourceid_denotations_count' do
-            @docs[1].should eql(@count_2)
-          end
-          
-          it 'docs.first should least same_sourceid_denotations_count' do
-            @docs.last.should eql(@count_1)
+            @docs[0].should eql(pmc_count_3)
+            @docs[1].should eql(pmc_count_2)
+            @docs.last.should eql(pmc_count_1)
           end
         end
       end
-      
-      context 'denotations_count' do
-        before do
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @doc_denotations_3 = FactoryGirl.create(:doc)
-          FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_3.id, :project_id => @project.id)
-          3.times do
-            denotation = FactoryGirl.create(:denotation, :doc => @doc_denotations_3)
-            FactoryGirl.create(:annotations_project, project_id: @project.id, annotation_id: denotation.id)
-          end
-          @doc_denotations_2 = FactoryGirl.create(:doc)
-          FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_2.id, :project_id => @project.id)
-          2.times do
-            denotation = FactoryGirl.create(:denotation, :doc => @doc_denotations_2)
-            FactoryGirl.create(:annotations_project, project_id: @project.id, annotation_id: denotation.id)
-          end
-          @doc_denotations_1 = FactoryGirl.create(:doc)
-          FactoryGirl.create(:docs_project, :doc_id => @doc_denotations_1.id, :project_id => @project.id)
-          denotation = FactoryGirl.create(:denotation, :doc => @doc_denotations_1)
-          FactoryGirl.create(:annotations_project, project_id: @project.id, annotation_id: denotation.id)
-          @doc_denotations_0 = FactoryGirl.create(:doc)
-          @docs = Doc.order_by(Doc.all, 'get_denotations_count')
-        end
-        
-        it 'doc which has most denotations should be docs[0]' do
-          @docs[0].should eql(@doc_denotations_3)
-        end
-        
-        it 'doc which has second most denotations should be docs[1]' do
-          @docs[1].should eql(@doc_denotations_2)
-        end
-        
-        it 'doc which has third most denotations should be docs[2]' do
-          @docs[2].should eql(@doc_denotations_1)
-        end
-        
-        it 'doc which does not has denotations should be docs.last' do
-          @docs.last.should eql(@doc_denotations_0)
-        end
-      end
-            
+
       context 'relations_count' do
-        let (:relations_count) { double(:relations_count) }
-        let (:docs) { Doc }
+        let(:relations_count) { double(:relations_count) }
+        let(:docs) { Doc }
 
         before do
           Doc.stub(:relations_count).and_return(relations_count)
@@ -636,99 +798,41 @@ describe Doc do
           expect( Doc.order_by(docs, 'relations_count') ).to eql(relations_count)
         end
       end
-      
+
       context 'same_sourceid_relations_count' do
-        context 'when sourcedb == PubMed' do
-          before do
-            @relations_count2 = FactoryGirl.create(:doc,  :sourceid => '12345', :subcatrels_count => 2, :sourcedb => 'PubMed')
-            @relations_count3 = FactoryGirl.create(:doc,  :sourceid => '23456', :subcatrels_count => 3, :sourcedb => 'PubMed')
-            @relations_count4 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 4, :sourcedb => 'PubMed')
-            @relations_count0 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 0, :sourcedb => 'PubMed')
-            @docs = Doc.order_by(Doc.pmdocs, 'same_sourceid_relations_count')
+        context 'when docs.first.sourcedb == PubMed' do
+          before(:all) do
+            Doc.delete_all
+            @count_1 = FactoryGirl.create(:doc, sourcedb: 'PubMed', subcatrels_count: 1)
+            @count_2 = FactoryGirl.create(:doc, sourcedb: 'PubMed', subcatrels_count: 2)
+            @count_3 = FactoryGirl.create(:doc, sourcedb: 'PubMed', subcatrels_count: 3)
+            @docs = Doc.order_by(Doc.where('id > ?', 0), 'same_sourceid_relations_count')
           end
-          
-          it 'doc which has 4 relations(same sourceid) should be docs[0]' do
-            @docs[0].should eql(@relations_count4)
-          end
-          
-          it 'doc which has 4 relations should be docs[1]' do
-            @docs[1].should eql(@relations_count3)
-          end
-          
-          it 'doc which has 3 relations should be docs[2]' do
-            @docs[2].should eql(@relations_count2)
-          end
-          
-          it 'doc which has 2 relations should be docs[3]' do
-            @docs[3].should eql(@relations_count0)
+
+          it 'docs.first should most same_sourceid_denotations_count' do
+            @docs[0].should eql(@count_3)
+            @docs[1].should eql(@count_2)
+            @docs.last.should eql(@count_1)
           end
         end
-        
-        context 'when sourcedb == PMC' do
+
+        context 'when docs.first.sourcedb != PubMed' do
+          let( :same_source_id_relations_count_1 ) { FactoryGirl.create(:doc, sourcedb: 'PMC') }
+          let( :same_source_id_relations_count_2 ) { FactoryGirl.create(:doc, sourcedb: 'PMC') }
+          let( :same_source_id_relations_count_3 ) { FactoryGirl.create(:doc, sourcedb: 'PMC') }
+
           before do
-            @relations_count2 = FactoryGirl.create(:doc,  :sourceid => '12345', :subcatrels_count => 2, :sourcedb => 'PMC', :serial => 0)
-            @relations_count3 = FactoryGirl.create(:doc,  :sourceid => '23456', :subcatrels_count => 3, :sourcedb => 'PMC', :serial => 0)
-            @relations_count0 = FactoryGirl.create(:doc,  :sourceid => '34567', :subcatrels_count => 0, :sourcedb => 'PMC', :serial => 0)
-            @docs = Doc.order_by(Doc.pmcdocs, 'same_sourceid_relations_count')
+            same_source_id_relations_count_1.stub(:same_sourceid_relations_count).and_return(1)
+            same_source_id_relations_count_2.stub(:same_sourceid_relations_count).and_return(2)
+            same_source_id_relations_count_3.stub(:same_sourceid_relations_count).and_return(3)
+            @docs = Doc.order_by([same_source_id_relations_count_1, same_source_id_relations_count_2, same_source_id_relations_count_3], 'same_sourceid_relations_count')
           end
           
           it 'doc which has 3 relations(same sourceid) should be docs[0]' do
-            @docs[0].should eql(@relations_count3)
+            expect( @docs.first).to eql(same_source_id_relations_count_3)
+            expect( @docs.last ).to eql(same_source_id_relations_count_1)
           end
-          
-          it 'doc which has 2 relations should be docs[1]' do
-            @docs[1].should eql(@relations_count2)
-          end
-          
-          it 'doc which has 0 relations should be docs[2]' do
-            @docs[2].should eql(@relations_count0)
-          end
-          
-          # it 'doc which has 2 relations should be docs[3]' do
-          #   @docs[3].should eql(@relations_count2)
-          # end
         end
-      end
-      
-      context 'else' do
-        before do
-          @doc_111 = FactoryGirl.create(:doc, :sourceid => '111', :sourcedb => 'PubMed')
-          @doc_1111 = FactoryGirl.create(:doc, :sourceid => '1111', :sourcedb => 'PubMed')
-          @doc_1112 = FactoryGirl.create(:doc, :sourceid => '1112', :sourcedb => 'PubMed')
-          @doc_1211 = FactoryGirl.create(:doc, :sourceid => '1211', :sourcedb => 'PubMed')
-          @doc_11111 = FactoryGirl.create(:doc, :sourceid => '11111', :sourcedb => 'PubMed')
-          @docs = Doc.order_by(Doc.pmdocs, nil)
-        end
-        
-        it 'sourceid 111 should be @docs[0]' do
-          @docs[0].should eql(@doc_111)
-        end
-        
-        it 'sourceid 1111 should be @docs[1]' do
-          @docs[1].should eql(@doc_1111)
-        end
-        
-        it 'sourceid 1112 should be @docs[2]' do
-          @docs[2].should eql(@doc_1112)
-        end
-        
-        it 'sourceid 1211 should be @docs[3]' do
-          @docs[3].should eql(@doc_1211)
-        end
-        
-        it 'sourceid 11111 should be @docs[4]' do
-          @docs[4].should eql(@doc_11111)
-        end
-      end
-    end
-    
-    context 'when docs blank' do
-      before do
-        @docs = Doc.order_by(Doc.pmdocs, nil)
-      end
-      
-      it 'should return blank' do
-        @docs.should be_blank
       end
     end
   end
@@ -758,63 +862,27 @@ describe Doc do
       @doc.relations_count.should eql(@subcatrels_size)
     end
   end
-  
+
   describe 'same_sourceid_denotations_count' do
-    before do
-      @sourceid_1234_doc_has_denotations_count = 3
-      @sourceid_1234_doc_has_denotations_count.times do
-        doc = FactoryGirl.create(:doc, :sourceid => '1234')
-        denotation = FactoryGirl.create(:denotation, doc: doc)
-        FactoryGirl.create(:annotations_project, project_id: 1, annotation_id: denotation.id)
-      end
-      @sourceid_1234 = FactoryGirl.create(:doc, :sourceid => '1234')
-      
-      @sourceid_4567_doc_has_denotations_count = 2
-      @sourceid_4567_doc_has_denotations_count.times do
-        doc = FactoryGirl.create(:doc, :sourceid => '4567')
-        denotation = FactoryGirl.create(:denotation, doc: doc)
-        FactoryGirl.create(:annotations_project, project_id: 1, annotation_id: denotation.id)
-      end
-      @sourceid_4567 = FactoryGirl.create(:doc, :sourceid => '4567')
-      @sourceid_1234_denotations_count = @sourceid_1234.same_sourceid_denotations_count
-      @sourceid_4567_denotations_count = @sourceid_4567.same_sourceid_denotations_count
+    let!(:pmc_denotations_count_1) { FactoryGirl.create(:doc, sourceid: 'PMC', denotations_count: 1) }
+    let!(:pmc_denotations_count_2) { FactoryGirl.create(:doc, sourceid: 'PMC', denotations_count: 2) }
+    let!(:pubmed_denotations_count_2) { FactoryGirl.create(:doc, sourceid: 'PubMed', denotations_count: 2) }
+
+    it 'should return sum of same sourceid denotations_count' do
+      expect(pmc_denotations_count_1.same_sourceid_denotations_count).to eql(3)
     end
-    
-    it 'should return docs which has samse sourceid denotations size' do
-      @sourceid_1234_denotations_count.should eql(@sourceid_1234_doc_has_denotations_count)     
-    end      
-    
-    it 'should return docs which has samse sourceid denotations size' do
-      @sourceid_4567_denotations_count.should eql(@sourceid_4567_doc_has_denotations_count)     
-    end          
   end
-  
+
   describe 'same_sourceid_relations_count' do
-    before do
-      @same_sourceid_docs_count = 5
-      @relations_size = 3
-      # create documents
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
-      @same_sourceid_docs_count.times do |i|
-        id = i + 1
-        doc = FactoryGirl.create(:doc,  :sourceid => '123456')
-        denotation = FactoryGirl.create(:denotation, :doc => doc)
-        FactoryGirl.create(:annotations_project, project: @project, annotation: denotation)
-        # create relations
-        @relations_size.times do |i|
-          id = i + 1
-          relation = FactoryGirl.create(:relation, :subj_id => denotation.id, :subj_type => 'Denotation', :obj_id => id)
-          FactoryGirl.create(:annotations_project, project: @project, annotation: relation)
-        end
-      end
-      @doc = FactoryGirl.create(:doc,  :sourceid => '123456')
-    end
-    
-    it 'should return sum of same sourceid docs subcatrels_count(= number of same sourceid docs and number of relations of those docs)' do
-      @doc.same_sourceid_relations_count.should eql(@same_sourceid_docs_count * @relations_size)
+    let!(:pmc_denotations_count_1) { FactoryGirl.create(:doc, sourceid: 'PMC', subcatrels_count: 1) }
+    let!(:pmc_denotations_count_2) { FactoryGirl.create(:doc, sourceid: 'PMC', subcatrels_count: 2) }
+    let!(:pubmed_denotations_count_2) { FactoryGirl.create(:doc, sourceid: 'PubMed', subcatrels_count: 2) }
+
+    it 'should return sum of same sourceid subcatrels_count' do
+      expect(pmc_denotations_count_1.same_sourceid_relations_count).to eql(3)
     end
   end
-  
+
   describe 'span' do
     context 'when body not includes ascii text' do
       before do
@@ -937,7 +1005,7 @@ describe Doc do
       
       context 'when encoding nil' do
         context 'when context_size present' do
-          pending do
+          pending '' do
             before do
               params = {:context_size => 10, :begin => @begin, :end => @end}
               @span, @prev_text, @next_text = @doc.span(params)
@@ -965,7 +1033,7 @@ describe Doc do
         end
 
         context 'when context_size present' do
-          pending do
+          pending '' do
             before do
               @context_size = 10
               params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
@@ -998,7 +1066,7 @@ describe Doc do
       
       context 'when encoding nil' do
         context 'when context_size present' do
-          pending do
+          pending '' do
             before do
               params = {:context_size => 3, :begin => @begin, :end => @end}
               @span, @prev_text, @next_text = @doc.span(params)
@@ -1026,7 +1094,7 @@ describe Doc do
         end
 
         context 'when context_size present' do
-          pending do
+          pending '' do
             before do
               @context_size = 3
               params = {:encoding => 'ascii', :context_size => @context_size, :begin => @begin, :end => @end}
@@ -1048,6 +1116,47 @@ describe Doc do
         end
       end
     end    
+  end
+
+  describe 'span_url' do
+    let(:doc) { FactoryGirl.create(:doc, sourceid: 'PMC', sourcedb: 'sourcedb') }
+    let(:span) { {begin: 1, end: 5} }
+
+    before do
+      doc.stub(:has_divs?).and_return(true)
+    end
+
+    context 'when has_divs? == true' do
+      it 'should return url' do
+        expect( doc.span_url(span) ).to eql("http://test.host/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/divs/#{doc.serial}/spans/#{span[:begin]}-#{span[:end]}")
+      end
+    end
+
+    context 'when has_divs? == false' do
+      before do
+        doc.stub(:has_divs?).and_return(false)
+      end
+
+      it 'should return url' do
+        expect( doc.span_url(span) ).to eql("http://test.host/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/#{span[:begin]}-#{span[:end]}")
+      end
+    end
+  end
+
+  describe 'spans_index' do
+    let(:doc) { FactoryGirl.create(:doc, sourceid: 'PMC', sourcedb: 'sourcedb') }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:hdenotation) { {id: 1, span: [{span: 'span_1'}, {span: 'span_2'}]} }
+    let(:span_url) { 'span_url' }
+
+    before do
+      doc.stub(:hdenotations).and_return([hdenotation])
+      doc.stub(:span_url).and_return(span_url)
+    end
+
+    it 'should return map result' do
+      expect( doc.spans_index ).to eql([{id: hdenotation[:id], span: [{span: hdenotation[:span][0][:span]}, {span: hdenotation[:span][1][:span]}], obj: span_url}])
+    end
   end
 
   describe '#set_ascii_body' do
@@ -1245,41 +1354,124 @@ describe Doc do
   end
   
   describe '#denotations_in_tracks' do
+    let(:doc) { FactoryGirl.create(:doc) } 
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:self_project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:span) { 'span' }
+    let(:hdenotations) { 'hdenotations' }
+
     before do
-      @doc = FactoryGirl.create(:doc)
-      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_1.docs << @doc
-      @project_2.docs << @doc
-      @denotation_1 = FactoryGirl.create(:denotation, doc_id: @doc.id)
-      FactoryGirl.create(:annotations_project, project: @project_1, annotation: @denotation_1)
-      @denotation_2 = FactoryGirl.create(:denotation, doc_id: @doc.id)
-      FactoryGirl.create(:annotations_project, project: @project_2, annotation: @denotation_2)
-      @hdenotaions = 'hdenotations'
-      @doc.stub(:hdenotations) do |project|
-        if project == @project_1
-          @denotation_1
-        elsif project == @project_2
-          @denotation_2
+      FactoryGirl.create(:docs_project, doc_id: doc.id, project_id: self_project.id)
+      doc.reload
+      doc.stub(:hdenotations).and_return(hdenotations)
+    end
+
+    context 'when project present' do
+      context 'when project respond_to each' do
+        let(:projects) { [project] }
+
+        it 'should set hdenotations' do
+          expect(doc).to receive(:hdenotations).with(project, span)
+          doc.denotations_in_tracks(projects, span)
+        end
+
+        it 'should project name and doc.hdenotations' do
+          expect( doc.denotations_in_tracks(project, span) ).to eql([{project: project.name, denotations: hdenotations}])
         end
       end
-      @denotations_in_tracks = @doc.denotations_in_tracks
+
+      context 'when project not respond_to each' do
+        it 'should set hdenotations' do
+          expect(doc).to receive(:hdenotations).with(project, span)
+          doc.denotations_in_tracks(project, span)
+        end
+
+        it 'should project name and doc.hdenotations' do
+          expect( doc.denotations_in_tracks(project, span) ).to eql([{project: project.name, denotations: hdenotations}])
+        end
+      end
     end
-    
-    it 'should return project' do
-      @denotations_in_tracks[0][:project].should eql(@project_1.name)
+
+    context 'when project nil' do
+      it 'should self.project name and doc.hdenotations' do
+        expect( doc.denotations_in_tracks(nil, span) ).to eql([{project: self_project.name, denotations: hdenotations}])
+      end
     end
-    
-    it 'should return denotations' do
-      @denotations_in_tracks[0][:denotations].should eql(@denotation_1)
+  end
+
+  describe 'get_denotations_count' do
+    let(:doc) { FactoryGirl.create(:doc, denotations_count: 5) }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+
+    context 'when project.nil && span.nil' do
+      it 'should return self.denotations_count' do
+        expect( doc.get_denotations_count(nil, nil) ).to eql(doc.denotations_count)
+      end
     end
-    
-    it 'should return project' do
-      @denotations_in_tracks[1][:project].should eql(@project_2.name)
+
+    context 'when span.nil' do
+      let(:denotations_from_projects_count) { 5 }
+
+      before do
+        doc.stub_chain(:denotations, :from_projects, :count).and_return(denotations_from_projects_count)
+      end
+
+      it 'should return self.denotations.from_projects.count' do
+        expect( doc.get_denotations_count(project, nil) ).to eql(denotations_from_projects_count)
+      end
     end
-    
-    it 'should return denotations' do
-      @denotations_in_tracks[1][:denotations].should eql(@denotation_2)
+
+    context 'when project and span present' do
+      let(:get_denotations_size) { 10 }
+      let(:span) { 'span' }
+
+      before do
+        doc.stub_chain(:get_denotations, :size).and_return(get_denotations_size)
+      end
+
+      it 'should return self.get_denotations.size' do
+        expect( doc ).to receive(:get_denotations).with(project, span)
+        doc.get_denotations_count(project, span)
+      end
+
+      it 'should return self.get_denotations.size' do
+        expect( doc.get_denotations_count(project, span) ).to eql(get_denotations_size)
+      end
+    end
+  end
+
+  describe 'annotations_count' do
+    let(:doc) { FactoryGirl.create(:doc, denotations_count: 5) }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:denotations_count) { 3 }
+    let(:subcatrels_count) { 4 }
+    let(:catmods_count) { 5 }
+    let(:subcatrelmods_count) { 6 }
+    let(:hdenotation) { {id: 'hdenotation'} }
+    let(:hrelation) { {id: 'hrelation'} }
+    let(:hmodification) { {id: 'hmodification'} }
+    let(:span) { 'span' }
+
+    before do
+      doc.stub_chain(:denotations, :count).and_return(denotations_count)
+      doc.stub_chain(:subcatrels, :count).and_return(subcatrels_count)
+      doc.stub_chain(:catmods, :count).and_return(catmods_count)
+      doc.stub_chain(:subcatrelmods, :count).and_return(subcatrelmods_count)
+      doc.stub(:hdenotations).and_return([hdenotation])
+      doc.stub(:hrelations).and_return([hrelation])
+      doc.stub(:hmodifications).and_return([hmodification])
+    end
+
+    context 'when project.nil && span.nil' do
+      it 'should return self denotations.count, subcatrels.count, catmods.count and subcatrelmods.count' do
+        expect(doc.annotations_count(nil, nil)).to eql(denotations_count + subcatrels_count + catmods_count + subcatrelmods_count)
+      end
+    end
+
+    context 'when project.present || span.present' do
+      it 'should return self denotations.size, subcatrels.size, catmods.size and subcatrelmods.size' do
+        expect(doc.annotations_count(project, span)).to eql(3)
+      end
     end
   end
 
@@ -1324,37 +1516,12 @@ describe Doc do
         end
       end
     end
+    
     context 'when base_ids present' do
       it 'should collect hrelations by generate_divs' do
         expect( relations ).to receive(:select!)
         doc.hrelations(nil, [1])
       end
-    end
-  end
-
-  describe 'spans_projects' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @denotation_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @denotation_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @not_denotation_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc)
-      FactoryGirl.create(:annotations_project, project: @denotation_project_1, annotation: @denotation_1)
-      @denotation_2 = FactoryGirl.create(:denotation, doc: @doc)
-      FactoryGirl.create(:annotations_project, project: @denotation_project_2, annotation: @denotation_2)
-      @denotation_3 = FactoryGirl.create(:denotation, doc: @doc)
-      FactoryGirl.create(:annotations_project, project_id: 1000, annotation: @denotation_3)
-      @denotations = double(:denotations)
-      @doc.stub(:denotations).and_return(@denotations)
-      @denotations.stub(:within_span).and_return([@denotation_1, @denotation_2, @denotation_3])
-      @denotation_1.reload
-      @denotation_2.reload
-      @denotation_3.reload
-      @projects = @doc.spans_projects({:begin => nil, :end => nil})
-    end
-    
-    it 'should return projects which has doc.denotations as denotations' do
-      @projects.should =~ [@denotation_project_1, @denotation_project_2]
     end
   end
   
@@ -1413,35 +1580,145 @@ describe Doc do
     end
   end
 
+  describe 'hannotations' do
+    let(:doc) { FactoryGirl.create(:doc, body: '12345678901234567890') }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+
+    context 'when has_divs? == true' do
+      before do
+        doc.stub(:has_divs?).and_return(true)
+      end
+
+      it 'should set doc_sourcedb_sourceid_divs_show_path as annotations[:target]' do
+        expect( doc.hannotations(nil, nil, nil)[:target] ).to eql(Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, only_path: false))
+      end
+
+      it 'should set doc.serial as annotations[:divid]' do
+        expect( doc.hannotations(nil, nil, nil)[:divid] ).to eql(doc.serial)
+      end
+    end
+
+    context 'when has_divs? == false' do
+      before do
+        doc.stub(:has_divs?).and_return(false)
+      end
+
+      it 'should set doc_sourcedb_sourceid_show_path as annotations[:target]' do
+        expect( doc.hannotations(nil, nil, nil)[:target] ).to eql(Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, only_path: false))
+      end
+    end
+
+    context 'when span present' do
+      it 'should return trimmed doc.body as annotations[:text]' do
+        expect( doc.hannotations(nil, {begin: 0, end: 6})[:text]).not_to eql(doc.body)
+      end
+    end
+
+    context 'when span present' do
+      it 'should return doc.body as annotations[:text]' do
+        expect( doc.hannotations(nil, nil)[:text]).to eql(doc.body)
+      end
+    end
+
+    context 'when project.present and project not respond_to each' do
+      let(:hdenotation_span) { {begin: 9, end: 14} }
+      let(:hdenotations) { [{id: 'hdenotation', span: hdenotation_span}] }
+      let(:hrelations) { [{id: 'hrelation'}] }
+      let(:hmodifications) { [{id: 'hmodification'}] }
+      let(:span) { {begin: 5, end: 10} }
+
+      before do
+        doc.stub(:hdenotations).and_return(hdenotations)
+        doc.stub(:hrelations).and_return(hrelations)
+        doc.stub(:hmodifications).and_return(hrelations)
+      end
+
+      context 'when span present' do
+        it 'should minus from hdenotations span begin and end' do
+          expect( doc.hannotations(project, span)[:denotations][0][:span][:begin] ).not_to eql(9)
+        end
+      end
+
+      context 'when span nil' do
+        it 'should not minus from hdenotations span begin and end' do
+          expect( doc.hannotations(project, nil)[:denotations][0][:span][:begin] ).to eql(9)
+        end
+      end
+    end
+  end
+
   describe 'destroy_project_annotations' do
     before do
       @doc = FactoryGirl.create(:doc)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
-      @modification_1 = FactoryGirl.create(:modification, :hid => 'M1', :obj => @denotation)
-      FactoryGirl.create(:annotations_project, project: @project, annotation: @modification_1)
-      @relation_1 = FactoryGirl.create(:subcatrel, :hid => 'r1', :obj => @denotation, :subj => @denotation)
-      FactoryGirl.create(:annotations_project, project: @project, annotation: @relation_1)
-      @relation_2 = FactoryGirl.create(:subinsrel, :hid => 'r2', :obj => @denotation)
-      FactoryGirl.create(:annotations_project, project: @project, annotation: @relation_2)
-      @modification_2 = FactoryGirl.create(:modification, :hid => 'M2', :obj => @relation_1, :obj_type => @relation_1.class.to_s)
-      FactoryGirl.create(:annotations_project, project: @project, annotation: @modification_2)
-      @modification_3 = FactoryGirl.create(:modification, :hid => 'M3', :obj => @relation_2, :obj_type => @relation_2.class.to_s)
-      FactoryGirl.create(:annotations_project, project: @project, annotation: @modification_3)
-      @project.reload
+      @denotations = double(:denotations)
+      @denotations.stub(:destroy_all).and_return(nil)
+      @doc.stub(:denotations).and_return(@denotations)
+      @denotations.stub(:from_projects).and_return(@denotations)
+    end
+
+    context 'when project nil' do
+      it 'should raise error' do
+        expect{ @doc.destroy_project_annotations(nil) }.to raise_error
+      end
     end
 
     context 'when project present' do
-      it 'should call destroy_all' do
-        denotations = double(:denotations)
-        denotations.stub(:destroy_all).and_return(nil)
-        @doc.stub_chain(:denotations, :from_projects).and_return(denotations)
-        denotations.should_receive(:destroy_all)
+      it 'should call from_projects.destroy_all' do
+        @denotations.should_receive(:from_projects)
+        @denotations.should_receive(:destroy_all)
         @doc.destroy_project_annotations(@project) 
       end
     end
   end
 
+  describe 'projects_within_span' do
+    let(:doc) { FactoryGirl.create(:doc, body: '12345678901234567890') }
+    let(:denotation_1) { double(:denotation) }
+    let(:denotation_2) { double(:denotation) }
+    let(:denotation_3) { double(:denotation) }
+    let(:denotation_4) { double(:denotation) }
+    let(:project_1) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:project_2) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+
+    before do
+      denotation_1.stub(:project).and_return(project_1)
+      denotation_2.stub(:project).and_return(project_2)
+      denotation_3.stub(:project).and_return(project_2)
+      denotation_4.stub(:project).and_return(nil)
+      doc.stub(:get_denotations).and_return([denotation_1, denotation_2, denotation_3, denotation_4])
+    end
+    
+    it 'should return get_denotations projects uniq' do
+      expect( doc.projects_within_span('span') ).to eql([project_1, project_2])
+    end
+  end
+
+  describe 'spans_projects' do
+    before do
+      @doc = FactoryGirl.create(:doc)
+      @denotation_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @denotation_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @not_denotation_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+      @denotation_1 = FactoryGirl.create(:denotation, :doc => @doc)
+      FactoryGirl.create(:annotations_project, project: @denotation_project_1, annotation: @denotation_1)
+      @denotation_2 = FactoryGirl.create(:denotation, doc: @doc)
+      FactoryGirl.create(:annotations_project, project: @denotation_project_2, annotation: @denotation_2)
+      @denotation_3 = FactoryGirl.create(:denotation, doc: @doc)
+      FactoryGirl.create(:annotations_project, project_id: 1000, annotation: @denotation_3)
+      @denotations = double(:denotations)
+      @doc.stub(:denotations).and_return(@denotations)
+      @denotations.stub(:within_span).and_return([@denotation_1, @denotation_2, @denotation_3])
+      @denotation_1.reload
+      @denotation_2.reload
+      @denotation_3.reload
+      @projects = @doc.spans_projects({:begin => nil, :end => nil})
+    end
+    
+    it 'should return projects which has doc.denotations as denotations' do
+      @projects.should =~ [@denotation_project_1, @denotation_project_2]
+    end
+  end
 
   describe 'to_hash' do
     before do
@@ -1455,7 +1732,7 @@ describe Doc do
 
   describe 'to_list_hash' do
     before do
-      @doc = FactoryGirl.create(:doc, sourcedb: 'sdb', sourceid: 'sdi', serial: 0, section: 'section', source: 'http://to.to', body: 'AB')
+      @doc = FactoryGirl.create(:doc, sourcedb: 'sdb', sourceid: 'sdi', section: 'section', source: 'http://to.to', body: 'AB')
     end
 
     context 'when doc_type is doc' do
@@ -1588,7 +1865,7 @@ describe Doc do
       end
 
       it 'should return true' do
-        @doc.updatable_for?(@user).should be_true
+        expect( @doc.updatable_for?(@user)).to be_true
       end
     end
     
@@ -1638,41 +1915,59 @@ describe Doc do
       end
     end
   end
-  
-  describe 'generate_divs' do
+
+  describe 'create_doc', elasticsearch: true do
     before do
-      @hash_1 = {:heading => 'HEAD1', :body => 'DIV BODY1'}
-      @hash_2 = {:heading => 'HEAD2', :body => 'DIV BODY2'}
-      @divs_hash = [@hash_1, @hash_2]
-      @attributes = {
-        :source_url => 'http://source.url',
-        :sourcedb => 'sourcedb',
-        :sourceid => 'sourceid'
-      }
-      @divs = Doc.create_divs(@divs_hash, @attributes)
+      @divs = [{body: 'body1', heading: 'heading_1'}]
+      @attributes = {source_url: 'source_url', sourcedb: 'sourcedb', sourceid: 'sourceid'}
+      Doc.stub(:index_diff).and_return(nil)
+      Doc.stub(:divs_hash).and_return(nil)
+      @doc = Doc.create_doc(@divs, @attributes)
     end
-    
-    it 'should create divs.body from divs_hash[:body]' do
-      @divs.collect{|div| div.body}.should =~ [@hash_1[:body], @hash_2[:body]]
+
+    it 'should create doc by divs_hash and attributes' do
+      expect( @doc[0][:body] ).to eql(@divs[0][:body])
+      expect( @doc[0][:section] ).to eql(@divs[0][:heading])
+      expect( @doc[0][:source] ).to eql(@attributes[:source_url])
+      expect( @doc[0][:sourcedb] ).to eql(@attributes[:sourcedb])
+      expect( @doc[0][:sourceid] ).to eql(@attributes[:sourceid])
+      expect( @doc[0][:serial] ).to eql(0)
     end
-    
-    it 'should create divs.section from divs_hash[:heading]' do
-      @divs.collect{|div| div.section}.should =~ [@hash_1[:heading], @hash_2[:heading]]
-    end
-    
-    it 'should create divs.source_url from attributes[:source_url]' do
-      @divs.collect{|div| div.source}.uniq.should =~ [@attributes[:source_url]]
-    end
-    
-    it 'should create divs.sourcedb from attributes[:sourcedb]' do
-      @divs.collect{|div| div.sourcedb}.uniq.should =~ [@attributes[:sourcedb]]
-    end
-    
-    it 'should create divs.sourceid from attributes[:sourceid]' do
-      @divs.collect{|div| div.sourceid}.uniq.should =~ [@attributes[:sourceid]]
+
+    it 'should call index_diff' do
+      expect(Doc).to receive(:index_diff)
+      Doc.create_doc(nil)
     end
   end
 
+  describe 'create_divs' do
+    describe 'assert method' do
+      before do
+        @divs = [{body: 'body1', heading: 'heading_1'}]
+        @attributes = {source_url: 'source_url', sourcedb: 'sourcedb', sourceid: 'sourceid'}
+        Doc.stub(:index_diff).and_return(nil)
+        Doc.stub(:divs_hash).and_return(nil)
+        @doc = Doc.create_divs(@divs, @attributes)
+      end
+
+      it 'should create doc by divs_hash and attributes' do
+        expect( @doc[0][:body] ).to eql(@divs[0][:body])
+        expect( @doc[0][:section] ).to eql(@divs[0][:heading])
+        expect( @doc[0][:source] ).to eql(@attributes[:source_url])
+        expect( @doc[0][:sourcedb] ).to eql(@attributes[:sourcedb])
+        expect( @doc[0][:sourceid] ).to eql(@attributes[:sourceid])
+        expect( @doc[0][:serial] ).to eql(0)
+      end
+    end
+
+    describe 'elasticsearch', elasticsearch: true do
+      it 'should call index_diff' do
+        expect(Doc).to receive(:index_diff)
+        Doc.create_divs(nil)
+      end
+    end
+  end
+  
   describe '.has_divs?' do
     before do
       @sourcedb = 'sourcedb'
@@ -1750,23 +2045,25 @@ describe Doc do
   
   describe 'has_divs?' do
     before do
-      @sourcedb = 'sourcedb'
-      @sourceid = 123456789
-      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
+      @doc = FactoryGirl.create(:doc)  
     end
     
     context 'when same sourcedb and sourceid doc blank' do
-      it 'shoud return false' do
+      before do
+        Doc.stub_chain(:same_sourcedb_sourceid, :size).and_return(1)
+      end
+
+      it 'should return false' do
         @doc.has_divs?.should be_false
       end
     end
     
     context 'when same sourcedb and sourceid doc present' do
       before do
-        FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
+        Doc.stub_chain(:same_sourcedb_sourceid, :size).and_return(2)
       end
       
-      it 'shoud return true' do
+      it 'should return true' do
         @doc.has_divs?.should be_true
       end
     end
@@ -1774,6 +2071,7 @@ describe Doc do
 
   describe 'self.get_div_ids' do
     before do
+      Doc.delete_all
       @sourcedb = 'sourcedb'
       @sourceid = 'sourceid'
       @serial_1 = 1
@@ -1789,7 +2087,7 @@ describe Doc do
   end
 
   describe 'attach_sourcedb_suffix' do
-    pending 'before_validation comennted' do
+    pending '' 'before_validation comennted' do
       context 'when sourcedb include : == false' do
         before do
           @sourcedb = 'sourcedb'
@@ -1830,6 +2128,49 @@ describe Doc do
           @doc.sourcedb.should eql("#{@sourcedb}")
         end
       end
+    end
+  end
+
+  describe 'expire_page_cache' do
+    let(:actioncontroller_base) { double(:actioncontroller_base) }
+    
+    before do
+      ActionController::Base.stub(:new).and_return(actioncontroller_base)
+    end
+
+    it 'should call expire_fragment' do
+      expect( actioncontroller_base ).to receive(:expire_fragment).with('sourcedbs')
+      Doc.new.expire_page_cache
+    end
+  end
+
+  describe 'decrement_docs_counter' do
+    let(:doc) { FactoryGirl.create(:doc, body: '12345678901234567890') }
+    let(:project) { double(:project) }
+
+    before do
+      doc.stub(:projects).and_return([project])
+    end
+
+    it 'should call decrement_docs_counter' do
+      expect(project).to receive(:decrement_docs_counter).with(doc)
+      doc.decrement_docs_counter
+    end
+  end
+
+  describe 'index_diff' do
+    it 'should call Delayed::Job' do
+      expect( Delayed::Job ).to receive(:enqueue).with(DelayedRake.new('elasticsearch:import:model', class: 'Doc', scope: 'diff'))
+      Doc.index_diff
+    end
+  end
+
+  describe 'dummy' do
+    let(:repeat_times) { 1 }
+
+    it 'should call create' do
+      expect(Doc).to receive(:create)
+      Doc.dummy(repeat_times)
     end
   end
 end
