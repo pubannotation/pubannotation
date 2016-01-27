@@ -1,5 +1,5 @@
 <%= form_tag(open_project_docs_path(@project.name), method: 'get')  do -%>
-	<%= select_tag :sourcedb, options_for_select(@sourcedbs),
+	<%= select_tag :sourcedb, options_for_select(@sourcedbs_active),
 		style: "width:7em" -%>
 	<%= text_field_tag :sourceid, params[:sourceid], value: params[:sourceid],
 		style: "width:7em", placeholder: t('activerecord.attributes.doc.sourceid') -%>

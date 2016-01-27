@@ -62,7 +62,7 @@ class ProjectsController < ApplicationController
 
       @search_path = search_project_docs_path(@project.name)
 
-      @sourcedbs = Doc.select(:sourcedb).uniq.pluck(:sourcedb)
+      @sourcedbs = Doc.select(:sourcedb).uniq.pluck(:sourcedb).select{|s| Doc.sourcedb_public?(s) || Doc.sourcedb_mine?(s, current_user)}
       @sourcedbs_active = @project.docs.select(:sourcedb).uniq.pluck(:sourcedb)
 
       @annotators = Annotator.all
