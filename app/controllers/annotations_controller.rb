@@ -323,10 +323,23 @@ class AnnotationsController < ApplicationController
       options[:mode] = :add if params[:mode] == 'add'
       options[:encoding] = :ascii if params[:encoding] == 'ascii'
 
-      priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docs, annotator, options), priority: priority, queue: :upload
-      Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
-      notice = "The task 'Obtain annotations' is created."
+      if docs.length > 1 || params[:run] == 'background'
+        priority = project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docs, annotator, options), priority: priority, queue: :upload
+        Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
+        notice = "The task 'Obtain annotations' is created."
+      elsif docs.length == 1
+        result = project.obtain_annotations(docs.first, annotator, options)
+        num = 0
+        unless result.nil?
+          num += result.has_key?(:denotations) ? result[:denotations].length : 0
+          num += result.has_key?(:relations) ? result[:relations].length : 0
+          num += result.has_key?(:modifications) ? result[:modifications].length : 0
+        end
+        notice = "#{num} annotation(s) obtained."
+      else
+        notice = "There is no such document."
+      end
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}
