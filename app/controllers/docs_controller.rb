@@ -431,7 +431,7 @@ class DocsController < ApplicationController
     rescue => e
       flash[:notice] = e.message
     end
-    redirect_to :back
+    redirect_to doc_sourcedb_sourceid_show_path params
   end
 
   # PUT /docs/1
