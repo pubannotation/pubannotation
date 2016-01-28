@@ -1,6 +1,10 @@
 <% path ||= request.path %>
 <%= form_tag(path, method: 'get', style:"display:inline-block") do -%>
 	<span style="width:7em; border-width:1px">&nbsp;</span>
-	<%= text_field_tag :keywords, params[:keywords], style: "width:7em", placeholder: t('views.shared.keywords') -%>
+	<%= text_field_tag :keywords, params[:keywords],
+		style: "width:7em",
+		# placeholder: t('views.shared.keywords'),
+		minlength: 2,
+		required: true -%>
 	<%= submit_tag t('views.shared.search'), class: :button -%>
 <% end %>
