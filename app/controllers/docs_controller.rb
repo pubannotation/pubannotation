@@ -22,8 +22,6 @@ class DocsController < ApplicationController
         Doc.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
       end
 
-      @sourcedbs = Doc.select(:sourcedb).distinct
-
       respond_to do |format|
         format.html
         format.json {render json: docs_list_hash}
@@ -54,8 +52,6 @@ class DocsController < ApplicationController
         sort_order = sort_order(Doc)
         @docs = @project.docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
       end
-
-      @sourcedbs = @project.docs.pluck(:sourcedb).uniq
 
       respond_to do |format|
         format.html
