@@ -8,7 +8,10 @@
 
 <div class="panel">
 	<section>
-		<h1><%= link_to t('activerecord.models.doc').pluralize.capitalize.html_safe, docs_path %></h1>
+		<h1>
+			<%= t('activerecord.models.doc').pluralize.capitalize.html_safe -%>
+			<%= render partial: 'docs/search_form', locals: {path: docs_path} -%>
+		</h1>
 		<% cache 'sourcedbs' do -%>
 		<%= render :partial => "docs/sourcedbs" -%>
 		<% end %>

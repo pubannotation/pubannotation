@@ -13,22 +13,13 @@ class DocsController < ApplicationController
     begin
       @docs_count = Doc.where(serial: 0).count
 
-      if params[:keywords].present?
+      @docs = if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, page:params[:page]})
-
         @search_count = search_results[:total]
-        @docs = search_results[:docs]
-        if @search_count > Doc::LIST_MAX_SIZE
-          flash[:notice] = t('views.docs.list_only', count: Doc::LIST_MAX_SIZE)
-        end
+        search_results[:docs]
       else
-        @docs = if @docs_count > Doc::LIST_MAX_SIZE
-          flash[:notice] = t('views.docs.list_disabled')
-          []
-        else
-          sort_order = sort_order(Doc)
-          Doc.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
-        end
+        sort_order = sort_order(Doc)
+        Doc.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
       end
 
       @sourcedbs = Doc.select(:sourcedb).distinct
@@ -59,17 +50,9 @@ class DocsController < ApplicationController
 
         @search_count = search_results[:total]
         @docs = search_results[:docs]
-        if @search_count > Doc::LIST_MAX_SIZE
-          flash[:notice] = t('views.docs.list_only', count: Doc::LIST_MAX_SIZE)
-        end
       else
-        @docs = if @docs_count > Doc::LIST_MAX_SIZE
-          flash[:notice] = t('views.docs.list_disabled')
-          []
-        else
-          sort_order = sort_order(Doc)
-          @project.docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
-        end
+        sort_order = sort_order(Doc)
+        @docs = @project.docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
       end
 
       @sourcedbs = @project.docs.pluck(:sourcedb).uniq

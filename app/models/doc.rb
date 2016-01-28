@@ -13,7 +13,7 @@ class Doc < ActiveRecord::Base
   #         "max_result_window" : 50000(value)
   #     }
   # }'
-  LIST_MAX_SIZE = 5000
+  LIST_MAX_SIZE = 50
 
   settings index: {
     analysis: {

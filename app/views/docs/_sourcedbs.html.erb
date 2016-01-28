@@ -1,11 +1,12 @@
 <ul style="margin:0; margin-right:1em; padding:0; padding-left:1.5em">
 <% @sourcedb_doc_counts.each do |sourcedb, doc_count| -%>
 <li>
-	<% if @project.present? -%>
+   	<%= sourcedb %> (<%= doc_count %>)
+<!-- 	<% if @project.present? -%>
     	<%= link_to sourcedb, sourceid_index_project_sourcedb_docs_path(@project.name, sourcedb) %> (<%= doc_count %>)
 	<% else -%>
     	<%= link_to sourcedb, doc_sourcedb_sourceid_index_path(sourcedb) %> (<%= doc_count %>)
 	<% end -%>
-</li>
+ --></li>
 <% end -%>
 </ul>

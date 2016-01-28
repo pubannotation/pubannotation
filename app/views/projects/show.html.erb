@@ -75,7 +75,7 @@
 		</tr>
 		<tr>
 			<th><%= t('views.shared.search') %></th>
-			<td style="text-align:right"><%= render partial: 'docs/search_form' -%></td>
+			<td style="text-align:right"><%= render partial: 'docs/search_form', locals: {path: project_docs_path(@project.name)} -%></td>
 		</tr>
 		<tr>
 			<th><%= t('views.shared.open') %></th>
