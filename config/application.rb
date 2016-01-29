@@ -21,9 +21,11 @@ module Pubann
     config.autoload_paths += %W(#{config.root}/app/jobs #{Rails.root}/lib)
     
     # require lib/
-    require 'doc_sequencer_pubmed'
-    require 'doc_sequencer_pmc'
-    require 'doc_sequencer_firstauthor'
+    Dir[File.join(Rails.root, "lib", "core_ext", "*.rb")].each {|l| require l }
+    Dir[File.join(Rails.root, "lib", "doc_sequencers", "*.rb")].each {|l| require l }
+    # require 'doc_sequencer_pubmed'
+    # require 'doc_sequencer_pmc'
+    # require 'doc_sequencer_firstauthor'
 
     config.i18n.enforce_available_locales = true
 
