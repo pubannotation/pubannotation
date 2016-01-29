@@ -213,6 +213,7 @@ module Utfrewrite
 		0x2217 => "*",
 		0x2134 => "o",
 		0x2133 => "M",
+		0x00BF => "?", # Inverted Question Mark
 		0x00B4 => " ",
 		0x02D8 => " ",
 		0x02C7 => " ",
