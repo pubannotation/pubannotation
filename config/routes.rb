@@ -64,6 +64,7 @@ Pubann::Application.routes.draw do  resources :annotators
             get 'annotations' => 'annotations#doc_annotations_index'
             get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
             # post 'annotations' => 'annotations#create'
+            get 'edit' => 'docs#edit'
             get 'uptodate' => 'docs#uptodate'
             get 'spans' => 'spans#doc_spans_index'
             get 'spans/:begin-:end' => 'spans#doc_span_show', :as => 'span_show'

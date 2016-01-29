@@ -286,15 +286,14 @@ class DocsController < ApplicationController
   # GET /docs/1/edit
   def edit
     begin
-      @project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless @project.present?
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-      divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document" unless divs.present?
 
       if divs.length > 1
         respond_to do |format|
-          format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
+          format.html {redirect_to :back}
         end
       else
         @doc = divs[0]
@@ -304,8 +303,6 @@ class DocsController < ApplicationController
         format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
       end
     end
-
-    @doc = Doc.find(params[:id])
   end
 
   # POST /docs
@@ -433,6 +430,8 @@ class DocsController < ApplicationController
   # PUT /docs/1
   # PUT /docs/1.json
   def update
+    raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+
     params[:doc][:body].gsub!(/\r\n/, "\n")
     @doc = Doc.find(params[:id])
 
