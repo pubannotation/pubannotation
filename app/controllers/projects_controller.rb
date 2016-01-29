@@ -155,6 +155,7 @@ class ProjectsController < ApplicationController
 
   def obtain_annotations
     @project = Project.editable(current_user).find_by_name(params[:id])
+    @sourcedbs = ["PubMed", "PMC", "FirstAuthor"]
     @annotators = Annotator.all
     @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
   end

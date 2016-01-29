@@ -44,13 +44,13 @@
 		<tr>
 			<th>
 				and, specify the documents<br>to be annotated<br>
-				* <i>leave blank to annotate<br>all the documents in the project</i>
+				* <i>leave it blank to annotate<br>all the documents in the project</i>
 			</th>
 			<td>
 			  <table>
 			    <tr>
 				    <th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
-			    	<td style="width:17em"><%= select_tag(:sourcedb, options_for_select(sourcedb_options_for_select)) -%></td>
+			    	<td style="width:17em"><%= select_tag(:sourcedb, options_for_select(@sourcedbs)) -%></td>
 				</tr>
 				<tr>
 				    <th><%= t('activerecord.attributes.doc.sourceid')%></th>
