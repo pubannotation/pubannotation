@@ -56,20 +56,21 @@ class DocsController < ApplicationController
       respond_to do |format|
         format.html
         format.json {
-          render json: @project.docs.where(serial: 0).sort_by_params(sort_order).select("sourcedb, sourceid")
+          source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
+          docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
+          render json: docs_list_hash
         }
-        format.csv  {
-          render csv: @project.docs.where(serial: 0).sort_by_params(sort_order).select("sourcedb, sourceid")
-          # source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
-          # render text: Doc.to_tsv(source_docs_all, 'doc')
+        format.tsv  {
+          source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
+          render text: Doc.to_tsv(source_docs_all, 'doc')
         }
       end
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render text: message, status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render text: message, status: :unprocessable_entity}
+      end
     end
   end
 
