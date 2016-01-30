@@ -53,6 +53,7 @@ class StoreAnnotationsCollectionTgzJob < Struct.new(:filepath, :project, :option
       end
     	@job.update_attribute(:num_dones, i + 1)
     end
+    Doc.index_diff if Doc.diff_flag
     File.unlink(filepath)
     FileUtils.rm_rf(dirpath)
 	end

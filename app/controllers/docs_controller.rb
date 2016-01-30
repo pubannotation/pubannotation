@@ -392,6 +392,7 @@ class DocsController < ApplicationController
         begin
           project.add_doc(docspec[:sourcedb], docspec[:sourceid], true)
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - added."
+          Doc.index_diff if Doc.diff_flag
         rescue => e
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
         end

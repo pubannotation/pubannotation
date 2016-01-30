@@ -280,6 +280,7 @@ class AnnotationsController < ApplicationController
 
       result = project.save_annotations(annotations, doc, options)
       notice = "annotations"
+      Doc.index_diff if Doc.diff_flag
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}
@@ -336,6 +337,7 @@ class AnnotationsController < ApplicationController
           num += result.has_key?(:relations) ? result[:relations].length : 0
           num += result.has_key?(:modifications) ? result[:modifications].length : 0
         end
+        Doc.index_diff if Doc.diff_flag
         notice = "#{num} annotation(s) obtained."
       else
         notice = "There is no such document."
