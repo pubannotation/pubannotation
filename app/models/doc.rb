@@ -60,6 +60,7 @@ class Doc < ActiveRecord::Base
     )
   end
   
+  @@diff_flag = false
   UserSourcedbSeparator = '@'
   after_save :expire_page_cache
   before_destroy :decrement_docs_counter
@@ -255,8 +256,29 @@ class Doc < ActiveRecord::Base
     end
 
     divs.each{|div| raise IOError, "Failed to save the document" unless div.save}
-    index_diff
+    @@diff_flag = true
     divs
+  end
+
+  def self.create_divs(divs_hash, attributes = {})
+    if divs_hash.present?
+      divs = Array.new
+      divs_hash.each_with_index do |div_hash, i|
+        doc = Doc.new(
+          {
+            :body     => div_hash[:body],
+            :section  => div_hash[:heading],
+            :source   => attributes[:source_url],
+            :sourcedb => attributes[:sourcedb],
+            :sourceid => attributes[:sourceid],
+            :serial   => i
+          }
+        )
+        divs << doc if doc.save
+      end
+    end
+    index_diff
+    return divs
   end
 
   def revise(body)
@@ -634,50 +656,6 @@ class Doc < ActiveRecord::Base
     sourcedb.include?(':') && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
   end
   
-  def self.create_doc(doc_hash, attributes = {})
-    # TODO div_hash always nil
-    if divs_hash.present?
-      divs = Array.new
-      divs_hash.each_with_index do |div_hash, i|
-        doc = Doc.new(
-          {
-            :body     => doc_hash[:body],
-            :section  => doc_hash[:heading],
-            :source   => attributes[:source_url],
-            :sourcedb => attributes[:sourcedb],
-            :sourceid => attributes[:sourceid],
-            :serial   => i
-          }
-        )
-        divs << doc if doc.save
-      end
-    end
-    index_diff
-    return divs
-  end
-
-
-  def self.create_divs(divs_hash, attributes = {})
-    if divs_hash.present?
-      divs = Array.new
-      divs_hash.each_with_index do |div_hash, i|
-        doc = Doc.new(
-          {
-            :body     => div_hash[:body],
-            :section  => div_hash[:heading],
-            :source   => attributes[:source_url],
-            :sourcedb => attributes[:sourcedb],
-            :sourceid => attributes[:sourceid],
-            :serial   => i
-          }
-        )
-        divs << doc if doc.save
-      end
-    end
-    index_diff
-    return divs
-  end
-
   def self.has_divs?(sourcedb, sourceid)
     self.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
   end
@@ -745,7 +723,12 @@ class Doc < ActiveRecord::Base
   end
 
   def self.index_diff
+    @@diff_flag = false
     Delayed::Job.enqueue(DelayedRake.new("elasticsearch:import:model", class: 'Doc', scope: "diff"))
+  end
+
+  def self.diff_flag
+    @@diff_flag
   end
 
   def self.dummy(repeat_times)

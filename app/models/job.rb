@@ -45,14 +45,21 @@ class Job < ActiveRecord::Base
   end
 
   def update_related_priority
-    project = Project.find(project_id)
-    project.jobs.waiting.order(:created_at).each_with_index do |j, i|
-      dj = begin
-        Delayed::Job.find(j.delayed_job_id)
-      rescue
-        nil
+    project = begin
+      Project.find(project_id)
+    rescue
+      nil
+    end
+
+    if project.present?
+      project.jobs.waiting.order(:created_at).each_with_index do |j, i|
+        dj = begin
+          Delayed::Job.find(j.delayed_job_id)
+        rescue
+          nil
+        end
+        dj.update_attribute(:priority, i) unless dj.nil?
       end
-      dj.update_attribute(:priority, i) unless dj.nil?
     end
   end
 end
