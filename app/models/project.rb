@@ -856,7 +856,12 @@ class Project < ActiveRecord::Base
     raise ArgumentError, "nil document" unless doc.present?
     options ||= {}
 
-    self.delete_annotations(doc) unless options.present? && options[:mode] == :add
+    if options[:mode] == 'skip'
+      num = doc.denotations.where("denotations.project_id = ?", id).count
+      return {result: 'upload is skipped due to existing annotations'} if num > 0
+    end
+
+    self.delete_annotations(doc) if options[:mode] == 'replace'
 
     original_text = annotations[:text]
     annotations[:text] = doc.original_body.nil? ? doc.body : doc.original_body
@@ -915,6 +920,13 @@ class Project < ActiveRecord::Base
   end
 
   def obtain_annotations(doc, annotator, options = nil)
+    options ||= {}
+
+    if options[:mode] == 'skip'
+      num = doc.denotations.where("denotations.project_id = ?", id).count
+      return {result: 'obtaining annotation is skipped due to existing annotations'} if num > 0
+    end
+
     annotations = inquire_annotations(doc, annotator, options)
     normalize_annotations!(annotations)
 
@@ -927,7 +939,7 @@ class Project < ActiveRecord::Base
   end
 
   def inquire_annotations(doc, annotator, options = nil)
-    doc.set_ascii_body if options[:encoding] == :ascii
+    doc.set_ascii_body if options[:encoding] == 'ascii'
 
     url = annotator['url']
       .gsub('_text_', doc.body)

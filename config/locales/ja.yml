@@ -554,5 +554,6 @@ ja:
       zip:
         delayed_job_present: ZIPファイルは数分程度で作成されます。      
         download_not_available: このプロジェクトはできません。
+        download_not_prepared: まだ用意されておりません。
         result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"
         deleted: "アノテーションZIPファイを削除しました。"

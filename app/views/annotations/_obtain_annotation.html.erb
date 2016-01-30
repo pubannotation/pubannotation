@@ -62,14 +62,17 @@
 		<% end %>
 
 		<tr>
-			<th>
-				Clear existing annotations?
-			</th>
+			<th>Choose mode</th>
 			<td>
-				<%= radio_button_tag :mode, :replace %>
-				<%= label_tag :mode_replace, :Yes, value: :replace %>
-			    <%= radio_button_tag :mode, :add, checked: true %>
-			    <%= label_tag :mode_add, :No, value: :add %>
+				For each document, when there are existing annotations, the upload will
+				<ul>
+					<li><%= radio_button_tag :mode, :replace, checked: true %><%= label_tag :mode_replace,
+						'<span style="font-weight:bold">REPLACE</span> the existing ones,'.html_safe %></li>
+					<li><%= radio_button_tag :mode, :add %><%= label_tag :mode_add,
+						'<span style="font-weight:bold">ADD</span> the new annotations to the existing ones, or'.html_safe %></li>
+					<li><%= radio_button_tag :mode, :skip %><%= label_tag :mode_skip,
+						'be <span style="font-weight:bold">SKIP</span>ped.'.html_safe %></li>
+				</ul>
 			</td>
 		</tr>
 

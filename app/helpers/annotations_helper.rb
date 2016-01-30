@@ -236,7 +236,7 @@ module AnnotationsHelper
           html += link_to t('views.shared.update'), project_create_annotations_zip_path(project.name, :update => true), :class => 'button', :style => "margin-left: 0.5em", :confirm => t('controllers.annotations.confirm_create_zip')
         end
         if project.user == current_user
-          html += link_to t('views.shared.delete'), project_delete_annotations_zip_path(project.name), confirm: t('controllers.shared.confirm_delete'), :class => 'button long_button'
+          html += link_to t('views.shared.delete'), project_delete_annotations_zip_path(project.name), confirm: t('controllers.shared.confirm_delete'), :class => 'button'
         end
         html
       else
@@ -251,10 +251,12 @@ module AnnotationsHelper
             t('views.shared.zip.delayed_job_present')
           end
         else
-          t('views.shared.zip.download_not_available')
+          t('views.shared.zip.download_not_prepared')
         end
-      end    
-    end    
+      end
+    else
+      t('views.shared.zip.download_not_available')
+    end
   end
 
   def project_annotations_rdf_link_helper(project)

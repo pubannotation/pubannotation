@@ -242,7 +242,7 @@ class AnnotationsController < ApplicationController
       annotations = normalize_annotations!(annotations)
 
       options = {}
-      options[:mode] = :add if params[:mode] == 'add'
+      options[:mode] = params[:mode] if params[:mode].present?
       options[:prefix] = params[:prefix] if params[:prefix].present?
 
       annotations_collection = [annotations]
@@ -321,8 +321,8 @@ class AnnotationsController < ApplicationController
       end
 
       options = {}
-      options[:mode] = :add if params[:mode] == 'add'
-      options[:encoding] = :ascii if params[:encoding] == 'ascii'
+      options[:mode] = params[:mode] if params[:mode].present?
+      options[:encoding] = params[:encoding] if params[:encoding].present?
 
       if docs.length > 1 || params[:run] == 'background'
         priority = project.jobs.unfinished.count
@@ -362,7 +362,7 @@ class AnnotationsController < ApplicationController
 
       if params[:tgzfile].present? && ['application/x-compressed-tar', 'application/x-gzip', 'application/gzip', 'application/x-gtar'].include?(params[:tgzfile].content_type)
         if project.jobs.count < 10
-          options = {mode: :add} if params[:mode] == 'add'
+          options = {mode: params[:mode]}
 
           filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.tgz")
           FileUtils.mv params[:tgzfile].path, filepath

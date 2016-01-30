@@ -1,13 +1,26 @@
 <%= form_tag project_create_annotations_from_tgz_path(@project.name), multipart: true do -%>
-	<label for="tgzfile">Upload a .tgz file (gzip compressed tar file) containing annotation json files:</label>
-	<ol>
-	<li><%= file_field_tag 'tgzfile', accept: 'application/x-gzip', required: true -%></li>
-	<li>Choose Mode:
-		<ul>
-		<li><input type="radio" name="mode" value="replace" checked="checked">replace: <span class="info">the annotations to be uploaded will replace the existing ones. (the exsiting annotations will be deleted.)</span></input>
-		<li><input type="radio" name="mode" value="add">add: <span class="info">the annotations to be uploaded will be added to the existing ones.</span></input>
-		</ul>
-	</li>
-	<li><%= submit_tag t('views.shared.upload') -%></li>
-	</ol>
+	<table>
+		<tr>
+			<th>Choose file</th>
+			<td><%= file_field_tag 'tgzfile', accept: 'application/x-gzip', required: true -%></td>
+		</tr>
+		<tr>
+			<th>Choose mode</th>
+			<td>
+				For each document, when there are existing annotations, the upload will
+				<ul>
+					<li><%= radio_button_tag :mode, :replace, checked: true %><%= label_tag :mode_replace,
+						'<span style="font-weight:bold">REPLACE</span> the existing ones,'.html_safe %></li>
+					<li><%= radio_button_tag :mode, :add %><%= label_tag :mode_add,
+						'<span style="font-weight:bold">ADD</span> the new annotations to the existing ones, or'.html_safe %></li>
+					<li><%= radio_button_tag :mode, :skip %><%= label_tag :mode_skip,
+						'be <span style="font-weight:bold">SKIP</span>ped.'.html_safe %></li>
+				</ul>
+			</td>
+		</tr>
+		<tr>
+			<th>Upload</th>
+			<td><%= submit_tag t('views.shared.upload') -%></td>
+		</tr>
+	</table>
 <% end -%>

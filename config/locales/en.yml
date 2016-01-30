@@ -533,6 +533,7 @@ en:
       zip:
         delayed_job_present: ZIP file will be created in a few minutes.      
         download_not_available: Not available for this project.
+        download_not_prepared: Not prepared yet for this project.
         deleted: Successfully deleted the annotation zip file.
       rdf:
         delayed_job_present: RDF file will be created in a few minutes.      

@@ -5,16 +5,13 @@
 	> upload-annotations
 <% end -%>
 
-<% if @project.present? -%>
+<section>
+	<%= render partial: 'projects/titlebar' -%>
+
 	<section>
-		<%= render partial: 'projects/titlebar' -%>
-<% end %>
-
-		<section>
-			<h2><%= t('views.docs.upload_annotations') %></h2>
-			<%= render partial: 'annotations/upload_tgz' -%>
-		</section>
-
-<% if @project.present? -%>
+		<h2><%= t('views.docs.upload_annotations') %></h2>
+		You can upload a <span title="gzip compressed tar file" style="text-decoration:underline">.tgz or .tar.gz file</span> which contains annotation json files.
+		<%= render partial: 'annotations/upload_tgz' -%>
 	</section>
-<% end %>
+
+</section>
