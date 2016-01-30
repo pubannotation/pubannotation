@@ -229,10 +229,11 @@ module AnnotationsHelper
       if File.exist?(file_path) == true
         zip_created_at = File.ctime(file_path)
         # when ZIP file exists 
-        html = link_to "Download '#{project.annotations_zip_filename}'", project_annotations_zip_path(project.name), :class => 'button'
+        html = link_to project.annotations_zip_filename, project_annotations_zip_path(project.name), class: 'button', title: "click to download"
+        html += tag :br
         html += content_tag :span, "#{zip_created_at.strftime("#{t('controllers.shared.created_at')}:%Y-%m-%d %T")}", :class => 'zip_time_stamp'
         if zip_created_at < project.annotations_updated_at
-          html += link_to t('controllers.annotations.update_zip'), project_create_annotations_zip_path(project.name, :update => true), :class => 'button', :style => "margin-left: 0.5em", :confirm => t('controllers.annotations.confirm_create_zip')
+          html += link_to t('views.shared.update'), project_create_annotations_zip_path(project.name, :update => true), :class => 'button', :style => "margin-left: 0.5em", :confirm => t('controllers.annotations.confirm_create_zip')
         end
         if project.user == current_user
           html += link_to t('views.shared.delete'), project_delete_annotations_zip_path(project.name), confirm: t('controllers.shared.confirm_delete'), :class => 'button long_button'

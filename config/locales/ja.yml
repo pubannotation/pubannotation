@@ -337,7 +337,6 @@ ja:
         delayed_job: アノテーションが提出されました。結果は該当プロジェクトのページからご確認できます。
       confirm_create_zip: ZIPファイル作成をしますか？※作成は遅延処理で実行されます。
       create_zip: アノテーションZIPファイルの作成
-      update_zip: アノテーションZIPファイルの更新
       create_zip_delay: アノテーションZIPファイルの作成を受け付けました。数分後に再度このページにアクセスして下さい。
     docs:
       index:
@@ -554,6 +553,6 @@ ja:
       made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"
       zip:
         delayed_job_present: ZIPファイルは数分程度で作成されます。      
-        download_not_available: アノテーションZIPファイルはダウンロードできません。
+        download_not_available: このプロジェクトはできません。
         result: "アノテーションZIPファイルの作成に%{result}しました。 %{created_at}"
         deleted: "アノテーションZIPファイを削除しました。"
