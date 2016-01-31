@@ -41,7 +41,8 @@ class DocsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      @docs_count = @project.docs.where(serial: 0).count
+      @docs_count = @project.pmdocs_count + @project.pmcdocs_count
+      @docs_count = @project.docs.where(serial: 0).count if @docs_count < 1000
 
       if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, page:params[:page]})
