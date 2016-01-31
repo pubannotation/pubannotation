@@ -41,4 +41,8 @@
 		<%= link_to_unless_current 'TXT', params.merge(format: :txt, encoding: 'ascii'), :class => 'tab' -%>
 	</span>
 	-->
+	<span class='tab-bar'>
+		<%= link_to '<', @prev_path, class: 'tab', title: 'previous division' unless @prev_path.nil? %>
+		<%= link_to '>', @next_path, class: 'tab', title: 'next division' unless @next_path.nil? %>
+	</span>
 </h1>

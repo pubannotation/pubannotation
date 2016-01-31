@@ -82,6 +82,11 @@ class DivsController < ApplicationController
       sort_order = sort_order(Project)
       @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
 
+      serial = params[:divid].to_i
+      divs_count = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]).count
+      @prev_path = serial > 0 ? doc_sourcedb_sourceid_divs_show_path(params[:sourcedb], params[:sourceid], serial - 1) : nil
+      @next_path = serial < divs_count - 1 ? doc_sourcedb_sourceid_divs_show_path(params[:sourcedb], params[:sourceid], serial + 1) : nil
+
       respond_to do |format|
         format.html {render 'docs/show'}
         format.json {render json: @doc.to_hash}
@@ -111,6 +116,11 @@ class DivsController < ApplicationController
 
       @annotators = Annotator.all
       @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
+
+      serial = params[:divid].to_i
+      divs_count = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]).count
+      @prev_path = serial > 0 ? show_project_sourcedb_sourceid_divs_docs_path(params[:project_id], params[:sourcedb], params[:sourceid], serial - 1) : nil
+      @next_path = serial < divs_count - 1 ? show_project_sourcedb_sourceid_divs_docs_path(params[:project_id], params[:sourcedb], params[:sourceid], serial + 1) : nil
 
       respond_to do |format|
         format.html {render 'docs/show_in_project'}
