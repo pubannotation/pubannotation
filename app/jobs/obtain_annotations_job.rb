@@ -1,11 +1,12 @@
-class ObtainAnnotationsJob < Struct.new(:project, :docs, :annotator, :options)
+class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
 	include StateManagement
 
 	def perform
-		@job.update_attribute(:num_items, docs.length)
+		@job.update_attribute(:num_items, docids.length)
     @job.update_attribute(:num_dones, 0)
 
-    docs.each_with_index do |doc, i|
+    docids.each_with_index do |docid, i|
+      doc = Doc.find(docid)
       begin
         project.obtain_annotations(doc, annotator, options)
       rescue => e

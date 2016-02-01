@@ -308,29 +308,36 @@ class AnnotationsController < ApplicationController
         raise ArgumentError, "Annotator URL is not specified"
       end.as_json
 
-      docs = if params[:sourceid].present?
-        doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid].present? ? params[:divid] : 0)
-        [doc]
+      docids = if params[:sourceid].present?
+        serial = params[:divid].present? ? params[:divid].to_i : 0
+        docid = project.docs.where(sourcedb: params[:sourcedb], sourceid: params[:sourceid], serial:serial).pluck(:id)
+        raise ArgumentError, "#{params[:sourcedb]}:#{params[:sourceid]} does not exist in this project." if docid.blank?
+        docid
       elsif params[:ids].present? && params[:sourcedb].present?
         docspecs = params[:ids].split(/[ ,"':|\t\n\r]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
         docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
         docspecs.uniq!
-        docspecs.inject([]) {|col, docspec| col += project.add_doc(docspec[:sourcedb], docspec[:sourceid])}
+        docspecs.inject([]) do |col, docspec|
+          ids = project.docs.where(sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid]).pluck(:id)
+          raise ArgumentError, "#{docspec[:sourcedb]}:#{docspec[:sourceid]} does not exist in this project." if ids.blank?
+          col += ids
+        end
       else
-        project.docs
+        project.docs.pluck(:id)
       end
 
       options = {}
       options[:mode] = params[:mode] if params[:mode].present?
       options[:encoding] = params[:encoding] if params[:encoding].present?
 
-      if docs.length > 1 || params[:run] == 'background'
+      if docids.length > 1 || params[:run] == 'background'
         priority = project.jobs.unfinished.count
-        delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docs, annotator, options), priority: priority, queue: :upload
+        delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids, annotator, options), priority: priority, queue: :upload
         Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
         notice = "The task 'Obtain annotations' is created."
-      elsif docs.length == 1
-        result = project.obtain_annotations(docs.first, annotator, options)
+      elsif docids.length == 1
+        doc = Doc.find(docids.first)
+        result = project.obtain_annotations(doc, annotator, options)
         num = 0
         unless result.nil?
           num += result.has_key?(:denotations) ? result[:denotations].length : 0
