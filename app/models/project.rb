@@ -14,6 +14,9 @@ class Project < ActiveRecord::Base
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
   has_many :annotations_projects
   has_many :annotations, through: :annotations_projects
+  has_many :denotations,    class_name: 'Annotation', through: :annotations_projects, source: :annotation, conditions: -> (r){"type = 'Denotation'"}, :dependent => :destroy, after_add: :update_updated_at
+  has_many :relations,      class_name: 'Annotation', through: :annotations_projects, source: :annotation, conditions: -> (r){"type = 'Relation'"}, :dependent => :destroy, after_add: :update_updated_at
+  has_many :modifications,  class_name: 'Annotation', through: :annotations_projects, source: :annotation, conditions: -> (r){"type = 'Modification'"}, :dependent => :destroy, after_add: :update_updated_at
   
   # Project to Proejct associations
   # parent project => associate projects = @project.associate_projects
@@ -33,9 +36,6 @@ class Project < ActiveRecord::Base
     :join_table => 'associate_projects_projects'
 
   attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
-  has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
-  has_many :relations, :dependent => :destroy, after_add: :update_updated_at
-  has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :jobs, :dependent => :destroy
