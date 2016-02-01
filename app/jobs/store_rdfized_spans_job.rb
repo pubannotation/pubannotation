@@ -1,16 +1,15 @@
-class StoreRdfizedSpansJob < Struct.new(:project, :rdfizer)
+class StoreRdfizedSpansJob < Struct.new(:sproject, :docids, :rdfizer)
 	include StateManagement
 
 	def perform
-    projects = Project.for_index
-    docs = projects.inject([]){|sum, p| (sum + p.docs).uniq}
-    annotations_collection = docs.collect{|doc| doc.hannotations}
-		@job.update_attribute(:num_items, annotations_collection.length)
+		@job.update_attribute(:num_items, docids.length)
 		@job.update_attribute(:num_dones, 0)
-    annotations_collection.each_with_index do |annotations, i|
+    docids.each_with_index do |docid, i|
     	begin
-        doc_ttl = project.get_conversion(annotations, rdfizer)
-        project.post_rdf(doc_ttl, nil, i == 0)
+    		doc = Doc.find(docid)
+    		annotations = doc.hannotations
+        doc_ttl = sproject.get_conversion(annotations, rdfizer)
+        sproject.post_rdf(doc_ttl, nil, i == 0)
 	    rescue => e
  	      doc_description  = [annotations[:sourcedb], annotations[:sourceid], annotations[:divid]].compact.join('-')
 				@job.messages << Message.create({item: "#{doc_description}", body: e.message})

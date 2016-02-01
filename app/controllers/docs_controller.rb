@@ -486,9 +486,11 @@ class DocsController < ApplicationController
     begin
       raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
+      projects = Project.for_index
+      docids = projects.inject([]){|col, p| (col + p.docs.pluck(:id))}.uniq
       system = Project.find_by_name('system-maintenance')
 
-      delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, Pubann::Application.config.rdfizer_spans), queue: :general
+      delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, docids, Pubann::Application.config.rdfizer_spans), queue: :general
       Job.create({name:"Store RDFized spans for selected projects", project_id:system.id, delayed_job_id:delayed_job.id})
     rescue => e
       flash[:notice] = e.message

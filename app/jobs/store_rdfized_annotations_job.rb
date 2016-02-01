@@ -1,15 +1,20 @@
-class StoreRdfizedAnnotationsJob < Struct.new(:project, :collection, :rdfizer, :graph_name)
+class StoreRdfizedAnnotationsJob < Struct.new(:sproject, :project, :rdfizer)
 	include StateManagement
 
 	def perform
-		@job.update_attribute(:num_items, collection.length)
+		graph_name = project.name
+		@job.update_attribute(:num_items, project.docs.count)
 		@job.update_attribute(:num_dones, 0)
-    collection.each_with_index do |annotations, i|
+    project.docs.each_with_index do |doc, i|
     	begin
-        doc_ttl = project.get_conversion(annotations, rdfizer)
-        project.post_rdf(doc_ttl, graph_name, i == 0)
+	      num = doc.denotations.where("denotations.project_id = ?", project.id).count
+	      if num > 0
+	    		annotations = doc.hannotations(project)
+	        doc_ttl = sproject.get_conversion(doc.hannotations(project), rdfizer)
+	        sproject.post_rdf(doc_ttl, graph_name, i == 0)
+	      end
 	    rescue => e
- 	      doc_description  = [annotations[:sourcedb], annotations[:sourceid], annotations[:divid]].compact.join('-')
+ 	      doc_description  = [doc.sourcedb, doc.sourceid, doc.serial].compact.join('-')
 				@job.messages << Message.create({item: "#{doc_description}", body: e.message})
 			end
 			@job.update_attribute(:num_dones, i + 1)
