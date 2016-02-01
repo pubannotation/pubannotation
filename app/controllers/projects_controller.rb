@@ -180,7 +180,7 @@ class ProjectsController < ApplicationController
 
       projects.each do |project|
         delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project, Pubann::Application.config.rdfizer_annotations), queue: :general
-        Job.create({name:"Store REDized annotations - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
+        Job.create({name:"Store RDFized annotations - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
       end
     rescue => e
       flash[:notice] = e.message
