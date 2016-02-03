@@ -251,7 +251,7 @@ class AnnotationsController < ApplicationController
       annotations = normalize_annotations!(annotations)
 
       options = {}
-      options[:mode] = params[:mode] if params[:mode].present?
+      options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
       options[:prefix] = params[:prefix] if params[:prefix].present?
 
       annotations_collection = [annotations]
@@ -336,7 +336,7 @@ class AnnotationsController < ApplicationController
       end
 
       options = {}
-      options[:mode] = params[:mode] if params[:mode].present?
+      options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
       options[:encoding] = params[:encoding] if params[:encoding].present?
 
       if docids.length > 1 || params[:run] == 'background'
@@ -378,7 +378,7 @@ class AnnotationsController < ApplicationController
 
       if params[:tgzfile].present? && ['application/x-compressed-tar', 'application/x-gzip', 'application/gzip', 'application/x-gtar'].include?(params[:tgzfile].content_type)
         if project.jobs.count < 10
-          options = {mode: params[:mode]}
+          options = {mode: params[:mode].present? ? params[:mode] : 'replace'}
 
           filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.tgz")
           FileUtils.mv params[:tgzfile].path, filepath
