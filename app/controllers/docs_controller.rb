@@ -11,7 +11,18 @@ class DocsController < ApplicationController
 
   def index
     begin
-      @docs_count = Doc.where(serial: 0).count
+      unless read_fragment('sourcedbs')
+        @sourcedb_doc_counts = Doc.where("serial = ?", 0).group(:sourcedb).count
+        if current_user
+          @sourcedb_doc_counts.delete_if do |sourcedb, doc_count|
+            sourcedb.include?(Doc::UserSourcedbSeparator) && sourcedb.split(Doc::UserSourcedbSeparator)[1] != current_user.username
+          end
+        else
+          @sourcedb_doc_counts.delete_if{|sourcedb, doc_count| sourcedb.include?(Doc::UserSourcedbSeparator)}
+        end
+      end
+
+      @docs_count = @sourcedb_doc_counts.values.inject(0){|sum, v| sum + v}
 
       @docs = if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, page:params[:page]})
@@ -198,7 +209,7 @@ class DocsController < ApplicationController
 
     rescue => e
       respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render text: message, status: :unprocessable_entity}
       end
@@ -244,7 +255,7 @@ class DocsController < ApplicationController
 
     rescue => e
       respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render status: :unprocessable_entity}
       end
@@ -301,7 +312,7 @@ class DocsController < ApplicationController
       end
     rescue => e
       respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
       end
     end
   end
@@ -458,7 +469,7 @@ class DocsController < ApplicationController
       redirect_path = records_project_docs_path(params[:project_id])
     else
       @doc.destroy
-      redirect_path = docs_url
+      redirect_path = home_path
     end
 
     respond_to do |format|
