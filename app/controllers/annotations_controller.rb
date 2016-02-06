@@ -61,9 +61,18 @@ class AnnotationsController < ApplicationController
       @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
 
       @doc.set_ascii_body if params[:encoding] == 'ascii'
-      context_size = params[:context_size].present? ? params[:context_size].to_i : 0
 
-      @annotations = @doc.hannotations(nil, @span, context_size)
+      params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
+
+      project = if params[:project].present?
+        params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
+      else
+        nil
+      end
+
+      project = project[0] if project.present? && project.length == 1
+      context_size = params[:context_size].present? ? params[:context_size].to_i : 0
+      @annotations = @doc.hannotations(project, @span, context_size)
 
       tracks = @annotations[:tracks] || []
       @project_annotations_index = tracks.inject({}) {|index, track| index[track[:project]] = track; index}
