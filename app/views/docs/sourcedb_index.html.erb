@@ -15,7 +15,9 @@
 		<%= t('views.docs.sourcedb_list')-%>
 	</h1>
 
+	<% cache 'docs_count_per_sourcedb' do -%>
 	<%= render :partial => "docs/sourcedbs" -%>
+	<% end %>
 
 	<% if user_signed_in? && @project.present? && current_user == @project.user %>
 		<section>
