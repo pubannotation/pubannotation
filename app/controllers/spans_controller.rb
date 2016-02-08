@@ -22,7 +22,7 @@ class SpansController < ApplicationController
       end
     rescue => e
       respond_to do |format|
-        format.html {redirect_to docs_path, notice: e.message}
+        format.html {redirect_to home_path, notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render text: message, status: :unprocessable_entity}
       end
@@ -43,7 +43,7 @@ class SpansController < ApplicationController
       end
     rescue => e
       respond_to do |format|
-        format.html {redirect_to docs_path, notice: e.message}
+        format.html {redirect_to home_path, notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render text: message, status: :unprocessable_entity}
       end
@@ -151,7 +151,7 @@ class SpansController < ApplicationController
 
     rescue => e
       respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render text: message, status: :unprocessable_entity}
       end
@@ -161,7 +161,7 @@ class SpansController < ApplicationController
   def div_span_show
     begin
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
-      raise "There is no such document in the project." unless @doc.present?
+      raise "There is no such document." unless @doc.present?
 
       @span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 
@@ -190,7 +190,7 @@ class SpansController < ApplicationController
       end
     rescue => e
       respond_to do |format|
-        format.html {redirect_to docs_path, notice: e.message}
+        format.html {redirect_to home_path, notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render status: :unprocessable_entity}
       end
@@ -259,7 +259,7 @@ class SpansController < ApplicationController
       end
     rescue => e
       respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : docs_path), notice: e.message}
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
         format.txt  {render status: :unprocessable_entity}
       end
