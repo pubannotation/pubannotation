@@ -11,18 +11,9 @@ class DocsController < ApplicationController
 
   def index
     begin
-      unless read_fragment('sourcedbs')
-        @sourcedb_doc_counts = Doc.where("serial = ?", 0).group(:sourcedb).count
-        if current_user
-          @sourcedb_doc_counts.delete_if do |sourcedb, doc_count|
-            sourcedb.include?(Doc::UserSourcedbSeparator) && sourcedb.split(Doc::UserSourcedbSeparator)[1] != current_user.username
-          end
-        else
-          @sourcedb_doc_counts.delete_if{|sourcedb, doc_count| sourcedb.include?(Doc::UserSourcedbSeparator)}
-        end
+      unless read_fragment('docs_count')
+        @docs_count = Doc.docs_count(current_user)
       end
-
-      @docs_count = @sourcedb_doc_counts.values.inject(0){|sum, v| sum + v}
 
       @docs = if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, page:params[:page]})

@@ -674,8 +674,26 @@ class Doc < ActiveRecord::Base
     end
   end
 
+  def self.docs_count_per_sourcedb(current_user)
+    docs_count_per_sourcedb = Doc.where("serial = ?", 0).group(:sourcedb).count
+    if current_user
+      docs_count_per_sourcedb.delete_if do |sourcedb, doc_count|
+        sourcedb.include?(Doc::UserSourcedbSeparator) && sourcedb.split(Doc::UserSourcedbSeparator)[1] != current_user.username
+      end
+    else
+      docs_count_per_sourcedb.delete_if{|sourcedb, doc_count| sourcedb.include?(Doc::UserSourcedbSeparator)}
+    end
+    docs_count_per_sourcedb
+  end
+
+  def self.docs_count(current_user)
+    docs_count_per_sourcedb = Doc.docs_count_per_sourcedb(current_user)
+    docs_count_per_sourcedb.values.inject(0){|sum, v| sum + v}
+  end
+
   def expire_page_cache
-    ActionController::Base.new.expire_fragment('sourcedbs')
+    ActionController::Base.new.expire_fragment('docs_count_per_sourcedb')
+    ActionController::Base.new.expire_fragment('docs_count')
   end
 
   # before destroy

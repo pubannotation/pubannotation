@@ -1,7 +1,7 @@
 <h1>
   <% @docs_path = @project.present? ? project_docs_path(@project.name) : docs_path -%>
 	<%= link_to t('views.docs.list').capitalize, @docs_path -%>
-	<span class='info'>(<%= @search_count.to_s + '/' if @search_count.present? -%><%= @docs_count -%>)</span>
+  <span class='info'>(<%= @search_count.to_s + '/' if @search_count.present? -%><% cache 'docs_count' do %><%= @docs_count -%><% end %>)</span>
 	<% if @project.present? || params[:action] == 'search' -%>
 		<span class='tab-bar'>
 			<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
