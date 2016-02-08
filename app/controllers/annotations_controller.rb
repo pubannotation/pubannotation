@@ -186,10 +186,18 @@ class AnnotationsController < ApplicationController
         raise "There is no such document." unless @doc.present?
 
         @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
         @doc.set_ascii_body if params[:encoding] == 'ascii'
+
+        params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
+
+        project = if params[:project].present?
+          params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
+        else
+          nil
+        end
+
         context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-        @annotations = @doc.hannotations(nil, @span, context_size)
+        @annotations = @doc.hannotations(project, @span, context_size)
 
         @track_annotations = @annotations[:tracks]
         @track_annotations.each {|a| a[:text] = @annotations[:text].gsub("\n", " ")}
@@ -214,10 +222,18 @@ class AnnotationsController < ApplicationController
       raise "There is no such document." unless @doc.present?
 
       @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
       @doc.set_ascii_body if params[:encoding] == 'ascii'
+
+      params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
+
+      project = if params[:project].present?
+        params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
+      else
+        nil
+      end
+
       context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-      @annotations = @doc.hannotations(nil, @span, context_size)
+      @annotations = @doc.hannotations(project, @span, context_size)
 
       @track_annotations = @annotations[:tracks]
       @track_annotations.each {|a| a[:text] = @annotations[:text]}
