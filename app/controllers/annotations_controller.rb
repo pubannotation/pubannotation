@@ -166,7 +166,7 @@ class AnnotationsController < ApplicationController
 
     rescue => e
       respond_to do |format|
-        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
       end
     end
