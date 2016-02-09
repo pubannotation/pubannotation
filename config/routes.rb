@@ -118,6 +118,7 @@ Pubann::Application.routes.draw do  resources :annotators
     member do
       get :search
       get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
+      get 'store_span_rdf' => 'projects#store_span_rdf'
       get 'clean' => 'projects#clean'
       get 'obtain_annotations' => 'projects#obtain_annotations'
       get 'upload_annotations' => 'projects#upload_annotations'

@@ -188,6 +188,22 @@ class ProjectsController < ApplicationController
     redirect_to project_path('system-maintenance')
   end
 
+  def store_span_rdf
+    begin
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+      project = Project.editable(current_user).find_by_name(params[:id])
+      raise ArgumentError, "There is no such project." unless project.present?
+      docids = project.docs.pluck(:id)
+      system = Project.find_by_name('system-maintenance')
+
+      delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, docids, Pubann::Application.config.rdfizer_spans), queue: :general
+      Job.create({name:"Store RDFized spans - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
+    rescue => e
+      flash[:notice] = e.message
+    end
+    redirect_to project_path('system-maintenance')
+  end
+
   def clean
     begin
       raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
