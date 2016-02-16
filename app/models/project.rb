@@ -6,11 +6,12 @@ class Project < ActiveRecord::Base
   before_validation :cleanup_namespaces
   after_validation :user_presence
   serialize :namespaces
+
   belongs_to :user
   has_and_belongs_to_many :docs, 
     :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter, :update_delta_index], 
     :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter, :update_delta_index]
-  has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
+  has_and_belongs_to_many :pmdocs, :join_table => "docs_projects", :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
   has_many :annotations_projects
   has_many :annotations, through: :annotations_projects
@@ -35,11 +36,12 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'project_id',
     :join_table => 'associate_projects_projects'
 
-  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :jobs, :dependent => :destroy
   has_many :notices, dependent: :destroy
+
+  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
   validates_format_of :name, :with => /\A[a-z0-9\-_]+\z/i
 
@@ -70,6 +72,7 @@ class Project < ActiveRecord::Base
     end
   }
 
+  # TODO Return all projects when current_user is nil
   scope :mine, -> (current_user) {
     if current_user.present?
       includes(:associate_maintainers).where('projects.user_id = ? OR associate_maintainers.user_id = ?', current_user.id, current_user.id)
@@ -96,26 +99,6 @@ class Project < ActiveRecord::Base
   }
 
   # scopes for order
-  scope :order_pmdocs_count, 
-    joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PubMed'").
-    group('projects.id').
-    order("count(docs.id) DESC")
-    
-  scope :order_pmcdocs_count, 
-    joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PMC'").
-    group('projects.id').
-    order("count(docs.id) DESC")
-    
-  scope :order_denotations_count, 
-    joins('LEFT OUTER JOIN denotations ON denotations.project_id = projects.id').
-    group('projects.id').
-    order("count(denotations.id) DESC")
-    
-  scope :order_relations_count,
-    joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
-    group('projects.id').
-    order('count(relations.id) DESC')
-    
   scope :order_author,
     order('author ASC')
     
@@ -229,7 +212,6 @@ class Project < ActiveRecord::Base
   
   # after_remove doc
   def decrement_docs_counter(doc)
-    p 'HERE'
     if doc.sourcedb == 'PMC' && doc.serial == 0
       counter_column = :pmcdocs_count
     elsif doc.sourcedb == 'PubMed'
@@ -369,7 +351,8 @@ class Project < ActiveRecord::Base
             :doc_id => denotation.doc_id,
             :begin => denotation.begin,
             :end => denotation.end,
-            :obj => denotation.obj
+            :obj_id => denotation.obj_id,
+            :obj_type => denotation.obj_type,
           }
         )
         if same_denotation.blank?
@@ -839,7 +822,10 @@ class Project < ActiveRecord::Base
     hrelations.each do |a|
       ra           = Relation.new
       ra.hid       = a[:id]
-      ra.pred      = a[:pred]
+      if a[:pred].present?
+        pred = Pred.find_or_create_by_name(a[:pred])
+        ra.pred_id    = pred.id
+      end
       if a[:subj].present?
         subj = a[:subj].camelize.constantize.find(a[:subj_id])
         ra.subj_type = subj.class.to_s
@@ -862,14 +848,25 @@ class Project < ActiveRecord::Base
     hmodifications.each do |a|
       ma        = Modification.new
       ma.hid    = a[:id]
-      ma.pred   = a[:pred]
-      ma.obj    = case a[:obj]
-        when /^R/
-          doc.subcatrels.find_by_project_id_and_hid(self.id, a[:obj])
-        else
-          Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
+      if a[:pred].present?
+        pred = Pred.find_or_create_by_name(a[:pred])
+        ma.pred_id    = pred.id
       end
-      ma.project_id = self.id
+      if a[:obj].present?
+        # TODO why search hid with hmodification[:obj]
+        obj    = case a[:obj]
+                 when /^R/
+                   doc.subcatrels.includes(:annotations_projects).where(['annotations_projects.project_id = ? AND annotations.hid = ?', self.id, a[:obj]]).first
+                 else
+                   # Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
+                   self.denotations.where(doc_id: doc.id, hid: a[:obj]).first
+                 end
+        if obj.present?
+          ma.obj_type = obj.class.to_s
+          ma.obj_id = obj.id
+          ma.projects << self
+        end
+      end
       raise ArgumentError, "Invalid representatin of modification: #{ma.hid}" unless ma.save
     end
   end

@@ -3,16 +3,16 @@ require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_zip]
+  before_filter :authenticate_user!, :except => [:index, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_zip]
   include DenotationsHelper
 
   def index
     @project, notice = get_project(params[:project_id])
     case request.format.symbol
     when :json
-      per_page = 10000
+      per_page = 200
     else :html
-      per_page = 10
+      per_page = 100
     end
     if @project
       @annotations = @project.annotations.paginate(page: params[:page], per_page: per_page)

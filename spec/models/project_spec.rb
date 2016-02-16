@@ -2,9 +2,67 @@
 require 'spec_helper'
 
 describe Project do
+  let!( :user) { FactoryGirl.create(:user) }
+
+  describe 'cleanup_namespaces' do
+    before do
+      @user = FactoryGirl.create(:user)
+    end
+
+    describe 'before_validate' do
+      it 'should call cleanup_namespaces' do
+        Project.any_instance.should_receive(:cleanup_namespaces)
+        FactoryGirl.create(:project, user: @user)
+      end
+    end
+
+    context 'when namespaces prensent' do
+      before do
+        @namespace_1 = {'prefix' => '_base', 'uri' => 'http://xmlns.com/foaf/0.1/'}
+        @namespace_2 = {'prefix' => 'foaf', 'uri' => 'http://xmlns.com/foaf/0.1/'}
+        @namespace_3 = {'prefix' => 'wd', 'uri' => 'http://www.wikidata.org/entity/'}
+        @namespace_4 = {'prefix' => 'wd', 'uri' => ''}
+        @namespace_5 = {'prefix' => '', 'uri' => ''}
+        @namespace_5 = {'prefix' => '', 'uri' => 'uri'}
+        namespaces = [@namespace_1, @namespace_2, @namespace_3, @namespace_4]
+        @project = @user.projects.build(name: 'My Project', namespaces: namespaces)
+      end
+
+      it 'should delete prefix or uri is blank' do
+        @project.cleanup_namespaces 
+        @project.namespaces.should =~ [@namespace_1, @namespace_2, @namespace_3]
+      end
+    end
+  end
+
+  describe 'user_presence' do
+    context 'when user blank' do
+      before do
+        @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
+      end
+
+
+      it 'should not raise user_id validation error' do
+        @project.valid?
+        @project.errors[:user_id].should be_blank
+      end 
+    end 
+
+    context 'when user blank' do
+      before do
+        @project = FactoryGirl.build(:project)  
+      end
+
+      it 'should raise user_id validation error' do
+        @project.valid?
+        @project.errors[:user_id].should be_present
+      end 
+    end 
+  end 
+
   describe 'belongs_to user' do
     before do
-      @user = FactoryGirl.create(:user, :id => 5)
+      @user = FactoryGirl.create(:user)
       @project = FactoryGirl.create(:project, :user => @user)
     end
     
@@ -14,13 +72,14 @@ describe Project do
   end
   
   describe 'has_and_belongs_to_many docs' do
-    before do
+    before(:all) do
       @doc_1 = FactoryGirl.create(:doc)
       @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       FactoryGirl.create(:docs_project, :project_id => @project_1.id, :doc_id => @doc_1.id)
       FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => @doc_1.id)
       FactoryGirl.create(:docs_project, :project_id => @project_2.id, :doc_id => FactoryGirl.create(:doc).id)
+      @doc_1.reload
     end
     
     it 'doc.projects should include @project_1' do
@@ -37,6 +96,44 @@ describe Project do
 
     it '@project_2.docs should include @doc' do
       @project_2.docs.should include(@doc_1)
+    end
+  end
+
+  describe 'has_and_belongs_to_many pmdocs' do
+    let( :pm_doc_1 ) { FactoryGirl.create(:doc, sourcedb: 'PubMed') }
+    let( :pm_doc_2 ) { FactoryGirl.create(:doc, sourcedb: 'PubMed') }
+    let( :pmc_doc_2 ) { FactoryGirl.create(:doc, sourcedb: 'PMC') }
+    let( :user) { FactoryGirl.create(:user) }
+    let!( :project ) { FactoryGirl.create(:project, user: user) }
+
+    before do
+      FactoryGirl.create(:docs_project, :project_id => project.id, :doc_id => pm_doc_1.id)
+      FactoryGirl.create(:docs_project, :project_id => project.id, :doc_id => pm_doc_2.id)
+      FactoryGirl.create(:docs_project, :project_id => project.id, :doc_id => pmc_doc_2.id)
+    end
+
+    it 'should include docs sourcedb == PubMed and belongs_to project' do
+      expect( project.pmdocs ).to match_array([pm_doc_1, pm_doc_2])
+    end
+  end
+
+  describe 'has_and_belongs_to_many pmcdocs' do
+    let( :pmc_doc_1 ) { FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: 'sid1', serial: 0) }
+    let( :pmc_doc_2 ) { FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: 'sid1', serial: 1) }
+    let( :pmc_doc_3 ) { FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: 'sid2', serial: 0) }
+    let( :pm_doc_1 ) { FactoryGirl.create(:doc, sourcedb: 'PubMed') }
+    let( :user) { FactoryGirl.create(:user) }
+    let!( :project ) { FactoryGirl.create(:project, user: user) }
+
+    before do
+      FactoryGirl.create(:docs_project, :project_id => project.id, :doc_id => pmc_doc_1.id)
+      FactoryGirl.create(:docs_project, :project_id => project.id, :doc_id => pmc_doc_2.id)
+      FactoryGirl.create(:docs_project, :project_id => project.id, :doc_id => pmc_doc_3.id)
+      FactoryGirl.create(:docs_project, :project_id => project.id, :doc_id => pm_doc_1.id)
+    end
+
+    it 'should include docs sourcedb == PubMed and belongs_to project' do
+      expect( project.pmcdocs ).to match_array([pmc_doc_1, pmc_doc_3])
     end
   end
   
@@ -75,28 +172,45 @@ describe Project do
       end
     end
   end
+
+  describe 'has_many annotations' do
+    let(:project ) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:doc ) { FactoryGirl.create(:doc) }
+    let(:denotation ) { FactoryGirl.create(:denotation, doc: doc) }
+    let(:relation) { FactoryGirl.create(:relation) }
+    let(:modification) { FactoryGirl.create(:relation) }
+
+    before do
+      FactoryGirl.create(:annotations_project, annotation: denotation, project: project)
+      FactoryGirl.create(:annotations_project, annotation: relation, project: project)
+      FactoryGirl.create(:annotations_project, annotation: modification, project: project)
+    end
+
+    it 'should include denotations, relations and modifications' do
+      expect(project.annotations).to match_array([denotation, relation, modification])
+    end
+  end
   
   describe 'has_many denotations' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => FactoryGirl.create(:doc))
+      @denotation = FactoryGirl.create(:denotation, doc: FactoryGirl.create(:doc))
+      FactoryGirl.create(:annotations_project, annotation: @denotation, project: @project)
+      @project.reload
     end
     
-    it 'project.denotations should be present' do
-      @project.denotations.should be_present
-    end
-    
-    it 'project.denotations should include related denotation' do
-      (@project.denotations - [@denotation]).should be_blank
+    it 'project.denotations should include denotation' do
+      expect(@project.denotations).to include(@denotation) 
     end
   end
 
   describe 'denotations after_add' do
     let( :project ) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) }
     let( :doc ) { FactoryGirl.create(:doc) }
-    let( :denotation ) { FactoryGirl.create(:denotation, :project => project, :doc => doc) }
+    let( :denotation ) { FactoryGirl.create(:denotation, :doc => doc) }
 
     before do
+      FactoryGirl.create(:annotations_project, annotation: denotation, project: project)
       project.stub(:update_updated_at).and_return(nil)
     end
 
@@ -109,7 +223,8 @@ describe Project do
   describe 'has_many relations' do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @relation = FactoryGirl.create(:relation, :project => @project, :obj_id => 5)
+      @relation = FactoryGirl.create(:relation, :obj_id => 5)
+      FactoryGirl.create(:annotations_project, annotation: @relation, project: @project)
     end
     
     it 'project.relations should be present' do
@@ -123,7 +238,7 @@ describe Project do
 
   describe 'relations after_add' do
     let( :project ) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) }
-    let( :relation ) { FactoryGirl.create(:relation, project: project, obj_id: 5) }
+    let( :relation ) { FactoryGirl.create(:relation, obj_id: 5) }
 
     before do
       project.stub(:update_updated_at).and_return(nil)
@@ -139,9 +254,10 @@ describe Project do
     before do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @doc = FactoryGirl.create(:doc)
-      @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-      @modification = FactoryGirl.create(:modification, :obj => @denotation, :project => @project)
-      # @modification = FactoryGirl.create(:modification, :obj_id => 1, :project => @project)      
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
+      FactoryGirl.create(:annotations_project, annotation: @denotation, project: @project)
+      @modification = FactoryGirl.create(:modification, :obj => @denotation)
+      FactoryGirl.create(:annotations_project, annotation: @modification, project: @project)
     end
     
     it 'project.modifications should be present' do
@@ -155,9 +271,22 @@ describe Project do
 
   describe 'modification after_add' do
     let( :project ) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) }
+    let( :project ) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) }
     let( :doc ) { FactoryGirl.create(:doc) }
-    let( :denotation ) { FactoryGirl.create(:denotation, :project => project, :doc => doc) }
-    let( :modification ) { FactoryGirl.create(:modification, :obj => denotation, project: nil) }
+    let( :denotation ) { FactoryGirl.create(:denotation, :doc => doc) }
+    let( :modification ) { FactoryGirl.create(:modification, :obj => denotation) }
+
+    before do
+      project.stub(:update_updated_at).and_return(nil)
+    end
+
+    it 'should call update_updated_at when add modifications' do
+      expect(project).to receive(:update_updated_at)
+      project.modifications << modification
+    end
+    let( :doc ) { FactoryGirl.create(:doc) }
+    let( :denotation ) { FactoryGirl.create(:denotation, :doc => doc) }
+    let( :modification ) { FactoryGirl.create(:modification, :obj => denotation) }
 
     before do
       project.stub(:update_updated_at).and_return(nil)
@@ -191,8 +320,7 @@ describe Project do
     end
     
     it 'should destoryed when project destroyed' do
-      @project.destroy
-      AssociateMaintainer.all.should be_blank
+      expect{ @project.destroy }.to change{ AssociateMaintainer.count }.by(-2)
     end
   end
   
@@ -215,6 +343,15 @@ describe Project do
     
     it 'should include' do
       @project.associate_maintainer_users.to_a.should =~ [@user_1, @user_2]
+    end
+  end
+
+  describe 'has_many jobs' do
+    let( :project ) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) }
+    let( :job ) { FactoryGirl.create(:job, project: project) }
+
+    it 'should call update_updated_at when add modifications' do
+      expect(project.jobs).to match_array([ job ])
     end
   end
 
@@ -241,6 +378,62 @@ describe Project do
 
     it 'should not include type present' do
       @projects.where('type IS NOT NULL').should be_blank
+    end
+  end
+
+  describe 'scope for_index' do
+    let( :user ) { FactoryGirl.create(:user) }
+    let( :project_accessibility_1_status_1 ) { FactoryGirl.create(:project, user: user, accessibility: 1, status: 1) }
+    let( :project_accessibility_1_status_2 ) { FactoryGirl.create(:project, user: user, accessibility: 1, status: 2) }
+    let( :project_accessibility_1_status_3 ) { FactoryGirl.create(:project, user: user, accessibility: 1, status: 3) }
+    let( :project_accessibility_0_status_1 ) { FactoryGirl.create(:project, user: user, accessibility: 0, status: 1) }
+
+    before do
+      @projects = Project.for_index 
+    end
+
+    it 'should include accessibility == 1 and status == 1' do
+      expect( @projects ).to include(project_accessibility_1_status_1)
+    end
+
+    it 'should include accessibility == 1 and status == 2' do
+      expect( @projects ).to include(project_accessibility_1_status_2)
+    end
+
+    it 'should not include accessibility == 1 and status == 3' do
+      expect( @projects ).not_to include(project_accessibility_1_status_3)
+    end
+
+    it 'should not include accessibility == 0' do
+      expect( @projects ).not_to include(project_accessibility_0_status_1)
+    end
+  end
+
+  describe 'scope for_home' do
+    let( :user ) { FactoryGirl.create(:user) }
+    let( :project_accessibility_1_status_1 ) { FactoryGirl.create(:project, user: user, accessibility: 1, status: 1) }
+    let( :project_accessibility_1_status_2 ) { FactoryGirl.create(:project, user: user, accessibility: 1, status: 2) }
+    let( :project_accessibility_1_status_3 ) { FactoryGirl.create(:project, user: user, accessibility: 1, status: 3) }
+    let( :project_accessibility_0_status_1 ) { FactoryGirl.create(:project, user: user, accessibility: 0, status: 1) }
+
+    before do
+      @projects = Project.for_home
+    end
+
+    it 'should include accessibility == 1 and status == 1' do
+      expect( @projects ).to include(project_accessibility_1_status_1)
+    end
+
+    it 'should include accessibility == 1 and status == 2' do
+      expect( @projects ).to include(project_accessibility_1_status_2)
+    end
+
+    it 'should not include accessibility == 1 and status == 3' do
+      expect( @projects ).not_to include(project_accessibility_1_status_3)
+    end
+
+    it 'should not include accessibility == 0' do
+      expect( @projects ).not_to include(project_accessibility_0_status_1)
     end
   end
 
@@ -313,51 +506,122 @@ describe Project do
     end
   end
 
-  describe 'scope top' do
+  describe 'scope editable' do
     before do
+      @user_1 = FactoryGirl.create(:user)
+      @user_2 = FactoryGirl.create(:user)
+      # projects by @user_1 with no maintainers
+      @accessibility_10_user_1 = FactoryGirl.create(:project, :accessibility => 10, :user => @user_1)  
+      @accessibility_1_user_1 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_1)  
+      # projects by @user_2 with no maintainers 
+      @accessibility_10_user_2 = FactoryGirl.create(:project, :accessibility => 10, :user => @user_2)  
+      @accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)
+      # projects by @user_2 with maintainers includes @user_1
+      @maintainer_project_accessibility_10_user_2 = FactoryGirl.create(:project, :accessibility => 10, :user => @user_2)
+      @maintainer_project_accessibility_1_user_2 = FactoryGirl.create(:project, :accessibility => 1, :user => @user_2)
+      FactoryGirl.create(:associate_maintainer, :project => @maintainer_project_accessibility_10_user_2, :user => @user_1)
+      FactoryGirl.create(:associate_maintainer, :project => @maintainer_project_accessibility_1_user_2, :user => @user_1)
+      @maintainer_project_accessibility_10_user_2.reload
+      @maintainer_project_accessibility_1_user_2.reload
+    end
+    
+    context 'when current_user present' do
+      before do
+        @projects = Project.editable(@user_1)
+      end
+      
+      it 'includes user is current_user and includes current_user as maintainers' do
+        expect(@projects).to match_array([@accessibility_10_user_1, @accessibility_1_user_1, @maintainer_project_accessibility_10_user_2, @maintainer_project_accessibility_1_user_2])
+      end
+    end
+    
+    context 'when current_user blank' do
+      before do
+        @projects = Project.editable(nil)
+      end
+      
+      it 'all of accessibility = 10' do
+        expect(@projects.collect{|p| p.accessibility}.uniq).should eql([10])
+      end
+    end
+  end
+
+  describe 'scope mine' do
+    before do
+      @user_1 = FactoryGirl.create(:user)
+      @user_2 = FactoryGirl.create(:user)
+      # projects by @user_1 with no maintainers
+      @user_1_1 = FactoryGirl.create(:project, user: @user_1)  
+      @user_1_2 = FactoryGirl.create(:project, user: @user_1)  
+      # projects by @user_2 with no maintainers 
+      @user_2_1 = FactoryGirl.create(:project, user: @user_2)  
+      @user_2_2 = FactoryGirl.create(:project, user: @user_2)
+      # projects by @user_2 with maintainers includes @user_1
+      @user_2_maintainer_user_1_1 = FactoryGirl.create(:project, user: @user_2)
+      @user_2_maintainer_user_2_2 = FactoryGirl.create(:project, user: @user_2)
+      FactoryGirl.create(:associate_maintainer, project: @user_2_maintainer_user_1_1, user: @user_1)
+      FactoryGirl.create(:associate_maintainer, project: @user_2_maintainer_user_2_2, user: @user_1)
+      @user_2_maintainer_user_1_1.reload
+      @user_2_maintainer_user_2_2.reload
+    end
+    
+    context 'when current_user present' do
+      before do
+        @projects = Project.mine(@user_1)
+      end
+      
+      it 'includes user is current_user and includes current_user as maintainers' do
+        expect(@projects).to match_array([@user_1_1, @user_1_2, @user_2_maintainer_user_1_1, @user_2_maintainer_user_2_2])
+      end
+    end
+    
+    context 'when current_user blank' do
+      before do
+        @projects = Project.mine(nil)
+      end
+      
+      it 'should return all' do
+        expect(@projects).to match_array(Project.all)
+      end
+    end
+  end
+
+  describe 'scope top_annotations_count' do
+    before(:all) do
+      Project.delete_all
       @user = FactoryGirl.create(:user)
-      @my_projects_max_denotations_count = 6
-      (1..@my_projects_max_denotations_count).each do |n|
-        FactoryGirl.create(:project, user: @user, denotations_count: n, updated_at: n.days.ago)
-      end
-
-      another_user = FactoryGirl.create(:user)
-      (1..11).each do |n|
-        FactoryGirl.create(:project, user: another_user, denotations_count: 11, updated_at: 1.month.ago)
-      end
+      @project_annotations_count_10_status_3_updated_1_hour_ago = FactoryGirl.create(:project, user: @user, annotations_count: 10, status: 3, updated_at: 1.hour.ago)
+      @project_annotations_count_9_status_3_updated_1_hour_ago = FactoryGirl.create(:project, user: @user, annotations_count: 9, status: 3, updated_at: 1.hour.ago)
+      @project_annotations_count_9_status_2_updated_1_hour_ago = FactoryGirl.create(:project, user: @user, annotations_count: 9, status: 2, updated_at: 1.hour.ago)
+      @project_annotations_count_0_status_3_updated_1_minutes_ago = FactoryGirl.create(:project, user: @user, annotations_count: 2, status: 3, updated_at: 1.minute.ago)
+      @project_annotations_count_0_status_3_updated_2_minutes_ago = FactoryGirl.create(:project, user: @user, annotations_count: 2, status: 3, updated_at: 2.minute.ago)
+      @projects = Project.top_annotations_count
     end
 
-    context 'when user nil' do
-      before do
-        @projects = Project.top(nil)
-      end
-
-      it 'size should be 10' do
-        @projects.size.should eql(10)
-      end
-
-      it 'denotations_count should prior to updated_at' do
-        @projects.first.denotations_count.should eql(11)
-      end
+    it 'should order first by annotations_count DESC' do
+      expect(@projects.first).to eql(@project_annotations_count_10_status_3_updated_1_hour_ago)
     end
 
-    context 'when user prensent' do
-      before do
-        @projects = Project.top(@user)
-      end
-
-      it 'size should be 10' do
-        @projects.size.should eql(10)
-      end
-
-      it 'my_project should prior to denotations_count' do
-        @projects.first.denotations_count.should eql(@my_projects_max_denotations_count)
-      end
+    it 'should order first by annotations_count DESC' do
+      expect(@projects.second).to eql(@project_annotations_count_9_status_2_updated_1_hour_ago)
     end
+
+    it 'should order second by updated_at DESC' do
+      expect(@projects[3]).to eql(@project_annotations_count_0_status_3_updated_1_minutes_ago)
+    end
+
+    it 'should order third by status ASC' do
+      expect(@projects[2]).to eql(@project_annotations_count_9_status_3_updated_1_hour_ago )
+    end
+  end
+
+  describe 'scope top_recent' do
+
   end
   
   describe 'scope not_id_in' do
     before do
+      Project.delete_all
       @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
@@ -392,9 +656,65 @@ describe Project do
     end    
   end
 
+  describe 'scope order_author' do
+    let!( :user) { FactoryGirl.create(:user) }
+    let!( :project_author_aa ) { FactoryGirl.create(:project, user: user, author: 'AA') }
+    let!( :project_author_ab ) { FactoryGirl.create(:project, user: user, author: 'AB') }
+    let!( :project_author_nil ) { FactoryGirl.create(:project, user: user, author: nil) }
+    
+    before do
+      @projects = Project.order_author
+    end
+
+    it 'should order by author ASC' do
+      expect( @projects.first ).to eql(project_author_aa)
+      expect( @projects.second ).to eql(project_author_ab)
+      expect( @projects.last.author ).to be_nil
+    end
+  end
+
+  describe 'scope order_maintainer' do
+    let!( :user_aa) { FactoryGirl.create(:user, username: 'AA') }
+    let!( :project_user_aa ) { FactoryGirl.create(:project, user: user_aa) }
+
+    before do
+      @projects = Project.order_maintainer
+    end
+
+    it 'should order by user.username ASC' do
+      expect( @projects.first ).to eql(project_user_aa)
+    end
+  end
+
+  describe 'scope order_association' do
+    let!( :user) { FactoryGirl.create(:user) }
+    let!( :another_user) { FactoryGirl.create(:user) }
+    let!( :project_maintainer_1 ) { FactoryGirl.create(:project, user: another_user) }
+    let!( :project_maintainer_2 ) { FactoryGirl.create(:project, user: another_user) }
+    let!( :project_user_1 ) { FactoryGirl.create(:project, user: user) }
+    let!( :project_user_2 ) { FactoryGirl.create(:project, user: user) }
+
+    before do
+      FactoryGirl.create(:associate_maintainer, user: user, project: project_maintainer_1)
+      FactoryGirl.create(:associate_maintainer, user: user, project: project_maintainer_2)
+      @projects = Project.order_association(user)
+    end
+
+    context 'when current_user present' do
+      it '' do
+        expect( @projects.limit(2) ).to match_array([project_user_1, project_user_2])
+      end
+
+      it '' do
+        expect( @projects[2..3] ).to match_array([project_maintainer_1, project_maintainer_2])
+      end
+    end
+  end
+
   describe 'sort_by_params' do
     context 'when sort by id' do
-      before do
+      before(:all) do
+        Project.delete_all
         @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
         @project_3 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
@@ -438,10 +758,11 @@ describe Project do
     end
 
     context 'sort_by name' do
-      before do
-        @project_1 = FactoryGirl.create(:project, name: 'A project spec',  user: FactoryGirl.create(:user))
-        @project_2 = FactoryGirl.create(:project, name: 'B project spec', user: FactoryGirl.create(:user))
-        @project_3 = FactoryGirl.create(:project, name: 'a project spec', user: FactoryGirl.create(:user))
+      before(:all) do
+        Project.delete_all
+        @project_1 = FactoryGirl.create(:project, name: 'Aproject',  user: FactoryGirl.create(:user))
+        @project_2 = FactoryGirl.create(:project, name: 'Bproject', user: FactoryGirl.create(:user))
+        @project_3 = FactoryGirl.create(:project, name: 'aproject', user: FactoryGirl.create(:user))
         @projects = Project.sort_by_params([['LOWER(name) ASC']])
       end
 
@@ -459,7 +780,127 @@ describe Project do
       end
     end
   end
-  
+
+  describe 'public?' do
+    let!( :user) { FactoryGirl.create(:user) }
+    let!( :project_accessibility_1 ) { FactoryGirl.create(:project, user: user, accessibility: 1) }
+    let!( :project_accessibility_0 ) { FactoryGirl.create(:project, user: user, accessibility: 0) }
+
+    context 'when accessibility == 1' do
+      it 'should return true' do
+        expect( project_accessibility_1.public?).to be_true
+      end
+    end
+
+    context 'when accessibility == 0' do
+      it 'should return false' do
+        expect( project_accessibility_0.public?).to be_false
+      end
+    end
+  end
+
+  describe 'accessible?' do
+    let!( :current_user) { FactoryGirl.create(:user) }
+    let!( :another_user) { FactoryGirl.create(:user) }
+    let!( :project_accessibility_1 ) { FactoryGirl.create(:project, user: another_user, accessibility: 1) }
+    let!( :project_accessibility_0 ) { FactoryGirl.create(:project, user: another_user, accessibility: 0) }
+    let!( :project_current_user_created) { FactoryGirl.create(:project, user: current_user, accessibility: 0) }
+
+    context 'when accessibility == 1' do
+      it 'should return true' do
+        expect( project_accessibility_1.accessible?(current_user)).to be_true
+      end
+    end
+
+    context 'when accessibility == 0' do
+      it 'should return false' do
+        expect( project_accessibility_0.accessible?(current_user)).to be_false
+      end
+    end
+
+    context 'when project user == current_user' do
+      it 'should return true' do
+        expect( project_current_user_created.accessible?(current_user)).to be_true
+      end
+    end
+
+    context 'when project user != current_user' do
+      it 'should return false' do
+        expect( project_accessibility_0.accessible?(current_user)).to be_false
+      end
+    end
+
+    context 'when current_user.root? == true' do
+      before do
+        current_user.stub(:root?).and_return(true)
+      end
+
+      it 'should return true' do
+        expect( project_accessibility_0.accessible?(current_user)).to be_true
+      end
+    end
+  end
+
+  describe 'editable?' do
+    let!( :current_user) { FactoryGirl.create(:user) }
+    let!( :another_user) { FactoryGirl.create(:user) }
+    let!( :project_current_user_created) { FactoryGirl.create(:project, user: current_user) }
+    let!( :project_current_user_maintain) { FactoryGirl.create(:project, user: another_user) }
+    let!( :project_another_user_created) { FactoryGirl.create(:project, user: another_user) }
+
+    before do
+      FactoryGirl.create(:associate_maintainer, project: project_current_user_maintain, user: current_user)
+    end
+
+    context 'when current_user.prensent?' do
+      context 'when current_user.root? == true' do
+        before do
+          current_user.stub(:root?).and_return(true)
+        end
+
+        it 'should return true' do
+          expect( project_another_user_created.editable?(current_user) ).to be_true    
+        end
+      end
+
+      context 'when project.user == current_user' do
+        it 'should return true' do
+          expect( project_current_user_created.editable?(current_user) ).to be_true    
+        end
+      end
+
+      context 'when current_user is a maintainer' do
+        it 'should return true' do
+          expect( project_current_user_maintain.editable?(current_user) ).to be_true    
+        end
+      end
+    end
+  end
+
+  describe 'destroyable?' do
+    before do
+      @project_user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, :user => @project_user)
+    end
+
+    
+    context 'when user.root is true' do
+      before do
+        @user = FactoryGirl.create(:user, root: true)
+      end
+
+      it 'should return true' do
+        @project.destroyable?(@user).should be_true
+      end
+    end
+
+    context 'when current_user is project.user' do
+      it 'should return true' do
+        @project.destroyable?(@project_user).should be_true
+      end
+    end
+  end
+
   describe 'status_text' do
     context 'when status = 1' do
       before do
@@ -538,7 +979,8 @@ describe Project do
   
   describe 'self.order_by' do
     context 'pmdocs_count' do
-      before do
+      before(:all) do
+        Project.delete_all
         @project_pmdocs_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 1, :accessibility => 1)
         @project_pmdocs_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 2, :accessibility => 1)
         @project_pmdocs_4 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 4, :accessibility => 1)
@@ -558,7 +1000,8 @@ describe Project do
     end
   
     context 'pmcdocs_count' do
-      before do
+      before(:all) do
+        Project.delete_all
         @project_pmcdocs_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmcdocs_count => 1, :accessibility => 1)
         @project_pmcdocs_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmcdocs_count => 2, :accessibility => 1)
         @project_pmcdocs_4 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmcdocs_count => 4, :accessibility => 1)
@@ -579,7 +1022,8 @@ describe Project do
     end
   
     context 'denotations_count' do
-      before do
+      before(:all) do
+        Project.delete_all
         @project_2_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 2, :accessibility => 1)
         @project_1_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 1, :accessibility => 1)
         @project_0_denotations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :denotations_count => 0, :accessibility => 1)
@@ -599,29 +1043,9 @@ describe Project do
       end
     end
   
-    context 'order_relations_count' do
-      before do
-        @project_2_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 2, :accessibility => 1)
-        @project_1_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 1, :accessibility => 1)
-        @project_0_relations = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :relations_count => 0, :accessibility => 1)
-        @projects = Project.order_by(Project, 'relations_count', nil)
-      end
-      
-      it 'project which has 2 relation should be @projects[0]' do
-        @projects[0].should eql(@project_2_relations)
-      end
-      
-      it 'project which has 1 relation should be @projects[1]' do
-        @projects[1].should eql(@project_1_relations)
-      end
-      
-      it 'project which has 0 relation should be @projects[2]' do
-        @projects[2].should eql(@project_0_relations)
-      end
-    end
-  
     context 'not match' do
-      before do
+      before(:all) do
+        Project.delete_all
         @project_name_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => '00001', :accessibility => 1)
         @project_name_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => '00002', :accessibility => 1)
       end
@@ -631,200 +1055,109 @@ describe Project do
       end
     end 
   end 
-  
+
   describe 'increment_docs_counter' do
+    let( :project) { FactoryGirl.create(:project, user: user) }
+    let( :associate_project) { FactoryGirl.create(:project, user: user) }
+    let( :pmc_doc) { FactoryGirl.create(:doc, sourcedb: 'PMC', serial: 0, sourceid: 'increment_docs_counter') }
+    let( :pm_doc) { FactoryGirl.create(:doc, sourcedb: 'PubMed', sourceid: 'increment_docs_counter') }
+
     before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
-      @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
-      @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
-      @associate_project_2_pmdocs_count = 2
-      @i = 1
-      @associate_project_2_pmdocs_count.times do
-        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s)
-        @i += 1  
-      end
-      @associate_project_2_pmcdocs_count = 4
-      @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
-        @i += 1  
-      end
-      @associate_project_2.reload
-      @project.associate_projects << @associate_project_1
-      @project.associate_projects << @associate_project_2
-      @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
-      @pmcdoc_serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
-      @project.reload
+      project.stub(:projects).and_return([ associate_project ])
+      project.reload
     end
-    
-    describe 'before add ' do
-      it 'project.pmdocs should equal sum of associate projects pmdocs_count and sum of copied pmdocs' do
-         @project.pmdocs_count.should eql(@associate_project_2_pmdocs_count * 2)
-      end
-      
-      it 'projectpmcdocs should equal sum of associate projects pmcdocs_count and sum of copied pmcdocs' do
-         @project.pmcdocs_count.should eql(@associate_project_2_pmcdocs_count * 2)
+
+    context 'when doc.sourcedb == PMC && doc.serial == 0' do
+      it 'should increment_counter' do
+        Project.should_receive(:increment_counter).with(:pmcdocs_count, project.id)
+        Project.should_receive(:increment_counter).with(:pmcdocs_count, associate_project.id)
+        project.increment_docs_counter(pmc_doc)
       end
     end
 
-    context 'when added PubMed' do
-      before do
-        @associate_project_1.reload
-        @associate_project_1.docs << @pmdoc
-        @project.reload
-      end
-          
-      it 'should increment project.pmcdocs_count' do
-        @project.pmdocs_count.should eql((@associate_project_2_pmdocs_count * 2) + 1)
-        @project.pmcdocs_count.should eql(@associate_project_2_pmcdocs_count * 2)
+    context 'when doc.sourcedb == PubMed' do
+      it 'should increment_counter' do
+        Project.should_receive(:increment_counter).with(:pmdocs_count, project.id)
+        Project.should_receive(:increment_counter).with(:pmdocs_count, associate_project.id)
+        project.increment_docs_counter(pm_doc)
       end
     end
-    
-    context 'when added PMC' do
-      context 'when serial == 0' do
-        before do
-          @associate_project_1.reload
-          @associate_project_1.docs << @pmcdoc
-        end
-            
-        it 'should increment pmcdocs_count' do
-          @project.reload
-          @project.pmcdocs_count.should eql((@associate_project_2_pmcdocs_count * 2) + 1)
-          @project.pmdocs_count.should eql(@associate_project_2_pmdocs_count * 2)
-        end
-      end
+  end
+  
+  describe 'update_delta_index' do
+    let!( :project ) { FactoryGirl.create(:project, user: user) }
+    let!( :doc ) { FactoryGirl.create(:doc) }
 
-      context 'when serial == 0' do
-        before do
-          @associate_project_1.reload
-          @associate_project_1.docs << @pmcdoc_serial_1
-        end
-            
-        it 'should not increment pmcdocs_count' do
-          @project.reload
-          @project.pmcdocs_count.should eql(@associate_project_2_pmcdocs_count * 2)
-          @project.pmdocs_count.should eql(@associate_project_2_pmdocs_count * 2)
-        end
-      end
+    it 'should save doc' do
+      expect( doc ).to receive(:save)
+      project.update_delta_index(doc)
     end
   end
-  
-  describe 'order_maintainer' do
-    before do
-      @user_1 = FactoryGirl.create(:user, username: 'AAA')
-      @user_2 = FactoryGirl.create(:user, username: 'BBB')
-      @user_3 = FactoryGirl.create(:user, username: 'CCC')
-      @project_1 = FactoryGirl.create(:project, :user => @user_1)
-      @project_2 = FactoryGirl.create(:project, :user => @user_2)
-      @project_3 = FactoryGirl.create(:project, :user => @user_3)
-      @projects = Project.order_maintainer
-    end
+
+  describe 'increment_docs_projects_counter' do
+    let!( :project ) { FactoryGirl.create(:project, user: user) }
+    let!( :doc ) { FactoryGirl.create(:doc) }
     
-    it 'should order by author' do
-      @projects[0].should eql(@project_1)
-    end
-    
-    it 'should order by author' do
-      @projects[1].should eql(@project_2)
-    end
-    
-    it 'should order by author' do
-      @projects[2].should eql(@project_3)
+    it 'should increment_counter :projects_count' do
+      expect(Doc).to receive(:increment_counter).with(:projects_count, doc.id)
+      project.increment_docs_projects_counter(doc)
     end
   end
-  
-  describe 'order_maintainer' do
+
+  describe 'decrement_docs_counter' do
+    let( :project) { FactoryGirl.create(:project, user: user) }
+    let( :associate_project) { FactoryGirl.create(:project, user: user) }
+    let( :pmc_doc) { FactoryGirl.create(:doc, sourcedb: 'PMC', serial: 0, sourceid: 'decrement_docs_counter') }
+    let( :pm_doc) { FactoryGirl.create(:doc, sourcedb: 'PubMed', sourceid: 'decrement_docs_counter') }
+
     before do
-      @project_1_user = FactoryGirl.create(:user, :username => 'AAA AAAA')
-      @project_1 = FactoryGirl.create(:project, :user => @project_1_user)
-      @project_2_user = FactoryGirl.create(:user, :username => 'AAA AAAB')
-      @project_2 = FactoryGirl.create(:project, :user => @project_2_user)
-      @project_3_user = FactoryGirl.create(:user, :username => 'AAA AAAc')
-      @project_3 = FactoryGirl.create(:project, :user => @project_3_user)
-      @projects = Project.order_maintainer
+      project.stub(:projects).and_return([ associate_project ])
+      project.reload
     end
-    
-    it 'should order by author' do
-      @projects[0].should eql(@project_1)
-    end
-    
-    it 'should order by author' do
-      @projects[1].should eql(@project_2)
-    end
-    
-    it 'should order by author' do
-      @projects[2].should eql(@project_3)
-    end
-  end
-  
-  describe 'scope :order_association' do
-    before do
-      @current_user = FactoryGirl.create(:user)
-      # create other users project
-      2.times do
-        FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      end
-      @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @user_project = FactoryGirl.create(:project, :user => @current_user)
-      FactoryGirl.create(:associate_maintainer, :user => @current_user, :project => @associate_project)        
-    end
-    
-    context 'when current_user.present' do
-      before do
-        @projects = Project.order_association(@current_user)
-      end
-      
-      it 'should set users project as first' do
-        @projects.first.should eql(@user_project)
-      end
-      
-      it 'should set users associate project as first' do
-        @projects.second.should eql(@associate_project)
+
+    context 'when doc.sourcedb == PMC && doc.serial == 0' do
+      it 'should decrement_counter' do
+        Project.should_receive(:decrement_counter).with(:pmcdocs_count, project.id)
+        Project.should_receive(:decrement_counter).with(:pmcdocs_count, associate_project.id)
+        project.decrement_docs_counter(pmc_doc)
       end
     end
 
-    context 'when current_user.blank' do
-      before do
-        @all_projects = Project.order('id DESC')        
-        @projects = Project.order('id DESC').order_association(nil)
-      end
-      
-      it 'should return @projects as same order projects' do
-        @projects.each_with_index do |project, index|
-          project.should eql(@all_projects[index])
-        end
+    context 'when doc.sourcedb == PubMed' do
+      it 'should decrement_counter' do
+        Project.should_receive(:decrement_counter).with(:pmdocs_count, project.id)
+        Project.should_receive(:decrement_counter).with(:pmdocs_count, associate_project.id)
+        project.decrement_docs_counter(pm_doc)
       end
     end
   end
-  
-  describe 'self.order_by' do
-    before do
-      @order_author = 'order_author'
-      @order_maintainer = 'order_maintainer'
-      @order_association = 'order_association'
-      @order_else = 'order_else'
-      # stub scopes
-      Project.stub(:accessible).and_return(double({
-          :order_author => @order_author,
-          :order_maintainer => @order_maintainer,
-          :order_association => @order_association,
-          :order => @order_else
-        }))
-    end
+
+  describe 'decrement_docs_projects_counter' do
+    let!( :project ) { FactoryGirl.create(:project, user: user) }
+    let!( :doc ) { FactoryGirl.create(:doc) }
     
-    it 'order by author should return accessible and order_author scope result' do
-      Project.order_by(Project, 'author', nil).should eql(@order_author)
-    end
-    
-    it 'order by maintainer should return accessible and order_maintainer scope result' do
-      Project.order_by(Project, 'maintainer', nil).should eql(@order_maintainer)
-    end
-    
-    it 'order by else should return accessible and orde by name ASC' do
-      Project.order_by(Project, nil, nil).should eql(@order_association)
+    it 'should decrement_counter :projects_count' do
+      expect(Doc).to receive(:decrement_counter).with(:projects_count, doc.id)
+      expect(doc).to receive(:reload)
+      project.decrement_docs_projects_counter(doc)
     end
   end
-   
+
+  describe 'update_annotations_updated_at' do
+    let!( :project ) { FactoryGirl.create(:project, user: user) }
+    let!( :doc ) { FactoryGirl.create(:doc) }
+    let!( :annotations_updated_at) { '2016-01-01' }
+
+    before(:all) do
+      DateTime.stub(:now).and_return(annotations_updated_at)
+    end
+    
+    it 'should increment_counter :projects_count' do
+      expect(project).to receive(:update_attribute).with(:annotations_updated_at, annotations_updated_at)
+      project.update_annotations_updated_at(doc)
+    end
+  end
+
   describe 'associate_maintainers_addable_for?' do
     context 'when new project' do
       before do
@@ -861,175 +1194,12 @@ describe Project do
     end
   end
   
-  describe 'updatable_for?' do
-    before do
-      @project_user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project, :user => @project_user)
-      @associate_maintainer_user_1 = FactoryGirl.create(:user)
-      @project.associate_maintainers.create({:user_id => @associate_maintainer_user_1.id})
-      @associate_maintainer_user_2 = FactoryGirl.create(:user)
-      @project.associate_maintainers.create({:user_id => @associate_maintainer_user_2.id})
-    end
-    
-
-    context 'when user.root is true' do
-      before do
-        @user = FactoryGirl.create(:user, root: true)
-      end
-
-      it 'should return true' do
-        @project.updatable_for?(@user).should be_true
-      end
-    end
-
-    context 'when current_user is project.user' do
-      it 'should return true' do
-        @project.updatable_for?(@project_user).should be_true
-      end
-    end
-    
-    context 'when current_user is project.associate_maintainer.user' do
-      it 'should return true' do
-        @project.updatable_for?(@associate_maintainer_user_1).should be_true
-      end
-    end
-    
-    context 'when current_user is project.associate_maintainer.user' do
-      it 'should return true' do
-        @project.updatable_for?(@associate_maintainer_user_2).should be_true
-      end
-    end
-    
-    context 'when current_user is not project.user nor project.associate_maintainer.user' do
-      it 'should return false' do
-        @project.updatable_for?(FactoryGirl.create(:user)).should be_false
-      end
-    end
-  end
-  
-  describe 'destroyable_for?' do
-    before do
-      @project_user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project, :user => @project_user)
-      @associate_maintainer_user_1 = FactoryGirl.create(:user)
-      @project.associate_maintainers.create({:user_id => @associate_maintainer_user_1.id})
-      @associate_maintainer_user_2 = FactoryGirl.create(:user)
-      @project.associate_maintainers.create({:user_id => @associate_maintainer_user_2.id})
-    end
-
-    
-    context 'when user.root is true' do
-      before do
-        @user = FactoryGirl.create(:user, root: true)
-      end
-
-      it 'should return true' do
-        @project.updatable_for?(@user).should be_true
-      end
-    end
-
-    context 'when current_user is project.user' do
-      it 'should return true' do
-        @project.destroyable_for?(@project_user).should be_true
-      end
-    end
-    
-    context 'when current_user is project.associate_maintainer.user' do
-      it 'should return false' do
-        @project.destroyable_for?(@associate_maintainer_user_1).should be_false
-      end
-    end
-    
-    context 'when current_user is project.associate_maintainer.user' do
-      it 'should return false' do
-        @project.destroyable_for?(@associate_maintainer_user_2).should be_false
-      end
-    end
-    
-    context 'when current_user is not project.user nor project.associate_maintainer.user' do
-      it 'should return false' do
-        @project.destroyable_for?(FactoryGirl.create(:user)).should be_false
-      end
-    end
-  end
-
-  describe 'notices_destroyable_for?' do
-    before do
-      @current_user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project, user: @current_user)
-      @notice = FactoryGirl.create(:notice, project: @project)
-    end
-
-    context 'when current.prensent? == true' do
-      context 'when current.root? = true' do
-        before do
-          @current_user.stub(:root?).and_return(true)
-        end
-
-        it 'should return true' do
-          @project.notices_destroyable_for?(@current_user).should be_true 
-        end
-      end
-
-      context 'when current.roo? = false' do
-        before do
-          @current_user.stub(:roo?).and_return(false)
-        end
-
-        context 'when current_user == project.user' do
-          it 'should return true' do
-            @project.notices_destroyable_for?(@current_user).should be_true 
-          end
-        end
-
-        context 'when current_user != project.user' do
-          it 'should return false' do
-            @project.notices_destroyable_for?(FactoryGirl.create(:user)).should be_false 
-          end
-        end
-      end
-    end
-
-    context 'when current.prensent? == false' do
-      it 'should return false' do
-        @project.notices_destroyable_for?(nil).should be_false 
-      end
-    end
-  end
-  
-  describe 'association_for' do
-    before do
-      @project_user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project, :user => @project_user)
-      @associate_maintainer_user = FactoryGirl.create(:user)
-      @project.associate_maintainers.create({:user_id => @associate_maintainer_user.id})
-    end
-    
-    context 'when current_user is project.user' do
-      it 'should return M' do
-        @project.association_for(@project_user).should eql('M')
-      end
-    end
-    
-    context 'when current_user is associate_maintainer_user' do
-      it 'should return M' do
-        @project.association_for(@associate_maintainer_user).should eql('A')
-      end
-    end
-    
-    context 'when current_user is no-relation' do
-      it 'should return nil' do
-        @project.association_for(FactoryGirl.create(:user)).should be_nil
-      end
-    end
-  end
-  
   describe 'build_associate_maintainers' do
     context 'when usernames present' do
       before do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @user_1 = FactoryGirl.create(:user, :username => 'Username 1')
-        @user_2 = FactoryGirl.create(:user, :username => 'Username 2')
+        @user_1 = FactoryGirl.create(:user)
+        @user_2 = FactoryGirl.create(:user)
         @project.build_associate_maintainers([@user_1.username, @user_2.username])
       end
       
@@ -1042,7 +1212,7 @@ describe Project do
     context 'when usernames dupliticated' do
       before do
         @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @user_1 = FactoryGirl.create(:user, :username => 'Username 1')
+        @user_1 = FactoryGirl.create(:user)
         @project.build_associate_maintainers([@user_1.username, @user_1.username, @user_1.username])
       end
       
@@ -1202,97 +1372,6 @@ describe Project do
     end
   end
 
-  describe 'decrement_docs_counter' do
-    before do
-      @project_pmdocs_count = 1
-      @project_pmcdocs_count = 2
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => @project_pmdocs_count, :pmcdocs_count => @project_pmcdocs_count)
-      @associate_project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
-      @associate_project_1_pmdocs_count = 1
-      @i = 1
-      @associate_project_1_pmdocs_count.times do
-        @associate_project_1.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s) 
-        @i += 1 
-      end
-      @associate_project_1_pmcdocs_count = 1
-      @associate_project_1_pmcdocs_count.times do
-        @associate_project_1.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
-        @i += 1 
-      end     
-      @associate_project_1.reload
-       
-      @associate_project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 0, :pmcdocs_count => 0)
-      @associate_project_2_pmdocs_count = 2
-      @associate_project_2_pmdocs_count.times do
-        @associate_project_2.pmdocs << FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s) 
-        @i += 1 
-      end
-      @associate_project_2_pmcdocs_count = 3
-      @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
-        @i += 1 
-      end     
-      @associate_project_2.reload
-      
-      @project.associate_projects << @associate_project_1
-      @project.associate_projects << @associate_project_2
-      @pmdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
-      @pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0)
-      @pmcdoc_serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 1)
-      @project.reload
-      @associate_project_1.reload
-      @associate_project_2.reload
-    end
-    
-    describe 'before delete' do
-      it 'project.pmdocs should equal sum of associate projects pmdocs_count' do
-         @project.pmdocs_count.should eql(@project_pmdocs_count + (@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
-      end
-      
-      it 'projectpmcdocs should equal sum of associate projects pmcdocs_count' do
-         @project.pmcdocs_count.should eql(@project_pmcdocs_count + (@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
-      end
-    end
-
-    context 'when deleted PubMed' do
-      before do
-        @associate_project_1.docs.delete(@pmdoc)
-        @project.reload
-      end
-          
-      it 'should decrement project.pmcdocs_count' do
-        @project.pmdocs_count.should eql((@project_pmdocs_count + (@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2) - 1)
-        @project.pmcdocs_count.should eql(@project_pmcdocs_count + (@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
-      end
-    end
-    
-    context 'when deleted PMC' do
-      context 'when serial == 0' do
-        before do
-          @associate_project_1.docs.delete(@pmcdoc)
-        end
-            
-        it 'should decrement pmcdocs_count' do
-          @project.reload
-          @project.pmcdocs_count.should eql((@project_pmcdocs_count + (@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2) - 1)
-          @project.pmdocs_count.should eql(@project_pmdocs_count + (@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
-        end
-      end
-
-      context 'when serial == 1' do
-        before do
-          @associate_project_1.docs.delete(@pmcdoc_serial_1)
-        end
-            
-        it 'should not decrement pmcdocs_count' do
-          @project.reload
-          @project.pmcdocs_count.should eql(@project_pmcdocs_count + (@associate_project_1_pmcdocs_count + @associate_project_2_pmcdocs_count) * 2)
-          @project.pmdocs_count.should eql(@project_pmdocs_count + (@associate_project_1_pmdocs_count + @associate_project_2_pmdocs_count) * 2)
-        end
-      end
-    end
-  end
-  
   describe 'associate_project_ids' do
     context 'when saved project' do
       before do
@@ -1525,392 +1604,77 @@ describe Project do
   
   describe 'increment_counters' do
     before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-    end
-    
-    context 'when associate project has relation models' do
-      before do
-        @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @associate_project_pmdocs_count = 1
-        @associate_project_pmdocs_count.times do
-          @associate_project.docs << FactoryGirl.create(:doc, :sourcedb => 'PubMed') 
-        end
-        @associate_project_pmcdocs_count = 2
-        @associate_project_pmcdocs_count.times do |time|
-          @associate_project.pmcdocs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, sourceid: time.to_s) 
-        end  
-        @associate_project_relations_count = 3
-        @associate_project_relations_count.times do
-          FactoryGirl.create(:relation, :subj_id => 1, :obj_id => 2, :project_id => @associate_project.id)
-        end
-        @associate_project_denotations_count = 4
-        @associate_project_denotations_count.times do
-          FactoryGirl.create(:denotation, :doc_id => 1, :project_id => @associate_project.id)
-        end
-        @associate_project.reload
-        @project.increment_counters(@associate_project)
-        @project.reload
-      end
-      
-      it 'should increment pmdocs count' do
-        @project.pmdocs_count.should eql(@associate_project_pmdocs_count)
-      end
-      
-      it 'should increment pmcdocs count' do
-        @project.pmcdocs_count.should eql(@associate_project_pmcdocs_count)
-      end
-      
-      it 'should increment relations count' do
-        @project.relations_count.should eql(@associate_project_relations_count)
-      end
-      
-      it 'should increment denotations count' do
-        @project.denotations_count.should eql(@associate_project_denotations_count)
-      end
-    end
-    
-    context 'when associate project has relation models' do
-      before do
-        @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 10, :pmcdocs_count => 20, :relations_count => 30, :denotations_count => 40)
-        @project.increment_counters(@associate_project)
-        @project.reload
-      end
-      
-      it 'should not increment pmdocs count' do
-        @project.pmdocs_count.should eql(0)
-      end
-      
-      it 'should not increment pmcdocs count' do
-        @project.pmcdocs_count.should eql(0)
-      end
-      
-      it 'should  not increment relations count' do
-        @project.relations_count.should eql(0)
-      end
-      
-      it 'should not increment denotations count' do
-        @project.denotations_count.should eql(0)
-      end
-    end
-  end
-
-  describe 'increment_annotations_count' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-    end
-
-    describe 'before add denotations, relations or modifications' do
-      it 'annotations_count should equal 0' do
-        expect( @project.annotations_count ).to eql 0
-      end
-    end
-
-    context '' do
-      before do
-        denotation = FactoryGirl.create(:denotation)
-        FactoryGirl.create(:relation, project: @project, :obj => denotation)
-        @project.reload
-      end
-
-      it '' do
-        expect( @project.annotations_count ).to eql 1
-      end
-    end
-  end
-  
-  describe 'add associate projects' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_pmdocs_count = 1
-      @project_pmdocs_count.times do
-        doc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed')
-        @project.docs << doc
-      end
-      @project_pmcdocs_count = 2
-      @project_pmcdocs_count.times do |time|
-        doc = FactoryGirl.create(:doc, :body => 'doc 2', :sourcedb => 'PMC', :serial => 0, sourceid: time.to_s)
-        @project.docs << doc
-      end
-      @project_denotations_count = 3
-      @di = 1
-      @project_denotations_count.times do
-        FactoryGirl.create(:denotation, :hid => 'T1', :begin => @di, :project => @project)
-        @di += 1
-      end
+      @project = FactoryGirl.create(:project, user: user, pmdocs_count: 1, pmcdocs_count: 1, denotations_count: 1, denotations_count: 1, relations_count: 1)
+      @associate_project = FactoryGirl.create(:project, user: user)
+      @associate_project.stub_chain(:pmdocs, :count).and_return(1)
+      @associate_project.stub_chain(:pmcdocs, :count).and_return(2)
+      @associate_project.stub_chain(:denotations, :count).and_return(3)
+      @associate_project.stub_chain(:relations, :count).and_return(4)
+      @project.increment_counters(@associate_project)
       @project.reload
-      
-      @associate_pmdocs_count = 10
-      @associate_pmcdocs_count = 20
-      @associate_denotations_count = 30
-      @associate_project = FactoryGirl.create(:project, 
-        :user => FactoryGirl.create(:user), 
-        :pmdocs_count => @associate_pmdocs_count, 
-        :pmcdocs_count => @associate_pmcdocs_count, 
-        :denotations_count => @associate_denotations_count)
-      @dup_pmdocs_count = 2
-      @i = 1
-      @dup_pmdocs_count.times do
-        pmdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PubMed', :sourceid => @i.to_s)
-        @i += 1
-        @associate_project.docs << pmdoc
-      end
-
-      @dup_pmcdocs_count = 3
-      @dup_pmcdocs_count.times do
-        pmcdoc = FactoryGirl.create(:doc, :body => 'doc 1', :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s)
-        @i += 1
-        @associate_project.docs << pmcdoc
-      end
-
-      @dup_denotations_count = 4
-      @doc = FactoryGirl.create(:doc)
-      @associate_project.docs << @doc
-      @dup_denotations_count.times do
-        FactoryGirl.create(:denotation, :hid => 'T1', :begin => @di, :project => @associate_project, :doc => @doc)
-        @di += 1
-      end
-      @associate_project.reload
     end
     
-    describe 'before add' do
-      it 'associate project pmdocs_count should equal count nubmer and assocaite model count' do
-        @associate_project.pmdocs_count.should eql @associate_pmdocs_count + @dup_pmdocs_count
-      end
-
-      it 'associate project pmcdocs_count should equal count nubmer and assocaite model count' do
-        @associate_project.pmcdocs_count.should eql @associate_pmcdocs_count + @dup_pmcdocs_count
-      end
-
-      it 'associate project denotations_count should equal count nubmer and assocaite model count' do
-        @associate_project.denotations_count.should eql @associate_denotations_count + @dup_denotations_count
-      end
+    it 'should increment pmdocs_count by associate_project.pmdocs.count' do
+      expect(@project.pmdocs_count).to eql(2)
     end
     
-    describe 'afte add' do
-      before do
-        @project.associate_projects << @associate_project
-        @associate_project.reload
-        @project.reload 
-      end
-      
-      it 'should increment project.pmdocs_count as associate_project.pmdocs.count * 2' do
-        @project.pmdocs_count.should eql(@project_pmdocs_count + (@dup_pmdocs_count * 2))
-      end
-      
-      it 'should increment project.pmcdocs_count as associate_project.pmdocs.count * 2' do
-        @project.pmcdocs_count.should eql(@project_pmcdocs_count + (@dup_pmcdocs_count * 2))
-      end
-
-      it 'should increment project.denotations_count as associate_project.denotations.count * 2' do
-        @project.denotations_count.should eql(@project_denotations_count + (@dup_denotations_count * 2))
-      end
+    it 'should increment pmcdocs_count by associate_project.pmcdocs.count' do
+      expect(@project.pmcdocs_count).to eql(3)
+    end
+    
+    it 'should increment denotations_count by associate_project.denotations.count' do
+      expect(@project.denotations_count).to eql(4)
+    end
+    
+    it 'should increment relations_count associate_project.relations.count' do
+      expect(@project.relations_count).to eql(5)
     end
   end
-  
+
   describe 'increment_pending_associate_projects_count' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @associate_projects_count = 2
-      @project.stub(:copy_associate_project_relational_models).and_return(nil)
-      @associate_projects_count.times do
-        @project.associate_projects << FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      end
-      @project.reload
-    end
-    
-    it 'should increment project.pending_associate_projects_count' do
-      @project.pending_associate_projects_count.should eql(@associate_projects_count)
+    let!( :project ) { FactoryGirl.create(:project, user: user) }
+    let!( :associate_project ) { FactoryGirl.create(:project, user: user) }
+
+    it 'should call increment_counter' do
+      expect(Project).to receive(:increment_counter).with(:pending_associate_projects_count, project.id)
+      project.increment_pending_associate_projects_count(associate_project)
     end
   end
-  
-  describe 'copy_associate_project_relational_models' do
-    describe 'decrement pending_associate_projects_count' do
-      before do
-        @associate_projects_count = 2
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pending_associate_projects_count => @associate_projects_count)
-        @project.stub(:increment_pending_associate_projects_count).and_return(nil)
-        @associate_projects_count.times do
-          @project.associate_projects << FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        end
-        @project.reload
-      end
-      
-      it 'should increment project.pending_associate_projects_count' do
-        @project.pending_associate_projects_count.should eql(0)
-      end
-    end
-    
-    describe 'copy docs' do
-      before do
-        @associate_project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        # duplicative docs
-        @same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source', :sourcedb => 'PubMed', :sourceid => '123456', :serial => 1, :section => 'section')
-        @same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source', :sourcedb => 'PMC', :sourceid => '123456', :serial => 0, :section => 'section')
-        @associate_project.docs << @same_doc_1
-        @associate_project.docs << @same_doc_2
-        # not duplicative docs
-        @not_same_doc_1 = FactoryGirl.create(:doc, :body => 'doc 1', :source => 'http://source.another', :sourcedb => 'PubMed', :sourceid => '1234567', :serial => 1, :section => 'section')
-        @not_same_doc_2 = FactoryGirl.create(:doc, :body => 'doc 2', :source => 'http://source.another', :sourcedb => 'PMC', :sourceid => '1234567', :serial => 0, :section => 'section')
-        @associate_project.docs << @not_same_doc_1
-        @associate_project.docs << @not_same_doc_2
-        @associate_project.reload
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :pmdocs_count => 10, :pmcdocs_count => 20, :denotations_count => 30)
-        # add dupulicative docs to project
-        @project.docs << @same_doc_1
-        @project.docs << @same_doc_2
-        @project.reload
-      end
-      
-      describe 'before' do
-        it 'project.pmdocs_count should not incremented' do
-          @project.pmdocs.to_a.should =~ [@same_doc_1]
-        end
-        
-        it 'project.pmcdocs_count should not incremented' do
-          @project.pmcdocs.to_a.should =~ [@same_doc_2]
-        end
-      end
-      
-      describe 'after' do
-        before do
-          @project.copy_associate_project_relational_models(@associate_project)
-          @project.reload
-        end
 
-        it 'should include not duplicative pmdoc' do
-          @project.pmdocs.to_a.should =~ [@same_doc_1, @not_same_doc_1]
-        end
-        
-        it 'should include not duplicative pmcdoc' do
-          @project.pmcdocs.to_a.should =~ [@same_doc_2, @not_same_doc_2]
-        end
-        
-        it 'project.docs should incremented by not duplicative docs count' do
-          @project.docs.count.should eql(4)
-        end
-        
-        it 'project.pmdocs_count should incremented by not duplicative pmdocs count' do
-          @project.pmdocs_count.should eql(12)
-        end
-        
-        it 'project.pmcdocs_count should incremented by not duplicative pmcdocs count' do
-          @project.pmcdocs_count.should eql(22)
+  describe 'copy_associate_project_relational_models' do
+    let!( :project ) { FactoryGirl.create(:project, user: user) }
+    let!( :associate_project ) { FactoryGirl.create(:project, user: user) }
+    let!( :doc) { FactoryGirl.create(:doc) }
+    let!( :denotation) { FactoryGirl.create(:denotation, doc_id: 1) }
+    let!( :relation) { FactoryGirl.create(:relation) }
+
+    before do
+      associate_project.stub(:docs).and_return([doc])
+      associate_project.stub(:denotations).and_return([denotation])
+      associate_project.stub(:relations).and_return([relation])
+    end
+    
+    context 'when associate_project.docs present' do
+      it 'should add associate_project.docs to self.docs' do
+        project.copy_associate_project_relational_models(associate_project)
+        project.reload
+        expect( project.docs ).to include(doc)
+      end
+    end
+    
+    context 'when associate_project.denotations present' do
+      context 'when same_denotation.blank' do
+        it 'should copy associate_project.denotations to self.denotations' do
+          expect{ project.copy_associate_project_relational_models(associate_project) }.to change{ project.denotations.count }.by(1)
         end
       end
     end
     
-    describe 'copy denotations' do
-      before do
-        @doc = FactoryGirl.create(:doc)
-        # associate project
-        @associate_project =  FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        # associate project same denotation
-        @same_denotation_associate = FactoryGirl.create(:denotation,
-          :project => @associate_project,
-          :doc => @doc
-        )
-        # associate project not same denotation
-        @not_same_denotation_associate = FactoryGirl.create(:denotation,
-          :project => @associate_project,
-          :begin => @same_denotation_associate.begin + 1,
-          :doc => @doc
-        )
-        # not associate project
-        @not_associate_project =  FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        FactoryGirl.create(:denotation,
-          :project => @not_associate_project,
-          :doc => @doc
-        )
-        # import project
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @same_denotation_project = FactoryGirl.create(:denotation,
-          :project => @project,
-          :doc => @doc
-        )
-      end
-      
-      describe 'before' do
-        it 'project should only have self denotations' do
-          @project.denotations.to_a.should =~ [@same_denotation_project]
+    context 'when associate_project.relations present' do
+      context 'when same_denotation.blank' do
+        it 'should copy associate_project.relations to self.relations' do
+          expect{ project.copy_associate_project_relational_models(associate_project) }.to change{ project.relations.count }.by(1)
         end
-      end
-      
-      describe 'after' do
-        before do
-          @project.copy_associate_project_relational_models(@associate_project)
-          @project.reload
-        end
-        
-        it 'project should import not duplicative denotations' do
-          @project.denotations.to_a.should =~ [@same_denotation_project, 
-            @project.denotations.where({
-              :hid => @not_same_denotation_associate.hid,
-              :begin => @not_same_denotation_associate.begin,
-              :end => @not_same_denotation_associate.end,
-              :obj => @not_same_denotation_associate.obj,
-              :doc_id => @not_same_denotation_associate.doc_id,
-              :project_id => @project.id
-            }).first
-           ]
-        end      
-      end
-    end
-    
-    describe 'copy relations' do
-      before do
-        @denotation = FactoryGirl.create(:denotation)
-        # associate project
-        @associate_project =  FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        # associate project same relation
-        @same_relation_associate = FactoryGirl.create(:relation,
-          :project => @associate_project,
-          :obj => @denotation
-        )
-        # associate project not same denotation
-        @not_same_relation_associate = FactoryGirl.create(:relation,
-          :project => @associate_project,
-          :subj_id => @same_relation_associate.subj_id + 1,
-          :obj => @denotation
-        )
-        # not associate project
-        @not_associate_project =  FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        FactoryGirl.create(:relation,
-          :project => @not_associate_project,
-          :obj => @denotation
-        )
-        # import project
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @same_relation_project = FactoryGirl.create(:relation,
-          :project => @project,
-          :obj => @denotation
-        )
-      end
-      
-      describe 'before' do
-        it 'project should only have self relations' do
-          @project.relations.to_a.should =~ [@same_relation_project]
-        end
-      end
-      
-      describe 'after' do
-        before do
-          @project.copy_associate_project_relational_models(@associate_project)
-          @project.reload
-        end
-        
-        it 'project should import not duplicative denotations' do
-          @project.relations.to_a.should =~ [@same_relation_project, 
-            @project.relations.where({
-              :hid => @not_same_relation_associate.hid,
-              :subj_id => @not_same_relation_associate.subj_id,
-              :subj_type => @not_same_relation_associate.subj_type,
-              :obj_id => @not_same_relation_associate.obj_id,
-              :obj_type => @not_same_relation_associate.obj_type,
-              :pred => @not_same_relation_associate.pred,
-              :project_id => @project.id
-            }).first
-           ]
-        end      
       end
     end
   end
@@ -1949,13 +1713,63 @@ describe Project do
     end
   end
   
+  describe 'get_annotations_count' do
+    let!( :project ) { FactoryGirl.create(:project, user: user, annotations_count: 5) }
+    let!( :doc) { FactoryGirl.create(:doc) }
+
+    context 'when doc.nil' do
+      it 'should return self.denotations_count' do
+        expect( project.get_annotations_count(nil, nil) ).to eql(project.annotations_count) 
+      end
+    end
+
+    context 'when doc.present' do
+      context 'when span.nil' do
+        let!(:doc_denotations_count) { 4 }
+        let!(:subcatrels_count) { 6 }
+        let!(:catmods_count) { 8 }
+        let!(:subcatrelmods_count) { 10 }
+
+        before do
+          doc.stub_chain(:denotations, :where, :count).and_return(doc_denotations_count)
+          doc.stub_chain(:subcatrels, :where, :count).and_return(subcatrels_count)
+          doc.stub_chain(:catmods, :where, :count).and_return(catmods_count)
+          doc.stub_chain(:subcatrelmods, :where, :count).and_return(subcatrelmods_count)
+        end
+
+        it 'should return doc.denotations, subcatrels and catmods' do
+          expect( project.get_annotations_count(doc, nil) ).to eql(doc_denotations_count + subcatrels_count + catmods_count + subcatrelmods_count) 
+        end
+      end
+
+      context 'when span.present' do
+        let!(:hdenotations_size) { 4 }
+        let!(:hrelations_size) { 6 }
+        let!(:hmodifications_size) { 8 }
+
+        before do
+          doc.stub_chain(:hdenotations, :collect).and_return([])
+          doc.stub_chain(:hdenotations, :size).and_return(hdenotations_size)
+          doc.stub_chain(:hrelations, :collect).and_return([])
+          doc.stub_chain(:hrelations, :size).and_return(hrelations_size)
+          doc.stub_chain(:hmodifications, :size).and_return(hmodifications_size)
+        end
+
+        it 'should return doc.hdenotations, hrelations and hmodifications' do
+          expect( project.get_annotations_count(doc, 'span') ).to eql(hdenotations_size + hrelations_size + hmodifications_size) 
+        end
+      end
+    end
+  end
+  
   describe '#annotations_collection' do
     before do
       @doc_1 = FactoryGirl.create(:doc)
       @doc_2 = FactoryGirl.create(:doc)
-
-      @doc_1.stub(:hannotations).and_return('hannotations_1')
-      @doc_2.stub(:hannotations).and_return('hannotations_2')
+      @doc_1_hannotations = 'hannotations_1'
+      @doc_1.stub(:hannotations).and_return(@doc_1_hannotations)
+      @doc_2_hannotations = 'hannotations_2'
+      @doc_2.stub(:hannotations).and_return(@doc_2_hannotations)
 
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
@@ -1965,288 +1779,174 @@ describe Project do
         @project.docs << @doc_1 << @doc_2
       end
       
-      it 'should return annotations_collection' do
-        @project.annotations_collection(nil).should eql(['hannotations_1', 'hannotations_2'])
+      context 'when encodin != ascii' do
+        it 'should return annotations_collection' do
+          @project.annotations_collection(nil).should eql([@doc_1_hannotations, @doc_2_hannotations])
+        end
+      end
+      
+      context 'when encodin == ascii' do
+        it 'should call set_ascii_body' do
+          @doc_1.should_receive(:set_ascii_body)
+          @doc_2.should_receive(:set_ascii_body)
+          @project.annotations_collection('ascii').should eql([@doc_1_hannotations, @doc_2_hannotations])
+        end
       end
     end
     
     context 'when project.docs blank' do
-      it 'should return anncollection' do
+      it 'should return blank array' do
         @project.annotations_collection(nil).should be_blank
       end
     end
   end
 
-  describe '#json' do
+  describe 'json' do
     before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), namespaces: [{'prefix' => '_base', 'uri' => 'http://base.uri'}, { 'prefix' => 'foaf', 'uri' => 'http://foaf.uri' }])
-      @maintainer = 'maintainer'
+      # user = FactoryGirl.create(:user)
+      @project = FactoryGirl.create(:project, user: user)
+      @maintainer = 'Maintainer1'
       @project.stub(:maintainer).and_return(@maintainer)
     end
 
     it 'should return @project as json except specific columns and include maintainer' do
-      @project.json.should eql("{\"accessibility\":null,\"annotations_count\":0,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"license\":null,\"name\":\"#{@project.name}\",\"namespaces\":#{@project.namespaces.to_json},\"process\":null,\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
+      @project.json.should eql("{\"accessibility\":null,\"annotations_count\":0,\"annotations_updated_at\":\"#{@project.annotations_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"annotations_zip_downloadable\":#{@project.annotations_zip_downloadable},\"author\":null,\"bionlpwriter\":null,\"created_at\":\"#{@project.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"denotations_count\":#{@project.denotations_count},\"description\":null,\"editor\":null,\"id\":#{@project.id},\"impressions_count\":#{@project.impressions_count},\"license\":null,\"name\":\"#{ @project.name }\",\"namespaces\":null,\"process\":null,\"rdfwriter\":null,\"reference\":null,\"relations_count\":#{@project.relations_count},\"sample\":null,\"status\":null,\"updated_at\":\"#{@project.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")}\",\"viewer\":null,\"xmlwriter\":null,\"maintainer\":\"#{@maintainer}\"}")
     end
   end
 
-  describe 'maintainer' do
-    context 'when user present' do
-      before do
-        @user = FactoryGirl.create(:user)
-        @project = FactoryGirl.create(:project, user: @user) 
-      end
-
-      it 'should return user.username' do
-        @project.maintainer.should eql(@user.username)
-      end
-    end
-
-    context 'when user blank' do
-      before do
-        @project = FactoryGirl.build(:project)
-        @project.save(validate: false) 
-      end
-
-      it 'should be blank' do
-        @project.maintainer.should be_blank
-      end
-    end
-  end
-
-  describe '#annotations_zip_filename' do
-    before do
-      @project_name = 'project_name'
-      @project = FactoryGirl.create(:project, :name => @project_name, :user => FactoryGirl.create(:user))
-    end
-
-    it 'should return zip filename' do
-      expect(@project.annotations_zip_filename).to eql("#{@project_name}-annotations.zip")
-    end
-  end
-  
-  describe '#annotations_zip_path' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @annotations_zip_filename = 'annotations.zip'
-      @project.stub(:annotations_zip_filename).and_return(@annotations_zip_filename)
-    end
+  describe 'has_doc?' do
     
-    it 'should return project annotations zip path' do
-      @project.annotations_zip_path.should eql("#{Project::DOWNLOADS_PATH}#{@annotations_zip_filename}")
-    end
   end
-  
-  describe '#create_annotations_zip' do
-    before do
-      @name = 'rspec'
-      Project.any_instance.stub(:get_doc_info).and_return('')
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => @name)
-    end
 
-    describe 'create directory' do
-      before do
-        FileUtils.stub(:mkdir_p) do |path|
-          @path = path
-        end
-      end
-
-      context 'when downloads directory does not exist' do
-        before do
-          Dir.stub(:exist?).and_return(false)
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @project.create_annotations_zip
-        end
-
-        it 'should call mkdir_p with Project::DOWNLOADS_PATH' do
-          @path.should eql(@project.downloads_system_path)
-        end
-      end
-
-      context 'when downloads directory exists' do
-        before do
-          Dir.stub(:exist?).and_return(true)
-          FactoryGirl.create(:project, :user => FactoryGirl.create(:user)).create_annotations_zip
-        end
-
-        it 'should not call mkdir_p' do
-          @path.should be_nil
-        end
-      end
-    end
+  ## Method order
+  describe 'save_hdenotations' do
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:doc) { FactoryGirl.create(:doc) }
+    let(:hdenotation) { {id: 'id', span: {begin: 0, end: 5}, obj: 'Protain'} }
+    let(:hdenotations) { [hdenotation] }
     
-    context 'when project.create_annotations_zip blank' do
-      before do
-        @result = @project.create_annotations_zip
+    it 'should create obj' do
+      project.save_hdenotations(hdenotations, doc)
+      expect( Obj.find_by_name(hdenotation[:obj])).to be_present
+    end
+
+    context 'denotation saved successfully' do
+      it 'should create denotation' do
+        expect{ project.save_hdenotations(hdenotations, doc) }.to change{ Denotation.count }.by(1)
       end
-          
-      it 'should not create ZIP file' do
-        File.exist?("#{Project::DOWNLOADS_PATH}#{@name}.zip").should be_false
+
+      it 'should add denotations as project.annotations' do
+        expect{ project.save_hdenotations(hdenotations, doc) }.to change{ project.annotations.count }.by(1)
+        expect{ project.save_hdenotations(hdenotations, doc) }.to change{ AnnotationsProject.count }.by(1)
       end
     end
-    
-    context 'when project.anncollection present' do
-      before do
-        Project.any_instance.stub(:annotations_collection).and_return(
-          [{
-            :sourcedb => 'sourcedb',
-            :sourceid => 'sourceid',
-            :division_id => 1,
-            :section => 'section',
-         }])
-         @result = @project.create_annotations_zip
-      end
-          
-      it 'should create ZIP file' do
-        File.exist?(@project.annotations_zip_system_path).should be_true
-      end
+
+    context 'denotation saved unsuccessfully' do
+      let(:hdenotation) { {id: 'id', span: {begin: 'aaa', end: 'end'}, obj: 'Protain'} }
+      let(:hdenotations) { [hdenotation] }
       
-      after do
-        File.unlink(@project.annotations_zip_system_path)
-      end
-    end
-
-    context 'when error occurred' do
-      before do
-        @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-        @project.stub(:anncollection).and_raise('error')
-      end
-
-      it 'should create @project.notices' do
-        expect{ @project.create_annotations_zip }.to change{ @project.notices.count }.from(0).to(1)
+      it 'should raise error' do
+        expect{ project.save_hdenotations(hdenotations, doc) }.to raise_error(ArgumentError)
       end
     end
   end
 
-  describe 'params_from_json' do
-    before do
-      @project_user = FactoryGirl.create(:user)
-      json = {name: 'name', user_id: 1, created_at: DateTime.now, relations_count: 6, maintainer: @project_user.username}.to_json
-      File.stub(:read).and_return(json)
-      @params = Project.params_from_json('')
+  describe 'save_hrelations' do
+    let!(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let!(:doc) { FactoryGirl.create(:doc) }
+    let!(:denotation) { FactoryGirl.create(:denotation, doc: doc) }
+    let!(:obj_type) { 'Denotation' }
+    let!(:hrelation ) { {id: 'hidA', pred: 'SaveHrel', subj: 'Denotation', subj_id: denotation.id, obj: obj_type} }
+    let!(:hrelations ) { [hrelation] }
+
+    it 'should add project.annotations' do
+      expect{ project.save_hrelations(hrelations, doc) }.to change{ project.annotations.count }.by(1)    
+    end
+    
+    it 'should set pred' do
+      project.save_hrelations(hrelations, doc)
+      expect( project.annotations.last.pred_id ).to eql( Pred.find_by_name(hrelation[:pred]).id )    
     end
 
-    it 'should not include not attr_accessible column' do
-      @params.select{|key, value| !Project.attr_accessible[:default].include?(key)}.size.should eql(0)
-      @params.should eql({'name' => 'name'})
+    it 'should set subj_type and subj_id' do
+      project.save_hrelations(hrelations, doc)
+      expect( project.annotations.last.subj_type ).to eql(hrelation[:subj])    
+      expect( project.annotations.last.subj_id ).to eql(hrelation[:subj_id])
+    end
+
+    it 'should set obj_type and obj_id' do
+      project.save_hrelations(hrelations, doc)
+      expect( project.annotations.last.obj_type).to eql('Obj')    
+      expect( project.annotations.last.obj_id).to eql(Obj.find_by_name(hrelation[:obj]).id)
+    end
+
+    it 'should create relation' do
+      expect{ project.save_hrelations(hrelations, doc) }.to change{ Relation.count }.by(1)
     end
   end
 
-  describe 'create_from_zip' do
-    pending do
+  describe 'save_hmodifications' do
+    let!(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let!(:doc) { FactoryGirl.create(:doc) }
+    let!(:denotation ) { FactoryGirl.create(:denotation, doc: doc, hid: 'Denotation') }
+    let!(:hmodification ) { {id: 'hidA', pred: 'SaveHrel', obj: 'Relation', subj: 'Denotation', subj_id: denotation.id} }
+    let!(:hmodifications ) { [hmodification] }
 
-      before do
-        @zip_file = "#{Project::DOWNLOADS_PATH}project.zip"
-        file = File.new(@zip_file, 'w')
-        @doc_annotations_file = 'PMC-100-1-title.json'
-        Zip::ZipOutputStream.open(file.path) do |z|
-          z.put_next_entry('project.json')
-          z.print ''
-          z.put_next_entry('docs.json')
-          z.print ''
-          z.put_next_entry(@doc_annotations_file)
-          z.print ''
-        end
-        file.close   
-        @project_user = FactoryGirl.create(:user)
-        @project_name = 'project name'
-        Project.stub(:params_from_json).and_return({name: @project_name})
-        @num_created = 1
-        @num_added = 2
-        @num_failed = 3
-        Dir.stub(:exist?).and_return(false)
-        Project.stub(:save_annotations) do |project, doc_annotations_files|
-          @project = project
-          @doc_annotations_files = doc_annotations_files
-        end
-        JSON.stub(:parse).and_return(nil)
+    it 'should create Modification' do
+      expect{ project.save_hmodifications(hmodifications, doc) }.to change{ Modification.count }.by(1)
+    end
+
+    context 'when hmodification[:pred].prensent' do
+      it 'should set pred_id' do
+        project.save_hmodifications(hmodifications, doc)
+        expect( Pred.find_by_name(hmodification[:pred]) ).to be_present
       end
+    end
 
-      context 'when project successfully saved' do
-        before do
-          Project.any_instance.stub(:add_docs_from_json).and_return([@num_created, @num_added, @num_failed])
-          @messages, @errors = Project.create_from_zip(@zip_file, @project_name, @project_user)
-        end
+    context 'when hmodifications[:obj] present' do
+      context 'when hmodifications[:obj] match /^R/' do
+        let!(:subcatrel ) { FactoryGirl.create(:relation, obj: denotation, subj_type: 'Annotation', subj_id: denotation.id, hid: hmodification[:obj] ) }
+        let!(:annotations_project) { FactoryGirl.create(:annotations_project, project: project, annotation: subcatrel) }
+        let!(:pred) { FactoryGirl.create(:pred, name: hmodification[:pred]) }
 
-        it 'should create project' do
-          Project.find_by_name(@project_name).should be_present
-        end
-
-        it 'messages should include project successfully created' do
-          @messages.should include(I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project')))
-        end
-
-        it 'should include docs created' do
-          @messages.should include(I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: @num_created, project_name: @project_name))
-        end
-
-        it 'should include docs added' do
-          @messages.should include(I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: @num_added, project_name: @project_name))
-        end
-
-        it 'should include docs failed' do
-          @messages.should include(I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: @num_failed, project_name: @project_name))
-        end
-
-        it 'should include delay.save_annotations' do
-          @messages.should include(I18n.t('controllers.projects.upload_zip.delay_save_annotations'))
-        end
-
-        it 'should return blank errors' do
-          @errors.should be_blank
-        end
-
-        it 'project.user should be @project_user' do
-          Project.find_by_name(@project_name).user.should eql(@project_user)
-        end
-
-        it 'should call save_annotations with project' do
-          @project.should eql(Project.find_by_name(@project_name))
-        end
-
-        it 'should call save_annotations with doc_annotations_files' do
-          @doc_annotations_files.should =~ [{name: @doc_annotations_file, path: "#{TempFilePath}#{@doc_annotations_file}"}]
+        it 'should set hmodification[:obj] as obj_type' do
+          project.save_hmodifications(hmodifications, doc)
+          expect( Modification.find_by_obj_type(hmodification[:obj]) ).to be_present
         end
       end
 
-      context 'when project which has same name exists' do
-        before do
-          FactoryGirl.create(:project, :user => FactoryGirl.create(:user), name: @project_name)
-          @messages, @errors = Project.create_from_zip(@zip_file, @project_name, @project_user)
-        end
+      context 'when hmodification[:obj].prensent' do
+        context 'when hmodifications[:obj] not match /^R/' do
+          let!(:hmodification ) { {id: 'hidA', pred: 'SaveHrel', obj: 'Denotation', subj: 'Denotation', subj_id: denotation.id} }
+          let!(:hmodifications ) { [hmodification] }
+          let!(:subcatrel ) { FactoryGirl.create(:relation, obj: denotation, subj_type: 'Annotation', subj_id: denotation.id, hid: hmodification[:obj] ) }
+          let!(:annotations_project) { FactoryGirl.create(:annotations_project, project: project, annotation: subcatrel) }
+          let!(:project_denotation) { FactoryGirl.create(:annotations_project, project: project, annotation: denotation) }
+          
+          before do
+            project.reload
+          end
 
-        it 'should return blank messages' do
-          @messages.should be_blank
+          it 'should set hmodification[:obj] as obj_type' do
+            project.save_hmodifications(hmodifications, doc)
+            expect( Modification.find_by_obj_type(hmodification[:obj]) ).to be_present
+          end
         end
-
-        it 'should return errors on project.name' do
-          @errors[0].should include(I18n.t('errors.messages.taken'))
-        end
-
-        it 'should not call save_annotations' do
-          @project.should be_nil
-        end
-      end
-
-      after do
-        FileUtils.rm_rf(TempFilePath)
-        FileUtils.mkdir_p(TempFilePath)
       end
     end
   end
 
   describe 'save_annotations' do
     let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:annotations) { {text: 'text'} }
     let(:doc) { FactoryGirl.create(:doc) }
-    let(:annotaitons) { {text: 'text'} }
     let(:align_denotations) { 'align_denotations' }
     let(:save_hdenotations) { 'save_hdenotations' }
     let(:save_hrelations) { 'save_hrelations' }
     let(:save_hmodifications) { 'save_hmodifications' }
-    let(:denotations) { [{id: 'denotation_id'}] }
-    let(:relations) { [{id: 'relation_id', subj: 'subj', obj: 'obj'}] }
-    let(:modifications) { [{id: 'modification_id'}] }
 
     before do
+      project.stub(:delete_annotations).and_return(nil)
       project.stub(:align_denotations).and_return(align_denotations)
       project.stub(:save_hdenotations).and_return(save_hdenotations)
       project.stub(:save_hrelations).and_return(save_hrelations)
@@ -2255,1091 +1955,101 @@ describe Project do
 
     context 'when doc blank' do
       it 'should raise error' do
-        expect{ project.save_annotations('annotaitons', nil) }.to raise_error
+        expect{ project.save_annotations('annotations', nil) }.to raise_error
       end
     end
 
-    context 'when options blank && options[:mode] == :addition' do
-      it 'should call destroy_project_annotations' do
-        expect(doc).to receive(:destroy_project_annotations).with(project)
-        project.save_annotations(annotaitons, doc, {mode: :other})
+    context 'when opens present && options[:mode] != add' do
+      it 'should call delete_annotations' do
+        expect(project).to receive(:delete_annotations).with(doc)
+        project.save_annotations(annotations, doc, {mode: :other})
       end
     end
 
-    context 'when options[:prefix] present' do
-      let(:options) { {prefix: 'Prefix'} }
-
-      context 'when annotaitons[:denotations] present' do
-        let(:annotaitions) { {text: 'text', denotations: denotations} }
-
-        it 'should replace id with prefix id' do
-          expect( project ).to receive(:align_denotations).with([{id: "#{options[:prefix]}_#{denotations[0][:id]}"}], annotaitions[:text], doc.body)
-          project.save_annotations(annotaitions, doc, options) 
-        end
-      end
-
-      context 'when annotaitons[:denotations] nil' do
-        let(:annotaitions) { {text: 'text'} }
-
-        it 'should not replace id with prefix id' do
-          expect( denotations ).not_to receive(:each)
-          project.save_annotations(annotaitions, doc, options) 
-        end
-      end
-
-      context 'when annotaitons[:relations] present' do
-        let(:annotaitions) { {text: 'text', relations: relations} }
-
-        it 'should replace id with prefix id' do
-          expect( relations ).to receive(:each)
-          project.save_annotations(annotaitions, doc, options) 
-        end
-      end
-
-      context 'when annotaitons[:relations] nil' do
-        let(:annotaitions) { {text: 'text'} }
-
-        it 'should not replace id with prefix id' do
-          expect( relations ).not_to receive(:each)
-          project.save_annotations(annotaitions, doc, options) 
-        end
+    context 'when annotations[:denotations] nil' do
+      it 'should return doc.body as annotations[:text]' do
+        expect( project.save_annotations(annotations, doc, {})[:text] ).to eql( doc.body ) 
       end
     end
 
-    context 'when annotaitons[:denotations] present' do
-      let(:annotaitions) { {text: 'text', denotations: denotations} }
+    context 'when annotations[:denotations] present' do
+      let(:annotations) { {text: 'text', denotations: 'denotations'} }
 
-      it 'should call align_denotations and save_hdenotations' do
-        expect( project ).to receive(:align_denotations).with([{id: denotations[0][:id]}], annotaitions[:text], doc.body)
-        expect( project ).to receive(:save_hdenotations).with(align_denotations, doc)
-        expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations})
-      end
-
-      context 'when annotaitons[:relations] present' do
-        let(:annotaitions) { {text: 'text', denotations: denotations, relations: relations} }
-
-        it 'should call save_hrelations and return annotaitions with relations' do
-          expect( project ).to receive(:save_hrelations).with(annotaitions[:relations], doc)
-          expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations, relations: relations})
-        end
-      end
-
-      context 'when annotaitons[:relations] nil' do
-        let(:annotaitions) { {text: 'text', denotations: denotations, relations: nil} }
-
-        it 'should not call save_hrelations and return annotaitions without relations' do
-          expect( project ).not_to receive(:save_hrelations).with(annotaitions[:relations], doc)
-          expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations})
-        end
-      end
-
-      context 'when annotaitons[:modifications] present' do
-        let(:annotaitions) { {text: 'text', denotations: denotations, modifications: modifications} }
-
-        it 'should call save_hmodifications and return annotaitions with modifications' do
-          expect( project ).to receive(:save_hmodifications).with(annotaitions[:modifications], doc)
-          expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations, modifications: modifications})
-        end
-      end
-
-      context 'when annotaitons[:modifications] nil' do
-        let(:annotaitions) { {text: 'text', denotations: denotations, modifications: nil} }
-
-        it 'should not call save_hmodifications and return annotaitions without modifications' do
-          expect( project ).not_to receive(:save_hmodifications).with(annotaitions[:modifications], doc)
-          expect( project.save_annotations(annotaitions, doc) ).to eql({text: doc.body, denotations: align_denotations})
-        end
-      end
-    end
-  end
-
-  describe 'old save_annotations' do
-    before do
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
-      @sourcedb = 'PMC'
-      @sourceid = '100'
-      @serial = 1
-      @doc_annotations_file_name = "#{@sourcedb}-#{@sourceid}-#{@serial}-title.json"
-      @doc_annotations_files = [{name: @doc_annotations_file_name, path: "#{TempFilePath}#{@doc_annotations_file_name}"}]
-      @doc = FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid, serial: @serial)
-      File.stub(:read).and_return(nil)
-      File.stub(:unlink).and_return(nil)
-      @denotations = 'denotations'
-      @relations = 'relations'
-      @text = 'text'
-      @doc_params = {'denotations' => @denotations, 'relations' => @relations, 'text' => @text}
-      JSON.stub(:parse).and_return(@doc_params)
-      @project.stub(:save_annotations).and_return(nil)
-    end
-
-    it '' do
-      @project.should_receive(:save_annotations).with({denotations: @denotations, relations: @relations, text: @text}, @project, @doc)
-      Project.save_annotations(@project, @doc_annotations_files)
-    end
-  end
-
-  describe 'store_annotations' do
-    before do
-      @text = 'text about'
-      @denotations = [{"span" => {"begin" => 0, "end" => 134}, "obj" => "TOP"}, {"span" => {"begin" => 0, "end" => 134}, "obj" => "TITLE"}]
-      @relations = nil
-      @modifications = nil
-      @annotations = {:text => @text, 
-                      :denotations => @denotations, 
-                      :relations => @relations, 
-                      :modifications => @modifications}
-      user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project, user: user)
-      @project.stub(:save_annotations).and_return(nil)
-    end
-
-    context 'when options[:delayed] == true' do
-      before do
-        @options = {mode: 'mode', delayed: true}
-      end
-
-      context 'when finished without errors' do
-        context 'when divs.length == 1' do
-          before do
-            @div = FactoryGirl.create(:doc)
-            @divs = [@div]
-          end
-
-          it 'should call @project.save_annotations with annotations, project, divs[0] and options' do
-            @project.should_receive(:save_annotations).with(@annotations, @project, @div, @options) 
-            @project.store_annotations(@annotations, @project, @divs, @options)
-          end
-
-          it 'should create project.notices with successful: true, method store_annotations' do
-            @project.notices.should_receive(:create).with({successful: true, method: 'store_annotations'})
-            @project.store_annotations(@annotations, @project, @divs, @options)
-          end
-        end
-
-        context 'when divs.length !== 1' do
-          before do
-            @div_1 = FactoryGirl.create(:doc)
-            @div_2 = FactoryGirl.create(:doc)
-            @divs = [@div_1, @div_2]
-            @denotations = [{span: {begin: 3, end: 5}}]
-            @annotations = {:text => @text, 
-                            :denotations => @denotations, 
-                            :relations => @relations, 
-                            :modifications => @modifications}
-            @find_divisions = [[1, [0, 3]], [1, [2, 5]]]
-            TextAlignment.stub(:find_divisions).and_return(@find_divisions)
-          end
-
-          it 'should call @project.save_annotations with annotations, project, divs[0]' do
-            @project.should_receive(:save_annotations).twice
-            @project.store_annotations(@annotations, @project, @divs, @options)
-          end
-
-          it 'should create project.notices with successful: true, method store_annotations' do
-            @project.notices.should_receive(:create).with({successful: true, method: 'store_annotations'})
-            @project.store_annotations(@annotations, @project, @divs, @options)
-          end
-        end
-      end
-
-      context 'when finished without errors' do
-        it 'should create project.notices with successful: false, method store_annotations' do
-          @project.notices.should_receive(:create).with({successful: false, method: 'store_annotations'})
-          @project.store_annotations(@annotations, @project, nil, @options)
-        end
-      end
-    end
-
-    context 'when options[:delayed] == false' do
-      before do
-        @options = {mode: 'mode'}
-        @div = FactoryGirl.create(:doc)
-        @divs = [@div]
-      end
-
-      it 'should not create project.notices with successful: true, method store_annotations' do
-        @project.notices.should_not_receive(:create).with({successful: true, method: 'store_annotations'})
-        @project.store_annotations(@annotations, @project, @divs, @options)
-      end
-    end
-  end
-
-  describe 'add_docs_from_json' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user)) 
-    end
-    
-    context 'when sourcedbs prensent' do
-      before do
-        @attributes = Array.new
-        @docs_array = Array.new
-        @project.stub(:add_docs) do |options|  
-          @attributes << {sourcedb: options[:sourcedb], ids: options[:ids]}
-          @docs_array << options[:docs_array]
-          @options_user = options[:user]
-          [1, 1, 1]
-        end
-        @pmc_user_1 = {:sourcedb => "PMC:user name", :sourceid => '1', :divid => 0, :text => 'body text'}
-        @pmc_user_2 = {:sourcedb => "PMC:user name", :sourceid => '1', :divid => 1, :text => 'body text'} 
-        @pmc_1 = {:sourceid => "1", :sourcedb => "PMC"} 
-        @pmc_2 = {:sourceid => "2", :sourcedb => "PMC"} 
-        @pub_med = {:sourceid => "1", :sourcedb => "PubMed"}
-        @user = FactoryGirl.create(:user)
-      end
-
-      context 'when json is Array' do
+      context 'when align_denotations returns proper text' do
         before do
-          docs = [@pmc_user_1, @pmc_user_2, @pmc_1, @pmc_2, @pub_med]
-          @result = @project.add_docs_from_json(docs, @user)
+          project.stub(:align_denotations).and_return(annotations[:denotations])
         end
 
-        it 'should pass ids and sourcedb for add_docs correctly' do
-          @attributes.should =~ [{sourcedb: "PMC:user name", ids: "1,1"}, {sourcedb: "PMC", ids: "1,2"}, {sourcedb: "PubMed", ids: "1"}]
-        end
-
-        it 'should count up num_created, num_added, num_failed' do
-          @result.should =~ [3, 3, 3]
-        end
-
-        it 'should pass docs_array by sourcedb' do
-          @docs_array.should eql([[@pmc_user_1, @pmc_user_2], [@pmc_1, @pmc_2], [@pub_med]])
-        end
-
-        it 'should passe user as user' do
-          @options_user.should eql @user
+        it 'should call align_denotations' do
+          expect( project ).to receive(:align_denotations).with(annotations[:denotations], annotations[:text], doc.body)
+          project.save_annotations(annotations, doc, {}) 
         end
       end
 
-      context 'when docs is Hash' do
+      context 'when align_denotations returns proper text' do
         before do
-          docs = @pmc_user_1
-          @result = @project.add_docs_from_json(docs, @user)
+          project.stub(:align_denotations).and_return('a')
         end
 
-        it 'should pass ids and sourcedb for add_docs correctly' do
-          @attributes.should =~ [{sourcedb: "PMC:user name", ids: "1"}]
+        it 'should raise error' do
+          expect{ project.save_annotations(annotations, doc, {}) }.to raise_error 
+        end
+      end
+
+      context 'when annotations denotations, relations and modifications present' do
+        let(:annotations) { {text: 'text', denotations: 'denotations', relations: 'relations', modifications: 'modifications'} }
+
+        it 'should call save_hdenotations' do
+          expect( project ).to receive(:save_hdenotations).with(align_denotations, doc)
+          project.save_annotations(annotations, doc, {}) 
         end
 
-        it 'should count up num_created, num_added, num_failed' do
-          @result.should =~ [1, 1, 1]
+        it 'should call save_hrelations' do
+          expect( project ).to receive(:save_hrelations).with(annotations[:relations], doc)
+          project.save_annotations(annotations, doc, {}) 
         end
 
-        it 'should pass docs_array by sourcedb' do
-          @docs_array.should eql([[@pmc_user_1]])
+        it 'should call save_hmodifications' do
+          expect( project ).to receive(:save_hmodifications).with(annotations[:modifications], doc)
+          project.save_annotations(annotations, doc, {}) 
+        end
+
+        it 'should return annotations' do
+          expect( project.save_annotations(annotations, doc, {}) ).to eql({text: doc.body, denotations: align_denotations, relations: annotations[:relations], modifications: annotations[:modifications]})
         end
       end
     end
   end
-  
-  describe '#add_docs' do
-    before do
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @sourceid = '8424'
-      @sourcedb = 'PMC'
-      @user = FactoryGirl.create(:user, username: 'Add Docs User Name')
-    end 
-    
-    context 'when divs present' do
-      context 'when sourcedb is current_users sourcedb' do
-        before do
-          @user_soucedb = "PMC#{Doc::UserSourcedbSeparator}#{@user.username}"
-          @doc_1 = FactoryGirl.create(:doc, :sourcedb => @user_soucedb, :sourceid => @sourceid, :serial => 0)
-          @doc_2 = FactoryGirl.create(:doc, :sourcedb => @user_soucedb, :sourceid => @sourceid, :serial => 1)
-          @docs_array = [
-            # successfully update
-            {'id' => 1, 'text' => 'doc body1', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
-            {'id' => 2, 'text' => 'doc body2', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
-            # successfully create
-            {'id' => 3, 'text' => 'doc body3', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 2},
-            # successfully update save serial(divid) record
-            {'text' => 'doc body4', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
-            # fail create
-            {'id' => 4, 'text' => nil, 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 3},
-            # fail update
-            {'text' => nil, 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 0}
-          ]
-        end
 
-        describe 'before execute' do
-          it 'project.docs should be_blank' do
-            @project.docs.should be_blank
-          end
-        end
-
-        describe 'after execute' do
-          before do
-            @result = @project.add_docs({ids: @sourceid, sourcedb: @user_soucedb, docs_array: @docs_array, user: @user})
-            @project.reload
-            @doc_1.reload
-            @doc_2.reload
-          end
-
-          it 'should create 1 doc and update 3 times and fail 2 time' do
-            @result.should eql [1, 3, 2]
-          end
-
-          it 'should update exists doc' do
-            @doc_1.body == @docs_array[0]['text'] && @doc_1.sourcedb == @docs_array[0]['sourcedb'] && @doc_1.source == @docs_array[0]['source_url'] && @doc_1.serial == @docs_array[0]['divid']
-          end
-
-          it 'should add project.docs' do
-            @project.docs.select{|doc| doc.body == @docs_array[0]['text'] && doc.sourcedb == @docs_array[0]['sourcedb'] && doc.source == @docs_array[0]['source_url'] && doc.serial == @docs_array[0]['divid']}.should be_present
-          end
-
-          it 'should add project.docs' do
-            @project.docs.select{|doc| doc.body == @docs_array[2]['text'] && doc.sourcedb == @docs_array[2]['sourcedb'] && doc.source == @docs_array[2]['source_url'] && doc.serial == @docs_array[2]['divid']}.should be_present
-          end
-
-          it 'should update exists doc' do
-            @doc_2.body == @docs_array[3]['text'] && @doc_1.sourcedb == @docs_array[3]['sourcedb'] && @doc_1.source == @docs_array[3]['source_url'] && @doc_1.serial == @docs_array[3]['divid']
-          end
-
-          it 'should add project.docs' do
-            @project.docs.select{|doc| doc.body == @docs_array[3]['text'] && doc.sourcedb == @docs_array[3]['sourcedb'] && doc.source == @docs_array[3]['source_url'] && doc.serial == @docs_array[3]['divid']}.should be_present
-          end
-
-          it 'should add and update project.docs' do
-            @project.docs.select{|doc| doc.body == @docs_array[0]['text'] && doc.sourcedb == @docs_array[0]['sourcedb'] && doc.source == @docs_array[0]['source_url'] && doc.serial == @docs_array[0]['divid']}.should be_present
-          end
-        end
-      end
-
-      context 'when sourcedb is not users sourcedb' do
-        before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 0)
-          FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 1)        
-          @project.reload
-        end
-        
-        describe 'before execute' do
-          it '@project should not include @doc' do
-            @project.docs.should_not include(@doc)
-          end
-        end   
-        
-        context 'when project docs not include divs.first' do
-          before do
-            @result = @project.add_docs({ids: @sourceid, sourcedb: @sourcedb, user: @user})
-            @project.reload
-          end
-
-          it '@project should include @doc' do
-            @project.docs.should include(@doc)
-          end
-          
-          it 'should increment num_added by added docs size' do
-            @result.should eql [0, Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @sourceid).size, 0]
-          end        
-        end
-
-        context 'when project docs include divs.first' do
-          before do
-            @project.docs << @doc
-            @project.reload
-          end
-          
-          describe 'before execute' do
-            it '@project should include @doc' do
-              @project.docs.should include(@doc)
-            end
-          end        
-        end        
-      end
-    end
-     
-    context 'when divs blank' do
-      context 'when generate creates doc successfully' do
-        context 'when sourcedb include :' do
-          context 'when sourcedb username is current_users username' do
-            before do
-              @sourcedb = "PMC#{Doc::UserSourcedbSeparator}#{@user.username}"
-              @docs_array = [
-                # successfully create
-                {'id' => 1, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => '123', 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
-                {'id' => 2, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => '123', 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
-                # fail since same sourcedb, sourceid and serial
-                {'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => '123', 'source_url' => 'http://user.sourcedb/', 'divid' => 1}
-              ]
-              @user_soucedb_doc = FactoryGirl.create(:doc)
-              @divs = [@user_soucedb_doc]
-              @num_failed_use_sourcedb_docs = 2
-              @project.stub(:create_user_sourcedb_docs).and_return([@divs,  @num_failed_use_sourcedb_docs])
-            end
-
-            it 'should calls create_user_sourcedb_docs with docs_array' do
-              @project.should_receive(:create_user_sourcedb_docs).with(docs_array: @docs_array)
-              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
-            end
-            
-            it 'should increment num_created' do
-              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user}).should eql([@divs.size, 0, @num_failed_use_sourcedb_docs])
-            end
-
-            it 'should create doc from docs_array' do
-              @project.docs.should_not include(@user_soucedb_doc)
-              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
-              @project.reload
-              @project.docs.should include(@user_soucedb_doc)
-            end
-          end
-
-          context 'when sourcedb username is not current_users username' do
-            before do
-              @other_users_username
-              @sourcedb = "PMC#{Doc::UserSourcedbSeparator}#{@other_users_username}"
-              @docs_array = [
-                {'id' => 1, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => 123, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
-                {'id' => 2, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => 123, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
-                {'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => 123, 'source_url' => 'http://user.sourcedb/', 'divid' => 1}
-              ]
-              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
-            end
-            
-            it 'should fail 3 times' do
-              @result.should eql [0, 0, @docs_array.size]
-            end
-
-            it 'should not create doc by docs_array sourcedb' do
-              Doc.find_all_by_sourcedb(@sourcedb).should be_blank
-            end
-          end
-        end
-
-        context 'when sourcedb is not user sourcedb' do
-          context 'when doc_sequencer_ present' do
-            before do
-              @new_sourceid = 'new sourceid'
-              @generated_doc_1 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 0)
-              @generated_doc_2 = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @new_sourceid, :serial => 1)
-              Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
-              @result = @project.add_docs({ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
-            end
-            
-            pending do
-              it 'should increment num_created' do
-                @result.should eql [Doc.find_all_by_sourcedb_and_sourceid(@sourcedb, @new_sourceid).size, 0, 0]
-              end
-            end
-          end
-
-          context 'when doc_sequencer_ blank' do
-            before do
-              @new_sourceid = '123456'
-              @docs_array = [
-                # successfully create
-                {'id' => 1, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => @new_sourceid, 'serial' => 0, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
-                {'id' => 2, 'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => @new_sourceid, 'serial' => 1, 'source_url' => 'http://user.sourcedb/', 'divid' => 1},
-                # fail since same sourcedb, sourceid and serial
-                {'text' => 'doc body', 'sourcedb' => @sourcedb, 'sourceid' => @new_sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 1}
-              ]
-              Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
-              @sourcedb = 'sourcedb'
-              @user = FactoryGirl.create(:user, username: 'User Name')
-              @user_soucedb_doc = FactoryGirl.create(:doc)
-              @divs = [@user_soucedb_doc]
-              @num_failed_use_sourcedb_docs = 2
-              @project.stub(:create_user_sourcedb_docs).and_return([@divs,  @num_failed_use_sourcedb_docs])
-            end
-            
-            it 'should call create_user_sourcedb_docs with docs_array and sourcedb' do
-              @project.should_receive(:create_user_sourcedb_docs).with({docs_array: @docs_array, sourcedb: "#{@sourcedb}:#{@user.username}"})
-              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
-            end
-
-            it 'should increment num_created' do
-              @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
-              @result.should eql([@divs.size, 0 , @num_failed_use_sourcedb_docs])
-            end
-
-            it 'should add create_user_sourcedb_docs as project.docs' do
-              @project.docs.should_not include(@user_soucedb_doc)
-              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
-              @project.docs.should include(@user_soucedb_doc)
-            end
-          end
-        end
-      end 
-      
-      context 'when generate crates doc unsuccessfully' do
-        before do
-          Doc.stub(:create_divs).and_return(nil)
-          @result = @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: nil, user: @user})
-        end
-        
-        pending do
-          it 'should not increment num_failed' do
-            @result.should eql [0, 0, 1]
-          end
-        end
-      end            
-    end
-  end
-
-  describe 'create_user_sourcedb_docs', elasticsearch: true do
-    # TODO just assserting about call index_diff
-    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user))}
-    let(:docs_array) { {sourcedb: ''} }
+  describe 'create_annotation_zip' do
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:annotations) { double(:annotations) }
+    let(:doc) { FactoryGirl.create(:doc) }
+    let(:zip_output_stream) { double(:zip) }
+    let(:title) { double(:title) }
 
     before do
-      Doc.stub(:index_diff).and_return(nil)
-      Doc.any_instance.stub(:valid?).and_return(true)
+      Dir.stub(:exist?).and_return(true)
+      Project.any_instance.stub(:annotations_collection).and_return([annotations])
+      project.stub_chain(:get_doc_info, :sub, :gsub).and_return(title)
+      project.stub(:annotations).and_return(annotations)
+      title.stub(:end_with?).and_return(true)
     end
 
-    it 'should call index_diff' do
-      expect(Doc).to receive(:index_diff)
-      project.create_user_sourcedb_docs({docs_array: docs_array})  
-    end
-  end
-
-  describe 'increment_docs_projects_counter' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
+    it 'should call get_doc_info' do
+      expect( project ).to receive(:get_doc_info)
+      project.create_annotations_zip(nil)
     end
 
-    it 'should increment doc.projects_count' do
-      expect{ 
-        @project.docs << @doc 
-        @doc.reload
-      }.to change{ @doc.projects_count }.from(0).to(1)
-    end
-  end
-
-  describe 'decrement_docs_projects_counter' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project.docs << @doc 
-      @doc.reload
+    it 'should call get_doc_info' do
+      expect( annotations ).to receive(:to_json)
+      project.create_annotations_zip(nil)
     end
 
-    it 'should decrement doc.projects_count' do
-      expect{ 
-        @project.docs.delete(@doc)
-        @doc.reload
-      }.to change{ @doc.projects_count }.from(1).to(0)
-    end
-  end
-
-  describe 'update_annotations_updated_at' do
-    before do
-      @doc = FactoryGirl.create(:doc)
-      @doc.stub(:update_doc_delta_index).and_return(nil)
-      @annotations_updated_at = 5.days.ago
-      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
-      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), annotations_updated_at: @annotations_updated_at )
-    end
-
-    describe 'after_add' do
-      it 'should update projects.annotations_updated_at' do
-        @project_1.docs << @doc
-        @project_2.docs << @doc
-        @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
-        @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
-      end
-
-    end
-
-    describe 'after_remove' do
-      before do
-        @project_1.docs.delete(@doc)
-        @project_2.docs.delete(@doc)
-      end
-
-      it 'should update projects.annotations_updated_at' do
-        @project_1.annotations_updated_at.should_not eql(@annotations_updated_at)
-        @project_2.annotations_updated_at.should_not eql(@annotations_updated_at)
-      end
-    end
-  end
-
-  describe 'save_hdenotations' do
-    let(:doc) { FactoryGirl.create(:doc, :section => 'section', :body => 'doc body') }
-    let(:project) { FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name") }
-    let(:obj_name) { 'Category' }
-    let(:hdenotation) { {id: 'hid', span: {begin: 1, end: 10}, obj: obj_name } }
-    let(:hdenotations) { Array.new }
-
-    before do
-      hdenotations << hdenotation
-    end
-
-    describe 'obj' do
-      context 'when obj not present' do
-        it 'should create obj' do
-          expect{ project.save_hdenotations(hdenotations, doc) }.to change{ Obj.count }.from(0).to(1)
-        end
-      end
-
-      context 'when obj present' do
-        let(:obj) { FactoryGirl.create(:obj , name: obj_name) }
-
-        before do
-          obj
-        end
-
-        it 'should not create obj' do
-          expect{ project.save_hdenotations(hdenotations, doc) }.not_to change{ Obj.count }.by(1)
-        end
-      end
-    end
-    
-    context 'save successfully' do
-      let(:denotation) { Denotation.find_by_hid(hdenotation[:id]) }
-
-      before do
-        project.save_hdenotations(hdenotations, doc)
-      end
-
-      it 'should save hdenotation[:id] as hid' do
-        expect( denotation.hid ).to eql(hdenotation[:id])
-      end
-      
-      it 'should save hdenotation[:span][:begin] as begin' do
-        expect( denotation.begin ).to eql(hdenotation[:span][:begin])
-      end
-      
-      it 'should save hdenotation[:span][:end] as end' do
-        expect( denotation.end).to eql(hdenotation[:span][:end])
-      end
-      
-      it 'should save hdenotation[:obj] as obj' do
-        expect( denotation.obj ).to eql(Obj.find_by_name(hdenotation[:obj]))
-      end
-
-      it 'should add project to denotation.projects' do
-        expect( denotation.projects ).to include(project)
-      end
-
-      it 'should save doc.id as doc_id' do
-        expect( denotation.doc_id ).to eql(doc.id)
-      end
-    end
-
-    context 'save failed' do
-      let(:hdenotation) { {id: 'hid', obj: obj_name } }
-
-      it 'should raise error' do
-        expect{ project.save_hdenotations(hdenotations, doc) }.to raise_error
-      end
-    end
-  end
-
-  describe 'save_hrelations' do
-    before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc)
-      @obj = 'Denotation'
-      FactoryGirl.create(:obj, name: @obj)
-      @hrelations = Array.new
-    end
-
-    before do
-      @hrelation = {id: 'hid', pred: 'pred', subj: 'Denotation', subj_id: @denotation.id, obj: @obj}
-      @hrelations << @hrelation
-    end
-
-    it 'should set subj_type and subj_id' do
-      @project.save_hrelations(@hrelations, @doc)
-      expect( @project.annotations.last.subj_type).to eql(@hrelation[:subj])    
-      expect( @project.annotations.last.subj_id).to eql(@denotation.id)
-    end
-
-    it 'should set obj_type and obj_id' do
-      @project.save_hrelations(@hrelations, @doc)
-      expect( @project.annotations.last.obj_type).to eql('Obj')    
-      expect( @project.annotations.last.obj_id).to eql(@denotation.id)
-    end
-
-    it 'should create relation' do
-      expect{ @project.save_hrelations(@hrelations, @doc) }.to change{ Relation.count }.from(0).to(1)
-    end
-  end
-
-  describe 'save_hmodifications' do
-    before do
-      @doc = FactoryGirl.create(:doc, :sourcedb => 'sourcedb', :sourceid => '1', :serial => 1, :section => 'section', :body => 'doc body')
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-    end
-    
-    context 'when hmodifications[:obj] match /^R/' do
-      before do
-        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @subcatrel = FactoryGirl.create(:subcatrel, :obj => @denotation, subj: @denotation)
-        FactoryGirl.create(:annotations_project, annotation: @subcatrel, project: @project)
-        @hmodification = {:id => 'hid', :pred => 'type', :obj => @subcatrel.hid}
-        @hmodifications = Array.new
-        @hmodifications << @hmodification
-        @result = @project.save_hmodifications(@hmodifications, @project, @doc)
-      end
-      
-      it 'should save successfully' do
-        @result.should be_true
-      end
-      
-      it 'should save Modification from hmodifications params and doc.instances' do
-        Modification.where(
-          :hid => @hmodification[:id],
-          :pred => @hmodification[:pred],
-          :obj_id => @subcatrel.id,
-          :obj_type => @subcatrel.class
-        ).should be_present
-      end
-    end
-
-    context 'when hmodifications[:obj] not match /^R/' do
-      before do
-        @denotation = FactoryGirl.create(:denotation, :project => @project, :doc => @doc)
-        @hmodification = {:id => 'hid', :pred => 'type', :obj => @denotation.hid}
-        @hmodifications = Array.new
-        @hmodifications << @hmodification
-        @result = @project.save_hmodifications(@hmodifications, @project, @doc)
-      end
-      
-      it 'should save successfully' do
-        @result.should be_true
-      end
-      
-      it 'should save Modification from hmodifications params and doc.instances' do
-        Modification.where(
-          :hid => @hmodification[:id],
-          :pred => @hmodification[:pred],
-          :obj_id => @denotation.id,
-          :obj_type => @denotation.class
-        ).should be_present
-      end
-    end
-  end
-
-  describe 'create_user_sourcedb_docs' do
-    before do
-      @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
-      @docs_array = [
-        {text: 'text', sourcedb: 'sdb', sourceid: 'sid', section: 'section', source_url: 'http', divid: 0},
-        {text: 'text', sourcedb: 'sdb', sourceid: nil, section: 'section', source_url: 'http', divid: 0}
-      ]  
-    end
-
-    context 'when options[:sourcedb] blank' do
-      it 'should save doc once' do
-        expect_any_instance_of(Doc).to receive(:save)
-        @project.create_user_sourcedb_docs({docs_array: @docs_array})
-      end
-
-      it 'should fail once' do
-        expect(@project.create_user_sourcedb_docs({docs_array: @docs_array})[1]).to eql(1)
-      end
-
-      it 'should save doc once' do
-        expect{ @project.create_user_sourcedb_docs({docs_array: @docs_array}) }.to change{ Doc.count }.from(0).to(1)
-      end
-    end
-
-    context 'when options[:sourcedb] prensent' do
-      it 'should save doc once' do
-        docs_array = [
-          {text: 'text', sourcedb: 'sdb', sourceid: 'sid', section: 'section', source_url: 'http', divid: 0}
-        ]  
-        sourcedb = 'param sdb'
-        nil.stub(:valid?).and_return(true)
-        nil.stub(:save).and_return(true)
-        expect(Doc).to receive(:new).with({body: docs_array[0][:text], sourcedb: sourcedb, sourceid: docs_array[0][:sourceid], section: docs_array[0][:section], source: docs_array[0][:source_url], serial: docs_array[0][:divid]})
-        @project.create_user_sourcedb_docs({docs_array: docs_array, sourcedb: sourcedb})
-      end
-    end
-  end
-
-  describe 'save_hdenotations' do
-    before do
-      @doc = FactoryGirl.create(:doc, :section => 'section', :body => 'doc body')
-      @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user), :name => "project_name")
-      @di = 1
-      1.times do
-        denotation = FactoryGirl.create(:denotation, :begin => @di, :doc_id => @doc.id)
-        FactoryGirl.create(:annotations_project, project_id: @associate_project_denotations_count_1.id, annotation: denotation)
-        @di += 1
-      end
-      @result = ave_hdenotations(@hdenotations, @associate_project_denotations_count_1, @doc) 
-      @denotation = Denotation.find_by_hid(@hdenotation[:id])
-    end
-    
-    it 'should save successfully' do
-      @result.should be_true
-    end
-    
-    it 'should save hdenotation[:id] as hid' do
-      @denotation.hid.should eql(@hdenotation[:id])
-    end
-    
-    it 'should save hdenotation[:span][:begin] as begin' do
-      @denotation.begin.should eql(@hdenotation[:span][:begin])
-    end
-    
-    it 'should save hdenotation[:span][:end] as end' do
-      @denotation.end.should eql(@hdenotation[:span][:end])
-    end
-    
-    it 'should save hdenotation[:obj] as obj' do
-      @denotation.obj.should eql(@hdenotation[:obj])
-    end
-
-    it 'should save project.id as project_id' do
-      @denotation.project_id.should eql(@associate_project_denotations_count_1.id)
-    end
-
-    it 'should save doc.id as doc_id' do
-      @denotation.doc_id.should eql(@doc.id)
-    end
-    
-    it 'should project.denotations_count should equal 0 before save' do
-      @project.denotations_count.should eql(0)
-    end
-
-    it 'should incliment project.denotations_count after denotation saved' do
-      @project.reload
-      @project.denotations_count.should eql((@associate_project_denotations_count_1.denotations_count + @associate_project_denotations_count_2.denotations_count) *2  + 1)
-    end
-      
-    it 'associate_projectproject.denotations_count should equal 1 before save' do
-      @associate_project_denotations_count_1.denotations_count.should eql(1)
-    end
-    
-    it 'associate_projectproject.denotations_count should incremented after save' do
-      @associate_project_denotations_count_1.reload
-      @associate_project_denotations_count_1.denotations_count.should eql(2)
-    end
-    
-    it 'associate_projectproject.denotations_count should remain' do
-      @associate_project_denotations_count_2.reload
-      @associate_project_denotations_count_2.denotations_count.should eql(2)
-    end
-  end
-
-  describe 'user_presence' do
-    context 'when user blank' do
-      before do
-        @project = FactoryGirl.build(:project, user: FactoryGirl.create(:user))  
-      end
-
-
-      it 'should not raise user_id validation error' do
-        @project.valid?
-        @project.errors[:user_id].should be_blank
-      end 
-    end 
-
-    context 'when user blank' do
-      before do
-        @project = FactoryGirl.build(:project)  
-      end
-
-      it 'should raise user_id validation error' do
-        @project.valid?
-        @project.errors[:user_id].should be_present
-      end 
-    end 
-  end 
-
-  describe 'namespaces_base' do
-    before do
-      @user = FactoryGirl.create(:user)
-    end
-
-    context 'when namespaces prensent' do
-      context 'when prefix _base present' do
-        before do
-          @namespace_base = {'prefix' => '_base', 'uri' => 'base_uri'}
-          namespaces = [@namespace_base, {'prefix' => 'foaf', 'uri' => 'foaf.uri'}]
-          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
-        end
-
-        it 'should return _base hash' do
-          @project.namespaces_base.should eql(@namespace_base)
-        end
-      end
-
-      context 'when prefix _base blank' do
-        before do
-          namespaces = [{'prefix' => 'foaf', 'uri' => 'foaf.uri'}]
-          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
-        end
-
-        it 'should return nil' do
-          @project.namespaces_base.should be_nil
-        end
-      end
-    end
-
-    context 'when namespaces nil' do
-      before do
-        @project = FactoryGirl.create(:project, user: @user, namespaces: nil)
-      end
-
-      it 'should return nil' do
-        @project.namespaces_base.should be_nil
-      end
-    end
-  end
-
-  describe 'base_uri' do
-    before do
-      @user = FactoryGirl.create(:user)
-      @project = FactoryGirl.create(:project, user: @user)
-    end
-
-    context 'when namespaces_base present' do
-      before do
-        @uri = 'base_uri'
-        @project.stub(:namespaces_base).and_return({'uri' => @uri} )
-      end
-
-      it 'should return uri' do
-        @project.base_uri.should eql(@uri)
-      end
-    end
-
-    context 'when namespaces_base blank' do
-      before do
-        @project.stub(:namespaces_base).and_return(nil)
-      end
-
-      it 'should return nil' do
-        @project.base_uri.should be_nil
-      end
-    end
-  end
-
-  describe 'namespaces_prefixes' do
-    before do
-      @user = FactoryGirl.create(:user)
-      @base = {'prefix' => '_base', 'uri' => 'base_uri'}
-      @prefix_1 = {'prefix' => 'foaf', 'uri' => 'foaf_uri'}
-      @prefix_2 = {'prefix' => 'xml', 'uri' => 'xml_uri'}
-    end
-
-    context 'when namespaces prensent' do
-      context 'when _base present' do
-        before do
-          namespaces = [@base, @prefix_1, @prefix_2]
-          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
-        end
-
-        it 'should return exept _base hash' do
-          @project.namespaces_prefixes.should =~ [@prefix_1, @prefix_2]
-        end
-      end
-
-      context 'when _base blank' do
-        before do
-          namespaces = [@prefix_1, @prefix_2]
-          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
-        end
-
-        it 'should return prefixes' do
-          @project.namespaces_prefixes.should =~ [@prefix_1, @prefix_2]
-        end
-      end
-
-      context 'when _base only' do
-        before do
-          namespaces = [@base]
-          @project = FactoryGirl.create(:project, user: @user, namespaces: namespaces)
-        end
-
-        it 'should return blank' do
-          @project.namespaces_prefixes.should be_blank
-        end
-      end
-    end
-
-    context 'when namespaces nil' do
-      before do
-        @project = FactoryGirl.create(:project, user: @user, namespaces: nil)
-      end
-
-      it 'should return nil' do
-        @project.namespaces_prefixes.should be_nil
-      end
-    end
-  end
-
-  describe 'cleanup_namespaces' do
-    before do
-      @user = FactoryGirl.create(:user)
-    end
-
-    describe 'before_validate' do
-      it 'should call cleanup_namespaces' do
-        Project.any_instance.should_receive(:cleanup_namespaces)
-        FactoryGirl.create(:project, user: @user)
-      end
-    end
-
-    context 'when namespaces prensent' do
-      before do
-        @namespace_1 = {'prefix' => '_base', 'uri' => 'http://xmlns.com/foaf/0.1/'}
-        @namespace_2 = {'prefix' => 'foaf', 'uri' => 'http://xmlns.com/foaf/0.1/'}
-        @namespace_3 = {'prefix' => 'wd', 'uri' => 'http://www.wikidata.org/entity/'}
-        @namespace_4 = {'prefix' => 'wd', 'uri' => ''}
-        @namespace_5 = {'prefix' => '', 'uri' => ''}
-        @namespace_5 = {'prefix' => '', 'uri' => 'uri'}
-        namespaces = [@namespace_1, @namespace_2, @namespace_3, @namespace_4]
-        @project = @user.projects.build(name: 'My Project', namespaces: namespaces)
-      end
-
-      it 'should delete prefix or uri is blank' do
-        @project.cleanup_namespaces 
-        @project.namespaces.should =~ [@namespace_1, @namespace_2, @namespace_3]
-      end
-    end
-  end
-
-  describe 'delay_destroy' do
-    before do
-      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
-    end
-
-    context 'when successfully finished' do
-      it 'should destroy project' do
-        expect{ @project.delay_destroy }.to change{ Project.count }.from(1).to(0)
-      end
-
-      it 'should not create notice' do
-        expect{ @project.delay_destroy }.not_to change{ Notice.count }.from(0).to(1)
-      end
-    end
-
-    context 'when failed' do
-      before do
-        @project.stub(:destroy).and_raise('Error')
-      end
-
-      it 'should not destroy project' do
-        expect{ @project.delay_destroy }.not_to change{ Project.count }.from(1).to(0)
-      end
-
-      it 'should create notice' do
-        expect{ @project.delay_destroy }.to change{ Notice.count }.from(0).to(1)
-      end
-    end
-  end
-
-  describe 'update_updated_at' do
-    let(:updated_at) { 10.days.ago }
-    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user), updated_at: updated_at) }
-
-    it 'should update updated_at' do
-      project.update_updated_at(nil)
-      expect(project.updated_at).not_to eql(updated_at)
-    end
-  end
-
-  describe 'sort_by_my_projects' do
-    let (:user_id) { 1 }
-
-    it 'should return case conditions' do
-      Project.sort_by_my_projects(user_id).should eql("CASE WHEN projects.user_id = #{user_id} THEN 1 WHEN projects.user_id != #{user_id} THEN 0 END")
+    it 'should call put_next_entry and print' do
+      expect_any_instance_of( Zip::OutputStream ).to receive(:put_next_entry)
+      expect_any_instance_of( Zip::OutputStream ).to receive(:print)
+      project.create_annotations_zip(nil)
     end
   end
 end

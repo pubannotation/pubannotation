@@ -3,6 +3,5 @@ FactoryGirl.define do
     c.type 'Modification'
     c.hid 'R1'
     c.obj_id {|modification| modification.association(:obj)}
-    c.pred 'Negation'
   end
 end

@@ -8,18 +8,18 @@ class Relation < Annotation
   attr_accessible :hid, :pred
 
   # validates :hid,     :presence => true
-  validates :pred,    :presence => true
+  # validates :pred,    :presence => true
   # validates :subj_id, :presence => true
   # validates :obj_id,  :presence => true
   validate :validate
 
   scope :from_projects, -> (projects) {
-    where('relations.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
+    includes(:annotations_projects).where('annotations_projects.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
   }
 
-  scope :project_relations, select(:id).group("relations.project_id")
+  scope :project_relations, select(:id).includes(:annotations_projects).group("annotations_projects.project_id, annotations_projects.id, annotations.id")
   scope :project_pmcdoc_cat_relations, lambda{|sourceid|
-    joins("INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation' INNER JOIN docs ON docs.id = denotations.doc_id AND docs.sourcedb = 'PMC'").
+    joins("INNER JOIN denotations ON annotaions.subj_id = denotations.id AND annotaions.subj_type = 'Denotation' INNER JOIN docs ON docs.id = denotations.doc_id AND docs.sourcedb = 'PMC'").
     where("docs.sourceid = ?", sourceid)
   }
   scope :projects_relations, lambda{|project_ids|
@@ -33,8 +33,8 @@ class Relation < Annotation
   }
 
   scope :sql, lambda{|ids|
-      where('relations.id IN(?)', ids).
-      order('relations.id ASC') 
+      where('annotaions.id IN(?)', ids).
+      order('annotaions.id ASC') 
   }
     
   after_save :increment_subcatrels_count, :increment_project_relations_count, :increment_project_annotations_count, :update_project_updated_at

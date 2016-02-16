@@ -15,6 +15,12 @@ class Annotation < ActiveRecord::Base
     where('annotations_projects.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
   }
   validates_presence_of :type
+  validates :obj_id, numericality: true, allow_nil: true
+  validates :subj_id, numericality: true, allow_nil: true
+  validates :doc_id, numericality: true, allow_nil: true
+  validates :pred_id, numericality: true, allow_nil: true
+  validates :begin, numericality: true, allow_nil: true
+  validates :end, numericality: true, allow_nil: true
 
   def increment_projects_annotations_count
     if self.projects.present?

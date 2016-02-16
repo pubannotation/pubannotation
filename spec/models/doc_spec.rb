@@ -250,18 +250,26 @@ describe Doc do
       @denotation_doc_2_3.reload
       @denotation_doc_3_1.reload
       @denotation_doc_3_2.reload
+      @relation_denotation_1.reload
+      @relation_denotation_2.reload
+      @relation_denotation_3.reload
+      @relation_denotation_4.reload
+      @relation_denotation_5.reload
+      @relation_denotation_6.reload
+      @relation_denotation_7.reload
+      @relation_denotation_8.reload
       @doc_1.reload
       @doc_2.reload
       @doc_3.reload
       @doc_4.reload
+      @docs = Doc.relations_count
     end
 
     # has 0 relations
 
     it 'should order Docs by count of relations' do
-      expect( Doc.relations_count.first ).to eql(@doc_3)
-      expect( Doc.relations_count.second ).to eql(@doc_2)
-      expect( Doc.relations_count.last ).to eql(@doc_4)
+      expect( @docs.first ).to eql(@doc_3)
+      expect( @docs.last ).to eql(@doc_4)
     end
   end
 
