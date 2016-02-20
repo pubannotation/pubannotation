@@ -26,7 +26,8 @@ class TextAlignment::LCSMin
     @str2 = str2.gsub(/\s/, PLACEHOLDER_CHAR)
 
     # find the corresponding minimal range of the two strings
-    @m1_initial, @m1_final, @m2_initial, @m2_final = _find_min_range(0, @str1.length - 1, 0, @str2.length - 1)
+    r = _find_min_range(0, @str1.length - 1, 0, @str2.length - 1)
+    @m1_initial, @m1_final, @m2_initial, @m2_final = r[:m1_initial], r[:m1_final], r[:m2_initial], r[:m2_final]
 
     if @m1_initial.nil?
       @sdiff = nil
@@ -50,13 +51,12 @@ class TextAlignment::LCSMin
     end
   end
 
-  def _find_min_range (m1_initial, m1_final, m2_initial, m2_final, clcs = 0)
+  def _find_min_range (m1_initial, m1_final, m2_initial, m2_final, clcs = 0, clss = 0)
     return nil if (m1_final - m1_initial < 0) || (m2_final - m2_initial < 0)
     sdiff = Diff::LCS.sdiff(@str1[m1_initial..m1_final], @str2[m2_initial..m2_final])
     lcs = sdiff.count{|d| d.action == '='}
 
     return nil if lcs == 0
-    return nil if lcs < clcs
 
     match_last  = sdiff.rindex{|d| d.action == '='}
     m1_final    = sdiff[match_last].old_position + m1_initial
@@ -66,20 +66,77 @@ class TextAlignment::LCSMin
     m1_initial  = sdiff[match_first].old_position + m1_initial
     m2_initial  = sdiff[match_first].new_position + m2_initial
 
+    lss = match_last - match_first + 1
+    return nil if (lcs < clcs) && (clss > 0) && (clss - lss < 2)
+
+    # attempt for shorter match
     if ((m1_final - m1_initial) > (m2_final - m2_initial))
-      m1i, m1f, m2i, m2f = _find_min_range(m1_initial + 1, m1_final, m2_initial, m2_final, lcs)
-      return m1i, m1f, m2i, m2f unless m1i.nil?
-      m1i, m1f, m2i, m2f = _find_min_range(m1_initial, m1_final - 1, m2_initial, m2_final, lcs)
-      return m1i, m1f, m2i, m2f unless m1i.nil?
+      r = _find_min_range(m1_initial + 1, m1_final, m2_initial, m2_final, lcs, lss)
+      return r unless r.nil?
+      r = _find_min_range(m1_initial, m1_final - 1, m2_initial, m2_final, lcs, lss)
+      return r unless r.nil?
     else
-      m1i, m1f, m2i, m2f = _find_min_range(m1_initial, m1_final, m2_initial + 1, m2_final, lcs)
-      return m1i, m1f, m2i, m2f unless m1i.nil?
-      m1i, m1f, m2i, m2f = _find_min_range(m1_initial, m1_final, m2_initial, m2_final - 1, lcs)
-      return m1i, m1f, m2i, m2f unless m1i.nil?
+      r = _find_min_range(m1_initial, m1_final, m2_initial + 1, m2_final, lcs, lss)
+      return r unless r.nil?
+      r = _find_min_range(m1_initial, m1_final, m2_initial, m2_final - 1, lcs, lss)
+      return r unless r.nil?
     end
 
-    return m1_initial, m1_final, m2_initial, m2_final
+    return {
+      m1_initial: m1_initial,
+      m1_final: m1_final,
+      m2_initial: m2_initial,
+      m2_final: m2_final,
+      lcs: lcs,
+    }
   end
+
+  def num_big_gaps (sdiff, initial, last)
+    raise ArgumentError, "nil sdiff" if sdiff.nil?
+    raise ArgumentError, "invalid indice: #{initial}, #{last}" unless last >= initial
+
+    state1 = :initial
+    state2 = :initial
+    gaps1 = []
+    gaps2 = []
+
+    (initial .. last).each do |i|
+      case sdiff[i].action
+      when '='
+        state1 = :continue
+        state2 = :continue
+      when '!'
+        gaps1 << 1
+        state1 = :break
+
+        if state2 == :break
+          gaps2[-1] += 1
+        else
+          gaps2 << 1
+        end
+        state2 = :continue
+      when '+'
+        if state1 == :break
+          gaps1[-1] += 1
+        else
+          gaps1 << 1
+        end
+        state1 = :break
+      when '-'
+        if state2 == :break
+          gaps2[-1] += 1
+        else
+          gaps2 << 1
+        end
+        state2 = :break
+      end
+    end
+
+    num_big_gaps1 = gaps1.select{|g| g > MAX_LEN_BIG_GAP}.length
+    num_big_gaps2 = gaps2.select{|g| g > MAX_LEN_BIG_GAP}.length
+    num_big_gaps1 + num_big_gaps2
+  end
+
 end
 
 

@@ -22,7 +22,11 @@ class TextAlignment::TextAlignment
     raise ArgumentError, "nil string" if str1.nil? || str2.nil?
     raise ArgumentError, "nil mappings" if mappings.nil?
 
-    # character mappings can be safely applied to the strings withoug changing the position of other characters
+    ## preprocessing
+    str1 = str1.dup
+    str2 = str2.dup
+
+    # single character mappings
     character_mappings = mappings.select{|m| m[0].length == 1 && m[1].length == 1}
     characters_from = character_mappings.collect{|m| m[0]}.join
     characters_to   = character_mappings.collect{|m| m[1]}.join
@@ -30,6 +34,15 @@ class TextAlignment::TextAlignment
 
     str1.tr!(characters_from, characters_to)
     str2.tr!(characters_from, characters_to)
+
+    # ASCII foldings
+    ascii_foldings = mappings.select{|m| m[0].length == 1 && m[1].length > 1}
+    ascii_foldings.each do |f|
+      from = f[1]
+      to   = f[0] * f[1].length
+      str1.gsub!(from, to)
+      str2.gsub!(from, to)
+    end
 
     mappings.delete_if{|m| m[0].length == 1 && m[1].length == 1}
 
@@ -164,6 +177,11 @@ if __FILE__ == $0
   # p align.common_elements
   # puts "---------------"
   # p align.mapped_elements
+
+  puts str1
+  puts "---"
+  puts str2
+
   puts TextAlignment::sdiff2cdiff(align.sdiff)
 
   new_spans = align.transform_spans(spans)

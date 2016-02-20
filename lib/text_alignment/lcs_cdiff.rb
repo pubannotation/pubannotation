@@ -37,8 +37,9 @@ class << TextAlignment
       end
     end
 
-    cdiff_str1 + "\n" + cdiff_str2
+    cdiff_str1.gsub(/\n/, ' ') + "\n" + cdiff_str2.gsub(/\n/, ' ')
   end
+
 end
 
 if __FILE__ == $0

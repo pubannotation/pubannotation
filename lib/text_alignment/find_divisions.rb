@@ -36,7 +36,7 @@ class << TextAlignment
   def _find_divisions(target, sources)
     mode, m, c, offset_begin = nil, nil, nil, nil
 
-    sources.each_with_index do |source, index|
+    sources.each_with_index do |source, i|
       if target.size < source[:text].size
         mode = :t_in_s
         str1 = target
@@ -53,10 +53,10 @@ class << TextAlignment
       offset_begin, offset_end = 0, -1
       offset_begin, offset_end = approximate_fit(str1, str2) if (len2 - len1) > len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD)
 
-      if offset_begin.present?
+      unless offset_begin.nil?
         c = TextAlignment::LCSComparison.new(str1, str2[offset_begin .. offset_end])
         if (c.similarity > TextAlignment::SIMILARITY_THRESHOLD) && ((len1 - (c.str1_match_final - c.str1_match_initial + 1)) < len1 * (1 - TextAlignment::SIMILARITY_THRESHOLD))
-          m = index
+          m = i
           break
         end
       end
@@ -93,19 +93,21 @@ end
 if __FILE__ == $0
   require 'json'
   if ARGV.length == 2
-    target  = File.read(ARGV[0]).strip
+    target  = JSON.parse File.read(ARGV[0]), :symbolize_names => true
+    target_text = target[:text].strip
+
     sources = JSON.parse File.read(ARGV[1]), :symbolize_names => true
-    div_index = TextAlignment::find_divisions(target, sources)
+    div_index = TextAlignment::find_divisions(target_text, sources)
 
     # str1 = File.read(ARGV[0]).strip
     # str2 = File.read(ARGV[1]).strip
     # div_index = TextAlignment::find_divisions(str1, [str2])
 
-    puts "target length: #{target.length}"
+    puts "target length: #{target_text.length}"
     div_index.each do |i|
       if i[0] >= 0
         puts "[Div: #{i[0]}] (#{i[1][0]}, #{i[1][1]})"
-        puts target[i[1][0] ... i[1][1]]
+        puts target_text[i[1][0] ... i[1][1]]
         puts "=========="
       else
         p i

@@ -24,6 +24,7 @@ class << TextAlignment
 
     # approximate the beginning of the fit
     signature_ngram = ngram_shared.detect{|g| ngram2.count(g) == 1}
+
     return nil, nil if signature_ngram.nil? #raise "no signature ngram"
     offset = str1.index(signature_ngram)
     fit_begin = str2.index(signature_ngram) - offset - (offset * TextAlignment::BUFFER_RATE).to_i
@@ -47,11 +48,14 @@ class << TextAlignment
 end
 
 if __FILE__ == $0
+  require 'json'
+
   if ARGV.length == 2
-    str1 = File.read(ARGV[0]).strip
-    str2 = File.read(ARGV[1]).strip
+    str1 = JSON.parse(File.read(ARGV[0]).strip)["text"]
+    str2 = JSON.parse(File.read(ARGV[1]).strip)["text"]
 
     loc = TextAlignment::approximate_fit(str1, str2)
     p loc
+    puts str2[loc[0]...loc[1]]
   end
 end
