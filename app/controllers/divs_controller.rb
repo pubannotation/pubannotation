@@ -53,7 +53,7 @@ class DivsController < ApplicationController
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
 
       respond_to do |format|
-        format.html {render 'index'}
+        format.html 
         format.json {render json: @divs.collect{|div| div.to_list_hash('div')} }
         format.tsv  {render text: Doc.to_tsv(@divs, 'div') }
         format.txt  {redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, params[:sourcedb], params[:sourceid], format: :txt)}
