@@ -221,41 +221,43 @@ module AnnotationsHelper
 
     return denotations, new_relations
   end
-  
-  def project_annotations_zip_link_helper(project)
+
+  def project_annotations_tgz_link_helper(project)
     if project.annotations_zip_downloadable == true
-      file_path = project.annotations_zip_system_path
+      file_path = project.annotations_tgz_system_path
       
       if File.exist?(file_path) == true
-        zip_created_at = File.ctime(file_path)
-        # when ZIP file exists 
-        html = link_to project.annotations_zip_filename, project_annotations_zip_path(project.name), class: 'button', title: "click to download"
+        tgz_created_at = File.ctime(file_path)
+        # when tgz file exists
+        html = link_to project.annotations_tgz_filename, project_annotations_tgz_path(project.name), class: 'button', title: "click to download"
         html += tag :br
-        html += content_tag :span, "#{zip_created_at.strftime("#{t('controllers.shared.created_at')}:%Y-%m-%d %T")}", :class => 'zip_time_stamp'
-        if zip_created_at < project.annotations_updated_at
-          html += link_to t('views.shared.update'), project_create_annotations_zip_path(project.name, :update => true), :class => 'button', :style => "margin-left: 0.5em", :confirm => t('controllers.annotations.confirm_create_zip')
+        html += content_tag :span, "#{tgz_created_at.strftime("#{t('controllers.shared.created_at')}:%Y-%m-%d %T")}", :class => 'time_stamp'
+        if tgz_created_at < project.annotations_updated_at
+          html += tag :br
+          html += link_to t('views.shared.update'), project_create_annotations_tgz_path(project.name, :update => true), :class => 'button', :style => "margin-left: 0.5em", :confirm => t('controllers.annotations.confirm_create_tgz')
         end
         if project.user == current_user
-          html += link_to t('views.shared.delete'), project_delete_annotations_zip_path(project.name), confirm: t('controllers.shared.confirm_delete'), :class => 'button'
+          html += tag :br
+          html += link_to t('views.shared.delete'), project_delete_annotations_tgz_path(project.name), confirm: t('controllers.shared.confirm_delete'), :class => 'button'
         end
         html
       else
-        # when ZIP file deos not exists 
-        delayed_job_tasks = ActiveRecord::Base.connection.execute('SELECT * FROM delayed_jobs').select{|delayed_job| delayed_job['handler'].include?(project.name) && delayed_job['handler'].include?('create_annotations_zip')}
+        # when tgz file deos not exists
+        delayed_job_tasks = ActiveRecord::Base.connection.execute('SELECT * FROM delayed_jobs').select{|delayed_job| delayed_job['handler'].include?(project.name) && delayed_job['handler'].include?('create_annotations_tgz')}
         if project.user == current_user
           if delayed_job_tasks.blank?
             # when delayed_job exists
-            link_to t('controllers.annotations.create_zip'), project_create_annotations_zip_path(project.name), :class => 'button long_button', :confirm => t('controllers.annotations.confirm_create_zip')
+            link_to t('controllers.annotations.create_downloadable'), project_create_annotations_tgz_path(project.name), :class => 'button long_button', :confirm => t('controllers.annotations.confirm_create_downloadable')
           else
             # delayed_job does not exists
-            t('views.shared.zip.delayed_job_present')
+            t('views.shared.download.delayed_job_present')
           end
         else
-          t('views.shared.zip.download_not_prepared')
+          t('views.shared.download.not_prepared')
         end
       end
     else
-      t('views.shared.zip.download_not_available')
+      t('views.shared.download.not_available')
     end
   end
 

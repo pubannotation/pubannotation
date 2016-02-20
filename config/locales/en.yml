@@ -242,7 +242,7 @@ en:
         rdfwriter: RDF writer
         xmlwriter: XML writer
         bionlpwriter: BioNLP-ST_writer
-        annotations_zip_downloadable: Anno. download
+        annotations_downloadable: Anno. download
         annotations_RDF_downloadable: Anno. RDF download
         process: Type
         updated_at: last update
@@ -319,8 +319,8 @@ en:
         no_project_document: The document, %{sourcedb}:%{sourceid}, does not exist or belong to the project, %{project_id}.
         no_annotation: No annotation in the submission.
         delayed_job: Annotation is submitted for registration. It may take a few minutes depending on the length of the text. You can check the result in your project page.
-      confirm_create_zip: Are you sure to create zip? It will take a few minutes.
-      create_zip: Create annotations ZIP file
+      confirm_create_downloadable: Are you sure to create a downloadable archive file? It will take a few minutes.
+      create_downloadable: Create a downloadable archive file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
       confirm_create_rdf: Are you sure to create rdf? It will take a few minutes.
       create_rdf: Create annotations RDF file.
@@ -438,11 +438,6 @@ en:
       associate_maintain_projects: Associated projects 
       belongs_to_sproject: Projects belongs to this Sproject
       associate_project: Associate project
-      select_zip_file: Select zip file to upload.
-      start_delay_create_annotations_zip:
-        result: "The task, 'create annotation zip', started. %{created_at}"
-      create_annotations_zip:
-        result: "The task, 'create annotation zip', finished %{result}. %{created_at}"
       start_delay_store_annotations:
         result: "Create annotations task started. %{created_at}"
       store_annotations:
@@ -524,16 +519,16 @@ en:
       div: div:%{divid}
       annotation: annnotation
       annotation_sets: project
-      download: download
       upload: upload
       obtain: obtain
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
       made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"
-      zip:
-        delayed_job_present: ZIP file will be created in a few minutes.      
-        download_not_available: Not available for this project.
-        download_not_prepared: Not prepared yet for this project.
+      download:
+        download: Download
+        delayed_job_present: Under creation
+        not_available: Not available for this project.
+        not_prepared: Not prepared yet for this project.
         deleted: Successfully deleted the annotation zip file.
       rdf:
         delayed_job_present: RDF file will be created in a few minutes.      

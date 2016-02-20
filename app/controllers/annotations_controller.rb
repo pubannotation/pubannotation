@@ -1,9 +1,8 @@
 require 'fileutils'
-require 'zip/zip'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_zip]
+  before_filter :authenticate_user!, :except => [:doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_tgz]
   include DenotationsHelper
 
   # annotations for doc without project
@@ -429,47 +428,46 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  # redirect to project annotations zip
-  def project_annotations_zip
+  # redirect to project annotations tgz
+  def project_annotations_tgz
     begin
       project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless project.present?
 
-      if File.exist?(project.annotations_zip_system_path)
-        # redirect_to "/annotations/#{project.annotations_zip_file_name}"
-        redirect_to project.annotations_zip_path
+      if File.exist?(project.annotations_tgz_system_path)
+        redirect_to project.annotations_tgz_path
       else
-        raise "annotation zip file does not exist."
+        raise "annotation tgz file does not exist."
       end
     rescue => e
       render_status_error(:not_found)
     end
   end
 
-  def create_project_annotations_zip
+  def create_project_annotations_tgz
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
-
       priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue CreateAnnotationsZipJob.new(project), priority: priority, queue: :general
-      Job.create({name:'Create annotations zip', project_id:project.id, delayed_job_id:delayed_job.id})
+      delayed_job = Delayed::Job.enqueue CreateAnnotationsTgzJob.new(project), priority: priority, queue: :general
+      Job.create({name:'Create annotations tarball', project_id:project.id, delayed_job_id:delayed_job.id})
+      redirect_to :back, notice: "The task 'Create annotations tarball' is created."
     rescue => e
-      flash[:notice] = notice
+      redirect_to home_path, notice: e.message
     end
-    redirect_to :back
   end
 
-  def delete_project_annotations_zip
+
+  def delete_project_annotations_tgz
     begin
       status_error = false
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless project.present?
 
-      if File.exist?(project.annotations_zip_system_path)
+      if File.exist?(project.annotations_tgz_system_path)
         if project.user == current_user 
-          File.unlink(project.annotations_zip_system_path)
-          flash[:notice] = t('views.shared.zip.deleted')
+          File.unlink(project.annotations_tgz_system_path)
+          flash[:notice] = t('views.shared.download.deleted')
         else
           status_error = true
           render_status_error(:forbidden)

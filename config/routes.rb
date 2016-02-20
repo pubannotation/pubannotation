@@ -97,10 +97,10 @@ Pubann::Application.routes.draw do  resources :annotators
   resources :projects do
     get 'spans/sql' => 'spans#sql'
     get 'relations/sql' => 'relations#sql'
-    get 'annotations.zip' => 'annotations#project_annotations_zip', :as => 'annotations_zip'
-    get 'annotations.zip/create' => 'annotations#create_project_annotations_zip', :as => 'create_annotations_zip'
+    get 'annotations.tgz' => 'annotations#project_annotations_tgz', :as => 'annotations_tgz'
+    get 'annotations.tgz/create' => 'annotations#create_project_annotations_tgz', :as => 'create_annotations_tgz'
     post 'annotations.tgz' => 'annotations#create_from_tgz', :as => 'create_annotations_from_tgz'
-    get 'delete_annotations_zip' => 'annotations#delete_project_annotations_zip', :as => 'delete_annotations_zip'
+    get 'delete_annotations_tgz' => 'annotations#delete_project_annotations_tgz', :as => 'delete_annotations_tgz'
     get 'annotations.rdf' => 'annotations#project_annotations_rdf', :as => 'annotations_rdf'
     get 'annotations.rdf/create' => 'annotations#create_project_annotations_rdf', :as => 'create_annotations_rdf'
     post 'annotations/upload' => 'annotations#create_from_upload', :as => 'create_annotations_from_upload'

@@ -26,7 +26,7 @@
 <% end -%>
 <br/>
 
-<table>
+<table class="vertical">
 	<tr>
 		<th><%= t('activerecord.attributes.project.status') %></th>
 		<td><%= @project.status_text -%></td>
@@ -68,7 +68,7 @@
 		<%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info" style="margin-right:10px">(<%= @docs_count -%>)</span>
 	</legend>
 
-	<table>
+	<table class="vertical">
 		<tr>
 			<th><%= t('views.shared.list') %></th>
 			<td><%= render partial: 'list_docs' -%></td>
@@ -104,10 +104,10 @@
 		Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span>
 	</legend>
 
-	<table>
+	<table class="vertical">
 		<tr>
-			<th><%= t('views.shared.download') %></th>
-			<td><%= project_annotations_zip_link_helper(@project) -%></td>
+			<th><%= t('views.shared.download.download') %></th>
+			<td><%= project_annotations_tgz_link_helper(@project) -%></td>
 		</tr>
 		<% if user_signed_in? && @project.editable?(current_user) -%>
 			<tr>

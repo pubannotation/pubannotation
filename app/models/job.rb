@@ -32,6 +32,15 @@ class Job < ActiveRecord::Base
     end
   end
 
+  def scan
+    dj = begin
+      Delayed::Job.find(self.delayed_job_id)
+    rescue
+      nil
+    end
+    @job.update_attribute(:ended_at, Time.now) if dj.nil?
+  end
+
   def stop
     if running?
       dj = begin

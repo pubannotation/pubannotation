@@ -514,15 +514,16 @@ class Project < ActiveRecord::Base
     annotations_collection = self.annotations_collection(encoding)
 
     FileUtils.mkdir_p(downloads_system_path) unless Dir.exist?(downloads_system_path)
-    tar = File.new(annotations_tgz_system_path, 'w')
-    Gem::Package:TarWriter.new(tar) do |writer|
-      annotations_collection.each do |annotations|
-        title = get_doc_info(annotations).sub(/\.$/, '').gsub(' ', '_')
-        title += ".json" unless title.end_with?(".json")
-        writer.add_file(title, 0644){|f| f.write(annotations.to_json)}
+    Zlib::GzipWriter.open(annotations_tgz_system_path, Zlib::BEST_COMPRESSION) do |gz|
+      Gem::Package::TarWriter.new(gz) do |tar|
+        annotations_collection.each do |annotations|
+          title = get_doc_info(annotations).sub(/\.$/, '').gsub(' ', '_')
+          path  = self.name + '/' + title + ".json"
+          stuff = annotations.to_json
+          tar.add_file_simple(path, 0644, stuff.length){|t| t.write(stuff)}
+        end
       end
     end
-    tar.close
   end 
 
   def get_conversion (annotation, converter, identifier = nil)

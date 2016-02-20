@@ -433,7 +433,7 @@ h1 .control {
 .show{
   display: block !important;
 }
-.zip_time_stamp{
+.time_stamp{
   font-size: 80%;
 }
 $indicator_size : 100px;
@@ -487,6 +487,11 @@ $indicator_size : 100px;
   width: 96%;
 }
 
+table.vertical th {
+  width: 70px;
+}
+
+
 .docs_header_sourcedb {
   width: 7em;
 }
@@ -500,6 +505,10 @@ $indicator_size : 100px;
 
 .docs_header_annotations_number{
   width: 5em;
+}
+
+.docs_header_button{
+  width: 70px;
 }
 
 .docs_header_text {

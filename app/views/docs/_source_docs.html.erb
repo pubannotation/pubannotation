@@ -42,7 +42,10 @@
       <%= t('views.shared.annotations_count') -%>
     </span>
   </th>
-  <th style="width:12em"></th>
+  <th class="docs_header_button"></th>
+  <% if @project.present? && user_signed_in? && @project.user == current_user %>
+    <th class="docs_header_button"></th>
+  <% end -%>
 </tr>
 
 <%= render partial: 'source_doc', collection: @docs -%>
