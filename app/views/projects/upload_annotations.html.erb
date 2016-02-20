@@ -10,8 +10,7 @@
 
 	<section>
 		<h2><%= t('views.docs.upload_annotations') %></h2>
-		You can upload a <span title="gzip compressed tar file" style="text-decoration:underline">.tgz or .tar.gz file</span> which contains annotation json files.
-		<%= render partial: 'annotations/upload_tgz' -%>
+		You can upload an annotation JSON file (<span style="text-decoration:underline">*.json</span>), or a gzip compressed tar file (<span style="text-decoration:underline">*.tgz</span> or <span style="text-decoration:underline">*.tar.gz</span>) which contains multitple annotation JSON files.
+		<%= render partial: 'annotations/upload' -%>
 	</section>
-
 </section>

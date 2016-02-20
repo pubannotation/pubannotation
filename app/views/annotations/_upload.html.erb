@@ -1,8 +1,8 @@
-<%= form_tag project_create_annotations_from_tgz_path(@project.name), multipart: true do -%>
+<%= form_tag project_create_annotations_from_upload_path(@project.name), multipart: true do -%>
 	<table>
 		<tr>
 			<th>Choose file</th>
-			<td><%= file_field_tag 'tgzfile', accept: 'application/x-gzip', required: true -%></td>
+			<td><%= file_field_tag 'upfile', accept: 'application/x-gzip,application/json', required: true -%></td>
 		</tr>
 		<tr>
 			<th>Choose mode</th>

@@ -1,15 +1,20 @@
 require 'fileutils'
 include AnnotationsHelper
 
-class StoreAnnotationsCollectionTgzJob < Struct.new(:filepath, :project, :options)
+class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :options)
 	include StateManagement
 
 	def perform
-    dirpath = File.join('tmp', File.basename(filepath, ".*"))
-    unpack_cmd = "mkdir #{dirpath}; tar -xzf #{filepath} -C #{dirpath}"
-    unpack_success_p = system(unpack_cmd)
-    raise IOError, "Could not unpack the archive file." unless unpack_success_p
-    jsonfiles = Dir.glob(File.join(dirpath, '**', '*.json'))
+    dirpath = nil
+    jsonfiles = if filepath.end_with?('.json')
+      Dir.glob(filepath)
+    else
+      dirpath = File.join('tmp', File.basename(filepath, ".*"))
+      unpack_cmd = "mkdir #{dirpath}; tar -xzf #{filepath} -C #{dirpath}"
+      unpack_success_p = system(unpack_cmd)
+      raise IOError, "Could not unpack the archive file." unless unpack_success_p
+      Dir.glob(File.join(dirpath, '**', '*.json'))
+    end
 
     # check annotation files
     @job.update_attribute(:num_items, jsonfiles.length)
@@ -48,13 +53,15 @@ class StoreAnnotationsCollectionTgzJob < Struct.new(:filepath, :project, :option
         rescue => e
           annotations[:sourcedb] = '-' unless annotations[:sourcedb].present?
           annotations[:sourceid] = '-' unless annotations[:sourceid].present?
-  				@job.messages << Message.create({item: "#{annotations[:sourcedb]}:#{annotations[:sourceid]}", body: e.message})
+          docspec = "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
+          docspec += "-#{annotations[:divid]}" unless annotations[:divid].nil?
+  				@job.messages << Message.create({item: docspec, body: e.message})
         end
       end
     	@job.update_attribute(:num_dones, i + 1)
     end
     Doc.index_diff if Doc.diff_flag
     File.unlink(filepath)
-    FileUtils.rm_rf(dirpath)
+    FileUtils.rm_rf(dirpath) unless dirpath.nil?
 	end
 end
