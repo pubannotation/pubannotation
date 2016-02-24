@@ -3,109 +3,12 @@ layout: default
 title: PubAnnotation
 ---
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
-<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
-<script src="http://textae.pubannotation.org/vender/jquery.jsPlumb-1.5.2-min.js"></script>
-<script src="http://textae.pubannotation.org/lib/textae.min.js"></script>
-<link rel="stylesheet" href="http://textae.pubannotation.org/lib/css/textae.min.css" />
-
-
 <section class="intro">
 	<div class="grid">
-
 		<div class="unit whole center-on-mobiles">
 			<div style="color:red; font-size:2em; font-weight:bold">PubAnnotation/TextAE service is now unavailable due to a server problem. We are very sorry for any inconvenience cause by the problem. We will do our best to get the service back.</div>
-			<div class="slogan">Share your annotation in alignment with others!</div>
+			<!-- <div class="slogan">Share your annotation in alignment with others!</div> -->
 		</div>
 	</div>
+	<div class="clear"></div>
 </section>
-<section class="features">
-	<div class="grid">
-		<div class="unit one-third">
-			<h4>Persistent repository</h4>
-			<p>Anyone can register his/her text annotations in PubAnnotation. The contributors will retain their full right over their annotation data. PubAnnotation will only help data holders share their data with others.</p>
-		</div>
-		<div class="unit one-third">
-			<h4>Alignment</h4>
-			<p>Due to the powerful alignment algorithm implemented in PubAnnotation, annotation data will be automatically aligned with others, on upload. It means your annotation data will become immediately available for comparative or integrative analysis with others.</p>
-		</div>
-		<div class="unit one-third">
-			<h4>Programmable API</h4>
-			<p>All the annotation data on PubAnnotation are accessable through <a href="http://en.wikipedia.org/wiki/Representational_state_transfer">REST API</a> and <a href="http://en.wikipedia.org/wiki/Dereferenceable_Uniform_Resource_Identifier">dereferenceable URIs</a>. It means, you don't need to download whole data sets any more, as your program can directly access the data whenever necessary.</p>
-		</div>
-		<div class="clear"></div>
-	</div>
-</section>
-
-<section class="quickstart">
-	<div class="grid">
-		<div class="unit golden-small center-on-mobiles">
-			<h4>Access aligned annotations</h4>
-		</div>
-		<div class="unit golden-large code">
-			<p class="title">URL</p>
-			<div class="shell">
-				<p class="line">http://pubannotation.org/docs/sourcedb/PubMed /sourceid/10022882/spans/606-710/annotations</p>
-			</div>
-		</div>
-		<div class="clear"></div>
-
-		<div class="unit one-fifth center-on-mobiles">
-			<p style="text-align:right">Gene name grounding<br/>(PubTator)</p>
-		</div>
-		<div class="unit four-fifths">
-			<div style="text-align:right; font-style:italic">The annotations below are rendered by <a href="http://textae.pubannotation.org">TextAE</a>.</div>
-			<div class="textae-editor" target="http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10022882/spans/606-710/annotations.json?project=pubtator-sample" style="background:#fff; color:black; padding:5px"></div>
-		</div>
-		<div class="clear"></div>
-
-		<div class="unit one-fifth center-on-mobiles">
-			<p style="text-align:right">Semantic annotation<br/>(MetaMap and SemRep)</p>
-		</div>
-		<div class="unit four-fifths">
-			<div class="textae-editor" target="http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10022882/spans/606-710/annotations.json?project=semrep-sample" style="background:#fff; color:black; padding:5px; padding-top:10px"></div>
-		</div>
-		<div class="clear"></div>
-
-		<div class="unit one-fifth center-on-mobiles">
-			<p style="text-align:right">Coreference annotation<br/>(Genia-Medco)</p>
-		</div>
-		<div class="unit four-fifths">
-			<div class="textae-editor" target="http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10022882/spans/606-710/annotations.json?project=genia-medco-coref" style="background:#fff; color:black; padding:5px; padding-top:50px"></div>
-		</div>
-		<div class="clear"></div>
-
-		<div class="unit one-fifth center-on-mobiles">
-			<p style="text-align:right">Dependency parsing<br/>(Enju)</p>
-		</div>
-		<div class="unit four-fifths">
-			<div class="textae-editor" target="http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10022882/spans/606-710/annotations.json?project=pubmed-enju-pas" style="background:#fff; color:black; padding:5px; padding-top:70px"></div>
-		</div>
-		<div class="clear"></div>
-	</div>
-</section>
-
-<section class="quickstart">
-	<div class="grid">
-		<div class="unit golden-small center-on-mobiles">
-			<h4>Upload annotation</h4>
-		</div>
-		<div class="unit golden-large code">
-			<p class="title">HTTP Post</p>
-			<div class="shell">
-				<p class="line">curl -user username:password -H "content-type:application/json" -d @annotations.json http://pubannotation.org/docs/sourcedb/PubMed /sourceid/10022882/annotations.json</p>
-			</div>
-		</div>
-		<div class="clear"></div>
-	</div>
-</section>
-
-<!--   <h4>News</h4>
-  <ul class="posts">
-    {% for post in site.posts %}
-      <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
-    {% endfor %}
-  </ul>
- -->
