@@ -2,7 +2,7 @@ class MigrateDenotations < ActiveRecord::Migration
   def up
     # Create obj master table
     denotations = ActiveRecord::Base.connection.exec_query('SELECT * FROM Denotations').to_hash
-    denotations.collect{|d| d['obj_type']}.uniq.each do |obj_name|
+    denotations.collect{|d| d['obj']}.uniq.each do |obj_name|
       Obj.create(name: obj_name)
     end
 
