@@ -18,7 +18,7 @@ class MigrateRelations < ActiveRecord::Migration
           type: 'Relation'
         }
       )
-      if relation.project_id.present?
+      if relation['project_id'].present?
         if Project.where(id: relation['project_id']).present?
           AnnotationsProject.create(annotation_id: relation['id'], project_id: relation['project_id'])
         end
