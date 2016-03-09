@@ -1,6 +1,6 @@
 ---
 layout: news
-title:  "Uploading status added."
+title:  "a new project status, Uploading, added."
 category: [system]
 ---
 As a status of a project, '_Uploading_' is added.
