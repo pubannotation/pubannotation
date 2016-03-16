@@ -45,6 +45,7 @@ class DocsController < ApplicationController
 
       @docs_count = @project.pmdocs_count + @project.pmcdocs_count
       @docs_count = @project.docs.where(serial: 0).count if @docs_count < 1000
+      sort_order = sort_order(Doc)
 
       if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, page:params[:page]})
@@ -52,15 +53,20 @@ class DocsController < ApplicationController
         @search_count = search_results[:total]
         @docs = search_results[:docs]
       else
-        sort_order = sort_order(Doc)
         @docs = @project.docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
       end
 
       respond_to do |format|
         format.html
         format.json {
-          source_docs_all = @docs.where(serial: 0).sort_by_params(sort_order)
-          docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
+          docs_all = if @search_count.nil?
+            raise "Too many (> 5000) to list" if @docs_count > 5000
+            @project.docs.where(serial: 0).sort_by_params(sort_order)
+          else
+            raise "Too many (> 5000) to list" if @search_count > 5000
+            Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id})[:docs]
+          end
+          docs_list_hash = docs_all.map{|d| d.to_list_hash('doc')}
           render json: docs_list_hash
         }
         format.tsv  {
