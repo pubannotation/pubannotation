@@ -59,12 +59,12 @@ class DocsController < ApplicationController
       respond_to do |format|
         format.html
         format.json {
-          source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
+          source_docs_all = @docs.where(serial: 0).sort_by_params(sort_order)
           docs_list_hash = source_docs_all.map{|d| d.to_list_hash('doc')}
           render json: docs_list_hash
         }
         format.tsv  {
-          source_docs_all = docs.where(serial: 0).sort_by_params(sort_order)
+          source_docs_all = @docs.where(serial: 0).sort_by_params(sort_order)
           render text: Doc.to_tsv(source_docs_all, 'doc')
         }
       end
