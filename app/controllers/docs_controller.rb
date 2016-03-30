@@ -347,8 +347,8 @@ class DocsController < ApplicationController
 
     # sourceid control
     unless doc_hash[:sourceid].present?
-      lastdoc = project.docs.where('sourcedb = ?', doc_hash[:sourcedb]).order("sourceid ASC").last
-      doc_hash[:sourceid] = lastdoc.nil? ? '1' : "#{lastdoc.sourceid.to_i + 1}"
+      last_id = project.docs.where(sourcedb: doc_hash[:sourcedb]).pluck(:sourceid).max_by{|i| i.to_i}
+      doc_hash[:sourceid] = last_id.nil? ? '1' : last_id.next
     end
 
     @doc = Doc.new(doc_hash)
