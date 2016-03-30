@@ -30,7 +30,10 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'project_id',
     :join_table => 'associate_projects_projects'
 
-  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference, :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter, :annotations_zip_downloadable, :namespaces, :process
+  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference,
+                  :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter,
+                  :annotations_zip_downloadable, :namespaces, :process,
+                  :pmdocs_count, :pmcdocs_count, :denotations_count, :relations_count, :annotations_count
   has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
   has_many :relations, :dependent => :destroy, after_add: :update_updated_at
   has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
@@ -870,6 +873,7 @@ class Project < ActiveRecord::Base
     if annotations[:denotations].present?
       num = annotations[:denotations].length
       annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
+
       raise "Alignment failed. Text may be too much different." if annotations[:denotations].length < num
 
       ActiveRecord::Base.transaction do
@@ -1035,16 +1039,16 @@ class Project < ActiveRecord::Base
   end
 
   def clean
-    annotations_collection = self.annotations_collection
     denotations_count = annotations_collection.inject(0){|sum, ann| sum += (ann[:denotations].present? ? ann[:denotations].length : 0)}
     relations_count = annotations_collection.inject(0){|sum, ann| sum += (ann[:relations].present? ? ann[:relations].length : 0)}
-    pmdocs_count = docs.where("sourcedb=?", "PubMed").count
-    pmcdocs_count = docs.where("sourcedb=?", "PMC").count
-    Project.update_counters self.id,
+    pmdocs_count = docs.where(sourcedb: "PubMed").count
+    pmcdocs_count = docs.where(sourcedb: "PMC").count
+    update_attributes(
       :pmdocs_count => pmdocs_count,
       :pmcdocs_count => pmcdocs_count,
       :denotations_count => denotations_count,
       :relations_count => relations_count,
       :annotations_count => denotations_count + relations_count
+    )
   end
 end
