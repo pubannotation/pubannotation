@@ -70,8 +70,14 @@ class DocsController < ApplicationController
           render json: docs_list_hash
         }
         format.tsv  {
-          source_docs_all = @docs.where(serial: 0).sort_by_params(sort_order)
-          render text: Doc.to_tsv(source_docs_all, 'doc')
+          docs_all = if @search_count.nil?
+            raise "Too many (> 5000) to list" if @docs_count > 5000
+            @project.docs.where(serial: 0).sort_by_params(sort_order)
+          else
+            raise "Too many (> 5000) to list" if @search_count > 5000
+            Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id})[:docs]
+          end
+          render text: Doc.to_tsv(docs_all, 'doc')
         }
       end
     rescue => e

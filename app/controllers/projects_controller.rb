@@ -58,7 +58,7 @@ class ProjectsController < ApplicationController
 
       # TODO: needs to be elaborated more
       @docs_count = @project.pmdocs_count + @project.pmcdocs_count
-      @docs_count = @project.docs.where(serial: 0).count if @docs_count < 1000
+      @docs_count = @project.docs.where(serial: 0).count if @docs_count < 1000 || @docs_count == 0
 
       # @sourcedbs = Doc.select(:sourcedb).uniq.pluck(:sourcedb).select{|s| Doc.sourcedb_public?(s) || Doc.sourcedb_mine?(s, current_user)}
       # @sourcedbs_active = @project.docs.select(:sourcedb).uniq.pluck(:sourcedb)
