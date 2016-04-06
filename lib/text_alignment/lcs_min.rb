@@ -51,12 +51,12 @@ class TextAlignment::LCSMin
     end
   end
 
-  def _find_min_range (m1_initial, m1_final, m2_initial, m2_final, clcs = 0, clss = 0)
+  def _find_min_range (m1_initial, m1_final, m2_initial, m2_final, clcs = 0)
     return nil if (m1_final - m1_initial < 0) || (m2_final - m2_initial < 0)
     sdiff = Diff::LCS.sdiff(@str1[m1_initial..m1_final], @str2[m2_initial..m2_final])
     lcs = sdiff.count{|d| d.action == '='}
 
-    return nil if lcs == 0
+    return nil if lcs < 0
 
     match_last  = sdiff.rindex{|d| d.action == '='}
     m1_final    = sdiff[match_last].old_position + m1_initial
@@ -66,19 +66,16 @@ class TextAlignment::LCSMin
     m1_initial  = sdiff[match_first].old_position + m1_initial
     m2_initial  = sdiff[match_first].new_position + m2_initial
 
-    lss = match_last - match_first + 1
-    return nil if (lcs < clcs) && (clss > 0) && (clss - lss < 2)
-
     # attempt for shorter match
     if ((m1_final - m1_initial) > (m2_final - m2_initial))
-      r = _find_min_range(m1_initial + 1, m1_final, m2_initial, m2_final, lcs, lss)
+      r = _find_min_range(m1_initial + 1, m1_final, m2_initial, m2_final, lcs)
       return r unless r.nil?
-      r = _find_min_range(m1_initial, m1_final - 1, m2_initial, m2_final, lcs, lss)
+      r = _find_min_range(m1_initial, m1_final - 1, m2_initial, m2_final, lcs)
       return r unless r.nil?
     else
-      r = _find_min_range(m1_initial, m1_final, m2_initial + 1, m2_final, lcs, lss)
+      r = _find_min_range(m1_initial, m1_final, m2_initial + 1, m2_final, lcs)
       return r unless r.nil?
-      r = _find_min_range(m1_initial, m1_final, m2_initial, m2_final - 1, lcs, lss)
+      r = _find_min_range(m1_initial, m1_final, m2_initial, m2_final - 1, lcs)
       return r unless r.nil?
     end
 
@@ -86,8 +83,7 @@ class TextAlignment::LCSMin
       m1_initial: m1_initial,
       m1_final: m1_final,
       m2_initial: m2_initial,
-      m2_final: m2_final,
-      lcs: lcs,
+      m2_final: m2_final
     }
   end
 
