@@ -882,6 +882,7 @@ class Project < ActiveRecord::Base
         self.save_hmodifications(annotations[:modifications], doc) if annotations[:modifications].present?
       end
     end
+
     result = annotations.select{|k,v| v.present?}
   end
 
@@ -979,7 +980,7 @@ class Project < ActiveRecord::Base
     end
 
     ann = {}
-    ann[:text] = if result.respond_to?(:has_key) && result.has_key?(:text)
+    ann[:text] = if result.respond_to?(:has_key?) && result.has_key?(:text)
       result[:text]
     else
       doc.body
