@@ -60,7 +60,7 @@ gem 'daemons'
 gem 'delayed_job_active_record'
 gem 'backup'
 gem 'whenever', :require => false
-gem 'mysql2',          '~> 0.3.13', :platform => :ruby
+# gem 'mysql2',          '~> 0.3.13', :platform => :ruby
 gem 'elasticsearch-model', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
 gem 'elasticsearch-rails', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
 
