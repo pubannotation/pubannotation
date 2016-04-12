@@ -56,7 +56,8 @@ class TextAlignment::LCSMin
     sdiff = Diff::LCS.sdiff(@str1[m1_initial..m1_final], @str2[m2_initial..m2_final])
     lcs = sdiff.count{|d| d.action == '='}
 
-    return nil if lcs < 0
+    return nil if lcs == 0
+    return nil if lcs < clcs
 
     match_last  = sdiff.rindex{|d| d.action == '='}
     m1_final    = sdiff[match_last].old_position + m1_initial
