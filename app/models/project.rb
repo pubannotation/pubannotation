@@ -806,7 +806,6 @@ class Project < ActiveRecord::Base
         if doc.valid?
           doc.save
           divs << doc
-          Doc.index_diff
         else
           num_failed += 1
         end

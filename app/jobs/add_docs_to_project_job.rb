@@ -12,6 +12,5 @@ class AddDocsToProjectJob < Struct.new(:docspecs, :project)
 			end
 			@job.update_attribute(:num_dones, i + 1)
     end
-		Doc.index_diff if Doc.diff_flag
 	end
 end

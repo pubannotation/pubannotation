@@ -360,7 +360,6 @@ class DocsController < ApplicationController
     @doc = Doc.new(doc_hash)
     respond_to do |format|
       if @doc.save
-        Doc.index_diff
         @project, notice = get_project(params[:project_id])
         @project.docs << @doc if @project.present?
         get_project(params[:project_id])
@@ -407,7 +406,6 @@ class DocsController < ApplicationController
         begin
           project.add_doc(docspec[:sourcedb], docspec[:sourceid], true)
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - added."
-          Doc.index_diff if Doc.diff_flag
         rescue => e
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
         end

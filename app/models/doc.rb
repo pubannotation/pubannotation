@@ -1,45 +1,24 @@
-require 'elasticsearch/model'
-
 class Doc < ActiveRecord::Base
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
 
-  # max search size for Elasticsearch
-  # this value must lower equal to Elasticsearch.max_result_window value
-  # set Elasticsearch.max_result_window value command
-  # curl -XPUT 'localhost:9200/docs/_settings' -d '
-  # {
-  #     "index" : {
-  #         "max_result_window" : 50000(value)
-  #     }
-  # }'
   LIST_MAX_SIZE = 50
 
   settings index: {
     analysis: {
-      filter: {
-        snowball_en: {
-          type: "snowball",
-          language: "English"
-        },
-        asciifolding_preserve: {
-          type: "asciifolding",
-          preserve_original: true
-        }
-      },
       analyzer: {
-        standard_english: {
-          type: "standard",
-          filter: ["standard", "lowercase", :asciifolding_preserve, :snowball_en]
+        standard_normalization: {
+          tokenizer: :standard,
+          filter: [:standard, :lowercase, :stop, :asciifolding, :snowball]
         }
       }
     }
   } do
     mappings do
-      indexes :sourcedb, index: :not_analyzed
-      indexes :sourceid, index: :not_analyzed
-      indexes :serial,   index: :not_analyzed
-      indexes :body,     type: 'string',  analyzer: :standard_english
+      indexes :sourcedb, type: :string, index: :not_analyzed
+      indexes :sourceid, type: :string, index: :not_analyzed
+      indexes :serial,   type: :integer, index: :not_analyzed
+      indexes :body,     type: :string,  analyzer: :standard_normalization
 
       # indexes :docs_projects, type: 'nested' do
       indexes :docs_projects do
@@ -60,7 +39,6 @@ class Doc < ActiveRecord::Base
     )
   end
   
-  @@diff_flag = false
   UserSourcedbSeparator = '@'
   after_save :expire_page_cache
   before_destroy :decrement_docs_counter
@@ -154,9 +132,6 @@ class Doc < ActiveRecord::Base
     sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
     order(sort_order)
   }
-  # NOTE scope for elasticsearch:import:model
-  # cannot use argument (raise error)
-  scope :diff, where(['created_at > ?', 1.hour.ago])
 
   def self.search_docs(attributes = {})
     filter_condition = []
@@ -256,7 +231,6 @@ class Doc < ActiveRecord::Base
     end
 
     divs.each{|div| raise IOError, "Failed to save the document" unless div.save}
-    @@diff_flag = true
     divs
   end
 
@@ -277,7 +251,6 @@ class Doc < ActiveRecord::Base
         divs << doc if doc.save
       end
     end
-    index_diff
     return divs
   end
 
@@ -738,15 +711,6 @@ class Doc < ActiveRecord::Base
     annotations[:relations] = hrelations if hrelations
     annotations[:modifications] = hmodifications if hmodifications
     annotations
-  end
-
-  def self.index_diff
-    @@diff_flag = false
-    Delayed::Job.enqueue(DelayedRake.new("elasticsearch:import:model", class: 'Doc', scope: "diff"))
-  end
-
-  def self.diff_flag
-    @@diff_flag
   end
 
   def self.dummy(repeat_times)
