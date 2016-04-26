@@ -52,14 +52,14 @@
     </tr>
     </table>
 
-    <% unless @job.messages.empty? %>
+    <% if @job.messages.present? %>
       <section>
         <h2>
           Problem reports (<%= @job.messages.count %>)
           <span class='tab-bar'>
             <%= link_to_unless_current 'JSON', params.merge(controller: :messages, action: :index, format: :json), :class => 'tab' -%>
             <%= link_to_unless_current 'TSV', params.merge(controller: :messages, action: :index, format: :tsv), :class => 'tab' -%>
-            </span>
+          </span>
         </h2>
         <p class="note">The following items were rejected due to the reported reasons.</p>
         <table>

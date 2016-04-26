@@ -3,5 +3,5 @@
 		style: "width:7em" -%>
 	<%= text_field_tag :sourceid, params[:sourceid], value: params[:sourceid],
 		style: "width:7em", placeholder: t('activerecord.attributes.doc.sourceid') -%>
-	<%= submit_tag t('views.shared.open'), class: :button -%>
+	<button type="submit" class="short-button" title="<%= t('views.shared.open') %>"><i class="fa fa-file-text-o" aria-hidden="true"></i></button>
 <% end %>

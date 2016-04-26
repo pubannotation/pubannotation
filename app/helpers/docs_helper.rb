@@ -1,4 +1,12 @@
 module DocsHelper
+  def sourcedb_count(user, project)
+    counts = if project.nil?
+      Doc.count_per_sourcedb(user)
+    else
+      project.docs.where("serial = ?", 0).group(:sourcedb).count
+    end
+  end
+
   def sourceid_index_link_helper(doc)
     if params[:project_id].present?
       link_to doc.sourcedb, sourceid_index_project_sourcedb_docs_path(params[:project_id], doc.sourcedb)  

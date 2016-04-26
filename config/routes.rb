@@ -31,6 +31,7 @@ Pubann::Application.routes.draw do  resources :annotators
 
   resources :docs do
     collection do
+      get 'open' => 'docs#open'
       get 'records' => 'docs#records'
       # list sourcedb
       get 'sourcedb' => 'docs#sourcedb_index'
@@ -124,6 +125,8 @@ Pubann::Application.routes.draw do  resources :annotators
       get 'obtain_annotations' => 'projects#obtain_annotations'
       get 'upload_annotations' => 'projects#upload_annotations'
       get 'autocomplete_sourcedb' => 'projects#autocomplete_sourcedb'
+      post 'compare' => 'projects#compare'
+      get  'comparison' => 'projects#show_comparison'
     end
     
     collection do
@@ -147,6 +150,7 @@ Pubann::Application.routes.draw do  resources :annotators
       collection do
         get 'index' => 'docs#index_in_project'
         post 'add' => 'docs#add'
+        post 'import' => 'docs#import'
         get 'records' => 'docs#records'
         get 'search' => 'docs#search'
         get 'open' => 'docs#open'
@@ -208,6 +212,12 @@ Pubann::Application.routes.draw do  resources :annotators
         get 'spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index'    
       end
       resources :annotations do
+      end
+    end
+
+    resources :annotations do
+      collection do
+        post 'import'  => 'annotations#import'
       end
     end
   end

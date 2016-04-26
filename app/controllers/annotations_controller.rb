@@ -442,6 +442,39 @@ class AnnotationsController < ApplicationController
     end
   end
 
+  def import
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management: #{params[:project_id]}." unless project.present?
+
+      source_project = Project.find_by_name(params[:select_project])
+      raise ArgumentError, "There is no such a project: #{params[:select_project]}." if source_project.nil?
+      raise ArgumentError, "You cannot import annotations from itself." if source_project == project
+
+      source_docs = source_project.docs.select{|d| d.serial == 0}
+      destin_docs = project.docs.select{|d| d.serial == 0}
+      shared_docs = source_docs & destin_docs
+
+      raise ArgumentError, "There is no shared document with the project, #{source_project.name}" if shared_docs.length == 0
+      raise ArgumentError, "For a performance reason, current implementation limits this feature to work for less than 3,000 documents." if shared_docs.length > 3000
+
+      docids = shared_docs.collect{|d| d.id}
+
+      priority = project.jobs.unfinished.count
+      delayed_job = Delayed::Job.enqueue ImportAnnotationsJob.new(source_project, project), priority: priority, queue: :general
+      Job.create({name:"Import annotations from #{source_project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
+      message = "The task, 'import annotations from the project, #{source_project.name}', is created."
+
+    rescue => e
+      message = e.message
+    end
+
+    respond_to do |format|
+      format.html {redirect_to project_path(project.name), notice: message}
+      format.json {render json:{message:message}}
+    end
+  end
+
   def create_project_annotations_tgz
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])

@@ -140,15 +140,16 @@ class DocsController < ApplicationController
   end
  
   def sourcedb_index
-    if params[:project_id].present?
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless @project.present?
-    end
-
-    @sourcedb_doc_counts = if @project.present?
-      @project.docs.where("serial = ?", 0).group(:sourcedb).count
-    else
-      Doc.where("serial = ?", 0).group(:sourcedb).count
+    begin
+      @project = if params[:project_id].present?
+        project = Project.accessible(current_user).find_by_name(params[:project_id])
+        raise "There is no such project." unless project.present?
+        project
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
+      end
     end
   end 
  
@@ -267,19 +268,29 @@ class DocsController < ApplicationController
 
   def open
     begin
-      project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless project.present?
+      if params[:project_id].present?
+        project = Project.accessible(current_user).find_by_name(params[:project_id])
+        raise "There is no such project." unless project.present?
 
-      divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+        divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        raise "There is no such document in the project." unless divs.present?
 
-      respond_to do |format|
-        format.html {redirect_to show_project_sourcedb_sourceid_docs_path(params[:project_id], params[:sourcedb], params[:sourceid])}
+        respond_to do |format|
+          format.html {redirect_to show_project_sourcedb_sourceid_docs_path(params[:project_id], params[:sourcedb], params[:sourceid])}
+        end
+      else
+        divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        raise "There is no such document." unless divs.present?
+
+        respond_to do |format|
+          format.html {redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid])}
+        end
       end
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to :back, notice: e.message}
-      end
+
+    # rescue => e
+    #   respond_to do |format|
+    #     format.html {redirect_to :back, notice: e.message}
+    #   end
     end
   end
 
@@ -415,6 +426,34 @@ class DocsController < ApplicationController
         Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
         message = "The task, 'add documents to the project', is created."
       end
+
+    rescue => e
+      message = e.message
+    end
+
+    respond_to do |format|
+      format.html {redirect_to project_path(project.name), notice: message}
+      format.json {render json:{message:message}}
+    end
+  end
+
+  def import
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
+
+      source_project = Project.find_by_name(params["select_project"])
+      raise ArgumentError, "There is no such a project." if source_project.nil?
+
+      raise ArgumentError, "You cannot import documents from itself." if source_project == project
+
+      docs = source_project.docs.select{|d| d.serial == 0}
+      docspecs = docs.collect{|d| {sourcedb: d.sourcedb, sourceid: d.sourceid}}
+
+      priority = project.jobs.unfinished.count
+      delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project), priority: priority, queue: :general
+      Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
+      message = "The task, 'import documents to the project', is created."
 
     rescue => e
       message = e.message

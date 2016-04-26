@@ -2,6 +2,7 @@ class Project < ActiveRecord::Base
   include ApplicationHelper
   include AnnotationsHelper
   DOWNLOADS_PATH = "/downloads/"
+  COMPARISONS_PATH = "public/comparisons/"
 
   before_validation :cleanup_namespaces
   after_validation :user_presence
@@ -282,7 +283,7 @@ class Project < ActiveRecord::Base
       end
     end
   end
-  
+
   def add_associate_projects(params_associate_projects, current_user)
     if params_associate_projects.present?
       associate_projects_names = Array.new
@@ -302,7 +303,7 @@ class Project < ActiveRecord::Base
       self.associate_projects << associate_projects
     end    
   end
-  
+
   def associate_project_ids
     associate_project_ids = associate_projects.present? ? associate_projects.collect{|associate_project| associate_project.id} : []
     associate_project_ids.uniq
@@ -315,7 +316,7 @@ class Project < ActiveRecord::Base
   def self_id_and_associate_project_and_project_ids
     associate_project_and_project_ids << self.id if self.id.present?
   end
-  
+
   def project_ids
     project_ids = projects.present? ? projects.collect{|project| project.id} : []
     project_ids.uniq
@@ -328,7 +329,7 @@ class Project < ActiveRecord::Base
       [0]
     end
   end
-  
+
   def associatable_project_ids(current_user)
     if self.new_record?
       associatable_projects = Project.accessible(current_user)
@@ -783,6 +784,7 @@ class Project < ActiveRecord::Base
       self.docs << divs
     end
 
+    ActionController::Base.new.expire_fragment("sourcedb_counts_in_#{self.name}")
     divs
   end
 
@@ -857,6 +859,7 @@ class Project < ActiveRecord::Base
 
   def save_annotations(annotations, doc, options = nil)
     raise ArgumentError, "nil document" unless doc.present?
+    raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
     options ||= {}
 
     if options[:mode] == 'skip'
@@ -996,6 +999,126 @@ class Project < ActiveRecord::Base
     ann
   end
 
+  def comparison_path
+    "#{Project::COMPARISONS_PATH}" + "comparison_#{self.name}" + '.json'
+  end
+
+  def create_comparison(project_ref)
+    docs = self.docs & project_ref.docs
+
+    comparison_denotations = compare_denotations(docs, project_ref)
+    comparison_relations = compare_relations(docs, project_ref)
+    comparison_modifications = compare_modifications(docs, project_ref)
+
+    comparison = {reference: project_ref.name}
+    comparison[:denotations] = comparison_denotations unless comparison_denotations.nil?
+    comparison[:relations] = comparison_relations unless comparison_relations.nil?
+    comparison[:modifications] = comparison_modifications unless comparison_modifications.nil?
+
+    File.write(comparison_path, comparison.to_json)
+  end
+
+  def compare_denotations(docs, project_ref)
+    types = Hash.new(0)
+    types_ref = Hash.new(0)
+    types_common = Hash.new(0)
+
+    docs.each do |doc|
+      anns     = doc.hannotations(self)
+      anns_ref = doc.hannotations(project_ref)
+
+      anns_norm     = anns.has_key?(:denotations) ? anns[:denotations].collect{|d| {span:d[:span], obj:d[:obj]}} : []
+      anns_norm_ref = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].collect{|d| {span:d[:span], obj:d[:obj]}} : []
+      anns_norm_common = anns_norm & anns_norm_ref
+
+      anns_norm.each{|d| types[d[:obj]] += 1; types['_ALL_'] += 1}
+      anns_norm_ref.each{|d| types_ref[d[:obj]] += 1; types_ref['_ALL_'] += 1}
+      anns_norm_common.each{|d| types_common[d[:obj]] += 1; types_common['_ALL_'] += 1}
+    end
+
+    return nil if types_ref.empty?
+
+    recall = Hash.new(0)
+    precision = Hash.new(0)
+    fscore = Hash.new(0)
+
+    types.each{|t, c| precision[t] = types_common[t].to_f / c}
+    types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
+    types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
+
+    {types:types, types_ref:types_ref, types_common:types_common, recall:recall, precision:precision, fscore:fscore}
+  end
+
+  def compare_relations(docs, project_ref)
+    types = Hash.new(0)
+    types_ref = Hash.new(0)
+    types_common = Hash.new(0)
+
+    docs.each do |doc|
+      anns     = doc.hannotations(self)
+      anns_ref = doc.hannotations(project_ref)
+
+      den_idx     =     anns.has_key?(:denotations) ?     anns[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
+      den_ref_idx = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
+
+      anns_norm     =     anns.has_key?(:relations) ?     anns[:relations].collect{|r| {subj:den_idx[r[:subj]], obj:den_idx[r[:obj]], pred:r[:pred]}} : []
+      anns_norm_ref = anns_ref.has_key?(:relations) ? anns_ref[:relations].collect{|r| {subj:den_ref_idx[r[:subj]], obj:den_ref_idx[r[:obj]], pred:r[:pred]}} : []
+      anns_norm_common = anns_norm & anns_norm_ref
+
+      anns_norm.each{|r| types[r[:pred]] += 1; types['_ALL_'] += 1}
+      anns_norm_ref.each{|r| types_ref[r[:pred]] += 1; types_ref['_ALL_'] += 1}
+      anns_norm_common.each{|r| types_common[r[:pred]] += 1; types_common['_ALL_'] += 1}
+      break
+    end
+
+    return nil if types_ref.empty?
+
+    recall = Hash.new(0)
+    precision = Hash.new(0)
+    fscore = Hash.new(0)
+
+    types.each{|t, c| precision[t] = types_common[t].to_f / c}
+    types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
+    types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
+
+    {types:types, types_ref:types_ref, types_common:types_common, recall:recall, precision:precision, fscore:fscore}
+  end
+
+  def compare_modifications(docs, project_ref)
+    types = Hash.new(0)
+    types_ref = Hash.new(0)
+    types_common = Hash.new(0)
+
+    docs.each do |doc|
+      anns     = doc.hannotations(self)
+      anns_ref = doc.hannotations(project_ref)
+
+      den_idx     =     anns.has_key?(:denotations) ?     anns[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
+      den_ref_idx = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
+
+      anns_norm     =     anns.has_key?(:modifications) ?     anns[:modifications].collect{|r| {obj:den_idx[r[:obj]], pred:r[:pred]}} : []
+      anns_norm_ref = anns_ref.has_key?(:modifications) ? anns_ref[:modifications].collect{|r| {obj:den_ref_idx[r[:obj]], pred:r[:pred]}} : []
+      anns_norm_common = anns_norm & anns_norm_ref
+
+      anns_norm.each{|m| types[m[:pred]] += 1; types['_ALL_'] += 1}
+      anns_norm_ref.each{|m| types_ref[m[:pred]] += 1; types_ref['_ALL_'] += 1}
+      anns_norm_common.each{|m| types_common[m[:pred]] += 1; types_common['_ALL_'] += 1}
+      break
+    end
+
+    return nil if types_ref.empty?
+
+    recall = Hash.new(0)
+    precision = Hash.new(0)
+    fscore = Hash.new(0)
+
+    types.each{|t, c| precision[t] = types_common[t].to_f / c}
+    types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
+    types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
+
+    {types:types, types_ref:types_ref, types_common:types_common, recall:recall, precision:precision, fscore:fscore}
+  end
+
   def user_presence
     if user.blank?
       errors.add(:user_id, 'is blank') 
@@ -1023,6 +1146,7 @@ class Project < ActiveRecord::Base
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
     self.delete_annotations(doc)
     self.docs.delete(doc)
+    ActionController::Base.new.expire_fragment("sourcedb_counts_in_#{self.name}")
     doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
   end
 

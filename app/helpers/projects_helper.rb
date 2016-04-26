@@ -25,8 +25,8 @@ module ProjectsHelper
 
   def type_badge(project)
     badge, btitle = case project.process_text
-      when 'manual', '手動' then [t('views.shared.manual_annotation_initial'), t('views.shared.manual_annotation')]
-      when 'automatic', '自動' then [t('views.shared.automatic_annotation_initial'), t('views.shared.automatic_annotation')]
+      when 'manual', '手動' then ['<i class="fa fa-hand-paper-o" aria-hidden="true"></i>', t('views.shared.manual_annotation')]
+      when 'automatic', '自動' then ['<i class="fa fa-cogs" aria-hidden="true"></i>', t('views.shared.automatic_annotation')]
       else ['', '']
     end
 
@@ -78,6 +78,13 @@ module ProjectsHelper
     if project.user == current_user
       css_class = 'check-circle'
       content_tag(:i, nil, class: "fa fa-#{css_class}")
+    end
+  end
+
+  def comparison_link(project)
+    if File.exist?(project.comparison_path)
+      link_to 'See last comparison', comparison_project_path(project.name)
+    else
     end
   end
 end

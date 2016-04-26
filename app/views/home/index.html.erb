@@ -12,8 +12,8 @@
 			<%= t('activerecord.models.doc').pluralize.capitalize.html_safe -%>
 			<%= render partial: 'docs/search_form', locals: {path: docs_path} -%>
 		</h1>
-		<% cache 'docs_count_per_sourcedb' do -%>
-		<%= render :partial => "docs/sourcedbs" -%>
+		<% cache 'sourcedb_counts' do -%>
+			<%= render :partial => "docs/sourcedb_counts" -%>
 		<% end %>
 	</section>
 </div>

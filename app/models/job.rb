@@ -38,18 +38,22 @@ class Job < ActiveRecord::Base
     rescue
       nil
     end
-    @job.update_attribute(:ended_at, Time.now) if dj.nil?
+    update_attribute(:ended_at, Time.now) if dj.nil?
   end
 
-  def stop
+  def stop_if_running
     if running?
       dj = begin
         Delayed::Job.find(self.delayed_job_id)
       rescue
         nil
       end
-      /pid:(<pid>\d+)/ =~ dj.locked_by
-      # TODO
+      unless dj.nil?
+        dj.locked_by.match(/delayed_job.(\d+)/)
+        worker_id = $1.to_i
+        `script/delayed_job -i #{worker_id} restart`
+        update_attribute(:ended_at, Time.now)
+      end
     end
   end
 

@@ -18,7 +18,7 @@ class Doc < ActiveRecord::Base
       indexes :sourcedb, type: :string, index: :not_analyzed
       indexes :sourceid, type: :string, index: :not_analyzed
       indexes :serial,   type: :integer, index: :not_analyzed
-      indexes :body,     type: :string,  analyzer: :standard_normalization
+      indexes :body,     type: :string,  analyzer: :standard_normalization, index_options: :offsets
 
       # indexes :docs_projects, type: 'nested' do
       indexes :docs_projects do
@@ -39,6 +39,42 @@ class Doc < ActiveRecord::Base
     )
   end
   
+  def self.search_docs(attributes = {})
+    filter_condition = []
+    filter_condition << {term: {'serial' => 0}} unless attributes[:sourceid].present?
+    filter_condition << {term: {'projects.id' => attributes[:project_id]}} if attributes[:project_id].present?
+    filter_condition << {term: {'sourcedb' => attributes[:sourcedb].downcase}} if attributes[:sourcedb].present?
+    filter_condition << {term: {'sourceid' => attributes[:sourceid]}} if attributes[:sourceid].present?
+
+    filter_phrase = {
+      bool: {
+        must: filter_condition
+      }
+    }
+
+    docs = search(
+      query: {
+        filtered: {
+          query: {
+            match: {
+              body: {
+                query: attributes[:body],
+                operator: "and",
+                fuzziness: "AUTO"
+              }
+            }
+          },
+          filter: filter_phrase
+        }
+      },
+    ).page(attributes[:page])
+
+    return {
+      total: docs.results.total,
+      results: docs.records
+    }
+  end
+
   UserSourcedbSeparator = '@'
   after_save :expire_page_cache
   before_destroy :decrement_docs_counter
@@ -132,47 +168,6 @@ class Doc < ActiveRecord::Base
     sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
     order(sort_order)
   }
-
-  def self.search_docs(attributes = {})
-    filter_condition = []
-    filter_condition << {term: {'serial' => 0}} unless attributes[:sourceid].present?
-    filter_condition << {term: {'projects.id' => attributes[:project_id]}} if attributes[:project_id].present?
-    filter_condition << {term: {'sourcedb' => attributes[:sourcedb].downcase}} if attributes[:sourcedb].present?
-    filter_condition << {term: {'sourceid' => attributes[:sourceid]}} if attributes[:sourceid].present?
-
-    filter_phrase = {
-      bool: {
-        must: filter_condition
-      }
-    }
-
-    docs = search(
-      query: {
-        filtered: {
-          query: {
-            match: {
-              body: {
-                query: attributes[:body],
-                operator: "and",
-                fuzziness: "AUTO"
-              }
-            }
-          },
-          filter: filter_phrase
-        }
-      },
-      sort: [
-        sourcedb: :asc,
-        sourceid: :asc,
-        serial: :asc
-      ],
-    ).page(attributes[:page])
-
-    return {
-      total: docs.results.total,
-      docs: docs.records
-    }
-  end
 
   def descriptor
     descriptor  = self.sourcedb + ':' + self.sourceid
@@ -647,7 +642,7 @@ class Doc < ActiveRecord::Base
     end
   end
 
-  def self.docs_count_per_sourcedb(current_user)
+  def self.count_per_sourcedb(current_user)
     docs_count_per_sourcedb = Doc.where("serial = ?", 0).group(:sourcedb).count
     if current_user
       docs_count_per_sourcedb.delete_if do |sourcedb, doc_count|
@@ -660,12 +655,12 @@ class Doc < ActiveRecord::Base
   end
 
   def self.docs_count(current_user)
-    docs_count_per_sourcedb = Doc.docs_count_per_sourcedb(current_user)
+    docs_count_per_sourcedb = Doc.count_per_sourcedb(current_user)
     docs_count_per_sourcedb.values.inject(0){|sum, v| sum + v}
   end
 
   def expire_page_cache
-    ActionController::Base.new.expire_fragment('docs_count_per_sourcedb')
+    ActionController::Base.new.expire_fragment('sourcedb_counts')
     ActionController::Base.new.expire_fragment('docs_count')
   end
 

@@ -57,8 +57,12 @@
     <td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
     <td style="text-align:right"><%= job.messages.length %></td>
     <td>
-        <%= link_to 'Show', project_job_path(@project.name, job), :class => :button %>
-        <%= link_to 'Remove', project_job_path(@project.name, job), method: :delete, data: { confirm: 'Are you sure?' }, :class => :button unless job.running? %>
+        <%= link_to 'Show', project_job_path(@project.name, job), class: :button %>
+        <% if job.running? %>
+          <%= link_to 'Stop', project_job_path(@project.name, job), method: :put, data: { confirm: 'Are you sure?' }, class: :button %>
+        <% else %>
+          <%= link_to 'Remove', project_job_path(@project.name, job), method: :delete, data: { confirm: 'Are you sure? Stopping a job may take a minute.' }, class: :button %>
+        <% end %>
     </td>
   </tr>
 <% end %>

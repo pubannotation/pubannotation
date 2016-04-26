@@ -69,31 +69,32 @@ class JobsController < ApplicationController
   # PUT /jobs/1
   # PUT /jobs/1.json
   def update
-    @job = Job.find(params[:id])
+    project = Project.editable(current_user).find_by_name(params[:project_id])
+    raise "There is no such project." unless project.present?
+
+    job = Job.find(params[:id])
+    raise "The project does not have the job." unless job.project == project
+
+    job.stop_if_running
 
     respond_to do |format|
-      if @job.update_attributes(params[:job])
-        format.html { redirect_to @job, notice: 'Job was successfully updated.' }
-        format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
-        format.json { render json: @job.errors, status: :unprocessable_entity }
-      end
+      format.html { redirect_to :back }
     end
   end
 
   # DELETE /jobs/1
   # DELETE /jobs/1.json
   def destroy
-    project = Project.accessible(current_user).find_by_name(params[:project_id])
+    project = Project.editable(current_user).find_by_name(params[:project_id])
     raise "There is no such project." unless project.present?
 
     job = Job.find(params[:id])
+    raise "The project does not have the job." unless job.project == project
+
     job.destroy_if_not_running
 
     respond_to do |format|
       format.html { redirect_to project_jobs_path(project.name) }
-      format.json { head :no_content }
     end
   end
 end

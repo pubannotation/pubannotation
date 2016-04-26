@@ -8,7 +8,7 @@
     <%= link_to_project(project) -%>
   </td>
   <td style="text-align:center"><%= type_badge(project).html_safe %></td>
-  <td title="<%= project.description -%>"><%= project.description %></td>
+  <td class="show_when_wide" title="<%= project.description -%>"><%= project.description %></td>
   <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
   <td style="text-align:center"><%= project.author %></td>
   <td style="text-align:center"><%= link_to project.user.username, show_user_path(project.user.username) %></td>
