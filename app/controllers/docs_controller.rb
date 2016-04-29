@@ -18,7 +18,7 @@ class DocsController < ApplicationController
       @docs = if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, page:params[:page]})
         @search_count = search_results[:total]
-        search_results[:docs]
+        search_results[:results]
       else
         sort_order = sort_order(Doc)
         Doc.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
