@@ -1,0 +1,9 @@
+<script>
+	$(function() {
+	  var accessibleProjects = <%= raw Project.accessible(nil).pluck(:name) %>;
+	  $("#select_project").autocomplete({
+	    source: accessibleProjects
+	  });
+	});
+</script>
+<input type="text" name="select_project" id="select_project" style="width:14.5em; text-align:left", placeholder="<%= placeholder %>">

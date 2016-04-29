@@ -1,0 +1,19 @@
+<table>
+	<tr>
+		<th></th>
+		<th colspan="2">Recall</th>
+		<th colspan="2">Precision</th>
+		<th>F-score</th>
+	</tr>
+	<% comparison[:types_ref].each do |e, c| %>
+		<% next if e == '_ALL_' %>
+		<tr>
+			<th><%= e %></th>
+			<td style="text-align:right"><%= '%.02f' % comparison[:recall][e] %></td>
+			<td style="text-align:center">(<%= comparison[:types_common][e] %> / <%= c %>)</td>
+			<td style="text-align:right"><%= '%.02f' % comparison[:precision][e] %></td>
+			<td style="text-align:center">(<%= comparison[:types_common][e] %> / <%= comparison[:types][e] %>)</td>
+			<td style="text-align:right"><%= '%.02f' % comparison[:fscore][e] %></td>
+		</tr>
+	<% end %>
+</table>

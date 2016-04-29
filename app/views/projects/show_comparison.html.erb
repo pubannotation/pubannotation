@@ -1,0 +1,34 @@
+<% content_for :path do %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+ 	> <%= link_to @project.name, project_path(@project.name) %>
+ 	> comparison
+<% end %>
+
+<section>
+	<%= render partial: 'projects/titlebar' -%>
+	<h1>
+		Comparison with '<%= @comparison[:reference] %>'
+    <span class='tab-bar'>
+      <%= link_to_unless_current 'JSON', params.merge(controller: :projects, action: :show_comparison, format: :json), :class => 'tab' -%>
+    </span>
+	</h1>
+	<% if @comparison[:denotations].present? %>
+		<section>
+			<h2>denotations</h2>
+			<%= render partial: 'comparison', locals: {comparison: @comparison[:denotations]} %>
+		</section>
+	<% end %>
+	<% if @comparison[:relations].present? %>
+		<section>
+			<h2>Relations</h2>
+			<%= render partial: 'comparison', locals: {comparison: @comparison[:relations]} %>
+		</section>
+	<% end %>
+	<% if @comparison[:modifications].present? %>
+		<section>
+			<h2>Modifications</h2>
+			<%= render partial: 'comparison', locals: {comparison: @comparison[:modifications]} %>
+		</section>
+	<% end %>
+</section>
