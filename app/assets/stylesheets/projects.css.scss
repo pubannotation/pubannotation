@@ -1,0 +1,17 @@
+@import 'variables';
+
+.project-properties {
+  table-layout:fixed;
+  width: 36em;
+
+  th {
+    width: 6em;
+  }
+
+  td {
+  }
+
+  td.help-column {
+    width: 1em;
+  }
+}

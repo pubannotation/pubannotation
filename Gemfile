@@ -42,7 +42,12 @@ group :test do
   gem 'test-unit'
 end
 
+gem "font-awesome-rails"
 gem 'jquery-rails'
+gem 'jquery-ui-rails'
+gem 'rails3-jquery-autocomplete'
+gem 'facebox-rails'
+
 gem 'rack-cors', :require => 'rack/cors'
 
 gem 'rest-client'
@@ -56,7 +61,6 @@ gem 'thin'
 gem 'devise'
 gem 'rubyzip'
 gem 'zip-zip'
-gem 'rails-jquery-autocomplete'
 gem 'daemons'
 gem 'delayed_job_active_record'
 gem 'backup'

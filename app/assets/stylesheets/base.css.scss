@@ -52,7 +52,6 @@ body {
 
 .badge {
   margin: 0;
-  margin-right: 5px;
   border-radius: 5px;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -286,7 +285,6 @@ li {
     cursor: pointer;
     min-width: 4.55em;
     text-align: center;
-    text-transform: lowercase;
 }
 
 .long_button {
@@ -466,7 +464,7 @@ $indicator_size : 100px;
 }
 
 .projects_header_type {
-  width: 2em;
+  width: 1.5em;
 }
 
 .projects_header_annotations_count,
@@ -547,6 +545,23 @@ div.oneline {
 
 .clear {
   clear: both;
+}
+
+.help-link {
+  color: green;
+  font-size: 1.2em;
+}
+
+.help {
+  display: none;
+}
+
+.popup {
+  .content {
+    h1 {
+      border-style: none;
+    }
+  }
 }
 
 @media screen and (max-width: 800px) {
