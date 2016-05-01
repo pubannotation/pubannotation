@@ -31,7 +31,7 @@ class Project < ActiveRecord::Base
     :association_foreign_key => 'project_id',
     :join_table => 'associate_projects_projects'
 
-  attr_accessible :name, :description, :author, :license, :status, :accessibility, :reference,
+  attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
                   :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter,
                   :annotations_zip_downloadable, :namespaces, :process,
                   :pmdocs_count, :pmcdocs_count, :denotations_count, :relations_count, :annotations_count
@@ -45,19 +45,35 @@ class Project < ActiveRecord::Base
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 30}, uniqueness: true
   validates_format_of :name, :with => /\A[a-z0-9\-_]+\z/i
 
+  def as_json(options={})
+    options||={}
+    json = {
+      name: self.name,
+      created_at: self.created_at,
+      updated_at: self.updated_at
+    }
+    json[:maintainer] = self.user.username unless options[:except] && options[:except].include?(:maintainer)
+    json[:author] = self.author if self.author.present?
+    json[:license] = self.license if self.license.present?
+    json[:namespaces] = self.namespaces if self.namespaces.present?
+    json
+  end
+
   default_scope where(:type => nil)
 
   scope :for_index, where('accessibility = 1 AND status < 3')
   scope :for_home, where('accessibility = 1 AND status < 4')
 
+  scope :public_or_blind, where(accessibility: [1, 3])
+
   scope :accessible, -> (current_user) {
     if current_user.present?
       if current_user.root?
       else
-        includes(:associate_maintainers).where('projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, current_user.id, current_user.id)
+        includes(:associate_maintainers).where('projects.accessibility = ? OR projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, 3, current_user.id, current_user.id)
       end
     else
-      where(accessibility: 1)
+      where(accessibility: [1, 3])
     end
   }
 
@@ -77,6 +93,18 @@ class Project < ActiveRecord::Base
       includes(:associate_maintainers).where('projects.user_id = ? OR associate_maintainers.user_id = ?', current_user.id, current_user.id)
     end
   }
+
+  def annotations_accessible?(current_user)
+    if accessibility == 1
+      true
+    else
+      if current_user && (current_user.root || current_user == user)
+        true
+      else
+        false
+      end
+    end 
+  end
 
   # scope for home#index
   scope :top_annotations_count,
@@ -178,7 +206,8 @@ class Project < ActiveRecord::Base
   def accessibility_text
    accessibility_hash = {
      1 => I18n.t('activerecord.options.project.accessibility.public'),
-     2 => :Private
+     2 => I18n.t('activerecord.options.project.accessibility.private'),
+     3 => I18n.t('activerecord.options.project.accessibility.blind')
    }
    accessibility_hash[self.accessibility]
   end
@@ -189,6 +218,16 @@ class Project < ActiveRecord::Base
      2 => I18n.t('activerecord.options.project.process.automatic')
    }
    process_hash[self.process]
+  end
+
+  def get_user(current_user)
+    if anonymize == true
+      if current_user.present? && (current_user.root? || current_user == user)
+        user
+      end
+    else
+      user
+    end
   end
 
   def self.order_by(projects, order, current_user)
@@ -1038,11 +1077,16 @@ class Project < ActiveRecord::Base
 
     return nil if types_ref.empty?
 
+    types_ref.each do |t, c|
+      types[t] = 0 if types[t] == 0
+      types_common[t] = 0 if types_common[t] == 0
+    end
+
     recall = Hash.new(0)
     precision = Hash.new(0)
     fscore = Hash.new(0)
 
-    types.each{|t, c| precision[t] = types_common[t].to_f / c}
+    types.each{|t, c| precision[t] = (c == 0 ? 0 : types_common[t].to_f / c)}
     types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
     types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
 
@@ -1068,16 +1112,20 @@ class Project < ActiveRecord::Base
       anns_norm.each{|r| types[r[:pred]] += 1; types['_ALL_'] += 1}
       anns_norm_ref.each{|r| types_ref[r[:pred]] += 1; types_ref['_ALL_'] += 1}
       anns_norm_common.each{|r| types_common[r[:pred]] += 1; types_common['_ALL_'] += 1}
-      break
     end
 
     return nil if types_ref.empty?
+
+    types_ref.each do |t, c|
+      types[t] = 0 if types[t] == 0
+      types_common[t] = 0 if types_common[t] == 0
+    end
 
     recall = Hash.new(0)
     precision = Hash.new(0)
     fscore = Hash.new(0)
 
-    types.each{|t, c| precision[t] = types_common[t].to_f / c}
+    types.each{|t, c| precision[t] = (c == 0 ? 0 : types_common[t].to_f / c)}
     types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
     types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
 
@@ -1103,16 +1151,20 @@ class Project < ActiveRecord::Base
       anns_norm.each{|m| types[m[:pred]] += 1; types['_ALL_'] += 1}
       anns_norm_ref.each{|m| types_ref[m[:pred]] += 1; types_ref['_ALL_'] += 1}
       anns_norm_common.each{|m| types_common[m[:pred]] += 1; types_common['_ALL_'] += 1}
-      break
     end
 
     return nil if types_ref.empty?
+
+    types_ref.each do |t, c|
+      types[t] = 0 if types[t] == 0
+      types_common[t] = 0 if types_common[t] == 0
+    end
 
     recall = Hash.new(0)
     precision = Hash.new(0)
     fscore = Hash.new(0)
 
-    types.each{|t, c| precision[t] = types_common[t].to_f / c}
+    types.each{|t, c| precision[t] = (c == 0 ? 0 : types_common[t].to_f / c)}
     types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
     types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
 

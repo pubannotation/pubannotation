@@ -196,13 +196,14 @@ class DocsController < ApplicationController
 
         @doc.set_ascii_body if params[:encoding] == 'ascii'
         @content = @doc.body.gsub(/\n/, "<br>")
-        @annotations = @doc.hannotations
-        @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
-        @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
-        @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
 
         sort_order = sort_order(Project)
         @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+
+        @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
+        @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
+        @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
+        @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
 
         respond_to do |format|
           format.html
@@ -220,7 +221,7 @@ class DocsController < ApplicationController
     end
   end
 
-  def project_doc_show
+  def show_in_project
     begin
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
@@ -244,14 +245,16 @@ class DocsController < ApplicationController
         @doc = divs[0]
 
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
-        @annotations = @doc.hannotations(@project)
         @content = @doc.body.gsub(/\n/, "<br>")
 
-        @annotators = Annotator.all
-        @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
+        @annotations = if @project.annotations_accessible?(current_user)
+          @doc.hannotations(@project)
+        else
+          nil
+        end
 
         respond_to do |format|
-          format.html {render 'show_in_project'}
+          format.html
           format.json {render json: @doc.to_hash}
           format.txt  {render text: @doc.body}
         end

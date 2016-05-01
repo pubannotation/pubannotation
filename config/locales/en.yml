@@ -262,9 +262,9 @@ en:
       project:
         name: Name of the project (up to 20 characters)
         description: Short description of the project
-        author: Name of the original author (or the project name)
+        author: Name of the original author
         license: Name of the license condition
-        reference: URL to an external page that describes this project
+        reference: URL to the original homepage of the annotation project
         sample: URL to a sample annotation
         username: sub-maintainers name
         associate_project_name: Enter associate project name.
@@ -285,9 +285,10 @@ en:
         accessibility:
           public: Public
           private: Private
+          blind: Blind
         process:
-          manual: manual 
-          automatic: automatic
+          manual: Manual
+          automatic: Automatic
     errors:
       <<: *errors
   controllers:
@@ -457,7 +458,7 @@ en:
       in_pubannotation: "<a href='%{href}'>Super projects</a> in PubAnnotation"
     hints:
       project:
-        author: Leave it blank if you yourself is the author of the annotation.
+        author: Use this field to specify the original author of the annotation in case you yourself is not the one.
         license: CC-BY is the default license condition that PubAnnotation recommends, but of course you can specify any other if you want.
         reference: While PubAnnotation provides storage of annotation, it is desired to have a separate homepage of the annotation/project that provides a comprehensive description of it.
         editor: Specify the URL of the editor you want to work with for your annotation project. If you have one that is not supported by PubAnnotation, please contact us.
@@ -500,6 +501,7 @@ en:
       add_model: Add %{model}
       delete_model: Delete %{model}
       permit: permit
+      anonymize: anonymize?
       show: show
       show_all: show all
       remove: remove

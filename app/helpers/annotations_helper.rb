@@ -2,10 +2,15 @@ require 'text_alignment'
 
 module AnnotationsHelper
   def annotations_count_helper(project, doc = nil, span = nil)
-    if doc.present?
-      doc.annotations_count(project, span)
+    project = doc.projects[0] if project.nil? && doc.projects.count == 1
+    if !project.present? || project.annotations_accessible?(current_user)
+      if doc.present?
+        doc.annotations_count(project, span)
+      else
+        project.annotations_count
+      end
     else
-      project.annotations_count
+      '<i class="fa fa-bars" aria-hidden="true" title="blinded"></i>'.html_safe
     end
   end
 

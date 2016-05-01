@@ -3,31 +3,54 @@
   > <%= t('views.users.sign_up') %>
 <% end %>
 
-<h1 class="capitalize_first"><%= t('views.users.sign_up') %></h1>
+<section>
+  <h1 class="capitalize_first"><%= t('views.users.sign_up') %></h1>
 
-<%= form_for(resource, :as => resource_name, :url => registration_path(resource_name)) do |f| %>
-  <%= devise_error_messages! %>
-  <table style="border:none">
-    <tr>
-      <th><%= f.label :username %></th>
-      <td><%= f.text_field :username %></td>
-    </tr>
-    <tr>
-      <th><%= f.label :email %></th>
-      <td><%= f.email_field :email %></td>
-    </tr>
-    <tr>
-      <th><%= f.label :password %></th>
-      <td><%= f.password_field :password %></td>
-    </tr>
-    <tr>
-      <th><%= f.label :password_confirmation %></th>
-      <td><%= f.password_field :password_confirmation %></td>
-    </tr>
-    <tr>
-      <th colspan="2" style="text-align:center"><%= f.submit t('views.users.sign_up'), :class => 'capitalize_first' %></th>
-    </tr>
-   </table>
-<% end %>
-<br/>
-<%= render "devise/shared/links" %>
+  <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name)) do |f| %>
+  <section>
+    <%= devise_error_messages! %>
+  </section>
+
+    <table style="border:none">
+      <tr>
+        <th><%= f.label :username %></th>
+        <td><%= f.text_field :username %></td>
+        <td>
+          <a href="#help-username" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+          <div id="help-username" class="help">
+            <h1>Username</h1>
+            <p>Your username will be part of the URL to your user page on PubAnnotation.</p>
+            <p>A username may include
+              <ul>
+                <li>lowercase letters,</li>
+                <li>decimal digits,</li>
+                <li>hyphen ('-'), period ('.'), and underscore ('_').</li>
+              </ul>
+            </p>
+            </p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th><%= f.label :email %></th>
+        <td><%= f.email_field :email %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th><%= f.label :password %></th>
+        <td><%= f.password_field :password %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th><%= f.label :password_confirmation %></th>
+        <td><%= f.password_field :password_confirmation %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th colspan="3" style="text-align:center"><%= f.submit t('views.users.sign_up'), :class => 'capitalize_first' %></th>
+      </tr>
+     </table>
+  <% end %>
+  <br/>
+  <%= render "devise/shared/links" %>
+</section>

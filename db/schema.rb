@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151108135607) do
+ActiveRecord::Schema.define(:version => 20160430140646) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -222,6 +222,7 @@ ActiveRecord::Schema.define(:version => 20151108135607) do
     t.integer  "process"
     t.integer  "annotations_count",                :default => 0
     t.string   "sample"
+    t.boolean  "anonymize",                        :default => false,                 :null => false
   end
 
   add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true

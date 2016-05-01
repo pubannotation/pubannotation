@@ -1,5 +1,3 @@
-<% project_path = project_path(project.name) -%>
-
 <tr>
   <% if @annotations_projects_check -%>
     <td><%= check_box_tag "annotations_projects_check", project.name, false, {id: "project_for_annotations_#{project.id}", class: 'annotations_projects_check'} -%></td>
@@ -7,11 +5,11 @@
   <td>
     <%= link_to_project(project) -%>
   </td>
-  <td style="text-align:center"><%= type_badge(project).html_safe %></td>
+  <td style="text-align:center"><%= badge_type(project).html_safe %></td>
   <td class="show_when_wide" title="<%= project.description -%>"><%= project.description %></td>
-  <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
+  <td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(project, @doc, @span), :delimiter => ',') %></td>
   <td style="text-align:center"><%= project.author %></td>
-  <td style="text-align:center"><%= link_to project.user.username, show_user_path(project.user.username) %></td>
+  <td style="text-align:center"><%= maintainer_link(project) %></td>
   <td style="text-align:center"><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
   <td style="text-align:center"><%= project.status_text -%></td>
 </tr>

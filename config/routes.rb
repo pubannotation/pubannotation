@@ -131,8 +131,8 @@ Pubann::Application.routes.draw do  resources :annotators
     
     collection do
       # auto complete path which use scope and scope argument required :scope_argument param
-      get 'autocomplete_project_name/:scope_argument'  => 'projects#autocomplete_project_name', :as => 'autocomplete_project_name'
-      get 'autocomplete_project_author'  => 'projects#autocomplete_project_author', :as => 'autocomplete_project_author'
+      get 'autocomplete_project_name'
+      get 'autocomplete_project_author'
       get 'zip_upload' => 'projects#zip_upload'
       post 'create_from_tgz' => 'projects#create_from_tgz'
       get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
@@ -167,7 +167,7 @@ Pubann::Application.routes.draw do  resources :annotators
               get '/' => 'docs#sourcedb_sourceid_index', :as => 'sourceid_index'
               
               scope ':sourceid' do
-                get '/' => 'docs#project_doc_show', :as =>'show'
+                get '/' => 'docs#show_in_project', :as =>'show'
                 delete '/' => 'docs#project_delete_doc', :as=>'delete'
                 get 'annotations' => 'annotations#project_doc_annotations_index'
                 get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
@@ -186,7 +186,7 @@ Pubann::Application.routes.draw do  resources :annotators
                   get 'search' => 'divs#search'
     
                   scope ':divid' do
-                    get '/' => 'divs#project_div_show', :as => 'show'
+                    get '/' => 'divs#show_in_project', :as => 'show'
                     get 'annotations' => 'annotations#project_div_annotations_index'
                     get 'annotations/visualize' => 'annotations#div_annotations_visualize'
                     post 'annotations' => 'annotations#create'

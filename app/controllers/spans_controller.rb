@@ -217,9 +217,6 @@ class SpansController < ApplicationController
         @annotations = @doc.hannotations(@project, @span)
         @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
 
-        @annotators = Annotator.all
-        @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
-
         respond_to do |format|
           format.html {render 'docs/show_in_project'}
           format.txt  {render text: @annotations[:text]}
@@ -248,9 +245,6 @@ class SpansController < ApplicationController
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
       @annotations = @doc.hannotations(@project, @span)
       @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
-
-      @annotators = Annotator.all
-      @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
 
       respond_to do |format|
         format.html {render 'docs/show_in_project'}

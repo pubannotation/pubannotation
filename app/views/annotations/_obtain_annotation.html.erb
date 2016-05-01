@@ -1,9 +1,9 @@
 <%= form_tag annotations_obtain_path, :method => "get" do %>
-   	<table style="border-color:#FFFFFF">
-   		<tr>
-	   		<th>Choose a predefined annotator</th>
-	   		<td>
-				<%= select_tag(:annotator, options_for_select(@annotator_options), prompt: 'choose one') %>
+	<table style="border-color:#FFFFFF">
+		<tr>
+			<th>Choose a predefined annotator</th>
+			<td>
+				<%= select_tag(:annotator, options_for_select(annotator_options), prompt: 'choose one') %>
 			</td>
 		</tr>
 

@@ -15,7 +15,7 @@
 					%>
 					<%= form_tag(search_path, method: 'get', style:"display:inline-block") do -%>
 						<%= text_field_tag :keywords, nil,
-							style: "width:6em",
+							style: "width:5em",
 							placeholder: t('views.shared.keywords'),
 							minlength: 2,
 							required: true -%>
@@ -24,7 +24,7 @@
 					<%= form_tag(open_path, method: 'get')  do -%>
 						<%= hidden_field_tag :sourcedb, sourcedb %>
 						<%= text_field_tag :sourceid, nil,
-							style: "width:6em",
+							style: "width:5em",
 							placeholder: t('activerecord.attributes.doc.sourceid') -%>
 						<button type="submit" class="short-button" title="Open"><i class="fa fa-file-text-o" aria-hidden="true"></i></button>
 					<% end %>

@@ -18,20 +18,42 @@ module ProjectsHelper
     html.html_safe
   end
 
+  def maintainer_link(project)
+    if project.anonymize == true
+      if current_user.present? && (current_user.root? || current_user == project.user)
+        link_to(project.user.username, show_user_path(project.user.username)) + ' <i class="fa fa-user-secret" aria-hidden="true"></i>'.html_safe
+      else
+        '<i class="fa fa-user-secret" aria-hidden="true" title="anonymized"></i>'.html_safe
+      end
+    else
+      link_to project.user.username, show_user_path(project.user.username)
+    end
+  end
+
   def home_button
     # link_to t('activerecord.attributes.project.reference'), @project.reference, :class => 'home_button' if @project.reference.present?
     link_to image_tag('home-24.png', alt: 'Home', title: 'Home', class: 'home_button'), @project.reference, :class => 'home_button' if @project.reference.present?
   end
 
-  def type_badge(project)
+  def badge_type(project)
     badge, btitle = case project.process_text
-      when 'manual', '手動' then ['<i class="fa fa-hand-paper-o" aria-hidden="true"></i>', t('views.shared.manual_annotation')]
-      when 'automatic', '自動' then ['<i class="fa fa-cogs" aria-hidden="true"></i>', t('views.shared.automatic_annotation')]
+      when 'Manual', '手動' then ['<i class="fa fa-hand-pointer-o" aria-hidden="true"></i>', t('views.shared.manual_annotation')]
+      when 'Automatic', '自動' then ['<i class="fa fa-cogs" aria-hidden="true"></i>', t('views.shared.automatic_annotation')]
       else ['', '']
     end
 
     "<span class='badge' title='#{btitle}'>#{badge}</span>"
   end
+
+  def badge_accessibility(project)
+    badge, btitle = case project.accessibility
+      when 2 then ['<i class="fa fa-ban" aria-hidden="true"></i>', t('activerecord.options.project.accessibility.private')]
+      when 3 then ['<i class="fa fa-bars" aria-hidden="true"></i>', t('activerecord.options.project.accessibility.blind')]
+    end
+
+    badge.present? ? "<span class='badge' title='#{btitle}'>#{badge}</span>" : ""
+  end
+
 
   def license_display_helper(license)
     case license

@@ -2,9 +2,11 @@
 module ApplicationHelper
   # render image tag and title attribute for hint
   def hint_helper(options = {})
-    image_tag("hint.png",
-      :size => "16x16",
-      :title => I18n.t("views.hints.#{options[:model]}.#{options[:column]}"))
+    content_tag(:i, nil,
+      class: "fa fa-question-circle", "aria-hidden" => "true",
+      style: "color: green; font-size:1.2em",
+      title: I18n.t("views.hints.#{options[:model]}.#{options[:column]}")
+    )
   end
 
   def errors_helper(model)

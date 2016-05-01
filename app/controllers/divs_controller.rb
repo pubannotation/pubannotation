@@ -102,7 +102,7 @@ class DivsController < ApplicationController
     end
   end
 
-  def project_div_show
+  def show_in_project
     begin
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
@@ -113,9 +113,6 @@ class DivsController < ApplicationController
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
       @content = @doc.body.gsub(/\n/, "<br>")
       @annotations = @doc.hannotations(@project)
-
-      @annotators = Annotator.all
-      @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
 
       serial = params[:divid].to_i
       divs_count = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]).count

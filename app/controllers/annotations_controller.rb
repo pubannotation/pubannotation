@@ -25,8 +25,10 @@ class AnnotationsController < ApplicationController
         project = if params[:project].present?
           params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
         else
-          nil
+          @doc.projects
         end
+
+        project.delete_if{|p| !p.annotations_accessible?(current_user)}
 
         project = project[0] if project.present? && project.length == 1
         context_size = params[:context_size].present? ? params[:context_size].to_i : 0
@@ -66,8 +68,10 @@ class AnnotationsController < ApplicationController
       project = if params[:project].present?
         params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
       else
-        nil
+        @doc.projects
       end
+
+      project.delete_if{|p| !p.annotations_accessible?(current_user)}
 
       project = project[0] if project.present? && project.length == 1
       context_size = params[:context_size].present? ? params[:context_size].to_i : 0
@@ -94,8 +98,9 @@ class AnnotationsController < ApplicationController
 
   def project_doc_annotations_index
     begin
-      @project = Project.find_by_name(params[:project_id])
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
+      raise "annotations inaccessible" unless @project.annotations_accessible?(current_user)
 
       unless @project.public?
         authenticate_user!
@@ -132,7 +137,7 @@ class AnnotationsController < ApplicationController
 
     rescue => e
       respond_to do |format|
-        format.html {redirect_to project_docs_path(@project.name), notice: e.message}
+        format.html {redirect_to :back, notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
       end
     end
@@ -140,7 +145,7 @@ class AnnotationsController < ApplicationController
 
   def project_div_annotations_index
     begin
-      @project = Project.find_by_name(params[:project_id])
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
       unless @project.public?
@@ -448,8 +453,9 @@ class AnnotationsController < ApplicationController
       raise "There is no such project in your management: #{params[:project_id]}." unless project.present?
 
       source_project = Project.find_by_name(params[:select_project])
-      raise ArgumentError, "There is no such a project: #{params[:select_project]}." if source_project.nil?
+      raise ArgumentError, "Could not find the project: #{params[:select_project]}." if source_project.nil?
       raise ArgumentError, "You cannot import annotations from itself." if source_project == project
+      raise ArgumentError, "The annotations in the project are blinded." if source_project.accessibility == 3
 
       source_docs = source_project.docs.select{|d| d.serial == 0}
       destin_docs = project.docs.select{|d| d.serial == 0}

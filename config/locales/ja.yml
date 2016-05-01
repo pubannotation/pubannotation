@@ -296,7 +296,8 @@ ja:
           testing: テスト中
         accessibility:
           public: 公開
-          private: プライベート
+          private: 非公開
+          blind: ブラインド
         process:
           manual: 手動
           automatic: 自動
@@ -516,6 +517,7 @@ ja:
       add_model: '%{model}の追加'
       delete_model: '%{model}の削除'
       permit: 許可する
+      anonymize: 匿名化
       section: セクション
       size: サイズ
       show: 表示

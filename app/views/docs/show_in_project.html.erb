@@ -8,8 +8,14 @@
 		<%= render :partial => 'docs/content'-%>
 
 		<section>
-			<%= render :partial => 'annotations/titlebar' -%>
-			<%= render :partial => 'annotations/summary' -%>
+			<% if @project.annotations_accessible?(current_user) %>
+				<%= render :partial => 'annotations/titlebar' -%>
+				<%= render :partial => 'annotations/summary' -%>
+			<% else %>
+				<h2><%= t('views.shared.annotation').pluralize.capitalize.html_safe %></h2>
+				<p><i class="fa fa-bars" aria-hidden="true"></i> <i>blinded</i></p>
+			<% end %>
+
 		</section>
 
 		<% if user_signed_in? and @project.editable?(current_user) %>

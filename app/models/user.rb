@@ -15,9 +15,8 @@ class User < ActiveRecord::Base
   has_many :projects, :dependent => :destroy
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
-  validates_uniqueness_of :username
-  validates_format_of :username, :with => /\A[a-z0-9\-_]+\z/i
-  validate :check_invalid_character
+  validates :username, :presence => true, :length => {:minimum => 5, :maximum => 20}, uniqueness: true
+  validates_format_of :username, :with => /\A[a-z0-9][a-z0-9_-]+\z/i
   validate :username_changed, on: :update
 
   before_destroy :destroy_all_user_sourcedb_docs
@@ -53,7 +52,7 @@ class User < ActiveRecord::Base
   end
 
   def check_invalid_character
-    if username =~/(\.|\/|\?|\#|\%)/
+    if username =~/(\/|\?|\#|\%)/
       errors.add(:username, I18n.t('errors.messages.invalid_character_included'))
     end
   end

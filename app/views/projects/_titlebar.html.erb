@@ -1,8 +1,8 @@
 <div class='project-title'>
 	<%= link_to_unless_current @project.name, project_path(@project.name) -%>
 	<%= home_button -%>
-	<% if @project.accessibility == 2 -%><span class = 'badge' title='Private project'>P</span><% end -%>
-	<%= type_badge(@project).html_safe %>
+	<%= badge_type(@project).html_safe %>
+	<%= badge_accessibility(@project).html_safe %>
 	<% if @project.jobs.present? && @project.editable?(current_user) -%>
 		<span class = 'tab-bar'>
 			<%= link_to_unless_current 'Jobs', project_jobs_path(@project.name), :class => 'tab inactive_tab' do

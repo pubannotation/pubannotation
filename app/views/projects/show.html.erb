@@ -33,7 +33,7 @@
 	</tr>
 	<tr>
 		<th><%= t('activerecord.attributes.project.maintainer') %></th>
-		<td><%= @project.user.username %></td>
+		<td><%= maintainer_link(@project) %></td>
 	</tr>
 	<tr>
 		<th><%= t('activerecord.attributes.project.author') %></th>
@@ -105,7 +105,7 @@
 
 <fieldset class="pane annotations">
 	<legend>
-		Annotations <span class='info'>(<%= annotations_count_helper(@project) %>)</span>
+		Annotations <span class='info'>(<%= number_with_delimiter(annotations_count_helper(@project, @doc, @span), :delimiter => ',') %>)</span>
 	</legend>
 
 	<table class="vertical">

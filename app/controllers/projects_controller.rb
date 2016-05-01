@@ -9,7 +9,7 @@ class ProjectsController < ApplicationController
   autocomplete :pmdoc,  :sourceid, :class_name => :doc, :scopes => [:pmdocs,  :project_name => :project_name]
   autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
   autocomplete :user, :username
-  autocomplete :project, :name, :full => true, :scopes => [:id_in => :project_ids]
+  autocomplete :project, :name, :full => true, :scopes => [:public_or_blind]
   autocomplete :project, :author
 
   # GET /projects
@@ -65,12 +65,9 @@ class ProjectsController < ApplicationController
       @sourcedbs = ['PubMed', 'PMC', 'FirstAuthor']
       @sourcedbs_active = ['PubMed', 'PMC', 'FirstAuthor']
 
-      @annotators = Annotator.all
-      @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
-
       respond_to do |format|
         format.html
-        format.json {render json: @project.json} 
+        format.json {render json: @project.anonymize ? @project.as_json(except: [:maintainer]) : @project.as_json}
       end
     rescue => e
       respond_to do |format|
@@ -156,8 +153,6 @@ class ProjectsController < ApplicationController
   def obtain_annotations
     @project = Project.editable(current_user).find_by_name(params[:id])
     @sourcedbs = ["PubMed", "PMC", "FirstAuthor"]
-    @annotators = Annotator.all
-    @annotator_options = @annotators.map{|a| [a[:abbrev], a[:abbrev]]}
   end
 
   def upload_annotations
@@ -342,13 +337,13 @@ class ProjectsController < ApplicationController
       raise ArgumentError, "There is no shared document with the project, #{project_ref.name}" if docs_common.length == 0
       raise ArgumentError, "For a performance reason, current implementation limits this feature to work for less than 3,000 documents." if docs_common.length > 3000
 
-      project.create_comparison(project_ref)
-      message = ""
+      # project.create_comparison(project_ref)
+      # message = ""
 
-      # priority = project.jobs.unfinished.count
-      # delayed_job = Delayed::Job.enqueue CompareAnnotationsJob.new(project, project_ref), priority: priority, queue: :general
-      # Job.create({name:'Compare annotations', project_id:project.id, delayed_job_id:delayed_job.id})
-      # message = "The task, 'compare annotations to the project, #{project_ref.name}', is created."
+      priority = project.jobs.unfinished.count
+      delayed_job = Delayed::Job.enqueue CompareAnnotationsJob.new(project, project_ref), priority: priority, queue: :general
+      Job.create({name:'Compare annotations', project_id:project.id, delayed_job_id:delayed_job.id})
+      message = "The task, 'compare annotations to the project, #{project_ref.name}', is created."
 
     # rescue => e
     #   message = e.message
