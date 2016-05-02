@@ -1007,7 +1007,8 @@ class Project < ActiveRecord::Base
       if annotator['method'] == 0 # 'get'
         RestClient.get url, {:params => params, :accept => :json}
       else
-        RestClient.post url, params.merge({:accept => :json})
+        RestClient::Request.execute(method: :post, url: url, timeout: 120, payload: params)
+        # RestClient.post url, params.merge({:accept => :json})
       end
     rescue => e
       raise IOError, "Invalid connection"
