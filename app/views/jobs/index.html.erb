@@ -24,13 +24,14 @@
 <h1>Background jobs
 <%= link_to 'Clear finished jobs', project_clear_finished_jobs_path(@project.name), method: :delete, :class => 'control button' %>
 </h1>
-
+<!-- 
 <table>
 <tr>
 <th>Current time</th>
 <td><%= Time.now %></td>
 </tr>
 </table>
+ -->
 <table>
   <tr>
     <th>#</th>
@@ -59,9 +60,9 @@
     <td>
         <%= link_to 'Show', project_job_path(@project.name, job), class: :button %>
         <% if job.running? %>
-          <%= link_to 'Stop', project_job_path(@project.name, job), method: :put, data: { confirm: 'Are you sure?', disable_with: "stopping<i class='fa fa-refresh fa-spin'></i>" }, class: :button %>
+          <%= link_to 'Stop', project_job_path(@project.name, job), method: :put, data: { confirm: t('controllers.shared.confirm_stop'), disable_with: "stopping<i class='fa fa-refresh fa-spin'></i>" }, class: :button %>
         <% else %>
-          <%= link_to 'Remove', project_job_path(@project.name, job), method: :delete, data: { confirm: 'Are you sure? Stopping a job may take a minute.' }, class: :button %>
+          <%= link_to 'Remove', project_job_path(@project.name, job), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
         <% end %>
     </td>
   </tr>

@@ -296,7 +296,8 @@ en:
       successfully_created: '%{model} was successfully created.'
       successfully_updated: '%{model} was successfully updated.'
       successfully_destroyed: '%{model} was successfully deleted.'
-      confirm_delete: Are you sure to delete?
+      confirm_delete: Are you sure?
+      confirm_stop: Are you sure?
       last_modified_at: Modified at
       created_at: Created at
       not_exists: There is no %{model}
