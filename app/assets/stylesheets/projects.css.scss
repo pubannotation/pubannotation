@@ -2,7 +2,7 @@
 
 .project-properties {
   table-layout:fixed;
-  width: 36em;
+  width: 100%;
 
   th {
     width: 6em;
@@ -13,5 +13,11 @@
 
   td.help-column {
     width: 1em;
+  }
+}
+
+@media screen and (max-width: 440px) {
+  .project-properties {
+    width: 32em;
   }
 }
