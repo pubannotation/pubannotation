@@ -122,7 +122,10 @@ class SpansController < ApplicationController
         @doc.set_ascii_body if params[:encoding] == 'ascii'
         @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
 
-        @annotations = @doc.hannotations(nil, @span)
+        sort_order = sort_order(Project)
+        @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+
+        @annotations = @doc.hannotations(@projects, @span)
 
         @project_annotations_index = if @annotations[:denotations].present?
           {@annotations[:project] => @annotations}
@@ -131,8 +134,9 @@ class SpansController < ApplicationController
         else
           {}
         end
-        sort_order = sort_order(Project)
-        @projects = Project.where('name IN (?)', @project_annotations_index.keys).sort_by_params(sort_order)
+
+        @projects.delete_if{|project| !@project_annotations_index.keys.include?(project.name)}
+
         # @annotations_projects_check = true
         @annotations_path = "#{url_for(:only_path => true)}/annotations"
 
@@ -166,8 +170,12 @@ class SpansController < ApplicationController
       @span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
-      @annotations = @doc.hannotations(@project, @span)
       @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
+
+      sort_order = sort_order(Project)
+      @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+
+      @annotations = @doc.hannotations(@projects, @span)
 
       @project_annotations_index = if @annotations[:denotations].present?
         {@annotations[:project] => @annotations}
@@ -177,8 +185,7 @@ class SpansController < ApplicationController
         {}
       end
 
-      sort_order = sort_order(Project)
-      @projects = Project.where('name IN (?)', @project_annotations_index.keys).sort_by_params(sort_order)
+      @projects.delete_if{|project| !@project_annotations_index.keys.include?(project.name)}
 
       # @annotations_projects_check = true
       @annotations_path = "#{url_for(:only_path => true)}/annotations"
