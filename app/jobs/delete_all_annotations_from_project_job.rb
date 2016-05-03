@@ -9,7 +9,7 @@ class DeleteAllAnnotationsFromProjectJob < Struct.new(:project)
       begin
         project.delete_annotations(doc)
       rescue => e
-				@job.messages << Message.create({item: "#{doc.sourcedb}:#{doc.sourceid}", body: e.message})
+				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message})
       end
 			@job.update_attribute(:num_dones, i + 1)
     end

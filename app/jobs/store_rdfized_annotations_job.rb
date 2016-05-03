@@ -15,7 +15,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:sproject, :project, :rdfizer)
 	      end
 	    rescue => e
  	      doc_description  = [doc.sourcedb, doc.sourceid, doc.serial].compact.join('-')
-				@job.messages << Message.create({item: "#{doc_description}", body: e.message})
+				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: e.message})
 			end
 			@job.update_attribute(:num_dones, i + 1)
     end

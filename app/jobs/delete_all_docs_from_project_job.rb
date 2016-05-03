@@ -10,9 +10,8 @@ class DeleteAllDocsFromProjectJob < Struct.new(:project, :current_user)
         project.denotations.where(doc_id: doc.id).destroy_all
         project.docs.delete(doc)
         doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
-        # project.delete_doc(doc, current_user)
       rescue => e
-				@job.messages << Message.create({item: "#{doc.sourcedb}:#{doc.sourceid}", body: e.message})
+				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message})
       end
 			@job.update_attribute(:num_dones, i + 1)
     end

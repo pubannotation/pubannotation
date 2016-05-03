@@ -8,7 +8,7 @@ class AddDocsToProjectJob < Struct.new(:docspecs, :project)
     	begin
 	      project.add_doc(docspec[:sourcedb], docspec[:sourceid], true)
 	    rescue => e
-				@job.messages << Message.create({item: "#{docspec[:sourcedb]}:#{docspec[:sourceid]}", body: e.message})
+				@job.messages << Message.create({sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid], body: e.message})
 			end
 			@job.update_attribute(:num_dones, i + 1)
     end

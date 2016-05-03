@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160430140646) do
+ActiveRecord::Schema.define(:version => 20160503094947) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -165,7 +165,9 @@ ActiveRecord::Schema.define(:version => 20160430140646) do
     t.integer  "job_id"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
-    t.string   "item"
+    t.string   "sourcedb"
+    t.string   "sourceid"
+    t.integer  "divid"
   end
 
   add_index "messages", ["job_id"], :name => "index_messages_on_job_id"

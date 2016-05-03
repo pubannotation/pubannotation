@@ -51,11 +51,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
             raise IOError, "document does not exist"
           end
         rescue => e
-          annotations[:sourcedb] = '-' unless annotations[:sourcedb].present?
-          annotations[:sourceid] = '-' unless annotations[:sourceid].present?
-          docspec = "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
-          docspec += "-#{annotations[:divid]}" unless annotations[:divid].nil?
-  				@job.messages << Message.create({item: docspec, body: e.message})
+          @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
         end
       end
     	@job.update_attribute(:num_dones, i + 1)

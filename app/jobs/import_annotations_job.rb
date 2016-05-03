@@ -15,9 +15,7 @@ class ImportAnnotationsJob < Struct.new(:source_project, :project)
         annotations = doc.hannotations(source_project)
         project.save_annotations(annotations, doc)
       rescue => e
-        docspec = "#{annotations[:sourcedb]}:#{annotations[:sourceid]}"
-        docspec += "-#{annotations[:divid]}" unless annotations[:divid].nil?
-				@job.messages << Message.create({item: docspec, body: e.message})
+				@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
       end
     	@job.update_attribute(:num_dones, i + 1)
     end

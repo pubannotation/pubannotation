@@ -24,7 +24,7 @@ class StoreAnnotationsCollectionJob < Struct.new(:collection, :project, :options
           raise IOError, "document does not exist"
         end
       rescue => e
-				@job.messages << Message.create({item: "#{annotations[:sourcedb]}:#{annotations[:sourceid]}", body: e.message})
+				@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message})
       end
 			@job.update_attribute(:num_dones, i + 1)
     end

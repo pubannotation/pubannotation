@@ -11,8 +11,7 @@ class StoreRdfizedSpansJob < Struct.new(:sproject, :docids, :rdfizer)
         doc_ttl = sproject.get_conversion(annotations, rdfizer)
         sproject.post_rdf(doc_ttl, nil, i == 0)
 	    rescue => e
- 	      doc_description  = [annotations[:sourcedb], annotations[:sourceid], annotations[:divid]].compact.join('-')
-				@job.messages << Message.create({item: "#{doc_description}", body: e.message})
+				@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
 			end
 			@job.update_attribute(:num_dones, i + 1)
     end
