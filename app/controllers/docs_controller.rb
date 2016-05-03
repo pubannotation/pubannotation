@@ -200,9 +200,11 @@ class DocsController < ApplicationController
         @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
 
         @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
-        @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
-        @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
-        @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
+        if @annotations[:tracks].present?
+          @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
+          @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
+          @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
+        end
 
         respond_to do |format|
           format.html

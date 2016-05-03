@@ -77,10 +77,16 @@ class DivsController < ApplicationController
 
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
       @content = @doc.body.gsub(/\n/, "<br>")
-      @annotations = @doc.hannotations
 
       sort_order = sort_order(Project)
       @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+
+      @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
+      if @annotations[:tracks].present?
+        @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
+        @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
+        @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
+      end
 
       serial = params[:divid].to_i
       divs_count = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]).count

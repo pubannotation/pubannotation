@@ -190,6 +190,12 @@ class SpansController < ApplicationController
       # @annotations_projects_check = true
       @annotations_path = "#{url_for(:only_path => true)}/annotations"
 
+      if @annotations[:tracks].present?
+        @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
+        @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
+        @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
+      end
+
       respond_to do |format|
         format.html {render 'docs/show'}
         format.txt  {render text: @annotations[:text]}
