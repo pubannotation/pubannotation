@@ -13,7 +13,7 @@ class DivsController < ApplicationController
       if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], sourceid: params[:sourceid], page:params[:page]})
         @search_count = search_results[:total]
-        @divs = @search_count > 0 ? search_results[:docs] : []
+        @divs = @search_count > 0 ? search_results[:results] : []
       end
 
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
@@ -47,7 +47,7 @@ class DivsController < ApplicationController
       if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, sourcedb: params[:sourcedb], sourceid: params[:sourceid], page:params[:page]})
         @search_count = search_results[:total]
-        @divs = @search_count > 0 ? search_results[:docs] : []
+        @divs = @search_count > 0 ? search_results[:results] : []
       end
 
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')

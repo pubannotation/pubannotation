@@ -43,7 +43,7 @@ class Doc < ActiveRecord::Base
     filter_condition = []
     filter_condition << {term: {'serial' => 0}} unless attributes[:sourceid].present?
     filter_condition << {term: {'projects.id' => attributes[:project_id]}} if attributes[:project_id].present?
-    filter_condition << {term: {'sourcedb' => attributes[:sourcedb].downcase}} if attributes[:sourcedb].present?
+    filter_condition << {term: {'sourcedb' => attributes[:sourcedb]}} if attributes[:sourcedb].present?
     filter_condition << {term: {'sourceid' => attributes[:sourceid]}} if attributes[:sourceid].present?
 
     filter_phrase = {

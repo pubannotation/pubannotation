@@ -49,9 +49,8 @@ class DocsController < ApplicationController
 
       if params[:keywords].present?
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, page:params[:page]})
-
         @search_count = search_results[:total]
-        @docs = search_results[:docs]
+        @docs = search_results[:results]
       else
         @docs = @project.docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
       end
