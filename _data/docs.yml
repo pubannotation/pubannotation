@@ -5,9 +5,11 @@
   - spans
   - create-project
   - add-document
+  - import-document
   - create-document
   - create-annotation
   - annotation-format
+  - import-annotation
   - obtain-annotation
   - annotation-server-api
   - annotation-editor

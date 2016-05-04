@@ -6,23 +6,26 @@ next_section: spans
 permalink: /docs/api/
 ---
 
-All the resources on PubAnnotation can be accessed through the REST API,
+All the resources on PubAnnotation can be accessed through its REST API,
 which is now the most standard way of accessing resources on the Web.
 
 Note that most of modern programming languages support the REST access and
 also there are many standalone REST clients.
 
-For example, [cURL](http://curl.haxx.se/) is a versatile command-line tool you can use as a REST client in major OS environments, e.g., UNIX, iOS, DOS.
+For example, [cURL](http://curl.haxx.se/) is a versatile command-line tool you can use as a REST client in major OS environments, e.g., UNIX, iOS, Windows.
 
-To test the API examples shown below, you can simply give one of the RESTful URLs as an argument of the cURL command as follows:
-`curl http://pubannotation.org/docs/sourcedb/PubMed/sourceid/25314077.json`
+To give it a simple try, you can give one of the RESTful URLs as an argument of the cURL command as follows:
+<textarea class="command" readonly="readonly">
+curl http://pubannotation.org/docs/sourcedb/PubMed/sourceid/25314077.json
+</textarea>
+Then, it will "get" you the resource represented by the URL: the document, PubMed:25314077, in this case.
 
 PubAnnotation maintains three types of resources
 
 * a *document* is a piece of text which is a sequence of characters.
-* *annotation* is a set of statements attached to a document.
+* *annotations* are statements attached to documents.
    * See [Format]({{site.baseurl}}/docs/format/) for more details of annotation.
-* a *project* is a collection of documents and annotation made to them.
+* a *project* is a collection of documents and annotations attached to them.
 
 ## Accessing documents
 
@@ -36,7 +39,7 @@ We hope you may figure out the composing rules of URIs while browsing the exampl
   * [http://pubannotation.org/docs/sourcedb/PMC](http://pubannotation.org/docs/sourcedb/PMC)
   * the name of source DB is case-sensitive
  -->
-* All the documents in the project, *example*:
+* All the documents in a specific project
   * [http://pubannotation.org/projects/example/docs](http://pubannotation.org/projects/example/docs)
 
 ### A specific document

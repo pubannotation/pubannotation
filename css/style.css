@@ -556,6 +556,12 @@ blockquote {
   color: #eeeeee;
 }
 
+article .command {
+  width: 100%;
+  background-color: #333333;
+  color: #eeeeee;
+}
+
 /* Tables */
 
 table {

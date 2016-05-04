@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Obtaining annotations
-prev_section: annotation-format
+prev_section: import-annotation
 next_section: annotation-server-api
 permalink: /docs/obtain-annotation/
 ---
@@ -17,7 +17,7 @@ To obtain automatic annotations for a document
 
 1. Go to a document page (or a division page in case of PMC document) of your project.<br/>
 If your are logged in and the document belongs to one of your projects, you will find the interface to request annotations from a web service.<br/>
-![open the editor]({{site.baseurl}}/img/obtain_annotation.png)
+![open the editor]({{site.baseurl}}/img/obtain_annotation_form.png)
 2. Enter the **URL** of an annotation service. If you do not know one, see below.
 3. Enter the **prefix** for the annotations from the annotation service.
   * Note that individual annotation services may not know about each other, and there is a chance of id confliction among annotations produced by different services, which may cause an unexpected result. By specifying unique prefixes to different annotation services, id confliction can be avoided.

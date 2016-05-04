@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Creating documents
-prev_section: add-document
+prev_section: import-document
 next_section: create-annotation
 permalink: /docs/create-document/
 ---
@@ -9,13 +9,13 @@ permalink: /docs/create-document/
 Once you have [created a project]({{site.baseurl}}/docs/create-project/) of your own,
 you can add documents to the project for annotation.
 
-There are two methods to add a document to a project:
+There are three methods to add a document to a project:
 
-1. [To _import_ a document]({{site.baseurl}}/docs/add-document/) from a pre-registered database, e.g. _PubMed_ or _PMC_
-2. To _create_ a new document
+1. [To _add_ a document from a pre-registered database]({{site.baseurl}}/docs/add-document/), e.g. _PubMed_ or _PMC_.
+2. [To _import_ documents from an existing project]({{site.baseurl}}/docs/import-document/).
+3. To _create_ a new document
 
-This page explains the second method.
-For the first method, readers are referred to [adding documents]({{site.baseurl}}/docs/add-document/).
+This page explains the third method.
 
 You can create a document by providing a block of text and relevant information, using one of following ways.
 
@@ -23,7 +23,8 @@ You can create a document by providing a block of text and relevant information,
 
 1. Go to your project page.
    * top > projects > your_project
-2. If you are logged in, you will find the _create a new document_ menu.
+2. If you are logged in, you will find the _create a new document_ menu.<br>
+![create_document_form]({{site.baseurl}}/img/create_document.png)
 3. Click the menu to open the _New document_ dialog.
 4. Provide a block of text and relevant information, e.g. source URL.
 If you are not sure about the relevant information, you can just the fields blank, and click the _Create document_ button.
