@@ -7,9 +7,9 @@ permalink: /docs/create-document/
 ---
 
 Once you have [created a project]({{site.baseurl}}/docs/create-project/) of your own,
-you can add documents to the project for annotation.
+the next step you would like to do is to add documents to the project.
 
-There are three methods to add a document to a project:
+There are three ways to add documents to a project:
 
 1. [To _add_ a document from a pre-registered database]({{site.baseurl}}/docs/add-document/), e.g. _PubMed_ or _PMC_.
 2. [To _import_ documents from an existing project]({{site.baseurl}}/docs/import-document/).
