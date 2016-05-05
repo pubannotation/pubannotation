@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Example 1
-prev_section: align-annotation
+prev_section: compare-project
 next_section: about
 permalink: /docs/example-1/
 ---
