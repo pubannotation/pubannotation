@@ -553,20 +553,6 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  # def create_project_annotations_rdf
-  #   begin
-  #     project = Project.editable(current_user).find_by_name(params[:project_id])
-  #     raise "There is no such project in your management." unless project.present?
-
-  #     project.notices.create({method: "create annotations rdf"})
-  #     ttl = project.create_annotations_rdf(params[:encoding])
-  #     # render :text => ttl, :content_type => 'application/x-turtle', :filename => project.name
-  #   rescue => e
-  #     flash[:notice] = notice
-  #   end
-  #   redirect_to :back
-  # end
-
   def destroy
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])

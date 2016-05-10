@@ -41,7 +41,6 @@ class Project < ActiveRecord::Base
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :jobs, :dependent => :destroy
-  has_many :notices, dependent: :destroy
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 32}, uniqueness: true
   validates_format_of :name, :with => /\A[a-z0-9\-_]+\z/i
 
@@ -591,17 +590,6 @@ class Project < ActiveRecord::Base
   def annotations_rdf_system_path
     self.downloads_system_path + self.annotations_rdf_filename
   end
-
-  # def create_annotations_rdf(encoding = nil)
-  #   begin
-  #     ttl = rdfize_docs(self.annotations_collection(encoding), Pubann::Application.config.rdfizer_annotations)
-  #     result = create_rdf_zip(ttl)
-  #     self.notices.create({method: "create annotations rdf", successful: true})
-  #   rescue => e
-  #     self.notices.create({method: "create annotations rdf", successful: false})
-  #   end
-  #   ttl
-  # end 
 
   def create_rdf_zip (ttl)
     require 'fileutils'

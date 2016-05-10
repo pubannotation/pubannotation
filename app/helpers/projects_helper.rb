@@ -105,7 +105,7 @@ module ProjectsHelper
 
   def comparison_link(project)
     if File.exist?(project.comparison_path)
-      link_to 'See last comparison', comparison_project_path(project.name)
+      link_to 'See the last comparison', comparison_project_path(project.name)
     else
     end
   end
