@@ -181,7 +181,7 @@ if __FILE__ == $0
   puts str1
   puts "---"
   puts str2
-
+  puts
   puts TextAlignment::sdiff2cdiff(align.sdiff)
 
   new_spans = align.transform_spans(spans)
