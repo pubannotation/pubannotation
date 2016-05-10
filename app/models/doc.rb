@@ -108,10 +108,6 @@ class Doc < ActiveRecord::Base
   }
 
   scope :relations_count,
-    # LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN instances ON instances.obj_id = denotations.id LEFT OUTER JOIN relations ON relations.subj_id = instances.id AND relations.subj_type = 'Instance'
-    #joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN instances ON instances.obj_id = denotations.id LEFT OUTER JOIN relations ON relations.subj_id = instances.id AND relations.subj_type = 'Instance' LEFT OUTER JOIN denotations denotations_docs_join ON denotations_docs_join.doc_id = docs.id LEFT OUTER JOIN relations subcatrels_docs ON subcatrels_docs.subj_id = denotations_docs_join.id AND subcatrels_docs.subj_type = 'Denotation'").
-    #joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
-    # order by subcatrels only
     joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
     .group('docs.id')
     .order('count(relations.id) DESC')
@@ -327,11 +323,6 @@ class Doc < ActiveRecord::Base
   end
 
   def same_sourceid_relations_count
-    # denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
-    # denotations_ids = Denotation.select('id, doc_id').where('doc_id IN (?)', denotation_doc_ids).collect{|denotation| denotation.id}
-    # relations_size = Relation.select('subj_id, subj_type').where(:subj_type => 'Denotation').where('subj_id IN(?)', denotations_ids).size
-    # instances_size = Instance.select('obj_id').where('obj_id IN(?)', denotations_ids).size
-    # relations_size + instances_size
     Doc.where(:sourceid => self.sourceid).sum('subcatrels_count')
   end
   
