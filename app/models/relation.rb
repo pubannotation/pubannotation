@@ -11,7 +11,6 @@ class Relation < ActiveRecord::Base
   validates :pred,    :presence => true
   validates :subj_id, :presence => true
   validates :obj_id,  :presence => true
-  validate :validate
 
   scope :from_projects, -> (projects) {
     where('relations.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
@@ -46,16 +45,6 @@ class Relation < ActiveRecord::Base
     hrelation[:subj] = subj.hid
     hrelation[:obj]  = obj.hid
     hrelation
-  end
-  
-  def validate
-    if obj.class == Block  || subj.class == Block
-      if subj.class != Block
-        errors.add(:subj_type, 'subj should be a Block when obj is a Block')
-      elsif obj.class != Block
-        errors.add(:obj_type, 'obj should be a Block when subj is a Block')
-      end
-    end
   end
   
   def self.project_relations_count(project_id, relations)
