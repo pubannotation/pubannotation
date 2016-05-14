@@ -1055,8 +1055,8 @@ class Project < ActiveRecord::Base
       anns     = doc.hannotations(self)
       anns_ref = doc.hannotations(project_ref)
 
-      anns_norm     = anns.has_key?(:denotations) ? anns[:denotations].collect{|d| {span:d[:span], obj:d[:obj]}} : []
-      anns_norm_ref = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].collect{|d| {span:d[:span], obj:d[:obj]}} : []
+      anns_norm     = anns.has_key?(:denotations) ? anns[:denotations].collect{|d| {span:d[:span], obj:d[:obj]}}.uniq : []
+      anns_norm_ref = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].collect{|d| {span:d[:span], obj:d[:obj]}}.uniq : []
       anns_norm_common = anns_norm & anns_norm_ref
 
       anns_norm.each{|d| types[d[:obj]] += 1; types['_ALL_'] += 1}
@@ -1094,8 +1094,8 @@ class Project < ActiveRecord::Base
       den_idx     =     anns.has_key?(:denotations) ?     anns[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
       den_ref_idx = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
 
-      anns_norm     =     anns.has_key?(:relations) ?     anns[:relations].collect{|r| {subj:den_idx[r[:subj]], obj:den_idx[r[:obj]], pred:r[:pred]}} : []
-      anns_norm_ref = anns_ref.has_key?(:relations) ? anns_ref[:relations].collect{|r| {subj:den_ref_idx[r[:subj]], obj:den_ref_idx[r[:obj]], pred:r[:pred]}} : []
+      anns_norm     =     anns.has_key?(:relations) ?     anns[:relations].collect{|r| {subj:den_idx[r[:subj]], obj:den_idx[r[:obj]], pred:r[:pred]}}.uniq : []
+      anns_norm_ref = anns_ref.has_key?(:relations) ? anns_ref[:relations].collect{|r| {subj:den_ref_idx[r[:subj]], obj:den_ref_idx[r[:obj]], pred:r[:pred]}}.uniq : []
       anns_norm_common = anns_norm & anns_norm_ref
 
       anns_norm.each{|r| types[r[:pred]] += 1; types['_ALL_'] += 1}
@@ -1133,8 +1133,8 @@ class Project < ActiveRecord::Base
       den_idx     =     anns.has_key?(:denotations) ?     anns[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
       den_ref_idx = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
 
-      anns_norm     =     anns.has_key?(:modifications) ?     anns[:modifications].collect{|r| {obj:den_idx[r[:obj]], pred:r[:pred]}} : []
-      anns_norm_ref = anns_ref.has_key?(:modifications) ? anns_ref[:modifications].collect{|r| {obj:den_ref_idx[r[:obj]], pred:r[:pred]}} : []
+      anns_norm     =     anns.has_key?(:modifications) ?     anns[:modifications].collect{|r| {obj:den_idx[r[:obj]], pred:r[:pred]}}.uniq : []
+      anns_norm_ref = anns_ref.has_key?(:modifications) ? anns_ref[:modifications].collect{|r| {obj:den_ref_idx[r[:obj]], pred:r[:pred]}}.uniq : []
       anns_norm_common = anns_norm & anns_norm_ref
 
       anns_norm.each{|m| types[m[:pred]] += 1; types['_ALL_'] += 1}
