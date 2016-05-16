@@ -338,15 +338,14 @@ class ProjectsController < ApplicationController
       raise ArgumentError, "For a performance reason, current implementation limits this feature to work for less than 3,000 documents." if docs_common.length > 3000
 
       # project.create_comparison(project_ref)
-      # message = ""
 
       priority = project.jobs.unfinished.count
       delayed_job = Delayed::Job.enqueue CompareAnnotationsJob.new(project, project_ref), priority: priority, queue: :general
       Job.create({name:'Compare annotations', project_id:project.id, delayed_job_id:delayed_job.id})
       message = "The task, 'compare annotations to the project, #{project_ref.name}', is created."
 
-    # rescue => e
-    #   message = e.message
+    rescue => e
+      message = e.message
     end
 
     respond_to do |format|

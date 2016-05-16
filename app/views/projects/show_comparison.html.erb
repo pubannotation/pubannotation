@@ -13,22 +13,59 @@
       <%= link_to_unless_current 'JSON', params.merge(controller: :projects, action: :show_comparison, format: :json), :class => 'tab' -%>
     </span>
 	</h1>
-	<% if @comparison[:denotations].present? %>
+
+	<% if @comparison[:individual].present? %>
 		<section>
-			<h2>denotations</h2>
-			<%= render partial: 'comparison', locals: {comparison: @comparison[:denotations]} %>
+			<h2>Individual annotations</h2>
+
+			<% if @comparison[:individual][:denotations].present? %>
+				<section>
+					<h3>Denotations</h3>
+					<%= render partial: 'comparison', locals: {comparison: @comparison[:individual][:denotations]} %>
+				</section>
+			<% end %>
+
+			<% if @comparison[:individual][:relations].present? %>
+				<section>
+					<h3>Relations</h3>
+					<%= render partial: 'comparison', locals: {comparison: @comparison[:individual][:relations]} %>
+				</section>
+			<% end %>
+
+			<% if @comparison[:individual][:modifications].present? %>
+				<section>
+					<h3>Modifications</h3>
+					<%= render partial: 'comparison', locals: {comparison: @comparison[:individual][:modifications]} %>
+				</section>
+			<% end %>
 		</section>
+
 	<% end %>
-	<% if @comparison[:relations].present? %>
+
+	<% if @comparison[:compound].present? %>
 		<section>
-			<h2>Relations</h2>
-			<%= render partial: 'comparison', locals: {comparison: @comparison[:relations]} %>
-		</section>
-	<% end %>
-	<% if @comparison[:modifications].present? %>
-		<section>
-			<h2>Modifications</h2>
-			<%= render partial: 'comparison', locals: {comparison: @comparison[:modifications]} %>
+			<h2>Compound annotations</h2>
+
+			<% if @comparison[:compound][:denotations].present? %>
+				<section>
+					<h3>Denotations</h3>
+					<%= render partial: 'comparison', locals: {comparison: @comparison[:compound][:denotations]} %>
+				</section>
+			<% end %>
+
+			<% if @comparison[:compound][:relations].present? %>
+				<section>
+					<h3>Relations</h3>
+					<%= render partial: 'comparison', locals: {comparison: @comparison[:compound][:relations]} %>
+				</section>
+			<% end %>
+
+			<% if @comparison[:compound][:modifications].present? %>
+				<section>
+					<h3>Modifications</h3>
+					<%= render partial: 'comparison', locals: {comparison: @comparison[:compound][:modifications]} %>
+				</section>
+			<% end %>
 		</section>
 	<% end %>
 </section>

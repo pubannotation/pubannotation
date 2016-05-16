@@ -1034,130 +1034,109 @@ class Project < ActiveRecord::Base
   def create_comparison(project_ref)
     docs = self.docs & project_ref.docs
 
-    comparison_denotations = compare_denotations(docs, project_ref)
-    comparison_relations = compare_relations(docs, project_ref)
-    comparison_modifications = compare_modifications(docs, project_ref)
+    comparison_simple = compare_annotations(project_ref, docs)
+    comparison_composite = compare_annotations(project_ref, docs, true)
 
-    comparison = {reference: project_ref.name}
-    comparison[:denotations] = comparison_denotations unless comparison_denotations.nil?
-    comparison[:relations] = comparison_relations unless comparison_relations.nil?
-    comparison[:modifications] = comparison_modifications unless comparison_modifications.nil?
+    comparison = {reference: project_ref.name, individual: comparison_simple, compound: comparison_composite}
 
     File.write(comparison_path, comparison.to_json)
   end
 
-  def compare_denotations(docs, project_ref)
-    types = Hash.new(0)
-    types_ref = Hash.new(0)
-    types_common = Hash.new(0)
+  def compare_annotations(project_ref, docs, compositep = false)
+    cmp_denotations = {counts:Hash.new(0), counts_ref:Hash.new(0), counts_common:Hash.new(0)}
+    cmp_relations = {counts:Hash.new(0), counts_ref:Hash.new(0), counts_common:Hash.new(0)}
+    cmp_modifications = {counts:Hash.new(0), counts_ref:Hash.new(0), counts_common:Hash.new(0)}
 
     docs.each do |doc|
-      anns     = doc.hannotations(self)
-      anns_ref = doc.hannotations(project_ref)
+      anns     = get_normalized_annotations(self, doc, compositep)
+      anns_ref = get_normalized_annotations(project_ref, doc, compositep)
 
-      anns_norm     = anns.has_key?(:denotations) ? anns[:denotations].collect{|d| {span:d[:span], obj:d[:obj]}}.uniq : []
-      anns_norm_ref = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].collect{|d| {span:d[:span], obj:d[:obj]}}.uniq : []
-      anns_norm_common = anns_norm & anns_norm_ref
+      count_denotations(anns[:denotations], cmp_denotations[:counts])
+      count_denotations(anns_ref[:denotations], cmp_denotations[:counts_ref])
+      count_denotations(anns[:denotations] & anns_ref[:denotations], cmp_denotations[:counts_common])
 
-      anns_norm.each{|d| types[d[:obj]] += 1; types['_ALL_'] += 1}
-      anns_norm_ref.each{|d| types_ref[d[:obj]] += 1; types_ref['_ALL_'] += 1}
-      anns_norm_common.each{|d| types_common[d[:obj]] += 1; types_common['_ALL_'] += 1}
+      count_relations(anns[:relations], cmp_relations[:counts])
+      count_relations(anns_ref[:relations], cmp_relations[:counts_ref])
+      count_relations(anns[:relations] & anns_ref[:relations], cmp_relations[:counts_common])
+
+      count_modifications(anns[:modifications], cmp_modifications[:counts])
+      count_modifications(anns_ref[:modifications], cmp_modifications[:counts_ref])
+      count_modifications(anns[:modifications] & anns_ref[:modifications], cmp_modifications[:counts_common])
     end
 
-    return nil if types_ref.empty?
+    compute_performance(cmp_denotations)
+    compute_performance(cmp_relations)
+    compute_performance(cmp_modifications)
 
-    types_ref.each do |t, c|
-      types[t] = 0 if types[t] == 0
-      types_common[t] = 0 if types_common[t] == 0
-    end
-
-    recall = Hash.new(0)
-    precision = Hash.new(0)
-    fscore = Hash.new(0)
-
-    types.each{|t, c| precision[t] = (c == 0 ? 0 : types_common[t].to_f / c)}
-    types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
-    types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
-
-    {types:types, types_ref:types_ref, types_common:types_common, recall:recall, precision:precision, fscore:fscore}
+    {denotations:cmp_denotations, relations:cmp_relations, modifications:cmp_modifications}
   end
 
-  def compare_relations(docs, project_ref)
-    types = Hash.new(0)
-    types_ref = Hash.new(0)
-    types_common = Hash.new(0)
-
-    docs.each do |doc|
-      anns     = doc.hannotations(self)
-      anns_ref = doc.hannotations(project_ref)
-
-      den_idx     =     anns.has_key?(:denotations) ?     anns[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
-      den_ref_idx = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
-
-      anns_norm     =     anns.has_key?(:relations) ?     anns[:relations].collect{|r| {subj:den_idx[r[:subj]], obj:den_idx[r[:obj]], pred:r[:pred]}}.uniq : []
-      anns_norm_ref = anns_ref.has_key?(:relations) ? anns_ref[:relations].collect{|r| {subj:den_ref_idx[r[:subj]], obj:den_ref_idx[r[:obj]], pred:r[:pred]}}.uniq : []
-      anns_norm_common = anns_norm & anns_norm_ref
-
-      anns_norm.each{|r| types[r[:pred]] += 1; types['_ALL_'] += 1}
-      anns_norm_ref.each{|r| types_ref[r[:pred]] += 1; types_ref['_ALL_'] += 1}
-      anns_norm_common.each{|r| types_common[r[:pred]] += 1; types_common['_ALL_'] += 1}
-    end
-
-    return nil if types_ref.empty?
-
-    types_ref.each do |t, c|
-      types[t] = 0 if types[t] == 0
-      types_common[t] = 0 if types_common[t] == 0
-    end
-
-    recall = Hash.new(0)
-    precision = Hash.new(0)
-    fscore = Hash.new(0)
-
-    types.each{|t, c| precision[t] = (c == 0 ? 0 : types_common[t].to_f / c)}
-    types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
-    types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
-
-    {types:types, types_ref:types_ref, types_common:types_common, recall:recall, precision:precision, fscore:fscore}
+  def count_denotations(denotations, counts)
+    denotations.each{|d| counts[d[:obj]] += 1; counts['_ALL_'] += 1}
+    counts
   end
 
-  def compare_modifications(docs, project_ref)
-    types = Hash.new(0)
-    types_ref = Hash.new(0)
-    types_common = Hash.new(0)
+  def count_relations(relations, counts)
+    relations.each{|r| counts[r[:pred]] += 1; counts['_ALL_'] += 1}
+    counts
+  end
 
-    docs.each do |doc|
-      anns     = doc.hannotations(self)
-      anns_ref = doc.hannotations(project_ref)
+  def count_modifications(modifications, counts)
+    modifications.each{|m| counts[m[:pred]] += 1; counts['_ALL_'] += 1}
+    counts
+  end
 
-      den_idx     =     anns.has_key?(:denotations) ?     anns[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
-      den_ref_idx = anns_ref.has_key?(:denotations) ? anns_ref[:denotations].inject({}){|s, d| s[d[:id]] = {span:d[:span], obj:d[:obj]}; s} : {}
-
-      anns_norm     =     anns.has_key?(:modifications) ?     anns[:modifications].collect{|r| {obj:den_idx[r[:obj]], pred:r[:pred]}}.uniq : []
-      anns_norm_ref = anns_ref.has_key?(:modifications) ? anns_ref[:modifications].collect{|r| {obj:den_ref_idx[r[:obj]], pred:r[:pred]}}.uniq : []
-      anns_norm_common = anns_norm & anns_norm_ref
-
-      anns_norm.each{|m| types[m[:pred]] += 1; types['_ALL_'] += 1}
-      anns_norm_ref.each{|m| types_ref[m[:pred]] += 1; types_ref['_ALL_'] += 1}
-      anns_norm_common.each{|m| types_common[m[:pred]] += 1; types_common['_ALL_'] += 1}
-    end
-
-    return nil if types_ref.empty?
-
-    types_ref.each do |t, c|
-      types[t] = 0 if types[t] == 0
-      types_common[t] = 0 if types_common[t] == 0
-    end
-
+  def compute_performance(comparison)
+    counts = comparison[:counts]
+    counts_ref = comparison[:counts_ref]
+    counts_common = comparison[:counts_common]
     recall = Hash.new(0)
     precision = Hash.new(0)
     fscore = Hash.new(0)
 
-    types.each{|t, c| precision[t] = (c == 0 ? 0 : types_common[t].to_f / c)}
-    types_ref.each{|t, c| recall[t] = types_common[t].to_f / c}
-    types_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
+    counts.each{|t, c| precision[t] = (c == 0 ? 0 : counts_common[t].to_f / c)}
+    counts_ref.each{|t, c| recall[t] = counts_common[t].to_f / c}
+    counts_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
 
-    {types:types, types_ref:types_ref, types_common:types_common, recall:recall, precision:precision, fscore:fscore}
+    comparison[:recall] = recall
+    comparison[:precision] = precision
+    comparison[:fscore] = fscore
+  end
+
+  def get_normalized_annotations(project, doc, compositep = false)
+    anns = doc.hannotations(project)
+    if anns.has_key?(:denotations)
+      denotations_idx = anns[:denotations].inject({}){|idx, d| idx[d[:id]] = {span:d[:span], obj:d[:obj]}; idx}
+
+      if compositep
+        dependency_idx = {}
+        if anns.has_key?(:relations)
+          anns[:relations].each do |r|
+            dependency_idx[r[:obj]] = [] if dependency_idx[r[:obj]].nil?
+            dependency_idx[r[:obj]] << r[:subj]
+          end
+        end
+
+        denotations_idx.each{|id, d| composite_denotation(id, denotations_idx, dependency_idx)}
+      end
+
+      denotations   = denotations_idx.values.uniq
+      relations     = anns[:relations].collect{|r| {subj:denotations_idx[r[:subj]], obj:denotations_idx[r[:obj]], pred:r[:pred]}}.uniq if anns.has_key?(:relations)
+      modifications = anns[:modifications].collect{|r| {obj:denotations_idx[r[:obj]], pred:r[:pred]}}.uniq if anns.has_key?(:modifications)
+    end
+
+    denotations ||= []
+    relations ||= []
+    modifications ||= []
+    {denotations: denotations, relations: relations, modifications: modifications}
+  end
+
+  def composite_denotation(did, denotations_idx, dependency_idx)
+    if denotations_idx[did].has_key?(:dep) || dependency_idx[did].nil?
+    else
+      denotations_idx[did][:dep] = dependency_idx[did].collect{|c| composite_denotation(c, denotations_idx, dependency_idx)}
+    end
+    denotations_idx[did]
   end
 
   def user_presence
