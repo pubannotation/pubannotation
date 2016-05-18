@@ -1094,7 +1094,7 @@ class Project < ActiveRecord::Base
     precision = Hash.new(0)
     fscore = Hash.new(0)
 
-    counts.each{|t, c| precision[t] = (c == 0 ? 0 : counts_common[t].to_f / c)}
+    counts_ref.each{|t, c| precision[t] = (c == 0 ? 0 : counts_common[t].to_f / c)}
     counts_ref.each{|t, c| recall[t] = counts_common[t].to_f / c}
     counts_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
 

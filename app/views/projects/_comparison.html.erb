@@ -10,9 +10,9 @@
 		<tr>
 			<th><%= e %></th>
 			<td style="text-align:right"><%= '%.02f' % comparison[:recall][e] %></td>
-			<td style="text-align:center">(<%= number_with_delimiter(comparison[:counts_common][e], :delimiter => ',') %> / <%= number_with_delimiter(c, :delimiter => ',') %>)</td>
+			<td style="text-align:center">(<%= number_with_delimiter(comparison[:counts_common][e], :delimiter => ',') || '-' %> / <%= number_with_delimiter(c, :delimiter => ',') || '-' %>)</td>
 			<td style="text-align:right"><%= '%.02f' % comparison[:precision][e] %></td>
-			<td style="text-align:center">(<%= number_with_delimiter(comparison[:counts_common][e], :delimiter => ',') %> / <%= number_with_delimiter(comparison[:counts][e], :delimiter => ',') %>)</td>
+			<td style="text-align:center">(<%= number_with_delimiter(comparison[:counts_common][e], :delimiter => ',') || '-' %> / <%= number_with_delimiter(comparison[:counts][e], :delimiter => ',') || '-' %>)</td>
 			<td style="text-align:right"><%= '%.02f' % comparison[:fscore][e] %></td>
 		</tr>
 	<% end %>
