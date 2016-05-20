@@ -1131,10 +1131,11 @@ class Project < ActiveRecord::Base
     {denotations: denotations, relations: relations, modifications: modifications}
   end
 
-  def composite_denotation(did, denotations_idx, dependency_idx)
+  def composite_denotation(did, denotations_idx, dependency_idx, stack = [])
     if denotations_idx[did].has_key?(:dep) || dependency_idx[did].nil?
     else
-      denotations_idx[did][:dep] = dependency_idx[did].collect{|c| composite_denotation(c, denotations_idx, dependency_idx)}
+      deps = dependency_idx[did] - stack
+      denotations_idx[did][:dep] = deps.collect{|c| composite_denotation(c, denotations_idx, dependency_idx, stack << c)}
     end
     denotations_idx[did]
   end
