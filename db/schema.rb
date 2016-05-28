@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160503094947) do
+ActiveRecord::Schema.define(:version => 20160528140652) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -49,20 +49,6 @@ ActiveRecord::Schema.define(:version => 20160503094947) do
 
   add_index "associate_projects_projects", ["associate_project_id"], :name => "index_associate_projects_projects_on_associate_project_id"
   add_index "associate_projects_projects", ["project_id"], :name => "index_associate_projects_projects_on_project_id"
-
-  create_table "blocks", :force => true do |t|
-    t.string   "hid"
-    t.integer  "doc_id"
-    t.integer  "begin"
-    t.integer  "end"
-    t.string   "category"
-    t.integer  "project_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
-  end
-
-  add_index "blocks", ["doc_id"], :name => "index_blocks_on_doc_id"
-  add_index "blocks", ["project_id"], :name => "index_blocks_on_project_id"
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0, :null => false
@@ -109,6 +95,7 @@ ActiveRecord::Schema.define(:version => 20160503094947) do
     t.integer  "projects_count",    :default => 0
   end
 
+  add_index "docs", ["projects_count"], :name => "index_docs_on_projects_count"
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
   add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
   add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
@@ -119,30 +106,6 @@ ActiveRecord::Schema.define(:version => 20160503094947) do
   end
 
   add_index "docs_projects", ["project_id", "doc_id"], :name => "index_docs_projects_on_project_id_and_doc_id", :unique => true
-
-  create_table "documentation_categories", :force => true do |t|
-    t.string "name", :null => false
-  end
-
-  create_table "documentations", :force => true do |t|
-    t.string  "title",                     :null => false
-    t.text    "body",                      :null => false
-    t.integer "documentation_category_id"
-  end
-
-  add_index "documentations", ["documentation_category_id"], :name => "index_documentations_on_documentation_category_id"
-
-  create_table "instances", :force => true do |t|
-    t.string   "hid"
-    t.integer  "obj_id"
-    t.string   "pred"
-    t.integer  "project_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
-  end
-
-  add_index "instances", ["obj_id"], :name => "index_instances_on_obj_id"
-  add_index "instances", ["project_id"], :name => "index_instances_on_project_id"
 
   create_table "jobs", :force => true do |t|
     t.integer  "project_id"
@@ -184,17 +147,6 @@ ActiveRecord::Schema.define(:version => 20160503094947) do
 
   add_index "modifications", ["obj_id"], :name => "index_modifications_on_obj_id"
   add_index "modifications", ["project_id"], :name => "index_modifications_on_project_id"
-
-  create_table "notices", :force => true do |t|
-    t.integer  "project_id"
-    t.datetime "created_at"
-    t.boolean  "successful"
-    t.text     "uri"
-    t.string   "method"
-    t.string   "message"
-  end
-
-  add_index "notices", ["project_id"], :name => "index_notices_on_project_id"
 
   create_table "projects", :force => true do |t|
     t.string   "name"
