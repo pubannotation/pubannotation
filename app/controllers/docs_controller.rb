@@ -152,22 +152,58 @@ class DocsController < ApplicationController
     end
   end 
  
-  def sourceid_index
+  def index_in_sourcedb
     @sourcedb = params[:sourcedb]
 
-    if params[:project_id].present?
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless @project.present?
-
-      @docs_count = @project.docs.where(sourcedb: @sourcedb, serial: 0).count
-      @docs = @project.docs.where(sourcedb: @sourcedb, serial: 0).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
-      @search_path = search_project_docs_path(@project.name)
+    @docs_count = if @sourcedb == 'PubMed'
+      Doc.where(sourcedb: @sourcedb).count
     else
-      @docs_count = Doc.where(sourcedb: @sourcedb, serial: 0).count
-      @docs = Doc.where(sourcedb: @sourcedb, serial: 0).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
-      @search_path = search_docs_path
+      Doc.where(sourcedb: @sourcedb, serial: 0).count
     end
-  end 
+
+    @docs = if params[:keywords].present?
+      search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], page:params[:page]})
+      @search_count = search_results[:total]
+      search_results[:results]
+    else
+      sort_order = sort_order(Doc)
+      if @sourcedb == 'PubMed'
+        Doc.where(sourcedb: @sourcedb).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+      else
+        Doc.where(sourcedb: @sourcedb, serial: 0).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+      end
+    end
+
+    @search_path = search_docs_path
+  end
+
+  def index_in_sourcedb_project
+    @sourcedb = params[:sourcedb]
+    @project = Project.accessible(current_user).find_by_name(params[:project_id])
+    raise "There is no such project." unless @project.present?
+
+    @docs_count = if @sourcedb == 'PubMed'
+      @project.docs.where(sourcedb: @sourcedb).count
+    else
+      @project.docs.where(sourcedb: @sourcedb, serial: 0).count
+    end
+
+    sort_order = sort_order(Doc)
+
+    @docs = if params[:keywords].present?
+      search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], project_id: @project.id, page:params[:page]})
+      @search_count = search_results[:total]
+      search_results[:results]
+    else
+      sort_order = sort_order(Doc)
+      if @sourcedb == 'PubMed'
+        @project.docs.where(sourcedb: @sourcedb).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+      else
+        @project.docs.where(sourcedb: @sourcedb, serial: 0).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+      end
+    end
+    @search_path = search_project_docs_path(@project.name)
+  end
 
   def show
     begin

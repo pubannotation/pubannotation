@@ -479,7 +479,7 @@ en:
       account: account
       annotation: annotation
       annotations: annotations
-      annotations_count: '#anno.'
+      annotations_count: "number of annotations"
       length: length
       projects_count: '#proj.'
       automatic_annotation_initial: A

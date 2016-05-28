@@ -494,7 +494,7 @@ ja:
       account: アカウント
       annotation: アノテーション
       annotations: アノテーション
-      annotations_count: anno.数
+      annotations_count: "annotationsの数"
       length: 長さ
       projects_count: "proj.数"
       automatic_annotation_initial: 自

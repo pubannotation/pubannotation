@@ -156,7 +156,7 @@ class Doc < ActiveRecord::Base
   }
   
   # default sort order 
-  DefaultSortArray = [['sourceid', 'ASC'], ['sourcedb', 'ASC']]
+  DefaultSortArray = [['projects_count', 'DESC']]
   # List of column names ignore case to sort
   CaseInsensitiveArray = %w(sourcedb)
 

@@ -48,18 +48,15 @@ Pubann::Application.routes.draw do  resources :annotators
       get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'    
     end
   end
-  
+
   # routings for /docs/sourcedb....
   scope 'docs',  :as => 'doc' do
     scope 'sourcedb', :as => 'sourcedb' do
       scope ':sourcedb' do
         # list sourceids
-        get '/' => 'docs#sourceid_index', :as => 'sourceid_index'
+        get '/' => 'docs#index_in_sourcedb', :as => 'index'
 
         scope 'sourceid', :as => 'sourceid' do
-          # list docs
-          get '/' => 'docs#sourcedb_sourceid_index', :as => 'sourceid_index'
-          
           scope ':sourceid' do
             get '/' => 'docs#show', :as =>'show'
             get 'annotations' => 'annotations#doc_annotations_index'
@@ -160,12 +157,9 @@ Pubann::Application.routes.draw do  resources :annotators
           
           scope ':sourcedb' do
             # list sourceids
-            get '/' => 'docs#sourceid_index', :as => 'sourceid_index'
+            get '/' => 'docs#index_in_sourcedb_project', :as => 'index'
           
             scope 'sourceid', :as => 'sourceid' do
-              # list docs
-              get '/' => 'docs#sourcedb_sourceid_index', :as => 'sourceid_index'
-              
               scope ':sourceid' do
                 get '/' => 'docs#show_in_project', :as =>'show'
                 delete '/' => 'docs#project_delete_doc', :as=>'delete'
