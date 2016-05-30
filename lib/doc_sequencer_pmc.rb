@@ -297,6 +297,7 @@ class DocSequencerPMC
       when 'italic', 'bold', 'sup', 'sub', 'underline', 'sc'
       when 'xref', 'ext-link', 'named-content'
       when 'fig', 'table-wrap'
+      when 'statement' # TODO: check what it is
       when 'inline-graphic', 'disp-formula' # TODO: check if it can be ignored.
       else
         raise "a unexpected element in p: #{e.name}"
