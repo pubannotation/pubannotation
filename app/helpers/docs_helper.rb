@@ -3,6 +3,7 @@ module DocsHelper
   def docs_count_cache_key
     cache_id = "count_#{@sourcedb.nil? ? 'docs' : @sourcedb}"
     cache_id += '_' + @project.name unless @project.nil?
+    cache_id
   end
 
   def docs_count
