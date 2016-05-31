@@ -12,18 +12,9 @@
   > <%= @sourcedb %>
 <% end %>
 
-<% if @project.present? -%>
+<section>
+  <%= render :partial => 'projects/titlebar' -%>
   <section>
-    <%= render :partial => 'projects/titlebar' -%>
-<% end %>
-
     <%= render :partial => 'source_docs' -%>
-
-    <section>
-      <h3>Search documents</h3>
-      <%= render partial: 'docs/search_form' -%>
-    </section>
-
-<% if @project.present? -%>
   </section>
-<% end %>
+</section>

@@ -479,9 +479,9 @@ en:
       account: account
       annotation: annotation
       annotations: annotations
-      annotations_count: "number of annotations"
+      annotations_count: '# Ann.'
       length: length
-      projects_count: '#proj.'
+      projects_count: '# proj.'
       automatic_annotation_initial: A
       automatic_annotation: Automatic annotation
       manual_annotation_initial: M

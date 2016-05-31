@@ -65,13 +65,16 @@
 
 <fieldset class="pane documents">
 	<legend>
-		<%= t('activerecord.models.doc').pluralize.capitalize %> <span class="info" style="margin-right:10px">(<%= @docs_count -%>)</span>
+		<%= t('activerecord.models.doc').pluralize.capitalize %>
+		<span class="info" style="margin-right:10px">
+			(<%= cache(docs_count_cache_key) do %><%= docs_count %><% end -%>)
+		</span>
 	</legend>
 
 	<table class="vertical">
 		<tr>
 			<th><%= t('views.shared.list') %></th>
-			<td><%= render partial: 'list_docs' -%></td>
+			<td><%= link_to t('views.shared.show'), project_docs_path(@project.name), class: 'button' -%></td>
 		</tr>
 		<tr>
 			<th><%= t('views.shared.search') %></th>

@@ -1,4 +1,36 @@
 module DocsHelper
+
+  def docs_count_cache_key
+    cache_id = "count_#{@sourcedb.nil? ? 'docs' : @sourcedb}"
+    cache_id += '_' + @project.name unless @project.nil?
+  end
+
+  def docs_count
+    if @project
+      if @sourcedb
+        count = if @sourcedb == 'PubMed'
+          @project.docs.where(sourcedb: @sourcedb).count
+        else
+          @project.docs.where(sourcedb: @sourcedb, serial: 0).count
+        end
+      else
+        count = @project.pmdocs_count + @project.pmcdocs_count
+        count = @project.docs.where(serial: 0).count if count < 1000
+      end
+    else
+      if @sourcedb
+        count = if @sourcedb == 'PubMed'
+          Doc.where(sourcedb: @sourcedb).count
+        else
+          Doc.where(sourcedb: @sourcedb, serial: 0).count
+        end
+      else
+        count = Doc.docs_count(current_user)
+      end
+    end
+    number_with_delimiter(count, :delimiter => ',')
+  end
+
   def sourcedb_count(user, project)
     counts = if project.nil?
       Doc.count_per_sourcedb(user)

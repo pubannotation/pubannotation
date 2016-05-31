@@ -281,6 +281,8 @@ class AnnotationsController < ApplicationController
         doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
         unless doc.present?
           project.add_doc(params[:sourcedb], params[:sourceid])
+          expire_fragment("count_docs_#{project.name}")
+          expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
           doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
         end
         raise "Could not add the document in the project." unless doc.present?
@@ -288,6 +290,8 @@ class AnnotationsController < ApplicationController
         divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
         unless divs.present?
           project.add_doc(params[:sourcedb], params[:sourceid])
+          expire_fragment("count_docs_#{project.name}")
+          expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
           divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
         end
         raise "Could not add the document in the project." unless divs.present?

@@ -810,8 +810,6 @@ class Project < ActiveRecord::Base
       raise IOError, "Failed to get the document" unless divs.present?
       self.docs << divs
     end
-
-    ActionController::Base.new.expire_fragment("sourcedb_counts_in_#{self.name}")
     divs
   end
 
@@ -1167,7 +1165,6 @@ class Project < ActiveRecord::Base
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
     self.delete_annotations(doc)
     self.docs.delete(doc)
-    ActionController::Base.new.expire_fragment("sourcedb_counts_in_#{self.name}")
     doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
   end
 

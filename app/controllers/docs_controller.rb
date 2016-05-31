@@ -7,6 +7,8 @@ class DocsController < ApplicationController
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
+  cache_sweeper :doc_sweeper
+
   autocomplete :doc, :sourcedb
 
   def index
@@ -43,8 +45,6 @@ class DocsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      @docs_count = @project.pmdocs_count + @project.pmcdocs_count
-      @docs_count = @project.docs.where(serial: 0).count if @docs_count < 1000
       sort_order = sort_order(Doc)
 
       if params[:keywords].present?
@@ -155,12 +155,6 @@ class DocsController < ApplicationController
   def index_in_sourcedb
     @sourcedb = params[:sourcedb]
 
-    @docs_count = if @sourcedb == 'PubMed'
-      Doc.where(sourcedb: @sourcedb).count
-    else
-      Doc.where(sourcedb: @sourcedb, serial: 0).count
-    end
-
     @docs = if params[:keywords].present?
       search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], page:params[:page]})
       @search_count = search_results[:total]
@@ -182,11 +176,6 @@ class DocsController < ApplicationController
     @project = Project.accessible(current_user).find_by_name(params[:project_id])
     raise "There is no such project." unless @project.present?
 
-    @docs_count = if @sourcedb == 'PubMed'
-      @project.docs.where(sourcedb: @sourcedb).count
-    else
-      @project.docs.where(sourcedb: @sourcedb, serial: 0).count
-    end
 
     sort_order = sort_order(Doc)
 
@@ -327,10 +316,10 @@ class DocsController < ApplicationController
         end
       end
 
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to :back, notice: e.message}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
+      end
     end
   end
 
@@ -413,6 +402,9 @@ class DocsController < ApplicationController
       if @doc.save
         @project, notice = get_project(params[:project_id])
         @project.docs << @doc if @project.present?
+        expire_fragment("count_docs_#{@project.name}")
+        expire_fragment("count_#{@doc.sourcedb}_#{@project.name}")
+
         get_project(params[:project_id])
         format.html { 
           if @project.present?
@@ -456,6 +448,8 @@ class DocsController < ApplicationController
         docspec = docspecs.first
         begin
           project.add_doc(docspec[:sourcedb], docspec[:sourceid], true)
+          expire_fragment("count_docs_#{project.name}")
+          expire_fragment("count_#{docspec[:sourcedb]}_#{project.name}")
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - added."
         rescue => e
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
@@ -546,6 +540,9 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       project = Project.find_by_name(params[:project_id])
       project.docs.delete(@doc)
+      expire_fragment("count_docs_#{project.name}")
+      expire_fragment("count_#{@doc.sourcedb}_#{project.name}")
+
       redirect_path = records_project_docs_path(params[:project_id])
     else
       @doc.destroy
@@ -567,6 +564,8 @@ class DocsController < ApplicationController
       raise "There is no such document in the project." unless divs.present?
 
       divs.each{|div| project.delete_doc(div, current_user)}
+      expire_fragment("count_docs_#{project.name}")
+      expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
     rescue => e
       flash[:notice] = e
     end
