@@ -245,7 +245,7 @@ en:
         annotations_downloadable: Anno. download
         annotations_RDF_downloadable: Anno. RDF download
         process: Type
-        updated_at: last update
+        updated_at: updated at
       sproject:
         rdfwriter: RDF writer
         xmlwriter: XML writer

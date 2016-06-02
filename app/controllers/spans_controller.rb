@@ -123,7 +123,7 @@ class SpansController < ApplicationController
         @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
 
         sort_order = sort_order(Project)
-        @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+        @projects = @doc.projects.accessible(current_user).order(sort_order)
 
         @annotations = @doc.hannotations(@projects, @span)
 
@@ -173,7 +173,7 @@ class SpansController < ApplicationController
       @content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
 
       sort_order = sort_order(Project)
-      @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+      @projects = @doc.projects.accessible(current_user).order(sort_order)
 
       @annotations = @doc.hannotations(@projects, @span)
 

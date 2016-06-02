@@ -92,30 +92,12 @@ module ApplicationHelper
 
   def sort_order(model)
     if params[:sort_key].present? && params[:sort_direction].present?
-      if params[:sort_key] == 'my_project'
-        sort_order = [[Project.sort_by_my_projects( current_user.id ), params[:sort_direction]]]
-      else
-        sort_order = [[params[:sort_key], params[:sort_direction]]] 
-      end
+      sort_order = "#{params[:sort_key]} #{params[:sort_direction]}"
     else
-      sort_order = model::DefaultSortArray
+      sort_order = model::DefaultSortKey
     end
 
-
-    # LOWER sort key column to ignore case
-    sort_order.each_with_index do |sort_array, index|
-      sort_key = sort_array[0]
-      # Column names ignore case need to be listed in model::CaseInsensitiveArray
-      sort_order[index][0] = lower_sort_key(model, sort_key)
-    end
     return sort_order
-  end
-
-  def lower_sort_key(model, sort_key)
-     if model::CaseInsensitiveArray.include?(sort_key)
-       sort_key = "LOWER(#{sort_key})"
-     end
-     return sort_key
   end
 
   def sortable(model, sort_key, title = nil)
@@ -125,11 +107,9 @@ module ApplicationHelper
     else
       # enable sorting 
       title ||= sort_key
-      sort_key = lower_sort_key(model, sort_key)
       sort_order = sort_order(model)
 
-      sort_order[0][0] = 'my_project' if ( sort_order[0][0] =~ /CASE WHEN/ ) == 0 
-      current_direction = sort_order.assoc(sort_key)[1] if sort_order.present? && sort_order.assoc(sort_key).present?
+      current_direction = sort_order.split[1]
       current_direction ||= 'DESC'
       css_class = "sortable-" + current_direction
       next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'

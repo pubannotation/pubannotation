@@ -79,7 +79,7 @@ class DivsController < ApplicationController
       @content = @doc.body.gsub(/\n/, "<br>")
 
       sort_order = sort_order(Project)
-      @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+      @projects = @doc.projects.accessible(current_user).order(sort_order)
 
       @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
       if @annotations[:tracks].present?

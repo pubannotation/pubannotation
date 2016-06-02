@@ -161,19 +161,11 @@ class Project < ActiveRecord::Base
   }
 
   # default sort order priority : left > right
-  DefaultSortArray = [['status', 'ASC'], ['denotations_count', 'DESC'], ['projects.updated_at', 'DESC'], ['name', 'ASC'], ['author', 'ASC'], ['users.username', 'ASC']]
-
-  # List of column names ignore case to sort
-  CaseInsensitiveArray = %w(name author users.username)
+  DefaultSortKey = "status ASC"
 
   LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
   EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=edit'
   
-  scope :sort_by_params, -> (sort_order) {
-      sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
-      unscoped.includes(:user).order(sort_order)
-  }
-
   def public?
     accessibility == 1
   end
@@ -1174,10 +1166,6 @@ class Project < ActiveRecord::Base
 
   def update_updated_at(model)
     self.update_attribute(:updated_at, DateTime.now)
-  end
-
-  def self.sort_by_my_projects(user_id)
-    "CASE WHEN projects.user_id = #{user_id} THEN 1 WHEN projects.user_id != #{user_id} THEN 0 END"
   end
 
   def clean

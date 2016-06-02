@@ -11,7 +11,7 @@
       <th class="show_when_wide"><%= t('activerecord.attributes.project.description') %></th>
       <th class="projects_header_denotations_count"><%= sortable(Project, 'annotations_count', t('views.shared.annotations_count')) -%></th>
       <th class="projects_header_author"><%= sortable(Project, 'author', t('activerecord.attributes.project.author')) %></th>
-      <th class="projects_header_user"><%= sortable(Project, 'users.username', t('activerecord.attributes.project.maintainer')) -%></th>
+      <th class="projects_header_user"><%= t('activerecord.attributes.project.maintainer') -%></th>
       <th class="projects_header_date"><%= sortable(Project, 'projects.updated_at', t('activerecord.attributes.project.updated_at')) -%></th>
       <th class="projects_header_status"><%= sortable(Project, 'status', t('activerecord.attributes.project.status')) -%></th>
     </tr>

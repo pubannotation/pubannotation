@@ -156,14 +156,7 @@ class Doc < ActiveRecord::Base
   }
   
   # default sort order 
-  DefaultSortArray = [['projects_count', 'DESC']]
-  # List of column names ignore case to sort
-  CaseInsensitiveArray = %w(sourcedb)
-
-  scope :sort_by_params, lambda{|sort_order|
-    sort_order = sort_order.collect{|s| s.join(' ')}.join(', ')
-    order(sort_order)
-  }
+  DefaultSortKey = "projects_count DESC"
 
   def descriptor
     descriptor  = self.sourcedb + ':' + self.sourceid

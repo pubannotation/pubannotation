@@ -23,7 +23,7 @@ class DocsController < ApplicationController
         search_results[:results]
       else
         sort_order = sort_order(Doc)
-        Doc.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
+        Doc.where(serial: 0).order(sort_order).paginate(:page => params[:page])
       end
 
       respond_to do |format|
@@ -52,7 +52,7 @@ class DocsController < ApplicationController
         @search_count = search_results[:total]
         @docs = search_results[:results]
       else
-        @docs = @project.docs.where(serial: 0).sort_by_params(sort_order).paginate(:page => params[:page])
+        @docs = @project.docs.where(serial: 0).order(sort_order).paginate(:page => params[:page])
       end
 
       respond_to do |format|
@@ -60,7 +60,7 @@ class DocsController < ApplicationController
         format.json {
           docs_all = if @search_count.nil?
             raise "Too many (> 5000) to list" if @docs_count > 5000
-            @project.docs.where(serial: 0).sort_by_params(sort_order)
+            @project.docs.where(serial: 0).order(sort_order)
           else
             raise "Too many (> 5000) to list" if @search_count > 5000
             Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id})[:docs]
@@ -71,7 +71,7 @@ class DocsController < ApplicationController
         format.tsv  {
           docs_all = if @search_count.nil?
             raise "Too many (> 5000) to list" if @docs_count > 5000
-            @project.docs.where(serial: 0).sort_by_params(sort_order)
+            @project.docs.where(serial: 0).order(sort_order)
           else
             raise "Too many (> 5000) to list" if @search_count > 5000
             Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id})[:docs]
@@ -162,9 +162,9 @@ class DocsController < ApplicationController
     else
       sort_order = sort_order(Doc)
       if @sourcedb == 'PubMed'
-        Doc.where(sourcedb: @sourcedb).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+        Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).paginate(:page => params[:page])
       else
-        Doc.where(sourcedb: @sourcedb, serial: 0).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+        Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).paginate(:page => params[:page])
       end
     end
 
@@ -186,9 +186,9 @@ class DocsController < ApplicationController
     else
       sort_order = sort_order(Doc)
       if @sourcedb == 'PubMed'
-        @project.docs.where(sourcedb: @sourcedb).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+        @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).paginate(:page => params[:page])
       else
-        @project.docs.where(sourcedb: @sourcedb, serial: 0).sort_by_params(sort_order(Doc)).paginate(:page => params[:page])
+        @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).paginate(:page => params[:page])
       end
     end
     @search_path = search_project_docs_path(@project.name)
@@ -222,7 +222,7 @@ class DocsController < ApplicationController
         @content = @doc.body.gsub(/\n/, "<br>")
 
         sort_order = sort_order(Project)
-        @projects = @doc.projects.accessible(current_user).sort_by_params(sort_order)
+        @projects = @doc.projects.accessible(current_user).order(sort_order)
 
         @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
         if @annotations[:tracks].present?
