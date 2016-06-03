@@ -13,18 +13,7 @@ class Project < ActiveRecord::Base
     :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter, :update_delta_index]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
-  
-  # Project to Proejct associations
-  # parent project => associate projects = @project.associate_projects
-  has_and_belongs_to_many :associate_projects, 
-    :foreign_key => 'project_id', 
-    :association_foreign_key => 'associate_project_id', 
-    :join_table => 'associate_projects_projects',
-    :class_name => 'Project', 
-    :before_add => :increment_pending_associate_projects_count,
-    :after_add => [:increment_counters, :copy_associate_project_relational_models],
-    :after_remove => :decrement_counters
-    
+
   # associate projects => parent projects = @project.projects
   has_and_belongs_to_many :projects, 
     :foreign_key => 'associate_project_id',
@@ -367,74 +356,6 @@ class Project < ActiveRecord::Base
       associatable_projects = Project.accessible(current_user).not_id_in(self.self_id_and_associate_project_and_project_ids)
     end
     associatable_projects.collect{|associatable_projects| associatable_projects.id}
-  end
-  
-  # increment counters after add associate projects
-  def increment_counters(associate_project)
-    Project.update_counters self.id,
-      :pmdocs_count => associate_project.pmdocs.count,
-      :pmcdocs_count => associate_project.pmcdocs.count,
-      :denotations_count => associate_project.denotations.count,
-      :relations_count => associate_project.relations.count
-  end 
-  
-  def increment_pending_associate_projects_count(associate_project)
-    Project.increment_counter(:pending_associate_projects_count, self.id)
-  end 
-  
-  def copy_associate_project_relational_models(associate_project)
-    Project.decrement_counter(:pending_associate_projects_count, self.id)
-    if associate_project.docs.present?
-      copy_docs = associate_project.docs - self.docs
-      copy_docs.each do |doc|
-        # copy doc
-        self.docs << doc
-      end
-    end
-    
-    if associate_project.denotations.present?
-      # copy denotations
-      associate_project.denotations.each do |denotation|
-        same_denotation = self.denotations.where(
-          {
-            :hid => denotation.hid,
-            :doc_id => denotation.doc_id,
-            :begin => denotation.begin,
-            :end => denotation.end,
-            :obj => denotation.obj
-          }
-        )
-        if same_denotation.blank?
-          self.denotations << denotation.dup
-        end
-      end
-    end
-    
-    if associate_project.relations.present?
-      associate_project.relations.each do |relation|
-        same_relation = self.relations.where({
-          :hid => relation.hid,
-          :subj_id => relation.subj_id,
-          :subj_type => relation.subj_type,
-          :obj_id => relation.obj_id,
-          :obj_type => relation.obj_type,
-          :pred => relation.pred
-        })
-        if same_relation.blank?
-          self.relations << relation.dup
-        end
-      end
-    end
-  end
-  handle_asynchronously :copy_associate_project_relational_models, :run_at => Proc.new { 1.minutes.from_now }
-    
-  # decrement counters after delete associate projects
-  def decrement_counters(associate_project)
-    Project.update_counters self.id, 
-      :pmdocs_count => - associate_project.pmdocs.count,
-      :pmcdocs_count => - associate_project.pmcdocs.count,
-      :denotations_count => - associate_project.denotations.count,
-      :relations_count => - associate_project.relations.count
   end
   
   def get_denotations_count(doc = nil, span = nil)
