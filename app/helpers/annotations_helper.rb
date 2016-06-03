@@ -5,9 +5,9 @@ module AnnotationsHelper
     project = doc.projects[0] if project.nil? && doc.projects.count == 1
     if !project.present? || project.annotations_accessible?(current_user)
       if doc.present?
-        doc.annotations_count(project, span)
+        doc.get_denotations_count(project, span)
       else
-        project.annotations_count
+        project.denotations_count
       end
     else
       '<i class="fa fa-bars" aria-hidden="true" title="blinded"></i>'.html_safe
