@@ -9,7 +9,7 @@ class SqlsController < ApplicationController
     if params[:sql].present?
       sanitized_sql =  sanitize_sql(params[:sql])
       @results = ActiveRecord::Base.connection.execute(sanitized_sql).to_a
-      @results = @results.paginate(:page => params[:page])
+      @results = @results.page(params[:page])
     end
   end
 end

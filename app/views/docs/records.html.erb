@@ -17,7 +17,7 @@
 	<%= render partial: 'doc', collection: @docs -%>
 <% end %>
 
-<%= will_paginate @docs %>
+<%= paginate @docs %>
 
 <% if user_signed_in? && @project.present? && current_user == @project.user %>
 	<h2><%= t('views.docs.add_new_documents') -%></h2>

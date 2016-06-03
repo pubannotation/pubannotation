@@ -42,7 +42,6 @@
   <th class="docs_header_annotations_number">
     <span title= >
       <%= t('views.shared.annotations_count') %>
-      <!-- <%= sortable(Doc, 'denotations_count', '#Ann.') -%> -->
     </span>
   </th>
   <th class="docs_header_button"></th>
@@ -54,4 +53,4 @@
 <%= render partial: 'source_doc', collection: @docs -%>
 
 </table>
-<%= will_paginate @docs -%>
+<%= paginate @docs -%>

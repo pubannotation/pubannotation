@@ -28,10 +28,10 @@ class ProjectsController < ApplicationController
     else
       if params[:text]
         text = "%#{ params[:text].downcase }%" 
-        @projects = Project.accessible(current_user).includes(:user).where(['LOWER( name ) like ? OR LOWER( description ) like ? OR LOWER( author ) like ? OR LOWER( users.username ) like ?', text, text, text, text]).order(sort_order).paginate(page: params[:page])
+        @projects = Project.accessible(current_user).includes(:user).where(['LOWER( name ) like ? OR LOWER( description ) like ? OR LOWER( author ) like ? OR LOWER( users.username ) like ?', text, text, text, text]).order(sort_order).page(params[:page])
         flash[:notice] = t('controllers.projects.index.not_found') if @projects.blank?
       else
-        @projects = Project.accessible(current_user).order(sort_order).paginate(page: params[:page])
+        @projects = Project.accessible(current_user).order(sort_order).page(params[:page])
       end
     end
 
@@ -301,7 +301,7 @@ class ProjectsController < ApplicationController
         @pm_sourceid_value = params[:sourceid]
         @pm_body_value = params[:body]
       end
-      @pmdocs = pmdocs.paginate(:page => params[:page])
+      @pmdocs = pmdocs.page(params[:page])
       # PMC
       pmcdocs = docs.pmcdocs
       if params[:doc] == 'PMC'
@@ -310,7 +310,7 @@ class ProjectsController < ApplicationController
         @pmc_sourceid_value = params[:sourceid]
         @pmc_body_value = params[:body]
       end
-      @pmcdocs = pmcdocs.paginate(:page => params[:page])
+      @pmcdocs = pmcdocs.page(params[:page])
       flash[:notice] = notice
       render :template => 'projects/show'
     end

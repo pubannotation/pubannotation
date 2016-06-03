@@ -145,6 +145,9 @@ GEM
     jquery-ui-rails (5.0.5)
       railties (>= 3.2.16)
     json (1.8.3)
+    kaminari (0.16.3)
+      actionpack (>= 3.0.0)
+      activesupport (>= 3.0.0)
     libxml-ruby (2.8.0)
     listen (3.0.6)
       rb-fsevent (>= 0.9.3)
@@ -286,7 +289,6 @@ GEM
     whenever (0.9.4)
       chronic (>= 0.6.3)
     wikipedia-client (1.6.2)
-    will_paginate (3.1.0)
     zip-zip (0.3)
       rubyzip (>= 1.0.0)
 
@@ -313,6 +315,7 @@ DEPENDENCIES
   htmlentities
   jquery-rails
   jquery-ui-rails
+  kaminari
   libxml-ruby
   pg
   rack-cors
@@ -334,7 +337,6 @@ DEPENDENCIES
   webrat
   whenever
   wikipedia-client
-  will_paginate
   zip-zip
 
 BUNDLED WITH

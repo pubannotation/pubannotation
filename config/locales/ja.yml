@@ -303,10 +303,6 @@ ja:
           automatic: 自動
     errors:
       <<: *errors
-  will_paginate:
-    previous_label: 前のページ
-    next_label: 次のページ
-    page_gap: ...
   controllers:
     shared:
       successfully_created: '%{model}を作成しました'

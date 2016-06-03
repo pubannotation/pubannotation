@@ -17,7 +17,7 @@ class RelationsController < ApplicationController
       end     
       @relations = Relation.sql_find(params, current_user, project ||= nil)
       if @relations.present?
-        @relations = @relations.paginate(:page => params[:page], :per_page => 50)
+        @relations = @relations.page(params[:page]).per(50)
       end
     rescue => error
       flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"

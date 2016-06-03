@@ -287,7 +287,7 @@ class SpansController < ApplicationController
       end
       @denotations = Denotation.sql_find(params, current_user, project ||= nil)
       if @denotations.present?
-        @denotations = @denotations.paginate(:page => params[:page], :per_page => 50)
+        @denotations = @denotations.page(params[:page]).per(50)
       end
     rescue => error
       flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"

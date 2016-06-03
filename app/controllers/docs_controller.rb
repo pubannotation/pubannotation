@@ -23,7 +23,7 @@ class DocsController < ApplicationController
         search_results[:results]
       else
         sort_order = sort_order(Doc)
-        Doc.where(serial: 0).order(sort_order).paginate(:page => params[:page])
+        Doc.where(serial: 0).order(sort_order).page(params[:page])
       end
 
       respond_to do |format|
@@ -52,7 +52,7 @@ class DocsController < ApplicationController
         @search_count = search_results[:total]
         @docs = search_results[:results]
       else
-        @docs = @project.docs.where(serial: 0).order(sort_order).paginate(:page => params[:page])
+        @docs = @project.docs.where(serial: 0).order(sort_order).page(params[:page])
       end
 
       respond_to do |format|
@@ -107,7 +107,7 @@ class DocsController < ApplicationController
 
     respond_to do |format|
       if @docs
-        format.html { @docs = @docs.paginate(:page => params[:page]) }
+        format.html { @docs = @docs.page(params[:page]) }
         format.json { render json: @docs }
         format.txt  {
           file_name = (@project)? @project.name + ".zip" : "docs.zip"
@@ -162,9 +162,9 @@ class DocsController < ApplicationController
     else
       sort_order = sort_order(Doc)
       if @sourcedb == 'PubMed'
-        Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).paginate(:page => params[:page])
+        Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).page(params[:page])
       else
-        Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).paginate(:page => params[:page])
+        Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).page(params[:page])
       end
     end
 
@@ -186,9 +186,9 @@ class DocsController < ApplicationController
     else
       sort_order = sort_order(Doc)
       if @sourcedb == 'PubMed'
-        @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).paginate(:page => params[:page])
+        @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).page(params[:page])
       else
-        @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).paginate(:page => params[:page])
+        @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).page(params[:page])
       end
     end
     @search_path = search_project_docs_path(@project.name)
