@@ -3,80 +3,64 @@ require 'zip/zip'
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
   before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :create_project_docs, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
-  # JSON POST
   before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
   cache_sweeper :doc_sweeper
-
   autocomplete :doc, :sourcedb
 
   def index
     begin
-      unless read_fragment('docs_count')
-        @docs_count = Doc.docs_count(current_user)
+      if params[:project_id].present?
+        @project = Project.accessible(current_user).find_by_name(params[:project_id])
+        raise "There is no such project." unless @project.present?
+      end
+
+      @sourcedb = params[:sourcedb]
+
+      page, per = if params[:format] && (params[:format] == "json" || params[:format] == "tsv")
+        params.delete(:page)
+        [1, 5000]
+      else
+        [params[:page], 10]
       end
 
       @docs = if params[:keywords].present?
-        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], page:params[:page]})
+        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: @sourcedb, page:params[:page]})
         @search_count = search_results[:total]
         search_results[:results]
       else
-        sort_order = sort_order(Doc)
-        Doc.where(serial: 0).order(sort_order).page(params[:page])
-      end
-
-      respond_to do |format|
-        format.html
-        format.json {render json: docs_list_hash}
-        format.tsv  {render text: Doc.to_tsv(source_docs_all, 'doc')}
-      end
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
-        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-        format.txt  {render text: message, status: :unprocessable_entity}
-      end
-    end
-  end
- 
-  def index_in_project
-    begin
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless @project.present?
-
-      sort_order = sort_order(Doc)
-
-      if params[:keywords].present?
-        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, page:params[:page]})
-        @search_count = search_results[:total]
-        @docs = search_results[:results]
-      else
-        @docs = @project.docs.where(serial: 0).order(sort_order).page(params[:page])
+        if @project.present?
+          if @sourcedb.present?
+            if @sourcedb == 'PubMed'
+              @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
+            else
+              @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+            end
+          else
+            @project.docs.where(serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+          end
+        else
+          if @sourcedb.present?
+            if @sourcedb == 'PubMed'
+              Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
+            else
+              Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+            end
+          else
+            Doc.where(serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+          end
+        end
       end
 
       respond_to do |format|
         format.html
         format.json {
-          docs_all = if @search_count.nil?
-            raise "Too many (> 5000) to list" if @docs_count > 5000
-            @project.docs.where(serial: 0).order(sort_order)
-          else
-            raise "Too many (> 5000) to list" if @search_count > 5000
-            Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id})[:docs]
-          end
-          docs_list_hash = docs_all.map{|d| d.to_list_hash('doc')}
+          docs_list_hash = @docs.map{|d| d.to_list_hash('doc')}
           render json: docs_list_hash
         }
         format.tsv  {
-          docs_all = if @search_count.nil?
-            raise "Too many (> 5000) to list" if @docs_count > 5000
-            @project.docs.where(serial: 0).order(sort_order)
-          else
-            raise "Too many (> 5000) to list" if @search_count > 5000
-            Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id})[:docs]
-          end
-          render text: Doc.to_tsv(docs_all, 'doc')
+          render text: Doc.to_tsv(@docs, 'doc')
         }
       end
     rescue => e
@@ -87,7 +71,6 @@ class DocsController < ApplicationController
       end
     end
   end
-
 
   def records
     if params[:project_id]
@@ -140,59 +123,17 @@ class DocsController < ApplicationController
  
   def sourcedb_index
     begin
-      @project = if params[:project_id].present?
-        project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no such project." unless project.present?
-        project
+      if params[:project_id].present?
+        @project = Project.accessible(current_user).find_by_name(params[:project_id])
+        raise "There is no such project." unless @project.present?
       end
+
     rescue => e
       respond_to do |format|
         format.html {redirect_to :back, notice: e.message}
       end
     end
   end 
- 
-  def index_in_sourcedb
-    @sourcedb = params[:sourcedb]
-
-    @docs = if params[:keywords].present?
-      search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], page:params[:page]})
-      @search_count = search_results[:total]
-      search_results[:results]
-    else
-      sort_order = sort_order(Doc)
-      if @sourcedb == 'PubMed'
-        Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).page(params[:page])
-      else
-        Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).page(params[:page])
-      end
-    end
-
-    @search_path = search_docs_path
-  end
-
-  def index_in_sourcedb_project
-    @sourcedb = params[:sourcedb]
-    @project = Project.accessible(current_user).find_by_name(params[:project_id])
-    raise "There is no such project." unless @project.present?
-
-
-    sort_order = sort_order(Doc)
-
-    @docs = if params[:keywords].present?
-      search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], project_id: @project.id, page:params[:page]})
-      @search_count = search_results[:total]
-      search_results[:results]
-    else
-      sort_order = sort_order(Doc)
-      if @sourcedb == 'PubMed'
-        @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).page(params[:page])
-      else
-        @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).page(params[:page])
-      end
-    end
-    @search_path = search_project_docs_path(@project.name)
-  end
 
   def show
     begin

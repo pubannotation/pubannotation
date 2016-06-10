@@ -1,8 +1,35 @@
 <% content_for :path do -%>
   > <%= link_to t('views.paths.home'), home_path -%>
-  > docs
+  <% if @project -%>
+    > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+    > <%= link_to @project.name, project_path(@project.name) %>
+		<% if @sourcedb -%>
+	    > <%= link_to 'docs', project_docs_path(@project.name) %>
+			> <%= link_to "sourcedb", project_sourcedb_docs_path(@project.name) %>
+			> <%= @sourcedb %>
+		<% else -%>
+			> docs
+		<% end -%>
+	<% else -%>
+		<% if @sourcedb -%>
+	    > <%= link_to 'docs', docs_path %>
+			> <%= link_to "sourcedb", sourcedb_docs_path %>
+			> <%= @sourcedb %>
+		<% else -%>
+			> docs
+		<% end -%>
+	<% end -%>
 <% end -%>
 
-<section>
-	<%= render partial: 'source_docs' -%>
-</section>
+<% if @project %>
+	<section>
+		<%= render partial: 'projects/titlebar' -%>
+<% end %>
+
+		<section>
+			<%= render partial: 'source_docs' -%>
+		</section>
+
+<% if @project %>
+	</section>
+<% end %>

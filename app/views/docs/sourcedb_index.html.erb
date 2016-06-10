@@ -1,6 +1,12 @@
 <% content_for :path do %>
 	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to "docs", docs_path %>
+  <% if @project %>
+    > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+    > <%= link_to @project.name, project_path(@project.name) %>
+    > <%= link_to "docs", project_docs_path(@project.name) %>
+	<% else %>
+		> <%= link_to "docs", docs_path %>
+	<% end %>
 	> sourcedb
 <% end %>
 
@@ -9,7 +15,13 @@
 		<%= t('views.docs.sourcedb_list')-%>
 	</h1>
 
-	<% cache 'sourcedb_counts' do -%>
+	<%
+		cache_key  = 'sourcedb_counts'
+		cache_key += "_#{@project.name}" if @project
+	%>
+
+	<% cache cache_key do -%>
 		<%= render :partial => "docs/sourcedb_counts" -%>
 	<% end %>
+
 </section>

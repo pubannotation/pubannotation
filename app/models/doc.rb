@@ -107,6 +107,13 @@ class Doc < ActiveRecord::Base
     }
   }
 
+
+  scope :simple_paginate, -> (page, per = 10) {
+    page = page.nil? ? 1 : page.to_i
+    offset = (page - 1) * per
+    offset(offset).limit(per)
+  }
+
   scope :relations_count,
     joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
     .group('docs.id')

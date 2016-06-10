@@ -54,7 +54,7 @@ Pubann::Application.routes.draw do  resources :annotators
     scope 'sourcedb', :as => 'sourcedb' do
       scope ':sourcedb' do
         # list sourceids
-        get '/' => 'docs#index_in_sourcedb', :as => 'index'
+        get '/' => 'docs#index', :as => 'index'
 
         scope 'sourceid', :as => 'sourceid' do
           scope ':sourceid' do
@@ -145,7 +145,7 @@ Pubann::Application.routes.draw do  resources :annotators
 
     resources :docs do
       collection do
-        get 'index' => 'docs#index_in_project'
+        get 'index' => 'docs#index'
         post 'add' => 'docs#add'
         post 'import' => 'docs#import'
         get 'records' => 'docs#records'
@@ -154,11 +154,11 @@ Pubann::Application.routes.draw do  resources :annotators
         scope 'sourcedb', :as => 'sourcedb' do
           # list sourcedb
           get '/' => 'docs#sourcedb_index' 
-          
+
           scope ':sourcedb' do
             # list sourceids
-            get '/' => 'docs#index_in_sourcedb_project', :as => 'index'
-          
+            get '/' => 'docs#index', :as => 'index'
+
             scope 'sourceid', :as => 'sourceid' do
               scope ':sourceid' do
                 get '/' => 'docs#show_in_project', :as =>'show'
@@ -173,12 +173,12 @@ Pubann::Application.routes.draw do  resources :annotators
                 get 'spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index', :as => 'span_annotations'
                 post 'spans/:begin-:end/annotations' => 'annotations#create'
                 delete 'spans/:begin-:end/annotations' => 'annotations#destroy', as: 'destroy_annotations_in_span'
-                
+
                 scope 'divs', :as => 'divs' do
                   get '/' => 'divs#index_in_project', :as => 'index'
                   get 'annotations/visualize' => 'annotations#div_annotations_visualize'
                   get 'search' => 'divs#search'
-    
+
                   scope ':divid' do
                     get '/' => 'divs#show_in_project', :as => 'show'
                     get 'annotations' => 'annotations#project_div_annotations_index'

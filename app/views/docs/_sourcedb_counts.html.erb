@@ -2,18 +2,18 @@
 	<table>
 		<% docs_counts = sourcedb_count(current_user, @project) %>
 		<% docs_counts.each do |sourcedb, docs_count| -%>
+			<%
+				index_path, open_path = if @project.nil?
+					[doc_sourcedb_index_path(sourcedb), open_docs_path]
+				else
+					[index_project_sourcedb_docs_path(@project.name, sourcedb), open_project_docs_path(@project.name)]
+				end
+			%>
 			<tr>
-				<td style="width:5em"><%= link_to sourcedb, doc_sourcedb_index_path(sourcedb) %></td>
+				<td style="width:5em"><%= link_to sourcedb, index_path %></td>
 				<td style="width:5em;text-align: right"><%= number_with_delimiter(docs_count, :delimiter => ',') %></td>
 				<td style="text-align: right">
-					<%
-						search_path, open_path = if @project.nil?
-							[doc_sourcedb_index_path(sourcedb), open_docs_path]
-						else
-							[index_project_sourcedb_docs(sourcedb), open_project_docs_path(@project.name)]
-						end
-					%>
-					<%= form_tag(search_path, method: 'get', style:"display:inline-block") do -%>
+					<%= form_tag(index_path, method: 'get', style:"display:inline-block") do -%>
 						<%= hidden_field_tag :sourcedb, sourcedb %>
 						<%= text_field_tag :keywords, nil,
 							style: "width:5em",

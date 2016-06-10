@@ -544,6 +544,12 @@ div.oneline {
   }
 }
 
+.pagination {
+  .page {
+    padding: 10px;
+  }
+}
+
 @media screen and (max-width: 800px) {
   .show_when_wide {
     display: none;

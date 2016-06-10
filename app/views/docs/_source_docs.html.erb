@@ -4,12 +4,10 @@
   <span class='info'>
     (<%= number_with_delimiter(@search_count, :delimiter => ',') + '/' if @search_count.present? -%><%= cache(docs_count_cache_key) do %><%= docs_count %><% end -%>)
   </span>
-	<% if @project.present? || params[:action] == 'search' -%>
-		<span class='tab-bar'>
-			<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
-			<%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
-		</span>
-	<% end -%>
+	<span class='tab-bar'>
+		<%= link_to 'JSON', params.merge(format: :json), class: 'tab', title: "To get the whole list (up to 5,000 items) in JSON" -%>
+		<%= link_to 'TSV', params.merge(format: :tsv), class: 'tab', title: "To get the whole list (up to 5,000 items) in TSV (Tab-separated values)" -%>
+	</span>
   <%= render partial: 'docs/search_form' -%>
 </h1>
 
@@ -40,7 +38,7 @@
     </span>
   </th>
   <th class="docs_header_annotations_number">
-    <span title= >
+    <span title= "Sorting on this column is yet to be supported. We are sorry for the inconvenience at the moment.">
       <%= t('views.shared.annotations_count') %>
     </span>
   </th>
@@ -53,4 +51,4 @@
 <%= render partial: 'source_doc', collection: @docs -%>
 
 </table>
-<%= paginate @docs -%>
+<%= simple_paginate -%>
