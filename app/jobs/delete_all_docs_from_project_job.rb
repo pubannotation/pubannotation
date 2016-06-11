@@ -17,8 +17,8 @@ class DeleteAllDocsFromProjectJob < Struct.new(:project, :current_user)
       end
       @job.update_attribute(:num_dones, i + 1)
     end
-    expire_fragment("count_docs_#{project.name}")
-    sourcedbs.each{|sdb| expire_fragment("count_#{sdb}_#{project.name}")}
+    ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
+    sourcedbs.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
     # project.update_attribute(:annotations_count, 0)
     # project.docs.clear
 	end
