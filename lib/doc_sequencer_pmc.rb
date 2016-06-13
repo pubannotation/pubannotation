@@ -281,7 +281,7 @@ class DocSequencerPMC
   def check_title(node)
     node.each_element do |e|
       case e.name
-      when 'italic', 'bold', 'sup', 'sub', 'underline'
+      when 'italic', 'bold', 'sup', 'sub', 'underline', 'xref'
       else
         raise "a unexpected element in title: #{e.name}"
         return false
