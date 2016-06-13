@@ -242,52 +242,6 @@
     </td>
   </tr>
 
-
-	<!-- associate projects search and add field -->
-<!-- 	<tr>
-	  	<th>
-	  		<%= t('activerecord.models.project') -%>
-	  	</th>
-	  	<td>
-	  		<% if @project.present? && @project.associate_projects.present? -%>
-		  		<% @project.associate_projects.each do |associate_project| -%>
-		  			<div>
-			  			<%= link_to associate_project.name, project_path(associate_project.name) -%>
-			  			<%= link_to t('views.shared.delete'), delete_associate_projects_project_path(@project.id, associate_project.id), :method => :delete, :confirm => t('views.shared.confirm.delete_model', :model => t('activerecord.models.project')) -%>
-		  			</div>
-		  		<% end -%>
-	  		<% end -%>
-	  		<%= fields_for :associate_projects_project do |ps| -%>
-	  			<div id="associate_projects_projects">
-	  				<% if params[:associate_projects].present? -%>
-	  					<% params[:associate_projects][:name].each do |index, name|-%>
-							<div class="associate_project">
-								<%= name -%>
-		  						<%= hidden_field_tag "associate_projects[name][#{index}]", name -%>
-								<span onclick="$(this).parent().remove()" href="" class="clickable-text"><%= t('views.shared.delete') -%></span>
-								<label>
-									<%= check_box_tag "associate_projects[import][#{index}]", 'true', params[:associate_projects][:import].present? && params[:associate_projects][:import][index].present? -%><%= t('controllers.projects.new.import') -%>
-								</label>
-							</div>	  					
-	  					<% end -%>
-	  				<% end -%>
-	  			</div>
-	  			<%= ps.autocomplete_field :project_name, "/projects/autocomplete_project_name/#{@project.associatable_project_ids(current_user)}", :id => 'associate_project_name', :placeholder => t('activerecord.placeholders.project.associate_project_name') -%>
-		  		<script type="text/javascript">
-		  			var i = 0;  
-			  		$('#associate_project_name').bind('railsAutocomplete.select', function(event, data){
-			  			var projectName = data.item.value;
-			  			// append associate projects name
-			  			$( "<div class='associate_project'>" + projectName +"<input type='hidden' value='" + projectName + "' id='associate_projects[name][" + i + "]' name='associate_projects[name][" + i + "]'> <span class='clickable-text' href='' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></span> <label><input type='checkbox' checked='checkced' id='associate_projects[import][" + i + "]' name='associate_projects[import][" + i + "]' value='true'><%= t('controllers.projects.new.import') -%></label></div>" ).appendTo( "#associate_projects_projects" );
-			  			$('#associate_project_name').val('');
-			  			i += 1;
-					});
-		  		</script>
-	  		<% end -%>
-	  	</td>
-	</tr>
- -->
-
   <tr><td style="border:none"></td></tr>
 <!--   <tr>
     <th><%= f.label :viewer %></th>
