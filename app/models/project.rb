@@ -709,6 +709,17 @@ class Project < ActiveRecord::Base
     return [num_created, num_added, num_failed]   
   end
 
+  # returns the divs added to the project
+  # returns nil if nothing is added
+  def add_doc_unless_exist(sourcedb, sourceid)
+    divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    divs = Doc.import_from_sequence(sourcedb, sourceid) unless divs.present?
+    raise IOError, "Failed to get the document" unless divs.present?
+    return nil if self.docs.include?(divs.first)
+    self.docs << divs
+    divs
+  end
+
   def add_doc(sourcedb, sourceid, strictp = false)
     divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
 
@@ -812,15 +823,15 @@ class Project < ActiveRecord::Base
 
     if annotations[:denotations].present?
       num = annotations[:denotations].length
+
       annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
 
       raise "Alignment failed. Text may be too much different." if annotations[:denotations].length < num
+      annotations[:denotations].each{|d| raise "Alignment failed. Text may be too much different." if d[:span][:begin].nil? || d[:span][:end].nil?}
 
-      ActiveRecord::Base.transaction do
-        self.save_hdenotations(annotations[:denotations], doc)
-        self.save_hrelations(annotations[:relations], doc) if annotations[:relations].present?
-        self.save_hmodifications(annotations[:modifications], doc) if annotations[:modifications].present?
-      end
+      self.save_hdenotations(annotations[:denotations], doc)
+      self.save_hrelations(annotations[:relations], doc) if annotations[:relations].present?
+      self.save_hmodifications(annotations[:modifications], doc) if annotations[:modifications].present?
     end
 
     result = annotations.select{|k,v| v.present?}
@@ -863,6 +874,29 @@ class Project < ActiveRecord::Base
       end
       {div_index: fit_index}
     end
+  end
+
+  def store_annotation_transaction(annotation_collection, options)
+    messages = []
+    ActiveRecord::Base.transaction do
+      annotation_collection.each do |annotations|
+        if annotations[:divid].present?
+          doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
+        else
+          divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
+          doc = divs[0] if divs.length == 1
+        end
+
+        if doc.present?
+          self.save_annotations(annotations, doc, options)
+        elsif divs.present?
+          self.store_annotations(annotations, divs, options)
+        else
+          messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: 'document does not exist.'}
+        end
+      end
+    end
+    messages
   end
 
   def obtain_annotations(doc, annotator, options = nil)
