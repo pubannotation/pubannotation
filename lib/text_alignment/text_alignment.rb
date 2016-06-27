@@ -10,6 +10,7 @@ require 'text_alignment/mappings'
 module TextAlignment; end unless defined? TextAlignment
 
 TextAlignment::SIGNATURE_NGRAM = 5 unless defined? TextAlignment::SIGNATURE_NGRAM
+TextAlignment::NOMATCH_CHARS = "@^|#$%&_" unless defined? TextAlignment::NOMATCH_CHARS
 
 class TextAlignment::TextAlignment
   attr_reader :sdiff
@@ -26,6 +27,24 @@ class TextAlignment::TextAlignment
     str1 = str1.dup
     str2 = str2.dup
 
+    ## find the first nomatch character
+    TextAlignment::NOMATCH_CHARS.each_char do |c|
+      if str2.index(c).nil?
+        @nomatch_char1 = c
+        break
+      end
+    end
+    raise RuntimeError, "Cannot find nomatch character" if @nomatch_char1.nil? 
+
+    ## find the first nomatch character
+    TextAlignment::NOMATCH_CHARS.each_char do |c|
+      if c != @nomatch_char1 && str1.index(c).nil?
+        @nomatch_char2 = c
+        break
+      end
+    end
+    raise RuntimeError, "Cannot find nomatch character" if @nomatch_char2.nil? 
+
     # single character mappings
     character_mappings = mappings.select{|m| m[0].length == 1 && m[1].length == 1}
     characters_from = character_mappings.collect{|m| m[0]}.join
@@ -39,9 +58,16 @@ class TextAlignment::TextAlignment
     ascii_foldings = mappings.select{|m| m[0].length == 1 && m[1].length > 1}
     ascii_foldings.each do |f|
       from = f[1]
-      to   = f[0] * f[1].length
-      str1.gsub!(from, to)
-      str2.gsub!(from, to)
+
+      if str2.index(f[0])
+        to   = f[0] + (@nomatch_char1 * (f[1].length - 1))
+        str1.gsub!(from, to)
+      end
+
+      if str1.index(f[0])
+        to   = f[0] + (@nomatch_char2 * (f[1].length - 1))
+        str2.gsub!(from, to)
+      end
     end
 
     mappings.delete_if{|m| m[0].length == 1 && m[1].length == 1}
@@ -178,10 +204,6 @@ if __FILE__ == $0
   # puts "---------------"
   # p align.mapped_elements
 
-  puts str1
-  puts "---"
-  puts str2
-  puts
   puts TextAlignment::sdiff2cdiff(align.sdiff)
 
   new_spans = align.transform_spans(spans)
