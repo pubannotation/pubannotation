@@ -20,6 +20,9 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
     @job.update_attribute(:num_items, jsonfiles.length)
     @job.update_attribute(:num_dones, 0)
 
+    sourcedbs = []
+    annotation_transaction = []
+    transaction_size = 0
     jsonfiles.each_with_index do |jsonfile, i|
       json = File.read(jsonfile)
       begin
@@ -34,21 +37,21 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
         begin
           raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
           normalize_annotations!(annotations)
-         	project.add_doc(annotations[:sourcedb], annotations[:sourceid])
+          divs_added = project.add_doc(annotations[:sourcedb], annotations[:sourceid])
+          sourcedbs << annotations[:sourcedb] unless divs_added.nil?
 
-          if annotations[:divid].present?
-            doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
-          else
-            divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-            doc = divs[0] if divs.length == 1
-          end
-
-          if doc.present?
-            project.save_annotations(annotations, doc, options)
-          elsif divs.present?
-            project.store_annotations(annotations, divs, options)
-          else
-            raise IOError, "document does not exist"
+          annotation_transaction << annotations
+          transaction_size += annotations[:denotations].size
+          if transaction_size > 1000
+            messages = project.store_annotation_transaction(annotation_transaction, options)
+            # messages.each {|m| @job.messages << Message.create(m)} unless messages.nil?
+            annotation_transaction = []
+            transaction_size = 0
+            unless sourcedbs.empty?
+              ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
+              sourcedbs.uniq.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
+              sourcedbs.clear
+            end
           end
         rescue => e
           @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
@@ -56,6 +59,14 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
       end
     	@job.update_attribute(:num_dones, i + 1)
     end
+
+    messages = project.store_annotation_transaction(annotation_transaction, options)
+    messages.each {|m| @job.messages << Message.create(m)} unless messages.nil?
+    unless sourcedbs.empty?
+      ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
+      sourcedbs.uniq.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
+    end
+
     File.unlink(filepath)
     FileUtils.rm_rf(dirpath) unless dirpath.nil?
 	end
