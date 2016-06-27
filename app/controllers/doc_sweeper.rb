@@ -30,8 +30,5 @@ class DocSweeper < ActionController::Caching::Sweeper
   def expire_cache_for(doc)
     # Expire the index page now that we added a new doc
     expire_page(:controller => 'docs', :action => 'index')
- 
-    # Expire a fragment
-    expire_fragment('all_available_products')
-  end
+   end
 end
