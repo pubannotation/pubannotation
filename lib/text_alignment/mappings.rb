@@ -26,14 +26,14 @@ module TextAlignment
     ["ψ", "psi"],     #U+03C8 (greek small letter psi)
     ["ω", "omega"],   #U+03C9 (greek small letter omega)
 
-    ["Γ", "gamma"],   #U+0393 (greek capital letter gamma)
-    ["Δ", "delta"],   #U+0394 (greek capital letter delta)
-    ["Θ", "theta"],   #U+0398 (greek capital letter theta)
-    ["Λ", "lambda"],  #U+039B (greek capital letter lambda)
-    ["Σ", "sigma"],   #U+03A3 (greek capital letter sigma)
-    ["Φ", "phi"],     #U+03A6 (greek capital letter phi)
-    ["Χ", "chi"],     #U+03A7 (greek capital letter chi)
-    ["Ω", "omega"],   #U+03A9 (greek capital letter omega)
+    ["Γ", "Gamma"],   #U+0393 (greek capital letter gamma)
+    ["Δ", "Delta"],   #U+0394 (greek capital letter delta)
+    ["Θ", "Theta"],   #U+0398 (greek capital letter theta)
+    ["Λ", "Lambda"],  #U+039B (greek capital letter lambda)
+    ["Σ", "Sigma"],   #U+03A3 (greek capital letter sigma)
+    ["Φ", "Phi"],     #U+03A6 (greek capital letter phi)
+    ["Χ", "Chi"],     #U+03A7 (greek capital letter chi)
+    ["Ω", "Omega"],   #U+03A9 (greek capital letter omega)
 
     ["ϕ", "phi"],     #U+03D5 (greek phi symbol)
 
