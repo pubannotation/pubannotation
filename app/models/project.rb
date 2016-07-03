@@ -888,9 +888,17 @@ class Project < ActiveRecord::Base
         end
 
         if doc.present?
-          self.save_annotations(annotations, doc, options)
+          begin
+            self.save_annotations(annotations, doc, options)
+          rescue => e
+            messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
+          end
         elsif divs.present?
-          self.store_annotations(annotations, divs, options)
+          begin
+            self.store_annotations(annotations, divs, options)
+          rescue => e
+            messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
+          end
         else
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: 'document does not exist.'}
         end
