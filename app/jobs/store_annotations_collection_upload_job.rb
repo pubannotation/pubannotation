@@ -28,7 +28,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
       begin
         o = JSON.parse(json, symbolize_names:true)
       rescue => e
-        @job.messages << Message.create({item: "#{File.basename(jsonfile)}", body: e.message})
+        @job.messages << Message.create({body: "[#{File.basename(jsonfile)}] " + e.message})
         next
       end
       annotation_collection = o.is_a?(Array) ? o : [o]
@@ -44,7 +44,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
           transaction_size += annotations[:denotations].size
           if transaction_size > 1000
             messages = project.store_annotation_transaction(annotation_transaction, options)
-            # messages.each {|m| @job.messages << Message.create(m)} unless messages.nil?
+            messages.each {|m| @job.messages << Message.create(m)} unless messages.nil?
             annotation_transaction = []
             transaction_size = 0
             unless sourcedbs.empty?
