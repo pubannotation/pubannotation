@@ -402,7 +402,7 @@ en:
       annotation_within_project: "Annotations <span class='meta'> from the project, <span class='pname'>%{project_name}</span></span>"
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_that_annotates_this: "Projects <span class='meta'>that have annotated to this document</span>"
-      obtain_annotations: obtain annotations
+      obtain_annotations: Obtain Annotations
       records: doc records
       list: documents
       list_button: List all the documents

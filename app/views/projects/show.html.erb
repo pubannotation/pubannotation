@@ -138,7 +138,7 @@
 			</tr>
 			<tr>
 				<th><%= t('views.shared.delete') %></th>
-				<td><%= render partial: 'delete_annotations' -%></td>
+				<td><%= link_to t('views.docs.delete_annotations'), delete_annotations_project_path(@project.name), class: 'button long_button' -%>
 			</tr>
 		<% end -%>
 	</table>

@@ -427,6 +427,40 @@ class AnnotationsController < ApplicationController
     end
   end
 
+  def delete_from_upload
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "There is no such project in your management." unless project.present?
+
+      ext = File.extname(params[:upfile].original_filename)
+      if ['.tgz', '.tar.gz', '.json'].include?(ext)
+        if project.jobs.count < 10
+          options = {mode: params[:mode].present? ? params[:mode] : 'replace'}
+
+          filepath = File.join('tmp', "delete-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.#{ext}")
+          FileUtils.mv params[:upfile].path, filepath
+
+          priority = project.jobs.unfinished.count
+          delayed_job = Delayed::Job.enqueue DeleteAnnotationsFromUploadJob.new(filepath, project, options), priority: priority, queue: :upload
+          Job.create({name:'Delete annotations from documents', project_id:project.id, delayed_job_id:delayed_job.id})
+          notice = "The task, 'Delete annotations from documents', is created."
+        else
+          notice = "Up to 10 jobs can be registered per a project. Please clean your jobs page."
+        end
+      else
+        notice = "Unknown file type: '#{ext}'."
+      end
+    rescue => e
+      notice = e.message
+    end
+
+    respond_to do |format|
+      format.html {redirect_to :back, notice: notice}
+      format.json {}
+    end
+  end
+
+
   # redirect to project annotations tgz
   def project_annotations_tgz
     begin

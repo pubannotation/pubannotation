@@ -154,6 +154,10 @@ class ProjectsController < ApplicationController
     @project = Project.editable(current_user).find_by_name(params[:id])
   end
 
+  def delete_annotations
+    @project = Project.editable(current_user).find_by_name(params[:id])
+  end
+
   def store_annotation_rdf
     begin
       raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true

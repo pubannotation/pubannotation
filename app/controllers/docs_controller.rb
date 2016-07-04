@@ -511,7 +511,7 @@ class DocsController < ApplicationController
     rescue => e
       flash[:notice] = e
     end
-    redirect_to :back
+    redirect_to project_docs_path(project.name)
   end
 
   def store_span_rdf

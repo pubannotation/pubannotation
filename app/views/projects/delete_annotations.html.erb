@@ -1,0 +1,48 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> delete-annotations
+<% end -%>
+
+<section>
+	<%= render partial: 'projects/titlebar' -%>
+
+	<section>
+		<h2><%= t('views.docs.delete_annotations') %></h2>
+		<table>
+			<tr>
+				<th>from All documents</th>
+				<td>
+					<%= link_to 'Delete', project_destroy_all_annotations_path(@project.name),
+					method: :delete,
+					confirm: "Are you sure? All the annotations in the project will be deleted.",
+					class: 'button long_button' %>
+				</td>
+				<td>
+		      <a href="#help-delete-from-all-docs" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+		      <div id="help-delete-from-all-docs" class="help">
+		      	<h1>Delete from all the documents</h1>
+		        <p>To delete all the annotations in all the documents included the project</p>
+		      </div>
+				</td>
+			</tr>
+			<tr>
+				<th>from Selected documents</th>
+				<td>
+					<%= form_tag project_delete_annotations_from_upload_path(@project.name), multipart: true do -%>
+						<%= file_field_tag 'upfile', accept: '.tgz,.tar.gz,.json', required: true -%>
+						<%= submit_tag t('views.shared.upload') -%>
+					<% end -%>
+				</td>
+				<td>
+		      <a href="#help-delete-from-selected-docs" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+		      <div id="help-delete-from-selected-docs" class="help">
+		      	<h1>Delete from selected documents</h1>
+		        <p>To delete all the annotations in selected documents. Users can upload a json file or a collection of json files, in whieh a collection of documents are specified.</p>
+		      </div>
+				</td>
+			</tr>
+		</table>
+	</section>
+</section>
