@@ -11,7 +11,29 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160528140652) do
+ActiveRecord::Schema.define(:version => 20160706062835) do
+
+  create_table "annotations", :force => true do |t|
+    t.string  "type"
+    t.string  "pred"
+    t.string  "obj_type"
+    t.integer "obj_id"
+    t.string  "subj_type"
+    t.integer "subj_id"
+    t.integer "pred_id"
+    t.string  "hid"
+  end
+
+  add_index "annotations", ["obj_id"], :name => "index_annotations_on_obj_id"
+  add_index "annotations", ["subj_id"], :name => "index_annotations_on_subj_id"
+
+  create_table "annotations_projects", :force => true do |t|
+    t.integer "annotation_id"
+    t.integer "project_id"
+  end
+
+  add_index "annotations_projects", ["annotation_id"], :name => "index_annotations_projects_on_annotation_id"
+  add_index "annotations_projects", ["project_id"], :name => "index_annotations_projects_on_project_id"
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -49,6 +71,20 @@ ActiveRecord::Schema.define(:version => 20160528140652) do
 
   add_index "associate_projects_projects", ["associate_project_id"], :name => "index_associate_projects_projects_on_associate_project_id"
   add_index "associate_projects_projects", ["project_id"], :name => "index_associate_projects_projects_on_project_id"
+
+  create_table "blocks", :force => true do |t|
+    t.string   "hid"
+    t.integer  "doc_id"
+    t.integer  "begin"
+    t.integer  "end"
+    t.string   "category"
+    t.integer  "project_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "blocks", ["doc_id"], :name => "index_blocks_on_doc_id"
+  add_index "blocks", ["project_id"], :name => "index_blocks_on_project_id"
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0, :null => false
@@ -93,6 +129,7 @@ ActiveRecord::Schema.define(:version => 20160528140652) do
     t.integer  "subcatrels_count",  :default => 0
     t.boolean  "delta",             :default => true, :null => false
     t.integer  "projects_count",    :default => 0
+    t.integer  "impressions_count", :default => 0
   end
 
   add_index "docs", ["projects_count"], :name => "index_docs_on_projects_count"
@@ -106,6 +143,55 @@ ActiveRecord::Schema.define(:version => 20160528140652) do
   end
 
   add_index "docs_projects", ["project_id", "doc_id"], :name => "index_docs_projects_on_project_id_and_doc_id", :unique => true
+
+  create_table "documentation_categories", :force => true do |t|
+    t.string "name", :null => false
+  end
+
+  create_table "documentations", :force => true do |t|
+    t.string  "title",                     :null => false
+    t.text    "body",                      :null => false
+    t.integer "documentation_category_id"
+  end
+
+  add_index "documentations", ["documentation_category_id"], :name => "index_documentations_on_documentation_category_id"
+
+  create_table "impressions", :force => true do |t|
+    t.string   "impressionable_type"
+    t.integer  "impressionable_id"
+    t.integer  "user_id"
+    t.string   "controller_name"
+    t.string   "action_name"
+    t.string   "view_name"
+    t.string   "request_hash"
+    t.string   "ip_address"
+    t.string   "session_hash"
+    t.text     "message"
+    t.text     "referrer"
+    t.datetime "created_at",          :null => false
+    t.datetime "updated_at",          :null => false
+  end
+
+  add_index "impressions", ["controller_name", "action_name", "ip_address"], :name => "controlleraction_ip_index"
+  add_index "impressions", ["controller_name", "action_name", "request_hash"], :name => "controlleraction_request_index"
+  add_index "impressions", ["controller_name", "action_name", "session_hash"], :name => "controlleraction_session_index"
+  add_index "impressions", ["impressionable_type", "impressionable_id", "ip_address"], :name => "poly_ip_index"
+  add_index "impressions", ["impressionable_type", "impressionable_id", "request_hash"], :name => "poly_request_index"
+  add_index "impressions", ["impressionable_type", "impressionable_id", "session_hash"], :name => "poly_session_index"
+  add_index "impressions", ["impressionable_type", "message", "impressionable_id"], :name => "impressionable_type_message_index"
+  add_index "impressions", ["user_id"], :name => "index_impressions_on_user_id"
+
+  create_table "instances", :force => true do |t|
+    t.string   "hid"
+    t.integer  "obj_id"
+    t.string   "pred"
+    t.integer  "project_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "instances", ["obj_id"], :name => "index_instances_on_obj_id"
+  add_index "instances", ["project_id"], :name => "index_instances_on_project_id"
 
   create_table "jobs", :force => true do |t|
     t.integer  "project_id"
@@ -148,6 +234,25 @@ ActiveRecord::Schema.define(:version => 20160528140652) do
   add_index "modifications", ["obj_id"], :name => "index_modifications_on_obj_id"
   add_index "modifications", ["project_id"], :name => "index_modifications_on_project_id"
 
+  create_table "notices", :force => true do |t|
+    t.integer  "project_id"
+    t.datetime "created_at"
+    t.boolean  "successful"
+    t.text     "uri"
+    t.string   "method"
+    t.string   "message"
+  end
+
+  add_index "notices", ["project_id"], :name => "index_notices_on_project_id"
+
+  create_table "objs", :force => true do |t|
+    t.string "name"
+  end
+
+  create_table "preds", :force => true do |t|
+    t.string "name"
+  end
+
   create_table "projects", :force => true do |t|
     t.string   "name"
     t.text     "description"
@@ -171,9 +276,10 @@ ActiveRecord::Schema.define(:version => 20160528140652) do
     t.integer  "relations_count",                  :default => 0
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
-    t.datetime "annotations_updated_at",           :default => '2016-04-08 06:25:21'
+    t.datetime "annotations_updated_at",           :default => '2015-02-23 05:39:37'
     t.text     "namespaces"
     t.integer  "process"
+    t.integer  "impressions_count",                :default => 0
     t.integer  "annotations_count",                :default => 0
     t.string   "sample"
     t.boolean  "anonymize",                        :default => false,                 :null => false
@@ -197,6 +303,14 @@ ActiveRecord::Schema.define(:version => 20160528140652) do
   add_index "relations", ["obj_id"], :name => "index_relations_on_obj_id"
   add_index "relations", ["project_id"], :name => "index_relations_on_project_id"
   add_index "relations", ["subj_id"], :name => "index_relations_on_subj_id"
+
+  create_table "spans", :force => true do |t|
+    t.integer "doc_id"
+    t.integer "begin"
+    t.integer "end"
+  end
+
+  add_index "spans", ["doc_id"], :name => "index_spans_on_doc_id"
 
   create_table "users", :force => true do |t|
     t.string   "email",                  :default => "",    :null => false
