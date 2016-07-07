@@ -281,7 +281,8 @@ class DocSequencerPMC
   def check_title(node)
     node.each_element do |e|
       case e.name
-      when 'italic', 'bold', 'sup', 'sub', 'underline', 'xref'
+      when 'italic', 'bold', 'sup', 'sub', 'underline'
+      when 'xref', 'named-content'
       else
         raise "a unexpected element in title: #{e.name}"
         return false
@@ -295,10 +296,10 @@ class DocSequencerPMC
     node.each_element do |e|
       case e.name
       when 'italic', 'bold', 'sup', 'sub', 'underline', 'sc'
-      when 'xref', 'ext-link', 'named-content'
+      when 'xref', 'ext-link', 'uri', 'named-content'
       when 'fig', 'table-wrap'
       when 'statement' # TODO: check what it is
-      when 'inline-graphic', 'disp-formula' # TODO: check if it can be ignored.
+      when 'inline-graphic', 'disp-formula', 'inline-formula' # TODO: check if it can be ignored.
       else
         raise "a unexpected element in p: #{e.name}"
         return false
