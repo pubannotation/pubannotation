@@ -439,80 +439,40 @@ describe Denotation do
       end      
     end
   end
-  
-  describe 'self.sql_find' do
-    pending do
-      before do
-      end
-      
-      context 'when params[:sql] present' do
-        before do
-          @current_user = FactoryGirl.create(:user)
-          @sql = 'select * from denotations;'
-          @params = {:sql => @sql}
-          @accessible_denotation = FactoryGirl.create(:denotation, :project_id => 1)  
-          @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-          @project_denotation = FactoryGirl.create(:denotation, :project => @project)  
-          Denotation.stub(:accessible_projects).and_return(Denotation.where(:id => @accessible_denotation.id))
-          Denotation.stub(:projects_denotations).and_return(Denotation.where(:id => @project_denotation.id))
-        end
-        
-        context 'when current_user blank' do
-          context 'when results.present' do
-            context 'when project.present' do
-              before do
-                @denotations = Denotation.sql_find(@params, nil, @project)
-              end
-              
-              it "should return project's denotations" do
-                @denotations.should =~ [@project_denotation]
-              end
-            end
-            
-            context 'when project.blank' do
-              before do
-                @denotations = Denotation.sql_find(@params, nil, nil)
-              end
-              
-              it "should return accessible project's denotations" do
-                @denotations.should =~ [@accessible_denotation]
-              end
-            end
-          end
-        end
-        
-        context 'when current_user present' do
-          context 'when results.present' do
-            context 'when project.present' do
-              before do
-                @denotations = Denotation.sql_find(@params, @current_user, @project)
-              end
-              
-              it "should return project's denotations" do
-                @denotations.should =~ [@project_denotation]
-              end
-            end
-            
-            context 'when project.blank' do
-              before do
-                @denotations = Denotation.sql_find(@params, @current_user, nil)
-              end
-              
-              it "should return accessible project's denotations" do
-                @denotations.should =~ [@accessible_denotation]
-              end
-            end
-          end
-        end
+
+  describe 'sql_find' do
+    let(:current_user) { FactoryGirl.create(:user) }
+    let(:accessible_relation) { FactoryGirl.create(:relation, obj_id: 1) }
+    let!(:project ) { FactoryGirl.create(:project, user: current_user) }
+    let(:params_sql) { 'SELECT * from denotations' }
+    let(:accessible_projects_projects_relations_sql) { 'docs accessible_projects_projects_relations_sql' }
+    let(:accessible_projects_sql) { 'docs accessible_projects_sql' }
+    let(:accessible_projects_from_projects_sql) { 'accessible_projects_from_projects_sql' }
+
+    before do
+      Denotation.stub(:sanitize_sql).and_return(params_sql)
+    end
+
+    context 'when params[:sql] present' do
+      it 'should call sanitize_sql' do
+        expect( Denotation ).to receive(:sanitize_sql).with(params_sql)
+        Denotation.sql_find({sql: params_sql}, current_user, project)
       end
 
-      context 'when params[:sql] blank' do
-        before do
-          @denotations = Denotation.sql_find({}, nil, nil)
-        end
-        
-        it 'should return blank' do
-          @denotations.should be_blank
+      it 'should execute sql' do
+        expect( Denotation.connection ).to receive(:execute).with(params_sql, includes: [:project])
+        Denotation.sql_find({sql: params_sql}, current_user, project)
+      end
+
+      context 'when results present' do
+        context 'when annotation is Denotation' do
+          before do
+            Denotation.stub_chain(:accessible_projects, :from_projects, :sql).and_return(accessible_projects_from_projects_sql)
+          end
+
+          it 'should return docs accessible_projects.projects_relations.sql' do
+            expect( Denotation.sql_find({sql: params_sql}, current_user, project) ).to eql(accessible_projects_from_projects_sql)
+          end
         end
       end
     end
