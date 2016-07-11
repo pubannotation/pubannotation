@@ -64,14 +64,6 @@ ActiveRecord::Schema.define(:version => 20160706062835) do
   add_index "associate_maintainers", ["project_id"], :name => "index_associate_maintainers_on_project_id"
   add_index "associate_maintainers", ["user_id"], :name => "index_associate_maintainers_on_user_id"
 
-  create_table "associate_projects_projects", :force => true do |t|
-    t.integer "project_id",           :null => false
-    t.integer "associate_project_id", :null => false
-  end
-
-  add_index "associate_projects_projects", ["associate_project_id"], :name => "index_associate_projects_projects_on_associate_project_id"
-  add_index "associate_projects_projects", ["project_id"], :name => "index_associate_projects_projects_on_project_id"
-
   create_table "blocks", :force => true do |t|
     t.string   "hid"
     t.integer  "doc_id"

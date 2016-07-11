@@ -1,4 +1,8 @@
 class CreateTables < ActiveRecord::Migration
+  if ActiveRecord::Base.connection.table_exists?('associate_projects_projects')
+    drop_table :associate_projects_projects
+  end
+
   unless ActiveRecord::Base.connection.table_exists?('annotators')
     create_table "annotators" do |t|
       t.string   "abbrev"
