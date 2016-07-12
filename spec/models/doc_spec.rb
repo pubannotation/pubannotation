@@ -56,9 +56,9 @@ describe Doc do
     before do
       @doc = FactoryGirl.create(:doc)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :id => 3, :project => @project)
-      @subj = FactoryGirl.create(:denotation, :doc => @doc, :id => 4)
-      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :id => 4, :obj => @denotation, :project => @project)
+      @denotation = FactoryGirl.create(:denotation, :doc => @doc, :project => @project)
+      @subj = FactoryGirl.create(:denotation, :doc => @doc)
+      @subcatrel = FactoryGirl.create(:subcatrel, :subj_id => @subj.id , :obj => @denotation, :project => @project)
       @subcatrelmod = FactoryGirl.create(:modification, :obj => @subcatrel, :project => @project)
     end
     
@@ -168,7 +168,7 @@ describe Doc do
       before do
         @pmcdocs_count = 3
         @pmcdocs_count.times do |time|
-          FactoryGirl.create(:doc, :sourcedb => 'PMC', sourceid: time.to_s, serial: 0)
+          FactoryGirl.create(:doc, :sourcedb => 'PMC', sourceid: time.to_s)
         end
         @not_pmcdoc = FactoryGirl.create(:doc, :sourcedb => 'PubMed')
         @serial_1 = FactoryGirl.create(:doc, :sourcedb => 'PMC')
@@ -243,6 +243,109 @@ describe Doc do
       @docs.select{|doc| doc.sourcedb == nil || doc.sourcedb == ''}.should be_blank
     end
   end
+
+  describe 'descriptor' do
+    let(:doc) { FactoryGirl.create(:doc) }
+    
+    context 'when has_divs? true' do
+      before do
+        doc.stub(:has_divs?).and_return(true)
+      end
+
+      it 'should return string includes sourcedb, sourceid and serial' do
+        expect( doc.descriptor ).to eql("#{doc.sourcedb}:#{doc.sourceid}-#{doc.serial}")
+      end
+    end
+
+    context 'when has_divs? false' do
+      before do
+        doc.stub(:has_divs?).and_return(false)
+      end
+
+      it 'should return string includes sourcedb and sourceid' do
+        expect( doc.descriptor ).to eql("#{doc.sourcedb}:#{doc.sourceid}")
+      end
+    end
+  end
+
+  describe 'get_doc' do
+    let(:sourcedb) { 'sdb' }
+    let(:sourceid) { '123456' }
+    let(:divid) { 'divid' }
+
+    context 'when docspec sourcedb sourceid present' do
+      context 'when divid present' do
+        it 'should call find_by_sourcedb_and_sourceid_and_serial' do
+          expect(Doc).to receive(:find_by_sourcedb_and_sourceid_and_serial).with(sourcedb, sourceid, divid)
+          Doc.get_doc({sourcedb: sourcedb, sourceid: sourceid, divid: divid })
+        end
+      end
+
+      context 'when divid nil' do
+        it 'should call find_by_sourcedb_and_sourceid_and_serial' do
+          expect(Doc).to receive(:find_by_sourcedb_and_sourceid_and_serial).with(sourcedb, sourceid, 0)
+          Doc.get_doc({sourcedb: sourcedb, sourceid: sourceid})
+        end
+      end
+    end
+
+    context 'when docspec sourcedb sourceid nil' do
+      it 'should return nil' do
+        expect( Doc.get_doc({}) ).to be_nil
+      end
+    end
+  end
+
+  describe 'get_divs' do
+    let(:sourcedb) { 'sdb' }
+    let(:sourceid) { '123456' }
+    let(:divid) { 'divid' }
+
+    context 'when docspec sourcedb sourceid present' do
+      context 'when div_id present' do
+        it 'should call find_al_by_sourcedb_and_sourceid_and_serial' do
+          expect(Doc).to receive(:find_all_by_sourcedb_and_sourceid_and_serial)#.with(sourcedb, sourceid, divid)
+          Doc.get_divs({sourcedb: sourcedb, sourceid: sourceid, div_id: divid })
+        end
+      end
+
+      context 'when divid nil' do
+        it 'should call find_all_by_sourcedb_and_sourceid' do
+          expect(Doc).to receive(:find_all_by_sourcedb_and_sourceid).with(sourcedb, sourceid)
+          Doc.get_divs({sourcedb: sourcedb, sourceid: sourceid})
+        end
+      end
+    end
+
+    context 'when docspec sourcedb sourceid nil' do
+      it 'should return nil' do
+        expect( Doc.get_divs({}) ).to be_blank
+      end
+    end
+  end
+
+  describe 'exist?' do
+    context 'when get_doc is not nil' do
+      before do
+        Doc.stub(:get_doc).and_return([])
+      end
+
+      it 'should return true' do
+        expect(Doc.exist?('')).to be_true
+      end
+    end
+
+    context 'when get_doc is nil' do
+      before do
+        Doc.stub(:get_doc).and_return(nil)
+      end
+
+      it 'should return false' do
+        expect(Doc.exist?('')).to be_false
+      end
+    end
+  end
+
   
   describe 'accessible_projects' do
     before do
@@ -411,50 +514,6 @@ describe Doc do
     end
   end
 
-  describe 'sort_by_params' do
-    before do
-      @doc_1 = FactoryGirl.create(:doc, body: 'doc_1')
-      @doc_2 = FactoryGirl.create(:doc, body: 'doc_2')
-      @doc_3 = FactoryGirl.create(:doc, body: 'doc_3')
-    end
-
-    context 'when sort_order is id DESC' do
-      before do
-        @docs = Doc.sort_by_params([['id DESC']])
-      end
-
-      it 'should sort doc by sort_order' do
-        @docs.first.should eql @doc_3
-      end
-
-      it 'should sort doc by sort_order' do
-        @docs.second.should eql @doc_2
-      end
-      
-      it 'should sort doc by sort_order' do
-        @docs.last.should eql @doc_1
-      end
-    end
-
-    context 'when sort_order is id ASC' do
-      before do
-        @docs = Doc.sort_by_params([['id ASC']])
-      end
-
-      it 'should sort doc by sort_order' do
-        @docs.first.should eql @doc_1
-      end
-
-      it 'should sort doc by sort_order' do
-        @docs.second.should eql @doc_2
-      end
-      
-      it 'should sort doc by sort_order' do
-        @docs.last.should eql @doc_3
-      end
-    end
-  end
-
   describe 'search_docs' do
     let(:sourcedb) { 'sdb' }
     let(:sourceid) { '123456' }
@@ -512,6 +571,93 @@ describe Doc do
       Doc.create_divs(nil)
     end
   end
+
+  describe 'revise' do
+    let(:doc) { FactoryGirl.create(:doc) }
+    let(:body) { 'new body' }
+
+    context 'when body == self.body' do
+      it 'should return nil' do
+        expect(doc.revise(doc.body)).to be_nil
+      end
+    end
+
+    context 'when text_aligner is nil' do
+      before do
+        TextAlignment::TextAlignment.stub(:new).and_return(nil)
+      end
+
+      it 'should return nil' do
+        expect{ doc.revise(body) }.to raise_error
+      end
+    end
+
+    context 'when text_aligner similarity is too low' do
+      before do
+        TextAlignment::TextAlignment.stub(:new).and_return(double(:text_aligner, similarity: 0.1))
+      end
+
+      it 'should return nil' do
+        expect{ doc.revise(body) }.to raise_error
+      end
+    end
+
+    context 'successfully finished' do
+      let(:denotation) { double(:denotation) }
+      let(:denotations) { [denotation] }
+      let(:text_aligner) { double(:text_aligner, similarity: 1) }
+
+      before do
+        doc.stub(:denotations).and_return(denotations)
+        denotation.stub(:save).and_return(true)
+        TextAlignment::TextAlignment.stub(:new).and_return(text_aligner)
+        text_aligner.stub(:transform_denotations!).and_return(denotations)
+      end
+
+      it 'should update body' do
+        doc.revise(body) 
+        expect( doc.body ).to eql(body)
+      end
+
+      it 'should call transform_denotations!' do
+        expect( text_aligner ).to receive(:transform_denotations!).with(denotations)
+        doc.revise(body) 
+      end
+
+      it 'should call transform_denotations!' do
+        expect( denotation ).to receive(:save)
+        doc.revise(body) 
+      end
+    end
+  end
+
+  describe 'uptodate' do
+    let(:div) { double(:div, body: 'div body', sourcedb: 'sourcedb', sourceid: 'sourceid') }
+    let(:divs) { [div] }
+
+    context 'when new_divs.size != divs size' do
+      before do
+        Object.stub_chain(:const_get, :new, :divs).and_return(5)
+      end
+
+      it 'should raise error' do
+        expect{ Doc.uptodate(divs) }.to raise_error
+      end
+    end
+
+    context 'when new_divs.size == divs size' do
+      let(:new_divs) { [{body: 'new body'}] }
+      before do
+        Object.stub_chain(:const_get, :new, :divs).and_return(new_divs)
+      end
+
+      it 'should call revise' do
+        expect(div).to receive(:revise).with(new_divs[0][:body])
+        Doc.uptodate(divs) 
+      end
+    end
+  end
+
   
   describe 'self.order_by' do
     context 'when docs present' do
@@ -1054,6 +1200,47 @@ describe Doc do
     end    
   end
 
+  describe 'span_url' do
+    let(:doc) { FactoryGirl.create(:doc, sourceid: 'PMC', sourcedb: 'sourcedb') }
+    let(:span) { {begin: 1, end: 5} }
+
+    before do
+      doc.stub(:has_divs?).and_return(true)
+    end
+
+    context 'when has_divs? == true' do
+      it 'should return url' do
+        expect( doc.span_url(span) ).to eql("http://test.host/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/divs/#{doc.serial}/spans/#{span[:begin]}-#{span[:end]}")
+      end
+    end
+
+    context 'when has_divs? == false' do
+      before do
+        doc.stub(:has_divs?).and_return(false)
+      end
+
+      it 'should return url' do
+        expect( doc.span_url(span) ).to eql("http://test.host/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/#{span[:begin]}-#{span[:end]}")
+      end
+    end
+  end
+
+  describe 'spans_index' do
+    let(:doc) { FactoryGirl.create(:doc, sourceid: 'PMC', sourcedb: 'sourcedb') }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:hdenotation) { {id: 1, span: [{span: 'span_1'}, {span: 'span_2'}]} }
+    let(:span_url) { 'span_url' }
+
+    before do
+      doc.stub(:hdenotations).and_return([hdenotation])
+      doc.stub(:span_url).and_return(span_url)
+    end
+
+    it 'should return map result' do
+      expect( doc.spans_index ).to eql([{id: hdenotation[:id], span: [{span: hdenotation[:span][0][:span]}, {span: hdenotation[:span][1][:span]}], obj: span_url}])
+    end
+  end
+
   describe '#set_ascii_body' do
     before do
       @utf_text = 'utf_text'
@@ -1114,6 +1301,147 @@ describe Doc do
     
     it 'should return prev, span, next text' do
       @spans_highlight.should eql("#{@doc.body[0...@begin]}<span class='highlight'>#{@doc.body[@begin...@end]}</span>#{@doc.body[@end..@doc.body.length]}")
+    end
+  end
+
+  describe 'get_denotattions' do
+    let!(:doc) { FactoryGirl.create(:doc) } 
+    let!(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let!(:denotation_1) { FactoryGirl.create(:denotation, project: project) }
+    let!(:denotation_2) { FactoryGirl.create(:denotation, project: project) }
+    let!(:denotation_3) { FactoryGirl.create(:denotation, project: project) }
+    let!(:denotations) { Denotation.where('id IN (?)', [denotation_1.id, denotation_2.id, denotation_3.id]) }
+
+    before do
+      doc.stub(:denotations).and_return(denotations)
+      denotations.stub(:sort).and_return(nil)
+    end
+
+    context 'when project.present' do
+      context 'when project is an Array' do
+        it 'should set denotations.project_id in project.ids' do
+          expect(doc.denotations).to receive(:where).with('denotations.project_id IN (?)', [project.id])
+          doc.get_denotations([project])
+        end
+      end
+
+      context 'when project is not an Array' do
+        it 'should set denotations.project_id equal project.id' do
+          expect(doc.denotations).to receive(:where).with('denotations.project_id = ?', project.id)
+          doc.get_denotations(project)
+        end
+      end
+    end
+
+    context 'when project.blank' do
+      it 'should set denotations ' do
+        expect(doc.denotations).not_to receive(:from_projects)
+        doc.get_denotations(nil)
+      end
+    end
+
+    describe 'text_aligner' do
+      let(:text_aligner) { double(:text_aligner) }
+
+      context 'when original_body.present' do
+        before do
+          doc.stub(:original_body).and_return('original_body')
+          TextAlignment::TextAlignment.stub(:new).and_return(text_aligner)
+          text_aligner.stub(:transform_denotations!).and_return(nil)
+        end
+
+        it 'should set TextAlignment::TextAlignment.new as text_aligner' do
+          expect(TextAlignment::TextAlignment).to receive(:new).with(doc.original_body, doc.body, TextAlignment::MAPPINGS)
+          doc.get_denotations(nil)
+        end
+
+        it 'should transform_denotations!' do
+          expect( text_aligner ).to receive(:transform_denotations!)
+          doc.get_denotations(nil)
+        end
+      end
+
+      context 'when original_body.nil' do
+        before do
+          doc.stub(:original_body).and_return(nil)
+        end
+
+        it 'should not set TextAlignment::TextAlignment.new as text_aligner' do
+          expect(TextAlignment::TextAlignment).not_to receive(:new).with(doc.original_body, doc.body, TextAlignment::MAPPINGS)
+          doc.get_denotations(nil)
+        end
+      end
+    end
+
+    describe 'span' do
+      context 'when span present' do
+        let(:span) { {begin: 1, end: 9}}
+        let(:span_1) { FactoryGirl.create(:span, doc_id: 1, begin: span[:begin] + 1 , end: span[:end] -1) }
+
+        let(:denotation_1) { FactoryGirl.create(:denotation, subj: span_1) }
+        let(:span_2) { FactoryGirl.create(:span, doc_id: 1, begin: span[:begin] + 2 , end: span[:end]) }
+        let(:denotation_2) { FactoryGirl.create(:denotation, subj: span_2) }
+        let(:span_3) { FactoryGirl.create(:span, doc_id: 1, begin: span[:begin] - 1 , end: span[:end]) }
+        let(:denotation_3) { FactoryGirl.create(:denotation, subj: span_3) }
+        let(:span_4) { FactoryGirl.create(:span, doc_id: 1, begin: span[:begin] - 1 , end: span[:end] +1) }
+        let(:denotation_4) { FactoryGirl.create(:denotation, subj: span_4) }
+        let(:span_5) { FactoryGirl.create(:span, doc_id: 1, begin: 0, end: 0) }
+        let(:denotation_5) { FactoryGirl.create(:denotation, subj: span_5) }
+        let(:denotations) { [denotation_1, denotation_2, denotation_3, denotation_4, denotation_5 ] }
+
+        before do
+          doc.stub(:denotations).and_return(denotations)
+        end
+
+        it 'denotations should selected by condition' do
+          expect{ doc.get_denotations(nil, span).select{|d| d.begin <= span[:begin] && d.end >= span[:end] }.to be_nil
+          }        end
+      end
+    end
+
+    describe 'sort denotations' do
+      context 'when span present' do
+        let(:span) { {begin: 1, end: 9}}
+        let(:span_1) { FactoryGirl.create(:span, doc_id: 1, begin: 2, end: 6) }
+        let(:denotation_1) { FactoryGirl.create(:denotation, subj: span_1) }
+        let(:span_2) { FactoryGirl.create(:span, doc_id: 1, begin: 2, end: 5) }
+        let(:denotation_2) { FactoryGirl.create(:denotation, subj: span_2) }
+        let(:span_3) { FactoryGirl.create(:span, doc_id: 1, begin: 1, end: 9) }
+        let(:denotation_3) { FactoryGirl.create(:denotation, subj: span_3) }
+        let(:span_4) { FactoryGirl.create(:span, doc_id: 1, begin: 1, end: 8) }
+        let(:denotation_4) { FactoryGirl.create(:denotation, subj: span_4) }
+        let(:span_5) { FactoryGirl.create(:span, doc_id: 1, begin: 1, end: 7) }
+        let(:denotation_5) { FactoryGirl.create(:denotation, subj: span_5) }
+        let(:denotations) { [denotation_1, denotation_2, denotation_3, denotation_4, denotation_5 ] }
+
+        before do
+          doc.stub(:denotations).and_return(denotations)
+        end
+
+        it 'denotations should be sorted by begin' do
+          expect( doc.get_denotations(nil, span).first.span.begin ).to eql(1)
+          expect( doc.get_denotations(nil, span).last.span.begin ).to eql(2)
+        end
+      end
+    end
+  end
+
+  describe 'hdenotations' do
+    let(:doc) { FactoryGirl.create(:doc) } 
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:span) { double(:span) }
+    let(:get_hash) { double(:get_hash) }
+    let(:get_hash_map) { double(:get_hash_map) }
+
+    before do
+      get_hash.stub(:map).and_return(nil)
+      doc.stub(:get_denotations).and_return(get_hash)
+    end
+
+    it 'should call get_denotations' do
+      expect(doc).to receive(:get_denotations).with(project, span)
+      expect(get_hash).to receive(:map)
+      doc.hdenotations(project, span)
     end
   end
 
@@ -1238,39 +1566,92 @@ describe Doc do
   end
   
   describe '#denotations_in_tracks' do
+    let(:doc) { FactoryGirl.create(:doc) }
+    let(:span) { 'span' }
+    let(:hdenotations) { 'hdenotations' }
+
     before do
-      @doc = FactoryGirl.create(:doc)
-      @project_1 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_2 = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
-      @project_1.docs << @doc
-      @project_2.docs << @doc
-      @denotation_1 = FactoryGirl.create(:denotation, :project_id => @project_1.id)
-      @denotation_2 = FactoryGirl.create(:denotation, :project_id => @project_2.id)
-      @hdenotaions = 'hdenotations'
-      @doc.stub(:hdenotations) do |project|
-        if project == @project_1
-          @denotation_1
-        elsif project == @project_2
-          @denotation_2
+      doc.stub(:hdenotations).and_return(hdenotations)
+    end
+
+    context 'when project present' do
+      context 'when project respond_to each' do
+        let(:project) { [FactoryGirl.create(:project, user: FactoryGirl.create(:user))] }
+
+        it 'should call doc.hdenotations with project[n] and span' do
+          expect( doc ).to receive(:hdenotations).with(project[0], span)
+          doc.denotations_in_tracks(project, span)
+        end
+
+        it 'should return hash includes project[n].name and hdenotations' do
+          expect( doc.denotations_in_tracks(project, span) ).to eql([ {project: project[0].name, denotations: hdenotations} ])
         end
       end
-      @denotations_in_tracks = @doc.denotations_in_tracks
+
+      context 'when project not respond_to each' do
+        let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+
+        it 'should call doc.hdenotations with project and span' do
+          expect( doc ).to receive(:hdenotations).with(project, span)
+          doc.denotations_in_tracks(project, span)
+        end
+
+        it 'should return hash includes project.name and hdenotations' do
+          expect( doc.denotations_in_tracks(project, span) ).to eql([ {project: project.name, denotations: hdenotations} ])
+        end
+      end
     end
-    
-    it 'should return project' do
-      @denotations_in_tracks[0][:project].should eql(@project_1.name)
+
+    context 'when project nil' do
+      let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+
+      before do
+        doc.stub(:projects).and_return([project])
+      end
+
+      it 'should call doc.hdenotations with doc.projects[n] and span' do
+        expect( doc ).to receive(:hdenotations).with(project, span)
+        doc.denotations_in_tracks(nil, span)
+      end
+
+      it 'should return hash includes doc.projects[n].name and hdenotations' do
+        expect( doc.denotations_in_tracks(nil, span) ).to eql([ {project: project.name, denotations: hdenotations} ])
+      end
     end
-    
-    it 'should return denotations' do
-      @denotations_in_tracks[0][:denotations].should eql(@denotation_1)
+  end
+
+  describe 'annotations_count' do
+    let(:doc) { FactoryGirl.create(:doc, denotations_count: 5) }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:denotations_count) { 3 }
+    let(:subcatrels_count) { 4 }
+    let(:catmods_count) { 5 }
+    let(:subcatrelmods_count) { 6 }
+    let(:hdenotation) { {id: 'hdenotation'} }
+    let(:hrelation) { {id: 'hrelation'} }
+    let(:hmodification) { {id: 'hmodification'} }
+    let(:span) { 'span' }
+
+    before do
+      doc.stub_chain(:denotations, :count).and_return(denotations_count)
+      doc.stub_chain(:subcatrels, :count).and_return(subcatrels_count)
+      doc.stub_chain(:catmods, :count).and_return(catmods_count)
+      doc.stub_chain(:subcatrelmods, :count).and_return(subcatrelmods_count)
+      doc.stub(:hdenotations).and_return([hdenotation])
+      doc.stub(:hrelations).and_return([hrelation])
+      doc.stub(:hmodifications).and_return([hmodification])
     end
-    
-    it 'should return project' do
-      @denotations_in_tracks[1][:project].should eql(@project_2.name)
+
+    context 'when project.nil && span.nil' do
+      it 'should return self denotations.count, subcatrels.count, catmods.count and subcatrelmods.count' do
+        expect(doc.annotations_count(nil, nil)).to eql(denotations_count + subcatrels_count + catmods_count + subcatrelmods_count)
+      end
     end
-    
-    it 'should return denotations' do
-      @denotations_in_tracks[1][:denotations].should eql(@denotation_2)
+
+    context 'when project.present || span.present' do
+      it 'should return self denotations.size, subcatrels.size, catmods.size and subcatrelmods.size' do
+        expect(doc.annotations_count(project, span)).to eql(3)
+      end
     end
   end
 
@@ -1359,6 +1740,28 @@ describe Doc do
           ])
         end
       end
+    end
+  end
+
+  describe 'projects_within_span' do
+    let(:doc) { FactoryGirl.create(:doc, body: '12345678901234567890') }
+    let(:denotation_1) { double(:denotation) }
+    let(:denotation_2) { double(:denotation) }
+    let(:denotation_3) { double(:denotation) }
+    let(:denotation_4) { double(:denotation) }
+    let(:project_1) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:project_2) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+
+    before do
+      denotation_1.stub(:project).and_return(project_1)
+      denotation_2.stub(:project).and_return(project_2)
+      denotation_3.stub(:project).and_return(project_2)
+      denotation_4.stub(:project).and_return(nil)
+      doc.stub(:get_denotations).and_return([denotation_1, denotation_2, denotation_3, denotation_4])
+    end
+    
+    it 'should return get_denotations projects uniq' do
+      expect( doc.projects_within_span('span') ).to eql([project_1, project_2])
     end
   end
   
@@ -1482,6 +1885,118 @@ describe Doc do
           {:id => @modification_1.hid, :pred => @modification_1.pred, :obj => @denotation_1.hid}, 
           {:id => @modification_2.hid, :pred => @modification_2.pred, :obj => @relation_1.hid} 
         ])
+      end
+    end
+  end
+  describe 'hannotations' do
+    let(:doc) { FactoryGirl.create(:doc, body: '12345678901234567890') }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+
+    context 'when has_divs? == true' do
+      before do
+        doc.stub(:has_divs?).and_return(true)
+      end
+
+      it 'should set doc_sourcedb_sourceid_divs_show_path as annotations[:target]' do
+        expect( doc.hannotations(nil, nil, nil)[:target] ).to eql(Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial, only_path: false))
+      end
+
+      it 'should set doc.serial as annotations[:divid]' do
+        expect( doc.hannotations(nil, nil, nil)[:divid] ).to eql(doc.serial)
+      end
+    end
+
+    context 'when has_divs? == false' do
+      before do
+        doc.stub(:has_divs?).and_return(false)
+      end
+
+      it 'should set doc_sourcedb_sourceid_show_path as annotations[:target]' do
+        expect( doc.hannotations(nil, nil, nil)[:target] ).to eql(Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid, only_path: false))
+      end
+    end
+
+    context 'when span present' do
+      it 'should return trimmed doc.body as annotations[:text]' do
+        expect( doc.hannotations(nil, {begin: 0, end: 6})[:text]).not_to eql(doc.body)
+      end
+    end
+
+    context 'when span present' do
+      it 'should return doc.body as annotations[:text]' do
+        expect( doc.hannotations(nil, nil)[:text]).to eql(doc.body)
+      end
+    end
+
+    context 'when project.present and project not respond_to each' do
+      let(:hdenotation_span) { {begin: 9, end: 14} }
+      let(:hdenotations) { [{id: 'hdenotation', span: hdenotation_span}] }
+      let(:hrelations) { [{id: 'hrelation'}] }
+      let(:hmodifications) { [{id: 'hmodification'}] }
+      let(:span) { {begin: 5, end: 10} }
+
+      before do
+        doc.stub(:hdenotations).and_return(hdenotations)
+        doc.stub(:hrelations).and_return(hrelations)
+        doc.stub(:hmodifications).and_return(hrelations)
+      end
+
+      context 'when span present' do
+        it 'should minus from hdenotations span begin and end' do
+          expect( doc.hannotations(project, span)[:denotations][0][:span][:begin] ).not_to eql(9)
+        end
+      end
+
+      context 'when span nil' do
+        it 'should not minus from hdenotations span begin and end' do
+          expect( doc.hannotations(project, nil)[:denotations][0][:span][:begin] ).to eql(9)
+        end
+      end
+    end
+
+    context 'when project.nil or project not respond_to each' do
+      let(:hdenotations) { [{id: 'hdenotation'}] }
+      let(:span) { {begin: 5, end: 10} }
+      let(:hrelations) { 'hrelations' }
+      let(:hdenotation_ids) { ['hdenotations ids'] }
+      let(:hrelations_ids) { ['relations ids'] }
+      let(:hrelations) { 'hrelations' }
+      let(:hmodifications) { 'hmodification' }
+      let(:project_namespaces) { 'project_namespaces' }
+
+      before do
+        doc.stub(:projects).and_return([ project ])
+        doc.stub(:hdenotations).and_return(hdenotations)
+        hdenotations.stub(:each).and_return(hdenotation_ids)
+        hdenotations.stub(:collect).and_return(hdenotation_ids)
+        doc.stub(:hrelations).and_return(hrelations)
+        hrelations.stub(:collect).and_return(hrelations_ids)
+        doc.stub_chain(:hmodifications).and_return(hmodifications)
+        project.stub(:namespaces).and_return('project_namespaces')
+      end
+
+      context 'when span present' do
+        it '' do
+          expect( doc.hannotations(nil, span)[:tracks][0] ).to eql({
+            project: project.name, denotations: hdenotations, relations: hrelations, modifications: hmodifications, namespaces: project.namespaces})
+        end
+      end
+
+      context 'when track[:denotations] present' do
+        it 'should add track to tracks' do
+          expect( doc.hannotations(nil, nil)[:tracks][0] ).to eql({
+            project: project.name, denotations: hdenotations, relations: hrelations, modifications: hmodifications, namespaces: project.namespaces})
+        end
+      end
+
+      context 'when track[:denotations] nil' do
+        before do
+          doc.stub(:hdenotations).and_return([])
+        end
+
+        it 'should not add track to tracks' do
+          expect( doc.hannotations(nil, nil)[:traks]).to be_blank
+        end
       end
     end
   end
@@ -1925,6 +2440,20 @@ B')
       end
     end
   end
+
+  describe 'decrement_docs_counter' do
+    let(:doc) { FactoryGirl.create(:doc, body: '12345678901234567890') }
+    let(:project) { double(:project) }
+
+    before do
+      doc.stub(:projects).and_return([project])
+    end
+
+    it 'should call decrement_docs_counter' do
+      expect(project).to receive(:decrement_docs_counter).with(doc)
+      doc.decrement_docs_counter
+    end
+  end  
    
   describe 'decrement_docs_counter' do
     before do
@@ -1939,10 +2468,10 @@ B')
         @i += 1 
       end
       @associate_project_1_pmcdocs_count = 3
-      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s)
+      @div = FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => @i.to_s)
       @i += 1 
       @associate_project_1_pmcdocs_count.times do
-        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
+        @associate_project_1.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => @i.to_s) 
         @i += 1 
       end     
       # @associate_project_1.pmcdocs_count 3 => 4
@@ -1959,7 +2488,7 @@ B')
       @doc = FactoryGirl.create(:doc, :sourcedb => 'PubMed', :sourceid => @i.to_s)
       @i += 1 
       @associate_project_2_pmcdocs_count.times do
-        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :serial => 0, :sourceid => @i.to_s) 
+        @associate_project_2.docs << FactoryGirl.create(:doc, :sourcedb => 'PMC', :sourceid => @i.to_s) 
         @i += 1 
       end     
       # @associate_project_2.pmdocs_count 4 => 5
@@ -2035,6 +2564,109 @@ B')
         @associate_project_2.pmdocs_count.should eql(4)
         @associate_project_2.pmcdocs_count.should eql(6)
       end
+    end
+  end
+
+  describe 'get_annotations' do
+    let(:doc) { FactoryGirl.create(:doc) }
+    let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
+    let(:span) { double(:span) }
+    let(:hdenotations) { double(:hdenotations) }
+    let(:hrelations) { double(:hrelations) }
+    let(:hmodifications) { double(:hmodifications) }
+    let(:transform_denotations) { 'transform_denotations' }
+
+    before do
+      doc.stub(:hdenotations).and_return(hdenotations)
+      doc.stub(:hrelations).and_return(hrelations)
+      doc.stub(:hmodifications).and_return(hmodifications)
+      TextAlignment::TextAlignment.stub_chain(:new, :transform_denotations).and_return(transform_denotations)
+    end
+
+    context 'options = nil' do
+      before do
+        @annotations = doc.get_annotations(span, project)
+      end
+
+      it 'should return project.name as :project' do
+        expect(@annotations[:project]).to eql(project.name)
+      end
+
+      it 'should return self.sourcedb as :sourcedb' do
+        expect(@annotations[:sourcedb]).to eql(doc.sourcedb)
+      end
+
+      it 'should return self.sourceid as :sourceid' do
+        expect(@annotations[:sourceid]).to eql(doc.sourceid)
+      end
+
+      it 'should return self.serial as :divid' do
+        expect(@annotations[:divid]).to eql(doc.serial)
+      end
+
+      it 'should return self.section as :section' do
+        expect(@annotations[:section]).to eql(doc.section)
+      end
+
+      it 'should return doc.body as :text' do
+        expect(@annotations[:text]).to eql(doc.body)
+      end
+
+      it 'should return doc.hdenotations as :denotations' do
+        expect(@annotations[:denotations]).to eql(hdenotations)
+      end
+
+      it 'should return doc.hrelations as :relations' do
+        expect(@annotations[:relations]).to eql(hrelations)
+      end
+
+      it 'should return doc.hmodifications as :modifications' do
+        expect(@annotations[:modifications]).to eql(hmodifications)
+      end
+    end
+
+    context 'when options[:encoding] == ascii' do
+      let(:get_ascii_text) { 'get_ascii_text' }
+
+      before do
+        doc.stub(:get_ascii_text).and_return(get_ascii_text)
+        @annotations = doc.get_annotations(span, project, encoding: 'ascii')
+      end
+
+      it 'should return transform_denotations as :denotations' do
+        expect(@annotations[:denotations]).to eql(transform_denotations)
+      end
+
+      it 'should return asciitext as :text' do
+        expect(@annotations[:text]).to eql(get_ascii_text)
+      end
+    end
+
+    context 'when options[:encoding] == ascii' do
+      let(:bag_denotations) { double(:hdenotations) }
+      let(:bag_relations) { double(:hrelations) }
+
+      before do
+        doc.stub(:bag_denotations).and_return([bag_denotations, bag_relations])
+        @annotations = doc.get_annotations(span, project, discontinuous_annotation: 'bag')
+      end
+
+      it 'should return bag_denotations as :denotations' do
+        expect(@annotations[:denotations]).to eql(bag_denotations)
+      end
+
+      it 'should return bag_relations as :relations' do
+        expect(@annotations[:relations]).to eql(bag_relations)
+      end
+    end
+  end
+  
+  describe 'dummy' do
+    let(:repeat_times) { 1 }
+
+    it 'should call create' do
+      expect(Doc).to receive(:create)
+      Doc.dummy(repeat_times)
     end
   end
 end

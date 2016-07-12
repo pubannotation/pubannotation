@@ -397,11 +397,15 @@ class Doc < ActiveRecord::Base
   def get_denotations(project = nil, span = nil)
     denotations = if project.present?
       if project.respond_to?(:each)
-        self.denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
+        p 'CASE 1'
+        p project.map{|p| p.id}
+        p self.denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
       else
+        p 'CASE 2'
         self.denotations.where('denotations.project_id = ?', project.id)
       end
     else
+      p 'CASE 3'
       self.denotations
     end
     self.text_aligner = TextAlignment::TextAlignment.new(self.original_body, self.body, TextAlignment::MAPPINGS) unless self.original_body.nil?

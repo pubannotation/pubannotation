@@ -28,15 +28,16 @@ class Denotation < ActiveRecord::Base
     where('denotations.begin >= ? AND denotations.end <= ?', span[:begin], span[:end]) if span.present?
   }
 
-  scope :after_alignment, -> (aligner) {
-    if aligner.present?
-      all.map do |d|
-        new_span = aligner.transform_a_span({:begin => d.begin, :end => d.end})
-        d.begin, d.end = new_span[:begin], new_span[:end]
-        d
-      end
-    end
-  }
+  # possibly unused
+  # scope :after_alignment, -> (aligner) {
+  #   if aligner.present?
+  #     all.map do |d|
+  #       new_span = aligner.transform_a_span({:begin => d.begin, :end => d.end})
+  #       d.begin, d.end = new_span[:begin], new_span[:end]
+  #       d
+  #     end
+  #   end
+  # }
 
   scope :accessible_projects, lambda{|current_user_id|
     joins([:project, :doc]).
@@ -65,13 +66,6 @@ class Denotation < ActiveRecord::Base
     project_ids = Array.new
     if self.project.present? 
       project_ids << self.project.id
-      if self.project.projects.present?
-        # increment projects.denotations_count
-        project.projects.each do |project|
-          Project.increment_counter(:denotations_count, project.id)
-          project_ids << project.id
-        end
-      end
       # update project annotations_updated_at
       Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
       Project.where("projects.id IN (?)", project_ids).update_all(updated_at: DateTime.now)
@@ -87,13 +81,6 @@ class Denotation < ActiveRecord::Base
     project_ids = Array.new
     if self.project.present? 
       project_ids << self.project.id
-      if self.project.projects.present?
-        project.projects.each do |project|
-          # decrement projects_denotations_count
-          Project.decrement_counter(:denotations_count, project.id)
-          project_ids << project.id
-        end
-      end
       # update project annotations_updated_at
       Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
       Project.where("projects.id IN (?)", project_ids).update_all(updated_at: DateTime.now)
