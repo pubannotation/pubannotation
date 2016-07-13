@@ -90,8 +90,6 @@ Pubann::Application.routes.draw do  resources :annotators
     end
   end
   
-  delete '/associate_projects_projects/:project_id/:associate_project_id' => 'associate_projects_projects#destroy', :as => 'delete_associate_projects_project'
-  
   resources :projects do
     get 'spans/sql' => 'spans#sql'
     get 'relations/sql' => 'relations#sql'
