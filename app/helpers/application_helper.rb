@@ -193,4 +193,7 @@ module ApplicationHelper
     ann
   end
 
+  def root_user?
+    user_signed_in? && current_user.root?    
+  end
 end

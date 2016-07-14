@@ -1,0 +1,9 @@
+<% content_for :css do -%>
+  <%= stylesheet_link_tag 'style' -%>
+<% end -%>
+
+<%= render partial: 'side_contents' -%>
+
+<div class="main-content">
+  <%= render partial: 'news_notification', collection: @news_notifications -%>
+</div>

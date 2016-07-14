@@ -1,0 +1,90 @@
+aside {
+    padding-top: 30px;
+}
+aside h4 {
+    border-bottom: 1px solid #c00;
+    font-size: 14px;
+    font-weight: 700;
+    margin-left: -2em;
+    padding: 0 0 10px 30px;
+    text-transform: uppercase;
+}
+.side-contents {
+    display: block;
+    float: left;
+    max-width: 15em;
+    padding-left: 4px;
+    width: 20%;
+}
+.main-content {
+    display: block;
+    float: right;
+    max-width: 80em;
+    width: 73%;
+}
+article {
+    padding: 40px;
+}
+article {
+    background: #fafafa none repeat scroll 0 0;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    font-size: small;
+    margin: 5px;
+    padding: 20px;
+}
+.label {
+    color: #fff;
+    float: left;
+    font-weight: bold;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
+}
+article h2:first-child {
+    margin-top: 0;
+}
+article h2, article h3, article h4, article h5, article h6 {
+    margin-bottom: 0.5em;
+    margin-top: 2em;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+.post-category::before {
+    border-color: transparent #6f0d0d #6f0d0d transparent;
+    border-style: solid;
+    border-width: 5px;
+    content: "";
+    height: 0;
+    left: 0;
+    position: absolute;
+    top: -10px;
+    width: 0;
+}
+.post-category {
+    margin-left: -50px;
+}
+.post-category {
+    background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #9e2812 0%, #6f0d0d 100%) repeat scroll 0 0;
+    border-radius: 0 5px 5px 0;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 -1px 0 rgba(0, 0, 0, 0.3) inset;
+    display: inline-block;
+    margin-left: -30px;
+    padding: 6px 10px 8px 50px;
+    position: relative;
+}
+.post-category, .post-meta {
+    display: inline-block;
+    font-size: 0.8em;
+    vertical-align: middle;
+}
+.post-date, .post-author {
+    margin-left: 10px;
+}
+.post-meta {
+    color: #aaa;
+    font-weight: 600;
+    text-shadow: 0 -1px 0 #000;
+}
+.post-category, .post-meta {
+    font-size: 0.8em;
+}

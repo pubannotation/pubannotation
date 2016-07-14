@@ -18,45 +18,27 @@ describe ApplicationController do
       controller.stub(:render_status_error).and_return(@render_status_error)
     end
 
-    context 'when user signed_in? == true' do
+    context 'when root_user? == true' do
       before do
-        controller.stub(:user_signed_in?).and_return(true)
+        controller.stub(:root_user?).and_return(true)
       end
 
-      context 'when root user' do
-        before do
-          controller.stub_chain(:current_user, :root?).and_return(true)
-          @result = controller.is_root_user?
-        end
-
-        it 'should return nil' do
-          @result.should be_nil
-        end
-      end
-
-      context 'when not root user' do
-        before do
-          controller.stub_chain(:current_user, :root?).and_return(false)
-          @result = controller.is_root_user?
-        end
-
-        it 'should return render_status_error' do
-          @result.should eql @render_status_error 
-        end
+      it 'should return nil' do
+        expect(controller.is_root_user?).to be_nil
       end
     end
 
-    context 'when user signed_in? == false' do
+    context 'when not root user' do
       before do
-        controller.stub(:user_signed_in?).and_return(false)
-        @result = controller.is_root_user?
+        controller.stub(:root_user?).and_return(false)
       end
 
       it 'should return render_status_error' do
-        @result.should eql @render_status_error 
+        expect(controller.is_root_user?).to eql( @render_status_error )
       end
     end
   end
+
   
   describe 'set_locale' do
     context 'when session[:locale].blank' do

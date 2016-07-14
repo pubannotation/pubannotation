@@ -1,0 +1,18 @@
+<%= form_for @news_notification do |f| -%>
+  <table>
+    <tr>
+      <th><%= f.label :title -%></th>
+      <td><%= f.text_field :title -%></td>
+    <tr>
+    <tr>
+      <th><%= f.label :body -%></th>
+      <td><%= f.text_area :body -%></td>
+    <tr>
+    <tr>
+      <th><%= f.label :category -%></th>
+      <td><%= f.text_field :category -%></td>
+    <tr>
+  </table>
+
+  <%= f.submit -%>
+<% end -%>

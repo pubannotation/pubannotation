@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
   after_filter :store_location
 
   def is_root_user?
-    unless user_signed_in? && current_user.root?    
+    unless root_user?
       render_status_error(:unauthorized)
     end
   end
