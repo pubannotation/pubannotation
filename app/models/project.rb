@@ -14,12 +14,6 @@ class Project < ActiveRecord::Base
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
 
-  # associate projects => parent projects = @project.projects
-  has_and_belongs_to_many :projects, 
-    :foreign_key => 'associate_project_id',
-    :association_foreign_key => 'project_id',
-    :join_table => 'associate_projects_projects'
-
   attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
                   :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter,
                   :annotations_zip_downloadable, :namespaces, :process,
@@ -301,61 +295,6 @@ class Project < ActiveRecord::Base
         self.associate_maintainers.build({:user_id => user.id})
       end
     end
-  end
-
-  def add_associate_projects(params_associate_projects, current_user)
-    if params_associate_projects.present?
-      associate_projects_names = Array.new
-      params_associate_projects[:name].each do |index, name|
-        associate_projects_names << name
-        if params_associate_projects[:import].present? && params_associate_projects[:import][index]
-          project = Project.includes(:associate_projects).find_by_name(name)
-          associate_projects_accessible = project.associate_projects.accessible(current_user)
-          # import associate projects which current user accessible 
-          if associate_projects_accessible.present?
-            associate_project_names = associate_projects_accessible.collect{|associate_project| associate_project.name}
-            associate_projects_names = associate_projects_names | associate_project_names if associate_project_names.present?
-          end
-        end
-      end
-      associate_projects = Project.where('name IN (?) AND id NOT IN (?)', associate_projects_names.uniq, associate_project_and_project_ids)
-      self.associate_projects << associate_projects
-    end    
-  end
-
-  def associate_project_ids
-    associate_project_ids = associate_projects.present? ? associate_projects.collect{|associate_project| associate_project.id} : []
-    associate_project_ids.uniq
-  end
-  
-  def self_id_and_associate_project_ids
-    associate_project_ids << self.id if self.id.present?
-  end
-  
-  def self_id_and_associate_project_and_project_ids
-    associate_project_and_project_ids << self.id if self.id.present?
-  end
-
-  def project_ids
-    project_ids = projects.present? ? projects.collect{|project| project.id} : []
-    project_ids.uniq
-  end
-  
-  def associate_project_and_project_ids
-    if associate_project_ids.present? || project_ids.present?
-      associate_project_ids | project_ids
-    else
-      [0]
-    end
-  end
-
-  def associatable_project_ids(current_user)
-    if self.new_record?
-      associatable_projects = Project.accessible(current_user)
-    else
-      associatable_projects = Project.accessible(current_user).not_id_in(self.self_id_and_associate_project_and_project_ids)
-    end
-    associatable_projects.collect{|associatable_projects| associatable_projects.id}
   end
   
   def get_denotations_count(doc = nil, span = nil)
