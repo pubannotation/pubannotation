@@ -27,6 +27,8 @@ class DocSequencerPubMed
         abstract = abstractTexts
                     .collect{|t| t['Label'].nil? ? t.content.strip : t['Label'] + ': ' + t.content.strip}
                     .join("\n")
+        abstractText = doc.find_first('/PubmedArticleSet//OtherAbstract/AbstractText')
+        abstract += abstractText.content.strip unless abstractText.nil?
 
         body  = ''
         body += title.content.strip if title
