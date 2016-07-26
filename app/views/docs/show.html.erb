@@ -1,3 +1,6 @@
+<%= content_for :javascript do -%>
+  <%= javascript_include_tag "docs" -%>
+<% end -%>
 <%= render :partial => 'docs/path'-%>
 <section>
 	<%= render :partial => 'docs/titlebar' -%>
@@ -14,7 +17,17 @@
 				<% end %>
 			</span>
 		</h2>
-		<%= render :partial => "projects/list", :locals => {:doc => @doc, :projects => @projects, :scope => nil} %>
+
+    <!-- Select projects area start -->
+    <div id="selected_projects_list">
+      <span class="button" id="set_selected_projects" data-doc-id="<%= @doc.id -%>">Show projects</span>
+    </div>
+    <div id="unselected_projects_list">
+      <%= render partial: "projects/name_list", collection: @projects -%>
+    </div>
+    <div id="projects"></div>
+    <!-- Select projects area end -->
+
 	</section>
 	<section>
 		<%= render :partial => 'annotations/titlebar' -%>

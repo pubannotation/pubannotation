@@ -1,7 +1,7 @@
 class ProjectsController < ApplicationController
   before_filter :updatable?, :only => [:edit, :update]
   before_filter :destroyable?, :only => :destroy
-  before_filter :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :autocomplete_project_author, :search]
+  before_filter :authenticate_user!, :except => [:index, :list, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :autocomplete_project_author, :search]
   # JSON POST
   before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
@@ -47,6 +47,11 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def list
+    projects = params[:projects].split(',')
+    @projects = Project.where(['name IN (?)', projects])
+    @doc = Doc.find(params[:doc_id])
+  end
 
   # GET /projects/:name
   # GET /projects/:name.json
