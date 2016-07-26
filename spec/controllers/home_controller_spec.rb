@@ -12,7 +12,7 @@ describe HomeController do
       get :index
     end
 
-    it 'shoould assign NewsNotification.limit as @news_notifications' do
+    it 'should assign NewsNotification.limit as @news_notifications' do
       expect( assigns[:news_notifications] ).to eql( news_notifications_limit) 
     end
   end
