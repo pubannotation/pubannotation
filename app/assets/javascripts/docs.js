@@ -1,10 +1,14 @@
 // Initialize
 $(document).ready(function(){
   selectProjectNames();
-  getSelectedProjectNames();
   selectedProjectsElement = $('#selected_projects_list');
   unselectedProjectsElement = $('#unselected_projects_list');
+  toggleProjectsSelection();
+  switchProjectSelection();
+  sortSelectedProjectsByName(); 
+  sortSelectedProjectsByAnnotationsCount();
   selectedProjectNames = new Array();
+  countProjectAnnotations();
 });
 
 // Add remove project name
@@ -14,18 +18,16 @@ var selectProjectNames = function(){
     isSelected = selectedProjectsElement.find("span[data-project-name='" + projectName + "']").length > 0;
     if(isSelected){
       // if already selected
-      unselectedProjectsElement.append($(this));
-      for(i=0;  i< selectedProjectNames.length; i++){
-        if(selectedProjectNames[i] == projectName){
-          selectedProjectNames.splice(i, 1);
-        }
-      }
+      unselectedProjectsElement.append($(this).parent());
     }else{
       // if not selected yet
       $('#no_projects_warning').remove();
-      selectedProjectsElement.append($(this));
-      selectedProjectNames.push(projectName);
+      selectedProjectsElement.append($(this).parent());
     }
+    getSelectedProjectNames();
+    switchButtonClass();
+    setAnnotationHref();
+    countProjectAnnotations();
   })
 }
 
@@ -35,27 +37,116 @@ var setAnnotationHref = function(){
   jQuery.each(annotationLinkIds, function(i, id) {
     linkElement = $("#annotations_" + id);
     href = linkElement.attr("href");
-    linkElement.attr("href", href + "?projects=" + selectedProjectNames.join());
+    if ( selectedProjectNames.length > 0 ){
+      linkElement.attr("href", href.split('?')[0] + "?projects=" + selectedProjectNames.join());
+    }else{
+      linkElement.attr("href", href.split('?')[0]);
+    };
   });
 }
 
 // Return selected project names by array
 var getSelectedProjectNames = function(){
-  $('#set_selected_projects').click(function(){
-    setAnnotationHref();
-    showSelectedProjectNames();
-    return selectedProjectNames;
+  selectedProjectNames = [];
+  selectedProjectElements = selectedProjectsElement.find('.project_wrapper');
+  jQuery.each(selectedProjectElements, function(i, selectedProjectElement) {
+    projectName = $( selectedProjectElement ).data('project-name');
+    selectedProjectNames.push(projectName);
   });
 }
 
-
-var showSelectedProjectNames = function(){
-  if ( selectedProjectNames.length > 0 ) {
-    // fetch by ajax
-    docId = $('#set_selected_projects').data('doc-id');
-    jQuery.getScript("/projects/list?doc_id=" + docId + "&projects=" + selectedProjectNames.join());
-  }else{
-    selectedProjectsElement.append("<span id='no_projects_warning' style='color:#f00'>Nothing selected.</span>");
-  }
+var switchButtonClass = function(){
+  jQuery.each(selectedProjectsElement.find('.fa'), function(i, selectedProjectElement){
+    $(selectedProjectElement).switchClass('fa-plus', 'fa-minus');
+  });
+  jQuery.each(unselectedProjectsElement.find('.fa'), function(i, unselectedProjectElement){
+    $(unselectedProjectElement).switchClass('fa-minus', 'fa-plus');
+  });
 }
 
+var toggleProjectsSelection = function(selectFlag){
+  $('.move_projects').click(function(e){
+    if (e.target.id == 'move_to_selected') {
+      // move to selected
+      currentElement = unselectedProjectsElement;
+      moveToElement = selectedProjectsElement;
+    }else{
+      // move to unselected
+      currentElement = unselectedProjectsElement;
+      currentElement = selectedProjectsElement;
+      moveToElement = unselectedProjectsElement;
+      selectedProjectNames = [];
+
+    }
+    projectElements = currentElement.find('.project_wrapper');
+    moveToElement.append(projectElements);
+    getSelectedProjectNames();
+    switchButtonClass(); 
+    setAnnotationHref();
+    countProjectAnnotations();
+  })
+}
+
+var switchProjectSelection = function(){
+  $('#switch_selection').click(function(){
+    selectedProjectElements = selectedProjectsElement.find('.project_wrapper');
+    unselectedProjectElements = unselectedProjectsElement.find('.project_wrapper');
+    unselectedProjectsElement.append(selectedProjectElements);
+    selectedProjectsElement.append(unselectedProjectElements);
+    getSelectedProjectNames();
+    switchButtonClass(); 
+    setAnnotationHref();
+    countProjectAnnotations();
+  });
+}
+
+var sortSelectedProjectsByName = function(){
+  $('.fa-sort-alpha-asc').click(function(){
+    sortSelectedProjects('project-name');
+  });
+}
+
+var sortSelectedProjectsByAnnotationsCount = function(){
+  $('.fa-sort-numeric-desc').click(function(){
+    sortSelectedProjects('annotations-count');
+  });
+}
+
+var sortSelectedProjects = function(sortKey){
+  selectedProjectElements = selectedProjectsElement.find('.project_wrapper');
+  if(sortKey == 'project-name'){
+    greaterVal = 1;
+    lessVal = -1
+  }else{
+    greaterVal = -1;
+    lessVal = 1
+  }
+  selectedProjectElements.sort(function(a, b){
+    var an = $( a ).data(sortKey), bn = $( b ).data(sortKey);
+    if(an > bn) {
+      return greaterVal;
+    }
+    if(an < bn) {
+      return lessVal;
+    }
+    return 0;
+  });
+  selectedProjectsElement.append(selectedProjectElements);
+  getSelectedProjectNames();
+  setAnnotationHref();
+}
+
+var countProjectAnnotations = function(){
+  var selectedProjectsAnnotaionsCount = 0;
+  var unselectedProjectsAnnotaionsCount = 0;
+  jQuery.each(selectedProjectsElement.find('.project_wrapper'), function(i, selectedProjectElement){
+    annotationsCount = $(selectedProjectElement).data('annotations-count');
+    selectedProjectsAnnotaionsCount += parseInt( annotationsCount );
+  });
+  jQuery.each(unselectedProjectsElement.find('.project_wrapper'), function(i, unselectedProjectElement){
+    annotationsCount = $(unselectedProjectElement).data('annotations-count');
+    unselectedProjectsAnnotaionsCount += parseInt( annotationsCount );
+  });
+  $('#selected_projects_annotations_count').text('(' + selectedProjectsAnnotaionsCount + ')');
+  $('#unselected_projects_annotations_count').text('(' + unselectedProjectsAnnotaionsCount + ')');
+}

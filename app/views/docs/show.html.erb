@@ -1,6 +1,3 @@
-<%= content_for :javascript do -%>
-  <%= javascript_include_tag "docs" -%>
-<% end -%>
 <%= render :partial => 'docs/path'-%>
 <section>
 	<%= render :partial => 'docs/titlebar' -%>
@@ -18,19 +15,54 @@
 			</span>
 		</h2>
 
-    <!-- Select projects area start -->
-    <div id="selected_projects_list">
-      <span class="button" id="set_selected_projects" data-doc-id="<%= @doc.id -%>">Show projects</span>
+    <!-- Select projects area -->
+    <div>
+      <div class="projects_wrapper">
+        <div>
+          Unselected projects
+          <span id="unselected_projects_annotations_count"></span>
+        </div>
+        <div id="unselected_projects_list">
+          <%= render partial: "projects/name_list", collection: @projects -%>
+        </div>
+      </div>
+      <div id="projects_switches">
+        <i class="fa fa-arrow-right move_projects" aria-hidden="true" id="move_to_selected"></i>
+        <i class="fa fa-arrows-h" aria-hidden="true" id="switch_selection"></i><br />
+        <i class="fa fa-arrow-left move_projects" aria-hidden="true" id="move_to_unselected"></i><br />
+      </div>
+      <div class="projects_wrapper">
+        <div>
+          Selected projects
+          <span id="selected_projects_annotations_count"></span>
+          <span class="project_select_button" style="position:absolute; right: 3em;">
+            <i class="fa fa-sort-alpha-asc" aria-hidden="true"></i>
+          </span>
+          <span class="project_select_button" style="position:absolute; right: 1em;">
+            <i class="fa fa-sort-numeric-desc" aria-hidden="true"></i>
+          </span>
+        </div>
+        <div id="selected_projects_list">
+        </div>
+      </div>
     </div>
-    <div id="unselected_projects_list">
-      <%= render partial: "projects/name_list", collection: @projects -%>
-    </div>
-    <div id="projects"></div>
-    <!-- Select projects area end -->
+    <div id="annotation_links">
+      <%=
+        link_to_unless_current 'VIEW', annotations_url, :class => 'tab inactive_tab', id: 'annotations_view' do
+            content_tag :span, 'VIEW', :class => 'tab active_tab'
+          end
+      %>
 
-	</section>
-	<section>
-		<%= render :partial => 'annotations/titlebar' -%>
-		<%= render :partial => 'annotations/summary' -%>
+      <%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
+      <% if @project.present? -%>
+        <%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab', id: 'annotations_textae' -%>	
+      <% else -%>
+        <%=
+          link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab inactive_tab', id: 'annotations_textae' do
+              content_tag :span, 'TextAE', :class => 'tab active_tab'
+            end
+        %>
+      <% end -%>
+    </div>
 	</section>
 </section>

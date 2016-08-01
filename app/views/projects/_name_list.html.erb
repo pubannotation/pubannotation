@@ -1,3 +1,9 @@
-<span class="button project_selector" data-project-name="<%= name_list.name -%>" >
-  <%= name_list.name -%>
-</span>
+<div class="project_wrapper" data-project-name="<%= name_list.name -%>" data-annotations-count="<%= annotations_count_helper(name_list, @doc, @span) -%>" >
+  <%= link_to name_list.name, project_path(name_list.name) -%>
+  (<%= annotations_count_helper(name_list, @doc, @span) -%>)
+  <span class="project_selector" data-project-name="<%= name_list.name -%>" >
+    <span class="project_select_button">
+      <i class="fa fa-plus" aria-hidden="true"></i>
+    </span>
+  </span>
+</div>
