@@ -9,6 +9,15 @@ $(document).ready(function(){
   sortSelectedProjectsByAnnotationsCount();
   selectedProjectNames = new Array();
   countProjectAnnotations();
+  $( function() {
+    $( "#selected_projects_list" ).sortable({
+      update: function(){
+        getSelectedProjectNames();
+        setAnnotationHref();
+      }
+    });
+    $( "#selected_projects_list" ).disableSelection();
+} );
 });
 
 // Add remove project name

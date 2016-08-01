@@ -25,6 +25,9 @@
   position: relative;
   margin: 0.2em 0;
 }
+#selected_projects_list{
+  list-style: none;
+}
 #projects_switches{
   width: 2em;
   float:left;
@@ -60,4 +63,7 @@
 .projects_wrapper{
   position: relative;
   width: 48%;
+}
+.project_wrapper{
+  list-style: none;
 }
