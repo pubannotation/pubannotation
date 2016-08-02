@@ -25,6 +25,14 @@
   position: relative;
   margin: 0.2em 0;
 }
+#unselected_projects_list .fa-bars{
+  color: lighten(#000, 90%);
+  cursor: not-allowed;
+}
+#selected_projects_list .fa-bars{
+  color: lighten(#000, 50%);
+  cursor: grab;
+}
 #selected_projects_list{
   list-style: none;
 }

@@ -1,4 +1,5 @@
 <li class="project_wrapper" data-project-name="<%= name_list.name -%>" data-annotations-count="<%= annotations_count_helper(name_list, @doc, @span) -%>" >
+  <i class="fa fa-bars" aria-hidden="true"></i>
   <%= link_to name_list.name, project_path(name_list.name) -%>
   (<%= annotations_count_helper(name_list, @doc, @span) -%>)
   <span class="project_selector" data-project-name="<%= name_list.name -%>" >
