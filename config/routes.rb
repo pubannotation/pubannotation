@@ -134,7 +134,6 @@ Pubann::Application.routes.draw do  resources :annotators
       post 'create_from_tgz' => 'projects#create_from_tgz'
       get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
       get 'clean' => 'projects#clean'
-      get 'list' => 'projects#list'
     end
   end
 

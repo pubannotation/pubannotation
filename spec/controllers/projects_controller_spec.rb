@@ -133,27 +133,6 @@ describe ProjectsController do
       end
     end
   end
-
-  describe 'list' do
-    let!(:user) { FactoryGirl.create(:user)}
-    let!(:doc) { FactoryGirl.create(:doc)}
-    let!(:project_1) { FactoryGirl.create(:project, user: user)}
-    let!(:project_2) { FactoryGirl.create(:project, user: user)}
-    let!(:project_3) { FactoryGirl.create(:project, user: user)}
-    let!(:subject){ xhr :get, :list, projects: [project_1.name, project_2.name].join(','), doc_id: doc.id }
-
-    before do
-      subject
-    end
-
-    it 'shoud set @projects by params[:projects]' do
-      expect(assigns[:projects]).to match_array([project_1, project_2])
-    end
-
-    it 'shoud set @doc by params[:doc_id]' do
-      expect(assigns[:doc]).to eql(doc)
-    end
-  end
   
   describe 'show' do
     context 'when project exists' do
