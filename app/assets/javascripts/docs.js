@@ -156,6 +156,11 @@ var countProjectAnnotations = function(){
     annotationsCount = $(unselectedProjectElement).data('annotations-count');
     unselectedProjectsAnnotaionsCount += parseInt( annotationsCount );
   });
+  if (selectedProjectsAnnotaionsCount >= 100) {
+    $('#annotations_textae').attr('href', '');
+    $('#annotations_textae').attr('title', 'annotations too many');
+    $('#annotations_textae').toggleClass('disabled_textae_link');
+  };
   $('#selected_projects_annotations_count').text('(' + selectedProjectsAnnotaionsCount + ')');
   $('#unselected_projects_annotations_count').text('(' + unselectedProjectsAnnotaionsCount + ')');
 }

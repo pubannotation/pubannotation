@@ -17,21 +17,12 @@
 #unselected_projects_list,
 #selected_projects_list{
   padding: 0.5em;
-  border-top: 1px solid #ccc;
   border-radius: 5%;
   width: 95%;
   float: left;
   min-height: 3em;
   position: relative;
   margin: 0.2em 0;
-}
-#unselected_projects_list .fa-bars{
-  color: lighten(#000, 90%);
-  cursor: not-allowed;
-}
-#selected_projects_list .fa-bars{
-  color: lighten(#000, 50%);
-  cursor: grab;
 }
 #selected_projects_list{
   list-style: none;
@@ -42,7 +33,7 @@
   text-align:center;
 }
 .project_selector{
-  margin-right: 1em;
+  padding: 3px;
 }
 .project_select_button{
   background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
@@ -57,21 +48,29 @@
 }
 .projects_wrapper{
   float:left;
+  a {
+    text-decoration: underline;
+  }
 }
 #annotation_links{
   clear: both;
   text-align: right;
-}
-#projects_switches {
-  margin-top: 2em;
 }
 #projects_switches i {
   cursor: pointer;
 }
 .projects_wrapper{
   position: relative;
-  width: 48%;
+  width: 98%;
 }
 .project_wrapper{
   list-style: none;
+  display: inline;
+  margin-right: 2px;
+  display: inline-block;
+  white-space: nowrap;
+}
+.disabled_textae_link{
+  cursor: not-allowed;
+  color: lighten(#000, 60%);
 }

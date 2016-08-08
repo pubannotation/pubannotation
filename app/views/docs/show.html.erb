@@ -15,37 +15,53 @@
 			</span>
 		</h2>
 
-    <!-- Select projects area -->
-    <div>
-      <div class="projects_wrapper">
-        <div>
-          Unselected projects
-          <span id="unselected_projects_annotations_count"></span>
-        </div>
-        <div id="unselected_projects_list">
-          <%= render partial: "projects/name_list", collection: @projects -%>
-        </div>
-      </div>
-      <div id="projects_switches">
-        <i class="fa fa-arrow-right move_projects" aria-hidden="true" id="move_to_selected"></i>
-        <i class="fa fa-arrows-h" aria-hidden="true" id="switch_selection"></i><br />
-        <i class="fa fa-arrow-left move_projects" aria-hidden="true" id="move_to_unselected"></i><br />
-      </div>
-      <div class="projects_wrapper">
-        <div>
-          Selected projects
-          <span id="selected_projects_annotations_count"></span>
-          <span class="project_select_button" style="position:absolute; right: 3em;">
-            <i class="fa fa-sort-alpha-asc" aria-hidden="true"></i>
-          </span>
-          <span class="project_select_button" style="position:absolute; right: 1em;">
-            <i class="fa fa-sort-numeric-desc" aria-hidden="true"></i>
-          </span>
-        </div>
-        <ul id="selected_projects_list">
-        </ul>
-      </div>
-    </div>
+    <% if @projects.present? -%>
+      <table style="width:100%">
+        <tr>
+          <td style="width:48%">
+            Unselected
+            <span id="unselected_projects_annotations_count"></span>
+          </td>
+          <td style="border:none; border-top:1px solid #fff;">
+          </td>
+          <td style="width:48%">
+            Selected
+            <span id="selected_projects_annotations_count"></span>
+            <span class="project_select_button" style="position:absolute; right: 3em;">
+              <i class="fa fa-sort-alpha-asc" aria-hidden="true"></i>
+            </span>
+            <span class="project_select_button" style="position:absolute; right: 1em;">
+              <i class="fa fa-sort-numeric-desc" aria-hidden="true"></i>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td style="width:48%; white-space: normal;">
+            <div class="projects_wrapper">
+              <div id="unselected_projects_list">
+                <%= render partial: "projects/name_list", collection: @projects -%>
+              </div>
+            </div>
+          </td>
+          <td style="border:none; border-bottom:1px solid #fff;">
+            <div id="projects_switches">
+              <i class="fa fa-arrow-right move_projects" aria-hidden="true" id="move_to_selected"></i><br />
+              <i class="fa fa-arrows-h" aria-hidden="true" id="switch_selection"></i><br />
+              <i class="fa fa-arrow-left move_projects" aria-hidden="true" id="move_to_unselected"></i><br />
+            </div>
+          </td>
+          <td style="width:48%; white-space: normal;">
+            <div class="projects_wrapper">
+              <ul id="selected_projects_list">
+              </ul>
+            </div>
+          </td>
+        </tr>
+      </table>
+    <% else -%>
+      <%= I18n.t('controllers.shared.not_exists', model: I18n.t('activerecord.models.project')) -%>
+    <% end -%>
+
     <div id="annotation_links">
       <%=
         link_to_unless_current 'VIEW', annotations_url, :class => 'tab inactive_tab', id: 'annotations_view' do
