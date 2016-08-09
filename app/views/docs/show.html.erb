@@ -4,13 +4,13 @@
 	<%= render :partial => 'docs/content'-%>
 
 	<section>
-		<h2>
-			Projects
-			<span class='meta'>
+		<h2 class="capitalize">
+      <%= t('activerecord.models.project').pluralize -%>
+			<span class='meta lowercase'>
 				<% if @span.present? -%>
-					that have annotations to this span
+          <%= t('views.docs.show.projects_that_have_annotations_to_this_span') -%>
 				<% else %>
-					that include this document
+          <%= t('views.docs.show.projects_include_this_document') -%>
 				<% end %>
 			</span>
 		</h2>
@@ -19,18 +19,18 @@
       <table style="width:100%">
         <tr>
           <td style="width:48%">
-            Unselected
+            <%= t('views.shared.unselected') -%>
             <span id="unselected_projects_annotations_count"></span>
           </td>
           <td style="border:none; border-top:1px solid #fff;">
           </td>
           <td style="width:48%">
-            Selected
+            <%= t('views.shared.selected') -%>
             <span id="selected_projects_annotations_count"></span>
-            <span class="project_select_button" style="position:absolute; right: 3em;">
+            <span class="project_select_button" style="position:absolute; right: 4em;">
               <i class="fa fa-sort-alpha-asc" aria-hidden="true"></i>
             </span>
-            <span class="project_select_button" style="position:absolute; right: 1em;">
+            <span class="project_select_button" style="position:absolute; right: 2em;">
               <i class="fa fa-sort-numeric-desc" aria-hidden="true"></i>
             </span>
           </td>
