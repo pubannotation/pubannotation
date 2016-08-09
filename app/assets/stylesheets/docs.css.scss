@@ -26,6 +26,11 @@
 }
 #selected_projects_list{
   list-style: none;
+  .ui-state-highlight { 
+    display: inline;
+    padding: 0 1em;
+    height: 1em;
+  }
 }
 #projects_switches{
   width: 2em;

@@ -11,6 +11,7 @@ $(document).ready(function(){
   countProjectAnnotations();
   $( function() {
     $( "#selected_projects_list" ).sortable({
+      placeholder: "ui-state-highlight",
       update: function(){
         getSelectedProjectNames();
         setAnnotationHref();
@@ -159,7 +160,9 @@ var countProjectAnnotations = function(){
   if (selectedProjectsAnnotaionsCount >= 100) {
     $('#annotations_textae').attr('href', '');
     $('#annotations_textae').attr('title', 'annotations too many');
-    $('#annotations_textae').toggleClass('disabled_textae_link');
+    $('#annotations_textae').addClass('disabled_textae_link');
+  }else{
+    $('#annotations_textae').removeClass('disabled_textae_link');
   };
   $('#selected_projects_annotations_count').text('(' + selectedProjectsAnnotaionsCount + ')');
   $('#unselected_projects_annotations_count').text('(' + unselectedProjectsAnnotaionsCount + ')');
