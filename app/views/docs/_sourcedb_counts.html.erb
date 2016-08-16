@@ -1,4 +1,4 @@
-<table class="vertical">
+<table>
 	<% docs_counts = sourcedb_count(current_user, @project) %>
 	<% docs_counts.each do |sourcedb, docs_count| -%>
 		<%
@@ -9,7 +9,7 @@
 			end
 		%>
 		<tr>
-			<th style="width:5em"><%= link_to sourcedb, index_path %></th>
+			<td style="width:5em"><%= link_to sourcedb, index_path %></td>
 			<td style="width:5em;text-align: right"><%= number_with_delimiter(docs_count, :delimiter => ',') %></td>
 			<td style="text-align: right">
 				<%= form_tag(index_path, method: 'get', style:"display:inline-block") do -%>

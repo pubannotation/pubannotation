@@ -68,10 +68,31 @@
 		<%= t('activerecord.models.doc').pluralize.capitalize %>
 	</legend>
 
-	<% cache(docs_count_cache_key) do -%>
-		<%= render :partial => "docs/sourcedb_counts" -%>
-	<% end %>
-</fieldset>
+		<% cache(docs_count_cache_key) do -%>
+			<%= render :partial => "docs/sourcedb_counts" -%>
+		<% end %>
+
+		<table class="vertical">
+		<% if user_signed_in? && @project.editable?(current_user) %>
+			<tr>
+				<th><%= t('views.shared.add') %></th>
+				<td style="text-align:right"><%= render partial: 'add_docs' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.import') %></th>
+				<td style="text-align:right"><%= render partial: 'import_docs_form' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.create') %></th>
+				<td><%= link_to 'Create a new document', new_project_doc_path(@project.name), class: 'button long_button' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.delete') %></th>
+				<td><%= render partial: 'delete_docs' -%></td>
+			</tr>
+		<% end -%>
+	</table>
+ </fieldset>
 
 <fieldset class="pane annotations">
 	<legend>
