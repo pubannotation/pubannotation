@@ -14,11 +14,7 @@
 <table class="full">
 <tr>
   <th class="docs_header_sourcedb">
-    <% if params[:keywords].present? -%>
-      <%= t('activerecord.attributes.doc.sourcedb') -%>
-    <% else -%>
-      <%= sortable(Doc, 'sourcedb', t('activerecord.attributes.doc.sourcedb')) %>
-    <% end -%>
+    <%= t('activerecord.attributes.doc.sourcedb') -%>
   </th>
   <th class="docs_header_sourceid">
     <% if params[:keywords].present? -%>
@@ -38,8 +34,12 @@
     </span>
   </th>
   <th class="docs_header_annotations_number">
-    <span title= "Sorting on this column is yet to be supported. We are sorry for the inconvenience at the moment.">
-      <%= t('views.shared.annotations_count') %>
+    <span title= "number of denotations (sorting may not be precise).">
+      <% if params[:keywords].present? -%>
+        <%= t('views.shared.annotations_count') -%>
+      <% else -%>
+        <%= sortable(Doc, 'denotations_count', t('views.shared.annotations_count')) -%>
+      <% end -%>
     </span>
   </th>
   <th class="docs_header_button"></th>

@@ -66,44 +66,11 @@
 <fieldset class="pane documents">
 	<legend>
 		<%= t('activerecord.models.doc').pluralize.capitalize %>
-		<span class="info" style="margin-right:10px">
-			(<%= cache(docs_count_cache_key) do %><%= docs_count %><% end -%>)
-		</span>
 	</legend>
 
-	<table class="vertical">
-		<tr>
-			<th><%= t('views.shared.list') %></th>
-			<td><%= link_to t('views.shared.show'), project_docs_path(@project.name), class: 'button' -%></td>
-		</tr>
-		<tr>
-			<th><%= t('views.shared.search') %></th>
-			<td style="text-align:right"><%= render partial: 'docs/search_form', locals: {path: project_docs_path(@project.name)} -%></td>
-		</tr>
-		<tr>
-			<th><%= t('views.shared.open') %></th>
-			<td style="text-align:right"><%= render partial: 'docs/open_form' -%></td>
-		</tr>
-		<% if user_signed_in? && @project.editable?(current_user) %>
-			<tr>
-				<th><%= t('views.shared.add') %></th>
-				<td style="text-align:right"><%= render partial: 'add_docs' -%></td>
-			</tr>
-			<tr>
-				<th><%= t('views.shared.import') %></th>
-				<td style="text-align:right"><%= render partial: 'import_docs_form' -%></td>
-			</tr>
-			<tr>
-				<th><%= t('views.shared.create') %></th>
-				<td><%= link_to 'Create a new document', new_project_doc_path(@project.name),
-					class: 'button long_button' -%></td>
-			</tr>
-			<tr>
-				<th><%= t('views.shared.delete') %></th>
-				<td><%= render partial: 'delete_docs' -%></td>
-			</tr>
-		<% end -%>
-	</table>
+	<% cache(docs_count_cache_key) do -%>
+		<%= render :partial => "docs/sourcedb_counts" -%>
+	<% end %>
 </fieldset>
 
 <fieldset class="pane annotations">
