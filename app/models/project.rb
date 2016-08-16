@@ -227,11 +227,6 @@ class Project < ActiveRecord::Base
     end
     if counter_column
       Project.increment_counter(counter_column, self.id)
-      if self.projects.present?
-        self.projects.each do |project|
-          Project.increment_counter(counter_column, project.id)
-        end          
-      end
     end
   end
 
@@ -252,11 +247,6 @@ class Project < ActiveRecord::Base
     end
     if counter_column
       Project.decrement_counter(counter_column, self.id)
-      if self.projects.present?
-        self.projects.each do |project|
-          Project.decrement_counter(counter_column, project.id)
-        end          
-      end          
     end          
   end          
 
