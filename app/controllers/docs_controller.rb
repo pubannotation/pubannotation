@@ -238,6 +238,7 @@ class DocsController < ApplicationController
   end
 
   def open
+    params[:sourceid].strip!
     begin
       if params[:project_id].present?
         project = Project.accessible(current_user).find_by_name(params[:project_id])
@@ -376,7 +377,7 @@ class DocsController < ApplicationController
                   elsif params["sourcedb"].present? && params["sourceid"].present?
                     [{sourcedb:params["sourcedb"], sourceid:params["sourceid"]}]
                   elsif params[:ids].present? && params[:sourcedb].present?
-                    params[:ids].split(/[ ,"':|\t\n\r]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
+                    params[:ids].strip.split(/[ ,"':|\t\n\r]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
                   else
                     []
                   end
