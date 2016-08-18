@@ -16,12 +16,12 @@ class User < ActiveRecord::Base
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
   validates :username, :presence => true, :length => {:minimum => 5, :maximum => 20}, uniqueness: true
-  validates_format_of :username, :with => /\A[a-zA-Z0-9][a-zA-Z0-9_- ]+\z/i
+  validates_format_of :username, :with => /\A[a-zA-Z0-9][a-zA-Z0-9 _-]+\z/i
   validate :username_changed, on: :update
 
   before_destroy :destroy_all_user_sourcedb_docs
 
-  scope :except_current_user, lambda { |current_user| 
+  scope :except_current_user, lambda { |current_user|
     if current_user.present?
       where(["id != ?", current_user.id]) 
     else
