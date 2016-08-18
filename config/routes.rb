@@ -221,6 +221,12 @@ Pubann::Application.routes.draw do  resources :annotators
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid/annotations' => 'annotations#project_div_annotations_index', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid/spans/:begin-:end/annotations' => 'annotations#project_div_annotations_index', :via => ["OPTIONS"]
 
+  resources :news_notifications, path: :news do
+    collection do
+      get 'category/:category' => 'news_notifications#category', as: 'category'
+    end
+  end
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

@@ -216,6 +216,7 @@ en:
       denotations: Denotations
       relations: Relations
       instances: Instances
+      news_notification: News
       project: project
       sproject: Super Project
       user: user

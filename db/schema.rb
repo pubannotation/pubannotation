@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160706062835) do
+ActiveRecord::Schema.define(:version => 20160713093746) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -56,7 +56,7 @@ ActiveRecord::Schema.define(:version => 20160706062835) do
     t.datetime "updated_at",                :null => false
   end
 
-  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
+  add_index "delayed_jobs", ["priority", "run_at"], :name => "index_delayed_jobs_on_priority_and_run_at"
 
   create_table "denotations", :force => true do |t|
     t.string   "hid"
@@ -140,6 +140,14 @@ ActiveRecord::Schema.define(:version => 20160706062835) do
   add_index "modifications", ["obj_id"], :name => "index_modifications_on_obj_id"
   add_index "modifications", ["project_id"], :name => "index_modifications_on_project_id"
 
+  create_table "news_notifications", :force => true do |t|
+    t.string   "title"
+    t.string   "category"
+    t.string   "body"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
   create_table "projects", :force => true do |t|
     t.string   "name"
     t.text     "description"
@@ -171,7 +179,6 @@ ActiveRecord::Schema.define(:version => 20160706062835) do
     t.boolean  "anonymize",                        :default => false,                 :null => false
   end
 
-  add_index "projects", ["name"], :name => "index_annsets_on_name", :unique => true
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true
 
   create_table "relations", :force => true do |t|

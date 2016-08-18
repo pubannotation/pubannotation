@@ -419,4 +419,45 @@ describe ApplicationHelper do
       end
     end
   end
+
+  describe 'root_user?' do
+    context 'when user_signed_in? == true' do
+      let(:current_user) { double(:current_user) }
+
+      before do
+        helper.stub(:user_signed_in?).and_return(true)
+        helper.stub(:current_user).and_return(current_user)
+      end
+
+      context 'when current_user.root? == true' do
+        before do
+          current_user.stub(:root?).and_return(true)
+        end
+
+        it 'should return true' do
+          expect( helper.root_user? ).to be_true
+        end
+      end
+
+      context 'when current_user.root? == false' do
+        before do
+          current_user.stub(:root?).and_return(false)
+        end
+
+        it 'should return false' do
+          expect( helper.root_user? ).to be_false
+        end
+      end
+    end
+
+    context 'when user_signed_in? == false' do
+      before do
+        helper.stub(:user_signed_in?).and_return(false)
+      end
+
+      it 'should return false' do
+        expect( helper.root_user? ).to be_false
+      end
+    end
+  end
 end

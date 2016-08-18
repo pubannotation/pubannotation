@@ -207,6 +207,7 @@ ja:
       denotations: デノテーション
       relations: リレーション
       instances: インスタンス
+      news_notification: ニュース     
       project: プロジェクト
       sproject: スーパープロジェクト
       user: ユーザー
@@ -226,6 +227,10 @@ ja:
         title: タイトル
         body: 本文
         documentation_category_id: カテゴリ
+      news_notification:
+        title: タイトル
+        body: 本文
+        category: カテゴリ
       project:
         name: 名前
         description: 説明

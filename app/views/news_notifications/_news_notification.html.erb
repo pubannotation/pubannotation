@@ -1,0 +1,18 @@
+<article>
+  <h2>
+    <%= link_to news_notification.title, news_notification_path(news_notification.id) -%>
+  </h2>
+  <span class="post-category">
+    <span class="label">
+      <%= news_notification.category -%>
+    </span>
+  </span>
+  <div class="post-meta">
+    <span class="post-date">
+      <%= "(#{ news_notification.updated_at.strftime('%d %b %Y') })" -%>
+    </span>
+  </div>
+  <div class="post-content">
+    <p><%= news_notification.body -%></p>
+  </div>
+</article>
