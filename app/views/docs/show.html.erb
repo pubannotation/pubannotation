@@ -20,12 +20,22 @@
         <tr>
           <td style="width:48%">
             <%= t('views.shared.unselected') -%>
+            <span id="unselected_projects_count"></span>
+            /
+            <span class="capitalize">
+              <%= t('activerecord.models.annotation') -%>
+            </span>
             <span id="unselected_projects_annotations_count"></span>
           </td>
           <td style="border:none; border-top:1px solid #fff;">
           </td>
           <td style="width:48%">
             <%= t('views.shared.selected') -%>
+            <span id="selected_projects_count"></span>
+            /
+            <span class="capitalize">
+              <%= t('activerecord.models.annotation') -%>
+            </span>
             <span id="selected_projects_annotations_count"></span>
             <span class="project_select_button" style="position:absolute; right: 4em;">
               <i class="fa fa-sort-alpha-asc" aria-hidden="true"></i>

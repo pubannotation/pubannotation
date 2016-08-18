@@ -202,6 +202,7 @@ ja:
       <<: *errors
   activerecord:
     models:
+      annotation: アノテーション
       doc: ドキュメント
       documentation: ドキュメント
       denotations: デノテーション

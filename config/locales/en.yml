@@ -211,6 +211,7 @@ en:
       <<: *errors
   activerecord:
     models:
+      annotation: annnotation
       doc: document
       documentation: documentation
       denotations: Denotations

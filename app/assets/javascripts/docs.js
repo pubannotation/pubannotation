@@ -9,6 +9,7 @@ $(document).ready(function(){
   sortSelectedProjectsByAnnotationsCount();
   selectedProjectNames = new Array();
   countProjectAnnotations();
+  countProjects();
   $( function() {
     $( "#selected_projects_list" ).sortable({
       placeholder: "ui-state-highlight",
@@ -38,6 +39,7 @@ var selectProjectNames = function(){
     switchButtonClass();
     setAnnotationHref();
     countProjectAnnotations();
+    countProjects();
   })
 }
 
@@ -94,6 +96,7 @@ var toggleProjectsSelection = function(selectFlag){
     switchButtonClass(); 
     setAnnotationHref();
     countProjectAnnotations();
+    countProjects();
   })
 }
 
@@ -107,6 +110,7 @@ var switchProjectSelection = function(){
     switchButtonClass(); 
     setAnnotationHref();
     countProjectAnnotations();
+    countProjects();
   });
 }
 
@@ -145,6 +149,13 @@ var sortSelectedProjects = function(sortKey){
   getSelectedProjectNames();
   setAnnotationHref();
 }
+
+var countProjects = function(){
+  unselectProjectsCount = unselectedProjectsElement.find('.project_wrapper').length;
+  $('#unselected_projects_count').text('(' + unselectProjectsCount + ')');
+  selectProjectsCount = selectedProjectsElement.find('.project_wrapper').length;
+  $('#selected_projects_count').text('(' + selectProjectsCount + ')');
+};
 
 var countProjectAnnotations = function(){
   var selectedProjectsAnnotaionsCount = 0;
