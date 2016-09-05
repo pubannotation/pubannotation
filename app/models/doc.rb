@@ -91,7 +91,9 @@ class Doc < ActiveRecord::Base
   has_many :catmods, :class_name => 'Modification', :through => :denotations, :source => :modifications
   has_many :subcatrelmods, :class_name => 'Modification', :through => :subcatrels, :source => :modifications
 
-  has_and_belongs_to_many :projects
+  has_and_belongs_to_many :projects,
+    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter, :update_es_doc],
+    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter, :update_es_doc]
 
   validates :body,     :presence => true
   validates :sourcedb, :presence => true
@@ -106,7 +108,6 @@ class Doc < ActiveRecord::Base
       :conditions => ['projects.name =?', project_name]
     }
   }
-
 
   scope :simple_paginate, -> (page, per = 10) {
     page = page.nil? ? 1 : page.to_i
@@ -164,6 +165,47 @@ class Doc < ActiveRecord::Base
   
   # default sort order 
   DefaultSortKey = "projects_count DESC"
+
+  def update_es_doc(project)
+    self.__elasticsearch__.index_document
+  end
+
+  # after_add doc
+  def increment_docs_counter(project)
+    if self.sourcedb == 'PMC' && self.serial == 0
+      counter_column = :pmcdocs_count
+    elsif self.sourcedb == 'PubMed'
+      counter_column = :pmdocs_count
+    end
+    if counter_column
+      Project.increment_counter(counter_column, project.id)
+    end
+  end
+
+  # after_remove doc
+  def decrement_docs_counter(project)
+    if self.sourcedb == 'PMC' && self.serial == 0
+      counter_column = :pmcdocs_count
+    elsif self.sourcedb == 'PubMed'
+      counter_column = :pmdocs_count
+    end
+    if counter_column
+      Project.decrement_counter(counter_column, project.id)
+    end
+  end
+
+  def update_annotations_updated_at(project)
+    project.update_attribute(:annotations_updated_at, DateTime.now)
+  end
+
+  def increment_docs_projects_counter(project)
+    Doc.increment_counter(:projects_count, self.id)
+  end
+
+  def decrement_docs_projects_counter(project)
+    Doc.decrement_counter(:projects_count, self.id)
+    self.reload
+  end
 
   def descriptor
     descriptor  = self.sourcedb + ':' + self.sourceid

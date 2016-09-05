@@ -8,9 +8,7 @@ class Project < ActiveRecord::Base
   after_validation :user_presence
   serialize :namespaces
   belongs_to :user
-  has_and_belongs_to_many :docs, 
-    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter, :update_delta_index, :update_es_doc], 
-    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter, :update_delta_index]
+  has_and_belongs_to_many :docs
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
 
@@ -218,52 +216,8 @@ class Project < ActiveRecord::Base
     end    
   end
   
-  # after_add doc
-  def increment_docs_counter(doc)
-    if doc.sourcedb == 'PMC' && doc.serial == 0
-      counter_column = :pmcdocs_count
-    elsif doc.sourcedb == 'PubMed'
-      counter_column = :pmdocs_count
-    end
-    if counter_column
-      Project.increment_counter(counter_column, self.id)
-    end
-  end
-
   def update_delta_index(doc)
     doc.save
-  end
-
-  def update_es_doc(doc)
-    p self.docs
-    puts "-----"
-    p doc.__elasticsearch__.as_indexed_json
-    doc.__elasticsearch__.index_document
-  end
-
-  def increment_docs_projects_counter(doc)
-    Doc.increment_counter(:projects_count, doc.id)
-  end
-  
-  # after_remove doc
-  def decrement_docs_counter(doc)
-    if doc.sourcedb == 'PMC' && doc.serial == 0
-      counter_column = :pmcdocs_count
-    elsif doc.sourcedb == 'PubMed'
-      counter_column = :pmdocs_count
-    end
-    if counter_column
-      Project.decrement_counter(counter_column, self.id)
-    end          
-  end          
-
-  def decrement_docs_projects_counter(doc)
-    Doc.decrement_counter(:projects_count, doc.id)
-    doc.reload
-  end
-
-  def update_annotations_updated_at(doc)
-    self.update_attribute(:annotations_updated_at, DateTime.now)
   end
 
   def associate_maintainers_addable_for?(current_user)
@@ -662,14 +616,13 @@ class Project < ActiveRecord::Base
     if divs.present?
       if self.docs.include?(divs.first)
         raise ArgumentError, "The document already exists" if strictp
-      else
-        self.docs << divs
       end
     else
       divs = Doc.import_from_sequence(sourcedb, sourceid)
       raise IOError, "Failed to get the document" unless divs.present?
-      self.docs << divs
     end
+
+    divs.each{|div| div.projects << self}
     divs
   end
 
