@@ -223,6 +223,7 @@ en:
       associate_maintainer: sub-maintainer
       associate_projects_project: associate project 
       notice: notice
+      visit_log: Visit
     attributes:
       doc:
         sourcedb: source DB
@@ -259,6 +260,9 @@ en:
         remember_me: remember me
         username: Username
         last_sign_in_at: Last sign in datetime
+      visit_log:
+        visited_date: Visit datetime
+        count: visits
     placeholders:
       project:
         name: Name of the project (up to 20 characters)

@@ -54,6 +54,9 @@ class ProjectsController < ApplicationController
     begin
       @project = Project.accessible(current_user).find_by_name(params[:id])
       raise "There is no such project." unless @project.present?
+      log_dates = 6
+      @visit_logs = @project.visit_logs.by_visited_date(log_dates)
+      @visit_log_days = (log_dates.days.ago.to_date..Date.today).to_a
 
       # @sourcedbs = Doc.select(:sourcedb).uniq.pluck(:sourcedb).select{|s| Doc.sourcedb_public?(s) || Doc.sourcedb_mine?(s, current_user)}
       # @sourcedbs_active = @project.docs.select(:sourcedb).uniq.pluck(:sourcedb)

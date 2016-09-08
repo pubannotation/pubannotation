@@ -215,6 +215,7 @@ ja:
       associate_maintainer: 副管理者
       associate_projects_project: 関連プロジェクト
       notice: お知らせ
+      visit_log: アクセス
     attributes:
       doc:
         sourcedb: ソースDB
@@ -273,6 +274,9 @@ ja:
         remember_me: 記憶する
         username: 名前
         last_sign_in_at: 最終ログイン日時
+      visit_log:
+        visited_date: アクセス日
+        count: アクセス数
     placeholders:
       project:
         name: プロジェクト名(20文字以内)

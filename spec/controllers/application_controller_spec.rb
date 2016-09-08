@@ -1007,4 +1007,51 @@ describe ApplicationController do
       flash[:error].should eql(I18n.t("errors.statuses.forbidden"))
     end
   end
+
+  describe 'log_visit_log' do
+    context 'when request method == get' do
+      before do
+        request.stub(:get?).and_return(true)
+      end
+
+      context 'when request path is related to a project' do
+        let(:current_user) { FactoryGirl.create(:user) }
+        let(:project_name) { 'project_name' }
+        let(:url) { 'url' }
+
+        before do
+          request.stub(:path).and_return('/projects/name')
+          request.stub(:url).and_return(url)
+          controller.stub(:params).and_return(project_id: project_name)
+          current_user_stub(current_user)
+        end
+
+        it 'should call VisitLog.log' do
+          expect( VisitLog ).to receive(:log).with(project_name: project_name, url: url, user: current_user)
+          controller.log_visit_log
+        end
+      end
+
+      context 'when request path is not related to a project' do
+        before do
+          request.stub(:path).and_return('/projects/')
+        end
+
+        it 'should not call VisitLog.log' do
+          expect( VisitLog ).not_to receive(:log)
+          controller.log_visit_log
+        end
+      end
+    end
+
+    context 'when request method != get' do
+      before do
+        request.stub(:get?).and_return(false)
+      end
+
+      it 'should be nil' do
+        expect( controller.log_visit_log ).to be_nil
+      end
+    end
+  end
 end

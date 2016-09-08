@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
   include ApplicationHelper
   include AnnotationsHelper
   protect_from_forgery
-  before_filter :set_locale
+  before_filter :set_locale, :log_visit_log
   after_filter :store_location
 
   def is_root_user?
@@ -311,5 +311,15 @@ class ApplicationController < ActionController::Base
     # translation required for each httpstatus eg: errors.statuses.forbidden
     flash[:error] = t("errors.statuses.#{status}")
     render 'shared/status_error', :status => status
+  end
+
+  def log_visit_log
+    if request.get?
+      matched_path = request.path.match( /projects\/.+/ )
+      if matched_path
+        project_name = params[:project_id] ||= params[:id]
+        VisitLog.log(project_name: project_name, url: request.url, user: current_user)
+      end
+    end
   end
 end

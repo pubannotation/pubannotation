@@ -132,4 +132,19 @@
 	</table>
 </fieldset>
 
+  <table>
+    <tr>
+      <th><%= t('activerecord.attributes.visit_log.visited_date') -%></th>
+      <th><%= t('activerecord.attributes.visit_log.count') -%></th>
+    </tr>
+    <% @visit_log_days.each do |visit_day| -%>
+      <tr>
+        <td><%= visit_day.to_s -%></td>
+        <td>
+          <% visit_log = @visit_logs.find{|visit_log| visit_log.visited_date == visit_day} -%>
+          <%= visit_log.present? ? visit_log.count : 0 -%>
+        </td>
+      </tr>
+    <% end -%>
+  </table>
 </section>

@@ -41,4 +41,20 @@
 			<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_recent, :scope => nil } %>
 		</section>
 	</div>
+
+  <h3>
+    Visits
+  </h3>
+  <table>
+    <tr>
+      <th><%= t('activerecord.attributes.project.name') -%></th>
+      <th><%= t('activerecord.attributes.visit_log.count') -%></th>
+    </tr>
+    <% @visit_logs.each do |visit_log| -%>
+      <tr>
+        <td><%= link_to visit_log.project.name, project_path(visit_log.project.name) -%></td>
+        <td><%= visit_log.count -%></td>
+      </tr>
+    <% end -%>
+  </table>
 </section>
