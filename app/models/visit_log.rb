@@ -11,6 +11,10 @@ class VisitLog < ActiveRecord::Base
     limit(limit) 
   }
 
+  scope :past_to_today, -> (days_ago) {
+    where(visited_date: ( days_ago - 1 ).days.ago.to_date..Date.today)
+  }
+
   scope :by_visited_date, -> (days_ago) {
     select('visited_date, COUNT(*) AS count').
     where("visited_date > ?", days_ago.days.ago).
