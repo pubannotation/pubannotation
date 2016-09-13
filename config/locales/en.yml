@@ -413,7 +413,7 @@ en:
       sourcedb_list: Source DB List
       sourceid_list: Source ID List
       show:
-        projects_include_this_document: include this document
+        projects_that_include_this_document: that include this document
         projects_that_have_annotations_to_this_span: that have annotations to this span
       import: Import
       create_a_new_document: Create a new document

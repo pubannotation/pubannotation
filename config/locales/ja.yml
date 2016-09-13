@@ -425,7 +425,7 @@ ja:
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
       show:
-        projects_include_this_document: このドキュメントを含むプロジェクト 
+        projects_that_include_this_document: このドキュメントを含むプロジェクト
         projects_that_have_annotations_to_this_span: このスパンのアノテーションを持つプロジェクト
       list: ドキュメント一覧
       import: ドキュメント追加
