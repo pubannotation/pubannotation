@@ -202,6 +202,7 @@ ja:
       <<: *errors
   activerecord:
     models:
+      annotation: アノテーション
       doc: ドキュメント
       documentation: ドキュメント
       denotations: デノテーション
@@ -423,6 +424,9 @@ ja:
       records: ドキュメントレコード一覧
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
+      show:
+        projects_include_this_document: このドキュメントを含むプロジェクト 
+        projects_that_have_annotations_to_this_span: このスパンのアノテーションを持つプロジェクト
       list: ドキュメント一覧
       import: ドキュメント追加
       create_a_new_document: ドキュメント生成
@@ -537,6 +541,8 @@ ja:
       see: 表示
       search: 検索
       successful: 成功
+      selected: 選択済み
+      unselected: 未選択
       unsuccessful: 失敗
       total_number: 総数
       open: 開く

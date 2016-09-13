@@ -47,7 +47,6 @@ class ProjectsController < ApplicationController
     end
   end
 
-
   # GET /projects/:name
   # GET /projects/:name.json
   def show

@@ -4,17 +4,17 @@
 <span class='tab-bar'>
 <!--	<span class='label'>UTF</span>-->
 	<%=
-		link_to_unless_current 'VIEW', annotations_url, :class => 'tab inactive_tab' do
+		link_to_unless_current 'VIEW', annotations_url, :class => 'tab inactive_tab', id: 'annotations_view' do
 	    	content_tag :span, 'VIEW', :class => 'tab active_tab'
 	    end
 	%>
 
-	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab' -%>
+	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
 	<% if @project.present? -%>
-		<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab' -%>	
+		<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab', id: 'annotations_textae' -%>	
 	<% else -%>
 		<%=
-			link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab inactive_tab' do
+			link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab inactive_tab', id: 'annotations_textae' do
 		    	content_tag :span, 'TextAE', :class => 'tab active_tab'
 		    end
 		%>
