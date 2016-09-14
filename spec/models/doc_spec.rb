@@ -2669,4 +2669,72 @@ B')
       Doc.dummy(repeat_times)
     end
   end
+
+  describe 'self.pmc_to_divs' do
+    before(:all) do
+      FactoryGirl.create(:doc, sourcedb: 'PubMed', sourceid: '123', serial: 0)
+      @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
+      @body_0 = "This doc is PMC serial 0."
+      @body_1 = "And this doc is not PubMed.
+"
+      @body_2 = "Then this doc is for PMC"
+      @pmc_serial_0 = FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: '123', serial: 0, body: @body_0)
+      @pmc_serial_1 = FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: '123', serial: 1, body: @body_1)
+      @pmc_serial_2 = FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: '123', serial: 2, body: @body_2)
+
+      # project
+      FactoryGirl.create(:docs_project, project_id: @project.id, doc_id: @pmc_serial_0.id)
+      FactoryGirl.create(:docs_project, project_id: @project.id, doc_id: @pmc_serial_1.id)
+      FactoryGirl.create(:docs_project, project_id: @project.id, doc_id: @pmc_serial_2.id)
+
+      # denotations
+      denotation_0 = FactoryGirl.create(:denotation, doc: @pmc_serial_0, project: @project)
+      denotation_1 = FactoryGirl.create(:denotation, doc: @pmc_serial_1, project: @project)
+      denotation_2 = FactoryGirl.create(:denotation, doc: @pmc_serial_2, project: @project)
+
+      # subcatrels
+      relation_1 = FactoryGirl.create(:subcatrel, subj: denotation_0, obj: denotation_1, project: @project)
+      relation_2 = FactoryGirl.create(:subcatrel, subj: denotation_1, obj: denotation_2, project: @project)
+      relation_3 = FactoryGirl.create(:subcatrel, subj: denotation_2, obj: denotation_2, project: @project)
+
+      # catmods
+      FactoryGirl.create(:modification, obj: denotation_0, project: @project)
+      FactoryGirl.create(:modification, obj: denotation_2, project: @project)
+
+      FactoryGirl.create(:modification, obj: relation_1, obj_type: 'Relation', project: @project)
+      FactoryGirl.create(:modification, obj: relation_2, obj_type: 'Relation', project: @project)
+      Doc.pmc_to_divs 
+      @pmc_serial_0.reload
+    end
+
+    it 'should create divs' do
+      expect( @pmc_serial_0.divs.size ).to eql(3)
+    end
+
+    it 'should create divs match body' do
+      div = @pmc_serial_0.divs.where(serial: 0).first
+      expect( @pmc_serial_0.body[div.begin...div.end] ).to eql(@body_0 + "\n")
+      div = @pmc_serial_0.divs.where(serial: 1).first
+      expect( @pmc_serial_0.body[div.begin...div.end] ).to eql(@body_1)
+      div = @pmc_serial_0.divs.where(serial: 2).first
+      expect( @pmc_serial_0.body[div.begin...div.end] ).to eql(@body_2 + "\n")
+    end
+
+    it 'should add subcatrels' do
+      expect( @pmc_serial_0.subcatrels.count ).to eql(3)
+    end
+
+    it 'should add catmods' do
+      expect( @pmc_serial_0.catmods.count ).to eql(2)
+    end
+
+    it 'should add subcatrelmods' do
+      expect( @pmc_serial_0.subcatrelmods.count ).to eql(2)
+    end
+
+    it 'should update project' do
+      expect( @project.docs.count ).to eql(1)
+      expect( DocsProject.count ).to eql(1)
+    end
+  end
 end

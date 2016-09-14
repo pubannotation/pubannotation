@@ -12,6 +12,7 @@
 # It's strongly recommended to check this file into your version control system.
 
 ActiveRecord::Schema.define(:version => 20160713093746) do
+ActiveRecord::Schema.define(:version => 20160911050743) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -71,6 +72,14 @@ ActiveRecord::Schema.define(:version => 20160713093746) do
 
   add_index "denotations", ["doc_id"], :name => "index_denotations_on_doc_id"
   add_index "denotations", ["project_id"], :name => "index_denotations_on_project_id"
+
+  create_table "divs", :force => true do |t|
+    t.integer "doc_id"
+    t.integer "begin"
+    t.integer "end"
+    t.string  "section"
+    t.integer "serial"
+  end
 
   create_table "docs", :force => true do |t|
     t.text     "body"

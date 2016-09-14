@@ -92,6 +92,7 @@ class Doc < ActiveRecord::Base
   has_many :subcatrelmods, :class_name => 'Modification', :through => :subcatrels, :source => :modifications
 
   has_and_belongs_to_many :projects
+  has_many :divs
 
   validates :body,     :presence => true
   validates :sourcedb, :presence => true
@@ -106,7 +107,6 @@ class Doc < ActiveRecord::Base
       :conditions => ['projects.name =?', project_name]
     }
   }
-
 
   scope :simple_paginate, -> (page, per = 10) {
     page = page.nil? ? 1 : page.to_i
@@ -702,6 +702,40 @@ class Doc < ActiveRecord::Base
   def self.dummy(repeat_times)
     repeat_times.times do |t|
       create({sourcedb: 'FFIK', body: "body is #{ t }", sourceid: t.to_s, serial: 0})
+    end
+  end
+
+  def self.pmc_to_divs
+    where(sourcedb: 'PMC').order('sourceid ASC').group_by(&:sourceid).each do |sourceid, docs|
+      begin_pos = 0
+      if docs.size > 1
+        base_doc = docs.detect{|doc| doc.serial == 0}
+        docs.sort{|a, b| a.serial <=> b.serial }.each do |doc|
+          # concatnate body
+          additional_body = doc.serial == 0 ? "" : "#{ doc.body.chomp }\n"
+          base_doc.update_attribute(:body, "#{ base_doc.body.chomp }\n#{ additional_body }")
+
+          # create div
+          body_length = doc.body.length
+          end_pos = base_doc.body.length
+          base_doc.divs.create(begin: begin_pos, end: end_pos, section: doc.section, serial: doc.serial)
+          begin_pos += body_length
+
+          # update denotation and project if doc.serial != 0 (base_doc)
+          # denotation
+          if doc != base_doc 
+            if doc.denotations.present?
+              doc.denotations.each do |denotation|
+                denotation.update_attribute(:doc_id, base_doc.id)
+              end
+            end
+            
+            # projects
+            doc.reload
+            doc.destroy
+          end
+        end
+      end
     end
   end
 end
