@@ -40,8 +40,8 @@ class DeleteAnnotationsFromUploadJob < Struct.new(:filepath, :project, :options)
           doc = Doc.find_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:divid])
           project.delete_annotations(doc) unless doc.nil?
         else
-          divs = Doc.find_all_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
-          divs.each{|div| project.delete_annotations(div)} unless divs.nil?
+          doc = Doc.find_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
+          project.delete_annotations(doc) unless doc.nil?
         end
       rescue => e
         @job.messages << Message.create({sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid], divid: docspec[:divid], body: e.message})

@@ -296,34 +296,6 @@ describe Doc do
     end
   end
 
-  describe 'get_divs' do
-    let(:sourcedb) { 'sdb' }
-    let(:sourceid) { '123456' }
-    let(:divid) { 'divid' }
-
-    context 'when docspec sourcedb sourceid present' do
-      context 'when div_id present' do
-        it 'should call find_al_by_sourcedb_and_sourceid_and_serial' do
-          expect(Doc).to receive(:find_all_by_sourcedb_and_sourceid_and_serial)#.with(sourcedb, sourceid, divid)
-          Doc.get_divs({sourcedb: sourcedb, sourceid: sourceid, div_id: divid })
-        end
-      end
-
-      context 'when divid nil' do
-        it 'should call find_all_by_sourcedb_and_sourceid' do
-          expect(Doc).to receive(:find_all_by_sourcedb_and_sourceid).with(sourcedb, sourceid)
-          Doc.get_divs({sourcedb: sourcedb, sourceid: sourceid})
-        end
-      end
-    end
-
-    context 'when docspec sourcedb sourceid nil' do
-      it 'should return nil' do
-        expect( Doc.get_divs({}) ).to be_blank
-      end
-    end
-  end
-
   describe 'exist?' do
     context 'when get_doc is not nil' do
       before do
@@ -1313,8 +1285,8 @@ describe Doc do
     let!(:denotations) { Denotation.where('id IN (?)', [denotation_1.id, denotation_2.id, denotation_3.id]) }
 
     before do
-      doc.stub(:denotations).and_return(denotations)
-      denotations.stub(:sort).and_return(nil)
+      doc.stub_chain(:denotations, :where).and_return(denotations)
+      denotations.stub(:sort!).and_return(nil)
     end
 
     context 'when project.present' do
@@ -1888,6 +1860,7 @@ describe Doc do
       end
     end
   end
+
   describe 'hannotations' do
     let(:doc) { FactoryGirl.create(:doc, body: '12345678901234567890') }
     let(:project) { FactoryGirl.create(:project, user: FactoryGirl.create(:user)) }
@@ -2265,118 +2238,68 @@ B')
     end
   end
 
-  describe '.has_divs?' do
-    before do
-      @sourcedb = 'sourcedb'
-      @sourceid = 'sourceid'
-    end
+  describe 'self.has_divs?' do
+    let(:doc) { FactoryGirl.create(:doc, sourcedb: "sdb", sourceid: 'sourceid_1') }
 
-    context 'when size > 1' do
+    context 'when doc has_divs? is true' do
       before do
-        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 2}))
-      end
-
-      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
-        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
-        Doc.has_divs?(@sourcedb, @sourceid)
+        Doc.stub(:find_by_sourcedb_and_sourceid).and_return(doc)
+        doc.stub(:has_divs?).and_return(true)
       end
 
       it 'should return true' do
-        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_true
+        expect( Doc.has_divs?(doc.sourcedb, doc.sourceid) ).to be_true
       end
     end
 
-    context 'when size = 1' do
+    context 'when doc has_divs? is false' do
       before do
-        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 1}))
+        Doc.stub(:find_by_sourcedb_and_sourceid).and_return(doc)
+        doc.stub(:has_divs?).and_return(false)
       end
 
-      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
-        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
-        Doc.has_divs?(@sourcedb, @sourceid)
-      end
-
-      it 'should return false' do
-        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_false
+      it 'should return true' do
+        expect( Doc.has_divs?(doc.sourcedb, doc.sourceid) ).to be_false
       end
     end
   end
 
+
   describe 'has_divs?' do
-    before do
-      @sourcedb = 'sourcedb'
-      @sourceid = 'sourceid'
-      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
-    end
+    let(:doc) { FactoryGirl.create(:doc, sourcedb: "sdb") }
 
-    context 'when size > 1' do
+    context 'when divs present' do
       before do
-        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 2}))
-      end
-
-      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
-        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
-        Doc.has_divs?(@sourcedb, @sourceid)
+        doc.stub(:divs).and_return(true)
       end
 
       it 'should return true' do
-        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_true
+        expect( doc.has_divs? ).to be_true
       end
     end
 
-    context 'when size = 1' do
+    context 'when divs not present' do
       before do
-        Doc.stub(:same_sourcedb_sourceid).and_return(double(:db, {size: 1}))
-      end
-
-      it 'should call same_sourcedb_sourceid with sourcedb and sourceid' do
-        expect(Doc).to receive(:same_sourcedb_sourceid).with(@sourcedb, @sourceid)
-        Doc.has_divs?(@sourcedb, @sourceid)
+        doc.stub(:divs).and_return(false)
       end
 
       it 'should return false' do
-        expect(Doc.has_divs?(@sourcedb, @sourceid)).to be_false
-      end
-    end
-  end
-  
-  describe 'has_divs?' do
-    before do
-      @sourcedb = 'sourcedb'
-      @sourceid = 123456789
-      @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
-    end
-    
-    context 'when same sourcedb and sourceid doc blank' do
-      it 'shoud return false' do
-        @doc.has_divs?.should be_false
-      end
-    end
-    
-    context 'when same sourcedb and sourceid doc present' do
-      before do
-        FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid.to_s)  
-      end
-      
-      it 'shoud return true' do
-        @doc.has_divs?.should be_true
+        expect( doc.has_divs? ).to be_false
       end
     end
   end
 
   describe 'self.get_div_ids' do
+    let(:doc) { FactoryGirl.create(:doc, sourcedb: "sdb", sourceid: 'sid') }
+    let(:div_1) { FactoryGirl.create(:div, doc: doc) }
+    let(:div_2) { FactoryGirl.create(:div, doc: doc) }
+
     before do
-      @sourcedb = 'sourcedb'
-      @sourceid = 'sourceid'
-      @serial_1 = 1
-      @serial_2 = 2
-      FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid.to_s, serial: @serial_1)  
-      FactoryGirl.create(:doc, sourcedb: @sourcedb, sourceid: @sourceid.to_s, serial: @serial_2)  
-      Doc.stub(:same_sourcedb_sourceid).and_return(Doc)
+      doc.stub(:divs).and_return([div_1, div_2])
     end
 
     it 'should return same_sourcedb_sourceid serials map' do
-      expect(Doc.get_div_ids(@sourcedb, @sourceid)).to match_array([@serial_1, @serial_2])
+      expect(Doc.get_div_ids(doc.sourcedb, doc.sourceid)).to match_array([div_1.serial, div_2.serial])
     end
   end
 
@@ -2674,10 +2597,17 @@ B')
     before(:all) do
       FactoryGirl.create(:doc, sourcedb: 'PubMed', sourceid: '123', serial: 0)
       @project = FactoryGirl.create(:project, user: FactoryGirl.create(:user))
-      @body_0 = "This doc is PMC serial 0."
-      @body_1 = "And this doc is not PubMed.
+      @body_0 = "BV Latent Membrane Protein 1 Activates Akt, NFκB, and Stat3 in B Cell Lymphomas
+Latent membrane protein 1 (LMP1) is the major oncoprotein of Epstein-Barr virus (EBV). In transgenic mice, LMP1 promotes increased lymphoma development by 12 mo of age. This study reveals that lymphoma develops in B-1a lymphocytes, a population that is associated with transformation in older mice. The lymphoma cells have deregulated cell cycle markers, and inhibitors of Akt, NFκB, and Stat3 block the enhanced viability of LMP1 transgenic lymphocytes and lymphoma cells in vitro. Lymphoma cells are independent of IL4/Stat6 signaling for survival and proliferation, but have constitutively activated Stat3 signaling. These same targets are also deregulated in wild-type B-1a lymphomas that arise spontaneously through age predisposition. These results suggest that Akt, NFκB, and Stat3 pathways may serve as effective targets in the treatment of EBV-associated B cell lymphomas."
+      @body_1 = "Epstein-Barr virus (EBV) is a ubiquitous γ-herpesvirus that infects humans predominantly at an early age with greater than 90% of the adult population infected with EBV [1]. EBV is linked to the development of both B lymphocyte and epithelial cell malignancies, including Burkitt lymphoma, Hodgkin disease (HD), and nasopharyngeal carcinoma (NPC), and cancers linked to immunosuppression, including post-transplant lymphoma and AIDS-associated lymphomas [2,3]. In vitro infection of B lymphocytes with EBV induces permanent growth transformation, and this ability to affect cell growth regulation likely contributes to the development of cancer.
+Many of the viral proteins expressed in transformed cells, including the EBV nuclear antigens and latent membrane proteins, have profound effects on cell growth regulation and are required for EBV latent infection and B cell transformation [1]. Latent membrane protein 1 (LMP1) is considered the major oncoprotein of EBV, as it transforms rodent fibroblasts to tumorigenicity in nude mice and is expressed in HD, NPC, and immunosuppression-associated tumors [4–8]. In B lymphocytes, LMP1 mimics CD40 signaling, and both LMP1 and CD40 are essential for EBV-mediated B cell transformation [9–11]. While CD40 interacts with CD40 ligand expressed on activated T cells to induce B cell activation and differentiation, LMP1 acts as a constitutive signal through ligand-independent oligomerization. LMP1 and CD40 interact with the same tumor necrosis factor receptor–associated factors (TRAFs) leading to activation of NFκB, c-Jun N terminal kinase (JNK), and p38 MAPK signaling pathways [12–16]. Activation of NFκB is required for EBV-induced B cell transformation and its inhibition rapidly results in cell death [17,18]. Recent studies indicate that LMP1 also activates phosphatidylinositol 3 kinase (PI3K)/Akt signaling and that this activation is required for LMP1-mediated transformation of rodent fibroblasts [5,19].
+In vitro, primary B cells can be maintained by CD40 ligation in combination with IL4 treatment. In vivo, CD40 signaling is necessary for germinal center (GC) formation such that mice deficient for CD40 or CD40L are unable to form GCs in response to T cell–dependent antigens [20,21]. Both the membrane proximal and distal cytoplasmic regions of CD40 that bind TRAF6 and TRAFs2/3/5, respectively, are necessary for GC formation, but either region is sufficient to induce extrafollicular B cell differentiation and restore low affinity antibody production [22]. Functionally, LMP1 can rescue CD40-deficient mice and restore immunoglobulin (Ig) class switching, most likely because LMP1 recruits similar TRAF molecules, TRAFs 1/2/3/5 and TRAF6, through the C-terminal activation regions 1 and 2 domains, respectively. However, LMP1 is unable to restore affinity maturation and GC formation [23].
+Several EBV transforming proteins have been studied in transgenic mouse models, however, only LMP1 induces tumor development when expressed under the control of the Ig heavy chain promoter and enhancer [24–26]. The LMP1 transgenic mice (IgLMP1) express LMP1 in B lymphocytes, and in mice older than 12 mo, lymphoma develops with increased incidence (40%–50%) compared to wild-type control mice (11%), suggesting that LMP1 contributes to tumor development [26]. The LMP1 lymphomas have rearranged Ig genes and have activated Akt, JNK, p38, and NFκB, with specific activation of the NFκB family member cRel [27].
+In this study, the LMP1 transgenic lymphocytes and lymphomas were further characterized and their growth properties in vitro were determined. To obtain pure populations of malignant lymphocytes and to enable more detailed biochemical analyses, examples of primary lymphomas were inoculated and passaged in SCID mice. Interestingly, lymphoma development was restricted to B-1a lymphocytes, a self-replenishing population of cells that are prone to malignancy [28,29]. LMP1 transgenic lymphocytes had increased viability in vitro and viability was increased by the addition of IL4. In contrast, both LMP1-positive and -negative lymphoma cells were independent of IL4 co-stimulation for survival and proliferation in vitro with a complete absence of activated Stat6, the IL4 target. The lymphomas were also distinguished by constitutive activation of Stat3 and deregulation of the Rb cell cycle pathway. Inhibition of the PI3K/Akt, NFκB, and Stat3 signaling pathways blocked the enhanced growth of both LMP1 transgenic and malignant lymphocytes, suggesting that these pathways are required for their growth and survival. These appear to be the same targets that are deregulated in wild-type B-1a lymphomas that arise spontaneously through age predisposition. This study reveals that LMP1 promotes malignancy in cells with the inherent ability to proliferate and that the Akt, NFκB, and Stat3 signaling pathways are required for its growth stimulatory effects.
 "
-      @body_2 = "Then this doc is for PMC"
+      @body_2 = "High Levels of LMP1 Expression Correlates with the Development of Lymphoma
+LMP1 expression in IgLMP1 mice was directed to B cells under the control of the Ig heavy chain promoter and enhancer. It has previously been shown that in these transgenic mice, LMP1 expression was restricted to B220+ B cells with lymphoma detected in greatly enlarged spleens [23,26]. To investigate whether LMP1 expression contributes to lymphoma development, B cells were purified from splenocytes by positive selection using anti-CD19 MACS magnetic beads, and equivalent amounts of B cells were analyzed by immunoblotting. LMP1 was detectable in LMP1 transgenic B cells, but upon development of lymphoma, LMP1 expression was stronger in 5/7 lymphomas analyzed with concomitant appearance of degradation products (Figure 1A). To determine whether the higher level of LMP1 detected was due to an expansion of malignant lymphocytes, expression of LMP1 in the spleen was further evaluated by immunohistochemical staining. Immunohistochemistry analysis of spleen sections detected LMP1 in the plasma membrane of cells in both the follicular white pulp and circulating lymphocytes in the red pulp (Figure 1B). LMP1 expression was heterogeneous with strong LMP1 staining interspersed amongst a background of cells staining weakly for LMP1. Upon development to lymphoma, LMP1 expression was more abundantly detected with multiple foci of intense LMP1 staining. This demonstrates that the increased LMP1 detected by immunoblotting upon malignant progression reflects an increase in LMP1 expression and an accumulation of cells expressing high levels of LMP1. This correlation between high LMP1 expression and the development of lymphoma suggests that progression to lymphoma results from increased levels of LMP1."
+
       @pmc_serial_0 = FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: '123', serial: 0, body: @body_0)
       @pmc_serial_1 = FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: '123', serial: 1, body: @body_1)
       @pmc_serial_2 = FactoryGirl.create(:doc, sourcedb: 'PMC', sourceid: '123', serial: 2, body: @body_2)
@@ -2735,6 +2665,10 @@ B')
     it 'should update project' do
       expect( @project.docs.count ).to eql(1)
       expect( DocsProject.count ).to eql(1)
+    end
+
+    it 'should update project' do
+      expect( @pmc_serial_0.denotations_count ).to eql(3)
     end
   end
 end

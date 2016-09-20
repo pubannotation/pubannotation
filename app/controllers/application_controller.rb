@@ -138,7 +138,8 @@ class ApplicationController < ActionController::Base
   end
 
   def get_divs (sourceid, project = nil)
-    divs = Doc.find_all_by_sourcedb_and_sourceid('PMC', sourceid)
+    doc = Doc.find_by_sourcedb_and_sourceid('PMC', sourceid)
+    divs = doc.divs if doc
     if divs and !divs.empty?
       if project and !divs.first.projects.include?(project)
         divs = nil

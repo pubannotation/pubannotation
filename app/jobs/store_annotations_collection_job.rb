@@ -12,11 +12,11 @@ class StoreAnnotationsCollectionJob < Struct.new(:collection, :project, :options
         if annotations[:divid].present?
           doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
         else
-          divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-          doc = divs[0] if divs.length == 1
+          doc = Doc.find_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
+          divs = doc.divs if doc
         end
 
-        if doc.present?
+        if doc.present? && divs.blank?
           project.save_annotations(annotations, doc, options)
         elsif divs.present?
           project.store_annotations(annotations, divs, options)

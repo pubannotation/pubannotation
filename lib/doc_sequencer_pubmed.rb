@@ -13,7 +13,7 @@ class DocSequencerPubMed
     raise "'#{id}' is not a valid ID of PubMed" unless id =~ /^(PubMed|PMID)?[:-]?([1-9][0-9]*)$/
     docid = $2
 
-    RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=#{docid}" do |response, request, result|
+    RestClient.get "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=#{docid}" do |response, request, result|
       case response.code
       when 200
         parser = XML::Parser.string(response, :encoding => XML::Encoding::UTF_8)

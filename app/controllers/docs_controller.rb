@@ -10,7 +10,7 @@ class DocsController < ApplicationController
   autocomplete :doc, :sourcedb
 
   def index
-    begin
+    # begin
       if params[:project_id].present?
         @project = Project.accessible(current_user).find_by_name(params[:project_id])
         raise "There is no such project." unless @project.present?
@@ -33,21 +33,13 @@ class DocsController < ApplicationController
       else
         if @project.present?
           if @sourcedb.present?
-            if @sourcedb == 'PubMed'
-              @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
-            else
-              @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
-            end
+            @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
           else
             @project.docs.where(serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
           end
         else
           if @sourcedb.present?
-            if @sourcedb == 'PubMed'
-              Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
-            else
-              Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
-            end
+            Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
           else
             Doc.where(serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
           end
@@ -64,13 +56,13 @@ class DocsController < ApplicationController
           render text: Doc.to_tsv(@docs, 'doc')
         }
       end
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
-        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-        format.txt  {render text: message, status: :unprocessable_entity}
-      end
-    end
+    # rescue => e
+    #   respond_to do |format|
+    #     format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
+    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+    #     format.txt  {render text: message, status: :unprocessable_entity}
+    #   end
+    # end
   end
 
   def records
@@ -138,48 +130,30 @@ class DocsController < ApplicationController
 
   def show
     begin
-      divs = if params[:id].present?
-        [Doc.find(params[:id])]
+      if params[:id].present?
+        @doc = Doc.find(params[:id])
       else
-        Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        @doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       end
-      raise "There is no such document." unless divs.present?
+      raise "There is no such document." unless @doc.present?
+      divs = @doc.divs
+      @doc.set_ascii_body if params[:encoding] == 'ascii'
+      @content = @doc.body.gsub(/\n/, "<br>")
+      sort_order = sort_order(Project)
+      @projects = @doc.projects.accessible(current_user).order(sort_order)
+      @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
 
-      if divs.length > 1
-        respond_to do |format|
-          format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
-          format.json {
-            divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-            render json: divs.collect{|div| div.body}
-          }
-          format.txt {
-            divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-            render text: divs.collect{|div| div.body}.join("\n")
-          }
-        end
-      else
-        @doc = divs[0]
-
-        @doc.set_ascii_body if params[:encoding] == 'ascii'
-        @content = @doc.body.gsub(/\n/, "<br>")
-
-        sort_order = sort_order(Project)
-        @projects = @doc.projects.accessible(current_user).order(sort_order)
-
-        @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
-        if @annotations[:tracks].present?
-          @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
-          @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
-          @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
-        end
-
-        respond_to do |format|
-          format.html
-          format.json {render json: @doc.to_hash}
-          format.txt  {render text: @doc.body}
-        end
+      if @annotations[:tracks].present?
+        @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
+        @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
+        @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
       end
 
+      respond_to do |format|
+        format.html
+        format.json {render json: @doc.to_hash}
+        format.txt  {render text: @doc.body}
+      end
     rescue => e
       respond_to do |format|
         format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
@@ -194,8 +168,9 @@ class DocsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      @doc = @project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless @doc.present?
+      divs = @doc.divs
 
       if divs.length > 1
         respond_to do |format|
@@ -210,8 +185,6 @@ class DocsController < ApplicationController
           }
         end
       else
-        @doc = divs[0]
-
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
         @content = @doc.body.gsub(/\n/, "<br>")
 
@@ -238,21 +211,23 @@ class DocsController < ApplicationController
   end
 
   def open
-    params[:sourceid].strip!
+    params[:sourceid].strip! 
     begin
       if params[:project_id].present?
         project = Project.accessible(current_user).find_by_name(params[:project_id])
         raise "There is no such project." unless project.present?
 
-        divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        raise "There is no such document in the project." unless divs.present?
+        doc = project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        raise "There is no such document in the project." unless doc.present?
+        divs = doc.divs
 
         respond_to do |format|
           format.html {redirect_to show_project_sourcedb_sourceid_docs_path(params[:project_id], params[:sourcedb], params[:sourceid])}
         end
       else
-        divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        raise "There is no such document." unless divs.present?
+        doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        raise "There is no such document." unless doc.present?
+        divs = doc.divs
 
         respond_to do |format|
           format.html {redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid])}
@@ -286,15 +261,14 @@ class DocsController < ApplicationController
     begin
       raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document" unless divs.present?
+      @doc = Doc.find(params[:id])
+      raise "There is no such document" unless @doc.present?
+      divs = @doc.divs
 
       if divs.length > 1
         respond_to do |format|
           format.html {redirect_to :back}
         end
-      else
-        @doc = divs[0]
       end
     rescue => e
       respond_to do |format|
@@ -446,10 +420,11 @@ class DocsController < ApplicationController
     begin
       raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-      divs = params[:sourceid].present? ? Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]) : nil
-      raise ArgumentError, "There is no such document." if params[:sourceid].present? && !divs.present?
+      doc = params[:sourceid].present? ? Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]) : nil
+      divs = doc.divs if doc
+      raise ArgumentError, "There is no such document." if params[:sourceid].present? && doc.blank?
 
-      Doc.uptodate(divs)
+      doc.uptodate
       flash[:notice] = "The document #{divs[0].descriptor} is successfully updated."
     rescue => e
       flash[:notice] = e.message
@@ -503,8 +478,9 @@ class DocsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      doc = project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless doc.present?
+      divs = doc.divs
 
       divs.each{|div| project.delete_doc(div, current_user)}
       expire_fragment("count_docs_#{project.name}")

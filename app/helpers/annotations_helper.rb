@@ -7,7 +7,7 @@ module AnnotationsHelper
       if doc.present?
         doc.get_denotations_count(project, span)
       else
-        project.denotations_count
+        project.denotations_num
       end
     else
       '<i class="fa fa-bars" aria-hidden="true" title="blinded"></i>'.html_safe

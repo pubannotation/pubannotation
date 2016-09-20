@@ -7,4 +7,16 @@ module DivsHelper
     end
     link_to t('views.shared.show'), href
   end
+
+  def div_body(div)
+    div.body(params[:encoding]).gsub(/\n/, "<br>")
+  end
+
+  def div_annotations_count_helper(div, project)
+    if project.present?
+      div.project_denotations(project).count
+    else
+      div.denotations.count
+    end
+  end
 end

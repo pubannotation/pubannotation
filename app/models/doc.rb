@@ -161,9 +161,9 @@ class Doc < ActiveRecord::Base
   scope :user_source_db, lambda{|username|
     where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
   }
-  
+
   # default sort order 
-  DefaultSortKey = "projects_count DESC"
+  DefaultSortKey = "projects_num DESC"
 
   def descriptor
     descriptor  = self.sourcedb + ':' + self.sourceid
@@ -171,23 +171,15 @@ class Doc < ActiveRecord::Base
     descriptor
   end
 
+  def self.find_base_doc(arguments = {})
+    find_by_sourcedb_and_sourceid_and_serial(arguments[:sourcedb], arguments[:sourceid], 0)
+  end
+
   def self.get_doc(docspec)
     if docspec[:sourcedb].present? && docspec[:sourceid].present?
       Doc.find_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:divid].present? ? docspec[:divid] : 0)
     else
       nil
-    end
-  end
-
-  def self.get_divs(docspec)
-    if docspec[:sourcedb].present? && docspec[:sourceid].present?
-      if docspec[:div_id].present?
-        Doc.find_all_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:divid])
-      else
-        Doc.find_all_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
-      end
-    else
-      []
     end
   end
 
@@ -208,66 +200,65 @@ class Doc < ActiveRecord::Base
 
     divs_hash = doc_sequence.divs
 
-    divs = divs_hash.map.with_index do |div_hash, i|
-      Doc.new(
-        {
-          :body     => div_hash[:body],
-          :section  => div_hash[:heading],
-          :source   => doc_sequence.source_url,
-          :sourcedb => sourcedb,
-          :sourceid => sourceid,
-          :serial   => i
-        }
-      )
+    begin
+      divs = create_divs(divs_hash, {source_url: doc_sequence.source_url, sourcedb: sourcedb, sourceid: sourceid})
+    rescue => e
+      raise IOError, "Failed to save the document"
     end
-
-    divs.each{|div| raise IOError, "Failed to save the document" unless div.save}
-    divs
   end
 
   def self.create_divs(divs_hash, attributes = {})
     if divs_hash.present?
-      divs = Array.new
-      divs_hash.each_with_index do |div_hash, i|
-        doc = Doc.new(
+      # create base doc
+      body_for_base_doc = divs_hash.map.collect{|div_hash| div_hash[:body].chomp + '\n'}.join('')
+      ActiveRecord::Base.transaction do
+        doc = Doc.create!(
           {
-            :body     => div_hash[:body],
-            :section  => div_hash[:heading],
-            :source   => attributes[:source_url],
-            :sourcedb => attributes[:sourcedb],
-            :sourceid => attributes[:sourceid],
-            :serial   => i
+            body: body_for_base_doc,
+            section: divs_hash[0][:heading],
+            source: attributes[:source_url],
+            sourcedb: attributes[:sourcedb],
+            sourceid: attributes[:sourceid],
+            serial: 0
           }
         )
-        divs << doc if doc.save
+
+        # create divs
+        doc.create_divs_from_doc_sequencer(divs_hash)
+        return doc.divs
       end
     end
-    return divs
   end
 
-  def revise(body)
-    return if body == self.body
-
-    text_aligner = TextAlignment::TextAlignment.new(self.body, body, TextAlignment::MAPPINGS)
-    raise RuntimeError, "cannot get alignment."     if text_aligner.nil?
-    raise RuntimeError, "texts too much different: #{text_aligner.similarity}." if text_aligner.similarity < 0.8
-    self.body = body
-    self.save
-    denotations = self.denotations
-    text_aligner.transform_denotations!(denotations)
-    denotations.each{|d| d.save}
+  def create_divs_from_doc_sequencer(divs_hash)
+    body = ''
+    divs_hash.map.with_index do |div_hash, i|
+      div_body = div_hash[:body].chomp + '\n'
+      if i == 0
+        begin_pos = 0
+        end_pos = div_body.length
+      else
+        begin_pos = body.length
+        end_pos = body.length + div_body.length
+      end
+      body += div_body
+      divs.create(begin: begin_pos, end: end_pos, section: div_hash[:heading], serial: i) 
+    end
   end
 
-  def self.uptodate(divs)
-    sourcedb = divs[0].sourcedb
-    sourceid = divs[0].sourceid
-    new_divs = Object.const_get("DocSequencer#{sourcedb}").new(sourceid).divs
+  def uptodate
+    new_divs = Object.const_get("DocSequencer#{self.sourcedb}").new(self.sourceid).divs
     raise RuntimeError, "Number of divs mismatch" unless new_divs.size == divs.size
 
-    divs.sort!{|a, b| a.serial <=> b.serial}
+    body_for_base_doc = new_divs.map.collect{|div_hash| div_hash[:body].chomp + '\n'}.join('')
+    self.update_attribute(:body, body_for_base_doc)
 
     ActiveRecord::Base.transaction do
-      divs.each_with_index{|div, i| div.revise(new_divs[i][:body])}
+      body = ''
+      divs.order('serial ASC').each do |div|
+        current_body += new_divs[i][:body].chomp + '\n'
+        div.revise(new_divs[i][:body], current_body)
+      end
     end
   end
 
@@ -509,7 +500,7 @@ class Doc < ActiveRecord::Base
         hrelations = self.hrelations(project, ids)
         ids += hrelations.collect{|d| d[:id]}
         hmodifications = self.hmodifications(project, ids)
-        track = {project:project.name, denotations:hdenotations, relations:hrelations, modificationss:hmodifications, namespaces:project.namespaces}
+        track = {project:project.name, denotations:hdenotations, relations:hrelations, modifications:hmodifications, namespaces:project.namespaces}
         track.select!{|k, v| v.present?}
         if track[:denotations].present?
           tracks << track
@@ -544,32 +535,23 @@ class Doc < ActiveRecord::Base
     }
   end
   
-  def to_list_hash(doc_type)
-    hash = {
+  def to_list_hash
+    {
       sourcedb: sourcedb,
       sourceid: sourceid,
+      url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(self.sourcedb, self.sourceid)
     }
-    # switch url or div_url
-    case doc_type
-    when 'doc'
-      hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(self.sourcedb, self.sourceid)
-    when 'div'
-      hash[:divid] = serial
-      hash[:section] = section
-      hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_index_url(self.sourcedb, self.sourceid)
-    end
-    return hash
   end
 
-  def self.to_tsv(docs, doc_type)
-    headers = docs.first.to_list_hash(doc_type).keys
+  def self.to_tsv(docs)
+    headers = docs.first.to_list_hash.keys
     tsv = CSV.generate(col_sep:"\t") do |csv|
       # headers
       csv << headers
       docs.each do |doc|
         doc_values = Array.new
         headers.each do |key|
-          doc_values << doc.to_list_hash(doc_type)[key]
+          doc_values << doc.to_list_hash[key]
         end
         csv << doc_values
       end
@@ -616,15 +598,16 @@ class Doc < ActiveRecord::Base
   end
   
   def self.has_divs?(sourcedb, sourceid)
-    self.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+    doc = find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    doc.present? && doc.has_divs?
   end
 
   def has_divs?
-    self.class.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+    divs.present?
   end
 
   def self.get_div_ids(sourcedb, sourceid)
-    self.same_sourcedb_sourceid(sourcedb, sourceid).select('serial').to_a.map{|d| d.serial}
+    self.find_by_sourcedb_and_sourceid(sourcedb, sourceid).divs.collect{|div| div.serial} #select('serial').to_a.map{|d| d.serial}
   end
 
   def attach_sourcedb_suffix
@@ -706,9 +689,9 @@ class Doc < ActiveRecord::Base
   end
 
   def self.pmc_to_divs
-    where(sourcedb: 'PMC').order('sourceid ASC').group_by(&:sourceid).each do |sourceid, docs|
-      begin_pos = 0
+    Doc.where(sourcedb: 'PMC').order('sourceid ASC').group_by(&:sourceid).each do |sourceid, docs|
       if docs.size > 1
+        begin_pos = 0
         base_doc = docs.detect{|doc| doc.serial == 0}
         docs.sort{|a, b| a.serial <=> b.serial }.each do |doc|
           # concatnate body
@@ -718,15 +701,17 @@ class Doc < ActiveRecord::Base
           # create div
           body_length = doc.body.length
           end_pos = base_doc.body.length
+          if doc.serial != 0
+            begin_pos = Div.last.end
+          end
           base_doc.divs.create(begin: begin_pos, end: end_pos, section: doc.section, serial: doc.serial)
-          begin_pos += body_length
 
-          # update denotation and project if doc.serial != 0 (base_doc)
+          # update denotation and project if docs is not the base_doc
           # denotation
           if doc != base_doc 
             if doc.denotations.present?
               doc.denotations.each do |denotation|
-                denotation.update_attribute(:doc_id, base_doc.id)
+                Doc.increment_counter(:denotations_count, base_doc.id) if denotation.update_attribute(:doc_id, base_doc.id)
               end
             end
             

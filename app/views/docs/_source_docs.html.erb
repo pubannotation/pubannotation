@@ -29,7 +29,7 @@
       <% if params[:keywords].present? -%>
         <%= t('views.shared.projects_count') -%>
       <% else -%>
-        <%= sortable(Doc, 'projects_count', t('views.shared.projects_count')) -%>
+        <%= sortable(Doc, 'projects_num', t('views.shared.projects_count')) -%>
       <% end -%>
     </span>
   </th>
@@ -46,6 +46,7 @@
   <% if @project.present? && user_signed_in? && @project.user == current_user %>
     <th class="docs_header_button"></th>
   <% end -%>
+  <th class="docs_header_button"></th>
 </tr>
 
 <%= render partial: 'source_doc', collection: @docs -%>

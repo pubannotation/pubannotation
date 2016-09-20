@@ -2,15 +2,15 @@ class SpansController < ApplicationController
 
   def doc_spans_index
     begin
-      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document." unless divs.present?
+      @doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document." unless @doc.present?
+      divs = @doc.divs
 
       if divs.length > 1
         respond_to do |format|
           format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
         end
       else
-        @doc = divs[0]
 
         @doc.set_ascii_body if params[:encoding] == 'ascii'
         @spans_index = @doc.spans_index
@@ -55,16 +55,15 @@ class SpansController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      @doc = @project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless @doc.present?
+      divs= @doc.divs
 
       if divs.length > 1
         respond_to do |format|
           format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
         end
       else
-        @doc = divs[0]
-
         @doc.set_ascii_body if params[:encoding] == 'ascii'
         @spans_index = @doc.spans_index(@project)
 
@@ -108,15 +107,15 @@ class SpansController < ApplicationController
 
   def doc_span_show
     begin
-      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document." unless divs.present?
+      @doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document." unless @doc.present?
+      divs = @doc.divs
 
       if divs.length > 1
         respond_to do |format|
           format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
         end
       else
-        @doc = divs[0]
         @span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 
         @doc.set_ascii_body if params[:encoding] == 'ascii'
@@ -215,15 +214,15 @@ class SpansController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
 
-      divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      @doc = @project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless @doc.present?
+      divs = @doc.divs
 
       if divs.length > 1
         respond_to do |format|
           format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
         end
       else
-        @doc = divs[0]
         @span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 
         @doc.set_ascii_body if (params[:encoding] == 'ascii')

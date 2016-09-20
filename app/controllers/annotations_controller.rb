@@ -8,15 +8,15 @@ class AnnotationsController < ApplicationController
   # annotations for doc without project
   def doc_annotations_index
     begin
-      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document." unless divs.present?
+      @doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      divs = @doc.divs if @doc
+      raise "There is no such document." unless @doc.present?
 
       if divs.length > 1
         respond_to do |format|
           format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
         end
       else
-        @doc = divs[0]
         @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
         @doc.set_ascii_body if params[:encoding] == 'ascii'
 
@@ -96,8 +96,9 @@ class AnnotationsController < ApplicationController
         raise "There is no such project in your access." unless @project.accessible?(current_user)
       end
 
-      divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      @doc = @project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      divs = @doc.divs if @doc
+      raise "There is no such document in the project." unless @doc.present?
 
       if divs.length > 1
         respond_to do |format|
@@ -108,8 +109,6 @@ class AnnotationsController < ApplicationController
           }
         end
       else
-        @doc = divs[0]
-
         @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
 
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
@@ -167,15 +166,15 @@ class AnnotationsController < ApplicationController
 
   def doc_annotations_visualize
     begin
-      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      @doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      divs = @doc.divs if @doc
+      raise "There is no such document in the project." unless @doc.present?
 
       if divs.length > 1
         respond_to do |format|
           format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
         end
       else
-        @doc = divs[0]
         @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
         @doc.set_ascii_body if params[:encoding] == 'ascii'
 
@@ -279,7 +278,7 @@ class AnnotationsController < ApplicationController
 
       if params[:divid].present?
         doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
-        unless doc.present?
+        if doc.blank?
           project.add_doc(params[:sourcedb], params[:sourceid])
           expire_fragment("count_docs_#{project.name}")
           expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
@@ -287,18 +286,17 @@ class AnnotationsController < ApplicationController
         end
         raise "Could not add the document in the project." unless doc.present?
       else
-        divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        unless divs.present?
+        doc = project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        divs = doc.divs if doc
+        if divs.blank?
           project.add_doc(params[:sourcedb], params[:sourceid])
           expire_fragment("count_docs_#{project.name}")
           expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
-          divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+          divs = project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]).divs
         end
         raise "Could not add the document in the project." unless divs.present?
 
-        if divs.length == 1
-          doc = divs[0]
-        else
+        if divs.length != 1
           priority = project.jobs.unfinished.count
           delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, options), priority: priority, queue: :general
           Job.create({name:'Store annotations', project_id:project.id, delayed_job_id:delayed_job.id})

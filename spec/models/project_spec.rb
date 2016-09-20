@@ -1916,7 +1916,7 @@ describe Project do
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
       @sourceid = '8424'
       @sourcedb = 'PMC'
-      @user = FactoryGirl.create(:user, username: 'Add Docs User Name')
+      @user = FactoryGirl.create(:user)
     end 
     
     context 'when divs present' do
@@ -1924,7 +1924,7 @@ describe Project do
         before do
           @user_soucedb = "PMC#{Doc::UserSourcedbSeparator}#{@user.username}"
           @doc_1 = FactoryGirl.create(:doc, :sourcedb => @user_soucedb, :sourceid => @sourceid, :serial => 0)
-          @doc_2 = FactoryGirl.create(:doc, :sourcedb => @user_soucedb, :sourceid => @sourceid, :serial => 1)
+          @doc_1_div_1 = FactoryGirl.create(:div, doc: @doc_1, begin: 0, end: 5, section: 'TIA', serial: 1)
           @docs_array = [
             # successfully update
             {'id' => 1, 'text' => 'doc body1', 'sourcedb' => @user_soucedb, 'sourceid' => @sourceid, 'source_url' => 'http://user.sourcedb/', 'divid' => 0},
@@ -1951,7 +1951,7 @@ describe Project do
             @result = @project.add_docs({ids: @sourceid, sourcedb: @user_soucedb, docs_array: @docs_array, user: @user})
             @project.reload
             @doc_1.reload
-            @doc_2.reload
+            @doc_1_div_1.reload
           end
 
           it 'should create 1 doc and update 3 times and fail 2 time' do
@@ -1971,7 +1971,7 @@ describe Project do
           end
 
           it 'should update exists doc' do
-            @doc_2.body == @docs_array[3]['text'] && @doc_1.sourcedb == @docs_array[3]['sourcedb'] && @doc_1.source == @docs_array[3]['source_url'] && @doc_1.serial == @docs_array[3]['divid']
+            @doc_1_div_1.body == @docs_array[3]['text'] && @doc_1.sourcedb == @docs_array[3]['sourcedb'] && @doc_1.source == @docs_array[3]['source_url'] && @doc_1.serial == @docs_array[3]['divid']
           end
 
           it 'should add project.docs' do
@@ -1986,8 +1986,8 @@ describe Project do
 
       context 'when sourcedb is not users sourcedb' do
         before do
-          @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 0)
-          FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid, :serial => 1)        
+          @doc = FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)
+          FactoryGirl.create(:doc, :sourcedb => @sourcedb, :sourceid => @sourceid)        
           @project.reload
         end
         
@@ -2048,7 +2048,7 @@ describe Project do
 
             it 'should calls create_user_sourcedb_docs with docs_array' do
               @project.should_receive(:create_user_sourcedb_docs).with(docs_array: @docs_array)
-              @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
+              p @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
             end
             
             it 'should increment num_created' do
@@ -2114,7 +2114,7 @@ describe Project do
               ]
               Doc.stub(:create_divs).and_return([@generated_doc_1, @generated_doc_2])
               @sourcedb = 'sourcedb'
-              @user = FactoryGirl.create(:user, username: 'User Name')
+              @user = FactoryGirl.create(:user)
               @user_soucedb_doc = FactoryGirl.create(:doc)
               @divs = [@user_soucedb_doc]
               @num_failed_use_sourcedb_docs = 2
@@ -2122,7 +2122,7 @@ describe Project do
             end
             
             it 'should call create_user_sourcedb_docs with docs_array and sourcedb' do
-              @project.should_receive(:create_user_sourcedb_docs).with({docs_array: @docs_array, sourcedb: "#{@sourcedb}:#{@user.username}"})
+              @project.should_receive(:create_user_sourcedb_docs).with({docs_array: @docs_array, sourcedb: "#{@sourcedb}@#{@user.username}"})
               @project.add_docs({ ids: @sourceid, sourcedb: @sourcedb, docs_array: @docs_array, user: @user})
             end
 
@@ -2171,21 +2171,21 @@ describe Project do
     end
   end
 
-  describe 'increment_docs_projects_counter' do
+  describe 'increment_docs_projects_num' do
     before do
       @doc = FactoryGirl.create(:doc)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
     end
 
-    it 'should increment doc.projects_count' do
+    it 'should increment doc.projects_num' do
       expect{ 
         @project.docs << @doc 
         @doc.reload
-      }.to change{ @doc.projects_count }.from(0).to(1)
+      }.to change{ @doc.projects_num }.from(0).to(1)
     end
   end
 
-  describe 'decrement_docs_projects_counter' do
+  describe 'decrement_docs_projects_num' do
     before do
       @doc = FactoryGirl.create(:doc)
       @project = FactoryGirl.create(:project, :user => FactoryGirl.create(:user))
@@ -2193,11 +2193,11 @@ describe Project do
       @doc.reload
     end
 
-    it 'should decrement doc.projects_count' do
+    it 'should decrement doc.projects_num' do
       expect{ 
         @project.docs.delete(@doc)
         @doc.reload
-      }.to change{ @doc.projects_count }.from(1).to(0)
+      }.to change{ @doc.projects_num }.from(1).to(0)
     end
   end
 

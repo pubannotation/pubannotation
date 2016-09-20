@@ -9,10 +9,11 @@ class Project < ActiveRecord::Base
   serialize :namespaces
   belongs_to :user
   has_and_belongs_to_many :docs, 
-    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter, :update_delta_index], 
-    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter, :update_delta_index]
+    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_num, :update_delta_index], 
+    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_num, :update_delta_index]
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
+  has_many :divs, through: :docs
 
   attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
                   :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter,
@@ -234,8 +235,8 @@ class Project < ActiveRecord::Base
     doc.save
   end
 
-  def increment_docs_projects_counter(doc)
-    Doc.increment_counter(:projects_count, doc.id)
+  def increment_docs_projects_num(doc)
+    Doc.increment_counter(:projects_num, doc.id)
   end
   
   # after_remove doc
@@ -250,8 +251,8 @@ class Project < ActiveRecord::Base
     end          
   end          
 
-  def decrement_docs_projects_counter(doc)
-    Doc.decrement_counter(:projects_count, doc.id)
+  def decrement_docs_projects_num(doc)
+    Doc.decrement_counter(:projects_num, doc.id)
     doc.reload
   end
 
@@ -331,8 +332,8 @@ class Project < ActiveRecord::Base
   end
 
   def has_doc?(sourcedb, sourceid)
-    divs = self.docs.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
-    divs.length > 0
+    doc = self.docs.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    doc.present? ? doc.divs.present? : false
   end
 
   def docs_list_hash
@@ -557,30 +558,74 @@ class Project < ActiveRecord::Base
     num_created, num_added, num_failed = 0, 0, 0
     ids = options[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
     ids.each do |sourceid|
-      divs = Doc.find_all_by_sourcedb_and_sourceid(options[:sourcedb], sourceid)
+      doc = Doc.find_by_sourcedb_and_sourceid(options[:sourcedb], sourceid)
+      divs = doc.divs if doc
       is_current_users_sourcedb = (options[:sourcedb] =~ /.#{Doc::UserSourcedbSeparator}#{options[:user].username}\Z/).present?
       if divs.present?
         if is_current_users_sourcedb
+          # TODO create method to create doc and divs from docs_array
           # when sourcedb is user's sourcedb
           # update or create if not present
-          options[:docs_array].each do |doc_array|
-            # find doc sourcedb sourdeid and serial
-            doc = Doc.find_or_initialize_by_sourcedb_and_sourceid_and_serial(options[:sourcedb], sourceid, doc_array['divid'])
-            mappings = {
-              'text' => 'body', 
-              'section' => 'section', 
-              'source_url' => 'source', 
-              'divid' => 'serial'
-            }
+          body_for_base_doc = options[:docs_array].collect{|doc_array| doc_array['text'].chomp + '\n' if doc_array['text']}.join('')
 
-            doc_params = Hash[doc_array.map{|key, value| [mappings[key], value]}].select{|key| key.present?}
-            if doc.new_record?
+          # doc
+          # doc = Doc.find_or_initialize_by_sourcedb_and_sourceid_and_serial(options[:sourcedb], sourceid, 0)
+          mappings = {
+            'text' => 'body', 
+            'section' => 'section', 
+            'source_url' => 'source', 
+            'divid' => 'serial'
+          }
+          doc_params = Hash[options[:docs_array].map{|key, value| [mappings[key], value]}].select{|key| key.present?}
+          doc_params['body'] = body_for_base_doc
+          if doc.new_record?
+            # when same sourcedb sourceid serial not present
+            doc.attributes = doc_params
+            if doc.valid?
+              # create
+              doc.save
+              self.docs << doc unless self.docs.include?(doc)
+              num_created += 1
+            else
+              num_failed += 1
+            end
+          else
+            # when same sourcedb sourceid serial present
+            # update
+            if doc.update_attributes(doc_params)
+              self.docs << doc unless self.docs.include?(doc)
+              num_added += 1
+            else
+              num_failed += 1
+            end
+          end
+
+          options[:docs_array].each do |doc_array|
+            body = ''
+            # find doc sourcedb sourdeid and serial
+            div_id = doc_array['divid'] 
+            div = doc.divs.find_by_serial(div_id)
+
+            # set begin end by text(doc.body) 
+            if doc_array["text"]
+              div_body = doc_array["text"].chomp + '\n' 
+              if div_id == 0
+                begin_pos = 0
+                end_pos = div_body.length
+              else
+                begin_pos = body.length
+                end_pos = body.length + div_body.length
+              end
+              body += div_body
+            end
+
+            div_attributes = {begin: begin_pos, end: end_pos, section: doc_array['section'], serial: div_id}
+            if div.blank?
               # when same sourcedb sourceid serial not present
-              doc.attributes = doc_params
-              if doc.valid?
+              div = Div.new div_attributes
+              if div.valid?
                 # create
-                doc.save
-                self.docs << doc unless self.docs.include?(doc)
+                div.save
                 num_created += 1
               else
                 num_failed += 1
@@ -588,8 +633,7 @@ class Project < ActiveRecord::Base
             else
               # when same sourcedb sourceid serial present
               # update
-              if doc.update_attributes(doc_params)
-                self.docs << doc unless self.docs.include?(doc)
+              if div.update_attributes(div_attributes)
                 num_added += 1
               else
                 num_failed += 1
@@ -641,27 +685,28 @@ class Project < ActiveRecord::Base
   # returns the divs added to the project
   # returns nil if nothing is added
   def add_doc_unless_exist(sourcedb, sourceid)
-    divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    divs = doc.divs if doc
     divs = Doc.import_from_sequence(sourcedb, sourceid) unless divs.present?
     raise IOError, "Failed to get the document" unless divs.present?
-    return nil if self.docs.include?(divs.first)
-    self.docs << divs
+    return nil if self.docs.include?(doc)
     divs
   end
 
   def add_doc(sourcedb, sourceid, strictp = false)
-    divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    divs = doc.divs if doc
 
     if divs.present?
-      if self.docs.include?(divs.first)
+      if self.docs.include?(doc)
         raise ArgumentError, "The document already exists" if strictp
       else
-        self.docs << divs
+        self.docs << doc
       end
     else
       divs = Doc.import_from_sequence(sourcedb, sourceid)
       raise IOError, "Failed to get the document" unless divs.present?
-      self.docs << divs
+      self.docs << divs.first.doc
     end
     divs
   end
@@ -672,6 +717,7 @@ class Project < ActiveRecord::Base
     if options[:docs_array].present?
       options[:docs_array].each do |doc_array_params|
         # all of columns insert into database need to be included in this hash.
+        # TODO create method to create doc and divs from docs_array
         doc_array_params[:sourcedb] = options[:sourcedb] if options[:sourcedb].present?
         mappings = {
           :text => :body, 
@@ -1049,7 +1095,7 @@ class Project < ActiveRecord::Base
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
     self.delete_annotations(doc)
     self.docs.delete(doc)
-    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
+    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_num == 0
   end
 
   def delete_annotations(doc)
