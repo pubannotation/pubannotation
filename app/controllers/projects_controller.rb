@@ -231,6 +231,7 @@ class ProjectsController < ApplicationController
       message = if project.docs.exists?
         project.delete_annotations
         project.docs.clear
+        ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
         ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
         "This project is emptied."
       else

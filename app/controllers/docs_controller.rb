@@ -507,6 +507,7 @@ class DocsController < ApplicationController
       raise "There is no such document in the project." unless divs.present?
 
       divs.each{|div| project.delete_doc(div, current_user)}
+      expire_fragment("sourcedb_counts_#{project.name}")
       expire_fragment("count_docs_#{project.name}")
       expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
     rescue => e
