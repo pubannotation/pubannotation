@@ -16,6 +16,7 @@ class AddDocsToProjectJob < Struct.new(:docspecs, :project)
 			@job.update_attribute(:num_dones, i + 1)
     end
     unless sourcedbs.empty?
+			ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
 			ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
 			sourcedbs.uniq.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
 		end

@@ -52,6 +52,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
             annotation_transaction = []
             transaction_size = 0
             unless sourcedbs.empty?
+              ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
               ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
               sourcedbs.uniq.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
               sourcedbs.clear

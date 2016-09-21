@@ -391,6 +391,7 @@ class DocsController < ApplicationController
         docspec = docspecs.first
         begin
           project.add_doc(docspec[:sourcedb], docspec[:sourceid], true)
+          expire_fragment("sourcedb_counts_#{project.name}")
           expire_fragment("count_docs_#{project.name}")
           expire_fragment("count_#{docspec[:sourcedb]}_#{project.name}")
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - added."
@@ -483,6 +484,7 @@ class DocsController < ApplicationController
     if params[:project_id].present?
       project = Project.find_by_name(params[:project_id])
       project.docs.delete(@doc)
+      expire_fragment("sourcedb_counts_#{project.name}")
       expire_fragment("count_docs_#{project.name}")
       expire_fragment("count_#{@doc.sourcedb}_#{project.name}")
 
