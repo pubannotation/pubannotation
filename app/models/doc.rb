@@ -472,7 +472,7 @@ class Doc < ActiveRecord::Base
 
   def get_denotations_num(project = nil, span = nil)
     if project.nil? && span.nil?
-      self.denotations_num
+      self.denotations_count
     elsif span.nil?
       self.denotations.where("denotations.project_id = ?", project.id).count
     else
