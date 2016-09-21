@@ -606,7 +606,7 @@ class Project < ActiveRecord::Base
     divs = Doc.import_from_sequence(sourcedb, sourceid) unless divs.present?
     raise IOError, "Failed to get the document" unless divs.present?
     return nil if self.docs.include?(divs.first)
-    self.docs << divs
+    divs.each{|div| div.projects << self}
     divs
   end
 
