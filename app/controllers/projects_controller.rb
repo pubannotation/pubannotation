@@ -229,12 +229,12 @@ class ProjectsController < ApplicationController
       raise "There is no such project in your management." unless project.present?
 
       message = if project.docs.exists?
-        priority = project.jobs.unfinished.count
-        delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project, current_user), priority: priority, queue: :general
-        Job.create({name:'Delete all documents from project', project_id:project.id, delayed_job_id:delayed_job.id})
-        "The task, 'delete all documents from project', is created."
+        project.delete_annotations
+        project.docs.clear
+        ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
+        "This project is emptied."
       else
-        "There is no document in the project."
+        "There is no document in this project."
       end
 
       respond_to do |format|
@@ -249,12 +249,11 @@ class ProjectsController < ApplicationController
       @project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless @project.present?
 
-      priority = @project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue DeleteAllAnnotationsFromProjectJob.new(@project), priority: priority, queue: :general
-      Job.create({name:'Delete all annotations from project', project_id:@project.id, delayed_job_id:delayed_job.id})
+      @project.delete_annotations
+      message = "Annotations in this project are all deleted."
 
       respond_to do |format|
-        format.html {redirect_to project_path(@project.name), status: :see_other, notice: "The task, 'delete all annotations from project', is created."}
+        format.html {redirect_to project_path(@project.name), status: :see_other, notice: message}
         format.json {render status: :no_content}
       end
     end

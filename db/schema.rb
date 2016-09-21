@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160713093746) do
+ActiveRecord::Schema.define(:version => 20160916063207) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -167,8 +167,8 @@ ActiveRecord::Schema.define(:version => 20160713093746) do
     t.string   "type"
     t.integer  "pmdocs_count",                     :default => 0
     t.integer  "pmcdocs_count",                    :default => 0
-    t.integer  "denotations_count",                :default => 0
-    t.integer  "relations_count",                  :default => 0
+    t.integer  "denotations_num",                  :default => 0
+    t.integer  "relations_num",                    :default => 0
     t.integer  "pending_associate_projects_count", :default => 0
     t.boolean  "annotations_zip_downloadable",     :default => true
     t.datetime "annotations_updated_at",           :default => '2016-04-08 06:25:21'
@@ -177,6 +177,7 @@ ActiveRecord::Schema.define(:version => 20160713093746) do
     t.integer  "annotations_count",                :default => 0
     t.string   "sample"
     t.boolean  "anonymize",                        :default => false,                 :null => false
+    t.integer  "modifications_num",                :default => 0
   end
 
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true

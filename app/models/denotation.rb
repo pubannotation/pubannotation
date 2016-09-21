@@ -3,7 +3,7 @@ require 'zip/zip'
 class Denotation < ActiveRecord::Base
   include DenotationsHelper
   
-  belongs_to :project, :counter_cache => true
+  belongs_to :project
   belongs_to :doc, :counter_cache => true
 
   has_many :modifications, :as => :obj, :dependent => :destroy
@@ -11,7 +11,7 @@ class Denotation < ActiveRecord::Base
   has_many :subrels, :class_name => 'Relation', :as => :subj, :dependent => :destroy
   has_many :objrels, :class_name => 'Relation', :as => :obj, :dependent => :destroy
 
-  attr_accessible :hid, :begin, :end, :obj
+  attr_accessible :hid, :begin, :end, :obj, :project_id, :doc_id
 
   validates :hid,       :presence => true
   validates :begin,     :presence => true
@@ -28,17 +28,6 @@ class Denotation < ActiveRecord::Base
     where('denotations.begin >= ? AND denotations.end <= ?', span[:begin], span[:end]) if span.present?
   }
 
-  # possibly unused
-  # scope :after_alignment, -> (aligner) {
-  #   if aligner.present?
-  #     all.map do |d|
-  #       new_span = aligner.transform_a_span({:begin => d.begin, :end => d.end})
-  #       d.begin, d.end = new_span[:begin], new_span[:end]
-  #       d
-  #     end
-  #   end
-  # }
-
   scope :accessible_projects, lambda{|current_user_id|
     joins([:project, :doc]).
     where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
@@ -49,9 +38,8 @@ class Denotation < ActiveRecord::Base
     order('denotations.id ASC') 
   }
   
-  after_save :update_projects_after_save, :increment_project_annotations_count
-  before_destroy :update_projects_before_destroy
-  after_destroy :decrement_project_annotations_count
+  after_save :increment_project_denotations_num, :update_project_updated_at
+  after_destroy :decrement_project_denotations_num, :update_project_updated_at
   
   def get_hash
     hdenotation = Hash.new
@@ -62,33 +50,16 @@ class Denotation < ActiveRecord::Base
   end
 
   # after save
-  def update_projects_after_save
-    project_ids = Array.new
-    if self.project.present? 
-      project_ids << self.project.id
-      # update project annotations_updated_at
-      Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
-      Project.where("projects.id IN (?)", project_ids).update_all(updated_at: DateTime.now)
-    end
+  def update_project_updated_at
+    self.project.update_updated_at
   end
 
-  def increment_project_annotations_count
-    Project.increment_counter(:annotations_count, project.id) if self.project.present?
-  end
-  
-  # before destroy
-  def update_projects_before_destroy
-    project_ids = Array.new
-    if self.project.present? 
-      project_ids << self.project.id
-      # update project annotations_updated_at
-      Project.where("projects.id IN (?)", project_ids).update_all(:annotations_updated_at => DateTime.now)
-      Project.where("projects.id IN (?)", project_ids).update_all(updated_at: DateTime.now)
-    end
+  def increment_project_denotations_num
+    self.project.increment!(:denotations_num)
   end
 
-  def decrement_project_annotations_count
-    Project.decrement_counter(:annotations_count, project.id) if self.project.present?
+  def decrement_project_denotations_num
+    self.project.decrement!(:denotations_num)
   end
   
   def self.sql_find(params, current_user, project)

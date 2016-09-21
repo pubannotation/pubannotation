@@ -15,7 +15,7 @@ class Project < ActiveRecord::Base
   attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
                   :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter,
                   :annotations_zip_downloadable, :namespaces, :process,
-                  :pmdocs_count, :pmcdocs_count, :denotations_count, :relations_count, :annotations_count
+                  :pmdocs_count, :pmcdocs_count, :denotations_num, :relations_num, :annotations_count
   has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
   has_many :relations, :dependent => :destroy, after_add: :update_updated_at
   has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
@@ -106,22 +106,22 @@ class Project < ActiveRecord::Base
   }
 
   # scopes for order
-  scope :order_pmdocs_count, 
+  scope :order_pmdocs_count,
     joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PubMed'").
     group('projects.id').
     order("count(docs.id) DESC")
     
-  scope :order_pmcdocs_count, 
+  scope :order_pmcdocs_count,
     joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PMC'").
     group('projects.id').
     order("count(docs.id) DESC")
     
-  scope :order_denotations_count, 
+  scope :order_denotations_num,
     joins('LEFT OUTER JOIN denotations ON denotations.project_id = projects.id').
     group('projects.id').
     order("count(denotations.id) DESC")
     
-  scope :order_relations_count,
+  scope :order_relations_num,
     joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
     group('projects.id').
     order('count(relations.id) DESC')
@@ -204,7 +204,7 @@ class Project < ActiveRecord::Base
 
   def self.order_by(projects, order, current_user)
     case order
-    when 'pmdocs_count', 'pmcdocs_count', 'denotations_count', 'relations_count'
+    when 'pmdocs_count', 'pmcdocs_count', 'denotations_num', 'relations_num'
       projects.accessible(current_user).order("#{order} DESC")
     when 'author'
       projects.accessible(current_user).order_author
@@ -248,9 +248,9 @@ class Project < ActiveRecord::Base
     end
   end
   
-  def get_denotations_count(doc = nil, span = nil)
+  def get_denotations_num(doc = nil, span = nil)
     if doc.nil?
-      self.denotations_count
+      self.denotations_num
     else
       if span.nil?
         doc.denotations.where("denotations.project_id = ?", self.id).count
@@ -616,13 +616,15 @@ class Project < ActiveRecord::Base
     if divs.present?
       if self.docs.include?(divs.first)
         raise ArgumentError, "The document already exists" if strictp
+      else
+        divs.each{|div| div.projects << self}
       end
     else
       divs = Doc.import_from_sequence(sourcedb, sourceid)
       raise IOError, "Failed to get the document" unless divs.present?
+      divs.each{|div| div.projects << self}
     end
 
-    divs.each{|div| div.projects << self}
     divs
   end
 
@@ -654,7 +656,7 @@ class Project < ActiveRecord::Base
     return [divs, num_failed]
   end
 
-  def save_hdenotations(hdenotations, doc)
+  def save_hdenotations_old(hdenotations, doc)
     hdenotations.each do |a|
       ca           = Denotation.new
       ca.hid       = a[:id]
@@ -667,7 +669,7 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def save_hrelations(hrelations, doc)
+  def save_hrelations_old(hrelations, doc)
     hrelations.each do |a|
       ra           = Relation.new
       ra.hid       = a[:id]
@@ -679,7 +681,7 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def save_hmodifications(hmodifications, doc)
+  def save_hmodifications_old(hmodifications, doc)
     hmodifications.each do |a|
       ma        = Modification.new
       ma.hid    = a[:id]
@@ -695,52 +697,144 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def save_annotations(annotations, doc, options = nil)
-    raise ArgumentError, "nil document" unless doc.present?
-    raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
-    options ||= {}
-
-    if options[:mode] == 'skip'
-      num = doc.denotations.where("denotations.project_id = ?", id).count
-      return {result: 'upload is skipped due to existing annotations'} if num > 0
+  def instantiate_hdenotations(hdenotations, doc)
+    new_entries = hdenotations.map do |a|
+      Denotation.new(
+        hid:a[:id],
+        begin:a[:span][:begin],
+        end:a[:span][:end],
+        obj:a[:obj],
+        project_id:self.id,
+        doc_id:doc.id
+      )
     end
+  end
 
-    self.delete_annotations(doc) if options[:mode] == 'replace'
+  def instantiate_hrelations(hrelations, doc)
+    new_entries = hrelations.map do |a|
+      Relation.new(
+        hid:a[:id],
+        pred:a[:pred],
+        subj:Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:subj]),
+        obj:Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj]),
+        project_id:self.id
+      )
+    end
+  end
 
+  def instantiate_hmodifications(hmodifications, doc)
+    new_entries = hmodifications.map do |a|
+      Modification.new(
+        hid:a[:id],
+        pred:a[:pred],
+        obj:case a[:obj]
+          when /^R/
+            doc.subcatrels.find_by_project_id_and_hid(self.id, a[:obj])
+          else
+            Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
+          end,
+        project_id:self.id
+      )
+    end
+  end
+
+  def instantiate_and_save_annotations(annotations, doc)
+    ActiveRecord::Base.transaction do
+      if annotations[:denotations].present?
+        instances = instantiate_hdenotations(annotations[:denotations], doc)
+        if instances.present?
+          r = Denotation.import instances, validate: false
+          raise "denotations import error" unless r.failed_instances.empty?
+          self.increment!(:denotations_num, instances.length)
+        end
+      end
+
+      if annotations[:relations].present?
+        instances = instantiate_hrelations(annotations[:relations], doc)
+        if instances.present?
+          r = Relation.import instances, validate: false
+          raise "relations import error" unless r.failed_instances.empty?
+          self.increment!(:relations_num, instances.length)
+        end
+      end
+
+      if annotations[:modifications].present?
+        instances = instantiate_hmodifications(annotations[:modifications], doc)
+        if instances.present?
+          r = Modification.import instances, validate: false
+          raise "modifications import error" unless r.failed_instances.empty?
+          self.increment!(:modifications_num, instances.length)
+        end
+      end
+    end
+  end
+
+  def instantiate_and_save_annotations_collection(annotations_collection)
+    ActiveRecord::Base.transaction do
+      # instantiate and save denotations
+      instances = annotations_collection.inject([]) do |col, ann|
+        doc = ann[:divid].nil? ? Doc.find_by_sourcedb_and_sourceid(ann[:sourcedb], ann[:sourceid]) : Doc.find_by_sourcedb_and_sourceid_and_serial(ann[:sourcedb], ann[:sourceid], ann[:divid])
+        ann[:denotations].nil? ? col : col + instantiate_hdenotations(ann[:denotations], doc)
+      end
+      if instances.present?
+        r = Denotation.import instances, validate: false
+        raise "denotations import error" unless r.failed_instances.empty?
+        self.increment!(:denotations_num, instances.length)
+      end
+      instances.clear
+
+      # instantiate and save relations
+      instances = annotations_collection.inject([]) do |col, ann|
+        doc = ann[:divid].nil? ? Doc.find_by_sourcedb_and_sourceid(ann[:sourcedb], ann[:sourceid]) : Doc.find_by_sourcedb_and_sourceid_and_serial(ann[:sourcedb], ann[:sourceid], ann[:divid])
+        ann[:relations].nil? ? col : col + instantiate_hrelations(ann[:relations], doc)
+      end
+      if instances.present?
+        r = Relation.import instances, validate: false
+        raise "relation import error" unless r.failed_instances.empty?
+        self.increment!(:relations_num, instances.length)
+      end
+      instances.clear
+
+      # instantiate and save modifications
+      instances = annotations_collection.inject([]) do |col, ann|
+        doc = ann[:divid].nil? ? Doc.find_by_sourcedb_and_sourceid(ann[:sourcedb], ann[:sourceid]) : Doc.find_by_sourcedb_and_sourceid_and_serial(ann[:sourcedb], ann[:sourceid], ann[:divid])
+        ann[:modifications].nil? ? col : col + instantiate_hmodifications(ann[:modifications], doc)
+      end
+      if instances.present?
+        r = Modification.import instances, validate: false
+        raise "modifications import error" unless r.failed_instances.empty?
+        self.increment!(:modifications_num, instances.length)
+      end
+    end
+  end
+
+  def align_annotations(annotations, doc)
     original_text = annotations[:text]
     annotations[:text] = doc.original_body.nil? ? doc.body : doc.original_body
 
     if annotations[:denotations].present?
       num = annotations[:denotations].length
-
       annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
-
       raise "Alignment failed. Text may be too much different." if annotations[:denotations].length < num
       annotations[:denotations].each{|d| raise "Alignment failed. Text may be too much different." if d[:span][:begin].nil? || d[:span][:end].nil?}
-
-      self.save_hdenotations(annotations[:denotations], doc)
-      self.save_hrelations(annotations[:relations], doc) if annotations[:relations].present?
-      self.save_hmodifications(annotations[:modifications], doc) if annotations[:modifications].present?
     end
 
-    result = annotations.select{|k,v| v.present?}
+    annotations.select{|k,v| v.present?}
   end
 
-  def store_annotations(annotations, divs, options = {})
-    options ||= {}
-    successful = true
-    fit_index = nil
-
+  def align_annotations_divs(annotations, divs)
     if divs.length == 1
-      self.save_annotations(annotations, divs[0], options)
+      [align_annotations(annotations, divs[0])]
     else
+      annotations_collection = []
+
       div_index = divs.collect{|d| [d.serial, d]}.to_h
       divs_hash = divs.collect{|d| d.to_hash}
       fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
 
       fit_index.each do |i|
         if i[0] >= 0
-          ann = {divid:i[0]}
+          ann = {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], divid:i[0]}
           idx = {}
           ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
           if annotations[:denotations].present?
@@ -758,41 +852,107 @@ class Project < ActiveRecord::Base
             ann[:modifications] = annotations[:modifications].select{|a| idx[a[:obj]]}
             ann[:modifications].each{|a| idx[a[:id]] = true}
           end
-          self.save_annotations(ann, div_index[i[0]], options)
+          annotations_collection << align_annotations(ann, div_index[i[0]])
         end
       end
-      {div_index: fit_index}
+      # {div_index: fit_index}
+      annotations_collection
     end
   end
 
-  def store_annotation_transaction(annotation_collection, options)
-    messages = []
-    ActiveRecord::Base.transaction do
-      annotation_collection.each do |annotations|
-        if annotations[:divid].present?
-          doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
-        else
-          divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-          doc = divs[0] if divs.length == 1
-        end
+  def save_annotations(annotations, doc, options = nil)
+    raise ArgumentError, "nil document" unless doc.present?
+    raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
+    options ||= {}
 
-        if doc.present?
-          begin
-            self.save_annotations(annotations, doc, options)
-          rescue => e
-            messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
+    if options[:mode] == 'skip'
+      num = doc.denotations.where("denotations.project_id = ?", id).count
+      return {result: 'upload is skipped due to existing annotations'} if num > 0
+    end
+
+    annotations = align_annotations(annotations, doc)
+
+    delete_doc_annotations(doc) if options[:mode] == 'replace'
+    instantiate_and_save_annotations(annotations, doc)
+
+    annotations
+  end
+
+  def save_annotations_divs(annotations, divs, options = {})
+    raise ArgumentError, "nil divs" unless divs.present?
+    raise ArgumentError, "the project does not have the document" unless divs.first.projects.include?(self)
+    options ||= {}
+
+    if options[:mode] == 'skip'
+      num = Denotations.where(project_id:self.id, sourcedb:divs.first.sourcedb, sourceid:divs.first.sourceid).count
+      return {result: 'upload is skipped due to existing annotations'} if num > 0
+    end
+
+    annotations_collection = align_annotations_divs(annotations, divs)
+
+    divs.each{|div| delete_doc_annotations(div)} if options[:mode] == 'replace'
+    instantiate_and_save_annotations_collection(annotations_collection)
+
+    annotations_collection
+  end
+
+  def store_annotations_collection(annotations_collection, options)
+    messages = []
+
+    aligned_collection = annotations_collection.inject([]) do |col, annotations|
+      if annotations[:divid].present?
+        doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
+        if options[:mode] == 'skip'
+          num = Denotation.where(doc_id:doc.id, project_id:self.id).count
+          if num > 0
+            messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: 'Uploading annotations skipped due to existing annotations'}
+            next
           end
-        elsif divs.present?
-          begin
-            self.store_annotations(annotations, divs, options)
-          rescue => e
-            messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
+        end
+      else
+        divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
+        doc = divs[0] if divs.length == 1
+        if options[:mode] == 'skip'
+          willskip = false
+          divs.each do |div|
+            num = Denotation.where(doc_id:doc.id, project_id:self.id).count
+            if num > 0
+              willskip = true
+              break
+            end
           end
-        else
-          messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: 'document does not exist.'}
+          if willskip
+            messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: 'Uploading annotations skipped due to existing annotations'}
+            next
+          end
         end
       end
+
+      normalize_annotations!(annotations)
+
+      if doc.present?
+        begin
+          col << align_annotations(annotations, doc)
+          delete_doc_annotations(doc) if options[:mode] == 'replace'
+        rescue => e
+          messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
+        end
+      elsif divs.present?
+        begin
+          col += align_annotations_divs(annotations, divs)
+          divs.each{|div| delete_doc_annotations(div)} if options[:mode] == 'replace'
+        rescue => e
+          messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
+        end
+      else
+        messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: 'document does not exist.'}
+      end
+
+      col
     end
+
+    instantiate_and_save_annotations_collection(aligned_collection)
+
     messages
   end
 
@@ -1007,30 +1167,52 @@ class Project < ActiveRecord::Base
 
   def delete_doc(doc, current_user)
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
-    self.delete_annotations(doc)
+    self.delete_doc_annotations(doc)
     self.docs.delete(doc)
     doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
   end
 
-  def delete_annotations(doc)
-    self.denotations.where(doc_id: doc.id).destroy_all
+  def delete_annotations
+    Modification.delete(Modification.where(project_id:self.id))
+    Relation.delete(Relation.where(project_id:self.id))
+    Denotation.delete(Denotation.where(project_id:self.id))
+    update_attribute(:denotations_num, 0)
+    update_attribute(:relations_num, 0)
+    update_attribute(:modifications_num, 0)
+    update_updated_at
   end
 
-  def update_updated_at(model)
+  def delete_doc_annotations(doc)
+    modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
+    Modification.delete(modifications)
+    decrement!(:modifications_num, modifications.length)
+
+    relations = doc.subcatrels.where(project_id: self.id)
+    Relation.delete(relations)
+    decrement!(:relations_num, relations.length)
+
+    denotations = doc.denotations.where(project_id: self.id)
+    Denotation.delete(denotations)
+    decrement!(:denotations_num, denotations.length)
+
+    update_updated_at
+  end
+
+  def update_updated_at
     self.update_attribute(:updated_at, DateTime.now)
   end
 
   def clean
-    denotations_count = annotations_collection.inject(0){|sum, ann| sum += (ann[:denotations].present? ? ann[:denotations].length : 0)}
-    relations_count = annotations_collection.inject(0){|sum, ann| sum += (ann[:relations].present? ? ann[:relations].length : 0)}
+    denotations_num = annotations_collection.inject(0){|sum, ann| sum += (ann[:denotations].present? ? ann[:denotations].length : 0)}
+    relations_num = annotations_collection.inject(0){|sum, ann| sum += (ann[:relations].present? ? ann[:relations].length : 0)}
     pmdocs_count = docs.where(sourcedb: "PubMed").count
     pmcdocs_count = docs.where(sourcedb: "PMC").count
     update_attributes(
       :pmdocs_count => pmdocs_count,
       :pmcdocs_count => pmcdocs_count,
-      :denotations_count => denotations_count,
-      :relations_count => relations_count,
-      :annotations_count => denotations_count + relations_count
+      :denotations_num => denotations_num,
+      :relations_num => relations_num,
+      :annotations_count => denotations_num + relations_num
     )
   end
 end

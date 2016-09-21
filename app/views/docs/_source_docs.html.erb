@@ -38,7 +38,7 @@
       <% if params[:keywords].present? -%>
         <%= t('views.shared.annotations_count') -%>
       <% else -%>
-        <%= sortable(Doc, 'denotations_count', t('views.shared.annotations_count')) -%>
+        <%= sortable(Doc, 'denotations_num', t('views.shared.annotations_count')) -%>
       <% end -%>
     </span>
   </th>

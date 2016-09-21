@@ -1,11 +1,11 @@
 class Relation < ActiveRecord::Base
-  belongs_to :project, :counter_cache => true
+  belongs_to :project
   belongs_to :subj, :polymorphic => true
   belongs_to :obj, :polymorphic => true
 
   has_many :modifications, :as => :obj, :dependent => :destroy
 
-  attr_accessible :hid, :pred
+  attr_accessible :hid, :pred, :subj, :obj, :project_id
 
   validates :hid,     :presence => true
   validates :pred,    :presence => true
@@ -35,8 +35,8 @@ class Relation < ActiveRecord::Base
       order('relations.id ASC') 
   }
     
-  after_save :increment_subcatrels_count, :increment_project_relations_count, :increment_project_annotations_count, :update_project_updated_at
-  after_destroy :decrement_subcatrels_count, :decrement_project_relations_count, :decrement_project_annotations_count, :update_project_updated_at
+  after_save :increment_subcatrels_count, :increment_project_relations_num, :update_project_updated_at
+  after_destroy :decrement_subcatrels_count, :decrement_project_relations_num, :update_project_updated_at
   
   def get_hash
     hrelation = Hash.new
@@ -47,7 +47,7 @@ class Relation < ActiveRecord::Base
     hrelation
   end
   
-  def self.project_relations_count(project_id, relations)
+  def self.project_relations_num(project_id, relations)
     relations.project_relations.count[project_id].to_i
   end
   
@@ -62,7 +62,19 @@ class Relation < ActiveRecord::Base
       Doc.decrement_counter(:subcatrels_count, subj.doc_id)
     end
   end
-  
+
+  def increment_project_relations_num
+    Project.increment_counter(:relations_num, self.project.id)
+  end
+
+  def decrement_project_relations_num
+    Project.decrement_counter(:relations_num, self.project.id)
+  end
+
+  def update_project_updated_at
+    self.project.update_updated_at
+  end
+
   def self.sql_find(params, current_user, project)
     if params[:sql].present?
       current_user_id = current_user.present? ? current_user.id : nil
@@ -80,33 +92,5 @@ class Relation < ActiveRecord::Base
       end     
     end     
   end
-  
-  # after save
-  def increment_project_relations_count
-    if self.project.present? && self.project.projects.present?
-      project.projects.each do |project|
-        Project.increment_counter(:relations_count, project.id)
-      end
-    end
-  end
 
-  def increment_project_annotations_count
-    Project.increment_counter(:annotations_count, project.id) if self.project.present?
-  end
-
-  def decrement_project_relations_count
-    if self.project.present? && self.project.projects.present?
-      project.projects.each do |project|
-        Project.decrement_counter(:relations_count, project.id)
-      end
-    end
-  end
-
-  def decrement_project_annotations_count
-    Project.decrement_counter(:annotations_count, project.id) if self.project.present?
-  end
-
-  def update_project_updated_at
-    project.update_attribute(:updated_at, DateTime.now) if self.project.present?
-  end
 end
