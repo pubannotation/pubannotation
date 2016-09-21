@@ -407,6 +407,9 @@ class AnnotationsController < ApplicationController
           filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.#{ext}")
           FileUtils.mv params[:upfile].path, filepath
 
+          # job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)
+          # job.perform()
+
           priority = project.jobs.unfinished.count
           delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
           Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})

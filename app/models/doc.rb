@@ -115,7 +115,7 @@ class Doc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  scope :relations_count,
+  scope :relations_num,
     joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
     .group('docs.id')
     .order('count(relations.id) DESC')
@@ -241,12 +241,19 @@ class Doc < ActiveRecord::Base
     raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
     raise ArgumentError, "sourceid is empty" unless sourceid.present?
 
-    begin
-      doc_sequence = Object.const_get("DocSequencer#{sourcedb}").new(sourceid)
+    sequencer = begin
+      Object.const_get("DocSequencer#{sourcedb}")
+    rescue => e
+      raise IOError, "Unknown sourcedb: #{sourcedb}"
+    end
+
+    doc_sequence = begin
+      sequencer.new(sourceid)
     rescue => e
       raise IOError, "Failed to get the document"
     end
-    raise IOError, "Failed to get the document" if doc_sequence.divs.nil?
+
+    raise IOError, "Empty document" if doc_sequence.divs.nil?
 
     divs_hash = doc_sequence.divs
 
@@ -316,21 +323,21 @@ class Doc < ActiveRecord::Base
   def self.order_by(docs, order)
     if docs.present?
       case order
-      when 'denotations_count'
-        docs.denotations_count
-      when 'same_sourceid_denotations_count'
+      when 'denotations_num'
+        docs.denotations_num
+      when 'same_sourceid_denotations_num'
         # docs
-          # .select('docs.*, SUM(CASE WHEN docs.sourceid = docs.sourceid THEN denotations_count ELSE 0 END) AS denotations_count_sum')
+          # .select('docs.*, SUM(CASE WHEN docs.sourceid = docs.sourceid THEN denotations_num ELSE 0 END) AS denotations_num_sum')
           # .group('docs.id')
-          # .order('denotations_count_sum DESC')
+          # .order('denotations_num_sum DESC')
         if docs.first.sourcedb == 'PubMed'
-          docs.order('denotations_count DESC')
+          docs.order('denotations_num DESC')
         else
-          docs.sort{|a, b| b.same_sourceid_denotations_count <=> a.same_sourceid_denotations_count}
+          docs.sort{|a, b| b.same_sourceid_denotations_num <=> a.same_sourceid_denotations_num}
         end
-      when 'relations_count'
-        docs.relations_count
-      when 'same_sourceid_relations_count'
+      when 'relations_num'
+        docs.relations_num
+      when 'same_sourceid_relations_num'
         # docs
           # .select('docs.*, CASE WHEN docs.sourceid = docs.sourceid THEN SUM(docs.subcatrels_count) ELSE 0 END AS subcatrels_count_sum')
           # .group('docs.id')
@@ -338,7 +345,7 @@ class Doc < ActiveRecord::Base
         if docs.first.sourcedb == 'PubMed'
           docs.order('subcatrels_count DESC')
         else
-          docs.sort{|a, b| b.same_sourceid_relations_count <=> a.same_sourceid_relations_count}
+          docs.sort{|a, b| b.same_sourceid_relations_num <=> a.same_sourceid_relations_num}
         end
       else
         docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
@@ -349,22 +356,22 @@ class Doc < ActiveRecord::Base
   end    
   
   # returns relations count which belongs to project and doc
-  def project_relations_count(project_id)
-    count = Relation.project_relations_count(project_id, subcatrels)
+  def project_relations_num(project_id)
+    count = Relation.project_relations_num(project_id, subcatrels)
   end
   
   # returns doc.relations count
-  def relations_count
+  def relations_num
     subcatrels.size
   end
   
-  def same_sourceid_denotations_count
+  def same_sourceid_denotations_num
     #denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
     #Denotation.select('doc_id').where('doc_id IN (?)', denotation_doc_ids).size
-    Doc.where(:sourceid => self.sourceid).sum('denotations_count')
+    Doc.where(:sourceid => self.sourceid).sum('denotations_num')
   end
 
-  def same_sourceid_relations_count
+  def same_sourceid_relations_num
     Doc.where(:sourceid => self.sourceid).sum('subcatrels_count')
   end
   
@@ -463,9 +470,9 @@ class Doc < ActiveRecord::Base
     _projects.inject([]){|t, p| t << {project:p.name, denotations:self.hdenotations(p, span)}}
   end
 
-  def get_denotations_count(project = nil, span = nil)
+  def get_denotations_num(project = nil, span = nil)
     if project.nil? && span.nil?
-      self.denotations_count
+      self.denotations_num
     elsif span.nil?
       self.denotations.where("denotations.project_id = ?", project.id).count
     else

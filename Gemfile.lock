@@ -32,6 +32,8 @@ GEM
       activesupport (= 3.2.22.2)
       arel (~> 3.0.2)
       tzinfo (~> 0.3.29)
+    activerecord-import (0.3.1)
+      activerecord (~> 3.0)
     activeresource (3.2.22.2)
       activemodel (= 3.2.22.2)
       activesupport (= 3.2.22.2)
@@ -296,6 +298,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activerecord-import (~> 0.3.1)
   backup
   coffee-rails (~> 3.2.1)
   cucumber
@@ -338,3 +341,6 @@ DEPENDENCIES
   whenever
   wikipedia-client
   zip-zip
+
+BUNDLED WITH
+   1.11.2

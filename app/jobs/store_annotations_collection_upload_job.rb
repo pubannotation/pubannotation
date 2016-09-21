@@ -5,6 +5,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 	include StateManagement
 
 	def perform
+    # read the filenames of json files into the array jsonfiles
     dirpath = nil
     jsonfiles = if filepath.end_with?('.json')
       Dir.glob(filepath)
@@ -40,10 +41,13 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
           divs_added = project.add_doc(annotations[:sourcedb], annotations[:sourceid])
           sourcedbs << annotations[:sourcedb] unless divs_added.nil?
 
-          annotation_transaction << annotations
-          transaction_size += annotations[:denotations].size
+          if annotations[:denotations].present?
+            annotation_transaction << annotations
+            transaction_size += annotations[:denotations].size
+          end
+
           if transaction_size > 1000
-            messages = project.store_annotation_transaction(annotation_transaction, options)
+            messages = project.store_annotations_collection(annotation_transaction, options)
             messages.each {|m| @job.messages << Message.create(m)} unless messages.nil?
             annotation_transaction = []
             transaction_size = 0
@@ -60,7 +64,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
     	@job.update_attribute(:num_dones, i + 1)
     end
 
-    messages = project.store_annotation_transaction(annotation_transaction, options)
+    messages = project.store_annotations_collection(annotation_transaction, options)
     messages.each {|m| @job.messages << Message.create(m)} unless messages.nil?
     unless sourcedbs.empty?
       ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
