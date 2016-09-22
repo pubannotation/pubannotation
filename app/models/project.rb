@@ -1132,16 +1132,16 @@ class Project < ActiveRecord::Base
 
   def delete_doc_annotations(doc)
     modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
-    Modification.delete(modifications)
     decrement!(:modifications_num, modifications.length)
+    Modification.delete(modifications)
 
     relations = doc.subcatrels.where(project_id: self.id)
-    Relation.delete(relations)
     decrement!(:relations_num, relations.length)
+    Relation.delete(relations)
 
     denotations = doc.denotations.where(project_id: self.id)
-    Denotation.delete(denotations)
     decrement!(:denotations_num, denotations.length)
+    Denotation.delete(denotations)
 
     update_updated_at
   end
