@@ -75,14 +75,6 @@ module AnnotationsHelper
     end
   end
 
-  # to work on the hash representation of denotations
-  # to assume that there is no bag representation to this method
-  def align_denotations(denotations, str1, str2)
-    return nil if denotations.nil?
-    align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-    align.transform_hdenotations(denotations).select{|a| a[:span][:begin].to_i <= a[:span][:end].to_i }
-  end
-
   # normalize annotations passed by an HTTP call
   def normalize_annotations!(annotations)
     raise ArgumentError, "annotations must be a hash." unless annotations.class == Hash

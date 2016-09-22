@@ -2,7 +2,7 @@ require 'fileutils'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_tgz]
+  before_filter :authenticate_user!, :except => [:align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_tgz]
   include DenotationsHelper
 
   # annotations for doc without project
@@ -325,6 +325,65 @@ class AnnotationsController < ApplicationController
         format.html {redirect_to (project.present? ? project_path(project.name) : home_path), notice: e.message}
         format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
       end
+    end
+  end
+
+  def align
+    begin
+      if params[:annotations]
+        annotations = params[:annotations].symbolize_keys
+      elsif params[:text].present?
+        annotations = {:text => params[:text]}
+        annotations[:denotations] = params[:denotations] if params[:denotations].present?
+        annotations[:relations] = params[:relations] if params[:relations].present?
+        annotations[:modifications] = params[:modifications] if params[:modifications].present?
+      else
+        raise ArgumentError, t('controllers.annotations.create.no_annotation')
+      end
+
+      annotations[:sourcedb] = params[:sourcedb]
+      annotations[:sourceid] = params[:sourceid]
+      annotations[:divid]    = params[:divid]
+
+      annotations = normalize_annotations!(annotations)
+      annotations_collection = [annotations]
+
+      if params[:divid].present?
+        doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
+        unless doc.present?
+          divs = Doc.import_from_sequence(params[:sourcedb], params[:sourceid])
+          raise IOError, "Failed to get the document" unless divs.present?
+          expire_fragment("sourcedb_counts")
+          expire_fragment("count_#{params[:sourcedb]}")
+          doc = divs[params[:divid]]
+        end
+      else
+        divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+        unless divs.present?
+          divs = Doc.import_from_sequence(params[:sourcedb], params[:sourceid])
+          raise IOError, "Failed to get the document" unless divs.present?
+          expire_fragment("sourcedb_counts")
+          expire_fragment("count_#{params[:sourcedb]}")
+        end
+        doc = divs[0] if divs.length == 1
+      end
+
+      annotations = if doc.present?
+        Annotation.align_annotations(annotations, doc)
+      elsif divs.present?
+        Annotation.align_annotations_divs(annotations, divs)
+      else
+        raise "Could not find the document."
+      end
+
+      respond_to do |format|
+        format.json {render json: annotations}
+      end
+
+    # rescue => e
+    #   respond_to do |format|
+    #     format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
+    #   end
     end
   end
 

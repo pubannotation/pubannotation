@@ -293,4 +293,67 @@ class SpansController < ApplicationController
       flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"
     end
   end
+
+  def get_url
+    if params[:divid].present?
+      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
+      unless doc.present?
+        divs = Doc.import_from_sequence(params[:sourcedb], params[:sourceid])
+        raise IOError, "Failed to get the document" unless divs.present?
+        expire_fragment("sourcedb_counts")
+        expire_fragment("count_#{params[:sourcedb]}")
+        doc = divs[params[:divid]]
+      end
+    else
+      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      unless divs.present?
+        divs = Doc.import_from_sequence(params[:sourcedb], params[:sourceid])
+        raise IOError, "Failed to get the document" unless divs.present?
+        expire_fragment("sourcedb_counts")
+        expire_fragment("count_#{params[:sourcedb]}")
+      end
+      doc = divs[0] if divs.length == 1
+    end
+
+    url = if params[:text]
+      text = params[:text].strip
+      annotations = {
+        text: text,
+        sourcedb: params[:sourcedb],
+        sourceid: params[:sourceid],
+        denotations:[{span:{begin:0, end:text.length}, obj:'span'}]
+      }
+
+      annotations = if doc.present?
+        Annotation.align_annotations(annotations, doc)
+      elsif divs.present?
+        Annotation.align_annotations_divs(annotations, divs).select{|ann| ann[:denotations].present?}.first
+      else
+        raise "Could not find the document."
+      end
+
+      raise "Could not find the string in the specified document." if annotations.nil?
+
+      res  = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
+      res += "/divs/#{annotations[:divid]}" if annotations[:divid].present?
+
+      span = annotations[:denotations].first[:span]
+      res += "/spans/#{span[:begin]}-#{span[:end]}"
+    else
+      res  = "#{home_path}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
+      res += "/divs/#{annotations[:divid]}" if annotations[:divid].present?
+    end
+
+    respond_to do |format|
+      format.html {render text: url, status: :created, location: url}
+      format.json {render text: url, status: :created, location: url}
+      format.txt  {render text: url, status: :created, location: url}
+    end
+  rescue => e
+    respond_to do |format|
+      format.html {render text: e.message, status: :unprocessable_entity}
+      format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      format.txt  {render text: e.message, status: :unprocessable_entity}
+    end
+  end
 end

@@ -324,7 +324,7 @@ class Doc < ActiveRecord::Base
     if docs.present?
       case order
       when 'denotations_num'
-        docs.denotations_num
+        docs.denotations_count
       when 'same_sourceid_denotations_num'
         # docs
           # .select('docs.*, SUM(CASE WHEN docs.sourceid = docs.sourceid THEN denotations_num ELSE 0 END) AS denotations_num_sum')

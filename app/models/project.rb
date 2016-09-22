@@ -808,58 +808,6 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def align_annotations(annotations, doc)
-    original_text = annotations[:text]
-    annotations[:text] = doc.original_body.nil? ? doc.body : doc.original_body
-
-    if annotations[:denotations].present?
-      num = annotations[:denotations].length
-      annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
-      raise "Alignment failed. Text may be too much different." if annotations[:denotations].length < num
-      annotations[:denotations].each{|d| raise "Alignment failed. Text may be too much different." if d[:span][:begin].nil? || d[:span][:end].nil?}
-    end
-
-    annotations.select{|k,v| v.present?}
-  end
-
-  def align_annotations_divs(annotations, divs)
-    if divs.length == 1
-      [align_annotations(annotations, divs[0])]
-    else
-      annotations_collection = []
-
-      div_index = divs.collect{|d| [d.serial, d]}.to_h
-      divs_hash = divs.collect{|d| d.to_hash}
-      fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
-
-      fit_index.each do |i|
-        if i[0] >= 0
-          ann = {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], divid:i[0]}
-          idx = {}
-          ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
-          if annotations[:denotations].present?
-            ann[:denotations] = annotations[:denotations]
-                                 .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
-                                .collect{|a| n = a.dup; n[:span] = a[:span].dup; n}
-                                   .each{|a| a[:span][:begin] -= i[1][0]; a[:span][:end] -= i[1][0]}
-            ann[:denotations].each{|a| idx[a[:id]] = true}
-          end
-          if annotations[:relations].present?
-            ann[:relations] = annotations[:relations].select{|a| idx[a[:subj]] && idx[a[:obj]]}
-            ann[:relations].each{|a| idx[a[:id]] = true}
-          end
-          if annotations[:modifications].present?
-            ann[:modifications] = annotations[:modifications].select{|a| idx[a[:obj]]}
-            ann[:modifications].each{|a| idx[a[:id]] = true}
-          end
-          annotations_collection << align_annotations(ann, div_index[i[0]])
-        end
-      end
-      # {div_index: fit_index}
-      annotations_collection
-    end
-  end
-
   def save_annotations(annotations, doc, options = nil)
     raise ArgumentError, "nil document" unless doc.present?
     raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
@@ -870,7 +818,7 @@ class Project < ActiveRecord::Base
       return {result: 'upload is skipped due to existing annotations'} if num > 0
     end
 
-    annotations = align_annotations(annotations, doc)
+    annotations = Annotation.align_annotations(annotations, doc)
 
     delete_doc_annotations(doc) if options[:mode] == 'replace'
     instantiate_and_save_annotations(annotations, doc)
@@ -888,7 +836,7 @@ class Project < ActiveRecord::Base
       return {result: 'upload is skipped due to existing annotations'} if num > 0
     end
 
-    annotations_collection = align_annotations_divs(annotations, divs)
+    annotations_collection = Annotation.align_annotations_divs(annotations, divs)
 
     divs.each{|div| delete_doc_annotations(div)} if options[:mode] == 'replace'
     instantiate_and_save_annotations_collection(annotations_collection)
@@ -932,14 +880,14 @@ class Project < ActiveRecord::Base
 
       if doc.present?
         begin
-          col << align_annotations(annotations, doc)
+          col << Annotation.align_annotations(annotations, doc)
           delete_doc_annotations(doc) if options[:mode] == 'replace'
         rescue => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
         end
       elsif divs.present?
         begin
-          col += align_annotations_divs(annotations, divs)
+          col += Annotation.align_annotations_divs(annotations, divs)
           divs.each{|div| delete_doc_annotations(div)} if options[:mode] == 'replace'
         rescue => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
