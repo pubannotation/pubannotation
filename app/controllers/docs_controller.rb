@@ -310,9 +310,9 @@ class DocsController < ApplicationController
     raise ArgumentError, "project id has to be specified." unless params[:project_id].present?
 
     project = Project.editable(current_user).find_by_name(params[:project_id])
-    raise ArgumentError, "There is no such project in your management." unless project.present?
+    raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
-    doc_hash = if params[:doc].present?
+    doc_hash = if params[:doc].present? && params[:commit].present?
       params[:doc] 
     else
       {
@@ -369,7 +369,7 @@ class DocsController < ApplicationController
   def add
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
+      raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
       # get the docspecs list
       docspecs =  if params["_json"] && params["_json"].class == Array
@@ -418,7 +418,7 @@ class DocsController < ApplicationController
   def import
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
+      raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
       source_project = Project.find_by_name(params["select_project"])
       raise ArgumentError, "There is no such a project." if source_project.nil?
