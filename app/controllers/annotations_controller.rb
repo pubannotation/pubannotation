@@ -2,8 +2,17 @@ require 'fileutils'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_tgz]
+  before_filter :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_tgz]
   include DenotationsHelper
+
+  def index
+    message = "The route does not exist.\n"
+    respond_to do |format|
+      format.html {redirect_to home_path, notice: message}
+      format.json {render json: {message:message}, status: :unprocessable_entity}
+      format.txt  {render text: message, status: :unprocessable_entity}
+    end
+  end
 
   # annotations for doc without project
   def doc_annotations_index

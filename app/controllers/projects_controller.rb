@@ -226,36 +226,50 @@ class ProjectsController < ApplicationController
   def delete_all_docs
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
+      raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
       message = if project.docs.exists?
         project.delete_annotations
         project.docs.clear
         ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
         ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-        "This project is emptied."
+        "The project is emptied.\n"
       else
-        "There is no document in this project."
+        "There was already no document in this project, and nothing happened.\n"
       end
 
       respond_to do |format|
-        format.html {redirect_to project_path(project.name), status: :see_other, notice: message}
-        format.json {render status: :no_content}
+        format.html {redirect_to project_path(project.name), notice: message}
+        format.json {render json:{message: message}}
+        format.txt  {render text:message}
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_path(project.name), notice: e.message}
+        format.json {render json:{message: e.message}, status: :unprocessable_entity}
+        format.txt  {render text:e.message, status: :unprocessable_entity}
       end
     end
   end
 
   def destroy_all_annotations
     begin
-      @project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless @project.present?
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
-      @project.delete_annotations
-      message = "Annotations in this project are all deleted."
+      project.delete_annotations
+      message = "Annotations in the project are all deleted.\n"
 
       respond_to do |format|
-        format.html {redirect_to project_path(@project.name), status: :see_other, notice: message}
-        format.json {render status: :no_content}
+        format.html {redirect_to project_path(project.name), notice: message}
+        format.json {render json:{message: message}}
+        format.txt  {render text:message}
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to project_path(project.name), notice: e.message}
+        format.json {render json:{message: e.message}, status: :unprocessable_entity}
+        format.txt  {render text:e.message, status: :unprocessable_entity}
       end
     end
   end
