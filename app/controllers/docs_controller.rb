@@ -480,42 +480,65 @@ class DocsController < ApplicationController
   # DELETE /docs/1
   # DELETE /docs/1.json
   def destroy
-    @doc = Doc.find(params[:id])
-    if params[:project_id].present?
-      project = Project.find_by_name(params[:project_id])
-      project.docs.delete(@doc)
-      expire_fragment("sourcedb_counts_#{project.name}")
-      expire_fragment("count_docs_#{project.name}")
-      expire_fragment("count_#{@doc.sourcedb}_#{project.name}")
+    begin
+      doc = Doc.find(params[:id])
+      if params[:project_id].present?
+        project = Project.editable(current_user).find_by_name(params[:project_id])
+        raise "There is no such project in your management." unless project.present?
+        project.docs.delete(doc)
+        expire_fragment("sourcedb_counts_#{project.name}")
+        expire_fragment("count_docs_#{project.name}")
+        expire_fragment("count_#{doc.sourcedb}_#{project.name}")
 
-      redirect_path = records_project_docs_path(params[:project_id])
-    else
-      @doc.destroy
-      redirect_path = home_path
-    end
+        redirect_path = records_project_docs_path(params[:project_id])
+      else
+        raise SecurityError, "Not authorized" unless current_user && current_user.root? == true
+        doc.destroy
+        redirect_path = home_path
+      end
 
-    respond_to do |format|
-      format.html { redirect_to redirect_path }
-      format.json { head :no_content }
+      message = 'the document is deleted from the project.'
+      respond_to do |format|
+        format.html { redirect_to redirect_path }
+        format.json { render json: {message: message} }
+        format.txt  { render text: message }
+      end
+    rescue => e
+      respond_to do |format|
+        format.html { redirect_to redirect_path, notice: e.message }
+        format.json { render json: {message: e.message}, status: :unprocessable_entity }
+        format.txt  { render text: e.message, status: :unprocessable_entity }
+      end
     end
   end
-  
+
   def project_delete_doc
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
+      raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
       divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      raise "The document does not exist in the project.\n" unless divs.present?
 
       divs.each{|div| project.delete_doc(div, current_user)}
       expire_fragment("sourcedb_counts_#{project.name}")
       expire_fragment("count_docs_#{project.name}")
       expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
+
+      message = "the document is deleted from the project.\n"
+
+      respond_to do |format|
+        format.html { redirect_to project_docs_path(project.name), notice:message }
+        format.json { render json: {message: message} }
+        format.txt  { render text: message }
+      end
     rescue => e
-      flash[:notice] = e
+      respond_to do |format|
+        format.html { redirect_to project_docs_path(project.name), notice:e.message }
+        format.json { render json: {message: e.message}, status: :unprocessable_entity }
+        format.txt  { render text: e.message, status: :unprocessable_entity }
+      end
     end
-    redirect_to project_docs_path(project.name)
   end
 
   def store_span_rdf

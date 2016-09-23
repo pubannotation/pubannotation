@@ -77,7 +77,7 @@ class Doc < ActiveRecord::Base
 
   UserSourcedbSeparator = '@'
   after_save :expire_page_cache
-  before_destroy :decrement_docs_counter
+  before_destroy :decrement_docs_counter_before_destroy
   after_destroy :expire_page_cache
   # before_validation :attach_sourcedb_suffix
   include ApplicationHelper
@@ -705,7 +705,7 @@ class Doc < ActiveRecord::Base
   end
 
   # before destroy
-  def decrement_docs_counter
+  def decrement_docs_counter_before_destroy
     if self.projects.present?
       self.projects.each do |project|
         project.decrement_docs_counter(self)

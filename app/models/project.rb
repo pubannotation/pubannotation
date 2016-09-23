@@ -628,6 +628,13 @@ class Project < ActiveRecord::Base
     divs
   end
 
+  def delete_doc(doc, current_user)
+    raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
+    self.delete_doc_annotations(doc)
+    doc.projects.delete(self)
+    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
+  end
+
   def create_user_sourcedb_docs(options = {})
     divs = []
     num_failed = 0
@@ -1111,13 +1118,6 @@ class Project < ActiveRecord::Base
   # delete empty value hashes
   def cleanup_namespaces
     namespaces.reject!{|namespace| namespace['prefix'].blank? || namespace['uri'].blank?} if namespaces.present?
-  end
-
-  def delete_doc(doc, current_user)
-    raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
-    self.delete_doc_annotations(doc)
-    self.docs.delete(doc)
-    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
   end
 
   def delete_annotations
