@@ -34,7 +34,8 @@ module DocsHelper
 
   def sourcedb_count(user, project)
     counts = if project.nil?
-      Doc.count_per_sourcedb(user)
+      # Doc.count_per_sourcedb(user)
+      Doc.count_per_sourcedb(nil)
     else
       project.docs.where("serial = ?", 0).group(:sourcedb).count
     end
