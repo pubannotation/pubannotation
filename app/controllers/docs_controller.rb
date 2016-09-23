@@ -345,6 +345,7 @@ class DocsController < ApplicationController
       if @doc.save
         @project, notice = get_project(params[:project_id])
         @project.docs << @doc if @project.present?
+        expire_fragment("sourcedb_counts_#{@project.name}")
         expire_fragment("count_docs_#{@project.name}")
         expire_fragment("count_#{@doc.sourcedb}_#{@project.name}")
 
@@ -352,8 +353,6 @@ class DocsController < ApplicationController
         format.html { 
           if @project.present?
             redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, doc_hash[:sourcedb], doc_hash[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
-            # redirect_to project_doc_path(@project.name, @doc), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
-          else
             redirect_to @doc, notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
           end 
         }
