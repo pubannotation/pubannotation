@@ -59,6 +59,15 @@ curl -u "your_email_address:your_password" -H "content-type:application/json" -d
 * __-d '{"text":"This is a sample text"}'__
    * Tells cURL to send (by the POST method) the text in JSON.
 
+The above examples do not specify the sourcedb and sourceid.
+In the case the sourcedb will be set to be _@your_username_, and the sourceid to be the smallest integer that does not already exist as a sourceid within the sourcedb.
+
+If you want, you can also specify the sourcedb and the sourceid as you like.
+However, the sourcedb has to be prefixed with your username, e.g., _sourcedb_name@your_username_:
+<textarea class="bash" readonly="true" style="height:7em">
+curl -u "your_email_address:your_password" -H "content-type:application/json" -d &apos;{"sourcedb":"your_sourcedb@your_username", "text":"This is a sample text."}&apos; http://pubannotation.org/projects/your_project/docs.json
+</textarea>
+
 Using JSON, you can send multiple document specifications:
 <textarea class="bash" readonly="true" style="height:7em">
 NOT YET IMPLEMENTED.
