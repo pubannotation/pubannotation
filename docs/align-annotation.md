@@ -2,7 +2,7 @@
 layout: docs
 title: Aligning annotations
 prev_section: submit-annotation
-next_section: compare-project
+next_section: find-location
 permalink: /docs/align-annotation/
 ---
 
