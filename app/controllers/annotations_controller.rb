@@ -474,7 +474,7 @@ class AnnotationsController < ApplicationController
         if project.jobs.count < 10
           options = {mode: params[:mode].present? ? params[:mode] : 'replace'}
 
-          filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.#{ext}")
+          filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
           FileUtils.mv params[:upfile].path, filepath
 
           # job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)

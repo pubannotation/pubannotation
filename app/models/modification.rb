@@ -34,4 +34,5 @@ class Modification < ActiveRecord::Base
   def decrement_project_modifications_num
     Project.decrement_counter(:modifications_num, self.project.id)
   end
+
 end

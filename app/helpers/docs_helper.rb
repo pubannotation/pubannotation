@@ -15,8 +15,8 @@ module DocsHelper
           @project.docs.where(sourcedb: @sourcedb, serial: 0).count
         end
       else
-        count = @project.pmdocs_count + @project.pmcdocs_count
-        count = @project.docs.where(serial: 0).count if count < 1000
+        # count = @project.pmdocs_count + @project.pmcdocs_count
+        count = @project.docs.where(serial: 0).count #if count < 1000
       end
     else
       if @sourcedb

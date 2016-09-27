@@ -4,9 +4,9 @@
 	<td><%= source_doc.body[0...100] -%></td>
 	<td style="text-align:right">
     <% if source_doc.has_divs? -%>
-      <%= link_to source_doc.projects_count, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
+      <%= link_to source_doc.projects_num, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
     <% else -%>
-      <%= link_to source_doc.projects_count, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
+      <%= link_to source_doc.projects_num, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
     <% end -%>
   </td>
   <td style="text-align:right"><%= annotations_count_helper(@project, source_doc) -%></td>

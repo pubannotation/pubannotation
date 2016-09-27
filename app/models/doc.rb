@@ -92,8 +92,8 @@ class Doc < ActiveRecord::Base
   has_many :subcatrelmods, :class_name => 'Modification', :through => :subcatrels, :source => :modifications
 
   has_and_belongs_to_many :projects,
-    :after_add => [:increment_docs_counter, :update_annotations_updated_at, :increment_docs_projects_counter, :update_es_doc],
-    :after_remove => [:decrement_docs_counter, :update_annotations_updated_at, :decrement_docs_projects_counter, :update_es_doc]
+    :after_add => [:increment_docs_projects_counter, :update_es_doc],
+    :after_remove => [:decrement_docs_projects_counter, :update_es_doc]
 
   validates :body,     :presence => true
   validates :sourcedb, :presence => true
@@ -164,7 +164,7 @@ class Doc < ActiveRecord::Base
   }
   
   # default sort order 
-  DefaultSortKey = "projects_count DESC"
+  DefaultSortKey = "projects_num DESC"
 
   def update_es_doc(project)
     self.__elasticsearch__.index_document
@@ -199,11 +199,11 @@ class Doc < ActiveRecord::Base
   end
 
   def increment_docs_projects_counter(project)
-    Doc.increment_counter(:projects_count, self.id)
+    Doc.increment_counter(:projects_num, self.id)
   end
 
   def decrement_docs_projects_counter(project)
-    Doc.decrement_counter(:projects_count, self.id)
+    Doc.decrement_counter(:projects_num, self.id)
     self.reload
   end
 

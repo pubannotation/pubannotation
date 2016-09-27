@@ -29,7 +29,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
       begin
         o = JSON.parse(json, symbolize_names:true)
       rescue => e
-        @job.messages << Message.create({body: "[#{File.basename(jsonfile)}] " + e.message})
+        @job.messages << Message.create({body: "[#{File.basename(jsonfile)}] " + "JSON parse error. Not a valid JSON object."})
         next
       end
       annotation_collection = o.is_a?(Array) ? o : [o]

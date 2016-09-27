@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160916063207) do
+ActiveRecord::Schema.define(:version => 20160927033635) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -79,15 +79,15 @@ ActiveRecord::Schema.define(:version => 20160916063207) do
     t.string   "sourceid"
     t.integer  "serial"
     t.string   "section"
-    t.datetime "created_at",                          :null => false
-    t.datetime "updated_at",                          :null => false
+    t.datetime "created_at",                           :null => false
+    t.datetime "updated_at",                           :null => false
     t.integer  "denotations_count", :default => 0
     t.integer  "subcatrels_count",  :default => 0
-    t.boolean  "delta",             :default => true, :null => false
-    t.integer  "projects_count",    :default => 0
+    t.integer  "projects_num",      :default => 0
+    t.boolean  "flag",              :default => false, :null => false
   end
 
-  add_index "docs", ["projects_count"], :name => "index_docs_on_projects_count"
+  add_index "docs", ["projects_num"], :name => "index_docs_on_projects_count"
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
   add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
   add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"

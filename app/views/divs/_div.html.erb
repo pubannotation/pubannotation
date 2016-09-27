@@ -3,7 +3,7 @@
         <td style="text-align:center"><%= div.section %></td>
         <td style="text-align:left"><%= div.body[0...100] %></td>
 		<td style="text-align:right">
-			<%= link_to div.projects_count, doc_sourcedb_sourceid_divs_show_path(div.sourcedb, div.sourceid, div.serial) -%>
+			<%= link_to div.projects_num, doc_sourcedb_sourceid_divs_show_path(div.sourcedb, div.sourceid, div.serial) -%>
 		</td>
         <td style="text-align:right"><%= div.body.length %></td>
         <td style="text-align:right"><%= annotations_count_helper(@project, div) %></td>

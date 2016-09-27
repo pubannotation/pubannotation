@@ -307,58 +307,57 @@ class DocsController < ApplicationController
   # POST /docs.json
   # Creation of document is only allowed for single division documents.
   def create
-    raise ArgumentError, "project id has to be specified." unless params[:project_id].present?
+    begin
+      raise ArgumentError, "project id has to be specified." unless params[:project_id].present?
 
-    project = Project.editable(current_user).find_by_name(params[:project_id])
-    raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
+      @project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless @project.present?
 
-    doc_hash = if params[:doc].present? && params[:commit].present?
-      params[:doc] 
-    else
-      {
-        source: params[:source],
-        sourcedb: params[:sourcedb] || '',
-        sourceid: params[:sourceid],
-        serial: params[:divid] || 0,
-        section: params[:section],
-        body: params[:text]
-      }
-    end
+      doc_hash = if params[:doc].present? && params[:commit].present?
+        params[:doc] 
+      else
+        {
+          source: params[:source],
+          sourcedb: params[:sourcedb] || '',
+          sourceid: params[:sourceid],
+          serial: params[:divid] || 0,
+          section: params[:section],
+          body: params[:text]
+        }
+      end
 
-    # sourcedb control
-    if doc_hash[:sourcedb].include?(Doc::UserSourcedbSeparator)
-      parts = doc_hash[:sourcedb].split(Doc::UserSourcedbSeparator)
-      raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
-      raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
-    else
-      doc_hash[:sourcedb] += "#{Doc::UserSourcedbSeparator}#{current_user.username}"
-    end
+      # sourcedb control
+      if doc_hash[:sourcedb].include?(Doc::UserSourcedbSeparator)
+        parts = doc_hash[:sourcedb].split(Doc::UserSourcedbSeparator)
+        raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
+        raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
+      else
+        doc_hash[:sourcedb] += "#{Doc::UserSourcedbSeparator}#{current_user.username}"
+      end
 
-    # sourceid control
-    unless doc_hash[:sourceid].present?
-      last_id = project.docs.where(sourcedb: doc_hash[:sourcedb]).pluck(:sourceid).max_by{|i| i.to_i}
-      doc_hash[:sourceid] = last_id.nil? ? '1' : last_id.next
-    end
+      # sourceid control
+      unless doc_hash[:sourceid].present?
+        last_id = @project.docs.where(sourcedb: doc_hash[:sourcedb]).pluck(:sourceid).max_by{|i| i.to_i}
+        doc_hash[:sourceid] = last_id.nil? ? '1' : last_id.next
+      end
 
-    @doc = Doc.new(doc_hash)
-    respond_to do |format|
+      @doc = Doc.new(doc_hash)
       if @doc.save
-        @project, notice = get_project(params[:project_id])
-        @project.docs << @doc if @project.present?
+        @doc.projects << @project
         expire_fragment("sourcedb_counts_#{@project.name}")
         expire_fragment("count_docs_#{@project.name}")
         expire_fragment("count_#{@doc.sourcedb}_#{@project.name}")
-
-        get_project(params[:project_id])
-        format.html { 
-          if @project.present?
-            redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, doc_hash[:sourcedb], doc_hash[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
-            redirect_to @doc, notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc'))
-          end 
-        }
-        format.json { render json: @doc, status: :created, location: @doc }
       else
-        format.html { render action: "new" }
+        raise IOError, "could not create the document."
+      end
+
+      respond_to do |format|
+        format.html { redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, doc_hash[:sourcedb], doc_hash[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc')) }
+        format.json { render json: @doc, status: :created, location: @doc }
+      end
+    rescue => e
+      respond_to do |format|
+        format.html { redirect_to new_project_doc_path(@project.name), notice: e.message }
         format.json { render json: @doc.errors, status: :unprocessable_entity }
       end
     end
@@ -519,7 +518,7 @@ class DocsController < ApplicationController
       divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       raise "The document does not exist in the project.\n" unless divs.present?
 
-      divs.each{|div| project.delete_doc(div, current_user)}
+      divs.each{|div| project.delete_doc(div)}
       expire_fragment("sourcedb_counts_#{project.name}")
       expire_fragment("count_docs_#{project.name}")
       expire_fragment("count_#{params[:sourcedb]}_#{project.name}")

@@ -229,13 +229,14 @@ class ProjectsController < ApplicationController
       raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
       message = if project.docs.exists?
-        project.delete_annotations
-        project.docs.clear
-        ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
-        ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-        "The project is emptied.\n"
+        project.delete_docs
+
+        priority = project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project), priority: priority, queue: :general
+        Job.create({name:'Delete all docs', project_id:project.id, delayed_job_id:delayed_job.id})
+        "The task, 'delete all docs', is created."
       else
-        "There was already no document in this project, and nothing happened.\n"
+        "There was already no document in the project, and nothing happened.\n"
       end
 
       respond_to do |format|

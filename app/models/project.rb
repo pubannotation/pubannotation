@@ -216,10 +216,6 @@ class Project < ActiveRecord::Base
     end    
   end
   
-  def update_delta_index(doc)
-    doc.save
-  end
-
   def associate_maintainers_addable_for?(current_user)
     if self.new_record?
       true
@@ -628,11 +624,25 @@ class Project < ActiveRecord::Base
     divs
   end
 
-  def delete_doc(doc, current_user)
+  def delete_doc(doc)
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
     self.delete_doc_annotations(doc)
     doc.projects.delete(self)
-    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{current_user.username}") && doc.projects_count == 0
+    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{user.username}") && doc.projects_num == 0
+  end
+
+  def delete_docs
+    delete_annotations
+
+    docs.update_all('projects_num = projects_num - 1')
+    docs.update_all(flag:true)
+
+    docs.delete_all
+
+    Doc.where("sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0").destroy_all
+
+    Doc.__elasticsearch__.import query: -> {where(flag:true)}
+    Doc.where(flag:true).update_all(flag:false)
   end
 
   def create_user_sourcedb_docs(options = {})
@@ -853,6 +863,7 @@ class Project < ActiveRecord::Base
 
   def store_annotations_collection(annotations_collection, options)
     messages = []
+    docids_to_be_cleared = []
 
     aligned_collection = annotations_collection.inject([]) do |col, annotations|
       if annotations[:divid].present?
@@ -888,14 +899,14 @@ class Project < ActiveRecord::Base
       if doc.present?
         begin
           col << Annotation.align_annotations(annotations, doc)
-          delete_doc_annotations(doc) if options[:mode] == 'replace'
+          docids_to_be_cleared << doc.id if options[:mode] == 'replace'
         rescue => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
         end
       elsif divs.present?
         begin
           col += Annotation.align_annotations_divs(annotations, divs)
-          divs.each{|div| delete_doc_annotations(div)} if options[:mode] == 'replace'
+          docids_to_be_cleared += divs.map{|d| d.id} if options[:mode] == 'replace'
         rescue => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
         end
