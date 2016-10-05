@@ -4,6 +4,73 @@
 	<%= render :partial => 'docs/titlebar' -%>
 	<section>
 		<%= render :partial => 'annotations/titlebar' -%>
-		<%= render :partial => 'visualize_track', :collection => @track_annotations -%>
+
+    <div class="clearfix">
+      <%= render :partial => 'visualize_track', :collection => @track_annotations -%>
+    </div>
+
+    <div id="selected-project-textaes">
+      <% #Append TextAE here -%>
+    </div>
+
+    <div id="hidden-unselected-project-textaes" style="display:none;">
+      <%= render partial: 'non_visualized_project', collection: @visualize_projects -%>
+    </div>
+
+    <% content_for :javascript do -%>
+      <script>
+        $(document).ready(function(){
+          appendTextae();
+          hideTextae();
+        });
+
+        <% #Append TextAE function -%>
+        let appendTextae = () => {
+          $('.project-textae-selector').click(function(){
+            jsonUrl = $(this).data('annotations-json-url');
+            let projectName = $(this).data('project-name');
+            let projectTextaeId = `textae-${ projectName }`;
+            let projectUrl = $(this).data('project-url');
+            $.getJSON(jsonUrl, function (data) {
+              textaeJson = JSON.stringify(data);
+              $('#selected-project-textaes').append( $(`
+                <section>
+                  <div id="textae-wrapper-${ projectName }" class="textae-wrapper oneline group" data-project-name="${ projectName }">
+                    <h3>
+                      <a href="${ projectUrl }">${ projectName }</a>
+                      <i class="fa fa-minus-square remove-textae clickable-text" aria-hidden="true"></i>
+                    </h3>
+                    <div class="textae-editor" id="${ projectTextaeId }">
+                      ${ textaeJson }
+                    </div>
+                  </div>
+                </section>
+              `) );
+              $(`#${ projectTextaeId }`).textae();
+              $("#hidden-unselected-project-textaes").append( $(`#project-selector-${ projectName }`));
+            })
+          });
+        }
+
+        <% #Remove TextAE function -%>
+        let hideTextae = () => {
+           $(document).on("click", ".remove-textae", function() {
+             let textaeWrapper = $(this).parent().parent();
+             let projectName = textaeWrapper.data('project-name');
+             $(textaeWrapper).remove();
+             projectSelector = $(`#project-selector-${ projectName }`);
+             projectSelector.show();
+             $("#unselected-project-textaes").append( projectSelector );
+           });
+        }
+      </script>
+    <% end -%>
+
+    <div id="unselected-project-textaes" style="margin-top: 1em;">
+      <% if @non_visualize_projects.present? -%>
+          <%= render partial: 'non_visualized_project', collection: @non_visualize_projects -%>
+      <% end -%>
+    </div>
+
 	</section>
 </section>

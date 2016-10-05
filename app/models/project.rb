@@ -57,6 +57,17 @@ class Project < ActiveRecord::Base
     end
   }
 
+  scope :annotations_accessible, -> (current_user){
+    if current_user.present? 
+      if current_user.root?
+      else
+        where(['accessibility = 1 OR user_id = ?', current_user.id])
+      end
+    else
+      where(accessibility: 1)
+    end
+  }
+
   scope :editable, -> (current_user) {
     if current_user.present?
       if current_user.root?

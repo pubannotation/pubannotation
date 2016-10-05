@@ -277,6 +277,46 @@ describe Project do
     end
   end
 
+  describe 'scope annotations_accessible' do
+    before(:all) do
+      @another_user = FactoryGirl.create(:user)
+      @belongs_to_another_user_accessibility_0 = FactoryGirl.create(:project, accessibility: 0, user: @another_user)  
+      @belongs_to_another_user_accessibility_1 = FactoryGirl.create(:project, accessibility: 1, user: @another_user)  
+
+      @current_user = FactoryGirl.create(:user)
+      @belongs_to_current_user_accessibility_0 = FactoryGirl.create(:project, accessibility: 0, user: @current_user)  
+      @belongs_to_current_user_accessibility_1 = FactoryGirl.create(:project, accessibility: 1, user: @current_user)  
+    end
+
+    context 'when current_user.prensent' do
+      context 'when current_user.root == true' do
+        before do
+          @current_user.stub(:root?).and_return(true)
+        end
+
+        it 'should return all projects' do
+          expect(Project.annotations_accessible(@current_user)).should match_array(Project.all)
+        end
+      end
+
+      context 'when current_user.root != true' do
+        before do
+          @current_user.stub(:root?).and_return(false)
+        end
+
+        it 'should return projects which accessibility == 1 OR belongs_to current_user' do
+          expect(Project.annotations_accessible(@current_user)).should match_array([@belongs_to_another_user_accessibility_1, @belongs_to_current_user_accessibility_0, @belongs_to_current_user_accessibility_1])
+        end
+      end
+    end
+
+    context 'when current_user.prensent' do
+      it 'should return projects which accessibility == 1' do
+        expect(Project.annotations_accessible(nil)).should match_array([@belongs_to_another_user_accessibility_1, @belongs_to_current_user_accessibility_1])
+      end
+    end
+  end
+
   describe 'scope top' do
     before do
       @user = FactoryGirl.create(:user)

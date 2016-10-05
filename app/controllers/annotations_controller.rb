@@ -185,31 +185,8 @@ class AnnotationsController < ApplicationController
         end
       else
         @doc = divs[0]
-        @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-        @doc.set_ascii_body if params[:encoding] == 'ascii'
-
-        params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
-
-        project = if params[:project].present?
-          params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
-        else
-          @doc.projects
-        end
-
-        project.delete_if{|p| !p.annotations_accessible?(current_user)}
-
-        context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-        @annotations = @doc.hannotations(project, @span, context_size)
-
-        @track_annotations = @annotations[:tracks]
-        @track_annotations.each {|a| a[:text] = @annotations[:text].gsub("\n", " ")}
-
-        respond_to do |format|
-          format.html {render 'visualize_tracks'}
-          format.json {render json: @annotations}
-        end
+        annotations_visualize
       end
-
     rescue => e
       respond_to do |format|
         format.html {redirect_to home_path, notice: e.message}
@@ -222,32 +199,7 @@ class AnnotationsController < ApplicationController
     begin
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document." unless @doc.present?
-
-      @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
-      @doc.set_ascii_body if params[:encoding] == 'ascii'
-
-      params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
-
-      project = if params[:project].present?
-        params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
-      else
-        @doc.projects
-      end
-
-      project.delete_if{|p| !p.annotations_accessible?(current_user)}
-
-      context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-      @annotations = @doc.hannotations(project, @span, context_size)
-
-      @track_annotations = @annotations[:tracks]
-      @track_annotations.each {|a| a[:text] = @annotations[:text]}
-
-      respond_to do |format|
-        format.html {render 'visualize_tracks'}
-        format.json {render json: @annotations}
-      end
-
+      annotations_visualize
     rescue => e
       respond_to do |format|
         format.html {redirect_to home_path, notice: e.message}
@@ -689,4 +641,34 @@ class AnnotationsController < ApplicationController
     end
   end
 
+  private
+
+  def annotations_visualize
+    @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+    @doc.set_ascii_body if params[:encoding] == 'ascii'
+
+    params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
+
+    if params[:project].present?
+      # params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
+      # Refactored to fetch a SQL
+      project_names = params[:project].split(',').uniq
+      @visualize_projects = Project.accessible(current_user).where(['name IN (?)', project_names]).annotations_accessible(current_user)
+      @non_visualize_projects = @doc.projects.accessible(current_user).annotations_accessible(current_user) - @visualize_projects
+    else
+      @visualize_projects = @non_visualize_projects = @doc.projects.accessible(current_user).annotations_accessible(current_user)
+      @visualize_projects = @doc.projects.accessible(current_user).annotations_accessible(current_user)
+    end
+
+    context_size = params[:context_size].present? ? params[:context_size].to_i : 0
+
+    @annotations = @doc.hannotations(@visualize_projects, @span, context_size)
+    @track_annotations = @annotations[:tracks]
+    @track_annotations.each {|a| a[:text] = @annotations[:text]}
+
+    respond_to do |format|
+      format.html {render 'visualize_tracks'}
+      format.json {render json: @annotations}
+    end
+  end
 end
