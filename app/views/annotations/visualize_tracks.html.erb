@@ -52,7 +52,7 @@
             </section>
           `) );
           $(`#${ projectTextaeId }`).textae();
-          $("#hidden-unselected-project-textaes").append( $(`#project-selector-${ projectName }`));
+          $("#hidden-unselected-project-textaes").append( $(`#project-selector-${ projectName }`).parent());
           setAddressBarUrl();
         })
       });
@@ -64,7 +64,7 @@
          let textaeWrapper = $(this).parent().parent();
          let projectName = textaeWrapper.data('project-name');
          $(textaeWrapper).remove();
-         projectSelector = $(`#project-selector-${ projectName }`);
+         projectSelector = $(`#project-selector-${ projectName }`).parent();
          projectSelector.show();
          $("#unselected-project-textaes").append( projectSelector );
          setAddressBarUrl();
@@ -116,13 +116,14 @@
 
     <div id="hidden-unselected-project-textaes" style="display:none;">
       <% # Visualized projects selector (Show up when textae hidden) -%>
-      <%= render partial: 'non_visualized_project', collection: @visualize_projects -%>
+      <%= render partial: 'projects/selector_project', collection: @visualize_projects -%>
     </div>
 
     <div id="unselected-project-textaes" style="margin-top: 1em;">
       <% if @non_visualize_projects.present? -%>
           <% # Not Visualized projects selector -%>
-          <%= render partial: 'non_visualized_project', collection: @non_visualize_projects -%>
+          <%= render partial: 'projects/selector_project', collection: @non_visualize_projects -%>
+    </div>
       <% end -%>
     </div>
 	</section>
