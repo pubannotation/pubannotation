@@ -559,6 +559,9 @@ div.oneline {
   display: table;
   clear: both;
 }
+.grabbable{
+  cursor: grab;
+}
 
 @media screen and (max-width: 800px) {
   .show_when_wide {

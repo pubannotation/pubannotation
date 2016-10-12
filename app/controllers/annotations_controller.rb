@@ -650,13 +650,15 @@ class AnnotationsController < ApplicationController
     params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
 
     if params[:project].present?
-      # params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
-      # Refactored to fetch a SQL
       project_names = params[:project].split(',').uniq
-      @visualize_projects = Project.accessible(current_user).where(['name IN (?)', project_names]).annotations_accessible(current_user)
+      @visualize_projects = Array.new
+      projects = Project.accessible(current_user).where(['name IN (?)', project_names]).annotations_accessible(current_user)
+      project_names.each do |project_name|
+        @visualize_projects.push projects.detect{|project| project.name == project_name}
+      end
+
       @non_visualize_projects = @doc.projects.accessible(current_user).annotations_accessible(current_user) - @visualize_projects
     else
-      @visualize_projects = @non_visualize_projects = @doc.projects.accessible(current_user).annotations_accessible(current_user)
       @visualize_projects = @doc.projects.accessible(current_user).annotations_accessible(current_user)
     end
 
