@@ -31,7 +31,7 @@ the standard [unix](http://www.unix.org/)/[linux](https://en.wikipedia.org/wiki/
 3. __curl -H "content-type:application/json" -u "_username_:_password_" -d @annotations.json _the-URL-of-annotations___
 
 For an editor to be compatible with PubAnnotation, besides the API,
-it also needs to understand the [PubAnnotation JSON format]({{site.baseurl}}/docs/format/).
+it also needs to understand the [PubAnnotation JSON format]({{site.baseurl}}/docs/annotation-format/).
 
 [TextAE](http://textae.pubannotation.org) is a web-based graphcial annotation editor,
 which meets the specification.

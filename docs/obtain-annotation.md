@@ -11,7 +11,7 @@ To obtain annotations, PubAnnotation can talk with a web service which
 
 * takes a piece of text through the parameter, _text_, and
 * responses with annotations to the text.
-  * for PubAnnotation to understand the response, annotations need to be in the [PubAnnotation JSON format]({{site.baseurl}}/docs/format/).
+  * for PubAnnotation to understand the response, annotations need to be in the [PubAnnotation JSON format]({{site.baseurl}}/docs/annotation-format/).
 
 To obtain automatic annotations for a document
 
@@ -41,7 +41,7 @@ curl -d sourcedb="PubMed" -d sourceid="123456" URL_of_annotation_web_service
 
 The verb of the request may be either POST (the above examples), or GET (put the option "-G" to the above examples).
 
-In either case, the response has to be annotations encoded in the [PubAnnotation JSON format]({{site.baseurl}}/docs/format/).
+In either case, the response has to be annotations encoded in the [PubAnnotation JSON format]({{site.baseurl}}/docs/annotation-format/).
 
 ## Annotation web service example
 

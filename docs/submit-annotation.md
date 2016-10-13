@@ -10,7 +10,7 @@ You can deposit your annotations to PubAnnotation.
 
 To do it,
 
-1. First, __prepare your annotations in [JSON](http://json.org/)__ files, following the guidelines in [Format]({{site.baseurl}}/docs/format/).
+1. First, __prepare your annotations in [JSON](http://json.org/)__ files, following the guidelines in [Format]({{site.baseurl}}/docs/annotation-format/).
 Once an annotation file is prepared, your are recommended to open it in the [TextAE editor](http://textae.pubannotation.org/editor.html?mode=edit). Then, you will immediately see if the annotation file is well prepared as you intend or not.
 2. __[Create an annotation project]({{site.baseurl}}/docs/create-project/)__ on PubAnnotation.
 3. Then, you can store your annotations in your project.
@@ -37,7 +37,7 @@ Following is explanation of the option specification:
    * Tells cURL to add the header in the request.
 * __-d @your\_annotation\_file.json__
    * Tells cURL to send the annotation data stored in the specified file.
-   * To learn how to prepare an annotation data file, please refer to [Format]({{site.baseurl}}/docs/format/).
+   * To learn how to prepare an annotation data file, please refer to [Format]({{site.baseurl}}/docs/annotation-format/).
 * __http://pubannotation.org/projects/_your-project_/docs/sourcedb/PubMed/sourceid/123456/annotations.json__
    * The URL for the document, _PubMed:123456_, in your project.
 

@@ -34,7 +34,7 @@ with the _sourcedb_/_sourceid_ specification ignored.
 ## Output
 
 PubAnnotation expects an annotation server to respond with annotations represented in 
-[PubAnnotation JSON format]({{site.baseurl}}/docs/format/).
+[PubAnnotation JSON format]({{site.baseurl}}/docs/annotation-format/).
 
 In case an annotation server wants to support multiple representations of annotations,
 the format of response body the client will expect may be represented in the URL itself or

@@ -24,7 +24,7 @@ PubAnnotation maintains three types of resources
 
 * a *document* is a piece of text which is a sequence of characters.
 * *annotations* are statements attached to documents.
-   * See [Format]({{site.baseurl}}/docs/format/) for more details of annotation.
+   * See [Format]({{site.baseurl}}/docs/annotation-format/) for more details of annotation.
 * a *project* is a collection of documents and annotations attached to them.
 
 ## Accessing documents
