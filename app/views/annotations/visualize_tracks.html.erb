@@ -74,16 +74,7 @@
     <% #Function change URL -%>
     let setAddressBarUrl = () => {
       let projectNames = getVisualizedProjectNames();
-      if (projectNames.length > 0){
-        let projectNames = getVisualizedProjectNames().join(',');
-        changeAddressBarUrl(`${ window.location.pathname }?projects=${ projectNames }` );
-      }else{
-        changeAddressBarUrl(window.location.pathname);
-      };
-    }
-
-    let changeAddressBarUrl = (url) => {
-      window.history.pushState({"html": url}, "Title", url );
+      changeAddressBarUrlForProjectsParams(projectNames);
     }
 
     let getVisualizedProjectNames = () => {

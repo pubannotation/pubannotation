@@ -1007,4 +1007,43 @@ describe ApplicationController do
       flash[:error].should eql(I18n.t("errors.statuses.forbidden"))
     end
   end
+
+  describe 'get_docs_projects' do
+    let(:sort_order) { 'sort_order' }
+    let(:doc) { FactoryGirl.create(:doc) } 
+    let(:projects_accesible_order) { 'projects_accesible_order' } 
+
+    before do
+      controller.stub(:sort_order).and_return(sort_order) 
+      controller.instance_variable_set(:@doc, doc)
+      current_user_stub(nil)
+      doc.stub_chain(:projects, :accessible, :order).and_return(projects_accesible_order)
+    end
+
+    context 'when projects not selected' do
+      it 'should assign accessible projects sorted' do
+        controller.get_docs_projects
+        expect( assigns(:projects) ).to eql(projects_accesible_order)
+      end
+    end
+
+    context 'when projects selected' do
+      let(:user) { FactoryGirl.create(:user) } 
+      let(:project_1) { FactoryGirl.create(:project, name: 'project_1', user: user) }
+      let(:project_2) { FactoryGirl.create(:project, name: 'project_2', user: user) }
+      let(:project_3) { FactoryGirl.create(:project, name: 'project_3', user: user) }
+      let(:projects_accesible_order) { [project_3, project_1, project_2] } 
+      let(:projects) { "#{ project_1.name },#{ project_3.name }"}
+
+      before do
+        controller.stub(:params).and_return(projects: projects)
+        doc.stub_chain(:projects, :accessible, :order).and_return(projects_accesible_order)
+      end
+
+      it 'should assign accessible projects sorted' do
+        controller.get_docs_projects
+        expect( assigns(:projects) ).to eql([project_2])
+      end
+    end
+  end
 end

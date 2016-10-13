@@ -29,3 +29,15 @@ let getURLParameter = (parameterName) => {
     }
   }
 }
+
+let changeAddressBarUrl = (url) => {
+  window.history.pushState({"html": url}, "Title", url);
+}
+
+let changeAddressBarUrlForProjectsParams = (projectNames) => {
+  if (projectNames.length > 0){
+    changeAddressBarUrl(`${ window.location.pathname }?projects=${ projectNames.join(',') }` );
+  }else{
+    changeAddressBarUrl(window.location.pathname);
+  };
+}

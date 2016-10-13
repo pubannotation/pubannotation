@@ -312,4 +312,17 @@ class ApplicationController < ActionController::Base
     flash[:error] = t("errors.statuses.#{status}")
     render 'shared/status_error', :status => status
   end
+
+  def get_docs_projects
+    sort_order = sort_order(Project)
+    @projects = @doc.projects.accessible(current_user).order(sort_order)
+    if params[:projects].present?
+      select_project_names = params[:projects].split(',').uniq
+      @selected_projects = Array.new 
+      select_project_names.each do |project_name|
+        @selected_projects.push @projects.detect{|project| project.name == project_name}
+      end
+      @projects -= @selected_projects
+    end
+  end
 end

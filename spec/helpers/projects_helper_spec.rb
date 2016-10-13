@@ -161,4 +161,18 @@ describe ProjectsHelper do
       end
     end
   end
+
+  describe 'project_selector_icon' do
+    context 'when selected == true' do
+      it 'should return fa-minus' do
+        expect( helper.project_selector_icon(true) ).to eql('fa-minus')
+      end
+    end
+
+    context 'when selected != true' do
+      it 'should return fa-minus' do
+        expect( helper.project_selector_icon(nil) ).to eql('fa-plus')
+      end
+    end
+  end
 end

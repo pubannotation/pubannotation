@@ -78,8 +78,7 @@ class DivsController < ApplicationController
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
       @content = @doc.body.gsub(/\n/, "<br>")
 
-      sort_order = sort_order(Project)
-      @projects = @doc.projects.accessible(current_user).order(sort_order)
+      get_docs_projects
 
       @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
       if @annotations[:tracks].present?

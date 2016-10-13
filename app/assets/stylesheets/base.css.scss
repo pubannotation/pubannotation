@@ -560,6 +560,7 @@ div.oneline {
   clear: both;
 }
 .grabbable{
+  cursor: -webkit-grab;
   cursor: grab;
 }
 

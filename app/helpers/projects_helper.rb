@@ -109,4 +109,12 @@ module ProjectsHelper
     else
     end
   end
+
+  def project_selector_icon(selected)
+    if selected
+      'fa-minus'
+    else
+      'fa-plus'
+    end
+  end
 end
