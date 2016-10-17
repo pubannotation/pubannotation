@@ -105,6 +105,12 @@
       </ul>
     </div>
 
+		<h2 class="capitalize">
+      <%= t('activerecord.models.project').pluralize -%>
+		</h2>
+
+    <%= t('views.shared.unselected') -%>
+    
     <div id="hidden-unselected-project-textaes" style="display:none;">
       <% # Visualized projects selector (Show up when textae hidden) -%>
       <%= render partial: 'projects/selector_project', collection: @visualize_projects -%>
