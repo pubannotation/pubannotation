@@ -17,7 +17,7 @@
 //= require jquery.facebox
 //= require_tree .
 
-let getURLParameter = (parameterName) => {
+getURLParameter = function(parameterName){
   var sPageURL = window.location.search.substring(1);
   var sURLVariables = sPageURL.split('&');
   for (var i = 0; i < sURLVariables.length; i++) 
@@ -30,13 +30,13 @@ let getURLParameter = (parameterName) => {
   }
 }
 
-let changeAddressBarUrl = (url) => {
+changeAddressBarUrl = function(url){
   window.history.pushState({"html": url}, "Title", url);
 }
 
-let changeAddressBarUrlForProjectsParams = (projectNames) => {
+changeAddressBarUrlForProjectsParams = function(projectNames){
   if (projectNames.length > 0){
-    changeAddressBarUrl(`${ window.location.pathname }?projects=${ projectNames.join(',') }` );
+    changeAddressBarUrl(window.location.pathname + '?projects=' +  projectNames.join(','));
   }else{
     changeAddressBarUrl(window.location.pathname);
   };
