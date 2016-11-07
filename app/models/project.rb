@@ -61,7 +61,7 @@ class Project < ActiveRecord::Base
     if current_user.present? 
       if current_user.root?
       else
-        where(['accessibility = 1 OR user_id = ?', current_user.id])
+        where(['projects.accessibility = 1 OR projects.user_id = ?', current_user.id])
       end
     else
       where(accessibility: 1)
