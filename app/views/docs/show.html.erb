@@ -24,6 +24,9 @@
       });
       getSelectedProjectNames();
       setAnnotationHref();
+      selectedProjectsElement.click(function(){
+        document.getSelection().removeAllRanges();
+      })
     });
 
     // Add remove project name
