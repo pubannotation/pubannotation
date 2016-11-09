@@ -127,38 +127,63 @@
 
     var sortSelectedProjectsByName = function(){
       $('.fa-sort-alpha-asc').click(function(){
-        sortSelectedProjects('project-name');
+        sortProjectsByName($(this).data('selected'));
       });
     }
 
     var sortSelectedProjectsByAnnotationsCount = function(){
       $('.fa-sort-numeric-desc').click(function(){
-        sortSelectedProjects('annotations-count');
+        sortProjectsByAnnotationsCount($(this).data('selected'));
       });
     }
 
-    var sortSelectedProjects = function(sortKey){
-      selectedProjectElements = selectedProjectsElement.find('.project_wrapper');
-      if(sortKey == 'project-name'){
-        greaterVal = 1;
-        lessVal = -1
+    var getProjectsElement = function(selected){
+      if (selected){
+        projectsElement = selectedProjectsElement;
       }else{
-        greaterVal = -1;
-        lessVal = 1
+        projectsElement = unselectedProjectsElement;
       }
-      selectedProjectElements.sort(function(a, b){
-        var an = $( a ).data(sortKey), bn = $( b ).data(sortKey);
-        if(an > bn) {
-          return greaterVal;
-        }
-        if(an < bn) {
-          return lessVal;
+      return projectsElement;
+    }
+
+    var sortProjectsByName = function(selected){
+      projectsElement = getProjectsElement(selected);
+      projectElements = projectsElement.find('.project_wrapper');
+      projectElements.sort(function(a, b) {
+        var a = $( a ).data('project-name').toLowerCase() 
+        var b = $( b ).data('project-name').toLowerCase();
+        if(a < b){
+          return -1;
+        }else if(a > b){
+          return 1;
         }
         return 0;
       });
-      selectedProjectsElement.append(selectedProjectElements);
+      projectsElement.append(projectElements);
       getSelectedProjectNames();
       setAnnotationHref();
+      changeAddressBarUrlForProjectsParams(selectedProjectNames);
+    }
+
+    var sortProjectsByAnnotationsCount = function(selected){
+      projectsElement = getProjectsElement(selected);
+      projectElements = projectsElement.find('.project_wrapper');
+      projectElements.sort(function(a, b){
+        var a = $( a ).data('annotations-count')
+        var b = $( b ).data('annotations-count');
+        return b- a;
+        if(a > b) {
+          return -1;
+        }
+        if(a < b) {
+          return 1;
+        }
+        return 0;
+      });
+      projectsElement.append(projectElements);
+      getSelectedProjectNames();
+      setAnnotationHref();
+      changeAddressBarUrlForProjectsParams(selectedProjectNames);
     }
 
     var countProjects = function(){
@@ -214,7 +239,7 @@
     <% if @projects.present? || @selected_projects.present? -%>
       <table style="width:100%">
         <tr>
-          <td style="width:48%">
+          <td style="width:48%; position:relative;">
             <%= t('views.shared.unselected') -%>
             <span id="unselected_projects_count"></span>
             /
@@ -222,6 +247,12 @@
               <%= t('activerecord.models.annotation') -%>
             </span>
             <span id="unselected_projects_annotations_count"></span>
+            <span class="project_select_button" style="position:absolute; right: 3em;">
+              <i class="fa fa-sort-alpha-asc" aria-hidden="true" data-selected="false"></i>
+            </span>
+            <span class="project_select_button" style="position:absolute; right: 1em;">
+              <i class="fa fa-sort-numeric-desc" aria-hidden="true" data-selected="false"></i>
+            </span>
           </td>
           <td style="border:none; border-top:1px solid #fff;">
           </td>
@@ -234,10 +265,10 @@
             </span>
             <span id="selected_projects_annotations_count"></span>
             <span class="project_select_button" style="position:absolute; right: 4em;">
-              <i class="fa fa-sort-alpha-asc" aria-hidden="true"></i>
+              <i class="fa fa-sort-alpha-asc" aria-hidden="true" data-selected="true"></i>
             </span>
             <span class="project_select_button" style="position:absolute; right: 2em;">
-              <i class="fa fa-sort-numeric-desc" aria-hidden="true"></i>
+              <i class="fa fa-sort-numeric-desc" aria-hidden="true" data-selected="true"></i>
             </span>
           </td>
         </tr>
