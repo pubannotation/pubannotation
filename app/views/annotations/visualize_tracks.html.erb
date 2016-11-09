@@ -18,6 +18,8 @@
 <% content_for :javascript do -%>
   <script>
     $(document).ready(function(){
+      selectedProjectsElement = $('#hidden-unselected-project-textaes');
+      unselectedProjectsElement = $('#unselected-project-textaes');
       appendTextae();
       hideTextae();
       $("#textae-list").sortable({
@@ -27,7 +29,24 @@
           setAddressBarUrl();
         }
       });
+      countProjects();
+      countProjectAnnotations();
     });
+
+    let countProjects = function(){
+      unselectProjectsCount = unselectedProjectsElement.find('.project_wrapper').length;
+      $('#unselected_projects_count').text('(' + unselectProjectsCount + ')');
+    };
+
+    let countProjectAnnotations = function(){
+      let unselectedProjectsAnnotaionsCount = 0;
+      jQuery.each(unselectedProjectsElement.find('.project_wrapper'), function(i, unselectedProjectElement){
+        annotationsCount = $(unselectedProjectElement).data('annotations-count');
+        unselectedProjectsAnnotaionsCount += parseInt( annotationsCount );
+      });
+      console.log(unselectedProjectsAnnotaionsCount);
+      $('#unselected_projects_annotations_count').text('(' + unselectedProjectsAnnotaionsCount + ')');
+    }
 
     <% #Function append TextAE -%>
     let appendTextae = () => {
@@ -54,6 +73,8 @@
           $(`#${ projectTextaeId }`).textae();
           $("#hidden-unselected-project-textaes").append( $(`#project-selector-${ projectName }`).parent());
           setAddressBarUrl();
+          countProjects();
+          countProjectAnnotations();
         })
       });
     }
@@ -68,6 +89,8 @@
          projectSelector.show();
          $("#unselected-project-textaes").append( projectSelector );
          setAddressBarUrl();
+         countProjects();
+         countProjectAnnotations();
        });
     }
 
@@ -110,6 +133,12 @@
 		</h2>
 
     <%= t('views.shared.unselected') -%>
+    <span id="unselected_projects_count"></span>
+    /
+    <span class="capitalize">
+      <%= t('activerecord.models.annotation') -%>
+    </span>
+    <span id="unselected_projects_annotations_count"></span>
     
     <div id="hidden-unselected-project-textaes" style="display:none;">
       <% # Visualized projects selector (Show up when textae hidden) -%>
@@ -120,7 +149,6 @@
       <% if @non_visualize_projects.present? -%>
           <% # Not Visualized projects selector -%>
           <%= render partial: 'projects/selector_project', collection: @non_visualize_projects -%>
-    </div>
       <% end -%>
     </div>
 	</section>
