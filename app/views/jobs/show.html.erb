@@ -41,10 +41,17 @@
       <td><%= @job.begun_at %></td>
     </tr>
 
-    <tr>
-      <th>Ended at</th>
-      <td><%= @job.ended_at %></td>
-    </tr>
+    <% if @job.ended_at.present? %>
+      <tr>
+        <th>Ended at</th>
+        <td><%= @job.ended_at %></td>
+      </tr>
+
+      <tr>
+        <th>Took</th>
+        <td><%= time_duration(@job.begun_at, @job.ended_at) %></td>
+      </tr>
+    <% end %>
 
     <tr>
       <th>Progress</th>
