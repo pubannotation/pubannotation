@@ -33,13 +33,13 @@
       countProjectAnnotations();
     });
 
-    let countProjects = function(){
+    countProjects = function(){
       unselectProjectsCount = unselectedProjectsElement.find('.project_wrapper').length;
       $('#unselected_projects_count').text('(' + unselectProjectsCount + ')');
     };
 
-    let countProjectAnnotations = function(){
-      let unselectedProjectsAnnotaionsCount = 0;
+    var countProjectAnnotations = function(){
+      var unselectedProjectsAnnotaionsCount = 0;
       jQuery.each(unselectedProjectsElement.find('.project_wrapper'), function(i, unselectedProjectElement){
         annotationsCount = $(unselectedProjectElement).data('annotations-count');
         unselectedProjectsAnnotaionsCount += parseInt( annotationsCount );
@@ -49,12 +49,12 @@
     }
 
     <% #Function append TextAE -%>
-    let appendTextae = () => {
+    var appendTextae = function(){
       $('.project-textae-selector').click(function(){
         jsonUrl = $(this).data('annotations-json-url');
-        let projectName = $(this).data('project-name');
-        let projectTextaeId = `textae-${ projectName }`;
-        let projectUrl = $(this).data('project-url');
+        var projectName = $(this).data('project-name');
+        var projectTextaeId = `textae-${ projectName }`;
+        var projectUrl = $(this).data('project-url');
         $.getJSON(jsonUrl, function (data) {
           textaeJson = JSON.stringify(data);
           $('#textae-list').append( $(`
@@ -80,10 +80,10 @@
     }
 
     <% #Function remove TextAE -%>
-    let hideTextae = () => {
+    var hideTextae = function(){
        $(document).on("click", ".remove-textae", function() {
-         let textaeWrapper = $(this).parent().parent();
-         let projectName = textaeWrapper.data('project-name');
+         var textaeWrapper = $(this).parent().parent();
+         var projectName = textaeWrapper.data('project-name');
          $(textaeWrapper).remove();
          projectSelector = $(`#project-selector-${ projectName }`).parent();
          projectSelector.show();
@@ -95,14 +95,14 @@
     }
 
     <% #Function change URL -%>
-    let setAddressBarUrl = () => {
-      let projectNames = getVisualizedProjectNames();
+    var setAddressBarUrl = function(){
+      var projectNames = getVisualizedProjectNames();
       changeAddressBarUrlForProjectsParams(projectNames);
     }
 
-    let getVisualizedProjectNames = () => {
-      let selectedProjectNames = new Array();
-      let selectedProjectElements = $('#project-textaes').find($('.textae-wrapper'));
+    var getVisualizedProjectNames = function(){
+      var selectedProjectNames = new Array();
+      var selectedProjectElements = $('#project-textaes').find($('.textae-wrapper'));
       jQuery.each(selectedProjectElements, function(i, selectedProjectElement) {
         projectName = $( selectedProjectElement ).data('project-name');
         selectedProjectNames.push(projectName);
