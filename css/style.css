@@ -130,6 +130,7 @@ body > header, body > section, body > footer {
   display: block;
   margin: 0;
   padding: 0;
+  font-size: small;
 }
 
 .quickstart .code .line span {
