@@ -1,8 +1,9 @@
 <%= content_tag :span,
   class: "project_wrapper button",
-  'data-annotations-count' => annotations_count_helper(selector_project, @doc, @span) do -%>
+  'data-annotations-count' => annotations_count_helper(selector_project, @doc, @span),
+  'data-project-name' => selector_project.name do -%>
   <%= link_to selector_project.name, project_path(selector_project.name) -%>
-  <%= "(#{ annotations_count_helper(selector_project, @doc, @span) })" unless params[:controller] == 'annotations' -%>
+  <%= "(#{ annotations_count_helper(selector_project, @doc, @span) })" -%>
   <%= content_tag :span, 
     id: "project-selector-#{selector_project.name}", 
     class: 'project_selector project-textae-selector', 
