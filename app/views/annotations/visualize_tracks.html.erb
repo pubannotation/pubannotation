@@ -27,11 +27,13 @@
         cursor: 'grabbing',
         update: function(event, ui) {
           setAddressBarUrl();
+          setAnnotationHref();
         }
       });
       countProjects();
       countProjectAnnotations();
       sortProjectsByName();
+      setAnnotationHref();
       sortProjectsByAnnotationsCount();
     });
 
@@ -76,6 +78,7 @@
           setAddressBarUrl();
           countProjects();
           countProjectAnnotations();
+          setAnnotationHref();
         })
       });
     }
@@ -92,6 +95,7 @@
          setAddressBarUrl();
          countProjects();
          countProjectAnnotations();
+         setAnnotationHref();
        });
     }
 
@@ -144,6 +148,21 @@
           return 0;
         });
         unselectedProjectsElement.append(projectElements);
+      });
+    }
+
+    var setAnnotationHref = function(){
+      annotationLinkIds = ["view", "json"] 
+      selectedProjectNames = getVisualizedProjectNames();
+      console.log(selectedProjectNames );
+      jQuery.each(annotationLinkIds, function(i, id) {
+        linkElement = $("#annotations_" + id);
+        href = linkElement.attr("href");
+        if ( selectedProjectNames.length > 0 ){
+          linkElement.attr("href", href.split('?')[0] + "?projects=" + selectedProjectNames.join());
+        }else{
+          linkElement.attr("href", href.split('?')[0]);
+        };
       });
     }
   </script>
