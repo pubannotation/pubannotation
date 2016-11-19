@@ -30,13 +30,7 @@
 	<span class='tab-bar'>
 <!--		<span class='label'>UTF</span>
 		<%= link_to_unless_current 'VIEW', params, :class => 'tab' -%>-->
-		<% if params[:divid].present? %>
-			<%= link_to_unless_current 'JSON', params.merge(controller: :divs, action: :show, format: :json), :class => 'tab' -%>
-			<%= link_to_unless_current 'TXT', params.merge(controller: :divs, action: :show, format: :txt), :class => 'tab' -%>
-		<% else -%>
-			<%= link_to_unless_current 'JSON', params.merge(controller: :docs, action: :show, format: :json), :class => 'tab' -%>
-			<%= link_to_unless_current 'TXT', params.merge(controller: :docs, action: :show, format: :txt), :class => 'tab' -%>
-		<% end -%>
+    <%= json_text_link_helper.html_safe -%>
 	</span>
 <!--
 	<span class='tab-bar'>
