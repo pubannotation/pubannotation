@@ -73,4 +73,15 @@ module DocsHelper
 
     docs.collect{|doc| [doc.sourcedb, doc.sourcedb]}
   end
+
+  def json_text_link_helper
+    html = ''
+    # Set actions which except projects and project params for link
+    except_actions = %w(div_annotations_visualize doc_annotations_visualize)
+    params.except!(:project, :projects) if except_actions.include?(params[:action])    
+    controller = params[:divid].present? ? :divs : :docs
+    html += link_to_unless_current 'JSON', params.merge(controller: controller, action: :show, format: :json), :class => 'tab'
+    html += link_to_unless_current 'TXT', params.merge(controller: controller, action: :show, format: :txt), :class => 'tab'
+    return html
+  end
 end

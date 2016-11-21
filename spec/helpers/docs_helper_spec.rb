@@ -72,4 +72,74 @@ describe DocsHelper do
       helper.sourcedb_options_for_select.should =~ [['A', 'A'], ['B', 'B']]
     end
   end
+
+  describe 'json_text_link_helper' do
+    context 'when div' do
+      context 'when action == div_annotations_visualize' do
+        let(:params) { {project: 'project', projects: ['project_1', 'project_2'], sourcedb: 'FA', sourceid: '8424', divid: '0', action: 'div_annotations_visualize'} }
+
+        before do
+          helper.stub(:params).and_return(params)
+        end
+
+        it 'should return a tag with href for divs#show for json' do
+          expect( helper.json_text_link_helper ).to have_selector(:a, :href => doc_sourcedb_sourceid_divs_show_path(params[:sourcedb], params[:sourceid], params[:divid], format: :json) )
+        end
+
+        it 'should return a tag with href for divs#show for txt' do
+          expect( helper.json_text_link_helper ).to have_selector(:a, :href => doc_sourcedb_sourceid_divs_show_path(params[:sourcedb], params[:sourceid], params[:divid], format: :txt) )
+        end
+      end
+
+      context 'when action != div_annotations_visualize' do
+        let(:params) { {project: 'project', projects: 'project_1,project_2', sourcedb: 'FA', sourceid: '8424', divid: '0', action: 'div_annotations_index'} }
+
+        before do
+          helper.stub(:params).and_return(params)
+        end
+
+        it 'should return a tag with href for divs#show for json with params[:project] and params[:projects]' do
+          expect( helper.json_text_link_helper ).to have_selector(:a, :href => doc_sourcedb_sourceid_divs_show_path(params[:sourcedb], params[:sourceid], params[:divid], project: params[:project], projects: params[:projects], format: :json) )
+        end
+
+        it 'should return a tag with href for divs#show for txt with params[:project] and params[:projects]' do
+          expect( helper.json_text_link_helper ).to have_selector(:a, :href => doc_sourcedb_sourceid_divs_show_path(params[:sourcedb], params[:sourceid], params[:divid], project: params[:project], projects: params[:projects], format: :txt) )
+        end
+      end
+    end
+
+    context 'when doc' do
+      context 'when action == doc_annotations_visualize' do
+        let(:params) { {project: 'project', projects: ['project_1', 'project_2'], sourcedb: 'FA', sourceid: '8424', action: 'doc_annotations_visualize'} }
+
+        before do
+          helper.stub(:params).and_return(params)
+        end
+
+        it 'should return a tag with href for docs#show for json' do
+          expect( helper.json_text_link_helper ).to have_selector(:a, :href => doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid], format: :json) )
+        end
+
+        it 'should return a tag with href for docs#show for txt' do
+          expect( helper.json_text_link_helper ).to have_selector(:a, :href => doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid], format: :txt) )
+        end
+      end
+
+      context 'when action != doc_annotations_visualize' do
+        let(:params) { {project: 'project', projects: 'project_1,project_2', sourcedb: 'FA', sourceid: '8424', action: 'div_annotations_index'} }
+
+        before do
+          helper.stub(:params).and_return(params)
+        end
+
+        it 'should return a tag with href for divs#show for json with params[:project] and params[:projects]' do
+          expect( helper.json_text_link_helper ).to have_selector(:a, :href => doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid], project: params[:project], projects: params[:projects], format: :json) )
+        end
+
+        it 'should return a tag with href for divs#show for txt with params[:project] and params[:projects]' do
+          expect( helper.json_text_link_helper ).to have_selector(:a, :href => doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid], project: params[:project], projects: params[:projects], format: :txt) )
+        end
+      end
+    end
+  end
 end 
