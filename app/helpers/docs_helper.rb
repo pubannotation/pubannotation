@@ -75,8 +75,8 @@ module DocsHelper
   end
 
   def json_text_link_helper
-    # Set actions which except projects and project params for link
     html = ''
+    # Set actions which except projects and project params for link
     except_actions = %w(div_annotations_visualize doc_annotations_visualize)
     params.except!(:project, :projects) if except_actions.include?(params[:action])    
     controller = params[:divid].present? ? :divs : :docs
