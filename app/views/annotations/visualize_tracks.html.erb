@@ -154,7 +154,6 @@
     var setAnnotationHref = function(){
       annotationLinkIds = ["view", "json"] 
       selectedProjectNames = getVisualizedProjectNames();
-      console.log(selectedProjectNames );
       jQuery.each(annotationLinkIds, function(i, id) {
         linkElement = $("#annotations_" + id);
         href = linkElement.attr("href");

@@ -704,6 +704,20 @@ describe AnnotationsHelper do
     end
   end
 
+  describe 'annotations_path' do
+    before do
+      helper.stub(:url_for).and_return("/projects/project_name/docs/sourcedb/FA/sourceid/8424/divs/0/spans/0-15/annotations/visualize")
+    end
+
+    it 'should not inclde /visualize' do
+      expect(/\/visualize/ =~ helper.annotations_path).to be_nil
+    end
+
+    it 'should end with /annotaitons' do
+      expect(/\/annotations\Z/ =~ helper.annotations_path).to be_present
+    end
+  end
+
   describe 'annotations_url_helper' do
     context 'when options nil' do
       before do
