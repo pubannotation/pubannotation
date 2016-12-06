@@ -22,14 +22,6 @@ module AnnotationsHelper
     "#{url_for(only_path: true)}".sub('/visualize', '').sub('/annotations', '') + '/annotations'
   end  
 
-  def annotations_json_url(project)
-    if params[:divid].present?
-      annotations_project_sourcedb_sourceid_divs_docs_path(project.name, params[:sourcedb], params[:sourceid], params[:divid], format: :json)
-    else
-      annotations_project_sourcedb_sourceid_docs_path(project.name, params[:sourcedb], params[:sourceid], format: :json)
-    end
-  end  
-
   def textae_url(project, source_url)
     return "http://textae.pubannotation.org/editor.html?target=#{source_url}.json" unless project.present? && source_url.present?
     connector = if project.editor.include?('?') then '&' else '?' end
