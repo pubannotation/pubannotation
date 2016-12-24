@@ -718,6 +718,34 @@ describe AnnotationsHelper do
     end
   end
 
+  describe 'annotations_json_path' do
+    let(:annotations_path) {'annotations_path'}
+    before do
+      helper.stub(:annotations_path).and_return(annotations_path)
+    end
+
+    context 'when query is nil' do
+      before do
+        URI.stub_chain(:parse, :query).and_return(nil)
+      end
+
+      it 'shoud return json path without params' do
+        expect( helper.annotations_json_path ).to eql("#{ annotations_path }.json")
+      end
+    end
+
+    context 'when query is present' do
+      let(:query) { 'projects=?project_1&project_2'}
+      before do
+        URI.stub_chain(:parse, :query).and_return(query)
+      end
+
+      it 'shoud return json path without params' do
+        expect( helper.annotations_json_path ).to eql("#{ annotations_path }.json?#{ query }")
+      end
+    end
+  end
+
   describe 'annotations_url_helper' do
     context 'when options nil' do
       before do

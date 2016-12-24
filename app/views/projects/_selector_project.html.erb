@@ -10,7 +10,7 @@
     'data-project-url' => project_path(selector_project.name), 
     'data-project-name' => selector_project.name, 
     'data-project-id' => selector_project.id, 
-    'data-annotations-json-url' => "#{ annotations_path }.json" do -%>
+    'data-annotations-json-url' => "#{ annotations_json_path }" do -%>
     <i class="fa <%= project_selector_icon local_assigns[:selected] -%>" aria-hidden="true"></i>
   <% end -%>
 <% end -%>
