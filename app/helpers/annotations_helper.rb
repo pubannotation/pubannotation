@@ -22,6 +22,12 @@ module AnnotationsHelper
     "#{url_for(only_path: true)}".sub('/visualize', '').sub('/annotations', '') + '/annotations'
   end  
 
+  def annotations_json_path
+    url_query = URI.parse( request.fullpath ).query
+    url_query = "?#{url_query}" if url_query.present? 
+    "#{ annotations_path }.json#{ url_query }" 
+  end  
+
   def textae_url(project, source_url)
     return "http://textae.pubannotation.org/editor.html?target=#{source_url}.json" unless project.present? && source_url.present?
     connector = if project.editor.include?('?') then '&' else '?' end
