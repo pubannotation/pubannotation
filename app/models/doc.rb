@@ -725,7 +725,7 @@ class Doc < ActiveRecord::Base
       text = asciitext
     end
 
-    if (options[:discontinuous_annotation] == 'bag')
+    unless (options[:discontinuous_span] == 'chain')
       # TODO: convert to hash representation
       hdenotations, hrelations = bag_denotations(hdenotations, hrelations)
     end

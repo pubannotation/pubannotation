@@ -34,53 +34,6 @@ module AnnotationsHelper
     "#{project.editor}#{connector}target=#{source_url}.json"
   end
 
-  # To be deprecated in favor of doc.get_annotations
-  def get_annotations (project, doc, options = {})
-    if doc.present?
-      hdenotations = doc.hdenotations(project)
-      hrelations = doc.hrelations(project)
-      hmodifications = doc.hmodifications(project)
-      text = doc.body
-      if (options[:encoding] == 'ascii')
-        asciitext = get_ascii_text (text)
-        text_alignment = TextAlignment::TextAlignment.new(text, asciitext)
-        hdenotations = text_alignment.transform_denotations(hdenotations)
-        # hdenotations = adjust_denotations(hdenotations, asciitext)
-        text = asciitext
-      end
-
-      if (options[:discontinuous_annotation] == 'bag')
-        # TODO: convert to hash representation
-        hdenotations, hrelations = bag_denotations(hdenotations, hrelations)
-      end
-
-      annotations = Hash.new
-      # if doc.sourcedb == 'PudMed'
-      #   annotations[:pmdoc_id] = doc.sourceid
-      # elsif doc.sourcedb == 'PMC'
-      #   annotations[:pmcdoc_id] = doc.sourceid
-      #   annotations[:divid] = doc.serial
-      # end
-      
-      # project
-      annotations[:project] = project[:name] if project.present?
-
-      # doc
-      annotations[:sourcedb] = doc.sourcedb
-      annotations[:sourceid] = doc.sourceid
-      annotations[:division_id] = doc.serial
-      annotations[:section] = doc.section
-      annotations[:text] = text
-      # doc.relational_models
-      annotations[:denotations] = hdenotations if hdenotations
-      annotations[:relations] = hrelations if hrelations
-      annotations[:modifications] = hmodifications if hmodifications
-      annotations
-    else
-      nil
-    end
-  end
-
   # normalize annotations passed by an HTTP call
   def normalize_annotations!(annotations)
     raise ArgumentError, "annotations must be a hash." unless annotations.class == Hash
@@ -95,6 +48,8 @@ module AnnotationsHelper
     if annotations[:denotations].present?
       raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
       annotations[:denotations].each{|d| d = d.symbolize_keys}
+
+      annotations = Annotation.chain_spans(annotations)
 
       ids = annotations[:denotations].collect{|d| d[:id]}.compact
       idnum = 1
@@ -180,53 +135,6 @@ module AnnotationsHelper
       end
     end
     return denotations
-  end
-  
-  def get_annotation_relational_models(doc, project, text, asciitext, annotations, options)
-    annotations[:project] = Rails.application.routes.url_helpers.project_path(project.name, :only_path => false)
-    hrelations = doc.hrelations(project)
-    hmodifications = doc.hmodifications(project)
-    hdenotations = doc.hdenotations(project)
-    if options[:encoding] == 'ascii'
-      text_alignment = TextAlignment::TextAlignment.new(text, asciitext)
-      hdenotations = text_alignment.transform_denotations(hdenotations)
-    end
-    if options[:discontinuous_annotation] == 'bag'
-      hdenotations, hrelations = bag_denotations(hdenotations, hrelations)
-    end
-    # doc.relational_models
-    annotations[:denotations] = hdenotations if hdenotations
-    annotations[:relations] = hrelations if hrelations
-    annotations[:modifications] = hmodifications if hmodifications
-    annotations
-  end
-  
-  def bag_denotations (denotations, relations)
-    tomerge = Hash.new
-
-    new_relations = Array.new
-    relations.each do |ra|
-      if ra[:pred] == '_lexChain'
-        tomerge[ra[:obj]] = ra[:subj]
-      else
-        new_relations << ra
-      end
-    end
-    idx = Hash.new
-    denotations.each_with_index {|ca, i| idx[ca[:id]] = i}
-
-    mergedto = Hash.new
-    tomerge.each do |from, to|
-      to = mergedto[to] if mergedto.has_key?(to)
-      fca = denotations[idx[from]]
-      tca = denotations[idx[to]]
-      tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
-      tca[:span].push (fca[:span])
-      denotations.delete_at(idx[from])
-      mergedto[from] = to
-    end
-
-    return denotations, new_relations
   end
 
   def project_annotations_tgz_link_helper(project)

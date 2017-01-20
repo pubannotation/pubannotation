@@ -323,9 +323,9 @@ class SpansController < ApplicationController
       }
 
       annotations = if doc.present?
-        Annotation.align_annotations(annotations, doc)
+        Annotation.prepare_annotations(annotations, doc)
       elsif divs.present?
-        Annotation.align_annotations_divs(annotations, divs).select{|ann| ann[:denotations].present?}.first
+        Annotation.prepare_annotations_divs(annotations, divs).select{|ann| ann[:denotations].present?}.first
       else
         raise "Could not find the document."
       end

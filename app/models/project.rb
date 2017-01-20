@@ -846,7 +846,7 @@ class Project < ActiveRecord::Base
       return {result: 'upload is skipped due to existing annotations'} if num > 0
     end
 
-    annotations = Annotation.align_annotations(annotations, doc)
+    annotations = Annotation.prepare_annotations(annotations, doc)
 
     delete_doc_annotations(doc) if options[:mode] == 'replace'
     instantiate_and_save_annotations(annotations, doc)
@@ -864,7 +864,7 @@ class Project < ActiveRecord::Base
       return {result: 'upload is skipped due to existing annotations'} if num > 0
     end
 
-    annotations_collection = Annotation.align_annotations_divs(annotations, divs)
+    annotations_collection = Annotation.prepare_annotations_divs(annotations, divs)
 
     divs.each{|div| delete_doc_annotations(div)} if options[:mode] == 'replace'
     instantiate_and_save_annotations_collection(annotations_collection)
@@ -909,14 +909,14 @@ class Project < ActiveRecord::Base
 
       if doc.present?
         begin
-          col << Annotation.align_annotations(annotations, doc)
+          col << Annotation.prepare_annotations(annotations, doc)
           docids_to_be_cleared << doc.id if options[:mode] == 'replace'
         rescue => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
         end
       elsif divs.present?
         begin
-          col += Annotation.align_annotations_divs(annotations, divs)
+          col += Annotation.prepare_annotations_divs(annotations, divs)
           docids_to_be_cleared += divs.map{|d| d.id} if options[:mode] == 'replace'
         rescue => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}

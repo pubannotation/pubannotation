@@ -332,9 +332,9 @@ class AnnotationsController < ApplicationController
       end
 
       annotations = if doc.present?
-        Annotation.align_annotations(annotations, doc)
+        Annotation.prepare_annotations(annotations, doc)
       elsif divs.present?
-        Annotation.align_annotations_divs(annotations, divs)
+        Annotation.prepare_annotations_divs(annotations, divs)
       else
         raise "Could not find the document."
       end
