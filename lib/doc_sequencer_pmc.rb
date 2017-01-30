@@ -17,7 +17,7 @@ class DocSequencerPMC
 
     id = id.sub(/^PMC[:-]?/, '')
 
-    RestClient.get "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{id}" do |response, request, result|
+    RestClient.get "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&retmode=xml&id=#{id}" do |response, request, result|
       case response.code
       when 200
         @xml = response
