@@ -29,16 +29,20 @@
       <% if params[:keywords].present? -%>
         <%= t('views.shared.projects_count') -%>
       <% else -%>
-        <%= sortable(Doc, 'projects_count', t('views.shared.projects_count')) -%>
+        <%= sortable(Doc, 'projects_num', t('views.shared.projects_count')) -%>
       <% end -%>
     </span>
   </th>
   <th class="docs_header_annotations_number">
-    <span title= "number of denotations (sorting may not be precise).">
+    <span title= "number of denotations">
       <% if params[:keywords].present? -%>
         <%= t('views.shared.annotations_count') -%>
       <% else -%>
-        <%= sortable(Doc, 'denotations_num', t('views.shared.annotations_count')) -%>
+        <% if  params[:project_id].present? -%>
+          <%= sortable(Doc, 'project_docs.denotations_num', t('views.shared.annotations_count')) -%>
+        <% else %>
+          <%= sortable(Doc, 'denotations_num', t('views.shared.annotations_count')) -%>
+        <% end %>
       <% end -%>
     </span>
   </th>

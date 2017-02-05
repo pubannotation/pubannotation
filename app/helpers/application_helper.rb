@@ -102,12 +102,10 @@ module ApplicationHelper
 
   def sort_order(model)
     if params[:sort_key].present? && params[:sort_direction].present?
-      sort_order = "#{params[:sort_key]} #{params[:sort_direction]}"
+      "#{params[:sort_key]} #{params[:sort_direction]}"
     else
-      sort_order = model::DefaultSortKey
+      model::DefaultSortKey
     end
-
-    return sort_order
   end
 
   def sortable(model, sort_key, title = nil)

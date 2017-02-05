@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160927033635) do
+ActiveRecord::Schema.define(:version => 20170204075835) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -81,23 +81,17 @@ ActiveRecord::Schema.define(:version => 20160927033635) do
     t.string   "section"
     t.datetime "created_at",                           :null => false
     t.datetime "updated_at",                           :null => false
-    t.integer  "denotations_count", :default => 0
-    t.integer  "subcatrels_count",  :default => 0
+    t.integer  "denotations_num",   :default => 0
+    t.integer  "relations_num",     :default => 0
     t.integer  "projects_num",      :default => 0
     t.boolean  "flag",              :default => false, :null => false
+    t.integer  "modifications_num", :default => 0
   end
 
   add_index "docs", ["projects_num"], :name => "index_docs_on_projects_count"
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
   add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
   add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
-
-  create_table "docs_projects", :id => false, :force => true do |t|
-    t.integer "project_id"
-    t.integer "doc_id"
-  end
-
-  add_index "docs_projects", ["project_id", "doc_id"], :name => "index_docs_projects_on_project_id_and_doc_id", :unique => true
 
   create_table "jobs", :force => true do |t|
     t.integer  "project_id"
@@ -146,6 +140,14 @@ ActiveRecord::Schema.define(:version => 20160927033635) do
     t.string   "body"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+  end
+
+  create_table "project_docs", :force => true do |t|
+    t.integer "project_id"
+    t.integer "doc_id"
+    t.integer "denotations_num",   :default => 0
+    t.integer "relations_num",     :default => 0
+    t.integer "modifications_num", :default => 0
   end
 
   create_table "projects", :force => true do |t|

@@ -8,14 +8,18 @@ class Project < ActiveRecord::Base
   after_validation :user_presence
   serialize :namespaces
   belongs_to :user
-  has_and_belongs_to_many :docs
+  has_many :project_docs
+  has_many :docs, through: :project_docs
+
+  # to be deprecated ---
   has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
   has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
+  # ---
 
   attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
                   :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter,
                   :annotations_zip_downloadable, :namespaces, :process,
-                  :pmdocs_count, :pmcdocs_count, :denotations_num, :relations_num, :annotations_count
+                  :pmdocs_count, :pmcdocs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
   has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
   has_many :relations, :dependent => :destroy, after_add: :update_updated_at
   has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
@@ -684,47 +688,6 @@ class Project < ActiveRecord::Base
     return [divs, num_failed]
   end
 
-  def save_hdenotations_old(hdenotations, doc)
-    hdenotations.each do |a|
-      ca           = Denotation.new
-      ca.hid       = a[:id]
-      ca.begin     = a[:span][:begin]
-      ca.end       = a[:span][:end]
-      ca.obj       = a[:obj]
-      ca.project_id = self.id
-      ca.doc_id    = doc.id
-      raise ArgumentError, "Invalid representation of denotation: #{ca.hid}" unless ca.save
-    end
-  end
-
-  def save_hrelations_old(hrelations, doc)
-    hrelations.each do |a|
-      ra           = Relation.new
-      ra.hid       = a[:id]
-      ra.pred      = a[:pred]
-      ra.subj      = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:subj])
-      ra.obj       = Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
-      ra.project_id = self.id
-      raise ArgumentError, "Invalid representation of relation: #{ra.hid}" unless ra.save
-    end
-  end
-
-  def save_hmodifications_old(hmodifications, doc)
-    hmodifications.each do |a|
-      ma        = Modification.new
-      ma.hid    = a[:id]
-      ma.pred   = a[:pred]
-      ma.obj    = case a[:obj]
-        when /^R/
-          doc.subcatrels.find_by_project_id_and_hid(self.id, a[:obj])
-        else
-          Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
-      end
-      ma.project_id = self.id
-      raise ArgumentError, "Invalid representatin of modification: #{ma.hid}" unless ma.save
-    end
-  end
-
   def instantiate_hdenotations(hdenotations, doc)
     new_entries = hdenotations.map do |a|
       Denotation.new(
@@ -773,6 +736,8 @@ class Project < ActiveRecord::Base
         if instances.present?
           r = Denotation.import instances, validate: false
           raise "denotations import error" unless r.failed_instances.empty?
+          ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).increment!(:denotations_num, instances.length)
+          doc.increment!(:denotations_num, instances.length)
           self.increment!(:denotations_num, instances.length)
         end
       end
@@ -782,6 +747,8 @@ class Project < ActiveRecord::Base
         if instances.present?
           r = Relation.import instances, validate: false
           raise "relations import error" unless r.failed_instances.empty?
+          ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).increment!(:relations_num, instances.length)
+          doc.increment!(:relations_num, instances.length)
           self.increment!(:relations_num, instances.length)
         end
       end
@@ -791,6 +758,8 @@ class Project < ActiveRecord::Base
         if instances.present?
           r = Modification.import instances, validate: false
           raise "modifications import error" unless r.failed_instances.empty?
+          ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).increment!(:modifications_num, instances.length)
+          doc.increment!(:modifications_num, instances.length)
           self.increment!(:modifications_num, instances.length)
         end
       end
@@ -807,6 +776,16 @@ class Project < ActiveRecord::Base
       if instances.present?
         r = Denotation.import instances, validate: false
         raise "denotations import error" unless r.failed_instances.empty?
+        p instances
+        puts "-----"
+        d_stat = instances.map{|i| i.doc_id}.group_by{|i| i}
+        p d_stat
+        puts "====="
+        d_stat.each do |did, set|
+          num = set.length
+          connection.execute("update project_docs set denotations_num = denotations_num + #{num} where project_id=#{id} and doc_id=#{did}")
+          connection.execute("update docs set denotations_num = denotations_num + #{num} where id=#{did}")
+        end
         self.increment!(:denotations_num, instances.length)
       end
       instances.clear
@@ -819,6 +798,12 @@ class Project < ActiveRecord::Base
       if instances.present?
         r = Relation.import instances, validate: false
         raise "relation import error" unless r.failed_instances.empty?
+        d_stat = instances.group_by{|i| i.subj.doc_id}
+        d_stat.each do |did, set|
+          num = set.length
+          connection.execute("update project_docs set relations_num = relations_num + #{num} where project_id=#{id} and doc_id=#{did}")
+          connection.execute("update docs set relations_num = relations_num + #{num} where id=#{did}")
+        end
         self.increment!(:relations_num, instances.length)
       end
       instances.clear
@@ -831,6 +816,12 @@ class Project < ActiveRecord::Base
       if instances.present?
         r = Modification.import instances, validate: false
         raise "modifications import error" unless r.failed_instances.empty?
+        d_stat = instances.group_by{|i| i.obj.doc_id}
+        d_stat.each do |did, set|
+          num = set.length
+          connection.execute("update project_docs set modifications_num = modifications_num + #{num} where project_id=#{id} and doc_id=#{did}")
+          connection.execute("update docs set modifications_num = modifications_num + #{num} where id=#{did}")
+        end
         self.increment!(:modifications_num, instances.length)
       end
     end
@@ -1154,14 +1145,20 @@ class Project < ActiveRecord::Base
 
   def delete_doc_annotations(doc)
     modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
+    ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).decrement!(:modifications_num, modifications.length)
+    doc.decrement!(:modifications_num, modifications.length)
     decrement!(:modifications_num, modifications.length)
     Modification.delete(modifications)
 
     relations = doc.subcatrels.where(project_id: self.id)
+    ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).decrement!(:relations_num, relations.length)
+    doc.decrement!(:relations_num, relations.length)
     decrement!(:relations_num, relations.length)
     Relation.delete(relations)
 
     denotations = doc.denotations.where(project_id: self.id)
+    ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).decrement!(:denotations_num, denotations.length)
+    doc.decrement!(:denotations_num, denotations.length)
     decrement!(:denotations_num, denotations.length)
     Denotation.delete(denotations)
 
@@ -1175,14 +1172,17 @@ class Project < ActiveRecord::Base
   def clean
     denotations_num = annotations_collection.inject(0){|sum, ann| sum += (ann[:denotations].present? ? ann[:denotations].length : 0)}
     relations_num = annotations_collection.inject(0){|sum, ann| sum += (ann[:relations].present? ? ann[:relations].length : 0)}
+    modifications_num = annotations_collection.inject(0){|sum, ann| sum += (ann[:modifications].present? ? ann[:modifications].length : 0)}
+
     pmdocs_count = docs.where(sourcedb: "PubMed").count
     pmcdocs_count = docs.where(sourcedb: "PMC").count
     update_attributes(
-      :pmdocs_count => pmdocs_count,
-      :pmcdocs_count => pmcdocs_count,
-      :denotations_num => denotations_num,
-      :relations_num => relations_num,
-      :annotations_count => denotations_num + relations_num
+      pmdocs_count: pmdocs_count,
+      pmcdocs_count: pmcdocs_count,
+      denotations_num: denotations_num,
+      relations_num: relations_num,
+      modifications_num: relations_num,
+      annotations_count: denotations_num + relations_num + modifications_num
     )
   end
 end

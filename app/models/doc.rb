@@ -91,7 +91,8 @@ class Doc < ActiveRecord::Base
   has_many :catmods, :class_name => 'Modification', :through => :denotations, :source => :modifications
   has_many :subcatrelmods, :class_name => 'Modification', :through => :subcatrels, :source => :modifications
 
-  has_and_belongs_to_many :projects,
+  has_many :project_docs
+  has_many :projects, through: :project_docs,
     :after_add => [:increment_docs_projects_counter, :update_es_doc],
     :after_remove => [:decrement_docs_projects_counter, :update_es_doc]
 
@@ -320,41 +321,6 @@ class Doc < ActiveRecord::Base
     end
   end
 
-  def self.order_by(docs, order)
-    if docs.present?
-      case order
-      when 'denotations_num'
-        docs.denotations_count
-      when 'same_sourceid_denotations_num'
-        # docs
-          # .select('docs.*, SUM(CASE WHEN docs.sourceid = docs.sourceid THEN denotations_num ELSE 0 END) AS denotations_num_sum')
-          # .group('docs.id')
-          # .order('denotations_num_sum DESC')
-        if docs.first.sourcedb == 'PubMed'
-          docs.order('denotations_num DESC')
-        else
-          docs.sort{|a, b| b.same_sourceid_denotations_num <=> a.same_sourceid_denotations_num}
-        end
-      when 'relations_num'
-        docs.relations_num
-      when 'same_sourceid_relations_num'
-        # docs
-          # .select('docs.*, CASE WHEN docs.sourceid = docs.sourceid THEN SUM(docs.subcatrels_count) ELSE 0 END AS subcatrels_count_sum')
-          # .group('docs.id')
-          # .order('subcatrels_count_sum DESC')
-        if docs.first.sourcedb == 'PubMed'
-          docs.order('subcatrels_count DESC')
-        else
-          docs.sort{|a, b| b.same_sourceid_relations_num <=> a.same_sourceid_relations_num}
-        end
-      else
-        docs.sort{|a, b| a.sourceid.to_i <=> b.sourceid.to_i}
-      end
-    else
-      []
-    end
-  end    
-  
   # returns relations count which belongs to project and doc
   def project_relations_num(project_id)
     count = Relation.project_relations_num(project_id, subcatrels)
@@ -372,7 +338,7 @@ class Doc < ActiveRecord::Base
   end
 
   def same_sourceid_relations_num
-    Doc.where(:sourceid => self.sourceid).sum('subcatrels_count')
+    Doc.where(:sourceid => self.sourceid).sum('relations_num')
   end
   
   def span(params)
@@ -472,11 +438,11 @@ class Doc < ActiveRecord::Base
 
   def get_denotations_num(project = nil, span = nil)
     if project.nil? && span.nil?
-      self.denotations_count
+      denotations_num
     elsif span.nil?
-      self.denotations.where("denotations.project_id = ?", project.id).count
+      ProjectDoc.find_by_project_id_and_doc_id(project.id, id).denotations_num
     else
-      self.get_denotations(project, span).size
+      get_denotations(project, span).count
     end
   end
 
@@ -751,6 +717,33 @@ class Doc < ActiveRecord::Base
   def self.dummy(repeat_times)
     repeat_times.times do |t|
       create({sourcedb: 'FFIK', body: "body is #{ t }", sourceid: t.to_s, serial: 0})
+    end
+  end
+
+  def self.update_numbers
+    Doc.all.each do |d|
+      d.update_numbers
+    end
+  end
+
+  def update_numbers
+    # numbers of this doc
+    connection.execute("update docs set denotations_num=#{denotations.count}, relations_num=#{subcatrels.count}, modifications_num=#{catmods.count + subcatrelmods.count} where id=#{id}")
+
+    # numbers of each project_doc
+    d_stat = denotations.group(:project_id).count
+    r_stat = subcatrels.group("relations.project_id").count
+
+    m_stat1 = catmods.group("modifications.project_id").count
+    m_stat2 = subcatrelmods.group("modifications.project_id").count
+    m_stat  = m_stat1.merge(m_stat2){|k,v1,v2| v1 + v2}
+
+    pids = (d_stat.keys + r_stat.keys + m_stat.keys).uniq
+    pids.each do |pid|
+      d_num = d_stat[pid] || 0
+      r_num = r_stat[pid] || 0
+      m_num = m_stat[pid] || 0
+      connection.execute("update project_docs set denotations_num=#{d_num}, relations_num=#{r_num}, modifications_num=#{m_num} where doc_id=#{id} and project_id=#{pid}")
     end
   end
 end

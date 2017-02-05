@@ -35,8 +35,8 @@ class Relation < ActiveRecord::Base
       order('relations.id ASC') 
   }
     
-  after_save :increment_subcatrels_count, :increment_project_relations_num, :update_project_updated_at
-  after_destroy :decrement_subcatrels_count, :decrement_project_relations_num, :update_project_updated_at
+  after_save :increment_project_relations_num, :update_project_updated_at
+  after_destroy :decrement_project_relations_num, :update_project_updated_at
   
   def get_hash
     hrelation = Hash.new
@@ -51,18 +51,6 @@ class Relation < ActiveRecord::Base
     relations.project_relations.count[project_id].to_i
   end
   
-  def increment_subcatrels_count
-    if self.subj_type == 'Denotation'
-      Doc.increment_counter(:subcatrels_count, subj.doc_id)
-    end
-  end
-  
-  def decrement_subcatrels_count
-    if self.subj_type == 'Denotation'
-      Doc.decrement_counter(:subcatrels_count, subj.doc_id)
-    end
-  end
-
   def increment_project_relations_num
     Project.increment_counter(:relations_num, self.project.id)
   end

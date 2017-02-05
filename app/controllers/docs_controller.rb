@@ -64,12 +64,12 @@ class DocsController < ApplicationController
           render text: Doc.to_tsv(@docs, 'doc')
         }
       end
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
-        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-        format.txt  {render text: message, status: :unprocessable_entity}
-      end
+    # rescue => e
+    #   respond_to do |format|
+    #     format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
+    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+    #     format.txt  {render text: message, status: :unprocessable_entity}
+    #   end
     end
   end
 
@@ -551,6 +551,16 @@ class DocsController < ApplicationController
     rescue => e
       flash[:notice] = e.message
     end
+    redirect_to project_path('system-maintenance')
+  end
+
+  def update_numbers
+    system = Project.find_by_name('system-maintenance')
+
+    delayed_job = Delayed::Job.enqueue UpdateAnnotationNumbersJob.new(nil), queue: :general
+    Job.create({name:"Update annotation numbers of each document", project_id:system.id, delayed_job_id:delayed_job.id})
+
+    result = {message: "The task, 'update annotation numbers of each document', created."}
     redirect_to project_path('system-maintenance')
   end
 
