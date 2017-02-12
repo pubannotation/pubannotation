@@ -555,13 +555,19 @@ class DocsController < ApplicationController
   end
 
   def update_numbers
-    system = Project.find_by_name('system-maintenance')
+    begin
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+      system = Project.find_by_name('system-maintenance')
 
-    delayed_job = Delayed::Job.enqueue UpdateAnnotationNumbersJob.new(nil), queue: :general
-    Job.create({name:"Update annotation numbers of each document", project_id:system.id, delayed_job_id:delayed_job.id})
+      delayed_job = Delayed::Job.enqueue UpdateAnnotationNumbersJob.new(nil), queue: :general
+      Job.create({name:"Update annotation numbers of each document", project_id:system.id, delayed_job_id:delayed_job.id})
 
-    result = {message: "The task, 'update annotation numbers of each document', created."}
-    redirect_to project_path('system-maintenance')
+      result = {message: "The task, 'update annotation numbers of each document', created."}
+      redirect_to project_path('system-maintenance')
+    rescue => e
+      flash[:notice] = e.message
+      redirect_to home_path
+    end
   end
 
   # def autocomplete_sourcedb
