@@ -51,6 +51,16 @@
         <th>Took</th>
         <td><%= time_duration(@job.begun_at, @job.ended_at) %></td>
       </tr>
+    <% else %>
+      <tr>
+        <th>Now</th>
+        <td><%= Time.now.utc %></td>
+      </tr>
+
+      <tr>
+        <th>Took, so far</th>
+        <td><%= time_duration(@job.begun_at, Time.now.utc) %></td>
+      </tr>
     <% end %>
 
     <tr>
