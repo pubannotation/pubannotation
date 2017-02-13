@@ -88,7 +88,8 @@ ActiveRecord::Schema.define(:version => 20170213023156) do
     t.integer  "modifications_num", :default => 0
   end
 
-  add_index "docs", ["projects_num"], :name => "index_docs_on_projects_count"
+  add_index "docs", ["denotations_num"], :name => "index_docs_on_denotations_num"
+  add_index "docs", ["projects_num"], :name => "index_docs_on_projects_num"
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
   add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
   add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
