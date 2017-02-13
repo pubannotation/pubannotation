@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170204075835) do
+ActiveRecord::Schema.define(:version => 20170213023156) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -149,6 +149,10 @@ ActiveRecord::Schema.define(:version => 20170204075835) do
     t.integer "relations_num",     :default => 0
     t.integer "modifications_num", :default => 0
   end
+
+  add_index "project_docs", ["denotations_num"], :name => "index_project_docs_on_denotations_num"
+  add_index "project_docs", ["doc_id"], :name => "index_project_docs_on_doc_id"
+  add_index "project_docs", ["project_id"], :name => "index_project_docs_on_project_id"
 
   create_table "projects", :force => true do |t|
     t.string   "name"
