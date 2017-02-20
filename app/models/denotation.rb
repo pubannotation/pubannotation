@@ -4,7 +4,7 @@ class Denotation < ActiveRecord::Base
   include DenotationsHelper
   
   belongs_to :project
-  belongs_to :doc, :counter_cache => true
+  belongs_to :doc
 
   has_many :modifications, :as => :obj, :dependent => :destroy
 
