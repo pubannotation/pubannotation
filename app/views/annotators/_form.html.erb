@@ -50,21 +50,6 @@
     <%= f.label :method, :POST, :value => 1 %>
     <%= f.radio_button :method, 1 %></td>
   </tr>
-  <tr>
-    <th><%= f.label :url2, :URL2 %></th>
-    <td><%= f.text_field :url2 %></td>
-  </tr>
-  <tr>
-    <th><%= f.label :params2 %></th>
-    <td><%= f.text_area :params2 %></td>
-  </tr>
-  <tr>
-    <th><%= f.label :method2 %></th>
-    <td><%= f.label :method2, :GET, :value => 0 %>
-    <%= f.radio_button :method2, 0, checked: true %>
-    <%= f.label :method2, :POST, :value => 1 %>
-    <%= f.radio_button :method2, 1 %></td>
-  </tr>
   </table>
   <div>
     <%= f.submit %>

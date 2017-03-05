@@ -44,21 +44,6 @@
   <th>Method:</th>
   <td><%= case @annotator.method when 0; :GET when 1; :POST end%></td>
 </tr>
-
-<tr>
-  <th>URL2:</th>
-  <td><%= @annotator.url2 %></td>
-</tr>
-
-<tr>
-  <th>Params2:</th>
-  <td><pre><%= @annotator.params2 %></pre></td>
-</tr>
-
-<tr>
-  <th>Method2:</th>
-  <td><%= case @annotator.method2 when 0; :GET when 1; :POST end%></td>
-</tr>
 </table>
 
 <%= link_to 'Edit', edit_annotator_path(@annotator) %> |

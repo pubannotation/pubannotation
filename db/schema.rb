@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170213023156) do
+ActiveRecord::Schema.define(:version => 20170221123628) do
 
   create_table "annotators", :force => true do |t|
     t.string   "abbrev"
@@ -22,9 +22,6 @@ ActiveRecord::Schema.define(:version => 20170213023156) do
     t.string   "url"
     t.text     "params"
     t.integer  "method"
-    t.string   "url2"
-    t.text     "params2"
-    t.integer  "method2"
     t.datetime "created_at",  :null => false
     t.datetime "updated_at",  :null => false
   end

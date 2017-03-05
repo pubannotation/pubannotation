@@ -17,7 +17,6 @@ class AnnotatorsController < ApplicationController
   def show
     @annotator = Annotator.find(params[:id])
     @annotator.params = @annotator.params.map{|p| p.join("=")}.join("\n")
-    @annotator.params2 = @annotator.params2.map{|p| p.join("=")}.join("\n")
 
     respond_to do |format|
       format.html # show.html.erb
@@ -30,7 +29,6 @@ class AnnotatorsController < ApplicationController
   def new
     @annotator = Annotator.new
     @annotator.params = @annotator.params.map{|p| p.join("=")}.join("\n")
-    @annotator.params2 = @annotator.params2.map{|p| p.join("=")}.join("\n")
 
     respond_to do |format|
       format.html # new.html.erb
@@ -42,7 +40,6 @@ class AnnotatorsController < ApplicationController
   def edit
     @annotator = Annotator.find(params[:id])
     @annotator.params = @annotator.params.map{|p| p.join("=")}.join("\n")
-    @annotator.params2 = @annotator.params2.map{|p| p.join("=")}.join("\n")
   end
 
   # POST /annotators
@@ -51,7 +48,6 @@ class AnnotatorsController < ApplicationController
     @annotator = Annotator.new(params[:annotator])
     @annotator.user = current_user
     @annotator.params = @annotator.params.split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h
-    @annotator.params2 = @annotator.params2.split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h
 
     respond_to do |format|
       if @annotator.save
@@ -70,7 +66,6 @@ class AnnotatorsController < ApplicationController
     @annotator = Annotator.find(params[:id])
     update = params[:annotator]
     update["params"] = update["params"].split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h
-    update["params2"] = update["params2"].split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h
 
     respond_to do |format|
       if @annotator.update_attributes(params[:annotator])
