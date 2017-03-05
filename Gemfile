@@ -51,7 +51,7 @@ gem 'facebox-rails'
 
 gem 'rack-cors', :require => 'rack/cors'
 
-gem 'rest-client'
+gem 'rest-client', '~> 2.0.1'
 gem 'htmlentities'
 gem 'libxml-ruby'
 gem 'wikipedia-client'
