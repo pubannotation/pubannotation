@@ -388,7 +388,7 @@ class Project < ActiveRecord::Base
       when 200
         response.force_encoding(Encoding::UTF_8)
       else
-        raise IOError, "Bad response from the converter"
+        raise RuntimeError, "Bad response from the converter"
       end
     end
   end
@@ -433,7 +433,7 @@ class Project < ActiveRecord::Base
 
     ttl_file.unlink
 
-    raise IOError, 'Could not store RDFized annotations' unless error.include?('201 Created') || error.include?('200 OK')
+    raise RuntimeError, 'Could not store RDFized annotations' unless error.include?('201 Created') || error.include?('200 OK')
   end
 
   def self.params_from_json(json_file)
@@ -615,7 +615,7 @@ class Project < ActiveRecord::Base
   def add_doc_unless_exist(sourcedb, sourceid)
     divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
     divs = Doc.import_from_sequence(sourcedb, sourceid) unless divs.present?
-    raise IOError, "Failed to get the document" unless divs.present?
+    raise RuntimeError, "Failed to get the document" unless divs.present?
     return nil if self.docs.include?(divs.first)
     divs.each{|div| div.projects << self}
     divs
@@ -632,7 +632,7 @@ class Project < ActiveRecord::Base
       end
     else
       divs = Doc.import_from_sequence(sourcedb, sourceid)
-      raise IOError, "Failed to get the document" unless divs.present?
+      raise RuntimeError, "Failed to get the document" unless divs.present?
       divs.each{|div| div.projects << self}
     end
 
@@ -776,11 +776,7 @@ class Project < ActiveRecord::Base
       if instances.present?
         r = Denotation.import instances, validate: false
         raise "denotations import error" unless r.failed_instances.empty?
-        p instances
-        puts "-----"
         d_stat = instances.map{|i| i.doc_id}.group_by{|i| i}
-        p d_stat
-        puts "====="
         d_stat.each do |did, set|
           num = set.length
           connection.execute("update project_docs set denotations_num = denotations_num + #{num} where project_id=#{id} and doc_id=#{did}")
@@ -827,15 +823,13 @@ class Project < ActiveRecord::Base
     end
   end
 
+  # annotations need to be normal
   def save_annotations(annotations, doc, options = nil)
     raise ArgumentError, "nil document" unless doc.present?
     raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
     options ||= {}
 
-    if options[:mode] == 'skip'
-      num = doc.denotations.where("denotations.project_id = ?", id).count
-      return {result: 'upload is skipped due to existing annotations'} if num > 0
-    end
+    return {result: 'upload is skipped due to existing annotations'} if options[:mode] == 'skip' && doc.denotations_count > 0
 
     annotations = Annotation.prepare_annotations(annotations, doc)
 
@@ -896,7 +890,7 @@ class Project < ActiveRecord::Base
         end
       end
 
-      normalize_annotations!(annotations)
+      Annotation.normalize!(annotations)
 
       if doc.present?
         begin
@@ -924,29 +918,25 @@ class Project < ActiveRecord::Base
     messages
   end
 
+  # To obtain annotations from an annotator and to save them in the project
   def obtain_annotations(doc, annotator, options = nil)
     options ||= {}
 
-    if options[:mode] == 'skip'
-      num = doc.denotations.where("denotations.project_id = ?", id).count
-      return {result: 'obtaining annotation is skipped due to existing annotations'} if num > 0
-    end
+    # To skip obtaining annotations in favor of existing annotations
+    return {result: 'obtaining annotation is skipped due to existing annotations'} if options[:mode] == 'skip' && doc.denotations_count > 0
 
-    annotations = inquire_annotations(doc, annotator, options)
-    normalize_annotations!(annotations)
+    method, url, params, payload = prepare_request(doc, annotator, options)
+    options[:abbrev] = annotator['abbrev']
+    annotations = make_request(doc, method, url, params, payload, options)
 
-    prefix = annotator['abbrev']
-    if prefix.present?
-      annotations[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if annotations[:denotations].present?
-      annotations[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:relations].present?
-      annotations[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:modifications].present?
-    end
-
-    result = self.save_annotations(annotations, doc, options)
+    Annotation.normalize!(annotations, annotator['abbrev'])
+    save_annotations(annotations, doc, options)
   end
 
-  def inquire_annotations(doc, annotator, options = nil)
+  def prepare_request(doc, annotator, options)
     doc.set_ascii_body if options[:encoding] == 'ascii'
+
+    method = (annotator['method'] == 0) ? :get : :post
 
     url = annotator['url']
       .gsub('_text_', doc.body)
@@ -954,6 +944,7 @@ class Project < ActiveRecord::Base
       .gsub('_sourceid_', doc.sourceid)
 
     params = {}
+
     annotator['params'].each do |k, v|
       params[k] = v
         .gsub('_text_', doc.body)
@@ -961,40 +952,28 @@ class Project < ActiveRecord::Base
         .gsub('_sourceid_', doc.sourceid)
     end
 
-    response = begin
-      if annotator['method'] == 0 # 'get'
-        RestClient.get url, {:params => params, :accept => :json}
-      else
-        RestClient::Request.execute(method: :post, url: url, timeout: 120, payload: params)
-        # RestClient.post url, params.merge({:accept => :json})
-      end
-    rescue => e
-      raise IOError, "Invalid connection"
-    end
-    raise IOError, "Bad gateway" unless response.code == 200
+    payload = (method == :post && params.has_key?('_body_')) ? doc.hannotations(self) : nil
 
-    begin
-      result = JSON.parse response, :symbolize_names => true
-    rescue => e
-      raise IOError, "Received a non-JSON object: [#{response}]"
-    end
+    [method, url, params, payload]
+  end
 
-    ann = {}
-    ann[:text] = if result.respond_to?(:has_key?) && result.has_key?(:text)
-      result[:text]
+  def make_request(doc, method, url, params, payload, options)
+    response = if method == :post && !payload.nil?
+      RestClient::Request.execute(method: method, url: url, payload: payload.to_json, max_redirects: 0, headers:{content_type: :json, accept: :json})
     else
-      doc.body
+      RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers:{params: params, accept: :json})
     end
 
-    if result.respond_to?(:has_key?) && result.has_key?(:denotations)
-      ann[:denotations] = result[:denotations]
-      ann[:relations] = result[:relations] if defined? result[:relations]
-      ann[:modifications] = result[:modifications] if defined? result[:modifications]
-    elsif result.respond_to?(:first) && result.first.respond_to?(:has_key?) && result.first.has_key?(:obj)
-      ann[:denotations] = result
+    result = begin
+      JSON.parse response, :symbolize_names => true
+    rescue => e
+      raise RuntimeError, "Received a non-JSON object: [#{response}]"
     end
 
-    ann
+    # When the result from the annotator does not include text, it is assumed that the text is the same as the document.
+    result[:text] = doc.body unless result.respond_to?(:has_key?) && result.has_key?(:text)
+
+    result
   end
 
   def comparison_path

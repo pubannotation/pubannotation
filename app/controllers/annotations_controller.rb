@@ -230,7 +230,7 @@ class AnnotationsController < ApplicationController
       annotations[:sourceid] = params[:sourceid]
       annotations[:divid]    = params[:divid]
 
-      annotations = normalize_annotations!(annotations)
+      annotations = Annotation.normalize!(annotations)
 
       options = {}
       options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
@@ -308,7 +308,7 @@ class AnnotationsController < ApplicationController
       annotations[:sourceid] = params[:sourceid]
       annotations[:divid]    = params[:divid]
 
-      annotations = normalize_annotations!(annotations)
+      annotations = Annotation.normalize!(annotations)
       annotations_collection = [annotations]
 
       if params[:divid].present?
@@ -343,17 +343,17 @@ class AnnotationsController < ApplicationController
         format.json {render json: annotations}
       end
 
-    # rescue => e
-    #   respond_to do |format|
-    #     format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
+      end
     end
   end
 
   def obtain
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
+      raise "Could not find the project: #{params[:project_id]}." unless project.present?
 
       annotator = if params[:annotator].present?
         Annotator.find(params[:annotator])
@@ -385,27 +385,54 @@ class AnnotationsController < ApplicationController
       options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
       options[:encoding] = params[:encoding] if params[:encoding].present?
 
-      if docids.length > 1 || params[:run] == 'background'
+      raise ArgumentError, "No document was found" if docids.empty?
+
+      message = ""
+
+      if docids.length == 1
+        doc = Doc.find(docids.first)
+        result = begin
+          project.obtain_annotations(doc, annotator, options)
+        rescue RestClient::ExceptionWithResponse => e
+          if e.response.code == 303
+            options[:retry_after] = e.response.headers[:retry_after].to_i
+            options[:try_times] = 3
+
+            # job = RetrieveAnnotationsJob.new(self, doc, e.response.headers[:location], options)
+            # job.perform()
+            priority = project.jobs.unfinished.count
+            delayed_job = Delayed::Job.enqueue RetrieveAnnotationsJob.new(project, doc, e.response.headers[:location], options), priority: priority, queue: :general, run_at: options[:retry_after].seconds.from_now
+            Job.create({name:"Retrieve annotations", project_id:project.id, delayed_job_id:delayed_job.id})
+            message = "Asyncronous annotation request was made."
+            nil
+          elsif e.response.code == 503
+            raise RuntimeError, "Service unavailable"
+          else
+            raise RuntimeError, e.message
+          end
+        rescue => e
+          raise RuntimeError, e.message
+        end
+
+        unless result.nil?
+          message += "#{result[:denotations].length} denotation(s)" if result.has_key?(:denotations) && result[:denotations].length > 0
+          message += " / #{result[:relations].length} relation(s)" if result.has_key?(:relations) && result[:relations].length > 0
+          message += " / #{result[:modifications].length} modification(s)" if result.has_key?(:modifications) && result[:modifications].length > 0
+          message += "no annotation" if message.empty?
+          message += " was obtained."
+        end
+      else # docids.length > 1
+        # job = ObtainAnnotationsJob.new(project, docids, annotator, options)
+        # job.perform()
+
         priority = project.jobs.unfinished.count
         delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids, annotator, options), priority: priority, queue: :upload
         Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
-        notice = "The task 'Obtain annotations' is created."
-      elsif docids.length == 1
-        doc = Doc.find(docids.first)
-        result = project.obtain_annotations(doc, annotator, options)
-        num = 0
-        unless result.nil?
-          num += result.has_key?(:denotations) ? result[:denotations].length : 0
-          num += result.has_key?(:relations) ? result[:relations].length : 0
-          num += result.has_key?(:modifications) ? result[:modifications].length : 0
-        end
-        notice = "#{num} annotation(s) obtained."
-      else
-        notice = "There is no such document."
+        message = "The task 'Obtain annotations' was created."
       end
 
       respond_to do |format|
-        format.html {redirect_to :back, notice: notice}
+        format.html {redirect_to :back, notice: message}
         format.json {}
       end
     rescue => e
