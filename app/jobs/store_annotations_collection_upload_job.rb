@@ -37,7 +37,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
       annotation_collection.each do |annotations|
         begin
           raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
-          normalize_annotations!(annotations)
+          Annotation.normalize!(annotations)
           divs_added = project.add_doc(annotations[:sourcedb], annotations[:sourceid])
           sourcedbs << annotations[:sourcedb] unless divs_added.nil?
 

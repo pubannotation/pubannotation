@@ -2,6 +2,93 @@ class Annotation < ActiveRecord::Base
   include ApplicationHelper
   include AnnotationsHelper
 
+  # normalize annotations passed by an HTTP call
+  def self.normalize!(annotations, prefix = nil)
+    raise ArgumentError, "annotations must be a hash." unless annotations.class == Hash
+    raise ArgumentError, "annotations must include a 'text'"  unless annotations[:text].present?
+
+    if annotations[:sourcedb].present?
+      annotations[:sourcedb] = 'PubMed' if annotations[:sourcedb].downcase == 'pubmed'
+      annotations[:sourcedb] = 'PMC' if annotations[:sourcedb].downcase == 'pmc'
+      annotations[:sourcedb] = 'FirstAuthor' if annotations[:sourcedb].downcase == 'firstauthor'
+    end
+
+    if annotations[:denotations].present?
+      raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
+      annotations[:denotations].each{|d| d = d.symbolize_keys}
+
+      annotations = Annotation.chain_spans(annotations)
+
+      ids = annotations[:denotations].collect{|d| d[:id]}.compact
+      idnum = 1
+
+      annotations[:denotations].each do |a|
+        raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'." unless (a[:span].present? && a[:span][:begin].present? && a[:span][:end].present?) || (a[:begin].present? && a[:end].present?)
+        raise ArgumentError, "a denotation must have an 'obj'." unless a[:obj].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('T' + idnum.to_s)
+          a[:id] = 'T' + idnum.to_s
+          idnum += 1
+        end
+
+        a[:span] = {begin: a[:begin], end: a[:end]} if !a[:span].present? && a[:begin].present? && a[:end].present?
+
+        a[:span][:begin] = a[:span][:begin].to_i if a[:span][:begin].is_a? String
+        a[:span][:end]   = a[:span][:end].to_i   if a[:span][:end].is_a? String
+
+        raise ArgumentError, "the begin offset must be between 0 and the length of the text: #{a}" if a[:span][:begin] < 0 || a[:span][:begin] > annotations[:text].length
+        raise ArgumentError, "the end offset must be between 0 and the length of the text." if a[:span][:end] < 0 || a[:span][:end] > annotations[:text].length
+        raise ArgumentError, "the begin offset must not be bigger than the end offset." if a[:span][:begin] > a[:span][:end]
+      end
+    end
+
+    if annotations[:relations].present?
+      raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
+      annotations[:relations].each{|a| a = a.symbolize_keys}
+
+      ids = annotations[:relations].collect{|a| a[:id]}.compact
+      idnum = 1
+
+      annotations[:relations].each do |a|
+        raise ArgumentError, "a relation must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('R' + idnum.to_s)
+          a[:id] = 'R' + idnum.to_s
+          idnum += 1
+        end
+      end
+    end
+
+    if annotations[:modifications].present?
+      raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
+      annotations[:modifications].each{|a| a = a.symbolize_keys}
+
+      ids = annotations[:modifications].collect{|a| a[:id]}.compact
+      idnum = 1
+
+      annotations[:modifications].each do |a|
+        raise ArgumentError, "a modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('M' + idnum.to_s)
+          a[:id] = 'M' + idnum.to_s
+          idnum += 1
+        end
+      end
+    end
+
+    if prefix.present?
+      annotations[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if annotations[:denotations].present?
+      annotations[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:relations].present?
+      annotations[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:modifications].present?
+    end
+
+    annotations
+  end
+
+
   def self.prepare_annotations(annotations, doc, options = {})
     annotations = align_annotations(annotations, doc)
   end
