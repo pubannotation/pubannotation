@@ -57,16 +57,17 @@
         <td><%= Time.now.utc %></td>
       </tr>
 
-      <tr>
-        <th>Took, so far</th>
-        <td><%= time_duration(@job.begun_at, Time.now.utc) %></td>
-      </tr>
+      <% if @job.begun_at.present? %>
+        <tr>
+          <th>Took, so far</th>
+          <td><%= time_duration(@job.begun_at, Time.now.utc) %></td>
+        </tr>
+        <tr>
+          <th>Progress</th>
+          <td><%= @job.num_dones %> / <%= @job.num_items %></td>
+        </tr>
+        <% end %>
     <% end %>
-
-    <tr>
-      <th>Progress</th>
-      <td><%= @job.num_dones %> / <%= @job.num_items %></td>
-    </tr>
     </table>
 
     <%= render partial: 'messages/messages' -%>
