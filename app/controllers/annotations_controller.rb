@@ -646,20 +646,23 @@ class AnnotationsController < ApplicationController
   def destroy
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
+      raise "Could not find the project." unless project.present?
 
       doc = if params[:divid].present?
         project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       else
         project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       end
-      raise "There is no such document in the project." unless doc.present?
+      raise "Could not find the document." unless doc.present?
 
-      span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
-      doc.set_ascii_body if (params[:encoding] == 'ascii')
-      denotations = doc.get_denotations(project, span)
-      denotations.each{|d| d.destroy}
+      if params[:begin].present? && params[:end].present?
+        span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
+        doc.set_ascii_body if (params[:encoding] == 'ascii')
+        denotations = doc.get_denotations(project, span)
+        denotations.each{|d| d.destroy}
+      else
+        project.delete_doc_annotations(doc)
+      end
 
       respond_to do |format|
         format.html {redirect_to :back, status: :see_other, notice: "annotations deleted"}

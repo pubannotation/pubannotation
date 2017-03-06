@@ -38,8 +38,8 @@ class Denotation < ActiveRecord::Base
     order('denotations.id ASC') 
   }
   
-  after_save :increment_project_denotations_num, :update_project_updated_at
-  after_destroy :decrement_project_denotations_num, :update_project_updated_at
+  after_save :increment_numbers, :update_project_updated_at
+  after_destroy :decrement_numbers, :update_project_updated_at
   
   def get_hash
     hdenotation = Hash.new
@@ -61,7 +61,19 @@ class Denotation < ActiveRecord::Base
   def decrement_project_denotations_num
     self.project.decrement!(:denotations_num)
   end
-  
+
+  def increment_numbers
+    ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id).increment!(:denotations_num)
+    self.doc.increment!(:denotations_num)
+    self.project.increment!(:denotations_num)
+  end
+
+  def decrement_numbers
+    ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id).decrement!(:denotations_num)
+    self.doc.decrement!(:denotations_num)
+    self.project.decrement!(:denotations_num)
+  end
+
   def self.sql_find(params, current_user, project)
     if params[:sql].present?
       current_user_id = current_user.present? ? current_user.id : nil
