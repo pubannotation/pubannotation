@@ -90,7 +90,7 @@ class Annotation < ActiveRecord::Base
 
 
   def self.prepare_annotations(annotations, doc, options = {})
-    annotations = align_annotations(annotations, doc)
+    annotations = align_annotations(annotations, doc, options[:span])
   end
 
   def self.chain_spans(annotations)
@@ -188,7 +188,8 @@ class Annotation < ActiveRecord::Base
     align.transform_hdenotations(denotations).select{|a| a[:span][:begin].to_i <= a[:span][:end].to_i }
   end
 
-  def self.align_annotations(annotations, doc)
+  # TODO: when a span is specified, restrict the alignment within the span.
+  def self.align_annotations(annotations, doc, span = nil)
     original_text = annotations[:text]
     annotations[:text] = doc.original_body.nil? ? doc.body : doc.original_body
 

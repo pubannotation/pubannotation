@@ -641,7 +641,7 @@ class Project < ActiveRecord::Base
 
   def delete_doc(doc)
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
-    self.delete_doc_annotations(doc)
+    delete_doc_annotations(doc)
     doc.projects.delete(self)
     doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{user.username}") && doc.projects_num == 0
   end
@@ -831,9 +831,9 @@ class Project < ActiveRecord::Base
 
     return {result: 'upload is skipped due to existing annotations'} if options[:mode] == 'skip' && doc.denotations_count > 0
 
-    annotations = Annotation.prepare_annotations(annotations, doc)
+    annotations = Annotation.prepare_annotations(annotations, doc, options)
 
-    delete_doc_annotations(doc) if options[:mode] == 'replace'
+    delete_doc_annotations(doc, options[:span]) if options[:mode] == 'replace'
     instantiate_and_save_annotations(annotations, doc)
 
     annotations
@@ -1122,25 +1122,30 @@ class Project < ActiveRecord::Base
     update_updated_at
   end
 
-  def delete_doc_annotations(doc)
-    modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
-    relations = doc.subcatrels.where(project_id: self.id)
-    denotations = doc.denotations.where(project_id: self.id)
+  def delete_doc_annotations(doc, span = nil)
+    if span.present?
+      denotations = doc.get_denotations(self, span)
+      denotations.each{|d| d.destroy}
+    else
+      modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
+      relations = doc.subcatrels.where(project_id: self.id)
+      denotations = doc.denotations.where(project_id: self.id)
 
-    doc.decrement!(:modifications_num, modifications.length)
-    doc.decrement!(:denotations_num, denotations.length)
-    doc.decrement!(:relations_num, relations.length)
+      doc.decrement!(:modifications_num, modifications.length)
+      doc.decrement!(:denotations_num, denotations.length)
+      doc.decrement!(:relations_num, relations.length)
 
-    decrement!(:modifications_num, modifications.length)
-    decrement!(:relations_num, relations.length)
-    decrement!(:denotations_num, denotations.length)
+      decrement!(:modifications_num, modifications.length)
+      decrement!(:relations_num, relations.length)
+      decrement!(:denotations_num, denotations.length)
 
-    Modification.delete(modifications)
-    Relation.delete(relations)
-    Denotation.delete(denotations)
+      Modification.delete(modifications)
+      Relation.delete(relations)
+      Denotation.delete(denotations)
 
-    ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).update_attributes!(denotations_num: 0, relations_num: 0, modifications_num: 0)
-    update_updated_at
+      ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).update_attributes!(denotations_num: 0, relations_num: 0, modifications_num: 0)
+      update_updated_at
+    end
   end
 
   def update_updated_at

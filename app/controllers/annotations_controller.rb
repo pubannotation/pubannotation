@@ -215,13 +215,15 @@ class AnnotationsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 
-      if params[:annotations]
-        annotations = params[:annotations].symbolize_keys
+      annotations = if params[:annotations]
+        params[:annotations].symbolize_keys
       elsif params[:text].present?
-        annotations = {:text => params[:text]}
-        annotations[:denotations] = params[:denotations] if params[:denotations].present?
-        annotations[:relations] = params[:relations] if params[:relations].present?
-        annotations[:modifications] = params[:modifications] if params[:modifications].present?
+        {
+          text: params[:text],
+          denotations: params[:denotations].present? ? params[:denotations] : nil,
+          relations: params[:relations].present? ? params[:relations] : nil,
+          modification: params[:modification].present? ? params[:modification] : nil,
+        }.delete_if{|k, v| v.nil?}
       else
         raise ArgumentError, t('controllers.annotations.create.no_annotation')
       end
@@ -235,8 +237,7 @@ class AnnotationsController < ApplicationController
       options = {}
       options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
       options[:prefix] = params[:prefix] if params[:prefix].present?
-
-      annotations_collection = [annotations]
+      options[:span] = {begin: params[:begin].to_i, end: params[:end].to_i} if params[:begin].present? && params[:end].present?
 
       if params[:divid].present?
         doc = project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
@@ -262,6 +263,7 @@ class AnnotationsController < ApplicationController
         if divs.length == 1
           doc = divs[0]
         else
+          raise ArgumentError, "A span can be specified only for a single document." if options[:span].present?
           priority = project.jobs.unfinished.count
           delayed_job = Delayed::Job.enqueue StoreAnnotationsJob.new(annotations, project, divs, options), priority: priority, queue: :general
           Job.create({name:'Store annotations', project_id:project.id, delayed_job_id:delayed_job.id})
@@ -275,6 +277,7 @@ class AnnotationsController < ApplicationController
         end
       end
 
+      doc.set_ascii_body if params[:encoding] == 'ascii'
       result = project.save_annotations(annotations, doc, options)
       notice = "annotations"
 
@@ -655,19 +658,17 @@ class AnnotationsController < ApplicationController
       end
       raise "Could not find the document." unless doc.present?
 
-      if params[:begin].present? && params[:end].present?
-        span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
-        doc.set_ascii_body if (params[:encoding] == 'ascii')
-        denotations = doc.get_denotations(project, span)
-        denotations.each{|d| d.destroy}
-      else
-        project.delete_doc_annotations(doc)
-      end
+      doc.set_ascii_body if params[:encoding] == 'ascii'
+
+      span = {begin: params[:begin].to_i, end: params[:end].to_i} if params[:begin].present? && params[:end].present?
+      project.delete_doc_annotations(doc, span)
 
       respond_to do |format|
-        format.html {redirect_to :back, status: :see_other, notice: "annotations deleted"}
+        format.html {redirect_to :back, notice: "annotations deleted"}
         format.json {render status: :no_content}
       end
+    rescue => e
+      redirect_to :back, notice: e.message
     end
   end
 
