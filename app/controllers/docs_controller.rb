@@ -191,10 +191,10 @@ class DocsController < ApplicationController
   def show_in_project
     begin
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "There is no such project." unless @project.present?
+      raise "Could not find the project." unless @project.present?
 
       divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document in the project." unless divs.present?
+      raise "Could not find the document within this project." unless divs.present?
 
       if divs.length > 1
         respond_to do |format|
@@ -241,17 +241,17 @@ class DocsController < ApplicationController
     begin
       if params[:project_id].present?
         project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no such project." unless project.present?
+        raise "Could not find the project." unless project.present?
 
         divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        raise "There is no such document in the project." unless divs.present?
+        raise "Could not find the document within this project." unless divs.present?
 
         respond_to do |format|
           format.html {redirect_to show_project_sourcedb_sourceid_docs_path(params[:project_id], params[:sourcedb], params[:sourceid])}
         end
       else
         divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        raise "There is no such document." unless divs.present?
+        raise "Could not find the document within this project." unless divs.present?
 
         respond_to do |format|
           format.html {redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid])}
