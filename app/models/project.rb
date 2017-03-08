@@ -1116,9 +1116,17 @@ class Project < ActiveRecord::Base
     Modification.delete(Modification.where(project_id:self.id))
     Relation.delete(Relation.where(project_id:self.id))
     Denotation.delete(Denotation.where(project_id:self.id))
-    update_attribute(:denotations_num, 0)
-    update_attribute(:relations_num, 0)
-    update_attribute(:modifications_num, 0)
+
+    update_attributes!(denotations_num: 0, relations_num: 0, modifications_num: 0)
+
+    connection.execute("update project_docs set denotations_num = 0, relations_num=0, modifications_num=0 where project_id=#{id}")
+
+    connection.execute("update docs set (denotations_num) = (select count(*) from denotations where denotations.doc_id = docs.id)")
+    connection.execute("update docs set (relations_num) = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id)")
+
+    # too much expensive.
+    # connection.execute("update docs set (modifications_num) = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))")
+
     update_updated_at
   end
 
