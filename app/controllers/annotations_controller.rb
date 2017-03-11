@@ -472,8 +472,8 @@ class AnnotationsController < ApplicationController
       else
         notice = "Unknown file type: '#{ext}'."
       end
-    # rescue => e
-    #   notice = e.message
+    rescue => e
+      notice = e.message
     end
 
     respond_to do |format|
