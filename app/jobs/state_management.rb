@@ -10,6 +10,6 @@ module StateManagement
 	end
 
   def error(job, exception)
-		@job.messages << Message.create({item: "The job failed", body: exception.message})
+		@job.messages << Message.create({sourcedb: nil, sourceid: nil, divid: nil, body: exception.message})
   end
 end
