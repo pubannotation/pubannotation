@@ -1,12 +1,14 @@
 class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
 	include StateManagement
 
+  MaxTrials = 10
+
 	def perform
 		@job.update_attribute(:num_items, docids.length)
     @job.update_attribute(:num_dones, 0)
 
     # for asyncronous annotation
-    max_trials = 3
+    trials = nil
     retrieval_queue = []
     @skip_interval = nil
 
@@ -24,19 +26,20 @@ class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
         if e.response.code == 303
           retry_after = e.response.headers[:retry_after].to_i
           @skip_interval ||= [retry_after / 2, 1].max
-          retrieval_queue << {doc:doc, url:e.response.headers[:location], num_tries: max_trials - 1, try_at: retry_after.seconds.from_now, retry_after: retry_after}
+          retrieval_queue << {doc:doc, url:e.response.headers[:location], trials: 1, try_at: retry_after.seconds.from_now, retry_after: retry_after}
           trials = nil
         elsif e.response.code == 503
           if retrieval_queue.empty?
             @job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: "Job execution stopped: service is unavailable when the queue is empty."})
             break
           else
+            trials ||= 1
             min_time = retrieval_queue.min_by{|t| t[:try_at]}[:try_at]
-            sleep(min_time - Time.now > 0 ? min_time - Time.now : @skip_interval)
+            sleep_time = [min_time - Time.now, @skip_interval].max * trials
+            sleep(sleep_time)
             process_retrieval_queue(retrieval_queue)
-            trials ||= 0
-            retry if (trials += 1) < max_trials
-            @job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: "Annotation request stopped: service is unavailable (tried #{max_trials} times)."})
+            retry if (trials += 1) <= MaxTrials
+            @job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: "Annotation request stopped: service is unavailable (tried #{MaxTrials} times)."})
             break
           end
         else
@@ -67,8 +70,8 @@ class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
           r[:delme] = true
         rescue RestClient::ExceptionWithResponse => e
           if e.response.code == 404 # Not Found
-            if (r[:num_tries]-=1).zero?
-              @job.messages << Message.create({sourcedb: r[:doc].sourcedb, sourceid: r[:doc].sourceid, divid:r[:doc].serial, body: "Retrieval of annotation failed despite of several trials."})
+            if (r[:trials]+=1) > MaxTrials
+              @job.messages << Message.create({sourcedb: r[:doc].sourcedb, sourceid: r[:doc].sourceid, divid:r[:doc].serial, body: "Retrieval of annotation failed despite of #{MaxTrials} trials."})
               r[:delme] = true
             else
               r[:try_at] = @skip_interval.seconds.from_now
