@@ -971,9 +971,9 @@ class Project < ActiveRecord::Base
     doc = docs.first
 
     url = annotator[:url]
-      .gsub('_text_', doc.body)
-      .gsub('_sourcedb_', doc.sourcedb)
-      .gsub('_sourceid_', doc.sourceid)
+      .gsub('_text_', URI.escape(doc.body))
+      .gsub('_sourcedb_', URI.escape(doc.sourcedb))
+      .gsub('_sourceid_', URI.escape(doc.sourceid))
 
     if params.present?
       params.each do |k, v|
