@@ -10,7 +10,8 @@
 		%>
 		<tr>
 			<td style="width:5em"><%= link_to sourcedb, index_path %></td>
-			<td style="width:5em;text-align: right"><%= number_with_delimiter(docs_count, :delimiter => ',') %></td>
+			<td style="width:6em;text-align: right"><%= number_with_delimiter(docs_count) %></td>
+			<!-- <td style="width:5em;text-align: right"><%= number_to_human(docs_count, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}) %></td> -->
 			<td style="text-align: right">
 				<%= form_tag(index_path, method: 'get', style:"display:inline-block") do -%>
 					<%= hidden_field_tag :sourcedb, sourcedb %>
