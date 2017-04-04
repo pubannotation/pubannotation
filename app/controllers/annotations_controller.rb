@@ -429,7 +429,7 @@ class AnnotationsController < ApplicationController
           elsif e.response.code == 404
             raise RuntimeError, "The annotation server does not know the path."
           else
-            raise RuntimeError, e.message
+            raise RuntimeError, "Received the following message from the server: #{e.message} "
           end
         rescue => e
           raise RuntimeError, e.message
