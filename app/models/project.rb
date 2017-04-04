@@ -103,7 +103,7 @@ class Project < ActiveRecord::Base
 
   # scope for home#index
   scope :top_annotations_count,
-    order('annotations_count DESC').order('projects.updated_at DESC').order('status ASC').limit(10)
+    order('denotations_num DESC').order('projects.updated_at DESC').order('status ASC').limit(10)
 
   scope :top_recent,
     order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
@@ -857,55 +857,61 @@ class Project < ActiveRecord::Base
     annotations_collection
   end
 
+  # It assumes that
+  # - annotations are already normal, and
+  # - documents exist in the database
   def store_annotations_collection(annotations_collection, options)
     messages = []
-    docids_to_be_cleared = []
+    num_skipped = 0
 
     aligned_collection = annotations_collection.inject([]) do |col, annotations|
-      if annotations[:divid].present?
-        doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
-        if options[:mode] == 'skip'
-          num = Denotation.where(doc_id:doc.id, project_id:self.id).count
-          if num > 0
-            messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: 'Uploading annotations skipped due to existing annotations'}
-            next
-          end
-        end
+
+      doc, divs = if annotations[:divid].present?
+        d = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
+        [d, nil]
       else
-        divs = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-        doc = divs[0] if divs.length == 1
-        if options[:mode] == 'skip'
-          willskip = false
-          divs.each do |div|
-            num = Denotation.where(doc_id:doc.id, project_id:self.id).count
-            if num > 0
-              willskip = true
-              break
-            end
-          end
-          if willskip
-            messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: 'Uploading annotations skipped due to existing annotations'}
-            next
-          end
+        s = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
+        if s.length == 1
+          [s[0], nil]
+        else
+          [nil, s]
         end
       end
 
-      Annotation.normalize!(annotations)
-
       if doc.present?
+
+        if options[:mode] == 'skip'
+          num = ProjectDoc.where(project_id:id, doc_id:doc.id).limit(1).pluck(:denotations_num).first
+          if num > 0
+            num_skipped += 1
+            next
+          end
+        end
+
         begin
           col << Annotation.prepare_annotations(annotations, doc)
-          docids_to_be_cleared << doc.id if options[:mode] == 'replace'
+          delete_doc_annotations(doc) if options[:mode] == 'replace'
         rescue => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
         end
+
       elsif divs.present?
+
+        if options[:mode] == 'skip'
+          num = Denotation.joins(:docs).where(project_id:id, 'docs.sourcedb' => annotations[:sourcedb], 'docs.sourceid' => annotations[:sourceid]).limit(1).count
+          if num > 0
+            num_skipped += 1
+            next
+          end
+        end
+
         begin
           col += Annotation.prepare_annotations_divs(annotations, divs)
-          docids_to_be_cleared += divs.map{|d| d.id} if options[:mode] == 'replace'
+          divs.each{|d| delete_doc_annotations(d)} if options[:mode] == 'replace'
         rescue => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
         end
+
       else
         messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: 'document does not exist.'}
       end
@@ -913,53 +919,95 @@ class Project < ActiveRecord::Base
       col
     end
 
-    instantiate_and_save_annotations_collection(aligned_collection)
+    messages << {body: "Uploading for #{num_skipped} documents were skipped due to existing annotations."}
+
+    instantiate_and_save_annotations_collection(aligned_collection) if aligned_collection.present?
 
     messages
   end
 
   # To obtain annotations from an annotator and to save them in the project
-  def obtain_annotations(doc, annotator, options = nil)
+  def obtain_annotations(docids, annotator, options = nil)
     options ||= {}
 
-    # To skip obtaining annotations in favor of existing annotations
-    return {result: 'obtaining annotation is skipped due to existing annotations'} if options[:mode] == 'skip' && doc.denotations_count > 0
+    docs = docids.map{|docid| Doc.find(docid)}
+    docs.each{|doc| doc.set_ascii_body} if options[:encoding] == 'ascii'
 
-    method, url, params, payload = prepare_request(doc, annotator, options)
-    options[:abbrev] = annotator['abbrev']
-    annotations = make_request(doc, method, url, params, payload, options)
+    method, url, params, payload = prepare_request(docs, annotator, options)
 
-    Annotation.normalize!(annotations, annotator['abbrev'])
-    save_annotations(annotations, doc, options)
+    result = make_request(method, url, params, payload)
+    annotations_col = (result.class == Array) ? result : [result]
+
+    # To recover the identity information, in case of syncronous annotation
+    annotations_col.each_with_index do |annotations, i|
+      raise RuntimeError, "Invalid annotation JSON object." unless annotations.respond_to?(:has_key?)
+      annotations[:text] = docs[i].body unless annotations[:text].present?
+      annotations[:sourcedb] = docs[i].sourcedb unless annotations[:sourcedb].present?
+      annotations[:sourceid] = docs[i].sourceid unless annotations[:sourceid].present?
+      annotations[:divid] = docs[i].serial unless annotations[:divid].present?
+      Annotation.normalize!(annotations, options[:prefix])
+    end
+
+    store_annotations_collection(annotations_col, options)
+    annotations_col
   end
 
-  def prepare_request(doc, annotator, options)
-    doc.set_ascii_body if options[:encoding] == 'ascii'
+  def prepare_request(docs, annotator, options)
+    method = (annotator[:method] == 0) ? :get : :post
 
-    method = (annotator['method'] == 0) ? :get : :post
+    params = if method == :get
+      # The URL of an annotator should include the placeholder of either _text_ or  _sourceid_.
+      # Otherwise, the default params will be automatically added.
+      if annotator[:url].include?('_text_') || annotator[:url].include?('_sourceid_')
+        # In this case, the number of document has to be 1.
+        raise RuntimeError, "Only one document can be passed to the annotation server through a GET request." unless docs.length == 1
+        nil
+      else
+        {"text"=>"_text_"}
+      end
+    end
 
-    url = annotator['url']
+    # In case of GET method, only one document can be passed to the annotation server.
+    doc = docs.first
+
+    url = annotator[:url]
       .gsub('_text_', doc.body)
       .gsub('_sourcedb_', doc.sourcedb)
       .gsub('_sourceid_', doc.sourceid)
 
-    params = {}
-
-    annotator['params'].each do |k, v|
-      params[k] = v
-        .gsub('_text_', doc.body)
-        .gsub('_sourcedb_', doc.sourcedb)
-        .gsub('_sourceid_', doc.sourceid)
+    if params.present?
+      params.each do |k, v|
+        params[k] = v.gsub('_text_', doc.body).gsub('_sourcedb_', doc.sourcedb).gsub('_sourceid_', doc.sourceid)
+      end
     end
 
-    payload = (method == :post && params.has_key?('_body_')) ? doc.hannotations(self) : nil
+    payload = if (method == :post)
+      # The default payload
+      annotator[:payload]['_body_'] = '_doc_' unless annotator[:payload].present?
+
+      if annotator[:payload]['_body_'] == '_text_'
+        docs.map{|doc| doc.body}
+      elsif annotator[:payload]['_body_'] == '_doc_'
+        docs.map{|doc| doc.hannotations(self).select{|k, v| [:text, :sourcedb, :sourceid, :divid].include? k}}
+      elsif annotator[:payload]['_body_'] == '_annotation_'
+        docs.map{|doc| doc.hannotations(self)}
+      end
+    end
+
+    payload = payload.first if payload.present? && (!annotator[:batch_num].present? || annotator[:batch_num] == 0)
 
     [method, url, params, payload]
   end
 
-  def make_request(doc, method, url, params, payload, options)
+  def make_request(method, url, params = nil, payload = nil)
+    payload, payload_type = if payload.class == String
+      [payload, 'text/plain; charset=utf8']
+    else
+      [payload.to_json, 'application/json; charset=utf8']
+    end
+
     response = if method == :post && !payload.nil?
-      RestClient::Request.execute(method: method, url: url, payload: payload.to_json, max_redirects: 0, headers:{content_type: :json, accept: :json})
+      RestClient::Request.execute(method: method, url: url, payload: payload, max_redirects: 0, headers:{content_type: payload_type, accept: :json})
     else
       RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers:{params: params, accept: :json})
     end
@@ -969,11 +1017,6 @@ class Project < ActiveRecord::Base
     rescue => e
       raise RuntimeError, "Received a non-JSON object: [#{response}]"
     end
-
-    # When the result from the annotator does not include text, it is assumed that the text is the same as the document.
-    result[:text] = doc.body unless result.respond_to?(:has_key?) && result.has_key?(:text)
-
-    result
   end
 
   def comparison_path

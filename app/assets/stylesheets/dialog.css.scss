@@ -1,0 +1,24 @@
+#error_explanation {
+	margin: 3px;
+	padding: 5px;
+	background-color: #ffeeed;
+
+	h2 {
+		border-style: none
+	}
+}
+
+.popup {
+  .content {
+    h1 {
+      border-style: none;
+    }
+    h1, h2, h3 {
+      border-style: none;
+    }
+    ul {
+    	margin: 1em 0;
+    	padding: 0 0 0 1.5em;
+    }
+  }
+}

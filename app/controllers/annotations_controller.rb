@@ -361,10 +361,10 @@ class AnnotationsController < ApplicationController
       annotator = if params[:annotator].present?
         Annotator.find(params[:annotator])
       elsif params[:url].present?
-        Annotator.new({abbrev:params[:abbrev], url:params[:url], method:params[:method], params:{"text"=>"_text_", "sourcedb"=>"_sourcedb_", "sourceid"=>"_sourceid_"}})
+        Annotator.new({name:params[:prefix], url:params[:url], method:params[:method], batch_num: 0})
       else
         raise ArgumentError, "Annotator URL is not specified"
-      end.as_json
+      end.as_json.symbolize_keys
 
       docids = if params[:sourceid].present?
         serial = params[:divid].present? ? params[:divid].to_i : 0
@@ -381,35 +381,53 @@ class AnnotationsController < ApplicationController
           col += ids
         end
       else
-        project.docs.pluck(:id)
+        # project.docs.pluck(:id)
+        [] # means all the documents in the project
       end
 
       options = {}
       options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
       options[:encoding] = params[:encoding] if params[:encoding].present?
+      options[:prefix] = annotator[:name]
 
-      raise ArgumentError, "No document was found" if docids.empty?
 
       message = ""
 
-      if docids.length == 1
-        doc = Doc.find(docids.first)
+      if options[:mode] == 'skip'
+        num_skipped =
+          if docids.empty?
+            ProjectDoc.where("project_id=#{project.id} and denotations_num > 0").count
+          else
+            num_docs = docids.length
+            docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
+            raise RuntimeError, 'Obtaining annotation was skipped due to existing annotations' if docids.empty?
+            num_docs - docids.length
+          end
+
+        message = "#{num_skipped} documents were skipped due to existing annotations." if num_skipped > 0
+
+        # To prevent the downstream process from checking for the skip mode again
+        # options[:mode] == 'replace'
+      end
+
+      message += if docids.length == 1
         result = begin
-          project.obtain_annotations(doc, annotator, options)
+          project.obtain_annotations(docids, annotator, options)
         rescue RestClient::ExceptionWithResponse => e
           if e.response.code == 303
             options[:retry_after] = e.response.headers[:retry_after].to_i
             options[:try_times] = 3
 
-            # job = RetrieveAnnotationsJob.new(self, doc, e.response.headers[:location], options)
+            # job = RetrieveAnnotationsJob.new(project, e.response.headers[:location], options)
             # job.perform()
             priority = project.jobs.unfinished.count
-            delayed_job = Delayed::Job.enqueue RetrieveAnnotationsJob.new(project, doc, e.response.headers[:location], options), priority: priority, queue: :general, run_at: options[:retry_after].seconds.from_now
+            delayed_job = Delayed::Job.enqueue RetrieveAnnotationsJob.new(project, e.response.headers[:location], options), priority: priority, queue: :general, run_at: options[:retry_after].seconds.from_now
             Job.create({name:"Retrieve annotations", project_id:project.id, delayed_job_id:delayed_job.id})
-            message = "Asyncronous annotation request was made."
-            nil
+            {message: "Annotation request was sent. The result will be retrieved by a background job."}
           elsif e.response.code == 503
             raise RuntimeError, "Service unavailable"
+          elsif e.response.code == 404
+            raise RuntimeError, "The annotation server does not know the path."
           else
             raise RuntimeError, e.message
           end
@@ -417,21 +435,50 @@ class AnnotationsController < ApplicationController
           raise RuntimeError, e.message
         end
 
-        unless result.nil?
-          message += "#{result[:denotations].length} denotation(s)" if result.has_key?(:denotations) && result[:denotations].length > 0
-          message += " / #{result[:relations].length} relation(s)" if result.has_key?(:relations) && result[:relations].length > 0
-          message += " / #{result[:modifications].length} modification(s)" if result.has_key?(:modifications) && result[:modifications].length > 0
-          message += "no annotation" if message.empty?
-          message += " was obtained."
+        if result.present?
+          if result.class == Array
+            r = result.first
+            m = ""
+            m += "#{r[:denotations].length} denotation(s)" if r.has_key?(:denotations) && r[:denotations].length > 0
+            m += " / #{r[:relations].length} relation(s)" if r.has_key?(:relations) && r[:relations].length > 0
+            m += " / #{r[:modifications].length} modification(s)" if r.has_key?(:modifications) && r[:modifications].length > 0
+            m += "No annotation" if m.empty?
+            m += " was obtained."
+          elsif result.class == Hash && result[:message].present?
+            result[:message]
+          else
+            "Unexpected result."
+          end
+        else
+          "Empty result was obtained."
         end
-      else # docids.length > 1
+      else # docids.length > 1 || docids == []
         # job = ObtainAnnotationsJob.new(project, docids, annotator, options)
         # job.perform()
 
-        priority = project.jobs.unfinished.count
-        delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids, annotator, options), priority: priority, queue: :upload
-        Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
-        message = "The task 'Obtain annotations' was created."
+        if docids.empty?
+          num = (options[:mode] == 'skip') ?
+            ProjectDoc.where(project_id: project.id, denotations_num: 0).count :
+            ProjectDoc.where(project_id: project.id).count
+          num_per_job = 100000
+          n = num / num_per_job
+          (0 .. n).each do |i|
+            docids = (options[:mode] == 'skip') ?
+              ProjectDoc.where(project_id: project.id, denotations_num: 0).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id) :
+              ProjectDoc.where(project_id: project.id).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
+
+            priority = project.jobs.unfinished.count
+            delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids, annotator, options), priority: priority, queue: :upload
+            job_name = (n > 0) ? "Obtain annotations (#{i}/n)" : "Obtain annotations"
+            Job.create({name:job_name, project_id:project.id, delayed_job_id:delayed_job.id})
+          end
+          (n > 0) ? "Multiple tasks of 'Obtain annotations' were created." : "The task 'Obtain annotations was created."
+        else
+          priority = project.jobs.unfinished.count
+          delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids, annotator, options), priority: priority, queue: :upload
+          Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
+          "The task 'Obtain annotations' was created."
+        end
       end
 
       respond_to do |format|
@@ -449,7 +496,7 @@ class AnnotationsController < ApplicationController
   def create_from_upload
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "There is no such project in your management." unless project.present?
+      raise "Could not find the project." unless project.present?
 
       ext = File.extname(params[:upfile].original_filename)
       if ['.tgz', '.tar.gz', '.json'].include?(ext)

@@ -43,7 +43,8 @@ group :test do
   gem 'test-unit'
 end
 
-gem "font-awesome-rails"
+gem 'wice_grid'
+gem 'font-awesome-rails'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'rails3-jquery-autocomplete'

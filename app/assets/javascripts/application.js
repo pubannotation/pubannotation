@@ -13,9 +13,10 @@
 //= require jquery
 //= require jquery_ujs
 //= require jquery-ui
+//= require wice_grid
 //= require autocomplete-rails
 //= require jquery.facebox
-//= require_tree .
+//= require_tree
 
 getURLParameter = function(parameterName){
   var sPageURL = window.location.search.substring(1);

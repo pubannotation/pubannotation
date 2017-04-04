@@ -1,51 +1,51 @@
 <% content_for :path do %>
   > <%= link_to t('views.paths.home'), home_path %>
   > <%= link_to 'annotators', annotators_path %>
-  > <%= @annotator.abbrev %>
+  > <%= @annotator.name %>
 <% end %>
 
-<table class="column-head">
-<tr>
-  <th style="width:6em">Abbrev:</th>
-  <td><%= @annotator.abbrev %></td>
-</tr>
+<section>
+  <h1>
+    <%= @annotator.name %>
+    <%= button_annotator_home -%>
+    <%= badge_annotator_accessibility(@annotator).html_safe %>
+  </h1>
 
-<tr>
-  <th>Name:</th>
-  <td><%= @annotator.name %></td>
-</tr>
+  <% if @annotator.description.present? %>
+    <p><%= @annotator.description %></p>
+  <% end -%>
 
-<tr>
-  <th>Description:</th>
-  <td><%= @annotator.description %></td>
-</tr>
+  <table class="column-head">
+  <tr>
+    <th>Creator</th>
+    <td><%= @annotator.user.username %></td>
+  </tr>
 
-<tr>
-  <th>Home:</th>
-  <td><%= @annotator.home %></td>
-</tr>
+  <tr>
+    <th>URL</th>
+    <td><%= link_to @annotator.url, @annotator.url %></td>
+  </tr>
 
-<tr>
-  <th>User:</th>
-  <td><%= @annotator.user.username %></td>
-</tr>
+  <tr>
+    <th>Method</th>
+    <td><%= case @annotator.method when 0; :GET when 1; :POST end%></td>
+  </tr>
 
-<tr>
-  <th>URL:</th>
-  <td><%= @annotator.url %></td>
-</tr>
+  <% if @annotator.method == 1 %>
+    <tr>
+      <th>Payload</th>
+      <td><pre><%= @annotator.payload %></pre></td>
+    </tr>
 
-<tr>
-  <th>Params:</th>
-  <td><pre><%= @annotator.params %></pre></td>
-</tr>
+    <tr>
+      <th>Batch num</th>
+      <td><pre><%= @annotator.batch_num %></pre></td>
+    </tr>
+  <% end %>
 
-<tr>
-  <th>Method:</th>
-  <td><%= case @annotator.method when 0; :GET when 1; :POST end%></td>
-</tr>
-</table>
+  </table>
 
-<%= link_to 'Edit', edit_annotator_path(@annotator) %> |
-<%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' } %> |
-<%= link_to 'Back', annotators_path %>
+  <%= link_to 'Edit', edit_annotator_path(@annotator), class: 'button' %>
+  <%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <%= link_to 'List', annotators_path, class: 'button' %>
+</section>

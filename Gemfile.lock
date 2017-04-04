@@ -286,6 +286,10 @@ GEM
       rack-test (>= 0.5.3)
     whenever (0.9.4)
       chronic (>= 0.6.3)
+    wice_grid (3.6.2)
+      activerecord (> 3.2)
+      coffee-rails (> 3.2)
+      kaminari (~> 0.16)
     wikipedia-client (1.6.2)
     zip-zip (0.3)
       rubyzip (>= 1.0.0)
@@ -334,6 +338,7 @@ DEPENDENCIES
   webmock (< 1.10.0)
   webrat
   whenever
+  wice_grid
   wikipedia-client
   zip-zip
 

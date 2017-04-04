@@ -27,28 +27,59 @@
 
   <section>
     <h2>Projects</h2>
-    <table class="full">
-    <tr>
-      <th class="projects_header_name"><%= t('activerecord.attributes.project.name') %></th>
-      <th><%= t('activerecord.attributes.project.description') %></th>
-      <th class="projects_header_denotations_num"><%= t('views.shared.annotations_count') -%></th>
-      <th class="projects_header_author"><%= t('activerecord.attributes.project.author') %></th>
-      <th class="projects_header_date"><%= t('activerecord.attributes.project.updated_at') -%></th>
-      <th class="projects_header_status"><%= t('activerecord.attributes.project.status') -%></th>
-    </tr>
-    <% @projects.each do |project| %>
-      <tr>
-      <td><%= link_to_project(project) -%></td>
-      <td title="<%= project.description -%>"><%= project.description %></td>
-      <td style="text-align:right"><%= annotations_count_helper(project, @doc, @span) -%></td>
-      <td style="text-align:center"><%= project.author %></td>
-      <td style="text-align:center"><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
-      <td style="text-align:center"><%= project.status_text -%></td>
-      </tr>
-    <% end %>
-    </table>
+
+    <%=
+      grid(@projects_grid) do |g|
+
+        g.column name: 'Name', attribute: 'name' do |project|
+          [link_to(project.name, project_path(project.name)), {style: 'width:12em; text-align:center'}]
+        end
+
+        g.column name: 'Description', attribute: 'description' do |project|
+          [strip_tags(project.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+        end
+
+        g.column name: '# Ann.', attribute: 'denotations_num' do |project|
+          [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:5.5em; text-align:right'}]
+        end
+
+        g.column name: 'Updated at', attribute: 'updated_at', filter: false do |project|
+          [project.updated_at.strftime('%Y-%m-%d'), {style: 'width:6em; text-align:center'}]
+        end
+
+        g.column name: 'Status', attribute: 'status', custom_filter: {'released' => 1, 'beta' => 2, 'uploading' => 3, 'developing' => 8, 'testing' => 9} do |project|
+          [project.status_text, {style: 'width:8em; text-align:center'}]
+        end
+
+      end
+    -%>
+
     <% if @user == current_user %>
-      <%= link_to t('views.shared.create'), new_project_path, {:class=> 'control button'} %>
+      <%= link_to 'Create a new project', new_project_path, {:class=> 'control button'} %>
     <% end %>
   </section>
+
+  <section>
+    <h2>Automatic annotators</h2>
+
+    <%=
+      grid(@annotators_grid) do |g|
+
+        g.column name: 'Name', attribute: 'name' do |annotator|
+          [link_to(annotator.name, annotator), {style: 'width:10em; text-align:center'}]
+        end
+
+        g.column name: 'Description', attribute: 'description' do |annotator|
+          [strip_tags(annotator.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+        end
+
+      end
+    -%>
+
+    <% if @user == current_user %>
+      <%= link_to 'Create a new annotator', new_annotator_path, {:class=> 'control button'} %>
+    <% end %>
+
+  </section>
+
 </section>

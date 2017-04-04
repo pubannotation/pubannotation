@@ -98,6 +98,7 @@ section {
 
 .project-title, h1, h2, h3, h4 {
   margin: 8px 0 8px -5px;
+  font-family: sans-serif;
 }
 
 h1 {
@@ -105,7 +106,6 @@ h1 {
   border:solid $main_color;
   border-width: 0px 0px 1px 7px;
   padding-left: 6px;
-  font-family: sans-serif;
   font-size: large;
 }
 
@@ -157,6 +157,10 @@ ul.note li {
 .note {
     font-size:small;
     font-style:italic;
+}
+
+dl dt {
+  font-weight: bold;
 }
 
 a {
@@ -513,9 +517,9 @@ table.search .button {
   width: 60px;
 }
 
-td input[type=text], textarea {
-  margin-left: 2px;
-  margin-right: 2px;
+td input[type=text], input[type=url], input[type=number], textarea {
+  box-sizing: border-box;
+  width: 100%;
 }
 
 td textarea {
@@ -538,14 +542,6 @@ div.oneline {
 
 .help {
   display: none;
-}
-
-.popup {
-  .content {
-    h1 {
-      border-style: none;
-    }
-  }
 }
 
 .pagination {

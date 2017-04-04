@@ -1,5 +1,13 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to 'annotators', annotators_path %>
+  > new
+<% end %>
+
+<section>
 <h1>New annotator</h1>
 
 <%= render 'form' %>
 
-<%= link_to 'Back', annotators_path %>
+<%= link_to 'List', annotators_path, class: 'button' %>
+</section>

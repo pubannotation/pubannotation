@@ -18,39 +18,175 @@
   <tr>
     <th style="width:6em"><%= f.label :user %></th>
     <td><%= current_user.username %></td>
+    <td></td>
   </tr>
   <tr>
-    <th><%= f.label :abbrev %></th>
-    <td><%= f.text_field :abbrev %></td>
+    <th><%= f.label :is_public -%></th>
+    <td><%= f.check_box :is_public -%></td>
+    <td>
+      <a href="#help-is-public" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-is-public" class="help">
+        <h1>Is Public</h1>
+        <p>If this attribute is checked, then the entry will appear in the public list of annotators.</p>
+        <p>Otherwise, it will be listed only to you when you are logged-in.</p>
+        <p>Note that however the entry will remain accessible even if this attribute is not checked: anyone can access this entry with the name of it if he/she knows.</p>
+        <p>In other words, setting of this attribute will affect the findability, but not the accessibility, of the entry.</p>
+      </div>
+    </td>
+
   </tr>
   <tr>
     <th><%= f.label :name %></th>
-    <td><%= f.text_field :name %></td>
+    <td><%= f.text_field :name, required: true %></td>
+    <td>
+      <a href="#help-name" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-name" class="help">
+        <h1>Name</h1>
+        <p>Note that the name will be a part of the URL of its configuration.</p>
+        <p>A name has to begin and end with
+          <ul>
+            <li>lowercase/upper letters, or</li>
+            <li>decimal digits,</li>
+          </ul>
+          and may include
+          <ul>
+            <li>lowercase/upper letters,</li>
+            <li>decimal digits,</li>
+            <li>hyphen ('-'), and underscore ('_').</li>
+          </ul>
+        </p>
+      </div>
+    </td>
   </tr>
   <tr>
     <th><%= f.label :description %></th>
     <td><%= f.text_area :description %></td>
+    <td></td>
   </tr>
   <tr>
     <th><%= f.label :home %></th>
     <td><%= f.text_field :home %></td>
+    <td></td>
   </tr>
   <tr>
     <th><%= f.label :url, :URL %></th>
-    <td><%= f.text_field :url %></td>
-  </tr>
-  <tr>
-    <th><%= f.label :params %></th>
-    <td><%= f.text_area :params %></td>
+    <td><%= f.text_field :url, type: :url, required: true %></td>
+    <td>
+      <a href="#help-url" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-url" class="help">
+        <h1>URL</h1>
+        <p>The following placeholders can be used to pass parameter values to the annotation service:
+          <ul>
+            <li>_text_ : the text body,</li>
+            <li>_sourcedb_ : the source db, and</li>
+            <li>_sourceid_ : the source id.</li>
+          </ul>
+        </p>
+        <h2>Examples</h2>
+        <p>http://example.org/annotation?text=_text_</p>
+        <p>http://example.org/annotation?pmid=_sourceid_&format=json</p>
+      </div>
+    </td>
+
   </tr>
   <tr>
     <th><%= f.label :method %></th>
-    <td><%= f.label :method, :GET, :value => 0 %>
-    <%= f.radio_button :method, 0, checked: true %>
-    <%= f.label :method, :POST, :value => 1 %>
-    <%= f.radio_button :method, 1 %></td>
+    <td>
+      <%= f.select :method, [[:GET, 0], [:POST, 1]], {}, onchange: "payload_switch(this)" %>
+    </td>
+    <td></td>
+  </tr>
+  <tr>
+    <th><%= f.label :payload %></th>
+    <td><%= f.text_area :payload, disabled: true %></td>
+    <td>
+      <a href="#help-payload" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-payload" class="help">
+        <h1>Payload</h1>
+        <p>Payload can be defined for the POST method.</p>
+        <p>Currently the following placeholders can be used to define the payload:
+          <dl>
+            <dt>_body_</dt>
+            <dd>the body of the request</dd>
+            <dt>_text_</dt>
+            <dd>the text of a document (plain text)</dd>
+            <dt>_doc_</dt>
+            <dd>a document (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+            <dt>_annotation_</dt>
+            <dd>the annotation to a document (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+          </dl>
+        </p>
+        <h2>Note</h2>
+        <ul>
+          <li>For a request from PubAnnotation, an annotator is expected to respond with a result of annotation which is in <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> format.</li>
+          <li>When a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object is sent to an annotator as an input, the annotator is expected to preserve, in its output, the content of the JSON object, except for adding the annotation results or changing pre-annotation to something else. For example, PubAnnotation will include the attributes, <i>sourcedb</i> and <i>sourceid</i>, in each document, when it sends documents to an annotator. PubAnnotation will then expect the results of annotation to preserve the attributes. PubAnnotation needs them to figure out which annotation to go to which document.</li> 
+        </ul>
+        <h2>Examples</h2>
+          <dl>
+            <dt>_body_ = _text_</dt>
+            <dd>The text of a document (in plain text) will be passed as the body of a request. Note that this setting cannot be used for a asyncronous request.</dd>
+            <dt>_body_ = _doc_</dt>
+            <dd>A document (in a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. It is the default setting.</dd>
+            <dt>_body_ = _annotation_</dt>
+            <dd>A document together with annotation to it (in a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. The annotation may be used as a pre-annotation.</dd>
+          </dl>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th><%= f.label :batch_num %></th>
+    <td><%= f.text_field :batch_num, type: :number, min: 0, required:true %></td>
+    <td>
+      <a href="#help-batch_num" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-batch_num" class="help">
+        <h1>Batch Num</h1>
+        <p>If your annotator can process multiple documents at a request, you can set this parameter to the number of documents you want PubAnnotation to send to your annotator at a time.</p>
+        <h2>Values</h2>
+          <dl>
+            <dt>0</dt>
+            <dd>The batch process mode is <u>off</u>. One document will be sent to the server at a request. It means a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object will be sent as the  body of a request. It is the default value of the parameter.</dd>
+            <dt>1</dt>
+            <dd>The batch process mode is on, but only one document will be sent to the server at a request. It means an <u>array</u> with one <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object will be sent as the body of a request.</dd>
+            <dt><i>n</i> (> 1)</dt>
+            <dd>The batch process mode is on, and multiple documents will be sent to the server at a request. It means an <u>array</u> with multiple <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects will be sent as the  body of a request.</dd>
+          </dl>
+        <h2>Note</h2>
+        <ul>
+        <li>When an array of multiple documents is sent to an annotator, the annotator is expected to respond also with an array which may include the results of annotation.</li>
+        <li>In the responded array of annotations, the <u>order has to be preserved</u> as in the array of documents in the input.</li>
+        <li>The batch process mode has to be turned <u>off</u> when the payload is '<i>_body_ = _text_</i>', because multiple texts cannot be represented explicitly in plain text.</li>
+      </div>
+    </td>
   </tr>
   </table>
+
+  <script>
+    window.onload = function() {
+      payload_switch(document.getElementById("annotator_method"));
+    }
+
+    function payload_switch(that) {
+      var payload_field = document.getElementById("annotator_payload")
+      var batch_num_field = document.getElementById("annotator_batch_num")
+
+      if (that.value == 0) {
+        payload_field.value = null;
+        payload_field.disabled = true;
+        batch_num_field.value = null;
+        batch_num_field.disabled = true;
+      } else {
+        payload_field.disabled = false;
+        if (payload_field.value == null || (payload_field.value == "") || (payload_field.value == "{}")) {
+          payload_field.value = "_body_ = _doc_";
+        }
+        batch_num_field.disabled = false;
+        if (batch_num_field.value == null || batch_num_field.value == "") {
+          batch_num_field.value = 0;
+        }
+      }
+    }
+  </script>
+
   <div>
     <%= f.submit %>
   </div>

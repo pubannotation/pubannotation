@@ -1,0 +1,22 @@
+PREFIX tao:<http://pubannotation.org/ontology/tao.owl#>
+PREFIX prj:<http://pubannotation.org/projects/>
+PREFIX ge:<http://bionlp.dbcls.jp/ontology/ge.owl#>
+PREFIX uniprot:<http://www.uniprot.org/uniprot/>
+
+SELECT distinct ?s1 ?s2
+FROM prj:bionlp-st-ge-2016-reference
+FROM prj:bionlp-st-ge-2016-uniprot
+WHERE {
+  graph prj:bionlp-st-ge-2016-uniprot {
+    ?o1 tao:denoted_by ?s1 .
+    ?o1 a uniprot:Q04206 .
+    ?o2 tao:denoted_by ?s2 .
+    ?o2 a uniprot:P09603 .
+  }
+
+  ?o1_1 tao:denoted_by ?s1 .
+  ?o2_1 tao:denoted_by ?s2 .
+  ?o1_1 ^ge:partOf? / ge:themeOf+ ?e .
+  ?o2_1 ^ge:partOf? / ge:causeOf+ ?e .  
+}
+LIMIT 10
