@@ -13,7 +13,7 @@ class DocsController < ApplicationController
     begin
       if params[:project_id].present?
         @project = Project.accessible(current_user).find_by_name(params[:project_id])
-        raise "There is no such project." unless @project.present?
+        raise "Could not find the project." unless @project.present?
       end
 
       @sourcedb = params[:sourcedb]
