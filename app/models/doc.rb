@@ -165,7 +165,7 @@ class Doc < ActiveRecord::Base
   }
   
   # default sort order 
-  DefaultSortKey = "projects_num DESC"
+  DefaultSortKey = "sourceid ASC"
 
   def update_es_doc(project)
     self.__elasticsearch__.index_document
