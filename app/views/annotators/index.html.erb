@@ -21,11 +21,11 @@
     end
 
     g.column name: 'Description', attribute: 'description' do |annotator|
-      [strip_tags(annotator.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+      [strip_tags(annotator.description), {style: 'max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
     end
 
-    g.column name: 'Maintainer', attribute: 'email', assoc: :user do |annotator|
-      [annotator.user.email, {style: 'width:15em; text-align:center'}]
+    g.column name: 'Maintainer', attribute: 'username', assoc: :user do |annotator|
+      [annotator.user.username, {style: 'width:10em; text-align:center'}]
     end
 
   end
