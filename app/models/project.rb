@@ -919,7 +919,7 @@ class Project < ActiveRecord::Base
       col
     end
 
-    messages << {body: "Uploading for #{num_skipped} documents were skipped due to existing annotations."}
+    messages << {body: "Uploading for #{num_skipped} documents were skipped due to existing annotations."} if num_skipped > 0
 
     instantiate_and_save_annotations_collection(aligned_collection) if aligned_collection.present?
 
