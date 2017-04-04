@@ -26,7 +26,10 @@ class JobsController < ApplicationController
     raise "There is no such project." unless @project.present?
 
     @job = Job.find(params[:id])
-    @messages = @job.messages.order(:created_at)
+    @messages_grid = initialize_grid(@job.messages,
+      order: :created_at,
+      per_page: 10
+    )
 
     respond_to do |format|
       format.html # show.html.erb

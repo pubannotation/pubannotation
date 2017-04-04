@@ -1,0 +1,39 @@
+<% if @job.messages.present? %>
+  <section>
+    <h2>
+      Problem report
+      <span class='tab-bar'>
+        <%= link_to_unless_current 'JSON', params.merge(controller: :messages, action: :index, format: :json), :class => 'tab' -%>
+        <%= link_to_unless_current 'TSV', params.merge(controller: :messages, action: :index, format: :tsv), :class => 'tab' -%>
+      </span>
+    </h2>
+
+    <%=
+      grid(@messages_grid) do |g|
+
+        g.column name: 'sourcedb', attribute: 'sourcedb' do |message|
+          [message.sourcedb, {style: 'width:7em; text-align:center'}]
+        end
+
+        g.column name: 'sourceid', attribute: 'sourceid' do |message|
+          [message.sourceid, {style: 'width:7em; text-align:center'}]
+        end
+
+        g.column name: 'divid', attribute: 'divid' do |message|
+          [message.divid, {style: 'width:3em; text-align:right'}]
+        end
+
+        g.column name: 'message', attribute: 'body' do |message|
+          [message.body, {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+        end
+
+        g.column name: 'reported at', attribute: 'created_at' do |message|
+          [message.created_at, {style: 'width:14em; text-align:center'}]
+        end
+
+      end
+    -%>
+
+  </section>
+
+<% end %>
