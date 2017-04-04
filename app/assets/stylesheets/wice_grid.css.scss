@@ -3,3 +3,23 @@
 table.table-striped tr.even {
   background-color: #eee;
 }
+
+.pagination {
+	margin: 0;
+	padding: 0;
+	float: left;
+	list-style-type: none;
+
+	li {
+		display: inline;
+		padding: 5px;
+	}
+
+	li.active {
+		font-weight: bold;
+	}
+}
+
+.pagination_status {
+	float: right;
+}
