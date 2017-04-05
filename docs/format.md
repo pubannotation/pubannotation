@@ -15,7 +15,7 @@ PubAnnotation JSON annotation format supports three different types of informati
 * *relation*, and
 * *modification*.
 
-## Denotation
+## Denotations
 
 A denotation connects a span of text to a conceptual object.
 In following example, there are two denotation annotations:
@@ -50,7 +50,13 @@ However, the default interpretation of T1 is as follows:
 * of which the type is *Protein*.
   * `"obj":"Protein"`
 
-## Relation
+### Discontinuous spans
+
+A denotation may involve multiple discontinuous spans.
+In following example
+
+
+## Relations
 
 A relation connects two entities.
 
@@ -100,7 +106,7 @@ For example, while the way of annotation in above example may be familiar to the
 
 ![relation example 2]({{ site.url }}/img/ex-relation2.png)
 
-## Modification
+## Modifications
 
 A modification annotation modifies the meaning of denotations and relations, specifically in terms of negation and speculation.
 

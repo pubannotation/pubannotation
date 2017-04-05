@@ -6,7 +6,7 @@ next_section: annotation-editor
 permalink: /docs/annotation-server-api/
 ---
 
-PubAnnotation defines REST API for interoperability
+PubAnnotation defines REST API for interoperability.
 
 A PubAnnotation-interoperable _annotations server_ is defined as a RESTful web service 
 which conforms the following input and output API.
@@ -22,7 +22,7 @@ When a request is made with _text_,
 the server is expected to produce annotations to the text,
 and to respond with the annotations.
 
-When a request is made with _sourcedb_/_sourceid_,
+When a request is made with _sourcedb_ & _sourceid_,
 the server is expected to fetch the corresponding piece of text from the source DB,
 to produce annotations to the text,
 and to respond with the annotations.
@@ -36,8 +36,8 @@ with the _sourcedb_/_sourceid_ specification ignored.
 PubAnnotation expects an annotation server to respond with annotations represented in 
 [PubAnnotation JSON format]({{site.baseurl}}/docs/annotation-format/).
 
-In case an annotation server wants to support multiple representations of annotations,
-the format of response body the client will expect may be represented in the URL itself or
+In case an annotation server supports multiple options of annotation formats,
+the format of response body the client will expect may be speficied in the URL or
 in the _Accept_ header.
 
 While different people advocate different approach, there may be pros and cons in both:
@@ -45,27 +45,41 @@ see this [dicussion](http://programmers.stackexchange.com/questions/139654/rest-
 
 However, either should be fine with PubAnnotation.
 
-For the case where a server replies on _Accept_ header to determine the output format of annotations.
+For the case where a server replies on _Accept_ header to determine the output format of annotations,
 PubAnnotation will add the _Accept_ header to every requests it will make.
 
 In case a server see the URL, e.g. type extention, to determine the format of output, which is the case of PubAnnotation, the server can simply ignore the _Accept_ header.
 
 ## Asyncronous output
 
+> [changes made at 21st Feb, 2017] The Retry-After header can be sent with the response of the initial request (not the second).
+
+> [changes made at 21st Feb, 2017] For the second request, the response code for the case the result of annotation is not (yet) available is changed to 404 from 503.
+
+> [changes made at 21st Feb, 2017] For the second request, the response code for the case the result of annotation is permanently removed is changed to 410 from 404.
+
 In case an annotation server requires a separate request for retrieval of annotations,
 the server has to response to the initial request
 with the status code 303 (See Other)
-and the _Location_ header should contain the URL for the client to access to retrieve the annotations.
+and the _Location_ header has to indicate the URL for the client to access to retrieve the annotations.
+Optionally, the _Retry-After_ header can be used to indicate
+how long the clinet is advised to wait before accessing the location of annotation result.
+If the server cannot fulfil the request for some reason, e.g., server overload,
+it has to respond with the status code 503 (Service Unavailable).
+It will inform the client that the request is fine,
+and that a later attempt with the same request may be successful.
 
-When the second request is made, if ready, the server has to respond with the status code 200 (OK)
-and the body should contain annotations.
+When the request to retrieve the result of annotation is made, if ready, the server has to respond with the status code 200 (OK)
+and the body has to deliver the result of annotation.
 
-If the server is not ready with annotations, it has to respond with the status code 503 (Service Unavailable).
-If possible, the _Retry-After_ header should contain the estimated time before ready.
+If the server is not ready with annotations, it has to respond with the status code 404 (Not Found).
 
 After annotations are delivered to the client, if the server removes the annotations,
 the annotations will not be available any more from the server.
-In the case, it has to respond to the request for the annotations with the status code 404 (Bad request).
+In the case, the server can respond with the status code 410 (Gone).
+
+As a model implementation, the API for asyncronous annotation request and retrieval is implemented in PubDictionaries.
+Please take a look at the corresponding API documentation: [PubDictionaries Annotation API](http://docs.pubdictionaries.org/annotation-api/)
 
 ## Example
 
