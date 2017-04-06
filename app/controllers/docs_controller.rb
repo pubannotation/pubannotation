@@ -150,7 +150,7 @@ class DocsController < ApplicationController
           format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
           format.json {
             divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-            render json: divs.collect{|div| div.body}
+            render json: divs.collect{|div| div.to_hash}
           }
           format.txt {
             divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
