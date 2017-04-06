@@ -50,7 +50,7 @@ PubAnnotation will add the _Accept_ header to every requests it will make.
 
 In case a server see the URL, e.g. type extention, to determine the format of output, which is the case of PubAnnotation, the server can simply ignore the _Accept_ header.
 
-## Asyncronous output
+## Asynchronous output
 
 > [changes made at 21st Feb, 2017] The Retry-After header can be sent with the response of the initial request (not the second).
 
@@ -78,7 +78,7 @@ After annotations are delivered to the client, if the server removes the annotat
 the annotations will not be available any more from the server.
 In the case, the server can respond with the status code 410 (Gone).
 
-As a model implementation, the API for asyncronous annotation request and retrieval is implemented in PubDictionaries.
+As a model implementation, the API for asynchronous annotation request and retrieval is implemented in PubDictionaries.
 Please take a look at the corresponding API documentation: [PubDictionaries Annotation API](http://docs.pubdictionaries.org/annotation-api/)
 
 ## Example
