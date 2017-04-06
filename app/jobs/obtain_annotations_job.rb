@@ -5,7 +5,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
 		@job.update_attribute(:num_items, docids.length)
     @job.update_attribute(:num_dones, 0)
 
-    # for asyncronous annotation
+    # for asynchronous annotation
     retrieval_queue = []
     @skip_interval = nil
 
