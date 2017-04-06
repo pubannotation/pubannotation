@@ -192,7 +192,7 @@ if __FILE__ == $0
 
   if ARGV.length == 2
     str1  = JSON.parse(File.read(ARGV[0]).strip)["text"]
-    spans = JSON.parse(File.read(ARGV[0]).strip, symbolize_names:true)[:denotations]
+    denotations = JSON.parse(File.read(ARGV[0]).strip, symbolize_names:true)[:denotations]
     str2  = JSON.parse(File.read(ARGV[1]).strip)["text"]
   end
 
@@ -205,9 +205,15 @@ if __FILE__ == $0
   # p align.mapped_elements
 
   puts TextAlignment::sdiff2cdiff(align.sdiff)
+  # p align
+  # puts "-----"
 
-  new_spans = align.transform_spans(spans)
-  new_spans.each do |s|
-    puts str2[s[:begin]...s[:end]]
-  end
+  p denotations
+  puts "-----"
+
+  new_denotations = align.transform_hdenotations(denotations)
+
+  p new_denotations
+  puts "-----"
+
 end
