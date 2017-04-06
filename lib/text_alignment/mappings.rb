@@ -67,6 +67,7 @@ module TextAlignment
     ["‘", "'"],       #U+2018 (left single quotation mark)
     ["’", "'"],       #U+2019 (right single quotation mark)
     ["“", '"'],       #U+201C (left double quotation mark)
-    ["”", '"']        #U+201D (right double quotation mark)
+    ["”", '"'],        #U+201D (right double quotation mark)
+    ['"', "''"]
   ]
 end
