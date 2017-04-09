@@ -6,7 +6,9 @@
 <% end %>
 
 <section>
-<h1>Editing annotator</h1>
-<%= render 'form' %>
-<%= link_to 'Back', annotator_path(@annotator), class: 'button' %>
+	<h1>Editing annotator</h1>
+	<%= render 'form' %>
+	<br/>
+	<%= link_to 'Show', annotator_path(@annotator), class: 'button' %>
+	<%= link_to 'List', annotators_path, class: 'button' %>
 </section>

@@ -7,8 +7,8 @@
 <section>
   <h1>
     <%= @annotator.name %>
-    <%= button_annotator_home -%>
-    <%= badge_annotator_accessibility(@annotator).html_safe %>
+    <%= button_home(@annotator.home) -%>
+    <%= badge_public(@annotator.is_public).html_safe %>
   </h1>
 
   <% if @annotator.description.present? %>

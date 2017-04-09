@@ -1,0 +1,15 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to 'editors', editors_path %>
+  > <%= link_to @editor.name, @editor %>
+  > <%= :edit %>
+<% end %>
+
+<section>
+	<h1>Editing editor</h1>
+	<%= render 'form' %>
+	<br/>
+	<%= link_to 'Show', editor_path(@editor), class: 'button' %>
+	<%= link_to 'List', editors_path, class: 'button' %>
+</section>
+

@@ -10,8 +10,11 @@
 	%>
 
 	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
+
 	<% if @project.present? -%>
-		<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab', id: 'annotations_textae' -%>	
+		<% Editor.accessibles(current_user).each do |editor| -%>
+			<%= link_to editor.name, editor_annotation_url(editor, annotations_url), :class => 'tab' %>
+		<% end %>
 	<% else -%>
 		<%=
 			link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab inactive_tab', id: 'annotations_textae' do
@@ -30,7 +33,6 @@
 	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize?encoding=ascii', :class => 'tab' if @span.present? -%>
 </span>
 -->
-
 
 <% if @project.present? && @project.editable?(current_user) && @annotations[:denotations].present? && params[:sourceid].present? -%>
 	<% destroy_path = if params[:divid].present?

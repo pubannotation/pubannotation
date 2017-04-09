@@ -1,0 +1,35 @@
+<% content_for :path do -%>
+  > <%= link_to t('views.paths.home'), home_path -%>
+  > editors
+<% end -%>
+
+<section>
+<h1>Editors</h1>
+<p>Below is a list of annotation editors which are interoperable with PubAnnotation.</p>
+
+<%=
+  grid(@editors_grid) do |g|
+
+    g.column name: 'Name', attribute: 'name' do |editor|
+      [link_to(editor.name, editor), {style: 'width:10em; text-align:center'}]
+    end
+
+    if current_user.present?
+      g.column do |editor|
+        badge_annotator_accessibility(editor).html_safe
+      end
+    end
+
+    g.column name: 'Description', attribute: 'description' do |editor|
+      [strip_tags(editor.description), {style: 'max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+    end
+
+    g.column name: 'Maintainer', attribute: 'username', assoc: :user do |editor|
+      [editor.user.username, {style: 'width:10em; text-align:center'}]
+    end
+
+  end
+-%>
+
+<%= link_to 'Create a new editor', new_editor_path, {:class=> 'control button'} %>
+</section>

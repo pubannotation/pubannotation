@@ -28,10 +28,11 @@ module AnnotationsHelper
     "#{ annotations_path }.json#{ url_query }" 
   end  
 
-  def textae_url(project, source_url)
-    return "http://textae.pubannotation.org/editor.html?target=#{source_url}.json" unless project.present? && source_url.present?
-    connector = if project.editor.include?('?') then '&' else '?' end
-    "#{project.editor}#{connector}target=#{source_url}.json"
+  def editor_annotation_url(editor, source_url)
+    editor.parameters.each_key{|k| editor.parameters[k] = source_url + '.json' if editor.parameters[k] == '_annotations_url_'}
+    parameters_str = editor.parameters.map{|p| p.join('=')}.join('&')
+    connector = editor.url.include?('?') ? '&' : '?'
+    url = "#{editor.url}#{connector}#{parameters_str}"
   end
 
   def get_focus(options)

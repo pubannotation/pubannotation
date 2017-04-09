@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170404051809) do
+ActiveRecord::Schema.define(:version => 20170408044405) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -90,6 +90,21 @@ ActiveRecord::Schema.define(:version => 20170404051809) do
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
   add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
   add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
+
+  create_table "editors", :force => true do |t|
+    t.string   "name"
+    t.string   "url"
+    t.text     "parameters"
+    t.text     "description"
+    t.string   "home"
+    t.integer  "user_id"
+    t.boolean  "is_public",   :default => false
+    t.datetime "created_at",                     :null => false
+    t.datetime "updated_at",                     :null => false
+  end
+
+  add_index "editors", ["name"], :name => "index_editors_on_name", :unique => true
+  add_index "editors", ["user_id"], :name => "index_editors_on_user_id"
 
   create_table "jobs", :force => true do |t|
     t.integer  "project_id"

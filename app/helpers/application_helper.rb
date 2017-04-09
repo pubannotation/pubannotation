@@ -1,5 +1,17 @@
 # encoding: UTF-8
 module ApplicationHelper
+
+  def button_home(url)
+    # link_to t('activerecord.attributes.project.reference'), @project.reference, :class => 'home_button' if @project.reference.present?
+    link_to image_tag('home-24.png', alt: 'Home', title: 'Home', class: 'home_button'), url, :class => 'home_button' if url.present?
+  end
+
+  def badge_public(is_public)
+    is_public ?
+      "<span class='badge' title='Public'><i class='fa fa-eye' aria-hidden='true'></i></span>" :
+      ""
+  end
+
   def simple_paginate
     current_page = params[:page].nil? ? 1 : params[:page].to_i
     nav = ''

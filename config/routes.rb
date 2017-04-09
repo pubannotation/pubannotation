@@ -1,4 +1,7 @@
-Pubann::Application.routes.draw do  resources :annotators
+Pubann::Application.routes.draw do
+
+  resources :annotators
+  resources :editors
 
   devise_for :users
 
@@ -21,7 +24,7 @@ Pubann::Application.routes.draw do  resources :annotators
   resource :sql do
     get :index
   end
-  
+
   resource :users do
     get '/' => 'users#index'
     get :autocomplete_username, :on => :collection

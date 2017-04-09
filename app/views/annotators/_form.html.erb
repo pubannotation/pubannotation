@@ -36,7 +36,7 @@
 
   </tr>
   <tr>
-    <th><%= f.label :name %></th>
+    <th><%= f.label :name, "Name*" %></th>
     <td><%= f.text_field :name, required: true %></td>
     <td>
       <a href="#help-name" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
@@ -69,7 +69,7 @@
     <td></td>
   </tr>
   <tr>
-    <th><%= f.label :url, :URL %></th>
+    <th><%= f.label :url, "URL*" %></th>
     <td><%= f.text_field :url, type: :url, required: true %></td>
     <td>
       <a href="#help-url" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
@@ -90,7 +90,7 @@
 
   </tr>
   <tr>
-    <th><%= f.label :method %></th>
+    <th><%= f.label :method, "Method*" %></th>
     <td>
       <%= f.select :method, [[:GET, 0], [:POST, 1]], {}, onchange: "payload_switch(this)" %>
     </td>

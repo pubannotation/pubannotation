@@ -1,0 +1,12 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to 'editors', editors_path %>
+  > new
+<% end %>
+
+<section>
+	<h1>New editor</h1>
+	<%= render 'form' %>
+	<br/>
+	<%= link_to 'List', editors_path, class: 'button' %>
+</section>
