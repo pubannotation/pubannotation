@@ -16,7 +16,7 @@
 
     if current_user.present?
       g.column do |editor|
-        badge_annotator_accessibility(editor).html_safe
+        badge_public(editor.is_public).html_safe
       end
     end
 
