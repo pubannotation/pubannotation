@@ -20,4 +20,7 @@ class Editor < ActiveRecord::Base
     end
   }
 
+  def changeable?(current_user)
+    current_user.present? && (current_user.root? || current_user == user)
+  end
 end

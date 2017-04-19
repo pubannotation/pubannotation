@@ -43,4 +43,7 @@ class Sequencer < ActiveRecord::Base
 	  result
   end
 
+  def changeable?(current_user)
+    current_user.present? && (current_user.root? || current_user == user)
+  end
 end

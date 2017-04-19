@@ -33,7 +33,9 @@
 
   </table>
 
-  <%= link_to 'Edit', edit_sequencer_path(@sequencer), class: 'button' %>
-  <%= link_to 'Destroy', @sequencer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <% if @sequencer.changeable?(current_user) -%>
+    <%= link_to 'Edit', edit_sequencer_path(@sequencer), class: 'button' %>
+    <%= link_to 'Destroy', @sequencer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <% end %>
   <%= link_to 'List', sequencers_path, class: 'button' %>
 </section>

@@ -1,4 +1,5 @@
 class AnnotatorsController < ApplicationController
+  before_filter :changeable?, :only => [:edit, :update, :destroy]
   before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
 
   # GET /annotators
@@ -100,5 +101,10 @@ class AnnotatorsController < ApplicationController
       format.html { redirect_to annotators_url }
       format.json { head :no_content }
     end
+  end
+
+  def changeable?
+    @annotator = Annotator.find(params[:id])
+    render_status_error(:forbidden) unless @annotator.changeable?(current_user)
   end
 end

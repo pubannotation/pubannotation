@@ -1,4 +1,5 @@
 class EditorsController < ApplicationController
+  before_filter :changeable?, :only => [:edit, :update, :destroy]
   before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
 
   respond_to :html
@@ -52,4 +53,8 @@ class EditorsController < ApplicationController
     respond_with(@editor)
   end
 
+  def changeable?
+    @editor = Editor.find(params[:id])
+    render_status_error(:forbidden) unless @editor.changeable?(current_user)
+  end
 end

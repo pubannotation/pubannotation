@@ -1,4 +1,5 @@
 class SequencersController < ApplicationController
+  before_filter :changeable?, :only => [:edit, :update, :destroy]
   before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
   respond_to :html
 
@@ -51,4 +52,8 @@ class SequencersController < ApplicationController
     respond_with(@sequencer)
   end
 
+  def changeable?
+    @sequencer = Sequencer.find(params[:id])
+    render_status_error(:forbidden) unless @sequencer.changeable?(current_user)
+  end
 end

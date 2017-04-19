@@ -45,7 +45,9 @@
 
   </table>
 
-  <%= link_to 'Edit', edit_annotator_path(@annotator), class: 'button' %>
-  <%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <% if @annotator.changeable?(current_user) -%>
+    <%= link_to 'Edit', edit_annotator_path(@annotator), class: 'button' %>
+    <%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <% end %>
   <%= link_to 'List', annotators_path, class: 'button' %>
 </section>

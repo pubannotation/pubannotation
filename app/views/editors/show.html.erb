@@ -34,7 +34,9 @@
 
   </table>
 
-  <%= link_to 'Edit', edit_editor_path(@editor), class: 'button' %>
-  <%= link_to 'Destroy', @editor, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <% if @editor.changeable?(current_user) -%>
+    <%= link_to 'Edit', edit_editor_path(@editor), class: 'button' %>
+    <%= link_to 'Destroy', @editor, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <% end %>
   <%= link_to 'List', editors_path, class: 'button' %>
 </section>
