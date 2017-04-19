@@ -251,7 +251,7 @@ class DocsController < ApplicationController
         end
       else
         divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-        raise "Could not find the document within this project." unless divs.present?
+        raise "Could not find the document within PubAnnotation." unless divs.present?
 
         respond_to do |format|
           format.html {redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid])}
@@ -387,7 +387,8 @@ class DocsController < ApplicationController
       if docspecs.length == 1
         docspec = docspecs.first
         begin
-          project.add_doc(docspec[:sourcedb], docspec[:sourceid], true)
+          divs = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
+          raise ArgumentError, "The document already exists." if divs.nil?
           expire_fragment("sourcedb_counts_#{project.name}")
           expire_fragment("count_docs_#{project.name}")
           expire_fragment("count_#{docspec[:sourcedb]}_#{project.name}")
@@ -396,6 +397,9 @@ class DocsController < ApplicationController
           message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
         end
       else
+        # delayed_job = AddDocsToProjectJob.new(docspecs, project)
+        # delayed_job.perform()
+
         priority = project.jobs.unfinished.count
         delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project), priority: priority, queue: :general
         Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})

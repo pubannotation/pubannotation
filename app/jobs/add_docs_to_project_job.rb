@@ -5,16 +5,21 @@ class AddDocsToProjectJob < Struct.new(:docspecs, :project)
 		@job.update_attribute(:num_items, docspecs.length)
 		@job.update_attribute(:num_dones, 0)
 
-		sourcedbs = []
-    docspecs.each_with_index do |docspec, i|
-    	begin
-				added = project.add_doc_unless_exist(docspec[:sourcedb], docspec[:sourceid])
-				sourcedbs << docspec[:sourcedb] unless added.nil?
-	    rescue => e
-				@job.messages << Message.create({sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid], body: e.message})
-			end
-			@job.update_attribute(:num_dones, i + 1)
-    end
+		docspecs_group_by_sourcedb = docspecs.group_by{|docspec| docspec[:sourcedb]}
+		docspecs_group_by_sourcedb.each do |sourcedb, docspecs|
+			ids = docspecs.map{|docspec| docspec[:sourceid]}
+			added, messages =
+				begin
+					project.add_docs(sourcedb, ids)
+		    rescue => e
+					@job.messages << Message.create({sourcedb: sourcedb, sourceid: "#{ids.first} - #{ids.last}", body: e.message})
+					[[], []]
+				end
+			messages.each{|message| @job.messages << Message.create({body: message})}
+			num_added_docs = added.map{|d| d[:sourceid]}.uniq.length
+      @job.update_attribute(:num_dones, @job.num_dones + num_added_docs)
+		end
+		sourcedbs = docspecs_group_by_sourcedb.keys
     unless sourcedbs.empty?
 			ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
 			ActionController::Base.new.expire_fragment("count_docs_#{project.name}")

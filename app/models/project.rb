@@ -8,7 +8,7 @@ class Project < ActiveRecord::Base
   after_validation :user_presence
   serialize :namespaces
   belongs_to :user
-  has_many :project_docs
+  has_many :project_docs, dependent: :destroy
   has_many :docs, through: :project_docs
 
   # to be deprecated ---
@@ -492,7 +492,7 @@ class Project < ActiveRecord::Base
     if project.present?
       if File.exist?(docs_json_file)
         if project.present?
-          num_created, num_added, num_failed = project.add_docs_from_json(JSON.parse(File.read(docs_json_file), :symbolize_names => true), current_user)
+          num_created, num_added, num_failed = project.create_docs_from_json(JSON.parse(File.read(docs_json_file), :symbolize_names => true), current_user)
           messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
           messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
           messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
@@ -509,14 +509,14 @@ class Project < ActiveRecord::Base
     return [messages, errors]
   end
 
-  def add_docs_from_json(docs, user)
+  def create_docs_from_json(docs, user)
     num_created, num_added, num_failed = 0, 0, 0
     docs = [docs] if docs.class == Hash
     sourcedbs = docs.group_by{|doc| doc[:sourcedb]}
     if sourcedbs.present?
       sourcedbs.each do |sourcedb, docs_array|
         ids = docs_array.collect{|doc| doc[:sourceid]}.join(",")
-        num_created_t, num_added_t, num_failed_t = self.add_docs({ids: ids, sourcedb: sourcedb, docs_array: docs_array, user: user})
+        num_created_t, num_added_t, num_failed_t = self.create_docs({ids: ids, sourcedb: sourcedb, docs_array: docs_array, user: user})
         num_created += num_created_t
         num_added += num_added_t
         num_failed += num_failed_t
@@ -525,7 +525,7 @@ class Project < ActiveRecord::Base
     return [num_created, num_added, num_failed]   
   end
 
-  def add_docs(options = {})
+  def create_docs(options = {})
     num_created, num_added, num_failed = 0, 0, 0
     ids = options[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
     ids.each do |sourceid|
@@ -612,30 +612,37 @@ class Project < ActiveRecord::Base
 
   # returns the divs added to the project
   # returns nil if nothing is added
-  def add_doc_unless_exist(sourcedb, sourceid)
-    divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
-    divs = Doc.import_from_sequence(sourcedb, sourceid) unless divs.present?
-    raise RuntimeError, "Failed to get the document" unless divs.present?
-    return nil if self.docs.include?(divs.first)
-    divs.each{|div| div.projects << self}
-    divs
-  end
+  def add_docs(sourcedb, sourceids, is_verbose = true)
+    ids_in_pa = Doc.where(sourcedb:sourcedb, sourceid:sourceids).pluck(:sourceid).uniq
+    ids_in_pj = ids_in_pa & docs.pluck(:sourceid).uniq
 
-  def add_doc(sourcedb, sourceid, strictp = false)
-    divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    ids_to_add = ids_in_pa - ids_in_pj
+    docs_to_add = Doc.where(sourcedb:sourcedb, sourceid:ids_to_add)
 
-    if divs.present?
-      if self.docs.include?(divs.first)
-        raise ArgumentError, "The document already exists" if strictp
-      else
-        divs.each{|div| div.projects << self}
-      end
-    else
-      divs = Doc.import_from_sequence(sourcedb, sourceid)
-      raise RuntimeError, "Failed to get the document" unless divs.present?
-      divs.each{|div| div.projects << self}
+    ids_to_sequence = sourceids - ids_in_pa
+    docs_sequenced, messages = ids_to_sequence.present? ?
+      Doc.sequence_docs(sourcedb, ids_to_sequence) :
+      [[], []]
+
+    docs_to_add += docs_sequenced
+
+    docs_to_add.each{|doc| doc.projects << self}
+
+    if ids_in_pj.length > 0 && is_verbose
+      messages << "#{ids_in_pj.length} doc(s) already existed."
     end
 
+    [docs_to_add, messages]
+  end
+
+  # returns the divs added to the project
+  # returns nil if nothing is added
+  def add_doc(sourcedb, sourceid)
+    divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    divs, messages = Doc.sequence_docs(sourcedb, [sourceid]) unless divs.present?
+    raise RuntimeError, "Failed to get the document" unless divs.present?
+    return nil if docs.include?(divs.first)
+    divs.each{|div| div.projects << self}
     divs
   end
 
@@ -688,7 +695,7 @@ class Project < ActiveRecord::Base
     return [divs, num_failed]
   end
 
-  def instantiate_hdenotations(hdenotations, doc)
+  def instantiate_hdenotations(hdenotations, docid)
     new_entries = hdenotations.map do |a|
       Denotation.new(
         hid:a[:id],
@@ -696,34 +703,37 @@ class Project < ActiveRecord::Base
         end:a[:span][:end],
         obj:a[:obj],
         project_id:self.id,
-        doc_id:doc.id
+        doc_id:docid
       )
     end
   end
 
-  def instantiate_hrelations(hrelations, doc)
+  def instantiate_hrelations(hrelations, docid)
     new_entries = hrelations.map do |a|
       Relation.new(
         hid:a[:id],
         pred:a[:pred],
-        subj:Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:subj]),
-        obj:Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj]),
+        subj:Denotation.find_by_doc_id_and_project_id_and_hid(docid, self.id, a[:subj]),
+        obj:Denotation.find_by_doc_id_and_project_id_and_hid(docid, self.id, a[:obj]),
         project_id:self.id
       )
     end
   end
 
-  def instantiate_hmodifications(hmodifications, doc)
+  def instantiate_hmodifications(hmodifications, docid)
     new_entries = hmodifications.map do |a|
+
+      obj = Denotation.find_by_doc_id_and_project_id_and_hid(docid, self.id, a[:obj])
+      if obj.nil?
+        doc = Doc.find(docid)
+        doc.subcatrels.find_by_project_id_and_hid(self.id, a[:obj])
+      end
+      raise ArgumentError, "Invalid object of modification: #{a[:id]}" if obj.nil?
+
       Modification.new(
         hid:a[:id],
         pred:a[:pred],
-        obj:case a[:obj]
-          when /^R/
-            doc.subcatrels.find_by_project_id_and_hid(self.id, a[:obj])
-          else
-            Denotation.find_by_doc_id_and_project_id_and_hid(doc.id, self.id, a[:obj])
-          end,
+        obj:obj,
         project_id:self.id
       )
     end
@@ -732,7 +742,7 @@ class Project < ActiveRecord::Base
   def instantiate_and_save_annotations(annotations, doc)
     ActiveRecord::Base.transaction do
       if annotations[:denotations].present?
-        instances = instantiate_hdenotations(annotations[:denotations], doc)
+        instances = instantiate_hdenotations(annotations[:denotations], doc.id)
         if instances.present?
           r = Denotation.import instances, validate: false
           raise "denotations import error" unless r.failed_instances.empty?
@@ -743,7 +753,7 @@ class Project < ActiveRecord::Base
       end
 
       if annotations[:relations].present?
-        instances = instantiate_hrelations(annotations[:relations], doc)
+        instances = instantiate_hrelations(annotations[:relations], doc.id)
         if instances.present?
           r = Relation.import instances, validate: false
           raise "relations import error" unless r.failed_instances.empty?
@@ -754,7 +764,7 @@ class Project < ActiveRecord::Base
       end
 
       if annotations[:modifications].present?
-        instances = instantiate_hmodifications(annotations[:modifications], doc)
+        instances = instantiate_hmodifications(annotations[:modifications], doc.id)
         if instances.present?
           r = Modification.import instances, validate: false
           raise "modifications import error" unless r.failed_instances.empty?
@@ -768,58 +778,77 @@ class Project < ActiveRecord::Base
 
   def instantiate_and_save_annotations_collection(annotations_collection)
     ActiveRecord::Base.transaction do
-      # instantiate and save denotations
-      instances = annotations_collection.inject([]) do |col, ann|
-        doc = ann[:divid].nil? ? Doc.find_by_sourcedb_and_sourceid(ann[:sourcedb], ann[:sourceid]) : Doc.find_by_sourcedb_and_sourceid_and_serial(ann[:sourcedb], ann[:sourceid], ann[:divid])
-        ann[:denotations].nil? ? col : col + instantiate_hdenotations(ann[:denotations], doc)
+
+      # collect statistics
+      d_stat, r_stat, m_stat = Hash.new(0), Hash.new(0), Hash.new(0)
+
+      # cache document id
+      annotations_collection.each do |ann|
+        ann[:docid] = ann[:divid].nil? ?
+          Doc.find_by_sourcedb_and_sourceid(ann[:sourcedb], ann[:sourceid]).id :
+          Doc.find_by_sourcedb_and_sourceid_and_serial(ann[:sourcedb], ann[:sourceid], ann[:divid]).id
       end
+
+      # instantiate and save denotations
+      instances = []
+      annotations_collection.each do |ann|
+        next unless ann[:denotations].present?
+        docid = ann[:docid]
+        instances += instantiate_hdenotations(ann[:denotations], docid)
+        d_stat[docid] += ann[:denotations].length
+      end
+
       if instances.present?
         r = Denotation.import instances, validate: false
         raise "denotations import error" unless r.failed_instances.empty?
-        d_stat = instances.map{|i| i.doc_id}.group_by{|i| i}
-        d_stat.each do |did, set|
-          num = set.length
-          connection.execute("update project_docs set denotations_num = denotations_num + #{num} where project_id=#{id} and doc_id=#{did}")
-          connection.execute("update docs set denotations_num = denotations_num + #{num} where id=#{did}")
-        end
-        self.increment!(:denotations_num, instances.length)
       end
-      instances.clear
+
+      d_stat_all = instances.length
 
       # instantiate and save relations
-      instances = annotations_collection.inject([]) do |col, ann|
-        doc = ann[:divid].nil? ? Doc.find_by_sourcedb_and_sourceid(ann[:sourcedb], ann[:sourceid]) : Doc.find_by_sourcedb_and_sourceid_and_serial(ann[:sourcedb], ann[:sourceid], ann[:divid])
-        ann[:relations].nil? ? col : col + instantiate_hrelations(ann[:relations], doc)
+      instances.clear
+      annotations_collection.each do |ann|
+        next unless ann[:relations].present?
+        docid = ann[:docid]
+        instances += instantiate_hrelations(ann[:relations], docid)
+        r_stat[docid] += ann[:relations].length
       end
+
       if instances.present?
         r = Relation.import instances, validate: false
         raise "relation import error" unless r.failed_instances.empty?
-        d_stat = instances.group_by{|i| i.subj.doc_id}
-        d_stat.each do |did, set|
-          num = set.length
-          connection.execute("update project_docs set relations_num = relations_num + #{num} where project_id=#{id} and doc_id=#{did}")
-          connection.execute("update docs set relations_num = relations_num + #{num} where id=#{did}")
-        end
-        self.increment!(:relations_num, instances.length)
       end
-      instances.clear
+
+      r_stat_all = instances.length
 
       # instantiate and save modifications
-      instances = annotations_collection.inject([]) do |col, ann|
-        doc = ann[:divid].nil? ? Doc.find_by_sourcedb_and_sourceid(ann[:sourcedb], ann[:sourceid]) : Doc.find_by_sourcedb_and_sourceid_and_serial(ann[:sourcedb], ann[:sourceid], ann[:divid])
-        ann[:modifications].nil? ? col : col + instantiate_hmodifications(ann[:modifications], doc)
+      instances.clear
+      annotations_collection.each do |ann|
+        next unless ann[:modifications].present?
+        docid = ann[:docid]
+        instances += instantiate_hmodifications(ann[:modifications], docid)
+        m_stat[docid] += ann[:modifications].length
       end
+
       if instances.present?
         r = Modification.import instances, validate: false
         raise "modifications import error" unless r.failed_instances.empty?
-        d_stat = instances.group_by{|i| i.obj.doc_id}
-        d_stat.each do |did, set|
-          num = set.length
-          connection.execute("update project_docs set modifications_num = modifications_num + #{num} where project_id=#{id} and doc_id=#{did}")
-          connection.execute("update docs set modifications_num = modifications_num + #{num} where id=#{did}")
-        end
-        self.increment!(:modifications_num, instances.length)
       end
+
+      m_stat_all = instances.length
+
+      d_stat.each do |did, d_num|
+        r_num = r_stat[did] ||= 0
+        m_num = m_stat[did] ||= 0
+        connection.execute("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{did}")
+        connection.execute("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{did}")
+      end
+
+      self.update_attributes!(
+        denotations_num: denotations_num + d_stat_all,
+        relations_num: relations_num + r_stat_all,
+        modifications_num: modifications_num + m_stat_all
+      )
     end
   end
 

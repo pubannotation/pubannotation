@@ -1,0 +1,39 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to 'sequencers', sequencers_path %>
+  > <%= @sequencer.name %>
+<% end %>
+
+<section>
+  <h1>
+    <%= @sequencer.name %>
+    <%= button_home(@sequencer.home) -%>
+  </h1>
+
+  <% if @sequencer.description.present? %>
+    <p><%= @sequencer.description %></p>
+  <% end -%>
+
+  <table class="column-head">
+
+    <tr>
+      <th>Creator</th>
+      <td><%= @sequencer.user.username %></td>
+    </tr>
+
+    <tr>
+      <th>URL</th>
+      <td><%= link_to @sequencer.url, @sequencer.url %></td>
+    </tr>
+
+    <tr>
+      <th>Parameters</th>
+      <td><pre><%= @sequencer.parameters %></pre></td>
+    </tr>
+
+  </table>
+
+  <%= link_to 'Edit', edit_sequencer_path(@sequencer), class: 'button' %>
+  <%= link_to 'Destroy', @sequencer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <%= link_to 'List', sequencers_path, class: 'button' %>
+</section>

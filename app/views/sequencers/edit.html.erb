@@ -1,0 +1,15 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to 'sequencers', sequencers_path %>
+  > <%= link_to @sequencer.name, @sequencer %>
+  > <%= :edit %>
+<% end %>
+
+<section>
+	<h1>Editing sequencer</h1>
+	<%= render 'form' %>
+	<br/>
+	<%= link_to 'Show', sequencer_path(@sequencer), class: 'button' %>
+	<%= link_to 'List', sequencers_path, class: 'button' %>
+</section>
+

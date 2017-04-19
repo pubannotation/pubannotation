@@ -317,7 +317,7 @@ class AnnotationsController < ApplicationController
       if params[:divid].present?
         doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
         unless doc.present?
-          divs = Doc.import_from_sequence(params[:sourcedb], params[:sourceid])
+          divs, messages = Doc.sequence_docs(params[:sourcedb], [params[:sourceid]])
           raise IOError, "Failed to get the document" unless divs.present?
           expire_fragment("sourcedb_counts")
           expire_fragment("count_#{params[:sourcedb]}")
@@ -326,7 +326,7 @@ class AnnotationsController < ApplicationController
       else
         divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
         unless divs.present?
-          divs = Doc.import_from_sequence(params[:sourcedb], params[:sourceid])
+          divs, messages = Doc.sequence_docs(params[:sourcedb], [params[:sourceid]])
           raise IOError, "Failed to get the document" unless divs.present?
           expire_fragment("sourcedb_counts")
           expire_fragment("count_#{params[:sourcedb]}")
@@ -466,6 +466,9 @@ class AnnotationsController < ApplicationController
             docids = (options[:mode] == 'skip') ?
               ProjectDoc.where(project_id: project.id, denotations_num: 0).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id) :
               ProjectDoc.where(project_id: project.id).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
+
+            # delayed_job = ObtainAnnotationsJob.new(project, docids, annotator, options)
+            # delayed_job.perform()
 
             priority = project.jobs.unfinished.count
             delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids, annotator, options), priority: priority, queue: :upload

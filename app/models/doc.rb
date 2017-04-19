@@ -77,21 +77,20 @@ class Doc < ActiveRecord::Base
 
   UserSourcedbSeparator = '@'
   after_save :expire_page_cache
-  before_destroy :decrement_docs_counter_before_destroy
   after_destroy :expire_page_cache
   # before_validation :attach_sourcedb_suffix
   include ApplicationHelper
 
   attr_accessor :username, :original_body, :text_aligner
   attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid, :username
-  has_many :denotations, :dependent => :destroy
+  has_many :denotations, dependent: :destroy
 
-  has_many :subcatrels, :class_name => 'Relation', :through => :denotations, :source => :subrels
+  has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
 
-  has_many :catmods, :class_name => 'Modification', :through => :denotations, :source => :modifications
-  has_many :subcatrelmods, :class_name => 'Modification', :through => :subcatrels, :source => :modifications
+  has_many :catmods, class_name: 'Modification', :through => :denotations, :source => :modifications
+  has_many :subcatrelmods, class_name: 'Modification', :through => :subcatrels, :source => :modifications
 
-  has_many :project_docs
+  has_many :project_docs, dependent: :destroy
   has_many :projects, through: :project_docs,
     :after_add => [:increment_docs_projects_counter, :update_es_doc],
     :after_remove => [:decrement_docs_projects_counter, :update_es_doc]
@@ -171,30 +170,6 @@ class Doc < ActiveRecord::Base
     self.__elasticsearch__.index_document
   end
 
-  # after_add doc
-  def increment_docs_counter(project)
-    if self.sourcedb == 'PMC' && self.serial == 0
-      counter_column = :pmcdocs_count
-    elsif self.sourcedb == 'PubMed'
-      counter_column = :pmdocs_count
-    end
-    if counter_column
-      Project.increment_counter(counter_column, project.id)
-    end
-  end
-
-  # after_remove doc
-  def decrement_docs_counter(project)
-    if self.sourcedb == 'PMC' && self.serial == 0
-      counter_column = :pmcdocs_count
-    elsif self.sourcedb == 'PubMed'
-      counter_column = :pmdocs_count
-    end
-    if counter_column
-      Project.decrement_counter(counter_column, project.id)
-    end
-  end
-
   def update_annotations_updated_at(project)
     project.update_attribute(:annotations_updated_at, DateTime.now)
   end
@@ -238,41 +213,36 @@ class Doc < ActiveRecord::Base
     !self.get_doc(docspec).nil?
   end
 
-  def self.import_from_sequence(sourcedb, sourceid)
+  def self.sequence_docs(sourcedb, sourceids)
     raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
-    raise ArgumentError, "sourceid is empty" unless sourceid.present?
+    raise ArgumentError, "sourceids is empty" unless sourceids.present?
 
-    sequencer = begin
-      Object.const_get("DocSequencer#{sourcedb}")
-    rescue => e
-      raise IOError, "Unknown sourcedb: #{sourcedb}"
-    end
+    sequencer = Sequencer.find(sourcedb)
+    raise RuntimeError, "Unknown sourcedb: #{sourcedb}" unless sequencer.present?
 
-    doc_sequence = begin
-      sequencer.new(sourceid)
-    rescue => e
-      raise IOError, "Failed to get the document"
-    end
+    result = sequencer.get_docs(sourceids)
 
-    raise IOError, "Empty document" if doc_sequence.divs.nil?
+    docs =
+      if result[:docs].present?
+        result[:docs].map do |doc|
+          Doc.new(
+            {
+              section: doc[:section],
+              body: doc[:text],
+              sourcedb: doc[:sourcedb],
+              sourceid: doc[:sourceid],
+              serial: doc[:divid].to_i,
+              source: doc[:source]
+            }
+          )
+        end
+      else
+        []
+      end
 
-    divs_hash = doc_sequence.divs
+    docs.each{|doc| result[:messages] << "Failed to save the document: #{doc.sourcedb}." unless doc.save}
 
-    divs = divs_hash.map.with_index do |div_hash, i|
-      Doc.new(
-        {
-          :body     => div_hash[:body],
-          :section  => div_hash[:heading],
-          :source   => doc_sequence.source_url,
-          :sourcedb => sourcedb,
-          :sourceid => sourceid,
-          :serial   => i
-        }
-      )
-    end
-
-    divs.each{|div| raise IOError, "Failed to save the document" unless div.save}
-    divs
+    [docs, result[:messages]]
   end
 
   def self.create_divs(divs_hash, attributes = {})
@@ -668,15 +638,6 @@ class Doc < ActiveRecord::Base
   def expire_page_cache
     ActionController::Base.new.expire_fragment('sourcedb_counts')
     ActionController::Base.new.expire_fragment('docs_count')
-  end
-
-  # before destroy
-  def decrement_docs_counter_before_destroy
-    if self.projects.present?
-      self.projects.each do |project|
-        project.decrement_docs_counter(self)
-      end
-    end
   end
 
   def get_annotations (span = nil, project = nil, options = {})

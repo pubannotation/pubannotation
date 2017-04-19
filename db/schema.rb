@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170408044405) do
+ActiveRecord::Schema.define(:version => 20170415043109) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -216,6 +216,19 @@ ActiveRecord::Schema.define(:version => 20170408044405) do
   add_index "relations", ["obj_id"], :name => "index_relations_on_obj_id"
   add_index "relations", ["project_id"], :name => "index_relations_on_project_id"
   add_index "relations", ["subj_id"], :name => "index_relations_on_subj_id"
+
+  create_table "sequencers", :force => true do |t|
+    t.string   "name"
+    t.text     "description"
+    t.string   "home"
+    t.integer  "user_id"
+    t.string   "url"
+    t.text     "parameters"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
+
+  add_index "sequencers", ["user_id"], :name => "index_sequencers_on_user_id"
 
   create_table "users", :force => true do |t|
     t.string   "email",                  :default => "",    :null => false

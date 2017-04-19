@@ -56,8 +56,10 @@ class ProjectsController < ApplicationController
 
       # @sourcedbs = Doc.select(:sourcedb).uniq.pluck(:sourcedb).select{|s| Doc.sourcedb_public?(s) || Doc.sourcedb_mine?(s, current_user)}
       # @sourcedbs_active = @project.docs.select(:sourcedb).uniq.pluck(:sourcedb)
-      @sourcedbs = ['PubMed', 'PMC', 'FirstAuthor']
-      @sourcedbs_active = ['PubMed', 'PMC', 'FirstAuthor']
+      # @sourcedbs = ['PubMed', 'PMC', 'FirstAuthor']
+      # @sourcedbs_active = ['PubMed', 'PMC', 'FirstAuthor']
+      @sourcedbs = ['PubMed', 'PMC']
+      @sourcedbs_active = ['PubMed', 'PMC']
 
       respond_to do |format|
         format.html
@@ -144,7 +146,8 @@ class ProjectsController < ApplicationController
 
   def obtain_annotations
     @project = Project.editable(current_user).find_by_name(params[:id])
-    @sourcedbs = ["PubMed", "PMC", "FirstAuthor"]
+    # @sourcedbs = ["PubMed", "PMC", "FirstAuthor"]
+    @sourcedbs = ["PubMed", "PMC"]
   end
 
   def upload_annotations

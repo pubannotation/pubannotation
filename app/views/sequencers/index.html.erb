@@ -1,0 +1,29 @@
+<% content_for :path do -%>
+  > <%= link_to t('views.paths.home'), home_path -%>
+  > sequencers
+<% end -%>
+
+<section>
+<h1>Sequencers</h1>
+<p>Below is a list of document sequencers which are interoperable with PubAnnotation.</p>
+
+<%=
+  grid(@sequencers_grid) do |g|
+
+    g.column name: 'Name', attribute: 'name' do |sequencer|
+      [link_to(sequencer.name, sequencer), {style: 'width:10em; text-align:center'}]
+    end
+
+    g.column name: 'Description', attribute: 'description' do |sequencer|
+      [strip_tags(sequencer.description), {style: 'max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+    end
+
+    g.column name: 'Maintainer', attribute: 'username', assoc: :user do |sequencer|
+      [sequencer.user.username, {style: 'width:10em; text-align:center'}]
+    end
+
+  end
+-%>
+
+<%= link_to 'Create a new sequencer', new_sequencer_path, {:class=> 'control button'} %>
+</section>
