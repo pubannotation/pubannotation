@@ -6,6 +6,9 @@
 	<li>
 		<%= t('activerecord.models.relations') %>:
 		<%= @annotations[:relations].present? ? @annotations[:relations].length : 0 %>
-		<br />
+	</li>
+	<li>
+		<%= t('activerecord.models.modifications') %>:
+		<%= @annotations[:modifications].present? ? @annotations[:modifications].length : 0 %>
 	</li>
 </ul>
