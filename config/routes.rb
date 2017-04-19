@@ -1,5 +1,8 @@
 Pubann::Application.routes.draw do
 
+  resources :sequencers
+
+
   resources :annotators
   resources :editors
 
@@ -65,7 +68,7 @@ Pubann::Application.routes.draw do
             get '/' => 'docs#show', :as =>'show'
             get 'annotations' => 'annotations#doc_annotations_index'
             get 'annotations/visualize' => 'annotations#doc_annotations_visualize'
-            # post 'annotations' => 'annotations#create'
+            post 'annotations' => 'annotations#align'
             get 'edit' => 'docs#edit'
             get 'uptodate' => 'docs#uptodate'
             get 'spans' => 'spans#doc_spans_index'
