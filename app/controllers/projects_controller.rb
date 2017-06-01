@@ -15,35 +15,19 @@ class ProjectsController < ApplicationController
   # GET /projects
   # GET /projects.json
   def index
-    sort_order = sort_order(Project)
-    sourcedb, sourceid, serial, id = get_docspec(params)
-    if sourcedb
-      @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, serial)
-      if @doc
-        @projects = @doc.projects.accessible(current_user).order(sort_order)
-      else
-        @projects = nil
-        notice = t('controllers.projects.index.does_not_exist', :sourcedb => sourcedb, :sourceid => sourceid)
-      end
-    else
-      if params[:text]
-        text = "%#{ params[:text].downcase }%" 
-        @projects = Project.accessible(current_user).includes(:user).where(['LOWER( name ) like ? OR LOWER( description ) like ? OR LOWER( author ) like ? OR LOWER( users.username ) like ?', text, text, text, text]).order(sort_order).page(params[:page])
-        flash[:notice] = t('controllers.projects.index.not_found') if @projects.blank?
-      else
-        @projects = Project.accessible(current_user).order(sort_order).page(params[:page])
-      end
-    end
-
-    @projects_total_number = Project.accessible(current_user).length
-
     respond_to do |format|
       format.html {
-        if @doc and @projects.blank?
-          redirect_to home_path, :notice => notice
-        end
+        @projects_grid = initialize_grid(Project.accessible(current_user),
+          order: :status,
+          include: :user
+        )
+
+        @projects_total_number = Project.accessible(current_user).length
       }
-      format.json { render json: @projects }
+      format.json {
+        projects = Project.accessible(current_user).order(:status)
+        render json: projects
+      }
     end
   end
 
