@@ -6,16 +6,22 @@
   }
 }
 
+#grid_filter_row input {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+
 .projects-list table {
   table-layout:fixed;
   width: 100%;
 
   .column-project-name {
-    width:10em;
+    width: 10em;
   }
 
   .column-project-type {
-    width:1.5em;
+    width: 2em;
   }
 
   .column-project-description {
@@ -23,7 +29,7 @@
   }
 
   .column-project-number {
-    width: 4em;
+    width: 5em;
   }
 
   .column-project-author {
@@ -35,7 +41,7 @@
   }
 
   .column-project-updated {
-    width: 6em;
+    width: 7em;
   }
 
   .column-project-status {
