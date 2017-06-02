@@ -5,7 +5,7 @@
       [link_to(project.name, project_path(project.name)), {title: project.name, style: 'text-align:center'}]
     end
 
-    g.column name: 'T', attribute: 'type', filter: false, class: 'column-project-type' do |project|
+    g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
       [badge_type(project).html_safe, {style: 'text-align:center'}]
     end
 
