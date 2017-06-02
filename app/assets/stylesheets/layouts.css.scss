@@ -1,5 +1,13 @@
 @import 'variables';
 
+body {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-family: Meiryo, "メイリオ", "MS PGothic","MS Pゴシック", osaka, Verdana, Geneva, sans-serif;
+  font-size: small;
+}
+
 .content {
   position: relative;
   margin: 0 auto;

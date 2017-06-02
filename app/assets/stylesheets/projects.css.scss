@@ -1,5 +1,48 @@
 @import 'variables';
 
+.wice-grid-title-row {
+  th:last-of-type {
+    width: 1.5em;
+  }
+}
+
+.projects-list table {
+  table-layout:fixed;
+  width: 100%;
+
+  .column-project-name {
+    width:10em;
+  }
+
+  .column-project-type {
+    width:1.5em;
+  }
+
+  .column-project-description {
+    max-width: 20em;
+  }
+
+  .column-project-number {
+    width: 4em;
+  }
+
+  .column-project-author {
+    width: 7em;
+  }
+
+  .column-project-user {
+    width: 7em;
+  }
+
+  .column-project-updated {
+    width: 6em;
+  }
+
+  .column-project-status {
+    width: 5em;
+  }
+}
+
 .project-properties {
   table-layout:fixed;
   width: 100%;

@@ -1,38 +1,38 @@
 <%=
   grid(@projects_grid) do |g|
 
-    g.column name: 'Name', attribute: 'name' do |project|
-      [link_to(project.name, project_path(project.name)), {title: project.name, style: 'width:10em; text-align:center'}]
+    g.column name: 'Name', attribute: 'name', class: 'column-project-name' do |project|
+      [link_to(project.name, project_path(project.name)), {title: project.name, style: 'text-align:center'}]
     end
 
-    g.column do |project|
-      badge_type(project).html_safe
+    g.column name: 'T', attribute: 'type', filter: false, class: 'column-project-type' do |project|
+      [badge_type(project).html_safe, {style: 'text-align:center'}]
     end
 
-    g.column name: 'Description', attribute: 'description' do |project|
-      [strip_tags(project.description), {title: strip_tags(project.description), style: 'max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+    g.column name: 'Description', attribute: 'description', class: 'column-project-description' do |project|
+      [strip_tags(project.description), {title: strip_tags(project.description), style: 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
     end
 
-    g.column name: '# Ann.', attribute: 'denotations_num' do |project|
+    g.column name: '# Ann.', attribute: 'denotations_num', filter: false, class: 'column-project-number' do |project|
       # [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:7em; text-align:right'}]
-      [number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'width:6em; text-align:right'}]
+      [number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'text-align:right'}]
     end
 
-    g.column name: 'Author', attribute: 'author' do |project|
-      [project.author, {style: 'width:8em; text-align:center'}]
+    g.column name: 'Author', attribute: 'author', class: 'column-project-author' do |project|
+      [project.author, {title: project.author, style: 'text-align:center'}]
     end
 
-    g.column name: 'Maintainer', attribute: 'username', assoc: :user do |project|
-      [maintainer_link(project), {style: 'width:8em; text-align:center'}]
+    g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |project|
+      [maintainer_link(project), {title: project.user.username, style: 'text-align:center'}]
     end
 
-    g.column name: 'Updated_at', attribute: 'updated_at' do |project|
-      [project.updated_at.strftime('%Y-%m-%d'), {style: 'width:8em; text-align:center'}]
+    g.column name: 'Updated_at', attribute: 'updated_at', class: 'column-project-updated' do |project|
+      [project.updated_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
     end
 
-    g.column name: 'Status', attribute: 'status',
-    custom_filter: {'Released' => 1, 'Beta' => 2, 'Uploading' => 3, 'Developing' => 8, 'Testing' => 9} do |project|
-      [project.status_text, {style: 'width:5em; text-align:center'}]
+    g.column name: 'Status', attribute: 'status', filter: false, class: 'column-project-status' do |project|
+    # custom_filter: {'Released' => 1, 'Beta' => 2, 'Uploading' => 3, 'Developing' => 8, 'Testing' => 9} do |project|
+      [project.status_text, {style: 'text-align:center'}]
     end
 
   end
