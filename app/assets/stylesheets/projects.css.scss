@@ -6,7 +6,7 @@
   }
 }
 
-#grid_filter_row input {
+#grid_filter_row input,select {
   box-sizing: border-box;
   width: 100%;
 }
@@ -45,7 +45,7 @@
   }
 
   .column-project-status {
-    width: 5em;
+    width: 6em;
   }
 }
 
