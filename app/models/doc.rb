@@ -410,7 +410,7 @@ class Doc < ActiveRecord::Base
     if project.nil? && span.nil?
       denotations_num
     elsif span.nil?
-      ProjectDoc.find_by_project_id_and_doc_id(project.id, id).denotations_num
+      ProjectDoc.where(project_id:project.id, doc_id:id).pluck(:denotations_num).first
     else
       get_denotations(project, span).count
     end
@@ -601,11 +601,11 @@ class Doc < ActiveRecord::Base
   end
   
   def self.has_divs?(sourcedb, sourceid)
-    self.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+    Doc.where(sourcedb:sourcedb, sourceid:sourceid, serial:1).exists?
   end
 
   def has_divs?
-    self.class.same_sourcedb_sourceid(sourcedb, sourceid).size > 1
+    Doc.where(sourcedb:sourcedb, sourceid:sourceid, serial:1).exists?
   end
 
   def self.get_div_ids(sourcedb, sourceid)
