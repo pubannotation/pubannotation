@@ -64,12 +64,12 @@ class DocsController < ApplicationController
           render text: Doc.to_tsv(@docs, 'doc')
         }
       end
-    # rescue => e
-    #   respond_to do |format|
-    #     format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
-    #     format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-    #     format.txt  {render text: message, status: :unprocessable_entity}
-    #   end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.txt  {render text: message, status: :unprocessable_entity}
+      end
     end
   end
 
