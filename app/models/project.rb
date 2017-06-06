@@ -157,7 +157,7 @@ class Project < ActiveRecord::Base
   }
 
   # default sort order priority : left > right
-  DefaultSortKey = "status ASC"
+  DefaultSortKey = "status ASC, projects.updated_at DESC"
 
   LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
   EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=edit'
