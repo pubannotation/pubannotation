@@ -10,7 +10,7 @@
   <tr>
     <th><%= f.label :description %></th>
     <td><%= f.text_area :description, :rows => 3, style: "width: 97%" %></td>
-    <td></td>
+    <td class="help-column"></td>
   </tr>
   <tr>
     <th><%= f.label :user, :maintainer %></th>
@@ -19,7 +19,7 @@
       &nbsp;
       (<%= f.label :anonymize, t('views.shared.anonymize') -%><%= f.check_box :anonymize -%>)
     </td>
-    <td>
+    <td class="help-column">
       <a href="#help-maintainer" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
       <div id="help-maintainer" class="help">
         <h1>Project maintainer</h1>
@@ -99,7 +99,7 @@
       <li>*: <a href="http://creativecommons.org/freeworks">free culture licenses</a>.</li>
       </ul>
     </td>
-    <td></td>
+    <td class="help-column"></td>
   </tr>
   <tr>
     <th><%= f.label :status %></th>
@@ -119,7 +119,7 @@
       <%= f.radio_button(:status, 9) %>
       <%= f.label :status, t('activerecord.options.project.status.testing'), value: 9 %>
     </td>
-    <td>
+    <td class="help-column">
       <a href="#help-status" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
       <div id="help-status" class="help">
         <h1>Project statuses</h1>
@@ -143,7 +143,7 @@
           [t('activerecord.options.project.accessibility.blind'), 3]],
           f.object.accessibility) %>
     </td>
-    <td>
+    <td class="help-column">
       <a href="#help-accessibility" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
       <div id="help-accessibility" class="help">
         <h1>Project accessibility types</h1>
@@ -162,7 +162,7 @@
 				[t('activerecord.options.project.process.manual'), 1],
 				[t('activerecord.options.project.process.automatic'), 2]],
     		f.object.process) %></td>
-    <td></td>
+    <td class="help-column"></td>
   </tr>
 
 <!--   <tr>
@@ -218,7 +218,7 @@
     <td>
       <%= f.text_field :reference, :placeholder => 'URL', style: "width: 97%" %>
     </td>
-    <td>
+    <td class="help-column">
       <a href="#help-home" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
       <div id="help-home" class="help">
         <h1>Project home</h1>
@@ -232,7 +232,7 @@
     <td>
       <%= f.text_field :sample, :placeholder => t('activerecord.placeholders.project.sample'), style: "width: 97%" %>
     </td>
-    <td>
+    <td class="help-column">
       <a href="#help-sample" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
       <div id="help-sample" class="help">
         <h1>Project sample</h1>
@@ -252,7 +252,7 @@
     <td>
       <%= f.text_field :editor, :placeholder => 'URL', style: "width: 97%" %>
     </td>
-    <td>
+    <td class="help-column">
       <a href="#help-editor" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
       <div id="help-editor" class="help">
         <h1>Project editor</h1>
@@ -272,7 +272,7 @@
       <br />
       <span id="add_namespaces_input" class="button">ADD</span>
     </td>
-    <td></td>
+    <td class="help-column"></td>
   </tr>
   <tr>
     <th><%= f.label :rdfwriter %></th>
@@ -294,7 +294,7 @@
   <tr>
     <th><%= t('activerecord.attributes.project.annotations_downloadable') %></th>
     <td><%= f.check_box :annotations_zip_downloadable %><%= f.label :annotations_zip_downloadable, t('views.shared.permit') -%></td>
-    <td></td>
+    <td class="help-column"></td>
   </tr>
   <tr>
     <th colspan="3"><%= f.submit %></th>

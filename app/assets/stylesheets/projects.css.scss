@@ -6,9 +6,11 @@
   }
 }
 
-#grid_filter_row input,select {
-  box-sizing: border-box;
-  width: 100%;
+#grid_filter_row {
+  input,select {
+    box-sizing: border-box;
+    width: 100%;
+  }
 }
 
 
@@ -61,7 +63,8 @@
   }
 
   td.help-column {
-    width: 1em;
+    width: 1.5em;
+    text-align: center;
   }
 }
 
