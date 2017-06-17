@@ -9,10 +9,6 @@
       [badge_type(project).html_safe, {style: 'text-align:center'}]
     end
 
-    g.column name: 'Description', attribute: 'description', class: 'column-project-description' do |project|
-      [strip_tags(project.description), {title: strip_tags(project.description), style: 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-    end
-
     g.column name: '# Ann.', attribute: 'denotations_num', filter: false, class: 'column-project-number' do |project|
       # [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:7em; text-align:right'}]
       [number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'text-align:right'}]
