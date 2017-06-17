@@ -499,29 +499,27 @@ class AnnotationsController < ApplicationController
   def create_from_upload
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "Could not find the project." unless project.present?
+      raise ArgumentError, "Could not find the project." unless project.present?
 
-      ext = File.extname(params[:upfile].original_filename)
-      if ['.tgz', '.tar.gz', '.json'].include?(ext)
-        if project.jobs.count < 10
-          options = {mode: params[:mode].present? ? params[:mode] : 'replace'}
+      filename = params[:upfile].original_filename
+      ext = File.extname(filename)
+      ext = '.tar.gz' if ext == '.gz' && filename.end_with?('.tar.gz')
+      raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json'].include?(ext)
 
-          filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
-          FileUtils.mv params[:upfile].path, filepath
+      raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
-          # job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)
-          # job.perform()
+      options = {mode: params[:mode].present? ? params[:mode] : 'replace'}
 
-          priority = project.jobs.unfinished.count
-          delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
-          Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
-          notice = "The task, 'Upload annotations', is created."
-        else
-          notice = "Up to 10 jobs can be registered per a project. Please clean your jobs page."
-        end
-      else
-        notice = "Unknown file type: '#{ext}'."
-      end
+      filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
+      FileUtils.mv params[:upfile].path, filepath
+
+      # job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)
+      # job.perform()
+
+      priority = project.jobs.unfinished.count
+      delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
+      Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
+      notice = "The task, 'Upload annotations', is created."
     rescue => e
       notice = e.message
     end
