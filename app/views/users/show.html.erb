@@ -32,7 +32,11 @@
       grid(@projects_grid) do |g|
 
         g.column name: 'Name', attribute: 'name' do |project|
-          [link_to(project.name, project_path(project.name)), {style: 'width:12em; text-align:center'}]
+          [link_to(project.name, project_path(project.name)), {title: project.name}]
+        end
+
+        g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
+          [badge_type(project).html_safe, {style: 'text-align:center'}]
         end
 
         g.column name: 'Description', attribute: 'description' do |project|
