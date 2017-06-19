@@ -35,6 +35,12 @@
           [link_to(project.name, project_path(project.name)), {title: project.name}]
         end
 
+        if @user == current_user
+          g.column name: 'A', attribute: 'accessibility', filter: false, class: 'column-project-type' do |project|
+            [badge_accessibility(project).html_safe, {style: 'text-align:center'}]
+          end
+        end
+
         g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
           [badge_type(project).html_safe, {style: 'text-align:center'}]
         end
@@ -71,6 +77,12 @@
 
         g.column name: 'Name', attribute: 'name' do |annotator|
           [link_to(annotator.name, annotator), {style: 'width:10em; text-align:center'}]
+        end
+
+        if @user == current_user
+          g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |project|
+            [badge_is_public(project).html_safe, {style: 'text-align:center'}]
+          end
         end
 
         g.column name: 'Description', attribute: 'description' do |annotator|

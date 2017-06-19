@@ -9,9 +9,8 @@ class UsersController < ApplicationController
     @user = User.find_by_username(params[:name])
     @projects = Project.mine(@user)
 
-    @projects_grid = initialize_grid(Project, conditions:{user_id: @user.id}, per_page: 10)
-    @annotators_grid = initialize_grid(Annotator, conditions:{user_id: @user.id}, per_page: 10)
-
+    @projects_grid = initialize_grid(Project.accessible(current_user), conditions:{user_id: @user.id}, per_page: 10)
+    @annotators_grid = initialize_grid(Annotator.accessibles(current_user), conditions:{user_id: @user.id}, per_page: 10)
   end
 
   def autocomplete_username
