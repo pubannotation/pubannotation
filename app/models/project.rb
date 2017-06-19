@@ -654,7 +654,7 @@ class Project < ActiveRecord::Base
   end
 
   def delete_docs
-    delete_annotations
+    delete_annotations if denotations_num > 0
 
     docs.update_all('projects_num = projects_num - 1')
     docs.update_all(flag:true)
