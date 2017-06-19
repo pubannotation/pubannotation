@@ -440,7 +440,7 @@ en:
       that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubannotation: "Annotation projects <span class='meta'>in PubAnnotation</span>"
       list: project list
-      confirm_delete: Are you sure? All the annotations that belong to this project will be deleted.
+      confirm_delete: Are you sure? The project, including all the annotations in it, will be deleted.
       user_projects: Your projects
       associate_maintain_projects: Associated projects 
       belongs_to_sproject: Projects belongs to this Sproject

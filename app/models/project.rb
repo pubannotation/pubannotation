@@ -11,11 +11,6 @@ class Project < ActiveRecord::Base
   has_many :project_docs, dependent: :destroy
   has_many :docs, through: :project_docs
 
-  # to be deprecated ---
-  has_and_belongs_to_many :pmdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PubMed'}
-  has_and_belongs_to_many :pmcdocs, :join_table => :docs_projects, :class_name => 'Doc', :conditions => {:sourcedb => 'PMC', :serial => 0}
-  # ---
-
   attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
                   :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter,
                   :annotations_zip_downloadable, :namespaces, :process,
@@ -302,9 +297,8 @@ class Project < ActiveRecord::Base
     to_json(except: except_columns, methods: :maintainer)
   end
 
-  def has_doc?(sourcedb, sourceid)
-    divs = self.docs.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
-    divs.length > 0
+  def has_doc?
+    ProjectDoc.exists?(project_id: id)
   end
 
   def docs_list_hash
@@ -659,7 +653,9 @@ class Project < ActiveRecord::Base
     docs.update_all('projects_num = projects_num - 1')
     docs.update_all(flag:true)
 
-    docs.delete_all
+    ## below, former is faster in development, but guess the latter is fater in production (better scale?)
+    # docs.delete_all
+    ProjectDoc.delete_all(project_id:id)
 
     Doc.where("sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0").destroy_all
 

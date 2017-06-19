@@ -215,7 +215,7 @@ class ProjectsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
-      message = if project.docs.exists?
+      message = if project.has_doc?
         # project.delete_docs
         # ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
         # ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
@@ -271,12 +271,14 @@ class ProjectsController < ApplicationController
     project = Project.editable(current_user).find_by_name(params[:id])
     raise "There is no such project." unless project.present?
 
+    sproject = Project.find_by_name('system-maintenance')
+
     priority = project.jobs.unfinished.count
     delayed_job = Delayed::Job.enqueue DestroyProjectJob.new(project), priority: priority, queue: :general
-    Job.create({name:'Destroy project', project_id:project.id, delayed_job_id:delayed_job.id})
+    Job.create({name:'Destroy project', project_id:sproject.id, delayed_job_id:delayed_job.id})
 
     respond_to do |format|
-      format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, is being deleted."}
+      format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, will be deleted soon."}
       format.json {head :no_content }
     end
   end
