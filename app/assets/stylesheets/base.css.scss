@@ -204,7 +204,7 @@ table.view_options {
 th {
   padding: 5px;
   text-align: center;
-  background-color: lighten($main_color, 30%);
+  background-color: lighten($main_color, 45%);
   font-weight: normal;
   color: white;
   text-transform: capitalize;
@@ -339,8 +339,10 @@ li {
     cursor: pointer;
 }
 
-h1 .control {
-  margin-left: 5px;
+h1,h2 {
+  .control {
+    margin-left: 5px;
+  }
 }
 
 .tab-bar{
