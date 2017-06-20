@@ -26,7 +26,10 @@
   <% end %>
 
   <section>
-    <h2>Projects</h2>
+    <h2>
+      Projects
+      <%= link_to 'create', new_project_path, {class: 'control button'} if @user == current_user %>
+    </h2>
 
     <%=
       grid(@projects_grid) do |g|
@@ -50,7 +53,8 @@
         end
 
         g.column name: '# Ann.', attribute: 'denotations_num' do |project|
-          [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:5.5em; text-align:right'}]
+          # [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:5.5em; text-align:right'}]
+          [number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'width:5.5em; text-align:right'}]
         end
 
         g.column name: 'Updated at', attribute: 'updated_at', filter: false do |project|
@@ -63,39 +67,64 @@
 
       end
     -%>
-
-    <% if @user == current_user %>
-      <%= link_to 'Create a new project', new_project_path, {:class=> 'control button'} %>
-    <% end %>
   </section>
 
   <section>
-    <h2>Automatic annotators</h2>
+    <h2>
+      Automatic annotators
+      <%= link_to 'create', new_annotator_path, {class: 'control button'} if @user == current_user %>
+    </h2>
 
     <%=
-      grid(@annotators_grid) do |g|
+      if @annotators_grid.resultset.count > 0
+        grid(@annotators_grid) do |g|
+          g.column name: 'Name', attribute: 'name' do |annotator|
+            [link_to(annotator.name, annotator), {style: 'width:10em'}]
+          end
 
-        g.column name: 'Name', attribute: 'name' do |annotator|
-          [link_to(annotator.name, annotator), {style: 'width:10em; text-align:center'}]
-        end
+          if @user == current_user
+            g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |annotator|
+              [badge_is_public(annotator).html_safe, {style: 'text-align:center'}]
+            end
+          end
 
-        if @user == current_user
-          g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |project|
-            [badge_is_public(project).html_safe, {style: 'text-align:center'}]
+          g.column name: 'Description', attribute: 'description' do |annotator|
+            [strip_tags(annotator.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
           end
         end
-
-        g.column name: 'Description', attribute: 'description' do |annotator|
-          [strip_tags(annotator.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-        end
-
+      else
+        'none'
       end
     -%>
+  </section>
 
-    <% if @user == current_user %>
-      <%= link_to 'Create a new annotator', new_annotator_path, {:class=> 'control button'} %>
-    <% end %>
+  <section>
+    <h2>
+      Editors
+      <%= link_to 'create', new_editor_path, {class: 'control button'} if @user == current_user %>
+    </h2>
 
+    <%=
+      if @editors_grid.resultset.count > 0
+        grid(@editors_grid) do |g|
+          g.column name: 'Name', attribute: 'name' do |editor|
+            [link_to(editor.name, editor), {style: 'width:10em'}]
+          end
+
+          if @user == current_user
+            g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |editor|
+              [badge_is_public(editor).html_safe, {style: 'text-align:center'}]
+            end
+          end
+
+          g.column name: 'Description', attribute: 'description' do |editor|
+            [strip_tags(editor.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+          end
+        end
+      else
+        'none'
+      end
+    -%>
   </section>
 
 </section>

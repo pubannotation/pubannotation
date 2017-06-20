@@ -11,6 +11,7 @@ class UsersController < ApplicationController
 
     @projects_grid = initialize_grid(Project.accessible(current_user), conditions:{user_id: @user.id}, per_page: 10)
     @annotators_grid = initialize_grid(Annotator.accessibles(current_user), conditions:{user_id: @user.id}, per_page: 10)
+    @editors_grid = initialize_grid(Editor.accessibles(current_user), conditions:{user_id: @user.id}, per_page: 10)
   end
 
   def autocomplete_username
