@@ -13,7 +13,7 @@
 
 	<% if @project.present? -%>
 		<% Editor.accessibles(current_user).each do |editor| -%>
-			<%= link_to editor.name, editor_annotation_url(editor, annotations_url), :class => 'tab' %>
+			<%= link_to_editor(@project, editor, annotations_url) %>
 		<% end %>
 	<% else -%>
 		<%=

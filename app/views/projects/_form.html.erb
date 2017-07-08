@@ -4,12 +4,12 @@
 <table class="project-properties">
   <tr>
     <th><%= f.label :name %></th>
-    <td><%= f.text_field :name, required: true, placeholder: t('activerecord.placeholders.project.name'), style: "width: 97%" %></td>
+    <td><%= f.text_field :name, required: true, placeholder: t('activerecord.placeholders.project.name') %></td>
     <td class="help-column"></td>
   </tr>
   <tr>
     <th><%= f.label :description %></th>
-    <td><%= f.text_area :description, :rows => 3, style: "width: 97%" %></td>
+    <td><%= f.text_area :description, :rows => 3 %></td>
     <td class="help-column"></td>
   </tr>
   <tr>
@@ -31,7 +31,7 @@
   <tr>
     <th><%= f.label :author %></th>
     <td>
-      <%= f.text_field :author, :placeholder => t('activerecord.placeholders.project.author'), style: "width: 97%" %>
+      <%= f.text_field :author, :placeholder => t('activerecord.placeholders.project.author') %>
     </td>
     <td class="help-column">
       <a href="#help-author" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
@@ -165,58 +165,10 @@
     <td class="help-column"></td>
   </tr>
 
-<!--   <tr>
-  	<th>
-  		<%= t('activerecord.models.associate_maintainer') -%>
-  	</th>
-  	<td>
-		<% @project.associate_maintainers.each do |associate_maintainer| -%>
-			<div>
-				<%= associate_maintainer.user.username -%>
-				<% if associate_maintainer.destroyable_for?(current_user) -%>
-					<%= link_to t('views.shared.delete'), project_associate_maintainer_path(@project, associate_maintainer), :method => :delete, :confirm => t('controllers.shared.confirm_delete') -%>
-				<% end -%>
-			</div>
-		<% end -%>
-
-		<% if @project.associate_maintainers_addable_for?(current_user) -%>
-	  		<%= fields_for :associate_maintainer do -%>
-	  			<div id="associate_maintainers">
-	  				<% if params[:usernames].present? -%>
-	  					<% params[:usernames].each do |username| -%>
-				  			<div class="associate_username">
-		  						<%= username -%>
-				  				<input type="hidden" value="<%= username -%>" id="usernames[]" name="usernames[]">
-				  				<span class="clickable-text" onclick='$(this).parent().remove()'>
-				  					<%= t('views.shared.delete') -%>
-				  				</span>
-				  			</div>
-		  				<% end %>
-	  				<% end %>
-	  			</div>
-	  			<% if @project.new_record? -%>
-  					<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }", :placeholder => t('activerecord.placeholders.project.username')  -%>
-  				<% else -%>
-  					<%= autocomplete_field_tag :username, "", "#{ autocomplete_username_users_path }?project_id=#{@project.id}", :placeholder => t('activerecord.placeholders.project.username')  -%>
-  				<% end -%>
-		  		<script type="text/javascript">
-			  		$('#username').bind('railsAutocomplete.select', function(event, data){
-			  			var userName = data.item.value;
-			  			// append associate maintainer username
-			  			$( "<div class='associate_username'>" + userName +"<input type='hidden' value='" + userName + "' id='usernames[]' name='usernames[]'> <span class='clickable-text' onclick='$(this).parent().remove()'><%= t('views.shared.delete') -%></span></div>" ).appendTo( "#associate_maintainers" );
-			  			$('#username').val('');
-					});
-		  		</script>
-			<% end -%>
-		<% end -%>
-  	</td>
-  </tr>
- -->
-
   <tr>
     <th><%= f.label :reference %></th>
     <td>
-      <%= f.text_field :reference, :placeholder => 'URL', style: "width: 97%" %>
+      <%= f.text_field :reference, :placeholder => 'URL' %>
     </td>
     <td class="help-column">
       <a href="#help-home" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
@@ -230,7 +182,7 @@
   <tr>
     <th><%= f.label :sample %></th>
     <td>
-      <%= f.text_field :sample, :placeholder => t('activerecord.placeholders.project.sample'), style: "width: 97%" %>
+      <%= f.text_field :sample, :placeholder => t('activerecord.placeholders.project.sample') %>
     </td>
     <td class="help-column">
       <a href="#help-sample" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
@@ -243,21 +195,15 @@
   </tr>
 
   <tr><td style="border:none"></td></tr>
-<!--   <tr>
-    <th><%= f.label :viewer %></th>
-    <td><%= f.text_field :viewer, :class => "input", :placeholder => 'URL' %></td>
-  </tr> -->
+
   <tr>
-    <th><%= f.label :editor %></th>
-    <td>
-      <%= f.text_field :editor, :placeholder => 'URL', style: "width: 97%" %>
-    </td>
+    <th><%= f.label :textae_config %></th>
+    <td><%= f.text_field :textae_config %></td>
     <td class="help-column">
-      <a href="#help-editor" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-editor" class="help">
-        <h1>Project editor</h1>
-        <p><%= t('views.hints.project.editor') %></p>
-        <p><span class="note"><a href="http://textae.pubannotation.org">TextAE</a> <%= t('views.projects.try_textae') %></span></p>
+      <a href="#help-textae_config" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-textae_config" class="help">
+        <h1>TextAE Config</h1>
+        <p>If you have a parcicular configuration of TextAE for the project, specify the location of the configuration.</p>
       </div>
     </td>
   </tr>
@@ -265,8 +211,8 @@
     <th><%= f.label :namespaces %></th>
     <td id="project_namespaces">
       <%= label_tag 'project[namespaces][][uri]', 'BASE' -%>
-      <%= hidden_field_tag 'project[namespaces][][prefix]', '_base', :class => "input" -%>
-      <%= text_field_tag 'project[namespaces][][uri]', @project.base_uri, :class => "input" -%>
+      <%= hidden_field_tag 'project[namespaces][][prefix]', '_base', class: "input" -%>
+      <%= text_field_tag 'project[namespaces][][uri]', @project.base_uri, class: "input", style: "width:calc(100% - 42px);" -%>
       <%= namespaces_prefix_input_fields -%>
       <span id="namespaces_inputs"></span>
       <br />

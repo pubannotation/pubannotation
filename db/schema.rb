@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170415043109) do
+ActiveRecord::Schema.define(:version => 20170708102542) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -175,7 +175,6 @@ ActiveRecord::Schema.define(:version => 20170415043109) do
     t.datetime "updated_at",                                                          :null => false
     t.string   "license"
     t.string   "reference"
-    t.string   "editor"
     t.integer  "accessibility"
     t.integer  "status"
     t.integer  "user_id"
@@ -197,6 +196,7 @@ ActiveRecord::Schema.define(:version => 20170415043109) do
     t.string   "sample"
     t.boolean  "anonymize",                        :default => false,                 :null => false
     t.integer  "modifications_num",                :default => 0
+    t.string   "textae_config"
   end
 
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true

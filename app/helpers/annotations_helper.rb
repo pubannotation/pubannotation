@@ -35,6 +35,15 @@ module AnnotationsHelper
     url = "#{editor.url}#{connector}#{parameters_str}"
   end
 
+  def link_to_editor(project, editor, source_url)
+    editor.parameters.each_key{|k| editor.parameters[k] = source_url + '.json' if editor.parameters[k] == '_annotations_url_'}
+    editor.parameters[:config] = project.textae_config if editor.name == 'TextAE' && project && project.textae_config
+    parameters_str = editor.parameters.map{|p| p.join('=')}.join('&')
+    connector = editor.url.include?('?') ? '&' : '?'
+    url = "#{editor.url}#{connector}#{parameters_str}"
+    link_to editor.name, url, :class => 'tab'
+  end
+
   def get_focus(options)
     if options.present? && options[:params].present? && options[:params][:begin].present? && options[:params][:context_size]
       sbeg = options[:params][:begin].to_i

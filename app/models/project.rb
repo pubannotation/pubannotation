@@ -12,7 +12,8 @@ class Project < ActiveRecord::Base
   has_many :docs, through: :project_docs
 
   attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
-                  :sample, :viewer, :editor, :rdfwriter, :xmlwriter, :bionlpwriter,
+                  :sample, :rdfwriter, :xmlwriter, :bionlpwriter,
+                  :textae_config,
                   :annotations_zip_downloadable, :namespaces, :process,
                   :pmdocs_count, :pmcdocs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
   has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
