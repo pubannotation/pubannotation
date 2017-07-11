@@ -21,10 +21,6 @@
     width: 14em;
   }
 
-  .column-project-type {
-    width: 2em;
-  }
-
   .column-project-description {
   }
 
@@ -48,6 +44,15 @@
     width: 6em;
   }
 }
+
+.column-project-type {
+  width: 1.5em;
+}
+
+.column-project-type.sorted {
+  width: 3em;
+}
+
 
 .project-properties {
   table-layout:fixed;

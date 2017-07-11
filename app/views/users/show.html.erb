@@ -58,7 +58,7 @@
         end
 
         g.column name: 'Updated at', attribute: 'updated_at', filter: false do |project|
-          [project.updated_at.strftime('%Y-%m-%d'), {style: 'width:6em; text-align:center'}]
+          [project.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
         end
 
         g.column name: 'Status', attribute: 'status', custom_filter: {'released' => 1, 'beta' => 2, 'uploading' => 3, 'developing' => 8, 'testing' => 9} do |project|
