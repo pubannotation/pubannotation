@@ -76,6 +76,10 @@ module ProjectsHelper
     end
   end
 
+  def textae_config_display_helper(config_url)
+    link_to(config_url, config_url) + ' ' + link_to(fa_icon('pencil', title:"edit"), config_url.chomp('.json'))
+  end
+
   def link_to_project(project)
     if @doc and @doc.sourcedb and @doc.sourceid 
       if @doc.has_divs? 

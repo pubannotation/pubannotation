@@ -43,6 +43,12 @@
 		<th><%= t('activerecord.attributes.project.license') %></th>
 		<td><%= license_display_helper(@project.license).html_safe %></td>
 	</tr>
+	<% if @project.textae_config %>
+		<tr>
+			<th>TextAE config</th>
+			<td><%= textae_config_display_helper(@project.textae_config).html_safe %></td>
+		</tr>
+	<% end %>
 </table>
 <% if user_signed_in? -%>
 	<% if @project.editable?(current_user) -%>
