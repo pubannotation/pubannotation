@@ -62,7 +62,7 @@ class ProjectsController < ApplicationController
   # GET /projects/new.json
   def new
     # set the dafault value for editor
-    @project = Project.new({editor: Project::EditorDefault})
+    @project = Project.new
     @project.user = current_user
 
     respond_to do |format|

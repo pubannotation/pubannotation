@@ -156,7 +156,6 @@ class Project < ActiveRecord::Base
   DefaultSortKey = "status ASC, projects.updated_at DESC"
 
   LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
-  EditorDefault = 'http://textae.pubannotation.org/editor.html?mode=edit'
   
   def public?
     accessibility == 1
