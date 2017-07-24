@@ -539,7 +539,7 @@ en:
         delayed_job_present: Under creation
         not_available: Not available for this project.
         not_prepared: Not prepared yet for this project.
-        deleted: Successfully deleted the annotation zip file.
+        deleted: Successfully deleted the annotation TGZ file.
       rdf:
         delayed_job_present: RDF file will be created in a few minutes.      
         download_not_available: Not available for this project.

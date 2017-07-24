@@ -619,7 +619,7 @@ class AnnotationsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
       priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue CreateAnnotationsTgzJob.new(project), priority: priority, queue: :general
+      delayed_job = Delayed::Job.enqueue CreateAnnotationsTgzJob.new(project, {}), priority: priority, queue: :general
       Job.create({name:'Create annotations tarball', project_id:project.id, delayed_job_id:delayed_job.id})
       redirect_to :back, notice: "The task 'Create annotations tarball' is created."
     rescue => e
@@ -635,7 +635,7 @@ class AnnotationsController < ApplicationController
       raise "There is no such project." unless project.present?
 
       if File.exist?(project.annotations_tgz_system_path)
-        if project.user == current_user 
+        if project.editable?(current_user)
           File.unlink(project.annotations_tgz_system_path)
           flash[:notice] = t('views.shared.download.deleted')
         else
