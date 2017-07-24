@@ -88,7 +88,7 @@ module AnnotationsHelper
       else
         # when tgz file deos not exists
         delayed_job_tasks = ActiveRecord::Base.connection.execute('SELECT * FROM delayed_jobs').select{|delayed_job| delayed_job['handler'].include?(project.name) && delayed_job['handler'].include?('create_annotations_tgz')}
-        if project.user == current_user
+        if project.editable?(current_user)
           if delayed_job_tasks.blank?
             # when delayed_job exists
             link_to t('controllers.annotations.create_downloadable'), project_create_annotations_tgz_path(project.name), :class => 'button long_button', :confirm => t('controllers.annotations.confirm_create_downloadable')

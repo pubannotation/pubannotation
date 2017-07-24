@@ -43,7 +43,7 @@
 		<th><%= t('activerecord.attributes.project.license') %></th>
 		<td><%= license_display_helper(@project.license).html_safe %></td>
 	</tr>
-	<% if @project.textae_config %>
+	<% if @project.textae_config.present? %>
 		<tr>
 			<th>TextAE config</th>
 			<td><%= textae_config_display_helper(@project.textae_config).html_safe %></td>
