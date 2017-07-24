@@ -77,7 +77,7 @@ module AnnotationsHelper
         html = link_to project.annotations_tgz_filename, project_annotations_tgz_path(project.name), class: 'button', title: "click to download"
         html += tag :br
         html += content_tag :span, "#{tgz_created_at.strftime("#{t('controllers.shared.created_at')}:%Y-%m-%d %T")}", :class => 'time_stamp'
-        if project.user == current_user
+        if project.editable?(current_user)
           html += tag :br
           if tgz_created_at < project.annotations_updated_at
             html += link_to t('views.shared.update'), project_create_annotations_tgz_path(project.name, update: true), confirm: t('controllers.annotations.confirm_create_downloadable'), class: 'button'
