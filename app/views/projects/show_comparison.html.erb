@@ -18,21 +18,21 @@
 		<section>
 			<h2>Individual annotations</h2>
 
-			<% if @comparison[:individual][:denotations].present? %>
+			<% if @comparison[:individual][:denotations].present? && @comparison[:individual][:denotations][:counts].present?%>
 				<section>
 					<h3>Denotations</h3>
 					<%= render partial: 'comparison', locals: {comparison: @comparison[:individual][:denotations]} %>
 				</section>
 			<% end %>
 
-			<% if @comparison[:individual][:relations].present? %>
+			<% if @comparison[:individual][:relations].present? && @comparison[:individual][:relations][:counts].present?%>
 				<section>
 					<h3>Relations</h3>
 					<%= render partial: 'comparison', locals: {comparison: @comparison[:individual][:relations]} %>
 				</section>
 			<% end %>
 
-			<% if @comparison[:individual][:modifications].present? %>
+			<% if @comparison[:individual][:modifications].present? && @comparison[:individual][:modifications][:counts].present? %>
 				<section>
 					<h3>Modifications</h3>
 					<%= render partial: 'comparison', locals: {comparison: @comparison[:individual][:modifications]} %>
