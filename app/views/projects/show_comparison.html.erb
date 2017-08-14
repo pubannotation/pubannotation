@@ -46,21 +46,21 @@
 		<section>
 			<h2>Compound annotations</h2>
 
-			<% if @comparison[:compound][:denotations].present? %>
+			<% if @comparison[:compound][:denotations].present? && @comparison[:compound][:denotations][:counts].present? %>
 				<section>
 					<h3>Denotations</h3>
 					<%= render partial: 'comparison', locals: {comparison: @comparison[:compound][:denotations]} %>
 				</section>
 			<% end %>
 
-			<% if @comparison[:compound][:relations].present? %>
+			<% if @comparison[:compound][:relations].present? && @comparison[:compound][:relations][:counts].present? %>
 				<section>
 					<h3>Relations</h3>
 					<%= render partial: 'comparison', locals: {comparison: @comparison[:compound][:relations]} %>
 				</section>
 			<% end %>
 
-			<% if @comparison[:compound][:modifications].present? %>
+			<% if @comparison[:compound][:modifications].present? && @comparison[:compound][:modifications][:counts].present?%>
 				<section>
 					<h3>Modifications</h3>
 					<%= render partial: 'comparison', locals: {comparison: @comparison[:compound][:modifications]} %>
