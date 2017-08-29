@@ -1,7 +1,47 @@
+<section>
+<h3>Specify a source-DB and source-IDs</h3>
 <%= form_tag(add_project_docs_path(@project.name), :method => "post") do %>
-	<%= select_tag :sourcedb, options_for_select(@sourcedbs),
-		style: "width:7em" -%>
-	<%= text_field_tag :ids, nil,
-		style: "width:7em", :placeholder => t('activerecord.placeholders.doc.ids'), :required => true %>
-	<button type="submit" class="short-button" title="<%= t('views.shared.add') %>"><i class="fa fa-plus" aria-hidden="true"></i></button>
+<table>
+<tr>
+<th>source DB</th>
+<td><%= select_tag :sourcedb, options_for_select(@sourcedbs),	style: "width:7em" -%></td>
+</tr>
+<tr>
+<th>source IDs</th>
+<td>
+<%= text_field_tag :ids, nil, style: "width:10em", :placeholder => t('activerecord.placeholders.doc.ids'), :required => true %>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<button type="submit" class="button long-button" title="<%= t('views.shared.add') %>">Add</button>
+</th>
+</tr>
+</table>
 <% end %>
+</section>
+
+<br/>
+<p>---- or ----</p>
+
+<section>
+<h3>Specify a source-DB and upload a text file with source-IDs</h3>
+<p>The file has to have source-IDs, each at a line.</p>
+<%= form_tag(add_from_upload_project_docs_path(@project.name), multipart: true) do %>
+<table>
+<tr>
+<th>source DB</th>
+<td><%= select_tag :sourcedb, options_for_select(@sourcedbs),	style: "width:7em" -%></td>
+</tr>
+<tr>
+<th>Choose File</th>
+<td><%= file_field_tag 'upfile', accept: '.txt', required: true -%></td>
+</tr>
+<tr>
+<th colspan="2">
+<button type="submit" class="button long-button" title="<%= t('views.shared.add') %>">Add</button>
+</th>
+</tr>
+</table>
+<% end %>
+</section>
