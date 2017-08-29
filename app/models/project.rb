@@ -412,7 +412,43 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def post_rdf(ttl, project_name = nil, initp = false)
+  def graph_uri
+    "http://pubannotation.org/projects/#{self.name}"
+  end
+
+  def last_indexed_at(endpoint = nil)
+    if endpoint.nil?
+      endpoint = stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
+    end
+    db = Rails.application.config.ep_database
+    result = endpoint.query(db, "select ?o where {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?o}")
+    begin
+      DateTime.parse(result.body["results"]["bindings"].first["o"]["value"])
+    rescue
+      nil
+    end
+  end
+
+  def post_rdf_stardog(ttl, project_name = nil, initp = false)
+    ttl_file = Tempfile.new("temporary.ttl")
+    ttl_file.write(ttl)
+    ttl_file.close
+
+    graph_uri = project_name.nil? ? "http://pubannotation.org/docs" : "http://pubannotation.org/projects/#{project_name}"
+    destination = "#{Pubann::Application.config.sparql_end_point}/sparql-graph-crud-auth?graph-uri=#{graph_uri}"
+    cmd  = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -T #{ttl_file.path}]
+    cmd += ' -X POST' unless initp
+
+    puts cmd
+    puts "+++"
+    message, error, state = Open3.capture3(cmd)
+
+    ttl_file.unlink
+
+    raise RuntimeError, 'Could not store RDFized annotations' unless error.include?('201 Created') || error.include?('200 OK')
+  end
+
+  def post_rdf_virtuoso(ttl, project_name = nil, initp = false)
     require 'open3'
 
     ttl_file = Tempfile.new("temporary.ttl")
@@ -423,6 +459,7 @@ class Project < ActiveRecord::Base
     destination = "#{Pubann::Application.config.sparql_end_point}/sparql-graph-crud-auth?graph-uri=#{graph_uri}"
     cmd  = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -T #{ttl_file.path}]
     cmd += ' -X POST' unless initp
+
     message, error, state = Open3.capture3(cmd)
 
     ttl_file.unlink

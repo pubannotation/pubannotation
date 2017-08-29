@@ -8,6 +8,14 @@ GIT
       hashie
     elasticsearch-rails (0.1.8)
 
+GIT
+  remote: git://github.com/jdkim/stardog-rb
+  revision: 82e32396824451f89a2fe1a024d096e56841073a
+  specs:
+    stardog-rb (0.0.6)
+      nokogiri
+      rest-client
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -332,6 +340,7 @@ DEPENDENCIES
   sass-rails (~> 3.2.3)
   simplecov
   spork-rails
+  stardog-rb!
   test-unit
   uglifier (>= 1.0.3)
   vcr

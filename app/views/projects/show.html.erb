@@ -110,7 +110,7 @@
 			<th><%= t('views.shared.download.download') %></th>
 			<td><%= project_annotations_tgz_link_helper(@project) -%></td>
 		</tr>
-		<% if user_signed_in? && @project.editable?(current_user) -%>
+		<% if @project.editable?(current_user) -%>
 			<tr>
 				<th><%= t('views.shared.upload') %></th>
 				<td><%= link_to t('views.docs.upload_annotations'), upload_annotations_project_path(@project.name), class: 'button long_button' -%></td>
@@ -122,6 +122,10 @@
 			<tr>
 				<th><%= t('views.shared.import') %></th>
 				<td style="text-align:right"><%= render partial: 'import_annotations_form' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.index') %></th>
+				<td><%= render partial: 'index_annotations' -%></td>
 			</tr>
 			<tr>
 				<th><%= t('views.shared.compare') %></th>

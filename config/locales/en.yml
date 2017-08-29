@@ -531,6 +531,9 @@ en:
       annotation_sets: project
       upload: upload
       obtain: obtain
+      import: import
+      index: index
+      compare: compare
       stored_in: "%{content}<span class='meta'> stored in <span class='pname'>%{pname}</span></span>"
       made_to: "%{content} <span class='meta'>made to <span class='pname'>%{pname}</span></span>"
       made_to_division: "%{content} made to %{serial}th divition of <span class='pname'>%{pname}</span>"

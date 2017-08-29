@@ -166,6 +166,29 @@ class Doc < ActiveRecord::Base
   # default sort order 
   DefaultSortKey = "sourceid ASC"
 
+  def self.graph_uri
+    "http://pubannotation.org/docs"
+  end
+
+  def graph_uri
+    has_divs? ?
+      "http://pubannotation.org/docs/sourcedb/#{sourcedb}/sourceid/#{sourceid}/divs/{serial}" :
+      "http://pubannotation.org/docs/sourcedb/#{sourcedb}/sourceid/#{sourceid}"
+  end
+
+  def last_indexed_at(endpoint = nil)
+    if endpoint.nil?
+      endpoint = stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
+    end
+    db = Rails.application.config.ep_database
+    result = endpoint.query(db, "select ?o where {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?o}")
+    begin
+      DateTime.parse(result.body["results"]["bindings"].first["o"]["value"])
+    rescue
+      nil
+    end
+  end
+
   def update_es_doc(project)
     self.__elasticsearch__.index_document
   end

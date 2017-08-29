@@ -140,7 +140,7 @@ Pubann::Application.routes.draw do
       get 'autocomplete_project_author'
       get 'zip_upload' => 'projects#zip_upload'
       post 'create_from_tgz' => 'projects#create_from_tgz'
-      get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
+      # get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
       get 'clean' => 'projects#clean'
     end
   end

@@ -69,6 +69,8 @@ gem 'whenever', :require => false
 # gem 'mysql2',          '~> 0.3.13', :platform => :ruby
 gem 'elasticsearch-model', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
 gem 'elasticsearch-rails', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
+gem 'stardog-rb', :git => 'git://github.com/jdkim/stardog-rb'
+
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

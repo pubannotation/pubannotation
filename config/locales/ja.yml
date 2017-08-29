@@ -553,6 +553,9 @@ ja:
       annotation_sets: アノテーションセット
       upload: アップロード
       obtain: 取得
+      import: インポート
+      index: インデクス
+      compare: 比較
       stored_in: "<span class='meta'><span>%{pname}</span>内の</span>%{content}"   
       made_to: "<span class='meta'><span class='pname'>%{pname}</span>用の</span>%{content}"
       made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"

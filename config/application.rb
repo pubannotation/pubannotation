@@ -67,8 +67,10 @@ module Pubann
     config.rdfizer = 'http://bionlp.dbcls.jp/tao_rdfizer'
     config.rdfizer_annotations = "#{config.rdfizer}?mode=annotations"
     config.rdfizer_spans       = "#{config.rdfizer}?mode=spans"
-    config.sparql_end_point = 'http://localhost:8890'
-    config.sparql_end_point_auth = 'dba:dba'
+    config.ep_url = 'http://localhost:5820/'
+    config.ep_database = 'PubAnnotation'
+    config.ep_user = 'admin'
+    config.ep_password = 'admin'
 
     # Ensure Rack::Cors to run before Warden::Manager used by Devise
     config.middleware.insert_before Warden::Manager, Rack::Cors do
