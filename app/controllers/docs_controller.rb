@@ -1,3 +1,4 @@
+require 'fileutils'
 require 'zip/zip'
 
 class DocsController < ApplicationController
@@ -363,6 +364,40 @@ class DocsController < ApplicationController
   end
 
   # add new docs to a project
+  def add_from_upload
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
+      raise ArgumentError, "sourcedb is not specified." unless params["sourcedb"].present?
+
+      sourcedb = params["sourcedb"]
+      filename = params[:upfile].original_filename
+      ext = File.extname(filename)
+      raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.txt'].include?(ext)
+
+      raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+
+      filepath = File.join('tmp', "add-docs-to-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
+      FileUtils.mv params[:upfile].path, filepath
+
+      job = AddDocsToProjectFromUploadJob.new(sourcedb, filepath, project)
+      job.perform()
+
+      # priority = project.jobs.unfinished.count
+      # delayed_job = Delayed::Job.enqueue AddDocsToProjectFromUploadJob.new(sourcedb, filepath, project), priority: priority, queue: :general
+      # Job.create({name:'Add docs to project from upload', project_id:project.id, delayed_job_id:delayed_job.id})
+      message = "The task, 'Add docs to project from upload', is created."
+    # rescue => e
+    #   notice = e.message
+    end
+
+    respond_to do |format|
+      format.html {redirect_to :back, notice: notice}
+      format.json {}
+    end
+  end
+
+  # add new docs to a project
   def add
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
@@ -411,7 +446,7 @@ class DocsController < ApplicationController
     end
 
     respond_to do |format|
-      format.html {redirect_to project_path(project.name), notice: message}
+      format.html {redirect_to :back, notice: message}
       format.json {render json:{message:message}}
     end
   end

@@ -126,6 +126,7 @@ Pubann::Application.routes.draw do
       get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
       get 'store_span_rdf' => 'projects#store_span_rdf'
       get 'clean' => 'projects#clean'
+      get 'add_docs' => 'projects#add_docs'
       get 'obtain_annotations' => 'projects#obtain_annotations'
       get 'upload_annotations' => 'projects#upload_annotations'
       get 'delete_annotations' => 'projects#delete_annotations'
@@ -155,6 +156,7 @@ Pubann::Application.routes.draw do
       collection do
         get 'index' => 'docs#index'
         post 'add' => 'docs#add'
+        post 'add_from_upload' => 'docs#add_from_upload'
         post 'import' => 'docs#import'
         get 'records' => 'docs#records'
         get 'search' => 'docs#search'

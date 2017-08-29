@@ -416,6 +416,7 @@ en:
         projects_that_include_this_document: that include this document
         projects_that_have_annotations_to_this_span: that have annotations to this span
       import: Import
+      add_docs: Add documents
       create_a_new_document: Create a new document
       total_number: "Total %{total_number} documents"
     spans:
