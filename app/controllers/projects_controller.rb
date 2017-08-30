@@ -153,13 +153,15 @@ class ProjectsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:id])
       raise ArgumentError, "There is no such project." unless project.present?
 
-      job = StoreRdfizedAnnotationsJob.new(project)
-      job.perform()
+      # job = StoreRdfizedAnnotationsJob.new(project)
+      # job.perform()
 
-      # delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project, project, Pubann::Application.config.rdfizer_annotations), queue: :general
-      # Job.create({name:"Store RDFized annotations - #{project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
-    # rescue => e
-    #   flash[:notice] = e.message
+      delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project), queue: :general
+      Job.create({name:"Store RDFized annotations - #{project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
+      flash[:notice] = "The task, 'Store RDFized annotations - #{project.name}', is created."
+
+    rescue => e
+      flash[:notice] = e.message
     end
     redirect_to project_path(project.name)
   end

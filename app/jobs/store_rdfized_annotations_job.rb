@@ -1,12 +1,12 @@
 require 'stardog'
 
 class StoreRdfizedAnnotationsJob < Struct.new(:project, :rdfizer_annotations, :rdfizer_spans)
-	# include StateManagement
+	include StateManagement
 	include Stardog
 
 	def perform
-		# @job.update_attribute(:num_items, project.docs.count)
-		# @job.update_attribute(:num_dones, 0)
+		@job.update_attribute(:num_items, project.docs.count)
+		@job.update_attribute(:num_dones, 0)
 		sd = stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
 		db = Rails.application.config.ep_database
     graph_uri_project = project.graph_uri
@@ -35,12 +35,12 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :rdfizer_annotations, :r
 				    update_time(sd, db, graph_uri_doc)
 				  end
 	      end
-	    # rescue => e
- 	   #    doc_description  = [doc.sourcedb, doc.sourceid, doc.serial].compact.join('-')
- 	   #    puts "[error] #{e}"
-				# @job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: e.message})
+	    rescue => e
+				doc_description  = [doc.sourcedb, doc.sourceid, doc.serial].compact.join('-')
+				puts "[error] #{e}"
+				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: e.message})
 			end
-			# @job.update_attribute(:num_dones, i + 1)
+			@job.update_attribute(:num_dones, i + 1)
     end
 
     update_time(sd, db, graph_uri_project)
