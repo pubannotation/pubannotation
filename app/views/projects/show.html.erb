@@ -123,10 +123,14 @@
 				<th><%= t('views.shared.import') %></th>
 				<td style="text-align:right"><%= render partial: 'import_annotations_form' -%></td>
 			</tr>
-			<tr>
-				<th><%= t('views.shared.index') %></th>
-				<td><%= render partial: 'index_annotations' -%></td>
-			</tr>
+
+			<% if @project.docs.count < Rails.application.config.project_indexable_max_docs || current_user.root? %>
+				<tr>
+					<th><%= t('views.shared.index') %></th>
+					<td><%= render partial: 'index_annotations' -%></td>
+				</tr>
+			<% end %>
+
 			<tr>
 				<th><%= t('views.shared.compare') %></th>
 				<td>
