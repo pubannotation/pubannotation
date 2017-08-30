@@ -71,6 +71,7 @@ module Pubann
     config.ep_database = 'PubAnnotation'
     config.ep_user = 'admin'
     config.ep_password = 'admin'
+    config.project_indexable_max_docs = 20
 
     # Ensure Rack::Cors to run before Warden::Manager used by Devise
     config.middleware.insert_before Warden::Manager, Rack::Cors do
