@@ -1,0 +1,15 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> add-docs
+<% end -%>
+
+<section>
+	<%= render partial: 'projects/titlebar' -%>
+
+	<section>
+		<h2><%= t('views.docs.add_docs') %></h2>
+		<%= render partial: 'add_docs' -%>
+	</section>
+</section>

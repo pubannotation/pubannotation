@@ -428,7 +428,8 @@ ja:
         projects_that_include_this_document: このドキュメントを含むプロジェクト
         projects_that_have_annotations_to_this_span: このスパンのアノテーションを持つプロジェクト
       list: ドキュメント一覧
-      import: ドキュメント追加
+      import: ドキュメントインポート
+      add_docs: ドキュメント追加
       create_a_new_document: ドキュメント生成
       total_number: "全%{total_number}ドキュメント"
     spans:
@@ -551,6 +552,7 @@ ja:
       div: div:%{divid}
       annotation: アノテーション
       annotation_sets: アノテーションセット
+      import: インポート
       upload: アップロード
       obtain: 取得
       import: インポート
