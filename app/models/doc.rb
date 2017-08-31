@@ -263,7 +263,7 @@ class Doc < ActiveRecord::Base
         []
       end
 
-    docs.each{|doc| result[:messages] << "Failed to save the document: #{doc.sourcedb}." unless doc.save}
+    docs.each{|doc| result[:messages] << "Failed to save the document: #{doc.sourcedb}:#{doc.sourceid}." unless doc.save}
 
     [docs, result[:messages]]
   end
