@@ -77,7 +77,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
     sourcedbs_changed = []
 
     sourcedb_sourceids_index.each do |sourcedb, sourceids|
-      docs, messages = project.add_docs(sourcedb, sourceids.to_a, false)
+      docs, messages, num_docs_existed = project.add_docs(sourcedb, sourceids.to_a)
       sourcedbs_changed << sourcedb if docs.present?
       messages.each {|m| @job.messages << Message.create({body:m})} unless messages.nil?
     end

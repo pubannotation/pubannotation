@@ -643,7 +643,7 @@ class Project < ActiveRecord::Base
 
   # returns the divs added to the project
   # returns nil if nothing is added
-  def add_docs(sourcedb, sourceids, is_verbose = true)
+  def add_docs(sourcedb, sourceids)
     ids_in_pa = Doc.where(sourcedb:sourcedb, sourceid:sourceids).pluck(:sourceid).uniq
     ids_in_pj = ids_in_pa & docs.pluck(:sourceid).uniq
 
@@ -658,12 +658,9 @@ class Project < ActiveRecord::Base
     docs_to_add += docs_sequenced
 
     docs_to_add.each{|doc| doc.projects << self}
+    num_docs_existed = ids_in_pj.length
 
-    if ids_in_pj.length > 0 && is_verbose
-      messages << "#{ids_in_pj.length} doc(s) already existed."
-    end
-
-    [docs_to_add, messages]
+    [docs_to_add, messages, num_docs_existed]
   end
 
   # returns the divs added to the project

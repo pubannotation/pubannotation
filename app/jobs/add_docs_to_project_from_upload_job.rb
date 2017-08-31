@@ -30,11 +30,22 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 	private
 
 	def add_docs(sourcedb, ids)
-		added, messages = begin
+		added, messages, num_docs_existed = begin
 			project.add_docs(sourcedb, ids)
     rescue => e
 			@job.messages << Message.create({sourcedb: sourcedb, sourceid: "#{ids.first} - #{ids.last}", body: e.message})
-			[[], []]
+			[[], [], 0]
+		end
+
+		if num_docs_existed > 0
+			if @total_num_docs_existed
+				@total_num_docs_existed += num_docs_existed
+				@message_existing_docs.update_attribute(:body, "#{@total_num_docs_existed} doc(s) already existed.")
+			else
+				@total_num_docs_existed = num_docs_existed
+				@message_existing_docs = Message.create({body: "#{@total_num_docs_existed} doc(s) already existed."})
+				@job.messages << @message_existing_docs
+			end
 		end
 
 		messages.each{|message| @job.messages << Message.create({body: message})}
