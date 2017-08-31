@@ -263,9 +263,17 @@ class Doc < ActiveRecord::Base
         []
       end
 
-    docs.each{|doc| result[:messages] << "Failed to save the document: #{doc.sourcedb}:#{doc.sourceid}." unless doc.save}
+    docs_sequenced = []
+    messages = result[:messages]
+    docs.each do |doc|
+      if doc.save
+        docs_sequenced << doc
+      else
+        messages << {sourcedb:doc.sourcedb, sourceid:doc.sourceid, body:"Failed to save the document."}
+      end
+    end
 
-    [docs, result[:messages]]
+    [docs_sqeuenced, messages]
   end
 
   def self.create_divs(divs_hash, attributes = {})

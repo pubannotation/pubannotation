@@ -7,15 +7,20 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 		@job.update_attribute(:num_items, count)
 		@job.update_attribute(:num_dones, 0)
 
+		@total_num_added = 0
+		@total_num_existed = 0
+
 		ids = []
-		File.foreach(filepath) do |line|
+		File.foreach(filepath).with_index do |line, i|
 			line.chomp!.strip!
 			ids << line unless line.empty?
 
-			if ids.length >= 500
+			if ids.length >= 1000
 				add_docs(sourcedb, ids)
 				ids.clear
 			end
+
+	    @job.update_attribute(:num_dones, i+1)
 	  end
 
 		add_docs(sourcedb, ids)
@@ -30,26 +35,28 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 	private
 
 	def add_docs(sourcedb, ids)
-		added, messages, num_docs_existed = begin
+		added, messages, num_existed = begin
 			project.add_docs(sourcedb, ids)
     rescue => e
 			@job.messages << Message.create({sourcedb: sourcedb, sourceid: "#{ids.first} - #{ids.last}", body: e.message})
 			[[], [], 0]
 		end
 
-		if num_docs_existed > 0
-			if @total_num_docs_existed
-				@total_num_docs_existed += num_docs_existed
-				@message_existing_docs.update_attribute(:body, "#{@total_num_docs_existed} doc(s) already existed.")
+		@total_num_added += added.map{|d| d[:sourceid]}.uniq.length
+
+		if num_existed > 0
+			@total_num_existed += num_existed
+
+			if @message_existed
+				@message_docs_existed.update_attribute(:body, "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added.")
 			else
-				@total_num_docs_existed = num_docs_existed
-				@message_existing_docs = Message.create({body: "#{@total_num_docs_existed} doc(s) already existed."})
-				@job.messages << @message_existing_docs
+				@message_docs_existed = Message.create({body: "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added."})
+				@job.messages << @message_docs_existed
 			end
 		end
 
-		messages.each{|message| @job.messages << Message.create({body: message})}
-		num_added_docs = added.map{|d| d[:sourceid]}.uniq.length
-    @job.update_attribute(:num_dones, @job.num_dones + num_added_docs)
+		messages.each do |message|
+			@job.messages << message.class == Hash ? Message.create(message) : Message.create({body: message})
+		end
 	end
 end
