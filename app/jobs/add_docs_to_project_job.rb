@@ -15,7 +15,9 @@ class AddDocsToProjectJob < Struct.new(:docspecs, :project)
 					@job.messages << Message.create({sourcedb: sourcedb, sourceid: "#{ids.first} - #{ids.last}", body: e.message})
 					[[], []]
 				end
-			messages.each{|message| @job.messages << Message.create({body: message})}
+			messages.each do |message|
+				@job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
+			end
 			num_added_docs = added.map{|d| d[:sourceid]}.uniq.length
       @job.update_attribute(:num_dones, @job.num_dones + num_added_docs)
 		end
