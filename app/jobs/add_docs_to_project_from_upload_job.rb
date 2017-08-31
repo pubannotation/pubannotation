@@ -53,7 +53,7 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 		end
 
 		messages.each do |message|
-			@job.messages << message.class == Hash ? Message.create(message) : Message.create({body: message})
+			@job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
 		end
 	end
 end
