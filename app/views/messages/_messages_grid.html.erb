@@ -27,8 +27,8 @@
           [message.body, {style: 'width:20em; max-width: 20em; white-space:initial; overflow:hidden; text-overflow:ellipsis'}]
         end
 
-        g.column name: 'reported at', attribute: 'created_at' do |message|
-          [message.created_at, {style: 'width:14em; text-align:center'}]
+        g.column name: 'reported at', attribute: 'updated_at' do |message|
+          [message.updated_at, {style: 'width:14em; text-align:center'}]
         end
 
       end
