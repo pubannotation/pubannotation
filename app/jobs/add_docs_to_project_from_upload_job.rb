@@ -43,16 +43,13 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 		end
 
 		@total_num_added += added.map{|d| d[:sourceid]}.uniq.length
+		@total_num_existed += num_existed
 
-		if num_existed > 0
-			@total_num_existed += num_existed
+		@message_docs_existed.update_attribute(:body, "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added.") if @message_docs_existed
 
-			if @message_existed
-				@message_docs_existed.update_attribute(:body, "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added.")
-			else
-				@message_docs_existed = Message.create({body: "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added."})
-				@job.messages << @message_docs_existed
-			end
+		if @total_num_existed > 0 && !defined?(@message_docs_existed)
+			@message_docs_existed = Message.create({body: "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added."})
+			@job.messages << @message_docs_existed
 		end
 
 		messages.each do |message|

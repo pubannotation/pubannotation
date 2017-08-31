@@ -273,7 +273,7 @@ class Doc < ActiveRecord::Base
       end
     end
 
-    [docs_sqeuenced, messages]
+    [docs_sequenced, messages]
   end
 
   def self.create_divs(divs_hash, attributes = {})
