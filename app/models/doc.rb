@@ -262,18 +262,21 @@ class Doc < ActiveRecord::Base
       []
     end
 
-    docs_sequenced = []
-    messages = result[:messages]
-
-    docs.each do |doc|
-      if doc.save
-        docs_sequenced << doc
-      else
-        messages << {sourcedb:doc.sourcedb, sourceid:doc.sourceid, body:"Failed to save the document."}
-      end
+    docs_valid = docs.select{|doc| doc.valid?}
+    unless docs_valid.empty?
+      r = Doc.import docs_valid
+      raise RuntimeError, "documents import error" unless r.failed_instances.empty?
     end
 
-    [docs_sequenced, messages]
+    docs_invalid = docs - docs_valid
+
+    messages = result[:messages]
+
+    docs_invalid.each do |doc|
+      messages << {sourcedb:doc.sourcedb, sourceid:doc.sourceid, body:"Failed to save the document."}
+    end
+
+    [docs_valid, messages]
   end
 
   def self.create_divs(divs_hash, attributes = {})
