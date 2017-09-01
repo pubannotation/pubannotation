@@ -651,9 +651,8 @@ class Project < ActiveRecord::Base
     docs_to_add = Doc.where(sourcedb:sourcedb, sourceid:ids_to_add)
 
     ids_to_sequence = sourceids - ids_in_pa
-    docs_sequenced, messages = ids_to_sequence.present? ?
-      Doc.sequence_docs(sourcedb, ids_to_sequence) :
-      [[], []]
+
+    docs_sequenced, messages = ids_to_sequence.present? ? Doc.sequence_docs(sourcedb, ids_to_sequence) : [[], []]
 
     docs_to_add += docs_sequenced
 

@@ -245,26 +245,26 @@ class Doc < ActiveRecord::Base
 
     result = sequencer.get_docs(sourceids)
 
-    docs =
-      if result[:docs].present?
-        result[:docs].map do |doc|
-          Doc.new(
-            {
-              section: doc[:section],
-              body: doc[:text],
-              sourcedb: doc[:sourcedb],
-              sourceid: doc[:sourceid],
-              serial: doc[:divid].to_i,
-              source: doc[:source]
-            }
-          )
-        end
-      else
-        []
+    docs = if result[:docs].present?
+      result[:docs].map do |doc|
+        Doc.new(
+          {
+            section: doc[:section],
+            body: doc[:text],
+            sourcedb: doc[:sourcedb],
+            sourceid: doc[:sourceid],
+            serial: doc[:divid].to_i,
+            source: doc[:source]
+          }
+        )
       end
+    else
+      []
+    end
 
     docs_sequenced = []
     messages = result[:messages]
+
     docs.each do |doc|
       if doc.save
         docs_sequenced << doc
