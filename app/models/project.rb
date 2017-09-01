@@ -659,7 +659,8 @@ class Project < ActiveRecord::Base
     docs_to_add.each{|doc| doc.projects << self}
     num_docs_existed = ids_in_pj.length
 
-    [docs_to_add, messages, num_docs_existed]
+    # return [num_added, num_sequenced, num_existed, messages]
+    [docs_to_add.length, docs_sequenced.length, ids_in_pj.length, messages]
   end
 
   # returns the divs added to the project

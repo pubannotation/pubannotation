@@ -23,6 +23,8 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
     @job.update_attribute(:num_items, jsonfiles.length)
     @job.update_attribute(:num_dones, 0)
 
+    @total_num_sequenced = 0
+
     sourcedb_sourceids_index = Hash.new{|hsh, key| hsh[key] = Set.new}
     annotation_transaction = []
     transaction_size = 0
@@ -65,6 +67,12 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
     end
 
     store(annotation_transaction, sourcedb_sourceids_index)
+
+    if @total_num_sequenced > 0
+      ActionController::Base.new.expire_fragment('sourcedb_counts')
+      ActionController::Base.new.expire_fragment('docs_count')
+    end
+
     @job.update_attribute(:num_dones, jsonfiles.length)
 
     File.unlink(filepath)
@@ -77,13 +85,17 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
     sourcedbs_changed = []
 
     sourcedb_sourceids_index.each do |sourcedb, sourceids|
-      docs, messages, num_docs_existed = project.add_docs(sourcedb, sourceids.to_a)
-      sourcedbs_changed << sourcedb if docs.present?
-      messages.each {|m| @job.messages << Message.create({body:m})} unless messages.nil?
+      num_added, num_sequenced, num_existed, messages = project.add_docs(sourcedb, sourceids.to_a)
+      sourcedbs_changed << sourcedb if num_added > 0
+      @total_num_sequenced += num_sequenced
+      messages.each do |message|
+        @job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
+      end
     end
 
     messages = project.store_annotations_collection(annotation_transaction, options)
     messages.each {|m| @job.messages << Message.create(m)} unless messages.nil?
+
     unless sourcedbs_changed.empty?
       ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
       ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
