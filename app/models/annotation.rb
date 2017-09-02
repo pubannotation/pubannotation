@@ -45,6 +45,9 @@ class Annotation < ActiveRecord::Base
 
     if annotations[:relations].present?
       raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
+
+      denotation_ids = annotations[:denotations].collect{|a| a[:id]}
+
       annotations[:relations].each{|a| a = a.symbolize_keys}
 
       ids = annotations[:relations].collect{|a| a[:id]}.compact
@@ -52,6 +55,7 @@ class Annotation < ActiveRecord::Base
 
       annotations[:relations].each do |a|
         raise ArgumentError, "a relation must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
+        raise ArgumentError, "'subj' and 'obj' of a relation must reference to a denotation: [#{a}]." unless (denotation_ids.include? a[:subj]) && (denotation_ids.include? a[:obj])
 
         unless a.has_key? :id
           idnum += 1 until !ids.include?('R' + idnum.to_s)
@@ -65,11 +69,14 @@ class Annotation < ActiveRecord::Base
       raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
       annotations[:modifications].each{|a| a = a.symbolize_keys}
 
+      dr_ids = annotations[:denotations].collect{|a| a[:id]} + annotations[:relations].collect{|a| a[:id]}
+
       ids = annotations[:modifications].collect{|a| a[:id]}.compact
       idnum = 1
 
       annotations[:modifications].each do |a|
         raise ArgumentError, "a modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
+        raise ArgumentError, "'obj' of a modification must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:obj]
 
         unless a.has_key? :id
           idnum += 1 until !ids.include?('M' + idnum.to_s)
