@@ -49,7 +49,7 @@
 
       <tr>
         <th>Took</th>
-        <td><%= time_duration(@job.begun_at, @job.ended_at) %></td>
+        <td><%= time_duration(@job.ended_at - @job.begun_at) %></td>
       </tr>
     <% else %>
       <tr>
@@ -58,15 +58,28 @@
       </tr>
 
       <% if @job.begun_at.present? %>
+        <% duration = Time.now.utc - @job.begun_at %>
         <tr>
           <th>Took, so far</th>
-          <td><%= time_duration(@job.begun_at, Time.now.utc) %></td>
+          <td><%= time_duration(duration) %></td>
         </tr>
         <tr>
           <th>Progress</th>
           <td><%= @job.num_dones %> / <%= @job.num_items %></td>
         </tr>
+
+        <% if @job.num_dones > 0 %>
+          <% pace = @job.num_dones / duration %>
+          <tr>
+            <th>Pace</th>
+            <td><%= pace.round(1) %> docs/second</td>
+          </tr>
+          <tr>
+            <th>will further take</th>
+            <td><%= time_duration((@job.num_items - @job.num_dones) / pace) %> (estimation)</td>
+          </tr>
         <% end %>
+      <% end %>
     <% end %>
     </table>
 

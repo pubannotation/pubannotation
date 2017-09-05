@@ -9,9 +9,8 @@ module JobsHelper
 		end
 	end
 
-	def time_duration(from, to)
-		t = to - from
-		mm, ss = t.divmod(60)
+	def time_duration(duration)
+		mm, ss = duration.divmod(60)
 		hh, mm = mm.divmod(60)
 		dd, hh = hh.divmod(24)
 		words  = ""
