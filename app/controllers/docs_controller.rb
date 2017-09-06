@@ -452,29 +452,31 @@ class DocsController < ApplicationController
   end
 
   def import
-    begin
+    message = begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
+      raise "The project (#{params[:project_id]}) does not exist, or you are not authorized to make a change to it.\n" unless project.present?
 
       source_project = Project.find_by_name(params["select_project"])
-      raise ArgumentError, "There is no such a project." if source_project.nil?
+      raise ArgumentError, "The project (#{params["select_project"]}) does not exist, or you are not authorized to access it.\n" unless source_project.present?
 
       raise ArgumentError, "You cannot import documents from itself." if source_project == project
 
-      docs = source_project.docs.select{|d| d.serial == 0}
-      docspecs = docs.collect{|d| {sourcedb: d.sourcedb, sourceid: d.sourceid}}
+      docids = source_project.docs.pluck(:id) - project.docs.pluck(:id)
+      docids_file = Tempfile.new("docids")
+      docids_file.puts docids
+      docids_file.close
 
       priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project), priority: priority, queue: :general
-      Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
-      message = "The task, 'import documents to the project', is created."
+      delayed_job = Delayed::Job.enqueue ImportDocsJob.new(docids_file.path, project), priority: priority, queue: :general
+      Job.create({name:'Import docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
 
+      "The task, 'import documents to the project', is created."
     rescue => e
-      message = e.message
+      e.message
     end
 
     respond_to do |format|
-      format.html {redirect_to project_path(project.name), notice: message}
+      format.html {redirect_to :back, notice: message}
       format.json {render json:{message:message}}
     end
   end
