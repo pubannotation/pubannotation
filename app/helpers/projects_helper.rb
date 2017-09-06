@@ -54,6 +54,15 @@ module ProjectsHelper
     badge.present? ? "<span class='badge' title='#{btitle}'>#{badge}</span>" : ""
   end
 
+  def icon_job(project)
+    if  project.has_running_jobs?
+      content_tag(:i, '', class: "fa fa-cog fa-spin fa-lg", "aria-hidden" => "true")
+    elsif  project.has_waiting_jobs?
+      content_tag(:i, '', class: "fa fa-cog fa-pulse fa-lg", "aria-hidden" => "true")
+    else
+      content_tag(:i, '', class: "fa fa-cog fa-lg", "aria-hidden" => "true")
+    end
+  end
 
   def license_display_helper(license)
     case license

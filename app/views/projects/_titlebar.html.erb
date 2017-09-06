@@ -4,10 +4,11 @@
 	<%= badge_type(@project).html_safe %>
 	<%= badge_accessibility(@project).html_safe %>
 	<% if @project.jobs.exists? && @project.editable?(current_user) -%>
-		<span class = 'tab-bar'>
-			<%= link_to_unless_current 'Jobs', project_jobs_path(@project.name), :class => 'tab inactive_tab' do
-		    	content_tag :span, 'Jobs', :class => 'tab active_tab'
-			end -%>
+		&nbsp;
+		<span>
+			<a href=<%= project_jobs_path(@project.name) %>>
+				<span class = ''><%= icon_job(@project) %></span>
+			</a>
 		</span>
 	<% end -%>
 	&nbsp;

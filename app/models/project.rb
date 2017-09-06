@@ -297,6 +297,20 @@ class Project < ActiveRecord::Base
     to_json(except: except_columns, methods: :maintainer)
   end
 
+  def has_jobs?
+    jobs.exists?
+  end
+
+  def has_running_jobs?
+    jobs.each{|job| return true if job.running?}
+    return false
+  end
+
+  def has_waiting_jobs?
+    jobs.each{|job| return true if job.waiting?}
+    return false
+  end
+
   def has_doc?
     ProjectDoc.exists?(project_id: id)
   end
