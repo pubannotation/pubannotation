@@ -1,6 +1,8 @@
 module TextAlignment
 
   TextAlignment::MAPPINGS = [
+    ["©", "(c)"],   #U+00A9 (Copyright Sign)
+
     ["α", "alpha"],   #U+03B1 (greek small letter alpha)
     ["β", "beta"],    #U+03B2 (greek small letter beta)
     ["γ", "gamma"],   #U+03B3 (greek small letter gamma)
