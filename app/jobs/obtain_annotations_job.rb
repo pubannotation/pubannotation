@@ -17,8 +17,12 @@ class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
         project.obtain_annotations(docid_col, annotator, options)
         @job.update_attribute(:num_dones, @job.num_dones + docid_col.length)
       rescue RestClient::Exceptions::Timeout => e
-        @job.messages << Message.create({body: "Job execution stopped: #{e.message}"})
-        break
+        @job.messages << if batch_num == 1
+          doc = Doc.find(docid_col.first)
+          Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain: #{e.message}"})
+        else
+          Message.create({body: "Could not obtain annotations for #{docid_col.length} docs: #{e.message}"})
+        end
       rescue RestClient::ExceptionWithResponse => e
         if e.response.code == 303
           retry_after = e.response.headers[:retry_after].to_i
