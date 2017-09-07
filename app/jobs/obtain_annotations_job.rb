@@ -46,8 +46,12 @@ class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
           @job.messages << Message.create({body: "Message from the annotator: #{e.message}"})
         end
       rescue => e
-				@job.messages << Message.create({body: e.message})
-        break
+        @job.messages << if batch_num == 1
+          doc = Doc.find(docid_col.first)
+          Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain: #{e.message}"})
+        else
+          Message.create({body: "Could not obtain annotations for #{docid_col.length} docs: #{e.message}"})
+        end
       end
 
       process_retrieval_queue(retrieval_queue) unless retrieval_queue.empty?
