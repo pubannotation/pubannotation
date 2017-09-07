@@ -362,7 +362,7 @@ class ProjectsController < ApplicationController
       docs_common = docs & docs_ref
 
       raise ArgumentError, "There is no shared document with the project, #{project_ref.name}" if docs_common.length == 0
-      raise ArgumentError, "For a performance reason, current implementation limits this feature to work for less than 3,000 documents. (#{docs_common.length})" if docs_common.length > 3000
+      raise ArgumentError, "For a performance reason, current implementation limits this feature to work for less than 5,000 documents. (#{docs_common.length})" if docs_common.length > 5000
 
       # project.create_comparison(project_ref)
 
