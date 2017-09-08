@@ -404,14 +404,14 @@ class AnnotationsController < ApplicationController
             num_docs - docids.length
           end
 
-        message = "#{num_skipped} documents were skipped due to existing annotations." if num_skipped > 0
+        message = "#{num_skipped} documents were skipped due to existing annotations.\n" if num_skipped > 0
 
         # To prevent the downstream process from checking for the skip mode again
         # options[:mode] == 'replace'
       end
 
       message += if docids.length == 1
-        result = begin
+        result, messages = begin
           project.obtain_annotations(docids, annotator, options)
         rescue RestClient::ExceptionWithResponse => e
           if e.response.code == 303
@@ -435,23 +435,26 @@ class AnnotationsController < ApplicationController
           raise RuntimeError, e.message
         end
 
+        m = messages.empty? ? "" : messages.map{|m| m[:body]}.join("\n") + "\n"
+
         if result.present?
           if result.class == Array
             r = result.first
-            m = ""
             m += "#{r[:denotations].length} denotation(s)" if r.has_key?(:denotations) && r[:denotations].length > 0
             m += " / #{r[:relations].length} relation(s)" if r.has_key?(:relations) && r[:relations].length > 0
             m += " / #{r[:modifications].length} modification(s)" if r.has_key?(:modifications) && r[:modifications].length > 0
             m += "No annotation" if m.empty?
             m += " was obtained."
           elsif result.class == Hash && result[:message].present?
-            result[:message]
+            m += result[:message]
           else
-            "Unexpected result."
+            m += "Unexpected result."
           end
         else
-          "Empty result was obtained."
+          m += "Empty result was obtained."
         end
+
+        m
       else # docids.length > 1 || docids == []
         # job = ObtainAnnotationsJob.new(project, docids, annotator, options)
         # job.perform()

@@ -1002,9 +1002,19 @@ class Project < ActiveRecord::Base
   # To obtain annotations from an annotator and to save them in the project
   def obtain_annotations(docids, annotator, options = nil)
     options ||= {}
+    messages = []
 
     docs = docids.map{|docid| Doc.find(docid)}
-    docs.each{|doc| doc.set_ascii_body} if options[:encoding] == 'ascii'
+    if options[:encoding] == 'ascii'
+      docs.each do |doc|
+        begin
+          doc.set_ascii_body
+        rescue => e
+          # This message may not be captured due to exceptions
+          messages << {sourcedb:doc.sourcedb, sourceid:doc.sourceid, divid:doc.serial, body:"The document is processed without changing to ASCII: #{e.message}"}
+        end
+      end
+    end
 
     method, url, params, payload = prepare_request(docs, annotator, options)
 
@@ -1022,7 +1032,7 @@ class Project < ActiveRecord::Base
     end
 
     store_annotations_collection(annotations_col, options)
-    annotations_col
+    [annotations_col, messages]
   end
 
   def prepare_request(docs, annotator, options)

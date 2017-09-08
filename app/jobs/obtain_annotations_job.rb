@@ -14,7 +14,8 @@ class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
 
     docids.each_slice(batch_num) do |docid_col|
       begin
-        project.obtain_annotations(docid_col, annotator, options)
+        r, messages = project.obtain_annotations(docid_col, annotator, options)
+        messages.each{|m| @job.messages << (m.class == Hash ? Message.create(m) : Message.create({body: m}))}
         @job.update_attribute(:num_dones, @job.num_dones + docid_col.length)
       rescue RestClient::Exceptions::Timeout => e
         @job.messages << if batch_num == 1
