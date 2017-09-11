@@ -438,7 +438,6 @@ class AnnotationsController < ApplicationController
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "Could not find the project: #{params[:project_id]}." unless project.present?
-
       raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
       annotator = if params[:annotator].present?
@@ -457,6 +456,7 @@ class AnnotationsController < ApplicationController
       else
         [] # means all the docs in the project
       end
+      sourceids.map{|id| id.chomp!}
 
       raise ArgumentError, "Source DB is not specified." if sourceids.present? && !params['sourcedb'].present?
 
@@ -469,7 +469,7 @@ class AnnotationsController < ApplicationController
 
       docids = sourceids.inject([]) do |col, sourceid|
         ids = project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id)
-        raise ArgumentError, "#{sourcedb}:#{sourceid} does not exist in this project." if ids.blank?
+        raise ArgumentError, "#{sourcedb}:#{sourceid} does not exist in this project." if ids.empty?
         col += ids
       end
 
