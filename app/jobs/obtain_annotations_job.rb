@@ -1,8 +1,10 @@
-class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
+class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :options)
 	include StateManagement
 
 	def perform
-		@job.update_attribute(:num_items, docids.length)
+    count = %x{wc -l #{filepath}}.split.first.to_i
+
+    @job.update_attribute(:num_items, count)
     @job.update_attribute(:num_dones, 0)
 
     # for asynchronous annotation
@@ -12,7 +14,8 @@ class ObtainAnnotationsJob < Struct.new(:project, :docids, :annotator, :options)
     batch_num = annotator[:batch_num]
     batch_num = 1 if batch_num.nil? || batch_num == 0
 
-    docids.each_slice(batch_num) do |docid_col|
+    File.foreach(filepath).each_slice(batch_num) do |docid_col|
+      docid_col.each{|d| d.chomp!.strip!}
       begin
         r, messages = project.obtain_annotations(docid_col, annotator, options)
         messages.each{|m| @job.messages << (m.class == Hash ? Message.create(m) : Message.create({body: m}))}

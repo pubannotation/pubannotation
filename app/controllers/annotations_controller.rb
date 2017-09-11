@@ -358,6 +358,10 @@ class AnnotationsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "Could not find the project: #{params[:project_id]}." unless project.present?
 
+      raise ArgumentError, "Source ID is not specified" unless params[:sourceid].present?
+      raise ArgumentError, "Source DB is not specified" unless params[:sourcedb].present?
+
+      # get the annotator
       annotator = if params[:annotator].present?
         Annotator.find(params[:annotator])
       elsif params[:url].present?
@@ -366,23 +370,11 @@ class AnnotationsController < ApplicationController
         raise ArgumentError, "Annotator URL is not specified"
       end.as_json.symbolize_keys
 
-      docids = if params[:sourceid].present?
+      docid = if params[:sourceid].present?
         serial = params[:divid].present? ? params[:divid].to_i : 0
-        docid = project.docs.where(sourcedb: params[:sourcedb], sourceid: params[:sourceid], serial:serial).pluck(:id)
-        raise ArgumentError, "#{params[:sourcedb]}:#{params[:sourceid]} does not exist in this project." if docid.blank?
-        docid
-      elsif params[:ids].present? && params[:sourcedb].present?
-        docspecs = params[:ids].split(/[ ,"':|\t\n\r]+/).collect{|id| id.strip}.collect{|id| {sourcedb:params[:sourcedb], sourceid:id}}
-        docspecs.each{|d| d[:sourceid].sub!(/^(PMC|pmc)/, '')}
-        docspecs.uniq!
-        docspecs.inject([]) do |col, docspec|
-          ids = project.docs.where(sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid]).pluck(:id)
-          raise ArgumentError, "#{docspec[:sourcedb]}:#{docspec[:sourceid]} does not exist in this project." if ids.blank?
-          col += ids
-        end
-      else
-        # project.docs.pluck(:id)
-        [] # means all the documents in the project
+        docids = project.docs.where(sourcedb: params[:sourcedb], sourceid: params[:sourceid], serial:serial).pluck(:id)
+        raise ArgumentError, "#{params[:sourcedb]}:#{params[:sourceid]}:#{serial} does not exist in this project." if docids.blank?
+        docids.first
       end
 
       options = {}
@@ -390,102 +382,163 @@ class AnnotationsController < ApplicationController
       options[:encoding] = params[:encoding] if params[:encoding].present?
       options[:prefix] = annotator[:name]
 
+      if options[:mode] == 'skip'
+        if ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0
+          raise "There are existing annotations. Obtaining annotation is skipped."
+        end
+      end
 
-      message = ""
+      annotations_col, messages = begin
+        project.obtain_annotations([docid], annotator, options)
+      rescue RestClient::ExceptionWithResponse => e
+        if e.response.code == 303
+          options[:retry_after] = e.response.headers[:retry_after].to_i
+          options[:try_times] = 3
+
+          # job = RetrieveAnnotationsJob.new(project, e.response.headers[:location], options)
+          # job.perform()
+          priority = project.jobs.unfinished.count
+          delayed_job = Delayed::Job.enqueue RetrieveAnnotationsJob.new(project, e.response.headers[:location], options), priority: priority, queue: :general, run_at: options[:retry_after].seconds.from_now
+          Job.create({name:"Retrieve annotations", project_id:project.id, delayed_job_id:delayed_job.id})
+          {message: "Annotation request was sent. The result will be retrieved by a background job."}
+        elsif e.response.code == 503
+          raise RuntimeError, "Service unavailable"
+        elsif e.response.code == 404
+          raise RuntimeError, "The annotation server does not know the path."
+        else
+          raise RuntimeError, "Received the following message from the server: #{e.message} "
+        end
+      rescue => e
+        raise RuntimeError, e.message
+      end
+
+      annotations_col.delete_if{|e| e.empty?}
+      if annotations_col.empty?
+        messages << {body: "No annotation was obtained."}
+      else
+        store_annotations_collection(annotations_col, options)
+        messages << {body: "Annotations to #{annotations_col.length} doc(s) were obtained."}
+      end
+
+      message = messages.empty? ? "" : messages.map{|m| m[:body]}.join("\n") + "\n"
+
+      respond_to do |format|
+        format.html {redirect_to :back, notice: message}
+        format.json {}
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
+        format.json {render status: :service_unavailable}
+      end
+    end
+  end
+
+  def obtain_batch
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise "Could not find the project: #{params[:project_id]}." unless project.present?
+
+      raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+
+      annotator = if params[:annotator].present?
+        Annotator.find(params[:annotator])
+      elsif params[:url].present?
+        Annotator.new({name:params[:prefix], url:params[:url], method:params[:method], batch_num: 0})
+      else
+        raise ArgumentError, "Annotator URL is not specified"
+      end.as_json.symbolize_keys
+
+      sourceids = if params[:upfile].present?
+        File.readlines(params[:upfile].path)
+      elsif params[:ids].present?
+        raise ArgumentError, "Source DB is not specified." unless params['sourcedb'].present?
+        params[:ids].split(/[ ,"':|\t\n\r]+/).map{|id| id.strip.sub(/^(PMC|pmc)/, '')}.uniq
+      else
+        [] # means all the docs in the project
+      end
+
+      raise ArgumentError, "Source DB is not specified." if sourceids.present? && !params['sourcedb'].present?
+
+      options = {}
+      options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
+      options[:encoding] = params[:encoding] if params[:encoding].present?
+      options[:prefix] = annotator[:name]
+
+      sourcedb = params['sourcedb']
+
+      docids = sourceids.inject([]) do |col, sourceid|
+        ids = project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id)
+        raise ArgumentError, "#{sourcedb}:#{sourceid} does not exist in this project." if ids.blank?
+        col += ids
+      end
+
+      messages = []
 
       if options[:mode] == 'skip'
-        num_skipped =
-          if docids.empty?
-            ProjectDoc.where("project_id=#{project.id} and denotations_num > 0").count
-          else
-            num_docs = docids.length
-            docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
-            raise RuntimeError, 'Obtaining annotation was skipped due to existing annotations' if docids.empty?
-            num_docs - docids.length
+        num_skipped = if docids.empty?
+          if ProjectDoc.where(project_id:project.id, denotations_num:0).count == 0
+            raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
           end
+          ProjectDoc.where("project_id=#{project.id} and denotations_num > 0").count
+        else
+          num_docs = docids.length
+          docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
+          raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
+          num_docs - docids.length
+        end
 
-        message = "#{num_skipped} documents were skipped due to existing annotations.\n" if num_skipped > 0
-
-        # To prevent the downstream process from checking for the skip mode again
-        # options[:mode] == 'replace'
+        messages << "#{num_skipped} documents were skipped due to existing annotations." if num_skipped > 0
       end
 
-      message += if docids.length == 1
-        result, messages = begin
-          project.obtain_annotations(docids, annotator, options)
-        rescue RestClient::ExceptionWithResponse => e
-          if e.response.code == 303
-            options[:retry_after] = e.response.headers[:retry_after].to_i
-            options[:try_times] = 3
-
-            # job = RetrieveAnnotationsJob.new(project, e.response.headers[:location], options)
-            # job.perform()
-            priority = project.jobs.unfinished.count
-            delayed_job = Delayed::Job.enqueue RetrieveAnnotationsJob.new(project, e.response.headers[:location], options), priority: priority, queue: :general, run_at: options[:retry_after].seconds.from_now
-            Job.create({name:"Retrieve annotations", project_id:project.id, delayed_job_id:delayed_job.id})
-            {message: "Annotation request was sent. The result will be retrieved by a background job."}
-          elsif e.response.code == 503
-            raise RuntimeError, "Service unavailable"
-          elsif e.response.code == 404
-            raise RuntimeError, "The annotation server does not know the path."
-          else
-            raise RuntimeError, "Received the following message from the server: #{e.message} "
-          end
-        rescue => e
-          raise RuntimeError, e.message
-        end
-
-        m = messages.empty? ? "" : messages.map{|m| m[:body]}.join("\n") + "\n"
-
-        if result.present?
-          if result.class == Array
-            r = result.first
-            m += "#{r[:denotations].length} denotation(s)" if r.has_key?(:denotations) && r[:denotations].length > 0
-            m += " / #{r[:relations].length} relation(s)" if r.has_key?(:relations) && r[:relations].length > 0
-            m += " / #{r[:modifications].length} modification(s)" if r.has_key?(:modifications) && r[:modifications].length > 0
-            m += "No annotation" if m.empty?
-            m += " was obtained."
-          elsif result.class == Hash && result[:message].present?
-            m += result[:message]
-          else
-            m += "Unexpected result."
-          end
-        else
-          m += "Empty result was obtained."
-        end
-
-        m
-      else # docids.length > 1 || docids == []
-        # job = ObtainAnnotationsJob.new(project, docids, annotator, options)
-        # job.perform()
-
+      num_per_job = 100000
+      docids_filepaths = begin
         if docids.empty?
-          num = (options[:mode] == 'skip') ?
-            ProjectDoc.where(project_id: project.id, denotations_num: 0).count :
-            ProjectDoc.where(project_id: project.id).count
-          num_per_job = 100000
-          n = num / num_per_job
-          (0 .. n).each do |i|
-            docids = (options[:mode] == 'skip') ?
-              ProjectDoc.where(project_id: project.id, denotations_num: 0).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id) :
-              ProjectDoc.where(project_id: project.id).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
-
-            # delayed_job = ObtainAnnotationsJob.new(project, docids, annotator, options)
-            # delayed_job.perform()
-
-            priority = project.jobs.unfinished.count
-            delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids, annotator, options), priority: priority, queue: :upload
-            job_name = (n > 0) ? "Obtain annotations (#{i}/n)" : "Obtain annotations"
-            Job.create({name:job_name, project_id:project.id, delayed_job_id:delayed_job.id})
+          if options[:mode] == 'skip'
+            num = ProjectDoc.where(project_id: project.id, denotations_num: 0).count
+            n = num / num_per_job
+            (0 .. n).collect do |i|
+              docids = ProjectDoc.where(project_id: project.id, denotations_num: 0).limit(num_per_job).offset(num_per_job * i + 1).pluck(:doc_id)
+              docids_file = Tempfile.new("pubann-docds-for-obtain-annotations-#{i+1}-of-#{n}")
+              docids_file.puts docids
+              docids_file.close
+              docids_file.path
+            end
+          else
+            num = ProjectDoc.where(project_id: project.id).count
+            n = num / num_per_job
+            (0 .. n).collect do |i|
+              docids = ProjectDoc.where(project_id: project.id).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
+              docids_file = Tempfile.new("pubann-docds-for-obtain-annotations-#{i+1}-of-#{n}")
+              docids_file.puts docids
+              docids_file.close
+              docids_file.path
+            end
           end
-          (n > 0) ? "Multiple tasks of 'Obtain annotations' were created." : "The task 'Obtain annotations was created."
         else
-          priority = project.jobs.unfinished.count
-          delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids, annotator, options), priority: priority, queue: :upload
-          Job.create({name:"Obtain annotations", project_id:project.id, delayed_job_id:delayed_job.id})
-          "The task 'Obtain annotations' was created."
+          num = docids.length
+          n = num / num_per_job
+          col = []
+          docids.each_slice(num_per_job).with_index do |slice, i|
+            docids_file = Tempfile.new("pubann-docds-for-obtain-annotations-#{i+1}-of-#{n}")
+            docids_file.puts slice
+            docids_file.close
+            col << docids_file.path
+          end
+          col
         end
       end
+
+      num_jobs = docids_filepaths.length
+      docids_filepaths.each_with_index do |docids_filepath, i|
+        priority = project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options), priority: priority, queue: :upload
+        job_name = (num_jobs > 1) ? "Obtain annotations (#{i+1}/#{num_jobs})" : "Obtain annotations"
+        Job.create({name:job_name, project_id:project.id, delayed_job_id:delayed_job.id})
+      end
+      messages << ((num_jobs > 1) ? "#{num_jobs} tasks of 'Obtain annotations' were created." : "The task 'Obtain annotations was created.")
+
+      message = messages.join("\n")
 
       respond_to do |format|
         format.html {redirect_to :back, notice: message}
