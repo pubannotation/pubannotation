@@ -462,15 +462,25 @@ class DocsController < ApplicationController
       raise ArgumentError, "You cannot import documents from itself." if source_project == project
 
       docids = source_project.docs.pluck(:id) - project.docs.pluck(:id)
-      docids_file = Tempfile.new("docids")
-      docids_file.puts docids
-      docids_file.close
 
-      priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue ImportDocsJob.new(docids_file.path, project), priority: priority, queue: :general
-      Job.create({name:'Import docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
+      if docids.empty?
+        "Importing docs was skipped because all the docs already existed in the project."
+      else
+        num_source_docs = source_project.docs.count
+        num_skip = num_source_docs - docids.length
 
-      "The task, 'import documents to the project', is created."
+        docids_file = Tempfile.new("docids")
+        docids_file.puts docids
+        docids_file.close
+
+        priority = project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue ImportDocsJob.new(docids_file.path, project), priority: priority, queue: :general
+        Job.create({name:'Import docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
+
+        m = ""
+        m += "#{num_skip} docs were skipped due to duplication." if num_skip > 0
+        m += "The task, 'import documents to the project', is created."
+      end
     rescue => e
       e.message
     end
