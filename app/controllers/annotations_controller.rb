@@ -450,7 +450,6 @@ class AnnotationsController < ApplicationController
       sourceids = if params[:upfile].present?
         File.readlines(params[:upfile].path)
       elsif params[:ids].present?
-        raise ArgumentError, "Source DB is not specified." unless params['sourcedb'].present?
         params[:ids].split(/[ ,"':|\t\n\r]+/).map{|id| id.strip.sub(/^(PMC|pmc)/, '')}.uniq
       else
         [] # means all the docs in the project
@@ -498,20 +497,18 @@ class AnnotationsController < ApplicationController
             n = num / num_per_job
             (0 .. n).collect do |i|
               docids = ProjectDoc.where(project_id: project.id, denotations_num: 0).limit(num_per_job).offset(num_per_job * i + 1).pluck(:doc_id)
-              docids_file = Tempfile.new("pubann-docds-for-obtain-annotations-#{i+1}-of-#{n}")
-              docids_file.puts docids
-              docids_file.close
-              docids_file.path
+              filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
+              File.open(filepath, "w"){|f| f.puts(docids)}
+              filepath
             end
           else
             num = ProjectDoc.where(project_id: project.id).count
             n = num / num_per_job
             (0 .. n).collect do |i|
               docids = ProjectDoc.where(project_id: project.id).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
-              docids_file = Tempfile.new("pubann-docds-for-obtain-annotations-#{i+1}-of-#{n}")
-              docids_file.puts docids
-              docids_file.close
-              docids_file.path
+              filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
+              File.open(filepath, "w"){|f| f.puts(docids)}
+              filepath
             end
           end
         else
@@ -519,10 +516,9 @@ class AnnotationsController < ApplicationController
           n = num / num_per_job
           col = []
           docids.each_slice(num_per_job).with_index do |slice, i|
-            docids_file = Tempfile.new("pubann-docds-for-obtain-annotations-#{i+1}-of-#{n}")
-            docids_file.puts slice
-            docids_file.close
-            col << docids_file.path
+            filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
+            File.open(filepath, "w"){|f| f.puts(docids)}
+            col << filepath
           end
           col
         end

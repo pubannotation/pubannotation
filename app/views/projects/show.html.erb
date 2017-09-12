@@ -127,7 +127,7 @@
 			<% if @project.docs.count < Rails.application.config.project_indexable_max_docs || current_user.root? %>
 				<tr>
 					<th><%= t('views.shared.index') %></th>
-					<td><%= render partial: 'index_annotations' -%></td>
+					<td><%= link_to t('views.docs.rdfize_annotations'), rdfize_annotations_project_path(@project.name), class: 'button long_button' -%></td>
 				</tr>
 			<% end %>
 

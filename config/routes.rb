@@ -123,11 +123,12 @@ Pubann::Application.routes.draw do
     
     member do
       get :search
-      get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
+      post 'store_annotation_rdf' => 'projects#store_annotation_rdf'
       get 'store_span_rdf' => 'projects#store_span_rdf'
       get 'clean' => 'projects#clean'
       get 'add_docs' => 'projects#add_docs'
       get 'obtain_annotations' => 'projects#obtain_annotations'
+      get 'rdfize_annotations' => 'projects#rdfize_annotations'
       get 'upload_annotations' => 'projects#upload_annotations'
       get 'delete_annotations' => 'projects#delete_annotations'
       get 'autocomplete_sourcedb' => 'projects#autocomplete_sourcedb'

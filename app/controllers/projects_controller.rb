@@ -140,6 +140,12 @@ class ProjectsController < ApplicationController
     @sourcedbs = ["PubMed", "PMC"]
   end
 
+  def rdfize_annotations
+    @project = Project.editable(current_user).find_by_name(params[:id])
+    # @sourcedbs = ["PubMed", "PMC", "FirstAuthor"]
+    @sourcedbs = ["PubMed", "PMC"]
+  end
+
   def upload_annotations
     @project = Project.editable(current_user).find_by_name(params[:id])
   end
@@ -151,15 +157,42 @@ class ProjectsController < ApplicationController
   def store_annotation_rdf
     begin
       project = Project.editable(current_user).find_by_name(params[:id])
-      raise ArgumentError, "There is no such project." unless project.present?
+      raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
+      raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+
+      sourceids = if params[:upfile].present?
+        File.readlines(params[:upfile].path)
+      elsif params[:ids].present?
+        params[:ids].split(/[ ,"':|\t\n\r]+/).map{|id| id.strip.sub(/^(PMC|pmc)/, '')}.uniq
+      else
+        [] # means all the docs in the project
+      end
+      sourceids.map{|id| id.chomp!}
+
+      raise ArgumentError, "Source DB is not specified." if sourceids.present? && !params['sourcedb'].present?
+
+      sourcedb = params['sourcedb']
+
+      docids = if sourceids.empty?
+        ProjectDoc.where(project_id: project.id).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
+      else
+        sourceids.inject([]) do |col, sourceid|
+          ids = project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id)
+          raise ArgumentError, "#{sourcedb}:#{sourceid} does not exist in this project." if ids.empty?
+          col += ids
+        end
+      end
+
+      filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
+      File.open(filepath, "w"){|f| f.puts(docids)}
+      filepath
 
       # job = StoreRdfizedAnnotationsJob.new(project)
       # job.perform()
 
-      delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project), queue: :general
+      delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project, filepath), queue: :general
       Job.create({name:"Store RDFized annotations - #{project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
       flash[:notice] = "The task, 'Store RDFized annotations - #{project.name}', is created."
-
     rescue => e
       flash[:notice] = e.message
     end

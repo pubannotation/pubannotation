@@ -1,12 +1,15 @@
 require 'stardog'
 
-class StoreRdfizedAnnotationsJob < Struct.new(:project, :rdfizer_annotations, :rdfizer_spans)
+class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 	include StateManagement
 	include Stardog
 
 	def perform
-		@job.update_attribute(:num_items, project.docs.count)
+		count = %x{wc -l #{filepath}}.split.first.to_i
+
+		@job.update_attribute(:num_items, count)
 		@job.update_attribute(:num_dones, 0)
+
 		sd = stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
 		db = Rails.application.config.ep_database
     graph_uri_project = project.graph_uri
@@ -14,7 +17,9 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :rdfizer_annotations, :r
 
     sd.clear_db(db, graph_uri_project)
 
-    project.docs.each_with_index do |doc, i|
+		File.foreach(filepath).with_index do |docid, i|
+			docid.chomp!.strip!
+			doc = Doc.find(docid)
     	begin
     		num_denotations = doc.denotations.where("denotations.project_id = ?", project.id).count
 
@@ -44,6 +49,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :rdfizer_annotations, :r
     end
 
     update_time(sd, db, graph_uri_project)
+
+    unlink(filepath)
 	end
 
 	private
