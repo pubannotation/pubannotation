@@ -416,7 +416,6 @@ class AnnotationsController < ApplicationController
       if annotations_col.empty?
         messages << {body: "No annotation was obtained."}
       else
-        store_annotations_collection(annotations_col, options)
         messages << {body: "Annotations to #{annotations_col.length} doc(s) were obtained."}
       end
 
