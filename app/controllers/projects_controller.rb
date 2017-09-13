@@ -174,7 +174,7 @@ class ProjectsController < ApplicationController
       sourcedb = params['sourcedb']
 
       docids = if sourceids.empty?
-        ProjectDoc.where(project_id: project.id).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
+        ProjectDoc.where(project_id: project.id).pluck(:doc_id)
       else
         sourceids.inject([]) do |col, sourceid|
           ids = project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id)
@@ -183,7 +183,7 @@ class ProjectsController < ApplicationController
         end
       end
 
-      filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
+      filepath = File.join('tmp', "obtain-#{project.name}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
       File.open(filepath, "w"){|f| f.puts(docids)}
       filepath
 
