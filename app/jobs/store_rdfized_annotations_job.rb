@@ -50,7 +50,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 
     update_time(sd, db, graph_uri_project)
 
-    unlink(filepath)
+    File.unlink(filepath)
 	end
 
 	private
