@@ -487,6 +487,7 @@ class AnnotationsController < ApplicationController
         end
 
         messages << "#{num_skipped} documents were skipped due to existing annotations." if num_skipped > 0
+        options.delete(:mode)
       end
 
       num_per_job = 100000
