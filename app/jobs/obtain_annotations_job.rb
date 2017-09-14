@@ -50,11 +50,9 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
           @job.messages << Message.create({body: "Message from the annotator: #{e.message}"})
         end
       rescue => e
-        @job.messages << if batch_num == 1
-          doc = Doc.find(docid_col.first)
+        @job.messages += docid_col.map do |docid|
+          doc = Doc.find(docid)
           Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain: #{e.message}"})
-        else
-          Message.create({body: "Could not obtain annotations for #{docid_col.length} docs: #{e.message}"})
         end
       end
 
@@ -77,7 +75,11 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 
         annotations_col.each_with_index do |annotations, i|
           raise RuntimeError, "Invalid annotation JSON object." unless annotations.respond_to?(:has_key?)
-          Annotation.normalize!(annotations, options[:prefix])
+          begin
+            Annotation.normalize!(annotations, options[:prefix])
+          rescue => e
+            raise "Error during normalization #{e.message}"
+          end
         end
 
         messages = project.store_annotations_collection(annotations_col, options)
@@ -98,7 +100,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
           @job.messages << Message.create({body: e.message})
         end
       rescue => e
-        @job.messages << Message.create({body: e.message})
+        @job.messages << Message.create({body: "Error: #{e.message} : #{annotations_col}"})
       end
     end
 
