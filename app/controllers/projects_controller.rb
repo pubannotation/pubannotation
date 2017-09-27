@@ -187,7 +187,7 @@ class ProjectsController < ApplicationController
       File.open(filepath, "w"){|f| f.puts(docids)}
       filepath
 
-      # job = StoreRdfizedAnnotationsJob.new(project)
+      # job = StoreRdfizedAnnotationsJob.new(project, filepath)
       # job.perform()
 
       delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project, filepath), queue: :general
