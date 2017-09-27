@@ -433,7 +433,22 @@ class Doc < ActiveRecord::Base
   def hdenotations(project = nil, span = nil)
     self.get_denotations(project, span).map{|d| d.get_hash}
   end
-  
+
+  def hdenotations_all
+    annotations = {}
+    annotations[:denotations] = hdenotations
+    annotations[:target] = if has_divs?
+      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(sourcedb, sourceid, serial, :only_path => false)
+    else
+      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, :only_path => false)
+    end
+    annotations[:sourcedb] = sourcedb
+    annotations[:sourceid] = sourceid
+    annotations[:divid] = serial if has_divs?
+    annotations[:text] = body
+    annotations
+  end
+
   # the first argument, project, may be a project or an array of projects.
   def denotations_in_tracks(project = nil, span = nil)
     _projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
