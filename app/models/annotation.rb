@@ -200,7 +200,7 @@ class Annotation < ActiveRecord::Base
     original_text = annotations[:text]
     annotations[:text] = doc.original_body.nil? ? doc.body : doc.original_body
 
-    if annotations[:denotations].present?
+    if annotations[:denotations].present? && original_text != annotations[:text]
       num = annotations[:denotations].length
       annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
       raise "Alignment failed. Text may be too much different." if annotations[:denotations].length < num
