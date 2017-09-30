@@ -31,9 +31,9 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
         if e.response.code == 303
           retry_after = e.response.headers[:retry_after].to_i
           if @skip_interval.nil?
-            @skip_interval = retry_after / 10
-            @skip_interval = 2 if @skip_interval < 2
-            @skip_interval = 10 if @skip_interval > 10
+            @skip_interval = retry_after.nil? ? 1 : retry_after / 10
+            @skip_interval = 1 if @skip_interval < 1
+            @skip_interval = 5 if @skip_interval > 5
           end
           retrieval_queue << {url:e.response.headers[:location], try_at: retry_after.seconds.from_now, retry_after: retry_after}
         elsif e.response.code == 503 # Service Unavailable
@@ -42,7 +42,6 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
             break
           end
           process_retrieval_queue(retrieval_queue)
-          sleep(@skip_interval)
           retry
         elsif e.response.code == 404
           @job.messages << Message.create({body: "The annotator does not know the path."})
@@ -89,8 +88,8 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
         r[:delme] = true
       rescue RestClient::ExceptionWithResponse => e
         if e.response.code == 404 # Not Found
-          if r[:try_at] + ([r[:retry_after], @skip_interval].max * 9) < Time.now
-            @job.messages << Message.create({body: "Retrieval of annotation failed after trials for 10 times longer than estimation."})
+          if (r[:try_at]) + 3600 < Time.now
+            @job.messages << Message.create({body: "Retrieval of annotation failed after trials for 1 hour."})
             r[:delme] = true
           end
         elsif e.response.code == 410 # Permanently removed
