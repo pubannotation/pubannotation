@@ -1,0 +1,14 @@
+<h1>
+New query
+<% if @project %>
+for <%= @project.name %>
+<% end %>
+</h1>
+
+<%= render 'form' %>
+
+<% if @project %>
+	<%= link_to "List", project_queries_path(@project.name), class: 'button' %>
+<% else %>
+	<%= link_to "List", queries_path, class: 'button' %>
+<% end %>

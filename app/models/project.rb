@@ -10,6 +10,7 @@ class Project < ActiveRecord::Base
   belongs_to :user
   has_many :project_docs, dependent: :destroy
   has_many :docs, through: :project_docs
+  has_many :queries
 
   attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
                   :sample, :rdfwriter, :xmlwriter, :bionlpwriter,

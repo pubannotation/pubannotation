@@ -1,0 +1,118 @@
+<fieldset class="main-panel">
+	<legend>SPARQL</legend>
+
+	<%= render "namespaces" %>
+	<div id="template"></div>
+	<div id="sparql_tmp" style="display:none"></div>
+	<form id="queryform" name="sparql" method="get">
+		<div style="margin-top:5px">
+			<% default_query = <<~HEREDOC
+					# show the statistics of the denoted entities
+					SELECT ?c (COUNT(?c) as ?count)
+					WHERE {
+						GRAPH prj:#{@project.name} {
+							?o tao:denoted_by ?s ; a ?c.
+							FILTER (?c != tao:Context_entity)
+						}
+					}
+					GROUP BY ?c
+					ORDER BY DESC(?count)
+				HEREDOC
+			%>
+			<textarea id="query" name="query" maxlength="1200"><%= params[:query] || default_query -%></textarea>
+		</div>
+
+		<ul>
+			<li>
+				Use a pre-defined template:
+				<% query_options = Query.where(project_id:@project).map{|q| [q.title, q.id]} %>
+				<%= select_tag "template-select", options_for_select([[(query_options.empty? ? "No template" : "Choose one"), nil]] + query_options) %>
+				<% if @project %>
+					<%= link_to "List", project_queries_path(@project.name), class: 'button' %>
+				<% else %>
+					<%= link_to "List", queries_path, class: 'button' %>
+				<% end %>
+			</li>
+<!--
+			<li>
+				Show results in
+				<%= radio_button_tag(:show_mode, :raw, params[:show_mode].nil? || params[:show_mode] == 'raw') %>
+				<%= label_tag(:show_mode_raw, 'raw') %>
+				or
+				<%= radio_button_tag(:show_mode, :textae, params[:show_mode] == 'textae') %>
+				<%= label_tag(:show_mode_textae, 'TextAE') %>
+			</li>
+-->
+		</ul>
+		<input type="submit" style="height: 20px; width: 60px" />
+	</form>
+	<% if @comment.present? %>
+		<div id="comment">
+			<%= @comment.html_safe %>
+		</div>
+	<% end %>
+</fieldset>
+
+<!-- codemirror scripts -->
+<script type="text/javascript">
+	var sparqlMirror = CodeMirror.fromTextArea(document.getElementById("query"), {
+		lineNumbers: true,
+		mode: "sparql"
+	});
+
+	$('#template-select').change(function() {
+		var query_id = $('#template-select').val();
+		if (query_id == "") {
+			$('#template').html("")
+			$('#sparql_tmp').text("")
+			sparqlMirror.getDoc().setValue("");
+		} else {
+			$.get("/queries/" + query_id + ".json", function(data) {
+				var query = data;
+				$('#template').html(query_template(query.title));
+				$('#sparql_tmp').text(query.sparql)
+				sparqlMirror.getDoc().setValue(query.sparql);
+			});
+		}
+	})
+
+	$('#template').on('change', 'input', function() {
+		var sparql = $('#sparql_tmp').text();
+		console.log(sparql);
+		$('#template input').each(function(index, element){
+			var name = $(this).attr('name');
+			var val = $(this).val();
+			if (val) {sparql = sparql.replace('[[' + name + ']]', val)}
+		});
+		sparqlMirror.getDoc().setValue(sparql);
+	});
+
+	function query_template(title) {
+		var frags = title.split(/(\[\[|]])/);
+		var slot_p = false;
+		var template = "<table><tr><th>Template</th><td>"
+		for (var i in frags) {
+			if (frags[i] == "[[") {
+				slot_p = true;
+			}
+			else if (frags[i] == "]]") {
+				slot_p = false;
+			}
+			else if (slot_p) {
+				template += ' <input type="text" name="' + frags[i] + '" placeholder="' + frags[i] + '">';
+			}
+			else {
+				template += frags[i];
+			}
+		}
+		template += "</td></tr></table>"
+		return template;
+	}
+
+	function setquery(query) {
+		document.getElementById("graph").value = query["graph"];
+		sparqlMirror.getDoc().setValue(query["sparql"]);
+		if (query["comment"] == null || query["comment"] == "") {query["comment"] = "No explanation."};
+		document.getElementById("comment").innerHTML = query["comment"];
+	}
+</script>

@@ -1,7 +1,8 @@
 Pubann::Application.routes.draw do
 
-  resources :sequencers
+  resources :queries
 
+  resources :sequencers
 
   resources :annotators
   resources :editors
@@ -122,7 +123,6 @@ Pubann::Application.routes.draw do
     end
     
     member do
-      get :search
       post 'store_annotation_rdf' => 'projects#store_annotation_rdf'
       get 'store_span_rdf' => 'projects#store_span_rdf'
       get 'clean' => 'projects#clean'
@@ -225,6 +225,8 @@ Pubann::Application.routes.draw do
         post 'import'  => 'annotations#import'
       end
     end
+
+    resources :queries
   end
   
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/annotations' => 'annotations#project_doc_annotations_index', :via => ["OPTIONS"]
@@ -291,6 +293,8 @@ Pubann::Application.routes.draw do
   # just remember to delete public/index.html.
   root :to => 'home#index'
   match '/' => 'home#index', :as => :home
+  get '/search' => 'search#index', :as => :search
+  get '/projects/:project_name/search' => 'search#index', :as => :search_project
 
   # See how all your routes lay out with "rake routes"
 

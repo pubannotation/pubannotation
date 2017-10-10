@@ -1,0 +1,43 @@
+<p id="notice"><%= notice %></p>
+
+<table class="virtical" style="table-layout:fixed; width:100%">
+<tr>
+  <th style="width:10em">Title</th>
+  <td><%= @query.title %></td>
+</tr>
+
+<tr>
+  <th>Sparql</th>
+  <td><pre><%= @query.sparql %></pre></td>
+</tr>
+
+<tr>
+  <th>Comment</th>
+  <td><%= @query.comment %></td>
+</tr>
+
+<tr>
+  <th>Priority</th>
+  <td><%= @query.priority %></td>
+</tr>
+
+<tr>
+  <th>Active</th>
+  <td><%= @query.active %></td>
+</tr>
+
+<tr>
+  <th>Project</th>
+  <td><%= @query.project.name %></td>
+</tr>
+</table>
+
+<% if @project %>
+  <%= link_to 'Edit', edit_project_query_path(@project.name, @query), class: 'button' %>
+  <%= link_to "List", project_queries_path(@project.name), class: 'button' %>
+  <%= link_to 'Delete', project_query_path(@project.name, @query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+<% else %>
+  <%= link_to 'Edit', edit_query_path(@query), class: 'button' %>
+  <%= link_to "List", queries_path, class: 'button' %>
+  <%= link_to 'Delete', @query, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+<% end %>

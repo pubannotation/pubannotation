@@ -1,0 +1,8 @@
+<div>
+Predefined prefixes:
+<div class="namespaces-box">
+	<% Pubann::Application.config.namespaces.each do |k, v| %>
+		<div class="namespace"><%= k %>: <%= v %></div>
+	<% end %>
+</div>
+</div>

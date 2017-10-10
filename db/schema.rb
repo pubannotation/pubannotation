@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170708102542) do
+ActiveRecord::Schema.define(:version => 20171008033045) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -200,6 +200,19 @@ ActiveRecord::Schema.define(:version => 20170708102542) do
   end
 
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true
+
+  create_table "queries", :force => true do |t|
+    t.string   "title",      :default => ""
+    t.text     "sparql",     :default => ""
+    t.text     "comment"
+    t.integer  "priority",   :default => 0,    :null => false
+    t.boolean  "active",     :default => true, :null => false
+    t.integer  "project_id"
+    t.datetime "created_at",                   :null => false
+    t.datetime "updated_at",                   :null => false
+  end
+
+  add_index "queries", ["project_id"], :name => "index_queries_on_project_id"
 
   create_table "relations", :force => true do |t|
     t.string   "hid"

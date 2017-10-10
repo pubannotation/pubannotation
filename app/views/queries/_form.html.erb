@@ -1,0 +1,40 @@
+<%= form_for(@query) do |f| %>
+  <% if @query.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@query.errors.count, "error") %> prohibited this query from being saved:</h2>
+
+      <ul>
+      <% @query.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="virtical">
+  <tr>
+    <th><%= f.label :title %></th>
+    <td><%= f.text_field :title %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :sparql %></th>
+    <td><%= f.text_area :sparql %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :comment %></th>
+    <td><%= f.text_area :comment %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :priority %></th>
+    <td><%= f.number_field :priority %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :active %></th>
+    <td><%= f.check_box :active %></td>
+  </tr>
+  <tr>
+    <th colspan="2"><%= f.submit %></th>
+  </tr>
+  </table>
+  <%= f.hidden_field :project_id, value: @project.id %>
+<% end %>

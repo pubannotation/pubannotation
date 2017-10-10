@@ -1,0 +1,33 @@
+<section>
+<%= render :partial => 'projects/titlebar' -%>
+
+<h1>Search</h1>
+
+<% if @message %>
+<pre style="background-color: #ffdddd">
+<%= @message[:message] %>
+</pre>
+<% end %>
+<%= render "query_in_sparql" %>
+
+<% if @solutions %>
+	<section>
+		<h2>Results</h2>
+
+		<table style="table-layout:fixed; width:100%">
+			<tr>
+				<% @solutions["head"]["vars"].each do |h| %>
+				<th><%= h %></th>
+				<% end %>
+			</tr>
+
+			<% @solutions["results"]["bindings"].each do |binding| %>
+				<tr>
+					<% binding.each_value do |v| %>
+						<td><%= v["type"] == "uri" ? link_to(v["value"], v["value"]) : v["value"] %></td>
+					<% end %>
+				</tr>
+			<% end %>
+		</table>
+	</section>
+<% end %>
