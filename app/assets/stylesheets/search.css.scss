@@ -21,8 +21,22 @@ div.namespace {
 	background-color: #fafafa;
 }
 
+div.project_object {
+	display: inline-block;
+	margin: 1px;
+	border: 1px solid #aaaaaa;
+	border-radius: 2px;
+	padding: 2px;
+	background-color: #fafafa;
+}
+
 #template {
+	td {
+		background-color: #def;
+	}
 	input {
 		width: auto;
+		border: 1px solid #aaa;
+		background-color: #eff;
 	}
 }

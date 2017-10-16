@@ -4,6 +4,8 @@ class CreateQueries < ActiveRecord::Migration
       t.string :title, default: "", nul: false
       t.text :sparql, default: "", nul: false
       t.text :comment
+      t.string :show_mode
+      t.string :projects
       t.integer :priority, default: 0, null: false
       t.boolean :active, default: true, null: false
       t.references :project

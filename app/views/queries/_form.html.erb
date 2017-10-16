@@ -11,18 +11,31 @@
     </div>
   <% end %>
 
-  <table class="virtical">
+  <table class="virtical" style="table-layout:fixed; width:100%">
   <tr>
-    <th><%= f.label :title %></th>
+    <th style="width:10em"><%= f.label :title %></th>
     <td><%= f.text_field :title %></td>
   </tr>
   <tr>
     <th><%= f.label :sparql %></th>
-    <td><%= f.text_area :sparql %></td>
+    <td><%= f.text_area :sparql, style: "tab-size:2" %></td>
   </tr>
   <tr>
     <th><%= f.label :comment %></th>
     <td><%= f.text_area :comment %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :show_mode %></th>
+    <td>
+      <%= f.radio_button :show_mode, :raw, checked: @query.show_mode != "textae" %>
+      <%= f.label :status, "raw", value: :raw %>
+      <%= f.radio_button :show_mode, :textae, checked: @query.show_mode == "textae" %>
+      <%= f.label :status, "TextAE", value: :textae %>
+    </td>
+  </tr>
+  <tr>
+    <th><%= f.label "Annotations to show" %></th>
+    <td><%= f.text_field :projects, placeholder: "comma-separated list of project names" %></td>
   </tr>
   <tr>
     <th><%= f.label :priority %></th>

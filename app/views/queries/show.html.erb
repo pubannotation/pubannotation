@@ -8,12 +8,22 @@
 
 <tr>
   <th>Sparql</th>
-  <td><pre><%= @query.sparql %></pre></td>
+  <td><pre style="tab-size:2"><%= @query.sparql %></pre></td>
 </tr>
 
 <tr>
   <th>Comment</th>
   <td><%= @query.comment %></td>
+</tr>
+
+<tr>
+  <th>Show mode</th>
+  <td><%= @query.show_mode %></td>
+</tr>
+
+<tr>
+  <th>Annotations to show</th>
+  <td><%= @query.projects %></td>
 </tr>
 
 <tr>

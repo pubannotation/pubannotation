@@ -1,40 +1,24 @@
 <section>
+<%= render :partial => 'projects/titlebar' -%>
+
 <h1>Search</h1>
 
+<% if @message %>
+<pre style="background-color: #ffdddd">
+<%= @message[:message] %>
+</pre>
+<% end %>
 <%= render "query_in_sparql" %>
 
-<p>TextAE</p>
-
-<% if @solutionss %>
-	<div class = "solutions">
-
-		<h1>Solution spans rendered in <a href="http://textae.pubannotation.org">TextAE</a></h1>
-		<% span_annotations_urls = solutions2span_annotations_urls(@solutions, @projects, @extension_size, @context_size) %>
-		<% if span_annotations_urls.empty? %>
-			<div class="message">
-			This view renders the maximum spans involved in the solutions.<br/>
-			However, the solutions to the input query do not involve a span specification.<br/>
-			Go back and try the <i>binding view</i>.
-			</div>
-		<% else %>
-			<% span_annotations_urls.each do |span_url, span_annotations_url| %>
-				<%=
-					if params[:mode] == "edit"
-						content_tag(:div, "",
-									class: "textae-editor",
-									target: span_annotations_url,
-									mode: "edit",
-									status_bar: "on")
-					else
-						content_tag(:div, "",
-									class: "textae-editor",
-									target: span_annotations_url,
-									status_bar: "on")
-					end
-				%>
-				<%= link_to ">PubAnnotation", span_url, class: "button" %>
-				<%= tag :hr %>
-			<% end %>
+<% if @solutions %>
+	<%= render :partial => 'shared/textae_css_js'-%>
+	<section>
+		<h1>Result spans rendered in <a href="http://textae.pubannotation.org">TextAE</a></h1>
+		<% @solutions["results"]["bindings"].each do |solution| %>
+			<% projects = params[:projects] ? params[:projects].split(',') : [@project.name] %>
+			<% span_url, annotation_url = solution2maxspan_url(solution, projects) %>
+			<%= content_tag(:div, "", class: "textae-editor", target: annotation_url, status_bar: "off", style:"margin:2px 0 0 0") %>
+			<%= link_to ">PubAnnotation", span_url, class: "button" %>
 		<% end %>
-	</div>
+	</section>
 <% end %>

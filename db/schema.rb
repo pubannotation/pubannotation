@@ -205,6 +205,8 @@ ActiveRecord::Schema.define(:version => 20171008033045) do
     t.string   "title",      :default => ""
     t.text     "sparql",     :default => ""
     t.text     "comment"
+    t.string   "show_mode"
+    t.string   "projects"
     t.integer  "priority",   :default => 0,    :null => false
     t.boolean  "active",     :default => true, :null => false
     t.integer  "project_id"
