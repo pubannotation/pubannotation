@@ -18,10 +18,12 @@ class ProjectsController < ApplicationController
     respond_to do |format|
       format.html {
         @projects_grid = initialize_grid(Project.accessible(current_user),
-          order: :status,
+          order: 'projects.status',
+          custom_order: {
+            'projects.status' => 'projects.status, projects.updated_at'
+          },
           include: :user
         )
-
         @projects_total_number = Project.accessible(current_user).length
       }
       format.json {
