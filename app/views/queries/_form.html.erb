@@ -49,5 +49,7 @@
     <th colspan="2"><%= f.submit %></th>
   </tr>
   </table>
-  <%= f.hidden_field :project_id, value: @project.id %>
+  <% if @project %>
+    <%= f.hidden_field :project_id, value: @project.id %>
+  <% end %>
 <% end %>

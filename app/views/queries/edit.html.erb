@@ -2,11 +2,10 @@
 
 <%= render 'form' %>
 
-
 <% if @project %>
-	<%= link_to 'Show', project_query_path(@project.name, @query), class: 'button' %>
 	<%= link_to "List", project_queries_path(@project.name), class: 'button' %>
+	<%= link_to 'Show', project_query_path(@project.name, @query), class: 'button' %>
 <% else %>
-	<%= link_to 'Show', @query, class: 'button' %>
 	<%= link_to "List", queries_path, class: 'button' %>
+	<%= link_to 'Show', @query, class: 'button' %>
 <% end %>
