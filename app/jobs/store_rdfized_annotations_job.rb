@@ -5,7 +5,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 	include Stardog
 
 	def perform
-		batch_size = 100
+		size_batch_annotations = 2000
+		size_batch_spans = 1000
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		@job.update_attribute(:num_items, count)
@@ -23,17 +24,25 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 		sd.clear_db(db, graph_uri_project)
 
 		annotations_col = []
+		num_denotations_in_annotation_queue = 0
+
 		docs_for_spans = []
+		num_denotations_in_current_doc = 0
+
 		File.foreach(filepath).with_index do |docid, i|
 			docid.chomp!.strip!
 			doc = Doc.find(docid)
 
 			# rdfize and store annotations
 			if doc.denotations.where("denotations.project_id = ?", project.id).exists?
-				annotations_col << doc.hannotations(project)
+				hannotations = doc.hannotations(project)
+				num_denotations_in_current_doc = hannotations[:denotations].length
+
+				annotations_col << hannotations
+				num_denotations_in_annotation_queue += num_denotations_in_current_doc
 
 				# batch processing for rdfizing annotations
-				if annotations_col.length >= batch_size
+				if num_denotations_in_annotation_queue >= size_batch_annotations
 					begin
 						annos_ttl = rdfizer_annos.rdfize(annotations_col)
 						sd.add(db, annos_ttl, graph_uri_project, "text/turtle")
@@ -41,30 +50,34 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 						@job.messages << Message.create({body: "failed in rdfizing annotations to #{annotations_col.length} docs: #{e.message}"})
 					end
 					annotations_col.clear
+					num_denotations_in_annotation_queue = 0
 				end
 			end
 
 			# rdfize and store spans
 			doc_last_indexed_at = doc.last_indexed_at(sd)
+			num_denotations_in_span_queue = 0
 			if doc_last_indexed_at.nil? || doc.denotations.where("denotations.project_id = ? AND denotations.updated_at > ?", project.id, doc_last_indexed_at).exists?
 				docs_for_spans << doc
+				num_denotations_in_span_queue += num_denotations_in_current_doc
 
-				if docs_for_spans.length >= batch_size
+				if num_denotations_in_span_queue >= size_batch_spans
 					begin
-					sd.with_transaction(db) do |txID|
-						docs_for_spans.each do |doc|
-							graph_uri_doc = doc.graph_uri
-							sd.clear_db_in_transaction(db, txID, graph_uri_doc)
-							spans = doc.hdenotations_all
-							spans_ttl = rdfizer_spans.rdfize([spans])
-							sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc, "text/turtle")
-							update_time_in_transaction(sd, db, txID, graph_uri_doc)
+						sd.with_transaction(db) do |txID|
+							docs_for_spans.each do |doc|
+								graph_uri_doc = doc.graph_uri
+								sd.clear_db_in_transaction(db, txID, graph_uri_doc)
+								spans = doc.hdenotations_all
+								spans_ttl = rdfizer_spans.rdfize([spans])
+								sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc, "text/turtle")
+								update_time_in_transaction(sd, db, txID, graph_uri_doc)
+							end
 						end
-					end
-					docs_for_spans.clear
 					rescue => e
 						@job.messages << Message.create({body: "failed in rdfizing spans in #{docs_for_spans.length} docs: #{e.message}"})
 					end
+					docs_for_spans.clear
+					num_denotations_in_current_doc = 0
 			  end
 			end
 
