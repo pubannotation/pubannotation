@@ -185,7 +185,7 @@ class Doc < ActiveRecord::Base
     begin
       DateTime.parse(result.body["results"]["bindings"].first["o"]["value"])
     rescue
-      DateTime.new(0)
+      nil
     end
   end
 
