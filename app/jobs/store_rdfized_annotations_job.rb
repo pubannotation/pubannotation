@@ -27,8 +27,9 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 		num_denotations_in_annotation_queue = 0
 
 		docs_for_spans = []
-		num_denotations_in_current_doc = 0
+		num_denotations_in_span_queue = 0
 
+		num_denotations_in_current_doc = 0
 		File.foreach(filepath).with_index do |docid, i|
 			docid.chomp!.strip!
 			doc = Doc.find(docid)
@@ -56,7 +57,6 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 
 			# rdfize and store spans
 			doc_last_indexed_at = doc.last_indexed_at(sd)
-			num_denotations_in_span_queue = 0
 			if doc_last_indexed_at.nil? || doc.denotations.where("denotations.project_id = ? AND denotations.updated_at > ?", project.id, doc_last_indexed_at).exists?
 				docs_for_spans << doc
 				num_denotations_in_span_queue += num_denotations_in_current_doc
@@ -64,10 +64,10 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 				if num_denotations_in_span_queue >= size_batch_spans
 					begin
 						sd.with_transaction(db) do |txID|
-							docs_for_spans.each do |doc|
-								graph_uri_doc = doc.graph_uri
+							docs_for_spans.each do |d|
+								graph_uri_doc = d.graph_uri
 								sd.clear_db_in_transaction(db, txID, graph_uri_doc)
-								spans = doc.hdenotations_all
+								spans = d.hdenotations_all
 								spans_ttl = rdfizer_spans.rdfize([spans])
 								sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc, "text/turtle")
 								update_time_in_transaction(sd, db, txID, graph_uri_doc)
