@@ -14,6 +14,10 @@
 	<section>
 		<h2>Results</h2>
 
+		<div class="page_info">
+			<span>&nbsp;</span>
+			<span class="num_solutions"><%= @num_solutions %> results</span>
+		</div>
 		<table style="table-layout:fixed; width:100%">
 			<tr>
 				<% @solutions["head"]["vars"].each do |h| %>

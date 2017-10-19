@@ -40,3 +40,33 @@ div.project_object {
 		background-color: #eff;
 	}
 }
+
+.page_info {
+	position: relative;
+
+	.page_index {
+		display: inline-block;
+		margin: 0;
+		padding: 0;
+
+		li {
+			display: inline-block;
+			margin: 0;
+			padding: 2px;
+			font-size: small;
+			font-weight: bold;
+			a {
+				font-weight: normal;
+			}
+		}
+
+		li.page {
+			border: 1px solid #15a;
+		}
+	}
+
+	.num_solutions {
+		position: absolute;
+		right: 0;
+	}
+}

@@ -14,6 +14,7 @@
 	<%= render :partial => 'shared/textae_css_js'-%>
 	<section>
 		<h1>Result spans rendered in <a href="http://textae.pubannotation.org">TextAE</a></h1>
+		<%= render "page_index" %>
 		<% @solutions["results"]["bindings"].each do |solution| %>
 			<% projects = params[:projects] ? params[:projects].split(',') : [@project.name] %>
 			<% span_url, annotation_url = solution2maxspan_url(solution, projects) %>
