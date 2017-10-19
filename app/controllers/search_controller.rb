@@ -8,7 +8,7 @@ class SearchController < ApplicationController
 
 		query = params[:query]
 		@page = params[:page].to_i if params.has_key?(:page)
-		@page_size = params.has_key?(:page_size) ? params[:page_size].to_i : 1
+		@page_size = params.has_key?(:page_size) ? params[:page_size].to_i : 10
 		@solutions, @message = get_solutions(query, @page, @page_size) if query.present?
 		@num_solutions = if params.has_key?(:num_solutions)
 			params[:num_solutions].to_i
