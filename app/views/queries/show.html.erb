@@ -1,3 +1,6 @@
+<section>
+<%= render :partial => 'projects/titlebar' -%>
+
 <p id="notice"><%= notice %></p>
 
 <table class="virtical" style="table-layout:fixed; width:100%">
@@ -51,3 +54,5 @@
   <%= link_to 'Edit', edit_query_path(@query), class: 'button' %>
   <%= link_to 'Delete', @query, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
 <% end %>
+
+</section>

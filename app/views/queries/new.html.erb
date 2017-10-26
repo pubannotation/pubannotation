@@ -1,3 +1,6 @@
+<section>
+<%= render :partial => 'projects/titlebar' -%>
+
 <h1>
 New query
 <% if @project %>
@@ -12,3 +15,5 @@ for <%= @project.name %>
 <% else %>
 	<%= link_to "List", queries_path, class: 'button' %>
 <% end %>
+
+</section>
