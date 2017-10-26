@@ -5,8 +5,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 	include Stardog
 
 	def perform
-		size_batch_annotations = 2000
-		size_batch_spans = 1000
+		size_batch_annotations = 1000
+		size_batch_spans = 500
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		@job.update_attribute(:num_items, count)
@@ -48,7 +48,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 						annos_ttl = rdfizer_annos.rdfize(annotations_col)
 						sd.add(db, annos_ttl, graph_uri_project, "text/turtle")
 					rescue => e
-						@job.messages << Message.create({body: "failed in rdfizing annotations to #{annotations_col.length} docs: #{e.message}"})
+						@job.messages << Message.create({body: "failed in storing rdfized annotations from #{annotations_col.length} docs: #{e.message}"})
 					end
 					annotations_col.clear
 					num_denotations_in_annotation_queue = 0
@@ -74,7 +74,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 							end
 						end
 					rescue => e
-						@job.messages << Message.create({body: "failed in rdfizing spans in #{docs_for_spans.length} docs: #{e.message}"})
+						@job.messages << Message.create({body: "failed in storing rdfized spans from #{docs_for_spans.length} docs: #{e.message}"})
 					end
 					docs_for_spans.clear
 					num_denotations_in_current_doc = 0
@@ -89,7 +89,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 				annos_ttl = rdfizer_annos.rdfize(annotations_col)
 				sd.add(db, annos_ttl, graph_uri_project, "text/turtle")
 			rescue => e
-				@job.messages << Message.create({body: "failed in rdfizing #{annotations_col.length} docs: #{e.message}"})
+				@job.messages << Message.create({body: "failed in storing rdfized annotations from #{annotations_col.length} docs: #{e.message}"})
 			end
 		end
 
@@ -106,7 +106,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 					end
 				end
 			rescue => e
-				@job.messages << Message.create({body: "failed in rdfizing spans in #{docs_for_spans.length} docs: #{e.message}"})
+				@job.messages << Message.create({body: "failed in storing rdfized spans from #{docs_for_spans.length} docs: #{e.message}"})
 			end
 		end
 
