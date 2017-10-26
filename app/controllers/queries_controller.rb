@@ -17,7 +17,9 @@ class QueriesController < ApplicationController
   end
 
   def new
-    @query = if @project
+    @query = if params[:project_id]
+      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      raise "Could not find the project." unless @project.present?
       @project.queries.new
     else
       Query.new
@@ -32,7 +34,7 @@ class QueriesController < ApplicationController
     query = Query.new(params[:query])
     respond_to do |format|
       if query.save
-        format.html { redirect_to @project ? project_query_path(@query.project.name, @query) : query_path(@query) }
+        format.html { redirect_to query.project ? project_query_path(query.project.name, query) : query_path(query) }
         format.json { render json: query, status: :created, location: query_path(query) }
       else
         format.html { render action: "new" }
@@ -44,7 +46,7 @@ class QueriesController < ApplicationController
   def update
     @query.update_attributes(params[:query])
     respond_to do |format|
-      format.html { redirect_to @project ? project_query_path(@query.project.name, @query) : query_path(@query) }
+      format.html { redirect_to @query.project ? project_query_path(@query.project.name, @query) : query_path(@query) }
       format.json { render json: query, status: :created, location: query_path(@query) }
     end
   end
@@ -52,9 +54,9 @@ class QueriesController < ApplicationController
   def destroy
     respond_to do |format|
       if @query.destroy
-        format.html { redirect_to @project ? project_queries_path(@project.name) : queries_path }
+        format.html { redirect_to @query.project ? project_queries_path(@project.name) : queries_path }
       else
-        format.html { redirect_to @project ? project_query_path(@query.project.name, @query) : query_path(@query) }
+        format.html { redirect_to @query.project ? project_query_path(@query.project.name, @query) : query_path(@query) }
         format.json { render json: @query.errors, status: :unprocessable_entity }
       end
     end
