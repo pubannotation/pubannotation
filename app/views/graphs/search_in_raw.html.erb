@@ -1,7 +1,9 @@
 <section>
 <%= render :partial => 'projects/titlebar' -%>
-
-<h1>Search</h1>
+<div>RDFization last updated at <%= @project.last_indexed_at(Pubann::Application.config.sd) %></div>
+<h1>
+Search
+</h1>
 
 <% if @message %>
 <pre style="background-color: #ffdddd">

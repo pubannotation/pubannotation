@@ -293,8 +293,8 @@ Pubann::Application.routes.draw do
   # just remember to delete public/index.html.
   root :to => 'home#index'
   match '/' => 'home#index', :as => :home
-  get '/search' => 'search#index', :as => :search
-  get '/projects/:project_name/search' => 'search#index', :as => :search_project
+  get '/search' => 'graphs#show', :as => :search
+  get '/projects/:project_name/search' => 'graphs#show', :as => :search_project
 
   # See how all your routes lay out with "rake routes"
 
