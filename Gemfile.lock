@@ -10,7 +10,7 @@ GIT
 
 GIT
   remote: git://github.com/jdkim/stardog-rb
-  revision: 82e32396824451f89a2fe1a024d096e56841073a
+  revision: 1a27d7dc25fbe324b4ce170688fef1eeb1cf432a
   specs:
     stardog-rb (0.0.6)
       nokogiri
@@ -93,7 +93,7 @@ GEM
       warden (~> 1.2.3)
     diff-lcs (1.2.5)
     docile (1.1.5)
-    domain_name (0.5.20161129)
+    domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
     elasticsearch (1.0.15)
       elasticsearch-api (= 1.0.15)
@@ -168,14 +168,14 @@ GEM
       treetop (~> 1.4.8)
     method_source (0.8.2)
     mime-types (1.25.1)
-    mini_portile2 (2.0.0)
+    mini_portile2 (2.3.0)
     multi_json (1.11.2)
     multi_test (0.1.2)
     multipart-post (2.0.0)
     nenv (0.3.0)
     netrc (0.11.0)
-    nokogiri (1.6.7.2)
-      mini_portile2 (~> 2.0.0.rc2)
+    nokogiri (1.8.1)
+      mini_portile2 (~> 2.3.0)
     notiffany (0.0.8)
       nenv (~> 0.1)
       shellany (~> 0.0)
@@ -221,7 +221,7 @@ GEM
       json (~> 1.4)
     responders (1.1.2)
       railties (>= 3.2, < 4.2)
-    rest-client (2.0.1)
+    rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
@@ -268,7 +268,7 @@ GEM
       multi_json (~> 1.0)
       rack (~> 1.0)
       tilt (~> 1.1, != 1.3.0)
-    tao_rdfizer (0.9.3)
+    tao_rdfizer (0.9.5)
     test-unit (3.1.8)
       power_assert
     thor (0.19.1)
@@ -282,7 +282,7 @@ GEM
       execjs (>= 0.3.0, < 3)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.2)
+    unf_ext (0.0.7.4)
     vcr (3.0.1)
     warden (1.2.6)
       rack (>= 1.0)
@@ -342,7 +342,7 @@ DEPENDENCIES
   simplecov
   spork-rails
   stardog-rb!
-  tao_rdfizer (~> 0.9.3)
+  tao_rdfizer (~> 0.9.5)
   test-unit
   uglifier (>= 1.0.3)
   vcr
@@ -354,4 +354,4 @@ DEPENDENCIES
   zip-zip
 
 BUNDLED WITH
-   1.16.0.pre.2
+   1.16.0.pre.3
