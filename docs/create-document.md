@@ -37,7 +37,7 @@ Note that most recent major programming languages have modules for REST access, 
 
 The following example shows a simple cURL command to create a new document in the project _your_project_:
 <textarea class="bash" readonly="true" style="height:5em">
-curl -u "your_email_address:your_password" text="This is a sample text." http://pubannotation.org/projects/your_project/docs.json
+curl -u "your_email_address:your_password" -d text="This is a sample text." http://pubannotation.org/projects/your_project/docs.json
 </textarea>
 Following is explanation of the option specification:
 
