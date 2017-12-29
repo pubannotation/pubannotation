@@ -47,7 +47,7 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 			project.add_docs(sourcedb, ids)
 		rescue => e
 			@job.messages << Message.create({sourcedb: sourcedb, sourceid: "#{ids.first} - #{ids.last}", body: e.message})
-			[[], [], 0]
+			[0, 0, 0, []]
 		end
 
 		@total_num_added += num_added
