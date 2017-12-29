@@ -9,4 +9,11 @@ class ProjectDoc < ActiveRecord::Base
     offset = (page - 1) * per
     offset(offset).limit(per)
   }
+
+  def graph_uri
+    doc_spec = doc.has_divs? ?
+      "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/divs/{doc.serial}" :
+      "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
+    project.graph_uri + doc_spec
+  end
 end
