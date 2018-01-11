@@ -162,3 +162,62 @@ Note that the syntax of modification annotation is experimental and subject to c
 
 What labels to use for *pred* of modification is up to the designer of annotation.
 However, currently the visualiztion of [TextAE](http://textae.pubannotation.org/) supports only *Speculation* and *Negation*.
+
+## Multi-layer annotations
+
+Multi-layer annotations - annotations which are made by multiple projects to the same text - can be represented as muptiple tracks.
+
+For example, if you access annotations to a specific text within a project,
+
+* http://pubannotation.org/projects/GO-BP/docs/sourcedb/PubMed/sourceid/10704529/spans/0-119/annotations.json
+
+you will get annotation without tracks:
+
+{% highlight json %}
+{
+   "target":"http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10704529",
+   "sourcedb":"PubMed",
+   "sourceid":"10704529",
+   "text":"Ultrastructural localization of sulfated and unsulfated keratan sulfate in normal and macular corneal dystrophy type I.",
+   "project":"GO-BP",
+   "denotations":[
+      {"id":"T1","span":{"begin":16,"end":28},"obj":"http://purl.obolibrary.org/obo/GO_0051179"},
+      {"id":"T5","span":{"begin":32,"end":40},"obj":"http://purl.obolibrary.org/obo/GO_0051923"},
+      {"id":"T8","span":{"begin":64,"end":71},"obj":"http://purl.obolibrary.org/obo/GO_0051923"}
+   ]
+}
+{% endhighlight %}
+
+
+However, if you access annotations to the same text without specification of a project (or if you specify multiple projects),
+
+* http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10704529/spans/0-119/annotations.json
+
+then you will get annotation in multiple tracks:
+
+{% highlight json %}
+{
+   "target":"http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10704529",
+   "sourcedb":"PubMed",
+   "sourceid":"10704529",
+   "text":"Ultrastructural localization of sulfated and unsulfated keratan sulfate in normal and macular corneal dystrophy type I.",
+   "tracks":[
+      {
+         "project":"GO-BP",
+         "denotations":[
+            {"id":"T1","span":{"begin":16,"end":28},"obj":"http://purl.obolibrary.org/obo/GO_0051179"},
+            {"id":"T5","span":{"begin":32,"end":40},"obj":"http://purl.obolibrary.org/obo/GO_0051923"},
+            {"id":"T8","span":{"begin":64,"end":71},"obj":"http://purl.obolibrary.org/obo/GO_0051923"}
+         ]},
+      {
+         "project":"GlycoBiology-GDGDB",
+         "denotations":[
+            {"id":"_T1","span":{"begin":86,"end":116},"obj":"http://acgg.asia/db/diseases/gdgdb?con_ui=CON00391"},
+            {"id":"_T2","span":{"begin":86,"end":118},"obj":"http://acgg.asia/db/diseases/gdgdb?con_ui=CON00391"}
+         ]
+      }
+   ]
+}
+{% endhighlight %}
+
+Note that the difference comes whether a project is specified or not in the URL.
