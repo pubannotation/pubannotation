@@ -431,8 +431,8 @@ class Doc < ActiveRecord::Base
 
     if span.present?
       _denotations.select!{|d| d.begin >= span[:begin] && d.end <= span[:end]}
-      if context_size.present?
-        context_size ||= 0
+      context_size ||= 0
+      if context_size > 0
         b = span[:begin] - context_size
         b = 0 if b < 0
         _denotations.each{|d| d[:span][:begin] -= b; d[:span][:end] -= b}
