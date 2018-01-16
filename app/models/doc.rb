@@ -172,8 +172,8 @@ class Doc < ActiveRecord::Base
 
   def graph_uri
     has_divs? ?
-      "http://pubannotation.org/docs/sourcedb/#{sourcedb}/sourceid/#{sourceid}/divs/{serial}" :
-      "http://pubannotation.org/docs/sourcedb/#{sourcedb}/sourceid/#{sourceid}"
+      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(sourcedb, sourceid, serial, only_path: false) :
+      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, only_path: false)
   end
 
   def last_indexed_at(endpoint = nil)
@@ -413,25 +413,38 @@ class Doc < ActiveRecord::Base
   
   # TODO: to take care of associate projects
   # the first argument, project, may be a project or an array of projects.
-  def get_denotations(project = nil, span = nil)
-    denotations = if project.present?
+  def get_denotations(project = nil, span = nil, context_size = nil)
+    _denotations = if project.present?
       if project.respond_to?(:each)
-        self.denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
+        denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
       else
-        self.denotations.where('denotations.project_id = ?', project.id)
+        denotations.where(:'denotations.project_id' => project.id)
       end
     else
-      self.denotations
+      denotations
     end
-    self.text_aligner = TextAlignment::TextAlignment.new(self.original_body, self.body, TextAlignment::MAPPINGS) unless self.original_body.nil?
-    self.text_aligner.transform_denotations!(denotations) if self.text_aligner.present?
-    denotations.select!{|d| d.begin >= span[:begin] && d.end <= span[:end]} if span.present?
-    denotations.sort!{|d1, d2| d1.begin <=> d2.begin || (d2.end <=> d1.end)}
+
+    unless original_body.nil?
+      text_aligner = TextAlignment::TextAlignment.new(original_body, body, TextAlignment::MAPPINGS)
+      text_aligner.transform_denotations!(_denotations) if text_aligner.present?
+    end
+
+    if span.present?
+      _denotations.select!{|d| d.begin >= span[:begin] && d.end <= span[:end]}
+      if context_size.present?
+        context_size ||= 0
+        b = span[:begin] - context_size
+        b = 0 if b < 0
+        _denotations.each{|d| d[:span][:begin] -= b; d[:span][:end] -= b}
+      end
+    end
+
+    _denotations.sort!{|d1, d2| d1.begin <=> d2.begin || (d2.end <=> d1.end)}
   end
 
   # the first argument, project, may be a project or an array of projects.
-  def hdenotations(project = nil, span = nil)
-    self.get_denotations(project, span).map{|d| d.get_hash}
+  def hdenotations(project = nil, span = nil, context_size = nil)
+    self.get_denotations(project, span, context_size).map{|d| d.get_hash}
   end
 
   def hdenotations_all
@@ -495,56 +508,34 @@ class Doc < ActiveRecord::Base
     hmodifications.sort!{|m1, m2| m1[:id] <=> m2[:id]}
   end
 
-  def hannotations(project = nil, span = nil, context_size = nil)
-    annotations = {}
-
-    annotations[:target] = if self.has_divs?
-      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(self.sourcedb, self.sourceid, self.serial, :only_path => false)
-    else
-      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(self.sourcedb, self.sourceid, :only_path => false)
-    end
-
-    annotations[:sourcedb] = self.sourcedb
-    annotations[:sourceid] = self.sourceid
-    annotations[:divid] = self.serial if self.has_divs?
-
-    b, e = 0, 0
-
+  def get_text(span = nil, context_size = nil)
     if span.present?
+      b, e = 0, 0
       context_size ||= 0
       b = span[:begin] - context_size
       e = span[:end] + context_size
       b = 0 if b < 0
-      e = self.body.length if e > self.body.length
-    end
-
-    annotations[:text] = if span.present?
-      self.body[b...e]
+      e = body.length if e > body.length
+      body[b...e]
     else
-      self.body
+      body
     end
+  end
+
+  def hannotations(project = nil, span = nil, context_size = nil, options = nil)
+    annotations = {}
+    annotations[:target] = graph_uri
+    annotations[:sourcedb] = sourcedb
+    annotations[:sourceid] = sourceid
+    annotations[:divid] = serial if has_divs?
+    annotations[:text] = get_text(span, context_size)
 
     if project.present? && !project.respond_to?(:each)
-      annotations[:project] = project.name
-      annotations[:denotations] = self.hdenotations(project, span)
-      annotations[:denotations].each{|d| d[:span][:begin] -= b; d[:span][:end] -= b} if span.present?
-      ids = annotations[:denotations].collect{|d| d[:id]}
-      annotations[:relations] = self.hrelations(project, ids)
-      ids += annotations[:relations].collect{|r| r[:id]}
-      annotations[:modifications] = self.hmodifications(project, ids)
-      annotations[:namespaces] = project.namespaces
-      annotations.select!{|k, v| v.present?}
+      annotations.merge!(get_project_annotations(project, span, context_size, options))
     else
       projects = project.present? ? project : self.projects
       annotations[:tracks] = projects.inject([]) do |tracks, project|
-        hdenotations = self.hdenotations(project, span)
-        hdenotations.each{|d| d[:span][:begin] -= b; d[:span][:end] -= b} if span.present?
-        ids =  hdenotations.collect{|d| d[:id]}
-        hrelations = self.hrelations(project, ids)
-        ids += hrelations.collect{|d| d[:id]}
-        hmodifications = self.hmodifications(project, ids)
-        track = {project:project.name, denotations:hdenotations, relations:hrelations, modificationss:hmodifications, namespaces:project.namespaces}
-        track.select!{|k, v| v.present?}
+        track = get_project_annotations(project, span, context_size, options)
         if track[:denotations].present?
           tracks << track
         else
@@ -554,6 +545,21 @@ class Doc < ActiveRecord::Base
     end
 
     annotations
+  end
+
+  def get_project_annotations (project, span = nil, context_size = nil, options = {})
+    hdenotations = hdenotations(project, span, context_size)
+    ids =  hdenotations.collect{|d| d[:id]}
+    hrelations = hrelations(project, ids)
+    ids += hrelations.collect{|d| d[:id]}
+    hmodifications = hmodifications(project, ids)
+
+    options ||= {}
+    if options[:discontinuous_span] == :bag
+      hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
+    end
+
+    {project:project.name, denotations:hdenotations, relations:hrelations, modificationss:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
   end
 
   def projects_within_span(span)
@@ -687,41 +693,6 @@ class Doc < ActiveRecord::Base
   def expire_page_cache
     ActionController::Base.new.expire_fragment('sourcedb_counts')
     ActionController::Base.new.expire_fragment('docs_count')
-  end
-
-  def get_annotations (span = nil, project = nil, options = {})
-    hdenotations = self.hdenotations(project, span)
-    hrelations = self.hrelations(project, span)
-    hmodifications = self.hmodifications(project, span)
-    text = self.body
-    if (options[:encoding] == 'ascii')
-      asciitext = get_ascii_text (text)
-      text_alignment = TextAlignment::TextAlignment.new(text, asciitext)
-      hdenotations = text_alignment.transform_denotations(hdenotations)
-      text = asciitext
-    end
-
-    unless (options[:discontinuous_span] == 'chain')
-      # TODO: convert to hash representation
-      hdenotations, hrelations = bag_denotations(hdenotations, hrelations)
-    end
-
-    annotations = Hash.new
-    
-    # project
-    annotations[:project] = project[:name] if project.present?
-
-    # doc
-    annotations[:sourcedb] = self.sourcedb
-    annotations[:sourceid] = self.sourceid
-    annotations[:divid] = self.serial
-    annotations[:section] = self.section
-    annotations[:text] = text
-    # doc.relational_models
-    annotations[:denotations] = hdenotations if hdenotations
-    annotations[:relations] = hrelations if hrelations
-    annotations[:modifications] = hmodifications if hmodifications
-    annotations
   end
 
   def self.dummy(repeat_times)

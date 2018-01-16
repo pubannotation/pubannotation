@@ -6,6 +6,10 @@
   <td>denote</td>
   <td><%= denotation[:obj] %></td>
   <td class="spans_preview">
-  	<%= body[denotation[:span][:begin]...denotation[:span][:end]] -%>
-  </td>
+		<% if denotation[:span].respond_to?(:push) %>
+			<%= denotation[:span].map{|s| body[s[:begin]...s[:end]]}.join('...') %>
+		<% else %>
+			<%= body[denotation[:span][:begin]...denotation[:span][:end]] -%>
+		<% end %>
+	</td>
 </tr>

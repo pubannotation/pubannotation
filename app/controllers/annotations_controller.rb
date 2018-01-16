@@ -36,12 +36,13 @@ class AnnotationsController < ApplicationController
         else
           @doc.projects
         end
-
         project.delete_if{|p| !p.annotations_accessible?(current_user)}
 
-        project = project[0] if project.present? && project.length == 1
         context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-        @annotations = @doc.hannotations(project, @span, context_size)
+
+        options = {}
+        options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
+        @annotations = @doc.hannotations(project, @span, context_size, options)
 
         respond_to do |format|
           format.html {render 'index'}
@@ -74,12 +75,13 @@ class AnnotationsController < ApplicationController
       else
         @doc.projects
       end
-
       project.delete_if{|p| !p.annotations_accessible?(current_user)}
 
-      project = project[0] if project.present? && project.length == 1
       context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-      @annotations = @doc.hannotations(project, @span, context_size)
+
+      options = {}
+      options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
+      @annotations = @doc.hannotations(project, @span, context_size, options)
 
       respond_to do |format|
         format.html {render 'index'}
@@ -118,14 +120,15 @@ class AnnotationsController < ApplicationController
         end
       else
         @doc = divs[0]
-
         @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
         # @content = @doc.body.gsub(/\n/, "<br>")
 
         context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-        @annotations = @doc.hannotations(@project, @span, context_size)
+
+        options = {}
+        options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
+        @annotations = @doc.hannotations(@project, @span, context_size, options)
 
         respond_to do |format|
           format.html {render 'index_in_project'}
@@ -159,7 +162,10 @@ class AnnotationsController < ApplicationController
       @doc.set_ascii_body if (params[:encoding] == 'ascii')
 
       context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-      @annotations = @doc.hannotations(@project, @span, context_size)
+
+      options = {}
+      options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
+      @annotations = @doc.hannotations(@project, @span, context_size, options)
 
       respond_to do |format|
         format.html {render 'index_in_project'}

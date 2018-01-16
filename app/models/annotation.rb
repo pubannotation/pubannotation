@@ -146,9 +146,9 @@ class Annotation < ActiveRecord::Base
     mergedto = Hash.new
     tomerge.each do |from, to|
       to = mergedto[to] if mergedto.has_key?(to)
-      fca = denotations[idx[from]]
-      tca = denotations[idx[to]]
-      tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
+      fda = denotations[idx[from]]
+      tda = denotations[idx[to]]
+      tda[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
       tca[:span].push (fca[:span])
       denotations.delete_at(idx[from])
       mergedto[from] = to
@@ -160,31 +160,31 @@ class Annotation < ActiveRecord::Base
   end
 
   def self.bag_denotations(denotations, relations)
-    tomerge = Hash.new
-
-    new_relations = Array.new
+    mergedto = {}
     relations.each do |ra|
       if ra[:pred] == '_lexicallyChainedTo'
-        tomerge[ra[:obj]] = ra[:subj]
-      else
-        new_relations << ra
+        # To see if either subjet or object is already merged to another.
+        ra[:subj] = mergedto[ra[:subj]] if mergedto.has_key? ra[:subj]
+        ra[:obj] = mergedto[ra[:obj]] if mergedto.has_key? ra[:obj]
+
+        # To find the indice of the subject and object
+        idx_from = denotations.find_index{|d| d[:id] == ra[:subj]}
+        idx_to   = denotations.find_index{|d| d[:id] == ra[:obj]}
+        from = denotations[idx_from]
+        to   = denotations[idx_to]
+
+        from[:span] = [from[:span]] unless from[:span].respond_to?('push')
+        to[:span]   = [to[:span]]   unless to[:span].respond_to?('push')
+
+        # To merge the two spans (in the reverse order)
+        from[:span] = to[:span] + from[:span]
+        denotations.delete_at(idx_to)
+        mergedto[ra[:obj]] = ra[:subj]
       end
     end
-    idx = Hash.new
-    denotations.each_with_index {|ca, i| idx[ca[:id]] = i}
+    relations.delete_if{|ra| ra[:pred] == '_lexicallyChainedTo'}
 
-    mergedto = Hash.new
-    tomerge.each do |from, to|
-      to = mergedto[to] if mergedto.has_key?(to)
-      fca = denotations[idx[from]]
-      tca = denotations[idx[to]]
-      tca[:span] = [tca[:span]] unless tca[:span].respond_to?('push')
-      tca[:span].push (fca[:span])
-      denotations.delete_at(idx[from])
-      mergedto[from] = to
-    end
-
-    return denotations, new_relations
+    return denotations, relations
   end
 
   # to work on the hash representation of denotations
