@@ -50,11 +50,6 @@ However, the default interpretation of T1 is as follows:
 * of which the type is *Protein*.
   * `"obj":"Protein"`
 
-### Discontinuous spans
-
-A denotation may involve multiple discontinuous spans.
-In following example
-
 
 ## Relations
 
@@ -167,11 +162,11 @@ However, currently the visualiztion of [TextAE](http://textae.pubannotation.org/
 
 Multi-layer annotations - annotations which are made by multiple projects to the same text - can be represented as muptiple tracks.
 
-For example, if you access annotations to a specific text within a project,
+Usually, you will access annotations within a project, e.g.,
 
-* http://pubannotation.org/projects/GO-BP/docs/sourcedb/PubMed/sourceid/10704529/spans/0-119/annotations.json
+* http://pubannotation.org/__projects/GO-BP__/docs/sourcedb/PubMed/sourceid/10704529/spans/0-119/annotations.json
 
-you will get annotation without tracks:
+In the case, you will get the annotations without tracks:
 
 {% highlight json %}
 {
@@ -188,12 +183,11 @@ you will get annotation without tracks:
 }
 {% endhighlight %}
 
-
-However, if you access annotations to the same text without specification of a project (or if you specify multiple projects),
+However, if you access annotations without indication of a project (or if you specify multiple projects), e.g.,
 
 * http://pubannotation.org/docs/sourcedb/PubMed/sourceid/10704529/spans/0-119/annotations.json
 
-then you will get annotation in multiple tracks:
+then you will get the annotations in multiple tracks:
 
 {% highlight json %}
 {
@@ -221,3 +215,66 @@ then you will get annotation in multiple tracks:
 {% endhighlight %}
 
 Note that the difference comes whether a project is specified or not in the URL.
+
+
+## Discontinuous spans
+
+Sometimes, there may be a case of denotation for which you may want to involve multiple discontinuous spans.
+For example, what if you want to annotate _left lung_ in the text, _left or right lung_,
+with the ontology id, _UBERON:0002168_.
+As the two words are not adjacent to each other, it is not straightforward to specify the span of the denotation.
+
+For representation of discontinuous spans as the span of a denotation, PubAnnotation supports two models:
+(1) bagging model, and (2) chaining model.
+
+### Bagging model
+
+In the bagging model, it is allowed to specify the span of a denotation by an array of begin and end offsets, e.g.,
+
+{% highlight json %}
+{
+   "text":"left and right lung",
+   "denotations":[
+      {"id":"T2","span":[{"begin":0,"end":4},{"begin":15,"end":19}],"obj":"UBERON:0002168"}
+   ]
+}
+{% endhighlight %}
+
+The bagging model may be intuitively easy to understand particularly in the JSON representation.
+However, it is a kind syntactic sugar which is beyond the normal representation of PubAnnotation.
+Internally, it is converted to the chaining model.
+
+Note that in the bagging model, a span may be specified either by just a single pair of begin and end offsets,
+or by an array of pairs.
+Therefore, for a software program to read a JSON representation of annotation,
+it must perform a dynamic type checking, a.k.a. _duck typing_.
+
+
+### Chaining model (default)
+
+The chaining model uses normal syntax of PubAnnotation JSON format.
+Instead, it uses special vocabularly to represent an involvement of multiple discontinuous spans in a denotation.
+For example, the above example in the bagging model will be internally converted to the chaining model as below:
+
+{% highlight json %}
+{
+   "text":"left and right lung",
+   "denotations":[
+      {"id":"T1","span":{"begin":0,"end":4},"obj":"_FRAGMENT"},
+      {"id":"T2","span":{"begin":15,"end":19},"obj":"UBERON:0002168"}
+   ],
+   "relations":[
+      {"id":"R1","pred":"_lexicallyChainedTo","subj":"T2","obj":"T1"}
+   ]
+}
+{% endhighlight %}
+
+It will be rendered in TextAE as below:
+
+![chaining discontinuous spans example]({{ site.url }}/img/chaining-discontinuous-spans.png)
+
+PubAnnotation uses the chaining model as default.
+The JSON representation in the bagging model can be accessed by
+setting the parameter _discontinuous_span_ to be the value, _bag_, e.g.,
+
+* http://pubannotation.org/projects/example/docs/sourcedb/@Jin-Dong%20Kim/sourceid/2/annotations.json?__discontinuous_span=bag__
