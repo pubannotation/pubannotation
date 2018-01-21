@@ -19,7 +19,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 		rdfizer_spans = TAO::RDFizer.new(:spans)
 
 		graph_uri_project = project.graph_uri
-		graph_uri_docs = Doc.graph_uri
+		graph_uri_doc_spans = Doc.graph_uri + '/spans'
 
 		sd.clear_db(db, graph_uri_project)
 
@@ -35,7 +35,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 			doc = Doc.find(docid)
 
 			# rdfize and store annotations
-			if doc.denotations.where("denotations.project_id = ?", project.id).exists?
+			if doc.denotations.where("denotations.project_id" => project.id).exists?
 				hannotations = doc.hannotations(project)
 				num_denotations_in_current_doc = hannotations[:denotations].length
 
@@ -66,11 +66,12 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 						sd.with_transaction(db) do |txID|
 							docs_for_spans.each do |d|
 								graph_uri_doc = d.graph_uri
-								sd.clear_db_in_transaction(db, txID, graph_uri_doc)
+								graph_uri_doc_spans = graph_uri_doc + '/spans'
+								sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
 								spans = d.hdenotations_all
 								spans_ttl = rdfizer_spans.rdfize([spans])
-								sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc, "text/turtle")
-								update_time_in_transaction(sd, db, txID, graph_uri_doc)
+								sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
+								update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 							end
 						end
 					rescue => e
@@ -98,11 +99,12 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 				sd.with_transaction(db) do |txID|
 					docs_for_spans.each do |doc|
 						graph_uri_doc = doc.graph_uri
-						sd.clear_db_in_transaction(db, txID, graph_uri_doc)
+						graph_uri_doc_spans = graph_uri_doc + '/spans'
+						sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
 						spans = doc.hdenotations_all
 						spans_ttl = rdfizer_spans.rdfize([spans])
-						sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc, "text/turtle")
-						update_time_in_transaction(sd, db, txID, graph_uri_doc)
+						sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
+						update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 					end
 				end
 			rescue => e
@@ -110,33 +112,48 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 			end
 		end
 
-		update_time(sd, db, graph_uri_project)
+		update_project_metadata(sd, db, project)
 
 		File.unlink(filepath)
 	end
 
 	private
 
-	def update_time(sd, database, graph_uri)
+	def update_project_metadata(sd, database, project)
+		graph_uri_project = project.graph_uri
+		graph_uri_project_docs = project.docs_uri
+
 		update = <<-HEREDOC
-			DELETE {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?generationTime .}
-			WHERE {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?generationTime .}
+			DELETE {<#{graph_uri_project}> prov:generatedAtTime ?generationTime .}
+			WHERE  {<#{graph_uri_project}> prov:generatedAtTime ?generationTime .}
 		HEREDOC
 		sd.update(database, update)
 
-		statement = %|<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> "#{DateTime.now.iso8601}"^^xsd:dateTime .|
-		sd.add(database, statement, nil, "text/turtle")
+		metadata = <<-HEREDOC
+			<#{graph_uri_project}> rdf:type tao:AnnotationDataSet ;
+				rdf:type oa:Annotation ;
+				oa:has_body <#{graph_uri_project}> ;
+				oa:has_target <#{graph_uri_project_docs}> ;
+				prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+		HEREDOC
+		sd.add(database, metadata, nil, "text/turtle")
 	end
 
-	def update_time_in_transaction(sd, database, txID, graph_uri)
+	def update_doc_metadata_in_transaction(sd, database, txID, graph_uri_doc, graph_uri_doc_spans)
 		update = <<-HEREDOC
-			DELETE {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?generationTime .}
-			WHERE {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?generationTime .}
+			DELETE {<#{graph_uri_doc_spans}> prov:generatedAtTime ?generationTime .}
+			WHERE  {<#{graph_uri_doc_spans}> prov:generatedAtTime ?generationTime .}
 		HEREDOC
 		sd.update_in_transaction(database, txID, update)
 
-		statement = %|<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> "#{DateTime.now.iso8601}"^^xsd:dateTime .|
-		sd.add_in_transaction(database, txID, statement, nil, "text/turtle")
+		metadata = <<-HEREDOC
+			<#{graph_uri_doc_spans}> rdf:type tao:AnnotationDataSet ;
+				rdf:type oa:Annotation ;
+				oa:has_body <#{graph_uri_doc_spans}> ;
+				oa:has_target <#{graph_uri_doc}> ;
+				prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+		HEREDOC
+		sd.add_in_transaction(database, txID, metadata, nil, "text/turtle")
 	end
 
 end

@@ -11,15 +11,16 @@
 
 		<ul>
 			<li>
-				Pre-defined template:
-				<% query_option_default = Query.where(project_id:nil).order(:id).map{|q| [q.title, q.id]} %>
-				<% query_options = query_option_default + Query.where(project_id:@project, active:true).map{|q| [q.title, q.id]} %>
+				<% path = @project ? project_queries_path(@project.name) : queries_path %>
+				<%= link_to 'Predefined templates:', path %>
+				<%
+					query_options = Query.where(category: 0, active:true).order(:category).map{|q| [q.title, q.id]}
+					if @project
+						query_options += Query.where(category: 1, active:true).order(:category).map{|q| [q.title, q.id]}
+						query_options += Query.where(category: 2, project_id:@project, active:true).map{|q| [q.title, q.id]}
+					end
+				%>
 				<%= select_tag :template_select, options_for_select([["Choose one", nil]] + query_options, params[:template_select]) %>
-				<% if @project %>
-					<%= link_to "List", project_queries_path(@project.name), class: 'button' %>
-				<% else %>
-					<%= link_to "List", queries_path, class: 'button' %>
-				<% end %>
 			</li>
 			<li>
 				Show results in
@@ -100,14 +101,13 @@
 		sparqlMirror.getDoc().setValue(query);
 		if (!show_mode) {show_mode = 'raw'}
 		set_show_mode(show_mode);
-		if (!projects) {projects = '<%= @project.name %>'}
 		set_project_selection(projects);
 	}
 
 	function init_template() {
 		var query = decodeURIComponent("<%= URI::escape(params[:query]) if params.has_key?(:query) %>");
 		if (query){
-			var projects = "<%= params[:projects] %>";
+			var projects = "<%= params[:projects] ? params[:projects] : (@project ? @project.name : '') %>";
 			var show_mode = "<%= params[:show_mode] %>";
 			set_query(query, show_mode, projects);
 		} else {
@@ -123,12 +123,14 @@
 			$.get("/queries/" + query_id + ".json", function(data) {
 				var query = data;
 				$('#template').html(query_template(query.title));
-				query.sparql = query.sparql.replace('#{@project.name}', '<%= @project.name %>');
+				<% if @project %>
+					query.sparql = query.sparql.replace('#{@project.name}', '<%= @project.name %>');
+				<% end %>
 				$('#sparql_tmp').text(query.sparql);
 				sparqlMirror.getDoc().setValue(query.sparql);
 				if (!query.show_mode) {query.show_mode = 'raw'}
 				set_show_mode(query.show_mode);
-				if (!query.projects) {query.projects = '<%= @project.name %>'}
+				if (!query.projects) {query.projects = '<%= @project.name if @project %>'}
 				set_project_selection(query.projects);
 			});
 		}	else {
@@ -142,7 +144,9 @@
 		set_show_mode("raw");
 		clear_show_selected_projects();
 		update_selected_projects();
-		add_project("<%= @project.name %>")
+		<% if @project %>
+			add_project("<%= @project.name %>")
+		<% end %>
 	}
 
 	function query_template(title) {

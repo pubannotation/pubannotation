@@ -16,6 +16,14 @@
     <th style="width:10em"><%= f.label :title %></th>
     <td><%= f.text_field :title %></td>
   </tr>
+
+  <% if root_user? %>
+    <tr>
+      <th><%= f.label :category %></th>
+      <td><%= f.text_field :category %></td>
+    </tr>
+  <% end %>
+
   <tr>
     <th><%= f.label :sparql %></th>
     <td><%= f.text_area :sparql, style: "tab-size:2" %></td>

@@ -1,4 +1,4 @@
-module SearchHelper
+module GraphsHelper
 
 	def solution2maxspan_url (solution, projects = nil, extension_size = 0, context_size = 0)
 		span_urls = solution.values.select{|v| span?(v["value"])}.map{|v| v["value"]}

@@ -1,6 +1,6 @@
 class GraphsController < ApplicationController
 	def show
-		@project = if params.has_key? :project_name
+		@project = if params[:project_name].present?
 			p = Project.accessible(current_user).find_by_name(params[:project_name])
 			raise "Could not find the project: #{params[:project_name]}." unless p.present?
 			p
@@ -19,15 +19,16 @@ class GraphsController < ApplicationController
 		rendering = begin
 			r = params[:show_mode] == "textae" ? :search_in_textae : :search_in_raw
 			if @solutions && @num_solutions > 0 && r == :search_in_textae
+				raise ArgumentError, "For the results to be rendered in TextAE, at least one project needs to be selected." unless params[:projects].present?
 
 				# check whether solutions include spans
 				s = @solutions["results"]["bindings"].first
 				spans = s.values.select{|v| span?(v["value"])}.map{|v| v["value"]}
-				raise ArgumentError, "The results do not include a span, thus cannot be rendered in TextAE." if spans.empty?
+				raise ArgumentError, "Because the results do not include a span, they are shown in table instead rendered in TextAE." if spans.empty?
 
 				# check whether spans in one solutions come from the same documents
 				span_prefixes = spans.map{|s| span_prefix(s)}.uniq
-				raise ArgumentError, "The results include spans from different docs, thus cannot be rendered in TextAE." if span_prefixes.length > 1
+				raise ArgumentError, "Because the results include spans from different docs, they are shown in table instead rendered in TextAE." if span_prefixes.length > 1
 
 				# check whether paging is necessary
 				if @page.nil? && @num_solutions > @page_size

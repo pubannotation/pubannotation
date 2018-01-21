@@ -1,31 +1,39 @@
 <section>
 
-<%= render :partial => 'projects/titlebar' -%>
-
-<h1>Listing queries</h1>
-
-<table>
-  <tr>
-    <th>Title</th>
-    <th>Priority</th>
-    <th>Active</th>
-    <% unless @project %>
-      <th>Project</th>
-    <% end %>
-  </tr>
-
-<% @queries.each do |query| %>
-  <% qpath = @project ? project_query_path(query.project.name, query) : query_path(query) %>
-  <tr>
-    <td><%= link_to query.title, qpath %></td>
-    <td><%= query.priority %></td>
-    <td><%= query.active %></td>
-    <% unless @project %>
-      <td><%= query.project ? query.project.name : nil%></td>
-    <% end %>
-  </tr>
+<% if @project %>
+  <%= render :partial => 'projects/titlebar' -%>
 <% end %>
-</table>
+
+<h1>Queries</h1>
+
+<%=
+  grid(@queries_grid) do |g|
+
+    g.column name: 'Title', attribute: 'title' do |query|
+      [link_to(query.title, query), {style: 'width:10em'}]
+    end
+
+    if root_user?
+      g.column name: 'Cat.', attribute: 'category' do |query|
+        [query.category, {style: 'width:4em; text-align:center'}]
+      end
+    end
+
+    g.column name: 'Act?', attribute: 'active' do |query|
+      [query.active, {style: 'width:4em; text-align:center'}]
+    end
+
+    g.column name: 'Pri.', attribute: 'priority' do |query|
+      [query.priority, {style: 'width:4em; text-align:center'}]
+    end
+
+    unless @project
+      g.column name: 'Project', attribute: 'project_id' do |query|
+        [query.project ? query.project.name : '-', {style: 'width:4em; text-align:center'}]
+      end
+    end
+  end
+-%>
 
 <br />
 

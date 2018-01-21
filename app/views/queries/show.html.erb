@@ -1,5 +1,8 @@
 <section>
-<%= render :partial => 'projects/titlebar' -%>
+
+<% if @project %>
+  <%= render :partial => 'projects/titlebar' -%>
+<% end %>
 
 <p id="notice"><%= notice %></p>
 
@@ -8,6 +11,13 @@
   <th style="width:10em">Title</th>
   <td><%= @query.title %></td>
 </tr>
+
+<% if root_user? %>
+  <tr>
+    <th>Category</th>
+    <td><%= @query.category %></td>
+  </tr>
+<% end %>
 
 <tr>
   <th>Sparql</th>

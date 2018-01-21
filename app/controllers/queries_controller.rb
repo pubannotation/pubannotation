@@ -6,6 +6,24 @@ class QueriesController < ApplicationController
 
   def index
     @queries = Query.where(project_id: @project)
+    @queries_grid = if root_user?
+      initialize_grid(Query,
+        order: :category,
+        order_direction: 'asc',
+        include: :project
+      )
+    elsif @project
+      initialize_grid(Query.where(project_id: @project.id),
+        order: :category,
+        order_direction: 'asc',
+        include: :project
+      )
+    else
+      initialize_grid(Query.where(category: 0),
+        include: :project
+      )
+    end
+
     respond_with(@queries)
   end
 

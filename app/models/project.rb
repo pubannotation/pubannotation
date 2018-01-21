@@ -428,7 +428,11 @@ class Project < ActiveRecord::Base
   end
 
   def graph_uri
-    "http://pubannotation.org/projects/#{self.name}"
+    Rails.application.routes.url_helpers.home_url + "projects/#{self.name}"
+  end
+
+  def docs_uri
+    graph_uri + '/docs'
   end
 
   def last_indexed_at(endpoint = nil)

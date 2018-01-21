@@ -1,3 +1,4 @@
+<% projects = params[:projects] ? params[:projects] : (@project ? @project.name : '') %>
 <fieldset id='show_selected_projects' style="display:inline-block; width:fill; vertical-align: middle">
 <legend>
 <%= autocomplete_field_tag 'project_name', '', autocomplete_project_name_projects_path, style: "width:12em; text-align:left", placeholder: "project name" %>
@@ -5,7 +6,7 @@
 </legend>
 </fieldset>
 <textarea id="selected_projects" name="projects" required="true" style="display:none">
-<%= params[:projects] ? params[:projects] : (@project ? @project.name : '') %>
+<%= projects %>
 </textarea>
 
 <script>
@@ -24,7 +25,7 @@
 	});
 
 	function set_project_selection(selected_projects_concat) {
-		if (!selected_projects_concat) {selected_projects_concat = "<%= params[:projects] ? params[:projects] : @project.name %>"}
+		if (!selected_projects_concat) {selected_projects_concat = "<%= projects %>"}
 		$('#selected_projects').text(selected_projects_concat);
 		update_show_selected_projects();
 	}

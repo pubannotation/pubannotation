@@ -1,5 +1,8 @@
 <section>
-<%= render :partial => 'projects/titlebar' -%>
+
+<% if @project %>
+  <%= render :partial => 'projects/titlebar' -%>
+<% end %>
 
 <h1>Editing query</h1>
 

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20171008033045) do
+ActiveRecord::Schema.define(:version => 20180118124715) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -212,6 +212,7 @@ ActiveRecord::Schema.define(:version => 20171008033045) do
     t.integer  "project_id"
     t.datetime "created_at",                   :null => false
     t.datetime "updated_at",                   :null => false
+    t.integer  "category",   :default => 2
   end
 
   add_index "queries", ["project_id"], :name => "index_queries_on_project_id"
