@@ -7,9 +7,10 @@ class GraphsController < ApplicationController
 		end
 
 		query = params[:query]
+		@reasoning = params[:reasoning] == 'true'
 		@page = params[:page].to_i if params.has_key?(:page)
 		@page_size = params.has_key?(:page_size) ? params[:page_size].to_i : 10
-		@solutions, @message = get_solutions(query, @page, @page_size) if query.present?
+		@solutions, @message = get_solutions(query, @reasoning, @page, @page_size) if query.present?
 		@num_solutions = if params.has_key?(:num_solutions)
 			params[:num_solutions].to_i
 		elsif @solutions
@@ -36,7 +37,7 @@ class GraphsController < ApplicationController
 					params[:page] = 1
 					@page = 1
 					params[:num_solutions] = @num_solutions
-					@solutions, @message = get_solutions(query, 1, @page_size)
+					@solutions, @message = get_solutions(query, @reasoning, 1, @page_size)
 				end
 			end
 			r
@@ -44,6 +45,15 @@ class GraphsController < ApplicationController
 			flash[:notice] = e.message
 			params[:show_mode] = "raw"
 			:search_in_raw
+		end
+
+		@project_last_indexed_at = if @project
+			begin
+				@project.last_indexed_at(Pubann::Application.config.sd)
+			rescue Exception => e
+				flash[:notice] = "Could not obtain the information about when the project was last indexed."
+				nil
+			end
 		end
 
 		params.delete(:template_select)
@@ -56,14 +66,14 @@ class GraphsController < ApplicationController
 
 	protected
 
-	def get_solutions(query, page = nil, page_size = nil)
+	def get_solutions(query, reasoning, page = nil, page_size = nil)
 		if page
 			query = query + "\nLIMIT #{page_size}\nOFFSET #{(page - 1) * page_size}"
 		end
 
 		sd = Pubann::Application.config.sd
 		db = Pubann::Application.config.db
-		results = sd.query(db, query, {reasoning: true})
+		results = sd.query(db, query, {reasoning: reasoning})
 		results.success? ? [results.body.to_h, nil] : [nil, JSON.parse(results.body, symbolize_names:true)]
 	end
 

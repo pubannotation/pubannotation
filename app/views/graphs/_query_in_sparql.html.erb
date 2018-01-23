@@ -30,6 +30,10 @@
 				<%= radio_button_tag(:show_mode, :textae, params[:show_mode] == 'textae') %>
 				<%= label_tag(:show_mode_textae, 'TextAE') %>
 			</li>
+			<li>
+				<%= label_tag(:reasoning, 'Reasoning') %>
+				<%= check_box_tag(:reasoning, true, @reasoning) %>
+			</li>
 			<ul>
 			<li id="option_select_projects" style="display:inline-block; padding:5px; background-color:#eee">
 				<span style="vertical-align: middle">Annotations to show:</span>
@@ -127,6 +131,7 @@
 					query.sparql = query.sparql.replace('#{@project.name}', '<%= @project.name %>');
 				<% end %>
 				$('#sparql_tmp').text(query.sparql);
+				$('#reasoning').prop('checked', query.reasoning);
 				sparqlMirror.getDoc().setValue(query.sparql);
 				if (!query.show_mode) {query.show_mode = 'raw'}
 				set_show_mode(query.show_mode);

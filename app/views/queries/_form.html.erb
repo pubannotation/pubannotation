@@ -23,10 +23,13 @@
       <td><%= f.text_field :category %></td>
     </tr>
   <% end %>
-
   <tr>
     <th><%= f.label :sparql %></th>
     <td><%= f.text_area :sparql, style: "tab-size:2" %></td>
+  </tr>
+  <tr>
+    <th><%= f.label :reasoning %></th>
+    <td><%= f.check_box :reasoning %></td>
   </tr>
   <tr>
     <th><%= f.label :comment %></th>
