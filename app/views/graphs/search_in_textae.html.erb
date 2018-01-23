@@ -1,11 +1,10 @@
 <section>
 <% if @project %>
 	<%= render :partial => 'projects/titlebar' -%>
-	<% last_indexed_at = @project.last_indexed_at(Pubann::Application.config.sd) %>
-	<% if last_indexed_at %>
-		<div>RDFization last updated at <%= @project.last_indexed_at(Pubann::Application.config.sd) %></div>
+	<% if @project_last_indexed_at %>
+		<div class="note">RDFization last updated at <%= @project_last_indexed_at %></div>
 	<% else %>
-		<div>The project is not yet RDFized.</div>
+		<div class="note">The project is not yet RDFized.</div>
 	<% end %>
 <% end %>
 
