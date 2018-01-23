@@ -29,7 +29,7 @@
 
     unless @project
       g.column name: 'Project', attribute: 'project_id' do |query|
-        [query.project ? query.project.name : '-', {style: 'width:4em; text-align:center'}]
+        [query.project ? link_to(query.project.name, project_path(query.project.name)) : '-', {style: 'width:4em; text-align:center'}]
       end
     end
   end

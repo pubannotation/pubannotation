@@ -56,7 +56,7 @@
 
 <tr>
   <th>Project</th>
-  <td><%= @query.project.name if @query.project %></td>
+  <td><%= link_to(@query.project.name, project_path(@query.project.name)) if @query.project %></td>
 </tr>
 </table>
 
