@@ -5,8 +5,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 	include Stardog
 
 	def perform
-		size_batch_annotations = 1000
-		size_batch_spans = 500
+		size_batch_annotations = 5000
+		size_batch_spans = 2500
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		@job.update_attribute(:num_items, count)
