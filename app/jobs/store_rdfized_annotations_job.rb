@@ -73,7 +73,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 								spans = d.hdenotations_all
 								spans_ttl = rdfizer_spans.rdfize([spans])
 								r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
-								raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
+								raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r && r.status == 200
 								update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 							end
 						end
@@ -108,7 +108,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 						spans = doc.hdenotations_all
 						spans_ttl = rdfizer_spans.rdfize([spans])
 						r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
-						raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
+						raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r && r.status == 200
 						update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 					end
 				end
@@ -135,7 +135,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 		sd.update(database, update)
 
 		metadata = <<-HEREDOC
-			<#{graph_uri_project}> rdf:type tao:AnnotationDataSet ;
+			<#{graph_uri_project}> rdf:type pubann:Project ;
 				rdf:type oa:Annotation ;
 				oa:has_body <#{graph_uri_project}> ;
 				oa:has_target <#{graph_uri_project_docs}> ;
@@ -152,8 +152,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 		sd.update_in_transaction(database, txID, update)
 
 		metadata = <<-HEREDOC
-			<#{graph_uri_doc_spans}> rdf:type tao:AnnotationDataSet ;
-				rdf:type oa:Annotation ;
+			<#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
 				oa:has_body <#{graph_uri_doc_spans}> ;
 				oa:has_target <#{graph_uri_doc}> ;
 				prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
