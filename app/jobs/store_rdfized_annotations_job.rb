@@ -46,13 +46,15 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 				if num_denotations_in_annotation_queue >= size_batch_annotations
 					begin
 						annos_ttl = rdfizer_annos.rdfize(annotations_col)
-						sd.add(db, annos_ttl, graph_uri_project, "text/turtle")
+						r = sd.add(db, annos_ttl, graph_uri_project, "text/turtle")
+						raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
 					rescue => e
 						@job.messages << Message.create({body: "failed in storing rdfized annotations from #{annotations_col.length} docs: #{e.message}"})
 					end
 					annotations_col.clear
 					num_denotations_in_annotation_queue = 0
 				end
+
 			end
 
 			# rdfize and store spans
@@ -70,7 +72,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 								sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
 								spans = d.hdenotations_all
 								spans_ttl = rdfizer_spans.rdfize([spans])
-								sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
+								r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
+								raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
 								update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 							end
 						end
@@ -88,7 +91,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 		unless annotations_col.empty?
 			begin
 				annos_ttl = rdfizer_annos.rdfize(annotations_col)
-				sd.add(db, annos_ttl, graph_uri_project, "text/turtle")
+				r = sd.add(db, annos_ttl, graph_uri_project, "text/turtle")
+				raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
 			rescue => e
 				@job.messages << Message.create({body: "failed in storing rdfized annotations from #{annotations_col.length} docs: #{e.message}"})
 			end
@@ -103,7 +107,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 						sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
 						spans = doc.hdenotations_all
 						spans_ttl = rdfizer_spans.rdfize([spans])
-						sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
+						r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
+						raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
 						update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 					end
 				end
