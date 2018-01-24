@@ -431,12 +431,14 @@ class Doc < ActiveRecord::Base
 
     if span.present?
       _denotations.select!{|d| d.begin >= span[:begin] && d.end <= span[:end]}
+
+      b = span[:begin]
       context_size ||= 0
       if context_size > 0
-        b = span[:begin] - context_size
+        b -= context_size
         b = 0 if b < 0
-        _denotations.each{|d| d[:span][:begin] -= b; d[:span][:end] -= b}
       end
+      _denotations.each{|d| d.begin -= b; d.end -= b}
     end
 
     _denotations.sort!{|d1, d2| d1.begin <=> d2.begin || (d2.end <=> d1.end)}
@@ -547,7 +549,7 @@ class Doc < ActiveRecord::Base
     annotations
   end
 
-  def get_project_annotations (project, span = nil, context_size = nil, options = {})
+  def get_project_annotations(project, span = nil, context_size = nil, options = {})
     hdenotations = hdenotations(project, span, context_size)
     ids =  hdenotations.collect{|d| d[:id]}
     hrelations = hrelations(project, ids)
