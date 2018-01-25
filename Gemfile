@@ -70,7 +70,7 @@ gem 'whenever', :require => false
 gem 'elasticsearch-model', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
 gem 'elasticsearch-rails', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
 gem 'stardog-rb', :git => 'git://github.com/jdkim/stardog-rb'
-gem 'tao_rdfizer', '>= 0.9.8'
+gem 'tao_rdfizer', '>= 0.9.9'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
