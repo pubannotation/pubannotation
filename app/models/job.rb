@@ -31,7 +31,7 @@ class Job < ActiveRecord::Base
       dj.delete unless dj.nil?
       update_attribute(:begun_at, Time.now)
       update_related_priority
-      self.messages.delete_all
+      Message.delete_all(job_id:self.id)
       self.destroy
     end
   end
