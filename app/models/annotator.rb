@@ -18,7 +18,10 @@ class Annotator < ActiveRecord::Base
 
   scope :accessibles, -> (current_user) {
     if current_user.present?
-      where("is_public = true or user_id = #{current_user.id}")
+      if current_user.root?
+      else
+        where("is_public = true or user_id = #{current_user.id}")
+      end
     else
       where(is_public: true)
     end
