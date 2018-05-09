@@ -195,7 +195,7 @@ Pubann::Application.routes.draw do
                     get 'annotations' => 'annotations#project_div_annotations_index'
                     get 'annotations/visualize' => 'annotations#div_annotations_visualize'
                     post 'annotations' => 'annotations#create'
-                    get 'annotations/obtain' => 'annotations#obtain'
+                    post 'annotations/obtain' => 'annotations#obtain'
                     delete 'annotations' => 'annotations#destroy', as: 'destroy_annotations'
                     get 'spans' => 'spans#project_div_spans_index', :as => 'spans_index'
                     get 'spans/:begin-:end' => 'spans#project_div_span_show', :as => 'span_show'
