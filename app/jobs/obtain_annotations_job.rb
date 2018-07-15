@@ -15,17 +15,17 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
     batch_num = 1 if batch_num.nil? || batch_num == 0
 
     File.foreach(filepath).each_slice(batch_num) do |docid_col|
-      docid_col.each{|d| d.chomp!.strip!}
+      docids = docid_col.map{|d| d.chomp.strip}
       begin
-        r, messages = project.obtain_annotations(docid_col, annotator, options)
+        r, messages = project.obtain_annotations(docids, annotator, options)
         messages.each{|m| @job.messages << (m.class == Hash ? Message.create(m) : Message.create({body: m}))}
-        @job.update_attribute(:num_dones, @job.num_dones + docid_col.length)
+        @job.update_attribute(:num_dones, @job.num_dones + docids.length)
       rescue RestClient::Exceptions::Timeout => e
         @job.messages << if batch_num == 1
-          doc = Doc.find(docid_col.first)
+          doc = Doc.find(docids.first)
           Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain: #{e.message}"})
         else
-          Message.create({body: "Could not obtain annotations for #{docid_col.length} docs: #{e.message}"})
+          Message.create({body: "Could not obtain annotations for #{docids.length} docs: #{e.message}"})
         end
       rescue RestClient::ExceptionWithResponse => e
         if e.response.code == 303
@@ -51,7 +51,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
           @job.messages << Message.create({body: "Message from the annotator: #{e.message}"})
         end
       rescue => e
-        @job.messages += docid_col.map do |docid|
+        @job.messages += docids.map do |docid|
           doc = Doc.find(docid)
           Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain: #{e.message}"})
         end
