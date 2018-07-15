@@ -38,8 +38,10 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
           retrieval_queue << {url:e.response.headers[:location], try_at: retry_after.seconds.from_now, retry_after: retry_after}
         elsif e.response.code == 503 # Service Unavailable
           if retrieval_queue.empty?
-            @job.messages << Message.create({body: "Job execution stopped: service is unavailable when the queue is empty."})
-            break
+            sleep(@skip_interval || 5)
+            redo
+            # @job.messages << Message.create({body: "Job execution stopped: service is unavailable when the retrieval queue is empty."})
+            # break
           end
           process_retrieval_queue(retrieval_queue)
           retry
