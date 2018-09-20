@@ -18,7 +18,7 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
-gem 'pg'
+gem 'pg', '0.18.4'
 gem 'friendly_id'
 
 group :development do
@@ -45,6 +45,7 @@ end
 
 gem 'wice_grid'
 gem 'font-awesome-rails'
+gem 'font-awesome-sass'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'rails3-jquery-autocomplete'
@@ -59,7 +60,7 @@ gem 'wikipedia-client'
 gem 'diff-lcs'
 gem 'ruby-dictionary'
 gem 'kaminari'
-gem 'devise'
+# gem 'devise'
 gem 'rubyzip'
 gem 'zip-zip'
 gem 'daemons'
@@ -86,3 +87,13 @@ gem 'tao_rdfizer', '>= 0.9.9'
 
 # To use debugger
 # gem 'debugger'
+# gem 'activerecord-postgresql-adapter'
+
+gem 'rake', '< 11.0'
+
+gem 'devise', '3.5.6'
+gem 'omniauth', '1.4.2'
+# gem 'devise'
+# gem 'omniauth'
+gem 'omniauth-github'
+gem 'omniauth-google-oauth2'

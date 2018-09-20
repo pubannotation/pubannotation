@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Textae Configuration Repository</title>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+<style>
+.wrapper{
+    padding: 50px;
+}
+.sns{
+    
+}
+.sns_list{
+    list-style: none;
+    margin:0;
+    padding:0;
+}
+.sns .sns_item{
+    margin-bottom: 15px;
+}
+.sns .sns_btn{
+    display: block;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #fff;
+    padding: 15px;
+}
+.sns .sns_btn-github{
+    background-color: #333;
+}
+.sns .sns_btn-google{
+    background-color: #4285f4;
+}
+</style>
+</head>
+<body>
+
+<div class="content">
+<%= yield %>
+</div>
+
+</body>
+</html>

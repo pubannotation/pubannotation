@@ -2,9 +2,9 @@ class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :token_authenticatable, :confirmable,
   # :lockable, :timeoutable and :omniauthable
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable, :validatable
-
+  devise :database_authenticatable, :registerable, :confirmable,
+         :recoverable, :rememberable, :trackable, :validatable,
+         :omniauthable, :omniauth_providers => [:github, :google_oauth2]
   # Setup accessible (or protected) attributes for your model
   attr_accessible :login, :username, :email, :password, :password_confirmation, :remember_me
   # attr_accessible :title, :body
@@ -38,6 +38,9 @@ class User < ActiveRecord::Base
       end
   }
   
+  include FriendlyId
+  friendly_id :email
+
   def self.find_first_by_auth_conditions(warden_conditions)
     conditions = warden_conditions.dup
     if login = conditions.delete(:login)
@@ -63,5 +66,24 @@ class User < ActiveRecord::Base
 
   def destroy_all_user_sourcedb_docs
     Doc.user_source_db(self.username).destroy_all
+  end
+
+  def self.from_omniauth(auth)
+    user = User.find_by_email(auth.info.email)
+
+    if user and user.confirmed?
+      user.provider = auth.provider
+      user.uid = auth.uid
+      return user
+    end
+
+    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
+      user.skip_confirmation!
+      user.username = auth.info.name
+      user.provider = auth.provider
+      user.uid = auth.uid
+      user.email = auth.info.email
+      user.password = Devise.friendly_token[0,20]
+    end
   end
 end

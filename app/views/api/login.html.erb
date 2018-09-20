@@ -1,0 +1,35 @@
+<div class="wrapper">
+    
+
+<div class="sns">
+    <ul class="sns_list">
+        <li class="sns_item"><a href="/users/auth/github?from=textae" class="sns_btn sns_btn-github"><i class="fa fa-github" aria-hidden="true"></i> Github</a></li>
+        <li class="sns_item"><a href="/users/auth/google_oauth2?from=textae" class="sns_btn sns_btn-google"><i class="fa fa-google" aria-hidden="true"></i> Google</a></li>
+    </ul>
+</div>
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+<table class='virtical'>
+  <tr>
+    <th><%= f.label :email %></th>
+    <td><%= f.email_field :email, autofocus: true %></td>
+  </tr>
+
+  <tr>
+    <th><%= f.label :password %></th>
+    <td><%= f.password_field :password, autocomplete: "off" %></td>
+  </tr>
+
+  <tr>
+    <th colspan='2'>
+      <% if devise_mapping.rememberable? -%>
+        <%= f.check_box :remember_me %>
+        <%= f.label :remember_me %>
+      <% end -%>
+      <%= f.submit "Log in" %>
+    </th>
+  </tr>
+</table>
+<% end %>
+
+</div>

@@ -104,6 +104,7 @@ class ProjectsController < ApplicationController
   # PUT /projects/:name.json
   def update
     @project.user = current_user unless current_user.root?
+    # abort @project.body.inspect
     respond_to do |format|
       if @project.update_attributes(params[:project])
         format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
