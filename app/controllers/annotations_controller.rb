@@ -2,7 +2,7 @@ require 'fileutils'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_tgz]
+  before_filter :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_tgz, :create]
   include DenotationsHelper
 
   def index
@@ -218,6 +218,14 @@ class AnnotationsController < ApplicationController
   # POST /annotations.json
   def create
     begin
+      # ログインしていないときは 401 と headers を返す
+      unless user_signed_in? then
+        response.headers['WWW-Authenticate'] = 'ServerPage'
+        response.headers['Location'] = api_login_url
+        head :unauthorized
+        return 
+      end  
+          
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
 

@@ -11,22 +11,20 @@
 <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
 <table class='virtical'>
   <tr>
-    <th><%= f.label :email %></th>
-    <td><%= f.email_field :email, autofocus: true %></td>
+    <th><%= f.label :login %></th>
+    <td><%= f.text_field :login, :placeholder => "Your username or e-mail address" %></td>
   </tr>
 
   <tr>
     <th><%= f.label :password %></th>
-    <td><%= f.password_field :password, autocomplete: "off" %></td>
+    <td><%= f.password_field :password %></td>
   </tr>
 
   <tr>
     <th colspan='2'>
-      <% if devise_mapping.rememberable? -%>
-        <%= f.check_box :remember_me %>
-        <%= f.label :remember_me %>
-      <% end -%>
-      <%= f.submit "Log in" %>
+      <%= f.label :remember_me %>
+      <%= f.check_box :remember_me %>
+      <%= f.submit t('views.users.sign_in'), :class => 'capitalize_first', :style => 'width: 10em' %>
     </th>
   </tr>
 </table>
