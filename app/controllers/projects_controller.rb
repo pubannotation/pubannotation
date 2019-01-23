@@ -358,33 +358,6 @@ class ProjectsController < ApplicationController
       format.json { head :no_content }
     end
   end
-  
-  def search
-    @project, notice = get_project(params[:id])
-    if @project
-      docs = @project.docs
-      # PubMed
-      pmdocs = docs.where(:sourcedb => 'PubMed')
-      if params[:doc] == 'PubMed'
-        pmdocs = pmdocs.where('sourceid like ?', "%#{params[:sourceid]}%") if params[:sourceid].present?
-        pmdocs = pmdocs.where('body like ?', "%#{params[:body]}%") if params[:body].present?
-        @pm_sourceid_value = params[:sourceid]
-        @pm_body_value = params[:body]
-      end
-      @pmdocs = pmdocs.page(params[:page])
-      # PMC
-      pmcdocs = docs.pmcdocs
-      if params[:doc] == 'PMC'
-        pmcdocs = pmcdocs.where('sourceid like ?', "%#{params[:sourceid]}%") if params[:sourceid].present?
-        pmcdocs = pmcdocs.where('body like ?', "%#{params[:body]}%") if params[:body].present?
-        @pmc_sourceid_value = params[:sourceid]
-        @pmc_body_value = params[:body]
-      end
-      @pmcdocs = pmcdocs.page(params[:page])
-      flash[:notice] = notice
-      render :template => 'projects/show'
-    end
-  end
 
   def compare
     begin
