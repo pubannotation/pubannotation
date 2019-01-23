@@ -254,7 +254,7 @@ class Doc < ActiveRecord::Base
             sourcedb: doc[:sourcedb],
             sourceid: doc[:sourceid],
             serial: doc[:divid].to_i,
-            source: doc[:source]
+            source: doc[:source_url]
           }
         )
       end
