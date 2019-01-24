@@ -20,7 +20,7 @@
     <% if params[:keywords].present? -%>
       <%= t('activerecord.attributes.doc.sourceid') -%>
     <% else -%>
-      <%= sortable(Doc, 'sourceid', t('activerecord.attributes.doc.sourceid')) %>
+      <%= t('activerecord.attributes.doc.sourceid') %>
     <% end -%>
   </th>
   <th><%= t('activerecord.attributes.doc.body') %></th>

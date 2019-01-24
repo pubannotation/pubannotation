@@ -164,7 +164,7 @@ class Doc < ActiveRecord::Base
   }
   
   # default sort order 
-  DefaultSortKey = "sourceid ASC"
+  # DefaultSortKey = "sourceid ASC"
 
   def self.graph_uri
     "http://pubannotation.org/docs"
