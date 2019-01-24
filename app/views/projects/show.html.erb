@@ -1,18 +1,6 @@
 <% content_for :path do %>
 	> <%= link_to t('views.paths.home'), home_path %>
-	<% if @doc and @doc.sourcedb == 'PubMed' %>
-		> <%= link_to t('views.shared.pmdocs'), pmdocs_path %>
-		> <%= link_to @doc.sourceid, pmdoc_path(@doc.sourceid) %>
-	 	> <%= link_to t('activerecord.models.project').pluralize, pmdoc_projects_path(@doc.sourceid) %>
-	<% elsif @doc and @doc.sourcedb == 'PMC' %>
-		> <%= link_to t('views.shared.pmcdocs'), pmcdocs_path %>
-		> <%= link_to @doc.sourceid, pmcdoc_path(@doc.sourceid) %>
-		> <%= link_to t('views.shared.divs'), pmcdoc_divs_path(@doc.sourceid) %>
-		> <%= link_to @doc.serial, pmcdoc_div_path(@doc.sourceid, @doc.serial) %>
-	 	> <%= link_to t('activerecord.models.project').pluralize, pmcdoc_div_projects_path(@doc.sourceid, @doc.serial) %>
-	<% else %>
- 		> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
- 	<% end %>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
  	> <%= @project.name %>
 <% end %>
 
