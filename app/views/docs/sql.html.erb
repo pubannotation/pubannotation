@@ -19,12 +19,11 @@
 						<%= doc[column] -%>
 					</td>
 				<% end -%>
-				<% if doc.sourcedb == 'PubMed' -%>
-      				<td><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) -%></td>
-    			<% end -%>
-			    <% if doc.sourcedb == 'PMC' -%>
-			    	<td><%= link_to t('views.shared.show'), pmcdoc_path(doc.sourceid) -%></td>
-			    <% end -%>
+				<% if Doc.is_mdoc_sourcedb(doc.sourcedb) -%>
+					<td><%= link_to t('views.shared.show'), pmcdoc_path(doc.sourceid) -%></td>
+				<% else -%>
+					<td><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) -%></td>
+				<% end -%>
 			</tr>
 		<% end -%>
 	</table>

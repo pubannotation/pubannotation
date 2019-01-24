@@ -9,10 +9,10 @@ module DocsHelper
   def docs_count
     if @project
       if @sourcedb
-        count = if @sourcedb == 'PubMed'
-          @project.docs.where(sourcedb: @sourcedb).count
-        else
+        count = if Doc.is_mdoc_sourcedb(@sourcedb)
           @project.docs.where(sourcedb: @sourcedb, serial: 0).count
+        else
+          @project.docs.where(sourcedb: @sourcedb).count
         end
       else
         # count = @project.pmdocs_count + @project.pmcdocs_count
@@ -20,10 +20,10 @@ module DocsHelper
       end
     else
       if @sourcedb
-        count = if @sourcedb == 'PubMed'
-          Doc.where(sourcedb: @sourcedb).count
-        else
+        count = if Doc.is_mdoc_sourcedb(@sourcedb)
           Doc.where(sourcedb: @sourcedb, serial: 0).count
+        else
+          Doc.where(sourcedb: @sourcedb).count
         end
       else
         count = Doc.docs_count(current_user)

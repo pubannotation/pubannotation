@@ -40,10 +40,10 @@
 				</td>
 				<td style='white-space: nowrap'>
 					<% if denotation.doc.present? -%>
-						<% if denotation.doc.sourcedb == 'PubMed'-%>
-							<%= link_to t('views.shared.show'), spans_pmdoc_path(denotation.doc.sourceid, denotation.begin, denotation.end), :target => '_blank'-%>
-						<% else -%>
+						<% if Doc.is_mdoc_sourcedb(denotation.doc.sourcedb) -%>
 							<%= link_to t('views.shared.show'), spans_pmcdoc_div_path(denotation.doc.sourceid, denotation.doc.serial, denotation.begin, denotation.end), :target => '_blank'-%>
+						<% else -%>
+							<%= link_to t('views.shared.show'), spans_pmdoc_path(denotation.doc.sourceid, denotation.begin, denotation.end), :target => '_blank'-%>
 						<% end -%>
 					<% end -%>
 				</td>

@@ -299,6 +299,11 @@ class Doc < ActiveRecord::Base
     return divs
   end
 
+  def self.is_mdoc_sourcedb(sourcedb)
+    ['PMC', 'FirstAuthor'].include?(sourcedb)
+  end
+
+
   def revise(body)
     return if body == self.body
 

@@ -34,20 +34,20 @@ class DocsController < ApplicationController
       else
         if @project.present?
           if @sourcedb.present?
-            if @sourcedb == 'PubMed'
-              @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
-            else
+            if Doc.is_mdoc_sourcedb(@sourcedb)
               @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+            else
+              @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
             end
           else
             @project.docs.where(serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
           end
         else
           if @sourcedb.present?
-            if @sourcedb == 'PubMed'
-              Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
-            else
+            if Doc.is_mdoc_sourcedb(@sourcedb)
               Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+            else
+              Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
             end
           else
             Doc.where(serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
