@@ -398,11 +398,13 @@ h1,h2 {
 }
 
 .sortable-ASC:after {
-  content: ' ' url(/assets/sort_asc.png);  
+  font-family: FontAwesome;
+  content: ' \f063';
 }
 
 .sortable-DESC:after {
-  content: ' ' url(/assets/sort_desc.png);  
+  font-family: FontAwesome;
+  content: ' \f062';
 }
 
 .spans_prev, 
