@@ -154,7 +154,7 @@ class Project < ActiveRecord::Base
   }
 
   # default sort order priority : left > right
-  DefaultSortKey = "status ASC, projects.updated_at DESC"
+  # DefaultSort = [['status', 'ASC'], ['projects.updated_at', 'DESC']]
 
   LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
   

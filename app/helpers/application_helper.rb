@@ -115,45 +115,29 @@ module ApplicationHelper
   def sort_order(model)
     if params[:sort_key].present? && params[:sort_direction].present?
       "#{params[:sort_key]} #{params[:sort_direction]}"
-    elsif defined? model::DefaultSortKey
-      model::DefaultSortKey
+    elsif defined? model::DefaultSort
+      model::DefaultSort.map{|s| s.join(' ')}.join(', ')
     else
       nil
     end
   end
 
-  def sortable(model, sort_key, title = nil)
-    if params[:controller] == 'home'
-      # disable sorting 
-      title
+  def sortable(model, header, sort_key, initial_sort_direction = 'DESC')
+    current_sort_direction = if params[:sort_key].present? && params[:sort_key] == sort_key && params[:sort_direction].present?
+      params[:sort_direction]
+    elsif (defined? model::DefaultSort) && (sort_match = model::DefaultSort.assoc sort_key)
+      sort_match[1]
     else
-      # enable sorting 
-      title ||= sort_key
-      sort_order = sort_order(model)
-
-      if sort_order.nil?
-        title
-      else
-        current_direction = sort_order.split[1]
-        current_direction ||= 'DESC'
-        css_class = "sortable-" + current_direction
-        next_direction = current_direction == 'ASC' ? 'DESC' : 'ASC'
-
-        if params[:text]
-          search_word = 'sort_direction'
-          sort_params_in_url = request.fullpath.match(search_word)
-          if sort_params_in_url.present?
-            sort_params_string = '&' + search_word + sort_params_in_url.post_match
-            current_path_without_sort_params = request.fullpath.gsub(sort_params_string, '')
-          else
-            current_path_without_sort_params = request.fullpath
-          end
-          link_to title, current_path_without_sort_params + '&' + {:sort_key => sort_key, :sort_direction => next_direction}.to_param, {:class => css_class}
-        else
-          link_to title, {:sort_key => sort_key, :sort_direction => next_direction}, {:class => css_class}
-        end
-      end
+      nil
     end
+
+    next_sort_direction = if current_sort_direction.nil?
+      initial_sort_direction
+    else
+      current_sort_direction == 'ASC' ? 'DESC' : 'ASC'
+    end
+
+    link_to header, params.merge(sort_key: sort_key, sort_direction: next_sort_direction), {:class => "sortable-" + (current_sort_direction || 'none')}
   end
 
   def get_project2 (project_name)
