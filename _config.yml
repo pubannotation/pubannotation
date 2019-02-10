@@ -18,6 +18,7 @@ baseurl: ""
 url: "http://www.pubannotation.org"
 
 # Build settings
+relative_permalinks: false
 markdown: kramdown
 highlighter: rouge
 theme: minima
