@@ -7,8 +7,10 @@
   - add-document
   - import-document
   - create-document
+  - add-annotation
   - create-annotation
   - annotation-format
+  - blind-annotation
   - import-annotation
   - obtain-annotation
   - annotation-server-api
@@ -17,5 +19,6 @@
   - align-annotation
   - find-location
   - compare-project
-  - example-1
+  - shared-task
+  - example-align
   - about

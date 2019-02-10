@@ -2,7 +2,7 @@
 layout: docs
 title: Comparing annotations
 prev_section: compare-project
-next_section: example-1
+next_section: example-align
 permalink: /docs/compare-annotation/
 ---
 

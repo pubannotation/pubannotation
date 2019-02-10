@@ -1,48 +1,65 @@
 ---
 layout: docs
-title: Annotation server API
+title: GET vs POST
 prev_section: obtain-annotation
 next_section: annotation-editor
-permalink: /docs/annotation-server-api/
+permalink: /docs/get-vs-post/
 ---
 
-Pubannotation can communicate with an external web service,
-which we call an _annotation server_,
-to get annotation from the server.
+When a REST service for text annotation, GET or POST method.
 
-Currently, PubAnnotation can communicate with annotation servers 
+## GET is a safe method
+
+means a GET request is cacheable, prefetchable, bookmarkable
+many web browsers 
+
+## do not USE 
+
+PubAnnotation defines REST API for interoperability.
+
+A PubAnnotation-interoperable _annotations server_ is defined as a RESTful web service 
 which conforms the following input and output API.
 
-### Input
+## Input
 
-For an annotation server to be interoperable with PubAnnotation, it has to take as input either
+A PubAnnotation-interoperable annotation server takes either
 
-* a piece of text (through a parameter which is default to _text_ ), or
-* a pair of source DB and source ID specification (through parameters which are defualt to _sourcedb_ and _sourceid_ ).
+* a piece of text through the parameter, _text_, or
+* a pair of source DB and source ID specification through the parameter, _sourcedb_ and _sourceid_.
 
-When a request is made with a piece of text,
-the server is expected to produce annotation to the text,
-and to respond with the annotation.
+When a request is made with _text_,
+the server is expected to produce annotations to the text,
+and to respond with the annotations.
 
-When a request is made with source DB / source ID specification,
+When a request is made with _sourcedb_ & _sourceid_,
 the server is expected to fetch the corresponding piece of text from the source DB,
-to produce annotation to the text,
-and to respond with the annotation.
+to produce annotations to the text,
+and to respond with the annotations.
 
-Making a request with both a piece of text and source DB / source ID specification is redundant and may cause a conflict: the piece of text supplied to the server may be different from the text fetched by the source DB / source ID.
+Making a request with both _text_ and _sourcedb_/_sourceid_ may cause a redundant specification.
+In the case, it is expected that the _text_ parameter takes higher priority
+with the _sourcedb_/_sourceid_ specification ignored.
 
-Therefore, in the case, to prevent unexpected consequence,
-the server must respond with the status code 400 (Bad Request).
-
-### Output
+## Output
 
 PubAnnotation expects an annotation server to respond with annotations represented in 
 [PubAnnotation JSON format]({{site.baseurl}}/docs/annotation-format/).
 
-For a server which supports content negotiation to determine the format of the response body,
-PubAnnotation will add the header "_Accept: application/json_" to every request it will make.
+In case an annotation server supports multiple options of annotation formats,
+the format of response body the client will expect may be speficied in the URL or
+in the _Accept_ header.
 
-### Asynchronous output
+While different people advocate different approach, there may be pros and cons in both:
+see this [dicussion](http://programmers.stackexchange.com/questions/139654/rest-tradeoffs-between-content-negotiation-via-accept-header-versus-extensions).
+
+However, either should be fine with PubAnnotation.
+
+For the case where a server replies on _Accept_ header to determine the output format of annotations,
+PubAnnotation will add the _Accept_ header to every requests it will make.
+
+In case a server see the URL, e.g. type extention, to determine the format of output, which is the case of PubAnnotation, the server can simply ignore the _Accept_ header.
+
+## Asynchronous output
 
 > [changes made at 21st Feb, 2017] The Retry-After header can be sent with the response of the initial request (not the second).
 
@@ -50,13 +67,10 @@ PubAnnotation will add the header "_Accept: application/json_" to every request 
 
 > [changes made at 21st Feb, 2017] For the second request, the response code for the case the result of annotation is permanently removed is changed to 410 from 404.
 
-The communication to get annotation from an annotation server can be made in an asyncronous way.
-For example, sometimes, it may take a long time for a server to produce annotation,
-and a request cannot be responded with the result of annotation within a reasonable time.
-
-In the case, an initial request is made with the input parameters.
-If the request is determined valid, the server is expected to respond with a status code 303 (See Other),
-together with the _Location_ header to indicate the URL for retrieval of the annotation.
+In case an annotation server requires a separate request for retrieval of annotations,
+the server has to response to the initial request
+with the status code 303 (See Other)
+and the _Location_ header has to indicate the URL for the client to access to retrieve the annotations.
 Optionally, the _Retry-After_ header can be used to indicate
 how long the clinet is advised to wait before accessing the location of annotation result.
 If the server cannot fulfil the request for some reason, e.g., server overload,
@@ -76,24 +90,7 @@ In the case, the server can respond with the status code 410 (Gone).
 As a model implementation, the API for asynchronous annotation request and retrieval is implemented in PubDictionaries.
 Please take a look at the corresponding API documentation: [PubDictionaries Annotation API](http://docs.pubdictionaries.org/annotation-api/)
 
-## Registration of an annotation server
-
-An annotation server can be registered to the [annotators](http://pubannotation.org/annotators) page of PubAnnotation.
-
-Below is an example of registration for an annotation service by PubDictionaries using the dictionary _UBERON-AE_:
-<br/>
-![register_annotation_server]({{site.baseurl}}/img/register_annotation_server.png)
-<br/>
-Parameters can be customized using the resigration interface.
-For details, please click the help icon of the interface.
-
-Below is another example to register the same annotation service this time for batch annotation (100 documents in one batch):
-<br/>
-![register_annotation_server_batch]({{site.baseurl}}/img/register_annotation_server_batch.png)
-<br/>
-
-
-## Example of requests
+## Example
 
 For an annotation server to be interoperable with PubAnnotation,
 it has to respond **at least one** of the example calls shown below.

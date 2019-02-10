@@ -1,11 +1,12 @@
 ---
 layout: docs
-title: Annotation format
-prev_section: create-annotation
-next_section: blind-annotation
-permalink: /docs/annotation-format/
+title: Hiding annotations
+prev_section: annotation-format
+next_section: import-annotation
+permalink: /docs/hide-annotation/
 ---
 
+A project can be set to hide annotations
 PubAnnotation uses [JSON](http://json.org/) as its default format to store annotations.
 This document describes how annotations are represented in JSON in PubAnnotation.
 

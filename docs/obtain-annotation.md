@@ -6,12 +6,25 @@ next_section: annotation-server-api
 permalink: /docs/obtain-annotation/
 ---
 
-For documents in PubAnnotation, annotations can be obtained from REST web services.
+For documents in a project, annotations can be obtained from an external web service,
+wich we call an annotation server.
+
+Pre-registered annotation servers can be found at the [annotators](http://pubannotation.org/annotators) page of PubAnnotation.
+
+An new annotation server can be registered at the same page.
+
+
+
+
 To obtain annotations, PubAnnotation can talk with a web service which
 
 * takes a piece of text through the parameter, _text_, and
 * responses with annotations to the text.
   * for PubAnnotation to understand the response, annotations need to be in the [PubAnnotation JSON format]({{site.baseurl}}/docs/annotation-format/).
+
+
+
+The web service may produce annotation 
 
 To obtain automatic annotations for a document,
 

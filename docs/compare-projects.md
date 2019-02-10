@@ -2,7 +2,7 @@
 layout: docs
 title: Comparing projects
 prev_section: find-location
-next_section: compare-annotation
+next_section: shared-task
 permalink: /docs/compare-project/
 ---
 

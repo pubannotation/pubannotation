@@ -24,13 +24,13 @@ thus its span specifications will be '_/span/4-11_'.
 
 PubAnnotation provides a GUI to get the URI of any span:
 
-1. In a document page
+1. Open a document page<br/>
 ![caret positions]({{site.baseurl}}/img/document-screen.png)
 
-2. Select a span, then the URI of the span will appear below the document.
+2. Select a span, then the URI of the span will appear below the document.<br/>
 ![caret positions]({{site.baseurl}}/img/span-select-screen.png)
 
-3. Click the URL to open the document page with the span highlighted.
+3. Click the URL to open the document page with the selected span highlighted.
 
 Once a span URI is obtained, annotations to the span can be accessed by adding '_/annotations_' to the URL:
 

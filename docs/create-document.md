@@ -2,7 +2,7 @@
 layout: docs
 title: Creating documents
 prev_section: import-document
-next_section: create-annotation
+next_section: add-annotation
 permalink: /docs/create-document/
 ---
 

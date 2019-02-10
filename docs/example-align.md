@@ -1,9 +1,9 @@
 ---
 layout: docs
-title: Example 1
-prev_section: compare-project
+title: Example of aligning your annotation to the original text
+prev_section: shared-task
 next_section: about
-permalink: /docs/example-1/
+permalink: /docs/example-align/
 ---
 
 This example shows how you can use PubAnnotation to align your annotation into the original text.
