@@ -10,11 +10,11 @@ Pubannotation can be used as a platform for shared task organization.
 
 ## Shared Tasks at PubAnnotation
 
-In PubAnnotation, it is assumed that a shared task is implmented by
+In PubAnnotation, it is assumed that a shared task is implemented by
 * benchmark data sets, and
 * evaluation tools.
 
-Here, _benchmark data_ means _annotation data_, which is supposed to have highly trustable annotation.
+Here, _benchmark data_ means _annotation data_, which is assumed to have reliable annotation.
 
 For shared task organization, a benchmark data set is often divided into three mutually exclusive sets:
 * reference data set,
@@ -73,7 +73,7 @@ If the _accessibility_ property of the project is set to be _public_, then the a
 ### 3. Participation
 
 For potential participants to actually participate in the shared task,
-they needs to be able to
+they need to be able to
 1. obtain the raw text of the benchmark data sets, either the training, development, or evaluation data set.
 1. submit their own annotation to texts, and
 1. get evaluation of their annotation.
