@@ -28,7 +28,7 @@ class DocsController < ApplicationController
 
       @docs = if params[:keywords].present?
         project_id = @project.nil? ? nil : @project.id
-        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:params[:page]})
+        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:page, per:per})
         @search_count = search_results[:total]
         search_results[:results]
       else

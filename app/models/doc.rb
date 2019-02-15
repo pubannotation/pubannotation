@@ -67,7 +67,7 @@ class Doc < ActiveRecord::Base
           filter: filter_phrase
         }
       },
-    ).page(attributes[:page])
+    ).page(attributes[:page]).per(attributes[:per])
 
     return {
       total: docs.results.total,
