@@ -67,12 +67,14 @@ class Doc < ActiveRecord::Base
           filter: filter_phrase
         }
       },
+      highlight: {
+        fields: {
+          body: {}
+        }
+      }
     ).page(attributes[:page]).per(attributes[:per])
 
-    return {
-      total: docs.results.total,
-      results: docs.records
-    }
+    return docs
   end
 
   UserSourcedbSeparator = '@'
@@ -594,8 +596,9 @@ class Doc < ActiveRecord::Base
   def to_list_hash(doc_type)
     hash = {
       sourcedb: sourcedb,
-      sourceid: sourceid,
+      sourceid: sourceid
     }
+
     # switch url or div_url
     case doc_type
     when 'doc'
@@ -606,6 +609,18 @@ class Doc < ActiveRecord::Base
       hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_index_url(self.sourcedb, self.sourceid)
     end
     return hash
+  end
+
+  def self.hash_to_tsv(docs)
+    headers = docs.first.keys
+    tsv = CSV.generate(col_sep:"\t") do |csv|
+      # headers
+      csv << headers
+      docs.each do |doc|
+        csv << doc.values
+      end
+    end
+    return tsv
   end
 
   def self.to_tsv(docs, doc_type)

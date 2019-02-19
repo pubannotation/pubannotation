@@ -1,7 +1,29 @@
 <tr>
   <td><%= source_doc.sourcedb -%></td>
 	<td><%= source_doc.sourceid -%></td>
-	<td><%= source_doc.body[0...100] -%></td>
+	<td class="snippet"><%=
+      snippet = source_doc.body
+      em_open_pos = snippet.index('<em>')
+      snippet = if em_open_pos
+        em_close_pos = snippet.rindex('</em>')
+        m = em_open_pos + (em_close_pos.to_f - em_open_pos) / 2
+        b = m - 50
+        e = m + 50
+        if b < 0
+          e = e - b
+          b = 0
+        end
+        if e > snippet.length
+          b -= e - snippet.length
+          e = snippet.length
+        end
+        b = 0 if b < 0
+        snippet[b...e]
+      else
+        snippet[0 ... 100]
+      end
+      snippet.html_safe
+    -%></td>
 	<td style="text-align:right">
     <% if source_doc.has_divs? -%>
       <%= link_to source_doc.projects_num, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>

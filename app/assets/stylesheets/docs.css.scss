@@ -83,3 +83,11 @@
   cursor: not-allowed;
   color: lighten(#000, 60%);
 }
+
+
+.snippet {
+  em {
+    font-style: normal;
+    font-weight: bold;
+  }
+}

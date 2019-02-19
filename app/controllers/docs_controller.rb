@@ -26,11 +26,13 @@ class DocsController < ApplicationController
         [params[:page], 10]
       end
 
+      htexts = nil
       @docs = if params[:keywords].present?
         project_id = @project.nil? ? nil : @project.id
         search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:page, per:per})
-        @search_count = search_results[:total]
-        search_results[:results]
+        @search_count = search_results.results.total
+        htexts = search_results.results.map{|r| {text: r.highlight.body}}
+        search_results.records
       else
         if @project.present?
           if @sourcedb.present?
@@ -56,13 +58,26 @@ class DocsController < ApplicationController
       end
 
       respond_to do |format|
-        format.html
+        format.html {
+          if htexts
+            htexts = htexts.map{|h| h[:text].first}
+            @docs = @docs.zip(htexts).each{|d,t| d.body = t}.map{|d,t| d}
+          end
+        }
         format.json {
-          docs_list_hash = @docs.map{|d| d.to_list_hash('doc')}
-          render json: docs_list_hash
+          hdocs = @docs.map{|d| d.to_list_hash('doc')}
+          if htexts
+            hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+          end
+          render json: hdocs
         }
         format.tsv  {
-          render text: Doc.to_tsv(@docs, 'doc')
+          hdocs = @docs.map{|d| d.to_list_hash('doc')}
+          if htexts
+            htexts.each{|h| h[:text] = h[:text].first}
+            hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+          end
+          render text: Doc.hash_to_tsv(hdocs)
         }
       end
     rescue => e

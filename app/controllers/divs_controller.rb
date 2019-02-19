@@ -10,18 +10,38 @@ class DivsController < ApplicationController
       @divs_count = @divs.count
       @doc = @divs.first
 
+      htexts = nil
       if params[:keywords].present?
-        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], sourceid: params[:sourceid], page:params[:page]})
-        @search_count = search_results[:total]
-        @divs = @search_count > 0 ? search_results[:results] : []
+        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: params[:sourcedb], sourceid: params[:sourceid], page:params[:page], per:params[:per]})
+        @search_count = search_results.results.total
+        htexts = search_results.results.map{|r| {text: r.highlight.body}}
+        @divs = @search_count > 0 ? search_results.records : []
       end
 
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
 
       respond_to do |format|
-        format.html
-        format.json {render json: @divs.collect{|div| div.to_list_hash('div')}}
-        format.tsv  {render text: Doc.to_tsv(@divs, 'div') }
+        format.html {
+          if htexts
+            htexts = htexts.map{|h| h[:text].first}
+            @divs = @divs.zip(htexts).each{|d,t| d.body = t}.map{|d,t| d}
+          end
+        }
+        format.json {
+          hdocs = @divs.map{|d| d.to_list_hash('doc')}
+          if htexts
+            hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+          end
+          render json: hdocs
+        }
+        format.tsv  {
+          hdocs = @divs.map{|d| d.to_list_hash('doc')}
+          if htexts
+            htexts.each{|h| h[:text] = h[:text].first}
+            hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+          end
+          render text: Doc.hash_to_tsv(hdocs)
+        }
         format.txt  {redirect_to doc_sourcedb_sourceid_show_path(params[:project_id], params[:sourcedb], params[:sourceid], format: :txt)}
       end
     rescue => e
@@ -44,19 +64,39 @@ class DivsController < ApplicationController
       @divs_count = @divs.count
       @doc = @divs.first
 
+      htexts = nil
       if params[:keywords].present?
-        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, sourcedb: params[:sourcedb], sourceid: params[:sourceid], page:params[:page]})
-        @search_count = search_results[:total]
-        @divs = @search_count > 0 ? search_results[:results] : []
+        search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: @project.id, sourcedb: params[:sourcedb], sourceid: params[:sourceid], page:params[:page], per:params[:per]})
+        @search_count = search_results.results.total
+        htexts = search_results.results.map{|r| {text: r.highlight.body}}
+        @divs = @search_count > 0 ? search_results.records : []
       end
 
       @divs.each{|div| div.set_ascii_body} if (params[:encoding] == 'ascii')
 
       respond_to do |format|
-        format.html 
-        format.json {render json: @divs.collect{|div| div.to_list_hash('div')} }
-        format.tsv  {render text: Doc.to_tsv(@divs, 'div') }
-        format.txt  {redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, params[:sourcedb], params[:sourceid], format: :txt)}
+        format.html {
+          if htexts
+            htexts = htexts.map{|h| h[:text].first}
+            @divs = @divs.zip(htexts).each{|d,t| d.body = t}.map{|d,t| d}
+          end
+        }
+        format.json {
+          hdocs = @divs.map{|d| d.to_list_hash('doc')}
+          if htexts
+            hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+          end
+          render json: hdocs
+        }
+        format.tsv  {
+          hdocs = @divs.map{|d| d.to_list_hash('doc')}
+          if htexts
+            htexts.each{|h| h[:text] = h[:text].first}
+            hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+          end
+          render text: Doc.hash_to_tsv(hdocs)
+        }
+        format.txt  {redirect_to doc_sourcedb_sourceid_show_path(params[:project_id], params[:sourcedb], params[:sourceid], format: :txt)}
       end
     rescue => e
       respond_to do |format|

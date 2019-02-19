@@ -1,7 +1,29 @@
 <tr>
         <td style="text-align:center"><%= div.serial %></td>
         <td style="text-align:center"><%= div.section %></td>
-        <td style="text-align:left"><%= div.body[0...100] %></td>
+		<td class="snippet"><%=
+	      snippet = div.body
+	      em_open_pos = snippet.index('<em>')
+	      snippet = if em_open_pos
+	        em_close_pos = snippet.rindex('</em>')
+	        m = em_open_pos + (em_close_pos.to_f - em_open_pos) / 2
+	        b = m - 50
+	        e = m + 50
+	        if b < 0
+	          e = e - b
+	          b = 0
+	        end
+	        if e > snippet.length
+	          b -= e - snippet.length
+	          e = snippet.length
+	        end
+	        b = 0 if b < 0
+	        snippet[b...e]
+	      else
+	        snippet[0 ... 100]
+	      end
+	      snippet.html_safe
+	    -%></td>
 		<td style="text-align:right">
 			<%= link_to div.projects_num, doc_sourcedb_sourceid_divs_show_path(div.sourcedb, div.sourceid, div.serial) -%>
 		</td>
