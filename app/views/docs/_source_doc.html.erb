@@ -6,18 +6,16 @@
       em_open_pos = snippet.index('<em>')
       snippet = if em_open_pos
         em_close_pos = snippet.rindex('</em>')
-        m = em_open_pos + (em_close_pos.to_f - em_open_pos) / 2
-        b = m - 50
-        e = m + 50
+        m = em_open_pos + (em_close_pos - em_open_pos) / 2
+        b = m - 40
+        e = m + 60
         if b < 0
-          e = e - b
+          e -= b
           b = 0
         end
         if e > snippet.length
-          b -= e - snippet.length
           e = snippet.length
         end
-        b = 0 if b < 0
         snippet[b...e]
       else
         snippet[0 ... 100]
