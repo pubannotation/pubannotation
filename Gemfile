@@ -67,8 +67,8 @@ gem 'delayed_job_active_record'
 gem 'backup'
 gem 'whenever', :require => false
 # gem 'mysql2',          '~> 0.3.13', :platform => :ruby
-gem 'elasticsearch-model', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
-gem 'elasticsearch-rails', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
+gem 'elasticsearch-model', '~> 5.1.0'
+gem 'elasticsearch-rails', '~> 5.1.0'
 gem 'stardog-rb', :git => 'git://github.com/jdkim/stardog-rb'
 gem 'tao_rdfizer', '>= 0.9.9'
 

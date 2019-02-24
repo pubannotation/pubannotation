@@ -54,8 +54,8 @@ class Doc < ActiveRecord::Base
 
     docs = search(
       query: {
-        filtered: {
-          query: {
+        bool: {
+          must: {
             match: {
               body: {
                 query: attributes[:body],
