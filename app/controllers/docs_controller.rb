@@ -34,25 +34,31 @@ class DocsController < ApplicationController
         htexts = search_results.results.map{|r| {text: r.highlight.body}}
         search_results.records
       else
+        sort_order = sort_order(Doc)
+        if params[:randomize]
+          sort_order = sort_order ? sort_order + ', ' : ''
+          sort_order += 'random()'
+        end
+
         if @project.present?
           if @sourcedb.present?
             if Doc.is_mdoc_sourcedb(@sourcedb)
-              @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+              @project.docs.where(sourcedb: @sourcedb, serial: 0).order(sort_order).simple_paginate(page, per)
             else
-              @project.docs.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
+              @project.docs.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
             end
           else
-            @project.docs.where(serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+            @project.docs.where(serial: 0).order(sort_order).simple_paginate(page, per)
           end
         else
           if @sourcedb.present?
             if Doc.is_mdoc_sourcedb(@sourcedb)
-              Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+              Doc.where(sourcedb: @sourcedb, serial: 0).order(sort_order).simple_paginate(page, per)
             else
-              Doc.where(sourcedb: @sourcedb).order(sort_order(Doc)).simple_paginate(page, per)
+              Doc.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
             end
           else
-            Doc.where(serial: 0).order(sort_order(Doc)).simple_paginate(page, per)
+            Doc.where(serial: 0).order(sort_order).simple_paginate(page, per)
           end
         end
       end

@@ -11,6 +11,13 @@
   text-decoration: none;
 }
 
+.option {
+  margin-left: 10px;
+  font-size: smaller;
+  font-weight: normal;
+  text-decoration: none;
+}
+
 .capitalize{
   text-transform:capitalize;
 }
@@ -102,7 +109,7 @@ section {
 }
 
 h1 {
-  width: 470px;
+  width: 490px;
   border:solid $main_color;
   border-width: 0px 0px 1px 7px;
   padding-left: 6px;
@@ -339,6 +346,36 @@ li {
     cursor: pointer;
 }
 
+.pushdown-button {
+    display:inline-block;
+    margin:2px;
+    border:1px solid #aaa;
+    border-radius:4px;
+    background-color:#fff;
+    box-shadow:1px 1px 0px 0px #aaa;
+
+    color:#222266;
+    font-family:arial;
+    font-size: small;
+    font-weight: normal;
+    padding: 2px 4px;
+    text-decoration:none;
+
+    cursor: pointer;
+    min-width: 4em;
+    text-align: center;
+}
+
+.pushdown-button:hover {
+  border-color: #000;
+}
+
+.pushdown-button.pressed {
+  background-color: #eee;
+  box-shadow:inset 1px 1px 0px 0px #aaa;
+  transform: translateY(1px);
+}
+
 h1,h2 {
   .control {
     margin-left: 5px;
@@ -347,7 +384,6 @@ h1,h2 {
 
 .tab-bar{
   position: relative;
-  top: -1px;
   margin-left: 6px;
   font-size: small;
   font-weight: normal;
