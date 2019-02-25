@@ -21,7 +21,7 @@ class DocsController < ApplicationController
 
       page, per = if params[:format] && (params[:format] == "json" || params[:format] == "tsv")
         params.delete(:page)
-        [1, 5000]
+        [1, 1000]
       else
         [params[:page], 10]
       end
