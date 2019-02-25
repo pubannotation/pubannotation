@@ -12,7 +12,8 @@
 }
 
 .option {
-  margin-left: 10px;
+  margin-left: 6px;
+  padding: 2px;
   font-size: smaller;
   font-weight: normal;
   text-decoration: none;
@@ -109,7 +110,7 @@ section {
 }
 
 h1 {
-  width: 490px;
+  width: 560px;
   border:solid $main_color;
   border-width: 0px 0px 1px 7px;
   padding-left: 6px;
@@ -383,8 +384,10 @@ h1,h2 {
 }
 
 .tab-bar{
+  display: inline-block;
   position: relative;
-  margin-left: 6px;
+  margin-left: 5px;
+  padding: 1px;
   font-size: small;
   font-weight: normal;
   text-decoration: none;
@@ -404,6 +407,13 @@ h1,h2 {
 }
 
 .inactive_tab {
+}
+
+.search-bar {
+  display: inline-block;
+  position: relative;
+  margin-left: 6px;
+  padding: 1px;
 }
 
 #path{

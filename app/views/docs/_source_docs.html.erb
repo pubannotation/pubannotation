@@ -9,15 +9,17 @@
 		<%= link_to 'TSV', params.merge(format: :tsv), class: 'tab', title: "To get the whole list (up to 1,000 items) in TSV (Tab-separated values)" -%>
 	</span>
   <%= render partial: 'docs/search_form' -%>
-  <span class='option' style='font-weight: normal'>
-    <% if params[:randomize] == 'true' %>
-      <% params.delete(:randomize) %>
-      <%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params, class: 'pushdown-button pressed', title: "randomize the order" -%>
-    <% else %>
-      <a href=<%= params %>YYY</a>
-      <%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.merge(randomize: true), class: 'pushdown-button', title: "randomize the order" -%>
-    <% end %>
-  </span>
+  <% if @search_count.nil? && docs_count.to_i < 100000 %>
+    <span class='option'>
+      <% if params[:randomize] == 'true' %>
+        <% params.delete(:randomize) %>
+        <%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params, class: 'pushdown-button pressed', title: "randomize the order (only for projects with <0.1M documents)" -%>
+      <% else %>
+        <a href=<%= params %>YYY</a>
+        <%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.merge(randomize: true), class: 'pushdown-button', title: "randomize the order (only for projects with <0.1M documents)" -%>
+      <% end %>
+    </span>
+  <% end %>
 </h1>
 
 <table class="full">
