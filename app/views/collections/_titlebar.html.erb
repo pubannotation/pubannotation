@@ -1,0 +1,6 @@
+<div class='collection-title'>
+	<%= link_to_unless_current @collection.name, collection_path(@collection.name) -%>
+	<%= collection_home_button -%>
+	<%= badge_sharedtask(@collection).html_safe %>
+	<%= badge_accessibility(@collection).html_safe %>
+</div>

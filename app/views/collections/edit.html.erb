@@ -1,0 +1,17 @@
+<% content_for :path do %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to "collections", collections_path %>
+	> <%= link_to @collection.name, collection_path(@collection.name) %>
+	> edit
+<% end %>
+
+<%= render :partial => 'titlebar' -%>
+
+<h1>
+	Properties
+</h1>
+
+<%= render 'form' %>
+
+<%= link_to 'Show', collection_path(@collection.name), class: 'button' %>
+<%= link_to 'List', collections_path, class: 'button' %>

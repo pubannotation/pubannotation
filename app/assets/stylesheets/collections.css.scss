@@ -1,0 +1,54 @@
+// Place all the styles related to the groups controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+.collection-title {
+  display: inline-block;
+  position: relative;
+  padding: 4px;
+  border-style: ridge;
+  border-width: 5px;
+  font-size: x-large;
+  font-weight: bold;
+  background: repeating-linear-gradient(
+    45deg,
+    #ecadac,
+    #ecadac 10px,
+    #d8a298 10px,
+    #d8a298 20px
+  );
+}
+
+.collection-object {
+  display: inline-block;
+  position: relative;
+  margin: 1px;
+  padding: 2px;
+  border-style: ridge;
+  border-width: 2px;
+  border-radius: 4px;
+  font-size: medium;
+  font-weight: bold;
+  background: repeating-linear-gradient(
+    45deg,
+    #ecadac,
+    #ecadac 10px,
+    #d8a298 10px,
+    #d8a298 20px
+  );
+}
+
+.collections_header_name {
+  width: 12em;
+}
+
+.collections_header_type {
+  width: 1.5em;
+}
+
+.collections_header_projects_count {
+  width: 3em;
+}
+.collections_header_date {
+  width: 6em;
+}

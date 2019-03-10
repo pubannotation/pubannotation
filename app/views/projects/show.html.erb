@@ -7,6 +7,15 @@
 <section>
 <%= render :partial => 'titlebar' -%>
 
+<% if @project.collections.accessible(current_user).any? %>
+	<fieldset class="pane collection(s)">
+	<legend>in Collections</legend>
+	<% @project.collections.accessible(current_user).each do |collection| %>
+		<%= render partial: 'collections/object', locals: {collection: collection} -%>
+	<% end %>
+	</fieldset>
+<% end %>
+
 <fieldset class="pane description">
 <legend>Description</legend>
 <% if @project.description.present? -%>

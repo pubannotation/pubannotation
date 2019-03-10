@@ -9,6 +9,7 @@ class UsersController < ApplicationController
     @user = User.find_by_username(params[:name])
     @projects = Project.mine(@user)
 
+    @collections_grid = initialize_grid(Collection.accessible(current_user), name: "cg", conditions:{user_id: @user.id}, per_page: 10)
     @projects_grid = initialize_grid(Project.accessible(current_user), name: "pg", conditions:{user_id: @user.id}, per_page: 10)
     @annotators_grid = initialize_grid(Annotator.accessibles(current_user), name: "ag", conditions:{user_id: @user.id}, per_page: 10)
     @editors_grid = initialize_grid(Editor.accessibles(current_user), name: "eg", conditions:{user_id: @user.id}, per_page: 10)

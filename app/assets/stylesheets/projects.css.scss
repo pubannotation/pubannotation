@@ -6,6 +6,24 @@
   }
 }
 
+.project-title {
+  display: inline-block;
+  position: relative;
+  padding: 4px;
+  border-style: ridge;
+  border-width: 5px;
+  font-size: x-large;
+  font-weight: bold;
+  background: repeating-linear-gradient(
+    45deg,
+    #a0adec,
+    #a0adec 10px,
+    #96a2d8 10px,
+    #96a2d8 20px
+  );
+}
+
+
 #grid_filter_row {
   input,select {
     box-sizing: border-box;
@@ -68,6 +86,13 @@
   td.help-column {
     width: 1.5em;
     text-align: center;
+  }
+}
+
+.collections-pane {
+  display: inline-block;
+  legend {
+    font-size:x-small;
   }
 }
 

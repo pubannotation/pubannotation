@@ -1,0 +1,4 @@
+<div class='collection-object'>
+	<%= link_to_unless_current collection.name, collection_path(collection.name) -%>
+	<%= badge_sharedtask(collection).html_safe %>
+</div>

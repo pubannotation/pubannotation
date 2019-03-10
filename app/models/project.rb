@@ -8,6 +8,8 @@ class Project < ActiveRecord::Base
   after_validation :user_presence
   serialize :namespaces
   belongs_to :user
+  has_many :collection_projects, dependent: :destroy
+  has_many :collections, through: :collection_projects
   has_many :project_docs, dependent: :destroy
   has_many :docs, through: :project_docs
   has_many :queries

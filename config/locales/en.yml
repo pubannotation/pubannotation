@@ -219,6 +219,7 @@ en:
       instances: Instances
       news_notification: News
       project: project
+      collection: collection
       sproject: Super Project
       user: user
       associate_maintainer: sub-maintainer
@@ -248,6 +249,9 @@ en:
         annotations_RDF_downloadable: Anno. RDF download
         process: Type
         updated_at: updated at
+      collections:
+        name: Name
+        description: Description
       sproject:
         rdfwriter: RDF writer
         xmlwriter: XML writer
@@ -430,6 +434,7 @@ en:
     paths:
       home: top
       docs: docs
+      new: new
     projects:
       project: project
       my_projects: my projecs

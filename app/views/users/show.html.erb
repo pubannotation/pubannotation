@@ -27,6 +27,41 @@
 
   <section>
     <h2>
+      Collections
+      <%= link_to 'create', new_collection_path, {class: 'control button'} if @user == current_user %>
+    </h2>
+
+    <%=
+      grid(@collections_grid) do |g|
+
+        g.column name: 'Name', attribute: 'name' do |collection|
+          [link_to(collection.name, collection_path(collection.name)), {title: collection.name}]
+        end
+
+        if @user == current_user
+          g.column attribute: 'accessibility', filter: false, class: 'column-project-type' do |collection|
+            [badge_accessibility(collection).html_safe, {style: 'text-align:center'}]
+          end
+        end
+
+        g.column filter: false, class: 'column-project-type' do |collection|
+          [badge_sharedtask(collection).html_safe, {style: 'text-align:center'}]
+        end
+
+        g.column name: 'Description', attribute: 'description' do |collection|
+          [strip_tags(collection.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+        end
+
+        g.column name: 'Updated at', attribute: 'updated_at', filter: false do |collection|
+          [collection.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
+        end
+
+      end
+    -%>
+  </section>
+
+  <section>
+    <h2>
       Projects
       <%= link_to 'create', new_project_path, {class: 'control button'} if @user == current_user %>
     </h2>

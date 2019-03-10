@@ -31,23 +31,6 @@
   text-transform:lowercase;
 }
 
-.project-title {
-  display: inline-block;
-  position: relative;
-  padding: 4px;
-  border-style: ridge;
-  border-width: 5px;
-  font-size: x-large;
-  font-weight: bold;
-  background: repeating-linear-gradient(
-    45deg,
-    #a0adec,
-    #a0adec 10px,
-    #96a2d8 10px,
-    #96a2d8 20px
-  );
-}
-
 .home_button {
   margin: 0;
   border-width: 0;

@@ -1,5 +1,16 @@
 Pubann::Application.routes.draw do
 
+  resources :collections do
+    resources :project do
+      collection do
+        post '/' => 'collections#add_project'
+      end
+      member do
+        delete '/' => 'collections#remove_project'
+      end
+    end
+  end
+
   resources :queries
 
   resources :sequencers

@@ -2,9 +2,7 @@
 > <%= t('views.paths.home') %>
 <% end %>
 
-<div class="panel show-on-mobiles">
-	<%= render :partial => "news" %>
-</div>
+<%= render :partial => "news" %>
 
 <div class="panel">
 	<section>
@@ -18,27 +16,35 @@
 	</section>
 </div>
 
-<div class="panel hide-on-mobiles">
-	<%= render :partial => "news" %>
+<div class="panel">
+	<section>
+		<h1 title='A shared task is a collection of projects, together which forms a shared task.'>
+			<%= link_to 'Shared Tasks', collections_path({grid: {f: {is_sharedtask: ['t']}}}) %>
+			<span class='info'>(<%= @sharedtasks_number -%>)</span>
+		</h1>
+		<%= render :partial => "collections/sharedtasks_list_simple", :locals => {:collections => @sharedtasks_top_recent, :scope => nil } %>
+	</section>
 </div>
 
-<section>
-	<h1>
-		<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
-		<span class='info'>(<%= @projects_number -%>)</span>
-		<span class='control'><%= render partial: 'projects/search_all_form' -%></span>
-	</h1>
+<div class="panel">
+	<section>
+		<h1 title='A collection is a group of projects collected for a specific purpose.'>
+			<%= link_to t('activerecord.models.collection').pluralize.capitalize.html_safe, collections_path %>
+			<span class='info'>(<%= @collections_number -%>)</span>
+			<span class='control'><%= render partial: 'collections/search_all_form' -%></span>
+		</h1>
+		<%= render :partial => "collections/list_simple", :locals => {:collections => @collections_top_recent, :scope => nil } %>
+	</section>
+</div>
 
-	<div class="panel">
-		<section>
-			<h3>With most annotations</h3>
-			<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_annotations_count, :scope => nil } %>
-		</section>
-	</div>
-		<div class="panel">
-		<section>
-			<h3>Recently updated</h3>
-			<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_recent, :scope => nil } %>
-		</section>
-	</div>
-</section>
+<div class="panel">
+	<section>
+		<h1 title='A project is an annotation dataset.'>
+			<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
+			<span class='info'>(<%= @projects_number -%>)</span>
+			<span class='control'><%= render partial: 'projects/search_all_form' -%></span>
+		</h1>
+		<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_recent, :scope => nil } %>
+	</section>
+</div>
+

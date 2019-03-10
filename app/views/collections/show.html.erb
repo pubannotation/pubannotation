@@ -1,0 +1,94 @@
+<% content_for :path do %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to t('activerecord.models.collection').pluralize, collections_path %>
+ 	> <%= @collection.name %>
+<% end %>
+
+<section>
+<%= render :partial => 'titlebar' -%>
+
+<fieldset class="pane description">
+<legend>Description</legend>
+<% if @collection.description.present? -%>
+	<div><%= @collection.description.html_safe %></div>
+<% end -%>
+<br/>
+
+<table class="vertical">
+	<tr>
+		<th><%= t('activerecord.attributes.project.maintainer') %></th>
+		<td><%= collection_maintainer_link(@collection) %></td>
+	</tr>
+</table>
+<% if user_signed_in? -%>
+	<% if @collection.editable?(current_user) -%>
+		<% edit_path = edit_collection_path(@collection.name) -%> <span class="button"> <%= link_to t('views.shared.edit'), edit_path, :class => 'capitalize_first' -%> </span>
+	<% end -%>
+
+	<% if @collection.destroyable?(current_user) -%> 
+		<span class="button"><%= link_to t('views.shared.delete'), @collection.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
+	<% end -%>
+<% end %>
+</fieldset>
+
+<fieldset class="pane projects">
+<legend>Projects</legend>
+
+<%=
+  grid(@projects_grid) do |g|
+
+    g.column name: 'Name', attribute: 'name', class: 'column-project-name' do |project|
+      [link_to(project.name, project_path(project.name)), {title: project.name}]
+    end
+
+    g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
+      [badge_type(project).html_safe, {style: 'text-align:center'}]
+    end
+
+    g.column name: 'Description', attribute: 'description', class: 'column-project-description' do |project|
+      [strip_tags(project.description), {title: strip_tags(project.description), style: 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+    end
+
+    g.column name: '# Ann.', attribute: 'denotations_num', filter: false, class: 'column-project-number' do |project|
+      # [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:7em; text-align:right'}]
+      [number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'text-align:right'}]
+    end
+
+    g.column name: 'Author', attribute: 'author', class: 'column-project-author' do |project|
+      [project.author, {title: project.author, style: 'text-align:center'}]
+    end
+
+    g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |project|
+      [maintainer_link(project), {title: project.user.username, style: 'text-align:center'}]
+    end
+
+    g.column name: 'Updated_at', attribute: 'updated_at', class: 'column-project-updated' do |project|
+      [project.updated_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
+    end
+
+    g.column name: 'Status', attribute: 'status', class: 'column-project-status',
+    custom_filter: {'Released' => 1, 'Beta' => 2, 'Uploading' => 3, 'Developing' => 8, 'Testing' => 9} do |project|
+      [project.status_text, {style: 'text-align:center'}]
+    end
+
+    if @collection.editable?(current_user)
+      g.column do |project|
+        link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button, title: 'Remove'
+      end
+    end
+
+  end
+-%>
+
+<% if @collection.editable?(current_user) %>
+  <table class="vertical">
+    <tr>
+      <th><%= t('views.shared.add') %></th>
+      <td style="text-align:right"><%= render partial: 'add_project_form' -%></td>
+    </tr>
+  </table>
+<% end -%>
+
+</fieldset>
+
+</section>

@@ -6,14 +6,19 @@
 	width: 480px;
 }
 
+.panel h1 {
+  width: 90%;
+}
+
+
 .panel table {
 	table-layout: fixed;
 	width: 100%;
 }
 
-#news {
-	margin: 10px;
-	width: 92%;
+#news_frame {
+  width: 550px;
+	margin: 5px;
 	border: $main_color 1px solid;
 	box-shadow: 2px 2px 2px;
 	background-color: #fff0f0;
@@ -22,10 +27,15 @@
 	}
 }
 
-#news legend {
+#news_frame legend {
 	font-family: sans-serif;
 	font-size: medium;
 	font-weight: bold;
+}
+
+#news {
+  height:30px;
+  overflow-y:scroll;
 }
 
 .show-on-mobiles {
@@ -35,12 +45,19 @@
 /* Responsive Stuff */
 /* @media screen and (max-width: 568px) { */
 @media screen and (max-width: 1018px) {
+  #news_frame {
+    width: 550px;
+  }
+
   .panel {
     width: 49%;
   }
 }
 
 @media screen and (max-width: 800px) {
+  #news_frame {
+    width: calc(99% - 30px);
+  }
 	.panel {
     width: 99%;
 		display: block;
