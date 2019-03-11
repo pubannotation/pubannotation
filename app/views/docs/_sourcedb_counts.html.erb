@@ -1,6 +1,9 @@
 <table>
-	<% docs_counts = sourcedb_count(current_user, @project) %>
-	<% docs_counts.each do |sourcedb, docs_count| -%>
+	<%
+		docs_counts = sourcedb_count(current_user, @project)
+		sourcedbs = ['PubMed', 'PMC', 'FirstAuthor', 'GrayAnatomy'].delete_if{|sourcedb| docs_counts[sourcedb].nil?}
+	%>
+	<% sourcedbs.each do |sourcedb| -%>
 		<%
 			index_path, open_path = if @project.nil?
 				[doc_sourcedb_index_path(sourcedb), open_docs_path]
@@ -9,25 +12,25 @@
 			end
 		%>
 		<tr>
-			<td style="width:5em"><%= link_to sourcedb, index_path %></td>
-			<td style="width:6em;text-align: right"><%= number_with_delimiter(docs_count) %></td>
+			<td style="width:8em"><%= link_to sourcedb, index_path %></td>
+			<td style="width:6em;text-align: right"><%= link_to number_with_delimiter(docs_counts[sourcedb]), index_path %></td>
 			<!-- <td style="width:5em;text-align: right"><%= number_to_human(docs_count, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}) %></td> -->
 			<td style="text-align: right">
 				<%= form_tag(index_path, method: 'get', style:"display:inline-block") do -%>
 					<%= hidden_field_tag :sourcedb, sourcedb %>
 					<%= text_field_tag :keywords, nil,
-						style: "width:5em",
+						style: "width:6em",
 						placeholder: t('views.shared.keywords'),
 						minlength: 2,
 						required: true -%>
-					<button type="submit" class="short-button" title="Search"><i class='fa fa-search' aria-hidden='true'></i></button>
+					<button type="submit" class="short_button" title="Search"><i class='fa fa-search' aria-hidden='true'></i></button>
 				<% end %>
 				<%= form_tag(open_path, method: 'get')  do -%>
 					<%= hidden_field_tag :sourcedb, sourcedb %>
 					<%= text_field_tag :sourceid, nil,
-						style: "width:5em",
+						style: "width:6em",
 						placeholder: t('activerecord.attributes.doc.sourceid') -%>
-					<button type="submit" class="short-button" title="Open"><i class="fa fa-file-text-o" aria-hidden="true"></i></button>
+					<button type="submit" class="short_button" title="Open"><i class="fa fa-file-text-o" aria-hidden="true"></i></button>
 				<% end %>
 			</td>
 		</tr>

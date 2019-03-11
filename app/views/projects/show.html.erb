@@ -49,11 +49,11 @@
 </table>
 <% if user_signed_in? -%>
 	<% if @project.editable?(current_user) -%>
-		<% edit_path = edit_project_path(@project.name) -%> <span class="button"> <%= link_to t('views.shared.edit'), edit_path, :class => 'capitalize_first' -%> </span>
+		<%= link_to t('views.shared.edit'), edit_project_path(@project.name), class: :button -%>
 	<% end -%>
 
 	<% if @project.destroyable?(current_user) -%> 
-		<span class="button"><%= link_to t('views.shared.delete'), @project.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
+		<%= link_to t('views.shared.delete'), @project.name, method: :delete, confirm: t('views.projects.confirm_delete'), class: :button %>
 	<% end -%>
 <% end %>
 </fieldset>
@@ -118,7 +118,7 @@
 			</tr>
 			<tr>
 				<th><%= t('views.shared.import') %></th>
-				<td style="text-align:right"><%= render partial: 'import_annotations_form' -%></td>
+				<td><%= render partial: 'import_annotations_form' -%></td>
 			</tr>
 
 			<% if @project.docs.count < Rails.application.config.project_indexable_max_docs || current_user.root? %>
@@ -132,7 +132,7 @@
 				<th><%= t('views.shared.compare') %></th>
 				<td>
 					<%= comparison_link(@project) %><br/>
-					<span style="text-align:right"><%= render partial: 'compare_form' -%></span>
+					<span><%= render partial: 'compare_form' -%></span>
 				</td>
 			</tr>
 			<tr>

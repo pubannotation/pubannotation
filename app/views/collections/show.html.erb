@@ -22,11 +22,11 @@
 </table>
 <% if user_signed_in? -%>
 	<% if @collection.editable?(current_user) -%>
-		<% edit_path = edit_collection_path(@collection.name) -%> <span class="button"> <%= link_to t('views.shared.edit'), edit_path, :class => 'capitalize_first' -%> </span>
+		<%= link_to t('views.shared.edit'), edit_collection_path(@collection.name), class: :button -%>
 	<% end -%>
 
 	<% if @collection.destroyable?(current_user) -%> 
-		<span class="button"><%= link_to t('views.shared.delete'), @collection.name, :method => :delete, :confirm => t('views.projects.confirm_delete') %></span>
+		<%= link_to t('views.shared.delete'), @collection.name, method: :delete, confirm: t('views.projects.confirm_delete'), class: :button %>
 	<% end -%>
 <% end %>
 </fieldset>
@@ -47,7 +47,7 @@
     end
 
     g.column name: 'Description', attribute: 'description', class: 'column-project-description' do |project|
-      [strip_tags(project.description), {title: strip_tags(project.description), style: 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+      [link_to(strip_tags(project.description), project_path(project.name)), {title: strip_tags(project.description), style: 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
     end
 
     g.column name: '# Ann.', attribute: 'denotations_num', filter: false, class: 'column-project-number' do |project|
