@@ -282,6 +282,26 @@ li {
   min-width: 15em;
 }
 
+.short_button {
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+    background-color:#ffffff;
+    border-radius:4px;
+    border:1px solid #aaa;
+    display:inline-block;
+    color:#222266;
+    font-family:arial;
+    font-size: small;
+    font-weight: normal;
+    padding: 2px 4px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+    cursor: pointer;
+    min-width: 1em;
+    text-align: center;
+}
+
+
 .button:hover {
     background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #f6f6f6), color-stop(1, #ffffff));
     background:-moz-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);

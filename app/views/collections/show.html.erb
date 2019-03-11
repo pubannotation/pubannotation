@@ -34,6 +34,7 @@
 <fieldset class="pane projects">
 <legend>Projects</legend>
 
+<div class="projects-list">
 <%=
   grid(@projects_grid) do |g|
 
@@ -54,10 +55,6 @@
       [number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'text-align:right'}]
     end
 
-    g.column name: 'Author', attribute: 'author', class: 'column-project-author' do |project|
-      [project.author, {title: project.author, style: 'text-align:center'}]
-    end
-
     g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |project|
       [maintainer_link(project), {title: project.user.username, style: 'text-align:center'}]
     end
@@ -73,12 +70,13 @@
 
     if @collection.editable?(current_user)
       g.column do |project|
-        link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button, title: 'Remove'
+        link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove'
       end
     end
 
   end
 -%>
+</div>
 
 <% if @collection.editable?(current_user) %>
   <table class="vertical">
