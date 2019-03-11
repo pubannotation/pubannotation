@@ -34,6 +34,7 @@
 <fieldset class="pane projects">
 <legend>Projects</legend>
 
+<div class="projects-list">
 <%=
   grid(@projects_grid) do |g|
 
@@ -79,6 +80,7 @@
 
   end
 -%>
+</div>
 
 <% if @collection.editable?(current_user) %>
   <table class="vertical">
