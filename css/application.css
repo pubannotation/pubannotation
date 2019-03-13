@@ -78,6 +78,7 @@ body {
 
 .bash {
   width: 100%;
+  margin: 10px 0 10px 0;
   padding: 0.5em;
   line-height: 1.8em;
   font-family: monospace;

@@ -16,9 +16,11 @@
   - annotation-server-api
   - annotation-editor
   - submit-annotation
+  - create-collection
   - align-annotation
   - find-location
   - compare-project
-  - shared-task
+  - shared-task-organize
+  - shared-task-participate
   - example-align
   - about

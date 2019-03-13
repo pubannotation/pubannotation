@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Aligning annotations
-prev_section: submit-annotation
+prev_section: create-collection
 next_section: find-location
 permalink: /docs/align-annotation/
 ---

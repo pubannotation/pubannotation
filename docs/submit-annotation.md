@@ -2,7 +2,7 @@
 layout: docs
 title: Submitting annotations
 prev_section: annotation-editor
-next_section: align-annotation
+next_section: create-collection
 permalink: /docs/submit-annotation/
 ---
 

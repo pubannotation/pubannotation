@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Example of aligning your annotation to the original text
-prev_section: shared-task
+prev_section: shared-task-participate
 next_section: about
 permalink: /docs/example-align/
 ---

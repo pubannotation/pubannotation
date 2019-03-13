@@ -2,13 +2,13 @@
 layout: docs
 title: Shared task organization
 prev_section: compare-project
-next_section: example-align
-permalink: /docs/shared-task/
+next_section: shared-task-participate
+permalink: /docs/shared-task-organize/
 ---
 
 Pubannotation can be used as a platform for shared task organization.
 
-## Shared Tasks at PubAnnotation
+## Shared Task Definition 
 
 In PubAnnotation, it is assumed that a shared task is implemented by
 * benchmark data sets, and
@@ -19,7 +19,7 @@ Here, _benchmark data_ means _annotation data_, which is assumed to have reliabl
 For shared task organization, a benchmark data set is often divided into three mutually exclusive sets:
 * reference data set,
 * development data set, and
-* evaluation data set.
+* test data set.
 
 The _reference data set_, a.k.a., _training data set_,
 is intended to be referenced for development of automatic annotation systems.
@@ -31,24 +31,28 @@ For machine learning approaches, it is usually used to optimize hyper parameters
 For approaches which do not need hyper parameter setting, it may be merge to the reference set in favor of more reference data.
 For shared task organization, sometimes it is used to provide partcipants with a chance of practice for final submissions.
 
-The performance of automatic annotation systems are evaluated against the _evaluation data set_.
+The performance of automatic annotation systems are evaluated against the _test data set_.
 To ensure prevention of overfitting (whether intended or unintended),
-often only the raw texts of an evaluation data set are made open,
+often only the raw texts of an test data set are made open,
 while the annotation to the texts are kept hidden.
 
-## Shared task organization at PubAnnotation
+## Shared task organization
 
 Using PubAnnotation, a shared task can be operated in following way:
 
-### 1. Release of benchmark data sets
+### 1. To release benchmark data sets
 
-Reasing benchmark data sets is straightforward with PubAnnotation.
+Release of the reference, development and test data sets can be done by creating three separate projects ([creating annotations]({{site.baseurl}}/docs/create-annotation/)), e.g., _ST1-reference_, _ST1-development_, and _ST1-test_, and uploading annotation data sets to the projects ([submitting annotations]({{site.baseurl}}/docs/submit-annotation/)).
 
-Release of the reference, development and devaluation data sets can be done by creating three separate projects ([creating annotations]({{site.baseurl}}/docs/create-annotation/)), e.g., _ST1-reference_, _ST1-development_, and _ST1-evaluation_, and uploading annotation data sets to the projects ([importing annotations]({{site.baseurl}}/docs/import-annotation/)).
+If you want to hide the annotation and to open only the raw texts of the test data set, you can set the _accessibility_ property of the corresponding project, e.g., _ST1-test_, to be _blind_. The annotation data of the project will then become only visible to the maintainer of the project.
 
-If you want to hide the annotation and to open only the raw texts of the evaluation data set, you can set the _accessibility_ property of the corresponding project, e.g., _ST1-evaluation_, to be _blind_. The annotation data of the project will then become only visible to the maintainer of the project.
+Make it sure to create a downloadable archive file in your projects. Otherwise users cannot download your data sets.
 
-### 2. Provision of supporting data
+After creating multiple projects for multiple data sets, you may want them to be accessed as a group.
+You can create a collection, e.g., _ST1_, to which you can put your projects ([creating collections]({{site.baseurl}}/docs/create-collection/)).
+If you specify the collection as a _shared task_, it will be listed in the shared task section in the front page of PubAnnotation.
+
+### 2. To provide supporting data sets
 
 In some shared task organization, e.g., BioNLP-ST 2009, 2011, 2013 and 2016,
 participants were provided with _supporting data sets_,
@@ -70,20 +74,8 @@ Providing a supporting data set, e.g., syntactic parsing result, for the shared 
 
 If the _accessibility_ property of the project is set to be _public_, then the annotation of the project will become accessible together with the annotation of the benchamark data sets of the shared task.
 
-### 3. Participation
+You can put all the projects of supporting data sets into the collection of your shared task, so that paritipants can find them easily.
 
-For potential participants to actually participate in the shared task,
-they need to be able to
-1. obtain the raw text of the benchmark data sets, either the training, development, or evaluation data set.
-1. submit their own annotation to texts, and
-1. get evaluation of their annotation.
+### 3. To see results of participation
 
-To do it in Pubannotation, a participant will
-1. create a project ([creating annotations]({{site.baseurl}}/docs/create-annotation/)),
-1. import texts from a project, either training, development or evaluation data set, of the shared task ([importing documents]({{site.baseurl}}/docs/import-document/)),
-1. add her (his) own annotation to the texts ([adding annotations]({{site.baseurl}}/docs/add-annotation/)), and
-1. compare the project against the corresponding project of the shared task ([comparing projects]({{site.baseurl}}/docs/compare-project/)).
-
-When a participant add her (his) annotation to the project,
-there are two options.
-First, (s)he can download all the raw texts from the project
+TBD
