@@ -219,28 +219,42 @@ class Annotation < ActiveRecord::Base
       div_index = divs.collect{|d| [d.serial, d]}.to_h
       divs_hash = divs.collect{|d| d.to_hash}
       fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
+      fit_index.each_with_index do |f, i|
+        gap = []
+        (0 .. i).each{|j| gap << fit_index[j][1] if f[1][0] < fit_index[j][1][0] && f[1][1] > fit_index[j][1][1]}
+        f << gap
+      end
 
-      fit_index.each do |i|
-        if i[0] >= 0
-          ann = {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], divid:i[0]}
-          idx = {}
-          ann[:text] = annotations[:text][i[1][0] ... i[1][1]]
-          if annotations[:denotations].present?
-            ann[:denotations] = annotations[:denotations]
-                                 .select{|a| a[:span][:begin] >= i[1][0] && a[:span][:end] <= i[1][1]}
-                                .collect{|a| n = a.dup; n[:span] = a[:span].dup; n}
-                                   .each{|a| a[:span][:begin] -= i[1][0]; a[:span][:end] -= i[1][0]}
+      fit_index.each do |fit|
+        if fit[0] >= 0
+          ann = {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], divid:fit[0]}
+          ann[:text] = ''
+          ann[:denotations] = [] if annotations[:denotations]
+
+          offsets = (fit[1] + fit[2].flatten).sort
+          offsets.each_slice(2) do |a, b|
+            if annotations[:denotations].present?
+              base = a - ann[:text].length
+              ann_col = annotations[:denotations].select{|d| d[:span][:begin] >= a && d[:span][:end] <= b}.collect{|d| d.dup}
+              ann_col.each{|d| d[:span] = {begin: d[:span][:begin] - base, end: d[:span][:end] - base}}
+              ann[:denotations] += ann_col
+            end
+            ann[:text] += annotations[:text][a ... b]
+          end
+
+          if ann[:denotations]
+            idx = {}
             ann[:denotations].each{|a| idx[a[:id]] = true}
+            if annotations[:relations].present?
+              ann[:relations] = annotations[:relations].select{|a| idx[a[:subj]] && idx[a[:obj]]}
+              ann[:relations].each{|a| idx[a[:id]] = true}
+            end
+            if annotations[:modifications].present?
+              ann[:modifications] = annotations[:modifications].select{|a| idx[a[:obj]]}
+              ann[:modifications].each{|a| idx[a[:id]] = true}
+            end
           end
-          if annotations[:relations].present?
-            ann[:relations] = annotations[:relations].select{|a| idx[a[:subj]] && idx[a[:obj]]}
-            ann[:relations].each{|a| idx[a[:id]] = true}
-          end
-          if annotations[:modifications].present?
-            ann[:modifications] = annotations[:modifications].select{|a| idx[a[:obj]]}
-            ann[:modifications].each{|a| idx[a[:id]] = true}
-          end
-          annotations_collection << prepare_annotations(ann, div_index[i[0]])
+          annotations_collection << prepare_annotations(ann, div_index[fit[0]])
         end
       end
       # {div_index: fit_index}
