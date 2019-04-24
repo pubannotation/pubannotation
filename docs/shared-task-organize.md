@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Shared task organization
-prev_section: compare-project
+prev_section: evaluate-annotations
 next_section: shared-task-participate
 permalink: /docs/shared-task-organize/
 ---

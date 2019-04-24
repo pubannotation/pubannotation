@@ -2,7 +2,7 @@
 layout: docs
 title: Find text locations
 prev_section: align-annotation
-next_section: compare-project
+next_section: evaluate-annotations
 permalink: /docs/find-location/
 ---
 
