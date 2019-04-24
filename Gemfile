@@ -80,7 +80,7 @@ gem 'tao_rdfizer', '>= 0.9.9'
 # gem 'jbuilder'
 
 # Use unicorn as the app server
-# gem 'unicorn'
+gem 'unicorn', '5.4.1'
 
 # Deploy with Capistrano
 # gem 'capistrano'
