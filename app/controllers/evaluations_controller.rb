@@ -95,8 +95,8 @@ class EvaluationsController < ApplicationController
     @reference_project = evaluation.reference_project
     @doc = Doc.get_doc(sourcedb:sourcedb, sourceid:sourceid, divid:divid)
 
-    @fps = result[:false_positives].select{|fp| fp[:sourcedb] == sourcedb && fp[:sourceid] == sourceid && fp[:divid] == divid}
-    @fns = result[:false_negatives].select{|fn| fn[:sourcedb] == sourcedb && fn[:sourceid] == sourceid && fn[:divid] == divid}
+    @fps = result[:false_positives].nil? ? [] : result[:false_positives].select{|fp| fp[:sourcedb] == sourcedb && fp[:sourceid] == sourceid && fp[:divid] == divid}
+    @fns = result[:false_negatives].nil? ? [] : result[:false_negatives].select{|fn| fn[:sourcedb] == sourcedb && fn[:sourceid] == sourceid && fn[:divid] == divid}
   
     render layout: 'layouts/popup'
   end

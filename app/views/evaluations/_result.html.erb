@@ -10,15 +10,15 @@
 	<%= render partial: 'measures', locals: {counts: result[:counts][:relations], measures: result[:measures][:relations]} %>
 </section>
 
-<% if ((result[:false_positives] && !result[:false_positives].empty?) || (result[:false_negatives] && !result[:false_negatives].empty?)) %>
+<% if result[:false_positives].present? || result[:false_negatives].present? %>
 	<section>
 		<h1>False positives / negatives</h1>
 		<%
-			fps_index = result[:false_positives].group_by do |c|
+			fps_index = result[:false_positives].nil? ? {} : result[:false_positives].group_by do |c|
 				c.has_key?(:divid) ? c[:sourcedb] + ':' + c[:sourceid] + ':' + c[:divid].to_s : c[:sourcedb] + ':' + c[:sourceid]
 			end
 
-			fns_index = result[:false_negatives].group_by do |c|
+			fns_index = result[:false_negatives].nil? ? {} : result[:false_negatives].group_by do |c|
 				c.has_key?(:divid) ? c[:sourcedb] + ':' + c[:sourceid] + ':' + c[:divid].to_s : c[:sourcedb] + ':' + c[:sourceid]
 			end
 
