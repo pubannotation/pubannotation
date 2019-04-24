@@ -1,0 +1,19 @@
+<%= render :partial => 'shared/textae_css_js'-%>
+<h1>from <%= params[:sourcedb] + ':' + params[:sourceid] + '(' + params[:divid] + ')' %></h1>
+<% if @fps && !@fps.empty?%>
+	<section>
+		<h2>False positives</h2>
+		<% @fps.each do |fp| %>
+			<%= render partial: 'visualize_false', locals: {pair:fp} %>
+		<% end %>
+	</section>
+<% end %>
+
+<% if @fns && !@fns.empty?%>
+	<section>
+		<h2>False nagatives</h2>
+		<% @fns.each do |fn| %>
+			<%= render partial: 'visualize_false', locals: {pair:fn} %>
+		<% end %>
+	</section>
+<% end %>

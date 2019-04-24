@@ -1,5 +1,15 @@
 Pubann::Application.routes.draw do
 
+  resources :evaluators
+
+  resources :evaluations do
+    post 'select_reference_project' => 'projects#select_reference_project'
+    post 'delete_reference_project' => 'projects#delete_reference_project'
+    post 'generate' => 'evaluations#generate'
+    get 'result' => 'evaluations#result'
+    get 'falses' => 'evaluations#falses'
+  end
+
   resources :collections do
     resources :project do
       collection do
@@ -143,8 +153,6 @@ Pubann::Application.routes.draw do
       get 'upload_annotations' => 'projects#upload_annotations'
       get 'delete_annotations' => 'projects#delete_annotations'
       get 'autocomplete_sourcedb' => 'projects#autocomplete_sourcedb'
-      post 'compare' => 'projects#compare'
-      get  'comparison' => 'projects#show_comparison'
     end
     
     collection do
@@ -163,6 +171,8 @@ Pubann::Application.routes.draw do
     delete 'docs' => 'projects#delete_all_docs', as: 'delete_all_docs'
     delete 'annotations' => 'projects#destroy_all_annotations', as: 'destroy_all_annotations'
     delete 'jobs' => 'projects#clear_finished_jobs', as: 'clear_finished_jobs'
+
+    resources :evaluations
 
     resources :docs do
       collection do

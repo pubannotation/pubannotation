@@ -43,6 +43,7 @@ group :test do
   gem 'test-unit'
 end
 
+gem 'pubannotation_evaluator', '~> 1.0.1'
 gem 'wice_grid'
 gem 'font-awesome-rails'
 gem 'jquery-rails'

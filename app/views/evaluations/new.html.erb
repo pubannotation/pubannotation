@@ -1,0 +1,24 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+  > <%= link_to @project.name, project_path(@project.name) -%>
+  > <%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name) -%>
+  > new evaluation
+<% end %>
+
+<% if @project %>
+  <section>
+    <%= render partial: 'projects/titlebar' -%>
+<% end %>
+
+<section>
+	<h1>New evaluation</h1>
+
+	<%= render 'form' %>
+
+	<%= link_to 'List', project_evaluations_path(@project.name), class: 'button' %>
+</section>
+
+<% if @project.present? -%>
+  </section>
+<% end %>

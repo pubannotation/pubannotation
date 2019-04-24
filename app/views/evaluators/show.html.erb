@@ -1,0 +1,41 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to 'evaluators', evaluators_path %>
+  > <%= @evaluator.name %>
+<% end %>
+
+<section>
+  <h1>
+    <%= @evaluator.name %>
+    <%= button_home(@evaluator.home) -%>
+    <%= badge_public(@evaluator.is_public).html_safe %>
+  </h1>
+
+  <% if @evaluator.description.present? %>
+    <p><%= @evaluator.description %></p>
+  <% end -%>
+
+  <table class="column-head">
+
+    <tr>
+      <th>Access Type</th>
+      <td><%= access_type_helper(@evaluator) %></td>
+    </tr>
+
+    <tr>
+      <th>URL</th>
+      <td><%= @evaluator.url %></td>
+    </tr>
+
+    <tr>
+      <th>Creator</th>
+      <td><%= @evaluator.user.username %></td>
+    </tr>
+  </table>
+
+  <% if @evaluator.changeable?(current_user) -%>
+    <%= link_to 'Edit', edit_evaluator_path(@evaluator), class: 'button' %>
+    <%= link_to 'Destroy', @evaluator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <% end %>
+  <%= link_to 'List', evaluators_path, class: 'button' %>
+</section>

@@ -1,0 +1,29 @@
+<table>
+<tr>
+	<th rowspan="2" style="width:10em"></th>
+	<th colspan="2">Study count</th>
+	<th colspan="2">Reference count</th>
+	<th rowspan="2" style="width:4em">Prec.</th>
+	<th rowspan="2" style="width:4em">Recall</th>
+	<th rowspan="2" style="width:4em">F-score</th>
+</tr>
+<tr>
+
+	<th style="width:4em">all</th>
+	<th style="width:4em">match</th>
+	<th style="width:4em">all</th>
+	<th style="width:4em">match</th>
+</tr>
+<% counts[:reference].each_key do |e| %>
+<tr>
+	<th><%= e %></th>
+	<td style="text-align:right"><%= number_with_delimiter(counts[:study][e], :delimiter => ',') %></td>
+	<td style="text-align:right"><%= number_with_delimiter(counts[:matched_study][e], :delimiter => ',') %></td>
+	<td style="text-align:right"><%= number_with_delimiter(counts[:reference][e], :delimiter => ',') %></td>
+	<td style="text-align:right"><%= number_with_delimiter(counts[:matched_reference][e], :delimiter => ',') %></td>
+	<td style="text-align:right"><%= '%.02f' % measures[:precision][e] %></td>
+	<td style="text-align:right"><%= '%.02f' % measures[:recall][e] %></td>
+	<td style="text-align:right"><%= '%.02f' % measures[:fscore][e] %></td>
+</tr>
+<% end %>
+</table>

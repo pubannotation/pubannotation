@@ -38,6 +38,11 @@ class Relation < ActiveRecord::Base
   after_save :increment_project_relations_num, :update_project_updated_at
   after_destroy :decrement_project_relations_num, :update_project_updated_at
   
+  def span
+    positions = (subj.span + obj.span).sort
+    [positions.first, positions.last]
+  end
+
   def get_hash
     hrelation = Hash.new
     hrelation[:id]   = hid

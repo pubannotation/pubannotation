@@ -129,11 +129,8 @@
 			<% end %>
 
 			<tr>
-				<th><%= t('views.shared.compare') %></th>
-				<td>
-					<%= comparison_link(@project) %><br/>
-					<span><%= render partial: 'compare_form' -%></span>
-				</td>
+				<th><%= t('views.shared.evaluations') %></th>
+				<td><%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name), class: 'button long_button' -%>
 			</tr>
 			<tr>
 				<th><%= t('views.shared.delete') %></th>

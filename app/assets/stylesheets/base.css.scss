@@ -69,6 +69,19 @@ div.project-title h1 .badge {
   font-weight: bold;
 }
 
+.pane {
+  h1 {
+    font-size: medium;
+    font-weight: bold;
+  }
+
+  h2 {
+    font-size: medium;
+    font-weight: bold;
+  }
+}
+
+
 .pane.description {
   background-color: #ffffee;
 }
@@ -276,6 +289,11 @@ li {
     cursor: pointer;
     min-width: 4.55em;
     text-align: center;
+}
+
+.disabled {
+    border:1px solid #dcdcdc;
+    color:#cccccc;
 }
 
 .long_button {

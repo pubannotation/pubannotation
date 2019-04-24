@@ -1,0 +1,27 @@
+<%
+	study_url, reference_url = pair2span_urls(pair, @doc, @study_project, @reference_project)
+%>
+<table class="false-cases">
+	<tr style="border:1px solid #ff4d88; background-color:#fff8f8">
+		<th style="background-color:#ff4d88">
+			<%= link_to @study_project.name, project_path(@study_project.name) %>
+		</th>
+		<td>
+			<%= content_tag(:div, "", class: "textae-editor", target: study_url + '/annotations.json', status_bar: "off", style:"margin:2px 0 0 0; border-color:#ffcccc") %>
+		</td>
+		<td>
+			<%= link_to ">Go", study_url, class: "button" %>
+		</td>
+	</tr>
+	<tr style="border:1px solid #4d88ff; background-color:#f8f8ff">
+		<th>
+			<%= link_to @reference_project.name, project_path(@reference_project.name) %>
+		</th>
+		<td>
+			<%= content_tag(:div, "", class: "textae-editor", target: reference_url + '/annotations.json', status_bar: "off", style:"margin:2px 0 0 0; border-color:#ccccff") %>
+		</td>
+		<td>
+			<%= link_to ">Go", reference_url, class: "button" %>
+		</td>
+	</tr>
+</table>

@@ -40,7 +40,11 @@ class Denotation < ActiveRecord::Base
   
   after_save :increment_numbers, :update_project_updated_at
   after_destroy :decrement_numbers, :update_project_updated_at
-  
+
+  def span
+    [self.begin, self.end]
+  end
+
   def get_hash
     hdenotation = Hash.new
     hdenotation[:id]   = hid

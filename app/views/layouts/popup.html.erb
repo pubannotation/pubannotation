@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	  <title><%= t('views.service.title') -%></title>
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <%= stylesheet_link_tag    "application", :media => "all" -%>
+	  <%= yield :css -%>
+	  <%= javascript_include_tag "application" -%>
+	  <script>
+		  jQuery(document).ready(function($) {
+		    $('a[rel*=facebox]').facebox()
+		  })
+	  </script>
+	  <%= yield :javascript -%>
+	  <%= csrf_meta_tags -%>
+	</head>
+	
+	<body>
+		<div id="main">
+			<div class="content">
+				<%= yield -%>
+			</div>
+		</div>
+	</body>
+</html>

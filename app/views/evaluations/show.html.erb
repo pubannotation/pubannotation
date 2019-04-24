@@ -1,0 +1,67 @@
+<% content_for :path do %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+  > <%= link_to @project.name, project_path(@project.name) -%>
+  > <%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name) -%>
+  > evaluation
+<% end %>
+
+<% if @project %>
+  <section>
+    <%= render partial: 'projects/titlebar' -%>
+<% end %>
+
+<section>
+	<h1>
+		Evaluation #<%= @evaluation.id %>
+		<%= badge_public(@evaluation.is_public).html_safe %>
+	  <%= link_to 'List', project_evaluations_path(@project.name), class: 'button' %>
+	  <% if @evaluation.changeable?(current_user) -%>
+	    <%= link_to 'Edit', edit_evaluation_path(@evaluation), class: 'button' %>
+	    <%= link_to 'Destroy', @evaluation, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+	  <% end %>
+	</h1>
+
+	<table class="column-head">
+		<tr>
+			<th>Study project</th>
+			<td><%= @evaluation.study_project.name %></td>
+		</tr>
+
+		<tr>
+			<th>Reference project</th>
+			<td><%= link_to(@evaluation.reference_project.name, project_path(@evaluation.reference_project.name))%></td>
+		</tr>
+
+		<tr>
+			<th>Evaluator</th>
+			<td><%= link_to(@evaluation.evaluator.name, evaluator_path(@evaluation.evaluator.name)) %></td>
+		</tr>
+
+		<tr>
+			<th>Result</th>
+			<td>
+				<%= button_to(t('views.evaluations.generate'), evaluation_generate_path(@evaluation.id)) %>
+			</td>
+		</tr>
+
+		<tr>
+			<th>Updated at</th>
+			<td><%= @evaluation.updated_at %></td>
+		</tr>
+	</table>
+
+	<fieldset class="pane evaluation_result">
+		<legend>
+			Result
+			<%= link_to('JSON', evaluation_result_path(@evaluation), class: 'button') if @evaluation.result %>
+		</legend>
+
+		<%= @evaluation.result.nil? ? 'There is no result of this evaluation yet.' : render(partial: "result") -%>
+
+	</fieldset>
+</section>
+
+<% if @project.present? -%>
+	</section>
+<% end %>

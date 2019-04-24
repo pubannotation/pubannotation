@@ -11,6 +11,10 @@ class Modification < ActiveRecord::Base
   after_save :increment_project_modifications_num, :update_project_updated_at
   after_destroy :decrement_project_modifications_num, :update_project_updated_at
 
+  def span
+    obj.span
+  end
+
   def get_hash
     hmodification = Hash.new
     hmodification[:id] = hid

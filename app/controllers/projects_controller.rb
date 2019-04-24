@@ -359,50 +359,6 @@ class ProjectsController < ApplicationController
     end
   end
 
-  def compare
-    begin
-      project = Project.editable(current_user).find_by_name(params[:id])
-      raise "There is no such project in your management." unless project.present?
-
-      project_ref = Project.find_by_name(params["select_project"])
-      raise ArgumentError, "There is no such a project." if project_ref.nil?
-      raise ArgumentError, "You cannot compare a project with itself" if project_ref == project
-
-      docs = project.docs
-      docs_ref = project_ref.docs
-      docs_common = docs & docs_ref
-
-      raise ArgumentError, "There is no shared document with the project, #{project_ref.name}" if docs_common.length == 0
-      raise ArgumentError, "For a performance reason, current implementation limits this feature to work for less than 5,000 documents. (#{docs_common.length})" if docs_common.length > 5000
-
-      # project.create_comparison(project_ref)
-
-      priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue CompareAnnotationsJob.new(project, project_ref), priority: priority, queue: :general
-      Job.create({name:'Compare annotations', project_id:project.id, delayed_job_id:delayed_job.id})
-      message = "The task, 'compare annotations to the project, #{project_ref.name}', is created."
-
-    rescue => e
-      message = e.message
-    end
-
-    respond_to do |format|
-      format.html {redirect_to project_path(project.name), notice: message}
-      format.json {render json:{message:message}}
-    end
-  end
-
-  def show_comparison
-    @project = Project.editable(current_user).find_by_name(params[:id])
-    raise "There is no such project in your management." unless @project.present?
-    @comparison = JSON.parse(File.read(@project.comparison_path), symbolize_names: true)
-
-    respond_to do |format|
-      format.html
-      format.json {render json:@comparison}
-    end
-  end
-
   def autocomplete_project_author
     render json: Project.where(['author like ?', "%#{params[:term]}%"]).collect{|project| project.author}.uniq
   end

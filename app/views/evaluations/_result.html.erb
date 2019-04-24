@@ -1,0 +1,48 @@
+<% result = JSON.parse @evaluation.result, :symbolize_names => true %>
+
+<section>
+	<h1>Denotations</h1>
+	<%= render partial: 'measures', locals: {counts: result[:counts][:denotations], measures: result[:measures][:denotations]} %>
+</section>
+
+<section>
+	<h1>Relations</h1>
+	<%= render partial: 'measures', locals: {counts: result[:counts][:relations], measures: result[:measures][:relations]} %>
+</section>
+
+<% if ((result[:false_positives] && !result[:false_positives].empty?) || (result[:false_negatives] && !result[:false_negatives].empty?)) %>
+	<section>
+		<h1>False positives / negatives</h1>
+		<%
+			fps_index = result[:false_positives].group_by do |c|
+				c.has_key?(:divid) ? c[:sourcedb] + ':' + c[:sourceid] + ':' + c[:divid].to_s : c[:sourcedb] + ':' + c[:sourceid]
+			end
+
+			fns_index = result[:false_negatives].group_by do |c|
+				c.has_key?(:divid) ? c[:sourcedb] + ':' + c[:sourceid] + ':' + c[:divid].to_s : c[:sourcedb] + ':' + c[:sourceid]
+			end
+
+			docspecs = (fps_index.keys + fns_index.keys).sort.uniq
+		%>
+
+		<table>
+			<tr>
+				<th colspan='3'>Document</th>
+				<th>#FP</th>
+				<th>#FN</th>
+			</tr>
+			<% docspecs.each do |docspec| %>
+				<% sourcedb, sourceid, divid = docspec.split(':') %>
+				<% oq = divid.nil? ? {sourcedb:sourcedb, sourceid:sourceid} : {sourcedb:sourcedb, sourceid:sourceid, divid:divid} %>
+				<tr>
+					<td style="text-align:center"><%= sourcedb %></td>
+					<td style="text-align:right"><%= sourceid %></td>
+					<td style="text-align:right"><%= divid || '-' %></td>
+					<td style="text-align:right"><%= fps_index.has_key?(docspec) ? fps_index[docspec].count : 0 %></td>
+					<td style="text-align:right"><%= fns_index.has_key?(docspec) ? fns_index[docspec].count : 0 %></td>
+					<td><%= link_to('Show', evaluation_falses_path(@evaluation, oq), class: 'button', target: '_blank') %></td>
+				</tr>
+			<% end %>
+		</table>
+	</section>
+<% end %>

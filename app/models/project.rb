@@ -2,7 +2,6 @@ class Project < ActiveRecord::Base
   include ApplicationHelper
   include AnnotationsHelper
   DOWNLOADS_PATH = "/downloads/"
-  COMPARISONS_PATH = "public/comparisons/"
 
   before_validation :cleanup_namespaces
   after_validation :user_presence
@@ -13,6 +12,9 @@ class Project < ActiveRecord::Base
   has_many :project_docs, dependent: :destroy
   has_many :docs, through: :project_docs
   has_many :queries
+
+  has_many :evaluations, foreign_key: 'study_project_id'
+  has_many :evaluatees, class_name: 'Evaluation', foreign_key: 'reference_project_id'
 
   attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
                   :sample, :rdfwriter, :xmlwriter, :bionlpwriter,
@@ -1107,119 +1109,6 @@ class Project < ActiveRecord::Base
     rescue => e
       raise RuntimeError, "Received a non-JSON object: [#{response}]"
     end
-  end
-
-  def comparison_path
-    "#{Project::COMPARISONS_PATH}" + "comparison_#{self.name}" + '.json'
-  end
-
-  def create_comparison(project_ref)
-    docs = self.docs & project_ref.docs
-
-    comparison_simple = compare_annotations(project_ref, docs)
-    comparison_composite = compare_annotations(project_ref, docs, true)
-
-    comparison = {reference: project_ref.name, individual: comparison_simple, compound: comparison_composite}
-
-    File.write(comparison_path, comparison.to_json)
-  end
-
-  def compare_annotations(project_ref, docs, compositep = false)
-    cmp_denotations = {counts:Hash.new(0), counts_ref:Hash.new(0), counts_common:Hash.new(0)}
-    cmp_relations = {counts:Hash.new(0), counts_ref:Hash.new(0), counts_common:Hash.new(0)}
-    cmp_modifications = {counts:Hash.new(0), counts_ref:Hash.new(0), counts_common:Hash.new(0)}
-
-    docs.each do |doc|
-      anns     = get_normalized_annotations(self, doc, compositep)
-      anns_ref = get_normalized_annotations(project_ref, doc, compositep)
-
-      count_denotations(anns[:denotations], cmp_denotations[:counts])
-      count_denotations(anns_ref[:denotations], cmp_denotations[:counts_ref])
-      count_denotations(anns[:denotations] & anns_ref[:denotations], cmp_denotations[:counts_common])
-
-      count_relations(anns[:relations], cmp_relations[:counts])
-      count_relations(anns_ref[:relations], cmp_relations[:counts_ref])
-      count_relations(anns[:relations] & anns_ref[:relations], cmp_relations[:counts_common])
-
-      count_modifications(anns[:modifications], cmp_modifications[:counts])
-      count_modifications(anns_ref[:modifications], cmp_modifications[:counts_ref])
-      count_modifications(anns[:modifications] & anns_ref[:modifications], cmp_modifications[:counts_common])
-    end
-
-    compute_performance(cmp_denotations)
-    compute_performance(cmp_relations)
-    compute_performance(cmp_modifications)
-
-    {denotations:cmp_denotations, relations:cmp_relations, modifications:cmp_modifications}
-  end
-
-  def count_denotations(denotations, counts)
-    denotations.each{|d| counts[d[:obj]] += 1; counts['_ALL_'] += 1}
-    counts
-  end
-
-  def count_relations(relations, counts)
-    relations.each{|r| counts[r[:pred]] += 1; counts['_ALL_'] += 1}
-    counts
-  end
-
-  def count_modifications(modifications, counts)
-    modifications.each{|m| counts[m[:pred]] += 1; counts['_ALL_'] += 1}
-    counts
-  end
-
-  def compute_performance(comparison)
-    counts = comparison[:counts]
-    counts_ref = comparison[:counts_ref]
-    counts_common = comparison[:counts_common]
-    recall = Hash.new(0)
-    precision = Hash.new(0)
-    fscore = Hash.new(0)
-
-    counts_ref.each{|t, c| a = counts[t]; precision[t] = (a == 0 ? 0 : counts_common[t].to_f / a)}
-    counts_ref.each{|t, c| recall[t] = counts_common[t].to_f / c}
-    counts_ref.each{|t, c| fscore[t] = (precision[t] + recall[t] == 0) ? 0 : 2.to_f * precision[t] * recall[t] / (precision[t] + recall[t])}
-
-    comparison[:recall] = recall
-    comparison[:precision] = precision
-    comparison[:fscore] = fscore
-  end
-
-  def get_normalized_annotations(project, doc, compositep = false)
-    anns = doc.hannotations(project)
-    if anns.has_key?(:denotations)
-      denotations_idx = anns[:denotations].inject({}){|idx, d| idx[d[:id]] = {span:d[:span], obj:d[:obj]}; idx}
-
-      if compositep
-        dependency_idx = {}
-        if anns.has_key?(:relations)
-          anns[:relations].each do |r|
-            dependency_idx[r[:obj]] = [] if dependency_idx[r[:obj]].nil?
-            dependency_idx[r[:obj]] << r[:subj]
-          end
-        end
-
-        denotations_idx.each{|id, d| composite_denotation(id, denotations_idx, dependency_idx)}
-      end
-
-      denotations   = denotations_idx.values.uniq
-      relations     = anns[:relations].collect{|r| {subj:denotations_idx[r[:subj]], obj:denotations_idx[r[:obj]], pred:r[:pred]}}.uniq if anns.has_key?(:relations)
-      modifications = anns[:modifications].collect{|r| {obj:denotations_idx[r[:obj]], pred:r[:pred]}}.uniq if anns.has_key?(:modifications)
-    end
-
-    denotations ||= []
-    relations ||= []
-    modifications ||= []
-    {denotations: denotations, relations: relations, modifications: modifications}
-  end
-
-  def composite_denotation(did, denotations_idx, dependency_idx, stack = [])
-    if denotations_idx[did].has_key?(:dep) || dependency_idx[did].nil?
-    else
-      deps = dependency_idx[did] - stack
-      denotations_idx[did][:dep] = deps.collect{|c| composite_denotation(c, denotations_idx, dependency_idx, stack << c)}
-    end
-    denotations_idx[did]
   end
 
   def user_presence

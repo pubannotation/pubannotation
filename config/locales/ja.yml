@@ -482,6 +482,9 @@ ja:
         title: 'プロジェクト検索'
     sprojects:
       in_pubannotation: "<span class='meta'>PubAnnotation内の</span>スーパープロジェクト"
+    evaluations:
+      generate: 生成
+      generated: 評価の結果が生成されました。
     hints:
       project:
         author: 他者が作成したアノテーションセットをアップロードする場合は、このアノテーションセットの公式の著者を記載
@@ -561,7 +564,8 @@ ja:
       obtain: 取得
       import: インポート
       index: インデクス
-      compare: 比較
+      evaluate: 評価
+      evaluate_annotations: アノテーション評価
       stored_in: "<span class='meta'><span>%{pname}</span>内の</span>%{content}"   
       made_to: "<span class='meta'><span class='pname'>%{pname}</span>用の</span>%{content}"
       made_to_division: "<span class='meta'><span class='pname'>%{pname}</span> %{serial}番目のディビジョンの</span>  %{content}"
