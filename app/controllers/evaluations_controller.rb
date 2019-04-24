@@ -98,7 +98,11 @@ class EvaluationsController < ApplicationController
     @fps = result[:false_positives].nil? ? [] : result[:false_positives].select{|fp| fp[:sourcedb] == sourcedb && fp[:sourceid] == sourceid && fp[:divid] == divid}
     @fns = result[:false_negatives].nil? ? [] : result[:false_negatives].select{|fn| fn[:sourcedb] == sourcedb && fn[:sourceid] == sourceid && fn[:divid] == divid}
   
-    render layout: 'layouts/popup'
+    begin
+      render layout: 'layouts/popup'
+    rescue => e
+      render text: "<h1>Something's wrong</h1><p>#{e.message}</p><p>Please re-generate the evaluation result.</p>", layout: 'layouts/popup'
+    end
   end
 
   def generate

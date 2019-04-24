@@ -16,6 +16,12 @@
 	</head>
 	
 	<body>
+		<div id="notice">
+			<div class="content">
+				<%= notice.html_safe if notice -%>
+				<%= alert -%>
+			</div>
+		</div>
 		<div id="main">
 			<div class="content">
 				<%= yield -%>
