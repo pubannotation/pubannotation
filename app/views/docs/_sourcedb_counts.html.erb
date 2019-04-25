@@ -1,7 +1,7 @@
 <table>
 	<%
 		docs_counts = sourcedb_count(current_user, @project)
-		sourcedbs = ['PubMed', 'PMC', 'FirstAuthor', 'GrayAnatomy'].delete_if{|sourcedb| docs_counts[sourcedb].nil?}
+		sourcedbs = docs_counts.keys
 	%>
 	<% sourcedbs.each do |sourcedb| -%>
 		<%
@@ -12,8 +12,8 @@
 			end
 		%>
 		<tr>
-			<td style="width:8em"><%= link_to sourcedb, index_path %></td>
-			<td style="width:6em;text-align: right"><%= link_to number_with_delimiter(docs_counts[sourcedb]), index_path %></td>
+			<td style="width:8em"><%= link_to sourcedb, index_path, style: "display:block" %></td>
+			<td style="width:6em;text-align: right"><%= link_to number_with_delimiter(docs_counts[sourcedb]), index_path, style: "display:block" %></td>
 			<!-- <td style="width:5em;text-align: right"><%= number_to_human(docs_count, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}) %></td> -->
 			<td style="text-align: right">
 				<%= form_tag(index_path, method: 'get', style:"display:inline-block") do -%>

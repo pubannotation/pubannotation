@@ -40,13 +40,6 @@ class ProjectsController < ApplicationController
       @project = Project.accessible(current_user).find_by_name(params[:id])
       raise "There is no such project." unless @project.present?
 
-      # @sourcedbs = Doc.select(:sourcedb).uniq.pluck(:sourcedb).select{|s| Doc.sourcedb_public?(s) || Doc.sourcedb_mine?(s, current_user)}
-      # @sourcedbs_active = @project.docs.select(:sourcedb).uniq.pluck(:sourcedb)
-      # @sourcedbs = ['PubMed', 'PMC', 'FirstAuthor']
-      # @sourcedbs_active = ['PubMed', 'PMC', 'FirstAuthor']
-      @sourcedbs = ['PubMed', 'PMC']
-      @sourcedbs_active = ['PubMed', 'PMC']
-
       respond_to do |format|
         format.html
         format.json {render json: @project.anonymize ? @project.as_json(except: [:maintainer]) : @project.as_json}
