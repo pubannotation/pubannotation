@@ -38,6 +38,10 @@
 <%=
   grid(@projects_grid) do |g|
 
+    g.blank_slate  do
+      "<p>There is no project yet in this collection.</p>"
+    end
+
     g.column name: 'Name', attribute: 'name', class: 'column-project-name' do |project|
       [link_to(project.name, project_path(project.name)), {title: project.name}]
     end
