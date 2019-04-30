@@ -443,7 +443,7 @@ en:
       properties: properties
       contents: Contents
       that_annotate_a_doc: "<a href='%{href}'>Projects</a> that annotate <span class='pname'>%{sourcedb}:%{sourceid}</span>"
-      that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}\'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
+      that_annotate_a_division: "<a href='%{href}'>Projects</a> that annotate the %{serial}'th division of <span class='pname'>%{sourcedb}:%{sourceid}</span>"
       in_pubannotation: "Annotation projects <span class='meta'>in PubAnnotation</span>"
       list: project list
       confirm_delete: Are you sure? The project, including all the annotations in it, will be deleted.
