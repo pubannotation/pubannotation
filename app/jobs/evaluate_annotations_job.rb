@@ -13,9 +13,13 @@ class EvaluateAnnotationsJob < Struct.new(:evaluation)
 		evaluator = PubannotationEvaluator.new
 		comparison = []
 		docs.each_with_index do |doc, i|
-			annotations = doc.hannotations(project)
-			reference_annotations = doc.hannotations(reference_project)
-			comparison += evaluator.compare(annotations, reference_annotations)
+			begin
+				annotations = doc.hannotations(project)
+				reference_annotations = doc.hannotations(reference_project)
+				comparison += evaluator.compare(annotations, reference_annotations)
+			rescue => e
+				@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
+			end
 			@job.update_attribute(:num_dones, i + 1)
 		end
 
