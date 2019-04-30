@@ -23,9 +23,9 @@
 <tr>
 	<th><%= e %></th>
 	<td style="text-align:right"><%= counts[:study][e].present? ? number_with_delimiter(counts[:study][e], :delimiter => ',') : 0 %></td>
-	<td style="text-align:right"><%= counts[:matched_study][e].present? ? number_with_delimiter(counts[:matched_study][e], :delimiter => ',') : 0 %></td>
+	<td style="text-align:right"><%= counts[:matched_study][e].present? ? number_with_delimiter('%.02f' % counts[:matched_study][e], :delimiter => ',') : 0 %></td>
 	<td style="text-align:right"><%= counts[:reference][e].present? ? number_with_delimiter(counts[:reference][e], :delimiter => ','): 0 %></td>
-	<td style="text-align:right"><%= counts[:matched_reference][e].present? ? number_with_delimiter(counts[:matched_reference][e], :delimiter => ',') : 0 %></td>
+	<td style="text-align:right"><%= counts[:matched_reference][e].present? ? number_with_delimiter('%.02f' % counts[:matched_reference][e], :delimiter => ',') : 0 %></td>
 	<td style="text-align:right"><%= measures[:precision][e].present? ? '%.02f' % measures[:precision][e] : '-' %></td>
 	<td style="text-align:right"><%= measures[:recall][e].present? ? '%.02f' % measures[:recall][e] : '-' %></td>
 	<td style="text-align:right"><%= measures[:fscore][e].present? ? '%.02f' % measures[:fscore][e] : '-' %></td>
