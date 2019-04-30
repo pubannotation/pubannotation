@@ -38,12 +38,14 @@
 			<td><%= link_to(@evaluation.evaluator.name, evaluator_path(@evaluation.evaluator.name)) %></td>
 		</tr>
 
-		<tr>
-			<th>Result</th>
-			<td>
-				<%= button_to(t('views.evaluations.generate'), evaluation_generate_path(@evaluation.id)) %>
-			</td>
-		</tr>
+	  <% if @evaluation.changeable?(current_user) -%>
+			<tr>
+				<th>Result</th>
+				<td>
+					<%= button_to(t('views.evaluations.generate'), evaluation_generate_path(@evaluation.id)) %>
+				</td>
+			</tr>
+		<% end %>
 
 		<tr>
 			<th>Updated at</th>

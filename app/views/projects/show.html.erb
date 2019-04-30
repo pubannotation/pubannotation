@@ -107,6 +107,10 @@
 			<th><%= t('views.shared.download.download') %></th>
 			<td><%= project_annotations_tgz_link_helper(@project) -%></td>
 		</tr>
+		<tr>
+			<th><%= t('views.shared.evaluations') %></th>
+			<td><%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name), class: 'button long_button' -%>
+		</tr>
 		<% if @project.editable?(current_user) -%>
 			<tr>
 				<th><%= t('views.shared.upload') %></th>
@@ -127,11 +131,6 @@
 					<td><%= link_to t('views.docs.rdfize_annotations'), rdfize_annotations_project_path(@project.name), class: 'button long_button' -%></td>
 				</tr>
 			<% end %>
-
-			<tr>
-				<th><%= t('views.shared.evaluations') %></th>
-				<td><%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name), class: 'button long_button' -%>
-			</tr>
 			<tr>
 				<th><%= t('views.shared.delete') %></th>
 				<td><%= link_to t('views.docs.delete_annotations'), delete_annotations_project_path(@project.name), class: 'button long_button' -%>

@@ -17,6 +17,23 @@
 
   <table class='column-head'>
     <tr>
+      <th><%= f.label :is_public -%></th>
+      <td><%= f.check_box :is_public -%></td>
+      <td>
+        <a href="#help-is-public" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+        <div id="help-is-public" class="help">
+          <h1>Is Public</h1>
+          <p>If this attribute is checked, then this evaluation will become public.</p>
+          <p>Otherwise, it will be accessible only by you.</p>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <th><%= f.label :note %></th>
+      <td><%= f.text_field :note %></td>
+      <td></td>
+    </tr>
+    <tr>
       <th><%= f.label :study_project %></th>
       <td><%= f.text_field :study_project, value:@evaluation.study_project.name, readonly:true %></td>
       <td></td>

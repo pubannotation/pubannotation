@@ -4,7 +4,9 @@ class CreateEvaluations < ActiveRecord::Migration
       t.references :study_project
       t.references :reference_project
       t.references :evaluator
+      t.string :note
       t.text :result
+      t.references :user
       t.boolean :is_public, default: false
 
       t.timestamps
@@ -12,5 +14,6 @@ class CreateEvaluations < ActiveRecord::Migration
     add_index :evaluations, :study_project_id
     add_index :evaluations, :reference_project_id
     add_index :evaluations, :evaluator_id
+    add_index :evaluations, :user_id
   end
 end

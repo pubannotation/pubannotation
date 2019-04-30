@@ -2,8 +2,9 @@ class Evaluation < ActiveRecord::Base
   belongs_to :study_project, class_name: 'Project'
   belongs_to :reference_project, class_name: 'Project'
   belongs_to :evaluator
-  attr_accessible :result, :is_public, :study_project, :reference_project, :evaluator
+  attr_accessible :result, :is_public, :study_project, :reference_project, :evaluator, :note, :user_id
 
+  validates :user_id, presence: true
   validates :study_project, presence: true
   validates :reference_project, presence: true
   validates :evaluator, presence: true
@@ -19,6 +20,17 @@ class Evaluation < ActiveRecord::Base
 	  	end
 	  end
   end
+
+  scope :accessible, -> (current_user) {
+    if current_user.present?
+      if current_user.root?
+      else
+        where('is_public = ? OR user_id =?', true, current_user.id)
+      end
+    else
+      where(is_public: true)
+    end
+  }
 
   def changeable?(current_user)
     current_user.present? && (current_user.root? || current_user == study_project.user)

@@ -5,10 +5,12 @@
 	<%= render partial: 'measures', locals: {counts: result[:counts][:denotations], measures: result[:measures][:denotations]} %>
 </section>
 
-<section>
-	<h1>Relations</h1>
-	<%= render partial: 'measures', locals: {counts: result[:counts][:relations], measures: result[:measures][:relations]} %>
-</section>
+<% if result[:counts][:relations].present? %>
+	<section>
+		<h1>Relations</h1>
+		<%= render partial: 'measures', locals: {counts: result[:counts][:relations], measures: result[:measures][:relations]} %>
+	</section>
+<% end %>
 
 <% if result[:false_positives].present? || result[:false_negatives].present? %>
 	<section>

@@ -1,6 +1,6 @@
 class EvaluationsController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :set_evaluation, only: [:show, :edit, :update, :destroy]
+  before_filter :authenticate_user!, except: [:index, :show]
+  before_filter :set_evaluation, only: [:edit, :update, :destroy]
 
   respond_to :html
 
@@ -8,7 +8,7 @@ class EvaluationsController < ApplicationController
     @project = Project.accessible(current_user).find_by_name(params[:project_id])
     raise "There is no such project." unless @project.present?
     @evaluations = Evaluation.all
-    @evaluations_grid = initialize_grid(@project.evaluations,
+    @evaluations_grid = initialize_grid(@project.evaluations.accessible(current_user),
       include: [:reference_project, :evaluator]
     )
     respond_with(@evaluations)
@@ -16,6 +16,7 @@ class EvaluationsController < ApplicationController
 
   def show
     @project = Project.accessible(current_user).find_by_name(params[:project_id])
+    @evaluation = Evaluation.accessible(current_user).find(params[:id])
     raise "There is no such project." unless @project.present?
     respond_with(@evaluation)
   end
@@ -39,6 +40,8 @@ class EvaluationsController < ApplicationController
 
     evaluator = Evaluator.accessibles(current_user).find_by_name(params[:evaluation][:evaluator])
     params[:evaluation][:evaluator] = evaluator.present? ? evaluator : nil
+
+    params[:evaluation][:user_id] = current_user.id
 
     @evaluation = Evaluation.new(params[:evaluation])
 
@@ -106,7 +109,7 @@ class EvaluationsController < ApplicationController
   end
 
   def generate
-    message = t('vewis.evaluations.generated')
+    message = t('views.evaluations.generated')
     evaluation = Evaluation.find(params[:evaluation_id])
 
     # job = EvaluateAnnotationsJob.new(evaluation)

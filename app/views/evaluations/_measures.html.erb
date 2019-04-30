@@ -14,16 +14,21 @@
 	<th style="width:4em">all</th>
 	<th style="width:4em">match</th>
 </tr>
-<% counts[:reference].each_key do |e| %>
+<%
+	elements = (counts[:study].keys + counts[:reference].keys).uniq.sort
+	elements.delete(:All)
+	elements.push(:All)
+%>
+<% elements.each do |e| %>
 <tr>
 	<th><%= e %></th>
-	<td style="text-align:right"><%= number_with_delimiter(counts[:study][e], :delimiter => ',') %></td>
-	<td style="text-align:right"><%= number_with_delimiter(counts[:matched_study][e], :delimiter => ',') %></td>
-	<td style="text-align:right"><%= number_with_delimiter(counts[:reference][e], :delimiter => ',') %></td>
-	<td style="text-align:right"><%= number_with_delimiter(counts[:matched_reference][e], :delimiter => ',') %></td>
-	<td style="text-align:right"><%= '%.02f' % measures[:precision][e] %></td>
-	<td style="text-align:right"><%= '%.02f' % measures[:recall][e] %></td>
-	<td style="text-align:right"><%= '%.02f' % measures[:fscore][e] %></td>
+	<td style="text-align:right"><%= counts[:study][e].present? ? number_with_delimiter(counts[:study][e], :delimiter => ',') : 0 %></td>
+	<td style="text-align:right"><%= counts[:matched_study][e].present? ? number_with_delimiter(counts[:matched_study][e], :delimiter => ',') : 0 %></td>
+	<td style="text-align:right"><%= counts[:reference][e].present? ? number_with_delimiter(counts[:reference][e], :delimiter => ','): 0 %></td>
+	<td style="text-align:right"><%= counts[:matched_reference][e].present? ? number_with_delimiter(counts[:matched_reference][e], :delimiter => ',') : 0 %></td>
+	<td style="text-align:right"><%= measures[:precision][e].present? ? '%.02f' % measures[:precision][e] : '-' %></td>
+	<td style="text-align:right"><%= measures[:recall][e].present? ? '%.02f' % measures[:recall][e] : '-' %></td>
+	<td style="text-align:right"><%= measures[:fscore][e].present? ? '%.02f' % measures[:fscore][e] : '-' %></td>
 </tr>
 <% end %>
 </table>
