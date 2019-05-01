@@ -10,7 +10,12 @@ class EvaluateAnnotationsJob < Struct.new(:evaluation)
 		@job.update_attribute(:num_items, docs.count)
 		@job.update_attribute(:num_dones, 0)
 
-		evaluator = PubannotationEvaluator.new
+		soft_match_characters = evaluation.soft_match_characters || PubannotationEvaluator::SOFT_MATCH_CHARACTERS
+		soft_match_words = evaluation.soft_match_words || PubannotationEvaluator::SOFT_MATCH_WORDS
+		denotations_type_match = evaluation.denotations_type_match || PubannotationEvaluator::EXACT_TYPE_MATCH
+		relations_type_match = evaluation.relations_type_match || PubannotationEvaluator::EXACT_TYPE_MATCH
+
+		evaluator = PubannotationEvaluator.new(soft_match_characters, soft_match_words, denotations_type_match, relations_type_match)
 		comparison = []
 		docs.each_with_index do |doc, i|
 			begin

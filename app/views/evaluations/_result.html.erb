@@ -1,6 +1,10 @@
 <% result = JSON.parse @evaluation.result, :symbolize_names => true %>
 
 <section>
+	<p>
+		Below is the result of evaluation performed for the <%= number_with_delimiter(@num_docs, :delimiter => ',') %> documents that are shared by the study and the reference projects.
+	</p>
+
 	<h1>Denotations</h1>
 	<%= render partial: 'measures', locals: {counts: result[:counts][:denotations], measures: result[:measures][:denotations]} %>
 </section>

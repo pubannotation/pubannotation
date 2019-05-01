@@ -38,6 +38,26 @@
 			<td><%= link_to(@evaluation.evaluator.name, evaluator_path(@evaluation.evaluator.name)) %></td>
 		</tr>
 
+		<tr>
+			<th>Soft match characters</th>
+			<td><%= @evaluation.soft_match_characters %></td>
+		</tr>
+
+		<tr>
+			<th>Soft match words</th>
+			<td><%= @evaluation.soft_match_words %></td>
+		</tr>
+
+		<tr>
+			<th>Denotations type match</th>
+			<td><pre><%= @evaluation.denotations_type_match %></pre></td>
+		</tr>
+
+		<tr>
+			<th>Relations type match</th>
+			<td><pre><%= @evaluation.relations_type_match %></pre></td>
+		</tr>
+
 	  <% if @evaluation.changeable?(current_user) -%>
 			<tr>
 				<th>Result</th>
