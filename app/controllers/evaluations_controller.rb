@@ -17,6 +17,7 @@ class EvaluationsController < ApplicationController
   def show
     @project = Project.accessible(current_user).find_by_name(params[:project_id])
     @evaluation = Evaluation.accessible(current_user).find(params[:id])
+    @num_docs = (@evaluation.study_project.docs & @evaluation.reference_project.docs).count
     raise "There is no such project." unless @project.present?
     respond_with(@evaluation)
   end
@@ -41,6 +42,9 @@ class EvaluationsController < ApplicationController
     evaluator = Evaluator.accessibles(current_user).find_by_name(params[:evaluation][:evaluator])
     params[:evaluation][:evaluator] = evaluator.present? ? evaluator : nil
 
+    params[:evaluation][:denotations_type_match] = nil unless params[:evaluation][:denotations_type_match].present?
+    params[:evaluation][:relations_type_match] = nil unless params[:evaluation][:relations_type_match].present?
+
     params[:evaluation][:user_id] = current_user.id
 
     @evaluation = Evaluation.new(params[:evaluation])
@@ -63,6 +67,9 @@ class EvaluationsController < ApplicationController
 
     evaluator = Evaluator.accessibles(current_user).find_by_name(params[:evaluation][:evaluator])
     params[:evaluation][:evaluator] = evaluator.present? ? evaluator : nil
+
+    params[:evaluation][:denotations_type_match] = nil unless params[:evaluation][:denotations_type_match].present?
+    params[:evaluation][:relations_type_match] = nil unless params[:evaluation][:relations_type_match].present?
 
     respond_to do |format|
       if @evaluation.update_attributes(params[:evaluation])
@@ -109,16 +116,20 @@ class EvaluationsController < ApplicationController
   end
 
   def generate
-    message = t('views.evaluations.generated')
-    evaluation = Evaluation.find(params[:evaluation_id])
+    message = begin
+      evaluation = Evaluation.find(params[:evaluation_id])
+      raise "Up to 10 jobs can be registered per project. Please clean your jobs page." unless evaluation.study_project.jobs.count < 10
 
-    # job = EvaluateAnnotationsJob.new(evaluation)
-    # job.perform()
+      # job = EvaluateAnnotationsJob.new(evaluation)
+      # job.perform()
 
-    priority = evaluation.study_project.jobs.unfinished.count
-    delayed_job = Delayed::Job.enqueue EvaluateAnnotationsJob.new(evaluation), priority: priority, queue: :general
-    Job.create({name:'Evaluate annotations', project_id:evaluation.study_project.id, delayed_job_id:delayed_job.id})
-    message = "The task, 'Evaluate annotations', is created."
+      priority = evaluation.study_project.jobs.unfinished.count
+      delayed_job = Delayed::Job.enqueue EvaluateAnnotationsJob.new(evaluation), priority: priority, queue: :general
+      Job.create({name:'Evaluate annotations', project_id:evaluation.study_project.id, delayed_job_id:delayed_job.id})
+      message = "The task, 'Evaluate annotations', is created."
+    rescue => e
+      e.message
+    end
 
     redirect_to :back, notice: message
   end
