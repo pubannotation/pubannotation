@@ -56,11 +56,11 @@ module ProjectsHelper
 
   def icon_job(project)
     if  project.has_running_jobs?
-      content_tag(:i, '', class: "fa fa-cog fa-spin fa-lg", "aria-hidden" => "true")
+      content_tag(:i, '', class: "fa fa-cog fa-spin fa-lg", "aria-hidden" => "true", title: "jobs")
     elsif  project.has_waiting_jobs?
-      content_tag(:i, '', class: "fa fa-cog fa-pulse fa-lg", "aria-hidden" => "true")
+      content_tag(:i, '', class: "fa fa-cog fa-pulse fa-lg", "aria-hidden" => "true", title: "jobs")
     else
-      content_tag(:i, '', class: "fa fa-cog fa-lg", "aria-hidden" => "true")
+      content_tag(:i, '', class: "fa fa-cog fa-lg", "aria-hidden" => "true", title: "jobs")
     end
   end
 
