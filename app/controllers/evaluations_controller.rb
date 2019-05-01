@@ -1,5 +1,5 @@
 class EvaluationsController < ApplicationController
-  before_filter :authenticate_user!, except: [:index, :show]
+  before_filter :authenticate_user!, except: [:index, :show, :falses]
   before_filter :set_evaluation, only: [:edit, :update, :destroy]
 
   respond_to :html
@@ -73,7 +73,7 @@ class EvaluationsController < ApplicationController
 
     respond_to do |format|
       if @evaluation.update_attributes(params[:evaluation])
-        format.html { redirect_to project_evaluations_path(@project.name), notice: 'Evaluation was successfully created.' }
+        format.html { redirect_to project_evaluation_path(@project.name, @evaluation), notice: 'Evaluation was successfully created.' }
       else
         format.html { render action: "edit" }
       end
