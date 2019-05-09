@@ -1,5 +1,9 @@
 <%= render :partial => 'shared/textae_css_js'-%>
-<h1>from <%= params[:sourcedb] + ':' + params[:sourceid] + '(' + params[:divid] + ')' %></h1>
+<%
+	docspec  = params[:sourcedb] + ':' + params[:sourceid]
+	docspec += '(' + params[:divid] + ')' if params.has_key?(:divid)
+%>
+<h1>from <%= docspec %></h1>
 <% if @fps && !@fps.empty?%>
 	<section>
 		<h2>False positives</h2>
