@@ -1,1 +1,1 @@
-<%= autocomplete_field_tag 'select_project', '', autocomplete_project_name_project_path(@project.name), style: "width:16em; text-align:left", placeholder: placeholder, required: true %>
+<%= autocomplete_field_tag 'select_project', '', autocomplete_project_name_project_path(@project.nil? ? '' : @project.name), style: "width:16em; text-align:left", placeholder: placeholder, required: true %>
