@@ -153,6 +153,7 @@ Pubann::Application.routes.draw do
       get 'upload_annotations' => 'projects#upload_annotations'
       get 'delete_annotations' => 'projects#delete_annotations'
       get 'autocomplete_sourcedb' => 'projects#autocomplete_sourcedb'
+      get 'autocomplete_project_name'
     end
     
     collection do

@@ -41,7 +41,7 @@
     <tr>
       <th><%= f.label :reference_project %></th>
       <td>
-        <%= f.autocomplete_field :reference_project, autocomplete_project_name_projects_path, style: "width:100%; text-align:left", placeholder: "project to compare against",value: @evaluation.reference_project.nil? ? '' : @evaluation.reference_project.name, required: true %>
+        <%= f.autocomplete_field :reference_project, autocomplete_project_name_project_path(@project.name), style: "width:100%; text-align:left", placeholder: "project to compare against",value: @evaluation.reference_project.nil? ? '' : @evaluation.reference_project.name, required: true %>
       </td>
       <td>
         <a href="#help-reference-project" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>

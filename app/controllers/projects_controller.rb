@@ -361,6 +361,11 @@ class ProjectsController < ApplicationController
     render :json => project.docs.where("sourcedb ILIKE ?", "%#{params[:term]}%").pluck(:sourcedb).uniq
   end
 
+  def autocomplete_project_name
+    exclude_project_name = params[:id] || ''
+    render :json => Project.accessible(current_user).where("name ILIKE ?", "%#{params[:term]}%").delete_if{|r| r.name == exclude_project_name}.collect{|r| {id:r.id, name:r.name, label:r.name}}
+  end
+
   def is_owner?
     render_status_error(:forbidden) unless @project.present? && @project.user == current_user
   end

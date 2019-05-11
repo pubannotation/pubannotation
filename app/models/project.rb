@@ -55,7 +55,7 @@ class Project < ActiveRecord::Base
     if current_user.present?
       if current_user.root?
       else
-        includes(:associate_maintainers).where('projects.accessibility = ? OR projects.accessibility = ? OR projects.user_id =? OR associate_maintainers.user_id =?', 1, 3, current_user.id, current_user.id)
+        where('accessibility = ? OR accessibility = ? OR user_id =?', 1, 3, current_user.id)
       end
     else
       where(accessibility: [1, 3])
