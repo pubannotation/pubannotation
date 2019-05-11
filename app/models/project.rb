@@ -167,15 +167,15 @@ class Project < ActiveRecord::Base
   end
 
   def accessible?(current_user)
-    self.accessibility == 1 || self.user == current_user || current_user.root?
+    accessibility == 1 || accessibility == 3 || (current_user.present? && (current_user == user || current_user.root?))
   end
 
   def editable?(current_user)
-    current_user.present? && (current_user.root? || current_user == user || self.associate_maintainer_users.include?(current_user))
+    current_user.present? && (current_user == user || current_user.root?)
   end
 
   def destroyable?(current_user)
-    current_user.root? || current_user == user  
+    current_user == user || current_user.root?
   end
 
   def status_text

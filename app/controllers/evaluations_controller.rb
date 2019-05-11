@@ -94,6 +94,11 @@ class EvaluationsController < ApplicationController
 
   def falses
     evaluation = Evaluation.find(params[:evaluation_id])
+    @study_project = evaluation.study_project
+    @reference_project = evaluation.reference_project
+    raise "The study project is not accessible." unless @study_project.accessible?(current_user)
+    raise "The reference project is not accessible." unless @reference_project.accessible?(current_user)
+
     result = JSON.parse evaluation.result, symbolize_names: true
 
     sourcedb = params[:sourcedb]
@@ -101,8 +106,6 @@ class EvaluationsController < ApplicationController
     divid = params[:divid]
     divid = divid.to_i unless divid.nil?
 
-    @study_project = evaluation.study_project
-    @reference_project = evaluation.reference_project
     @doc = Doc.get_doc(sourcedb:sourcedb, sourceid:sourceid, divid:divid)
 
     @fps = result[:false_positives].nil? ? [] : result[:false_positives].select{|fp| fp[:sourcedb] == sourcedb && fp[:sourceid] == sourceid && fp[:divid] == divid}
@@ -118,8 +121,9 @@ class EvaluationsController < ApplicationController
   def generate
     message = begin
       evaluation = Evaluation.find(params[:evaluation_id])
+      raise "You are not allowed to (re-)generate the evaluation result." unless evaluation.study_project.editable?(current_user)
+      raise "The reference project is not accessible." unless evaluation.reference_project.accessible?(current_user)
       raise "Up to 10 jobs can be registered per project. Please clean your jobs page." unless evaluation.study_project.jobs.count < 10
-
       # job = EvaluateAnnotationsJob.new(evaluation)
       # job.perform()
 

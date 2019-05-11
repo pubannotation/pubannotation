@@ -1,4 +1,4 @@
-class EvaluateAnnotationsJob < Struct.new(:evaluation)
+class EvaluateAnnotationsJob < Struct.new(:evaluation, :detail)
 	include StateManagement
 
 	def perform
@@ -30,7 +30,7 @@ class EvaluateAnnotationsJob < Struct.new(:evaluation)
 
 		result = evaluator.evaluate(comparison)
 
-		if reference_project.accessibility == 1
+		unless reference_project.accessibility == 3
 			false_positives = comparison.select{|m| m[:study] && m[:reference].nil?}
 			result[:false_positives] = false_positives if false_positives.present?
 
