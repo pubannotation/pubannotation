@@ -33,6 +33,7 @@ Deploy
 -----
 
 rails s -e production
+
 (You will encounter an error message with an instruction to set a secret key for devise. Please follow the instruction.)
 
 License
