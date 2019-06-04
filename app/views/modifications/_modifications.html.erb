@@ -1,14 +1,12 @@
 <% if modifications.present? -%>
-  <section>
-    <h3>Modificationss</h3>
-    <table class="ann">
-      <tr>
-        <th>Id</th>
-        <th>Subject</th>
-        <th>Predicate</th>
-        <th>Object</th>
-      </tr>
-      <%= render partial: 'modifications/modification', collection: modifications, locals: {doc: doc, body: body} -%>
-    </table>
-    </section>
+  <tr>
+    <td colspan="4" style="border-color:white"><h3>Modifications</h3></td>
+  </tr>
+  <tr>
+    <th>Id</th>
+    <th>Subject</th>
+    <th>Predicate</th>
+    <th>Object</th>
+  </tr>
+  <%= render partial: 'modifications/modification', collection: modifications, locals: {doc: doc, body: body} -%>
 <% end -%>

@@ -1,14 +1,16 @@
 <section>
 	<% unless @project.present? %>
-		<h2><%= annotations[:project] -%></h2>
+		<h2><%= link_to annotations[:project], project_path(annotations[:project]) -%></h2>
 	<% end %>
 
-	<%= render partial: 'denotations/denotations',
-	  locals: {denotations:annotations[:denotations], doc: doc, body: body} -%>
-
-	<%= render partial: 'relations/relations',
-	  locals: {relations:annotations[:relations], doc: doc, body: body} -%>
-
-	<%= render partial: 'modifications/modifications',
-	  locals: {modifications:annotations[:modifications], doc: doc, body: body} -%>
+	<% if annotations[:denotations].present? -%>
+		<table class="ann">
+			<%= render partial: 'denotations/denotations',
+				locals: {denotations:annotations[:denotations], doc: doc, body: body} -%>
+			<%= render partial: 'relations/relations',
+				locals: {relations:annotations[:relations], doc: doc, body: body} -%>
+			<%= render partial: 'modifications/modifications',
+				locals: {modifications:annotations[:modifications], doc: doc, body: body} -%>
+		</table>
+	<% end %>
 </section>

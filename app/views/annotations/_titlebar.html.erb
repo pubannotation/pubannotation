@@ -9,6 +9,10 @@
 	    end
 	%>
 
+	<% if @project.present? %>
+		<%= link_to_unless_current 'TSV', annotations_url + '.tsv', :class => 'tab', id: 'annotations_tsv' -%>
+	<% end %>
+
 	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
 
 	<% if @project.present? -%>

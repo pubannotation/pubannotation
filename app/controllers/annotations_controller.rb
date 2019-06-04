@@ -133,6 +133,7 @@ class AnnotationsController < ApplicationController
         respond_to do |format|
           format.html {render 'index_in_project'}
           format.json {render json: @annotations}
+          format.tsv  {render text: Annotation.hash_to_tsv(@annotations)}
         end
       end
 
@@ -140,6 +141,7 @@ class AnnotationsController < ApplicationController
       respond_to do |format|
         format.html {redirect_to :back, notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.tsv  {render text: 'Error'}
       end
     end
   end
@@ -170,12 +172,14 @@ class AnnotationsController < ApplicationController
       respond_to do |format|
         format.html {render 'index_in_project'}
         format.json {render json: @annotations}
+        format.tsv  {render text: Annotation.hash_to_tsv(@annotations)}
       end
 
     rescue => e
       respond_to do |format|
         format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
         format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+        format.tsv  {render tsv: 'error'}
       end
     end
   end

@@ -1,17 +1,12 @@
-<% if denotations.present? -%>
-  <section>
-    <h3>Denotations</h3>
-    <table class="ann">
-      <tr>
-        <th class='annotation_header_id'>Id</th>
-        <th class='annotation_header_span'>Span</th>
-        <th class='annotation_header_predicate'>Predicate</th>
-        <th class='annotation_header_object'>Object</th>
-      </tr>
+<tr>
+  <td colspan="4" style="border-color:white"><h3>Denotations</h3></td>
+</tr>
+<tr>
+  <th class='annotation_header_id'>Id</th>
+  <th class='annotation_header_span'>Subject</th>
+  <th class='annotation_header_predicate'>Predicate</th>
+  <th class='annotation_header_object'>Object</th>
+  <th class='annotation_header_object'>Lexical cue</th>
+</tr>
+<%= render partial: 'denotations/denotation', collection: denotations, locals: {doc: doc, body: body} -%>
 
-      <%= render partial: 'denotations/denotation', collection: denotations, locals: {doc: doc, body: body} -%>
-    </table>
-  </section>
-<% else -%>
-  <%= t('controllers.shared.not_exists', model: t('views.shared.annotation')) %>
-<% end -%>
