@@ -568,7 +568,7 @@ class Doc < ActiveRecord::Base
       hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
     end
 
-    {project:project.name, denotations:hdenotations, relations:hrelations, modificationss:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
+    {project:project.name, denotations:hdenotations, relations:hrelations, modifications:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
   end
 
   def projects_within_span(span)
