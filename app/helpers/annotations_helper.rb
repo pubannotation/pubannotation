@@ -91,7 +91,19 @@ module AnnotationsHelper
         if project.editable?(current_user)
           if delayed_job_tasks.blank?
             # when delayed_job exists
-            link_to t('controllers.annotations.create_downloadable'), project_create_annotations_tgz_path(project.name), :class => 'button long_button', :confirm => t('controllers.annotations.confirm_create_downloadable')
+            title  = 'To create a downloadable tgz file which includes all the texts '
+            title += if project.accessibility == 3
+              'of this project. Note that it will NOT include annotations, as this project is set to blind annotations.'
+            else
+              'and annotations of this project.'
+            end
+            link_to(
+              t('controllers.annotations.create_downloadable'),
+              project_create_annotations_tgz_path(project.name),
+              :class => 'button long_button',
+              :title => title,
+              :confirm => t('controllers.annotations.confirm_create_downloadable')
+            )
           else
             # delayed_job does not exists
             t('views.shared.download.delayed_job_present')

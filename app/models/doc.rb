@@ -214,6 +214,14 @@ class Doc < ActiveRecord::Base
     descriptor
   end
 
+  def filename
+    if has_divs?
+      "#{sourcedb}-#{sourceid}-#{serial}-#{section.sub(/\.$/, '').gsub(' ', '_')}"
+    else
+      "#{sourcedb}-#{sourceid}"
+    end
+  end
+
   def self.get_doc(docspec)
     if docspec[:sourcedb].present? && docspec[:sourceid].present?
       Doc.find_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:divid].present? ? docspec[:divid] : 0)
