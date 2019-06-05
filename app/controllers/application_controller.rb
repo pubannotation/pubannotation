@@ -315,7 +315,7 @@ class ApplicationController < ActionController::Base
 
   def get_docs_projects
     sort_order = sort_order(Project)
-    @projects = @doc.projects.accessible(current_user).order(sort_order)
+    @projects = @doc.projects.annotations_accessible(current_user).order(sort_order)
     if params[:projects].present?
       select_project_names = params[:projects].split(',').uniq
       @selected_projects = Array.new 
