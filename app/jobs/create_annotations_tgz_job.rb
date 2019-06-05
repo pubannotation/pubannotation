@@ -17,9 +17,15 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 						doc.set_ascii_body if options[:encoding] == 'ascii'
 						annotations = doc.hannotations(project)
 	          title = get_doc_info(annotations).sub(/\.$/, '').gsub(' ', '_')
-	          path  = project.name + '/' + title + ".json"
+	          path  = project.name + '/json/' + title + ".json"
 	          stuff = annotations.to_json
 	          tar.add_file_simple(path, 0644, stuff.length){|t| t.write(stuff)}
+	          path  = project.name + '/tsv/' + title + ".tsv"
+	          stuff = Annotation.hash_to_tsv(annotations)
+	          tar.add_file_simple(path, 0644, stuff.length){|t| t.write(stuff)}
+	          path  = project.name + '/txt/' + title + ".txt"
+	          stuff = doc.body
+	          tar.add_file_simple(path, 0644, stuff.bytesize){|t| t.write(stuff)}
 	        rescue => e
 		 	      doc_description  = [doc.sourcedb, doc.sourceid, doc.serial].compact.join('-')
 						@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: e.message})
