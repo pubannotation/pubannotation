@@ -3,14 +3,42 @@
 		<h2><%= link_to annotations[:project], project_path(annotations[:project]) -%></h2>
 	<% end %>
 
-	<% if annotations[:denotations].present? -%>
+	<% if annotations.present? -%>
+
 		<table class="ann">
-			<%= render partial: 'denotations/denotations',
-				locals: {denotations:annotations[:denotations], doc: doc, body: body} -%>
-			<%= render partial: 'relations/relations',
-				locals: {relations:annotations[:relations], doc: doc, body: body} -%>
-			<%= render partial: 'modifications/modifications',
-				locals: {modifications:annotations[:modifications], doc: doc, body: body} -%>
+			<tr>
+				<th class='annotation_header_id'>Id</th>
+				<th class='annotation_header_span'>Subject</th>
+				<th class='annotation_header_object'>Object</th>
+				<th class='annotation_header_predicate'>Predicate</th>
+				<th class='annotation_header_object'>Lexical cues</th>
+			</tr>
+
+			<% annotations[:text] = body unless annotations[:text].present? -%>
+			<% array = Annotation.hash_to_array(annotations) -%>
+			<% array.each do |a| -%>
+				<%
+					if a[1] =~ /^(\d+)-(\d+)$/
+						a[1] = link_to "#{$1}-#{$2}", doc.span_url({begin:$1, end:$2})
+					end
+
+					type = case a[3]
+					when 'denotes'
+						'denotation'
+					when 'hasMood'
+						'modification'
+					else
+						'relation'
+					end
+				%>
+				<tr class=<%= type %>>
+					<td><%= a[0] %></td>
+					<td><%= a[1] %></td>
+					<td><%= a[2] %></td>
+					<td><%= a[3] %></td>
+					<td><%= a[4] %></td>
+				</tr>
+			<% end %>
 		</table>
 	<% end %>
 </section>

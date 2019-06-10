@@ -2,28 +2,42 @@ class Annotation < ActiveRecord::Base
   include ApplicationHelper
   include AnnotationsHelper
 
+
+  def self.hash_to_array(annotations)
+    array = []
+
+    text = annotations[:text]
+    lexical_cues = {}
+    if annotations[:denotations].present?
+      annotations[:denotations].each do |a|
+        lexical_cues[a[:id]] = text[a[:span][:begin]...a[:span][:end]]
+        array << [a[:id], "#{a[:span][:begin]}-#{a[:span][:end]}", a[:obj], 'denotes', lexical_cues[a[:id]]]
+      end
+    end
+
+    if annotations[:relations].present?
+      annotations[:relations].each do |a|
+        lexical_cues[a[:id]] = [lexical_cues[a[:subj]], lexical_cues[a[:obj]]].to_csv.chomp
+        array << [a[:id], a[:subj], a[:obj], a[:pred], lexical_cues[a[:id]]]
+      end
+    end
+
+    if annotations[:modifications].present?
+      annotations[:modifications].each do |a|
+        array << [a[:id], a[:obj], a[:pred], 'hasMood', lexical_cues[a[:obj]]]
+      end
+    end
+    array
+  end
+
+
   def self.hash_to_tsv(annotations)
-    headers = ["Id", "Subject", "Predicate", "Object"]
+    headers = ["Id", "Subject", "Object", "Predicate", "Lexical cue"]
+
+    array = self.hash_to_array(annotations)
     tsv = CSV.generate(col_sep:"\t") do |csv|
       csv << headers
-
-      if annotations[:denotations].present?
-        annotations[:denotations].each do |d|
-         csv << [d[:id], "#{d[:span][:begin]}-#{d[:span][:end]}", 'denotes', d[:obj]]
-        end
-      end
-
-      if annotations[:relations].present?
-        annotations[:relations].each do |d|
-         csv << [d[:id], d[:subj], d[:pred], d[:obj]]
-        end
-      end
-
-      if annotations[:modifications].present?
-        annotations[:modifications].each do |d|
-          csv << [d[:obj], 'hasMood', d[:pred]]
-        end
-      end
+      array.each{|a| csv << a}
     end
     return tsv
   end
