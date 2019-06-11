@@ -44,6 +44,7 @@ group :test do
   gem 'test-unit'
 end
 
+gem 'text_alignment', '~> 0.2.4'
 gem 'pubannotation_evaluator', '~> 1.0', '>= 1.0.5'
 gem 'wice_grid'
 gem 'font-awesome-rails'
@@ -58,7 +59,6 @@ gem 'rest-client', '~> 2.0.1'
 gem 'htmlentities'
 gem 'libxml-ruby'
 gem 'wikipedia-client'
-gem 'diff-lcs'
 gem 'ruby-dictionary'
 gem 'kaminari'
 gem 'devise'
