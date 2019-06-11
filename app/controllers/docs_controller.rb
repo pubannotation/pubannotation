@@ -485,7 +485,7 @@ class DocsController < ApplicationController
       docids = source_project.docs.pluck(:id) - project.docs.pluck(:id)
 
       if docids.empty?
-        "Importing docs was skipped because all the docs already existed in the project."
+        "There is no document to import from the project, '#{params["select_project"]}'."
       else
         num_source_docs = source_project.docs.count
         num_skip = num_source_docs - docids.length
