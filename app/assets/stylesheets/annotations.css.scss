@@ -1,0 +1,28 @@
+table.ann {
+	tr.denotation {
+		background-color: #f8f8ff;
+	}
+
+	tr.denotation:hover {
+		background-color: #e8e8ff;			
+	}
+
+
+	tr.relation {
+		background-color: #fff2f2;
+	}
+
+	tr.relation:hover {
+		background-color: #ffe2e2;
+	}
+
+
+	tr.modification {
+		background-color: #f0fff0;
+	}
+
+	tr.modification:hover {
+		background-color: #e0ffe0;
+	}
+
+}
