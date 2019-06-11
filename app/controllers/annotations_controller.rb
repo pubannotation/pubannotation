@@ -563,8 +563,10 @@ class AnnotationsController < ApplicationController
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise ArgumentError, "Could not find the project." unless project.present?
 
-      filename = params[:upfile].original_filename
-      ext = File.extname(filename)
+      file = params[:upfile]
+
+      filename = file.original_filename
+      ext = File.extname(filename).downcase
       ext = '.tar.gz' if ext == '.gz' && filename.end_with?('.tar.gz')
       raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json'].include?(ext)
 
@@ -573,15 +575,18 @@ class AnnotationsController < ApplicationController
       options = {mode: params[:mode].present? ? params[:mode] : 'replace'}
 
       filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
-      FileUtils.mv params[:upfile].path, filepath
+      FileUtils.mv file.path, filepath
 
-      # job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)
-      # job.perform()
-
-      priority = project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
-      Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
-      notice = "The task, 'Upload annotations', is created."
+      if ext == '.json' && file.size < 10.kilobytes
+        job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)
+        res = job.perform()
+        notice = "Annotations are successfully uploaded."
+      else
+        priority = project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
+        Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
+        notice = "The task, 'Upload annotations', is created."
+      end
     rescue => e
       notice = e.message
     end

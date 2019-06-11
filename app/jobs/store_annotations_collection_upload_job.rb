@@ -20,8 +20,10 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
     end.sort
 
     # check annotation files
-    @job.update_attribute(:num_items, jsonfiles.length)
-    @job.update_attribute(:num_dones, 0)
+    if @job
+      @job.update_attribute(:num_items, jsonfiles.length)
+      @job.update_attribute(:num_dones, 0)
+    end
 
     @total_num_sequenced = 0
 
@@ -35,7 +37,12 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
         begin
           JSON.parse(json, symbolize_names:true)
         rescue => e
-          @job.messages << Message.create({body: "[#{File.basename(jsonfile)}] JSON parse error. Not a valid JSON object."})
+          message = "[#{File.basename(jsonfile)}] JSON parse error. Not a valid JSON object."
+          if @job
+            @job.messages << Message.create({body: "[#{File.basename(jsonfile)}] JSON parse error. Not a valid JSON object."})
+          else
+            raise ArgumentError, message
+          end
           next
         end
       annotation_collection = o.is_a?(Array) ? o : [o]
@@ -54,14 +61,20 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 
           if transaction_size > MAX_SIZE_TRANSACTION
             store(annotation_transaction, sourcedb_sourceids_index)
-            @job.update_attribute(:num_dones, i + 1)
+            if @job
+              @job.update_attribute(:num_dones, i + 1)
+            end
 
             annotation_transaction.clear
             transaction_size = 0
             sourcedb_sourceids_index.clear
           end
         rescue => e
-          @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
+          if @job
+            @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
+          else
+            raise ArgumentError, "[#{annotations[:sourcedb]}-#{annotations[:sourceid]}#{annotations[:divid].nil? ? '' : '-' + annotations[:divid]}] #{e.message}"
+          end
         end
       end
     end
@@ -73,10 +86,13 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
       ActionController::Base.new.expire_fragment('docs_count')
     end
 
-    @job.update_attribute(:num_dones, jsonfiles.length)
+    if @job
+      @job.update_attribute(:num_dones, jsonfiles.length)
+    end
 
     File.unlink(filepath)
     FileUtils.rm_rf(dirpath) unless dirpath.nil?
+    true
 	end
 
   private
@@ -94,7 +110,14 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
     end
 
     messages = project.store_annotations_collection(annotation_transaction, options)
-    messages.each {|m| @job.messages << Message.create(m)} unless messages.nil?
+    if messages.present?
+      if @job
+        messages.each{|m| @job.messages << Message.create(m)}
+      else
+        msgs = messages.collect{|m| "[#{m[:sourcedb]}-#{m[:sourceid]}#{m[:divid].nil? ? '' : '-' + m[:divid]}] #{m[:body]}"}
+        raise ArgumentError, msgs.join("\n")
+      end
+    end
 
     unless sourcedbs_changed.empty?
       ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
