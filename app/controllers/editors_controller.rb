@@ -14,9 +14,18 @@ class EditorsController < ApplicationController
   end
 
   def show
-    @editor = Editor.find(params[:id])
-    @editor.parameters = @editor.parameters.map{|p| p.join(' = ')}.join("\n")
-    respond_with(@editor)
+    begin
+      begin
+        @editor = Editor.accessibles(current_user).find(params[:id])
+      rescue
+        raise "Could not find the editor, #{params[:id]}."
+      end
+
+      @editor.parameters = @editor.parameters.map{|p| p.join(' = ')}.join("\n")
+      respond_with(@editor)
+    rescue => e
+      redirect_to editors_path, :notice => e.message
+    end
   end
 
   def new
