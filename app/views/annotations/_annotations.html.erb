@@ -18,8 +18,12 @@
 			<% array = Annotation.hash_to_array(annotations) -%>
 			<% array.each do |a| -%>
 				<%
-					if a[1] =~ /^(\d+)-(\d+)$/
-						a[1] = link_to "#{$1}-#{$2}", doc.span_url({begin:$1, end:$2})
+					spans = a[1].parse_csv
+					slinks = if spans[0] =~ /^(\d+)-(\d+)$/
+						spans.collect do |s|
+							s =~ /^(\d+)-(\d+)$/
+							link_to "#{$1}-#{$2}", doc.span_url({begin:$1, end:$2})
+						end.join(',').html_safe
 					end
 
 					type = case a[3]
@@ -33,7 +37,7 @@
 				%>
 				<tr class=<%= type %>>
 					<td><%= a[0] %></td>
-					<td><%= a[1] %></td>
+					<td><%= slinks.nil? ? a[1] : slinks %></td>
 					<td><%= a[2] %></td>
 					<td><%= a[3] %></td>
 					<td><%= a[4] %></td>

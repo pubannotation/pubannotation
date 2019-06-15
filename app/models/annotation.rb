@@ -10,8 +10,10 @@ class Annotation < ActiveRecord::Base
     lexical_cues = {}
     if annotations[:denotations].present?
       annotations[:denotations].each do |a|
-        lexical_cues[a[:id]] = text[a[:span][:begin]...a[:span][:end]]
-        array << [a[:id], "#{a[:span][:begin]}-#{a[:span][:end]}", a[:obj], 'denotes', lexical_cues[a[:id]]]
+        spans = a[:span].class == Array ? a[:span] : [a[:span]]
+        lexical_cues[a[:id]] = spans.collect{|s| text[s[:begin]...s[:end]]}.to_csv.chomp
+        spant = spans.collect{|s| "#{s[:begin]}-#{s[:end]}"}.to_csv.chomp
+        array << [a[:id], spant, a[:obj], 'denotes', lexical_cues[a[:id]]]
       end
     end
 
