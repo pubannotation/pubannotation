@@ -234,7 +234,15 @@ class Annotation < ActiveRecord::Base
   def self.align_denotations(denotations, str1, str2)
     return nil if denotations.nil?
     align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-    align.transform_hdenotations(denotations).select{|a| a[:span][:begin].to_i <= a[:span][:end].to_i }
+    denotations_new = align.transform_hdenotations(denotations)
+    bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
+    unless bads.empty?
+      align = TextAlignment::TextAlignment.new(str1.downcase, str2.downcase, TextAlignment::MAPPINGS)
+      denotations_new = align.transform_hdenotations(denotations)
+      bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
+      raise "Alignment failed. Text may be too much different." unless bads.empty?
+    end
+    denotations_new
   end
 
   # TODO: when a span is specified, restrict the alignment within the span.
@@ -245,8 +253,6 @@ class Annotation < ActiveRecord::Base
     if annotations[:denotations].present? && original_text != annotations[:text]
       num = annotations[:denotations].length
       annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
-      raise "Alignment failed. Text may be too much different." if annotations[:denotations].length < num
-      annotations[:denotations].each{|d| raise "Alignment failed. Text may be too much different." if d[:span][:begin].nil? || d[:span][:end].nil?}
     end
 
     annotations.select{|k,v| v.present?}
