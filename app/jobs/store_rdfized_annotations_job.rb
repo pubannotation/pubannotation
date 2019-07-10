@@ -120,7 +120,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 						sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
 						spans_ttl = rdfizer_spans.rdfize([spans])
 						r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
-						raise RuntimeError, "failure while adding RDFized spans to the endpoint." unless r && r.status == 200
+						raise RuntimeError, "failure while adding RDFized spans to the endpoint (#{r.status})." unless r && r.status == 200
 						update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 					end
 				end
