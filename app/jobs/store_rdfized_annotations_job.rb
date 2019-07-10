@@ -27,8 +27,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 		annotations_col = []
 		num_denotations_in_annotation_queue = 0
 
-		docs_for_spans = []
-		num_denotations_in_span_queue = 0
+		spans_indexed_queue = {}
+		num_spans_in_span_queue = 0
 
 		File.foreach(filepath).with_index do |docid, i|
 			docid.chomp!.strip!
@@ -40,7 +40,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 
 				# rdfize and store annotations
 				# batch processing for rdfizing annotations
-				if (num_denotations_in_annotation_queue + num_denotations_in_current_doc) >= size_batch_annotations
+				if (num_denotations_in_annotation_queue > 0) && ((num_denotations_in_annotation_queue + num_denotations_in_current_doc) >= size_batch_annotations)
 					begin
 						annos_ttl = rdfizer_annos.rdfize(annotations_col)
 						r = sd.add(db, annos_ttl, graph_uri_project, "text/turtle")
@@ -62,14 +62,15 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 				# rdfize and store spans
 				doc_last_indexed_at = doc.last_indexed_at(sd)
 				if doc_last_indexed_at.nil? || doc.denotations.where("denotations.project_id = ? AND denotations.updated_at > ?", project.id, doc_last_indexed_at).exists?
-					if (num_denotations_in_span_queue + num_denotations_in_current_doc) >= size_batch_spans
+					spans = doc.hdenotations_all
+					num_spans_in_current_doc = spans.length
+
+					if (num_spans_in_span_queue > 0) && (num_spans_in_span_queue + num_spans_in_current_doc) >= size_batch_spans
 						begin
 							sd.with_transaction(db) do |txID|
-								docs_for_spans.each do |d|
-									graph_uri_doc = d.graph_uri
+								spans_indexed_queue.each do |graph_uri_doc, spans|
 									graph_uri_doc_spans = graph_uri_doc + '/spans'
 									sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
-									spans = d.hdenotations_all
 									spans_ttl = rdfizer_spans.rdfize([spans])
 									r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
 									raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r && r.status == 200
@@ -78,16 +79,16 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 							end
 						rescue => e
 							if @job
-								@job.messages << Message.create({body: "failed in storing rdfized spans from #{docs_for_spans.length} docs: #{e.message}"})
+								@job.messages << Message.create({body: "failed in storing rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"})
 							else
 								raise ArgumentError, message
 							end
 						end
-						docs_for_spans.clear
-						num_denotations_in_current_doc = 0
+						spans_indexed_queue.clear
+						num_spans_in_span_queue = 0
 					else
-						docs_for_spans << doc
-						num_denotations_in_span_queue += num_denotations_in_current_doc
+						spans_indexed_queue[doc.graph_uri] = spans
+						num_spans_in_span_queue += num_spans_in_current_doc
 				  end
 				end
 			end
@@ -111,14 +112,12 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 			end
 		end
 
-		unless docs_for_spans.empty?
+		unless spans_indexed_queue.empty?
 			begin
 				sd.with_transaction(db) do |txID|
-					docs_for_spans.each do |doc|
-						graph_uri_doc = doc.graph_uri
+					spans_indexed_queue.each do |graph_uri_doc, spans|
 						graph_uri_doc_spans = graph_uri_doc + '/spans'
 						sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
-						spans = doc.hdenotations_all
 						spans_ttl = rdfizer_spans.rdfize([spans])
 						r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
 						raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r && r.status == 200
@@ -127,7 +126,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 				end
 			rescue => e
 				if @job
-					@job.messages << Message.create({body: "failed in storing rdfized spans from #{docs_for_spans.length} docs: #{e.message}"})
+					@job.messages << Message.create({body: "failed in storing rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"})
 				else
 					raise ArgumentError, message
 				end
