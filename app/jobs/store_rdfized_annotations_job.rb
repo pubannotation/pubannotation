@@ -6,7 +6,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 
 	def perform
 		size_batch_annotations = 5000
-		size_batch_spans = 2500
+		size_batch_spans = 2000
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		if @job
@@ -47,7 +47,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 						raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
 					rescue => e
 						if @job
-							@job.messages << Message.create({body: "failed in storing rdfized annotations from #{annotations_col.length} docs: #{e.message}"})
+							@job.messages << Message.create({body: "failed in storing #{num_denotations_in_annotation_queue} rdfized annotations from #{annotations_col.length} docs: #{e.message}"})
 						else
 							raise ArgumentError, message
 						end
@@ -65,7 +65,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 					spans = doc.hdenotations_all
 					num_spans_in_current_doc = spans.length
 
-					if (num_spans_in_span_queue > 0) && (num_spans_in_span_queue + num_spans_in_current_doc) >= size_batch_spans
+					if (num_spans_in_span_queue > 0) && ((num_spans_in_span_queue + num_spans_in_current_doc) >= size_batch_spans)
 						begin
 							sd.with_transaction(db) do |txID|
 								spans_indexed_queue.each do |graph_uri_doc, spans|
@@ -73,13 +73,13 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 									sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
 									spans_ttl = rdfizer_spans.rdfize([spans])
 									r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
-									raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r && r.status == 200
+									raise RuntimeError, "failure while adding RDFized spans to the endpoint." unless r && r.status == 200
 									update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 								end
 							end
 						rescue => e
 							if @job
-								@job.messages << Message.create({body: "failed in storing rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"})
+								@job.messages << Message.create({body: "failed in storing #{num_spans_in_span_queue} rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"})
 							else
 								raise ArgumentError, message
 							end
@@ -105,7 +105,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 				raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
 			rescue => e
 				if @job
-					@job.messages << Message.create({body: "failed in storing rdfized annotations from #{annotations_col.length} docs: #{e.message}"})
+					@job.messages << Message.create({body: "failed in storing #{num_denotations_in_annotation_queue} rdfized annotations from the last #{annotations_col.length} docs: #{e.message}"})
 				else
 					raise ArgumentError, message
 				end
@@ -120,13 +120,13 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 						sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
 						spans_ttl = rdfizer_spans.rdfize([spans])
 						r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
-						raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r && r.status == 200
+						raise RuntimeError, "failure while adding RDFized spans to the endpoint." unless r && r.status == 200
 						update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
 					end
 				end
 			rescue => e
 				if @job
-					@job.messages << Message.create({body: "failed in storing rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"})
+					@job.messages << Message.create({body: "failed in storing #{num_spans_in_span_queue} rdfized spans from the last #{spans_indexed_queue.length} docs: #{e.message}"})
 				else
 					raise ArgumentError, message
 				end
