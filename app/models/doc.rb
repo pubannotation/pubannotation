@@ -540,12 +540,13 @@ class Doc < ActiveRecord::Base
   end
 
   def hannotations(project = nil, span = nil, context_size = nil, options = nil)
-    annotations = {}
-    annotations[:target] = graph_uri
-    annotations[:sourcedb] = sourcedb
-    annotations[:sourceid] = sourceid
+    annotations = {
+      target: graph_uri,
+      sourcedb: sourcedb,
+      sourceid: sourceid,
+      text: get_text(span, context_size)
+    }
     annotations[:divid] = serial if has_divs?
-    annotations[:text] = get_text(span, context_size)
 
     if project.present? && !project.respond_to?(:each)
       annotations.merge!(get_project_annotations(project, span, context_size, options))
