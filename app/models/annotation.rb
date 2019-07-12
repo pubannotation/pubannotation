@@ -236,7 +236,7 @@ class Annotation < ActiveRecord::Base
     align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
     denotations_new = align.transform_hdenotations(denotations)
     bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
-    unless bads.empty?
+    unless bads.empty? && align.similarity > 0.5
       align = TextAlignment::TextAlignment.new(str1.downcase, str2.downcase, TextAlignment::MAPPINGS)
       denotations_new = align.transform_hdenotations(denotations)
       bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}

@@ -269,7 +269,7 @@ GEM
     tao_rdfizer (0.9.10)
     test-unit (3.1.8)
       power_assert
-    text_alignment (0.2.5)
+    text_alignment (0.2.6)
     thor (0.19.1)
     thread_safe (0.3.5)
     tilt (1.4.1)
@@ -346,7 +346,7 @@ DEPENDENCIES
   stardog-rb!
   tao_rdfizer (~> 0.9.10)
   test-unit
-  text_alignment (~> 0.2.5)
+  text_alignment (~> 0.2.6)
   uglifier (>= 1.0.3)
   unicorn (= 5.4.1)
   vcr
