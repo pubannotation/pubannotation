@@ -15,10 +15,10 @@ class Doc < ActiveRecord::Base
     }
   } do
     mappings do
-      indexes :sourcedb, type: :string, index: :not_analyzed
-      indexes :sourceid, type: :string, index: :not_analyzed
-      indexes :serial,   type: :integer, index: :not_analyzed
-      indexes :body,     type: :string,  analyzer: :standard_normalization, index_options: :offsets
+      indexes :sourcedb, type: :keyword
+      indexes :sourceid, type: :keyword
+      indexes :serial,   type: :integer
+      indexes :body,     type: :text,  analyzer: :standard_normalization, index_options: :offsets
 
       # indexes :docs_projects, type: 'nested' do
       indexes :docs_projects do
@@ -27,7 +27,7 @@ class Doc < ActiveRecord::Base
       end
 
       indexes :projects do
-        indexes :id, index: :not_analyzed
+        indexes :id, type: :integer
       end
     end
   end
