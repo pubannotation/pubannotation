@@ -194,6 +194,14 @@ module ApplicationHelper
   end
 
   def root_user?
-    user_signed_in? && current_user.root?    
+    user_signed_in? && current_user.root?
   end
+
+  def name_with_private_indicator(object)
+    str  = object.name
+    str += ' '
+    str += content_tag(:i, '', class: "fa fa-eye-slash", "aria-hidden" => "true", title: "private") unless object.is_public
+    str
+  end
+
 end
