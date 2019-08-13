@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20180123053557) do
+ActiveRecord::Schema.define(:version => 20190501042525) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -38,6 +38,24 @@ ActiveRecord::Schema.define(:version => 20180123053557) do
 
   add_index "associate_maintainers", ["project_id"], :name => "index_associate_maintainers_on_project_id"
   add_index "associate_maintainers", ["user_id"], :name => "index_associate_maintainers_on_user_id"
+
+  create_table "collection_projects", :force => true do |t|
+    t.integer  "collection_id"
+    t.integer  "project_id"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+  end
+
+  create_table "collections", :force => true do |t|
+    t.string   "name"
+    t.text     "description"
+    t.string   "reference"
+    t.integer  "user_id"
+    t.boolean  "is_sharedtask", :default => false
+    t.integer  "accessibility", :default => 1
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
+  end
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0, :null => false
@@ -105,6 +123,41 @@ ActiveRecord::Schema.define(:version => 20180123053557) do
 
   add_index "editors", ["name"], :name => "index_editors_on_name", :unique => true
   add_index "editors", ["user_id"], :name => "index_editors_on_user_id"
+
+  create_table "evaluations", :force => true do |t|
+    t.integer  "study_project_id"
+    t.integer  "reference_project_id"
+    t.integer  "evaluator_id"
+    t.string   "note"
+    t.text     "result"
+    t.integer  "user_id"
+    t.boolean  "is_public",              :default => false
+    t.datetime "created_at",                                :null => false
+    t.datetime "updated_at",                                :null => false
+    t.integer  "soft_match_characters"
+    t.integer  "soft_match_words"
+    t.text     "denotations_type_match"
+    t.text     "relations_type_match"
+  end
+
+  add_index "evaluations", ["evaluator_id"], :name => "index_evaluations_on_evaluator_id"
+  add_index "evaluations", ["reference_project_id"], :name => "index_evaluations_on_reference_project_id"
+  add_index "evaluations", ["study_project_id"], :name => "index_evaluations_on_study_project_id"
+  add_index "evaluations", ["user_id"], :name => "index_evaluations_on_user_id"
+
+  create_table "evaluators", :force => true do |t|
+    t.string   "name"
+    t.string   "home"
+    t.text     "description"
+    t.integer  "access_type"
+    t.string   "url"
+    t.integer  "user_id"
+    t.boolean  "is_public",   :default => false
+    t.datetime "created_at",                     :null => false
+    t.datetime "updated_at",                     :null => false
+  end
+
+  add_index "evaluators", ["user_id"], :name => "index_evaluators_on_user_id"
 
   create_table "jobs", :force => true do |t|
     t.integer  "project_id"
