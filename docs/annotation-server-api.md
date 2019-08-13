@@ -17,8 +17,8 @@ which conforms the following input and output API.
 
 For an annotation server to be interoperable with PubAnnotation, it has to take as input either
 
-* a piece of text (through a parameter which is default to _text_ ), or
-* a pair of source DB and source ID specification (through parameters which are defualt to _sourcedb_ and _sourceid_ ).
+* a piece of text (through a parameter which defaults to _text_ ), or
+* a pair of source DB and source ID specification (through parameters which defualt to _sourcedb_ and _sourceid_ ).
 
 When a request is made with a piece of text,
 the server is expected to produce annotation to the text,
@@ -29,10 +29,11 @@ the server is expected to fetch the corresponding piece of text from the source 
 to produce annotation to the text,
 and to respond with the annotation.
 
-Making a request with both a piece of text and source DB / source ID specification is redundant and may cause a conflict: the piece of text supplied to the server may be different from the text fetched by the source DB / source ID.
+When a request is made with both a piece of text and a specification of source DB / source ID,
+the former should take precedence, and the latter should be treated as redundant fields.
 
-Therefore, in the case, to prevent unexpected consequence,
-the server must respond with the status code 400 (Bad Request).
+When a request is made with some redundant fields, the server is expected to ignore them for its processing, but to include all of them in the response.
+In other words, when the server receives a request with a json object, it is expected return the json object as it is, changing only the annotation fields, e.g., denotations, relations, and modifications.
 
 ### Output
 
