@@ -21,12 +21,12 @@ module ProjectsHelper
   def maintainer_link(project)
     if project.anonymize == true
       if current_user.present? && (current_user.root? || current_user == project.user)
-        link_to(project.user.username, show_user_path(project.user.username)) + ' <i class="fa fa-user-secret" aria-hidden="true"></i>'.html_safe
+        link_to (project.user.username + ' ' + content_tag(:i, '', class: "fa fa-user-secret", "aria-hidden" => "true", title: "anonymized")).html_safe, show_user_path(project.user.username), style: 'display:block'
       else
         '<i class="fa fa-user-secret" aria-hidden="true" title="anonymized"></i>'.html_safe
       end
     else
-      link_to project.user.username, show_user_path(project.user.username)
+      link_to project.user.username, show_user_path(project.user.username), style: 'display:block'
     end
   end
 

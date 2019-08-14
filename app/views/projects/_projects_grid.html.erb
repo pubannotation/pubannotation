@@ -2,7 +2,7 @@
   grid(@projects_grid) do |g|
 
     g.column name: 'Name', attribute: 'name', class: 'column-project-name' do |project|
-      [link_to(project.name, project_path(project.name)), {title: project.name}]
+      [link_to(project.name, project_path(project.name), style: 'display:block'), {title: project.name}]
     end
 
     g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
