@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20190501042525) do
+ActiveRecord::Schema.define(:version => 20190815001316) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(:version => 20190501042525) do
     t.datetime "updated_at",                     :null => false
     t.integer  "batch_num",   :default => 1
     t.boolean  "is_public",   :default => false
+    t.text     "sample"
   end
 
   add_index "annotators", ["user_id"], :name => "index_annotators_on_user_id"
@@ -42,8 +43,9 @@ ActiveRecord::Schema.define(:version => 20190501042525) do
   create_table "collection_projects", :force => true do |t|
     t.integer  "collection_id"
     t.integer  "project_id"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.datetime "created_at",                      :null => false
+    t.datetime "updated_at",                      :null => false
+    t.boolean  "is_primary",    :default => true
   end
 
   create_table "collections", :force => true do |t|

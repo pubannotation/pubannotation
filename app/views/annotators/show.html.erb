@@ -8,7 +8,13 @@
   <h1>
     <%= @annotator.name %>
     <%= button_home(@annotator.home) -%>
-    <%= badge_public(@annotator.is_public).html_safe %>
+    <%= badge_private(@annotator.is_public).html_safe %>
+
+    <% if @annotator.changeable?(current_user) -%>
+      <%= link_to 'Edit', edit_annotator_path(@annotator), class: 'button' %>
+      <%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+    <% end %>
+    <%= link_to 'List', annotators_path, class: 'button' %>
   </h1>
 
   <% if @annotator.description.present? %>
@@ -45,9 +51,29 @@
 
   </table>
 
-  <% if @annotator.changeable?(current_user) -%>
-    <%= link_to 'Edit', edit_annotator_path(@annotator), class: 'button' %>
-    <%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <% if @annotator.batch_num == 0 %>
+    <fieldset>
+      <legend>Test</legend>
+      <p class="note">Send your text to the server and see how it works.<br/>
+      At the moment, this feature only works for the servers which receive a piece of text as input, and return their annotation results instantly.</p>
+      <%= form_tag annotator_path(@annotator), method: :get do -%>
+        <%= text_area_tag :text, params[:text] || @annotator.sample, required: true, style: "height:50px" %>
+
+        <div class="center-align">
+          <%= submit_tag 'Submit', class: :button %>
+          <%= button_tag 'Reset', type: :reset, id: :reset, class: :button %>
+        </div>
+
+        <% unless @result.nil? || @result.empty? %>
+          <h2>Result in <%= link_to 'TextAE', 'http://textae.pubannotation.org' %></h2>
+          <%= render :partial => 'shared/textae_css_js'-%>
+          <div class="textae-editor"><%= @result.to_json %></div>
+
+          <h2>Result in <%= link_to 'JSON', 'http://www.pubannotation.org/docs/annotation-format/' %></h2>
+          <pre style="white-space:pre-wrap; border:1px solid black"><%= JSON.pretty_generate @result %></pre>
+        <% end %>
+      <% end %>
+    </fieldset>
   <% end %>
-  <%= link_to 'List', annotators_path, class: 'button' %>
+
 </section>

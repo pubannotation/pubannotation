@@ -12,6 +12,14 @@ module ApplicationHelper
       ""
   end
 
+  def badge_private(is_public)
+    if is_public
+      ""
+    else
+      content_tag(:i, '', class: "fa fa-eye-slash", "aria-hidden" => "true", title: "private")
+    end
+  end
+
   def simple_paginate
     current_page = params[:page].nil? ? 1 : params[:page].to_i
     nav = ''

@@ -20,20 +20,31 @@ class AnnotatorsController < ApplicationController
   # GET /annotators/1.json
   def show
     begin
+      message = ""
       begin
         @annotator = Annotator.accessibles(current_user).find(params[:id])
       rescue
         raise "Could not find the annotator, #{params[:id]}."
       end
+
+      @result = if params[:text]
+        begin
+          @annotator.obtain_annotations(params[:text])
+        rescue => e
+          message = "A problem is reported from the server: #{e.message}."
+          nil
+        end
+      end
+
       @annotator.payload = @annotator.payload.map{|p| p.join(' = ')}.join("\n")
 
       respond_to do |format|
-        format.html # show.html.erb
+        format.html {flash[:notice] = message}
         format.json { render json: @annotator }
       end
     rescue => e
       respond_to do |format|
-        format.html {redirect_to annotators_path, :notice => e.message}
+        format.html {flash[:notice] = message}
         format.json {head :unprocessable_entity}
       end
     end
