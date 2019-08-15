@@ -375,7 +375,7 @@ class AnnotationsController < ApplicationController
       annotator = if params[:annotator].present?
         Annotator.find(params[:annotator])
       elsif params[:url].present?
-        Annotator.new({name:params[:prefix], url:params[:url], method:params[:method], batch_num: 0})
+        Annotator.new({name:params[:prefix], url:params[:url], method:params[:method], batch_num: 2})
       else
         raise ArgumentError, "Annotator URL is not specified"
       end.as_json.symbolize_keys
@@ -398,8 +398,14 @@ class AnnotationsController < ApplicationController
         end
       end
 
-      annotations_col, messages = begin
-        project.obtain_annotations([docid], annotator, options)
+      begin
+        annotations_col, messages = project.obtain_annotations([docid], annotator, options)
+        annotations_col.delete_if{|e| e.empty?}
+        if annotations_col.empty?
+          messages << {body: "No annotation was obtained."}
+        else
+          messages << {body: "Annotations to #{annotations_col.length} doc(s) were obtained."}
+        end
       rescue RestClient::ExceptionWithResponse => e
         if e.response.code == 303
           options[:retry_after] = e.response.headers[:retry_after].to_i
@@ -410,7 +416,7 @@ class AnnotationsController < ApplicationController
           priority = project.jobs.unfinished.count
           delayed_job = Delayed::Job.enqueue RetrieveAnnotationsJob.new(project, e.response.headers[:location], options), priority: priority, queue: :general, run_at: options[:retry_after].seconds.from_now
           Job.create({name:"Retrieve annotations", project_id:project.id, delayed_job_id:delayed_job.id})
-          {message: "Annotation request was sent. The result will be retrieved by a background job."}
+          messages = [{body: "Annotation request was sent. The result will be retrieved by a background job."}]
         elsif e.response.code == 503
           raise RuntimeError, "Service unavailable"
         elsif e.response.code == 404
@@ -420,13 +426,6 @@ class AnnotationsController < ApplicationController
         end
       rescue => e
         raise RuntimeError, e.message
-      end
-
-      annotations_col.delete_if{|e| e.empty?}
-      if annotations_col.empty?
-        messages << {body: "No annotation was obtained."}
-      else
-        messages << {body: "Annotations to #{annotations_col.length} doc(s) were obtained."}
       end
 
       message = messages.empty? ? "" : messages.map{|m| m[:body]}.join("\n") + "\n"
