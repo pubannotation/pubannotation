@@ -43,9 +43,8 @@ ActiveRecord::Schema.define(:version => 20190815001316) do
   create_table "collection_projects", :force => true do |t|
     t.integer  "collection_id"
     t.integer  "project_id"
-    t.datetime "created_at",                      :null => false
-    t.datetime "updated_at",                      :null => false
-    t.boolean  "is_primary",    :default => true
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
   end
 
   create_table "collections", :force => true do |t|
