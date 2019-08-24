@@ -245,14 +245,22 @@ class Annotation < ActiveRecord::Base
     denotations_new
   end
 
-  # TODO: when a span is specified, restrict the alignment within the span.
+  # To align annotations, considering the span specification
   def self.align_annotations(annotations, doc, span = nil)
-    original_text = annotations[:text]
-    annotations[:text] = doc.original_body.nil? ? doc.body : doc.original_body
+    if annotations[:denotations].present?
+      if span
+        raise ArgumentError, "The text of the span might be changed, which is not allowed when the span is explictely specified in the URL." if annotations[:text] != doc.body[span[:begin] ... span[:end]]
+        annotations[:denotations].each do |d|
+          d[:span][:begin] += span[:begin]
+          d[:span][:end]   += span[:begin]
+        end
+        annotations[:text] = doc.body
+      end
 
-    if annotations[:denotations].present? && original_text != annotations[:text]
-      num = annotations[:denotations].length
-      annotations[:denotations] = align_denotations(annotations[:denotations], original_text, annotations[:text])
+      target_text = doc.original_body.nil? ? doc.body : doc.original_body
+      if annotations[:text] != target_text
+        annotations[:denotations] = align_denotations(annotations[:denotations], annotations[:text], target_text)
+      end
     end
 
     annotations.select{|k,v| v.present?}
