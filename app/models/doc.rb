@@ -379,14 +379,6 @@ class Doc < ActiveRecord::Base
     return [prev_text, body[span[:begin]...span[:end]], post_text]
   end
 
-  def span_url(span)
-    if self.has_divs?
-      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_span_show_url(self.sourcedb, self.sourceid, self.serial, span[:begin], span[:end])
-    else
-      Rails.application.routes.url_helpers.doc_sourcedb_sourceid_span_show_url(self.sourcedb, self.sourceid, span[:begin], span[:end])
-    end
-  end
-
   def spans_index(project = nil)
     self.hdenotations(project).map{|d| {id:d[:id], span:d[:span], obj:self.span_url(d[:span])}}.uniq{|d| d[:span]}
   end

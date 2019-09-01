@@ -22,7 +22,7 @@
 					slinks = if spans[0] =~ /^(\d+)-(\d+)$/
 						spans.collect do |s|
 							s =~ /^(\d+)-(\d+)$/
-							link_to "#{$1}-#{$2}", doc.span_url({begin:$1, end:$2})
+							link_to "#{$1}-#{$2}", span_url(doc, {begin:$1, end:$2})
 						end.join(',').html_safe
 					end
 
