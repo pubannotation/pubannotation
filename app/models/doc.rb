@@ -58,9 +58,7 @@ class Doc < ActiveRecord::Base
           must: {
             match: {
               body: {
-                query: attributes[:body],
-                operator: "and",
-                fuzziness: "AUTO"
+                query: attributes[:body]
               }
             }
           },
