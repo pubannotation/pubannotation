@@ -114,7 +114,7 @@ GEM
       railties (>= 3.0.0)
     faraday (0.15.4)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.10)
+    ffi (1.11.1)
     font-awesome-rails (4.6.1.0)
       railties (>= 3.2, < 5.1)
     formatador (0.2.5)
