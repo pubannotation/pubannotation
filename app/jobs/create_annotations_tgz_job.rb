@@ -10,6 +10,7 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 		@job.update_attribute(:num_dones, 0)
 
 		blind_p = project.accessibility == 3 ? true : false
+		dic = []
 
 		FileUtils.mkdir_p(project.downloads_system_path) unless Dir.exist?(project.downloads_system_path)
 		Zlib::GzipWriter.open(project.annotations_tgz_system_path, Zlib::BEST_COMPRESSION) do |gz|
@@ -31,12 +32,16 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 							tar.add_file_simple(project.name + '/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
 							file = Annotation.hash_to_tsv(annotations)
 							tar.add_file_simple(project.name + '/tsv/' + filename + ".tsv", 0644, file.bytesize){|t| t.write(file)}
+							dic += Annotation.hash_to_dic_array(annotations)
 						end
 					rescue => e
 						@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: e.message})
 					end
 					@job.update_attribute(:num_dones, i + 1)
 				end
+				dic.uniq!
+				file = Annotation.dic_array_to_tsv(dic)
+				tar.add_file_simple(project.name + '/dic/' + project.name + ".dic", 0644, file.bytesize){|t| t.write(file)}
 			end
 		end
 	end

@@ -11,6 +11,7 @@
 
 	<% if @project.present? %>
 		<%= link_to_unless_current 'TSV', annotations_url + '.tsv', :class => 'tab', id: 'annotations_tsv' -%>
+		<%= link_to_unless_current 'DIC', annotations_url + '.dic', :class => 'tab', id: 'annotations_dic' -%>
 	<% end %>
 
 	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>

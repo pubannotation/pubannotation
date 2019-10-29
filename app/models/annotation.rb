@@ -11,7 +11,7 @@ class Annotation < ActiveRecord::Base
     if annotations[:denotations].present?
       annotations[:denotations].each do |a|
         spans = a[:span].class == Array ? a[:span] : [a[:span]]
-        lexical_cues[a[:id]] = spans.collect{|s| text[s[:begin]...s[:end]]}.to_csv.chomp
+        lexical_cues[a[:id]] = spans.collect{|s| text[s[:begin]...s[:end]]}.join(' ').chomp
         spant = spans.collect{|s| "#{s[:begin]}-#{s[:end]}"}.to_csv.chomp
         array << [a[:id], spant, a[:obj], 'denotes', lexical_cues[a[:id]]]
       end
@@ -32,9 +32,24 @@ class Annotation < ActiveRecord::Base
     array
   end
 
+  def self.hash_to_dic_array(annotations)
+    array = []
+
+    text = annotations[:text]
+    if annotations[:denotations].present?
+      annotations[:denotations].each do |a|
+        spans = a[:span].class == Array ? a[:span] : [a[:span]]
+        lexical_cue = spans.collect{|s| text[s[:begin]...s[:end]]}.join(' ').chomp
+        array << [lexical_cue, a[:obj]]
+      end
+    end
+
+    array.uniq
+  end
+
 
   def self.hash_to_tsv(annotations)
-    headers = ["Id", "Subject", "Object", "Predicate", "Lexical cue"]
+    headers = ["# Id", "Subject", "Object", "Predicate", "Lexical cue"]
 
     array = self.hash_to_array(annotations)
     tsv = CSV.generate(col_sep:"\t") do |csv|
@@ -43,6 +58,25 @@ class Annotation < ActiveRecord::Base
     end
     return tsv
   end
+
+  def self.hash_to_dic(annotations)
+    headers = ["# Term", "Identifier"]
+    array = self.hash_to_dic_array(annotations)
+    tsv = dic_array_to_tsv(array)
+    return tsv
+  end
+
+  def self.dic_array_to_tsv(array)
+    headers = ["# Term", "Identifier"]
+
+    dic = CSV.generate(col_sep:"\t") do |csv|
+      csv << headers
+      array.each{|a| csv << a}
+    end
+
+    return dic
+  end
+
 
   # normalize annotations passed by an HTTP call
   def self.normalize!(annotations, prefix = nil)

@@ -133,7 +133,8 @@ class AnnotationsController < ApplicationController
         respond_to do |format|
           format.html {render 'index_in_project'}
           format.json {render json: @annotations}
-          format.tsv  {render text: Annotation.hash_to_tsv(@annotations)}
+          format.tsv  {send_data Annotation.hash_to_tsv(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.tsv"}
+          format.dic  {send_data Annotation.hash_to_dic(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.dic"}
         end
       end
 
@@ -150,6 +151,7 @@ class AnnotationsController < ApplicationController
     begin
       @project = Project.accessible(current_user).find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
+      raise "annotations inaccessible" unless @project.annotations_accessible?(current_user)
 
       unless @project.public?
         authenticate_user!
@@ -172,7 +174,8 @@ class AnnotationsController < ApplicationController
       respond_to do |format|
         format.html {render 'index_in_project'}
         format.json {render json: @annotations}
-        format.tsv  {render text: Annotation.hash_to_tsv(@annotations)}
+        format.tsv  {send_data Annotation.hash_to_tsv(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.tsv"}
+        format.dic  {send_data Annotation.hash_to_dic(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.dic"}
       end
 
     rescue => e

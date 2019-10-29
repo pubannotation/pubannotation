@@ -7,3 +7,4 @@ Mime::Type.register "application/x-turtle", :ttl
 Mime::Type.register "text/plain", :txt
 Mime::Type.register "font/truetype", :ttf
 Mime::Type.register "text/tab-separated-values", :tsv
+Mime::Type.register "text/tab-separated-values", :dic
