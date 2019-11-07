@@ -3,8 +3,8 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :create_project_docs, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
-  before_filter :http_basic_authenticate, :only => :create_project_docs, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
+  before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
+  before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
   cache_sweeper :doc_sweeper
@@ -337,14 +337,24 @@ class DocsController < ApplicationController
       doc_hash = if params[:doc].present? && params[:commit].present?
         params[:doc] 
       else
-        {
-          source: params[:source],
-          sourcedb: params[:sourcedb] || '',
-          sourceid: params[:sourceid],
-          serial: params[:divid] || 0,
-          section: params[:section],
-          body: params[:text]
-        }
+        text = if params[:text]
+          params[:text]
+        elsif request.content_type =~ /text/
+          request.body.read
+        end
+
+        if text
+          {
+            source: params[:source],
+            sourcedb: params[:sourcedb] || '',
+            sourceid: params[:sourceid],
+            serial: params[:divid] || 0,
+            section: params[:section],
+            body: text
+          }
+        else
+          raise ArgumentError, "A block of text has to be sent."
+        end
       end
 
       # sourcedb control
@@ -379,7 +389,7 @@ class DocsController < ApplicationController
     rescue => e
       respond_to do |format|
         format.html { redirect_to new_project_doc_path(@project.name), notice: e.message }
-        format.json { render json: @doc.errors, status: :unprocessable_entity }
+        format.json { render json: {message: e.message}, status: :unprocessable_entity }
       end
     end
   end
