@@ -3,7 +3,7 @@ layout: docs
 title: Blinding annotations
 prev_section: annotation-format
 next_section: import-annotation
-permalink: /docs/hide-annotation/
+permalink: /docs/blind-annotation/
 ---
 
 PubAnnotation uses [JSON](http://json.org/) as its default format to store annotations.

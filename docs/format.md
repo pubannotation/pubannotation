@@ -2,7 +2,7 @@
 layout: docs
 title: Annotation format
 prev_section: create-annotation
-next_section: blind-annotation
+next_section: import-annotation
 permalink: /docs/annotation-format/
 ---
 

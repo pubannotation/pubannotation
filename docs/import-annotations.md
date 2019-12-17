@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Importing annotations
-prev_section: blind-annotation
+prev_section: annotation-format
 next_section: obtain-annotation
 permalink: /docs/import-annotation/
 ---

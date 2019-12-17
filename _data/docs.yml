@@ -10,7 +10,6 @@
   - add-annotation
   - create-annotation
   - annotation-format
-  - blind-annotation
   - import-annotation
   - obtain-annotation
   - annotation-server-api
