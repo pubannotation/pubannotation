@@ -87,6 +87,7 @@ class Annotation < ActiveRecord::Base
       annotations[:sourcedb] = 'PubMed' if annotations[:sourcedb].downcase == 'pubmed'
       annotations[:sourcedb] = 'PMC' if annotations[:sourcedb].downcase == 'pmc'
       annotations[:sourcedb] = 'FirstAuthor' if annotations[:sourcedb].downcase == 'firstauthor'
+      annotations[:sourcedb] = 'FirstAuthors' if annotations[:sourcedb].downcase == 'firstauthors
     end
 
     if annotations[:denotations].present?
