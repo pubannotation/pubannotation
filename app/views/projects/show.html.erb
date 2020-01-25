@@ -109,7 +109,7 @@
 		</tr>
 		<tr>
 			<th><%= t('views.shared.evaluations') %></th>
-			<td><%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name), class: 'button long_button' -%>
+			<td><%= link_to t('views.shared.evaluations') + " (#{@project.evaluations.count})", project_evaluations_path(@project.name), class: 'button long_button' -%>
 		</tr>
 		<% if @project.editable?(current_user) -%>
 			<tr>
