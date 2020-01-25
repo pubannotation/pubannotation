@@ -12,6 +12,10 @@
       <th><%= f.label :category -%></th>
       <td><%= f.text_field :category -%></td>
     <tr>
+    <tr>
+      <th>Active?</th>
+      <td><%= f.check_box :active %></td>
+    </tr>
   </table>
 
   <%= f.submit -%>

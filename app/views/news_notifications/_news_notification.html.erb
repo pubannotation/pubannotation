@@ -1,6 +1,7 @@
 <article>
   <h2>
     <%= link_to news_notification.title, news_notification_path(news_notification.id) -%>
+    <%= content_tag(:sup, 'past', style: "font-style:italic; color:red") unless news_notification.active %>
   </h2>
   <span class="post-category">
     <span class="label">
