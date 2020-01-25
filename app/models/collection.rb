@@ -26,6 +26,7 @@ class Collection < ActiveRecord::Base
   }
 
   scope :sharedtasks, where(is_sharedtask: true)
+  scope :no_sharedtasks, where(is_sharedtask: false)
 
   scope :top_recent, order('collections.updated_at DESC').limit(10)
 

@@ -4,7 +4,6 @@
   <table>
     <tr>
       <th class="collections_header_name"><%= t('activerecord.attributes.collection.name') %></th>
-      <th class="collections_header_type"></th>
       <th class="collections_header_description"><%= t('activerecord.attributes.collection.description') %></th>
       <th class="collections_header_projects_count"><%= t('views.shared.projects_count') -%></th>
       <th class="collections_header_date"><%= t('activerecord.attributes.project.updated_at') -%></th>
@@ -13,7 +12,6 @@
     <% collections.each do |collection| %>
       <tr>
         <td><%= link_to collection.name, collection_path(collection.name) -%></td>
-        <td style="text-align:center"><%= badge_sharedtask(collection).html_safe %></td>
         <td style="text-align:left"><%= link_to strip_tags(collection.description), collection_path(collection.name) %></td>
         <td style="text-align:right"><%= collection.projects.count %></td>
         <td style="text-align:center"><%= collection.updated_at.strftime('%Y-%m-%d') -%></td>
