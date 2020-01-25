@@ -1,7 +1,7 @@
+<% if @news_notifications.present? || (current_user && current_user.root) -%>
 <fieldset id="news_frame">
   <legend><%= link_to t('activerecord.models.news_notification'), news_notifications_path -%></legend>
   <div id="news">
-    <% if @news_notifications.present? -%>
       <ul style="margin:0; margin-right:1em; padding:0; padding-left:1.5em">
         <% @news_notifications.each do |news_notification| -%>
           <li style="margin-top:5px" class="">
@@ -9,6 +9,6 @@
           </li>
         <% end -%>
       </ul>
-    <% end -%>
   </div>
 </fieldset>
+<% end -%>
