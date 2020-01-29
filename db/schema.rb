@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20200125033354) do
+ActiveRecord::Schema.define(:version => 20200125152948) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -39,6 +39,21 @@ ActiveRecord::Schema.define(:version => 20200125033354) do
 
   add_index "associate_maintainers", ["project_id"], :name => "index_associate_maintainers_on_project_id"
   add_index "associate_maintainers", ["user_id"], :name => "index_associate_maintainers_on_user_id"
+
+  create_table "attrivutes", :force => true do |t|
+    t.string   "hid"
+    t.integer  "subj_id"
+    t.string   "subj_type"
+    t.string   "obj"
+    t.string   "pred"
+    t.integer  "project_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "attrivutes", ["obj"], :name => "index_attrivutes_on_obj"
+  add_index "attrivutes", ["project_id"], :name => "index_attrivutes_on_project_id"
+  add_index "attrivutes", ["subj_id"], :name => "index_attrivutes_on_subj_id"
 
   create_table "collection_projects", :force => true do |t|
     t.integer  "collection_id"

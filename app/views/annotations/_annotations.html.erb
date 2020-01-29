@@ -6,16 +6,15 @@
 	<% if annotations.present? -%>
 
 		<table class="ann">
+			<% annotations[:text] = body unless annotations[:text].present? -%>
+			<% array = Annotation.hash_to_array(annotations, @project ? @project.get_textae_config : nil) -%>
+			<% headers = array.shift %>
 			<tr>
-				<th class='annotation_header_id'>Id</th>
-				<th class='annotation_header_span'>Subject</th>
-				<th class='annotation_header_object'>Object</th>
-				<th class='annotation_header_predicate'>Predicate</th>
-				<th class='annotation_header_object'>Lexical cues</th>
+				<% headers.each do |h| -%>
+					<th><%= h %></th>
+				<% end %>
 			</tr>
 
-			<% annotations[:text] = body unless annotations[:text].present? -%>
-			<% array = Annotation.hash_to_array(annotations) -%>
 			<% array.each do |a| -%>
 				<%
 					spans = a[1].parse_csv
@@ -36,11 +35,13 @@
 					end
 				%>
 				<tr class=<%= type %>>
-					<td><%= a[0] %></td>
-					<td><%= slinks.nil? ? a[1] : slinks %></td>
-					<td><%= a[2] %></td>
-					<td><%= a[3] %></td>
-					<td><%= a[4] %></td>
+					<% a.each_with_index do |e, i| -%>
+						<% if i == 1 -%>
+							<td><%= slinks.nil? ? a[1] : slinks %></td>
+						<% else -%>
+							<td><%= a[i] %></td>
+						<% end -%>
+					<% end -%>
 				</tr>
 			<% end %>
 		</table>

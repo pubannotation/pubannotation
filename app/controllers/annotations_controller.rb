@@ -129,11 +129,12 @@ class AnnotationsController < ApplicationController
         options = {}
         options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
         @annotations = @doc.hannotations(@project, @span, context_size, options)
+        textae_config = @project ? @project.get_textae_config : nil
 
         respond_to do |format|
           format.html {render 'index_in_project'}
           format.json {render json: @annotations}
-          format.tsv  {send_data Annotation.hash_to_tsv(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.tsv"}
+          format.tsv  {send_data Annotation.hash_to_tsv(@annotations, textae_config), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.tsv"}
           format.dic  {send_data Annotation.hash_to_dic(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.dic"}
         end
       end
@@ -170,11 +171,12 @@ class AnnotationsController < ApplicationController
       options = {}
       options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
       @annotations = @doc.hannotations(@project, @span, context_size, options)
+      textae_config = @project ? @project.get_textae_config : nil
 
       respond_to do |format|
         format.html {render 'index_in_project'}
         format.json {render json: @annotations}
-        format.tsv  {send_data Annotation.hash_to_tsv(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.tsv"}
+        format.tsv  {send_data Annotation.hash_to_tsv(@annotations, textae_config), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.tsv"}
         format.dic  {send_data Annotation.hash_to_dic(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.dic"}
       end
 
@@ -235,6 +237,7 @@ class AnnotationsController < ApplicationController
           text: params[:text],
           denotations: params[:denotations].present? ? params[:denotations] : nil,
           relations: params[:relations].present? ? params[:relations] : nil,
+          attributes: params[:attributes].present? ? params[:attributes] : nil,
           modification: params[:modification].present? ? params[:modification] : nil,
         }.delete_if{|k, v| v.nil?}
       else

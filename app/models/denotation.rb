@@ -6,6 +6,7 @@ class Denotation < ActiveRecord::Base
   belongs_to :project
   belongs_to :doc
 
+  has_many :attrivutes, :as => :subj, :dependent => :destroy
   has_many :modifications, :as => :obj, :dependent => :destroy
 
   has_many :subrels, :class_name => 'Relation', :as => :subj, :dependent => :destroy

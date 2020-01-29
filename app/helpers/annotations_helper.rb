@@ -37,7 +37,7 @@ module AnnotationsHelper
 
   def link_to_editor(project, editor, source_url)
     editor.parameters.each_key{|k| editor.parameters[k] = source_url + '.json' if editor.parameters[k] == '_annotations_url_'}
-    editor.parameters[:config] = project.textae_config if editor.name == 'TextAE' && project && project.textae_config.present?
+    editor.parameters[:config] = project.textae_config if editor.name =~ /^TextAE/ && project && project.textae_config.present?
     parameters_str = editor.parameters.map{|p| p.join('=')}.join('&')
     connector = editor.url.include?('?') ? '&' : '?'
     url = "#{editor.url}#{connector}#{parameters_str}"

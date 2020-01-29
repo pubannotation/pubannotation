@@ -1,4 +1,6 @@
 table.ann {
+	text-align: center;
+
 	tr.denotation {
 		background-color: #f8f8ff;
 	}
@@ -25,4 +27,15 @@ table.ann {
 		background-color: #e0ffe0;
 	}
 
+	th {
+		text-align: center;
+	}
+
+	th:nth-child(n+6) {
+		background-color: #66aaff;
+	}
+
+	td {
+		text-align: center;
+	}
 }

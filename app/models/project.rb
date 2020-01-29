@@ -23,6 +23,7 @@ class Project < ActiveRecord::Base
                   :pmdocs_count, :pmcdocs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
   has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
   has_many :relations, :dependent => :destroy, after_add: :update_updated_at
+  has_many :attrivutes, :dependent => :destroy, after_add: :update_updated_at
   has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
@@ -773,6 +774,18 @@ class Project < ActiveRecord::Base
     end
   end
 
+  def instantiate_hattributes(hattributes, docid)
+    new_entries = hattributes.map do |a|
+      Attrivute.new(
+        hid:a[:id],
+        pred:a[:pred],
+        subj:Denotation.find_by_doc_id_and_project_id_and_hid(docid, self.id, a[:subj]),
+        obj:a[:obj],
+        project_id:self.id
+      )
+    end
+  end
+
   def instantiate_hmodifications(hmodifications, docid)
     new_entries = hmodifications.map do |a|
 
@@ -813,6 +826,14 @@ class Project < ActiveRecord::Base
           ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).increment!(:relations_num, instances.length)
           doc.increment!(:relations_num, instances.length)
           self.increment!(:relations_num, instances.length)
+        end
+      end
+
+      if annotations[:attributes].present?
+        instances = instantiate_hattributes(annotations[:attributes], doc.id)
+        if instances.present?
+          r = Attrivute.import instances, validate: false
+          raise "attributes import error" unless r.failed_instances.empty?
         end
       end
 
@@ -874,6 +895,19 @@ class Project < ActiveRecord::Base
 
       r_stat_all = instances.length
 
+      # instantiate and save attributes
+      instances.clear
+      annotations_collection.each do |ann|
+        next unless ann[:attributes].present?
+        docid = ann[:docid]
+        instances += instantiate_hattributes(ann[:attributes], docid)
+      end
+
+      if instances.present?
+        r = Attrivute.import instances, validate: false
+        raise "attribute import error" unless r.failed_instances.empty?
+      end
+
       # instantiate and save modifications
       instances.clear
       annotations_collection.each do |ann|
@@ -892,6 +926,7 @@ class Project < ActiveRecord::Base
 
       d_stat.each do |did, d_num|
         r_num = r_stat[did] ||= 0
+        a_num = a_stat[did] ||= 0
         m_num = m_stat[did] ||= 0
         connection.execute("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{did}")
         connection.execute("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{did}")
@@ -1109,6 +1144,10 @@ class Project < ActiveRecord::Base
     rescue => e
       raise RuntimeError, "Received a non-JSON object: [#{response}]"
     end
+  end
+
+  def get_textae_config
+    textae_config.present? ? make_request(:get, textae_config) : {}
   end
 
   def user_presence

@@ -87,6 +87,8 @@ class Doc < ActiveRecord::Base
 
   has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
 
+  has_many :denotation_attributes, class_name: 'Attrivute', :through => :denotations, :source => :attrivutes
+
   has_many :catmods, class_name: 'Modification', :through => :denotations, :source => :modifications
   has_many :subcatrelmods, class_name: 'Modification', :through => :subcatrels, :source => :modifications
 
@@ -507,6 +509,15 @@ class Doc < ActiveRecord::Base
     hrelations.sort!{|r1, r2| r1[:id] <=> r2[:id]}
   end
   
+  # the first argument, project, may be a project or an array of projects.
+  def hattributes(project = nil, base_ids = nil)
+    projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
+    attrivutes = self.denotation_attributes.from_projects(projects)
+    hattrivutes = attrivutes.collect {|a| a.get_hash}
+    hattrivutes.select!{|a| base_ids.include?(a[:subj])} unless base_ids.nil?
+    hattrivutes.sort!{|a1, a2| a1[:id] <=> a2[:id]}
+  end
+
   def hmodifications(project = nil, base_ids = nil)
     projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
     modifications = self.catmods.from_projects(projects) + self.subcatrelmods.from_projects(projects)
@@ -559,6 +570,7 @@ class Doc < ActiveRecord::Base
     hdenotations = hdenotations(project, span, context_size)
     ids =  hdenotations.collect{|d| d[:id]}
     hrelations = hrelations(project, ids)
+    hattributes = hattributes(project, ids)
     ids += hrelations.collect{|d| d[:id]}
     hmodifications = hmodifications(project, ids)
 
@@ -567,7 +579,7 @@ class Doc < ActiveRecord::Base
       hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
     end
 
-    {project:project.name, denotations:hdenotations, relations:hrelations, modifications:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
+    {project:project.name, denotations:hdenotations, relations:hrelations, attributes:hattributes, modifications:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
   end
 
   def projects_within_span(span)

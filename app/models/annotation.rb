@@ -2,18 +2,43 @@ class Annotation < ActiveRecord::Base
   include ApplicationHelper
   include AnnotationsHelper
 
-
-  def self.hash_to_array(annotations)
+  # To produce an array of annotations for export.
+  # The initial row of the array to contain the headers
+  def self.hash_to_array(annotations, textae_config = nil)
     array = []
+
+    headers = ["Id", "Subject", "Object", "Predicate", "Lexical cue"]
 
     text = annotations[:text]
     lexical_cues = {}
+
+    attrs_idx = nil
+    attr_preds = []
+
+    if annotations[:attributes].present?
+      attrs = annotations[:attributes]
+      attrs_idx = attrs.inject({}) do |idx, a|
+        idx.merge("#{a[:subj]}&#{a[:pred]}" => a)
+      end
+      attr_preds = if textae_config.present? && textae_config[:"attribute types"].present?
+        textae_config[:"attribute types"].collect{|t| t[:pred]}
+      else
+        attrs.collect{|a| a[:pred]}.uniq.sort
+      end
+    end
+
+    array << headers + attr_preds
+
     if annotations[:denotations].present?
       annotations[:denotations].each do |a|
         spans = a[:span].class == Array ? a[:span] : [a[:span]]
         lexical_cues[a[:id]] = spans.collect{|s| text[s[:begin]...s[:end]]}.join(' ').chomp
         spant = spans.collect{|s| "#{s[:begin]}-#{s[:end]}"}.to_csv.chomp
-        array << [a[:id], spant, a[:obj], 'denotes', lexical_cues[a[:id]]]
+        attrs = attr_preds.collect do |pred|
+          att = attrs_idx["#{a[:id]}&#{pred}"]
+          att.nil? ? nil : att[:obj]
+        end
+        array << [a[:id], spant, a[:obj], 'denotes', lexical_cues[a[:id]]] + attrs
       end
     end
 
@@ -29,11 +54,15 @@ class Annotation < ActiveRecord::Base
         array << [a[:id], a[:obj], a[:pred], 'hasMood', lexical_cues[a[:obj]]]
       end
     end
+
     array
   end
 
   def self.hash_to_dic_array(annotations)
     array = []
+
+    headers = ["Term", "Identifier"]
+    array << headers
 
     text = annotations[:text]
     if annotations[:denotations].present?
@@ -48,35 +77,23 @@ class Annotation < ActiveRecord::Base
   end
 
 
-  def self.hash_to_tsv(annotations)
-    headers = ["# Id", "Subject", "Object", "Predicate", "Lexical cue"]
-
-    array = self.hash_to_array(annotations)
+  def self.hash_to_tsv(annotations, textae_config = nil)
+    array = self.hash_to_array(annotations, textae_config)
+    array[0][0] = '# ' + array[0][0]
     tsv = CSV.generate(col_sep:"\t") do |csv|
-      csv << headers
       array.each{|a| csv << a}
     end
     return tsv
   end
 
   def self.hash_to_dic(annotations)
-    headers = ["# Term", "Identifier"]
     array = self.hash_to_dic_array(annotations)
-    tsv = dic_array_to_tsv(array)
-    return tsv
-  end
-
-  def self.dic_array_to_tsv(array)
-    headers = ["# Term", "Identifier"]
-
-    dic = CSV.generate(col_sep:"\t") do |csv|
-      csv << headers
+    array[0][0] = '# ' + array[0][0]
+    tsv = CSV.generate(col_sep:"\t") do |csv|
       array.each{|a| csv << a}
     end
-
-    return dic
+    return tsv
   end
-
 
   # normalize annotations passed by an HTTP call
   def self.normalize!(annotations, prefix = nil)
@@ -120,10 +137,12 @@ class Annotation < ActiveRecord::Base
       end
     end
 
+    d_ids = nil
+
     if annotations[:relations].present?
       raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
 
-      denotation_ids = annotations[:denotations].collect{|a| a[:id]}
+      d_ids = annotations[:denotations].collect{|a| a[:id]}
 
       annotations[:relations].each{|a| a = a.symbolize_keys}
 
@@ -132,7 +151,7 @@ class Annotation < ActiveRecord::Base
 
       annotations[:relations].each do |a|
         raise ArgumentError, "a relation must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
-        raise ArgumentError, "'subj' and 'obj' of a relation must reference to a denotation: [#{a}]." unless (denotation_ids.include? a[:subj]) && (denotation_ids.include? a[:obj])
+        raise ArgumentError, "'subj' and 'obj' of a relation must reference to a denotation: [#{a}]." unless (d_ids.include? a[:subj]) && (d_ids.include? a[:obj])
 
         unless a.has_key? :id
           idnum += 1 until !ids.include?('R' + idnum.to_s)
@@ -142,18 +161,44 @@ class Annotation < ActiveRecord::Base
       end
     end
 
+    if annotations[:attributes].present?
+      raise ArgumentError, "'attributes' must be an array." unless annotations[:attributes].class == Array
+      annotations[:attributes].each{|a| a = a.symbolize_keys}
+
+      d_ids ||= annotations[:denotations].collect{|a| a[:id]}
+
+      ids = annotations[:attributes].collect{|a| a[:id]}.compact
+      idnum = 1
+
+      annotations[:attributes].each do |a|
+
+        # TODO: to remove the following line after TextAE is updated.
+        a[:obj] = true unless a[:obj].present?
+
+        raise ArgumentError, "An attribute must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
+        raise ArgumentError, "The 'subj' of an attribute must reference to a denotation: [#{a}]." unless d_ids.include? a[:subj]
+
+        unless a.has_key? :id
+          idnum += 1 until !ids.include?('A' + idnum.to_s)
+          a[:id] = 'A' + idnum.to_s
+          idnum += 1
+        end
+      end
+    end
+
     if annotations[:modifications].present?
       raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
       annotations[:modifications].each{|a| a = a.symbolize_keys}
 
-      dr_ids = annotations[:denotations].collect{|a| a[:id]} + annotations[:relations].collect{|a| a[:id]}
+      d_ids ||= annotations[:denotations].collect{|a| a[:id]}
+      dr_ids = d_ids + annotations[:relations].collect{|a| a[:id]}
 
       ids = annotations[:modifications].collect{|a| a[:id]}.compact
       idnum = 1
 
       annotations[:modifications].each do |a|
-        raise ArgumentError, "a modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
-        raise ArgumentError, "'obj' of a modification must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:obj]
+        raise ArgumentError, "A modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
+        raise ArgumentError, "The 'obj' of a modification must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:obj]
 
         unless a.has_key? :id
           idnum += 1 until !ids.include?('M' + idnum.to_s)
@@ -166,6 +211,7 @@ class Annotation < ActiveRecord::Base
     if prefix.present?
       annotations[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if annotations[:denotations].present?
       annotations[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:relations].present?
+      annotations[:attributes].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]} if annotations[:attributes].present?
       annotations[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:modifications].present?
     end
 
