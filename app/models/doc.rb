@@ -310,7 +310,7 @@ class Doc < ActiveRecord::Base
   end
 
   def self.is_mdoc_sourcedb(sourcedb)
-    ['PMC', 'FirstAuthor'].include?(sourcedb)
+    ['PMC'].include?(sourcedb)
   end
 
 

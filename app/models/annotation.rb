@@ -76,7 +76,6 @@ class Annotation < ActiveRecord::Base
     array.uniq
   end
 
-
   def self.hash_to_tsv(annotations, textae_config = nil)
     array = self.hash_to_array(annotations, textae_config)
     array[0][0] = '# ' + array[0][0]
@@ -103,7 +102,6 @@ class Annotation < ActiveRecord::Base
     if annotations[:sourcedb].present?
       annotations[:sourcedb] = 'PubMed' if annotations[:sourcedb].downcase == 'pubmed'
       annotations[:sourcedb] = 'PMC' if annotations[:sourcedb].downcase == 'pmc'
-      annotations[:sourcedb] = 'FirstAuthor' if annotations[:sourcedb].downcase == 'firstauthor'
       annotations[:sourcedb] = 'FirstAuthors' if annotations[:sourcedb].downcase == 'firstauthors'
     end
 
@@ -217,7 +215,6 @@ class Annotation < ActiveRecord::Base
 
     annotations
   end
-
 
   def self.prepare_annotations(annotations, doc, options = {})
     annotations = align_annotations(annotations, doc, options[:span])
