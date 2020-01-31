@@ -63,13 +63,12 @@ div.project-title h1 .badge {
 .pane {
   margin: 5px;
   padding: 5px 20px;
-}
-.pane legend {
-  font-size: medium;
-  font-weight: bold;
-}
 
-.pane {
+  legend {
+    font-size: medium;
+    font-weight: bold;
+  }
+
   h1 {
     font-size: medium;
     font-weight: bold;
@@ -80,7 +79,6 @@ div.project-title h1 .badge {
     font-weight: bold;
   }
 }
-
 
 .pane.description {
   background-color: #ffffee;

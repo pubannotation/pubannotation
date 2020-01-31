@@ -1,15 +1,15 @@
 @import 'variables';
 
 .panel {
-	display: inline-block;
-	vertical-align: top;
-	width: 480px;
+  display: inline-block;
+  vertical-align: top;
+  margin: 5px;
+  width: 490px;
 }
 
 .panel h1 {
   width: 90%;
 }
-
 
 .panel table {
 	table-layout: fixed;
