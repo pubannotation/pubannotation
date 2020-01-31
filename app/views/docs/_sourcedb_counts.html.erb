@@ -1,7 +1,7 @@
 <table>
 	<%
 		docs_counts = sourcedb_count(current_user, @project)
-		sourcedbs = docs_counts.keys
+		sourcedbs = docs_counts.keys.sort{|a, b| docs_counts[b] <=> docs_counts[a]}
 	%>
 	<% sourcedbs.each do |sourcedb| -%>
 		<%
