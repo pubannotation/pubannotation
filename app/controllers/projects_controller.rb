@@ -24,7 +24,7 @@ class ProjectsController < ApplicationController
           },
           include: :user
         )
-        @projects_total_number = Project.accessible(current_user).length
+        @projects_total_number = Project.accessible(current_user).count
       }
       format.json {
         projects = Project.accessible(current_user).order(:status)
