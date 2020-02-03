@@ -231,6 +231,10 @@ class Project < ActiveRecord::Base
       projects.accessible(current_user).order_association(current_user)
     end    
   end
+
+  def self.statistics
+    counts = Project.where(accessibility: 1).group(:status).group(:process).count
+  end
   
   def associate_maintainers_addable_for?(current_user)
     if self.new_record?

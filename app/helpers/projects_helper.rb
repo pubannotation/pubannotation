@@ -1,4 +1,32 @@
 module ProjectsHelper
+  def project_status_text_helper(status)
+    {
+      1 => I18n.t('activerecord.options.project.status.released'),
+      2 => I18n.t('activerecord.options.project.status.beta'),
+      3 => I18n.t('activerecord.options.project.status.uploading'),
+      8 => I18n.t('activerecord.options.project.status.developing'),
+      9 => I18n.t('activerecord.options.project.status.testing')
+    }[status] || 'N/S'
+  end
+
+  def project_process_text_helper(process)
+    {
+      1 => I18n.t('activerecord.options.project.process.manual'),
+      2 => I18n.t('activerecord.options.project.process.automatic')
+    }[process]
+  end
+
+  def project_process_link_helper(process)
+    text = {
+      1 => I18n.t('activerecord.options.project.process.manual'),
+      2 => I18n.t('activerecord.options.project.process.automatic')
+    }[process]
+
+    path = projects_path + '?' + URI.encode_www_form_component("grid[f][process][eq]") + "=#{process}"
+
+    link_to(text, path, style: "display:block")
+  end
+
   def namespaces_prefix_input_fields
     if @project.namespaces_prefixes.present?
       render :partial => 'namespace_prefix_input', :collection => @project.namespaces_prefixes

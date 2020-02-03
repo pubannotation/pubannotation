@@ -5,15 +5,20 @@
   vertical-align: top;
   margin: 5px;
   width: 490px;
-}
 
-.panel h1 {
-  width: 90%;
-}
+  h1 {
+    width: 90%;
+  }
 
-.panel table {
-	table-layout: fixed;
-	width: 100%;
+  h2 {
+    border: 0 none;
+    margin: 0;
+  }
+
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
 }
 
 #news_frame {

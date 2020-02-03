@@ -1,0 +1,21 @@
+<%
+	counts = Project.statistics
+	row_keys = [1, 2, 8, 9, nil]
+	col_keys = [1, 2]
+%>
+<table>
+	<tr>
+		<th style="width:6em"></th>
+		<% col_keys.each do |c| -%>
+			<th><%= project_process_link_helper(c) %></th>
+		<% end -%>
+	</tr>
+	<% row_keys.each do |r| -%>
+		<tr>
+			<td><%= project_status_text_helper(r) %></td>
+			<% col_keys.each do |c| -%>
+				<td style="text-align: right"><%= counts[[r, c]] || 0 %></td>
+			<% end -%>
+		</tr>
+	<% end -%>
+</table>
