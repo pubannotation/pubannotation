@@ -1,5 +1,8 @@
 <%
-	counts = Project.statistics
+	counts = Project.accessible(current_user).group(:status).group(:process).count
+	r_counts = Project.accessible(current_user).group(:status).count
+	c_counts = Project.accessible(current_user).group(:process).count
+	a_count = Project.accessible(current_user).count
 	row_keys = [1, 2, 8, 9, nil]
 	col_keys = [1, 2]
 %>
@@ -9,13 +12,22 @@
 		<% col_keys.each do |c| -%>
 			<th><%= project_process_link_helper(c) %></th>
 		<% end -%>
+		<td style="text-align:center; background-color:#eef">Sum</td>
 	</tr>
 	<% row_keys.each do |r| -%>
 		<tr>
 			<td><%= project_status_text_helper(r) %></td>
 			<% col_keys.each do |c| -%>
-				<td style="text-align: right"><%= counts[[r, c]] || 0 %></td>
+				<td style="text-align:right"><%= counts[[r, c]] || 0 %></td>
 			<% end -%>
+			<td style="text-align:right; background-color:#eef"><%= r_counts[r] || 0 %></td>
 		</tr>
 	<% end -%>
+	<tr style="background-color:#eef">
+		<td>Sum</td>
+		<% col_keys.each do |c| -%>
+			<td style="text-align: right"><%= c_counts[c] || 0 %></td>
+		<% end -%>
+		<td style="text-align: right"><%= a_count || 0 %></td>
+	</tr>
 </table>
