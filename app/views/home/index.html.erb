@@ -18,11 +18,13 @@
 
 <div class="panel">
 	<section>
-		<h1 title='A shared task is a collection of projects, together which forms a shared task.'>
-			<%= link_to 'Shared Tasks', collections_path({grid: {f: {is_sharedtask: ['t']}}}) %>
-			<span class='info'>(<%= @sharedtasks_number -%>)</span>
+		<h1 title='A project is an annotation dataset.'>
+			<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
+			<span class='info'>(<%= @projects_number -%>)</span>
+			<span class='control'><%= render partial: 'projects/search_all_form' -%></span>
 		</h1>
-		<%= render :partial => "collections/sharedtasks_list_simple", :locals => {:collections => @sharedtasks_top_recent, :scope => nil } %>
+		<h2>Statistics</h2>
+		<%= render :partial => "projects/statistics" %>
 	</section>
 </div>
 
@@ -39,12 +41,10 @@
 
 <div class="panel">
 	<section>
-		<h1 title='A project is an annotation dataset.'>
-			<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
-			<span class='info'>(<%= @projects_number -%>)</span>
-			<span class='control'><%= render partial: 'projects/search_all_form' -%></span>
+		<h1 title='A shared task is a collection of projects, together which forms a shared task.'>
+			<%= link_to 'Shared Tasks', collections_path({grid: {f: {is_sharedtask: ['t']}}}) %>
+			<span class='info'>(<%= @sharedtasks_number -%>)</span>
 		</h1>
-		<%= render :partial => "projects/list_simple", :locals => {:doc => nil, :projects => @projects_top_recent, :scope => nil } %>
+		<%= render :partial => "collections/sharedtasks_list_simple", :locals => {:collections => @sharedtasks_top_recent, :scope => nil } %>
 	</section>
 </div>
-
