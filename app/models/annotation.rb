@@ -58,6 +58,15 @@ class Annotation < ActiveRecord::Base
     array
   end
 
+  def self.hash_to_tsv(annotations, textae_config = nil)
+    array = self.hash_to_array(annotations, textae_config)
+    array[0][0] = '# ' + array[0][0]
+    tsv = CSV.generate(col_sep:"\t") do |csv|
+      array.each{|a| csv << a}
+    end
+    return tsv
+  end
+
   def self.hash_to_dic_array(annotations)
     array = []
 
@@ -76,22 +85,16 @@ class Annotation < ActiveRecord::Base
     array.uniq
   end
 
-  def self.hash_to_tsv(annotations, textae_config = nil)
-    array = self.hash_to_array(annotations, textae_config)
-    array[0][0] = '# ' + array[0][0]
-    tsv = CSV.generate(col_sep:"\t") do |csv|
-      array.each{|a| csv << a}
+  def self.dic_array_to_tsv(dic)
+    dic[0][0] = '# ' + dic[0][0]
+    CSV.generate(col_sep:"\t") do |csv|
+      dic.each{|a| csv << a}
     end
-    return tsv
   end
 
   def self.hash_to_dic(annotations)
     array = self.hash_to_dic_array(annotations)
-    array[0][0] = '# ' + array[0][0]
-    tsv = CSV.generate(col_sep:"\t") do |csv|
-      array.each{|a| csv << a}
-    end
-    return tsv
+    self.dic_array_to_tsv(array)
   end
 
   # normalize annotations passed by an HTTP call
