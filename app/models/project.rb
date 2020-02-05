@@ -858,7 +858,7 @@ class Project < ActiveRecord::Base
     ActiveRecord::Base.transaction do
 
       # collect statistics
-      d_stat, r_stat, m_stat = Hash.new(0), Hash.new(0), Hash.new(0)
+      d_stat, r_stat, a_stat, m_stat = Hash.new(0), Hash.new(0), Hash.new(0), Hash.new(0)
 
       # cache document id
       annotations_collection.each do |ann|
