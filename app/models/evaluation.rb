@@ -37,4 +37,29 @@ class Evaluation < ActiveRecord::Base
   def changeable?(current_user)
     current_user.present? && (current_user.root? || current_user == study_project.user)
   end
+
+  def obtain
+    raise RuntimeError, "The method is valid only when the evaluator is a web service."unless evaluator.access_type == 2
+    raise RuntimeError, "The URL of the evaluation web service is not specified." unless evaluator.url.present?
+
+    annotations_col = study_project.docs.collect{|doc| doc.hannotations(study_project)}
+    result = make_request(evaluator.url, annotations_col)
+    update_attribute(:result, JSON.generate(result))
+
+    result
+  end
+
+  def make_request(url, annotations_col)
+    response = begin
+      RestClient::Request.execute(method: :post, url: url, payload: annotations_col.to_json, max_redirects: 0, headers:{content_type: 'application/json; charset=utf8', accept: :json})
+    rescue => e
+      raise "The evaluation service reported a problem: #{e.message}"
+    end
+
+    result = begin
+      JSON.parse response, :symbolize_names => true
+    rescue => e
+      raise RuntimeError, "Received a non-JSON object: [#{response}]"
+    end
+  end
 end

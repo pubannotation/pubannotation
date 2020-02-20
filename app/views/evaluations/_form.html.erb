@@ -16,96 +16,121 @@
   </div>
 
   <table class='column-head'>
-    <tr>
-      <th><%= f.label :is_public -%></th>
-      <td><%= f.check_box :is_public -%></td>
-      <td>
-        <a href="#help-is-public" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-        <div id="help-is-public" class="help">
-          <h1>Is Public</h1>
-          <p>If this attribute is checked, then this evaluation will become public.</p>
-          <p>Otherwise, it will be accessible only by you.</p>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <th><%= f.label :note %></th>
-      <td><%= f.text_field :note %></td>
-      <td></td>
-    </tr>
-    <tr>
-      <th><%= f.label :study_project %></th>
-      <td><%= f.text_field :study_project, value:@evaluation.study_project.name, readonly:true %></td>
-      <td></td>
-    </tr>
-    <tr>
-      <th><%= f.label :reference_project %></th>
-      <td>
-        <%= f.autocomplete_field :reference_project, autocomplete_project_name_project_path(@project.name), style: "width:100%; text-align:left", placeholder: "project to compare against",value: @evaluation.reference_project.nil? ? '' : @evaluation.reference_project.name, required: true %>
-      </td>
-      <td>
-        <a href="#help-reference-project" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-        <div id="help-reference-project" class="help">
-          <h1>Reference project</h1>
-          <p>It specifies a project against which the current project will be compared, for evaluation.</p>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <th><%= f.label :evaluator %></th>
-      <td>
-        <%= f.select :evaluator, options_for_select(evaluator_options_helper), required: true %>
-      </td>
-      <td></td>
-    </tr>
-    <tr>
-      <th><%= f.label :soft_match_characters %></th>
-      <td><%= f.number_field :soft_match_characters %></td>
-      <td>
-        <a href="#help-soft_match_characters" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-        <div id="help-soft_match_characters" class="help">
-          <h1>Soft match characters</h1>
-          <p>The number of chracters allowed for soft boundary matching. It defaults to 20.</p>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <th><%= f.label :soft_match_words %></th>
-      <td><%= f.number_field :soft_match_words %></td>
-      <td>
-        <a href="#help-soft_match_words" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-        <div id="help-soft_match_words" class="help">
-          <h1>Soft match words</h1>
-          <p>The number of words allowed for soft boundary matching. It defaults to 2.</p>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <th><%= f.label :denotations_type_match %></th>
-      <td><%= f.text_area :denotations_type_match %></td>
-      <td>
-        <a href="#help-denotations_type_match" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-        <div id="help-denotations_type_match" class="help">
-          <h1>Denotations type match</h1>
-          <p>A ruby block to assign the matching score of two denotation labels or types, <i>study_type</i> and <i>reference_type</i>.</p>
-          <p>Default is the exact match which is expressed as follows:<br/> <i>study_type == reference_type ? 1 : 0</i></p>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <th><%= f.label :relations_type_match %></th>
-      <td><%= f.text_area :relations_type_match %></td>
-      <td>
-        <a href="#help-relations_type_match" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-        <div id="help-relations_type_match" class="help">
-          <h1>Relations type match</h1>
-          <p>A ruby block to assign the matching score of two relation labels or types, <i>study_type</i> and <i>reference_type</i>.</p>
-          <p>Default is the exact match which is expressed as follows:<br/> <i>study_type == reference_type ? 1 : 0</i></p>
-        </div>
-      </td>
-    </tr>
+    <tbody>
+      <tr>
+        <th style="width:12em"><%= f.label :is_public -%></th>
+        <td><%= f.check_box :is_public -%></td>
+        <td>
+          <a href="#help-is-public" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+          <div id="help-is-public" class="help">
+            <h1>Is Public</h1>
+            <p>If this attribute is checked, then this evaluation will become public.</p>
+            <p>Otherwise, it will be accessible only by you.</p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th><%= f.label :note %></th>
+        <td><%= f.text_field :note %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th><%= f.label :study_project %></th>
+        <td><%= f.text_field :study_project, value:@evaluation.study_project.name, readonly:true %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th><%= f.label :reference_project %></th>
+        <td>
+          <%= f.autocomplete_field :reference_project, autocomplete_project_name_project_path(@project.name), style: "width:100%; text-align:left", placeholder: "project to compare against",value: @evaluation.reference_project.nil? ? '' : @evaluation.reference_project.name, required: true %>
+        </td>
+        <td>
+          <a href="#help-reference-project" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+          <div id="help-reference-project" class="help">
+            <h1>Reference project</h1>
+            <p>It specifies a project against which the current project will be compared, for evaluation.</p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th><%= f.label :evaluator %></th>
+        <td>
+          <%= f.select :evaluator, options_for_select(evaluator_options_helper), {required: true}, {onchange: "show_options(this)"} %>
+        </td>
+        <td></td>
+      </tr>
+    </tbody>
+
+    <tbody id="pubannotation_evaluator_options">
+      <tr>
+        <th><%= f.label :soft_match_characters %></th>
+        <td><%= f.number_field :soft_match_characters %></td>
+        <td>
+          <a href="#help-soft_match_characters" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+          <div id="help-soft_match_characters" class="help">
+            <h1>Soft match characters</h1>
+            <p>The number of chracters allowed for soft boundary matching. It defaults to 20.</p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th><%= f.label :soft_match_words %></th>
+        <td><%= f.number_field :soft_match_words %></td>
+        <td>
+          <a href="#help-soft_match_words" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+          <div id="help-soft_match_words" class="help">
+            <h1>Soft match words</h1>
+            <p>The number of words allowed for soft boundary matching. It defaults to 2.</p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th><%= f.label :denotations_type_match %></th>
+        <td><%= f.text_area :denotations_type_match %></td>
+        <td>
+          <a href="#help-denotations_type_match" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+          <div id="help-denotations_type_match" class="help">
+            <h1>Denotations type match</h1>
+            <p>A ruby block to assign the matching score of two denotation labels or types, <i>study_type</i> and <i>reference_type</i>.</p>
+            <p>Default is the exact match which is expressed as follows:<br/> <i>study_type == reference_type ? 1 : 0</i></p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th><%= f.label :relations_type_match %></th>
+        <td><%= f.text_area :relations_type_match %></td>
+        <td>
+          <a href="#help-relations_type_match" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+          <div id="help-relations_type_match" class="help">
+            <h1>Relations type match</h1>
+            <p>A ruby block to assign the matching score of two relation labels or types, <i>study_type</i> and <i>reference_type</i>.</p>
+            <p>Default is the exact match which is expressed as follows:<br/> <i>study_type == reference_type ? 1 : 0</i></p>
+          </div>
+        </td>
+      </tr>
+    </tbody>
 
   </table>
+
+  <script>
+    window.onload = function() {
+      show_options(document.getElementById("evaluation_evaluator"));
+    }
+
+    function show_options(that) {
+      var pubannotation_evaluator_options_block = document.getElementById("pubannotation_evaluator_options");
+      console.log(that.value);
+      console.log(pubannotation_evaluator_options_block);
+
+      if (that.value == "PubAnnotationGeneric") {
+        console.log("here");
+        pubannotation_evaluator_options_block.style.display = '';
+      } else {
+        pubannotation_evaluator_options_block.style.display = 'none';
+      }
+    }
+  </script>
+
   <div class="actions">
     <%= f.submit %>
   </div>

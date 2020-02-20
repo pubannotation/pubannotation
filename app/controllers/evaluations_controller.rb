@@ -124,13 +124,19 @@ class EvaluationsController < ApplicationController
       raise "You are not allowed to (re-)generate the evaluation result." unless evaluation.study_project.editable?(current_user)
       raise "The reference project is not accessible." unless evaluation.reference_project.accessible?(current_user)
       raise "Up to 10 jobs can be registered per project. Please clean your jobs page." unless evaluation.study_project.jobs.count < 10
-      # job = EvaluateAnnotationsJob.new(evaluation)
-      # job.perform()
 
-      priority = evaluation.study_project.jobs.unfinished.count
-      delayed_job = Delayed::Job.enqueue EvaluateAnnotationsJob.new(evaluation), priority: priority, queue: :general
-      Job.create({name:'Evaluate annotations', project_id:evaluation.study_project.id, delayed_job_id:delayed_job.id})
-      message = "The task, 'Evaluate annotations', is created."
+      if evaluation.evaluator.access_type == 2 # web service
+        evaluation.obtain
+        "Evaluation is successfuly updated."
+      else
+        # job = EvaluateAnnotationsJob.new(evaluation)
+        # job.perform()
+
+        priority = evaluation.study_project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue EvaluateAnnotationsJob.new(evaluation), priority: priority, queue: :general
+        Job.create({name:'Evaluate annotations', project_id:evaluation.study_project.id, delayed_job_id:delayed_job.id})
+        "The task, 'Evaluate annotations', is created. Please reload the page to see the result."
+      end
     rescue => e
       e.message
     end
