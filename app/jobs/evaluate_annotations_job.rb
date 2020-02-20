@@ -2,13 +2,15 @@ class EvaluateAnnotationsJob < Struct.new(:evaluation, :detail)
 	include StateManagement
 
 	def perform
-    project = evaluation.study_project
-    reference_project = evaluation.reference_project
+		project = evaluation.study_project
+		reference_project = evaluation.reference_project
 
-    docs = project.docs & reference_project.docs
+		docs = project.docs & reference_project.docs
 
-		@job.update_attribute(:num_items, docs.count)
-		@job.update_attribute(:num_dones, 0)
+		if @job
+			@job.update_attribute(:num_items, docs.count)
+			@job.update_attribute(:num_dones, 0)
+		end
 
 		soft_match_characters = evaluation.soft_match_characters || PubannotationEvaluator::SOFT_MATCH_CHARACTERS
 		soft_match_words = evaluation.soft_match_words || PubannotationEvaluator::SOFT_MATCH_WORDS
@@ -23,9 +25,15 @@ class EvaluateAnnotationsJob < Struct.new(:evaluation, :detail)
 				reference_annotations = doc.hannotations(reference_project)
 				comparison += evaluator.compare(annotations, reference_annotations)
 			rescue => e
-				@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
+				if @job
+					@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
+				else
+					raise e
+				end
 			end
-			@job.update_attribute(:num_dones, i + 1)
+			if @job
+				@job.update_attribute(:num_dones, i + 1)
+			end
 		end
 
 		result = evaluator.evaluate(comparison)
