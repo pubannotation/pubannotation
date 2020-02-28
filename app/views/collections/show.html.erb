@@ -67,6 +67,10 @@
       [project.updated_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
     end
 
+    g.column name: 'RDFized_at', class: 'column-project-updated' do |project|
+      [project.last_indexed_at.nil? ? '-' : project.last_indexed_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
+    end
+
     g.column name: 'Status', attribute: 'status', class: 'column-project-status',
     custom_filter: {'Released' => 1, 'Beta' => 2, 'Uploading' => 3, 'Developing' => 8, 'Testing' => 9} do |project|
       [project.status_text, {style: 'text-align:center'}]

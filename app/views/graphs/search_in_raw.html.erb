@@ -1,8 +1,8 @@
 <section>
 <% if @project %>
 	<%= render :partial => 'projects/titlebar' -%>
-	<% if @project_last_indexed_at %>
-		<div class="note">RDFization last updated at <%= @project_last_indexed_at %></div>
+	<% if last_indexed_at = @project.last_indexed_at %>
+		<div class="note">RDFization last updated at <%= last_indexed_at %></div>
 	<% else %>
 		<div class="note">The project is not yet RDFized.</div>
 	<% end %>

@@ -47,15 +47,6 @@ class GraphsController < ApplicationController
 			:search_in_raw
 		end
 
-		@project_last_indexed_at = if @project
-			begin
-				@project.last_indexed_at(Pubann::Application.config.sd)
-			rescue Exception => e
-				flash[:notice] = "Could not obtain the information about when the project was last indexed."
-				nil
-			end
-		end
-
 		params.delete(:template_select)
 
     respond_to do |format|
