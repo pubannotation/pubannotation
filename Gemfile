@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.3.4'
+ruby '2.5.5'
 
 gem 'rails', '3.2.22.2'
 gem 'activerecord-import', '~> 0.15.0'
@@ -19,7 +19,7 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
-gem 'pg'
+gem 'pg', '~> 0.11'
 gem 'friendly_id'
 
 group :development do
@@ -71,7 +71,7 @@ gem 'whenever', :require => false
 # gem 'mysql2',          '~> 0.3.13', :platform => :ruby
 gem 'elasticsearch-model', '~> 5.1.0'
 gem 'elasticsearch-rails', '~> 5.1.0'
-gem 'stardog-rb', :git => 'git://github.com/jdkim/stardog-rb'
+gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.9.12'
 
 # To use ActiveModel has_secure_password
