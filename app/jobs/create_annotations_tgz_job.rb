@@ -22,17 +22,18 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 
 						file = doc.body
 						tar.add_file_simple(project.name + '/txt/' + filename + ".txt", 0644, file.bytesize){|t| t.write(file)}
-
-						if blind_p
-							file = doc.to_hash.to_json
-							tar.add_file_simple(project.name + '/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
-						else
-							annotations = doc.hannotations(project)
-							file = annotations.to_json
-							tar.add_file_simple(project.name + '/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
-							file = Annotation.hash_to_tsv(annotations)
-							tar.add_file_simple(project.name + '/tsv/' + filename + ".tsv", 0644, file.bytesize){|t| t.write(file)}
-							dic += Annotation.hash_to_dic_array(annotations)
+						if project.denotations_num > 0
+							if blind_p
+								file = doc.to_hash.to_json
+								tar.add_file_simple(project.name + '/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
+							else
+								annotations = doc.hannotations(project)
+								file = annotations.to_json
+								tar.add_file_simple(project.name + '/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
+								file = Annotation.hash_to_tsv(annotations)
+								tar.add_file_simple(project.name + '/tsv/' + filename + ".tsv", 0644, file.bytesize){|t| t.write(file)}
+								dic += Annotation.hash_to_dic_array(annotations)
+							end
 						end
 					rescue => e
 						@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: e.message})
