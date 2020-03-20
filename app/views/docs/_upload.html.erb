@@ -1,0 +1,24 @@
+<%= form_tag project_create_docs_from_upload_path(@project.name), multipart: true do -%>
+	<table>
+		<tr>
+			<th>Choose file</th>
+			<td><%= file_field_tag 'upfile', accept: '.tgz,.tar.gz,.json', required: true -%></td>
+		</tr>
+		<tr>
+			<th>Choose mode</th>
+			<td>
+				For each document, when there is an existing one with the same sourcedb and sourceid, the upload will
+				<ul>
+					<li><%= radio_button_tag :mode, :update, checked: true %><%= label_tag :mode_replace,
+						'<span style="font-weight:bold">UPDATE</span> the existing one, or'.html_safe %></li>
+					<li><%= radio_button_tag :mode, :skip %><%= label_tag :mode_skip,
+						'be <span style="font-weight:bold">SKIP</span>ped.'.html_safe %></li>
+				</ul>
+			</td>
+		</tr>
+		<tr>
+			<th>Upload</th>
+			<td><%= submit_tag t('views.shared.upload') -%></td>
+		</tr>
+	</table>
+<% end -%>

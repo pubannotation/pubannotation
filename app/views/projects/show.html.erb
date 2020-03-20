@@ -87,7 +87,11 @@
 			</tr>
 			<tr>
 				<th><%= t('views.shared.create') %></th>
-				<td><%= link_to 'Create a new document', new_project_doc_path(@project.name), class: 'button long_button' -%></td>
+				<td><%= link_to t('views.docs.create_doc'), new_project_doc_path(@project.name), class: 'button long_button' -%></td>
+			</tr>
+			<tr>
+				<th><%= t('views.shared.upload') %></th>
+				<td><%= link_to t('views.docs.upload_docs'), upload_docs_project_path(@project.name), class: 'button long_button' -%></td>
 			</tr>
 			<tr>
 				<th><%= t('views.shared.delete') %></th>

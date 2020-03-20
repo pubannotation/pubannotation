@@ -1,0 +1,16 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> upload-annotations
+<% end -%>
+
+<section>
+	<%= render partial: 'projects/titlebar' -%>
+
+	<section>
+		<h2><%= t('views.docs.upload_docs') %></h2>
+		<p>You can upload a PubAnnotation JSON file (<span style="text-decoration:underline">*.json</span>) which includes the sourcedb, the sourceid, and the text, or a gzip compressed tar file (<span style="text-decoration:underline">*.tgz</span> or <span style="text-decoration:underline">*.tar.gz</span>) of such JSON files.</p>
+		<%= render partial: 'docs/upload' -%>
+	</section>
+</section>

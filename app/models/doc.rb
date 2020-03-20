@@ -32,6 +32,8 @@ class Doc < ActiveRecord::Base
     end
   end
 
+  SOURCEDBS = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy']
+
   def as_indexed_json(options={})
     as_json(
       only: [:id, :sourcedb, :sourceid, :serial, :body],
@@ -313,25 +315,25 @@ class Doc < ActiveRecord::Base
     ['PMC'].include?(sourcedb)
   end
 
+  def revise(new_body)
+    unless new_body == self.body
+      text_aligner = TextAlignment::TextAlignment.new(self.body, new_body, TextAlignment::MAPPINGS)
+      raise RuntimeError, "cannot get alignment." if text_aligner.nil?
+      raise RuntimeError, "text too much different: #{text_aligner.similarity}." if text_aligner.similarity < 0.8
 
-  def revise(body)
-    return if body == self.body
+      self.body = new_body
+      save!
 
-    text_aligner = TextAlignment::TextAlignment.new(self.body, body, TextAlignment::MAPPINGS)
-    raise RuntimeError, "cannot get alignment."     if text_aligner.nil?
-    raise RuntimeError, "texts too much different: #{text_aligner.similarity}." if text_aligner.similarity < 0.8
-    self.body = body
-    self.save
-    denotations = self.denotations
-    text_aligner.transform_denotations!(denotations)
-    denotations.each{|d| d.save}
+      text_aligner.transform_denotations!(self.denotations)
+      denotations.each{|d| d.save!}
+    end
   end
 
   def self.uptodate(divs)
     sourcedb = divs[0].sourcedb
     sourceid = divs[0].sourceid
     new_divs = Object.const_get("DocSequencer#{sourcedb}").new(sourceid).divs
-    raise RuntimeError, "Number of divs mismatch" unless new_divs.size == divs.size
+    raise RuntimeError, "The number of divs mismatch" unless new_divs.size == divs.size
 
     divs.sort!{|a, b| a.serial <=> b.serial}
 
@@ -700,8 +702,40 @@ class Doc < ActiveRecord::Base
     self.same_sourcedb_sourceid(sourcedb, sourceid).select('serial').to_a.map{|d| d.serial}
   end
 
+  def self.prepare_creation(doc, current_user)
+    raise RuntimeError, "You have to be logged on to create a document." unless current_user.present?
+
+    if !doc[:body].present? && doc[:text].present?
+      doc[:body] = doc[:text]
+      doc.delete(:text)
+    end
+
+    raise ArgumentError, "There is no text." unless doc[:body].present?
+
+    # personalize the sourcedb
+    if doc[:sourcedb].present?
+      if doc[:sourcedb].include?(Doc::UserSourcedbSeparator)
+        parts = doc[:sourcedb].split(Doc::UserSourcedbSeparator)
+        raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
+        raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
+      else
+        doc[:sourcedb] += UserSourcedbSeparator + current_user.username unless current_user.root?
+      end
+    else
+      doc[:sourcedb] = UserSourcedbSeparator + current_user.username
+    end
+
+    # sourceid control
+    unless doc[:sourceid].present?
+      last_id = Doc.where(sourcedb: doc[:sourcedb]).pluck(:sourceid).max_by{|i| i.to_i}
+      doc[:sourceid] = last_id.nil? ? '1' : last_id.next
+    end
+
+    doc.merge(serial:0)
+  end
+
   def attach_sourcedb_suffix
-    if sourcedb.include?(':') == false && username.present?
+    if sourcedb.include?(UserSourcedbSeparator) == false && username.present?
       self.sourcedb = "#{sourcedb}#{UserSourcedbSeparator}#{username}"
     end
   end

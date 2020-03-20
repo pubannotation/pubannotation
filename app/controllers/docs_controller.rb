@@ -357,20 +357,7 @@ class DocsController < ApplicationController
         end
       end
 
-      # sourcedb control
-      if doc_hash[:sourcedb].include?(Doc::UserSourcedbSeparator)
-        parts = doc_hash[:sourcedb].split(Doc::UserSourcedbSeparator)
-        raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
-        raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
-      else
-        doc_hash[:sourcedb] += "#{Doc::UserSourcedbSeparator}#{current_user.username}"
-      end
-
-      # sourceid control
-      unless doc_hash[:sourceid].present?
-        last_id = Doc.where(sourcedb: doc_hash[:sourcedb]).pluck(:sourceid).max_by{|i| i.to_i}
-        doc_hash[:sourceid] = last_id.nil? ? '1' : last_id.next
-      end
+      doc_hash = Doc.prepare_creation(doc_hash, current_user)
 
       @doc = Doc.new(doc_hash)
       if @doc.save
@@ -553,6 +540,45 @@ class DocsController < ApplicationController
         format.html { render action: "edit" }
         format.json { render json: @doc.errors, status: :unprocessable_entity }
       end
+    end
+  end
+
+  def create_from_upload
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise ArgumentError, "Could not find the project." unless project.present?
+
+      file = params[:upfile]
+
+      filename = file.original_filename
+      ext = File.extname(filename).downcase
+      ext = '.tar.gz' if ext == '.gz' && filename.end_with?('.tar.gz')
+      raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json'].include?(ext)
+
+      raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+
+      options = {mode: params[:mode].present? ? params[:mode].to_sym : :update}
+
+      filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
+      FileUtils.mv file.path, filepath
+
+      if ext == '.json' && file.size < 100.kilobytes
+        job = UploadDocsJob.new(filepath, project, options)
+        res = job.perform()
+        notice = "Documents are successfully uploaded."
+      else
+        priority = project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue UploadDocsJob.new(filepath, project, options), priority: priority, queue: :upload
+        Job.create({name:'Upload documents', project_id:project.id, delayed_job_id:delayed_job.id})
+        notice = "The task, 'Upload documents', is created."
+      end
+    rescue => e
+      notice = e.message
+    end
+
+    respond_to do |format|
+      format.html {redirect_to :back, notice: notice}
+      format.json {}
     end
   end
 

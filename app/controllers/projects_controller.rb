@@ -125,23 +125,18 @@ class ProjectsController < ApplicationController
 
   def add_docs
     @project = Project.editable(current_user).find_by_name(params[:id])
-    @sourcedbs = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy']
+  end
+
+  def upload_docs
+    @project = Project.editable(current_user).find_by_name(params[:id])
   end
 
   def obtain_annotations
     @project = Project.editable(current_user).find_by_name(params[:id])
-
-    # TODO
-    # - to set it properly for individual projects
-    @sourcedbs = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy']
   end
 
   def rdfize_annotations
     @project = Project.editable(current_user).find_by_name(params[:id])
-
-    # TODO
-    # - to set it properly for individual projects
-    @sourcedbs = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy']
   end
 
   def upload_annotations

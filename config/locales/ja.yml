@@ -434,6 +434,8 @@ ja:
       list: ドキュメント一覧
       import: ドキュメントインポート
       add_docs: ドキュメント追加
+      create_doc: ドキュメント新規作成
+      upload_docs: ドキュメントアップロード
       create_a_new_document: ドキュメント生成
       total_number: "全%{total_number}ドキュメント"
     spans:

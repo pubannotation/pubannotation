@@ -4,7 +4,7 @@
 <table>
 <tr>
 <th>source DB</th>
-<td><%= select_tag :sourcedb, options_for_select(@sourcedbs),	style: "width:7em" -%></td>
+<td><%= select_tag :sourcedb, options_for_select(Doc::SOURCEDBS),	style: "width:7em" -%></td>
 </tr>
 <tr>
 <th>source IDs</th>
@@ -31,7 +31,7 @@
 <table>
 <tr>
 <th>source DB</th>
-<td><%= select_tag :sourcedb, options_for_select(@sourcedbs),	style: "width:7em" -%></td>
+<td><%= select_tag :sourcedb, options_for_select(Doc::SOURCEDBS),	style: "width:7em" -%></td>
 </tr>
 <tr>
 <th>Choose File</th>

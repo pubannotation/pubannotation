@@ -50,7 +50,7 @@
 			  <table>
 					<tr>
 						<th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
-						<td style="width:17em"><%= select_tag(:sourcedb, options_for_select(@sourcedbs)) -%></td>
+						<td style="width:17em"><%= select_tag(:sourcedb, options_for_select(Doc::SOURCEDBS)) -%></td>
 					</tr>
 					<tr>
 						<th><%= t('activerecord.attributes.doc.sourceid')%></th>
