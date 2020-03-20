@@ -28,7 +28,7 @@ class Project < ActiveRecord::Base
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :jobs, :dependent => :destroy
-  validates :name, :presence => true, :length => {:minimum => 5, :maximum => 32}, uniqueness: true
+  validates :name, :presence => true, :length => {:minimum => 5, :maximum => 40}, uniqueness: true
   validates_format_of :name, :with => /\A[a-z0-9\-_]+\z/i
 
   def as_json(options={})
