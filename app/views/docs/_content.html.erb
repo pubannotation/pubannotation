@@ -1,16 +1,16 @@
-<table>
+<table style="width:100%">
 <tr><th style="text-align:left">
 	<%= @doc.section %>
 	<%= '(Title and Abstract)' if @doc.section == 'TIAB' %>
 </th></tr>
-<tr><td class="text"><%= @content.html_safe %></td><tr>
+<tr><td class="text"><div id="body" style="max-height:300px; overflow-y:auto"><%= @content.html_safe %></div></td><tr>
 <tr>
-  <td class="linkSpace"></td>
+	<td id="linkSpace"></td>
 </tr>
 </table>
 
 <%= link_to t('views.shared.edit_model', :model => t('activerecord.models.doc')), edit_doc_path(@doc), :class => 'button'  if @doc.updatable_for?(current_user) -%>
 
 <script>
-  $('.text').linkToSelectedSpan('.linkSpace');
+	$('#body').linkToSelectedSpan('#linkSpace');
 </script>
