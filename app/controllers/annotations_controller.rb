@@ -98,13 +98,12 @@ class AnnotationsController < ApplicationController
 
   def project_doc_annotations_index
     begin
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      @project = Project.find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
-      raise "annotations inaccessible" unless @project.annotations_accessible?(current_user)
 
       unless @project.public?
         authenticate_user!
-        raise "There is no such project in your access." unless @project.accessible?(current_user)
+        raise "annotations inaccessible" unless @project.annotations_accessible?(current_user)
       end
 
       divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
@@ -150,13 +149,12 @@ class AnnotationsController < ApplicationController
 
   def project_div_annotations_index
     begin
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
+      @project = Project.find_by_name(params[:project_id])
       raise "There is no such project." unless @project.present?
-      raise "annotations inaccessible" unless @project.annotations_accessible?(current_user)
 
       unless @project.public?
         authenticate_user!
-        raise "There is no such project in your access." unless @project.accessible?(current_user)
+        raise "annotations inaccessible" unless @project.annotations_accessible?(current_user)
       end
 
       @doc = @project.docs.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])

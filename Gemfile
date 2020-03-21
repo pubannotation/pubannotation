@@ -53,8 +53,6 @@ gem 'jquery-ui-rails'
 gem 'rails3-jquery-autocomplete'
 gem 'facebox-rails'
 
-gem 'rack-cors', :require => 'rack/cors'
-
 gem 'rest-client', '~> 2.0.1'
 gem 'htmlentities'
 gem 'libxml-ruby'
