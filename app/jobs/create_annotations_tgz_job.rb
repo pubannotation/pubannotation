@@ -40,21 +40,14 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 					end
 					@job.update_attribute(:num_dones, i + 1)
 				end
-				dic.uniq!
-				file = Annotation.dic_array_to_tsv(dic)
-				tar.add_file_simple(project.name + '/dic/' + project.name + ".dic", 0644, file.bytesize){|t| t.write(file)}
+
+				unless dic.empty?
+					dic.uniq!
+					file = Annotation.dic_array_to_tsv(dic)
+					tar.add_file_simple(project.name + '/dic/' + project.name + ".dic", 0644, file.bytesize){|t| t.write(file)}
+				end
 			end
 		end
 	end
 
-  def get_doc_info (annotations)
-    sourcedb = annotations[:sourcedb]
-    sourceid = annotations[:sourceid]
-    divid    = annotations[:divid]
-    if divid.present?
-      doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, divid.to_i)
-      section   = doc.section.to_s if doc.present?
-    end
-    docinfo   = (divid == nil)? "#{sourcedb}-#{sourceid}" : "#{sourcedb}-#{sourceid}-#{divid}-#{section}"
-  end
 end
