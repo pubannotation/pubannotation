@@ -33,4 +33,9 @@ class Attrivute < ActiveRecord::Base
   def update_project_updated_at
     self.project.update_updated_at
   end
+
+  def self.new_id
+    'A' + rand(99999).to_s
+  end
+
 end

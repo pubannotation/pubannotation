@@ -942,6 +942,63 @@ class Project < ActiveRecord::Base
     end
   end
 
+  def reid_annotations(annotations, doc, span)
+    aids_background = doc.get_annotation_ids(self, {begin:0, end:span[:begin]}) + doc.get_annotation_ids(self, {begin:span[:end], end:doc.body.length})
+
+    id_change = {}
+    if annotations.has_key?(:denotations)
+      annotations[:denotations].each do |a|
+        id = a[:id]
+        id = Denotation.new_id while aids_background.include?(id)
+        if id != a[:id]
+          id_change[a[:id]] = id
+          a[:id] = id
+          aids_background << id
+        end
+      end
+
+      if annotations.has_key?(:relations)
+        annotations[:relations].each do |a|
+          id = a[:id]
+          id = Relation.new_id while aids_background.include?(id)
+          if id != a[:id]
+            id_change[a[:id]] = id
+            a[:id] = id
+            aids_background << id
+          end
+          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+          a[:obj] = id_change[a[:obj]] if id_change.has_key?(a[:obj])
+        end
+      end
+
+      if annotations.has_key?(:attributes)
+        annotations[:attributes].each do |a|
+          id = a[:id]
+          id = Attrivute.new_id while aids_background.include?(id)
+          if id != a[:id]
+            a[:id] = id
+            aids_background << id
+          end
+          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+        end
+      end
+
+      if annotations.has_key?(:modifications)
+        annotations[:modifications].each do |a|
+          id = a[:id]
+          id = Modification.new_id while aids_background.include?(id)
+          if id != a[:id]
+            a[:id] = id
+            aids_background << id
+          end
+          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+        end
+      end
+    end
+
+    annotations
+  end
+
   # annotations need to be normal
   def save_annotations(annotations, doc, options = nil)
     raise ArgumentError, "nil document" unless doc.present?
@@ -951,6 +1008,7 @@ class Project < ActiveRecord::Base
     return {result: 'upload is skipped due to existing annotations'} if options[:mode] == 'skip' && doc.denotations_count > 0
 
     annotations = Annotation.prepare_annotations(annotations, doc, options)
+    annotations = reid_annotations(annotations, doc, options[:span]) if options[:span].present? && annotations.has_key?(:denotations)
 
     delete_doc_annotations(doc, options[:span]) if options[:mode] == 'replace'
     instantiate_and_save_annotations(annotations, doc)

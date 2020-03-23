@@ -86,4 +86,8 @@ class Relation < ActiveRecord::Base
     end     
   end
 
+  def self.new_id
+    'R' + rand(99999).to_s
+  end
+
 end

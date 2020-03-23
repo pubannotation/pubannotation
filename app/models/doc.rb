@@ -419,7 +419,26 @@ class Doc < ActiveRecord::Base
     next_text = self.body[end_pos..self.body.length]
     "<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"   
   end
-  
+
+  def get_annotation_ids(project, span = nil)
+    dids = if span.nil?
+      denotations.where(project_id: project.id).pluck(:hid)
+    else
+      denotations.where(["project_id = ? AND begin >= ? AND denotations.end <= ?", project.id, span[:begin], span[:end]]).pluck(:hid)
+    end
+
+    hrelations = hrelations(project, dids)
+    rids = hrelations.collect{|r| r[:id]}
+
+    hattributes = hattributes(project, dids)
+    aids = hattributes.collect{|a| a[:id]}
+
+    hmodifications = hmodifications(project, dids + rids)
+    mids = hmodifications.collect{|m| m[:id]}
+
+    dids + rids + aids + mids
+  end
+
   # TODO: to take care of associate projects
   # the first argument, project, may be a project or an array of projects.
   def get_denotations(project = nil, span = nil, context_size = nil)

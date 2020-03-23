@@ -80,6 +80,10 @@ class Denotation < ActiveRecord::Base
     self.project.decrement!(:denotations_num)
   end
 
+  def self.new_id
+    'T' + rand(99999).to_s
+  end
+
   def self.sql_find(params, current_user, project)
     if params[:sql].present?
       current_user_id = current_user.present? ? current_user.id : nil

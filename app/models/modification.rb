@@ -39,4 +39,8 @@ class Modification < ActiveRecord::Base
     Project.decrement_counter(:modifications_num, self.project.id)
   end
 
+  def self.new_id
+    'M' + rand(99999).to_s
+  end
+
 end
