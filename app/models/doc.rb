@@ -721,7 +721,7 @@ class Doc < ActiveRecord::Base
     self.same_sourcedb_sourceid(sourcedb, sourceid).select('serial').to_a.map{|d| d.serial}
   end
 
-  def self.prepare_creation(doc, current_user)
+  def self.prepare_creation(doc, current_user, no_personalize = false)
     raise RuntimeError, "You have to be logged on to create a document." unless current_user.present?
 
     if !doc[:body].present? && doc[:text].present?
@@ -729,19 +729,23 @@ class Doc < ActiveRecord::Base
       doc.delete(:text)
     end
 
-    raise ArgumentError, "There is no text." unless doc[:body].present?
+    raise ArgumentError, "Text is missing." unless doc[:body].present?
 
-    # personalize the sourcedb
-    if doc[:sourcedb].present?
-      if doc[:sourcedb].include?(Doc::UserSourcedbSeparator)
-        parts = doc[:sourcedb].split(Doc::UserSourcedbSeparator)
-        raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
-        raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
-      else
-        doc[:sourcedb] += UserSourcedbSeparator + current_user.username unless current_user.root?
-      end
+    if no_personalize
+      raise ArgumentError, "sourcedb is missing." unless doc[:sourcedb].present?
     else
-      doc[:sourcedb] = UserSourcedbSeparator + current_user.username
+      # personalize the sourcedb unless no_personalize
+      if doc[:sourcedb].present?
+        if doc[:sourcedb].include?(Doc::UserSourcedbSeparator)
+          parts = doc[:sourcedb].split(Doc::UserSourcedbSeparator)
+          raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
+          raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
+        else
+          doc[:sourcedb] += UserSourcedbSeparator + current_user.username
+        end
+      else
+        doc[:sourcedb] = UserSourcedbSeparator + current_user.username
+      end
     end
 
     # sourceid control
