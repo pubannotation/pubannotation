@@ -3,7 +3,7 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :only => [:new, :edit, :new, :create, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
+  before_filter :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
   before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
   skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
@@ -302,28 +302,6 @@ class DocsController < ApplicationController
     end
   end
 
-  # GET /docs/1/edit
-  def edit
-    begin
-      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
-
-      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-      raise "There is no such document" unless divs.present?
-
-      if divs.length > 1
-        respond_to do |format|
-          format.html {redirect_to :back}
-        end
-      else
-        @doc = divs[0]
-      end
-    rescue => e
-      respond_to do |format|
-        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-      end
-    end
-  end
-
   # POST /docs
   # POST /docs.json
   # Creation of document is only allowed for single division documents.
@@ -377,6 +355,90 @@ class DocsController < ApplicationController
       respond_to do |format|
         format.html { redirect_to new_project_doc_path(@project.name), notice: e.message }
         format.json { render json: {message: e.message}, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def create_from_upload
+    begin
+      project = Project.editable(current_user).find_by_name(params[:project_id])
+      raise ArgumentError, "Could not find the project." unless project.present?
+
+      file = params[:upfile]
+
+      filename = file.original_filename
+      ext = File.extname(filename).downcase
+      ext = '.tar.gz' if ext == '.gz' && filename.end_with?('.tar.gz')
+      raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json', '.txt'].include?(ext)
+
+      options = {
+        mode: params[:mode].present? ? params[:mode].to_sym : :update,
+        root: current_user.root?
+      }
+
+      dirpath = File.join('tmp/uploads', "#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}")
+      FileUtils.mkdir_p dirpath
+      FileUtils.mv file.path, File.join(dirpath, filename)
+
+      if ['.json', '.txt'].include?(ext) && file.size < 100.kilobytes
+        job = UploadDocsJob.new(dirpath, project, options)
+        res = job.perform()
+        notice = "Documents are successfully uploaded."
+      else
+        raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+        priority = project.jobs.unfinished.count
+        delayed_job = Delayed::Job.enqueue UploadDocsJob.new(dirpath, project, options), priority: priority, queue: :upload
+        task_name = "Upload documents: #{filename}"
+        Job.create({name:task_name, project_id:project.id, delayed_job_id:delayed_job.id})
+        notice = "The task, '#{task_name}', is created."
+      end
+    rescue => e
+      notice = e.message
+    end
+
+    respond_to do |format|
+      format.html {redirect_to :back, notice: notice}
+      format.json {}
+    end
+  end
+
+  # GET /docs/1/edit
+  def edit
+    begin
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+
+      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document" unless divs.present?
+
+      if divs.length > 1
+        respond_to do |format|
+          format.html {redirect_to :back}
+        end
+      else
+        @doc = divs[0]
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
+      end
+    end
+  end
+
+  # PUT /docs/1
+  # PUT /docs/1.json
+  def update
+    raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+
+    params[:doc][:body].gsub!(/\r\n/, "\n")
+    @doc = Doc.find(params[:id])
+
+    respond_to do |format|
+      if @doc.update_attributes(params[:doc])
+        format.html { redirect_to @doc, notice: t('controllers.shared.successfully_updated', :model => t('activerecord.models.doc')) }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @doc.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -522,64 +584,6 @@ class DocsController < ApplicationController
       flash[:notice] = e.message
     end
     redirect_to doc_sourcedb_sourceid_show_path params
-  end
-
-  # PUT /docs/1
-  # PUT /docs/1.json
-  def update
-    raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
-
-    params[:doc][:body].gsub!(/\r\n/, "\n")
-    @doc = Doc.find(params[:id])
-
-    respond_to do |format|
-      if @doc.update_attributes(params[:doc])
-        format.html { redirect_to @doc, notice: t('controllers.shared.successfully_updated', :model => t('activerecord.models.doc')) }
-        format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
-        format.json { render json: @doc.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  def create_from_upload
-    begin
-      project = Project.editable(current_user).find_by_name(params[:project_id])
-      raise ArgumentError, "Could not find the project." unless project.present?
-
-      file = params[:upfile]
-
-      filename = file.original_filename
-      ext = File.extname(filename).downcase
-      ext = '.tar.gz' if ext == '.gz' && filename.end_with?('.tar.gz')
-      raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json'].include?(ext)
-
-      raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
-
-      options = {mode: params[:mode].present? ? params[:mode].to_sym : :update}
-
-      filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
-      FileUtils.mv file.path, filepath
-
-      if ext == '.json' && file.size < 100.kilobytes
-        job = UploadDocsJob.new(filepath, project, options)
-        res = job.perform()
-        notice = "Documents are successfully uploaded."
-      else
-        priority = project.jobs.unfinished.count
-        delayed_job = Delayed::Job.enqueue UploadDocsJob.new(filepath, project, options), priority: priority, queue: :upload
-        Job.create({name:'Upload documents', project_id:project.id, delayed_job_id:delayed_job.id})
-        notice = "The task, 'Upload documents', is created."
-      end
-    rescue => e
-      notice = e.message
-    end
-
-    respond_to do |format|
-      format.html {redirect_to :back, notice: notice}
-      format.json {}
-    end
   end
 
   # DELETE /docs/1
