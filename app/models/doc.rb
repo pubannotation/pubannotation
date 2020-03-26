@@ -32,7 +32,7 @@ class Doc < ActiveRecord::Base
     end
   end
 
-  SOURCEDBS = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy']
+  SOURCEDBS = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy', 'CORD-19']
 
   def as_indexed_json(options={})
     as_json(
