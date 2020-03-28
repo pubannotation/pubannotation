@@ -411,22 +411,26 @@ class AnnotationsController < ApplicationController
           messages << {body: "Annotations to #{annotations_col.length} doc(s) were obtained."}
         end
       rescue RestClient::ExceptionWithResponse => e
-        if e.response.code == 303
-          options[:retry_after] = e.response.headers[:retry_after].to_i
-          options[:try_times] = 3
-
-          # job = RetrieveAnnotationsJob.new(project, e.response.headers[:location], options)
-          # job.perform()
-          priority = project.jobs.unfinished.count
-          delayed_job = Delayed::Job.enqueue RetrieveAnnotationsJob.new(project, e.response.headers[:location], options), priority: priority, queue: :general, run_at: options[:retry_after].seconds.from_now
-          Job.create({name:"Retrieve annotations", project_id:project.id, delayed_job_id:delayed_job.id})
-          messages = [{body: "Annotation request was sent. The result will be retrieved by a background job."}]
-        elsif e.response.code == 503
-          raise RuntimeError, "Service unavailable"
-        elsif e.response.code == 404
-          raise RuntimeError, "The annotation server does not know the path."
+        if e.response.nil?
+          raise RuntimeError, e.message
         else
-          raise RuntimeError, "Received the following message from the server: #{e.message} "
+          if e.response.code == 303
+            options[:retry_after] = e.response.headers[:retry_after].to_i
+            options[:try_times] = 20
+
+            # job = RetrieveAnnotationsJob.new(project, e.response.headers[:location], options)
+            # job.perform()
+            priority = project.jobs.unfinished.count
+            delayed_job = Delayed::Job.enqueue RetrieveAnnotationsJob.new(project, e.response.headers[:location], options), priority: priority, queue: :general, run_at: options[:retry_after].seconds.from_now
+            Job.create({name:"Retrieve annotations", project_id:project.id, delayed_job_id:delayed_job.id})
+            messages = [{body: "Annotation request was sent. The result will be retrieved by a background job."}]
+          elsif e.response.code == 503
+            raise RuntimeError, "Service unavailable"
+          elsif e.response.code == 404
+            raise RuntimeError, "The annotation server does not know the path."
+          else
+            raise RuntimeError, "Received the following message from the server: #{e.message} "
+          end
         end
       rescue => e
         raise RuntimeError, e.message
