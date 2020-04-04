@@ -342,6 +342,36 @@ class Doc < ActiveRecord::Base
     end
   end
 
+  def get_slices(max_size, span = nil)
+    text = get_text(span)
+    length = text.length
+    if length > max_size
+      slices = []
+      _begin = 0
+      while _begin + max_size < length
+        subtext = text[_begin ... _begin + max_size]
+        _end = subtext.rindex("\n")
+        if _end.nil?
+          raise RuntimeError, "Could not split the document."
+        else
+          _end += _begin
+        end
+        slices << {begin:_begin, end:_end}
+        _begin = _end + 1
+      end
+      slices << {begin:_begin, end:length}
+      unless span.nil?
+        slices.each do |slice|
+          slice[:begin] += span[:begin]
+          slice[:end] += span[:begin]
+        end
+      end
+      slices
+    else
+      span.nil? ? [nil] : [span]
+    end
+  end
+
   # returns relations count which belongs to project and doc
   def project_relations_num(project_id)
     count = Relation.project_relations_num(project_id, subcatrels)
@@ -426,6 +456,8 @@ class Doc < ActiveRecord::Base
     else
       denotations.where(["project_id = ? AND begin >= ? AND denotations.end <= ?", project.id, span[:begin], span[:end]]).pluck(:hid)
     end
+
+    return [] if dids.empty?
 
     hrelations = hrelations(project, dids)
     rids = hrelations.collect{|r| r[:id]}
@@ -612,6 +644,15 @@ class Doc < ActiveRecord::Base
     if self_denotations.present?
       self_denotations.within_span({:begin => params[:begin], :end => params[:end]}).collect{|denotation| denotation.project}.uniq.compact
     end  
+  end
+
+  def hdoc
+    {
+      text: body,
+      sourcedb: sourcedb,
+      sourceid: sourceid,
+      divid: serial,
+    }
   end
 
   def to_hash

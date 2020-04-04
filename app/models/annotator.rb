@@ -1,8 +1,17 @@
 class Annotator < ActiveRecord::Base
 	extend FriendlyId
 
+  MaxTextSync  = 50000
+  MaxTextAsync = 100000
+  # MaxTextAsync = 60000
+  MaxWaitInQueue = 30.seconds
+  MaxWaitInProcessing = 30.seconds
+  MaxWaitInQueueBatch = 1.hour
+  MaxWaitInProcessingBatch = 1.hour
+  SkipInterval = 5
+
   belongs_to :user
-  attr_accessible :name, :description, :home, :url, :method, :payload, :batch_num, :is_public, :sample
+  attr_accessible :name, :description, :home, :url, :method, :payload, :max_text_size, :async_protocol, :is_public, :sample
 
   friendly_id :name
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 32}, uniqueness: true
@@ -11,8 +20,6 @@ class Annotator < ActiveRecord::Base
   validates :url, :presence => true
   validates :method, :presence => true
   validates :payload, :presence => true, if: 'method == 1'
-  validates :batch_num, :presence => true
-  validates :batch_num, :numericality => { equal_to: 0 }, if: Proc.new{|a| a.payload.present? && a.payload['_body_'] == '_text_'}
 
   serialize :payload, Hash
 
@@ -32,30 +39,79 @@ class Annotator < ActiveRecord::Base
   end
 
   # To obtain annotations from an annotator and to save them in the project
-  def obtain_annotations(text)
-    method, url, params, payload = prepare_request(text)
+  def obtain_annotations(docs)
+    method, url, params, payload = prepare_request(docs)
     result = make_request(method, url, params, payload)
+    annotations_col = (result.class == Array) ? result : [result]
+
+    # To recover the identity information, in case of syncronous annotation
+    annotations_col.each_with_index do |annotations, i|
+      raise RuntimeError, "Invalid annotation JSON object." unless annotations.respond_to?(:has_key?)
+      annotations[:text] = docs[i][:text] unless annotations[:text].present?
+      annotations[:sourcedb] = docs[i][:sourcedb] unless annotations[:sourcedb].present?
+      annotations[:sourceid] = docs[i][:sourceid] unless annotations[:sourceid].present?
+      annotations[:divid] = docs[i][:serial] unless annotations[:divid].present?
+    end
+    # store_annotations_collection(annotations_col, options)
+    annotations_col
   end
 
-  def prepare_request(text)
-    _method = (method == 0) ? :get : :post
-    params = {"text" => text} if _method == :get && !url.include?('_text_')
-    _url = url.gsub('_text_', URI.escape(text))
+  def single_doc_processing?
+    method == 0 || url.include?('_text_') || url.include?('_sourceid_') || ['_text_', '_doc_', '_annotation_'].include?(payload['_body_'])
+  end
 
-    _payload = if (_method == :post)
-      if payload.present? && payload['_body_'].present?
-        case payload['_body_']
-        when '_text_'
-          text
-        when '_doc_' || '_annotation_'
-          {text:text}
-        end
+  def prepare_request(docs)
+    _method = (method == 0) ? :get : :post
+
+    ## URL check and set the default parameter
+    _params = if _method == :get
+      # The URL of an annotator who receives a GET request, should include the placeholder(s) of either _text_ or _sourcedb_/_sourcedb_ .
+      # Otherwise, the default params will be automatically added.
+      if self.url.include?('_text_') || (self.url.include?('_sourcedb_') && self.url.include?('_sourceid_'))
+        nil
       else
-        {text:text}
+        {'text' => '_text_'}
       end
     end
 
-    [_method, _url, params, _payload]
+    if (docs.length > 1) && single_doc_processing?
+      raise RuntimeError, "The annotation server is configured to receive only one document at a time."
+    end
+
+    ## URL rewrite
+    # assuming only one document is passed.
+    doc = docs.first
+    _url = self.url.gsub('_text_', URI.escape(doc[:text]))
+    _url.gsub!('_sourcedb_', URI.escape(doc[:sourcedb])) if doc[:sourcedb].present?
+    _url.gsub!('_sourceid_', URI.escape(doc[:sourceid])) if doc[:sourceid].present?
+
+    ## parameter rewrite
+    if _params.present?
+      _params.each do |k, v|
+        _params[k] = v.gsub('_text_', doc[:text]).gsub('_sourcedb_', doc[:sourcedb]).gsub('_sourceid_', doc[:sourceid])
+      end
+    end
+
+    ## payload rewrite
+    _payload = if (_method == :post)
+      # The default payload
+      self.payload['_body_'] = '_doc_' unless self.payload.present?
+
+      case self.payload['_body_']
+      when '_text_'
+        doc[:text]
+      when '_doc_'
+        doc.select{|k, v| [:text, :sourcedb, :sourceid, :divid].include? k}
+      when '_annotation_'
+        doc
+      when '_docs_'
+        docs.map{|doc| doc.select{|k, v| [:text, :sourcedb, :sourceid, :divid].include? k}}
+      when '_annotations_'
+        docs
+      end
+    end
+
+    [_method, _url, _params, _payload]
   end
 
   def make_request(method, url, params = nil, payload = nil)
@@ -71,10 +127,14 @@ class Annotator < ActiveRecord::Base
       RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers:{params: params, accept: :json})
     end
 
-    result = begin
-      JSON.parse response, :symbolize_names => true
-    rescue => e
-      raise RuntimeError, "Received a non-JSON object: [#{response}]"
+    if response.code == 200
+      result = begin
+        JSON.parse response, :symbolize_names => true
+      rescue => e
+        raise RuntimeError, "Received an invalid JSON object: [#{response}]"
+      end
+    else
+      raise RestClient::ExceptionWithResponse.new(response)
     end
   end
 

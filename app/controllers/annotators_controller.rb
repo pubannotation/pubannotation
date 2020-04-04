@@ -29,7 +29,7 @@ class AnnotatorsController < ApplicationController
 
       @result = if params[:text]
         begin
-          @annotator.obtain_annotations(params[:text])
+          @annotator.obtain_annotations([{text:params[:text]}]).first
         rescue => e
           message = "A problem is reported from the server: #{e.message}."
           nil
@@ -95,7 +95,6 @@ class AnnotatorsController < ApplicationController
     update = params[:annotator]
     if update['method'] == '0'
       update['payload'] = nil
-      update['batch_num'] = 0
     end
     update['payload'] = update['payload'].delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if update['payload'].present?
 

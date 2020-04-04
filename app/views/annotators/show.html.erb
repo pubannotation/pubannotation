@@ -44,14 +44,20 @@
     </tr>
 
     <tr>
-      <th>Batch num</th>
-      <td><pre><%= @annotator.batch_num %></pre></td>
+      <th>Protocol</th>
+      <td><%= @annotator.async_protocol? ? 'Async' : 'Sync' %></td>
     </tr>
+
+    <tr>
+      <th>Max Text Size</th>
+      <td><%= max_text_size(@annotator) %></td>
+    </tr>
+
   <% end %>
 
   </table>
 
-  <% if @annotator.batch_num == 0 %>
+  <% if !@annotator.async_protocol && (!@annotator[:url].include?('_sourceid_') || @annotator[:payload].has_key?('_body_')) %>
     <fieldset>
       <legend>Test</legend>
       <p class="note">Send your text to the server and see how it works.<br/>

@@ -336,11 +336,11 @@ class Annotation < ActiveRecord::Base
           d[:span][:end]   += span[:begin]
         end
         annotations[:text] = doc.body
-      end
-
-      target_text = doc.original_body.nil? ? doc.body : doc.original_body
-      if annotations[:text] != target_text
-        annotations[:denotations] = align_denotations(annotations[:denotations], annotations[:text], target_text)
+      else
+        target_text = doc.original_body.nil? ? doc.body : doc.original_body
+        if annotations[:text] != target_text
+          annotations[:denotations] = align_denotations(annotations[:denotations], annotations[:text], target_text)
+        end
       end
     end
 

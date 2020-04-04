@@ -33,7 +33,6 @@
         <p>In other words, setting of this attribute will affect the findability, but not the accessibility, of the entry.</p>
       </div>
     </td>
-
   </tr>
   <tr>
     <th><%= f.label :name, "Name*" %></th>
@@ -112,8 +111,12 @@
             <dd>the text of a document (plain text)</dd>
             <dt>_doc_</dt>
             <dd>a document (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+            <dt>_docs_</dt>
+            <dd>An array of documents (<a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
             <dt>_annotation_</dt>
-            <dd>the annotation to a document (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+            <dd>A document with annotation (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+            <dt>_annotations_</dt>
+            <dd>An array of documents with annotation (<a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
           </dl>
         </p>
         <h2>Note</h2>
@@ -133,31 +136,36 @@
       </div>
     </td>
   </tr>
+
   <tr>
-    <th><%= f.label :batch_num %></th>
-    <td><%= f.text_field :batch_num, type: :number, min: 0, required:true %></td>
+    <th><%= f.label :async_protocol -%></th>
+    <td><%= f.check_box :async_protocol -%></td>
     <td>
-      <a href="#help-batch_num" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-batch_num" class="help">
-        <h1>Batch Num</h1>
-        <p>If your annotator can process multiple documents at a request, you can set this parameter to the number of documents you want PubAnnotation to send to your annotator at a time.</p>
-        <h2>Values</h2>
-          <dl>
-            <dt>0</dt>
-            <dd>The batch process mode is <u>off</u>. One document will be sent to the server at a request. It means a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object will be sent as the  body of a request. It is the default value of the parameter.</dd>
-            <dt>1</dt>
-            <dd>The batch process mode is on, but only one document will be sent to the server at a request. It means an <u>array</u> with one <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object will be sent as the body of a request.</dd>
-            <dt><i>n</i> (> 1)</dt>
-            <dd>The batch process mode is on, and multiple documents will be sent to the server at a request. It means an <u>array</u> with multiple <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects will be sent as the  body of a request.</dd>
-          </dl>
-        <h2>Note</h2>
-        <ul>
-        <li>When an array of multiple documents is sent to an annotator, the annotator is expected to respond also with an array which may include the results of annotation.</li>
-        <li>In the responded array of annotations, the <u>order has to be preserved</u> as in the array of documents in the input.</li>
-        <li>The batch process mode has to be turned <u>off</u> when the payload is '<i>_body_ = _text_</i>', because multiple texts cannot be represented explicitly in plain text.</li>
+      <a href="#help-async_protocol" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-async_protocol" class="help">
+        <h1>Is Async Protocol</h1>
+        <p>Check it if this annotator uses the <a href="http://www.pubannotation.org/docs/annotation-server-api/">asynchronous protocol</a>.</p>
       </div>
     </td>
   </tr>
+
+  <tr>
+    <th><%= f.label :max_text_size %></th>
+    <td><%= f.text_field :max_text_size, type: :number, min: 100 %></td>
+    <td>
+      <a href="#help-max_text_size" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-max_text_size" class="help">
+        <h1>Max Text Size</h1>
+        <p>The maximum size of text to be sent to the annotator.</p>
+        <h2>Default</h2>
+        <ul>
+          <li><%= Annotator::MaxTextSync %> for a synchronous protocol.</li>
+          <li><%= Annotator::MaxTextAsync %> for an asynchronous protocol.</li>
+        </ul>
+      </div>
+    </td>
+  </tr>
+
   <tr>
     <th><%= f.label :sample, 'Sample text' %></th>
     <td><%= f.text_area :sample %></td>
@@ -178,21 +186,14 @@
 
     function payload_switch(that) {
       var payload_field = document.getElementById("annotator_payload")
-      var batch_num_field = document.getElementById("annotator_batch_num")
 
       if (that.value == 0) {
         payload_field.value = null;
         payload_field.disabled = true;
-        batch_num_field.value = null;
-        batch_num_field.disabled = true;
       } else {
         payload_field.disabled = false;
         if (payload_field.value == null || (payload_field.value == "") || (payload_field.value == "{}")) {
           payload_field.value = "_body_ = _doc_";
-        }
-        batch_num_field.disabled = false;
-        if (batch_num_field.value == null || batch_num_field.value == "") {
-          batch_num_field.value = 0;
         }
       }
     }

@@ -808,46 +808,50 @@ class Project < ActiveRecord::Base
   end
 
   def instantiate_and_save_annotations(annotations, doc)
-    ActiveRecord::Base.transaction do
-      if annotations[:denotations].present?
+    if annotations[:denotations].present?
+      res = ActiveRecord::Base.transaction do
+        d_num = 0
+        r_num = 0
+        m_num = 0
+
         instances = instantiate_hdenotations(annotations[:denotations], doc.id)
         if instances.present?
           r = Denotation.import instances, validate: false
           raise "denotations import error" unless r.failed_instances.empty?
-          ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).increment!(:denotations_num, instances.length)
-          doc.increment!(:denotations_num, instances.length)
-          self.increment!(:denotations_num, instances.length)
         end
-      end
 
-      if annotations[:relations].present?
-        instances = instantiate_hrelations(annotations[:relations], doc.id)
-        if instances.present?
-          r = Relation.import instances, validate: false
-          raise "relations import error" unless r.failed_instances.empty?
-          ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).increment!(:relations_num, instances.length)
-          doc.increment!(:relations_num, instances.length)
-          self.increment!(:relations_num, instances.length)
-        end
-      end
+        d_num = annotations[:denotations].length
 
-      if annotations[:attributes].present?
-        instances = instantiate_hattributes(annotations[:attributes], doc.id)
-        if instances.present?
-          r = Attrivute.import instances, validate: false
-          raise "attributes import error" unless r.failed_instances.empty?
+        if annotations[:relations].present?
+          instances = instantiate_hrelations(annotations[:relations], doc.id)
+          if instances.present?
+            r = Relation.import instances, validate: false
+            raise "relations import error" unless r.failed_instances.empty?
+          end
+          r_num = annotations[:denotations].length
         end
-      end
 
-      if annotations[:modifications].present?
-        instances = instantiate_hmodifications(annotations[:modifications], doc.id)
-        if instances.present?
-          r = Modification.import instances, validate: false
-          raise "modifications import error" unless r.failed_instances.empty?
-          ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).increment!(:modifications_num, instances.length)
-          doc.increment!(:modifications_num, instances.length)
-          self.increment!(:modifications_num, instances.length)
+
+        if annotations[:attributes].present?
+          instances = instantiate_hattributes(annotations[:attributes], doc.id)
+          if instances.present?
+            r = Attrivute.import instances, validate: false
+            raise "attributes import error" unless r.failed_instances.empty?
+          end
         end
+
+        if annotations[:modifications].present?
+          instances = instantiate_hmodifications(annotations[:modifications], doc.id)
+          if instances.present?
+            r = Modification.import instances, validate: false
+            raise "modifications import error" unless r.failed_instances.empty?
+          end
+          m_num = annotations[:modifications].length
+        end
+
+        connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{doc.id}")
+        connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{doc.id}")
+        connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{id}")
       end
     end
   end
@@ -858,11 +862,11 @@ class Project < ActiveRecord::Base
       # collect statistics
       d_stat, r_stat, a_stat, m_stat = Hash.new(0), Hash.new(0), Hash.new(0), Hash.new(0)
 
-      # cache document id
+      # record document id
       annotations_collection.each do |ann|
         ann[:docid] = ann[:divid].nil? ?
-          Doc.find_by_sourcedb_and_sourceid(ann[:sourcedb], ann[:sourceid]).id :
-          Doc.find_by_sourcedb_and_sourceid_and_serial(ann[:sourcedb], ann[:sourceid], ann[:divid]).id
+          Doc.select(:id).where(sourcedb:ann[:sourcedb], sourceid:ann[:sourceid]).first.id :
+          Doc.select(:id).where(sourcedb:ann[:sourcedb], sourceid:ann[:sourceid], serial:ann[:divid]).first.id
       end
 
       # instantiate and save denotations
@@ -930,68 +934,63 @@ class Project < ActiveRecord::Base
         r_num = r_stat[did] ||= 0
         a_num = a_stat[did] ||= 0
         m_num = m_stat[did] ||= 0
-        connection.execute("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{did}")
+        connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{did}")
         connection.execute("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{did}")
       end
-
-      self.update_attributes!(
-        denotations_num: denotations_num + d_stat_all,
-        relations_num: relations_num + r_stat_all,
-        modifications_num: modifications_num + m_stat_all
-      )
+      connection.execute("update projects set denotations_num = denotations_num + #{d_stat_all}, relations_num = relations_num + #{r_stat_all}, modifications_num = modifications_num + #{m_stat_all} where id=#{id}")
     end
   end
 
-  def reid_annotations(annotations, doc, span)
-    aids_background = doc.get_annotation_ids(self, {begin:0, end:span[:begin]}) + doc.get_annotation_ids(self, {begin:span[:end], end:doc.body.length})
-
-    id_change = {}
-    if annotations.has_key?(:denotations)
-      annotations[:denotations].each do |a|
-        id = a[:id]
-        id = Denotation.new_id while aids_background.include?(id)
-        if id != a[:id]
-          id_change[a[:id]] = id
-          a[:id] = id
-          aids_background << id
-        end
-      end
-
-      if annotations.has_key?(:relations)
-        annotations[:relations].each do |a|
+  def reid_annotations(annotations, doc)
+    aids_background = doc.get_annotation_ids(self)
+    unless aids_background.empty?
+      id_change = {}
+      if annotations.has_key?(:denotations)
+        annotations[:denotations].each do |a|
           id = a[:id]
-          id = Relation.new_id while aids_background.include?(id)
+          id = Denotation.new_id while aids_background.include?(id)
           if id != a[:id]
             id_change[a[:id]] = id
             a[:id] = id
             aids_background << id
           end
-          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
-          a[:obj] = id_change[a[:obj]] if id_change.has_key?(a[:obj])
         end
-      end
 
-      if annotations.has_key?(:attributes)
-        annotations[:attributes].each do |a|
-          id = a[:id]
-          id = Attrivute.new_id while aids_background.include?(id)
-          if id != a[:id]
-            a[:id] = id
-            aids_background << id
+        if annotations.has_key?(:relations)
+          annotations[:relations].each do |a|
+            id = a[:id]
+            id = Relation.new_id while aids_background.include?(id)
+            if id != a[:id]
+              id_change[a[:id]] = id
+              a[:id] = id
+              aids_background << id
+            end
+            a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+            a[:obj] = id_change[a[:obj]] if id_change.has_key?(a[:obj])
           end
-          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
         end
-      end
 
-      if annotations.has_key?(:modifications)
-        annotations[:modifications].each do |a|
-          id = a[:id]
-          id = Modification.new_id while aids_background.include?(id)
-          if id != a[:id]
-            a[:id] = id
-            aids_background << id
+        if annotations.has_key?(:attributes)
+          annotations[:attributes].each do |a|
+            id = a[:id]
+            id = Attrivute.new_id while aids_background.include?(id)
+            if id != a[:id]
+              a[:id] = id
+              aids_background << id
+            end
+            a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
           end
-          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+        end
+
+        if annotations.has_key?(:modifications)
+          annotations[:modifications].each do |a|
+            id = a[:id]
+            id = Modification.new_id while aids_background.include?(id)
+            if id != a[:id]
+              a[:id] = id
+              aids_background << id
+            end
+          end
         end
       end
     end
@@ -1008,12 +1007,11 @@ class Project < ActiveRecord::Base
     return {result: 'upload is skipped due to existing annotations'} if options[:mode] == 'skip' && doc.denotations_count > 0
 
     annotations = Annotation.prepare_annotations(annotations, doc, options)
-    annotations = reid_annotations(annotations, doc, options[:span]) if options[:span].present? && annotations.has_key?(:denotations)
 
     delete_doc_annotations(doc, options[:span]) if options[:mode] == 'replace'
-    instantiate_and_save_annotations(annotations, doc)
+    annotations = reid_annotations(annotations, doc) if options[:mode] == 'add' || options[:span].present?
 
-    annotations
+    instantiate_and_save_annotations(annotations, doc)
   end
 
   def save_annotations_divs(annotations, divs, options = {})
@@ -1068,7 +1066,7 @@ class Project < ActiveRecord::Base
         begin
           col << Annotation.prepare_annotations(annotations, doc)
           delete_doc_annotations(doc) if options[:mode] == 'replace'
-        rescue => e
+        rescue StandardError => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
         end
 
@@ -1085,7 +1083,7 @@ class Project < ActiveRecord::Base
         begin
           col += Annotation.prepare_annotations_divs(annotations, divs)
           divs.each{|d| delete_doc_annotations(d)} if options[:mode] == 'replace'
-        rescue => e
+        rescue StandardError => e
           messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
         end
 
@@ -1104,21 +1102,8 @@ class Project < ActiveRecord::Base
   end
 
   # To obtain annotations from an annotator and to save them in the project
-  def obtain_annotations(docids, annotator, options = nil)
+  def obtain_annotations(docs, annotator, options = nil)
     options ||= {}
-    messages = []
-
-    docs = docids.map{|docid| Doc.find(docid)}
-    if options[:encoding] == 'ascii'
-      docs.each do |doc|
-        begin
-          doc.set_ascii_body
-        rescue => e
-          # This message may not be captured due to exceptions
-          messages << {sourcedb:doc.sourcedb, sourceid:doc.sourceid, divid:doc.serial, body:"The document is processed without changing to ASCII: #{e.message}"}
-        end
-      end
-    end
 
     method, url, params, payload = prepare_request(docs, annotator, options)
 
@@ -1136,7 +1121,6 @@ class Project < ActiveRecord::Base
     end
 
     store_annotations_collection(annotations_col, options)
-    [annotations_col, messages]
   end
 
   def prepare_request(docs, annotator, options)
@@ -1199,10 +1183,14 @@ class Project < ActiveRecord::Base
       RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers:{params: params, accept: :json})
     end
 
-    result = begin
-      JSON.parse response, :symbolize_names => true
-    rescue => e
-      raise RuntimeError, "Received a non-JSON object: [#{response}]"
+    if response.code == 200
+      result = begin
+        JSON.parse response, :symbolize_names => true
+      rescue => e
+        raise RuntimeError, "Received a non-JSON object: [#{response}]"
+      end
+    else
+      raise RestClient::ExceptionWithResponse.new(response)
     end
   end
 
@@ -1238,16 +1226,16 @@ class Project < ActiveRecord::Base
     Relation.delete_all(project_id:self.id)
     Denotation.delete_all(project_id:self.id)
 
-    connection.execute("update project_docs set denotations_num = 0, relations_num=0, modifications_num=0 where project_id=#{id}")
+    connection.exec_query("update project_docs set denotations_num = 0, relations_num=0, modifications_num=0 where project_id=#{id}")
 
     if docs.count < 1000000
-      connection.execute("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})")
-      connection.execute("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if relations_num > 0
-      connection.execute("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id)) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if modifications_num > 0
+      connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})")
+      connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if relations_num > 0
+      connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id)) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if modifications_num > 0
     else
-      connection.execute("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id)")
-      connection.execute("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id)") if relations_num > 0
-      connection.execute("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))") if modifications_num > 0
+      connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id)")
+      connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id)") if relations_num > 0
+      connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))") if modifications_num > 0
     end
 
     update_attributes!(denotations_num: 0, relations_num: 0, modifications_num: 0)
@@ -1257,27 +1245,29 @@ class Project < ActiveRecord::Base
 
   def delete_doc_annotations(doc, span = nil)
     if span.present?
-      denotations = doc.get_denotations(self, span)
-      denotations.each{|d| d.destroy}
+      Denotation.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
     else
-      modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
-      relations = doc.subcatrels.where(project_id: self.id)
-      denotations = doc.denotations.where(project_id: self.id)
+      ActiveRecord::Base.transaction do
+        modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
+        relations = doc.subcatrels.where(project_id: self.id)
+        attributes = doc.denotation_attributes.where(project_id: self.id)
+        denotations = doc.denotations.where(project_id: self.id)
 
-      doc.decrement!(:modifications_num, modifications.length)
-      doc.decrement!(:denotations_num, denotations.length)
-      doc.decrement!(:relations_num, relations.length)
+        d_num = denotations.count
+        r_num = relations.count
+        m_num = modifications.count
 
-      decrement!(:modifications_num, modifications.length)
-      decrement!(:relations_num, relations.length)
-      decrement!(:denotations_num, denotations.length)
+        Modification.delete(modifications)
+        Relation.delete(relations)
+        Attrivute.delete(attributes)
+        Denotation.delete(denotations)
 
-      Modification.delete(modifications)
-      Relation.delete(relations)
-      Denotation.delete(denotations)
-
-      ProjectDoc.find_by_project_id_and_doc_id(id, doc.id).update_attributes!(denotations_num: 0, relations_num: 0, modifications_num: 0)
-      update_updated_at
+        # ActiveRecord::Base.establish_connection
+        connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0 where project_id=#{id} and doc_id=#{doc.id}")
+        connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
+        connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
+        update_updated_at
+      end
     end
   end
 

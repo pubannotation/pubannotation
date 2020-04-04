@@ -35,7 +35,7 @@
       </tr>
 
       <tr>
-        <th>Took</th>
+        <th>Elapsed</th>
         <td><%= time_duration(@job.ended_at - @job.begun_at) %></td>
       </tr>
     <% else %>
@@ -47,7 +47,7 @@
       <% if @job.begun_at.present? %>
         <% duration = Time.now.utc - @job.begun_at %>
         <tr>
-          <th>Took, so far</th>
+          <th>Elapsed</th>
           <td><%= time_duration(duration) %></td>
         </tr>
         <tr>
@@ -59,7 +59,7 @@
           <% pace = @job.num_dones / duration %>
           <tr>
             <th>Pace</th>
-            <td><%= pace.round(1) %> docs/second</td>
+            <td><%= pace.round(3) %> docs/second</td>
           </tr>
           <tr>
             <th>will further take</th>
