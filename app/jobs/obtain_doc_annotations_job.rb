@@ -81,7 +81,8 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 
 		case status[:status]
 		when 'DONE'
-			annotations = annotator.make_request(:get, status[:result_location]).first
+			result = annotator.make_request(:get, status[:result_location])
+			annotations  = result.class == Array ? result.first : result
 			text_length = annotations[:text].length
 			annotations_num = annotations[:denotations].length
 

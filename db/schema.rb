@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20200125152948) do
+ActiveRecord::Schema.define(:version => 20200401031734) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -21,11 +21,12 @@ ActiveRecord::Schema.define(:version => 20200125152948) do
     t.string   "url"
     t.text     "payload"
     t.integer  "method"
-    t.datetime "created_at",                     :null => false
-    t.datetime "updated_at",                     :null => false
-    t.integer  "batch_num",   :default => 1
-    t.boolean  "is_public",   :default => false
+    t.datetime "created_at",                        :null => false
+    t.datetime "updated_at",                        :null => false
+    t.boolean  "is_public",      :default => false
     t.text     "sample"
+    t.integer  "max_text_size"
+    t.boolean  "async_protocol", :default => false
   end
 
   add_index "annotators", ["user_id"], :name => "index_annotators_on_user_id"

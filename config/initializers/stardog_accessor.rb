@@ -1,7 +1,9 @@
 require 'stardog'
 include Stardog
 
-sd_url = 'http://localhost:5820/'
+# sd_url = 'http://localhost:5820/'
+sd_url = 'http://ep.pubannotation.org/'
+
 sd_database = 'PubAnnotation'
 sd_user = 'anonymous'
 sd_password = 'anonymous'
