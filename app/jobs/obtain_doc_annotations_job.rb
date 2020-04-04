@@ -16,7 +16,10 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 
 		slices.each_with_index do |slice, i|
 			timer_start = Time.now
-			annotations = annotator.obtain_annotations([{text:doc.get_text(slice), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]).first
+			slice_text = doc.get_text(slice)
+			text_length = slice_text.length
+
+			annotations = annotator.obtain_annotations([{text:slice_text, sourcedb:doc.sourcedb, sourceid:doc.sourceid}]).first
 			ttime = Time.now - timer_start
 
 			timer_start = Time.now
@@ -24,7 +27,6 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 			project.save_annotations(annotations, doc, options.merge(span:slice))
 			stime = Time.now - timer_start
 
-			text_length = slice[:end] - slice[:begin]
 			annotations_num = annotations[:denotations].length
 			if @job && options[:debug]
 				@job.messages << Message.create({body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"})
