@@ -37,6 +37,3 @@ public/downloads/*
 
 # Ignore vcs
 spec/vcr/*
-
-# Ignore spec (at the moment)
-spec/*
