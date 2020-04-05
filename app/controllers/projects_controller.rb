@@ -167,7 +167,7 @@ class ProjectsController < ApplicationController
       sourcedb = params['sourcedb']
 
       docids = if sourceids.empty?
-        ProjectDoc.where(project_id: project.id).pluck(:doc_id)
+        project.docs.pluck(:doc_id)
       else
         sourceids.inject([]) do |col, sourceid|
           ids = project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id)
@@ -176,7 +176,7 @@ class ProjectsController < ApplicationController
         end
       end
 
-      filepath = File.join('tmp', "obtain-#{project.name}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
+      filepath = File.join('tmp', "store_rdf-#{project.name}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
       File.open(filepath, "w"){|f| f.puts(docids)}
       filepath
 
@@ -266,11 +266,6 @@ class ProjectsController < ApplicationController
       raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
       message = if project.has_doc?
-        # project.delete_docs
-        # ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
-        # ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-        # "All the documents in this project were deleted."
-
         priority = project.jobs.unfinished.count
         delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project), priority: priority, queue: :general
         Job.create({name:'Delete all docs', project_id:project.id, delayed_job_id:delayed_job.id})

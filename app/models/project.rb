@@ -465,8 +465,6 @@ class Project < ActiveRecord::Base
     cmd  = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -T #{ttl_file.path}]
     cmd += ' -X POST' unless initp
 
-    puts cmd
-    puts "+++"
     message, error, state = Open3.capture3(cmd)
 
     ttl_file.unlink
@@ -708,19 +706,21 @@ class Project < ActiveRecord::Base
   end
 
   def delete_docs
-    delete_annotations if denotations_num > 0
+    ActiveRecord::Base.transaction do
+      delete_annotations if denotations_num > 0
 
-    docs.update_all('projects_num = projects_num - 1')
-    docs.update_all(flag:true)
+      docs.update_all('projects_num = projects_num - 1')
+      docs.update_all(flag:true)
 
-    ## below, former is faster in development, but guess the latter is fater in production (better scale?)
-    # docs.delete_all
-    ProjectDoc.delete_all(project_id:id)
+      ## below, former is faster in development, but guess the latter is fater in production (better scale?)
+      # docs.delete_all
+      ProjectDoc.delete_all(project_id:id)
 
-    Doc.where("sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0").destroy_all
+      Doc.where("sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0").destroy_all
 
-    Doc.__elasticsearch__.import query: -> {where(flag:true)}
-    Doc.where(flag:true).update_all(flag:false)
+      Doc.__elasticsearch__.import query: -> {where(flag:true)}
+      Doc.where(flag:true).update_all(flag:false)
+    end
   end
 
   def create_user_sourcedb_docs(options = {})
@@ -1222,25 +1222,27 @@ class Project < ActiveRecord::Base
   end
 
   def delete_annotations
-    Modification.delete_all(project_id:self.id)
-    Relation.delete_all(project_id:self.id)
-    Denotation.delete_all(project_id:self.id)
+    ActiveRecord::Base.transaction do
+      Modification.delete_all(project_id:self.id)
+      Relation.delete_all(project_id:self.id)
+      Denotation.delete_all(project_id:self.id)
 
-    connection.exec_query("update project_docs set denotations_num = 0, relations_num=0, modifications_num=0 where project_id=#{id}")
+      connection.exec_query("update project_docs set denotations_num = 0, relations_num=0, modifications_num=0 where project_id=#{id}")
 
-    if docs.count < 1000000
-      connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})")
-      connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if relations_num > 0
-      connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id)) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if modifications_num > 0
-    else
-      connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id)")
-      connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id)") if relations_num > 0
-      connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))") if modifications_num > 0
+      if docs.count < 1000000
+        connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})")
+        connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if relations_num > 0
+        connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id)) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if modifications_num > 0
+      else
+        connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id)")
+        connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id)") if relations_num > 0
+        connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))") if modifications_num > 0
+      end
+
+      connection.exec_query("update projects set denotations_num = 0, relations_num=0, modifications_num=0 where project_id=#{id}")
+
+      update_updated_at
     end
-
-    update_attributes!(denotations_num: 0, relations_num: 0, modifications_num: 0)
-
-    update_updated_at
   end
 
   def delete_doc_annotations(doc, span = nil)

@@ -30,8 +30,8 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 		spans_indexed_queue = {}
 		num_spans_in_span_queue = 0
 
-		File.foreach(filepath).with_index do |docid, i|
-			docid.chomp!.strip!
+		File.foreach(filepath).with_index do |line, i|
+			docid = line.chomp.strip
 			doc = Doc.find(docid)
 
 			if doc.denotations.where("denotations.project_id" => project.id).exists?
