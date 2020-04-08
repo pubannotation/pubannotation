@@ -16,8 +16,8 @@ Search
 <p class="note">It is now a beta feature, which is still under development. Please understand that sometimes this feature may work unstably. Your comments or reports on bugs will be highly appreciated.</p>
 
 <div id="help-maintainer" class="help">
-  <h1>Search</h1>
-  <p>
+	<h1>Search</h1>
+	<p>
 	In the search page, you can search the RDFized annotations in PubAnnotation using
 	<%= link_to 'SPARQL', 'https://www.w3.org/TR/sparql11-query/' %>.
 	If not familiar with
@@ -47,17 +47,20 @@ Search
 			<span>&nbsp;</span>
 			<span class="num_solutions"><%= @num_solutions %> results</span>
 		</div>
+
+		<% vars = @solutions["head"]["vars"] %>
 		<table style="table-layout:fixed; width:100%">
 			<tr>
-				<% @solutions["head"]["vars"].each do |h| %>
-				<th><%= h %></th>
+				<% vars.each do |h| %>
+					<th><%= h %></th>
 				<% end %>
 			</tr>
 
 			<% @solutions["results"]["bindings"].each do |binding| %>
 				<tr>
-					<% binding.each_value do |v| %>
-						<td><%= v["type"] == "uri" ? link_to(v["value"], v["value"]) : v["value"] %></td>
+					<% vars.each do |h| %>
+						<% v = binding[h] %>
+						<td><%= v['type'] == 'uri' ? link_to(v['value'], v['value']) : v['value'] %></td>
 					<% end %>
 				</tr>
 			<% end %>
