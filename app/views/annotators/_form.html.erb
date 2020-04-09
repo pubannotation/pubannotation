@@ -91,9 +91,15 @@
   <tr>
     <th><%= f.label :method, "Method*" %></th>
     <td>
-      <%= f.select :method, [[:GET, 0], [:POST, 1]], {}, onchange: "payload_switch(this)" %>
+      <%= f.select :method, [[:POST, 1], [:GET, 0]], {}, onchange: "payload_switch(this)" %>
     </td>
-    <td></td>
+    <td>
+      <a href="#help-method" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-method" class="help">
+        <h1>Method</h1>
+        <p>Considering that the text to be sent may be long, you should choose 'POST' unless you have a particular reason to chooose 'GET'.</p>
+      </div>
+    </td>
   </tr>
   <tr>
     <th><%= f.label :payload %></th>
