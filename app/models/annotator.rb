@@ -51,8 +51,8 @@ class Annotator < ActiveRecord::Base
       annotations[:sourcedb] = docs[i][:sourcedb] unless annotations[:sourcedb].present?
       annotations[:sourceid] = docs[i][:sourceid] unless annotations[:sourceid].present?
       annotations[:divid] = docs[i][:serial] unless annotations[:divid].present?
+      Annotation.normalize!(annotations)
     end
-    # store_annotations_collection(annotations_col, options)
     annotations_col
   end
 
