@@ -310,19 +310,81 @@ class Annotation < ActiveRecord::Base
     return denotations, relations
   end
 
+  def self.text2sentences(text)
+    sentences = []
+    sentence_spans = []
+
+    b = 0
+    e = 0
+
+    until e.nil?
+      b = text.index(/\S/, e)
+      break if b.nil?
+      e = text.index(/([.?!]\s|\n)/, b)
+      if e.nil?
+        sentences << text[b .. -1]
+        sentence_spans << [b, text.length]
+      else
+        e += 1 unless text[e] == "\n"
+        sentences << text[b ... e]
+        sentence_spans << [b, e]
+        b = e
+      end
+    end
+
+    [sentences, sentence_spans]
+  end
+
+  def self.align_denotations_by_sentences!(denotations, str, rstr)
+    tsentences, tsentence_spans = text2sentences(str)
+    rsentences, rsentence_spans = text2sentences(rstr)
+
+    compareDiff = Diff::LCS.sdiff(tsentences, rsentences)
+
+    matchh = {}
+    deltah = {}
+    compareDiff.select{|c| c.action == '='}.each do |c|
+      matchh[c.old_position] = c.new_position
+      deltah[c.old_position] = rsentence_spans[c.new_position].first - tsentence_spans[c.old_position].first
+    end
+
+    slength = tsentence_spans.length
+    denotations.each do |d|
+      b = d[:span][:begin]
+      e = d[:span][:end]
+
+      i = 0; i += 1 until (i >= slength) || (b >= tsentence_spans[i][0] && b <= tsentence_spans[i][1])
+      raise "Could not find matched position" if i >= slength
+      raise "Annotation to be lost due to a change to the text: #{d} (#{str[b ... e]})" unless deltah[i].present?
+      d[:span][:begin] += deltah[i]
+
+      i = 0; i += 1 until (i > slength) || (e >=tsentence_spans[i][0] && e <= tsentence_spans[i][1])
+      raise "Could not find matched position" if i > slength
+      raise "Annotation to be lost due to a change to the text: #{d} (#{str[b ... e]})" unless deltah[i].present?
+      d[:span][:end] += deltah[i]
+    end
+
+    denotations
+  end
+
   # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method
-  def self.align_denotations(denotations, str1, str2)
+  def self.align_denotations(denotations, str, rstr)
     return nil if denotations.nil?
-    align = TextAlignment::TextAlignment.new(str1, str2, TextAlignment::MAPPINGS)
-    denotations_new = align.transform_hdenotations(denotations)
-    bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
-    unless bads.empty? && align.similarity > 0.5
-      align = TextAlignment::TextAlignment.new(str1.downcase, str2.downcase, TextAlignment::MAPPINGS)
+    denotations_new = align_denotations_by_sentences!(denotations, str, rstr)
+
+    if denotations_new.nil?
+      align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
       denotations_new = align.transform_hdenotations(denotations)
       bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
-      raise "Alignment failed. Text may be too much different." unless bads.empty?
+      unless bads.empty? && align.similarity > 0.5
+        align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
+        denotations_new = align.transform_hdenotations(denotations)
+        bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
+        raise "Alignment failed. Text may be too much different." unless bads.empty?
+      end
     end
+
     denotations_new
   end
 
@@ -337,9 +399,9 @@ class Annotation < ActiveRecord::Base
         end
         annotations[:text] = doc.body
       else
-        target_text = doc.original_body.nil? ? doc.body : doc.original_body
-        if annotations[:text] != target_text
-          annotations[:denotations] = align_denotations(annotations[:denotations], annotations[:text], target_text)
+        ref_text = doc.original_body.nil? ? doc.body : doc.original_body
+        if annotations[:text] != ref_text
+          annotations[:denotations] = align_denotations(annotations[:denotations], annotations[:text], ref_text)
         end
       end
     end
