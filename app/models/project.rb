@@ -1239,7 +1239,7 @@ class Project < ActiveRecord::Base
         connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))") if modifications_num > 0
       end
 
-      connection.exec_query("update projects set denotations_num = 0, relations_num=0, modifications_num=0 where project_id=#{id}")
+      connection.exec_query("update projects set denotations_num = 0, relations_num=0, modifications_num=0 where id=#{id}")
 
       update_updated_at
     end
