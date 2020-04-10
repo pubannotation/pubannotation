@@ -33,7 +33,7 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
         doc_hash = case ext
         when '.json'
           json = File.read(fpath)
-          doc_hash = JSON.parse(json, symbolize_names:true)
+          JSON.parse(json, symbolize_names:true).select{|k,v| [:sourcedb, :sourceid, :text, :source].include? k}
         when '.txt'
           fparts = fname.split('-')
           raise "The filename is expected to be in the form 'sourcedb-sourceid.txt'." unless fparts.length == 2
