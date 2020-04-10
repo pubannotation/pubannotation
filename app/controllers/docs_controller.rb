@@ -335,7 +335,7 @@ class DocsController < ApplicationController
         end
       end
 
-      doc_hash = Doc.prepare_creation(doc_hash, current_user)
+      doc_hash = Doc.hdoc_normalize!(doc_hash, current_user)
 
       @doc = Doc.new(doc_hash)
       if @doc.save
@@ -387,6 +387,10 @@ class DocsController < ApplicationController
       else
         raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
         priority = project.jobs.unfinished.count
+
+        # job = UploadDocsJob.new(dirpath, project, options)
+        # job.perform()
+
         delayed_job = Delayed::Job.enqueue UploadDocsJob.new(dirpath, project, options), priority: priority, queue: :upload
         task_name = "Upload documents: #{filename}"
         Job.create({name:task_name, project_id:project.id, delayed_job_id:delayed_job.id})

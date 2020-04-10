@@ -317,15 +317,14 @@ class Doc < ActiveRecord::Base
 
   def revise(new_body)
     unless new_body == self.body
-      text_aligner = TextAlignment::TextAlignment.new(self.body, new_body, TextAlignment::MAPPINGS)
-      raise RuntimeError, "cannot get alignment." if text_aligner.nil?
-      raise RuntimeError, "text too much different: #{text_aligner.similarity}." if text_aligner.similarity < 0.8
-
+      _denotations = self.denotations
+      Annotation.align_denotations!(_denotations, self.body, new_body)
       self.body = new_body
-      save!
 
-      text_aligner.transform_denotations!(self.denotations)
-      denotations.each{|d| d.save!}
+      ActiveRecord::Base.transaction do
+        save!
+        _denotations.each{|d| d.save!}
+      end
     end
   end
 
@@ -762,40 +761,45 @@ class Doc < ActiveRecord::Base
     self.same_sourcedb_sourceid(sourcedb, sourceid).select('serial').to_a.map{|d| d.serial}
   end
 
-  def self.prepare_creation(doc, current_user, no_personalize = false)
-    raise RuntimeError, "You have to be logged on to create a document." unless current_user.present?
+  def self.hdoc_normalize!(hdoc, current_user, no_personalize = false)
+    raise RuntimeError, "You have to be logged in to create a document." unless current_user.present?
 
-    if !doc[:body].present? && doc[:text].present?
-      doc[:body] = doc[:text]
-      doc.delete(:text)
+    unless hdoc[:body].present?
+      if hdoc[:text].present?
+        hdoc[:body] = hdoc[:text]
+      else
+        raise ArgumentError, "Text is missing."
+      end
     end
 
-    raise ArgumentError, "Text is missing." unless doc[:body].present?
+    hdoc.delete(:text) if hdoc[:text].present?
+
+    raise ArgumentError, "Text is missing." unless hdoc[:body].present?
 
     if no_personalize
-      raise ArgumentError, "sourcedb is missing." unless doc[:sourcedb].present?
+      raise ArgumentError, "sourcedb is missing." unless hdoc[:sourcedb].present?
     else
       # personalize the sourcedb unless no_personalize
-      if doc[:sourcedb].present?
-        if doc[:sourcedb].include?(Doc::UserSourcedbSeparator)
-          parts = doc[:sourcedb].split(Doc::UserSourcedbSeparator)
+      if hdoc[:sourcedb].present?
+        if hdoc[:sourcedb].include?(Doc::UserSourcedbSeparator)
+          parts = hdoc[:sourcedb].split(Doc::UserSourcedbSeparator)
           raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
           raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
         else
-          doc[:sourcedb] += UserSourcedbSeparator + current_user.username
+          hdoc[:sourcedb] += UserSourcedbSeparator + current_user.username
         end
       else
-        doc[:sourcedb] = UserSourcedbSeparator + current_user.username
+        hdoc[:sourcedb] = UserSourcedbSeparator + current_user.username
       end
     end
 
     # sourceid control
-    unless doc[:sourceid].present?
-      last_id = Doc.where(sourcedb: doc[:sourcedb]).pluck(:sourceid).max_by{|i| i.to_i}
-      doc[:sourceid] = last_id.nil? ? '1' : last_id.next
+    unless hdoc[:sourceid].present?
+      last_id = Doc.where(sourcedb: hdoc[:sourcedb]).pluck(:sourceid).max_by{|i| i.to_i}
+      hdoc[:sourceid] = last_id.nil? ? '1' : last_id.next
     end
 
-    doc.merge(serial:0)
+    hdoc.merge(serial:0)
   end
 
   def attach_sourcedb_suffix

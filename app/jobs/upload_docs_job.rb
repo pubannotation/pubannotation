@@ -23,14 +23,15 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
 
     username = project.user
     mode = options[:mode]
-    num_updated = 0
+    created = false
+    num_updated_or_skipped = 0
     sourcedbs_added = Set[]
     infiles.each_with_index do |fpath, i|
       begin
         ext = File.extname(fpath)
         fname = File.basename(fpath, ext)
 
-        doc_hash = case ext
+        hdoc = case ext
         when '.json'
           json = File.read(fpath)
           JSON.parse(json, symbolize_names:true).select{|k,v| [:sourcedb, :sourceid, :text, :source].include? k}
@@ -47,9 +48,9 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
           }
         end
 
-        doc_hash = Doc.prepare_creation(doc_hash, username, options[:root] == true)
+        hdoc = Doc.hdoc_normalize!(hdoc, username, options[:root] == true)
 
-        same_docs = Doc.where(sourcedb: doc_hash[:sourcedb], sourceid: doc_hash[:sourceid])
+        same_docs = Doc.where(sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid])
         same_doc = if same_docs.count == 1
           same_docs.first
         elsif same_docs.count > 1
@@ -59,13 +60,19 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
         end
 
         if same_doc.present?
-          same_doc.revise(doc_hash[:body]) if mode == :update
-          num_updated+= 1
+          same_doc.revise(hdoc[:body]) if mode == :update
+          num_updated_or_skipped += 1
+          unless same_doc.projects.include? project
+            same_doc.projects << project
+            sourcedbs_added << hdoc[:sourcedb]
+          end
         else
-          doc = Doc.new(doc_hash)
-          doc.save!
+          doc = Doc.new(hdoc)
+          r = Doc.import [doc]
+          raise RuntimeError, "documents import error" unless r.failed_instances.empty?
+          created = true
           doc.projects << project
-          sourcedbs_added << doc_hash[:sourcedb]
+          sourcedbs_added << hdoc[:sourcedb]
         end
       rescue => e
         message = "[#{fpath}] #{e.message}"
@@ -82,11 +89,11 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
     end
 
     if @job
-      @job.messages << Message.create({body: "#{num_updated} docs were #{mode == :update ? 'updated' : 'skipped'}."}) if num_updated > 0
+      @job.messages << Message.create({body: "#{num_updated_or_skipped} docs were #{mode == :update ? 'updated' : 'skipped'}."}) if num_updated_or_skipped > 0
     end
 
     unless sourcedbs_added.empty?
-      ActionController::Base.new.expire_fragment("sourcedb_counts")
+      ActionController::Base.new.expire_fragment("sourcedb_counts") if created
       ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
       ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
       sourcedbs_added.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
