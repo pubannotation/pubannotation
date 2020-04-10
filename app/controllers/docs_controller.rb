@@ -335,7 +335,7 @@ class DocsController < ApplicationController
         end
       end
 
-      doc_hash = Doc.hdoc_normalize!(doc_hash, current_user)
+      doc_hash = Doc.hdoc_normalize!(doc_hash, current_user, current_user.root?)
 
       @doc = Doc.new(doc_hash)
       if @doc.save
