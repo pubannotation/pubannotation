@@ -60,16 +60,24 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
           end
 
           if transaction_size > MAX_SIZE_TRANSACTION
-            store(annotation_transaction, sourcedb_sourceids_index)
-            if @job
-              @job.update_attribute(:num_dones, i + 1)
+            begin
+              store(annotation_transaction, sourcedb_sourceids_index)
+              if @job
+                @job.update_attribute(:num_dones, i + 1)
+              end
+            ensure
+              annotation_transaction.clear
+              transaction_size = 0
+              sourcedb_sourceids_index.clear
             end
-
-            annotation_transaction.clear
-            transaction_size = 0
-            sourcedb_sourceids_index.clear
           end
-        rescue => e
+        rescue ActiveRecord::ActiveRecordError => e
+          if @job
+            @job.messages << Message.create({body: e.message})
+          else
+            raise e
+          end
+        rescue StandardError => e
           if @job
             @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
           else
@@ -79,7 +87,15 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
       end
     end
 
-    store(annotation_transaction, sourcedb_sourceids_index)
+    begin
+      store(annotation_transaction, sourcedb_sourceids_index)
+    rescue StandardError => e
+      if @job
+        @job.messages << Message.create({body: e.message})
+      else
+        raise e
+      end
+    end
 
     if @total_num_sequenced > 0
       ActionController::Base.new.expire_fragment('sourcedb_counts')

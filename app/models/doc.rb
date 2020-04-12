@@ -252,8 +252,12 @@ class Doc < ActiveRecord::Base
     raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
     raise ArgumentError, "sourceids is empty" unless sourceids.present?
 
-    sequencer = Sequencer.find(sourcedb)
-    raise RuntimeError, "Unknown sourcedb: #{sourcedb}" unless sequencer.present?
+    begin
+      sequencer = Sequencer.find(sourcedb)
+    rescue ActiveRecord::ActiveRecordError => e
+      raise ActiveRecord::ActiveRecordError, "The sequener for #{sourcedb} could not be found. The documents for thses sourceids could not be sourced: #{sourceids.join(', ')}."
+    end
+    raise "The sequener for #{sourcedb} could not be found. The documents for thses sourceids could not be sourced: #{sourceids.join(', ')}." unless sequencer.present?
 
     result = sequencer.get_docs(sourceids)
 

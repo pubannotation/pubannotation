@@ -67,7 +67,8 @@ module Pubann
     config.rdfizer = 'http://bionlp.dbcls.jp/tao_rdfizer'
     config.rdfizer_annotations = "#{config.rdfizer}?mode=annotations"
     config.rdfizer_spans       = "#{config.rdfizer}?mode=spans"
-    config.ep_url = 'http://localhost:5820/'
+    # config.ep_url = 'http://localhost:5820/'
+    config.ep_url = 'http://ep.pubannotation.org/'
     config.ep_database = 'PubAnnotation'
     config.ep_user = 'admin'
     config.ep_password = 'admin'
