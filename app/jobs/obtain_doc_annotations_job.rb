@@ -24,7 +24,8 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 
 			timer_start = Time.now
 			annotations = Annotation.normalize!(annotations)
-			project.save_annotations(annotations, doc, options.merge(span:slice))
+			messages = project.save_annotations!(annotations, doc, options.merge(span:slice))
+			messages.each{|m| @job.messages << Message.create(m)}
 			stime = Time.now - timer_start
 
 			annotations_num = annotations[:denotations].length
@@ -90,7 +91,9 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 			annotations = Annotation.normalize!(annotations)
 			doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid].present? ? annotations[:divid].to_i : 0)
 			stime = Time.now - timer_start
-			project.save_annotations(annotations, doc, options)
+			messages = project.save_annotations!(annotations, doc, options)
+			messages.each{|m| @job.messages << Message.create(m)}
+
 			if @job && options[:debug]
 				ptime = status[:finished_at].to_time - status[:started_at].to_time
 				qtime = status[:started_at].to_time - status[:submitted_at].to_time

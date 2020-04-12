@@ -313,34 +313,34 @@ class SpansController < ApplicationController
       doc = divs[0] if divs.length == 1
     end
 
-    url = if params[:text]
-      text = params[:text].strip
-      annotations = {
-        text: text,
-        sourcedb: params[:sourcedb],
-        sourceid: params[:sourceid],
-        denotations:[{span:{begin:0, end:text.length}, obj:'span'}]
-      }
+    raise ArgumentError, "The 'text' parameter is missing." unless params[:text].present?
+    raise ArgumentError, "The value of the 'text' parameter is not a string." unless params[:text].class == String
 
-      annotations = if doc.present?
-        Annotation.prepare_annotations(annotations, doc)
-      elsif divs.present?
-        Annotation.prepare_annotations_divs(annotations, divs).select{|ann| ann[:denotations].present?}.first
-      else
-        raise "Could not find the document."
-      end
+    text = params[:text].strip
+    annotations = {
+      text: text,
+      sourcedb: params[:sourcedb],
+      sourceid: params[:sourceid],
+      denotations:[{span:{begin:0, end:text.length}, obj:'span'}]
+    }
 
-      raise "Could not find the string in the specified document." if annotations.nil?
-
-      res  = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
-      res += "/divs/#{annotations[:divid]}" if annotations[:divid].present?
-
-      span = annotations[:denotations].first[:span]
-      res += "/spans/#{span[:begin]}-#{span[:end]}"
+    annotations = if doc.present?
+      m = Annotation.prepare_annotations!(annotations, doc)
+      annotations
+    elsif divs.present?
+      a, m = Annotation.prepare_annotations_divs(annotations, divs)
+      a.select{|ann| ann[:denotations].present?}.first
     else
-      res  = "#{home_path}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
-      res += "/divs/#{annotations[:divid]}" if annotations[:divid].present?
+      raise "Could not find the document."
     end
+
+    raise "Could not find the string in the specified document." if annotations.nil?
+
+    url  = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
+    url += "/divs/#{annotations[:divid]}" if annotations[:divid].present?
+
+    span = annotations[:denotations].first[:span]
+    url += "/spans/#{span[:begin]}-#{span[:end]}"
 
     respond_to do |format|
       format.html {render text: url, status: :created, location: url}

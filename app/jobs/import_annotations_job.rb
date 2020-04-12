@@ -13,7 +13,8 @@ class ImportAnnotationsJob < Struct.new(:source_project, :project)
     docs.each_with_index do |doc, i|
       begin
         annotations = doc.hannotations(source_project)
-        project.save_annotations(annotations, doc)
+        messages = project.save_annotations!(annotations, doc)
+        messages.each{|m| @job.messages << Message.create(m)}
       rescue => e
 				@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
       end

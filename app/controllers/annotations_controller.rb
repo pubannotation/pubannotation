@@ -292,12 +292,13 @@ class AnnotationsController < ApplicationController
       end
 
       doc.set_ascii_body if params[:encoding] == 'ascii'
-      result = project.save_annotations(annotations, doc, options)
-      notice = "annotations"
+      msgs = project.save_annotations!(annotations, doc, options)
+      notice = "annotations saved."
+      notice += "\n" + msgs.join("\n") unless msgs.empty?
 
       respond_to do |format|
         format.html {redirect_to :back, notice: notice}
-        format.json {render json: result, status: :created}
+        format.json {render json: annotations, status: :created}
       end
 
     rescue => e
@@ -349,9 +350,11 @@ class AnnotationsController < ApplicationController
       end
 
       annotations = if doc.present?
-        Annotation.prepare_annotations(annotations, doc)
+        m = Annotation.prepare_annotations!(annotations, doc)
+        annotations
       elsif divs.present?
-        Annotation.prepare_annotations_divs(annotations, divs)
+        a, m = Annotation.prepare_annotations_divs(annotations, divs)
+        a
       else
         raise "Could not find the document."
       end

@@ -60,7 +60,12 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
         end
 
         if same_doc.present?
-          same_doc.revise(hdoc[:body]) if mode == :update
+          messages = same_doc.revise(hdoc[:body]) if mode == :update
+          if @job
+            messages.each{|m| @job.messages << Message.create({sourcedb:same_doc.sourcedb, sourceid:same_doc.sourceid, body:m})}
+          else
+            raise messages.join("\n")
+          end
           num_updated_or_skipped += 1
           unless same_doc.projects.include? project
             same_doc.projects << project

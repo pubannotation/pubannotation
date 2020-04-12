@@ -129,11 +129,12 @@ private
     annotations_col.each{|annotations| Annotation.normalize!(annotations, options[:prefix])}
     text_length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
     timer_start = Time.now
-    if options[:span].present?
-      project.save_annotations(annotations_col.first, docs.first, options)
+    messages = if options[:span].present?
+      project.save_annotations!(annotations_col.first, docs.first, options)
     else
       project.store_annotations_collection(annotations_col, options)
     end
+    messages.each{|m| @job.messages << Message.create(m)}
     stime = Time.now - timer_start
 
     if @job
@@ -185,12 +186,13 @@ private
         end
 
         timer_start = Time.now
-        if task[:span].present?
-          project.save_annotations(annotations_col.first, Doc.find(task[:docid]), options.merge(span:task[:span]))
+        messages = if task[:span].present?
+          project.save_annotations!(annotations_col.first, Doc.find(task[:docid]), options.merge(span:task[:span]))
         else
-          messages = project.store_annotations_collection(annotations_col, options)
-          messages.each{|m| @job.messages << Message.create(m)}
+          project.store_annotations_collection(annotations_col, options)
         end
+        messages.each{|m| @job.messages << Message.create(m)}
+
         stime = Time.now - timer_start
 
         if @job

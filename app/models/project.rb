@@ -557,7 +557,7 @@ class Project < ActiveRecord::Base
 
       # save annotations
       if doc_annotations_files
-        delay.save_annotations(project, doc_annotations_files)
+        delay.save_annotations!(project, doc_annotations_files)
         messages << I18n.t('controllers.projects.upload_zip.delay_save_annotations')
       end
     end
@@ -999,19 +999,21 @@ class Project < ActiveRecord::Base
   end
 
   # annotations need to be normal
-  def save_annotations(annotations, doc, options = nil)
+  def save_annotations!(annotations, doc, options = nil)
     raise ArgumentError, "nil document" unless doc.present?
     raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
     options ||= {}
 
     return {result: 'upload is skipped due to existing annotations'} if options[:mode] == 'skip' && doc.denotations_count > 0
 
-    annotations = Annotation.prepare_annotations(annotations, doc, options)
+    messages = Annotation.prepare_annotations!(annotations, doc, options)
 
     delete_doc_annotations(doc, options[:span]) if options[:mode] == 'replace'
     annotations = reid_annotations(annotations, doc) if options[:mode] == 'add' || options[:span].present?
 
     instantiate_and_save_annotations(annotations, doc)
+
+    messages
   end
 
   def save_annotations_divs(annotations, divs, options = {})
@@ -1024,12 +1026,12 @@ class Project < ActiveRecord::Base
       return {result: 'upload is skipped due to existing annotations'} if num > 0
     end
 
-    annotations_collection = Annotation.prepare_annotations_divs(annotations, divs)
+    annotations_collection, messages = Annotation.prepare_annotations_divs(annotations, divs)
 
     divs.each{|div| delete_doc_annotations(div)} if options[:mode] == 'replace'
     instantiate_and_save_annotations_collection(annotations_collection)
 
-    annotations_collection
+    messages
   end
 
   # It assumes that
@@ -1064,10 +1066,12 @@ class Project < ActiveRecord::Base
         end
 
         begin
-          col << Annotation.prepare_annotations(annotations, doc)
+          msgs = Annotation.prepare_annotations!(annotations, doc)
+          col << annotations
+          messages += msgs.map{|msg| {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body:msg}}
           delete_doc_annotations(doc) if options[:mode] == 'replace'
-        rescue StandardError => e
-          messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
+        # rescue StandardError => e
+        #   messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
         end
 
       elsif divs.present?
@@ -1081,10 +1085,12 @@ class Project < ActiveRecord::Base
         end
 
         begin
-          col += Annotation.prepare_annotations_divs(annotations, divs)
+          a, msgs = Annotation.prepare_annotations_divs(annotations, divs)
+          col += a
+          messages += msgs.map{|msg| {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body:msg}}
           divs.each{|d| delete_doc_annotations(d)} if options[:mode] == 'replace'
-        rescue StandardError => e
-          messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
+        # rescue StandardError => e
+        #   messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
         end
 
       else

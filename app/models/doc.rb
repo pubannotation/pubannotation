@@ -318,7 +318,7 @@ class Doc < ActiveRecord::Base
   def revise(new_body)
     unless new_body == self.body
       _denotations = self.denotations
-      Annotation.align_denotations!(_denotations, self.body, new_body)
+      messages = Annotation.align_denotations!(_denotations, self.body, new_body)
       self.body = new_body
 
       ActiveRecord::Base.transaction do
