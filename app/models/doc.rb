@@ -255,9 +255,9 @@ class Doc < ActiveRecord::Base
     begin
       sequencer = Sequencer.find(sourcedb)
     rescue ActiveRecord::ActiveRecordError => e
-      raise ActiveRecord::ActiveRecordError, "The sequener for #{sourcedb} could not be found. The documents for thses sourceids could not be sourced: #{sourceids.join(', ')}."
+      raise ActiveRecord::ActiveRecordError, "These documents could not be found and sourced: [#{sourcedb}] #{sourceids.join(', ')}."
     end
-    raise "The sequener for #{sourcedb} could not be found. The documents for thses sourceids could not be sourced: #{sourceids.join(', ')}." unless sequencer.present?
+    raise "These documents could not be found and sourced: [#{sourcedb}] #{sourceids.join(', ')}." unless sequencer.present?
 
     result = sequencer.get_docs(sourceids)
 
