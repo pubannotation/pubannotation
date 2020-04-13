@@ -339,7 +339,7 @@ class ApplicationController < ActionController::Base
     if request.referer.present?
       uri = URI.parse(request.referer)
       referer_uri = "#{uri.scheme}://#{uri.host}"
-      referer_uri += ":#{uri.port}" unless uri.port == 80
+      referer_uri += ":#{uri.port}" unless uri.port == 80 || uri.port == 443
 
       response.headers['Access-Control-Allow-Origin'] = referer_uri
       response.headers['Access-Control-Allow-Methods'] = 'POST, GET, PUT, PATCH, DELETE, OPTIONS'
