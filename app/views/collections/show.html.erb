@@ -106,7 +106,7 @@
       <td style="text-align:right"><%= render partial: 'add_project_form' -%></td>
     </tr>
   </table>
-<% elsif @collection.is_open && current_user.projects.present? -%>
+<% elsif @collection.is_open && current_user && current_user.projects.present? -%>
   <table class="vertical">
     <tr>
       <th><%= t('views.shared.add') %></th>
