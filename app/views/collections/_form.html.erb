@@ -37,7 +37,7 @@
 
   <tr>
     <th><%= f.label :sharedtask %></th>
-    <td><%= f.check_box :is_sharedtask %><%= f.label :is_sharedtask, 'is it a shared task?' -%></td>
+    <td><%= f.label :is_sharedtask, 'Is this a shared task?' -%><%= f.check_box :is_sharedtask %></td>
     <td class="help-column"></td>
   </tr>
 
@@ -53,10 +53,24 @@
     <td class="help-column">
       <a href="#help-accessibility" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
       <div id="help-accessibility" class="help">
-        <h1>Project accessibility types</h1>
+        <h1>Collection accessibility types</h1>
         <ul>
           <li><b>Public</b>: to let anyone access the project</li>
           <li><b>Private</b>: to keep the project invisible</li>
+        </ul>
+      </div>
+    </td>
+  </tr>
+
+  <tr>
+    <th><%= f.label :openness %></th>
+    <td><%= f.label :is_open, 'Is this an open collection?' -%><%= f.check_box :is_open %></td>
+    <td class="help-column">
+      <a href="#help-is-open" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-is-open" class="help">
+        <h1>Collection openness</h1>
+        <ul>
+          <li>To an <b>open</b> collectionm anyone can add his/her projects. Otherwise, only the maintainer of the collection can add</li>
         </ul>
       </div>
     </td>

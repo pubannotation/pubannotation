@@ -30,9 +30,10 @@ class EvaluateAnnotationsJob < Struct.new(:evaluation, :detail)
 				else
 					raise e
 				end
-			end
-			if @job
-				@job.update_attribute(:num_dones, i + 1)
+			ensure
+				if @job
+					@job.update_attribute(:num_dones, i + 1)
+				end
 			end
 		end
 

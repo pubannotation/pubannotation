@@ -43,7 +43,7 @@
     end
 
     g.column name: 'Name', attribute: 'name', class: 'column-project-name' do |project|
-      [link_to(project.name, project_path(project.name)), {title: project.name}]
+      [link_to(name_with_private_indicator(project).html_safe, project_path(project.name)), {title: project.name}]
     end
 
     g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
@@ -57,6 +57,10 @@
     g.column name: '# Ann.', attribute: 'denotations_num', filter: false, class: 'column-project-number' do |project|
       # [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:7em; text-align:right'}]
       [number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'text-align:right'}]
+    end
+
+    g.column name: 'Author', attribute: 'author', class: 'column-project-author' do |project|
+      [project.author, {title: project.author, style: 'text-align:center'}]
     end
 
     g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |project|
@@ -78,8 +82,17 @@
 
     if @collection.editable?(current_user)
       g.column do |project|
-        link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove'
+        link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove this project from the collection'
       end
+    elsif @collection.is_open
+      g.column do |project|
+        if project.editable?(current_user)
+          link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove this project from the collection'
+        else
+          ''
+        end
+      end
+
     end
 
   end
@@ -91,6 +104,13 @@
     <tr>
       <th><%= t('views.shared.add') %></th>
       <td style="text-align:right"><%= render partial: 'add_project_form' -%></td>
+    </tr>
+  </table>
+<% elsif @collection.is_open && current_user.projects.present? -%>
+  <table class="vertical">
+    <tr>
+      <th><%= t('views.shared.add') %></th>
+      <td style="text-align:right"><%= render partial: 'add_my_project_form' -%></td>
     </tr>
   </table>
 <% end -%>

@@ -20,6 +20,14 @@ module ApplicationHelper
     end
   end
 
+  def badge_open(is_open)
+    if is_open
+      content_tag(:i, '', class: "fa fa-sign-in", "aria-hidden" => "true", title: "This is an open collection, to which anyone can add his/her own projects.")
+    else
+      ''
+    end
+  end
+
   def simple_paginate
     current_page = params[:page].nil? ? 1 : params[:page].to_i
     nav = ''
@@ -208,7 +216,11 @@ module ApplicationHelper
   def name_with_private_indicator(object)
     str  = object.name
     str += ' '
-    str += content_tag(:i, '', class: "fa fa-eye-slash", "aria-hidden" => "true", title: "private") unless object.is_public
+    if (object.respond_to?(:is_public) && !object.is_public) || (object.respond_to?(:accessibility) && object.accessibility == 2)
+      str += content_tag(:i, '', class: "fa fa-eye-slash", "aria-hidden" => "true", title: "private")
+    elsif object.respond_to?(:accessibility) && object.accessibility == 3
+      str += content_tag(:i, '', class: "fa fa-bars", "aria-hidden" => "true", title: "private")
+    end
     str
   end
 

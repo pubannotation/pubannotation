@@ -75,7 +75,7 @@ module ProjectsHelper
 
   def badge_accessibility(project)
     badge, btitle = case project.accessibility
-      when 2 then ['<i class="fa fa-ban" aria-hidden="true"></i>', t('activerecord.options.project.accessibility.private')]
+      when 2 then ['<i class="fa fa-eye-slash" aria-hidden="true"></i>', t('activerecord.options.project.accessibility.private')]
       when 3 then ['<i class="fa fa-bars" aria-hidden="true"></i>', t('activerecord.options.project.accessibility.blind')]
     end
 

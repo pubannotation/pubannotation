@@ -1,0 +1,4 @@
+<%= form_tag(collection_project_index_path(@collection.name), :method => "post") do %>
+	<%= render partial: "projects/select_editable_project", locals: {placeholder: "your project to be added"} %>
+	<button type="submit" class="short_button" title="Add"><i class="fa fa-plus" aria-hidden="true"></i></button>
+<% end %>

@@ -18,10 +18,9 @@ class StoreRdfizedSpansJob < Struct.new(:sproject, :docids, :rdfizer)
 				else
 					raise ArgumentError, message
 				end
+			ensure
+				@job.update_attribute(:num_dones, i + 1) if @job
 			end
-				if @job
-					@job.update_attribute(:num_dones, i + 1)
-				end
     end
 	end
 end

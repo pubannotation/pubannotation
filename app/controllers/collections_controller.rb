@@ -82,12 +82,19 @@ class CollectionsController < ApplicationController
     @collection = Collection.find_by_name(params[:collection_id])
     project_name = params[:select_project]
     project = Project.find_by_name(project_name)
+
+    if @collection.is_open
+      raise "To add a project to an open collection, you have to be the maintainer of either the project or the collection." unless @collection.user = current_user || project.user == current_user || current_user.root?
+    else
+      raise "This is a closed collection. Only the maintainer of the collection can add projects to it." unless @collection.user = current_user || current_user.root?
+    end
+
     message = if project
       if @collection.projects.include?(project)
         "The project already exist in this collection: '#{project_name}'."
       else
         @collection.projects << project
-        "The project added to this collection: '#{project_name}'."
+        "The project is added to this collection: '#{project_name}'."
       end
     else
       "Could not find the project: '#{project_name}'."
@@ -103,6 +110,13 @@ class CollectionsController < ApplicationController
     @collection = Collection.find_by_name(params[:collection_id])
     project_name = params[:id]
     project = Project.find_by_name(project_name)
+
+    if @collection.is_open
+      raise "To remove a project from an open collection, you have to be the maintainer of either the project or the collection." unless @collection.user = current_user || project.user == current_user || current_user.root?
+    else
+      raise "This is a closed collection. Only the maintainer of the collection can remove a project from it." unless @collection.user = current_user || current_user.root?
+    end
+
     message = if project
       if @collection.projects.delete(project)
         "The project removed from this collection: '#{project_name}'."

@@ -83,9 +83,10 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 							else
 								raise ArgumentError, e.message
 							end
+						ensure
+							spans_indexed_queue.clear
+							num_spans_in_span_queue = 0
 						end
-						spans_indexed_queue.clear
-						num_spans_in_span_queue = 0
 					else
 						spans_indexed_queue[doc.graph_uri] = spans
 						num_spans_in_span_queue += num_spans_in_current_doc

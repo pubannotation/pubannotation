@@ -1,7 +1,7 @@
 class Collection < ActiveRecord::Base
   belongs_to :user
   attr_accessible :description, :name, :reference,
-  								:is_sharedtask, :accessibility
+                  :is_sharedtask, :accessibility, :is_open
   has_many :collection_projects, dependent: :destroy
   has_many :projects, through: :collection_projects
 
