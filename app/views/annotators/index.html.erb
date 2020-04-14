@@ -23,6 +23,9 @@
       [link_to(annotator.user.username, show_user_path(annotator.user.username), style: 'display:block'), {style: 'width:10em; text-align:center'}]
     end
 
+    g.column name: 'Updated_at', attribute: 'updated_at', class: 'column-project-updated' do |annotator|
+      [annotator.updated_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
+    end
   end
 -%>
 

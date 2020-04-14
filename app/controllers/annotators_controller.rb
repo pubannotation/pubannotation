@@ -6,7 +6,8 @@ class AnnotatorsController < ApplicationController
   # GET /annotators.json
   def index
     @annotators_grid = initialize_grid(Annotator.accessibles(current_user),
-      order: :name,
+      order: :updated_at,
+      order_direction: :desc,
       include: :user
     )
 
