@@ -20,14 +20,6 @@ module ApplicationHelper
     end
   end
 
-  def badge_open(is_open)
-    if is_open
-      content_tag(:i, '', class: "fa fa-sign-in", "aria-hidden" => "true", title: "This is an open collection, to which anyone can add his/her own projects.")
-    else
-      ''
-    end
-  end
-
   def simple_paginate
     current_page = params[:page].nil? ? 1 : params[:page].to_i
     nav = ''
