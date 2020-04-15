@@ -57,7 +57,7 @@
 
   </table>
 
-  <% if !@annotator.async_protocol && (!@annotator[:url].include?('_sourceid_') || @annotator[:payload].has_key?('_body_')) %>
+  <% if !@annotator.async_protocol && (!@annotator[:url].include?('_sourceid_') || (@annotator[:payload].present? && @annotator[:payload].has_key?('_body_'))) %>
     <fieldset>
       <legend>Test</legend>
       <p class="note">Send your text to the server and see how it works.<br/>
