@@ -18,7 +18,7 @@
   <tr>
     <th style="width:6em"><%= f.label :user %></th>
     <td><%= current_user.username %></td>
-    <td></td>
+    <td style="width:1em"></td>
   </tr>
   <tr>
     <th><%= f.label :is_public -%></th>
@@ -36,7 +36,7 @@
   </tr>
   <tr>
     <th><%= f.label :name, "Name*" %></th>
-    <td><%= f.text_field :name, required: true %></td>
+    <td><%= f.text_field :name, required: true, style:'width:100%' %></td>
     <td>
       <a href="#help-name" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
       <div id="help-name" class="help">
@@ -168,6 +168,25 @@
           <li><%= Annotator::MaxTextSync %> for a synchronous protocol.</li>
           <li><%= Annotator::MaxTextAsync %> for an asynchronous protocol.</li>
         </ul>
+      </div>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Transformation</th>
+    <td>
+      <div style="width:90%; white-space:normal">
+        <ul>
+          <li>The labels (the object) will be transformed to the value of the attrbitue: <%= f.text_field :receiver_attribute, placeholder: "the predicate of an attribute", style: "width:6em" %>, and</li>
+          <li>The labels will be filled with: <%= f.text_field :new_label, placeholder: "new label", style: "width:6em" %></li>
+        </ul>
+      </div>
+    </td>
+    <td>
+      <a href="#help-transformation" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+      <div id="help-transformation" class="help">
+        <h1>Transformation</h1>
+        <p>The annotations obtained from an automatic annotation server can be transformed.</p>
       </div>
     </td>
   </tr>

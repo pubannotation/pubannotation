@@ -55,6 +55,21 @@
 
   <% end %>
 
+  <% if @annotator.receiver_attribute.present? %>
+    <tr>
+      <th>Transformation</th>
+      <td>
+        <div style="width:90%; white-space:normal">
+          <ul>
+            <li>The labels (the object) will be transformed to the value of the attrbitue: <i><%= @annotator.receiver_attribute %></i>, and</li>
+            <li>The labels will be filled with: <i><%= @annotator.new_label %></i></li>
+          </ul>
+        </div>
+      </td>
+    </tr>
+  <% end %>
+
+
   </table>
 
   <% if !@annotator.async_protocol && (!@annotator[:url].include?('_sourceid_') || (@annotator[:payload].present? && @annotator[:payload].has_key?('_body_'))) %>

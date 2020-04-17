@@ -11,7 +11,7 @@ class Annotator < ActiveRecord::Base
   SkipInterval = 5
 
   belongs_to :user
-  attr_accessible :name, :description, :home, :url, :method, :payload, :max_text_size, :async_protocol, :is_public, :sample
+  attr_accessible :name, :description, :home, :url, :method, :payload, :max_text_size, :async_protocol, :is_public, :sample, :receiver_attribute, :new_label
 
   friendly_id :name
   validates :name, :presence => true, :length => {:minimum => 5, :maximum => 32}, uniqueness: true
@@ -52,8 +52,22 @@ class Annotator < ActiveRecord::Base
       annotations[:sourceid] = docs[i][:sourceid] unless annotations[:sourceid].present?
       annotations[:divid] = docs[i][:serial] unless annotations[:divid].present?
       Annotation.normalize!(annotations)
+      annotations_transform!(annotations)
     end
     annotations_col
+  end
+
+  def annotations_transform!(annotations)
+    return unless receiver_attribute.present?
+    raise 'new label needs to be defined' unless new_label.present?
+    new_attributes = []
+    a_id_num = 0
+    annotations[:denotations].each do |d|
+      new_attributes << {id:"A#{a_id_num += 1}", subj:d[:id], pred:receiver_attribute, obj:d[:obj]}
+      d[:obj] = new_label
+    end
+    annotations[:attributes] ||= []
+    annotations[:attributes] += new_attributes
   end
 
   def single_doc_processing?

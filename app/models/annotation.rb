@@ -565,4 +565,46 @@ class Annotation < ActiveRecord::Base
     end
   end
 
+  def self.skey_of_denotation(d)
+    "#{d[:span][:begin]}-#{d[:span][:end]}-#{d[:obj]}"
+  end
+
+  def self.prepare_annotations_for_merging!(annotations, base_annotations)
+    return annotations unless base_annotations[:denotations].present? && annotations[:denotations].present?
+    base_denotations_idx = base_annotations[:denotations].inject({}){|idx, d| idx.merge!({skey_of_denotation(d) => d[:id]})}
+
+    dup_denotations_idx = {}
+    annotations[:denotations].each do |d|
+      key = skey_of_denotation(d)
+      dup_denotations_idx[d[:id]] = base_denotations_idx[key] if base_denotations_idx.has_key? key
+    end
+
+    annotations[:denotations].delete_if{|d| dup_denotations_idx.has_key? d[:id]}
+
+    if annotations[:attributes].present?
+      annotations[:attributes].each do |a|
+        s = a[:subj]
+        a[:subj] = dup_denotations_idx[s] if dup_denotations_idx.has_key? s
+      end
+    end
+
+    if annotations[:relations].present?
+      annotations[:relations].each do |r|
+        s = r[:subj]
+        r[:subj] = dup_denotations_idx[s] if dup_denotations_idx.has_key? s
+        o = r[:obj]
+        r[:obj] = dup_denotations_idx[o] if dup_denotations_idx.has_key? o
+      end
+    end
+
+    if annotations[:modification].present?
+      annotations[:modification].each do |m|
+        s = m[:subj]
+        m[:subj] = dup_denotations_idx[s] if dup_denotations_idx.has_key? s
+      end
+    end
+
+    annotations
+  end
+
 end

@@ -941,7 +941,7 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def reid_annotations(annotations, doc)
+  def reid_annotations!(annotations, doc)
     aids_background = doc.get_annotation_ids(self)
     unless aids_background.empty?
       id_change = {}
@@ -998,18 +998,28 @@ class Project < ActiveRecord::Base
     annotations
   end
 
+
   # annotations need to be normal
   def save_annotations!(annotations, doc, options = nil)
     raise ArgumentError, "nil document" unless doc.present?
     raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
     options ||= {}
 
-    return {result: 'upload is skipped due to existing annotations'} if options[:mode] == 'skip' && doc.denotations_count > 0
+    return ['upload is skipped due to existing annotations'] if options[:mode] == 'skip' && doc.denotations_count > 0
 
     messages = Annotation.prepare_annotations!(annotations, doc, options)
 
-    delete_doc_annotations(doc, options[:span]) if options[:mode] == 'replace'
-    annotations = reid_annotations(annotations, doc) if options[:mode] == 'add' || options[:span].present?
+    case options[:mode]
+    when 'replace'
+      delete_doc_annotations(doc, options[:span])
+      reid_annotations!(annotations, doc) if options[:span].present?
+    when 'add'
+      reid_annotations!(annotations, doc)
+    when 'merge'
+      reid_annotations!(annotations, doc)
+      base_annotations = doc.hannotations(self, options[:span])
+      Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
+    end
 
     instantiate_and_save_annotations(annotations, doc)
 
@@ -1028,7 +1038,19 @@ class Project < ActiveRecord::Base
 
     annotations_collection, messages = Annotation.prepare_annotations_divs(annotations, divs)
 
-    divs.each{|div| delete_doc_annotations(div)} if options[:mode] == 'replace'
+    case options[:mode]
+    when 'replace'
+      divs.each{|d| delete_doc_annotations(d)}
+    when 'add'
+      raise "At the moment, 'add' mode is not supported for multi-div documents. We are sorry for the inconvenience."
+      # a.each{|ann| reid_annotations!(ann, d)}
+    when 'merge'
+      raise "At the moment, 'merge' mode is not supported for multi-div documents. We are sorry for the inconvenience."
+      # base_annotations = doc.hannotations(self)
+      # Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
+      # reid_annotations!(annotations, doc)
+    end
+
     instantiate_and_save_annotations_collection(annotations_collection)
 
     messages
@@ -1067,9 +1089,20 @@ class Project < ActiveRecord::Base
 
         begin
           msgs = Annotation.prepare_annotations!(annotations, doc)
-          col << annotations
           messages += msgs.map{|msg| {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body:msg}}
-          delete_doc_annotations(doc) if options[:mode] == 'replace'
+
+          case options[:mode]
+          when 'replace'
+            delete_doc_annotations(doc)
+          when 'add'
+            reid_annotations!(annotations, doc)
+          when 'merge'
+            reid_annotations!(annotations, doc)
+            base_annotations = doc.hannotations(self)
+            Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
+          end
+
+          col << annotations
         # rescue StandardError => e
         #   messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
         end
@@ -1086,9 +1119,22 @@ class Project < ActiveRecord::Base
 
         begin
           a, msgs = Annotation.prepare_annotations_divs(annotations, divs)
-          col += a
           messages += msgs.map{|msg| {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body:msg}}
-          divs.each{|d| delete_doc_annotations(d)} if options[:mode] == 'replace'
+
+          case options[:mode]
+          when 'replace'
+            divs.each{|d| delete_doc_annotations(d)}
+          when 'add'
+            raise "At the moment, 'add' mode is not supported. We are sorry for the inconvenience."
+            # a.each{|ann| reid_annotations!(ann, d)}
+          when 'merge'
+            raise "At the moment, 'merge' mode is not supported. We are sorry for the inconvenience."
+            # base_annotations = doc.hannotations(self)
+            # Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
+            # reid_annotations!(annotations, doc)
+          end
+
+          col += a
         # rescue StandardError => e
         #   messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
         end
