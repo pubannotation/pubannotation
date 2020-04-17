@@ -396,7 +396,7 @@ class AnnotationsController < ApplicationController
       end
 
       options = {}
-      options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
+      options[:mode] = params[:mode] || 'replace'
       options[:prefix] = annotator.name
       options[:span] = {begin: params[:begin].to_i, end: params[:end].to_i} if params[:begin].present? && params[:end].present?
       options[:encoding] = 'ascii' if params[:encoding] == 'ascii'
