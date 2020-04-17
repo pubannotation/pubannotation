@@ -23,7 +23,6 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 			ttime = Time.now - timer_start
 
 			timer_start = Time.now
-			annotations = Annotation.normalize!(annotations)
 			messages = project.save_annotations!(annotations, doc, options.merge(span:slice))
 			messages.each{|m| @job.messages << Message.create(m)}
 			stime = Time.now - timer_start
