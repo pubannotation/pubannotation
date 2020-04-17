@@ -126,7 +126,6 @@ private
 
     ## In case of synchronous protocol
     timer_start = Time.now
-    annotations_col.each{|annotations| Annotation.normalize!(annotations, options[:prefix])}
     text_length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
     timer_start = Time.now
     messages = if options[:span].present?
@@ -182,7 +181,8 @@ private
         annotations_col = (result.class == Array) ? result : [result]
         annotations_col.each_with_index do |annotations, i|
           raise RuntimeError, "annotation result is not a valid JSON object." unless annotations.class == Hash
-          Annotation.normalize!(annotations, options[:prefix])
+          Annotation.normalize!(annotations)
+          annotator.annotations_transform!(annotations)
         end
 
         timer_start = Time.now

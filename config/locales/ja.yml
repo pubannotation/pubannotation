@@ -425,6 +425,7 @@ ja:
       document_content: ドキュメントのコンテンツ
       projects_that_annotates_this: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       obtain_annotations: アノテーションの取得
+      transform_annotations: アノテーションの変換
       records: ドキュメントレコード一覧
       sourcedb_list: ソースDB一覧
       sourceid_list: ソースID一覧
@@ -564,6 +565,7 @@ ja:
       import: インポート
       upload: アップロード
       obtain: 取得
+      transform: 変換
       import: インポート
       index: インデクス
       evaluate: 評価
