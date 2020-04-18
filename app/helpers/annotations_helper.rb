@@ -41,7 +41,7 @@ module AnnotationsHelper
     parameters_str = editor.parameters.map{|p| p.join('=')}.join('&')
     connector = editor.url.include?('?') ? '&' : '?'
     url = "#{editor.url}#{connector}#{parameters_str}"
-    link_to editor.name, url, :class => 'tab'
+    link_to editor.name, url, :class => 'tab', :title => editor.description
   end
 
   def get_focus(options)
