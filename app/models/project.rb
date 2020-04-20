@@ -1103,8 +1103,8 @@ class Project < ActiveRecord::Base
           end
 
           col << annotations
-        # rescue StandardError => e
-        #   messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
+        rescue StandardError => e
+          messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
         end
 
       elsif divs.present?
@@ -1135,8 +1135,8 @@ class Project < ActiveRecord::Base
           end
 
           col += a
-        # rescue StandardError => e
-        #   messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
+        rescue StandardError => e
+          messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
         end
 
       else
@@ -1301,26 +1301,31 @@ class Project < ActiveRecord::Base
     if span.present?
       Denotation.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
     else
-      ActiveRecord::Base.transaction do
+      denotations = doc.denotations.where(project_id: self.id)
+      d_num = denotations.length
+
+      if d_num > 0
         modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
+        m_num = modifications.length
+
         relations = doc.subcatrels.where(project_id: self.id)
+        r_num = relations.length
+
         attributes = doc.denotation_attributes.where(project_id: self.id)
-        denotations = doc.denotations.where(project_id: self.id)
+        a_num = attributes.length
 
-        d_num = denotations.count
-        r_num = relations.count
-        m_num = modifications.count
+        ActiveRecord::Base.transaction do
+          Modification.delete(modifications) if m_num > 0
+          Relation.delete(relations) if r_num > 0
+          Attrivute.delete(attributes) if a_num > 0
+          Denotation.delete(denotations)
 
-        Modification.delete(modifications)
-        Relation.delete(relations)
-        Attrivute.delete(attributes)
-        Denotation.delete(denotations)
-
-        # ActiveRecord::Base.establish_connection
-        connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0 where project_id=#{id} and doc_id=#{doc.id}")
-        connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
-        connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
-        update_updated_at
+          # ActiveRecord::Base.establish_connection
+          connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0 where project_id=#{id} and doc_id=#{doc.id}")
+          connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
+          connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
+          update_updated_at
+        end
       end
     end
   end

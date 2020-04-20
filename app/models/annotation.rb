@@ -335,6 +335,30 @@ class Annotation < ActiveRecord::Base
     [sentences, sentence_spans]
   end
 
+  def self.align_hdenotations_by_exact!(hdenotations, str, rstr)
+    block_begin = rstr.index(str)
+    return nil if block_begin.nil?
+
+    hdenotations.each do |d|
+      d[:span][:begin] += block_begin
+      d[:span][:end] += block_begin
+    end
+
+    []
+  end
+
+  def self.align_denotations_by_exact!(denotations, str, rstr)
+    block_begin = rstr.index(str)
+    return nil if block_begin.nil?
+
+    denotations.each do |d|
+      d.begin += block_begin
+      d.end += block_begin
+    end
+
+    []
+  end
+
   def self.align_hdenotations_by_sentences!(hdenotations, str, rstr)
     tsentences, tsentence_spans = text2sentences(str)
     rsentences, rsentence_spans = text2sentences(rstr)
@@ -350,9 +374,11 @@ class Annotation < ActiveRecord::Base
 
     messages = []
     slength = tsentence_spans.length
+    new_spans = {}
     hdenotations.each do |d|
       b = d[:span][:begin]
       e = d[:span][:end]
+      new_span = {begin:b, end:e}
       span_adjusted = false
 
       # find the **first** sentence whose end is bigger than the begin of the current span
@@ -363,10 +389,10 @@ class Annotation < ActiveRecord::Base
         return nil
       end
       unless b >= tsentence_spans[i][0]
-        d[:span][:begin] = tsentence_spans[i][0]
+        new_span[:begin] = tsentence_spans[i][0]
         span_adjusted = true
       end
-      d[:span][:begin] += deltah[i]
+      new_span[:begin] += deltah[i]
 
       # find the **first** sentence whose begin is bigger than the end of the current span
       i = 0; i += 1 until i == slength || e < tsentence_spans[i][0]
@@ -378,20 +404,22 @@ class Annotation < ActiveRecord::Base
         return nil
       end
       unless e <= tsentence_spans[i][1]
-        d[:span][:end] = tsentence_spans[i][1]
+        new_span[:end] = tsentence_spans[i][1]
         span_adjusted = true
       end
-      d[:span][:end] += deltah[i]
+      new_span[:end] += deltah[i]
 
       if span_adjusted
-        messages << "The span is adjusted. Please check.\nOriginal:[#{str[b ... e]}]\nAdjusted:[#{rstr[d[:span][:begin] ... d[:span][:end]]}]"
+        messages << "The span is adjusted. Please check.\nOriginal:[#{str[b ... e]}]\nAdjusted:[#{rstr[new_span[:begin] ... new_span[:end]]}]"
       end
+      new_spans[d[:id]] = new_span
     end
 
+    hdenotations.each{|d| d[:span] = new_spans[d[:id]]}
     messages
   end
 
-  def self.align_denotations_by_sentences!(denotations, str, rstr)
+  def self.align_denotations_by_sentences!(hdenotations, str, rstr)
     tsentences, tsentence_spans = text2sentences(str)
     rsentences, rsentence_spans = text2sentences(rstr)
 
@@ -406,22 +434,30 @@ class Annotation < ActiveRecord::Base
 
     messages = []
     slength = tsentence_spans.length
+    new_spans = {}
     denotations.each do |d|
       b = d.begin
       e = d.end
+      new_span = {begin:b, end:e}
+      span_adjusted = false
 
       # find the **first** sentence whose end is bigger than the begin of the current span
-      i = 0; i += 1 until i == slength || b <= tsentence_spans[i][1]
+      i = 0
+      i += 1 until i == slength || b <= tsentence_spans[i][1]
       unless i < slength && deltah[i].present?
         # messages << "An anotation is lost due to a substantial change to the text: #{d} (#{str[b ... e]})"
         # next
         return nil
       end
-      d.begin = tsentence_spans[i][0] unless b >= tsentence_spans[i][0]
-      d.begin += deltah[i]
+      unless b >= tsentence_spans[i][0]
+        new_span[:begin] = tsentence_spans[i][0]
+        span_adjusted = true
+      end
+      new_span[:begin] += deltah[i]
 
       # find the **first** sentence whose begin is bigger than the end of the current span
-      i = 0; i += 1 until i == slength || e < tsentence_spans[i][0]
+      i = 0;
+      i += 1 until i == slength || e < tsentence_spans[i][0]
       # step back
       i -= 1
       unless deltah[i].present?
@@ -429,14 +465,19 @@ class Annotation < ActiveRecord::Base
         # next
         return nil
       end
-      d.end = tsentence_spans[i][1] unless e <= tsentence_spans[i][1]
-      d.end += deltah[i]
-
-      if b != d.begin || e != d.end
-        messages << "The span is adjusted. Please check.\nOriginal:[#{rstr[b ... e]}]\nAdjusted:[#{rstr[d.begin ... d.end]}]"
+      unless e <= tsentence_spans[i][1]
+        new_span[:end] = tsentence_spans[i][1]
+        span_adjusted = true
       end
+      new_span[:end] += deltah[i]
+
+      if span_adjusted
+        messages << "The span is adjusted. Please check.\nOriginal:[#{str[b ... e]}]\nAdjusted:[#{rstr[new_span[:begin] ... new_span[:end]]}]"
+      end
+      new_spans[d.hid] = new_span
     end
 
+    denotations.each{|d| d.begin = new_spans[d.hid][:begin]; d.end = new_spans[d.hid][:end]}
     messages
   end
 
@@ -446,42 +487,45 @@ class Annotation < ActiveRecord::Base
   def self.align_hdenotations!(hdenotations, str, rstr)
     return [] unless hdenotations.present? && str != rstr
 
+    messages = align_hdenotations_by_exact!(hdenotations, str, rstr)
+    return messages unless messages.nil?
+
     messages = align_hdenotations_by_sentences!(hdenotations, str, rstr)
-    unless messages.nil?
-      messages
-    else
-      align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
+    return messages unless messages.nil?
+
+    align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
+    denotations_new = align.transform_hdenotations(hdenotations)
+
+    bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
+    unless bads.empty? && align.similarity > 0.5
+      align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
       denotations_new = align.transform_hdenotations(hdenotations)
       bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
-      unless bads.empty? && align.similarity > 0.5
-        align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
-        denotations_new = align.transform_hdenotations(hdenotations)
-        bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
-        raise "Alignment failed. Text may be too much different." unless bads.empty?
-      end
-      hdenotations[:denotations] = denotations_new
-      []
+      raise "Alignment failed. Text may be too much different." unless bads.empty?
     end
+    hdenotations.replace(denotations_new)
+    []
   end
 
   def self.align_denotations!(denotations, str, rstr)
     return [] unless denotations.present? && str != rstr
 
-    message = align_denotations_by_sentences!(denotations, str, rstr)
-    unless messages.nil?
-      messages
-    else
-      align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
+    messages = align_denotations_by_exact!(denotations, str, rstr)
+    return messages unless messages.nil?
+
+    messages = align_denotations_by_sentences!(denotations, str, rstr)
+    return messages unless messages.nil?
+
+    align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
+    align.transform_denotations!(denotations)
+    bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
+    unless bads.empty? && align.similarity > 0.5
+      align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
       align.transform_denotations!(denotations)
       bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
-      unless bads.empty? && align.similarity > 0.5
-        align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
-        align.transform_denotations!(denotations)
-        bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
-        raise "Alignment failed. Text may be too much different." unless bads.empty?
-      end
-      []
+      raise "Alignment failed. Text may be too much different." unless bads.empty?
     end
+    []
   end
 
   # To align annotations, considering the span specification
@@ -513,56 +557,63 @@ class Annotation < ActiveRecord::Base
   def self.prepare_annotations_divs(annotations, divs)
     if divs.length == 1
       messages = prepare_annotations!(annotations, divs[0])
-      [[annotations], messages]
-    else
-      annotations_collection = []
-
-      div_index = divs.collect{|d| [d.serial, d]}.to_h
-      divs_hash = divs.collect{|d| d.to_hash}
-      fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
-      fit_index.each_with_index do |f, i|
-        gap = []
-        (0 .. i).each{|j| gap << fit_index[j][1] if f[1][0] < fit_index[j][1][0] && f[1][1] > fit_index[j][1][1]}
-        f << gap
-      end
-
-      messages = []
-      fit_index.each do |fit|
-        if fit[0] >= 0
-          ann = {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], divid:fit[0]}
-          ann[:text] = ''
-          ann[:denotations] = [] if annotations[:denotations]
-
-          offsets = (fit[1] + fit[2].flatten).sort
-          offsets.each_slice(2) do |a, b|
-            if annotations[:denotations].present?
-              base = a - ann[:text].length
-              ann_col = annotations[:denotations].select{|d| d[:span][:begin] >= a && d[:span][:end] <= b}.collect{|d| d.dup}
-              ann_col.each{|d| d[:span] = {begin: d[:span][:begin] - base, end: d[:span][:end] - base}}
-              ann[:denotations] += ann_col
-            end
-            ann[:text] += annotations[:text][a ... b]
-          end
-
-          if ann[:denotations]
-            idx = {}
-            ann[:denotations].each{|a| idx[a[:id]] = true}
-            if annotations[:relations].present?
-              ann[:relations] = annotations[:relations].select{|a| idx[a[:subj]] && idx[a[:obj]]}
-              ann[:relations].each{|a| idx[a[:id]] = true}
-            end
-            if annotations[:modifications].present?
-              ann[:modifications] = annotations[:modifications].select{|a| idx[a[:obj]]}
-              ann[:modifications].each{|a| idx[a[:id]] = true}
-            end
-          end
-          messages += prepare_annotations!(ann, div_index[fit[0]])
-          annotations_collection << ann
-        end
-      end
-      # {div_index: fit_index}
-      [annotations_collection, messages]
+      return [[annotations], messages]
     end
+
+    mdiv_i = divs.find_index{|d| d.body.index(annotations[:text])}
+    unless mdiv_i.nil?
+      messages = prepare_annotations!(annotations, divs[mdiv_i])
+      return [[annotations], messages]
+    end
+
+    annotations_collection = []
+
+    div_index = divs.collect{|d| [d.serial, d]}.to_h
+    divs_hash = divs.collect{|d| d.to_hash}
+    fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
+    fit_index.each_with_index do |f, i|
+      gap = []
+      (0 .. i).each{|j| gap << fit_index[j][1] if f[1][0] < fit_index[j][1][0] && f[1][1] > fit_index[j][1][1]}
+      f << gap
+    end
+
+    messages = []
+    fit_index.each do |fit|
+      if fit[0] >= 0
+        ann = {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], divid:fit[0]}
+        ann[:text] = ''
+        ann[:denotations] = [] if annotations[:denotations]
+
+        offsets = (fit[1] + fit[2].flatten).sort
+        offsets.each_slice(2) do |a, b|
+          if annotations[:denotations].present?
+            base = a - ann[:text].length
+            ann_col = annotations[:denotations].select{|d| d[:span][:begin] >= a && d[:span][:end] <= b}.collect{|d| d.dup}
+            ann_col.each{|d| d[:span] = {begin: d[:span][:begin] - base, end: d[:span][:end] - base}}
+            ann[:denotations] += ann_col
+          end
+          ann[:text] += annotations[:text][a ... b]
+        end
+
+        if ann[:denotations]
+          idx = {}
+          ann[:denotations].each{|a| idx[a[:id]] = true}
+          if annotations[:relations].present?
+            ann[:relations] = annotations[:relations].select{|a| idx[a[:subj]] && idx[a[:obj]]}
+            ann[:relations].each{|a| idx[a[:id]] = true}
+          end
+          if annotations[:modifications].present?
+            ann[:modifications] = annotations[:modifications].select{|a| idx[a[:obj]]}
+            ann[:modifications].each{|a| idx[a[:id]] = true}
+          end
+        end
+        messages += prepare_annotations!(ann, div_index[fit[0]])
+        annotations_collection << ann
+      end
+    end
+
+    # {div_index: fit_index}
+    [annotations_collection, messages]
   end
 
   def self.skey_of_denotation(d, obj = nil)
