@@ -494,7 +494,7 @@ class AnnotationsController < ApplicationController
             num = ProjectDoc.where(project_id: project.id, denotations_num: 0).count
             n = num / num_per_job
             (0 .. n).collect do |i|
-              docids = ProjectDoc.where(project_id: project.id, denotations_num: 0).limit(num_per_job).offset(num_per_job * i + 1).pluck(:doc_id)
+              docids = ProjectDoc.where(project_id: project.id, denotations_num: 0).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
               filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n+1}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
               File.open(filepath, "w"){|f| f.puts(docids)}
               filepath
