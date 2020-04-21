@@ -457,7 +457,7 @@ class AnnotationsController < ApplicationController
       raise ArgumentError, "Source DB is not specified." if sourceids.present? && !params['sourcedb'].present?
 
       options = {}
-      options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
+      options[:mode] = params[:mode] || 'replace'
       options[:encoding] = params[:encoding] if params[:encoding].present?
       options[:prefix] = annotator.name
 
@@ -485,7 +485,6 @@ class AnnotationsController < ApplicationController
         end
 
         messages << "#{num_skipped} documents were skipped due to existing annotations." if num_skipped > 0
-        options.delete(:mode)
       end
 
       num_per_job = 100000
