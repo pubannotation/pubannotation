@@ -54,7 +54,7 @@ gem 'jquery-ui-rails'
 gem 'rails3-jquery-autocomplete'
 gem 'facebox-rails'
 
-gem 'rest-client', '~> 2.0.1'
+gem 'rest-client', '~> 2.1.0'
 gem 'htmlentities'
 gem 'libxml-ruby'
 gem 'wikipedia-client'

@@ -147,6 +147,7 @@ GEM
     hashie (4.1.0)
     hike (1.2.3)
     htmlentities (4.3.4)
+    http-accept (1.7.0)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     http_parser.rb (0.6.0)
@@ -227,7 +228,8 @@ GEM
       json (~> 1.4)
     responders (1.1.2)
       railties (>= 3.2, < 4.2)
-    rest-client (2.0.2)
+    rest-client (2.1.0)
+      http-accept (>= 1.7.0, < 2.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
@@ -291,7 +293,7 @@ GEM
       execjs (>= 0.3.0, < 3)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.6)
+    unf_ext (0.0.7.7)
     unicorn (5.4.1)
       kgio (~> 2.6)
       raindrops (~> 0.7)
@@ -345,7 +347,7 @@ DEPENDENCIES
   rails (= 3.2.22.2)
   rails3-jquery-autocomplete
   rake (< 11.0)
-  rest-client (~> 2.0.1)
+  rest-client (~> 2.1.0)
   rspec
   rspec-rails (~> 2.0)
   ruby-dictionary

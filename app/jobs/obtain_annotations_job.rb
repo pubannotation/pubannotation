@@ -46,6 +46,16 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
           else
             make_request_batch(docs, annotator, options)
           end
+        rescue => e
+          if @job
+            if docs.length < 10
+              docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{e.message}"})}
+            else
+              @job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{e.message}"})
+            end
+          else
+            raise e
+          end
         ensure
           docs.clear
           docs_size = 0
@@ -64,19 +74,14 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
         raise RuntimeError, message
       end
     rescue RuntimeError => e
-      if docs.length == 1
-        doc = docs.first
-        if @job
-          @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain: #{e.message}"})
+      if @job
+        if docs.length < 10
+          docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{e.message}"})}
         else
-          raise e
+          @job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{e.message}"})
         end
       else
-        if @job
-          @job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{e.message}"})
-        else
-          raise e
-        end
+        raise e
       end
     end
 
