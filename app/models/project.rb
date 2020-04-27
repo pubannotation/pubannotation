@@ -1019,6 +1019,8 @@ class Project < ActiveRecord::Base
       reid_annotations!(annotations, doc)
       base_annotations = doc.hannotations(self, options[:span])
       Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
+    else
+      reid_annotations!(annotations, doc) if options[:span].present?
     end
 
     instantiate_and_save_annotations(annotations, doc)

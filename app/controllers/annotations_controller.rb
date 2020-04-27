@@ -478,6 +478,7 @@ class AnnotationsController < ApplicationController
           end
           ProjectDoc.where("project_id=#{project.id} and denotations_num > 0").count
         else
+          options[:mode] = 'add'
           num_docs = docids.length
           docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
           raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
@@ -491,6 +492,8 @@ class AnnotationsController < ApplicationController
       docids_filepaths = begin
         if docids.empty?
           if options[:mode] == 'skip'
+            options[:mode] = 'add'
+
             num = ProjectDoc.where(project_id: project.id, denotations_num: 0).count
             n = num / num_per_job
             (0 .. n).collect do |i|
