@@ -1005,7 +1005,7 @@ class Project < ActiveRecord::Base
     raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
     options ||= {}
 
-    return ['upload is skipped due to existing annotations'] if options[:mode] == 'skip' && doc.denotations_count > 0
+    return ['upload is skipped due to existing annotations'] if options[:mode] == 'skip' && doc.denotations_num > 0
 
     messages = Annotation.prepare_annotations!(annotations, doc, options)
 
