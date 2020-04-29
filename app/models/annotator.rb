@@ -3,7 +3,6 @@ class Annotator < ActiveRecord::Base
 
   MaxTextSync  = 50000
   MaxTextAsync = 100000
-  # MaxTextAsync = 60000
   MaxWaitInQueue = 30.seconds
   MaxWaitInProcessing = 30.seconds
   MaxWaitInQueueBatch = 1.hour
@@ -149,6 +148,8 @@ class Annotator < ActiveRecord::Base
     else
       RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers:{params: params, accept: :json})
     end
+
+    raise "Unexpected response: #{response}" unless response.respond_to?(:code)
 
     if response.code == 200
       result = begin
