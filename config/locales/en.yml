@@ -497,7 +497,7 @@ en:
       annotation: annotation
       annotations: annotations
       annotations_count: '# Ann.'
-      length: length
+      length: size
       projects_count: '# proj.'
       automatic_annotation_initial: A
       automatic_annotation: Automatic annotation

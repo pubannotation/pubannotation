@@ -398,6 +398,7 @@ h1,h2 {
   background-color: $main_color;
 }
 .tab {
+  margin: 1px;
   border: 1px solid $main_color;
   border-radius: 3px;
   padding: 1px 3px;
@@ -543,6 +544,11 @@ table.vertical th {
 .docs_header_sourceid {
   width: 7em;
 }
+
+.docs_header_length {
+  width: 5em;
+}
+
 .docs_header_projects_number{
   width: 5em;
 }

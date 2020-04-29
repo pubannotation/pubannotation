@@ -22,6 +22,7 @@
       end
       snippet.html_safe
     -%></td>
+  <td style="text-align:right"><%= number_to_human_size(source_doc.body.length) %></td>
 	<td style="text-align:right">
     <% if source_doc.has_divs? -%>
       <%= link_to source_doc.projects_num, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid) -%>
@@ -29,7 +30,7 @@
       <%= link_to source_doc.projects_num, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid) -%>
     <% end -%>
   </td>
-  <td style="text-align:right"><%= annotations_count_helper(@project, source_doc) -%></td>
+  <td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(@project, source_doc)) -%></td>
   <td >
     <% if  params[:project_id].present? -%>
       <% if source_doc.has_divs? -%>
