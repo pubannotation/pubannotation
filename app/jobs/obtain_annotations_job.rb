@@ -138,7 +138,10 @@ private
     else
       project.store_annotations_collection(annotations_col, options)
     end
-    messages.each{|m| @job.messages << Message.create(m)}
+    messages.each do |m|
+      m = {body: m} if m.class == String
+      @job.messages << Message.create(m)
+    end
     stime = Time.now - timer_start
 
     if @job
@@ -196,7 +199,10 @@ private
         else
           project.store_annotations_collection(annotations_col, options)
         end
-        messages.each{|m| @job.messages << Message.create(m)}
+        messages.each do |m|
+          m = {body: m} if m.class == String
+          @job.messages << Message.create(m)
+        end
 
         stime = Time.now - timer_start
 
