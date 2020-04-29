@@ -419,7 +419,7 @@ class Annotation < ActiveRecord::Base
     messages
   end
 
-  def self.align_denotations_by_sentences!(hdenotations, str, rstr)
+  def self.align_denotations_by_sentences!(denotations, str, rstr)
     tsentences, tsentence_spans = text2sentences(str)
     rsentences, rsentence_spans = text2sentences(rstr)
 
