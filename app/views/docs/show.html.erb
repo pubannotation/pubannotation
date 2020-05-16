@@ -52,9 +52,9 @@
       })
     }
 
-    // Add ?projects=project_name_1,project_name_2 to VIEW, JSON and TextAE links
+    // Add ?projects=project_name_1,project_name_2 to TAB, JSON and TextAE links
     var setAnnotationHref = function(){
-      annotationLinkIds = ["view", "json", "textae"] 
+      annotationLinkIds = ["tab", "json", "listview", "mergeview"]
       jQuery.each(annotationLinkIds, function(i, id) {
         linkElement = $("#annotations_" + id);
         href = linkElement.attr("href");
@@ -302,19 +302,25 @@
 
     <div id="annotation_links">
       <%=
-        link_to_unless_current 'VIEW', annotations_url, :class => 'tab inactive_tab', id: 'annotations_view' do
-            content_tag :span, 'VIEW', :class => 'tab active_tab'
-          end
+        link_to_unless_current 'TAB', annotations_url, :class => 'tab inactive_tab', id: 'annotations_tab', title: "Table" do
+          content_tag :span, 'TAB', :class => 'tab active_tab', title: "Table"
+        end
       %>
 
       <%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
+
       <% if @project.present? -%>
         <%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab', id: 'annotations_textae' -%>	
       <% else -%>
         <%=
-          link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab inactive_tab', id: 'annotations_textae' do
-              content_tag :span, 'TextAE', :class => 'tab active_tab'
-            end
+          link_to_unless_current 'ListView', annotations_url + '/list_view', :class => 'tab inactive_tab', id: 'annotations_listview', title: 'List view of annotations' do
+            content_tag :span, 'ListView', :class => 'tab active_tab', title: 'List view of annotations'
+          end
+        %>
+        <%=
+          link_to_unless_current 'MergeView', annotations_url + '/merge_view', :class => 'tab inactive_tab', id: 'annotations_mergeview', title: 'Merged view of annotations' do
+            content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
+          end
         %>
       <% end -%>
     </div>

@@ -2,42 +2,27 @@
 <%= t('views.shared.annotation').pluralize.capitalize.html_safe %>
 
 <span class='tab-bar'>
-<!--	<span class='label'>UTF</span>-->
 	<%=
-		link_to_unless_current 'VIEW', annotations_url, :class => 'tab inactive_tab', id: 'annotations_view' do
-	    	content_tag :span, 'VIEW', :class => 'tab active_tab'
-	    end
+		link_to_unless_current 'TAB', params.merge(controller: :annotations, action: :doc_annotations_index), :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
+			content_tag :span, 'TAB', :class => 'tab active_tab', title: 'table'
+		end
 	%>
-
-	<% if @project.present? %>
-		<%= link_to_unless_current 'TSV', annotations_url + '.tsv', :class => 'tab', id: 'annotations_tsv' -%>
-		<%= link_to_unless_current 'DIC', annotations_url + '.dic', :class => 'tab', id: 'annotations_dic' -%>
-	<% end %>
 
 	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
 
-	<% if @project.present? -%>
-		<% Editor.accessibles(current_user).each do |editor| -%>
-			<%= link_to_editor(@project, editor, annotations_url) %>
-		<% end %>
-	<% else -%>
-		<%=
-			link_to_unless_current 'TextAE', annotations_url + '/visualize', :class => 'tab inactive_tab', id: 'annotations_textae' do
-		    	content_tag :span, 'TextAE', :class => 'tab active_tab'
-		    end
-		%>
-	<% end -%>
+	<%=
+		link_to_unless_current 'View', params.merge(controller: :annotations, action: :doc_annotations_list_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'View of annotations' do
+			content_tag :span, 'View', :class => 'tab active_tab', title: 'List view of annotations'
+		end
+	%>
+
+	<%=
+		link_to_unless_current 'MergeView', params.merge(controller: :annotations, action: :doc_annotations_merge_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'Merged view of annotations' do
+			content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
+		end
+	%>
 
 </span>
-
-<!--
-<span class='tab-bar'>
-	<span class='label'>ASCII</span>
-	<%= link_to_unless_current 'VIEW', annotations_url + '?encoding=ascii', :class => 'tab' -%>
-	<%= link_to_unless_current 'JSON', annotations_url + '.json?encoding=ascii', :class => 'tab' -%>
-	<%= link_to_unless_current 'TextAE', annotations_url + '/visualize?encoding=ascii', :class => 'tab' if @span.present? -%>
-</span>
--->
 
 <% if @project.present? && @project.editable?(current_user) && @annotations[:denotations].present? && params[:sourceid].present? -%>
 	<% destroy_path = if params[:divid].present?

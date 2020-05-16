@@ -2,7 +2,7 @@ require 'fileutils'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_visualize, :div_annotations_visualize, :project_annotations_tgz]
+  before_filter :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_list_view, :div_annotations_list_view, :project_annotations_tgz]
   include DenotationsHelper
 
   def index
@@ -187,7 +187,7 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  def doc_annotations_visualize
+  def doc_annotations_merge_view
     begin
       divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       raise "There is no such document in the project." unless divs.present?
@@ -198,7 +198,7 @@ class AnnotationsController < ApplicationController
         end
       else
         @doc = divs[0]
-        annotations_visualize
+        annotations_merge_view
       end
     rescue => e
       respond_to do |format|
@@ -208,11 +208,32 @@ class AnnotationsController < ApplicationController
     end
   end
 
-  def div_annotations_visualize
+  def doc_annotations_list_view
+    begin
+      divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+      raise "There is no such document in the project." unless divs.present?
+
+      if divs.length > 1
+        respond_to do |format|
+          format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
+        end
+      else
+        @doc = divs[0]
+        annotations_list_view
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to home_path, notice: e.message}
+        format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      end
+    end
+  end
+
+  def div_annotations_list_view
     begin
       @doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       raise "There is no such document." unless @doc.present?
-      annotations_visualize
+      annotations_list_view
     rescue => e
       respond_to do |format|
         format.html {redirect_to home_path, notice: e.message}
@@ -782,14 +803,51 @@ class AnnotationsController < ApplicationController
 
   private
 
-  def annotations_visualize
+  def annotations_merge_view
     @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
     @doc.set_ascii_body if params[:encoding] == 'ascii'
 
-    params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
+    pnames_concat = params[:projects]
 
-    if params[:project].present?
-      project_names = params[:project].split(',').uniq
+    all_projects = @doc.projects.annotations_accessible(current_user)
+    if pnames_concat.present?
+      pnames = pnames_concat.split(',').uniq
+      @in_projects = all_projects.select{|p| pnames.include? p.name}
+      @out_projects = all_projects - @in_projects
+    else
+      @in_projects = all_projects
+    end
+
+    context_size = params[:context_size].to_i
+
+    color_generator = ColorGenerator.new saturation: 0.7, lightness: 0.75
+    @annotations = @doc.hannotations(@in_projects, @span, context_size)
+    @annotations[:config] = {} unless @annotations.has_key? :config
+    @annotations[:config]["attribute types"] = [] unless @annotations[:config].has_key? :attributes_types
+    source_type_values = []
+    @annotations[:config]["attribute types"] << {pred:'source', "value type" => 'selection', values:source_type_values}
+    @annotations[:tracks].each_with_index do |track, i|
+      pname = track[:project]
+      source_type_values << {id:pname, color: '#' + color_generator.create_hex}
+      source_type_values.last[:default] = true if i == 0
+      track[:denotations].each do |d|
+        track[:attributes] = [] unless track.has_key? :attributes
+        track[:attributes] << {subj:d[:id], pred:'source', obj:track[:project]}
+      end
+    end
+
+    respond_to do |format|
+      format.html {render 'merge_view'}
+      format.json {render json: @annotations}
+    end
+  end
+
+  def annotations_list_view
+    @span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+    @doc.set_ascii_body if params[:encoding] == 'ascii'
+
+    if params[:projects].present?
+      project_names = params[:projects].split(',').uniq
       @visualize_projects = Array.new
       projects = Project.accessible(current_user).where(['name IN (?)', project_names]).annotations_accessible(current_user)
       project_names.each do |project_name|
@@ -808,7 +866,7 @@ class AnnotationsController < ApplicationController
     @track_annotations.each {|a| a[:text] = @annotations[:text]}
 
     respond_to do |format|
-      format.html {render 'visualize_tracks'}
+      format.html {render 'list_view'}
       format.json {render json: @annotations}
     end
   end

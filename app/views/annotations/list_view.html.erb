@@ -1,0 +1,32 @@
+<% content_for :css do -%>
+  <style>
+    .ui-state-highlight { height: 1.5em; line-height: 1.2em; }
+    #textae-list{
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .textae-wrapper-section{
+      background-color: #fff;
+    }
+  </style>
+<% end -%>
+
+<%= render :partial => 'docs/path'-%>
+
+<%= render :partial => 'shared/textae_css_js'-%>
+
+<section>
+  <%= render :partial => 'docs/titlebar' -%>
+
+  <section>
+    <%= render :partial => 'annotations/titlebar' -%>
+
+    <div class="clearfix" id="project-textaes">
+      <ul id="textae-list">
+        <%= render :partial => 'visualize_track', :collection => @track_annotations -%>
+        <% #TextAE will be appended here -%>
+      </ul>
+    </div>
+  </section>
+</section>

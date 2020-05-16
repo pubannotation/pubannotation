@@ -15,11 +15,11 @@ module AnnotationsHelper
   end
 
   def annotations_url
-    "#{url_for(only_path: false)}".sub('/visualize', '').sub('/annotations', '') + '/annotations'
+    "#{url_for(only_path: false)}".sub('/visualize', '').sub('/list_view', '').sub('/merge_view', '').sub('/annotations', '') + '/annotations'
   end  
 
   def annotations_path
-    "#{url_for(only_path: true)}".sub('/visualize', '').sub('/annotations', '') + '/annotations'
+    "#{url_for(only_path: true)}".sub('/visualize', '').sub('/list_view', '').sub('/merge_view', '').sub('/annotations', '') + '/annotations'
   end  
 
   def annotations_json_path

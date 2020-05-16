@@ -1,0 +1,56 @@
+<h2>
+<%= t('views.shared.annotation').pluralize.capitalize.html_safe %>
+
+<span class='tab-bar'>
+	<%=
+		link_to_unless_current 'TAB', annotations_url, :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
+			content_tag :span, 'TAB', :class => 'tab active_tab', title: 'table'
+		end
+	%>
+
+	<% if @project.present? %>
+		<%= link_to_unless_current 'TSV', annotations_url + '.tsv', :class => 'tab', id: 'annotations_tsv' -%>
+		<%= link_to_unless_current 'DIC', annotations_url + '.dic', :class => 'tab', id: 'annotations_dic' -%>
+	<% end %>
+
+	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
+
+	<% if @project.present? -%>
+		<% Editor.accessibles(current_user).each do |editor| -%>
+			<%= link_to_editor(@project, editor, annotations_url) %>
+		<% end %>
+	<% else -%>
+		<%=
+			link_to_unless_current 'ListView', annotations_url + '/visualize', :class => 'tab inactive_tab', id: 'annotations_textae', title: 'List view of annotations' do
+				content_tag :span, 'TextAE', :class => 'tab active_tab', title: 'List view of annotations'
+			end
+		%>
+		<%=
+			link_to_unless_current 'MergeView', annotations_url + '/merge_view', :class => 'tab inactive_tab', id: 'annotations_textae', title: 'Merged view of annotations' do
+				content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
+			end
+		%>
+	<% end -%>
+
+</span>
+
+<% if @project.present? && @project.editable?(current_user) && @annotations[:denotations].present? && params[:sourceid].present? -%>
+	<% destroy_path = if params[:divid].present?
+			if params[:begin].present?
+				destroy_annotations_in_span_project_sourcedb_sourceid_divs_docs_path
+			else
+				destroy_annotations_project_sourcedb_sourceid_divs_docs_path
+			end
+		else
+			if params[:begin].present?
+				destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
+			else
+				destroy_annotations_project_sourcedb_sourceid_docs_path
+			end
+		end
+	-%>
+	<%= form_tag(destroy_path, method: :delete, style: 'display:inline') do%>
+		<%= submit_tag t('views.shared.delete_all'), :confirm => t('views.annotations.index.confirm_destroy_all', :class => 'control button') %>
+	<% end %>
+<% end %>
+</h2>

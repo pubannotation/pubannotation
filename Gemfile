@@ -53,6 +53,7 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'rails3-jquery-autocomplete'
 gem 'facebox-rails'
+gem 'color-generator'
 
 gem 'rest-client', '~> 2.1.0'
 gem 'htmlentities'

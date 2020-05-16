@@ -9,7 +9,7 @@
 
 		<section>
 			<% if @project.annotations_accessible?(current_user) %>
-				<%= render :partial => 'annotations/titlebar' -%>
+				<%= render :partial => 'annotations/titlebar_in_project' -%>
 				<%= render :partial => 'annotations/summary' -%>
 			<% else %>
 				<h2><%= t('views.shared.annotation').pluralize.capitalize.html_safe %></h2>

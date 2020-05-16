@@ -320,16 +320,18 @@ class Doc < ActiveRecord::Base
   end
 
   def revise(new_body)
-    unless new_body == self.body
-      _denotations = self.denotations
-      messages = Annotation.align_denotations!(_denotations, self.body, new_body)
-      self.body = new_body
+    return [] if new_body == self.body
 
-      ActiveRecord::Base.transaction do
-        save!
-        _denotations.each{|d| d.save!}
-      end
+    _denotations = self.denotations
+    messages = Annotation.align_denotations!(_denotations, self.body, new_body)
+    self.body = new_body
+
+    ActiveRecord::Base.transaction do
+      save!
+      _denotations.each{|d| d.save!}
     end
+
+    messages
   end
 
   def self.uptodate(divs)

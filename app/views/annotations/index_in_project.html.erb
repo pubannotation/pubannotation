@@ -4,7 +4,7 @@
 	<section>
 		<%= render :partial => 'docs/titlebar' -%>
 		<section>
-			<%= render :partial => 'annotations/titlebar' -%>
+			<%= render :partial => 'annotations/titlebar_in_project' -%>
 			<section>
 				<%= render :partial => 'annotations/annotations', locals: {annotations:@annotations, doc: @doc, body: @annotations[:text]} -%>
 			</section>

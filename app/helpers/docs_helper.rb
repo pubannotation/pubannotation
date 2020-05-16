@@ -1,5 +1,24 @@
 module DocsHelper
 
+  def doc_show_path_helper
+    action = params[:project_id].present? ? :show_in_project : :show
+    params.merge(controller: :docs, action: action).except(:divid, :begin, :end)
+  end
+
+  def div_show_path_helper
+    action = params[:project_id].present? ? :show_in_project : :show
+    params.merge(controller: :divs, action: action).except(:begin, :end)
+  end
+
+  def span_show_path_helper
+    action = if params[:divid].present?
+      params[:project_id].present? ? :project_div_span_show : :div_span_show
+    else
+      params[:project_id].present? ? :project_doc_span_show : :doc_span_show
+    end
+    params.merge(controller: :spans, action: action)
+  end
+
   def docs_count_cache_key
     cache_id = "count_#{@sourcedb.nil? ? 'docs' : @sourcedb}"
     cache_id += '_' + @project.name unless @project.nil?
@@ -77,11 +96,14 @@ module DocsHelper
   def json_text_link_helper
     html = ''
     # Set actions which except projects and project params for link
-    except_actions = %w(div_annotations_visualize doc_annotations_visualize)
-    params.except!(:project, :projects) if except_actions.include?(params[:action])    
+    except_actions = %w(doc_annotations_list_view div_annotations_list_view doc_annotations_merge_view div_annotations_merge_view)
+
+    params_to_text = params.dup
+    params_to_text.except!(:project, :projects) if except_actions.include?(params[:action])
     controller = params[:divid].present? ? :divs : :docs
-    html += link_to_unless_current 'JSON', params.merge(controller: controller, action: :show, format: :json), :class => 'tab'
-    html += link_to_unless_current 'TXT', params.merge(controller: controller, action: :show, format: :txt), :class => 'tab'
-    return html
+    params_to_text = params.merge(controller: controller, action: :show)
+
+    html += link_to_unless_current 'JSON', params_to_text.merge(format: :json), :class => 'tab'
+    html += link_to_unless_current 'TXT', params_to_text.merge(format: :txt), :class => 'tab'
   end
 end

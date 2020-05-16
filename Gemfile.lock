@@ -56,6 +56,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.12.2)
+    color-generator (0.0.4)
     concurrent-ruby (1.1.6)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
@@ -324,6 +325,7 @@ DEPENDENCIES
   activerecord-import (~> 0.15.0)
   backup
   coffee-rails (~> 3.2.1)
+  color-generator
   cucumber
   daemons
   database_cleaner
