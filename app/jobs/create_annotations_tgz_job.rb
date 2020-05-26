@@ -10,6 +10,7 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 		@job.update_attribute(:num_dones, 0)
 
 		blind_p = project.accessibility == 3 ? true : false
+		textae_config = project.get_textae_config
 		dic = []
 
 		FileUtils.mkdir_p(project.downloads_system_path) unless Dir.exist?(project.downloads_system_path)
@@ -30,7 +31,7 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 								annotations = doc.hannotations(project)
 								file = annotations.to_json
 								tar.add_file_simple(project.name + '/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
-								file = Annotation.hash_to_tsv(annotations)
+								file = Annotation.hash_to_tsv(annotations, textae_config)
 								tar.add_file_simple(project.name + '/tsv/' + filename + ".tsv", 0644, file.bytesize){|t| t.write(file)}
 								dic += Annotation.hash_to_dic_array(annotations)
 							end
