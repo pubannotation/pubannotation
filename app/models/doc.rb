@@ -790,7 +790,7 @@ class Doc < ActiveRecord::Base
         if hdoc[:sourcedb].include?(Doc::UserSourcedbSeparator)
           parts = hdoc[:sourcedb].split(Doc::UserSourcedbSeparator)
           raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
-          raise ArgumentError, "'#{part[1]}' is not your username." unless parts[1] == current_user.username
+          raise ArgumentError, "'#{parts[1]}' is not your username." unless parts[1] == current_user.username
         else
           hdoc[:sourcedb] += UserSourcedbSeparator + current_user.username
         end
