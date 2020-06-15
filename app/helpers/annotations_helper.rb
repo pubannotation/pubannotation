@@ -201,4 +201,16 @@ module AnnotationsHelper
     end
     docinfo   = (divid == nil)? "#{sourcedb}-#{sourceid}" : "#{sourcedb}-#{sourceid}-#{divid}-#{section}"
   end
+
+  def has_discontinuous_spans?(annotations)
+    if annotations[:relations].present?
+      i = annotations[:relations].index{|r| r[:pred] == '_lexicallyChainedTo'}
+      return true unless i.nil?
+    end
+    if annotations[:denotations].present?
+      i = annotations[:denotations].index{|d| d[:span].class == Array}
+      return true unless i.nil?
+    end
+    false
+  end
 end
