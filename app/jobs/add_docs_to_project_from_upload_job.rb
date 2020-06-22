@@ -4,8 +4,10 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 	def perform
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
-		@job.update_attribute(:num_items, count)
-		@job.update_attribute(:num_dones, 0)
+		if @job
+			@job.update_attribute(:num_items, count)
+			@job.update_attribute(:num_dones, 0)
+		end
 
 		@total_num_added = 0
 		@total_num_sequenced = 0
@@ -13,7 +15,8 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 
 		ids = []
 		File.foreach(filepath).with_index do |line, i|
-			line.chomp!.strip!
+			line.chomp! && line.strip!
+			line.sub!(/^PMC/, '')
 			ids << line unless line.empty?
 
 			if ids.length >= 1000
@@ -21,15 +24,17 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 				ids.clear
 			end
 
-	    @job.update_attribute(:num_dones, i+1)
-	  end
+			if @job
+				@job.update_attribute(:num_dones, i+1)
+			end
+		end
 
 		add_docs(sourcedb, ids)
 
 		if @total_num_sequenced > 0
-	    ActionController::Base.new.expire_fragment('sourcedb_counts')
-	    ActionController::Base.new.expire_fragment('docs_count')
-	  end
+			ActionController::Base.new.expire_fragment('sourcedb_counts')
+			ActionController::Base.new.expire_fragment('docs_count')
+		end
 
 		if @total_num_added > 0
 			ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
@@ -46,7 +51,9 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 		num_added, num_sequenced, num_existed, messages = begin
 			project.add_docs(sourcedb, ids)
 		rescue => e
-			@job.messages << Message.create({sourcedb: sourcedb, sourceid: "#{ids.first} - #{ids.last}", body: e.message})
+			if @job
+				@job.messages << Message.create({sourcedb: sourcedb, sourceid: "#{ids.first} - #{ids.last}", body: e.message})
+			end
 			[0, 0, 0, []]
 		end
 
@@ -58,11 +65,15 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 
 		if @total_num_existed > 0 && !defined?(@message_docs_existed)
 			@message_docs_existed = Message.create({body: "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added."})
-			@job.messages << @message_docs_existed
+			if @job
+				@job.messages << @message_docs_existed
+			end
 		end
 
 		messages.each do |message|
-			@job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
+			if @job
+				@job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
+			end
 		end
 	end
 end

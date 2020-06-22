@@ -469,15 +469,18 @@ class DocsController < ApplicationController
 
       priority = project.jobs.unfinished.count
       delayed_job = Delayed::Job.enqueue AddDocsToProjectFromUploadJob.new(sourcedb, filepath, project), priority: priority, queue: :general
-      Job.create({name:'Add docs to project from upload', project_id:project.id, delayed_job_id:delayed_job.id})
+      job = Job.create({name:'Add docs to project from upload', project_id:project.id, delayed_job_id:delayed_job.id})
       message = "The task, 'Add docs to project from upload', is created."
-    rescue => e
-      message = e.message
-    end
 
-    respond_to do |format|
-      format.html {redirect_to :back, notice: message}
-      format.json {}
+      respond_to do |format|
+        format.html {redirect_to :back, notice: message}
+        format.json {render json: {message: message, task_location: project_job_url(project.name, job.id, format: :json)}, status: :ok}
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
+        format.json {render json: {message: e.message}, status: :unprocessable_entity}
+      end
     end
   end
 
