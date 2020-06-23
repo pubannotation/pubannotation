@@ -2,7 +2,7 @@ require 'fileutils'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_list_view, :div_annotations_list_view, :project_annotations_tgz]
+  before_filter :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_list_view, :div_annotations_list_view, :doc_annotations_merge_view, :div_annotations_merge_view, :project_annotations_tgz]
   include DenotationsHelper
 
   def index
