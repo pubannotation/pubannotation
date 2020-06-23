@@ -598,16 +598,19 @@ class AnnotationsController < ApplicationController
       else
         priority = project.jobs.unfinished.count
         delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
-        Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
+        task = Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
         notice = "The task, 'Upload annotations', is created."
       end
-    rescue => e
-      notice = e.message
-    end
 
-    respond_to do |format|
-      format.html {redirect_to :back, notice: notice}
-      format.json {}
+      respond_to do |format|
+        format.html {redirect_to :back, notice: notice}
+        format.json {render json: {message: notice, task_location: project_job_url(project.name, task.id, format: :json)}, status: :ok}
+      end
+    rescue => e
+      respond_to do |format|
+        format.html {redirect_to :back, notice: e.message}
+        format.json {render json: {message: e.message}, status: :unprocessable_entity}
+      end
     end
   end
 
