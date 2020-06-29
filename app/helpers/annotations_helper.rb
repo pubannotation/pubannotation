@@ -151,14 +151,6 @@ module AnnotationsHelper
     end    
   end
 
-  def visualization_link(span = nil)
-    if span.present? && (span[:end] - span[:begin] < 200)
-      link_to(t('views.annotations.see_in_visualizaion'), annotations_url, class: 'button')
-    else
-      content_tag(:span, t('views.annotations.see_in_visualizaion'), title: t('views.annotations.visualization_link_disabled'), style: 'color: #999')
-    end
-  end
-
   def annotations_obtain_path
     if params[:sourceid].present?
       if params[:divid].present?
