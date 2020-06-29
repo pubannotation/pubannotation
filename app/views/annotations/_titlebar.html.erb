@@ -8,11 +8,13 @@
 		end
 	%>
 
-	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
+	<%=
+		link_to 'JSON', params.merge(controller: :annotations, action: :doc_annotations_index, format: :json), :class => 'tab inactive_tab', id: 'annotations_json', title: 'json'
+	%>
 
 	<%=
-		link_to_unless_current 'View', params.merge(controller: :annotations, action: :doc_annotations_list_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'View of annotations' do
-			content_tag :span, 'View', :class => 'tab active_tab', title: 'List view of annotations'
+		link_to_unless_current 'ListView', params.merge(controller: :annotations, action: :doc_annotations_list_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'List view of annotations' do
+			content_tag :span, 'ListView', :class => 'tab active_tab', title: 'List view of annotations'
 		end
 	%>
 
