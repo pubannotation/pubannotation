@@ -3,17 +3,23 @@
 
 <span class='tab-bar'>
 	<%=
-		link_to_unless_current 'TAB', annotations_url, :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
+		link_to_unless_current 'TAB', params.merge(controller: :annotations, action: :project_doc_annotations_index), :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
 			content_tag :span, 'TAB', :class => 'tab active_tab', title: 'table'
 		end
 	%>
 
 	<% if @project.present? %>
-		<%= link_to_unless_current 'TSV', annotations_url + '.tsv', :class => 'tab', id: 'annotations_tsv' -%>
-		<%= link_to_unless_current 'DIC', annotations_url + '.dic', :class => 'tab', id: 'annotations_dic' -%>
+		<%=
+			link_to 'TSV', params.merge(controller: :annotations, action: :project_doc_annotations_index, format: :tsv), :class => 'tab inactive_tab', id: 'annotations_tsv', title: 'tsv'
+		%>
+		<%=
+			link_to 'DIC', params.merge(controller: :annotations, action: :project_doc_annotations_index, format: :dic), :class => 'tab inactive_tab', id: 'annotations_dic', title: 'dic'
+		%>
 	<% end %>
 
-	<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
+	<%=
+		link_to 'JSON', params.merge(controller: :annotations, action: :project_doc_annotations_index, format: :json), :class => 'tab inactive_tab', id: 'annotations_json', title: 'json'
+	%>
 
 	<% if @project.present? -%>
 		<% Editor.accessibles(current_user).each do |editor| -%>
