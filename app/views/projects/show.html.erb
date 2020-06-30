@@ -109,7 +109,7 @@
 	<table class="vertical">
 		<tr>
 			<th><%= t('views.shared.download.download') %></th>
-			<td><%= project_annotations_tgz_link_helper(@project) -%></td>
+			<td><%= render partial: 'download' -%></td>
 		</tr>
 		<tr>
 			<th><%= t('views.shared.evaluations') %></th>

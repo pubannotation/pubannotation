@@ -344,6 +344,8 @@ ja:
         no_annotation: アノテーションが含まれていません
         delayed_job: アノテーションが提出されました。結果は該当プロジェクトのページからご確認できます。
       confirm_create_downloadable: tgzファイル作成をしますか？※作成は遅延処理で実行されます。
+      confirm_update_downloadable: tgzファイル更新をしますか？※更新は遅延処理で実行されます。
+      help_update_downloadable: tgzファイルの作成後アノテーションに変更が有りました。tgzファイルを更新しますか。
       create_downloadable: アノテーションtgzファイルの作成
       create_tgz_delay: アノテーションtgzファイルの作成を受け付けました。数分後に再度このページにアクセスして下さい。
     docs:
@@ -578,4 +580,5 @@ ja:
         delayed_job_present: 数分程度で作成されます。
         not_available: このプロジェクトはできません。
         not_prepared: まだ用意されておりません。
+        contact_manager: このプロジェクトの管理者に問い合わせてください。
         deleted: "アノテーションtgzファイを削除しました。"

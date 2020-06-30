@@ -8,12 +8,14 @@
 		<% array = Annotation.hash_to_array(annotations, @project ? @project.get_textae_config : nil) -%>
 		<% headers = array.shift %>
 
-		<% if has_discontinuous_spans?(annotations) %>
+		<% if @project.has_discontinuous_span? %>
 			<%
 				ds_model, alternative = if params['discontinuous_span'] == 'bag' then ['bag', 'chain'] else ['chain', 'bag'] end
 			%>
-			<p class='note'>Below, discontinuous spans are shown in the '<%= ds_model %>'' model.
-			You can change it to the <%= link_to alternative, params.merge(discontinuous_span: alternative), class: :button %> model.</p>
+			<p class='note'>Below, discontinuous spans are shown in the
+				<%= content_tag :span, ds_model, :class => 'tab active_tab' %> model.
+				You can change it to the
+				<%= link_to alternative, params.merge(discontinuous_span: alternative), :class => 'tab inactive_tab' %> model.</p>
 		<% end %>
 
 		<table class="ann">

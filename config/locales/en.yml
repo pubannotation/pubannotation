@@ -328,6 +328,8 @@ en:
         no_annotation: No annotation in the submission.
         delayed_job: Annotation is submitted for registration. It may take a few minutes depending on the length of the text. You can check the result in your project page.
       confirm_create_downloadable: Are you sure to create a downloadable archive file? It may take a few minutes.
+      confirm_update_downloadable: Are you sure to update the downloadable archive file? It may take a few minutes.
+      help_update_downloadable: Annotations are changed since the creation of the tgz file. Do you want to update the tgz file?
       create_downloadable: Create a downloadable archive file.
       create_zip_delay: ZIP will be created after a few minutes and then please come back to this page.
       confirm_create_rdf: Are you sure to create rdf? It will take a few minutes.
@@ -556,6 +558,7 @@ en:
         delayed_job_present: Under creation
         not_available: Not available for this project.
         not_prepared: Not prepared yet for this project.
+        contact_manager: Contact the manager of this project.
         deleted: Successfully deleted the annotation TGZ file.
       rdf:
         delayed_job_present: RDF file will be created in a few minutes.      

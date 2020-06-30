@@ -21,10 +21,10 @@ class Project < ActiveRecord::Base
                   :textae_config,
                   :annotations_zip_downloadable, :namespaces, :process,
                   :pmdocs_count, :pmcdocs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
-  has_many :denotations, :dependent => :destroy, after_add: :update_updated_at
-  has_many :relations, :dependent => :destroy, after_add: :update_updated_at
-  has_many :attrivutes, :dependent => :destroy, after_add: :update_updated_at
-  has_many :modifications, :dependent => :destroy, after_add: :update_updated_at
+  has_many :denotations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
+  has_many :relations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
+  has_many :attrivutes, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
+  has_many :modifications, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :jobs, :dependent => :destroy
@@ -323,6 +323,10 @@ class Project < ActiveRecord::Base
 
   def has_doc?
     ProjectDoc.exists?(project_id: id)
+  end
+
+  def has_discontinuous_span?
+    relations.where(pred: '_lexicallyChainedTo').exists?
   end
 
   def docs_list_hash
@@ -1295,6 +1299,7 @@ class Project < ActiveRecord::Base
 
       connection.exec_query("update projects set denotations_num = 0, relations_num=0, modifications_num=0 where id=#{id}")
 
+      update_annotations_updated_at
       update_updated_at
     end
   end
@@ -1326,6 +1331,7 @@ class Project < ActiveRecord::Base
           connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0 where project_id=#{id} and doc_id=#{doc.id}")
           connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
           connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
+          update_annotations_updated_at
           update_updated_at
         end
       end
@@ -1334,6 +1340,10 @@ class Project < ActiveRecord::Base
 
   def update_updated_at
     self.update_attribute(:updated_at, DateTime.now)
+  end
+
+  def update_annotations_updated_at
+    self.update_attribute(:annotations_updated_at, DateTime.now)
   end
 
   def clean

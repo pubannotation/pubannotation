@@ -1,0 +1,100 @@
+<table>
+<% if @project.annotations_zip_downloadable %>
+	<% file_path = @project.annotations_tgz_system_path %>
+	<% if File.exist?(file_path) %>
+		<% tgz_created_at = File.ctime(file_path) %>
+		<tr><td>
+			<%=
+				link_to(
+					@project.annotations_tgz_filename,
+					project_annotations_tgz_path(@project.name),
+					title: "click to download",
+					class: 'button',
+					style: 'box-sizing: border-box; width:100%'
+				)
+			%>
+		</td></tr>
+		<tr><td style="text-align:center">
+			<span class='time_stamp'><%= tgz_created_at.strftime("#{t('controllers.shared.created_at')}: %Y-%m-%d %T UTC") %></span>
+		</td></tr>
+		<% if tgz_created_at < @project.annotations_updated_at %>
+			<tr><td>
+				<span class='note'>Out of date</span><br/>
+				<span class='time_stamp'>Annotation last changed<br/>at <%= @project.annotations_updated_at %>.</span>
+			</td></tr>
+		<% end %>
+
+		<% if @project.editable?(current_user) %>
+			<% if tgz_created_at < @project.annotations_updated_at %>
+				<tr><td>
+					<%=
+						link_to(
+							t('views.shared.update'),
+							project_create_annotations_tgz_path(@project.name, update: true),
+							confirm: t('controllers.annotations.confirm_update_downloadable'),
+							title: t('controllers.annotations.help_update_downloadable'),
+							class: 'button',
+							style: 'box-sizing: border-box; width:100%'
+						)
+					%>
+				</td></tr>
+			<% end %>
+			<tr><td>
+				<%=
+					link_to(
+						t('views.shared.delete'),
+						project_delete_annotations_tgz_path(@project.name),
+						confirm: t('controllers.shared.confirm_delete'),
+						class: 'button',
+						style: 'box-sizing: border-box; width:100%'
+					)
+				%>
+			</td></tr>
+		<% end %>
+	<% else # when the tgz file does not exist %> 
+		<tr><td>
+			<%= t('views.shared.download.not_prepared') %>
+		</td></tr>
+
+		<% if @project.editable?(current_user) %>
+			<% same_tasks = @project.jobs.where(name: "Create a downloadable archive", ended_at:nil) %>
+			<% if same_tasks.empty? %>
+				<%
+					title  = 'To create a downloadable tgz file which includes all the texts '
+					title += if @project.accessibility == 3
+						'of this project. Note that it will NOT include annotations, as this project is set to a blind project.'
+					else
+						'and annotations of this project.'
+					end
+				%>
+				<tr><td>
+					<%=
+						link_to(
+							t('controllers.annotations.create_downloadable'),
+							project_create_annotations_tgz_path(@project.name),
+							:class => 'button long_button',
+							:title => title,
+							:confirm => t('controllers.annotations.confirm_create_downloadable')
+						)
+					%>
+				</td></tr>
+			<% else # a running same task exists %>
+				<tr><td style="text-align:center">
+					<%= t('views.shared.download.delayed_job_present') %>
+				</td></tr>
+			<% end %>
+		<% else %>
+			<tr><td>
+				<%= t('views.shared.download.contact_manager') %>
+			</td></tr>
+		<% end %>
+	<% end %>
+<% else %>
+	<tr><td>
+		<%= t('views.shared.download.not_available') %>
+	</td></tr>
+	<tr><td>
+		<%= t('views.shared.download.contact_manager') %>
+	</td></tr>
+<% end %>
+</table>
