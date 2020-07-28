@@ -277,6 +277,10 @@ class Doc < ActiveRecord::Base
     else
       []
     end
+  end
+
+  def self.sequence_and_store_docs(sourcedb, sourceids)
+    docs = sequence_docs(sourcedb, sourceids)
 
     docs_valid = docs.select{|doc| doc.valid?}
     unless docs_valid.empty?
@@ -284,9 +288,9 @@ class Doc < ActiveRecord::Base
       raise RuntimeError, "documents import error" unless r.failed_instances.empty?
     end
 
-    docs_invalid = docs - docs_valid
+    messages = []
 
-    messages = result[:messages]
+    docs_invalid = docs - docs_valid
 
     docs_invalid.each do |doc|
       messages << {sourcedb:doc.sourcedb, sourceid:doc.sourceid, body:"Failed to save the document."}
@@ -337,14 +341,126 @@ class Doc < ActiveRecord::Base
   def self.uptodate(divs)
     sourcedb = divs[0].sourcedb
     sourceid = divs[0].sourceid
-    new_divs = Object.const_get("DocSequencer#{sourcedb}").new(sourceid).divs
-    raise RuntimeError, "The number of divs mismatch" unless new_divs.size == divs.size
+    r = self.sequence_docs(sourcedb, [sourceid])
 
-    divs.sort!{|a, b| a.serial <=> b.serial}
+    raise "document sequence #{sourcedb}:#{sourceid} failed" unless r.length == 1
 
-    ActiveRecord::Base.transaction do
-      divs.each_with_index{|div, i| div.revise(new_divs[i][:body])}
+    new_doc = r.first
+
+    if divs.length == 1
+      doc = divs.first
+
+      ActiveRecord::Base.transaction do
+        doc.revise(new_doc.body)
+      end
+
+    elsif divs.length > 1
+      puts "The document #{sourcedb}:#{sourceid} gets updated."
+
+      new_text =  new_doc.body
+
+      total_num = divs.sum{|div| div.denotations.length}
+      puts "Total num denotations: #{total_num}"
+
+      doc = divs.shift
+
+      idnum_denotations = 0
+      idnum_relations = 0
+      idnum_attributes = 0
+      idnum_modifications = 0
+
+      ActiveRecord::Base.transaction do
+        # The document to be left
+        Annotation.align_denotations!(doc.denotations, doc.body, new_text)
+
+        # re-id annotations
+        doc.denotations.each do |d|
+          d.hid = 'T' + (idnum_denotations += 1).to_s
+          d.save!
+        end
+
+        doc.subcatrels.each do |r|
+          r.hid = 'R' + (idnum_relations += 1).to_s
+          r.save!
+        end
+
+        doc.denotation_attributes.each do |a|
+          a.hid = 'A' + (idnum_attributes += 1).to_s
+          a.save!
+        end
+
+        (doc.catmods + doc.subcatrelmods).each do |m|
+          m.hid = 'M' + (idnum_modifications += 1).to_s
+          m.save!
+        end
+
+        doc.body = new_text
+        doc.save!
+        doc.__elasticsearch__.update_document
+
+        # re-id and move annotations
+        divs.each do |div|
+          Annotation.align_denotations!(div.denotations, div.body, new_text)
+
+          # caution: the order of reiding matters here
+          (div.catmods + div.subcatrelmods).each do |m|
+            m.hid = 'M' + (idnum_modifications += 1).to_s
+            m.save!
+          end
+
+          div.denotation_attributes.each do |a|
+            a.hid = 'A' + (idnum_attributes += 1).to_s
+            a.save!
+          end
+
+          div.subcatrels.each do |r|
+            r.hid = 'R' + (idnum_relations += 1).to_s
+            r.save!
+          end
+
+          div.denotations.each do |d|
+            d.doc_id = doc.id
+            d.hid = 'T' + (idnum_denotations += 1).to_s
+            d.save!
+          end
+
+        end
+
+        # delete unnecessary divs
+        divs.each do |d|
+          d.__elasticsearch__.delete_document
+          # d.delete
+        end
+        div_ids_merged = divs.collect{|div| div.id}.join(', ')
+        connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_merged})")
+        connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_merged})")
+
+        # update relevant counts of the doc
+        doc.reset_count_denotations
+        doc.reset_count_relations
+        doc.reset_count_modifications
+
+        doc.project_docs.each do |pd|
+          pd.reset_count_denotations
+          pd.reset_count_relations
+          pd.reset_count_modifications
+        end
+      end
+    else
+      raise RuntimeError, "What?"
     end
+  end
+
+  def reset_count_denotations
+    connection.exec_query "UPDATE docs SET (denotations_num) = (SELECT count(*) FROM denotations WHERE denotations.doc_id = #{id}) WHERE docs.id = #{id}"
+  end
+
+  def reset_count_relations
+    connection.exec_query "UPDATE docs SET (relations_num) = (SELECT count(*) FROM relations INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type='Denotation' WHERE denotations.doc_id = #{id}) WHERE docs.id = #{id}"
+  end
+
+  def reset_count_modifications
+    connection.exec_query "UPDATE docs SET (modifications_num) = row((SELECT count(*) FROM modifications INNER JOIN denotations ON modifications.obj_id = denotations.id AND modifications.obj_type = 'Denotation' WHERE denotations.doc_id = #{id}) + (SELECT count(*) FROM modifications INNER JOIN relations on modifications.obj_id = relations.id AND modifications.obj_type = 'Relation' INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotations' WHERE denotations.doc_id = #{id})) WHERE docs.id = #{id}"
   end
 
   def get_slices(max_size, span = nil)

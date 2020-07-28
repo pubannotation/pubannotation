@@ -296,7 +296,7 @@ class SpansController < ApplicationController
     if params[:divid].present?
       doc = Doc.find_by_sourcedb_and_sourceid_and_serial(params[:sourcedb], params[:sourceid], params[:divid])
       unless doc.present?
-        divs, messages = Doc.sequence_docs(params[:sourcedb], [params[:sourceid]])
+        divs, messages = Doc.sequence_and_store_docs(params[:sourcedb], [params[:sourceid]])
         raise IOError, "Failed to get the document" unless divs.present?
         expire_fragment("sourcedb_counts")
         expire_fragment("count_#{params[:sourcedb]}")
@@ -305,7 +305,7 @@ class SpansController < ApplicationController
     else
       divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
       unless divs.present?
-        divs, messages = Doc.sequence_docs(params[:sourcedb], [params[:sourceid]])
+        divs, messages = Doc.sequence_and_store_docs(params[:sourcedb], [params[:sourceid]])
         raise IOError, "Failed to get the document" unless divs.present?
         expire_fragment("sourcedb_counts")
         expire_fragment("count_#{params[:sourcedb]}")

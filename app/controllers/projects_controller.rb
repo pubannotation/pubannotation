@@ -267,6 +267,10 @@ class ProjectsController < ApplicationController
 
       message = if project.has_doc?
         priority = project.jobs.unfinished.count
+
+        # job = DeleteAllDocsFromProjectJob.new(project)
+        # job.perform()
+
         delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project), priority: priority, queue: :general
         Job.create({name:'Delete all docs', project_id:project.id, delayed_job_id:delayed_job.id})
         "The task, 'delete all docs', is created."

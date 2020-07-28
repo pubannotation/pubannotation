@@ -69,13 +69,15 @@ class Denotation < ActiveRecord::Base
   end
 
   def increment_numbers
-    ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id).increment!(:denotations_num)
+    pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
+    pd.increment!(:denotations_num) if pd
     self.doc.increment!(:denotations_num)
     self.project.increment!(:denotations_num)
   end
 
   def decrement_numbers
-    ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id).decrement!(:denotations_num)
+    pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
+    pd.decrement!(:denotations_num) if pd
     self.doc.decrement!(:denotations_num)
     self.project.decrement!(:denotations_num)
   end

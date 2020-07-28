@@ -510,21 +510,18 @@ class Annotation < ActiveRecord::Base
   def self.align_denotations!(denotations, str, rstr)
     return [] unless denotations.present? && str != rstr
 
-    messages = align_denotations_by_exact!(denotations, str, rstr)
-    return messages unless messages.nil?
-
-    messages = align_denotations_by_sentences!(denotations, str, rstr)
-    return messages unless messages.nil?
-
-    align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
+    align = TextAlignment::TextAlignment.new(str, rstr)
     align.transform_denotations!(denotations)
+
     bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
-    unless bads.empty? && align.similarity > 0.5
+    unless bads.empty? # && align.similarity > 0.5
       align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
       align.transform_denotations!(denotations)
+
       bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
       raise "Alignment failed. Text may be too much different." unless bads.empty?
     end
+
     []
   end
 
@@ -572,8 +569,11 @@ class Annotation < ActiveRecord::Base
     divs_hash = divs.collect{|d| d.to_hash}
     fit_index = TextAlignment.find_divisions(annotations[:text], divs_hash)
     fit_index.each_with_index do |f, i|
+      break if f[0] == -1
       gap = []
-      (0 .. i).each{|j| gap << fit_index[j][1] if f[1][0] < fit_index[j][1][0] && f[1][1] > fit_index[j][1][1]}
+      (0 ... i).each do |j|
+        gap << fit_index[j][1] if f[1][0] < fit_index[j][1][0] && f[1][1] > fit_index[j][1][1]
+      end
       f << gap
     end
 

@@ -582,7 +582,7 @@ class DocsController < ApplicationController
     begin
       raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-      divs = params[:sourceid].present? ? Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid]) : nil
+      divs = params[:sourceid].present? ? Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid]).order(:serial) : nil
       raise ArgumentError, "There is no such document." if params[:sourceid].present? && !divs.present?
 
       Doc.uptodate(divs)

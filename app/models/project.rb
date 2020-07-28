@@ -680,7 +680,7 @@ class Project < ActiveRecord::Base
 
     ids_to_sequence = sourceids - ids_in_pa
 
-    docs_sequenced, messages = ids_to_sequence.present? ? Doc.sequence_docs(sourcedb, ids_to_sequence) : [[], []]
+    docs_sequenced, messages = ids_to_sequence.present? ? Doc.sequence_and_store_docs(sourcedb, ids_to_sequence) : [[], []]
 
     docs_to_add += docs_sequenced
 
@@ -695,7 +695,7 @@ class Project < ActiveRecord::Base
   # returns nil if nothing is added
   def add_doc(sourcedb, sourceid)
     divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
-    divs, messages = Doc.sequence_docs(sourcedb, [sourceid]) unless divs.present?
+    divs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid]) unless divs.present?
     raise RuntimeError, "Failed to get the document" unless divs.present?
     return nil if docs.include?(divs.first)
     divs.each{|div| div.projects << self}
@@ -713,17 +713,34 @@ class Project < ActiveRecord::Base
     ActiveRecord::Base.transaction do
       delete_annotations if denotations_num > 0
 
-      docs.update_all('projects_num = projects_num - 1')
-      docs.update_all(flag:true)
+      unless docs.empty?
+        connection.exec_query(
+          "
+            UPDATE docs
+            SET projects_num = projects_num - 1, flag = true
+            WHERE docs.id
+            IN (
+              SELECT project_docs.doc_id
+              FROM project_docs
+              WHERE project_docs.project_id = #{id}
+            )
+          "
+        )
+        connection.exec_query("DELETE FROM project_docs WHERE project_id = #{id}")
+      end
+    end
+  end
 
-      ## below, former is faster in development, but guess the latter is fater in production (better scale?)
-      # docs.delete_all
-      ProjectDoc.delete_all(project_id:id)
-
-      Doc.where("sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0").destroy_all
+  def update_es_index
+    ActiveRecord::Base.transaction do
+      Doc.where("sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0").each do |d|
+        d.__elasticsearch__.delete_document
+        d.delete
+      end
+      # connection.exec_query("DELETE FROM docs WHERE (sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0)")
 
       Doc.__elasticsearch__.import query: -> {where(flag:true)}
-      Doc.where(flag:true).update_all(flag:false)
+      connection.exec_query('UPDATE docs SET flag = false WHERE flag = true')
     end
   end
 
