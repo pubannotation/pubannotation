@@ -158,6 +158,7 @@ Pubann::Application.routes.draw do
       get 'clean' => 'projects#clean'
       get 'add_docs' => 'projects#add_docs'
       get 'upload_docs' => 'projects#upload_docs'
+      get 'uptodate_docs' => 'projects#uptodate_docs'
       get 'obtain_annotations' => 'projects#obtain_annotations'
       get 'rdfize_annotations' => 'projects#rdfize_annotations'
       get 'upload_annotations' => 'projects#upload_annotations'

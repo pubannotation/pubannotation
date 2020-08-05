@@ -338,7 +338,116 @@ class Doc < ActiveRecord::Base
     messages
   end
 
-  def self.uptodate(divs)
+  def self.uptodate(divs, new_doc = nil)
+    sourcedb = divs[0].sourcedb
+    sourceid = divs[0].sourceid
+
+    new_doc ||= begin
+      r = self.sequence_docs(sourcedb, [sourceid])
+      raise "document sequence #{sourcedb}:#{sourceid} failed" unless r.length == 1
+      r.first
+    end
+
+    if divs.length == 1
+      doc = divs.first
+
+      ActiveRecord::Base.transaction do
+        doc.revise(new_doc.body)
+      end
+
+    elsif divs.length > 1
+      new_text =  new_doc.body
+
+      doc = divs.shift
+
+      idnum_denotations = 0
+      idnum_relations = 0
+      idnum_attributes = 0
+      idnum_modifications = 0
+
+      ActiveRecord::Base.transaction do
+        # The document to be left
+        Annotation.align_denotations!(doc.denotations, doc.body, new_text)
+
+        # re-id annotations
+        doc.denotations.each do |d|
+          d.hid = 'T' + (idnum_denotations += 1).to_s
+          d.save!
+        end
+
+        doc.subcatrels.each do |r|
+          r.hid = 'R' + (idnum_relations += 1).to_s
+          r.save!
+        end
+
+        doc.denotation_attributes.each do |a|
+          a.hid = 'A' + (idnum_attributes += 1).to_s
+          a.save!
+        end
+
+        (doc.catmods + doc.subcatrelmods).each do |m|
+          m.hid = 'M' + (idnum_modifications += 1).to_s
+          m.save!
+        end
+
+        doc.body = new_text
+        doc.save!
+        doc.__elasticsearch__.update_document
+
+        # re-id and move annotations
+        divs.each do |div|
+          Annotation.align_denotations!(div.denotations, div.body, new_text)
+
+          # caution: the order of reiding matters here
+          (div.catmods + div.subcatrelmods).each do |m|
+            m.hid = 'M' + (idnum_modifications += 1).to_s
+            m.save!
+          end
+
+          div.denotation_attributes.each do |a|
+            a.hid = 'A' + (idnum_attributes += 1).to_s
+            a.save!
+          end
+
+          div.subcatrels.each do |r|
+            r.hid = 'R' + (idnum_relations += 1).to_s
+            r.save!
+          end
+
+          div.denotations.each do |d|
+            d.doc_id = doc.id
+            d.hid = 'T' + (idnum_denotations += 1).to_s
+            d.save!
+          end
+
+        end
+
+        # delete unnecessary divs
+        divs.each do |d|
+          d.__elasticsearch__.delete_document
+          # d.delete
+        end
+        div_ids_merged = divs.collect{|div| div.id}.join(', ')
+        connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_merged})")
+        connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_merged})")
+
+        # update relevant counts of the doc
+        doc.reset_count_denotations
+        doc.reset_count_relations
+        doc.reset_count_modifications
+
+        doc.project_docs.each do |pd|
+          pd.reset_count_denotations
+          pd.reset_count_relations
+          pd.reset_count_modifications
+        end
+      end
+    else
+      raise RuntimeError, "What?"
+    end
+  end
+
+  def self.uptodate_old(divs)
     sourcedb = divs[0].sourcedb
     sourceid = divs[0].sourceid
     r = self.sequence_docs(sourcedb, [sourceid])

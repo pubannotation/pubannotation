@@ -131,6 +131,25 @@ class ProjectsController < ApplicationController
     @project = Project.editable(current_user).find_by_name(params[:id])
   end
 
+  def uptodate_docs
+    begin
+      project = Project.find_by_name(params[:id])
+      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+
+      # job = UptodateDocsJob.new(project)
+      # job.perform()
+
+      delayed_job = Delayed::Job.enqueue UptodateDocsJob.new(project), queue: :general
+      task_name = "Uptodate docs in project - #{project.name}"
+      Job.create({name:task_name, project_id:project.id, delayed_job_id:delayed_job.id})
+      flash[:notice] = "The task, '#{task_name}', is created."
+      redirect_to project_path(project.name)
+    rescue => e
+      flash[:notice] = e.message
+      redirect_to project_path(project.name)
+    end
+  end
+
   def obtain_annotations
     @project = Project.editable(current_user).find_by_name(params[:id])
   end
