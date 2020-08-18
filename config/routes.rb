@@ -28,7 +28,7 @@ Pubann::Application.routes.draw do
   resources :annotators
   resources :editors
 
-  devise_for :users
+  devise_for :users, :controllers => { :omniauth_callbacks => "callbacks" }
 
   get "home/index"
 
@@ -41,11 +41,11 @@ Pubann::Application.routes.draw do
   namespace :relations do
     get :sql
   end
-  
+
   namespace :spans do
     get :sql
   end
-  
+
   resource :sql do
     get :index
   end
@@ -68,13 +68,13 @@ Pubann::Application.routes.draw do
       get 'update_numbers' => 'docs#update_numbers'
 
       get :autocomplete_doc_sourcedb
-    end  
+    end
     member do
       get 'annotations' => 'annotations#doc_annotations_index'
       get 'spans' => 'spans#spans_index', :as => 'spans_index'
       # get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
       get 'spans/:begin-:end' => 'spans#span_show', :as => 'span_show'
-      get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'    
+      get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'
     end
   end
 
@@ -102,7 +102,7 @@ Pubann::Application.routes.draw do
             get 'spans/:begin-:end/annotations/merge_view' => 'annotations#doc_annotations_merge_view'
             get 'spans/:begin-:end/annotations/list_view' => 'annotations#doc_annotations_list_view'
             get 'spans/:begin-:end/annotations/visualize' => 'annotations#doc_annotations_list_view'
-            
+
             scope 'divs', :as => 'divs' do
               get '/' => 'divs#index', :as => 'index'
               get 'search' => 'divs#search'
@@ -120,14 +120,14 @@ Pubann::Application.routes.draw do
                 get 'spans/:begin-:end/annotations/merge_view' => 'annotations#div_annotations_merge_view'
                 get 'spans/:begin-:end/annotations/list_view' => 'annotations#div_annotations_list_view'
                 get 'spans/:begin-:end/annotations/visualize' => 'annotations#div_annotations_list_view'
-              end  
-            end    
+              end
+            end
           end
         end
       end
     end
   end
-  
+
   resources :projects do
     get 'spans/sql' => 'spans#sql'
     get 'relations/sql' => 'relations#sql'
@@ -151,7 +151,7 @@ Pubann::Application.routes.draw do
         get 'messages' => 'messages#index'
       end
     end
-    
+
     member do
       post 'store_annotation_rdf' => 'projects#store_annotation_rdf'
       get 'store_span_rdf' => 'projects#store_span_rdf'
@@ -165,7 +165,7 @@ Pubann::Application.routes.draw do
       get 'autocomplete_sourcedb' => 'projects#autocomplete_sourcedb'
       get 'autocomplete_project_name'
     end
-    
+
     collection do
       # auto complete path which use scope and scope argument required :scope_argument param
       get 'autocomplete_project_name'
@@ -197,7 +197,7 @@ Pubann::Application.routes.draw do
         get 'open' => 'docs#open'
         scope 'sourcedb', :as => 'sourcedb' do
           # list sourcedb
-          get '/' => 'docs#sourcedb_index' 
+          get '/' => 'docs#sourcedb_index'
 
           scope ':sourcedb' do
             # list sourceids
@@ -237,19 +237,19 @@ Pubann::Application.routes.draw do
                     post 'spans/:begin-:end/annotations' => 'annotations#create'
                     delete 'spans/:begin-:end/annotations' => 'annotations#destroy', as: 'destroy_annotations_in_span'
                     post 'spans/:begin-:end/annotations/obtain' => 'annotations#obtain', as: 'annotations_obtain_in_span'
-                  end  
-                end    
+                  end
+                end
               end
             end
           end
         end
-      end  
-      
+      end
+
       member do
         get 'annotations' => 'annotations#project_doc_annotations_index'
         get 'spans' => 'spans#spans_index', :as => 'spans_index'
         get 'spans/:begin-:end' => 'spans#span_show', :as => 'span_show'
-        get 'spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index'    
+        get 'spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index'
       end
       resources :annotations do
       end
@@ -263,7 +263,7 @@ Pubann::Application.routes.draw do
 
     resources :queries
   end
-  
+
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
