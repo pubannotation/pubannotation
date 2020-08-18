@@ -3,7 +3,8 @@ class User < ActiveRecord::Base
   # :token_authenticatable, :confirmable,
   # :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable, :validatable
+         :recoverable, :rememberable, :trackable, :validatable,
+         :omniauthable, :omniauth_providers => [:google_oauth2]
 
   # Setup accessible (or protected) attributes for your model
   attr_accessible :login, :username, :email, :password, :password_confirmation, :remember_me
@@ -11,7 +12,7 @@ class User < ActiveRecord::Base
   # Virtual attribute for authenticating by either username or email
   # This is in addition to a real persisted field like 'username'
   attr_accessor :login
-  
+
   has_many :projects, :dependent => :destroy
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
@@ -23,7 +24,7 @@ class User < ActiveRecord::Base
 
   scope :except_current_user, lambda { |current_user|
     if current_user.present?
-      where(["id != ?", current_user.id]) 
+      where(["id != ?", current_user.id])
     else
       all
     end
@@ -37,7 +38,7 @@ class User < ActiveRecord::Base
         all
       end
   }
-  
+
   def self.find_first_by_auth_conditions(warden_conditions)
     conditions = warden_conditions.dup
     if login = conditions.delete(:login)
@@ -48,7 +49,7 @@ class User < ActiveRecord::Base
   end
 
   def root?
-    root    
+    root
   end
 
   def check_invalid_character
@@ -63,5 +64,12 @@ class User < ActiveRecord::Base
 
   def destroy_all_user_sourcedb_docs
     Doc.user_source_db(self.username).destroy_all
+  end
+
+  def self.from_omniauth(auth)
+    user = User.find_by_email(auth.info.email)
+    return user if user
+
+    User.create!(email: auth.info.email, username: auth.info.name, password: Devise.friendly_token[0,20])
   end
 end
