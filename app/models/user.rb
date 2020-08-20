@@ -2,7 +2,7 @@ class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :token_authenticatable, :confirmable,
   # :lockable, :timeoutable and :omniauthable
-  devise :database_authenticatable, :registerable,
+  devise :database_authenticatable, :registerable, :confirmable,
          :recoverable, :rememberable, :trackable, :validatable,
          :omniauthable, :omniauth_providers => [:google_oauth2]
 
@@ -68,8 +68,14 @@ class User < ActiveRecord::Base
 
   def self.from_omniauth(auth)
     user = User.find_by_email(auth.info.email)
-    return user if user
+    return user if user and user.confirmed?
 
-    User.create!(email: auth.info.email, username: auth.info.name, password: Devise.friendly_token[0,20])
+    user = User.new(email: auth.info.email,
+                    username: auth.info.name,
+                    password: Devise.friendly_token[0,20]
+                   )
+    user.skip_confirmation!
+    user.save
+    user
   end
 end
