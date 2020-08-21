@@ -15,7 +15,7 @@ ja:
     failure:
       already_authenticated: 既にログインしています。
       unauthenticated: 続けるにはログインまたはアカウントを登録してください。
-      unconfirmed: 本登録を行ってください。
+      unconfirmed: アカウント確認のリンクが入っているメールを送りました。 メール内のリンクでアカウントを有効にしてください。
       locked: アカウントが凍結されています。
       invalid: メールアドレスまたはパスワードが違います。
       timeout: セッションがタイムアウトしました。もう一度ログインしてください。
