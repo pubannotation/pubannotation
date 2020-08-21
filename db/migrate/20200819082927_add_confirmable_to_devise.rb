@@ -6,7 +6,7 @@ class AddConfirmableToDevise < ActiveRecord::Migration
     add_column :users, :unconfirmed_email, :string
     add_index :users, :confirmation_token, unique: true
 
-    execute("UPDATE users SET confirmed_at = NOW()")
+    User.all.each { |user| user.skip_confirmation! }
   end
 
   def down
