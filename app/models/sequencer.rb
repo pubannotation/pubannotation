@@ -28,19 +28,21 @@ class Sequencer < ActiveRecord::Base
   def get_docs(sourceids)
     ids_groups = sourceids.each_slice(MAX_NUM_ID).to_a
 
-    result = ids_groups.inject({docs:[], messages:[]}) do |sum, ids|
-      response = RestClient::Request.execute(method: :post, url: url, payload: ids.to_json, headers:{content_type: :json, accept: :json})
-      result = begin
-        JSON.parse response, :symbolize_names => true
+    ids_groups.inject({docs:[], messages:[]}) do |result, ids|
+      begin
+        response = RestClient::Request.execute(method: :post, url: url, payload: ids.to_json, headers:{content_type: :json, accept: :json})
+        begin
+          r = JSON.parse response, :symbolize_names => true
+          result[:docs] += r[:docs]
+          result[:messages] += r[:messages]
+        rescue => e
+          result[:messages] << {sourcedb: name, body: "Error during JSON parsing: #{e.message}"}
+        end
       rescue => e
-        {docs: [], messages: ["Received a non-JSON object: [#{response}]"]}
+        result[:messages] << {sourcedb: name, body: "Error during communication with the server: #{e.message}"}
       end
-      sum[:docs] += result[:docs] if result[:docs].present?
-      sum[:messages] += result[:messages] if result[:messages].present?
-      sum
+      result
     end
-
-	  result
   end
 
   def changeable?(current_user)

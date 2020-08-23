@@ -85,6 +85,10 @@ class Doc < ActiveRecord::Base
 
   attr_accessor :username, :original_body, :text_aligner
   attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid, :username
+
+  has_many :divisions, dependent: :destroy
+  has_many :typesettings, dependent: :destroy
+
   has_many :denotations, dependent: :destroy
 
   has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
@@ -248,55 +252,110 @@ class Doc < ActiveRecord::Base
     !self.get_doc(docspec).nil?
   end
 
+  def self.hdoc_valid?(hdoc)
+    return false unless hdoc[:text].present?
+    return false unless hdoc[:sourcedb].present?
+    return false unless hdoc[:sourceid].present?
+    true
+  end
+
+  # returns {docs:..., messages:...}
   def self.sequence_docs(sourcedb, sourceids)
     raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
     raise ArgumentError, "sourceids is empty" unless sourceids.present?
 
-    begin
-      sequencer = Sequencer.find(sourcedb)
+    sequencer = begin
+      Sequencer.find(sourcedb)
     rescue ActiveRecord::ActiveRecordError => e
-      raise ActiveRecord::ActiveRecordError, "These documents could not be found and sourced: [#{sourcedb}] #{sourceids.join(', ')}."
+      nil
     end
-    raise "These documents could not be found and sourced: [#{sourcedb}] #{sourceids.join(', ')}." unless sequencer.present?
+    raise "Could not find the sequencer for the sourcedb: [#{sourcedb}]" unless sequencer.present?
 
     result = sequencer.get_docs(sourceids)
 
-    docs = if result[:docs].present?
-      result[:docs].map do |doc|
-        Doc.new(
-          {
-            section: doc[:section],
-            body: doc[:text],
-            sourcedb: doc[:sourcedb],
-            sourceid: doc[:sourceid],
-            serial: doc[:divid].to_i,
-            source: doc[:source_url]
-          }
-        )
-      end
-    else
-      []
+    invalid_docs = result[:docs].select{|doc| !Doc.hdoc_valid?(doc)}
+    invalid_docs.each do |doc|
+      result[:messages] << {sourcedb:sourcedb, sourceid:doc[:source], body:"Invalid document entry."} unless Doc.hdoc_valid?(doc)
     end
+
+    result[:docs] = result[:docs] - invalid_docs
+    result
+  end
+
+  def self.store_hdoc(hdoc)
+    doc = Doc.new(
+      {
+        body: hdoc[:text],
+        sourcedb: hdoc[:sourcedb],
+        sourceid: hdoc[:sourceid],
+        serial: hdoc[:divid] || 0,
+        source: hdoc[:source_url]
+      }
+    )
+
+    doc.save!
+    doc
+  end
+
+  def store_divisions(hdivisions)
+    divisions = hdivisions.map do |hdiv|
+      Division.new(
+        {
+          doc_id: self.id,
+          begin: hdiv[:span][:begin],
+          end: hdiv[:span][:end],
+          label: hdiv[:label]
+        }
+      )
+    end
+
+    r = Division.import divisions
+    raise "Failed to save the divisions." unless r.failed_instances.empty?
+
+    divisions
+  end
+
+  def store_typesettings(htypesettings)
+    typesettings = htypesettings.map do |hts|
+      Typesetting.new(
+        {
+          doc_id: self.id,
+          begin: hts[:span][:begin],
+          end: hts[:span][:end],
+          style: hts[:style]
+        }
+      )
+    end
+
+    r = Typesetting.import typesettings
+    raise "Failed to save the typesettings." unless r.failed_instances.empty?
+
+    typesettings
+  end
+
+  def self.store_hdocs(hdocs)
+    docs_saved = []
+    messages = []
+
+    hdocs.each do |hdoc|
+
+      ActiveRecord::Base.transaction do
+        doc = store_hdoc(hdoc)
+        doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
+        doc.store_typesettings(hdoc[:typesettings]) if hdoc.has_key? :typesettings
+        docs_saved << doc
+      rescue => e
+        messages << {sourcedb:hdoc[:sourcedb], sourceid:hdoc[:sourceid], body:e.message}
+      end
+    end
+
+    [docs_saved, messages]
   end
 
   def self.sequence_and_store_docs(sourcedb, sourceids)
-    docs = sequence_docs(sourcedb, sourceids)
-
-    docs_valid = docs.select{|doc| doc.valid?}
-    unless docs_valid.empty?
-      r = Doc.import docs_valid
-      raise RuntimeError, "documents import error" unless r.failed_instances.empty?
-    end
-
-    messages = []
-
-    docs_invalid = docs - docs_valid
-
-    docs_invalid.each do |doc|
-      messages << {sourcedb:doc.sourcedb, sourceid:doc.sourceid, body:"Failed to save the document."}
-    end
-
-    [docs_valid, messages]
+    result = sequence_docs(sourcedb, sourceids)
+    docs_saved, messages = store_hdocs(result[:docs])
+    [docs_saved, result[:messages] + messages]
   end
 
   def self.create_divs(divs_hash, attributes = {})
@@ -323,40 +382,45 @@ class Doc < ActiveRecord::Base
     ['PMC'].include?(sourcedb)
   end
 
-  def revise(new_body)
+  def revise(new_hdoc)
+    new_body = new_hdoc[:text]
     return [] if new_body == self.body
 
     _denotations = self.denotations
     messages = Annotation.align_denotations!(_denotations, self.body, new_body)
-    self.body = new_body
 
     ActiveRecord::Base.transaction do
-      save!
+      self.divisions.destroy_all
+      self.typesettings.destroy_all
+      self.body = new_body
+      self.save!
+      self.store_divisions(new_hdoc[:divisions])
+      self.store_typesettings(new_hdoc[:typesettings])
       _denotations.each{|d| d.save!}
     end
 
     messages
   end
 
-  def self.uptodate(divs, new_doc = nil)
+  def self.uptodate(divs, new_hdoc = nil)
     sourcedb = divs[0].sourcedb
     sourceid = divs[0].sourceid
 
-    new_doc ||= begin
+    new_hdoc ||= begin
       r = self.sequence_docs(sourcedb, [sourceid])
-      raise "document sequence #{sourcedb}:#{sourceid} failed" unless r.length == 1
-      r.first
+      raise "The document could not be sequenced: #{sourcedb}:#{sourceid}" unless r[:docs].length == 1
+      r[:docs].first
     end
 
     if divs.length == 1
       doc = divs.first
 
       ActiveRecord::Base.transaction do
-        doc.revise(new_doc.body)
+        doc.revise(new_hdoc)
       end
 
     elsif divs.length > 1
-      new_text =  new_doc.body
+      new_text =  new_hdoc[:text]
 
       doc = divs.shift
 
@@ -390,122 +454,13 @@ class Doc < ActiveRecord::Base
           m.save!
         end
 
+        doc.divisions.destroy_all
+        doc.typesettings.destroy_all
         doc.body = new_text
         doc.save!
         doc.__elasticsearch__.update_document
-
-        # re-id and move annotations
-        divs.each do |div|
-          Annotation.align_denotations!(div.denotations, div.body, new_text)
-
-          # caution: the order of reiding matters here
-          (div.catmods + div.subcatrelmods).each do |m|
-            m.hid = 'M' + (idnum_modifications += 1).to_s
-            m.save!
-          end
-
-          div.denotation_attributes.each do |a|
-            a.hid = 'A' + (idnum_attributes += 1).to_s
-            a.save!
-          end
-
-          div.subcatrels.each do |r|
-            r.hid = 'R' + (idnum_relations += 1).to_s
-            r.save!
-          end
-
-          div.denotations.each do |d|
-            d.doc_id = doc.id
-            d.hid = 'T' + (idnum_denotations += 1).to_s
-            d.save!
-          end
-
-        end
-
-        # delete unnecessary divs
-        divs.each do |d|
-          d.__elasticsearch__.delete_document
-          # d.delete
-        end
-        div_ids_merged = divs.collect{|div| div.id}.join(', ')
-        connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_merged})")
-        connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_merged})")
-
-        # update relevant counts of the doc
-        doc.reset_count_denotations
-        doc.reset_count_relations
-        doc.reset_count_modifications
-
-        doc.project_docs.each do |pd|
-          pd.reset_count_denotations
-          pd.reset_count_relations
-          pd.reset_count_modifications
-        end
-      end
-    else
-      raise RuntimeError, "What?"
-    end
-  end
-
-  def self.uptodate_old(divs)
-    sourcedb = divs[0].sourcedb
-    sourceid = divs[0].sourceid
-    r = self.sequence_docs(sourcedb, [sourceid])
-
-    raise "document sequence #{sourcedb}:#{sourceid} failed" unless r.length == 1
-
-    new_doc = r.first
-
-    if divs.length == 1
-      doc = divs.first
-
-      ActiveRecord::Base.transaction do
-        doc.revise(new_doc.body)
-      end
-
-    elsif divs.length > 1
-      puts "The document #{sourcedb}:#{sourceid} gets updated."
-
-      new_text =  new_doc.body
-
-      total_num = divs.sum{|div| div.denotations.length}
-      puts "Total num denotations: #{total_num}"
-
-      doc = divs.shift
-
-      idnum_denotations = 0
-      idnum_relations = 0
-      idnum_attributes = 0
-      idnum_modifications = 0
-
-      ActiveRecord::Base.transaction do
-        # The document to be left
-        Annotation.align_denotations!(doc.denotations, doc.body, new_text)
-
-        # re-id annotations
-        doc.denotations.each do |d|
-          d.hid = 'T' + (idnum_denotations += 1).to_s
-          d.save!
-        end
-
-        doc.subcatrels.each do |r|
-          r.hid = 'R' + (idnum_relations += 1).to_s
-          r.save!
-        end
-
-        doc.denotation_attributes.each do |a|
-          a.hid = 'A' + (idnum_attributes += 1).to_s
-          a.save!
-        end
-
-        (doc.catmods + doc.subcatrelmods).each do |m|
-          m.hid = 'M' + (idnum_modifications += 1).to_s
-          m.save!
-        end
-
-        doc.body = new_text
-        doc.save!
-        doc.__elasticsearch__.update_document
+        doc.store_divisions(new_hdoc[:divisions])
+        doc.store_typesettings(new_hdoc[:typesettings])
 
         # re-id and move annotations
         divs.each do |div|
@@ -823,12 +778,26 @@ class Doc < ActiveRecord::Base
     end
   end
 
+  def get_typesettings(span = nil, context_size = nil)
+    if span.present?
+      context_size ||= 0
+      b = span[:begin] - context_size
+      e = span[:end] + context_size
+      b = 0 if b < 0
+      e = body.length if e > body.length
+      typesettings.select{|t| t.begin >= b && t.end < e}.map{|t| t.begin -= b; t.end -= b; t.to_hash}
+    else
+      typesettings.map{|t| t.to_hash}
+    end
+  end
+
   def hannotations(project = nil, span = nil, context_size = nil, options = nil)
     annotations = {
       target: graph_uri,
       sourcedb: sourcedb,
       sourceid: sourceid,
-      text: get_text(span, context_size)
+      text: get_text(span, context_size),
+      typesettings: get_typesettings(span, context_size)
     }
     annotations[:divid] = serial if has_divs?
 

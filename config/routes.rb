@@ -1,7 +1,6 @@
 Pubann::Application.routes.draw do
 
   resources :evaluators
-
   resources :evaluations do
     post 'select_reference_project' => 'projects#select_reference_project'
     post 'delete_reference_project' => 'projects#delete_reference_project'
@@ -95,6 +94,7 @@ Pubann::Application.routes.draw do
             post 'annotations' => 'annotations#align'
             get 'edit' => 'docs#edit'
             get 'uptodate' => 'docs#uptodate'
+            delete '/' => 'docs#delete', :as=>'delete'
             get 'spans' => 'spans#doc_spans_index'
             post 'spans' => 'spans#get_url'
             get 'spans/:begin-:end' => 'spans#doc_span_show', :as => 'span_show'

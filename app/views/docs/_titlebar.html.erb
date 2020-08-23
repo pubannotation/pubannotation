@@ -12,6 +12,13 @@
 		<%= link_to '>', @next_path, class: 'tab', title: 'next division' unless @next_path.nil? %>
 	</span>
 
+	<% if current_user && current_user.root? %>
+		<span class='tab-bar'>
+			<%= link_to 'uptodate', doc_sourcedb_sourceid_uptodate_path(params[:sourcedb], params[:sourceid]), class: 'tab', title: 'uptodate' %>
+			<%= link_to 'delete', doc_sourcedb_sourceid_delete_path(params[:sourcedb], params[:sourceid]), :method => :delete, :confirm => 'Are you sure?', class: 'tab', title: 'delete' %>
+		</span>
+	<% end %>
+
 	<%=
 		if @project.present?
 			num_projects = (@doc.hannotations(@projects, @span)[:tracks] || []).length
