@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20200819082927) do
+ActiveRecord::Schema.define(:version => 20200821103832) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
