@@ -24,6 +24,7 @@ gem 'pg', '~> 0.11'
 gem 'friendly_id'
 
 group :development do
+  gem 'dotenv-rails'
   gem 'guard'
   gem 'guard-livereload'
 end
@@ -61,7 +62,9 @@ gem 'libxml-ruby'
 gem 'wikipedia-client'
 gem 'ruby-dictionary'
 gem 'kaminari'
-gem 'devise'
+gem 'devise', git: 'https://github.com/plataformatec/devise' , branch: '3-stable'
+gem 'omniauth'
+gem 'omniauth-google-oauth2'
 gem 'rubyzip'
 gem 'zip-zip'
 gem 'daemons'
