@@ -208,19 +208,29 @@
       </div>
     </td>
   </tr>
+
   <tr>
     <th><%= f.label :namespaces %></th>
-    <td id="project_namespaces">
-      <%= label_tag 'project[namespaces][][uri]', 'BASE' -%>
-      <%= hidden_field_tag 'project[namespaces][][prefix]', '_base', class: "input" -%>
-      <%= text_field_tag 'project[namespaces][][uri]', @project.base_uri, class: "input", style: "width:calc(100% - 42px);" -%>
-      <%= namespaces_prefix_input_fields -%>
-      <span id="namespaces_inputs"></span>
-      <br />
-      <span id="add_namespaces_input" class="button">ADD</span>
+    <td>
+      <table id="project_namespaces" style="width: 100%">
+        <tr>
+          <th style="width:7em; background-color:#99aaff">Prefix</th>
+          <th style="width:auto; background-color:#99aaff">URL</th>
+        </tr>
+        <tr>
+          <td style="background-color:#ddeeff"><span style="margin: 2px; font-style:italic">_base</span></td>
+          <td>
+            <%= hidden_field_tag 'project[namespaces][][prefix]', '_base', class: "input" -%>
+            <%= text_field_tag 'project[namespaces][][uri]', @project.base_uri, class: "input" -%>
+          </td>
+        </tr>
+        <%= namespaces_prefix_input_fields -%>
+      </table>
+      <span id="add_namespaces_input" class="button">Add more</span>
     </td>
     <td class="help-column"></td>
   </tr>
+
   <tr>
     <th><%= f.label :rdfwriter %></th>
     <td><%= f.text_field :rdfwriter, :class => "input", :placeholder => 'URL' %></td>
@@ -262,10 +272,10 @@
 <% end -%>
 <% content_for :javascript do -%>
   <script type="text/javascript">
-    var inputTag = '<%= render(partial: 'namespace_prefix_input') -%>'
+    var inputTag = '<%= render(partial: "namespace_prefix_input") -%>';
     $(document).ready(function(){
       $('#add_namespaces_input').click(function(){
-        $('#namespaces_inputs').append(inputTag);
+        $('#project_namespaces').append(inputTag);
       })
     })
   </script>

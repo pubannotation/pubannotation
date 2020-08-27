@@ -4,7 +4,4 @@
     uri = namespace_prefix_input['uri']
   end 
 -%>
-<%= label_tag 'project[namespaces][][prefix]', 'PREFIX', class: 'prefix_label' -%>
-<%= text_field_tag 'project[namespaces][][prefix]', prefix, style: "width: 3em" -%>
-<%= label_tag 'project[namespaces][][uri]', 'URL' -%>
-<%= text_field_tag 'project[namespaces][][uri]', uri, style: "width:calc(100% - 120px);" -%>
+<tr><td style="background-color:#ddeeff"><%= text_field_tag 'project[namespaces][][prefix]', prefix -%></td><td><%= text_field_tag 'project[namespaces][][uri]', uri -%></td></tr>
