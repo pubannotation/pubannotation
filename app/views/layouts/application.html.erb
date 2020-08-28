@@ -14,37 +14,48 @@
 	  <%= yield :javascript -%>
 	  <%= csrf_meta_tags -%>
 	</head>
-	
+
 	<body>
-		<div id="header" class="frame">
-			<div class="content">
-				<%= render :partial => 'layouts/header' -%>
-			</div>
-		</div>
-		<div id="top-ribbon">
-			<div class="content">
-				<div id="path">
-					<%= yield :path -%>
+		<% if params[:controller] == "devise/sessions" %>
+			<div id="login_header" class="frame">
+				<div class="content">
+					<%= render :partial => 'layouts/login_header' -%>
 				</div>
 			</div>
-		</div>
+		<% else %>
+			<div id="header" class="frame">
+				<div class="content">
+					<%= render :partial => 'layouts/header' -%>
+				</div>
+			</div>
+
+			<div id="top-ribbon">
+				<div class="content">
+					<div id="path">
+						<%= yield :path -%>
+					</div>
+				</div>
+			</div>
+		<% end %>
 		<div id="notice">
 			<div class="content">
 				<%= notice.html_safe if notice -%>
 				<%= alert -%>
 			</div>
 		</div>
-		
+
 		<div id="main">
 			<div class="content">
 				<%= yield -%>
 			</div>
 		</div>
+		<% unless params[:controller] == "devise/sessions" %>
 		<div id="footer" class="frame">
 			<div class="content">
 				<%= render :partial => 'layouts/footer' -%>
 			</div>
 		</div>
+		<% end %>
 		<div id='Indicator'></div>
 	</body>
 </html>
