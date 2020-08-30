@@ -298,6 +298,8 @@ class Doc < ActiveRecord::Base
   end
 
   def store_divisions(hdivisions)
+    return [] if hdivisions.nil?
+
     divisions = hdivisions.map do |hdiv|
       Division.new(
         {
@@ -316,6 +318,8 @@ class Doc < ActiveRecord::Base
   end
 
   def store_typesettings(htypesettings)
+    return [] if htypesettings.nil?
+
     typesettings = htypesettings.map do |hts|
       Typesetting.new(
         {
@@ -383,20 +387,32 @@ class Doc < ActiveRecord::Base
   end
 
   def revise(new_hdoc)
+    messages = []
     new_body = new_hdoc[:text]
-    return [] if new_body == self.body
 
-    _denotations = self.denotations
-    messages = Annotation.align_denotations!(_denotations, self.body, new_body)
+    if new_body == self.body
+      unless self.divisions == new_hdoc[:divisions]
+        self.divisions.destroy_all
+        self.store_divisions(new_hdoc[:divisions])
+      end
 
-    ActiveRecord::Base.transaction do
-      self.divisions.destroy_all
-      self.typesettings.destroy_all
-      self.body = new_body
-      self.save!
-      self.store_divisions(new_hdoc[:divisions])
-      self.store_typesettings(new_hdoc[:typesettings])
-      _denotations.each{|d| d.save!}
+      unless self.typesettings == new_hdoc[:typesettings]
+        self.typesettings.destroy_all
+        self.store_typesettings(new_hdoc[:typesettings])
+      end
+    else
+      _denotations = self.denotations
+      messages += Annotation.align_denotations!(_denotations, self.body, new_body)
+
+      ActiveRecord::Base.transaction do
+        self.divisions.destroy_all
+        self.typesettings.destroy_all
+        self.body = new_body
+        self.save!
+        self.store_divisions(new_hdoc[:divisions])
+        self.store_typesettings(new_hdoc[:typesettings])
+        _denotations.each{|d| d.save!}
+      end
     end
 
     messages
