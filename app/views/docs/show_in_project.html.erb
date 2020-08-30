@@ -6,6 +6,7 @@
 	<section>
 		<%= render :partial => 'docs/titlebar' -%>
 		<%= render :partial => 'docs/content'-%>
+		<%= render :partial => 'docs/divisions'-%>
 
 		<section>
 			<% if @project.annotations_accessible?(current_user) %>
