@@ -349,4 +349,5 @@ class ApplicationController < ActionController::Base
       response.headers['Access-Control-Allow-Credentials'] = 'true'
     end
   end
+
 end
