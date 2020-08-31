@@ -16,19 +16,13 @@
 	</head>
 
 	<body>
-		<div id="header" class="frame">
+
+		<div id="login_header" class="frame">
 			<div class="content">
-				<%= render :partial => 'layouts/header' -%>
+				<%= render :partial => 'layouts/login_header' -%>
 			</div>
 		</div>
 
-		<div id="top-ribbon">
-			<div class="content">
-				<div id="path">
-					<%= yield :path -%>
-				</div>
-			</div>
-		</div>
 		<div id="notice">
 			<div class="content">
 				<%= notice.html_safe if notice -%>
@@ -41,11 +35,7 @@
 				<%= yield -%>
 			</div>
 		</div>
-		<div id="footer" class="frame">
-			<div class="content">
-				<%= render :partial => 'layouts/footer' -%>
-			</div>
-		</div>
+
 		<div id='Indicator'></div>
 	</body>
 </html>

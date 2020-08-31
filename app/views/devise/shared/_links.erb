@@ -1,6 +1,15 @@
 <div class="capitalize_first">
 <%- if controller_name != 'sessions' %>
-  <%= link_to t('views.users.sign_in'), new_session_path(resource_name), :class => 'capitalize_first button' %><br />
+  <a class = "capitalize_first button" href="javascript:openRequestedPopup('/users/sign_in', '_blank', window, 600, 450);"><%= t('views.users.sign_in') %></a>
+  </br>
+  <script type="text/javascript">
+    function openRequestedPopup(url, windowName, win, w, h) {
+      const y = win.top.outerHeight / 2 + win.top.screenY - ( h / 2);
+      const x = win.top.outerWidth / 2 + win.top.screenX - ( w / 2);
+      const windowFeatures = `toolbar=yes, location=no, directories=no, status=no, menubar=yes, scrollbars=no, resizable=no, copyhistory=no, width=${w}, height=${h}, top=${y}, left=${x}`;
+      return win.open(url, windowName, windowFeatures);
+    }
+  </script>
 <% end -%>
 
 <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
