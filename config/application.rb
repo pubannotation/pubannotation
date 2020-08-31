@@ -19,7 +19,7 @@ module Pubann
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
     config.autoload_paths += %W(#{config.root}/app/jobs #{Rails.root}/lib)
-    
+
     config.i18n.enforce_available_locales = true
 
     # Only load the plugins named here, in the order given (default is alphabetical).
@@ -73,5 +73,13 @@ module Pubann
     config.ep_user = 'admin'
     config.ep_password = 'admin'
     config.project_indexable_max_docs = 200000
+
+    config.to_prepare do
+      Devise::SessionsController.layout "devise"
+      Devise::RegistrationsController.layout "application"
+      Devise::ConfirmationsController.layout "application"
+      Devise::UnlocksController.layout "application"
+      Devise::PasswordsController.layout "application"
+    end
   end
 end
