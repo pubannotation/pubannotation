@@ -333,14 +333,6 @@ class ApplicationController < ActionController::Base
     render json: {}
   end
 
-  def layout
-    if is_a?(Devise::SessionsController)
-      "devise"
-    else
-      "application"
-    end
-  end
-
   protected
 
   def cors_set_access_control_headers
