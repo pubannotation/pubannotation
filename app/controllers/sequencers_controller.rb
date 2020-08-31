@@ -5,7 +5,7 @@ class SequencersController < ApplicationController
 
   def index
     @sequencers = Sequencer.all
-    @sequencers_grid = initialize_grid(Sequencer,
+    @sequencers_grid = initialize_grid(Sequencer.accessibles(current_user),
       order: :name,
       include: :user
     )

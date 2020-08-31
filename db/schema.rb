@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20200821103832) do
+ActiveRecord::Schema.define(:version => 20200831051109) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -324,8 +324,9 @@ ActiveRecord::Schema.define(:version => 20200821103832) do
     t.integer  "user_id"
     t.string   "url"
     t.text     "parameters"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.datetime "created_at",                     :null => false
+    t.datetime "updated_at",                     :null => false
+    t.boolean  "is_public",   :default => false
   end
 
   add_index "sequencers", ["user_id"], :name => "index_sequencers_on_user_id"

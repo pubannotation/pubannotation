@@ -8,6 +8,7 @@
   <h1>
     <%= @sequencer.name %>
     <%= button_home(@sequencer.home) -%>
+    <%= badge_public(@sequencer.is_public).html_safe %>
   </h1>
 
   <% if @sequencer.description.present? %>
