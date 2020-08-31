@@ -16,13 +16,13 @@ class ApplicationController < ActionController::Base
       render_status_error(:unauthorized)
     end
   end
-
+  
   def set_locale
     accept_locale = ['en', 'ja']
     if params[:locale].present? && accept_locale.include?(params[:locale])
       session[:locale] = params[:locale]
     end
-
+    
     if session[:locale].blank?
       accept_language = request.env['HTTP_ACCEPT_LANGUAGE'] ||= 'en'
       locale_string = accept_language.scan(/^[a-z]{2}/).first
@@ -36,7 +36,7 @@ class ApplicationController < ActionController::Base
       I18n.locale = session[:locale]
     end
   end
-
+  
   def store_location
     requested_path = url_for(:only_path => true)
     if requested_path != new_user_session_path && requested_path != new_user_registration_path && (requested_path =~ /password/).blank?  && request.method == 'GET'
@@ -44,11 +44,11 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def http_basic_authenticate
+  def http_basic_authenticate 
     authenticate_or_request_with_http_basic do |username, password|
       user = User.find_by_email(username)
       if user.present? && user.valid_password?(password)
-        sign_in :user, user
+        sign_in :user, user 
       else
         respond_to do |format|
           format.json{
@@ -62,7 +62,7 @@ class ApplicationController < ActionController::Base
       end
     end
   end
-
+  
   def after_sign_in_path_for(resource)
     session[:after_sign_in_path] ||= root_path
   end
@@ -132,7 +132,7 @@ class ApplicationController < ActionController::Base
         end
       end
     else
-      notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid)
+      notice = I18n.t('controllers.application.get_doc.no_annotation', :sourcedb => sourcedb, :sourceid => sourceid) 
     end
 
     return doc, notice
@@ -147,7 +147,7 @@ class ApplicationController < ActionController::Base
       end
     else
       divs = nil
-      notice = I18n.t('controllers.application.get_divs.no_annotation', :sourceid => sourceid)
+      notice = I18n.t('controllers.application.get_divs.no_annotation', :sourceid => sourceid) 
     end
 
     return [divs, notice]
@@ -187,7 +187,7 @@ class ApplicationController < ActionController::Base
     # And just returns denotations_s array.
     mid = 0
     denotations_s.each do |ca|
-      if (cid = ca.hid[1..-1].to_i) > mid
+      if (cid = ca.hid[1..-1].to_i) > mid 
         mid = cid
       end
     end
@@ -307,7 +307,7 @@ class ApplicationController < ActionController::Base
     end
     navigator
   end
-
+  
   def render_status_error(status)
     # translation required for each httpstatus eg: errors.statuses.forbidden
     flash[:error] = t("errors.statuses.#{status}")
@@ -319,7 +319,7 @@ class ApplicationController < ActionController::Base
     @projects = @doc.projects.annotations_accessible(current_user).order(sort_order)
     if params[:projects].present?
       select_project_names = params[:projects].split(',').uniq
-      @selected_projects = Array.new
+      @selected_projects = Array.new 
       select_project_names.each do |project_name|
         @selected_projects.push @projects.detect{|project| project.name == project_name}
       end
@@ -349,5 +349,4 @@ class ApplicationController < ActionController::Base
       response.headers['Access-Control-Allow-Credentials'] = 'true'
     end
   end
-
 end
