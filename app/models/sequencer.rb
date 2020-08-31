@@ -25,6 +25,10 @@ class Sequencer < ActiveRecord::Base
     end
   }
 
+  def self.list(current_user = nil)
+    Sequencer.accessibles(current_user).pluck(:name)
+  end
+
   def get_doc(sourceid)
     response = RestClient::Request.execute(method: :get, url: url, headers:{content_type: :json, accept: :json})
 
