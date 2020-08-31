@@ -73,13 +73,5 @@ module Pubann
     config.ep_user = 'admin'
     config.ep_password = 'admin'
     config.project_indexable_max_docs = 200000
-
-    config.to_prepare do
-      Devise::SessionsController.layout "devise"
-      Devise::RegistrationsController.layout "application"
-      Devise::ConfirmationsController.layout "application"
-      Devise::UnlocksController.layout "application"
-      Devise::PasswordsController.layout "application"
-    end
   end
 end
