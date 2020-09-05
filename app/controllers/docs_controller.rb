@@ -352,6 +352,9 @@ class DocsController < ApplicationController
         format.json { render json: @doc, status: :created, location: @doc }
       end
     rescue => e
+      logger.error e.message
+      logger.error e.backtrace.join("\n")
+
       respond_to do |format|
         format.html { redirect_to new_project_doc_path(@project.name), notice: e.message }
         format.json { render json: {message: e.message}, status: :unprocessable_entity }
