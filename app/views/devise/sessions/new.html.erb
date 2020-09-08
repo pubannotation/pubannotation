@@ -4,10 +4,10 @@
 <% end %>
 
 <h1><%= t('views.users.sign_in') %></h1>
-
+<!--
 <div style="margin:2px"><%= link_to login_with_google.html_safe, omniauth_authorize_path(resource_name, :google_oauth2) %></div>
 <br/>
-
+ -->
 <%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
 <table>
 <tr>
