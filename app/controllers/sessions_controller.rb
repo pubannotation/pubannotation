@@ -3,6 +3,6 @@ class SessionsController < Devise::SessionsController
     user = warden.authenticate!(auth_options)
     sign_in(:user, user) if user.persisted?
 
-    render :closed_and_reloaded, layout: false
+    render template: 'callbacks/closed_and_reloaded', layout: false
   end
 end
