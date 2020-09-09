@@ -25,6 +25,10 @@
 
 <table class="vertical">
 	<tr>
+		<th><%= t('activerecord.attributes.project.updated_at') %></th>
+		<td><%= @project.updated_at.strftime('%Y-%m-%d') %></td>
+	</tr>
+	<tr>
 		<th><%= t('activerecord.attributes.project.status') %></th>
 		<td><%= @project.status_text -%></td>
 	</tr>
@@ -32,10 +36,12 @@
 		<th><%= t('activerecord.attributes.project.maintainer') %></th>
 		<td><%= maintainer_link(@project) %></td>
 	</tr>
-	<tr>
-		<th><%= t('activerecord.attributes.project.author') %></th>
-		<td><%= @project.author %></td>
-	</tr>
+	<% if @project.author.present? %>
+		<tr>
+			<th><%= t('activerecord.attributes.project.author') %></th>
+			<td><%= @project.author %></td>
+		</tr>
+	<% end %>
 	<tr>
 		<th><%= t('activerecord.attributes.project.license') %></th>
 		<td><%= license_display_helper(@project.license).html_safe %></td>

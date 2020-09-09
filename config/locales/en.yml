@@ -248,7 +248,7 @@ en:
         annotations_downloadable: Anno. download
         annotations_RDF_downloadable: Anno. RDF download
         process: Type
-        updated_at: updated at
+        updated_at: Updated at
       collections:
         name: Name
         description: Description
