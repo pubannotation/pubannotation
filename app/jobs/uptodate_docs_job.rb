@@ -27,7 +27,7 @@ class UptodateDocsJob < Struct.new(:project)
 					@job.update_attribute(:num_dones, num += 1) if @job
 				rescue => e
 					if @job
-						@job.messages << Message.create({body: e.message})
+						@job.messages << Message.create({sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid], body: e.message})
 					else
 						raise e.message
 					end
