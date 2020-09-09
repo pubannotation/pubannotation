@@ -651,6 +651,20 @@ class Doc < ActiveRecord::Base
     "<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"   
   end
 
+  def get_project_count(span = nil)
+    return self.projects.count if span.nil?
+
+    # when the span is specified
+    denotations.where("denotations.begin >= ? AND denotations.end <= ?", span[:begin], span[:end]).pluck(:project_id).uniq.count
+  end
+
+  def get_projects(span = nil)
+    return self.projects if span.nil?
+
+    # when the span is specified
+    denotations.where("denotations.begin >= ? AND denotations.end <= ?", span[:begin], span[:end]).pluck(:project_id).uniq.collect{|pid| Project.find(pid)}
+  end
+
   def get_annotation_ids(project, span = nil)
     dids = if span.nil?
       denotations.where(project_id: project.id).pluck(:hid)
@@ -675,14 +689,26 @@ class Doc < ActiveRecord::Base
   # TODO: to take care of associate projects
   # the first argument, project, may be a project or an array of projects.
   def get_denotations(project = nil, span = nil, context_size = nil)
-    _denotations = if project.present?
-      if project.respond_to?(:each)
-        denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
+    _denotations = if span.present?
+      if project.present?
+        if project.respond_to?(:each)
+          denotations.where("denotations.project_id IN (?) AND denotations.begin >= ? AND denotations.end <= ?", project.map{|p| p.id}, span[:begin], span[:end])
+        else
+          denotations.where("denotations.project_id = ? AND denotations.begin >= ? AND denotations.end <= ?", project.id, span[:begin], span[:end])
+        end
       else
-        denotations.where(:'denotations.project_id' => project.id)
+        denotations.where("denotations.begin >= ? AND denotations.end <= ?", span[:begin], span[:end])
       end
     else
-      denotations
+      if project.present?
+        if project.respond_to?(:each)
+          denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
+        else
+          denotations.where(:'denotations.project_id' => project.id)
+        end
+      else
+        denotations
+      end
     end
 
     unless original_body.nil?
@@ -691,8 +717,6 @@ class Doc < ActiveRecord::Base
     end
 
     if span.present?
-      _denotations.select!{|d| d.begin >= span[:begin] && d.end <= span[:end]}
-
       b = span[:begin]
       context_size ||= 0
       if context_size > 0

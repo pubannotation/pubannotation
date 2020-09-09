@@ -187,13 +187,6 @@ class DocsController < ApplicationController
 
         get_docs_projects
 
-        @annotations = @doc.hannotations(@projects.select{|p|p.annotations_accessible?(current_user)})
-        if @annotations[:tracks].present?
-          @annotations[:denotations] = @annotations[:tracks].inject([]){|denotations, track| denotations += (track[:denotations] || [])}
-          @annotations[:relations] = @annotations[:tracks].inject([]){|relations, track| relations += (track[:relations] || [])}
-          @annotations[:modifications] = @annotations[:tracks].inject([]){|modifications, track| modifications += (track[:modifications] || [])}
-        end
-
         respond_to do |format|
           format.html
           format.json {render json: @doc.to_hash}
@@ -235,12 +228,6 @@ class DocsController < ApplicationController
 
         @doc.set_ascii_body if (params[:encoding] == 'ascii')
         @content = @doc.body.gsub(/\n/, "<br>")
-
-        @annotations = if @project.annotations_accessible?(current_user)
-          @doc.hannotations(@project)
-        else
-          nil
-        end
 
         respond_to do |format|
           format.html

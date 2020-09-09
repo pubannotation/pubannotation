@@ -1,14 +1,16 @@
+<% @span ||= nil %>
+
 <ul>
 	<li>
 		<%= t('activerecord.models.denotations') %>:
-		<%= @annotations[:denotations].present? ? @annotations[:denotations].length : 0 %>
+		<%= @project.get_denotations_count(@doc, @span) %>
 	</li>
 	<li>
 		<%= t('activerecord.models.relations') %>:
-		<%= @annotations[:relations].present? ? @annotations[:relations].length : 0 %>
+		<%= @project.get_relations_count(@doc, @span) %>
 	</li>
 	<li>
 		<%= t('activerecord.models.modifications') %>:
-		<%= @annotations[:modifications].present? ? @annotations[:modifications].length : 0 %>
+		<%= @project.get_modifications_count(@doc, @span) %>
 	</li>
 </ul>

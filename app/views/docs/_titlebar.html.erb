@@ -21,10 +21,15 @@
 
 	<%=
 		if @project.present?
-			num_projects = (@doc.hannotations(@projects, @span)[:tracks] || []).length
-			title = "Click this button to see all the #{num_projects} projects that have annotations to this span."
+			# num_projects = (@doc.hannotations(@projects, @span)[:tracks] || []).length
+			num_projects = @doc.get_project_count(@span)
+			title = "Click this button to see all the #{num_projects} projects " + if @span.nil?
+				"that include this document."
+			else
+				"that have annotations to this span."
+			end
 
-			if @doc.projects.length > 0
+			if num_projects > 1
 				if params[:divid].present?
 					if @span.present?
 						link_to("#{num_projects} Projects", doc_sourcedb_sourceid_divs_span_show_path(@doc.sourcedb, @doc.sourceid, params[:divid], params[:begin], params[:end]), :class => :button, title: title)

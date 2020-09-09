@@ -17,7 +17,9 @@
       end
     end
   -%>
-  <%= "(#{ annotations_count_helper(selector_project, @doc, @span) })" -%>
+
+  <%= "(#{ selector_project.get_denotations_count(@doc, @span) })" -%>
+
   <%= content_tag :span, 
     id: "project-selector-#{selector_project.name}", 
     class: 'project_selector project-textae-selector', 

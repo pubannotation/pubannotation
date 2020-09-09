@@ -263,7 +263,33 @@ class Project < ActiveRecord::Base
       end
     end
   end
-  
+
+  def get_denotations_count(doc = nil, span = nil)
+    return self.denotations_num if doc.nil?
+    return denotations.where("denotations.doc_id = ?", doc.id).count if span.nil?
+
+    # when the span is specified
+    denotations.where("denotations.doc_id = ? AND denotations.begin >= ? AND denotations.end <= ?", doc.id, span[:begin], span[:end]).count
+  end
+
+  def get_relations_count(doc = nil, span = nil)
+    return self.relations_num if doc.nil?
+    return doc.subcatrels.where(project_id: self.id).count if span.nil?
+
+    # when the span is specified
+    doc.subcatrels.where("denotations.begin >= ? and denotations.end <= ?", span[:begin], span[:end]).count
+  end
+
+  def get_modifications_count(doc = nil, span = nil)
+    return self.modifications_num if doc.nil?
+    return doc.catmods.where(project_id: self.id).count + doc.subcatrelmods.where(project_id: self.id).count if span.nil?
+
+    # when the span is specified
+    # ToDo: check modificaitons of relations
+    doc.catmods.where("denotations.begin >= ? and denotations.end <= ?", span[:begin], span[:end]).count
+  end
+
+  # To be deprecated in favor of denotations_count
   def get_denotations_num(doc = nil, span = nil)
     if doc.nil?
       self.denotations_num

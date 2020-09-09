@@ -40,7 +40,7 @@
 
 </span>
 
-<% if @project.present? && @project.editable?(current_user) && @annotations[:denotations].present? && params[:sourceid].present? -%>
+<% if @project.present? && @project.editable?(current_user) && @project.get_denotations_count(@doc) > 0 && params[:sourceid].present? -%>
 	<% destroy_path = if params[:divid].present?
 			if params[:begin].present?
 				destroy_annotations_in_span_project_sourcedb_sourceid_divs_docs_path
