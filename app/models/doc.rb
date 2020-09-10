@@ -711,10 +711,10 @@ class Doc < ActiveRecord::Base
       end
     end
 
-    unless original_body.nil?
-      text_aligner = TextAlignment::TextAlignment.new(original_body, body, TextAlignment::MAPPINGS)
-      text_aligner.transform_denotations!(_denotations) if text_aligner.present?
-    end
+    # unless original_body.nil?
+    #   text_aligner = TextAlignment::TextAlignment.new(original_body, body, TextAlignment::MAPPINGS)
+    #   text_aligner.transform_denotations!(_denotations) if text_aligner.present?
+    # end
 
     if span.present?
       b = span[:begin]
@@ -776,6 +776,33 @@ class Doc < ActiveRecord::Base
       hmodifications = self.hmodifications(project, ids)
       hdenotations.size + hrelations.size + hmodifications.size
     end
+  end
+
+  def get_relations(project = nil, base_ids = nil)
+    projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
+    if base_ids.present?
+      self.subcatrels.from_projects(projects).where("relations.subj_id IN (?) and relations.obj_id IN (?)", base_ids, base_ids)
+    else
+      self.subcatrels.from_projects(projects)
+    end.sort{|r1, r2| r1.id <=> r2.id}
+  end
+
+  def get_attributes(project = nil, base_ids = nil)
+    projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
+    if base_ids.present?
+      self.denotation_attributes.from_projects(projects).where("attrivutes.subj_id IN (?)", base_ids)
+    else
+      self.denotation_attributes.from_projects(projects)
+    end.sort{|a1, a2| a1.id <=> a2.id}
+  end
+
+  def get_modifications(project = nil, base_ids = nil)
+    projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
+    if base_ids.present?
+      self.catmods.from_projects(projects).where("modifications.obj_id IN (?)", base_ids) + self.subcatrelmods.from_projects(projects).where("modifications.obj_id IN (?)", base_ids)
+    else
+      self.catmods.from_projects(projects) + self.subcatrelmods.from_projects(projects)
+    end.sort{|m1, m2| m1.id <=> m2.id}
   end
 
   # the first argument, project, may be a project or an array of projects.
@@ -859,12 +886,20 @@ class Doc < ActiveRecord::Base
   end
 
   def get_project_annotations(project, span = nil, context_size = nil, options = {})
-    hdenotations = hdenotations(project, span, context_size)
-    ids =  hdenotations.collect{|d| d[:id]}
-    hrelations = hrelations(project, ids)
-    hattributes = hattributes(project, ids)
-    ids += hrelations.collect{|d| d[:id]}
-    hmodifications = hmodifications(project, ids)
+    _denotations = get_denotations(project, span, context_size)
+
+    ids = span.nil? ? nil : _denotations.collect{|d| d.id}
+    _relations = get_relations(project, ids)
+    _attributes = get_attributes(project, ids)
+
+    ids += _relations.collect{|r| r.id} unless span.nil?
+
+    _modifications = get_modifications(project, ids)
+
+    hdenotations = _denotations.map{|d| d.get_hash}
+    hrelations = _relations.map{|r| r.get_hash}
+    hattributes = _attributes.map{|a| a.get_hash}
+    hmodifications = _modifications.map{|m| m.get_hash}
 
     options ||= {}
     if options[:discontinuous_span] == :bag
