@@ -519,7 +519,7 @@ class Annotation < ActiveRecord::Base
       align.transform_denotations!(denotations)
 
       bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
-      raise "Alignment failed. Text may be too much different." unless bads.empty?
+      raise "Alignment failed. Text may be too much different: #{bads}." unless bads.empty?
     end
 
     []

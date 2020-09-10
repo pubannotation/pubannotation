@@ -569,19 +569,16 @@ class DocsController < ApplicationController
   end
 
   def uptodate
-    message = begin
-      raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+    raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-      divs = params[:sourceid].present? ? Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid]).order(:serial) : nil
-      raise ArgumentError, "There is no such document." if params[:sourceid].present? && !divs.present?
+    divs = params[:sourceid].present? ? Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid]).order(:serial) : nil
+    raise ArgumentError, "There is no such document." if params[:sourceid].present? && !divs.present?
 
-      Doc.uptodate(divs)
-      "The document #{divs[0].descriptor} is successfully updated."
-    rescue => e
-      e.message
-    end
-
+    Doc.uptodate(divs)
+    message = "The document #{divs[0].descriptor} is successfully updated."
     redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid]), notice: message
+  rescue => e
+    redirect_to :back, notice: e.message
   end
 
   # DELETE /docs/sourcedb/:sourcedb/sourceid/:sourceid
