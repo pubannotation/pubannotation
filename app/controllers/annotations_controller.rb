@@ -2,7 +2,7 @@ require 'fileutils'
 
 class AnnotationsController < ApplicationController
   protect_from_forgery :except => [:create]
-  before_filter :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_list_view, :div_annotations_list_view, :doc_annotations_merge_view, :div_annotations_merge_view, :project_annotations_tgz]
+  before_filter :authenticate_user!, :except => [:create, :index, :align, :doc_annotations_index, :div_annotations_index, :project_doc_annotations_index, :project_div_annotations_index, :doc_annotations_list_view, :div_annotations_list_view, :doc_annotations_merge_view, :div_annotations_merge_view, :project_annotations_tgz]
   include DenotationsHelper
 
   def index
@@ -245,6 +245,13 @@ class AnnotationsController < ApplicationController
   # POST /annotations
   # POST /annotations.json
   def create
+    unless user_signed_in? then
+      response.headers['WWW-Authenticate'] = 'ServerPage'
+      response.headers['Location'] = new_user_session_url
+      response.headers['Access-Control-Expose-Headers'] = 'WWW-Authenticate, Location'
+      head 401 and return
+    end
+
     begin
       project = Project.editable(current_user).find_by_name(params[:project_id])
       raise "There is no such project in your management." unless project.present?
@@ -765,7 +772,7 @@ class AnnotationsController < ApplicationController
       raise "There is no such project." unless project.present?
 
       if File.exist?(project.annotations_rdf_system_path)
-        if project.user == current_user 
+        if project.user == current_user
           File.unlink(project.annotations_rdf_system_path)
           flash[:notice] = t('views.shared.rdf.deleted')
         else
