@@ -1,6 +1,6 @@
 class AnnotationsController < ApplicationController
 	protect_from_forgery :except => [:create]
-	before_action :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :project_doc_annotations_index, :doc_annotations_list_view, :doc_annotations_merge_view, :project_annotations_tgz]
+	before_action :authenticate_user!, :except => [:create, :index, :align, :doc_annotations_index, :project_doc_annotations_index, :doc_annotations_list_view, :doc_annotations_merge_view, :project_annotations_tgz]
 	include DenotationsHelper
 
 	def index
@@ -117,6 +117,13 @@ class AnnotationsController < ApplicationController
 	# POST /annotations
 	# POST /annotations.json
 	def create
+		unless user_signed_in? then
+			response.headers['WWW-Authenticate'] = 'ServerPage'
+			response.headers['Location'] = new_user_session_url
+			response.headers['Access-Control-Expose-Headers'] = 'WWW-Authenticate, Location'
+			head 401 and return
+		end
+
 		begin
 			# use unsafe params for flexible paramater passing
 			unsafe_params = params.permit!.to_hash.deep_symbolize_keys!
