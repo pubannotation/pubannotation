@@ -1,8 +1,12 @@
 <html>
   <body>
     <script>
-      window.opener.location.reload();
+      window.onbeforeunload= parentReload;
       window.close();
+
+      function parentReload() {
+        window.opener.location.reload();
+      }
     </script>
   </body>
 </html>
