@@ -509,11 +509,12 @@ class Annotation < ActiveRecord::Base
   def self.align_denotations!(denotations, str, rstr)
     return [] unless denotations.present? && str != rstr
 
-    align = TextAlignment::TextAlignment.new(str, rstr)
+    align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
     align.transform_denotations!(denotations)
 
     bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
     unless bads.empty? # && align.similarity > 0.5
+      denotations.each{|d| d.reload}
       align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
       align.transform_denotations!(denotations)
 
