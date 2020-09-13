@@ -120,8 +120,12 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
       num_added, num_sequenced, num_existed, messages = project.add_docs(sourcedb, sourceids.to_a)
       sourcedbs_changed << sourcedb if num_added > 0
       @total_num_sequenced += num_sequenced
-      messages.each do |message|
-        @job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
+      if @job
+        messages.each do |message|
+          @job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
+        end
+      else
+        raise messages.join("\n") if @messages.present?
       end
     end
 
@@ -130,7 +134,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
       if @job
         messages.each{|m| @job.messages << Message.create(m)}
       else
-        msgs = messages.collect{|m| "[#{m[:sourcedb]}-#{m[:sourceid]}#{m[:divid].nil? ? '' : '-' + m[:divid]}] #{m[:body]}"}
+        msgs = messages.collect{|m| "[#{m[:sourcedb]}-#{m[:sourceid]}#{m[:divid].nil? ? '' : '-' + m[:divid].to_s}] #{m[:body]}"}
         raise ArgumentError, msgs.join("\n")
       end
     end
