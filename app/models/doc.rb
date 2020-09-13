@@ -447,7 +447,11 @@ class Doc < ActiveRecord::Base
 
       ActiveRecord::Base.transaction do
         # The document to be left
-        Annotation.align_denotations!(doc.denotations, doc.body, new_text)
+        begin
+          Annotation.align_denotations!(doc.denotations, doc.body, new_text)
+        rescue => e
+          raise "divid:#{doc.serial}\t#{e.message}"
+        end
 
         # re-id annotations
         doc.denotations.each do |d|
@@ -480,7 +484,11 @@ class Doc < ActiveRecord::Base
 
         # re-id and move annotations
         divs.each do |div|
-          Annotation.align_denotations!(div.denotations, div.body, new_text)
+          begin
+            Annotation.align_denotations!(div.denotations, div.body, new_text)
+          rescue => e
+            raise "divid:#{div.serial}\t#{e.message}"
+          end
 
           # caution: the order of reiding matters here
           (div.catmods + div.subcatrelmods).each do |m|
