@@ -481,7 +481,6 @@ class Annotation < ActiveRecord::Base
     messages
   end
 
-
   # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method
   def self.align_hdenotations!(hdenotations, str, rstr)
@@ -497,7 +496,7 @@ class Annotation < ActiveRecord::Base
     denotations_new = align.transform_hdenotations(hdenotations)
 
     bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
-    unless bads.empty? && align.similarity > 0.5
+    unless bads.empty? # && align.similarity > 0.5
       align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
       denotations_new = align.transform_hdenotations(hdenotations)
       bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
@@ -519,7 +518,7 @@ class Annotation < ActiveRecord::Base
       align.transform_denotations!(denotations)
 
       bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
-      raise "Alignment failed. Text may be too much different: #{bads}." unless bads.empty?
+      raise "Alignment failed. Text may be too much different." unless bads.empty?
     end
 
     []
@@ -543,7 +542,11 @@ class Annotation < ActiveRecord::Base
       if annotations[:text] == ref_text
         []
       else
-        messages = align_hdenotations!(annotations[:denotations], annotations[:text], ref_text)
+        begin
+          messages = align_hdenotations!(annotations[:denotations], annotations[:text], ref_text)
+        rescue => e
+          raise "[#{annotations[:sourcedb]}:#{annotations[:sourceid]}-#{annotations[:divid]}] #{e.message}"
+        end
         annotations[:text] = doc.body
         annotations.delete_if{|k,v| !v.present?}
         messages
