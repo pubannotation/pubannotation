@@ -49,12 +49,12 @@ class Sequencer < ActiveRecord::Base
         begin
           r = JSON.parse response, :symbolize_names => true
           result[:docs] += r[:docs]
-          result[:messages] += r[:messages]
+          result[:messages] += r[:messages] if r[:messages]
         rescue => e
-          result[:messages] << {sourcedb: name, body: "Error during JSON parsing: #{e.message}"}
+          result[:messages] << {sourcedb: name, sourceid: ids.join(', '), body: "Error during JSON parsing: #{e.message}"}
         end
       rescue => e
-        result[:messages] << {sourcedb: name, body: "Error during communication with the server: #{e.message}"}
+        result[:messages] << {sourcedb: name, sourceid: ids.join(', '), body: "Error during communication with the server: #{e.message}"}
       end
       result
     end
