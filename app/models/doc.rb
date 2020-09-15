@@ -446,6 +446,21 @@ class Doc < ActiveRecord::Base
       idnum_modifications = 0
 
       ActiveRecord::Base.transaction do
+        # delete divs without annotations, in advance
+        div_ids_to_be_deleted = []
+        divs.each do |div|
+          if div.denotations.empty?
+            begin
+              div.__elasticsearch__.delete_document
+            rescue
+            end
+            div_ids_to_be_deleted << div.id
+          end
+        end
+        connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_to_be_deleted.join(', ')})")
+        connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_to_be_deleted.join(', ')})")
+        divs.delete_if{|div| div_ids_to_be_deleted.include? div.id}
+
         # The document to be left
         begin
           Annotation.align_denotations!(doc.denotations, doc.body, new_text)
@@ -516,7 +531,10 @@ class Doc < ActiveRecord::Base
 
         # delete unnecessary divs
         divs.each do |d|
-          d.__elasticsearch__.delete_document
+          begin
+            d.__elasticsearch__.delete_document
+          rescue
+          end
           # d.delete
         end
         div_ids_merged = divs.collect{|div| div.id}.join(', ')
