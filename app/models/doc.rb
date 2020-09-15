@@ -275,7 +275,7 @@ class Doc < ActiveRecord::Base
 
     invalid_docs = result[:docs].select{|doc| !Doc.hdoc_valid?(doc)}
     invalid_docs.each do |doc|
-      result[:messages] << {sourcedb:sourcedb, sourceid:doc[:source], body:"Invalid document entry."} unless Doc.hdoc_valid?(doc)
+      result[:messages] << {sourcedb:sourcedb, sourceid:doc[:sourceid], body:"Invalid document entry."} unless Doc.hdoc_valid?(doc)
     end
 
     result[:docs] = result[:docs] - invalid_docs
@@ -457,9 +457,11 @@ class Doc < ActiveRecord::Base
             div_ids_to_be_deleted << div.id
           end
         end
-        connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_to_be_deleted.join(', ')})")
-        connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_to_be_deleted.join(', ')})")
-        divs.delete_if{|div| div_ids_to_be_deleted.include? div.id}
+        unless div_ids_to_be_deleted.empty?
+          connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_to_be_deleted.join(', ')})")
+          connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_to_be_deleted.join(', ')})")
+          divs.delete_if{|div| div_ids_to_be_deleted.include? div.id}
+        end
 
         # The document to be left
         begin
@@ -538,8 +540,10 @@ class Doc < ActiveRecord::Base
           # d.delete
         end
         div_ids_merged = divs.collect{|div| div.id}.join(', ')
-        connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_merged})")
-        connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_merged})")
+        unless div_ids_merged.empty?
+          connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_merged})")
+          connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_merged})")
+        end
 
         # update relevant counts of the doc
         doc.reset_count_denotations
