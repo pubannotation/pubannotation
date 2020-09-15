@@ -9,7 +9,7 @@ module StateManagement
 		@job.update_related_priority
 	end
 
-  def error(job, exception)
-		@job.messages << Message.create({sourcedb: nil, sourceid: nil, divid: nil, body: exception.message})
-  end
+	def error(job, exception)
+		@job.messages << Message.create({sourcedb: '*', sourceid: '*', divid: nil, body: exception.message})
+	end
 end
