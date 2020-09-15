@@ -34,6 +34,8 @@ class UptodateDocsJob < Struct.new(:project)
 						raise e.message
 					end
 				end
+			rescue => e
+				@job.messages << Message.create({sourcedb: sourcedb, sourceid: sids.join(", ").[0 ... 200], body: e.message})
 			end
 		end
 	end
