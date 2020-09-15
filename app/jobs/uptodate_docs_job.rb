@@ -19,7 +19,9 @@ class UptodateDocsJob < Struct.new(:project)
 
 			sourceids.each_slice(batch_num).each do |sids|
 				r = Doc.sequence_docs(sourcedb, sids)
-				@job.messages += r[:messages].map{|m| Message.create(m)} unless r[:messages].empty?
+				unless r[:messages].empty?
+					r[:messages].each{|m| @job.messages << Message.create(m)}
+				end
 				hdocs_sequenced = r[:docs]
 				hdocs_sequenced.each do |hdoc|
 					divs = Doc.where(sourcedb:sourcedb, sourceid:hdoc[:sourceid]).order(:serial)
