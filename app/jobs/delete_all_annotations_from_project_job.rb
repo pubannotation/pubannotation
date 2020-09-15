@@ -2,17 +2,15 @@ class DeleteAllAnnotationsFromProjectJob < Struct.new(:project)
 	include StateManagement
 
 	def perform
-    docs = project.docs
-		@job.update_attribute(:num_items, docs.length)
-    @job.update_attribute(:num_dones, 0)
-    docs.each_with_index do |doc, i|
-      begin
-        project.delete_annotations(doc)
-      rescue => e
-				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message})
-      end
-			@job.update_attribute(:num_dones, i + 1)
-    end
-    project.update_attribute(:annotations_count, 0)
+		docs = project.docs
+		@job.update_attribute(:num_items, 1)
+		@job.update_attribute(:num_dones, 0)
+		begin
+			project.delete_annotations
+		rescue => e
+			@job.messages << Message.create({body: e.message})
+		end
+		@job.update_attribute(:num_dones, 1)
+		project.update_attribute(:annotations_count, 0)
 	end
 end
