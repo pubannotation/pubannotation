@@ -22,11 +22,14 @@ class UptodateDocsJob < Struct.new(:project)
 				unless r[:messages].empty?
 					r[:messages].each do |m|
 						message = if m.class == String
-							{body: m}
+							{body: m[0 ... 200]}
 						elsif m.class == Hash
-							m
+							_sourcedb = m[:sourcedb] || ''
+							_sourceid = m[:sourceid] || ''
+							_body = m[:body] || ''
+							{sourcedb: _sourcedb[0 ... 200], sourceid: _sourceid[0 ... 200], body: _body[0 ... 200]}
 						else
-							{body: "Unknown message: #{m}"}
+							{body: "Unknown message: #{m}"[0 ... 200]}
 						end
 						@job.messages << Message.create(message)
 					end
@@ -44,7 +47,7 @@ class UptodateDocsJob < Struct.new(:project)
 					end
 				end
 			rescue => e
-				@job.messages << Message.create({sourcedb: sourcedb, sourceid: sids.join(", ")[0 ... 200], body: e.message})
+				@job.messages << Message.create({sourcedb: sourcedb, sourceid: sids.join(", ")[0 ... 200], body: e.message[0 ... 200]})
 			end
 		end
 	end
