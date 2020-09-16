@@ -20,7 +20,16 @@ class UptodateDocsJob < Struct.new(:project)
 			sourceids.each_slice(batch_num).each do |sids|
 				r = Doc.sequence_docs(sourcedb, sids)
 				unless r[:messages].empty?
-					r[:messages].each{|m| @job.messages << Message.create(m)}
+					r[:messages].each do |m|
+						message = if m.class == String
+							{body: m}
+						elsif m.class == Hash
+							m
+						else
+							{body: "Unknown message: #{m}"}
+						end
+						@job.messages << Message.create(message)
+					end
 				end
 				hdocs_sequenced = r[:docs]
 				hdocs_sequenced.each do |hdoc|
