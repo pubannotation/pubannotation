@@ -509,7 +509,7 @@ class Annotation < ActiveRecord::Base
   def self.align_denotations!(denotations, str, rstr)
     return [] unless denotations.present? && str != rstr
 
-    bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
+    bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= str.length)}
     unless bads.empty?
       message = "Alignment cancelled. Invalid denotations found: "
       message += if bads.length > 5
@@ -523,7 +523,7 @@ class Annotation < ActiveRecord::Base
     align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
     align.transform_denotations!(denotations)
 
-    bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
+    bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= rstr.length)}
     unless bads.empty? # && align.similarity > 0.5
       denotations.each{|d| d.reload}
       align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
