@@ -311,7 +311,7 @@ GEM
     tao_rdfizer (0.9.13)
     test-unit (3.3.6)
       power_assert
-    text_alignment (0.3.15)
+    text_alignment (0.3.16)
       ruby-dictionary (~> 1.1, >= 1.1.1)
       string-similarity (~> 2.1)
     thor (1.0.1)
@@ -394,7 +394,7 @@ DEPENDENCIES
   stardog-rb!
   tao_rdfizer (~> 0.9.13)
   test-unit
-  text_alignment (~> 0.3.15)
+  text_alignment (~> 0.3.16)
   uglifier (>= 1.0.3)
   unicorn (= 5.4.1)
   vcr
