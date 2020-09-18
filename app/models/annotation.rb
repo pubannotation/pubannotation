@@ -513,9 +513,9 @@ class Annotation < ActiveRecord::Base
     unless bads.empty?
       message = "Alignment cancelled. Invalid denotations found: "
       message += if bads.length > 5
-        bads[0 ... 5].map{|d| "[#{d.begin}, #{d.end}]"}.join(", ") + "..."
+        bads[0 ... 5].map{|d| d.to_s}.join(", ") + "..."
       else
-        bads.map{|d| "[#{d.begin}, #{d.end}]"}.join(", ")
+        bads.map{|d| d.to_s}.join(", ")
       end
       raise message
     end
@@ -527,9 +527,9 @@ class Annotation < ActiveRecord::Base
     unless bads.empty? # && align.similarity > 0.5
       message = "Alignment failed. Invalid transformations found: "
       message += if bads.length > 5
-        bads[0 ... 5].map{|d| "[#{d.begin}, #{d.end}]"}.join(", ") + "..."
+        bads[0 ... 5].map{|d| d.to_s}.join(", ") + "..."
       else
-        bads.map{|d| "[#{d.begin}, #{d.end}]"}.join(", ")
+        bads.map{|d| d.to_s}.join(", ")
       end
       raise message
     end

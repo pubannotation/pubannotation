@@ -43,6 +43,10 @@ class Denotation < ActiveRecord::Base
   after_update :update_project_updated_at
   after_destroy :decrement_numbers, :update_project_updated_at
 
+  def to_s
+    "#{self.project.name}:[#{self.begin}, #{self.end}]"
+  end
+
   def span
     [self.begin, self.end]
   end
