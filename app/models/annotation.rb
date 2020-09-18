@@ -525,12 +525,13 @@ class Annotation < ActiveRecord::Base
 
     bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= rstr.length)}
     unless bads.empty? # && align.similarity > 0.5
-      denotations.each{|d| d.reload}
-      align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
-      align.transform_denotations!(denotations)
-
-      bads = denotations.select{|d| d.begin.nil? || d.end.nil? || d.begin.to_i >= d.end.to_i}
-      raise "Alignment failed. Text may be too much different." unless bads.empty?
+      message = "Alignment failed. Invalid transformations found: "
+      message += if bads.length > 5
+        bads[0 ... 5].map{|d| "[#{d.begin}, #{d.end}]"}.join(", ") + "..."
+      else
+        bads.map{|d| "[#{d.begin}, #{d.end}]"}.join(", ")
+      end
+      raise message
     end
 
     []
