@@ -16,7 +16,7 @@
         end
 
         g.column name: 'sourceid', attribute: 'sourceid' do |message|
-          [message.sourceid, {style: 'width:7em; text-align:center'}]
+          [(message.sourcedb && message.sourceid) ? link_to(message.sourceid, show_project_sourcedb_sourceid_docs_path(@project.name, message.sourcedb, message.sourceid), style:'display:block') : message.sourceid, {style: 'width:7em; text-align:center'}]
         end
 
         g.column name: 'divid', attribute: 'divid' do |message|
