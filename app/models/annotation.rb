@@ -132,9 +132,13 @@ class Annotation < ActiveRecord::Base
         a[:span][:begin] = a[:span][:begin].to_i if a[:span][:begin].is_a? String
         a[:span][:end]   = a[:span][:end].to_i   if a[:span][:end].is_a? String
 
-        raise ArgumentError, "the begin offset must be between 0 and the length of the text: #{a}" if a[:span][:begin] < 0 || a[:span][:begin] > annotations[:text].length
-        raise ArgumentError, "the end offset must be between 0 and the length of the text." if a[:span][:end] < 0 || a[:span][:end] > annotations[:text].length
-        raise ArgumentError, "the begin offset must not be bigger than the end offset." if a[:span][:begin] > a[:span][:end]
+        raise ArgumentError, "the begin offset must be bigger than or equal to 0: #{a}" unless a[:span][:begin] >= 0
+        raise ArgumentError, "the begin offset must be smaller than the length of the text: #{a}" unless a[:span][:begin] < annotations[:text].length
+
+        raise ArgumentError, "the end offset must be bigger than 0: #{a}" unless a[:span][:end] > 0
+        raise ArgumentError, "the end offset must be smaller than or equal to the length of the text: #{a}" unless a[:span][:end] <= annotations[:text].length
+
+        raise ArgumentError, "the end offset must be bigger than the begin offset: #{a}" unless a[:span][:begin] < a[:span][:end]
       end
     end
 
