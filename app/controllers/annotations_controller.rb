@@ -591,7 +591,7 @@ class AnnotationsController < ApplicationController
       filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
       FileUtils.mv file.path, filepath
 
-      if ext == '.json' && file.size < 10.kilobytes
+      if ext == '.json' && file.size < 20.kilobytes
         job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)
         res = job.perform()
         notice = "Annotations are successfully uploaded."

@@ -501,10 +501,23 @@ class Annotation < ActiveRecord::Base
 
     bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
     unless bads.empty? # && align.similarity > 0.5
-      align = TextAlignment::TextAlignment.new(str.downcase, rstr.downcase, TextAlignment::MAPPINGS)
-      denotations_new = align.transform_hdenotations(hdenotations)
-      bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
-      raise "Alignment failed. Text may be too much different." unless bads.empty?
+      message = "Alignment cancelled. Invalid denotations found: "
+
+      message += if str.length > 100
+        str[0 ... 100] + "..."
+      else
+        str
+      end
+
+      message += ", "
+
+      message += if bads.length > 3
+        bads[0 ... 3].map{|d| d.to_s}.join(", ") + "..."
+      else
+        bads.map{|d| "[#{d[:span][:begin]}, #{d[:span][:end]}]"}.join(", ")
+      end
+
+      raise message
     end
     hdenotations.replace(denotations_new)
     []
