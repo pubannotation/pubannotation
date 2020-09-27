@@ -7,7 +7,11 @@
 			</span>
 		</h2>
 		<%
-			divs = @doc.divisions.sort{|a, b| a.begin <=> b.begin || b.end <=> a.end}
+			divs = @doc.divisions.sort do |a, b|
+				cmp1 = a.begin <=> b.begin
+				cmp1 == 0 ? b.end <=> a.end : cmp1
+			end
+
 			levels = []
 			divs.each_with_index do |d, c|
 				level = if c == 0
@@ -19,10 +23,10 @@
 			end
 		%>
 		<table id="divisions" style="display:none; table-layout:fixed; width:100%">
-		<% @doc.divisions.each_with_index do |div, i| %>
+		<% divs.each_with_index do |div, i| %>
 				<tr>
-					<td style="width:20em">
-						<%= raw '&nbsp;' * levels[i] * 10 %>
+					<td style="width:15em">
+						<%= raw '&nbsp;' * levels[i] * 5 %>
 						<% if @project %>
 							<%= link_to_unless_current div.label, span_show_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, div.begin, div.end) %>
 						<% else %>
