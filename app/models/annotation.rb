@@ -501,7 +501,7 @@ class Annotation < ActiveRecord::Base
 
     bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
     unless bads.empty? # && align.similarity > 0.5
-      message = "Alignment cancelled. Invalid denotations found: "
+      message = "Alignment failed. Invalid denotations found: "
 
       message += if str.length > 100
         str[0 ... 100] + "..."
