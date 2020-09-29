@@ -46,7 +46,7 @@ group :test do
   gem 'test-unit'
 end
 
-gem 'text_alignment', '~> 0.3.23'
+gem 'text_alignment', '~> 0.3.24'
 gem 'pubannotation_evaluator', '~> 1.0', '>= 1.0.5'
 gem 'wice_grid'
 gem 'font-awesome-rails'
