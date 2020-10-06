@@ -1,0 +1,33 @@
+// Place all the styles related to the jobs controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+.text_alignment_table {
+	td {
+		white-space: normal;
+	}
+
+	tr.common_text {
+		background-color: #bdf;
+	}
+
+	tr.aligned_texts {
+		background-color: #bfd;
+	}
+
+	tr.disparate_texts {
+		background-color: #fbb;
+	}
+
+	td.text_alignment_common {
+		text-align: center;
+	}
+
+	td.text_alignment_left {
+		text-align: right;
+	}
+
+	td.text_alignment_right {
+		text-align: left;
+	}
+}

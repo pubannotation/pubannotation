@@ -1,6 +1,8 @@
 class Message < ActiveRecord::Base
+  attr_accessible :sourcedb, :sourceid, :divid, :body, :data
+
   belongs_to :job
-  attr_accessible :sourcedb, :sourceid, :divid, :body
+  serialize :data
 
   def as_json(options={})
     options||={}

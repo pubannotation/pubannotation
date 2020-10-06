@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20200831051109) do
+ActiveRecord::Schema.define(:version => 20201004121204) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -212,6 +212,7 @@ ActiveRecord::Schema.define(:version => 20200831051109) do
     t.string   "sourcedb"
     t.string   "sourceid"
     t.integer  "divid"
+    t.text     "data"
   end
 
   add_index "messages", ["job_id"], :name => "index_messages_on_job_id"

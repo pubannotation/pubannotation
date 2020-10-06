@@ -24,7 +24,7 @@
         end
 
         g.column name: 'message', attribute: 'body' do |message|
-          [message.body, {title: message.body, style: 'width:20em; max-width: 20em; white-space:initial; overflow:hidden; text-overflow:ellipsis'}]
+          [link_to(message.body, message), {title: message.body, style: 'width:20em; max-width: 20em; white-space:initial; overflow:hidden; text-overflow:ellipsis'}]
         end
 
         g.column name: 'reported at', attribute: 'updated_at' do |message|

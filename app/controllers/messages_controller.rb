@@ -14,4 +14,9 @@ class MessagesController < ApplicationController
 			format.tsv  {render text: @messages.as_tsv}
 		end
 	end
+
+	def show
+		@message = Message.find(params[:id])
+		@project = @message.job.project
+	end
 end

@@ -269,6 +269,8 @@ Pubann::Application.routes.draw do
     resources :queries
   end
 
+  resources :messages
+
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]

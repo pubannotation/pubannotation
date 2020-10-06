@@ -1138,7 +1138,7 @@ class Project < ActiveRecord::Base
 
 				begin
 					msgs = Annotation.prepare_annotations!(annotations, doc)
-					messages += msgs.map{|msg| {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body:msg}}
+					messages += msgs.map{|msg| msg.merge({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid]})}
 
 					case options[:mode]
 					when 'replace'

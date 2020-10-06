@@ -1,0 +1,58 @@
+<table class='text_alignment_table'>
+	<thead>
+		<tr>
+			<th class='text_alignment_left' style='width:50%'>Text 1</th>
+			<th class='text_alignment_rigt'>Text 2</th>
+		</tr>
+	</thead>
+	<tbody>
+		<% blocks.each do |block| %>
+			<%= render partial: 'annotations/block_alignment_spans', locals: {alignment: block} -%>
+			<% case block[:alignment] %>
+			<% when :block %>
+				<tr class='common_text' title='common text'>
+					<td colspan='2' class='text_alignment_common'><%= source_text[block[:source][:begin] ... block[:source][:end]] %></td>
+				</tr>
+			<% when :empty %>
+				<tr class='disparate_texts' title='disparate texts'>
+					<td class='text_alignment_left'><%= source_text[block[:source][:begin] ... block[:source][:end]] %></td>
+					<td class='text_alignment_right'><%= target_text[block[:target][:begin] ... block[:target][:end]] %></td>
+				</tr>
+			<% else %>
+				<%
+					base = block[:source][:begin]
+					astr1 = block[:alignment].sdiff.map do |c|
+						case c.action
+						when '='
+							source_text[c.old_position + base]
+						when '+'
+							'_'
+						when '-'
+							source_text[c.old_position + base]
+						when '!'
+							source_text[c.old_position + base] + '_'
+						end
+					end.join('')
+
+					base = block[:target][:begin]
+					astr2 = block[:alignment].sdiff.map do |c|
+						case c.action
+						when '='
+							target_text[c.new_position + base]
+						when '+'
+							target_text[c.new_position + base]
+						when '-'
+							'_'
+						when '!'
+							'_' + target_text[c.new_position + base]
+						end
+					end.join('')
+				%>
+				<tr class='aligned_texts' title='aligned texts'>
+					<td class='text_alignment_left'><%= astr1 %></td>
+					<td class='text_alignment_right'><%= astr2 %></td>
+				</tr>
+			<% end %>
+		<% end %>
+	</tbody>
+</table>'

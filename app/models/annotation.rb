@@ -339,30 +339,6 @@ class Annotation < ActiveRecord::Base
     [sentences, sentence_spans]
   end
 
-  def self.align_hdenotations_by_exact!(hdenotations, str, rstr)
-    block_begin = rstr.index(str)
-    return nil if block_begin.nil?
-
-    hdenotations.each do |d|
-      d[:span][:begin] += block_begin
-      d[:span][:end] += block_begin
-    end
-
-    []
-  end
-
-  def self.align_denotations_by_exact!(denotations, str, rstr)
-    block_begin = rstr.index(str)
-    return nil if block_begin.nil?
-
-    denotations.each do |d|
-      d.begin += block_begin
-      d.end += block_begin
-    end
-
-    []
-  end
-
   def self.align_hdenotations_by_sentences!(hdenotations, str, rstr)
     tsentences, tsentence_spans = text2sentences(str)
     rsentences, rsentence_spans = text2sentences(rstr)
@@ -487,16 +463,12 @@ class Annotation < ActiveRecord::Base
 
   # to work on the hash representation of denotations
   # to assume that there is no bag representation to this method
-  def self.align_hdenotations!(hdenotations, str, rstr)
+  def self.align_hdenotations!(hdenotations, str, rstr, size_ngram = nil, size_window = nil, text_similiarity_threshold = nil)
     return [] unless hdenotations.present? && str != rstr
 
-    messages = align_hdenotations_by_exact!(hdenotations, str, rstr)
-    return messages unless messages.nil?
+    messages = []
 
-    messages = align_hdenotations_by_sentences!(hdenotations, str, rstr)
-    return messages unless messages.nil?
-
-    align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
+    align = TextAlignment::TextAlignment.new(str, rstr, size_ngram = nil, size_window = nil, text_similiarity_threshold = nil)
     denotations_new = align.transform_hdenotations(hdenotations)
 
     bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
@@ -517,14 +489,16 @@ class Annotation < ActiveRecord::Base
         bads.map{|d| "[#{d[:span][:begin]}, #{d[:span][:end]}]"}.join(", ")
       end
 
-      raise message
+      messages << {body:message, data:{block_alignment: align.block_alignment}}
     end
     hdenotations.replace(denotations_new)
-    []
+    messages
   end
 
-  def self.align_denotations!(denotations, str, rstr)
+  def self.align_denotations!(denotations, str, rstr, size_ngram = nil, size_window = nil, text_similiarity_threshold = nil)
     return [] unless denotations.present? && str != rstr
+
+    messages = []
 
     bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= str.length)}
     unless bads.empty?
@@ -537,7 +511,7 @@ class Annotation < ActiveRecord::Base
       raise message
     end
 
-    align = TextAlignment::TextAlignment.new(str, rstr, TextAlignment::MAPPINGS)
+    align = TextAlignment::TextAlignment.new(str, rstr, size_ngram = nil, size_window = nil, text_similiarity_threshold = nil)
     align.transform_denotations!(denotations)
 
     bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= rstr.length)}
@@ -551,7 +525,7 @@ class Annotation < ActiveRecord::Base
       raise message
     end
 
-    []
+    messages
   end
 
   # To align annotations, considering the span specification
