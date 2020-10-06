@@ -7,25 +7,28 @@
 		<%= @message.body %>
 
 		<section>
-			<% if @message.sourcedb && @message.sourceid %>
-				<section>
-					<h2>Document</h2>
-					<%= link_to("#{@message.sourcedb}:#{@message.sourceid}", show_project_sourcedb_sourceid_docs_path(@project.name, @message.sourcedb, @message.sourceid)) %>
-				</section>
-			<% end %>
-
-			<% if @message[:data][:block_alignment].present? %>
-				<section>
-					<h2>Alignment</h2>
-					<%=
-						render partial: 'annotations/block_alignments', locals: {
-							blocks:@message[:data][:block_alignment][:blocks],
-							source_text:@message[:data][:block_alignment][:source_text],
-							target_text:@message[:data][:block_alignment][:target_text]
-						}
-					-%>
-				</section>
-			<% end %>
+			<h2>Job</h2>
+	    <%= @job.name %>
 		</section>
+
+		<% if @message.sourcedb && @message.sourceid %>
+			<section>
+				<h2>Document</h2>
+				<%= link_to("#{@message.sourcedb}:#{@message.sourceid}", show_project_sourcedb_sourceid_docs_path(@project.name, @message.sourcedb, @message.sourceid)) %>
+			</section>
+		<% end %>
+
+		<% if @message[:data] && @message[:data][:block_alignment] %>
+			<section>
+				<h2>Alignment</h2>
+				<%=
+					render partial: 'annotations/block_alignments', locals: {
+						blocks:@message[:data][:block_alignment][:blocks],
+						source_text:@message[:data][:block_alignment][:source_text],
+						target_text:@message[:data][:block_alignment][:target_text]
+					}
+				-%>
+			</section>
+		<% end %>
 	</section>
 </section>
