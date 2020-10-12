@@ -10,7 +10,11 @@
 			<%= render partial: 'annotations/block_alignment_spans', locals: {alignment: block} -%>
 			<% case block[:alignment] %>
 			<% when :block %>
-				<tr class='common_text' title='common text'>
+				<tr class='common_text' title='common text (block)'>
+					<td colspan='2' class='text_alignment_common'><%= source_text[block[:source][:begin] ... block[:source][:end]] %></td>
+				</tr>
+			<% when :term %>
+				<tr class='common_text' title='common text (term)'>
 					<td colspan='2' class='text_alignment_common'><%= source_text[block[:source][:begin] ... block[:source][:end]] %></td>
 				</tr>
 			<% when :empty %>
@@ -48,7 +52,7 @@
 						end
 					end.join('')
 				%>
-				<tr class='aligned_texts' title='aligned texts'>
+				<tr class='aligned_texts' title='aligned texts (similarity: <%= block[:similarity] %>)'>
 					<td class='text_alignment_left'><%= astr1 %></td>
 					<td class='text_alignment_right'><%= astr2 %></td>
 				</tr>

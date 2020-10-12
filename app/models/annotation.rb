@@ -468,28 +468,17 @@ class Annotation < ActiveRecord::Base
 
     messages = []
 
-    align = TextAlignment::TextAlignment.new(str, rstr, size_ngram = nil, size_window = nil, text_similiarity_threshold = nil)
+    align = TextAlignment::TextAlignment.new(str, rstr, hdenotations, size_ngram, size_window, text_similiarity_threshold)
     denotations_new = align.transform_hdenotations(hdenotations)
 
-    bads = denotations_new.select{|d| d[:span][:begin].nil? || d[:span][:end].nil? || d[:span][:begin].to_i >= d[:span][:end].to_i}
-    unless bads.empty? # && align.similarity > 0.5
-      message = "Alignment failed. Invalid denotations found: "
-
-      message += if str.length > 100
-        str[0 ... 100] + "..."
-      else
-        str
-      end
-
-      message += ", "
-
-      message += if bads.length > 3
-        bads[0 ... 3].map{|d| d.to_s}.join(", ") + "..."
-      else
-        bads.map{|d| "[#{d[:span][:begin]}, #{d[:span][:end]}]"}.join(", ")
-      end
-
-      messages << {body:message, data:{block_alignment: align.block_alignment}}
+    unless align.lost_annotations.empty?
+      messages << {
+        body:"Alignment failed. Invalid denotations found after transformation",
+        data:{
+          block_alignment: align.block_alignment,
+          lost_annotations: align.lost_annotations
+        }
+      }
     end
     hdenotations.replace(denotations_new)
     messages
@@ -511,7 +500,7 @@ class Annotation < ActiveRecord::Base
       raise message
     end
 
-    align = TextAlignment::TextAlignment.new(str, rstr, size_ngram = nil, size_window = nil, text_similiarity_threshold = nil)
+    align = TextAlignment::TextAlignment.new(str, rstr, nil, size_ngram, size_window, text_similiarity_threshold)
     align.transform_denotations!(denotations)
 
     bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= rstr.length)}

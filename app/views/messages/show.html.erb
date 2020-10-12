@@ -18,6 +18,32 @@
 			</section>
 		<% end %>
 
+		<% if @message[:data] && @message[:data][:lost_annotations] %>
+			<% source_text = @message[:data][:block_alignment][:source_text] %>
+			<section>
+				<h2>Lost annotations</h2>
+				<table>
+					<tr>
+						<th>Text</th><th>Source</th><th>Transformed</th>
+					</tr>
+					<% @message[:data][:lost_annotations].each do |a| %>
+						<tr>
+							<td>
+								<%= source_text[a[:source][:begin] ... a[:source][:end]] %>
+							</td>
+							<td>
+								<%= "[#{a[:source][:begin]}, #{a[:source][:end]}]" %>
+							</td>
+							<td>
+								<%= "[#{a[:target][:begin]}, #{a[:target][:end]}]" %>
+							</td>
+						</tr>
+					<% end %>
+					</table>
+
+			</section>
+		<% end %>
+
 		<% if @message[:data] && @message[:data][:block_alignment] %>
 			<section>
 				<h2>Alignment</h2>

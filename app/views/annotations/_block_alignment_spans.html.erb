@@ -1,4 +1,8 @@
+<%
+	source_span = alignment[:source][:begin] == alignment[:source][:end] ? '-' : "#{alignment[:source][:begin]} - #{alignment[:source][:end]}"
+	target_span = (alignment[:target] && (alignment[:target][:begin] == alignment[:target][:end])) ? '-' : "#{alignment[:target][:begin]} - #{alignment[:target][:end]}"
+%>
 <tr>
-	<th class='text_alignment_left'><%= "#{alignment[:source][:begin]} - #{alignment[:source][:end]}" %></th>
-	<th class='text_alignment_right'><%= "#{alignment[:target][:begin]} - #{alignment[:target][:end]}" %></th>
+	<th class='text_alignment_left'><%= source_span %></th>
+	<th class='text_alignment_right'><%= target_span %></th>
 </tr>
