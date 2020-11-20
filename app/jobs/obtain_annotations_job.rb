@@ -68,10 +68,10 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
       process_tasks_queue unless @annotation_tasks_queue.empty?
     rescue RestClient::ServiceUnavailable => e
       if @job
-        @job.messages << Message.create({body: message})
+        @job.messages << Message.create({body: e.message})
         exit
       else
-        raise RuntimeError, message
+        raise RuntimeError, e.message
       end
     rescue RuntimeError => e
       if @job
@@ -163,7 +163,7 @@ private
     end
     retry
   rescue RestClient::ExceptionWithResponse => e
-    if e.response.present?
+    if e.response.present? && e.response.respond_to?(:code)
       case e.response.code
       when 201
         ## In case of asynchronous protocol
