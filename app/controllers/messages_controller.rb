@@ -20,4 +20,27 @@ class MessagesController < ApplicationController
 		@job     = @message.job
 		@project = @message.job.project
 	end
+
+	def data_source
+		message = Message.find(params[:id])
+
+		source_text = message.data[:block_alignment][:source_text]
+		denotations = message.data[:block_alignment][:denotations]
+
+		data = {text: source_text}
+		data[:denotations] = denotations if denotations.present?
+
+		send_data data.to_json, filename: "#{message.sourcedb}-#{message.sourceid}-annotations.json"
+	end
+
+	def data_target
+		message = Message.find(params[:id])
+
+		target = message.data[:block_alignment][:target_text]
+
+		data = {text: target}
+
+		send_data data.to_json, filename: "#{message.sourcedb}-#{message.sourceid}.json"
+	end
+
 end

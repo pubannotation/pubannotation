@@ -46,12 +46,19 @@
 
 		<% if @message[:data] && @message[:data][:block_alignment] %>
 			<section>
+				<h2>Download data</h2>
+				<% %>
+				<%= link_to 'download source data', data_source_message_path(@message), class: :button %>
+				<%= link_to 'download target data', data_target_message_path(@message), class: :button %>
+			</section>
+			<section>
 				<h2>Alignment</h2>
 				<%=
 					render partial: 'annotations/block_alignments', locals: {
 						blocks:@message[:data][:block_alignment][:blocks],
 						source_text:@message[:data][:block_alignment][:source_text],
-						target_text:@message[:data][:block_alignment][:target_text]
+						target_text:@message[:data][:block_alignment][:target_text],
+						denotations:@message[:data][:block_alignment][:denotations]
 					}
 				%>
 			</section>

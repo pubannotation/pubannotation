@@ -42,6 +42,8 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
               make_request_batch(docs, annotator, options.merge(span:slice))
             rescue RuntimeError => e
               @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{e.message}"}) if @job
+            rescue => e
+              @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{e.message}"}) if @job
             end
           else
             make_request_batch(docs, annotator, options)
@@ -76,9 +78,9 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
     rescue RuntimeError => e
       if @job
         if docs.length < 10
-          docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{e.message}"})}
+          docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Runtime error: #{e.message}"})}
         else
-          @job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{e.message}"})
+          @job.messages << Message.create({body: "Runtime error while processing #{docs.length} docs: #{e.message}"})
         end
       else
         raise e
@@ -100,7 +102,11 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
           slices.each do |slice|
             make_request_batch(docs, annotator, options.merge(span:slice))
           rescue RuntimeError => e
-            @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{e.message}"}) if @job
+            if @job
+              @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{e.message}"})
+            else
+              raise e
+            end
           end
         else
           make_request_batch(docs, annotator, options)
@@ -109,8 +115,16 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
     end
 
     until @annotation_tasks_queue.empty?
-      process_tasks_queue
-      sleep(skip_interval) unless @annotation_tasks_queue.empty?
+      begin
+        process_tasks_queue
+        sleep(skip_interval) unless @annotation_tasks_queue.empty?
+      rescue => e
+        if @job
+          @job.messages << Message.create({body: e.message})
+        else
+          raise e
+        end
+      end
     end
 
     File.unlink(filepath)
@@ -125,6 +139,7 @@ private
     else
       docs.map{|d| d.hdoc}
     end
+
     timer_start = Time.now
     annotations_col = annotator.obtain_annotations(hdocs)
     ttime = Time.now - timer_start
@@ -191,6 +206,12 @@ private
           raise RuntimeError, "annotation result is not a valid JSON object." unless annotations.class == Hash
           Annotation.normalize!(annotations)
           annotator.annotations_transform!(annotations)
+        rescue => e
+          if @job
+            @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message})
+          else
+            raise e
+          end
         end
 
         timer_start = Time.now
@@ -230,7 +251,6 @@ private
         raise RuntimeError, "The annotation server reported an unknown status of the annotation task: #{status[:status]}."
       end
     end
-
   ensure
     @annotation_tasks_queue.delete_if{|task| task[:delme]}
   end

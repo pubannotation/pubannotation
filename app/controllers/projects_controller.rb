@@ -60,6 +60,12 @@ class ProjectsController < ApplicationController
 		@project = Project.new
 		@project.user = current_user
 
+		@collection = if params[:collection_id].present?
+			collection = Collection.addable(current_user).find_by_name(params[:collection_id])
+			raise "Could not find the collection: #{params[:collection_id]}" unless collection.present?
+			collection
+		end
+
 		respond_to do |format|
 			format.html # new.html.erb
 			format.json { render json: @project }
@@ -73,12 +79,19 @@ class ProjectsController < ApplicationController
 			params_from_json = Project.params_from_json(params[:project].tempfile)
 			params[:project] = params_from_json
 		end
+
 		@project = Project.new(params[:project])
 		@project.user = current_user
+
+		@collection = if params[:collection_id].present?
+			collection = Collection.addable(current_user).find_by_name(params[:collection_id])
+			raise "Could not find the collection: #{params[:collection_id]}" unless collection.present?
+			collection
+		end
+
 		respond_to do |format|
 			if @project.save
-				@project.build_associate_maintainers(params[:usernames])
-				@project.save
+				@collection.projects << @project if @collection.present?
 				format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_created', :model => t('views.shared.annotation_sets')) }
 				format.json { render json: @project, status: :created, location: @project }
 			else
@@ -378,13 +391,13 @@ class ProjectsController < ApplicationController
 	end
 
 	def autocomplete_project_name
-		exclude_project_name = params[:id] || ''
-		render :json => Project.accessible(current_user).where("name ILIKE ?", "%#{params[:term]}%").delete_if{|r| r.name == exclude_project_name}.collect{|r| {id:r.id, name:r.name, label:r.name}}
+		project_name_to_be_excluded = params[:id] || ''
+		render :json => Project.accessible(current_user).where("name ILIKE ?", "%#{params[:term]}%").delete_if{|r| r.name == project_name_to_be_excluded}.collect{|r| {id:r.id, name:r.name, label:r.name}}
 	end
 
 	def autocomplete_editable_project_name
-		exclude_project_name = params[:id] || ''
-		render :json => Project.editable(current_user).where("name ILIKE ?", "%#{params[:term]}%").delete_if{|r| r.name == exclude_project_name}.collect{|r| {id:r.id, name:r.name, label:r.name}}
+		project_name_to_be_excluded = params[:id] || ''
+		render :json => Project.editable(current_user).where("name ILIKE ?", "%#{params[:term]}%").delete_if{|r| r.name == project_name_to_be_excluded}.collect{|r| {id:r.id, name:r.name, label:r.name}}
 	end
 
 	def is_owner?

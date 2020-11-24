@@ -79,7 +79,9 @@ class CollectionsController < ApplicationController
   end
 
   def add_project
-    @collection = Collection.find_by_name(params[:collection_id])
+    @collection = Collection.addable(current_user).find_by_name(params[:id])
+    raise "Could not find the collection: #{params[:id]}" unless @collection.present?
+
     project_name = params[:select_project]
     project = Project.find_by_name(project_name)
 
@@ -94,7 +96,7 @@ class CollectionsController < ApplicationController
         "The project already exist in this collection: '#{project_name}'."
       else
         @collection.projects << project
-        "The project is added to this collection: '#{project_name}'."
+        "The project, #{project_name}, was added to this collection."
       end
     else
       "Could not find the project: '#{project_name}'."
@@ -107,7 +109,8 @@ class CollectionsController < ApplicationController
   end
 
   def remove_project
-    @collection = Collection.find_by_name(params[:collection_id])
+    @collection = Collection.addable(current_user).find_by_name(params[:collection_id])
+    raise "Could not find the collection: #{params[:collection_id]}" unless @collection.present?
     project_name = params[:id]
     project = Project.find_by_name(project_name)
 

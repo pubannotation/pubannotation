@@ -25,6 +25,15 @@ class Collection < ActiveRecord::Base
     end
   }
 
+  scope :addable, -> (current_user) {
+    if current_user.present?
+      if current_user.root?
+      else
+        where('collections.user_id = ? OR collections.is_open = TRUE', current_user.id)
+      end
+    end
+  }
+
   scope :sharedtasks, where(is_sharedtask: true)
   scope :no_sharedtasks, where(is_sharedtask: false)
 

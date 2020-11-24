@@ -105,12 +105,20 @@
       <th><%= t('views.shared.add') %></th>
       <td style="text-align:right"><%= render partial: 'add_project_form' -%></td>
     </tr>
+    <tr>
+      <th><%= t('views.shared.create') %></th>
+      <td style="text-align:right"><%= link_to 'a new project in this collection', new_collection_project_path(@collection.name), {class: 'control button', style: 'box-sizing: border-box; width:100%'} %></td>
+    </tr>
   </table>
 <% elsif @collection.is_open && current_user && current_user.projects.present? -%>
   <table class="vertical">
     <tr>
       <th><%= t('views.shared.add') %></th>
       <td style="text-align:right"><%= render partial: 'add_my_project_form' -%></td>
+    </tr>
+    <tr>
+      <th><%= t('views.shared.create') %></th>
+      <td style="text-align:right"><%= render partial: 'create_project_form' -%></td>
     </tr>
   </table>
 <% end -%>

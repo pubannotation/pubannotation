@@ -1,4 +1,5 @@
-<%= form_for(@project, :html => {:class => 'IndicatorForm', :id => 'project_form'}) do |f| %>
+<% collection_id = @collection.present? ? @collection.name : nil %>
+<%= form_for(@project, :url => {collection_id: collection_id, action: :create}, :html => {:class => 'IndicatorForm', :id => 'project_form'}) do |f| %>
 	<%= errors_helper(@project) %>
 
 <table class="project-properties">

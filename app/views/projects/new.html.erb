@@ -1,11 +1,23 @@
 <% content_for :path do %>
 	> <%= link_to t('views.paths.home'), home_path %>
- 	> <%= link_to "projects", projects_path %>
- 	> <%= t('views.paths.new') %>
+	<% if @collection.present? %>
+	  > <%= link_to t('activerecord.models.collection').pluralize, collections_path %>
+		>	<%= link_to @collection.name, collection_path(@collection.name) %>
+	<% end %>
+	> projects
+	> <%= t('views.paths.new') %>
 <% end %>
 
+<section>
+<% if @collection.present? %>
+<%= render :partial => 'collections/titlebar' -%>
+<% end %>
+
+<section>
 <h1>
 	<%= t('views.shared.new_model', :model => t('activerecord.models.project')) %>
 </h1>
 
 <%= render :partial => 'form' -%>
+</section>
+</section>

@@ -522,7 +522,7 @@ class Annotation < ActiveRecord::Base
     return [] unless annotations[:denotations].present?
 
     if span
-      raise ArgumentError, "The text of the span might be changed, which is not allowed when the span is explictely specified in the URL." if annotations[:text] != doc.body[span[:begin] ... span[:end]]
+      raise ArgumentError, "The text of the span might be changed, which is not allowed when the span is explictely specified in the URL." if annotations[:text] != doc.get_text(span)
 
       annotations[:denotations].each do |d|
         d[:span][:begin] += span[:begin]

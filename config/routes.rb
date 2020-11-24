@@ -10,10 +10,10 @@ Pubann::Application.routes.draw do
   end
 
   resources :collections do
-    resources :project do
-      collection do
-        post '/' => 'collections#add_project'
-      end
+    member do
+      post '/add_project' => 'collections#add_project'
+    end
+    resources :projects do
       member do
         delete '/' => 'collections#remove_project'
       end
@@ -269,7 +269,12 @@ Pubann::Application.routes.draw do
     resources :queries
   end
 
-  resources :messages
+  resources :messages do
+    member do
+      get '/data_source' => 'messages#data_source'
+      get '/data_target' => 'messages#data_target'
+    end
+  end
 
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
   match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
