@@ -106,26 +106,6 @@ Pubann::Application.routes.draw do
 						get 'spans/:begin-:end/annotations/merge_view' => 'annotations#doc_annotations_merge_view'
 						get 'spans/:begin-:end/annotations/list_view' => 'annotations#doc_annotations_list_view'
 						get 'spans/:begin-:end/annotations/visualize' => 'annotations#doc_annotations_list_view'
-
-						scope 'divs', :as => 'divs' do
-							get '/' => 'divs#index', :as => 'index'
-							get 'search' => 'divs#search'
-
-							scope ':divid' do
-								get '/' => 'divs#show', :as => 'show'
-								get 'annotations' => 'annotations#div_annotations_index'
-								get 'annotations/merge_view' => 'annotations#div_annotations_merge_view'
-								get 'annotations/list_view' => 'annotations#div_annotations_list_view'
-								get 'annotations/visualize' => 'annotations#div_annotations_list_view'
-								# post 'annotations' => 'annotations#create'
-								get 'spans' => 'spans#div_spans_index'
-								get 'spans/:begin-:end' => 'spans#div_span_show', :as => 'span_show'
-								get 'spans/:begin-:end/annotations' => 'annotations#div_annotations_index'
-								get 'spans/:begin-:end/annotations/merge_view' => 'annotations#div_annotations_merge_view'
-								get 'spans/:begin-:end/annotations/list_view' => 'annotations#div_annotations_list_view'
-								get 'spans/:begin-:end/annotations/visualize' => 'annotations#div_annotations_list_view'
-							end
-						end
 					end
 				end
 			end
@@ -223,27 +203,6 @@ Pubann::Application.routes.draw do
 								post 'spans/:begin-:end/annotations' => 'annotations#create'
 								delete 'spans/:begin-:end/annotations' => 'annotations#destroy', as: 'destroy_annotations_in_span'
 								post 'spans/:begin-:end/annotations/obtain' => 'annotations#obtain', as: 'annotations_obtain_in_span'
-
-								scope 'divs', :as => 'divs' do
-									get '/' => 'divs#index_in_project', :as => 'index'
-									get 'annotations/visualize' => 'annotations#div_annotations_list_view'
-									get 'search' => 'divs#search'
-
-									scope ':divid' do
-										get '/' => 'divs#show_in_project', :as => 'show'
-										get 'annotations' => 'annotations#project_div_annotations_index'
-										get 'annotations/visualize' => 'annotations#div_annotations_list_view'
-										post 'annotations' => 'annotations#create'
-										post 'annotations/obtain' => 'annotations#obtain'
-										delete 'annotations' => 'annotations#destroy', as: 'destroy_annotations'
-										get 'spans' => 'spans#project_div_spans_index', :as => 'spans_index'
-										get 'spans/:begin-:end' => 'spans#project_div_span_show', :as => 'span_show'
-										get 'spans/:begin-:end/annotations' => 'annotations#project_div_annotations_index', :as => 'span_annotations'
-										post 'spans/:begin-:end/annotations' => 'annotations#create'
-										delete 'spans/:begin-:end/annotations' => 'annotations#destroy', as: 'destroy_annotations_in_span'
-										post 'spans/:begin-:end/annotations/obtain' => 'annotations#obtain', as: 'annotations_obtain_in_span'
-									end
-								end
 							end
 						end
 					end
@@ -278,8 +237,6 @@ Pubann::Application.routes.draw do
 
 	match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
 	match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
-	match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
-	match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/divs/:divid/spans/:begin-:end/annotations' => 'application#cors_preflight_check', :via => ["OPTIONS"]
 
 	match '/annotations/align' => 'annotations#align', :via => ["POST"]
 
