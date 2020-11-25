@@ -41,9 +41,9 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
             slices.each do |slice|
               make_request_batch(docs, annotator, options.merge(span:slice))
             rescue RuntimeError => e
-              @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{e.message}"}) if @job
+              @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
             rescue => e
-              @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{e.message}"}) if @job
+              @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
             end
           else
             make_request_batch(docs, annotator, options)
@@ -51,9 +51,9 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
         rescue => e
           if @job
             if docs.length < 10
-              docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{e.message}"})}
+              docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{exception_message(e)}"})}
             else
-              @job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{e.message}"})
+              @job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"})
             end
           else
             raise e
@@ -70,21 +70,17 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
       process_tasks_queue unless @annotation_tasks_queue.empty?
     rescue RestClient::ServiceUnavailable => e
       if @job
-        begin
-          @job.messages << Message.create({body: "Service unavailable while processing #{docs.length} docs:\n#{e.message}:\n#{e.backtrace.join("\n")}"})
-        rescue => e
-          @job.messages << Message.create({body: "#{e.message}:\n#{e.backtrace.join("\n")}"})
-        end
+        @job.messages << Message.create({body: "Service unavailable while processing #{docs.length} docs:\n#{exception_message(e)}:\n#{e.backtrace.join("\n")}"})
         exit
       else
-        raise RuntimeError, e.message
+        raise RuntimeError, exception_message(e)
       end
     rescue RuntimeError => e
       if @job
         if docs.length < 10
-          docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Runtime error: #{e.message}"})}
+          docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Runtime error: #{exception_message(e)}"})}
         else
-          @job.messages << Message.create({body: "Runtime error while processing #{docs.length} docs: #{e.message}"})
+          @job.messages << Message.create({body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"})
         end
       else
         raise e
@@ -107,7 +103,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
             make_request_batch(docs, annotator, options.merge(span:slice))
           rescue RuntimeError => e
             if @job
-              @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{e.message}"})
+              @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"})
             else
               raise e
             end
@@ -124,7 +120,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
         sleep(skip_interval) unless @annotation_tasks_queue.empty?
       rescue => e
         if @job
-          @job.messages << Message.create({body: e.message})
+          @job.messages << Message.create({body: exception_message(e)})
         else
           raise e
         end
@@ -212,7 +208,7 @@ private
           annotator.annotations_transform!(annotations)
         rescue => e
           if @job
-            @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message})
+            @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: exception_message(e)})
           else
             raise e
           end
@@ -257,6 +253,12 @@ private
     end
   ensure
     @annotation_tasks_queue.delete_if{|task| task[:delme]}
+  end
+
+  def exception_message(exception)
+    exception.message
+  rescue => e
+    "exception message inaccessible."
   end
 
 end
