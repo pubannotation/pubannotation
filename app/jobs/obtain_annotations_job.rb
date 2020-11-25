@@ -69,8 +69,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 			process_tasks_queue unless @annotation_tasks_queue.empty?
 		rescue RestClient::ServiceUnavailable => e
 			if @job
-				@job.messages << Message.create({body: "Service unavailable while processing #{docs.length} docs:\n#{exception_message(e)}:\n#{e.backtrace.join("\n")}"})
-				exit
+				@job.messages << Message.create({body: "Service unavailable while processing #{docs.length} docs:\n#{exception_message(e)}"})
 			else
 				raise RuntimeError, exception_message(e)
 			end
@@ -257,7 +256,6 @@ private
 	def exception_message(exception)
 		exception.message
 	rescue => e
-		"exception message inaccessible."
+		"exception message inaccessible:\n#{exception}:\n#{exception.backtrace.join("\n")}"
 	end
-
 end
