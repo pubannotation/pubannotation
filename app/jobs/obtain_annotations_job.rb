@@ -232,7 +232,7 @@ private
 				raise RuntimeError, "The annotation server issued an error message: #{status[:error_message]}."
 			when 'IN_QUEUE'
 				if Time.now - status[:submitted_at].to_time > Annotator::MaxWaitInQueueBatch
-					message = "The task is terminated because an annotation task has been waiting for more than #{Annotator::MaxWaitInQueue} seconds in the queue."
+					message = "The task is terminated because an annotation task has been waiting for more than #{Annotator::MaxWaitInQueue} seconds in the queue - submitted_at: #{status[:submitted_at]}, terminated_at: #{Time.now}"
 					if @job
 						if task[:span].present?
 							d = Doc.find(task[:docid])
@@ -247,7 +247,7 @@ private
 				end
 			when 'IN_PROGRESS'
 				if Time.now - status[:started_at].to_time > Annotator::MaxWaitInProcessingBatch
-					message = "The task is terminated because an annotation task has been in processing for more than #{Annotator::MaxWaitInProcessing} seconds."
+					message = "The task is terminated because an annotation task has been in processing for more than #{Annotator::MaxWaitInProcessing} seconds - started_at: #{status[:started_at]}, terminated_at: #{Time.now}."
 					if @job
 						if task[:span].present?
 							d = Doc.find(task[:docid])

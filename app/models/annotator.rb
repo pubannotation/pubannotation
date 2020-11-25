@@ -3,8 +3,8 @@ class Annotator < ActiveRecord::Base
 
 	MaxTextSync  = 50000
 	MaxTextAsync = 100000
-	MaxWaitInQueue = 900.seconds
-	MaxWaitInProcessing = 900.seconds
+	MaxWaitInQueue = 30.minutes
+	MaxWaitInProcessing = 30.minutes
 	MaxWaitInQueueBatch = 1.hour
 	MaxWaitInProcessingBatch = 1.hour
 	SkipInterval = 5
