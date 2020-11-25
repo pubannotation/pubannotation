@@ -67,12 +67,6 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 			docs_size += doc_length
 
 			process_tasks_queue unless @annotation_tasks_queue.empty?
-		rescue RestClient::ServiceUnavailable => e
-			if @job
-				@job.messages << Message.create({body: "Service unavailable while processing #{docs.length} docs:\n#{exception_message(e)}"})
-			else
-				raise RuntimeError, exception_message(e)
-			end
 		rescue RuntimeError => e
 			if @job
 				if docs.length < 10
@@ -238,11 +232,23 @@ private
 				raise RuntimeError, "The annotation server issued an error message: #{status[:error_message]}."
 			when 'IN_QUEUE'
 				if Time.now - status[:submitted_at].to_time > Annotator::MaxWaitInQueueBatch
-					raise RestClient::ServiceUnavailable, "The task is terminated because a task has been waiting for more than #{Annotator::MaxWaitInQueue} in the queue."
+					message = "The task is terminated because an annotation task has been waiting for more than #{Annotator::MaxWaitInQueue} in the queue."
+					if @job
+						@job.messages << Message.create({body: message})
+						exit
+					else
+						raise message
+					end
 				end
 			when 'IN_PROGRESS'
 				if Time.now - status[:started_at].to_time > Annotator::MaxWaitInProcessingBatch
-					raise RestClient::ServiceUnavailable, "The task is terminated because a task has been in processing for more than #{Annotator::MaxWaitInProcessing}."
+					message = "The task is terminated because an annotation task has been in processing for more than #{Annotator::MaxWaitInProcessing} seconds."
+					if @job
+						@job.messages << Message.create({body: message})
+						exit
+					else
+						raise message
+					end
 				end
 			else
 				task[:delme] = true
