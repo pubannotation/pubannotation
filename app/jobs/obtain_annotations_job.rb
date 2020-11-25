@@ -232,9 +232,14 @@ private
 				raise RuntimeError, "The annotation server issued an error message: #{status[:error_message]}."
 			when 'IN_QUEUE'
 				if Time.now - status[:submitted_at].to_time > Annotator::MaxWaitInQueueBatch
-					message = "The task is terminated because an annotation task has been waiting for more than #{Annotator::MaxWaitInQueue} in the queue."
+					message = "The task is terminated because an annotation task has been waiting for more than #{Annotator::MaxWaitInQueue} seconds in the queue."
 					if @job
-						@job.messages << Message.create({body: message})
+						if task[:span].present?
+							d = Doc.find(task[:docid])
+							@job.messages << Message.create({sourcedb:d.sourcedb, sourceid:d.sourceid, body: message})
+						else
+							@job.messages << Message.create({body: message})
+						end
 						exit
 					else
 						raise message
@@ -244,7 +249,12 @@ private
 				if Time.now - status[:started_at].to_time > Annotator::MaxWaitInProcessingBatch
 					message = "The task is terminated because an annotation task has been in processing for more than #{Annotator::MaxWaitInProcessing} seconds."
 					if @job
-						@job.messages << Message.create({body: message})
+						if task[:span].present?
+							d = Doc.find(task[:docid])
+							@job.messages << Message.create({sourcedb:d.sourcedb, sourceid:d.sourceid, body: message})
+						else
+							@job.messages << Message.create({body: message})
+						end
 						exit
 					else
 						raise message
