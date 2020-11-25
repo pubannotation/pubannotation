@@ -1,117 +1,117 @@
 @import 'variables';
 
 .wice-grid-title-row {
-  th:last-of-type {
-    width: 1.8em;
-  }
+	th:last-of-type {
+		width: 1.8em;
+	}
 }
 
 .project-title {
-  display: inline-block;
-  position: relative;
-  padding: 4px 8px 4px 4px;
-  border-style: ridge;
-  border-width: 5px;
-  font-size: x-large;
-  font-weight: bold;
-  background: repeating-linear-gradient(
-    45deg,
-    #a0adec,
-    #a0adec 10px,
-    #96a2d8 10px,
-    #96a2d8 20px
-  );
+	display: inline-block;
+	position: relative;
+	padding: 4px 8px 4px 4px;
+	border-style: ridge;
+	border-width: 5px;
+	font-size: x-large;
+	font-weight: bold;
+	background: repeating-linear-gradient(
+		45deg,
+		#a0adec,
+		#a0adec 10px,
+		#96a2d8 10px,
+		#96a2d8 20px
+	);
 }
 
 
 #grid_filter_row {
-  input,select {
-    box-sizing: border-box;
-    width: 100%;
-  }
+	input,select {
+		box-sizing: border-box;
+		width: 100%;
+	}
 }
 
 .projects-list table {
-  table-layout:fixed;
-  width: 100%;
+	table-layout:fixed;
+	width: 100%;
 
-  .column-project-name {
-    width: 14em;
-  }
+	.column-project-name {
+		width: 14em;
+	}
 
-  .column-project-description {
-  }
+	.column-project-description {
+	}
 
-  .column-project-number {
-    width: 5em;
-  }
+	.column-project-number {
+		width: 5em;
+	}
 
-  .column-project-author {
-    width: 7em;
-  }
+	.column-project-author {
+		width: 7em;
+	}
 
-  .column-project-user {
-    width: 7em;
-  }
+	.column-project-user {
+		width: 7em;
+	}
 
-  .column-project-updated {
-    width: 7em;
-  }
+	.column-project-updated {
+		width: 7em;
+	}
 
-  .column-project-status {
-    width: 6em;
-  }
+	.column-project-status {
+		width: 6em;
+	}
 }
 
 .column-project-type {
-  width: 1.5em;
+	width: 1.5em;
 }
 
 .column-project-type.sorted {
-  width: 3em;
+	width: 3em;
 }
 
 
 .project-properties {
-  table-layout:fixed;
-  width: 100%;
+	table-layout:fixed;
+	width: 100%;
 
-  th {
-    width: 6em;
-  }
+	th {
+		width: 6em;
+	}
 
-  td {
-  }
+	td {
+	}
 
-  td.help-column {
-    width: 1.5em;
-    text-align: center;
-  }
+	td.help-column {
+		width: 1.5em;
+		text-align: center;
+	}
 }
 
 .collections-pane {
-  display: inline-block;
-  legend {
-    font-size:x-small;
-  }
+	display: inline-block;
+	legend {
+		font-size:x-small;
+	}
 }
 
 .show-on-mobile {
-  visibility: hidden;
+	visibility: hidden;
 }
 
 @media screen and (max-width: 850px) {
-  .show-on-mobile {
-    visibility: visible;
-  }
+	.show-on-mobile {
+		visibility: visible;
+	}
 
-  .hide-on-mobile {
-    display: none;
-  }
+	.hide-on-mobile {
+		display: none;
+	}
 
-  .projects-list table {
-    .column-project-name {
-      width: 12em;
-    }
-  }
+	.projects-list table {
+		.column-project-name {
+			width: 12em;
+		}
+	}
 }

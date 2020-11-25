@@ -3,281 +3,281 @@
 	<%= errors_helper(@project) %>
 
 <table class="project-properties">
-  <tr>
-    <th><%= f.label :name %></th>
-    <td><%= f.text_field :name, required: true, placeholder: t('activerecord.placeholders.project.name') %></td>
-    <td class="help-column"></td>
-  </tr>
-  <tr>
-    <th><%= f.label :description %></th>
-    <td><%= f.text_area :description, :rows => 3 %></td>
-    <td class="help-column"></td>
-  </tr>
-  <tr>
-    <th><%= f.label :user, :maintainer %></th>
-    <td>
-      <%= @project.user.username %>
-      &nbsp;
-      (<%= f.label :anonymize, t('views.shared.anonymize') -%><%= f.check_box :anonymize -%>)
-    </td>
-    <td class="help-column">
-      <a href="#help-maintainer" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-maintainer" class="help">
-        <h1>Project maintainer</h1>
-        <p>The maintainer of a project can be anonymized for the case, e.g., when a paper about the project is under blind review.</p>
-        </p>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label :author %></th>
-    <td>
-      <%= f.text_field :author, :placeholder => t('activerecord.placeholders.project.author') %>
-    </td>
-    <td class="help-column">
-      <a href="#help-author" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-author" class="help">
-        <h1>Project author</h1>
-        <p><%= t("views.hints.project.author") %></p>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label :license %></th>
-    <td>
-      <table style="border-style:none">
-      <tr>
-        <td style="border-style:none">
-          <%= f.radio_button(:license, 'CC-BY') %>
-          <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY</a>*
-        </td>
-        <td style="border-style:none">
-          <%= f.radio_button(:license, 'BY-SA') %>
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/">BY-SA</a>*
-        </td>
-        <td style="border-style:none">
-          <%= f.radio_button(:license, 'BY-ND') %>
-          <a href="https://creativecommons.org/licenses/by-nd/4.0/">BY-ND</a>
-        </td>
-      </tr>
-      <tr>
-        <td style="border-style:none">
-          <%= f.radio_button(:license, 'BY-NC') %>
-          <a href="https://creativecommons.org/licenses/by-nc/4.0/">BY-NC</a>
-        </td>
-        <td style="border-style:none">
-          <%= f.radio_button(:license, 'BY-NC-SA') %>
-          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">BY-NC-SA</a>
-        </td>
-        <td style="border-style:none">
-          <%= f.radio_button(:license, 'BY-NC-ND') %>
-          <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">BY-NC-ND</a>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="3" style="border-style:none">
-          <% if @project[:license].nil? || @project[:license].empty? || ['CC-BY', 'BY-SA', 'BY-ND', 'BY-NC', 'BY-NC-SA', 'BY-NC-ND'].include?(@project[:license]) %>
-            <%= f.radio_button(:license, 'other') %>
-            <%= text_field_tag :license, nil, placeholder: "Name of license condition", style: "width:200px" %>
-          <% else %>
-            <%= f.radio_button(:license, 'other', :checked => true) %>
-            <%= text_field_tag :license, @project[:license], placeholder: "Name of license condition", style: "width:200px" %>
-          <% end %>
-          <script type="text/javascript">
-            $(function() {
-                $('#project_form').submit(function() {
-                  if ($('input[type="radio"]:checked', '#project_form').val() == 'other') {
-                    $('input[id="project_license_other"]', '#project_form').val($('#license').val());
-                  }
-                  return true;
-                });
-            });
-          </script>
-        </td>
-      </tr>
-      </table>
-      <ul class="note">
-      <li>*: <a href="http://creativecommons.org/freeworks">free culture licenses</a>.</li>
-      </ul>
-    </td>
-    <td class="help-column"></td>
-  </tr>
-  <tr>
-    <th><%= f.label :status %></th>
-    <td>
-      <%= f.radio_button(:status, 1) %>
-      <%= f.label :status, t('activerecord.options.project.status.released'), value: 1 %>
-      <br/>
-      <%= f.radio_button(:status, 2) %>
-      <%= f.label :status, t('activerecord.options.project.status.beta'), value: 2 %>
-      <br/>
-      <%= f.radio_button(:status, 3) %>
-      <%= f.label :status, t('activerecord.options.project.status.uploading'), value: 3 %>
-      <br/>
-      <%= f.radio_button(:status, 8) %>
-      <%= f.label :status, t('activerecord.options.project.status.developing'), value: 8 %>
-      <br/>
-      <%= f.radio_button(:status, 9) %>
-      <%= f.label :status, t('activerecord.options.project.status.testing'), value: 9 %>
-    </td>
-    <td class="help-column">
-      <a href="#help-status" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-status" class="help">
-        <h1>Project statuses</h1>
-        <dl>
-          <li><b>Released</b> - annotation is finalized. </li>
-          <li><b>Beta</b> - release candidate.</li>
-          <li><b>Uploading</b> - annotation is done, but uploading may take time.</li>
-          <li><b>Developing</b> - under development. will be frequent changed.</li>
-          <li><b>Testing</b> - for a testing purpose. (to be removed automatically, 1 year after last change.)</li>
-        </dl>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label :accessibility %></th>
-    <td>
-      <%= f.select :accessibility,
-        options_for_select([
-          [t('activerecord.options.project.accessibility.public'), 1],
-          [t('activerecord.options.project.accessibility.private'), 2],
-          [t('activerecord.options.project.accessibility.blind'), 3]],
-          f.object.accessibility) %>
-    </td>
-    <td class="help-column">
-      <a href="#help-accessibility" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-accessibility" class="help">
-        <h1>Project accessibility types</h1>
-        <ul>
-          <li><b>Public</b>: to let anyone access the project</li>
-          <li><b>Private</b>: to keep the project invisible</li>
-          <li><b>Blind</b>: to hide the annotations, e.g. for blind test, while the project itself is visible.</li>
-        </ul>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label :process %></th>
-    <td><%= f.select :process, 
-    		options_for_select([
+	<tr>
+		<th><%= f.label :name %></th>
+		<td><%= f.text_field :name, required: true, placeholder: t('activerecord.placeholders.project.name') %></td>
+		<td class="help-column"></td>
+	</tr>
+	<tr>
+		<th><%= f.label :description %></th>
+		<td><%= f.text_area :description, :rows => 3 %></td>
+		<td class="help-column"></td>
+	</tr>
+	<tr>
+		<th><%= f.label :user, :maintainer %></th>
+		<td>
+			<%= @project.user.username %>
+			&nbsp;
+			(<%= f.label :anonymize, t('views.shared.anonymize') -%><%= f.check_box :anonymize -%>)
+		</td>
+		<td class="help-column">
+			<a href="#help-maintainer" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-maintainer" class="help">
+				<h1>Project maintainer</h1>
+				<p>The maintainer of a project can be anonymized for the case, e.g., when a paper about the project is under blind review.</p>
+				</p>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label :author %></th>
+		<td>
+			<%= f.text_field :author, :placeholder => t('activerecord.placeholders.project.author') %>
+		</td>
+		<td class="help-column">
+			<a href="#help-author" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-author" class="help">
+				<h1>Project author</h1>
+				<p><%= t("views.hints.project.author") %></p>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label :license %></th>
+		<td>
+			<table style="border-style:none">
+			<tr>
+				<td style="border-style:none">
+					<%= f.radio_button(:license, 'CC-BY') %>
+					<a href="https://creativecommons.org/licenses/by/4.0/">CC-BY</a>*
+				</td>
+				<td style="border-style:none">
+					<%= f.radio_button(:license, 'BY-SA') %>
+					<a href="https://creativecommons.org/licenses/by-sa/4.0/">BY-SA</a>*
+				</td>
+				<td style="border-style:none">
+					<%= f.radio_button(:license, 'BY-ND') %>
+					<a href="https://creativecommons.org/licenses/by-nd/4.0/">BY-ND</a>
+				</td>
+			</tr>
+			<tr>
+				<td style="border-style:none">
+					<%= f.radio_button(:license, 'BY-NC') %>
+					<a href="https://creativecommons.org/licenses/by-nc/4.0/">BY-NC</a>
+				</td>
+				<td style="border-style:none">
+					<%= f.radio_button(:license, 'BY-NC-SA') %>
+					<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">BY-NC-SA</a>
+				</td>
+				<td style="border-style:none">
+					<%= f.radio_button(:license, 'BY-NC-ND') %>
+					<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">BY-NC-ND</a>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" style="border-style:none">
+					<% if @project[:license].nil? || @project[:license].empty? || ['CC-BY', 'BY-SA', 'BY-ND', 'BY-NC', 'BY-NC-SA', 'BY-NC-ND'].include?(@project[:license]) %>
+						<%= f.radio_button(:license, 'other') %>
+						<%= text_field_tag :license, nil, placeholder: "Name of license condition", style: "width:200px" %>
+					<% else %>
+						<%= f.radio_button(:license, 'other', :checked => true) %>
+						<%= text_field_tag :license, @project[:license], placeholder: "Name of license condition", style: "width:200px" %>
+					<% end %>
+					<script type="text/javascript">
+						$(function() {
+								$('#project_form').submit(function() {
+									if ($('input[type="radio"]:checked', '#project_form').val() == 'other') {
+										$('input[id="project_license_other"]', '#project_form').val($('#license').val());
+									}
+									return true;
+								});
+						});
+					</script>
+				</td>
+			</tr>
+			</table>
+			<ul class="note">
+			<li>*: <a href="http://creativecommons.org/freeworks">free culture licenses</a>.</li>
+			</ul>
+		</td>
+		<td class="help-column"></td>
+	</tr>
+	<tr>
+		<th><%= f.label :status %></th>
+		<td>
+			<%= f.radio_button(:status, 1) %>
+			<%= f.label :status, t('activerecord.options.project.status.released'), value: 1 %>
+			<br/>
+			<%= f.radio_button(:status, 2) %>
+			<%= f.label :status, t('activerecord.options.project.status.beta'), value: 2 %>
+			<br/>
+			<%= f.radio_button(:status, 3) %>
+			<%= f.label :status, t('activerecord.options.project.status.uploading'), value: 3 %>
+			<br/>
+			<%= f.radio_button(:status, 8) %>
+			<%= f.label :status, t('activerecord.options.project.status.developing'), value: 8 %>
+			<br/>
+			<%= f.radio_button(:status, 9) %>
+			<%= f.label :status, t('activerecord.options.project.status.testing'), value: 9 %>
+		</td>
+		<td class="help-column">
+			<a href="#help-status" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-status" class="help">
+				<h1>Project statuses</h1>
+				<dl>
+					<li><b>Released</b> - annotation is finalized. </li>
+					<li><b>Beta</b> - release candidate.</li>
+					<li><b>Uploading</b> - annotation is done, but uploading may take time.</li>
+					<li><b>Developing</b> - under development. will be frequent changed.</li>
+					<li><b>Testing</b> - for a testing purpose. (to be removed automatically, 1 year after last change.)</li>
+				</dl>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label :accessibility %></th>
+		<td>
+			<%= f.select :accessibility,
+				options_for_select([
+					[t('activerecord.options.project.accessibility.public'), 1],
+					[t('activerecord.options.project.accessibility.private'), 2],
+					[t('activerecord.options.project.accessibility.blind'), 3]],
+					f.object.accessibility) %>
+		</td>
+		<td class="help-column">
+			<a href="#help-accessibility" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-accessibility" class="help">
+				<h1>Project accessibility types</h1>
+				<ul>
+					<li><b>Public</b>: to let anyone access the project</li>
+					<li><b>Private</b>: to keep the project invisible</li>
+					<li><b>Blind</b>: to hide the annotations, e.g. for blind test, while the project itself is visible.</li>
+				</ul>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label :process %></th>
+		<td><%= f.select :process, 
+				options_for_select([
 				[t('activerecord.options.project.process.manual'), 1],
 				[t('activerecord.options.project.process.automatic'), 2]],
-    		f.object.process) %></td>
-    <td class="help-column"></td>
-  </tr>
+				f.object.process) %></td>
+		<td class="help-column"></td>
+	</tr>
 
-  <tr>
-    <th><%= f.label :reference %></th>
-    <td>
-      <%= f.text_field :reference, :placeholder => 'URL' %>
-    </td>
-    <td class="help-column">
-      <a href="#help-home" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-home" class="help">
-        <h1>Project home</h1>
-        <p><%= t('activerecord.placeholders.project.reference') %></p>
-      </div>
-    </td>
-  </tr>
+	<tr>
+		<th><%= f.label :reference %></th>
+		<td>
+			<%= f.text_field :reference, :placeholder => 'URL' %>
+		</td>
+		<td class="help-column">
+			<a href="#help-home" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-home" class="help">
+				<h1>Project home</h1>
+				<p><%= t('activerecord.placeholders.project.reference') %></p>
+			</div>
+		</td>
+	</tr>
 
-  <tr>
-    <th><%= f.label :sample %></th>
-    <td>
-      <%= f.text_field :sample, :placeholder => t('activerecord.placeholders.project.sample') %>
-    </td>
-    <td class="help-column">
-      <a href="#help-sample" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-sample" class="help">
-        <h1>Project sample</h1>
-        <p><%= t('activerecord.placeholders.project.sample') %></p>
-        <p><span class="note">See <a href="http://www.pubannotation.org/docs/spans/">this help page (<i>Spans</i>)</a> to learn how-to.</span></p>
-      </div>
-    </td>
-  </tr>
+	<tr>
+		<th><%= f.label :sample %></th>
+		<td>
+			<%= f.text_field :sample, :placeholder => t('activerecord.placeholders.project.sample') %>
+		</td>
+		<td class="help-column">
+			<a href="#help-sample" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-sample" class="help">
+				<h1>Project sample</h1>
+				<p><%= t('activerecord.placeholders.project.sample') %></p>
+				<p><span class="note">See <a href="http://www.pubannotation.org/docs/spans/">this help page (<i>Spans</i>)</a> to learn how-to.</span></p>
+			</div>
+		</td>
+	</tr>
 
-  <tr><td style="border:none"></td></tr>
+	<tr><td style="border:none"></td></tr>
 
-  <tr>
-    <th><%= f.label :textae_config %></th>
-    <td><%= f.text_field :textae_config %></td>
-    <td class="help-column">
-      <a href="#help-textae_config" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-textae_config" class="help">
-        <h1>TextAE Config</h1>
-        <p>If you have a parcicular configuration of TextAE for the project, specify the location of the configuration.</p>
-        <p>You can find some configurations in the <a href="http://textae-configs.pubannotation.org">TextAE configuration repository</a>.</p>
-      </div>
-    </td>
-  </tr>
+	<tr>
+		<th><%= f.label :textae_config %></th>
+		<td><%= f.text_field :textae_config %></td>
+		<td class="help-column">
+			<a href="#help-textae_config" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-textae_config" class="help">
+				<h1>TextAE Config</h1>
+				<p>If you have a parcicular configuration of TextAE for the project, specify the location of the configuration.</p>
+				<p>You can find some configurations in the <a href="http://textae-configs.pubannotation.org">TextAE configuration repository</a>.</p>
+			</div>
+		</td>
+	</tr>
 
-  <tr>
-    <th><%= f.label :namespaces %></th>
-    <td>
-      <table id="project_namespaces" style="width: 100%">
-        <tr>
-          <th style="width:7em; background-color:#99aaff">Prefix</th>
-          <th style="width:auto; background-color:#99aaff">URL</th>
-        </tr>
-        <tr>
-          <td style="background-color:#ddeeff"><span style="margin: 2px; font-style:italic">_base</span></td>
-          <td>
-            <%= hidden_field_tag 'project[namespaces][][prefix]', '_base', class: "input" -%>
-            <%= text_field_tag 'project[namespaces][][uri]', @project.base_uri, class: "input" -%>
-          </td>
-        </tr>
-        <%= namespaces_prefix_input_fields -%>
-      </table>
-      <span id="add_namespaces_input" class="button">Add more</span>
-    </td>
-    <td class="help-column"></td>
-  </tr>
+	<tr>
+		<th><%= f.label :namespaces %></th>
+		<td>
+			<table id="project_namespaces" style="width: 100%">
+				<tr>
+					<th style="width:7em; background-color:#99aaff">Prefix</th>
+					<th style="width:auto; background-color:#99aaff">URL</th>
+				</tr>
+				<tr>
+					<td style="background-color:#ddeeff"><span style="margin: 2px; font-style:italic">_base</span></td>
+					<td>
+						<%= hidden_field_tag 'project[namespaces][][prefix]', '_base', class: "input" -%>
+						<%= text_field_tag 'project[namespaces][][uri]', @project.base_uri, class: "input" -%>
+					</td>
+				</tr>
+				<%= namespaces_prefix_input_fields -%>
+			</table>
+			<span id="add_namespaces_input" class="button">Add more</span>
+		</td>
+		<td class="help-column"></td>
+	</tr>
 
-  <tr>
-    <th><%= f.label :rdfwriter %></th>
-    <td><%= f.text_field :rdfwriter, :class => "input", :placeholder => 'URL' %></td>
-    <td></td>
-  </tr>
-  <tr>
-    <th><%= f.label :xmlwriter %></th>
-    <td><%= f.text_field :xmlwriter, :class => "input", :placeholder => 'URL' %></td>
-    <td></td>
-  </tr>
+	<tr>
+		<th><%= f.label :rdfwriter %></th>
+		<td><%= f.text_field :rdfwriter, :class => "input", :placeholder => 'URL' %></td>
+		<td></td>
+	</tr>
+	<tr>
+		<th><%= f.label :xmlwriter %></th>
+		<td><%= f.text_field :xmlwriter, :class => "input", :placeholder => 'URL' %></td>
+		<td></td>
+	</tr>
 <!--
-  <tr>
-    <th><%= f.label :bionlpwriter %></th>
-    <td><%= f.text_field :bionlpwriter, :class => "input", :placeholder => 'URL' %></td>
-    <td></td>
-  </tr>
+	<tr>
+		<th><%= f.label :bionlpwriter %></th>
+		<td><%= f.text_field :bionlpwriter, :class => "input", :placeholder => 'URL' %></td>
+		<td></td>
+	</tr>
  -->
-  <tr>
-    <th><%= t('activerecord.attributes.project.annotations_downloadable') %></th>
-    <td><%= f.check_box :annotations_zip_downloadable %><%= f.label :annotations_zip_downloadable, t('views.shared.permit') -%></td>
-    <td class="help-column"></td>
-  </tr>
-  <tr>
-    <th colspan="3"><%= f.submit %></th>
-  </tr>
+	<tr>
+		<th><%= t('activerecord.attributes.project.annotations_downloadable') %></th>
+		<td><%= f.check_box :annotations_zip_downloadable %><%= f.label :annotations_zip_downloadable, t('views.shared.permit') -%></td>
+		<td class="help-column"></td>
+	</tr>
+	<tr>
+		<th colspan="3"><%= f.submit %></th>
+	</tr>
 </table>
 <% end %>		
 
 <% content_for :css do -%>
-  <style>
-  .prefix_label:before{
-    content: '\A';
-    white-space: pre;
-  }
-  #project_namespaces input{
-    margin: 2px;
-  }
-  </style>
+	<style>
+	.prefix_label:before{
+		content: '\A';
+		white-space: pre;
+	}
+	#project_namespaces input{
+		margin: 2px;
+	}
+	</style>
 <% end -%>
 <% content_for :javascript do -%>
-  <script type="text/javascript">
-    var inputTag = '<%= render(partial: "namespace_prefix_input") -%>';
-    $(document).ready(function(){
-      $('#add_namespaces_input').click(function(){
-        $('#project_namespaces').append(inputTag);
-      })
-    })
-  </script>
+	<script type="text/javascript">
+		var inputTag = '<%= render(partial: "namespace_prefix_input") -%>';
+		$(document).ready(function(){
+			$('#add_namespaces_input').click(function(){
+				$('#project_namespaces').append(inputTag);
+			})
+		})
+	</script>
 <% end -%>

@@ -11,10 +11,10 @@
 			<th>... or, specify one</th>
 			<td>
 
-		   	<table>
-		   		<tr>
-			   		<th>URL</th>
-			   		<td style="text-align:center">
+				<table>
+					<tr>
+						<th>URL</th>
+						<td style="text-align:center">
 						<%= text_field_tag :url, nil, placeholder: "URL of annotation server", size: 30 %>
 					</td>
 				</tr>
@@ -40,7 +40,7 @@
 				* <i>leave it blank to annotate<br>all the documents in the project</i>
 			</th>
 			<td>
-			  <table>
+				<table>
 					<tr>
 						<th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
 						<td style="width:17em"><%= select_tag(:sourcedb, options_for_select(Doc::SOURCEDBS)) -%></td>
@@ -55,7 +55,7 @@
 							<%= file_field_tag 'upfile', accept: '.txt' -%>
 						</td>
 					</tr>
-			  </table>
+				</table>
 			</td>
 		</tr>
 		<% end %>
@@ -84,8 +84,8 @@
 			<td>
 				<%= radio_button_tag :encoding, :ascii %>
 				<%= label_tag :encoding_ascii, :Yes, value: :ascii %>
-			    <%= radio_button_tag :encoding, :unicode, checked: true %>
-			    <%= label_tag :encoding_unicode, :No, value: :unicode %>
+					<%= radio_button_tag :encoding, :unicode, checked: true %>
+					<%= label_tag :encoding_unicode, :No, value: :unicode %>
 			</td>
 		</tr>
 

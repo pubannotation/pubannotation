@@ -1,24 +1,24 @@
 <% if projects.blank? %>
-  <p>none</p>
+	<p>none</p>
 <% else %>
-  <table>
-    <tr>
-      <th><%= t('activerecord.attributes.project.name') %></th>
-      <th class="projects_header_type"></th>
-      <th class="projects_header_annotations_count"><%= t('views.shared.annotations_count') -%></th>
-      <th class="projects_header_date"><%= t('activerecord.attributes.project.updated_at') -%></th>
-      <th class="projects_header_status"><%= t('activerecord.attributes.project.status') -%></th>
-    </tr>
+	<table>
+		<tr>
+			<th><%= t('activerecord.attributes.project.name') %></th>
+			<th class="projects_header_type"></th>
+			<th class="projects_header_annotations_count"><%= t('views.shared.annotations_count') -%></th>
+			<th class="projects_header_date"><%= t('activerecord.attributes.project.updated_at') -%></th>
+			<th class="projects_header_status"><%= t('activerecord.attributes.project.status') -%></th>
+		</tr>
 
-    <% projects.each do |project| %>
-      <% project_path = project_path(project.name) -%>
-      <tr>
-        <td><%= link_to_project(project) -%></td>
-        <td style="text-align:center"><%= badge_type(project).html_safe %></td>
-        <td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(project, @doc, @span), :delimiter => ',') %></td>
-        <td style="text-align:center"><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
-        <td style="text-align:center"><%= project.status_text -%></td>
-      </tr>
-    <% end %>
-  </table>
+		<% projects.each do |project| %>
+			<% project_path = project_path(project.name) -%>
+			<tr>
+				<td><%= link_to_project(project) -%></td>
+				<td style="text-align:center"><%= badge_type(project).html_safe %></td>
+				<td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(project, @doc, @span), :delimiter => ',') %></td>
+				<td style="text-align:center"><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
+				<td style="text-align:center"><%= project.status_text -%></td>
+			</tr>
+		<% end %>
+	</table>
 <% end %>

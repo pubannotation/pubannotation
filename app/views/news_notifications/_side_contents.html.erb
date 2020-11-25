@@ -1,11 +1,11 @@
 <div class="side-contents hide-on-mobiles">
-  <aside>
-    <h4>News</h4>
-    <ul>
-      <li><%= link_to 'All', news_notifications_path -%></li>
-      <li><%= link_to 'System updates', category_news_notifications_path('System updates') -%></li>
-      <li><%= link_to 'General', category_news_notifications_path('General') -%></li>
-    </ul>
-    <%= link_to t('views.paths.new'), new_news_notification_path, class: 'button' if root_user? -%>
-  </aside>
+	<aside>
+		<h4>News</h4>
+		<ul>
+			<li><%= link_to 'All', news_notifications_path -%></li>
+			<li><%= link_to 'System updates', category_news_notifications_path('System updates') -%></li>
+			<li><%= link_to 'General', category_news_notifications_path('General') -%></li>
+		</ul>
+		<%= link_to t('views.paths.new'), new_news_notification_path, class: 'button' if root_user? -%>
+	</aside>
 </div>

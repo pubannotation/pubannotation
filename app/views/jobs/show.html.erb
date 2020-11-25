@@ -1,75 +1,75 @@
 <% content_for :path do %>
-  > <%= link_to t('views.paths.home'), home_path %>
-  > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
-  > <%= link_to @project.name, project_path(@project.name) %>
-  > <%= link_to 'jobs', project_jobs_path(@project.name) %>
-  > <%= @job.delayed_job_id %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+	> <%= link_to @project.name, project_path(@project.name) %>
+	> <%= link_to 'jobs', project_jobs_path(@project.name) %>
+	> <%= @job.delayed_job_id %>
 <% end %>
 
 <section>
-  <%= render :partial => 'projects/titlebar' -%>
+	<%= render :partial => 'projects/titlebar' -%>
 
-  <section>
-    <h1>
-    Job #<%= @job.delayed_job_id %>: <%= @job.name %>
-    <%= link_to 'Remove', project_job_path(@project.name, @job), method: :delete, data: { confirm: 'Are you sure?' }, :class => :button unless @job.running? %>
-    </h1>
+	<section>
+		<h1>
+		Job #<%= @job.delayed_job_id %>: <%= @job.name %>
+		<%= link_to 'Remove', project_job_path(@project.name, @job), method: :delete, data: { confirm: 'Are you sure?' }, :class => :button unless @job.running? %>
+		</h1>
 
-    <p id="notice"><%= notice %></p>
+		<p id="notice"><%= notice %></p>
 
-    <table>
-    <tr>
-      <th>Created at</th>
-      <td><%= @job.created_at %></td>
-    </tr>
+		<table>
+		<tr>
+			<th>Created at</th>
+			<td><%= @job.created_at %></td>
+		</tr>
 
-    <tr>
-      <th>Begun at</th>
-      <td><%= @job.begun_at %></td>
-    </tr>
+		<tr>
+			<th>Begun at</th>
+			<td><%= @job.begun_at %></td>
+		</tr>
 
-    <% if @job.ended_at.present? %>
-      <tr>
-        <th>Ended at</th>
-        <td><%= @job.ended_at %></td>
-      </tr>
+		<% if @job.ended_at.present? %>
+			<tr>
+				<th>Ended at</th>
+				<td><%= @job.ended_at %></td>
+			</tr>
 
-      <tr>
-        <th>Elapsed</th>
-        <td><%= time_duration(@job.ended_at - @job.begun_at) %></td>
-      </tr>
-    <% else %>
-      <tr>
-        <th>Now</th>
-        <td><%= Time.now.utc %></td>
-      </tr>
+			<tr>
+				<th>Elapsed</th>
+				<td><%= time_duration(@job.ended_at - @job.begun_at) %></td>
+			</tr>
+		<% else %>
+			<tr>
+				<th>Now</th>
+				<td><%= Time.now.utc %></td>
+			</tr>
 
-      <% if @job.begun_at.present? %>
-        <% duration = Time.now.utc - @job.begun_at %>
-        <tr>
-          <th>Elapsed</th>
-          <td><%= time_duration(duration) %></td>
-        </tr>
-        <tr>
-          <th>Progress</th>
-          <td><%= @job.num_dones %> / <%= @job.num_items %></td>
-        </tr>
+			<% if @job.begun_at.present? %>
+				<% duration = Time.now.utc - @job.begun_at %>
+				<tr>
+					<th>Elapsed</th>
+					<td><%= time_duration(duration) %></td>
+				</tr>
+				<tr>
+					<th>Progress</th>
+					<td><%= @job.num_dones %> / <%= @job.num_items %></td>
+				</tr>
 
-        <% if @job.num_dones > 0 %>
-          <% pace = @job.num_dones / duration %>
-          <tr>
-            <th>Pace</th>
-            <td><%= pace.round(3) %> docs/second</td>
-          </tr>
-          <tr>
-            <th>will further take</th>
-            <td><%= time_duration((@job.num_items - @job.num_dones) / pace) %> (estimation)</td>
-          </tr>
-        <% end %>
-      <% end %>
-    <% end %>
-    </table>
+				<% if @job.num_dones > 0 %>
+					<% pace = @job.num_dones / duration %>
+					<tr>
+						<th>Pace</th>
+						<td><%= pace.round(3) %> docs/second</td>
+					</tr>
+					<tr>
+						<th>will further take</th>
+						<td><%= time_duration((@job.num_items - @job.num_dones) / pace) %> (estimation)</td>
+					</tr>
+				<% end %>
+			<% end %>
+		<% end %>
+		</table>
 
-    <%= render partial: 'messages/messages_grid' -%>
-  </section>
+		<%= render partial: 'messages/messages_grid' -%>
+	</section>
 </section>

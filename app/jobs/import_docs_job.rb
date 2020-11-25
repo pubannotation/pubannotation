@@ -15,7 +15,7 @@ class ImportDocsJob < Struct.new(:filepath, :project)
 			@job.update_attribute(:num_dones, i + 1)
 		end
 
-    unless sourcedb_h.empty?
+		unless sourcedb_h.empty?
 			ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
 			ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
 			sourcedb_h.each_key{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}

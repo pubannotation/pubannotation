@@ -1,19 +1,19 @@
 <h1>Modification annotations</h1>
 
 <table class="ann">
-  <tr>
-    <th>Project</th>
-    <th>Id</th>
-    <th>Type</th>
-    <th>Object</th>
-  </tr>
+	<tr>
+		<th>Project</th>
+		<th>Id</th>
+		<th>Type</th>
+		<th>Object</th>
+	</tr>
 
 <% @modifications.each do |modification| %>
-  <tr>
-    <td><%= modification.project %></td>
-    <td><%= modification.id %></td>
-    <td><%= modification.type %></td>
-    <td><%= modification.object %></td>
-  </tr>
+	<tr>
+		<td><%= modification.project %></td>
+		<td><%= modification.id %></td>
+		<td><%= modification.type %></td>
+		<td><%= modification.object %></td>
+	</tr>
 <% end %>
 </table>

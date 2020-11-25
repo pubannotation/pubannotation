@@ -1,15 +1,15 @@
 <% content_for :path do %>
-  > <%= link_to t('views.paths.home'), home_path %>
-  > <%= t('activerecord.models.project').pluralize %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= t('activerecord.models.project').pluralize %>
 <% end %>
 
 <section>
 <h1>
-  <%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
+	<%= link_to t('activerecord.models.project').pluralize.capitalize.html_safe, projects_path %>
 
-  <% if user_signed_in?%>
-    <%= link_to t('views.shared.create'), new_project_path, {:class=> 'control button'} %>
-  <% end %>
+	<% if user_signed_in?%>
+		<%= link_to t('views.shared.create'), new_project_path, {:class=> 'control button'} %>
+	<% end %>
 </h1>
 <div class="projects-list hide-on-mobile">
 <%= render :partial => "projects_grid" %>

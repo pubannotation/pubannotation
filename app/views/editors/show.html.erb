@@ -1,42 +1,42 @@
 <% content_for :path do %>
-  > <%= link_to t('views.paths.home'), home_path %>
-  > <%= link_to 'editors', editors_path %>
-  > <%= @editor.name %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to 'editors', editors_path %>
+	> <%= @editor.name %>
 <% end %>
 
 <section>
-  <h1>
-    <%= @editor.name %>
-    <%= button_home(@editor.home) -%>
-    <%= badge_public(@editor.is_public).html_safe %>
-  </h1>
+	<h1>
+		<%= @editor.name %>
+		<%= button_home(@editor.home) -%>
+		<%= badge_public(@editor.is_public).html_safe %>
+	</h1>
 
-  <% if @editor.description.present? %>
-    <p><%= @editor.description %></p>
-  <% end -%>
+	<% if @editor.description.present? %>
+		<p><%= @editor.description %></p>
+	<% end -%>
 
-  <table class="column-head">
+	<table class="column-head">
 
-    <tr>
-      <th>Creator</th>
-      <td><%= @editor.user.username %></td>
-    </tr>
+		<tr>
+			<th>Creator</th>
+			<td><%= @editor.user.username %></td>
+		</tr>
 
-    <tr>
-      <th>URL</th>
-      <td><%= link_to @editor.url, @editor.url %></td>
-    </tr>
+		<tr>
+			<th>URL</th>
+			<td><%= link_to @editor.url, @editor.url %></td>
+		</tr>
 
-    <tr>
-      <th>Parameters</th>
-      <td><pre><%= @editor.parameters %></pre></td>
-    </tr>
+		<tr>
+			<th>Parameters</th>
+			<td><pre><%= @editor.parameters %></pre></td>
+		</tr>
 
-  </table>
+	</table>
 
-  <% if @editor.changeable?(current_user) -%>
-    <%= link_to 'Edit', edit_editor_path(@editor), class: 'button' %>
-    <%= link_to 'Destroy', @editor, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
-  <% end %>
-  <%= link_to 'List', editors_path, class: 'button' %>
+	<% if @editor.changeable?(current_user) -%>
+		<%= link_to 'Edit', edit_editor_path(@editor), class: 'button' %>
+		<%= link_to 'Destroy', @editor, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+	<% end %>
+	<%= link_to 'List', editors_path, class: 'button' %>
 </section>

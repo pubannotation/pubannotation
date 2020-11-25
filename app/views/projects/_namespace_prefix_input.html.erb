@@ -1,7 +1,7 @@
 <% 
-  if namespace_prefix_input.present?
-    prefix = namespace_prefix_input['prefix']
-    uri = namespace_prefix_input['uri']
-  end 
+	if namespace_prefix_input.present?
+		prefix = namespace_prefix_input['prefix']
+		uri = namespace_prefix_input['uri']
+	end 
 -%>
 <tr><td style="background-color:#ddeeff"><%= text_field_tag 'project[namespaces][][prefix]', prefix -%></td><td><%= text_field_tag 'project[namespaces][][uri]', uri -%></td></tr>

@@ -1,231 +1,231 @@
 <%= form_for(@annotator) do |f| %>
-  <% if @annotator.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@annotator.errors.count, "error") %> prohibited this annotator from being saved:</h2>
+	<% if @annotator.errors.any? %>
+		<div id="error_explanation">
+			<h2><%= pluralize(@annotator.errors.count, "error") %> prohibited this annotator from being saved:</h2>
 
-      <ul>
-      <% @annotator.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
+			<ul>
+			<% @annotator.errors.full_messages.each do |msg| %>
+				<li><%= msg %></li>
+			<% end %>
+			</ul>
+		</div>
+	<% end %>
 
-  <div>
-    <%= f.submit %>
-  </div>
-  <table class='column-head'>
-  <tr>
-    <th style="width:6em"><%= f.label :user %></th>
-    <td><%= current_user.username %></td>
-    <td style="width:1em"></td>
-  </tr>
-  <tr>
-    <th><%= f.label :is_public -%></th>
-    <td><%= f.check_box :is_public -%></td>
-    <td>
-      <a href="#help-is-public" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-is-public" class="help">
-        <h1>Is Public</h1>
-        <p>If this attribute is checked, then the entry will appear in the public list of annotators.</p>
-        <p>Otherwise, it will be listed only to you when you are logged-in.</p>
-        <p>Note that however the entry will remain accessible even if this attribute is not checked: anyone can access this entry with the name of it if he/she knows.</p>
-        <p>In other words, setting of this attribute will affect the findability, but not the accessibility, of the entry.</p>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label :name, "Name*" %></th>
-    <td><%= f.text_field :name, required: true, style:'width:100%' %></td>
-    <td>
-      <a href="#help-name" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-name" class="help">
-        <h1>Name</h1>
-        <p>Note that the name will be a part of the URL of its configuration.</p>
-        <p>A name has to begin and end with
-          <ul>
-            <li>lowercase/upper letters, or</li>
-            <li>decimal digits,</li>
-          </ul>
-          and may include
-          <ul>
-            <li>lowercase/upper letters,</li>
-            <li>decimal digits,</li>
-            <li>hyphen ('-'), and underscore ('_').</li>
-          </ul>
-        </p>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label :description %></th>
-    <td><%= f.text_area :description %></td>
-    <td></td>
-  </tr>
-  <tr>
-    <th><%= f.label :home %></th>
-    <td><%= f.text_field :home %></td>
-    <td></td>
-  </tr>
-  <tr>
-    <th><%= f.label :url, "URL*" %></th>
-    <td><%= f.text_field :url, type: :url, required: true %></td>
-    <td>
-      <a href="#help-url" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-url" class="help">
-        <h1>URL</h1>
-        <p>The following placeholders can be used to pass parameter values to the annotation service:
-          <ul>
-            <li>_text_ : the text body,</li>
-            <li>_sourcedb_ : the source db, and</li>
-            <li>_sourceid_ : the source id.</li>
-          </ul>
-        </p>
-        <h2>Examples</h2>
-        <p>http://example.org/annotation?text=_text_</p>
-        <p>http://example.org/annotation?pmid=_sourceid_&format=json</p>
-      </div>
-    </td>
+	<div>
+		<%= f.submit %>
+	</div>
+	<table class='column-head'>
+	<tr>
+		<th style="width:6em"><%= f.label :user %></th>
+		<td><%= current_user.username %></td>
+		<td style="width:1em"></td>
+	</tr>
+	<tr>
+		<th><%= f.label :is_public -%></th>
+		<td><%= f.check_box :is_public -%></td>
+		<td>
+			<a href="#help-is-public" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-is-public" class="help">
+				<h1>Is Public</h1>
+				<p>If this attribute is checked, then the entry will appear in the public list of annotators.</p>
+				<p>Otherwise, it will be listed only to you when you are logged-in.</p>
+				<p>Note that however the entry will remain accessible even if this attribute is not checked: anyone can access this entry with the name of it if he/she knows.</p>
+				<p>In other words, setting of this attribute will affect the findability, but not the accessibility, of the entry.</p>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label :name, "Name*" %></th>
+		<td><%= f.text_field :name, required: true, style:'width:100%' %></td>
+		<td>
+			<a href="#help-name" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-name" class="help">
+				<h1>Name</h1>
+				<p>Note that the name will be a part of the URL of its configuration.</p>
+				<p>A name has to begin and end with
+					<ul>
+						<li>lowercase/upper letters, or</li>
+						<li>decimal digits,</li>
+					</ul>
+					and may include
+					<ul>
+						<li>lowercase/upper letters,</li>
+						<li>decimal digits,</li>
+						<li>hyphen ('-'), and underscore ('_').</li>
+					</ul>
+				</p>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label :description %></th>
+		<td><%= f.text_area :description %></td>
+		<td></td>
+	</tr>
+	<tr>
+		<th><%= f.label :home %></th>
+		<td><%= f.text_field :home %></td>
+		<td></td>
+	</tr>
+	<tr>
+		<th><%= f.label :url, "URL*" %></th>
+		<td><%= f.text_field :url, type: :url, required: true %></td>
+		<td>
+			<a href="#help-url" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-url" class="help">
+				<h1>URL</h1>
+				<p>The following placeholders can be used to pass parameter values to the annotation service:
+					<ul>
+						<li>_text_ : the text body,</li>
+						<li>_sourcedb_ : the source db, and</li>
+						<li>_sourceid_ : the source id.</li>
+					</ul>
+				</p>
+				<h2>Examples</h2>
+				<p>http://example.org/annotation?text=_text_</p>
+				<p>http://example.org/annotation?pmid=_sourceid_&format=json</p>
+			</div>
+		</td>
 
-  </tr>
-  <tr>
-    <th><%= f.label :method, "Method*" %></th>
-    <td>
-      <%= f.select :method, [[:POST, 1], [:GET, 0]], {}, onchange: "payload_switch(this)" %>
-    </td>
-    <td>
-      <a href="#help-method" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-method" class="help">
-        <h1>Method</h1>
-        <p>Considering that the text to be sent may be long, you should choose 'POST' unless you have a particular reason to chooose 'GET'.</p>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label :payload %></th>
-    <td><%= f.text_area :payload, disabled: true %></td>
-    <td>
-      <a href="#help-payload" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-payload" class="help">
-        <h1>Payload</h1>
-        <p>Payload can be defined for the POST method.</p>
-        <p>Currently the following placeholders can be used to define the payload:
-          <dl>
-            <dt>_body_</dt>
-            <dd>the body of the request</dd>
-            <dt>_text_</dt>
-            <dd>the text of a document (plain text)</dd>
-            <dt>_doc_</dt>
-            <dd>a document (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
-            <dt>_docs_</dt>
-            <dd>An array of documents (<a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
-            <dt>_annotation_</dt>
-            <dd>A document with annotation (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
-            <dt>_annotations_</dt>
-            <dd>An array of documents with annotation (<a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
-          </dl>
-        </p>
-        <h2>Note</h2>
-        <ul>
-          <li>For a request from PubAnnotation, an annotator is expected to respond with a result of annotation which is in <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> format.</li>
-          <li>When a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object is sent to an annotator as an input, the annotator is expected to preserve, in its output, the content of the JSON object, except for adding the annotation results or changing pre-annotation to something else. For example, PubAnnotation will include the attributes, <i>sourcedb</i> and <i>sourceid</i>, in each document, when it sends documents to an annotator. PubAnnotation will then expect the results of annotation to preserve the attributes. PubAnnotation needs them to figure out which annotation to go to which document.</li> 
-        </ul>
-        <h2>Examples</h2>
-          <dl>
-            <dt>_body_ = _text_</dt>
-            <dd>The text of a document (in plain text) will be passed as the body of a request. Note that this setting cannot be used for a asynchronous request.</dd>
-            <dt>_body_ = _doc_</dt>
-            <dd>A document (in a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. It is the default setting.</dd>
-            <dt>_body_ = _annotation_</dt>
-            <dd>A document together with annotation to it (in a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. The annotation may be used as a pre-annotation.</dd>
-          </dl>
-      </div>
-    </td>
-  </tr>
+	</tr>
+	<tr>
+		<th><%= f.label :method, "Method*" %></th>
+		<td>
+			<%= f.select :method, [[:POST, 1], [:GET, 0]], {}, onchange: "payload_switch(this)" %>
+		</td>
+		<td>
+			<a href="#help-method" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-method" class="help">
+				<h1>Method</h1>
+				<p>Considering that the text to be sent may be long, you should choose 'POST' unless you have a particular reason to chooose 'GET'.</p>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label :payload %></th>
+		<td><%= f.text_area :payload, disabled: true %></td>
+		<td>
+			<a href="#help-payload" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-payload" class="help">
+				<h1>Payload</h1>
+				<p>Payload can be defined for the POST method.</p>
+				<p>Currently the following placeholders can be used to define the payload:
+					<dl>
+						<dt>_body_</dt>
+						<dd>the body of the request</dd>
+						<dt>_text_</dt>
+						<dd>the text of a document (plain text)</dd>
+						<dt>_doc_</dt>
+						<dd>a document (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+						<dt>_docs_</dt>
+						<dd>An array of documents (<a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
+						<dt>_annotation_</dt>
+						<dd>A document with annotation (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+						<dt>_annotations_</dt>
+						<dd>An array of documents with annotation (<a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
+					</dl>
+				</p>
+				<h2>Note</h2>
+				<ul>
+					<li>For a request from PubAnnotation, an annotator is expected to respond with a result of annotation which is in <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> format.</li>
+					<li>When a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object is sent to an annotator as an input, the annotator is expected to preserve, in its output, the content of the JSON object, except for adding the annotation results or changing pre-annotation to something else. For example, PubAnnotation will include the attributes, <i>sourcedb</i> and <i>sourceid</i>, in each document, when it sends documents to an annotator. PubAnnotation will then expect the results of annotation to preserve the attributes. PubAnnotation needs them to figure out which annotation to go to which document.</li> 
+				</ul>
+				<h2>Examples</h2>
+					<dl>
+						<dt>_body_ = _text_</dt>
+						<dd>The text of a document (in plain text) will be passed as the body of a request. Note that this setting cannot be used for a asynchronous request.</dd>
+						<dt>_body_ = _doc_</dt>
+						<dd>A document (in a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. It is the default setting.</dd>
+						<dt>_body_ = _annotation_</dt>
+						<dd>A document together with annotation to it (in a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. The annotation may be used as a pre-annotation.</dd>
+					</dl>
+			</div>
+		</td>
+	</tr>
 
-  <tr>
-    <th><%= f.label :async_protocol -%></th>
-    <td><%= f.check_box :async_protocol -%></td>
-    <td>
-      <a href="#help-async_protocol" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-async_protocol" class="help">
-        <h1>Is Async Protocol</h1>
-        <p>Check it if this annotator uses the <a href="http://www.pubannotation.org/docs/annotation-server-api/">asynchronous protocol</a>.</p>
-      </div>
-    </td>
-  </tr>
+	<tr>
+		<th><%= f.label :async_protocol -%></th>
+		<td><%= f.check_box :async_protocol -%></td>
+		<td>
+			<a href="#help-async_protocol" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-async_protocol" class="help">
+				<h1>Is Async Protocol</h1>
+				<p>Check it if this annotator uses the <a href="http://www.pubannotation.org/docs/annotation-server-api/">asynchronous protocol</a>.</p>
+			</div>
+		</td>
+	</tr>
 
-  <tr>
-    <th><%= f.label :max_text_size %></th>
-    <td><%= f.text_field :max_text_size, type: :number, min: 100 %></td>
-    <td>
-      <a href="#help-max_text_size" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-max_text_size" class="help">
-        <h1>Max Text Size</h1>
-        <p>The maximum size of text to be sent to the annotator.</p>
-        <h2>Default</h2>
-        <ul>
-          <li><%= Annotator::MaxTextSync %> for a synchronous protocol.</li>
-          <li><%= Annotator::MaxTextAsync %> for an asynchronous protocol.</li>
-        </ul>
-      </div>
-    </td>
-  </tr>
+	<tr>
+		<th><%= f.label :max_text_size %></th>
+		<td><%= f.text_field :max_text_size, type: :number, min: 100 %></td>
+		<td>
+			<a href="#help-max_text_size" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-max_text_size" class="help">
+				<h1>Max Text Size</h1>
+				<p>The maximum size of text to be sent to the annotator.</p>
+				<h2>Default</h2>
+				<ul>
+					<li><%= Annotator::MaxTextSync %> for a synchronous protocol.</li>
+					<li><%= Annotator::MaxTextAsync %> for an asynchronous protocol.</li>
+				</ul>
+			</div>
+		</td>
+	</tr>
 
-  <tr>
-    <th>Transformation</th>
-    <td>
-      <div style="width:90%; white-space:normal">
-        <ul>
-          <li>The labels (the object) will be transformed to the value of the attrbitue: <%= f.text_field :receiver_attribute, placeholder: "the predicate of an attribute", style: "width:6em" %>, and</li>
-          <li>The labels will be filled with: <%= f.text_field :new_label, placeholder: "new label", style: "width:6em" %></li>
-        </ul>
-      </div>
-    </td>
-    <td>
-      <a href="#help-transformation" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-transformation" class="help">
-        <h1>Transformation</h1>
-        <p>The annotations obtained from an automatic annotation server can be transformed.</p>
-      </div>
-    </td>
-  </tr>
+	<tr>
+		<th>Transformation</th>
+		<td>
+			<div style="width:90%; white-space:normal">
+				<ul>
+					<li>The labels (the object) will be transformed to the value of the attrbitue: <%= f.text_field :receiver_attribute, placeholder: "the predicate of an attribute", style: "width:6em" %>, and</li>
+					<li>The labels will be filled with: <%= f.text_field :new_label, placeholder: "new label", style: "width:6em" %></li>
+				</ul>
+			</div>
+		</td>
+		<td>
+			<a href="#help-transformation" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-transformation" class="help">
+				<h1>Transformation</h1>
+				<p>The annotations obtained from an automatic annotation server can be transformed.</p>
+			</div>
+		</td>
+	</tr>
 
-  <tr>
-    <th><%= f.label :sample, 'Sample text' %></th>
-    <td><%= f.text_area :sample %></td>
-    <td>
-      <a href="#help-sample" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-sample" class="help">
-        <h1>Sample text</h1>
-        <p>You can specify a sample text with which you want the annotator to be tested.</p>
-      </div>
-    </td>
-  </tr>
-  </table>
+	<tr>
+		<th><%= f.label :sample, 'Sample text' %></th>
+		<td><%= f.text_area :sample %></td>
+		<td>
+			<a href="#help-sample" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-sample" class="help">
+				<h1>Sample text</h1>
+				<p>You can specify a sample text with which you want the annotator to be tested.</p>
+			</div>
+		</td>
+	</tr>
+	</table>
 
-  <script>
-    window.onload = function() {
-      payload_switch(document.getElementById("annotator_method"));
-    }
+	<script>
+		window.onload = function() {
+			payload_switch(document.getElementById("annotator_method"));
+		}
 
-    function payload_switch(that) {
-      var payload_field = document.getElementById("annotator_payload")
+		function payload_switch(that) {
+			var payload_field = document.getElementById("annotator_payload")
 
-      if (that.value == 0) {
-        payload_field.value = null;
-        payload_field.disabled = true;
-      } else {
-        payload_field.disabled = false;
-        if (payload_field.value == null || (payload_field.value == "") || (payload_field.value == "{}")) {
-          payload_field.value = "_body_ = _doc_";
-        }
-      }
-    }
-  </script>
+			if (that.value == 0) {
+				payload_field.value = null;
+				payload_field.disabled = true;
+			} else {
+				payload_field.disabled = false;
+				if (payload_field.value == null || (payload_field.value == "") || (payload_field.value == "{}")) {
+					payload_field.value = "_body_ = _doc_";
+				}
+			}
+		}
+	</script>
 
-  <div>
-    <%= f.submit %>
-  </div>
+	<div>
+		<%= f.submit %>
+	</div>
 
 <% end %>

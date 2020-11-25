@@ -1,31 +1,31 @@
 <%= form_tag projects_path, method: 'get' do -%>
-  <table id="projects_search" class="full">
-    <tr>
-      <th class="projects_header_name"><%= label_tag :name, t('activerecord.attributes.project.name') -%></th>
-      <th><%= label_tag :description, t('activerecord.attributes.project.description') -%></th>
-      <th class="projects_header_author"><%= label_tag :author, t('activerecord.attributes.project.author') -%></th>
-      <th class="projects_header_user"><%= label_tag :user, t('activerecord.attributes.project.maintainer') -%></th>
-    </tr>
-    <tr>
-      <td><%= text_field_tag :name, params[:name] -%></td>
-      <td><%= text_field_tag :description, params[:description] -%></td>
-      <td>
-        <%= autocomplete_field_tag :author, params[:author], "#{ autocomplete_project_author_projects_path }", :placeholder => t('activerecord.attributes.project.author')  -%>
-      </td>
-      <td>
-        <%= autocomplete_field_tag :user, params[:user], "#{ autocomplete_username_users_path }", :placeholder => t('activerecord.attributes.project.maintainer')  -%>
-      </td>
-    </tr>
-  </table>
+	<table id="projects_search" class="full">
+		<tr>
+			<th class="projects_header_name"><%= label_tag :name, t('activerecord.attributes.project.name') -%></th>
+			<th><%= label_tag :description, t('activerecord.attributes.project.description') -%></th>
+			<th class="projects_header_author"><%= label_tag :author, t('activerecord.attributes.project.author') -%></th>
+			<th class="projects_header_user"><%= label_tag :user, t('activerecord.attributes.project.maintainer') -%></th>
+		</tr>
+		<tr>
+			<td><%= text_field_tag :name, params[:name] -%></td>
+			<td><%= text_field_tag :description, params[:description] -%></td>
+			<td>
+				<%= autocomplete_field_tag :author, params[:author], "#{ autocomplete_project_author_projects_path }", :placeholder => t('activerecord.attributes.project.author')  -%>
+			</td>
+			<td>
+				<%= autocomplete_field_tag :user, params[:user], "#{ autocomplete_username_users_path }", :placeholder => t('activerecord.attributes.project.maintainer')  -%>
+			</td>
+		</tr>
+	</table>
 
-  <%= hidden_field_tag :search_projects, true -%>
-  <%= submit_tag t('views.shared.search') -%>
-  <%= submit_tag t('views.shared.clear'), id: 'reset' -%>
+	<%= hidden_field_tag :search_projects, true -%>
+	<%= submit_tag t('views.shared.search') -%>
+	<%= submit_tag t('views.shared.clear'), id: 'reset' -%>
 <% end -%>
 
 <script>
-  $("#reset").click(function(){
-   $(this).closest('form').find("input[type=text], textarea").val("");
-    return false
-  });
+	$("#reset").click(function(){
+	 $(this).closest('form').find("input[type=text], textarea").val("");
+		return false
+	});
 </script>

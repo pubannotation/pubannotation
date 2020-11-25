@@ -1,25 +1,25 @@
 <% content_for :path do %>
-  > <%= link_to t('views.paths.home'), home_path %>
-  > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
-  > <%= link_to @project.name, project_path(@project.name) -%>
-  > <%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name) -%>
-  > evaluation
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> <%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name) -%>
+	> evaluation
 <% end %>
 
 <% if @project %>
-  <section>
-    <%= render partial: 'projects/titlebar' -%>
+	<section>
+		<%= render partial: 'projects/titlebar' -%>
 <% end %>
 
 <section>
 	<h1>
 		Evaluation #<%= @evaluation.id %>
 		<%= badge_public(@evaluation.is_public).html_safe %>
-	  <%= link_to 'List', project_evaluations_path(@project.name), class: 'button' %>
-	  <% if @evaluation.changeable?(current_user) -%>
-	    <%= link_to 'Edit', edit_evaluation_path(@evaluation), class: 'button' %>
-	    <%= link_to 'Destroy', @evaluation, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
-	  <% end %>
+		<%= link_to 'List', project_evaluations_path(@project.name), class: 'button' %>
+		<% if @evaluation.changeable?(current_user) -%>
+			<%= link_to 'Edit', edit_evaluation_path(@evaluation), class: 'button' %>
+			<%= link_to 'Destroy', @evaluation, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+		<% end %>
 	</h1>
 
 	<table class="column-head">
@@ -63,7 +63,7 @@
 			<td><pre><%= @evaluation.relations_type_match %></pre></td>
 		</tr>
 
-	  <% if @evaluation.changeable?(current_user) -%>
+		<% if @evaluation.changeable?(current_user) -%>
 			<tr>
 				<th>Result</th>
 				<td>

@@ -1,10 +1,10 @@
 <% content_for :path do %>
-  > <%= link_to t('views.paths.home'), home_path %>
-  <% if @project %>
-    > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
-    > <%= link_to @project.name, project_path(@project.name) %>
-  <% end %>
-  > <%= t('views.docs.records') -%>
+	> <%= link_to t('views.paths.home'), home_path %>
+	<% if @project %>
+		> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+		> <%= link_to @project.name, project_path(@project.name) %>
+	<% end %>
+	> <%= t('views.docs.records') -%>
 <% end %>
 
 <%= render :partial => 'projects/titlebar' -%>
@@ -12,7 +12,7 @@
 <h2><%= t('views.docs.records') -%></h2>
 
 <% if @docs.empty? %>
-  <p><%= t('views.shared.none') %></p>
+	<p><%= t('views.shared.none') %></p>
 <% else %>
 	<%= render partial: 'doc', collection: @docs -%>
 <% end %>
@@ -22,8 +22,8 @@
 <% if user_signed_in? && @project.present? && current_user == @project.user %>
 	<h2><%= t('views.docs.add_new_documents') -%></h2>
 	<ul>
-	  <li>by uploading a new document<br/>
-	    <%= link_to t('views.shared.new_model', :model => t('activerecord.models.doc')), @new_doc_src, :class => 'button' -%>
-	  </li>
+		<li>by uploading a new document<br/>
+			<%= link_to t('views.shared.new_model', :model => t('activerecord.models.doc')), @new_doc_src, :class => 'button' -%>
+		</li>
 	</ul>
 <% end %>

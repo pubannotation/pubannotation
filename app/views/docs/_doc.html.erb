@@ -17,23 +17,23 @@
 	<td><%= doc.section -%></td>
 	<td class="text"><%= doc.body -%></td>
 	<td style="text-align:center">
-    	<% if @project -%>
-    		<% if doc.has_divs? -%>
-    			<%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_divs_docs_path(@project.name, doc.sourcedb, doc.sourceid, doc.serial), class: 'button' -%>
-    		<% else -%>
-    			<%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_docs_path(@project.name, doc.sourcedb, doc.sourceid), class: 'button' -%>
-    		<% end -%>
+		<% if @project -%>
+			<% if doc.has_divs? -%>
+				<%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_divs_docs_path(@project.name, doc.sourcedb, doc.sourceid, doc.serial), class: 'button' -%>
+			<% else -%>
+				<%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_docs_path(@project.name, doc.sourcedb, doc.sourceid), class: 'button' -%>
+			<% end -%>
 
-   			<% if user_signed_in? && @project.user == current_user %>
+			<% if user_signed_in? && @project.user == current_user %>
 				<%= link_to t('views.shared.delete'), project_doc_path(@project.name, doc.id), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: 'button' if @project.present? && doc.updatable_for?(current_user) -%>
 			<% end %>
-    	<% else -%>
-    		<% if doc.has_divs? -%>
-    			<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial), class: 'button' -%>
-        	<% else -%>
-    			<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid), class: 'button' -%>
-        	<% end -%>
-    	<% end -%>
+		<% else -%>
+			<% if doc.has_divs? -%>
+				<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_divs_show_path(doc.sourcedb, doc.sourceid, doc.serial), class: 'button' -%>
+			<% else -%>
+				<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(doc.sourcedb, doc.sourceid), class: 'button' -%>
+			<% end -%>
+		<% end -%>
 
 		<!-- <%= link_to t('views.shared.edit'), edit_doc_path(doc), :class => 'button' if doc.updatable_for?(current_user) -%> -->
 	</td>

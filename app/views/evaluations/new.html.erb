@@ -1,14 +1,14 @@
 <% content_for :path do %>
-  > <%= link_to t('views.paths.home'), home_path %>
-  > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
-  > <%= link_to @project.name, project_path(@project.name) -%>
-  > <%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name) -%>
-  > new evaluation
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> <%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name) -%>
+	> new evaluation
 <% end %>
 
 <% if @project %>
-  <section>
-    <%= render partial: 'projects/titlebar' -%>
+	<section>
+		<%= render partial: 'projects/titlebar' -%>
 <% end %>
 
 <section>
@@ -20,5 +20,5 @@
 </section>
 
 <% if @project.present? -%>
-  </section>
+	</section>
 <% end %>

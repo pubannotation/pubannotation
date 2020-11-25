@@ -1,38 +1,38 @@
 <%= form_for(@doc) do |f| %>
 	<%= errors_helper(@doc) %>
 
-  <table style="width:610px">
-  <tr>
-    <th style="width:5em">Text</th>
-    <td><%= f.text_area :body, size:"60x10" %></td>
-  </tr>
-  <tr>
-    <th>Information (leave it blank if you don't know what they are)</th>
-    <td>
-      <table>
-      <tr><th>Source URL</th><td>
-        <%= f.text_field :source %>
-      </td></tr>
-      <tr><th>Source DB</th><td>
-        <%= f.text_field :sourcedb %>
-      </td></tr>
-      <tr><th>Source Id</th><td>
-        <%= f.text_field :sourceid %>
-      </td></tr>
-      <tr><th>Division Id</th><td>
-        <%= f.number_field :serial, value: 0 -%>
-      </td></tr>
-      <tr><th>Section</th><td>
-        <%= f.text_field :section %>
-      </td></tr>
-      </table>
-    </td>
-    </tr>
-    </table>
+	<table style="width:610px">
+	<tr>
+		<th style="width:5em">Text</th>
+		<td><%= f.text_area :body, size:"60x10" %></td>
+	</tr>
+	<tr>
+		<th>Information (leave it blank if you don't know what they are)</th>
+		<td>
+			<table>
+			<tr><th>Source URL</th><td>
+				<%= f.text_field :source %>
+			</td></tr>
+			<tr><th>Source DB</th><td>
+				<%= f.text_field :sourcedb %>
+			</td></tr>
+			<tr><th>Source Id</th><td>
+				<%= f.text_field :sourceid %>
+			</td></tr>
+			<tr><th>Division Id</th><td>
+				<%= f.number_field :serial, value: 0 -%>
+			</td></tr>
+			<tr><th>Section</th><td>
+				<%= f.text_field :section %>
+			</td></tr>
+			</table>
+		</td>
+		</tr>
+		</table>
 
-  <%= f.hidden_field :username, value: current_user.username -%>
-  <%= hidden_field_tag :project_id, @project.name if @project.present? -%>
-  <div class="actions">
-    <%= f.submit %>
-  </div>
+	<%= f.hidden_field :username, value: current_user.username -%>
+	<%= hidden_field_tag :project_id, @project.name if @project.present? -%>
+	<div class="actions">
+		<%= f.submit %>
+	</div>
 <% end %>

@@ -1,8 +1,8 @@
 <% content_for :path do %>
-    > <%= link_to t('views.paths.home'), home_path %>
-    > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
-    > <%= link_to @project.name, project_path(@project.name) %>
-    > jobs
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+	> <%= link_to @project.name, project_path(@project.name) %>
+	> jobs
 <% end %>
 
 <section>
@@ -22,37 +22,37 @@
  -->
 <table>
   <tr>
-    <th>#</th>
-    <th>Job type</th>
-    <th>Created at</th>
-    <th>State</th>
-    <th>Progress</th>
-    <th>#Messages</th>
+	<th>#</th>
+	<th>Job type</th>
+	<th>Created at</th>
+	<th>State</th>
+	<th>Progress</th>
+	<th>#Messages</th>
   </tr>
 
 <% @jobs.each_with_index do |job, i| %>
   <tr
-    <%=
-        if job.running?
-            'style=background-color:#ffcccc'
-        elsif job.finished?
-            'style=color:#888888'
-        end
-    %>>
-    <td><%= i + 1 %></td>
-    <td><%= job.name %></td>
-    <td><%= job.created_at %></td>
-    <td><%= state(job) %></td>
-    <td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
-    <td style="text-align:right"><%= job.messages.length %></td>
-    <td>
-        <%= link_to 'Show', project_job_path(@project.name, job), class: :button %>
-        <% if job.running? %>
-          <%= link_to 'Stop', project_job_path(@project.name, job), method: :put, data: { confirm: t('controllers.shared.confirm_stop'), disable_with: "stopping<i class='fa fa-refresh fa-spin'></i>" }, class: :button %>
-        <% else %>
-          <%= link_to 'Remove', project_job_path(@project.name, job), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
-        <% end %>
-    </td>
+	<%=
+		if job.running?
+			'style=background-color:#ffcccc'
+		elsif job.finished?
+			'style=color:#888888'
+		end
+	%>>
+	<td><%= i + 1 %></td>
+	<td><%= job.name %></td>
+	<td><%= job.created_at %></td>
+	<td><%= state(job) %></td>
+	<td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
+	<td style="text-align:right"><%= job.messages.length %></td>
+	<td>
+		<%= link_to 'Show', project_job_path(@project.name, job), class: :button %>
+		<% if job.running? %>
+		  <%= link_to 'Stop', project_job_path(@project.name, job), method: :put, data: { confirm: t('controllers.shared.confirm_stop'), disable_with: "stopping<i class='fa fa-refresh fa-spin'></i>" }, class: :button %>
+		<% else %>
+		  <%= link_to 'Remove', project_job_path(@project.name, job), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
+		<% end %>
+	</td>
   </tr>
 <% end %>
 </table>

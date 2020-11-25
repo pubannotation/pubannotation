@@ -1,54 +1,54 @@
 <tr>
-  <td><%= source_doc.sourcedb -%></td>
+	<td><%= source_doc.sourcedb -%></td>
 	<td><%= source_doc.sourceid -%></td>
 	<td class="snippet"><%=
-      snippet = source_doc.body
-      em_open_pos = snippet.index('<em>')
-      snippet = if em_open_pos
-        em_close_pos = snippet.rindex('</em>')
-        m = em_open_pos + (em_close_pos - em_open_pos) / 2
-        b = m - 40
-        e = m + 60
-        if b < 0
-          e -= b
-          b = 0
-        end
-        if e > snippet.length
-          e = snippet.length
-        end
-        snippet[b...e]
-      else
-        snippet[0 ... 100]
-      end
-      snippet.html_safe
-    -%></td>
-  <td style="text-align:right"><%= number_to_human_size(source_doc.body.length) %></td>
+		snippet = source_doc.body
+		em_open_pos = snippet.index('<em>')
+		snippet = if em_open_pos
+			em_close_pos = snippet.rindex('</em>')
+			m = em_open_pos + (em_close_pos - em_open_pos) / 2
+			b = m - 40
+			e = m + 60
+			if b < 0
+				e -= b
+				b = 0
+			end
+			if e > snippet.length
+				e = snippet.length
+			end
+			snippet[b...e]
+		else
+			snippet[0 ... 100]
+		end
+		snippet.html_safe
+	-%></td>
+	<td style="text-align:right"><%= number_to_human_size(source_doc.body.length) %></td>
 	<td style="text-align:right">
-    <% if source_doc.has_divs? -%>
-      <%= link_to source_doc.projects_num, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid), style:"display:block" -%>
-    <% else -%>
-      <%= link_to source_doc.projects_num, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid), style:"display:block" -%>
-    <% end -%>
-  </td>
-  <td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(@project, source_doc)) -%></td>
-  <td >
-    <% if  params[:project_id].present? -%>
-      <% if source_doc.has_divs? -%>
-        <%= link_to t('views.shared.show'), index_project_sourcedb_sourceid_divs_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), class: :button -%>
-      <% else -%>
-        <%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), class: :button -%>
-      <% end -%>
-    <% else -%>
-      <% if source_doc.has_divs? -%>
-        <%= link_to t('views.shared.show'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid), class: :button -%>
-      <% else -%>
-        <%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid), class: :button -%>
-      <% end -%>
-    <% end -%>
-  </td>
-  <% if @project.present? && @project.editable?(current_user) %>
-    <td>
-      <%= link_to t('views.shared.delete'), delete_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: :button -%>
-    </td>
-  <% end %>
+		<% if source_doc.has_divs? -%>
+			<%= link_to source_doc.projects_num, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid), style:"display:block" -%>
+		<% else -%>
+			<%= link_to source_doc.projects_num, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid), style:"display:block" -%>
+		<% end -%>
+	</td>
+	<td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(@project, source_doc)) -%></td>
+	<td >
+		<% if  params[:project_id].present? -%>
+			<% if source_doc.has_divs? -%>
+				<%= link_to t('views.shared.show'), index_project_sourcedb_sourceid_divs_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), class: :button -%>
+			<% else -%>
+				<%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), class: :button -%>
+			<% end -%>
+		<% else -%>
+			<% if source_doc.has_divs? -%>
+				<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid), class: :button -%>
+			<% else -%>
+				<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid), class: :button -%>
+			<% end -%>
+		<% end -%>
+	</td>
+	<% if @project.present? && @project.editable?(current_user) %>
+		<td>
+			<%= link_to t('views.shared.delete'), delete_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: :button -%>
+		</td>
+	<% end %>
 </tr>

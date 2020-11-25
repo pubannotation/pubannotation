@@ -11,39 +11,39 @@ gem 'activerecord-import', '~> 0.15.0'
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
-  gem 'sass-rails',   '~> 3.2.3'
-  gem 'coffee-rails', '~> 3.2.1'
+	gem 'sass-rails',   '~> 3.2.3'
+	gem 'coffee-rails', '~> 3.2.1'
 
-  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  # gem 'therubyracer', :platforms => :ruby
+	# See https://github.com/sstephenson/execjs#readme for more supported runtimes
+	# gem 'therubyracer', :platforms => :ruby
 
-  gem 'uglifier', '>= 1.0.3'
+	gem 'uglifier', '>= 1.0.3'
 end
 
 gem 'pg', '~> 0.11'
 gem 'friendly_id'
 
 group :development do
-  gem 'dotenv-rails'
-  gem 'guard'
-  gem 'guard-livereload'
+	gem 'dotenv-rails'
+	gem 'guard'
+	gem 'guard-livereload'
 end
 
 group :test, :development do
-  gem 'rspec-rails', '~> 2.0'
+	gem 'rspec-rails', '~> 2.0'
 end
 
 group :test do
-  gem 'rspec'
-  gem 'cucumber'
-  gem 'spork-rails'
-  gem 'factory_girl_rails'
-  gem 'simplecov', :require => false
-  gem 'vcr'
-  gem 'webmock', '< 1.10.0'
-  gem 'webrat'
-  gem 'database_cleaner'
-  gem 'test-unit'
+	gem 'rspec'
+	gem 'cucumber'
+	gem 'spork-rails'
+	gem 'factory_girl_rails'
+	gem 'simplecov', :require => false
+	gem 'vcr'
+	gem 'webmock', '< 1.10.0'
+	gem 'webrat'
+	gem 'database_cleaner'
+	gem 'test-unit'
 end
 
 gem 'text_alignment', '0.9'

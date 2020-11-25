@@ -1,37 +1,37 @@
 <% content_for :path do -%>
-  > <%= link_to t('views.paths.home'), home_path -%>
-  > evaluators
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> evaluators
 <% end -%>
 
 <section>
 <h1>Evaluators</h1>
 
 <%=
-  grid(@evaluators_grid) do |g|
+	grid(@evaluators_grid) do |g|
 
-    if current_user.present?
-      g.column do |evaluator|
-        badge_public(evaluator.is_public).html_safe
-      end
-    end
+		if current_user.present?
+			g.column do |evaluator|
+				badge_public(evaluator.is_public).html_safe
+			end
+		end
 
-    g.column name: 'Name', attribute: 'name' do |evaluator|
-      [link_to(evaluator.name, evaluator), {style: 'width:10em; text-align:center'}]
-    end
+		g.column name: 'Name', attribute: 'name' do |evaluator|
+			[link_to(evaluator.name, evaluator), {style: 'width:10em; text-align:center'}]
+		end
 
-    g.column name: 'Description', attribute: 'description' do |evaluator|
-      [link_to(strip_tags(evaluator.description), evaluator), {style: 'max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-    end
+		g.column name: 'Description', attribute: 'description' do |evaluator|
+			[link_to(strip_tags(evaluator.description), evaluator), {style: 'max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+		end
 
-    g.column name: 'Type', attribute: 'access_type' do |evaluator|
-      [access_type_helper(evaluator), {style: 'max-width: 5em; text-align:center'}]
-    end
+		g.column name: 'Type', attribute: 'access_type' do |evaluator|
+			[access_type_helper(evaluator), {style: 'max-width: 5em; text-align:center'}]
+		end
 
-    g.column name: 'Maintainer', attribute: 'username', assoc: :user do |evaluator|
-      [evaluator.user.username, {style: 'width:10em; text-align:center'}]
-    end
+		g.column name: 'Maintainer', attribute: 'username', assoc: :user do |evaluator|
+			[evaluator.user.username, {style: 'width:10em; text-align:center'}]
+		end
 
-  end
+	end
 -%>
 
 <%= link_to 'Create a new evaluator', new_evaluator_path, {:class=> 'control button'} %>

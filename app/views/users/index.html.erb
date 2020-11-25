@@ -1,14 +1,14 @@
 <table>
-  <tr>
-    <th><%= t('activerecord.attributes.user.username') -%></th>
-    <th><%= t('activerecord.attributes.user.last_sign_in_at') -%></th>
-  </tr>
-  <% @users.each do |user| -%>
-    <tr>
-      <td><%= user.username -%></td>
-      <td><%= user.last_sign_in_at -%></td>
-    </tr>  
-  <% end -%>
+	<tr>
+		<th><%= t('activerecord.attributes.user.username') -%></th>
+		<th><%= t('activerecord.attributes.user.last_sign_in_at') -%></th>
+	</tr>
+	<% @users.each do |user| -%>
+		<tr>
+			<td><%= user.username -%></td>
+			<td><%= user.last_sign_in_at -%></td>
+		</tr>  
+	<% end -%>
 </table>
 
 <%= paginate @users -%>

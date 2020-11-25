@@ -1,28 +1,28 @@
 @import 'variables';
 
 .panel {
-  display: inline-block;
-  vertical-align: top;
-  margin: 5px;
-  width: 490px;
+	display: inline-block;
+	vertical-align: top;
+	margin: 5px;
+	width: 490px;
 
-  h1 {
-    width: 90%;
-  }
+	h1 {
+		width: 90%;
+	}
 
-  h2 {
-    border: 0 none;
-    margin: 0;
-  }
+	h2 {
+		border: 0 none;
+		margin: 0;
+	}
 
-  table {
-    table-layout: fixed;
-    width: 100%;
-  }
+	table {
+		table-layout: fixed;
+		width: 100%;
+	}
 }
 
 #news_frame {
-  width: 550px;
+	width: 550px;
 	margin: 5px;
 	border: $main_color 1px solid;
 	box-shadow: 2px 2px 2px;
@@ -39,57 +39,57 @@
 }
 
 #news {
-  height:30px;
-  overflow-y:scroll;
+	height:30px;
+	overflow-y:scroll;
 }
 
 .show-on-mobiles {
-  display: none;
+	display: none;
 }
 
 /* Responsive Stuff */
 /* @media screen and (max-width: 568px) { */
 @media screen and (max-width: 1018px) {
-  #news_frame {
-    width: 550px;
-  }
+	#news_frame {
+		width: 550px;
+	}
 
-  .panel {
-    width: 49%;
-  }
+	.panel {
+		width: 49%;
+	}
 }
 
 @media screen and (max-width: 800px) {
-  #news_frame {
-    width: calc(99% - 30px);
-  }
+	#news_frame {
+		width: calc(99% - 30px);
+	}
 	.panel {
-    width: 99%;
+		width: 99%;
 		display: block;
 	}
 
-  /* Stack anything that isn’t full-width on smaller screens */
-  .grid .unit {
-    width: 100% !important;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  .unit .grid .unit {
-    padding-left: 0px;
-    padding-right: 0px;
-  }
+	/* Stack anything that isn’t full-width on smaller screens */
+	.grid .unit {
+		width: 100% !important;
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+	.unit .grid .unit {
+		padding-left: 0px;
+		padding-right: 0px;
+	}
 
-  /* Sometimes, you just want to be different on small screens */
-  .center-on-mobiles {
-    text-align: center !important;
-  }
-  .hide-on-mobiles {
-    display: none !important;
-  }
-  .show-on-mobiles {
-    display: block !important;
-  }
-  a .show-on-mobiles {
-    display: inline !important;
-  }
+	/* Sometimes, you just want to be different on small screens */
+	.center-on-mobiles {
+		text-align: center !important;
+	}
+	.hide-on-mobiles {
+		display: none !important;
+	}
+	.show-on-mobiles {
+		display: block !important;
+	}
+	a .show-on-mobiles {
+		display: inline !important;
+	}
 }

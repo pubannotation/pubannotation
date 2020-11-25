@@ -1,61 +1,61 @@
 <% content_for :path do -%>
-  > <%= link_to t('views.paths.home'), home_path -%>
-  > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
-  > <%= link_to @project.name, project_path(@project.name) -%>
-  > evaluations
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> evaluations
 <% end -%>
 
 <% if @project %>
-  <section>
-    <%= render partial: 'projects/titlebar' -%>
+	<section>
+		<%= render partial: 'projects/titlebar' -%>
 <% end %>
 
 <section>
-  <h1>Evaluations</h1>
+	<h1>Evaluations</h1>
 
-  <%=
-    grid(@evaluations_grid) do |g|
+	<%=
+		grid(@evaluations_grid) do |g|
 
-      g.blank_slate  do
-        "<p>There is no evaluation yet.</p>"
-      end
+			g.blank_slate  do
+				"<p>There is no evaluation yet.</p>"
+			end
 
-      if @project.editable?(current_user)
-        g.column do |evaluation|
-          badge_public(evaluation.is_public).html_safe
-        end
-      end
+			if @project.editable?(current_user)
+				g.column do |evaluation|
+					badge_public(evaluation.is_public).html_safe
+				end
+			end
 
-      g.column name: 'Note', attribute: 'note' do |evaluation|
-        [evaluation.note, {style: 'width:10em; text-align:center'}]
-      end
+			g.column name: 'Note', attribute: 'note' do |evaluation|
+				[evaluation.note, {style: 'width:10em; text-align:center'}]
+			end
 
-      g.column name: 'Reference', attribute: 'name', assoc: :reference_project do |evaluation|
-        [link_to(evaluation.reference_project.name, project_path(evaluation.reference_project.name)), {style: 'width:10em; text-align:center'}]
-      end
+			g.column name: 'Reference', attribute: 'name', assoc: :reference_project do |evaluation|
+				[link_to(evaluation.reference_project.name, project_path(evaluation.reference_project.name)), {style: 'width:10em; text-align:center'}]
+			end
 
-      g.column name: 'Evaluator', attribute: 'name', assoc: :evaluator do |evaluation|
-        [link_to(evaluation.evaluator.name, evaluator_path(evaluation.evaluator.name)), {style: 'width:10em; text-align:center'}]
-      end
+			g.column name: 'Evaluator', attribute: 'name', assoc: :evaluator do |evaluation|
+				[link_to(evaluation.evaluator.name, evaluator_path(evaluation.evaluator.name)), {style: 'width:10em; text-align:center'}]
+			end
 
-      g.column name: 'Updated at', attribute: 'updated_at' do |evaluation|
-        [evaluation.updated_at, {style: 'width:5em; text-align:right'}]
-      end
+			g.column name: 'Updated at', attribute: 'updated_at' do |evaluation|
+				[evaluation.updated_at, {style: 'width:5em; text-align:right'}]
+			end
 
-      g.column do |evaluation|
-        buttons = link_to('Show', project_evaluation_path(@project.name, evaluation), class: 'button')
-        buttons += link_to('Destroy', evaluation, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button') if @project.editable?(current_user)
-        buttons
-      end
+			g.column do |evaluation|
+				buttons = link_to('Show', project_evaluation_path(@project.name, evaluation), class: 'button')
+				buttons += link_to('Destroy', evaluation, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button') if @project.editable?(current_user)
+				buttons
+			end
 
-    end
-  -%>
+		end
+	-%>
 
 <% if @project.editable?(current_user) %>
-  <%= link_to 'Create', new_project_evaluation_path(@project.name), {:class=> 'control button'} %>
+	<%= link_to 'Create', new_project_evaluation_path(@project.name), {:class=> 'control button'} %>
 <% end %>
 </section>
 
 <% if @project.present? -%>
-  </section>
+	</section>
 <% end %>

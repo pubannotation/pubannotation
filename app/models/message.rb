@@ -1,22 +1,22 @@
 class Message < ActiveRecord::Base
-  attr_accessible :sourcedb, :sourceid, :divid, :body, :data
+	attr_accessible :sourcedb, :sourceid, :divid, :body, :data
 
-  belongs_to :job
-  serialize :data
+	belongs_to :job
+	serialize :data
 
-  def as_json(options={})
-    options||={}
-    json = {
+	def as_json(options={})
+		options||={}
+		json = {
 			body: self.body,
 			created_at: self.created_at,
-    }
-    json[:sourcedb] = self.sourcedb unless self.sourcedb.nil?
-    json[:sourceid] = self.sourceid unless self.sourceid.nil?
-    json[:divid] = self.divid unless self.divid.nil?
-    json
-  end
+		}
+		json[:sourcedb] = self.sourcedb unless self.sourcedb.nil?
+		json[:sourceid] = self.sourceid unless self.sourceid.nil?
+		json[:divid] = self.divid unless self.divid.nil?
+		json
+	end
 
-  def self.as_tsv
+	def self.as_tsv
 		column_names = %w{sourcedb sourceid divid body created_at}
 
 		CSV.generate(col_sep: "\t") do |csv|

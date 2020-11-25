@@ -1,22 +1,22 @@
 <%= form_for @news_notification do |f| -%>
-  <table>
-    <tr>
-      <th><%= f.label :title -%></th>
-      <td><%= f.text_field :title -%></td>
-    <tr>
-    <tr>
-      <th><%= f.label :body -%></th>
-      <td><%= f.text_area :body -%></td>
-    <tr>
-    <tr>
-      <th><%= f.label :category -%></th>
-      <td><%= f.text_field :category -%></td>
-    <tr>
-    <tr>
-      <th>Active?</th>
-      <td><%= f.check_box :active %></td>
-    </tr>
-  </table>
+	<table>
+		<tr>
+			<th><%= f.label :title -%></th>
+			<td><%= f.text_field :title -%></td>
+		<tr>
+		<tr>
+			<th><%= f.label :body -%></th>
+			<td><%= f.text_area :body -%></td>
+		<tr>
+		<tr>
+			<th><%= f.label :category -%></th>
+			<td><%= f.text_field :category -%></td>
+		<tr>
+		<tr>
+			<th>Active?</th>
+			<td><%= f.check_box :active %></td>
+		</tr>
+	</table>
 
-  <%= f.submit -%>
+	<%= f.submit -%>
 <% end -%>

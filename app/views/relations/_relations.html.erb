@@ -1,12 +1,12 @@
 <% if relations.present? -%>
-  <tr>
-    <td colspan="4" style="border-color:white"><h3>Relations</h3></td>
-  </tr>
-  <tr>
-    <th>Id</th>
-    <th>Subject</th>
-    <th>Predicate</th>
-    <th>Object</th>
-  </tr>
-  <%= render partial: 'relations/relation', collection: relations, locals: {doc: doc, body: body} -%>
+	<tr>
+		<td colspan="4" style="border-color:white"><h3>Relations</h3></td>
+	</tr>
+	<tr>
+		<th>Id</th>
+		<th>Subject</th>
+		<th>Predicate</th>
+		<th>Object</th>
+	</tr>
+	<%= render partial: 'relations/relation', collection: relations, locals: {doc: doc, body: body} -%>
 <% end -%>

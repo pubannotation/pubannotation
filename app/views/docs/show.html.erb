@@ -1,223 +1,223 @@
 <% content_for :javascript do -%>
-  <script>
-    $(document).ready(function(){
-      selectProjectNames();
-      selectedProjectsElement = $('#selected_projects_list');
-      unselectedProjectsElement = $('#unselected_projects_list');
-      toggleProjectsSelection();
-      switchProjectSelection();
-      sortSelectedProjectsByName(); 
-      sortSelectedProjectsByAnnotationsCount();
-      selectedProjectNames = new Array();
-      countProjectAnnotations();
-      countProjects();
-      $( function() {
-        $( "#selected_projects_list" ).sortable({
-          placeholder: "ui-state-highlight",
-          update: function(){
-            getSelectedProjectNames();
-            setAnnotationHref();
-            changeAddressBarUrlForProjectsParams(selectedProjectNames);
-          }
-        });
-        $( "#selected_projects_list" ).disableSelection();
-      });
-      getSelectedProjectNames();
-      setAnnotationHref();
-      selectedProjectsElement.click(function(){
-        document.getSelection().removeAllRanges();
-      })
-    });
+	<script>
+		$(document).ready(function(){
+			selectProjectNames();
+			selectedProjectsElement = $('#selected_projects_list');
+			unselectedProjectsElement = $('#unselected_projects_list');
+			toggleProjectsSelection();
+			switchProjectSelection();
+			sortSelectedProjectsByName(); 
+			sortSelectedProjectsByAnnotationsCount();
+			selectedProjectNames = new Array();
+			countProjectAnnotations();
+			countProjects();
+			$( function() {
+				$( "#selected_projects_list" ).sortable({
+					placeholder: "ui-state-highlight",
+					update: function(){
+						getSelectedProjectNames();
+						setAnnotationHref();
+						changeAddressBarUrlForProjectsParams(selectedProjectNames);
+					}
+				});
+				$( "#selected_projects_list" ).disableSelection();
+			});
+			getSelectedProjectNames();
+			setAnnotationHref();
+			selectedProjectsElement.click(function(){
+				document.getSelection().removeAllRanges();
+			})
+		});
 
-    // Add remove project name
-    var selectProjectNames = function(){
-      $('.project_selector').click(function(){
-        projectName = $(this).data('project-name');
-        isSelected = selectedProjectsElement.find("span[data-project-name='" + projectName + "']").length > 0;
-        if(isSelected){
-          // if already selected
-          unselectedProjectsElement.append($(this).parent());
-        }else{
-          // if not selected yet
-          $('#no_projects_warning').remove();
-          selectedProjectsElement.append($(this).parent());
-        }
-        getSelectedProjectNames();
-        switchButtonClass();
-        setAnnotationHref();
-        countProjectAnnotations();
-        countProjects();
-        changeAddressBarUrlForProjectsParams(selectedProjectNames);
-        document.getSelection().removeAllRanges();
-      })
-    }
+		// Add remove project name
+		var selectProjectNames = function(){
+			$('.project_selector').click(function(){
+				projectName = $(this).data('project-name');
+				isSelected = selectedProjectsElement.find("span[data-project-name='" + projectName + "']").length > 0;
+				if(isSelected){
+					// if already selected
+					unselectedProjectsElement.append($(this).parent());
+				}else{
+					// if not selected yet
+					$('#no_projects_warning').remove();
+					selectedProjectsElement.append($(this).parent());
+				}
+				getSelectedProjectNames();
+				switchButtonClass();
+				setAnnotationHref();
+				countProjectAnnotations();
+				countProjects();
+				changeAddressBarUrlForProjectsParams(selectedProjectNames);
+				document.getSelection().removeAllRanges();
+			})
+		}
 
-    // Add ?projects=project_name_1,project_name_2 to TAB, JSON and TextAE links
-    var setAnnotationHref = function(){
-      annotationLinkIds = ["tab", "json", "listview", "mergeview"]
-      jQuery.each(annotationLinkIds, function(i, id) {
-        linkElement = $("#annotations_" + id);
-        href = linkElement.attr("href");
-        if ( selectedProjectNames.length > 0 ){
-          linkElement.attr("href", href.split('?')[0] + "?projects=" + selectedProjectNames.join());
-        }else{
-          linkElement.attr("href", href.split('?')[0]);
-        };
-      });
-    }
+		// Add ?projects=project_name_1,project_name_2 to TAB, JSON and TextAE links
+		var setAnnotationHref = function(){
+			annotationLinkIds = ["tab", "json", "listview", "mergeview"]
+			jQuery.each(annotationLinkIds, function(i, id) {
+				linkElement = $("#annotations_" + id);
+				href = linkElement.attr("href");
+				if ( selectedProjectNames.length > 0 ){
+					linkElement.attr("href", href.split('?')[0] + "?projects=" + selectedProjectNames.join());
+				}else{
+					linkElement.attr("href", href.split('?')[0]);
+				};
+			});
+		}
 
-    // Return selected project names by array
-    var getSelectedProjectNames = function(){
-      selectedProjectNames = [];
-      selectedProjectElements = selectedProjectsElement.find('.project_wrapper');
-      jQuery.each(selectedProjectElements, function(i, selectedProjectElement) {
-        projectName = $( selectedProjectElement ).find('.project_selector').data('project-name');
-        selectedProjectNames.push(projectName);
-      });
-    }
+		// Return selected project names by array
+		var getSelectedProjectNames = function(){
+			selectedProjectNames = [];
+			selectedProjectElements = selectedProjectsElement.find('.project_wrapper');
+			jQuery.each(selectedProjectElements, function(i, selectedProjectElement) {
+				projectName = $( selectedProjectElement ).find('.project_selector').data('project-name');
+				selectedProjectNames.push(projectName);
+			});
+		}
 
-    var switchButtonClass = function(){
-      jQuery.each(selectedProjectsElement.find('.fa'), function(i, selectedProjectElement){
-        $(selectedProjectElement).switchClass('fa-plus', 'fa-minus');
-      });
-      jQuery.each(unselectedProjectsElement.find('.fa'), function(i, unselectedProjectElement){
-        $(unselectedProjectElement).switchClass('fa-minus', 'fa-plus');
-      });
-    }
+		var switchButtonClass = function(){
+			jQuery.each(selectedProjectsElement.find('.fa'), function(i, selectedProjectElement){
+				$(selectedProjectElement).switchClass('fa-plus', 'fa-minus');
+			});
+			jQuery.each(unselectedProjectsElement.find('.fa'), function(i, unselectedProjectElement){
+				$(unselectedProjectElement).switchClass('fa-minus', 'fa-plus');
+			});
+		}
 
-    var toggleProjectsSelection = function(selectFlag){
-      $('.move_projects').click(function(e){
-        if (e.target.id == 'move_to_selected') {
-          // move to selected
-          currentElement = unselectedProjectsElement;
-          moveToElement = selectedProjectsElement;
-        }else{
-          // move to unselected
-          currentElement = unselectedProjectsElement;
-          currentElement = selectedProjectsElement;
-          moveToElement = unselectedProjectsElement;
-          selectedProjectNames = [];
+		var toggleProjectsSelection = function(selectFlag){
+			$('.move_projects').click(function(e){
+				if (e.target.id == 'move_to_selected') {
+					// move to selected
+					currentElement = unselectedProjectsElement;
+					moveToElement = selectedProjectsElement;
+				}else{
+					// move to unselected
+					currentElement = unselectedProjectsElement;
+					currentElement = selectedProjectsElement;
+					moveToElement = unselectedProjectsElement;
+					selectedProjectNames = [];
 
-        }
-        projectElements = currentElement.find('.project_wrapper');
-        moveToElement.append(projectElements);
-        getSelectedProjectNames();
-        switchButtonClass(); 
-        setAnnotationHref();
-        countProjectAnnotations();
-        countProjects();
-        changeAddressBarUrlForProjectsParams(selectedProjectNames);
-      })
-    }
+				}
+				projectElements = currentElement.find('.project_wrapper');
+				moveToElement.append(projectElements);
+				getSelectedProjectNames();
+				switchButtonClass(); 
+				setAnnotationHref();
+				countProjectAnnotations();
+				countProjects();
+				changeAddressBarUrlForProjectsParams(selectedProjectNames);
+			})
+		}
 
-    var switchProjectSelection = function(){
-      $('#switch_selection').click(function(){
-        selectedProjectElements = selectedProjectsElement.find('.project_wrapper');
-        unselectedProjectElements = unselectedProjectsElement.find('.project_wrapper');
-        unselectedProjectsElement.append(selectedProjectElements);
-        selectedProjectsElement.append(unselectedProjectElements);
-        getSelectedProjectNames();
-        switchButtonClass(); 
-        setAnnotationHref();
-        countProjectAnnotations();
-        countProjects();
-        changeAddressBarUrlForProjectsParams(selectedProjectNames);
-      });
-    }
+		var switchProjectSelection = function(){
+			$('#switch_selection').click(function(){
+				selectedProjectElements = selectedProjectsElement.find('.project_wrapper');
+				unselectedProjectElements = unselectedProjectsElement.find('.project_wrapper');
+				unselectedProjectsElement.append(selectedProjectElements);
+				selectedProjectsElement.append(unselectedProjectElements);
+				getSelectedProjectNames();
+				switchButtonClass(); 
+				setAnnotationHref();
+				countProjectAnnotations();
+				countProjects();
+				changeAddressBarUrlForProjectsParams(selectedProjectNames);
+			});
+		}
 
-    var sortSelectedProjectsByName = function(){
-      $('.fa-sort-alpha-asc').click(function(){
-        sortProjectsByName($(this).data('selected'));
-      });
-    }
+		var sortSelectedProjectsByName = function(){
+			$('.fa-sort-alpha-asc').click(function(){
+				sortProjectsByName($(this).data('selected'));
+			});
+		}
 
-    var sortSelectedProjectsByAnnotationsCount = function(){
-      $('.fa-sort-numeric-desc').click(function(){
-        sortProjectsByAnnotationsCount($(this).data('selected'));
-      });
-    }
+		var sortSelectedProjectsByAnnotationsCount = function(){
+			$('.fa-sort-numeric-desc').click(function(){
+				sortProjectsByAnnotationsCount($(this).data('selected'));
+			});
+		}
 
-    var getProjectsElement = function(selected){
-      if (selected){
-        projectsElement = selectedProjectsElement;
-      }else{
-        projectsElement = unselectedProjectsElement;
-      }
-      return projectsElement;
-    }
+		var getProjectsElement = function(selected){
+			if (selected){
+				projectsElement = selectedProjectsElement;
+			}else{
+				projectsElement = unselectedProjectsElement;
+			}
+			return projectsElement;
+		}
 
-    var sortProjectsByName = function(selected){
-      projectsElement = getProjectsElement(selected);
-      projectElements = projectsElement.find('.project_wrapper');
-      projectElements.sort(function(a, b) {
-        var a = $( a ).data('project-name').toLowerCase() 
-        var b = $( b ).data('project-name').toLowerCase();
-        if(a < b){
-          return -1;
-        }else if(a > b){
-          return 1;
-        }
-        return 0;
-      });
-      projectsElement.append(projectElements);
-      getSelectedProjectNames();
-      setAnnotationHref();
-      changeAddressBarUrlForProjectsParams(selectedProjectNames);
-    }
+		var sortProjectsByName = function(selected){
+			projectsElement = getProjectsElement(selected);
+			projectElements = projectsElement.find('.project_wrapper');
+			projectElements.sort(function(a, b) {
+				var a = $( a ).data('project-name').toLowerCase() 
+				var b = $( b ).data('project-name').toLowerCase();
+				if(a < b){
+					return -1;
+				}else if(a > b){
+					return 1;
+				}
+				return 0;
+			});
+			projectsElement.append(projectElements);
+			getSelectedProjectNames();
+			setAnnotationHref();
+			changeAddressBarUrlForProjectsParams(selectedProjectNames);
+		}
 
-    var sortProjectsByAnnotationsCount = function(selected){
-      projectsElement = getProjectsElement(selected);
-      projectElements = projectsElement.find('.project_wrapper');
-      projectElements.sort(function(a, b){
-        var a = $( a ).data('annotations-count')
-        var b = $( b ).data('annotations-count');
-        return b- a;
-        if(a > b) {
-          return -1;
-        }
-        if(a < b) {
-          return 1;
-        }
-        return 0;
-      });
-      projectsElement.append(projectElements);
-      getSelectedProjectNames();
-      setAnnotationHref();
-      changeAddressBarUrlForProjectsParams(selectedProjectNames);
-    }
+		var sortProjectsByAnnotationsCount = function(selected){
+			projectsElement = getProjectsElement(selected);
+			projectElements = projectsElement.find('.project_wrapper');
+			projectElements.sort(function(a, b){
+				var a = $( a ).data('annotations-count')
+				var b = $( b ).data('annotations-count');
+				return b- a;
+				if(a > b) {
+					return -1;
+				}
+				if(a < b) {
+					return 1;
+				}
+				return 0;
+			});
+			projectsElement.append(projectElements);
+			getSelectedProjectNames();
+			setAnnotationHref();
+			changeAddressBarUrlForProjectsParams(selectedProjectNames);
+		}
 
-    var countProjects = function(){
-      unselectProjectsCount = unselectedProjectsElement.find('.project_wrapper').length;
-      $('#unselected_projects_count').text('(' + unselectProjectsCount + ')');
-      selectProjectsCount = selectedProjectsElement.find('.project_wrapper').length;
-      $('#selected_projects_count').text('(' + selectProjectsCount + ')');
-    };
+		var countProjects = function(){
+			unselectProjectsCount = unselectedProjectsElement.find('.project_wrapper').length;
+			$('#unselected_projects_count').text('(' + unselectProjectsCount + ')');
+			selectProjectsCount = selectedProjectsElement.find('.project_wrapper').length;
+			$('#selected_projects_count').text('(' + selectProjectsCount + ')');
+		};
 
-    var countProjectAnnotations = function(){
-      var selectedProjectsAnnotaionsCount = 0;
-      var unselectedProjectsAnnotaionsCount = 0;
-      jQuery.each(selectedProjectsElement.find('.project_wrapper'), function(i, selectedProjectElement){
-        annotationsCount = $(selectedProjectElement).data('annotations-count');
-        selectedProjectsAnnotaionsCount += parseInt( annotationsCount );
-      });
-      jQuery.each(unselectedProjectsElement.find('.project_wrapper'), function(i, unselectedProjectElement){
-        annotationsCount = $(unselectedProjectElement).data('annotations-count');
-        unselectedProjectsAnnotaionsCount += parseInt( annotationsCount );
-      });
-      if (selectedProjectsAnnotaionsCount >= 100) {
-        $('#annotations_textae').attr('href', '');
-        $('#annotations_textae').attr('title', 'Annotations too many');
-        $('#annotations_textae').addClass('disabled_textae_link');
-        $('#annotations_textae').on("click", function (e) {
-            e.preventDefault();
-        });
-      }else{
-        $('#annotations_textae').removeClass('disabled_textae_link');
-      };
-      $('#selected_projects_annotations_count').text('(' + selectedProjectsAnnotaionsCount + ')');
-      $('#unselected_projects_annotations_count').text('(' + unselectedProjectsAnnotaionsCount + ')');
-    }
-  </script>
+		var countProjectAnnotations = function(){
+			var selectedProjectsAnnotaionsCount = 0;
+			var unselectedProjectsAnnotaionsCount = 0;
+			jQuery.each(selectedProjectsElement.find('.project_wrapper'), function(i, selectedProjectElement){
+				annotationsCount = $(selectedProjectElement).data('annotations-count');
+				selectedProjectsAnnotaionsCount += parseInt( annotationsCount );
+			});
+			jQuery.each(unselectedProjectsElement.find('.project_wrapper'), function(i, unselectedProjectElement){
+				annotationsCount = $(unselectedProjectElement).data('annotations-count');
+				unselectedProjectsAnnotaionsCount += parseInt( annotationsCount );
+			});
+			if (selectedProjectsAnnotaionsCount >= 100) {
+				$('#annotations_textae').attr('href', '');
+				$('#annotations_textae').attr('title', 'Annotations too many');
+				$('#annotations_textae').addClass('disabled_textae_link');
+				$('#annotations_textae').on("click", function (e) {
+						e.preventDefault();
+				});
+			}else{
+				$('#annotations_textae').removeClass('disabled_textae_link');
+			};
+			$('#selected_projects_annotations_count').text('(' + selectedProjectsAnnotaionsCount + ')');
+			$('#unselected_projects_annotations_count').text('(' + unselectedProjectsAnnotaionsCount + ')');
+		}
+	</script>
 <% end -%>
 <%= render :partial => 'docs/path'-%>
 <section>
@@ -227,103 +227,103 @@
 
 	<section>
 		<h2 class="capitalize">
-      <%= t('activerecord.models.project').pluralize -%>
+			<%= t('activerecord.models.project').pluralize -%>
 			<span class='meta lowercase'>
 				<% if @span.present? -%>
-          <%= t('views.docs.show.projects_that_have_annotations_to_this_span') -%>
+					<%= t('views.docs.show.projects_that_have_annotations_to_this_span') -%>
 				<% else %>
-          <%= t('views.docs.show.projects_that_include_this_document') -%>
+					<%= t('views.docs.show.projects_that_include_this_document') -%>
 				<% end %>
 			</span>
 		</h2>
 
-    <% if @projects.present? || @selected_projects.present? -%>
-      <table style="width:100%">
-        <tr>
-          <td style="width:48%; position:relative;">
-            <%= t('views.shared.unselected') -%>
-            <span id="unselected_projects_count"></span>
-            /
-            <span class="capitalize">
-              <%= t('activerecord.models.annotation') -%>
-            </span>
-            <span id="unselected_projects_annotations_count"></span>
-            <span class="project_select_button" style="position:absolute; right: 3em;">
-              <i class="fa fa-sort-alpha-asc" aria-hidden="true" data-selected="false"></i>
-            </span>
-            <span class="project_select_button" style="position:absolute; right: 1em;">
-              <i class="fa fa-sort-numeric-desc" aria-hidden="true" data-selected="false"></i>
-            </span>
-          </td>
-          <td style="border:none; border-top:1px solid #fff;">
-          </td>
-          <td style="width:48%">
-            <%= t('views.shared.selected') -%>
-            <span id="selected_projects_count"></span>
-            /
-            <span class="capitalize">
-              <%= t('activerecord.models.annotation') -%>
-            </span>
-            <span id="selected_projects_annotations_count"></span>
-            <span class="project_select_button" style="position:absolute; right: 4em;">
-              <i class="fa fa-sort-alpha-asc" aria-hidden="true" data-selected="true"></i>
-            </span>
-            <span class="project_select_button" style="position:absolute; right: 2em;">
-              <i class="fa fa-sort-numeric-desc" aria-hidden="true" data-selected="true"></i>
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td style="width:48%; white-space: normal;">
-            <div class="projects_wrapper">
-              <div id="unselected_projects_list">
-                <%= render partial: "projects/selector_project", collection: @projects -%>
-              </div>
-            </div>
-          </td>
-          <td style="border:none; border-bottom:1px solid #fff;">
-            <div id="projects_switches">
-              <i class="fa fa-arrow-right move_projects" aria-hidden="true" id="move_to_selected"></i><br />
-              <i class="fa fa-arrows-h" aria-hidden="true" id="switch_selection"></i><br />
-              <i class="fa fa-arrow-left move_projects" aria-hidden="true" id="move_to_unselected"></i><br />
-            </div>
-          </td>
-          <td style="width:48%; white-space: normal;">
-            <div class="projects_wrapper">
-              <ul id="selected_projects_list">
-                <%= render partial: "projects/selector_project", collection: @selected_projects, locals: {selected: true} -%>
-              </ul>
-            </div>
-          </td>
-        </tr>
-      </table>
-    <% else -%>
-      <%= I18n.t('controllers.shared.not_exists', model: I18n.t('activerecord.models.project')) -%>
-    <% end -%>
+		<% if @projects.present? || @selected_projects.present? -%>
+			<table style="width:100%">
+				<tr>
+					<td style="width:48%; position:relative;">
+						<%= t('views.shared.unselected') -%>
+						<span id="unselected_projects_count"></span>
+						/
+						<span class="capitalize">
+							<%= t('activerecord.models.annotation') -%>
+						</span>
+						<span id="unselected_projects_annotations_count"></span>
+						<span class="project_select_button" style="position:absolute; right: 3em;">
+							<i class="fa fa-sort-alpha-asc" aria-hidden="true" data-selected="false"></i>
+						</span>
+						<span class="project_select_button" style="position:absolute; right: 1em;">
+							<i class="fa fa-sort-numeric-desc" aria-hidden="true" data-selected="false"></i>
+						</span>
+					</td>
+					<td style="border:none; border-top:1px solid #fff;">
+					</td>
+					<td style="width:48%">
+						<%= t('views.shared.selected') -%>
+						<span id="selected_projects_count"></span>
+						/
+						<span class="capitalize">
+							<%= t('activerecord.models.annotation') -%>
+						</span>
+						<span id="selected_projects_annotations_count"></span>
+						<span class="project_select_button" style="position:absolute; right: 4em;">
+							<i class="fa fa-sort-alpha-asc" aria-hidden="true" data-selected="true"></i>
+						</span>
+						<span class="project_select_button" style="position:absolute; right: 2em;">
+							<i class="fa fa-sort-numeric-desc" aria-hidden="true" data-selected="true"></i>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td style="width:48%; white-space: normal;">
+						<div class="projects_wrapper">
+							<div id="unselected_projects_list">
+								<%= render partial: "projects/selector_project", collection: @projects -%>
+							</div>
+						</div>
+					</td>
+					<td style="border:none; border-bottom:1px solid #fff;">
+						<div id="projects_switches">
+							<i class="fa fa-arrow-right move_projects" aria-hidden="true" id="move_to_selected"></i><br />
+							<i class="fa fa-arrows-h" aria-hidden="true" id="switch_selection"></i><br />
+							<i class="fa fa-arrow-left move_projects" aria-hidden="true" id="move_to_unselected"></i><br />
+						</div>
+					</td>
+					<td style="width:48%; white-space: normal;">
+						<div class="projects_wrapper">
+							<ul id="selected_projects_list">
+								<%= render partial: "projects/selector_project", collection: @selected_projects, locals: {selected: true} -%>
+							</ul>
+						</div>
+					</td>
+				</tr>
+			</table>
+		<% else -%>
+			<%= I18n.t('controllers.shared.not_exists', model: I18n.t('activerecord.models.project')) -%>
+		<% end -%>
 
-    <div id="annotation_links">
-      <%=
-        link_to_unless_current 'TAB', annotations_url, :class => 'tab inactive_tab', id: 'annotations_tab', title: "Table" do
-          content_tag :span, 'TAB', :class => 'tab active_tab', title: "Table"
-        end
-      %>
+		<div id="annotation_links">
+			<%=
+				link_to_unless_current 'TAB', annotations_url, :class => 'tab inactive_tab', id: 'annotations_tab', title: "Table" do
+					content_tag :span, 'TAB', :class => 'tab active_tab', title: "Table"
+				end
+			%>
 
-      <%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
+			<%= link_to_unless_current 'JSON', annotations_url + '.json', :class => 'tab', id: 'annotations_json' -%>
 
-      <% if @project.present? -%>
-        <%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab', id: 'annotations_textae' -%>	
-      <% else -%>
-        <%=
-          link_to_unless_current 'ListView', annotations_url + '/list_view', :class => 'tab inactive_tab', id: 'annotations_listview', title: 'List view of annotations' do
-            content_tag :span, 'ListView', :class => 'tab active_tab', title: 'List view of annotations'
-          end
-        %>
-        <%=
-          link_to_unless_current 'MergeView', annotations_url + '/merge_view', :class => 'tab inactive_tab', id: 'annotations_mergeview', title: 'Merged view of annotations' do
-            content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
-          end
-        %>
-      <% end -%>
-    </div>
+			<% if @project.present? -%>
+				<%= link_to 'TextAE', textae_url(@project, annotations_url), :class => 'tab', id: 'annotations_textae' -%>	
+			<% else -%>
+				<%=
+					link_to_unless_current 'ListView', annotations_url + '/list_view', :class => 'tab inactive_tab', id: 'annotations_listview', title: 'List view of annotations' do
+						content_tag :span, 'ListView', :class => 'tab active_tab', title: 'List view of annotations'
+					end
+				%>
+				<%=
+					link_to_unless_current 'MergeView', annotations_url + '/merge_view', :class => 'tab inactive_tab', id: 'annotations_mergeview', title: 'Merged view of annotations' do
+						content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
+					end
+				%>
+			<% end -%>
+		</div>
 	</section>
 </section>

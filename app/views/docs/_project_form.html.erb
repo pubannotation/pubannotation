@@ -1,15 +1,15 @@
 <% if @project and user_signed_in? && @project.editable?(current_user) %>
 	<%= form_tag(add_project_docs_path(@project.name), :method => "post") do %>
-	  <table>
-	    <tr>
-		    <th><%= t('activerecord.attributes.doc.sourcedb')%></th>
-		    <th><%= t('activerecord.attributes.doc.sourceid')%></th>
-		</tr>
-		<tr>
-	    	<td><%= select_tag(:sourcedb, options_for_select(sourcedb_options_for_select)) -%></td>
-	        <td><%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids'), :required => true) %></td>
-	        <td><%= submit_tag(t('views.shared.add')) %></td>
-	    </tr>
-	  </table>
+		<table>
+			<tr>
+				<th><%= t('activerecord.attributes.doc.sourcedb')%></th>
+				<th><%= t('activerecord.attributes.doc.sourceid')%></th>
+			</tr>
+			<tr>
+				<td><%= select_tag(:sourcedb, options_for_select(sourcedb_options_for_select)) -%></td>
+				<td><%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids'), :required => true) %></td>
+				<td><%= submit_tag(t('views.shared.add')) %></td>
+			</tr>
+		</table>
 	<% end %>
 <% end %>

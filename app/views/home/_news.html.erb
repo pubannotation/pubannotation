@@ -1,14 +1,14 @@
 <% if @news_notifications.present? || (current_user && current_user.root) -%>
-<fieldset id="news_frame">
-  <legend><%= link_to t('activerecord.models.news_notification'), news_notifications_path -%></legend>
-  <div id="news">
-      <ul style="margin:0; margin-right:1em; padding:0; padding-left:1.5em">
-        <% @news_notifications.each do |news_notification| -%>
-          <li style="margin-top:5px" class="">
-            <%= link_to "(#{ news_notification.updated_at.strftime('%d %b %Y') }) #{ news_notification.title }", news_notification, title: news_notification.body -%>
-          </li>
-        <% end -%>
-      </ul>
-  </div>
-</fieldset>
+	<fieldset id="news_frame">
+		<legend><%= link_to t('activerecord.models.news_notification'), news_notifications_path -%></legend>
+		<div id="news">
+			<ul style="margin:0; margin-right:1em; padding:0; padding-left:1.5em">
+				<% @news_notifications.each do |news_notification| -%>
+					<li style="margin-top:5px" class="">
+						<%= link_to "(#{ news_notification.updated_at.strftime('%d %b %Y') }) #{ news_notification.title }", news_notification, title: news_notification.body -%>
+					</li>
+				<% end -%>
+			</ul>
+		</div>
+	</fieldset>
 <% end -%>

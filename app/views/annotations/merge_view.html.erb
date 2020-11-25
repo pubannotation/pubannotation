@@ -1,15 +1,15 @@
 <% content_for :css do -%>
-  <style>
-    .ui-state-highlight { height: 1.5em; line-height: 1.2em; }
-    #textae-list{
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .textae-wrapper-section{
-      background-color: #fff;
-    }
-  </style>
+	<style>
+		.ui-state-highlight { height: 1.5em; line-height: 1.2em; }
+		#textae-list{
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+		.textae-wrapper-section{
+			background-color: #fff;
+		}
+	</style>
 <% end -%>
 
 <%= render :partial => 'docs/path'-%>
@@ -19,10 +19,10 @@
 	<%= render :partial => 'docs/titlebar' -%>
 	<section>
 		<%= render :partial => 'annotations/titlebar' -%>
-    <section class="textae-wrapper-section">
-      <div class="textae-editor">
-        <%= @annotations.to_json %>
-      </div>
-    </section>
+		<section class="textae-wrapper-section">
+			<div class="textae-editor">
+				<%= @annotations.to_json %>
+			</div>
+		</section>
 	</section>
 </section>

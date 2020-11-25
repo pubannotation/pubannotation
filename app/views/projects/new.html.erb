@@ -1,7 +1,7 @@
 <% content_for :path do %>
 	> <%= link_to t('views.paths.home'), home_path %>
 	<% if @collection.present? %>
-	  > <%= link_to t('activerecord.models.collection').pluralize, collections_path %>
+		> <%= link_to t('activerecord.models.collection').pluralize, collections_path %>
 		>	<%= link_to @collection.name, collection_path(@collection.name) %>
 	<% end %>
 	> projects

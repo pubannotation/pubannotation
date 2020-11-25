@@ -1,24 +1,24 @@
 <%=
-  grid(@collections_grid) do |g|
+	grid(@collections_grid) do |g|
 
-    g.column name: 'Name', attribute: 'name', class: 'column-project-name' do |collection|
-      [link_to(collection.name, collection_path(collection.name)), {title: collection.name}]
-    end
+		g.column name: 'Name', attribute: 'name', class: 'column-project-name' do |collection|
+			[link_to(collection.name, collection_path(collection.name)), {title: collection.name}]
+		end
 
-    g.column name: 'S', attribute: 'is_sharedtask', class: 'column-project-type' do |collection|
-      [badge_sharedtask(collection).html_safe, {style: 'text-align:center'}]
-    end
+		g.column name: 'S', attribute: 'is_sharedtask', class: 'column-project-type' do |collection|
+			[badge_sharedtask(collection).html_safe, {style: 'text-align:center'}]
+		end
 
-    g.column name: 'Description', attribute: 'description', class: 'column-project-description' do |collection|
-      [link_to(strip_tags(collection.description), collection_path(collection.name)), {title: strip_tags(collection.description), style: 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-    end
+		g.column name: 'Description', attribute: 'description', class: 'column-project-description' do |collection|
+			[link_to(strip_tags(collection.description), collection_path(collection.name)), {title: strip_tags(collection.description), style: 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+		end
 
-    g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |collection|
-      [collection_maintainer_link(collection), {title: collection.user.username, style: 'text-align:center'}]
-    end
+		g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |collection|
+			[collection_maintainer_link(collection), {title: collection.user.username, style: 'text-align:center'}]
+		end
 
-    g.column name: 'Updated_at', attribute: 'updated_at', class: 'column-project-updated' do |collection|
-      [collection.updated_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
-    end
-  end
+		g.column name: 'Updated_at', attribute: 'updated_at', class: 'column-project-updated' do |collection|
+			[collection.updated_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
+		end
+	end
 -%>

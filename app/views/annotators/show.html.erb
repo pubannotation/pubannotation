@@ -1,99 +1,99 @@
 <% content_for :path do %>
-  > <%= link_to t('views.paths.home'), home_path %>
-  > <%= link_to 'annotators', annotators_path %>
-  > <%= @annotator.name %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	> <%= link_to 'annotators', annotators_path %>
+	> <%= @annotator.name %>
 <% end %>
 
 <section>
-  <h1>
-    <%= @annotator.name %>
-    <%= button_home(@annotator.home) -%>
-    <%= badge_private(@annotator.is_public).html_safe %>
+	<h1>
+		<%= @annotator.name %>
+		<%= button_home(@annotator.home) -%>
+		<%= badge_private(@annotator.is_public).html_safe %>
 
-    <% if @annotator.changeable?(current_user) -%>
-      <%= link_to 'Edit', edit_annotator_path(@annotator), class: 'button' %>
-      <%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
-    <% end %>
-    <%= link_to 'List', annotators_path, class: 'button' %>
-  </h1>
+		<% if @annotator.changeable?(current_user) -%>
+			<%= link_to 'Edit', edit_annotator_path(@annotator), class: 'button' %>
+			<%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+		<% end %>
+		<%= link_to 'List', annotators_path, class: 'button' %>
+	</h1>
 
-  <% if @annotator.description.present? %>
-    <p><%= @annotator.description %></p>
-  <% end -%>
+	<% if @annotator.description.present? %>
+		<p><%= @annotator.description %></p>
+	<% end -%>
 
-  <table class="column-head">
-  <tr>
-    <th>Creator</th>
-    <td><%= @annotator.user.username %></td>
-  </tr>
+	<table class="column-head">
+	<tr>
+		<th>Creator</th>
+		<td><%= @annotator.user.username %></td>
+	</tr>
 
-  <tr>
-    <th>URL</th>
-    <td><%= link_to @annotator.url, @annotator.url %></td>
-  </tr>
+	<tr>
+		<th>URL</th>
+		<td><%= link_to @annotator.url, @annotator.url %></td>
+	</tr>
 
-  <tr>
-    <th>Method</th>
-    <td><%= case @annotator.method when 0; :GET when 1; :POST end%></td>
-  </tr>
+	<tr>
+		<th>Method</th>
+		<td><%= case @annotator.method when 0; :GET when 1; :POST end%></td>
+	</tr>
 
-  <% if @annotator.method == 1 %>
-    <tr>
-      <th>Payload</th>
-      <td><pre><%= @annotator.payload %></pre></td>
-    </tr>
+	<% if @annotator.method == 1 %>
+		<tr>
+			<th>Payload</th>
+			<td><pre><%= @annotator.payload %></pre></td>
+		</tr>
 
-    <tr>
-      <th>Protocol</th>
-      <td><%= @annotator.async_protocol? ? 'Async' : 'Sync' %></td>
-    </tr>
+		<tr>
+			<th>Protocol</th>
+			<td><%= @annotator.async_protocol? ? 'Async' : 'Sync' %></td>
+		</tr>
 
-    <tr>
-      <th>Max Text Size</th>
-      <td><%= max_text_size(@annotator) %></td>
-    </tr>
+		<tr>
+			<th>Max Text Size</th>
+			<td><%= max_text_size(@annotator) %></td>
+		</tr>
 
-  <% end %>
+	<% end %>
 
-  <% if @annotator.receiver_attribute.present? %>
-    <tr>
-      <th>Transformation</th>
-      <td>
-        <div style="width:90%; white-space:normal">
-          <ul>
-            <li>The labels (the object) will be transformed to the value of the attrbitue: <i><%= @annotator.receiver_attribute %></i>, and</li>
-            <li>The labels will be filled with: <i><%= @annotator.new_label %></i></li>
-          </ul>
-        </div>
-      </td>
-    </tr>
-  <% end %>
+	<% if @annotator.receiver_attribute.present? %>
+		<tr>
+			<th>Transformation</th>
+			<td>
+				<div style="width:90%; white-space:normal">
+					<ul>
+						<li>The labels (the object) will be transformed to the value of the attrbitue: <i><%= @annotator.receiver_attribute %></i>, and</li>
+						<li>The labels will be filled with: <i><%= @annotator.new_label %></i></li>
+					</ul>
+				</div>
+			</td>
+		</tr>
+	<% end %>
 
-  </table>
+	</table>
 
-  <% if !@annotator.async_protocol && (!@annotator[:url].include?('_sourceid_') || (@annotator[:payload].present? && @annotator[:payload].has_key?('_body_'))) %>
-    <fieldset>
-      <legend>Test</legend>
-      <p class="note">Send your text to the server and see how it works.<br/>
-      At the moment, this feature only works for the servers which receive a piece of text as input, and return their annotation results instantly.</p>
-      <%= form_tag annotator_path(@annotator), method: :get do -%>
-        <%= text_area_tag :text, params[:text] || @annotator.sample, required: true, style: "height:50px" %>
+	<% if !@annotator.async_protocol && (!@annotator[:url].include?('_sourceid_') || (@annotator[:payload].present? && @annotator[:payload].has_key?('_body_'))) %>
+		<fieldset>
+			<legend>Test</legend>
+			<p class="note">Send your text to the server and see how it works.<br/>
+			At the moment, this feature only works for the servers which receive a piece of text as input, and return their annotation results instantly.</p>
+			<%= form_tag annotator_path(@annotator), method: :get do -%>
+				<%= text_area_tag :text, params[:text] || @annotator.sample, required: true, style: "height:50px" %>
 
-        <div class="center-align">
-          <%= submit_tag 'Submit', class: :button %>
-          <%= button_tag 'Reset', type: :reset, id: :reset, class: :button %>
-        </div>
+				<div class="center-align">
+					<%= submit_tag 'Submit', class: :button %>
+					<%= button_tag 'Reset', type: :reset, id: :reset, class: :button %>
+				</div>
 
-        <% unless @result.nil? || @result.empty? %>
-          <h2>Result in <%= link_to 'TextAE', 'http://textae.pubannotation.org' %></h2>
-          <%= render :partial => 'shared/textae_css_js'-%>
-          <div class="textae-editor"><%= @result.to_json %></div>
+				<% unless @result.nil? || @result.empty? %>
+					<h2>Result in <%= link_to 'TextAE', 'http://textae.pubannotation.org' %></h2>
+					<%= render :partial => 'shared/textae_css_js'-%>
+					<div class="textae-editor"><%= @result.to_json %></div>
 
-          <h2>Result in <%= link_to 'JSON', 'http://www.pubannotation.org/docs/annotation-format/' %></h2>
-          <pre style="white-space:pre-wrap; border:1px solid black"><%= JSON.pretty_generate @result %></pre>
-        <% end %>
-      <% end %>
-    </fieldset>
-  <% end %>
+					<h2>Result in <%= link_to 'JSON', 'http://www.pubannotation.org/docs/annotation-format/' %></h2>
+					<pre style="white-space:pre-wrap; border:1px solid black"><%= JSON.pretty_generate @result %></pre>
+				<% end %>
+			<% end %>
+		</fieldset>
+	<% end %>
 
 </section>

@@ -1,89 +1,89 @@
 <%= form_for(@evaluator) do |f| %>
-  <% if @evaluator.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@evaluator.errors.count, "error") %> prohibited this evaluator from being saved:</h2>
+	<% if @evaluator.errors.any? %>
+		<div id="error_explanation">
+			<h2><%= pluralize(@evaluator.errors.count, "error") %> prohibited this evaluator from being saved:</h2>
 
-      <ul>
-      <% @evaluator.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
+			<ul>
+			<% @evaluator.errors.full_messages.each do |msg| %>
+				<li><%= msg %></li>
+			<% end %>
+			</ul>
+		</div>
+	<% end %>
 
-  <div class="actions">
-    <%= f.submit %>
-  </div>
+	<div class="actions">
+		<%= f.submit %>
+	</div>
 
-  <table class='column-head'>
-  <tr>
-    <th><%= f.label :is_public -%></th>
-    <td><%= f.check_box :is_public -%></td>
-    <td>
-      <a href="#help-is-public" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-is-public" class="help">
-        <h1>Is Public</h1>
-        <p>If this attribute is checked, then the entry will appear in the public list of evaluators.</p>
-        <p>Otherwise, it will be listed only to you when you are logged-in.</p>
-        <p>Note that however the entry will remain accessible even if this attribute is not checked: anyone can access this entry with the name of it if he/she knows.</p>
-        <p>In other words, setting of this attribute will affect the findability, but not the accessibility, of the entry.</p>
-      </div>
-    </td>
-  </tr>
+	<table class='column-head'>
+	<tr>
+		<th><%= f.label :is_public -%></th>
+		<td><%= f.check_box :is_public -%></td>
+		<td>
+			<a href="#help-is-public" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-is-public" class="help">
+				<h1>Is Public</h1>
+				<p>If this attribute is checked, then the entry will appear in the public list of evaluators.</p>
+				<p>Otherwise, it will be listed only to you when you are logged-in.</p>
+				<p>Note that however the entry will remain accessible even if this attribute is not checked: anyone can access this entry with the name of it if he/she knows.</p>
+				<p>In other words, setting of this attribute will affect the findability, but not the accessibility, of the entry.</p>
+			</div>
+		</td>
+	</tr>
 
-  <tr>
-    <th><%= f.label :name %></th>
-    <td><%= f.text_field :name %></td>
-    <td></td>
-  </tr>
-  <tr>
-    <th><%= f.label :description %></th>
-    <td><%= f.text_area :description %></td>
-    <td></td>
-  </tr>
-  <tr>
-    <th><%= f.label :home %></th>
-    <td><%= f.text_field :home %></td>
-    <td></td>
-  </tr>
-  <tr>
-    <th><%= f.label :access_type %></th>
-    <td>
-      <%= f.radio_button(:access_type, 1) %>
-      <%= f.label :access_type, 'Ruby Gem', value: 1 %>
-      <br/>
-      <%= f.radio_button(:access_type, 2) %>
-      <%= f.label :access_type, 'Web Service', value: 2 %>
-    </td>
-    <td class="help-column">
-      <a href="#help-access-type" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-access-type" class="help">
-        <h1>Annotator access type</h1>
-        <dl>
-          <li><b>Ruby Gem</b> - available as a ruby gem.</li>
-          <li><b>Web Service</b> - available as a web service.</li>
-        </dl>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label :url %></th>
-    <td><%= f.text_field :url %></td>
-    <td class="help-column">
-      <a href="#help-type" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
-      <div id="help-type" class="help">
-        <h1>Annotator URL</h1>
-        <dl>
-          <li>In case of a ruby gem, the URL of the homepage where the gem is available.</li>
-          <li>In case of a web service, the URL of the API.</li>
-        </dl>
-      </div>
-    </td>
-  </tr>
-  </table>
+	<tr>
+		<th><%= f.label :name %></th>
+		<td><%= f.text_field :name %></td>
+		<td></td>
+	</tr>
+	<tr>
+		<th><%= f.label :description %></th>
+		<td><%= f.text_area :description %></td>
+		<td></td>
+	</tr>
+	<tr>
+		<th><%= f.label :home %></th>
+		<td><%= f.text_field :home %></td>
+		<td></td>
+	</tr>
+	<tr>
+		<th><%= f.label :access_type %></th>
+		<td>
+			<%= f.radio_button(:access_type, 1) %>
+			<%= f.label :access_type, 'Ruby Gem', value: 1 %>
+			<br/>
+			<%= f.radio_button(:access_type, 2) %>
+			<%= f.label :access_type, 'Web Service', value: 2 %>
+		</td>
+		<td class="help-column">
+			<a href="#help-access-type" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-access-type" class="help">
+				<h1>Annotator access type</h1>
+				<dl>
+					<li><b>Ruby Gem</b> - available as a ruby gem.</li>
+					<li><b>Web Service</b> - available as a web service.</li>
+				</dl>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label :url %></th>
+		<td><%= f.text_field :url %></td>
+		<td class="help-column">
+			<a href="#help-type" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
+			<div id="help-type" class="help">
+				<h1>Annotator URL</h1>
+				<dl>
+					<li>In case of a ruby gem, the URL of the homepage where the gem is available.</li>
+					<li>In case of a web service, the URL of the API.</li>
+				</dl>
+			</div>
+		</td>
+	</tr>
+	</table>
 
-  <div class="actions">
-    <%= f.submit %>
-  </div>
+	<div class="actions">
+		<%= f.submit %>
+	</div>
 
 <% end %>

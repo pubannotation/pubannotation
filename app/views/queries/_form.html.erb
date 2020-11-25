@@ -1,66 +1,66 @@
 <%= form_for(@query) do |f| %>
-  <% if @query.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@query.errors.count, "error") %> prohibited this query from being saved:</h2>
+	<% if @query.errors.any? %>
+		<div id="error_explanation">
+			<h2><%= pluralize(@query.errors.count, "error") %> prohibited this query from being saved:</h2>
 
-      <ul>
-      <% @query.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
+			<ul>
+			<% @query.errors.full_messages.each do |msg| %>
+				<li><%= msg %></li>
+			<% end %>
+			</ul>
+		</div>
+	<% end %>
 
-  <table class="virtical" style="table-layout:fixed; width:100%">
-  <tr>
-    <th style="width:10em"><%= f.label :title %></th>
-    <td><%= f.text_field :title %></td>
-  </tr>
+	<table class="virtical" style="table-layout:fixed; width:100%">
+	<tr>
+		<th style="width:10em"><%= f.label :title %></th>
+		<td><%= f.text_field :title %></td>
+	</tr>
 
-  <% if root_user? %>
-    <tr>
-      <th><%= f.label :category %></th>
-      <td><%= f.text_field :category %></td>
-    </tr>
-  <% end %>
-  <tr>
-    <th><%= f.label :sparql %></th>
-    <td><%= f.text_area :sparql, style: "tab-size:2" %></td>
-  </tr>
-  <tr>
-    <th><%= f.label :reasoning %></th>
-    <td><%= f.check_box :reasoning %></td>
-  </tr>
-  <tr>
-    <th><%= f.label :comment %></th>
-    <td><%= f.text_area :comment %></td>
-  </tr>
-  <tr>
-    <th><%= f.label :show_mode %></th>
-    <td>
-      <%= f.radio_button :show_mode, :raw, checked: @query.show_mode != "textae" %>
-      <%= f.label :status, "raw", value: :raw %>
-      <%= f.radio_button :show_mode, :textae, checked: @query.show_mode == "textae" %>
-      <%= f.label :status, "TextAE", value: :textae %>
-    </td>
-  </tr>
-  <tr>
-    <th><%= f.label "Annotations to show" %></th>
-    <td><%= f.text_field :projects, placeholder: "comma-separated list of project names" %></td>
-  </tr>
-  <tr>
-    <th><%= f.label :priority %></th>
-    <td><%= f.number_field :priority %></td>
-  </tr>
-  <tr>
-    <th><%= f.label :active %></th>
-    <td><%= f.check_box :active %></td>
-  </tr>
-  <tr>
-    <th colspan="2"><%= f.submit %></th>
-  </tr>
-  </table>
-  <% if @project %>
-    <%= f.hidden_field :project_id, value: @project.id %>
-  <% end %>
+	<% if root_user? %>
+		<tr>
+			<th><%= f.label :category %></th>
+			<td><%= f.text_field :category %></td>
+		</tr>
+	<% end %>
+	<tr>
+		<th><%= f.label :sparql %></th>
+		<td><%= f.text_area :sparql, style: "tab-size:2" %></td>
+	</tr>
+	<tr>
+		<th><%= f.label :reasoning %></th>
+		<td><%= f.check_box :reasoning %></td>
+	</tr>
+	<tr>
+		<th><%= f.label :comment %></th>
+		<td><%= f.text_area :comment %></td>
+	</tr>
+	<tr>
+		<th><%= f.label :show_mode %></th>
+		<td>
+			<%= f.radio_button :show_mode, :raw, checked: @query.show_mode != "textae" %>
+			<%= f.label :status, "raw", value: :raw %>
+			<%= f.radio_button :show_mode, :textae, checked: @query.show_mode == "textae" %>
+			<%= f.label :status, "TextAE", value: :textae %>
+		</td>
+	</tr>
+	<tr>
+		<th><%= f.label "Annotations to show" %></th>
+		<td><%= f.text_field :projects, placeholder: "comma-separated list of project names" %></td>
+	</tr>
+	<tr>
+		<th><%= f.label :priority %></th>
+		<td><%= f.number_field :priority %></td>
+	</tr>
+	<tr>
+		<th><%= f.label :active %></th>
+		<td><%= f.check_box :active %></td>
+	</tr>
+	<tr>
+		<th colspan="2"><%= f.submit %></th>
+	</tr>
+	</table>
+	<% if @project %>
+		<%= f.hidden_field :project_id, value: @project.id %>
+	<% end %>
 <% end %>

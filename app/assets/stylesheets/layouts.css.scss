@@ -1,70 +1,70 @@
 @import 'variables';
 
 .content {
-  position: relative;
-  margin: 0 auto;
-  max-width: 1010px;
-  text-align: left;
-  padding: 5px;
+	position: relative;
+	margin: 0 auto;
+	max-width: 1010px;
+	text-align: left;
+	padding: 5px;
 }
 
 .frame {
-  position: relative;
-  background-color: $main_color;
-  color: #aaaaaa;
-  a {
-    color: #aaaaff;
-  }
-  a:hover {
-    color: #ccccff;
-  }
+	position: relative;
+	background-color: $main_color;
+	color: #aaaaaa;
+	a {
+		color: #aaaaff;
+	}
+	a:hover {
+		color: #ccccff;
+	}
 }
 
 #footer {
-  margin-top: 20px;
-  clear: both;
+	margin-top: 20px;
+	clear: both;
 }
 
 #top-ribbon {
-  background-color: $sub_color;
+	background-color: $sub_color;
 
-  .content {
-    padding: 2px $base_padding;
-  }
+	.content {
+		padding: 2px $base_padding;
+	}
 }
 
 #path {
-  font-size:x-small;
-  font-style:italic;
+	font-size:x-small;
+	font-style:italic;
 }
 
 #account {
-  font-size:small;
-  color: #fff;
-  a {
-    color: #fff;
-  }
+	font-size:small;
+	color: #fff;
+	a {
+		color: #fff;
+	}
 }
 
 .menu {
-  ul {
-    display: inline;
-    padding: 0;
-    margin: 0;
-  }
-  li {
-    display: inline;
-    margin-left: 0.5em;
-  }
-  a {
-    background-color: $sub_color;
-    border-radius: 3px;
-    color: $main_color;
-  }
+	ul {
+		display: inline;
+		padding: 0;
+		margin: 0;
+	}
+	li {
+		display: inline;
+		margin-left: 0.5em;
+	}
+	a {
+		background-color: $sub_color;
+		border-radius: 3px;
+		color: $main_color;
+	}
 }
 
 #notice {
-  text-align: left;
-  font-size: small;
-  color: red;
+	text-align: left;
+	font-size: small;
+	color: red;
 }

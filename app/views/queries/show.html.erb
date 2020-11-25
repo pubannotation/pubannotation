@@ -1,73 +1,73 @@
 <section>
 
 <% if @project %>
-  <%= render :partial => 'projects/titlebar' -%>
+	<%= render :partial => 'projects/titlebar' -%>
 <% end %>
 
 <p id="notice"><%= notice %></p>
 
 <table class="virtical" style="table-layout:fixed; width:100%">
 <tr>
-  <th style="width:10em">Title</th>
-  <td><%= @query.title %></td>
+	<th style="width:10em">Title</th>
+	<td><%= @query.title %></td>
 </tr>
 
 <% if root_user? %>
-  <tr>
-    <th>Category</th>
-    <td><%= @query.category %></td>
-  </tr>
+	<tr>
+		<th>Category</th>
+		<td><%= @query.category %></td>
+	</tr>
 <% end %>
 
 <tr>
-  <th>Sparql</th>
-  <td><pre style="tab-size:2"><%= @query.sparql %></pre></td>
+	<th>Sparql</th>
+	<td><pre style="tab-size:2"><%= @query.sparql %></pre></td>
 </tr>
 
 <tr>
-  <th>Reasoning</th>
-  <td><%= @query.reasoning %></td>
+	<th>Reasoning</th>
+	<td><%= @query.reasoning %></td>
 </tr>
 
 <tr>
-  <th>Comment</th>
-  <td><%= @query.comment %></td>
+	<th>Comment</th>
+	<td><%= @query.comment %></td>
 </tr>
 
 <tr>
-  <th>Show mode</th>
-  <td><%= @query.show_mode %></td>
+	<th>Show mode</th>
+	<td><%= @query.show_mode %></td>
 </tr>
 
 <tr>
-  <th>Annotations to show</th>
-  <td><%= @query.projects %></td>
+	<th>Annotations to show</th>
+	<td><%= @query.projects %></td>
 </tr>
 
 <tr>
-  <th>Priority</th>
-  <td><%= @query.priority %></td>
+	<th>Priority</th>
+	<td><%= @query.priority %></td>
 </tr>
 
 <tr>
-  <th>Active</th>
-  <td><%= @query.active %></td>
+	<th>Active</th>
+	<td><%= @query.active %></td>
 </tr>
 
 <tr>
-  <th>Project</th>
-  <td><%= link_to(@query.project.name, project_path(@query.project.name)) if @query.project %></td>
+	<th>Project</th>
+	<td><%= link_to(@query.project.name, project_path(@query.project.name)) if @query.project %></td>
 </tr>
 </table>
 
 <% if @project %>
-  <%= link_to "List", project_queries_path(@project.name), class: 'button' %>
-  <%= link_to 'Edit', edit_project_query_path(@project.name, @query), class: 'button' %>
-  <%= link_to 'Delete', project_query_path(@project.name, @query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+	<%= link_to "List", project_queries_path(@project.name), class: 'button' %>
+	<%= link_to 'Edit', edit_project_query_path(@project.name, @query), class: 'button' %>
+	<%= link_to 'Delete', project_query_path(@project.name, @query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
 <% else %>
-  <%= link_to "List", queries_path, class: 'button' %>
-  <%= link_to 'Edit', edit_query_path(@query), class: 'button' %>
-  <%= link_to 'Delete', @query, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+	<%= link_to "List", queries_path, class: 'button' %>
+	<%= link_to 'Edit', edit_query_path(@query), class: 'button' %>
+	<%= link_to 'Delete', @query, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
 <% end %>
 
 </section>

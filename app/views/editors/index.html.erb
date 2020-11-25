@@ -1,6 +1,6 @@
 <% content_for :path do -%>
-  > <%= link_to t('views.paths.home'), home_path -%>
-  > editors
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> editors
 <% end -%>
 
 <section>
@@ -8,21 +8,21 @@
 <p>Below is a list of annotation editors which are interoperable with PubAnnotation.</p>
 
 <%=
-  grid(@editors_grid) do |g|
+	grid(@editors_grid) do |g|
 
-    g.column name: 'Name', attribute: 'name' do |editor|
-      [link_to(name_with_private_indicator(editor).html_safe, editor, style: 'display:block'), {style: 'width:10em'}]
-    end
+		g.column name: 'Name', attribute: 'name' do |editor|
+			[link_to(name_with_private_indicator(editor).html_safe, editor, style: 'display:block'), {style: 'width:10em'}]
+		end
 
-    g.column name: 'Description', attribute: 'description' do |editor|
-      [link_to(strip_tags(editor.description), editor, style: 'display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'), {style: 'max-width: 40em'}]
-    end
+		g.column name: 'Description', attribute: 'description' do |editor|
+			[link_to(strip_tags(editor.description), editor, style: 'display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'), {style: 'max-width: 40em'}]
+		end
 
-    g.column name: 'Maintainer', attribute: 'username', assoc: :user do |editor|
-      [link_to(editor.user.username, show_user_path(editor.user.username), style: 'display:block'), {style: 'width:10em; text-align:center'}]
-    end
+		g.column name: 'Maintainer', attribute: 'username', assoc: :user do |editor|
+			[link_to(editor.user.username, show_user_path(editor.user.username), style: 'display:block'), {style: 'width:10em; text-align:center'}]
+		end
 
-  end
+	end
 -%>
 
 <%= link_to 'Create a new editor', new_editor_path, {:class=> 'control button'} %>
