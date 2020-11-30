@@ -1,6 +1,16 @@
-<% collection_id = @collection.present? ? @collection.name : nil %>
-<%= form_for(@project, :url => {collection_id: collection_id, action: :create}, :html => {:class => 'IndicatorForm', :id => 'project_form'}) do |f| %>
-	<%= errors_helper(@project) %>
+<%
+	url, method = begin
+		collection_id = @collection.present? ? @collection.name : nil
+		if @project.new_record?
+			[projects_path(collection_id: collection_id), 'post']
+		else
+			[project_path(@project, collection_id: collection_id), 'put']
+		end
+	end
+%>
+
+<%= form_for(@project, url: url, :html => {method: method, :class => 'IndicatorForm', :id => 'project_form'}) do |f| %>
+<%= errors_helper(@project) %>
 
 <table class="project-properties">
 	<tr>
