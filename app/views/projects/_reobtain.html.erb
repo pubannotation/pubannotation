@@ -1,0 +1,16 @@
+<table class='sub-pane' style="width:100%">
+	<tr>
+		<td style="text-align:center">
+			Last annotator: <%= @project.annotator.name %>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align:center">
+			<%= form_tag annotations_obtain_path, style: 'width:100%' do %>
+				<%= hidden_field_tag :annotator, @project.annotator.name %>
+				<%= hidden_field_tag :mode, :replace %>
+				<%= submit_tag 'Re-execute', class: 'button long_button', title: 'To obtain annotations from the last annotation service, for all the documents in this project' %>
+			<% end %>
+		</td>
+	</tr>
+</table>

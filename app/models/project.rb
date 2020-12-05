@@ -7,6 +7,7 @@ class Project < ActiveRecord::Base
 	after_validation :user_presence
 	serialize :namespaces
 	belongs_to :user
+	belongs_to :annotator
 	has_many :collection_projects, dependent: :destroy
 	has_many :collections, through: :collection_projects
 	has_many :project_docs, dependent: :destroy
@@ -18,7 +19,7 @@ class Project < ActiveRecord::Base
 
 	attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
 									:sample, :rdfwriter, :xmlwriter, :bionlpwriter,
-									:textae_config,
+									:textae_config, :annotator_id,
 									:annotations_zip_downloadable, :namespaces, :process,
 									:pmdocs_count, :pmcdocs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
 	has_many :denotations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]

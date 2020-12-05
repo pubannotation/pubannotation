@@ -90,6 +90,10 @@ div.project-title h1 .badge {
 
 .pane.annotations {
 	background-color: #ffeeff;
+
+	.sub-pane {
+		background-color: #ddccdd;
+	}
 }
 
 section {
@@ -277,7 +281,8 @@ li {
 }
 
 .long_button {
-	width: 16em;
+	box-sizing: border-box;
+	width: 100%;
 }
 
 .short_button {

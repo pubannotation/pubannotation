@@ -128,7 +128,10 @@
 			</tr>
 			<tr>
 				<th><%= t('views.shared.obtain') %></th>
-				<td><%= link_to t('views.docs.obtain_annotations'), obtain_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+				<td>
+					<%= render partial: 'reobtain' -%>
+					<%= link_to t('views.docs.obtain_annotations'), obtain_annotations_project_path(@project.name), class: 'button long_button' -%><br/>
+				</td>
 			</tr>
 			<tr>
 				<th><%= t('views.shared.import') %></th>

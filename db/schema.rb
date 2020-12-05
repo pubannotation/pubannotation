@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20201004121204) do
+ActiveRecord::Schema.define(:version => 20201202081620) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -281,6 +281,7 @@ ActiveRecord::Schema.define(:version => 20201004121204) do
     t.boolean  "anonymize",                        :default => false,                 :null => false
     t.integer  "modifications_num",                :default => 0
     t.string   "textae_config"
+    t.integer  "annotator_id"
   end
 
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true

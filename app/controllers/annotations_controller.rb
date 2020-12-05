@@ -458,6 +458,7 @@ class AnnotationsController < ApplicationController
 			raise "Could not find the project: #{params[:project_id]}." unless project.present?
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
+			# to determine the annotator
 			annotator = if params[:annotator].present?
 				Annotator.find(params[:annotator])
 			elsif params[:url].present?
@@ -466,98 +467,71 @@ class AnnotationsController < ApplicationController
 				raise ArgumentError, "Annotator URL is not specified"
 			end
 
+			# to determine the sourceids
 			sourceids = if params[:upfile].present?
-				File.readlines(params[:upfile].path)
+				File.readlines(params[:upfile].path).map(&:chomp)
 			elsif params[:ids].present?
 				params[:ids].split(/[ ,"':|\t\n\r]+/).map{|id| id.strip.sub(/^(PMC|pmc)/, '')}.uniq
 			else
 				[] # means all the docs in the project
 			end
-			sourceids.map{|id| id.chomp!}
 
+			# to determine the sourcedb
 			raise ArgumentError, "Source DB is not specified." if sourceids.present? && !params['sourcedb'].present?
-
-			options = {}
-			options[:mode] = params[:mode] || 'replace'
-			options[:encoding] = params[:encoding] if params[:encoding].present?
-			options[:prefix] = annotator.name
-
 			sourcedb = params['sourcedb']
 
-			docids = sourceids.inject([]) do |col, sourceid|
-				ids = project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id)
-				raise ArgumentError, "#{sourcedb}:#{sourceid} does not exist in this project." if ids.empty?
-				col += ids
+			# to determine the options
+			options = {}
+			options[:mode] = params[:mode] || 'replace'
+			options[:prefix] = annotator.name
+
+			# to deterine the docids
+			docids = sourceids.collect {|sourceid| project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id).first}
+			sourceid_indice_missing = docids.each_index.select{|i| docids[i].nil?}
+			unless sourceid_indice_missing.empty?
+				sourceids_missing = sourceid_indice_missing.collect{|i| sourceids[i]}
+				raise ArgumentError, "Could not find the sourceid(s) in this project (sourcedb: #{sourcedb}): #{sourceids_missing.join(', ')}."
 			end
 
 			messages = []
 
-			if options[:mode] == 'skip'
-				num_skipped = if docids.empty?
-					if ProjectDoc.where(project_id:project.id, denotations_num:0).count == 0
-						raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
-					end
-					ProjectDoc.where("project_id=#{project.id} and denotations_num > 0").count
-				else
-					options[:mode] = 'add'
-					num_docs = docids.length
-					docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
-					raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
-					num_docs - docids.length
-				end
-
-				messages << "#{num_skipped} documents were skipped due to existing annotations." if num_skipped > 0
-			end
-
-			num_per_job = 100000
-			docids_filepaths = begin
-				if docids.empty?
-					if options[:mode] == 'skip'
-						options[:mode] = 'add'
-
-						num = ProjectDoc.where(project_id: project.id, denotations_num: 0).count
-						n = num / num_per_job
-						(0 .. n).collect do |i|
-							docids = ProjectDoc.where(project_id: project.id, denotations_num: 0).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
-							filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n+1}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
-							File.open(filepath, "w"){|f| f.puts(docids)}
-							filepath
+			docids_filepath = begin
+				# To update docids according to the options
+				if options[:mode] == 'skip'
+					num_skipped = if docids.empty?
+						if ProjectDoc.where(project_id:project.id, denotations_num:0).count == 0
+							raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
 						end
+						docids = ProjectDoc.where(project_id:project.id, denotations_num:0 ).pluck(:doc_id)
+						ProjectDoc.where("project_id=#{project.id} and denotations_num > 0").count
 					else
-						num = ProjectDoc.where(project_id: project.id).count
-						n = num / num_per_job
-						(0 .. n).collect do |i|
-							docids = ProjectDoc.where(project_id: project.id).limit(num_per_job).offset(num_per_job * i).pluck(:doc_id)
-							filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n+1}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
-							File.open(filepath, "w"){|f| f.puts(docids)}
-							filepath
-						end
+						num_docs = docids.length
+						docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
+						raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
+						num_docs - docids.length
 					end
+
+					messages << "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
+					options[:mode] = 'add'
 				else
-					num = docids.length
-					n = num / num_per_job
-					col = []
-					docids.each_slice(num_per_job).with_index do |slice, i|
-						filepath = File.join('tmp', "obtain-#{project.name}-#{i+1}-of-#{n+1}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
-						File.open(filepath, "w"){|f| f.puts(docids)}
-						col << filepath
+					if docids.empty?
+						docids = ProjectDoc.where(project_id:project.id).pluck(:doc_id)
 					end
-					col
 				end
+
+				filepath = File.join('tmp', "obtain-#{project.name}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
+				File.open(filepath, "w"){|f| f.puts(docids)}
+				filepath
 			end
 
-			num_jobs = docids_filepaths.length
-			docids_filepaths.each_with_index do |docids_filepath, i|
-				# job = ObtainAnnotationsJob.new(project, docids_filepath, annotator, options)
-				# job.perform()
-				priority = project.jobs.unfinished.count
-				# delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options.merge(debug: true)), priority: priority, queue: :upload
-				delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options), priority: priority, queue: :upload
-				job_name = (num_jobs > 1) ? "Obtain annotations: #{annotator.name} (#{i+1}/#{num_jobs})" : "Obtain annotations: #{annotator.name}"
-				Job.create({name:job_name, project_id:project.id, delayed_job_id:delayed_job.id})
-			end
-			messages << ((num_jobs > 1) ? "#{num_jobs} tasks of 'Obtain annotations' were created." : "The task 'Obtain annotations was created.")
+			priority = project.jobs.unfinished.count
+			# delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options.merge(debug: true)), priority: priority, queue: :upload
+			delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options), priority: priority, queue: :upload
+			Job.create({name:"Obtain annotations: #{annotator.name}", project_id:project.id, delayed_job_id:delayed_job.id})
 
+			project.update_attributes({annotator_id:annotator.id}) if annotator.persisted?
+
+			messages << "The task 'Obtain annotations was created."
 			message = messages.join("\n")
 
 			respond_to do |format|
