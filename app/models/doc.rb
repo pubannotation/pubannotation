@@ -106,7 +106,6 @@ class Doc < ActiveRecord::Base
 	validates :body,     :presence => true
 	validates :sourcedb, :presence => true
 	validates :sourceid, :presence => true
-	validates :serial,   :presence => true
 	validates_uniqueness_of :serial, scope: [:sourcedb, :sourceid]
 	
 	scope :pmdocs, where(:sourcedb => 'PubMed')
@@ -285,10 +284,9 @@ class Doc < ActiveRecord::Base
 	def self.store_hdoc(hdoc)
 		doc = Doc.new(
 			{
-				body: hdoc[:text],
+				body: hdoc[:body],
 				sourcedb: hdoc[:sourcedb],
 				sourceid: hdoc[:sourceid],
-				serial: hdoc[:divid] || 0,
 				source: hdoc[:source_url]
 			}
 		)
@@ -954,20 +952,19 @@ class Doc < ActiveRecord::Base
 		{
 			text: body,
 			sourcedb: sourcedb,
-			sourceid: sourceid,
-			divid: serial,
+			sourceid: sourceid
 		}
 	end
 
 	def to_hash
 		{
-			text: body.nil? ? nil : body,
+			text: body,
 			sourcedb: sourcedb,
 			sourceid: sourceid,
-			divid: serial,
 			section: section,
-			source_url: source
-		}
+			source_url: source,
+			typesettings: get_typesettings
+		}.compact
 	end
 	
 	def to_list_hash(doc_type)
@@ -1104,7 +1101,7 @@ class Doc < ActiveRecord::Base
 			hdoc[:sourceid] = last_id.nil? ? '1' : last_id.next
 		end
 
-		hdoc.merge(serial:0)
+		hdoc
 	end
 
 	def attach_sourcedb_suffix

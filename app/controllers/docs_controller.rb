@@ -308,40 +308,36 @@ class DocsController < ApplicationController
 					request.body.read
 				end
 
-				if text
-					{
-						source: params[:source],
-						sourcedb: params[:sourcedb] || '',
-						sourceid: params[:sourceid],
-						serial: params[:divid] || 0,
-						section: params[:section],
-						body: text
-					}
-				else
-					raise ArgumentError, "A block of text has to be sent."
-				end
+				raise "Could not find text." unless text.present?
+
+				_doc = {
+					source: params[:source],
+					sourcedb: params[:sourcedb] || '',
+					sourceid: params[:sourceid],
+					section: params[:section],
+					body: text
+				}
+
+				_doc[:divisions] = params[:divisions] if params[:divisions].present?
+				_doc[:typesettings] = params[:typesettings] if params[:typesettings].present?
+				_doc
 			end
 
 			doc_hash = Doc.hdoc_normalize!(doc_hash, current_user, current_user.root?)
+			docs_saved, messages = Doc.store_hdocs([doc_hash])
+			raise IOError, "Could not create the document: #{messages.join("\n")}" if messages.present?
 
-			@doc = Doc.new(doc_hash)
-			if @doc.save
-				@doc.projects << @project
-				expire_fragment("sourcedb_counts_#{@project.name}")
-				expire_fragment("count_docs_#{@project.name}")
-				expire_fragment("count_#{@doc.sourcedb}_#{@project.name}")
-			else
-				raise IOError, "could not create the document."
-			end
+			@doc = docs_saved.first
+			@doc.projects << @project
+			expire_fragment("sourcedb_counts_#{@project.name}")
+			expire_fragment("count_docs_#{@project.name}")
+			expire_fragment("count_#{@doc.sourcedb}_#{@project.name}")
 
 			respond_to do |format|
 				format.html { redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, doc_hash[:sourcedb], doc_hash[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc')) }
-				format.json { render json: @doc, status: :created, location: @doc }
+				format.json { render json: @doc.to_hash, status: :created, location: @doc }
 			end
 		rescue => e
-			logger.error e.message
-			logger.error e.backtrace.join("\n")
-
 			respond_to do |format|
 				format.html { redirect_to new_project_doc_path(@project.name), notice: e.message }
 				format.json { render json: {message: e.message}, status: :unprocessable_entity }
