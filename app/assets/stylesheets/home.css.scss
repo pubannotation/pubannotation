@@ -43,23 +43,15 @@
 	overflow-y:scroll;
 }
 
-.show-on-mobiles {
-	display: none;
-}
-
 /* Responsive Stuff */
 /* @media screen and (max-width: 568px) { */
 @media screen and (max-width: 1018px) {
-	#news_frame {
-		width: 550px;
-	}
-
 	.panel {
-		width: 49%;
+		width: 48%;
 	}
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: $min_width_wide) {
 	#news_frame {
 		width: calc(99% - 30px);
 	}
@@ -77,19 +69,5 @@
 	.unit .grid .unit {
 		padding-left: 0px;
 		padding-right: 0px;
-	}
-
-	/* Sometimes, you just want to be different on small screens */
-	.center-on-mobiles {
-		text-align: center !important;
-	}
-	.hide-on-mobiles {
-		display: none !important;
-	}
-	.show-on-mobiles {
-		display: block !important;
-	}
-	a .show-on-mobiles {
-		display: inline !important;
 	}
 }

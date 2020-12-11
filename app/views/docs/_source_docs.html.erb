@@ -23,20 +23,32 @@
 </h1>
 
 <table class="full">
+<colgroup>
+	<col class="docs_col_sourcedb">
+	<col class="docs_col_sourceid">
+	<col class="docs_col_text show-when-wide">
+	<col class="docs_col_length">
+	<col class="docs_col_projects_number">
+	<col class="docs_col_annotations_number">
+	<col class="docs_col_button">
+	<% if @project.present? && @project.editable?(current_user) %>
+		<col class="docs_col_button">
+	<% end -%>
+</colgroup>
 <tr>
-	<th class="docs_header_sourcedb">
+	<th>
 		<%= t('activerecord.attributes.doc.sourcedb') -%>
 	</th>
-	<th class="docs_header_sourceid">
-		<% if params[:keywords].present? -%>
-			<%= t('activerecord.attributes.doc.sourceid') -%>
-		<% else -%>
-			<%= t('activerecord.attributes.doc.sourceid') %>
-		<% end -%>
+	<th>
+		<%= t('activerecord.attributes.doc.sourceid') %>
 	</th>
-	<th><%= t('activerecord.attributes.doc.body') %></th>
-	<th class="docs_header_length"><%= t('views.shared.length') %></th>
-	<th class="docs_header_projects_number">
+	<th class="show-when-wide">
+		<%= t('activerecord.attributes.doc.body') %>
+	</th>
+	<th>
+		<%= t('views.shared.length') %>
+	</th>
+	<th>
 		<span title="number of projects">
 			<% if params[:keywords].present? -%>
 				<%= t('views.shared.projects_count') -%>
@@ -45,7 +57,7 @@
 			<% end -%>
 		</span>
 	</th>
-	<th class="docs_header_annotations_number">
+	<th>
 		<span title= "number of denotations">
 			<% if params[:keywords].present? -%>
 				<%= t('views.shared.annotations_count') -%>
@@ -58,9 +70,9 @@
 			<% end -%>
 		</span>
 	</th>
-	<th class="docs_header_button"></th>
-	<% if @project.present? && user_signed_in? && @project.user == current_user %>
-		<th class="docs_header_button"></th>
+	<th></th>
+	<% if @project.present? && @project.editable?(current_user) %>
+		<th></th>
 	<% end -%>
 </tr>
 

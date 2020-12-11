@@ -184,6 +184,10 @@ table {
 	margin: 5px 0;
 }
 
+td {
+	position: static;
+}
+
 table, th, td{
 	border:1px solid lighten($main_color, 70%);
 }
@@ -222,7 +226,6 @@ th a:hover {
 
 td {
 	padding:5px;
-	text-align:left;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -504,10 +507,6 @@ $indicator_size : 100px;
 	z-index: 9999;
 }
 
-.projects_header_name {
-	width: 12em;
-}
-
 .projects_header_type {
 	width: 1.5em;
 }
@@ -539,35 +538,6 @@ $indicator_size : 100px;
 
 table.vertical th {
 	width: 80px;
-}
-
-
-.docs_header_sourcedb {
-	width: 7em;
-}
-
-.docs_header_sourceid {
-	width: 7em;
-}
-
-.docs_header_length {
-	width: 5em;
-}
-
-.docs_header_projects_number{
-	width: 5em;
-}
-
-.docs_header_annotations_number{
-	width: 5em;
-}
-
-.docs_header_button{
-	width: 70px;
-}
-
-.docs_header_text {
-	width: 15em
 }
 
 .annotation_header_id {width: 5em}
@@ -617,27 +587,37 @@ div.oneline {
 	display: table;
 	clear: both;
 }
+
 .grabbable{
 	cursor: -webkit-grab;
 	cursor: grab;
 }
 
-@media screen and (max-width: 800px) {
-	.show_when_wide {
-		display: none;
-	}
-	.projects_header_name {
-		width: auto;
-		min-width: 8em;
-	}
-}
-
-@media screen and (max-width: 660px) {
-	.projects_header_name {
-		width: 6em;
-	}
-}
-
 .fa-eye-slash::before {
 	color: red;
+}
+
+.show-when-narrow {
+	display: none;
+}
+
+@media screen and (max-width: $min_width_wide) {
+	.show-when-wide {
+		display: none;
+	}
+
+	.show-when-narrow {
+		display: block;
+	}
+
+
+	th.show-when-narrow {
+		display: table-cell;
+	}
+
+	td.show-when-narrow {
+		display: table-cell;
+	}
+
+
 }

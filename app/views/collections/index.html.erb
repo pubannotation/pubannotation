@@ -11,10 +11,10 @@
 		<%= link_to t('views.shared.create'), new_collection_path, {:class=> 'control button'} %>
 	<% end %>
 </h1>
-<div class="projects-list hide-on-mobile">
+<div class="projects-list show-when-wide">
 <%= render :partial => "collections_grid" %>
 </div>
-<div class="projects-list show-on-mobile">
+<div class="projects-list show-when-narrow">
 <%= render :partial => "collections_grid_mobile" %>
 </div>
 </section>

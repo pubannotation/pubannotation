@@ -11,10 +11,10 @@
 		<%= link_to t('views.shared.create'), new_project_path, {:class=> 'control button'} %>
 	<% end %>
 </h1>
-<div class="projects-list hide-on-mobile">
+<div class="projects-list show-when-wide">
 <%= render :partial => "projects_grid" %>
 </div>
-<div class="projects-list show-on-mobile">
+<div class="projects-list show-when-narrow">
 <%= render :partial => "projects_grid_mobile" %>
 </div>
 </section>

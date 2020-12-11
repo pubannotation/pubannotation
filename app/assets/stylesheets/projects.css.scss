@@ -96,19 +96,7 @@
 	}
 }
 
-.show-on-mobile {
-	visibility: hidden;
-}
-
 @media screen and (max-width: 850px) {
-	.show-on-mobile {
-		visibility: visible;
-	}
-
-	.hide-on-mobile {
-		display: none;
-	}
-
 	.projects-list table {
 		.column-project-name {
 			width: 12em;

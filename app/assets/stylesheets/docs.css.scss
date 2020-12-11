@@ -1,4 +1,5 @@
 @import 'variables';
+
 .context {
 	color: #888888;
 }
@@ -14,6 +15,7 @@
 .linkSpace .message {
 	color: #888888;
 }
+
 #unselected_projects_list,
 #selected_projects_list{
 	padding: 0.5em;
@@ -24,6 +26,7 @@
 	position: relative;
 	margin: 0.2em 0;
 }
+
 #selected_projects_list{
 	list-style: none;
 	.ui-state-highlight { 
@@ -35,15 +38,18 @@
 		cursor: grab;
 	}
 }
+
 #projects_switches{
 	width: 2em;
 	float:left;
 	text-align:center;
 }
+
 .project_selector{
 	padding: 3px;
 	cursor: pointer;
 }
+
 .project_select_button{
 	background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
 	background-color:#ffffff;
@@ -55,23 +61,28 @@
 	text-align: center;
 	cursor: pointer;
 }
+
 .projects_wrapper{
 	float:left;
 	a {
 		text-decoration: underline;
 	}
 }
+
 #annotation_links{
 	clear: both;
 	text-align: right;
 }
+
 #projects_switches i {
 	cursor: pointer;
 }
+
 .projects_wrapper{
 	position: relative;
 	width: 98%;
 }
+
 .project_wrapper{
 	list-style: none;
 	display: inline;
@@ -79,15 +90,42 @@
 	display: inline-block;
 	white-space: nowrap;
 }
+
 .disabled_textae_link{
 	cursor: not-allowed;
 	color: lighten(#000, 60%);
 }
-
 
 .snippet {
 	em {
 		font-style: normal;
 		font-weight: bold;
 	}
+}
+
+.docs_col_sourcedb {
+	width: 7em;
+}
+
+.docs_col_sourceid {
+	width: 7em;
+}
+
+.docs_col_text {
+}
+
+.docs_col_length {
+	width: 6em;
+}
+
+.docs_col_projects_number{
+	width: 5em;
+}
+
+.docs_col_annotations_number{
+	width: 5em;
+}
+
+.docs_col_button{
+	width: 5.5em;
 }

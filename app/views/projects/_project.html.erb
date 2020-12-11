@@ -6,7 +6,7 @@
 		<%= link_to_project(project) -%>
 	</td>
 	<td style="text-align:center"><%= badge_type(project).html_safe %></td>
-	<td class="show_when_wide" title="<%= project.description -%>"><%= project.description %></td>
+	<td class="show-when-wide" title="<%= project.description -%>"><%= project.description %></td>
 	<td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(project, @doc, @span), :delimiter => ',') %></td>
 	<td style="text-align:center"><%= project.author %></td>
 	<td style="text-align:center"><%= maintainer_link(project) %></td>

@@ -106,4 +106,25 @@ module DocsHelper
 		html += link_to_unless_current 'JSON', params_to_text.merge(format: :json), :class => 'tab'
 		html += link_to_unless_current 'TXT', params_to_text.merge(format: :txt), :class => 'tab'
 	end
+
+	def doc_snippet(doc)
+		snippet = doc.body
+		em_open_pos = snippet.index('<em>')
+		if em_open_pos
+			em_close_pos = snippet.rindex('</em>')
+			m = em_open_pos + (em_close_pos - em_open_pos) / 2
+			b = m - 40
+			e = m + 60
+			if b < 0
+				e -= b
+				b = 0
+			end
+			if e > snippet.length
+				e = snippet.length
+			end
+			snippet[b...e]
+		else
+			snippet[0 ... 100]
+		end
+	end
 end
