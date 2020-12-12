@@ -1,14 +1,14 @@
+<% project = Project.find_by_name(annotations[:project]) %>
+
 <section>
-	<% unless @project.present? %>
-		<h2><%= link_to annotations[:project], project_path(annotations[:project]) -%></h2>
-	<% end %>
+	<h2><%= link_to project.name, project_path(project.name) -%></h2>
 
 	<% if annotations.present? -%>
 		<% annotations[:text] = body unless annotations[:text].present? -%>
-		<% array = Annotation.hash_to_array(annotations, @project ? @project.get_textae_config : nil) -%>
+		<% array = Annotation.hash_to_array(annotations, project.get_textae_config) -%>
 		<% headers = array.shift %>
 
-		<% if @project.has_discontinuous_span? %>
+		<% if project.has_discontinuous_span? %>
 			<%
 				ds_model, alternative = if params['discontinuous_span'] == 'bag' then ['bag', 'chain'] else ['chain', 'bag'] end
 			%>

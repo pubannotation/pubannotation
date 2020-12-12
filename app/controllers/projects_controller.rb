@@ -6,8 +6,6 @@ class ProjectsController < ApplicationController
 	before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 	skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
-	autocomplete :pmdoc,  :sourceid, :class_name => :doc, :scopes => [:pmdocs,  :project_name => :project_name]
-	autocomplete :pmcdoc, :sourceid, :class_name => :doc, :scopes => [:pmcdocs, :project_name => :project_name]
 	autocomplete :user, :username
 	autocomplete :project, :name, :full => true, :scopes => [:public_or_blind]
 	autocomplete :project, :author
@@ -117,21 +115,6 @@ class ProjectsController < ApplicationController
 			else
 				format.html { render action: "edit" }
 				format.json { render json: @project.errors, status: :unprocessable_entity }
-			end
-		end
-	end
-
-	def create_from_zip
-		zip_file = params[:zip].path
-
-		if zip_file.present? && params[:zip].content_type == 'application/zip'
-			project_name = File.basename(params[:zip].original_filename, ".*")
-			messages, errors = Project.create_from_zip(zip_file, project_name, current_user)
-			# 結果をうけとってメッセージに表示
-			if messages.present?
-				flash[:notice] = messages.join('<br />')
-			else errors.present?
-				flash[:notice] = errors.join('<br />')
 			end
 		end
 	end

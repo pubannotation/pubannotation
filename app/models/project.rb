@@ -528,174 +528,6 @@ class Project < ActiveRecord::Base
 		project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
 	end
 
-	def self.create_from_zip(zip_file, project_name, current_user)
-		messages = Array.new
-		errors = Array.new
-		unless Dir.exist?(TempFilePath)
-			FileUtils.mkdir_p(TempFilePath)
-		end
-		project_json_file = "#{TempFilePath}#{project_name}-project.json"
-		docs_json_file = "#{TempFilePath}#{project_name}-docs.json"
-		doc_annotations_files = Array.new
-		# open zip file
-		Zip::ZipFile.open(zip_file) do |zipfile|
-			zipfile.each do |file|
-				file_name = file.name
-				if file_name == 'project.json'
-					# extract project.json
-					file.extract(project_json_file) unless File.exist?(project_json_file)
-				elsif file_name == 'docs.json'
-					# extract docs.json
-					file.extract(docs_json_file) unless File.exist?(docs_json_file)
-				else
-					# extract sourcedb-sourdeid-serial-section.json
-					doc_annotations_file = "#{TempFilePath}#{file.name}"
-					unless File.exist?(doc_annotations_file)
-						file.extract(doc_annotations_file)
-						doc_annotations_files << {name: file.name, path: doc_annotations_file}
-					end
-				end
-			end
-		end
-
-		# create project if [project_name]-project.json exist
-		if File.exist?(project_json_file)
-			params_from_json = Project.params_from_json(project_json_file)
-			File.unlink(project_json_file)
-			project_params = params_from_json
-			project = Project.new(project_params)
-			project.user = current_user
-			if project.valid?
-				project.save
-				messages << I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.project'))
-			else
-				errors << project.errors.full_messages.join('<br />')
-				project = nil
-			end
-		end
-
-		# create project.docs if [project_name]-docs.json exist
-		if project.present?
-			if File.exist?(docs_json_file)
-				if project.present?
-					num_created, num_added, num_failed = project.create_docs_from_json(JSON.parse(File.read(docs_json_file), :symbolize_names => true), current_user)
-					messages << I18n.t('controllers.docs.create_project_docs.created_to_document_set', num_created: num_created, project_name: project.name) if num_created > 0
-					messages << I18n.t('controllers.docs.create_project_docs.added_to_document_set', num_added: num_added, project_name: project.name) if num_added > 0
-					messages << I18n.t('controllers.docs.create_project_docs.failed_to_document_set', num_failed: num_failed, project_name: project.name) if num_failed > 0
-				end
-				File.unlink(docs_json_file) 
-			end
-
-			# save annotations
-			if doc_annotations_files
-				delay.save_annotations!(project, doc_annotations_files)
-				messages << I18n.t('controllers.projects.upload_zip.delay_save_annotations')
-			end
-		end
-		return [messages, errors]
-	end
-
-	def create_docs_from_json(docs, user)
-		num_created, num_added, num_failed = 0, 0, 0
-		docs = [docs] if docs.class == Hash
-		sourcedbs = docs.group_by{|doc| doc[:sourcedb]}
-		if sourcedbs.present?
-			sourcedbs.each do |sourcedb, docs_array|
-				ids = docs_array.collect{|doc| doc[:sourceid]}.join(",")
-				num_created_t, num_added_t, num_failed_t = self.create_docs({ids: ids, sourcedb: sourcedb, docs_array: docs_array, user: user})
-				num_created += num_created_t
-				num_added += num_added_t
-				num_failed += num_failed_t
-			end
-		end
-		return [num_created, num_added, num_failed]   
-	end
-
-	def create_docs(options = {})
-		num_created, num_added, num_failed = 0, 0, 0
-		ids = options[:ids].split(/[ ,"':|\t\n]+/).collect{|id| id.strip}
-		ids.each do |sourceid|
-			divs = Doc.find_all_by_sourcedb_and_sourceid(options[:sourcedb], sourceid)
-			is_current_users_sourcedb = (options[:sourcedb] =~ /.#{Doc::UserSourcedbSeparator}#{options[:user].username}\Z/).present?
-			if divs.present?
-				if is_current_users_sourcedb
-					# when sourcedb is user's sourcedb
-					# update or create if not present
-					options[:docs_array].each do |doc_array|
-						# find doc sourcedb sourdeid and serial
-						doc = Doc.find_or_initialize_by_sourcedb_and_sourceid_and_serial(options[:sourcedb], sourceid, doc_array['divid'])
-						mappings = {
-							'text' => 'body', 
-							'section' => 'section', 
-							'source_url' => 'source', 
-							'divid' => 'serial'
-						}
-
-						doc_params = Hash[doc_array.map{|key, value| [mappings[key], value]}].select{|key| key.present?}
-						if doc.new_record?
-							# when same sourcedb sourceid serial not present
-							doc.attributes = doc_params
-							if doc.valid?
-								# create
-								doc.save
-								self.docs << doc unless self.docs.include?(doc)
-								num_created += 1
-							else
-								num_failed += 1
-							end
-						else
-							# when same sourcedb sourceid serial present
-							# update
-							if doc.update_attributes(doc_params)
-								self.docs << doc unless self.docs.include?(doc)
-								num_added += 1
-							else
-								num_failed += 1
-							end
-						end
-					end
-				else
-					# when sourcedb is not user's sourcedb
-					unless self.docs.include?(divs.first)
-						self.docs << divs
-						num_added += divs.size
-					end
-				end
-			else
-				if options[:sourcedb].include?(Doc::UserSourcedbSeparator)
-					# when sourcedb include : 
-					if is_current_users_sourcedb
-						# when sourcedb is user's sourcedb
-						divs, num_failed_user_sourcedb_docs = create_user_sourcedb_docs(docs_array: options[:docs_array])
-						num_failed += num_failed_user_sourcedb_docs
-					else
-						# when sourcedb is not user's sourcedb
-						num_failed += options[:docs_array].size
-					end
-				else
-					# when sourcedb is not user generated
-					begin
-						# when doc_sequencer_ present
-						doc_sequence = Object.const_get("DocSequencer#{options[:sourcedb]}").new(sourceid)
-						divs_hash = doc_sequence.divs
-						divs = Doc.create_divs(divs_hash, :sourcedb => options[:sourcedb], :sourceid => sourceid, :source_url => doc_sequence.source_url)
-					rescue
-						# when doc_sequencer_ not present
-						divs, num_failed_user_sourcedb_docs = create_user_sourcedb_docs({docs_array: options[:docs_array], sourcedb: "#{options[:sourcedb]}#{Doc::UserSourcedbSeparator}#{options[:user].username}"})
-						num_failed += num_failed_user_sourcedb_docs
-					end
-				end
-				if divs
-					self.docs << divs
-					num_created += divs.size
-				else
-					num_failed += 1
-				end
-			end
-		end  
-		return [num_created, num_added, num_failed]   
-	end
-
 	# returns the divs added to the project
 	# returns nil if nothing is added
 	def add_docs(sourcedb, sourceids)
@@ -718,15 +550,16 @@ class Project < ActiveRecord::Base
 		[docs_to_add.length, docs_sequenced.length, ids_in_pj.length, messages]
 	end
 
-	# returns the divs added to the project
+	# returns the doc added to the project
 	# returns nil if nothing is added
 	def add_doc(sourcedb, sourceid)
-		divs = Doc.find_all_by_sourcedb_and_sourceid(sourcedb, sourceid)
-		divs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid]) unless divs.present?
-		raise RuntimeError, "Failed to get the document" unless divs.present?
-		return nil if docs.include?(divs.first)
-		divs.each{|div| div.projects << self}
-		divs
+		doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+		new_docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid]) unless doc.present?
+		raise RuntimeError, "Failed to get the document" unless new_docs.length == 1
+		doc = new_docs.first
+		return nil if self.docs.include?(doc)
+		doc.projects << self
+		doc
 	end
 
 	def delete_doc(doc)
@@ -783,8 +616,7 @@ class Project < ActiveRecord::Base
 					:sourcedb => :sourcedb, 
 					:sourceid => :sourceid, 
 					:section => :section, 
-					:source_url => :source, 
-					:divid => :serial
+					:source_url => :source
 				}
 				doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
 				doc = Doc.new(doc_params) 
@@ -912,9 +744,7 @@ class Project < ActiveRecord::Base
 
 			# record document id
 			annotations_collection.each do |ann|
-				ann[:docid] = ann[:divid].nil? ?
-					Doc.select(:id).where(sourcedb:ann[:sourcedb], sourceid:ann[:sourceid]).first.id :
-					Doc.select(:id).where(sourcedb:ann[:sourcedb], sourceid:ann[:sourceid], serial:ann[:divid]).first.id
+				ann[:docid] = Doc.select(:id).where(sourcedb:ann[:sourcedb], sourceid:ann[:sourceid]).first.id
 			end
 
 			# instantiate and save denotations
@@ -1076,36 +906,6 @@ class Project < ActiveRecord::Base
 		messages
 	end
 
-	def save_annotations_divs(annotations, divs, options = {})
-		raise ArgumentError, "nil divs" unless divs.present?
-		raise ArgumentError, "the project does not have the document" unless divs.first.projects.include?(self)
-		options ||= {}
-
-		if options[:mode] == 'skip'
-			num = Denotations.where(project_id:self.id, sourcedb:divs.first.sourcedb, sourceid:divs.first.sourceid).count
-			return {result: 'upload is skipped due to existing annotations'} if num > 0
-		end
-
-		annotations_collection, messages = Annotation.prepare_annotations_divs(annotations, divs)
-
-		case options[:mode]
-		when 'replace'
-			divs.each{|d| delete_doc_annotations(d)}
-		when 'add'
-			raise "At the moment, 'add' mode is not supported for multi-div documents. We are sorry for the inconvenience."
-			# a.each{|ann| reid_annotations!(ann, d)}
-		when 'merge'
-			raise "At the moment, 'merge' mode is not supported for multi-div documents. We are sorry for the inconvenience."
-			# base_annotations = doc.hannotations(self)
-			# Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
-			# reid_annotations!(annotations, doc)
-		end
-
-		instantiate_and_save_annotations_collection(annotations_collection)
-
-		messages
-	end
-
 	# It assumes that
 	# - annotations are already normal, and
 	# - documents exist in the database
@@ -1115,17 +915,7 @@ class Project < ActiveRecord::Base
 
 		aligned_collection = annotations_collection.inject([]) do |col, annotations|
 
-			doc, divs = if annotations[:divid].present?
-				d = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid])
-				[d, nil]
-			else
-				s = Doc.find_all_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-				if s.length == 1
-					[s[0], nil]
-				else
-					[nil, s]
-				end
-			end
+			doc = Doc.find_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
 
 			if doc.present?
 
@@ -1157,40 +947,8 @@ class Project < ActiveRecord::Base
 					messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
 				end
 
-			elsif divs.present?
-
-				if options[:mode] == 'skip'
-					num = Denotation.joins(:docs).where(project_id:id, 'docs.sourcedb' => annotations[:sourcedb], 'docs.sourceid' => annotations[:sourceid]).limit(1).count
-					if num > 0
-						num_skipped += 1
-						next
-					end
-				end
-
-				begin
-					a, msgs = Annotation.prepare_annotations_divs(annotations, divs)
-					messages += msgs.map{|msg| {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body:msg}}
-
-					case options[:mode]
-					when 'replace'
-						divs.each{|d| delete_doc_annotations(d)}
-					when 'add'
-						raise "At the moment, 'add' mode is not supported. We are sorry for the inconvenience."
-						# a.each{|ann| reid_annotations!(ann, d)}
-					when 'merge'
-						raise "At the moment, 'merge' mode is not supported. We are sorry for the inconvenience."
-						# base_annotations = doc.hannotations(self)
-						# Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
-						# reid_annotations!(annotations, doc)
-					end
-
-					col += a
-				rescue StandardError => e
-					messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message}
-				end
-
 			else
-				messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: 'document does not exist.'}
+				messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: 'document does not exist.'}
 			end
 
 			col
@@ -1218,7 +976,6 @@ class Project < ActiveRecord::Base
 			annotations[:text] = docs[i].body unless annotations[:text].present?
 			annotations[:sourcedb] = docs[i].sourcedb unless annotations[:sourcedb].present?
 			annotations[:sourceid] = docs[i].sourceid unless annotations[:sourceid].present?
-			annotations[:divid] = docs[i].serial unless annotations[:divid].present?
 			Annotation.normalize!(annotations, options[:prefix])
 		end
 

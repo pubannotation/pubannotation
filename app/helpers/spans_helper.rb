@@ -8,10 +8,6 @@ module SpansHelper
 	end
 
 	def span_url(doc, span)
-		if doc.has_divs?
-			doc_sourcedb_sourceid_divs_span_show_url(doc.sourcedb, doc.sourceid, doc.serial, span[:begin], span[:end])
-		else
-			doc_sourcedb_sourceid_span_show_url(doc.sourcedb, doc.sourceid, span[:begin], span[:end])
-		end
+		doc_sourcedb_sourceid_span_show_url(doc.sourcedb, doc.sourceid, span[:begin], span[:end])
 	end
 end

@@ -19,11 +19,7 @@
 						<%= doc[column] -%>
 					</td>
 				<% end -%>
-				<% if Doc.is_mdoc_sourcedb(doc.sourcedb) -%>
-					<td><%= link_to t('views.shared.show'), pmcdoc_path(doc.sourceid) -%></td>
-				<% else -%>
-					<td><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) -%></td>
-				<% end -%>
+				<td><%= link_to t('views.shared.show'), pmdoc_path(doc.sourceid) -%></td>
 			</tr>
 		<% end -%>
 	</table>

@@ -48,7 +48,7 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 			end
 		rescue => e
 			if @job
-				@job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, divid:doc.serial, body: e.message})
+				@job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: e.message})
 			else
 				raise RuntimeError, e.message
 			end
@@ -88,7 +88,7 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 
 			timer_start = Time.now
 			annotations = Annotation.normalize!(annotations)
-			doc = Doc.find_by_sourcedb_and_sourceid_and_serial(annotations[:sourcedb], annotations[:sourceid], annotations[:divid].present? ? annotations[:divid].to_i : 0)
+			doc = Doc.find_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
 			stime = Time.now - timer_start
 			messages = project.save_annotations!(annotations, doc, options)
 			messages.each{|m| @job.messages << Message.create(m)}

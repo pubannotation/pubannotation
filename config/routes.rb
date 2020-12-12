@@ -63,7 +63,6 @@ Pubann::Application.routes.draw do
 	resources :docs do
 		collection do
 			get 'open' => 'docs#open'
-			get 'records' => 'docs#records'
 			# list sourcedb
 			get 'sourcedb' => 'docs#sourcedb_index'
 			get 'search' => 'docs#search'
@@ -177,7 +176,6 @@ Pubann::Application.routes.draw do
 				post 'add' => 'docs#add'
 				post 'add_from_upload' => 'docs#add_from_upload'
 				post 'import' => 'docs#import'
-				get 'records' => 'docs#records'
 				get 'search' => 'docs#search'
 				get 'open' => 'docs#open'
 				scope 'sourcedb', :as => 'sourcedb' do

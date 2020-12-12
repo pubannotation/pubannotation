@@ -4,11 +4,7 @@
 	<td class="snippet show-when-wide"><%= doc_snippet(source_doc).html_safe -%></td>
 	<td style="text-align:right"><%= number_to_human_size(source_doc.body.length) %></td>
 	<td style="text-align:right">
-		<% if source_doc.has_divs? -%>
-			<%= link_to source_doc.projects_num, doc_sourcedb_sourceid_divs_index_path(source_doc.sourcedb, source_doc.sourceid), style:"display:block" -%>
-		<% else -%>
-			<%= link_to source_doc.projects_num, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid), style:"display:block" -%>
-		<% end -%>
+		<%= link_to source_doc.projects_num, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid), style:"display:block" -%>
 	</td>
 	<td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(@project, source_doc)) -%></td>
 	<td >

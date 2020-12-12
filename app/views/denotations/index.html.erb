@@ -14,9 +14,6 @@
 <% @denotations.each do |denotation| %>
 	<tr>
 		<td><%= denotation.project %></td>
-		<!--td><= denotation.doc_sourcedb %></td>
-		<td><= denotation.doc_sourceid %></td>
-		<td><= denotation.doc_serial %></td-->
 		<td><%= denotation.id %></td>
 		<td>
 			<% unless denotation.denotation.respond_to?(:keys) %>

@@ -106,10 +106,7 @@ class Doc < ActiveRecord::Base
 	validates :body,     :presence => true
 	validates :sourcedb, :presence => true
 	validates :sourceid, :presence => true
-	validates_uniqueness_of :serial, scope: [:sourcedb, :sourceid]
 	
-	scope :pmdocs, where(:sourcedb => 'PubMed')
-	scope :pmcdocs, where(:sourcedb => 'PMC', :serial => 0)
 	scope :project_name, lambda{|project_name|
 		{:joins => :projects,
 			:conditions => ['projects.name =?', project_name]
@@ -178,9 +175,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def graph_uri
-		has_divs? ?
-			Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(sourcedb, sourceid, serial, only_path: false) :
-			Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, only_path: false)
+		Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, only_path: false)
 	end
 
 	def last_indexed_at(endpoint = nil)
@@ -214,36 +209,18 @@ class Doc < ActiveRecord::Base
 	end
 
 	def descriptor
-		descriptor  = self.sourcedb + ':' + self.sourceid
-		descriptor += '-' + self.serial.to_s if self.has_divs?
-		descriptor
+		"#{sourcedb}:#{sourceid}"
 	end
 
 	def filename
-		if has_divs?
-			"#{sourcedb}-#{sourceid}-#{serial}-#{section.sub(/\.$/, '').gsub(' ', '_')}"
-		else
-			"#{sourcedb}-#{sourceid}"
-		end
+		"#{sourcedb}-#{sourceid}"
 	end
 
 	def self.get_doc(docspec)
 		if docspec[:sourcedb].present? && docspec[:sourceid].present?
-			Doc.find_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:divid].present? ? docspec[:divid] : 0)
+			Doc.find_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
 		else
 			nil
-		end
-	end
-
-	def self.get_divs(docspec)
-		if docspec[:sourcedb].present? && docspec[:sourceid].present?
-			if docspec[:div_id].present?
-				Doc.find_all_by_sourcedb_and_sourceid_and_serial(docspec[:sourcedb], docspec[:sourceid], docspec[:divid])
-			else
-				Doc.find_all_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
-			end
-		else
-			[]
 		end
 	end
 
@@ -284,7 +261,7 @@ class Doc < ActiveRecord::Base
 	def self.store_hdoc(hdoc)
 		doc = Doc.new(
 			{
-				body: hdoc[:body],
+				body: hdoc[:text],
 				sourcedb: hdoc[:sourcedb],
 				sourceid: hdoc[:sourceid],
 				source: hdoc[:source_url]
@@ -360,30 +337,6 @@ class Doc < ActiveRecord::Base
 		[docs_saved, result[:messages] + messages]
 	end
 
-	def self.create_divs(divs_hash, attributes = {})
-		if divs_hash.present?
-			divs = Array.new
-			divs_hash.each_with_index do |div_hash, i|
-				doc = Doc.new(
-					{
-						:body     => div_hash[:body],
-						:section  => div_hash[:heading],
-						:source   => attributes[:source_url],
-						:sourcedb => attributes[:sourcedb],
-						:sourceid => attributes[:sourceid],
-						:serial   => i
-					}
-				)
-				divs << doc if doc.save
-			end
-		end
-		return divs
-	end
-
-	def self.is_mdoc_sourcedb(sourcedb)
-		['PMC'].include?(sourcedb)
-	end
-
 	def revise(new_hdoc)
 		messages = []
 		new_body = new_hdoc[:text]
@@ -416,146 +369,18 @@ class Doc < ActiveRecord::Base
 		messages
 	end
 
-	def self.uptodate(divs, new_hdoc = nil)
-		sourcedb = divs[0].sourcedb
-		sourceid = divs[0].sourceid
+	def self.uptodate(doc, new_hdoc = nil)
+		sourcedb = doc.sourcedb
+		sourceid = doc.sourceid
 
 		new_hdoc ||= begin
 			r = self.sequence_docs(sourcedb, [sourceid])
-			raise "The document could not be sequenced: #{sourcedb}:#{sourceid}" unless r[:docs].length == 1
+			raise "Could not sequence the document: #{sourcedb}:#{sourceid}" unless r[:docs].length == 1
 			r[:docs].first
 		end
 
-		if divs.length == 1
-			doc = divs.first
-
-			ActiveRecord::Base.transaction do
-				doc.revise(new_hdoc)
-			end
-
-		elsif divs.length > 1
-			new_text =  new_hdoc[:text]
-
-			doc = divs.shift
-
-			idnum_denotations = 0
-			idnum_relations = 0
-			idnum_attributes = 0
-			idnum_modifications = 0
-
-			ActiveRecord::Base.transaction do
-				# delete divs without annotations, in advance
-				div_ids_to_be_deleted = []
-				divs.each do |div|
-					if div.denotations.empty?
-						begin
-							div.__elasticsearch__.delete_document
-						rescue
-						end
-						div_ids_to_be_deleted << div.id
-					end
-				end
-				unless div_ids_to_be_deleted.empty?
-					connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_to_be_deleted.join(', ')})")
-					connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_to_be_deleted.join(', ')})")
-					divs.delete_if{|div| div_ids_to_be_deleted.include? div.id}
-				end
-
-				# The document to be left
-				begin
-					Annotation.align_denotations!(doc.denotations, doc.body, new_text)
-				rescue => e
-					raise "divid:#{doc.serial}\t#{e.message}"
-				end
-
-				# re-id annotations
-				doc.denotations.each do |d|
-					d.hid = 'T' + (idnum_denotations += 1).to_s
-					d.save!
-				end
-
-				doc.subcatrels.each do |r|
-					r.hid = 'R' + (idnum_relations += 1).to_s
-					r.save!
-				end
-
-				doc.denotation_attributes.each do |a|
-					a.hid = 'A' + (idnum_attributes += 1).to_s
-					a.save!
-				end
-
-				(doc.catmods + doc.subcatrelmods).each do |m|
-					m.hid = 'M' + (idnum_modifications += 1).to_s
-					m.save!
-				end
-
-				doc.divisions.destroy_all
-				doc.typesettings.destroy_all
-				doc.body = new_text
-				doc.save!
-				doc.__elasticsearch__.update_document
-				doc.store_divisions(new_hdoc[:divisions])
-				doc.store_typesettings(new_hdoc[:typesettings])
-
-				# re-id and move annotations
-				divs.each do |div|
-					begin
-						Annotation.align_denotations!(div.denotations, div.body, new_text)
-					rescue => e
-						raise "divid:#{div.serial}\t#{e.message}"
-					end
-
-					# caution: the order of reiding matters here
-					(div.catmods + div.subcatrelmods).each do |m|
-						m.hid = 'M' + (idnum_modifications += 1).to_s
-						m.save!
-					end
-
-					div.denotation_attributes.each do |a|
-						a.hid = 'A' + (idnum_attributes += 1).to_s
-						a.save!
-					end
-
-					div.subcatrels.each do |r|
-						r.hid = 'R' + (idnum_relations += 1).to_s
-						r.save!
-					end
-
-					div.denotations.each do |d|
-						d.doc_id = doc.id
-						d.hid = 'T' + (idnum_denotations += 1).to_s
-						d.save!
-					end
-
-				end
-
-				# delete unnecessary divs
-				divs.each do |d|
-					begin
-						d.__elasticsearch__.delete_document
-					rescue
-					end
-					# d.delete
-				end
-				div_ids_merged = divs.collect{|div| div.id}.join(', ')
-				unless div_ids_merged.empty?
-					connection.exec_query("DELETE FROM docs WHERE id IN (#{div_ids_merged})")
-					connection.exec_query("DELETE FROM project_docs WHERE doc_id IN (#{div_ids_merged})")
-				end
-
-				# update relevant counts of the doc
-				doc.reset_count_denotations
-				doc.reset_count_relations
-				doc.reset_count_modifications
-
-				doc.project_docs.each do |pd|
-					pd.reset_count_denotations
-					pd.reset_count_relations
-					pd.reset_count_modifications
-				end
-			end
-		else
-			raise RuntimeError, "What?"
+		ActiveRecord::Base.transaction do
+			doc.revise(new_hdoc)
 		end
 	end
 
@@ -765,14 +590,9 @@ class Doc < ActiveRecord::Base
 	def hdenotations_all
 		annotations = {}
 		annotations[:denotations] = hdenotations
-		annotations[:target] = if has_divs?
-			Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_show_path(sourcedb, sourceid, serial, :only_path => false)
-		else
-			Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, :only_path => false)
-		end
+		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, :only_path => false)
 		annotations[:sourcedb] = sourcedb
 		annotations[:sourceid] = sourceid
-		annotations[:divid] = serial if has_divs?
 		annotations[:text] = body
 		annotations
 	end
@@ -894,7 +714,6 @@ class Doc < ActiveRecord::Base
 			text: get_text(span, context_size),
 			typesettings: get_typesettings(span, context_size)
 		}
-		annotations[:divid] = serial if has_divs?
 
 		if project.present? && !project.respond_to?(:each)
 			annotations.merge!(get_project_annotations(project, span, context_size, options))
@@ -968,21 +787,11 @@ class Doc < ActiveRecord::Base
 	end
 	
 	def to_list_hash(doc_type)
-		hash = {
+		{
 			sourcedb: sourcedb,
-			sourceid: sourceid
+			sourceid: sourceid,
+			url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(self.sourcedb, self.sourceid)
 		}
-
-		# switch url or div_url
-		case doc_type
-		when 'doc'
-			hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(self.sourcedb, self.sourceid)
-		when 'div'
-			hash[:divid] = serial
-			hash[:section] = section
-			hash[:url] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_divs_index_url(self.sourcedb, self.sourceid)
-		end
-		return hash
 	end
 
 	def self.hash_to_tsv(docs)
@@ -1050,18 +859,6 @@ class Doc < ActiveRecord::Base
 	def created_by?(current_user)
 		sourcedb.include?(':') && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
 	end
-	
-	def self.has_divs?(sourcedb, sourceid)
-		Doc.where(sourcedb:sourcedb, sourceid:sourceid, serial:1).exists?
-	end
-
-	def has_divs?
-		Doc.where(sourcedb:sourcedb, sourceid:sourceid, serial:1).exists?
-	end
-
-	def self.get_div_ids(sourcedb, sourceid)
-		self.same_sourcedb_sourceid(sourcedb, sourceid).select('serial').to_a.map{|d| d.serial}
-	end
 
 	def self.hdoc_normalize!(hdoc, current_user, no_personalize = false)
 		raise RuntimeError, "You have to be logged in to create a document." unless current_user.present?
@@ -1111,7 +908,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def self.count_per_sourcedb(current_user)
-		docs_count_per_sourcedb = Doc.where("serial = ?", 0).group(:sourcedb).count
+		docs_count_per_sourcedb = Doc.group(:sourcedb).count
 		if current_user
 			docs_count_per_sourcedb.delete_if do |sourcedb, doc_count|
 				sourcedb.include?(Doc::UserSourcedbSeparator) && sourcedb.split(Doc::UserSourcedbSeparator)[1] != current_user.username
@@ -1134,7 +931,7 @@ class Doc < ActiveRecord::Base
 
 	def self.dummy(repeat_times)
 		repeat_times.times do |t|
-			create({sourcedb: 'FFIK', body: "body is #{ t }", sourceid: t.to_s, serial: 0})
+			create({sourcedb: 'FFIK', body: "body is #{ t }", sourceid: t.to_s})
 		end
 	end
 

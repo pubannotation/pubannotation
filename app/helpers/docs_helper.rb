@@ -30,7 +30,6 @@ module DocsHelper
 			if @sourcedb
 				@project.docs.where(sourcedb: @sourcedb).count
 			else
-				# count = @project.pmdocs_count + @project.pmcdocs_count
 				@project.docs.count #if count < 1000
 			end
 		else

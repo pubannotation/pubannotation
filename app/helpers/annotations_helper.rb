@@ -103,18 +103,10 @@ module AnnotationsHelper
 
 	def annotations_obtain_path
 		if params[:sourceid].present?
-			if params[:divid].present?
-				if params[:begin].present?
-					annotations_obtain_in_span_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial, params[:begin], params[:end])
-				else
-					annotations_obtain_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
-				end
+			if params[:begin].present?
+				annotations_obtain_in_span_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, params[:begin], params[:end])
 			else
-				if params[:begin].present?
-					annotations_obtain_in_span_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, params[:begin], params[:end])
-				else
-					annotations_obtain_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
-				end
+				annotations_obtain_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
 			end
 		else
 			project_annotations_obtain_path(@project.name)
@@ -125,23 +117,14 @@ module AnnotationsHelper
 		if params[:id].present?
 			annotations_project_doc_path(@project.name, @doc.id)
 		else
-			if params[:divid].present?
-				annotations_generate_project_sourcedb_sourceid_divs_docs_path(@project.name, @doc.sourcedb, @doc.sourceid, @doc.serial)
-			else
-				annotations_generate_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
-			end
+			annotations_generate_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
 		end
 	end
 
 	def get_doc_info (annotations)
 		sourcedb = annotations[:sourcedb]
 		sourceid = annotations[:sourceid]
-		divid    = annotations[:divid]
-		if divid.present?
-			doc = Doc.find_by_sourcedb_and_sourceid_and_serial(sourcedb, sourceid, divid.to_i)
-			section   = doc.section.to_s if doc.present?
-		end
-		docinfo   = (divid == nil)? "#{sourcedb}-#{sourceid}" : "#{sourcedb}-#{sourceid}-#{divid}-#{section}"
+		docinfo  = "#{sourcedb}-#{sourceid}"
 	end
 
 end

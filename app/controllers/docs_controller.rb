@@ -3,7 +3,7 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
 	protect_from_forgery :except => [:create]
-	before_filter :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :project_delete_all_docs]
+	before_filter :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :project_delete_all_docs, :uptodate]
 	before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 	skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
@@ -83,55 +83,6 @@ class DocsController < ApplicationController
 				format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
 				format.txt  {render text: message, status: :unprocessable_entity}
-			end
-		end
-	end
-
-	def records
-		if params[:project_id]
-			@project, notice = get_project(params[:project_id])
-			@new_doc_src = new_project_doc_path
-			if @project
-				@docs = @project.docs.order('sourcedb ASC').order('sourceid ASC')
-			else
-				@docs = nil
-			end
-		else
-			@docs = Doc.order('sourcedb ASC').order('sourceid ASC')
-			@new_doc_src = new_doc_path
-		end
-
-		@docs.each{|doc| doc.set_ascii_body} if (params[:encoding] == 'ascii')
-
-		respond_to do |format|
-			if @docs
-				format.html { @docs = @docs.page(params[:page]) }
-				format.json { render json: @docs }
-				format.txt  {
-					file_name = (@project)? @project.name + ".zip" : "docs.zip"
-					t = Tempfile.new("pubann-temp-filename-#{Time.now}")
-					Zip::ZipOutputStream.open(t.path) do |z|
-						@docs.each do |doc|
-							title = "%s-%s-%s" % [doc.sourcedb, doc.sourceid, doc.section]
-							title.sub!(/\.$/, '')
-							title.gsub!(' ', '_')
-							title += ".txt" unless title.end_with?(".txt")
-							z.put_next_entry(title)
-							z.print doc.body
-						end
-					end
-					send_file t.path, :type => 'application/zip',
-														:disposition => 'attachment',
-														:filename => file_name
-					t.close
-
-					# texts = @docs.collect{|doc| doc.body}
-					# render text: texts.join("\n----------\n")
-				}
-			else
-				format.html { flash[:notice] = notice }
-				format.json { head :unprocessable_entity }
-				format.txt  { head :unprocessable_entity }
 			end
 		end
 	end
@@ -492,8 +443,8 @@ class DocsController < ApplicationController
 			if docspecs.length == 1
 				docspec = docspecs.first
 				begin
-					divs = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
-					raise ArgumentError, "The document already exists." if divs.nil?
+					result = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
+					raise ArgumentError, "The document already exists." if result == nil
 					expire_fragment("sourcedb_counts_#{project.name}")
 					expire_fragment("count_docs_#{project.name}")
 					expire_fragment("count_#{docspec[:sourcedb]}_#{project.name}")
@@ -562,20 +513,24 @@ class DocsController < ApplicationController
 	end
 
 	def uptodate
-		raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+		if current_user.root?
+			doc = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid]).first
+			if doc.present?
+				p = {
+					size_ngram: params[:size_ngram],
+					size_window: params[:size_window],
+					threshold: params[:threshold]
+				}.compact
 
-		divs = params[:sourceid].present? ? Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid]).order(:serial) : nil
-		raise ArgumentError, "There is no such document." if params[:sourceid].present? && !divs.present?
-
-		p = {
-			size_ngram: params[:size_ngram],
-			size_window: params[:size_window],
-			threshold: params[:threshold]
-		}.compact
-
-		Doc.uptodate(divs)
-		message = "The document #{divs[0].descriptor} is successfully updated."
-		redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid]), notice: message
+				Doc.uptodate(doc)
+				message = "The document #{doc.descriptor} was successfully updated."
+				redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid]), notice: message
+			else
+				render_status_error(:not_found)
+			end
+		else
+			render_status_error(:forbidden)
+		end
 	rescue => e
 		redirect_to :back, notice: e.message
 	end
@@ -606,7 +561,7 @@ class DocsController < ApplicationController
 				expire_fragment("count_docs_#{project.name}")
 				expire_fragment("count_#{doc.sourcedb}_#{project.name}")
 
-				redirect_path = records_project_docs_path(params[:project_id])
+				redirect_path = project_docs_path(params[:project_id])
 			else
 				raise SecurityError, "Not authorized" unless current_user && current_user.root? == true
 				doc.destroy

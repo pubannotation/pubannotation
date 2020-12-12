@@ -50,7 +50,7 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 							end
 						end
 					rescue => e
-						@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, divid: doc.serial, body: e.message}) if @job
+						@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message}) if @job
 					end
 					@job.update_attribute(:num_dones, i + 1) if @job
 				end

@@ -103,10 +103,7 @@ class EvaluationsController < ApplicationController
 
 		sourcedb = params[:sourcedb]
 		sourceid = params[:sourceid]
-		divid = params[:divid]
-		divid = divid.to_i unless divid.nil?
-
-		@doc = Doc.get_doc(sourcedb:sourcedb, sourceid:sourceid, divid:divid)
+		@doc = Doc.get_doc(sourcedb:sourcedb, sourceid:sourceid)
 
 		@fps = result[:false_positives].nil? ? [] : result[:false_positives].select{|fp| fp[:sourcedb] == sourcedb && fp[:sourceid] == sourceid && fp[:divid] == divid}
 		@fns = result[:false_negatives].nil? ? [] : result[:false_negatives].select{|fn| fn[:sourcedb] == sourcedb && fn[:sourceid] == sourceid && fn[:divid] == divid}

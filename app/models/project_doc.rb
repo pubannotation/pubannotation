@@ -11,10 +11,7 @@ class ProjectDoc < ActiveRecord::Base
 	}
 
 	def graph_uri
-		doc_spec = doc.has_divs? ?
-			"/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/divs/{doc.serial}" :
-			"/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
-		project.graph_uri + doc_spec
+		project.graph_uri + "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
 	end
 
 	def self.reset_counts_denotations

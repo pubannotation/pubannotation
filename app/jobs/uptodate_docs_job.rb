@@ -36,8 +36,8 @@ class UptodateDocsJob < Struct.new(:project)
 				end
 				hdocs_sequenced = r[:docs]
 				hdocs_sequenced.each do |hdoc|
-					divs = Doc.where(sourcedb:sourcedb, sourceid:hdoc[:sourceid]).order(:serial)
-					Doc.uptodate(divs, hdoc)
+					doc = Doc.where(sourcedb:sourcedb, sourceid:hdoc[:sourceid]).first
+					Doc.uptodate(doc, hdoc)
 					@job.update_attribute(:num_dones, num += 1) if @job
 				rescue => e
 					if @job

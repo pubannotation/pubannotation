@@ -1,11 +1,7 @@
 <table>
 	<tr>
 		<th>
-			<% if @doc.has_divs? %>
-				<%= @doc.sourcedb %>:<%= @doc.sourceid %>(<%= @doc.serial %>)/spans/<%= params[:begin] %>-<%= params[:end] %>
-			<% else %>
-				<%= @doc.sourcedb %>:<%= link_to @doc.sourceid, @doc.source %>/spans/<%= params[:begin] %>-<%= params[:end] %>
-			<% end %>
+			<%= @doc.sourcedb %>:<%= link_to @doc.sourceid, @doc.source %>/spans/<%= params[:begin] %>-<%= params[:end] %>
 		</th>
 	</tr>
 	<tr>
