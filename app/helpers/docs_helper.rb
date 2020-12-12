@@ -26,26 +26,18 @@ module DocsHelper
 	end
 
 	def docs_count
-		if @project
+		count = if @project
 			if @sourcedb
-				count = if Doc.is_mdoc_sourcedb(@sourcedb)
-					@project.docs.where(sourcedb: @sourcedb, serial: 0).count
-				else
-					@project.docs.where(sourcedb: @sourcedb).count
-				end
+				@project.docs.where(sourcedb: @sourcedb).count
 			else
 				# count = @project.pmdocs_count + @project.pmcdocs_count
-				count = @project.docs.where(serial: 0).count #if count < 1000
+				@project.docs.count #if count < 1000
 			end
 		else
 			if @sourcedb
-				count = if Doc.is_mdoc_sourcedb(@sourcedb)
-					Doc.where(sourcedb: @sourcedb, serial: 0).count
-				else
-					Doc.where(sourcedb: @sourcedb).count
-				end
+				Doc.where(sourcedb: @sourcedb).count
 			else
-				count = Doc.docs_count(current_user)
+				Doc.docs_count(current_user)
 			end
 		end
 		number_with_delimiter(count, :delimiter => ',')
@@ -56,7 +48,7 @@ module DocsHelper
 			# Doc.count_per_sourcedb(user)
 			Doc.count_per_sourcedb(nil)
 		else
-			project.docs.where(serial: 0).select(:sourcedb).group(:sourcedb).count
+			project.docs.select(:sourcedb).group(:sourcedb).count
 		end
 	end
 

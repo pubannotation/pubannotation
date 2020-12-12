@@ -92,12 +92,12 @@ class DocsController < ApplicationController
 			@project, notice = get_project(params[:project_id])
 			@new_doc_src = new_project_doc_path
 			if @project
-				@docs = @project.docs.order('sourcedb ASC').order('sourceid ASC').order('serial ASC')
+				@docs = @project.docs.order('sourcedb ASC').order('sourceid ASC')
 			else
 				@docs = nil
 			end
 		else
-			@docs = Doc.order('sourcedb ASC').order('sourceid ASC').order('serial ASC')
+			@docs = Doc.order('sourcedb ASC').order('sourceid ASC')
 			@new_doc_src = new_doc_path
 		end
 
@@ -112,7 +112,7 @@ class DocsController < ApplicationController
 					t = Tempfile.new("pubann-temp-filename-#{Time.now}")
 					Zip::ZipOutputStream.open(t.path) do |z|
 						@docs.each do |doc|
-							title = "%s-%s-%02d-%s" % [doc.sourcedb, doc.sourceid, doc.serial, doc.section]
+							title = "%s-%s-%s" % [doc.sourcedb, doc.sourceid, doc.section]
 							title.sub!(/\.$/, '')
 							title.gsub!(' ', '_')
 							title += ".txt" unless title.end_with?(".txt")
