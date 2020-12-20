@@ -57,12 +57,14 @@ Search
 			</tr>
 
 			<% @solutions["results"]["bindings"].each do |binding| %>
-				<tr>
-					<% vars.each do |h| %>
-						<% v = binding[h] %>
-						<td><%= v['type'] == 'uri' ? link_to(v['value'], v['value']) : v['value'] %></td>
-					<% end %>
-				</tr>
+				<% if binding.present? %>
+					<tr>
+						<% vars.each do |h| %>
+							<% v = binding[h] %>
+							<td><%= v['type'] == 'uri' ? link_to(v['value'], v['value']) : v['value'] %></td>
+						<% end %>
+					</tr>
+				<% end %>
 			<% end %>
 		</table>
 	</section>
