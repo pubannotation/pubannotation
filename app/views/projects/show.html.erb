@@ -141,7 +141,11 @@
 			<% if @project.docs.count < Rails.application.config.project_indexable_max_docs || current_user.root? %>
 				<tr>
 					<th><%= t('views.shared.index') %></th>
-					<td><%= link_to t('views.docs.rdfize_annotations'), rdfize_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+					<td>
+						<% if last_indexed_at = @project.last_indexed_at %>
+							Updated at <%= last_indexed_at %><br/>
+						<% end %>
+						<%= link_to t('views.docs.rdfize_annotations'), rdfize_annotations_project_path(@project.name), class: 'button long_button' -%></td>
 				</tr>
 			<% end %>
 			<tr>
