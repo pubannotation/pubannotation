@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 ruby '2.5.7'
 
 gem 'rails', '3.2.22.2'
-gem 'rake', '< 11.0'
+gem 'rake', '< 13.0'
 gem 'activerecord-import', '~> 0.15.0'
 
 # Bundle edge Rails instead:
