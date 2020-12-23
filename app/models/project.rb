@@ -554,9 +554,11 @@ class Project < ActiveRecord::Base
 	# returns nil if nothing is added
 	def add_doc(sourcedb, sourceid)
 		doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
-		new_docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid]) unless doc.present?
-		raise RuntimeError, "Failed to get the document" unless new_docs.length == 1
-		doc = new_docs.first
+		unless doc.present?
+			new_docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid])
+			raise RuntimeError, "Failed to get the document: #{messages.join("\n")}" unless new_docs.present?
+			doc = new_docs.first
+		end
 		return nil if self.docs.include?(doc)
 		doc.projects << self
 		doc
