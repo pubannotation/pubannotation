@@ -224,7 +224,7 @@ class AnnotationsController < ApplicationController
 		annotator = if params[:annotator].present?
 			Annotator.find(params[:annotator])
 		elsif params[:url].present?
-			Annotator.new({name:params[:prefix], url:params[:url], method:params[:method], batch_num: 2})
+			Annotator.new({name:params[:prefix] || '-', url:params[:url], method:params[:method]})
 		else
 			raise ArgumentError, "Annotator URL is not specified"
 		end
@@ -278,7 +278,7 @@ class AnnotationsController < ApplicationController
 			annotator = if params[:annotator].present?
 				Annotator.find(params[:annotator])
 			elsif params[:url].present?
-				Annotator.new({name:params[:prefix], url:params[:url], method:params[:method], batch_num: 0})
+				Annotator.new({name:params[:prefix], url:params[:url], method:params[:method]})
 			else
 				raise ArgumentError, "Annotator URL is not specified"
 			end
@@ -302,7 +302,13 @@ class AnnotationsController < ApplicationController
 			options[:prefix] = annotator.name
 
 			# to deterine the docids
-			docids = sourceids.collect {|sourceid| project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id).first}
+			docids = if options[:mode] == 'fill'
+				options[:mode] == 'add'
+				ProjectDoc.where(project_id:project.id, annotations_updated_at:nil).pluck(:doc_id)
+			else
+				sourceids.collect {|sourceid| project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id).first}
+			end
+
 			sourceid_indice_missing = docids.each_index.select{|i| docids[i].nil?}
 			unless sourceid_indice_missing.empty?
 				sourceids_missing = sourceid_indice_missing.collect{|i| sourceids[i]}
@@ -341,6 +347,10 @@ class AnnotationsController < ApplicationController
 			end
 
 			priority = project.jobs.unfinished.count
+
+			# job = ObtainAnnotationsJob.new(project, docids_filepath, annotator, options)
+			# job.perform()
+
 			# delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options.merge(debug: true)), priority: priority, queue: :upload
 			delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options), priority: priority, queue: :upload
 			Job.create({name:"Obtain annotations: #{annotator.name}", project_id:project.id, delayed_job_id:delayed_job.id})

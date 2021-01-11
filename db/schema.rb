@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20201202081620) do
+ActiveRecord::Schema.define(:version => 20201221082717) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -240,11 +240,12 @@ ActiveRecord::Schema.define(:version => 20201202081620) do
   end
 
   create_table "project_docs", :force => true do |t|
-    t.integer "project_id"
-    t.integer "doc_id"
-    t.integer "denotations_num",   :default => 0
-    t.integer "relations_num",     :default => 0
-    t.integer "modifications_num", :default => 0
+    t.integer  "project_id"
+    t.integer  "doc_id"
+    t.integer  "denotations_num",        :default => 0
+    t.integer  "relations_num",          :default => 0
+    t.integer  "modifications_num",      :default => 0
+    t.datetime "annotations_updated_at"
   end
 
   add_index "project_docs", ["denotations_num"], :name => "index_project_docs_on_denotations_num"

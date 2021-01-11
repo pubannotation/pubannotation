@@ -735,6 +735,10 @@ class Project < ActiveRecord::Base
 				connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{doc.id}")
 				connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{id}")
 			end
+
+			connection.exec_query("update project_docs set annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
+			update_annotations_updated_at
+			update_updated_at
 		end
 	end
 
@@ -814,10 +818,18 @@ class Project < ActiveRecord::Base
 				r_num = r_stat[did] ||= 0
 				a_num = a_stat[did] ||= 0
 				m_num = m_stat[did] ||= 0
-				connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{did}")
-				connection.execute("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{did}")
+				connection.exec_query("UPDATE project_docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE project_id=#{id} and doc_id=#{did}")
+				connection.execute("UPDATE docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE id=#{did}")
 			end
-			connection.execute("update projects set denotations_num = denotations_num + #{d_stat_all}, relations_num = relations_num + #{r_stat_all}, modifications_num = modifications_num + #{m_stat_all} where id=#{id}")
+
+			annotations_collection.each do |ann|
+				connection.exec_query("UPDATE project_docs SET annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{id} and doc_id=#{ann[:docid]}")
+			end
+
+			connection.execute("UPDATE projects SET denotations_num = denotations_num + #{d_stat_all}, relations_num = relations_num + #{r_stat_all}, modifications_num = modifications_num + #{m_stat_all} WHERE id=#{id}")
+
+			update_annotations_updated_at
+			update_updated_at
 		end
 	end
 
@@ -963,27 +975,6 @@ class Project < ActiveRecord::Base
 		messages
 	end
 
-	# To obtain annotations from an annotator and to save them in the project
-	def obtain_annotations(docs, annotator, options = nil)
-		options ||= {}
-
-		method, url, params, payload = prepare_request(docs, annotator, options)
-
-		result = make_request(method, url, params, payload)
-		annotations_col = (result.class == Array) ? result : [result]
-
-		# To recover the identity information, in case of syncronous annotation
-		annotations_col.each_with_index do |annotations, i|
-			raise RuntimeError, "Invalid annotation JSON object." unless annotations.respond_to?(:has_key?)
-			annotations[:text] = docs[i].body unless annotations[:text].present?
-			annotations[:sourcedb] = docs[i].sourcedb unless annotations[:sourcedb].present?
-			annotations[:sourceid] = docs[i].sourceid unless annotations[:sourceid].present?
-			Annotation.normalize!(annotations, options[:prefix])
-		end
-
-		store_annotations_collection(annotations_col, options)
-	end
-
 	def prepare_request(docs, annotator, options)
 		method = (annotator[:method] == 0) ? :get : :post
 
@@ -1088,7 +1079,7 @@ class Project < ActiveRecord::Base
 			Relation.delete_all(project_id:self.id)
 			Denotation.delete_all(project_id:self.id)
 
-			connection.exec_query("update project_docs set denotations_num = 0, relations_num=0, modifications_num=0 where project_id=#{id}")
+			connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id}")
 
 			if docs.count < 1000000
 				connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})")
@@ -1131,9 +1122,10 @@ class Project < ActiveRecord::Base
 					Denotation.delete(denotations)
 
 					# ActiveRecord::Base.establish_connection
-					connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0 where project_id=#{id} and doc_id=#{doc.id}")
+					connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id} and doc_id=#{doc.id}")
 					connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
 					connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
+
 					update_annotations_updated_at
 					update_updated_at
 				end

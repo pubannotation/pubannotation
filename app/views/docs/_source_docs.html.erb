@@ -22,14 +22,18 @@
 	<% end %>
 </h1>
 
-<table class="full">
+<table class="full with_row_link">
 <colgroup>
 	<col class="docs_col_sourcedb">
 	<col class="docs_col_sourceid">
 	<col class="docs_col_text show-when-wide">
 	<col class="docs_col_length">
+	<col class="table_col_date show-when-wide">
+	<col class="table_cell_col_sep">
 	<col class="docs_col_projects_number">
+	<col class="table_cell_col_sep">
 	<col class="docs_col_annotations_number">
+	<col class="table_col_date">
 	<col class="docs_col_button">
 	<% if @project.present? && @project.editable?(current_user) %>
 		<col class="docs_col_button">
@@ -48,8 +52,10 @@
 	<th>
 		<%= t('views.shared.length') %>
 	</th>
+	<th class="show-when-wide">updated at</th>
+	<th class="table_cell_col_sep"></th>
 	<th>
-		<span title="number of projects">
+		<span title="the number of the projects that include the document">
 			<% if params[:keywords].present? -%>
 				<%= t('views.shared.projects_count') -%>
 			<% else -%>
@@ -57,8 +63,9 @@
 			<% end -%>
 		</span>
 	</th>
+	<th class="table_cell_col_sep"></th>
 	<th>
-		<span title= "number of denotations">
+		<span title="the number of the annotations (denotations) that the document has">
 			<% if params[:keywords].present? -%>
 				<%= t('views.shared.annotations_count') -%>
 			<% else -%>
@@ -70,13 +77,20 @@
 			<% end -%>
 		</span>
 	</th>
-	<th></th>
-	<% if @project.present? && @project.editable?(current_user) %>
-		<th></th>
-	<% end -%>
+	<% if @project %>
+		<th><%= sortable(Doc, "updated_at", 'project_docs.annotations_updated_at') -%></th>
+	<% end %>
 </tr>
 
 <%= render partial: 'source_doc', collection: @docs -%>
-
+<!--
+<script>
+	jQuery(document).ready(function($) {
+		$(".clickable-row").click(function() {
+			window.location = $(this).data("href");
+		});
+	});
+</script>
+ -->
 </table>
 <%= simple_paginate -%>

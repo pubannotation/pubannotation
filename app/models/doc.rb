@@ -195,10 +195,6 @@ class Doc < ActiveRecord::Base
 		self.__elasticsearch__.index_document
 	end
 
-	def update_annotations_updated_at(project)
-		project.update_attribute(:annotations_updated_at, DateTime.now)
-	end
-
 	def increment_docs_projects_counter(project)
 		Doc.increment_counter(:projects_num, self.id)
 	end

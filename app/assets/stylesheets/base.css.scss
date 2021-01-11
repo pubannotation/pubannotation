@@ -184,12 +184,17 @@ table {
 	margin: 5px 0;
 }
 
+tr.clickable-row:hover {
+	background-color: #eef;
+	cursor: pointer;
+}
+
 td {
 	position: static;
 }
 
-table, th, td{
-	border:1px solid lighten($main_color, 70%);
+th, td{
+	border: 1px solid lighten($main_color, 70%);
 }
 
 table.full {
@@ -224,19 +229,54 @@ th a:hover {
 	color: #aaaaff;
 }
 
+table.with_row_link {
+	td {
+		padding: 0;
+
+		a {
+			color: inherit;
+		}
+	}
+}
+
 td {
 	padding:5px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+
+	.row_link {
+		display: block;
+		padding: 5px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.cell_link {
+		display: block;
+		padding: 5px;
+	}
+
+	.cell_link:hover {
+		background-color: #cbf;
+	}
 }
 
 td.text {
 	white-space: normal
 }
 
+
 td th {
 	background-color: lighten($main_color, 50%);
+}
+
+.table_cell_col_sep {
+	border-top-style: none;
+	border-bottom-style: none;
+	background-color: white;
+	width: 3px;
 }
 
 li {
@@ -507,6 +547,11 @@ $indicator_size : 100px;
 	z-index: 9999;
 }
 
+
+.table_col_date {
+	width: 6.5em;
+}
+
 .projects_header_type {
 	width: 1.5em;
 }
@@ -516,9 +561,7 @@ $indicator_size : 100px;
 .projects_header_relations_num {
 	width: 6em;
 }
-.projects_header_date {
-	width: 6em;
-}
+
 .projects_header_status {
 	width: 5em;
 }

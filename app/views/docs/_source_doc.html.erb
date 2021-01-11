@@ -1,22 +1,59 @@
-<tr>
-	<td style="text-align:center"><%= source_doc.sourcedb -%></td>
-	<td style="text-align:center"><%= source_doc.sourceid -%></td>
-	<td class="snippet show-when-wide"><%= doc_snippet(source_doc).html_safe -%></td>
-	<td style="text-align:right"><%= number_to_human_size(source_doc.body.length) %></td>
+<%
+	doc_href = if params[:project_id].present?
+		show_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid)
+	else
+		doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid)
+	end
+
+	doc_updated_at = source_doc.updated_at
+%>
+
+<tr class="clickable-row" data-href="<%= doc_href %>">
+	<td style="text-align:center"><%= link_to(source_doc.sourcedb, doc_href, class: :row_link) -%></td>
+	<td style="text-align:center"><%= link_to(source_doc.sourceid, doc_href, class: :row_link) -%></td>
+	<td class="snippet show-when-wide"><%= link_to(doc_snippet(source_doc).html_safe, doc_href, class: "row_link") -%></td>
+	<td style="text-align:right"><%= link_to(number_to_human_size(source_doc.body.length), doc_href, class: :row_link) %></td>
+	<td class="show-when-wide" style="text-align:center"><%= link_to(doc_updated_at.to_date, doc_href, class: :row_link, title: "This document was last updated_at #{source_doc.updated_at.to_date}.") %></td>
+	<td class="table_cell_col_sep"></td>
 	<td style="text-align:right">
-		<%= link_to source_doc.projects_num, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid), style:"display:block" -%>
+		<%=
+			link_to(source_doc.projects_num, doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid),
+							title: "This document is included in #{source_doc.projects_num} project(s).",
+							class: "cell_link")
+		-%>
 	</td>
-	<td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(@project, source_doc)) -%></td>
-	<td >
-		<% if  params[:project_id].present? -%>
-			<%= link_to t('views.shared.show'), show_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), class: "button long_button" -%>
-		<% else -%>
-			<%= link_to t('views.shared.show'), doc_sourcedb_sourceid_show_path(source_doc.sourcedb, source_doc.sourceid), class: "button long_button" -%>
-		<% end -%>
+	<td class="table_cell_col_sep"></td>
+	<td style="text-align:right">
+		<%=
+			title = "This document has #{annotations_count_helper(@project, source_doc)} annotation(s) " + if @project
+				"in this project."
+			else
+				"in total."
+			end
+			link_to(number_with_delimiter(annotations_count_helper(@project, source_doc)), doc_href, class: :row_link, title: title)
+		-%>
 	</td>
+	<% if @project %>
+		<%
+			annotations_updated_at = ProjectDoc.where(doc_id:source_doc.id, project_id:@project.id).first.annotations_updated_at
+		%>
+		<% if annotations_updated_at.nil? %>
+			<td style="text-align:center; background-color: #fee">
+		<% else %>
+			<td style="text-align:center">
+		<% end %>
+			<%=
+				if annotations_updated_at
+					link_to(annotations_updated_at.to_date, doc_href, class: :row_link, title: "The annotation(s) by this project to this document was last updated at #{annotations_updated_at.to_date}.")
+				else
+					content_tag(:div, '-', title: "This document is not yet annotated.")
+				end
+			%>
+		</td>
+	<% end %>
 	<% if @project.present? && @project.editable?(current_user) %>
-		<td>
-			<%= link_to t('views.shared.delete'), delete_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: "button long_button" -%>
+		<td style="text-align:center">
+			<%= content_tag(:div, link_to(content_tag(:i, '', class: "fa fa-times", "aria-hidden" => "true"), delete_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: "short_button", title: "remove this document from this project."), class: :cell_link) -%>
 		</td>
 	<% end %>
 </tr>

@@ -1,4 +1,8 @@
 module ProjectsHelper
+	def number_docs_without_annotation(project)
+		ProjectDoc.where(project_id:project.id, annotations_updated_at:nil).count
+	end
+
 	def project_status_text_helper(status)
 		{
 			1 => I18n.t('activerecord.options.project.status.released'),

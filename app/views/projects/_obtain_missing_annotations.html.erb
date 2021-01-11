@@ -2,15 +2,15 @@
 	<table class='sub-pane' style="width:100%">
 		<tr>
 			<td style="text-align:center">
-				Last annotator: <%= @project.annotator.name %>
+				<%= number_docs_without_annotation(@project) %> doc(s) are yet to be annotated
 			</td>
 		</tr>
 		<tr>
 			<td style="text-align:center">
 				<%= form_tag annotations_obtain_path, style: 'width:100%' do %>
 					<%= hidden_field_tag :annotator, @project.annotator.name %>
-					<%= hidden_field_tag :mode, :replace %>
-					<%= submit_tag '(Re-)annotate all the docs', class: 'button long_button', title: 'To obtain annotations from the last annotation service, for all the documents in this project' %>
+					<%= hidden_field_tag :mode, :fill %>
+					<%= submit_tag 'annotate the doc(s)', class: 'button long_button', title: 'To obtain annotations from the last annotation service, for the documents which have not been annotated' %>
 				<% end %>
 			</td>
 		</tr>
