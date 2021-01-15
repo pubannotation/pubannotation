@@ -556,7 +556,16 @@ class Project < ActiveRecord::Base
 		doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
 		unless doc.present?
 			new_docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid])
-			raise RuntimeError, "Failed to get the document: #{messages.join("\n")}" unless new_docs.present?
+			unless new_docs.present?
+				message = messages.map do |m|
+					if m.class == Hash
+						m[:body]
+					else
+						m
+					end
+				end.join("\n")
+				raise RuntimeError, "Failed to get the document: #{message}"
+			end
 			doc = new_docs.first
 		end
 		return nil if self.docs.include?(doc)
@@ -818,12 +827,12 @@ class Project < ActiveRecord::Base
 				r_num = r_stat[did] ||= 0
 				a_num = a_stat[did] ||= 0
 				m_num = m_stat[did] ||= 0
-				connection.exec_query("UPDATE project_docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE project_id=#{id} and doc_id=#{did}")
+				connection.exec_query("UPDATE project_docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE project_id=#{id} AND doc_id=#{did}")
 				connection.execute("UPDATE docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE id=#{did}")
 			end
 
 			annotations_collection.each do |ann|
-				connection.exec_query("UPDATE project_docs SET annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{id} and doc_id=#{ann[:docid]}")
+				connection.exec_query("UPDATE project_docs SET annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{id} AND doc_id=#{ann[:docid]}")
 			end
 
 			connection.execute("UPDATE projects SET denotations_num = denotations_num + #{d_stat_all}, relations_num = relations_num + #{r_stat_all}, modifications_num = modifications_num + #{m_stat_all} WHERE id=#{id}")
