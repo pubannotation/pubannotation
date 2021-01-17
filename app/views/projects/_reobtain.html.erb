@@ -2,7 +2,7 @@
 	<table class='sub-pane' style="width:100%">
 		<tr>
 			<td style="text-align:center">
-				Last annotator: <%= @project.annotator.name %>
+				Last annotator: <%= link_to @project.annotator.name, @project.annotator %>
 			</td>
 		</tr>
 		<tr>
