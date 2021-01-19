@@ -205,6 +205,10 @@ module ApplicationHelper
 		user_signed_in? && current_user.root?
 	end
 
+	def manager?
+		user_signed_in? && current_user.manager?
+	end
+
 	def name_with_private_indicator(object)
 		str  = object.name
 		str += ' '

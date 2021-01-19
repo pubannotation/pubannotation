@@ -52,6 +52,10 @@ class User < ActiveRecord::Base
 		root
 	end
 
+	def manager?
+		manager
+	end
+
 	def check_invalid_character
 		if username =~/(\/|\?|\#|\%)/
 			errors.add(:username, I18n.t('errors.messages.invalid_character_included'))
