@@ -195,16 +195,36 @@ class ProjectsController < ApplicationController
 			File.open(filepath, "w"){|f| f.puts(docids)}
 			filepath
 
-			# job = StoreRdfizedAnnotationsJob.new(project, filepath)
+			options = {
+				skip_span_indexing: params[:skip_span_indexing].present?
+			}
+
+			# job = StoreRdfizedAnnotationsJob.new(project, filepath, options)
 			# job.perform()
 
-			delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project, filepath), queue: :general
+			delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project, filepath, options), queue: :general
 			Job.create({name:"Store RDFized annotations - #{project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
 			flash[:notice] = "The task, 'Store RDFized annotations - #{project.name}', is created."
 		rescue => e
 			flash[:notice] = e.message
 		end
 		redirect_to project_path(project.name)
+	end
+
+	# post
+	def delete_annotation_rdf
+		begin
+			project = Project.editable(current_user).find_by_name(params[:id])
+			raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
+
+			project.delete_index
+
+			flash[:notice] = "The RDF index of this project is deleted."
+		rescue => e
+			flash[:notice] = e.message
+		end
+
+		redirect_to :back
 	end
 
 	def store_annotation_rdf_all

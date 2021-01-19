@@ -486,6 +486,22 @@ class Project < ActiveRecord::Base
 		end
 	end
 
+	def delete_index
+		begin
+			sd = stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
+			db = Rails.application.config.ep_database
+			graph_uri_project = self.graph_uri
+			sd.clear_db(db, graph_uri_project)
+			update = <<-HEREDOC
+				DELETE {<#{graph_uri_project}> prov:generatedAtTime ?generationTime .}
+				WHERE  {<#{graph_uri_project}> prov:generatedAtTime ?generationTime .}
+			HEREDOC
+			sd.update(db, update)
+		rescue
+			raise "Could not delete the RDF index of this project."
+		end
+	end
+
 	def post_rdf_stardog(ttl, project_name = nil, initp = false)
 		ttl_file = Tempfile.new("temporary.ttl")
 		ttl_file.write(ttl)

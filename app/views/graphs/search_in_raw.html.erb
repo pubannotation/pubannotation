@@ -2,7 +2,12 @@
 <% if @project %>
 	<%= render :partial => 'projects/titlebar' -%>
 	<% if last_indexed_at = @project.last_indexed_at %>
-		<div class="note">RDFization last updated at <%= last_indexed_at %></div>
+		<div class="note">
+			RDFization last updated at <%= last_indexed_at %>
+			<% if @project.editable?(current_user) -%>
+				&nbsp;<%= link_to 'Delete', delete_annotation_rdf_project_path(@project.name), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+			<% end %>
+		</div>
 	<% else %>
 		<div class="note">The project is not yet RDFized.</div>
 	<% end %>

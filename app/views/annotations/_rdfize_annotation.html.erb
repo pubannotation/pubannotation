@@ -14,6 +14,12 @@
 				<%= file_field_tag 'upfile', accept: '.txt' -%>
 			</td>
 		</tr>
+		<% if root_user? %>
+			<tr>
+				<th>skip span indexing?</th>
+				<td>Yes<%= check_box_tag :skip_span_indexing %></td>
+			</tr>
+		<% end %>
 		<tr>
 			<th colspan="2">
 				<%= submit_tag('RDFize annotations') %>

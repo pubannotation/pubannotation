@@ -1,6 +1,6 @@
 require 'stardog'
 
-class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
+class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath, :options)
 	include StateManagement
 	include Stardog
 
@@ -24,6 +24,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 
 		sd.clear_db(db, graph_uri_project)
 
+		skip_span_indexing = options[:skip_span_indexing]
 		annotations_col = []
 		num_denotations_in_annotation_queue = 0
 
@@ -60,37 +61,39 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath)
 				end
 
 				# rdfize and store spans
-				doc_last_indexed_at = doc.last_indexed_at(sd)
-				if doc_last_indexed_at.nil? || doc.denotations.where("denotations.project_id = ? AND denotations.updated_at > ?", project.id, doc_last_indexed_at).exists?
-					spans = doc.hdenotations_all
-					num_spans_in_current_doc = spans.length
+				unless skip_span_indexing
+					doc_last_indexed_at = doc.last_indexed_at(sd)
+					if doc_last_indexed_at.nil? || doc.denotations.where("denotations.project_id = ? AND denotations.updated_at > ?", project.id, doc_last_indexed_at).exists?
+						spans = doc.hdenotations_all
+						num_spans_in_current_doc = spans.length
 
-					if (num_spans_in_span_queue > 0) && ((num_spans_in_span_queue + num_spans_in_current_doc) >= size_batch_spans)
-						begin
-							sd.with_transaction(db) do |txID|
-								spans_indexed_queue.each do |graph_uri_doc, spans|
-									graph_uri_doc_spans = graph_uri_doc + '/spans'
-									sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
-									spans_ttl = rdfizer_spans.rdfize([spans])
-									r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
-									raise RuntimeError, "failure while adding RDFized spans to <#{graph_uri_doc_spans}>." unless r && r.status == 200
-									update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
+						if (num_spans_in_span_queue > 0) && ((num_spans_in_span_queue + num_spans_in_current_doc) >= size_batch_spans)
+							begin
+								sd.with_transaction(db) do |txID|
+									spans_indexed_queue.each do |graph_uri_doc, spans|
+										graph_uri_doc_spans = graph_uri_doc + '/spans'
+										sd.clear_db_in_transaction(db, txID, graph_uri_doc_spans)
+										spans_ttl = rdfizer_spans.rdfize([spans])
+										r = sd.add_in_transaction(db, txID, spans_ttl, graph_uri_doc_spans, "text/turtle")
+										raise RuntimeError, "failure while adding RDFized spans to <#{graph_uri_doc_spans}>." unless r && r.status == 200
+										update_doc_metadata_in_transaction(sd, db, txID, graph_uri_doc, graph_uri_doc_spans)
+									end
 								end
+							rescue => e
+								if @job
+									@job.messages << Message.create({body: "failed in storing #{num_spans_in_span_queue} rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"})
+								else
+									raise ArgumentError, e.message
+								end
+							ensure
+								spans_indexed_queue.clear
+								num_spans_in_span_queue = 0
 							end
-						rescue => e
-							if @job
-								@job.messages << Message.create({body: "failed in storing #{num_spans_in_span_queue} rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"})
-							else
-								raise ArgumentError, e.message
-							end
-						ensure
-							spans_indexed_queue.clear
-							num_spans_in_span_queue = 0
-						end
-					else
-						spans_indexed_queue[doc.graph_uri] = spans
-						num_spans_in_span_queue += num_spans_in_current_doc
-				  end
+						else
+							spans_indexed_queue[doc.graph_uri] = spans
+							num_spans_in_span_queue += num_spans_in_current_doc
+					  end
+					end
 				end
 			end
 

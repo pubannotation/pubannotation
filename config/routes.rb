@@ -137,6 +137,7 @@ Pubann::Application.routes.draw do
 
 		member do
 			post 'store_annotation_rdf' => 'projects#store_annotation_rdf'
+			delete 'delete_annotation_rdf' => 'projects#delete_annotation_rdf'
 			get 'store_span_rdf' => 'projects#store_span_rdf'
 			get 'clean' => 'projects#clean'
 			get 'add_docs' => 'projects#add_docs'
