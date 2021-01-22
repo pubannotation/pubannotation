@@ -227,6 +227,25 @@ class ProjectsController < ApplicationController
 		redirect_to :back
 	end
 
+	def create_annotation_rdf
+		begin
+			project = Project.editable(current_user).find_by_name(params[:id])
+			raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
+			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+
+			# job = CreateAnnotationRdfJob.new(project)
+			# job.perform()
+
+			delayed_job = Delayed::Job.enqueue CreateAnnotationRdfJob.new(project), queue: :general
+			Job.create({name:"Create Annotation RDF - #{project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
+			flash[:notice] = "The task, 'Create Annotation RDF - #{project.name}', is created."
+		rescue => e
+			flash[:notice] = e.message
+		end
+		redirect_to project_path(project.name)
+	end
+
+
 	def store_annotation_rdf_all
 		begin
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true

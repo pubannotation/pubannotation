@@ -28,3 +28,6 @@
 	</table>
 <% end %>
 
+<% if root_user? %>
+	<%= link_to 'Crete annotation RDF', create_annotation_rdf_project_path(@project.name), method: :post, data: { confirm: 'Are you sure?' }, :class => :button %>
+<% end %>

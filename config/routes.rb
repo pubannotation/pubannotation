@@ -124,7 +124,6 @@ Pubann::Application.routes.draw do
 		post 'annotations/upload' => 'annotations#create_from_upload', :as => 'create_annotations_from_upload'
 		post 'annotations/delete' => 'annotations#delete_from_upload', :as => 'delete_annotations_from_upload'
 		post 'annotations/obtain' => 'annotations#obtain_batch'
-		get 'delete_annotations_rdf' => 'annotations#delete_project_annotations_rdf', :as => 'delete_annotations_rdf'
 		get 'notices' => 'notices#index'
 		get 'tasks' => 'notices#tasks'
 		resources :annotations
@@ -136,6 +135,7 @@ Pubann::Application.routes.draw do
 		end
 
 		member do
+			post 'create_annotation_rdf' => 'projects#create_annotation_rdf'
 			post 'store_annotation_rdf' => 'projects#store_annotation_rdf'
 			delete 'delete_annotation_rdf' => 'projects#delete_annotation_rdf'
 			get 'store_span_rdf' => 'projects#store_span_rdf'
