@@ -15,6 +15,15 @@ class Modification < ActiveRecord::Base
 		obj.span
 	end
 
+	def as_json(options={})
+		{
+			id: hid,
+			pred: pred,
+			obj: obj.hid
+		}
+	end
+
+	# to be deprecated in favor of as_json
 	def get_hash
 		hmodification = Hash.new
 		hmodification[:id] = hid
@@ -23,8 +32,19 @@ class Modification < ActiveRecord::Base
 		hmodification
 	end
 
-	scope :from_projects, -> (projects) {
-		where('modifications.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
+	scope :in_project, -> (project_id) {
+		where('modifications.project_id': project_id) unless project_id.nil?
+	}
+
+	scope :among_entities, -> (entity_ids) {
+		case entity_ids
+		when nil
+			# all
+		when []
+			none
+		else
+			where("modifications.obj_id": entity_ids)
+		end
 	}
 
 	def update_project_updated_at

@@ -268,10 +268,7 @@ class Project < ActiveRecord::Base
 
 	def get_denotations_count(doc = nil, span = nil)
 		return self.denotations_num if doc.nil?
-		return denotations.where("denotations.doc_id = ?", doc.id).count if span.nil?
-
-		# when the span is specified
-		denotations.where("denotations.doc_id = ? AND denotations.begin >= ? AND denotations.end <= ?", doc.id, span[:begin], span[:end]).count
+		doc.get_denotations_count(id, span)
 	end
 
 	def get_relations_count(doc = nil, span = nil)
@@ -291,40 +288,9 @@ class Project < ActiveRecord::Base
 		doc.catmods.where("denotations.begin >= ? and denotations.end <= ?", span[:begin], span[:end]).count
 	end
 
-	# To be deprecated in favor of denotations_count
-	def get_denotations_num(doc = nil, span = nil)
-		if doc.nil?
-			self.denotations_num
-		else
-			if span.nil?
-				doc.denotations.where("denotations.project_id = ?", self.id).count
-			else
-				doc.hdenotations(self, span).length
-			end
-		end
-	end
-
-	def get_annotations_count(doc = nil, span = nil)
-		if doc.nil?
-			self.annotations_count
-		else
-			if span.nil?
-				# begin from the doc because it should be faster.
-				doc.denotations.where("denotations.project_id = ?", self.id).count + doc.subcatrels.where("relations.project_id = ?", self.id).count + doc.catmods.where("modifications.project_id = ?", self.id).count + doc.subcatrelmods.where("modifications.project_id = ?", self.id).count
-			else
-				hdenotations = doc.hdenotations(self, span)
-				ids =  hdenotations.collect{|d| d[:id]}
-				hrelations = doc.hrelations(self, ids)
-				ids += hrelations.collect{|d| d[:id]}
-				hmodifications = doc.hmodifications(self, ids)
-				hdenotations.size + hrelations.size + hmodifications.size
-			end
-		end
-	end
-
 	def annotations_collection(encoding = nil)
 		if self.docs.present?
-			self.docs.collect{|doc| doc.set_ascii_body if encoding == 'ascii'; doc.hannotations(self)}
+			self.docs.collect{|doc| doc.set_ascii_body if encoding == 'ascii'; doc.hannotations(self, nil, nil, {sort:true})}
 		else
 			[]
 		end
@@ -924,7 +890,7 @@ class Project < ActiveRecord::Base
 	end
 
 	def reid_annotations!(annotations, doc)
-		aids_background = doc.get_annotation_ids(self)
+		aids_background = doc.get_annotation_hids(id)
 		unless aids_background.empty?
 			id_change = {}
 			if annotations.has_key?(:denotations)

@@ -64,7 +64,7 @@ class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath, :options)
 				unless skip_span_indexing
 					doc_last_indexed_at = doc.last_indexed_at(sd)
 					if doc_last_indexed_at.nil? || doc.denotations.where("denotations.project_id = ? AND denotations.updated_at > ?", project.id, doc_last_indexed_at).exists?
-						spans = doc.hdenotations_all
+						spans = doc.get_denotations_hash_all
 						num_spans_in_current_doc = spans.length
 
 						if (num_spans_in_span_queue > 0) && ((num_spans_in_span_queue + num_spans_in_current_doc) >= size_batch_spans)

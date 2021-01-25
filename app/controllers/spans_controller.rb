@@ -45,7 +45,7 @@ class SpansController < ApplicationController
 				@doc = divs[0]
 
 				@doc.set_ascii_body if params[:encoding] == 'ascii'
-				@spans_index = @doc.spans_index(@project)
+				@spans_index = @doc.spans_index(@project.id)
 
 				respond_to do |format|
 					format.html {render 'spans_index'}

@@ -5,7 +5,7 @@ module AnnotationsHelper
 		project = doc.projects.first if project.nil? && doc.projects_num == 1
 		if !project.present? || project.annotations_accessible?(current_user)
 			if doc.present?
-				doc.get_denotations_num(project, span)
+				doc.get_denotations_count(project.id, span)
 			else
 				project.denotations_num
 			end

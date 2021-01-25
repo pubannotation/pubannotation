@@ -17,6 +17,16 @@ class Attrivute < ActiveRecord::Base
 		subj.span
 	end
 
+	def as_json(options={})
+		{
+			id: hid,
+			pred: pred,
+			subj: subj.hid,
+			obj: obj
+		}
+	end
+
+	# to be deprecated in favor of as_json
 	def get_hash
 		{
 			id:   hid,
@@ -26,8 +36,19 @@ class Attrivute < ActiveRecord::Base
 		}
 	end
 
-	scope :from_projects, -> (projects) {
-		where('attrivutes.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
+	scope :in_project, -> (project_id) {
+		where(project_id: project_id) unless project_id.nil?
+	}
+
+	scope :among_entities, -> (entity_ids) {
+		case entity_ids
+		when nil
+			# all
+		when []
+			none
+		else
+			where("attrivutes.subj_id": entity_ids)
+		end
 	}
 
 	def update_project_updated_at

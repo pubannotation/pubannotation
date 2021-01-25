@@ -461,8 +461,8 @@ class Doc < ActiveRecord::Base
 		return [prev_text, body[span[:begin]...span[:end]], post_text]
 	end
 
-	def spans_index(project = nil)
-		self.hdenotations(project).map{|d| {id:d[:id], span:d[:span], obj:self.span_url(d[:span])}}.uniq{|d| d[:span]}
+	def spans_index(project_id = nil)
+		self.get_denotations_hash(project_id).map{|d| {id:d[:id], span:d[:span], obj:self.span_url(d[:span])}}.uniq{|d| d[:span]}
 	end
 
 
@@ -514,78 +514,60 @@ class Doc < ActiveRecord::Base
 		denotations.where("denotations.begin >= ? AND denotations.end <= ?", span[:begin], span[:end]).pluck(:project_id).uniq.collect{|pid| Project.find(pid)}
 	end
 
-	def get_annotation_ids(project, span = nil)
-		dids = if span.nil?
-			denotations.where(project_id: project.id).pluck(:hid)
-		else
-			denotations.where(["project_id = ? AND begin >= ? AND denotations.end <= ?", project.id, span[:begin], span[:end]]).pluck(:hid)
-		end
+	def get_annotation_hids(project_id, span = nil)
+		denotation_hids = get_denotation_hids(project_id, span)
+		return [] if denotation_hids.empty?
 
-		return [] if dids.empty?
+		base_ids = span.nil? ? nil : get_denotation_ids(project_id, span)
 
-		hrelations = hrelations(project, dids)
-		rids = hrelations.collect{|r| r[:id]}
+		relation_hids = get_relation_hids(project_id, base_ids)
 
-		hattributes = hattributes(project, dids)
-		aids = hattributes.collect{|a| a[:id]}
+		base_ids += get_relation_ids(project_id, base_ids) unless span.nil?
 
-		hmodifications = hmodifications(project, dids + rids)
-		mids = hmodifications.collect{|m| m[:id]}
+		attribute_hids = get_attribute_hids(project_id, base_ids)
+		modification_hids = get_modification_hids(project_id, base_ids)
 
-		dids + rids + aids + mids
+		denotation_hids + relation_hids + attribute_hids + modification_hids
 	end
 
-	# TODO: to take care of associate projects
-	# the first argument, project, may be a project or an array of projects.
-	def get_denotations(project = nil, span = nil, context_size = nil)
-		_denotations = if span.present?
-			if project.present?
-				if project.respond_to?(:each)
-					denotations.where("denotations.project_id IN (?) AND denotations.begin >= ? AND denotations.end <= ?", project.map{|p| p.id}, span[:begin], span[:end])
-				else
-					denotations.where("denotations.project_id = ? AND denotations.begin >= ? AND denotations.end <= ?", project.id, span[:begin], span[:end])
-				end
-			else
-				denotations.where("denotations.begin >= ? AND denotations.end <= ?", span[:begin], span[:end])
-			end
-		else
-			if project.present?
-				if project.respond_to?(:each)
-					denotations.where('denotations.project_id IN (?)', project.map{|p| p.id})
-				else
-					denotations.where(:'denotations.project_id' => project.id)
-				end
-			else
-				denotations
-			end
-		end
-
-		# unless original_body.nil?
-		#   text_aligner = TextAlignment::TextAlignment.new(original_body, body, TextAlignment::MAPPINGS)
-		#   text_aligner.transform_denotations!(_denotations) if text_aligner.present?
-		# end
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_denotations(project_id = nil, span = nil, context_size = nil, sort = false)
+		_denotations = denotations.in_project(project_id).in_span(span)
 
 		if span.present?
 			b = span[:begin]
-			context_size ||= 0
-			if context_size > 0
+			unless context_size.nil?
 				b -= context_size
 				b = 0 if b < 0
 			end
 			_denotations.each{|d| d.begin -= b; d.end -= b}
 		end
 
-		_denotations.sort!{|d1, d2| d1.begin <=> d2.begin || (d2.end <=> d1.end)}
+		if sort
+			_denotations.sort{|d1, d2| (d1.begin <=> d2.begin).nonzero? || (d2.end <=> d1.end)}
+		else
+			_denotations
+		end
 	end
 
 	# the first argument, project, may be a project or an array of projects.
-	def hdenotations(project = nil, span = nil, context_size = nil)
-		self.get_denotations(project, span, context_size).map{|d| d.get_hash}
+	def get_denotations_hash(project_id = nil, span = nil, context_size = nil, sort = false)
+		self.get_denotations(project_id, span, context_size, sort).as_json
 	end
 
-	def hdenotations_all
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_denotation_ids(project_id = nil, span = nil)
+		denotations.in_project(project_id).in_span(span).pluck(:id)
+	end
+
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_denotation_hids(project_id = nil, span = nil)
+		denotations.in_project(project_id).in_span(span).pluck(:hid)
+	end
+
+	def get_denotations_hash_all
 		annotations = {}
-		annotations[:denotations] = hdenotations
+		annotations[:denotations] = get_denotations_hash
 		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, :only_path => false)
 		annotations[:sourcedb] = sourcedb
 		annotations[:sourceid] = sourceid
@@ -593,86 +575,99 @@ class Doc < ActiveRecord::Base
 		annotations
 	end
 
-	# the first argument, project, may be a project or an array of projects.
-	def denotations_in_tracks(project = nil, span = nil)
-		_projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-		_projects.inject([]){|t, p| t << {project:p.name, denotations:self.hdenotations(p, span)}}
-	end
-
-	def get_denotations_num(project = nil, span = nil)
-		if project.nil? && span.nil?
+	def get_denotations_count(project_id = nil, span = nil)
+		if project_id.nil? && span.nil?
 			denotations_num
 		elsif span.nil?
-			ProjectDoc.where(project_id:project.id, doc_id:id).pluck(:denotations_num).first
+			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:denotations_num).first
 		else
-			get_denotations(project, span).count
+			denotations.in_project(project_id).in_span(span).count
 		end
 	end
 
-	def annotations_count(project = nil, span = nil)
-		if project.nil? && span.nil?
-			self.denotations.count + self.subcatrels.count + self.catmods.count + self.subcatrelmods.count
+	# project_id may be either a single project or a set of projects
+	def get_relations(project_id = nil, base_ids = nil, sort = false)
+		_relations = self.subcatrels.in_project(project_id).among_denotations(base_ids)
+		if sort
+			_relations.sort{|r1, r2| r1.id <=> r2.id}
 		else
-			hdenotations = self.hdenotations(project, span)
-			ids =  hdenotations.collect{|d| d[:id]}
-			hrelations = self.hrelations(project, ids)
-			ids += hrelations.collect{|d| d[:id]}
-			hmodifications = self.hmodifications(project, ids)
-			hdenotations.size + hrelations.size + hmodifications.size
+			_relations
 		end
-	end
-
-	def get_relations(project = nil, base_ids = nil)
-		projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-		if base_ids.present?
-			self.subcatrels.from_projects(projects).where("relations.subj_id IN (?) and relations.obj_id IN (?)", base_ids, base_ids)
-		else
-			self.subcatrels.from_projects(projects)
-		end.sort{|r1, r2| r1.id <=> r2.id}
-	end
-
-	def get_attributes(project = nil, base_ids = nil)
-		projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-		if base_ids.present?
-			self.denotation_attributes.from_projects(projects).where("attrivutes.subj_id IN (?)", base_ids)
-		else
-			self.denotation_attributes.from_projects(projects)
-		end.sort{|a1, a2| a1.id <=> a2.id}
-	end
-
-	def get_modifications(project = nil, base_ids = nil)
-		projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-		if base_ids.present?
-			self.catmods.from_projects(projects).where("modifications.obj_id IN (?)", base_ids) + self.subcatrelmods.from_projects(projects).where("modifications.obj_id IN (?)", base_ids)
-		else
-			self.catmods.from_projects(projects) + self.subcatrelmods.from_projects(projects)
-		end.sort{|m1, m2| m1.id <=> m2.id}
 	end
 
 	# the first argument, project, may be a project or an array of projects.
-	def hrelations(project = nil, base_ids = nil)
-		projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-		relations = self.subcatrels.from_projects(projects)
-		hrelations = relations.collect {|ra| ra.get_hash}
-		hrelations.select!{|r| base_ids.include?(r[:subj]) && base_ids.include?(r[:obj])} unless base_ids.nil?
-		hrelations.sort!{|r1, r2| r1[:id] <=> r2[:id]}
+	def get_relations_hash(project_id = nil, base_ids = nil, sort = false)
+		return [] if base_ids == []
+		get_relations(project_id, base_ids, sort).as_json
 	end
+
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_relation_ids(project_id = nil, base_ids = nil)
+		return [] if base_ids == []
+		subcatrels.in_project(project_id).among_denotations(base_ids).pluck(:id)
+	end
+
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_relation_hids(project_id = nil, base_ids = nil)
+		return [] if base_ids == []
+		subcatrels.in_project(project_id).among_denotations(base_ids).pluck(:hid)
+	end
+
+	def get_attributes(project_id = nil, base_ids = nil)
+		self.denotation_attributes.in_project(project_id).among_entities(base_ids)
+	end
+
+	def get_attributes_hash(project_id = nil, base_ids = nil)
+		return [] if base_ids == []
+		# continue if base_ids.nil? || base_ids.present?
+
+		query = "SELECT attrivutes.hid AS id, attrivutes.pred AS pred, denotations.hid AS subj, attrivutes.obj AS obj FROM attrivutes INNER JOIN denotations ON attrivutes.subj_id = denotations.id WHERE denotations.doc_id = #{self.id}"
+
+		# project condition
+		unless project_id.nil?
+			query += if project_id.respond_to?(:each)
+				" AND attrivutes.project_id IN (#{project.map{|p| p.id}.join(', ')})"
+			else
+				" AND attrivutes.project_id = #{project_id}"
+			end
+		end
+
+		# base_id condition
+		unless base_ids.nil?
+			query += " AND attrivutes.subj_id IN (#{base_ids.join(', ')})"
+		end
 	
-	# the first argument, project, may be a project or an array of projects.
-	def hattributes(project = nil, base_ids = nil)
-		projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-		attrivutes = self.denotation_attributes.from_projects(projects)
-		hattrivutes = attrivutes.collect {|a| a.get_hash}
-		hattrivutes.select!{|a| base_ids.include?(a[:subj])} unless base_ids.nil?
-		hattrivutes.sort!{|a1, a2| a1[:id] <=> a2[:id]}
+		# sort!{|a1, a2| a1[:id] <=> a2[:id]}
+		connection.exec_query(query).to_a.collect{|a| a.symbolize_keys}
 	end
 
-	def hmodifications(project = nil, base_ids = nil)
-		projects = project.present? ? (project.respond_to?(:each) ? project : [project]) : self.projects
-		modifications = self.catmods.from_projects(projects) + self.subcatrelmods.from_projects(projects)
-		hmodifications = modifications.collect {|m| m.get_hash}
-		hmodifications.select!{|m| base_ids.include?(m[:obj])} unless base_ids.nil?
-		hmodifications.sort!{|m1, m2| m1[:id] <=> m2[:id]}
+	def get_attribute_ids(project_id = nil, base_ids = nil)
+		self.denotation_attributes.in_project(project_id).among_entities(base_ids).pluck(:id)
+	end
+
+	def get_attribute_hids(project_id = nil, base_ids = nil)
+		return [] if base_ids == []
+		self.denotation_attributes.in_project(project_id).among_entities(base_ids).pluck(:hid)
+	end
+
+	def get_modifications(project_id = nil, base_ids = nil)
+		self.catmods.in_project(project_id).among_entities(base_ids) + self.subcatrelmods.in_project(project_id).among_entities(base_ids)
+		# sort{|m1, m2| m1.id <=> m2.id}
+	end
+
+	def get_modifications_hash(project_id = nil, base_ids = nil)
+		return [] if base_ids == []
+		self.catmods.in_project(project_id).among_entities(base_ids).as_json + self.subcatrelmods.in_project(project_id).among_entities(base_ids).as_json
+	end
+
+	def get_modification_ids(project_id = nil, base_ids = nil)
+		return [] if base_ids == []
+		self.catmods.in_project(project_id).among_entities(base_ids).pluck(:id) + self.subcatrelmods.in_project(project_id).among_entities(base_ids).pluck(:id)
+	end
+
+	def get_modification_hids(project_id = nil, base_ids = nil)
+		return [] if base_ids == []
+		self.catmods.in_project(project_id).among_entities(base_ids).pluck(:hid) + self.subcatrelmods.in_project(project_id).among_entities(base_ids).pluck(:hid)
 	end
 
 	def get_text(span = nil, context_size = nil)
@@ -729,31 +724,30 @@ class Doc < ActiveRecord::Base
 	end
 
 	def get_project_annotations(project, span = nil, context_size = nil, options = {})
-		_denotations = get_denotations(project, span, context_size)
-
-		ids = span.nil? ? nil : _denotations.collect{|d| d.id}
-		_relations = get_relations(project, ids)
-		_attributes = get_attributes(project, ids)
-
-		ids += _relations.collect{|r| r.id} unless span.nil?
-
-		_modifications = get_modifications(project, ids)
-
-		hdenotations = _denotations.map{|d| d.get_hash}
-		hrelations = _relations.map{|r| r.get_hash}
-		hattributes = _attributes.map{|a| a.get_hash}
-		hmodifications = _modifications.map{|m| m.get_hash}
-
 		options ||= {}
+		sort_p = options[:sort]
+
+		project_id = unless project.nil?
+			project.respond_to?(:each) ? project.map{|p| p.id} : project.id
+		end
+
+		ids = nil
+
+		hdenotations = get_denotations_hash(project_id, span, context_size, sort_p)
+
+		ids = get_denotation_ids(project_id, span) unless span.nil?
+
+		hrelations = get_relations_hash(project_id, ids, sort_p)
+		ids += get_relation_ids(project_id, ids) unless span.nil?
+
+		hattributes = get_attributes_hash(project_id, ids)
+		hmodifications = get_modifications_hash(project_id, ids)
+
 		if options[:discontinuous_span] == :bag
 			hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
 		end
 
 		{project:project.name, denotations:hdenotations, relations:hrelations, attributes:hattributes, modifications:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
-	end
-
-	def projects_within_span(span)
-		self.get_denotations(nil, span).collect{|d| d.project}.uniq.compact
 	end
 
 	def spans_projects(params)

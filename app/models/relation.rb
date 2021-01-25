@@ -12,8 +12,19 @@ class Relation < ActiveRecord::Base
 	validates :subj_id, :presence => true
 	validates :obj_id,  :presence => true
 
-	scope :from_projects, -> (projects) {
-		where('relations.project_id IN (?)', projects.map{|p| p.id}) if projects.present?
+	scope :in_project, -> (project_id) {
+		where(project_id: project_id) unless project_id.nil?
+	}
+
+	scope :among_denotations, -> (denotation_ids) {
+		case denotation_ids
+		when nil
+			# all
+		when []
+			none
+		else
+			where("relations.subj_id": denotation_ids, "relations.obj_id": denotation_ids)
+		end
 	}
 
 	scope :project_relations, select(:id).group("relations.project_id")
@@ -43,6 +54,16 @@ class Relation < ActiveRecord::Base
 		[positions.first, positions.last]
 	end
 
+	def as_json(options={})
+		{
+			id: hid,
+			pred: pred,
+			subj: subj.hid,
+			obj: obj.hid
+		}
+	end
+
+	# to be deprecated in favor of as_json
 	def get_hash
 		hrelation = Hash.new
 		hrelation[:id]   = hid

@@ -68,7 +68,7 @@ class AnnotationsController < ApplicationController
 
 		context_size = params[:context_size].present? ? params[:context_size].to_i : 0
 
-		@options = {}
+		@options = {sort: true}
 		@options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
 		@annotations = @doc.hannotations(@project, @span, context_size, @options)
 		textae_config = @project ? @project.get_textae_config : nil

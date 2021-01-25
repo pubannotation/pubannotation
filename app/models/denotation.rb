@@ -21,12 +21,12 @@ class Denotation < ActiveRecord::Base
 	validates :project_id, :presence => true
 	validates :doc_id,    :presence => true
 
-	scope :from_projects, -> (projects) {
-		where('project_id IN (?)', projects.map{|p| p.id}) if projects.present?
+	scope :in_project, -> (project_id) {
+		where(project_id: project_id) unless project_id.nil?
 	}
 
-	scope :within_span, -> (span) {
-		where('denotations.begin >= ? AND denotations.end <= ?', span[:begin], span[:end]) if span.present?
+	scope :in_span, -> (span) {
+		where('denotations.begin >= ? AND denotations.end <= ?', span[:begin], span[:end]) unless span.nil?
 	}
 
 	scope :accessible_projects, lambda{|current_user_id|
@@ -49,6 +49,14 @@ class Denotation < ActiveRecord::Base
 
 	def span
 		[self.begin, self.end]
+	end
+
+	def as_json(options={})
+		{
+			id: hid,
+			span: {begin: self.begin, end: self.end},
+			obj: obj
+		}
 	end
 
 	def get_hash
@@ -97,7 +105,7 @@ class Denotation < ActiveRecord::Base
 			results = self.connection.execute(sanitized_sql, :includes => [:project])
 			if results.present?
 				ids = results.collect{|result| result['id']}
-				denotations = self.accessible_projects(current_user_id).from_projects([project]).sql(ids)
+				denotations = self.accessible_projects(current_user_id).in_project(project.id).sql(ids)
 			end       
 		end
 	end
