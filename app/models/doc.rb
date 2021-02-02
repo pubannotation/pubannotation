@@ -247,6 +247,8 @@ class Doc < ActiveRecord::Base
 	end
 
 	def self.store_hdoc(hdoc)
+		hdoc[:text] = hdoc[:body] if !hdoc[:text] && hdoc[:body]
+
 		doc = Doc.new(
 			{
 				body: hdoc[:text],
@@ -305,7 +307,6 @@ class Doc < ActiveRecord::Base
 		messages = []
 
 		hdocs.each do |hdoc|
-
 			ActiveRecord::Base.transaction do
 				doc = store_hdoc(hdoc)
 				doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
