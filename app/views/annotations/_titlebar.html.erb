@@ -27,18 +27,10 @@
 </span>
 
 <% if @project.present? && @project.editable?(current_user) && @annotations[:denotations].present? && params[:sourceid].present? -%>
-	<% destroy_path = if params[:divid].present?
-			if params[:begin].present?
-				destroy_annotations_in_span_project_sourcedb_sourceid_divs_docs_path
-			else
-				destroy_annotations_project_sourcedb_sourceid_divs_docs_path
-			end
+	<% destroy_path = if params[:begin].present?
+			destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
 		else
-			if params[:begin].present?
-				destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
-			else
-				destroy_annotations_project_sourcedb_sourceid_docs_path
-			end
+			destroy_annotations_project_sourcedb_sourceid_docs_path
 		end
 	-%>
 	<%= form_tag(destroy_path, method: :delete, style: 'display:inline') do%>

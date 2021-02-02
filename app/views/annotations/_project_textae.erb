@@ -4,11 +4,7 @@
 
 <%
 	if params[:sourcedb].present? && params[:sourceid].present? && params[:begin].present? && params[:end].present?
-		if params[:divid].present?
-			@textae_json_url = spans_annotations_project_sourcedb_sourceid_divs_docs_url(project_textae[:project].name, params[:sourcedb], params[:sourceid], params[:divid], params[:begin], params[:end])
-		else
-			@textae_json_url = spans_annotations_project_sourcedb_sourceid_docs_url(project_textae[:project].name, params[:sourcedb], params[:sourceid], params[:begin], params[:end])
-		end
+		@textae_json_url = spans_annotations_project_sourcedb_sourceid_docs_url(project_textae[:project].name, params[:sourcedb], params[:sourceid], params[:begin], params[:end])
 		@textae_json_url += '.json'
 	end
 -%>

@@ -575,8 +575,6 @@ class Project < ActiveRecord::Base
 		project_params = project_attributes.select{|key| Project.attr_accessible[:default].include?(key)}
 	end
 
-	# returns the divs added to the project
-	# returns nil if nothing is added
 	def add_docs(sourcedb, sourceids)
 		ids_in_pa = Doc.where(sourcedb:sourcedb, sourceid:sourceids).pluck(:sourceid).uniq
 		ids_in_pj = ids_in_pa & docs.pluck(:sourceid).uniq
@@ -673,7 +671,6 @@ class Project < ActiveRecord::Base
 					:text => :body, 
 					:sourcedb => :sourcedb, 
 					:sourceid => :sourceid, 
-					:section => :section, 
 					:source_url => :source
 				}
 				doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
@@ -999,7 +996,7 @@ class Project < ActiveRecord::Base
 
 				begin
 					msgs = Annotation.prepare_annotations!(annotations, doc)
-					messages += msgs.map{|msg| msg.merge({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid]})}
+					messages += msgs.map{|msg| msg.merge({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid]})}
 
 					case options[:mode]
 					when 'replace'
@@ -1067,7 +1064,7 @@ class Project < ActiveRecord::Base
 			if annotator[:payload]['_body_'] == '_text_'
 				docs.map{|doc| doc.body}
 			elsif annotator[:payload]['_body_'] == '_doc_'
-				docs.map{|doc| doc.hannotations(self).select{|k, v| [:text, :sourcedb, :sourceid, :divid].include? k}}
+				docs.map{|doc| doc.hannotations(self).select{|k, v| [:text, :sourcedb, :sourceid].include? k}}
 			elsif annotator[:payload]['_body_'] == '_annotation_'
 				docs.map{|doc| doc.hannotations(self)}
 			end

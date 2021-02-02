@@ -2,23 +2,18 @@ class SpansController < ApplicationController
 
 	def doc_spans_index
 		begin
-			divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "There is no such document." unless divs.present?
+			docs = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
+			raise "Could not find the document." unless docs.present?
+			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-			if divs.length > 1
-				respond_to do |format|
-					format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
-				end
-			else
-				@doc = divs[0]
+			@doc = docs.first
 
-				@doc.set_ascii_body if params[:encoding] == 'ascii'
-				@spans_index = @doc.spans_index
+			@doc.set_ascii_body if params[:encoding] == 'ascii'
+			@spans_index = @doc.spans_index
 
-				respond_to do |format|
-					format.html {render 'spans_index'}
-					format.json {render json: {text: @doc.body, denotations: @spans_index}}
-				end
+			respond_to do |format|
+				format.html {render 'spans_index'}
+				format.json {render json: {text: @doc.body, denotations: @spans_index}}
 			end
 		rescue => e
 			respond_to do |format|
@@ -32,25 +27,20 @@ class SpansController < ApplicationController
 	def project_doc_spans_index
 		begin
 			@project = Project.accessible(current_user).find_by_name(params[:project_id])
-			raise "There is no such project." unless @project.present?
+			raise "Could not find the project." unless @project.present?
 
-			divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "There is no such document in the project." unless divs.present?
+			docs = @project.docs.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
+			raise "Could not find the document." unless docs.present?
+			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-			if divs.length > 1
-				respond_to do |format|
-					format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
-				end
-			else
-				@doc = divs[0]
+			@doc = docs.first
 
-				@doc.set_ascii_body if params[:encoding] == 'ascii'
-				@spans_index = @doc.spans_index(@project.id)
+			@doc.set_ascii_body if params[:encoding] == 'ascii'
+			@spans_index = @doc.spans_index(@project.id)
 
-				respond_to do |format|
-					format.html {render 'spans_index'}
-					format.json {render json: {text: @doc.body, denotations: @spans_index}}
-				end
+			respond_to do |format|
+				format.html {render 'spans_index'}
+				format.json {render json: {text: @doc.body, denotations: @spans_index}}
 			end
 		rescue => e
 			respond_to do |format|
@@ -63,35 +53,29 @@ class SpansController < ApplicationController
 
 	def doc_span_show
 		begin
-			divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "There is no such document." unless divs.present?
+			docs = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
+			raise "Could not find the document." unless docs.present?
+			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-			if divs.length > 1
-				respond_to do |format|
-					format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
-				end
-			else
-				@doc = divs[0]
-				@span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
+			@doc = docs.first
+			@span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 
-				@doc.set_ascii_body if params[:encoding] == 'ascii'
-				@content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
+			@doc.set_ascii_body if params[:encoding] == 'ascii'
+			@content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
 
-				get_docs_projects
-				valid_projects = @doc.get_projects(@span)
+			get_docs_projects
+			valid_projects = @doc.get_projects(@span)
 
-				@projects = @projects & valid_projects
+			@projects = @projects & valid_projects
 
-				# @annotations_projects_check = true
-				@annotations_path = "#{url_for(:only_path => true)}/annotations"
+			# @annotations_projects_check = true
+			@annotations_path = "#{url_for(:only_path => true)}/annotations"
 
-				respond_to do |format|
-					format.html {render 'docs/show'}
-					format.json {render json: @doc.to_hash}
-					format.txt  {render text: @doc.body}
-				end
+			respond_to do |format|
+				format.html {render 'docs/show'}
+				format.json {render json: @doc.to_hash}
+				format.txt  {render text: @doc.body}
 			end
-
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
@@ -104,27 +88,22 @@ class SpansController < ApplicationController
 	def project_doc_span_show
 		begin
 			@project = Project.accessible(current_user).find_by_name(params[:project_id])
-			raise "There is no such project." unless @project.present?
+			raise "Could not find the project." unless @project.present?
 
-			divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "There is no such document in the project." unless divs.present?
+			docs = @project.docs.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
+			raise "Could not find the document." unless docs.present?
+			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-			if divs.length > 1
-				respond_to do |format|
-					format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
-				end
-			else
-				@doc = divs[0]
-				@span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
+			@doc = docs.first
+			@span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 
-				@doc.set_ascii_body if (params[:encoding] == 'ascii')
-				@content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
+			@doc.set_ascii_body if (params[:encoding] == 'ascii')
+			@content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
 
-				respond_to do |format|
-					format.html {render 'docs/show_in_project'}
-					format.txt  {render text: @annotations[:text]}
-					format.json {render json: {text: @annotations[:text]}}
-				end
+			respond_to do |format|
+				format.html {render 'docs/show_in_project'}
+				format.txt  {render text: @annotations[:text]}
+				format.json {render json: {text: @annotations[:text]}}
 			end
 		rescue => e
 			respond_to do |format|

@@ -2,20 +2,12 @@ module DocsHelper
 
 	def doc_show_path_helper
 		action = params[:project_id].present? ? :show_in_project : :show
-		params.merge(controller: :docs, action: action).except(:divid, :begin, :end)
-	end
-
-	def div_show_path_helper
-		action = params[:project_id].present? ? :show_in_project : :show
-		params.merge(controller: :divs, action: action).except(:begin, :end)
+		params.merge(controller: :docs, action: action).except(:begin, :end)
 	end
 
 	def span_show_path_helper
-		action = if params[:divid].present?
-			params[:project_id].present? ? :project_div_span_show : :div_span_show
-		else
-			params[:project_id].present? ? :project_doc_span_show : :doc_span_show
-		end
+		action = params[:project_id].present? ? :project_doc_span_show : :doc_span_show
+		params[:project_id].present? ? :project_doc_span_show : :doc_span_show
 		params.merge(controller: :spans, action: action)
 	end
 
@@ -87,12 +79,11 @@ module DocsHelper
 	def json_text_link_helper
 		html = ''
 		# Set actions which except projects and project params for link
-		except_actions = %w(doc_annotations_list_view div_annotations_list_view doc_annotations_merge_view div_annotations_merge_view)
+		except_actions = %w(doc_annotations_list_view doc_annotations_merge_view)
 
 		params_to_text = params.dup
 		params_to_text.except!(:project, :projects) if except_actions.include?(params[:action])
-		controller = params[:divid].present? ? :divs : :docs
-		params_to_text = params.merge(controller: controller, action: :show)
+		params_to_text = params.merge(controller: :docs, action: :show)
 
 		html += link_to_unless_current 'JSON', params_to_text.merge(format: :json), :class => 'tab'
 		html += link_to_unless_current 'TXT', params_to_text.merge(format: :txt), :class => 'tab'

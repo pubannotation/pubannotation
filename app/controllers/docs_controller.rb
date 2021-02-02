@@ -103,38 +103,21 @@ class DocsController < ApplicationController
 
 	def show
 		begin
-			divs = if params[:id].present?
-				[Doc.find(params[:id])]
-			else
-				Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			end
-			raise "There is no such document." unless divs.present?
+			docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+			raise "Could not find the document: #{params[:sourcedb]}:#{params[:sourceid]}" unless docs.present?
+			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-			if divs.length > 1
-				respond_to do |format|
-					format.html {redirect_to doc_sourcedb_sourceid_divs_index_path params}
-					format.json {
-						divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-						render json: divs.collect{|div| div.to_hash}
-					}
-					format.txt {
-						divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-						render text: divs.collect{|div| div.body}.join("\n")
-					}
-				end
-			else
-				@doc = divs[0]
+			@doc = docs.first
 
-				@doc.set_ascii_body if params[:encoding] == 'ascii'
-				@content = @doc.body.gsub(/\n/, "<br>")
+			@doc.set_ascii_body if params[:encoding] == 'ascii'
+			@content = @doc.body.gsub(/\n/, "<br>")
 
-				get_docs_projects
+			get_docs_projects
 
-				respond_to do |format|
-					format.html
-					format.json {render json: @doc.to_hash}
-					format.txt  {render text: @doc.body}
-				end
+			respond_to do |format|
+				format.html
+				format.json {render json: @doc.to_hash}
+				format.txt  {render text: @doc.body}
 			end
 
 		rescue => e
@@ -151,32 +134,19 @@ class DocsController < ApplicationController
 			@project = Project.accessible(current_user).find_by_name(params[:project_id])
 			raise "Could not find the project." unless @project.present?
 
-			divs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "Could not find the document within this project." unless divs.present?
+			docs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+			raise "Could not find the document: #{params[:sourcedb]}:#{params[:sourceid]} within this project." unless docs.present?
+			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-			if divs.length > 1
-				respond_to do |format|
-					format.html {redirect_to index_project_sourcedb_sourceid_divs_docs_path(@project.name, params[:sourcedb], params[:sourceid])}
-					format.json {
-						divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-						render json: divs.collect{|div| div.body}
-					}
-					format.txt {
-						divs.each{|div| div.set_ascii_body} if params[:encoding] == 'ascii'
-						render text: divs.collect{|div| div.body}.join("\n")
-					}
-				end
-			else
-				@doc = divs[0]
+			@doc = docs.first
 
-				@doc.set_ascii_body if (params[:encoding] == 'ascii')
-				@content = @doc.body.gsub(/\n/, "<br>")
+			@doc.set_ascii_body if (params[:encoding] == 'ascii')
+			@content = @doc.body.gsub(/\n/, "<br>")
 
-				respond_to do |format|
-					format.html
-					format.json {render json: @doc.to_hash}
-					format.txt  {render text: @doc.body}
-				end
+			respond_to do |format|
+				format.html
+				format.json {render json: @doc.to_hash}
+				format.txt  {render text: @doc.body}
 			end
 
 		rescue => e
@@ -192,19 +162,10 @@ class DocsController < ApplicationController
 		params[:sourceid].strip!
 		begin
 			if params[:project_id].present?
-				project = Project.accessible(current_user).find_by_name(params[:project_id])
-				raise "Could not find the project." unless project.present?
-
-				divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-				raise "Could not find the document within this project." unless divs.present?
-
 				respond_to do |format|
 					format.html {redirect_to show_project_sourcedb_sourceid_docs_path(params[:project_id], params[:sourcedb], params[:sourceid])}
 				end
 			else
-				divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-				raise "Could not find the document within PubAnnotation." unless divs.present?
-
 				respond_to do |format|
 					format.html {redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid])}
 				end
@@ -257,7 +218,6 @@ class DocsController < ApplicationController
 					source: params[:source],
 					sourcedb: params[:sourcedb] || '',
 					sourceid: params[:sourceid],
-					section: params[:section],
 					body: text
 				}
 
@@ -340,21 +300,11 @@ class DocsController < ApplicationController
 		begin
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
+			docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+			raise "There is no such document" unless docs.present?
+			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-			divs = if params.has_key? :id
-				[Doc.find(params[:id])]
-			else
-				Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			end
-			raise "There is no such document" unless divs.present?
-
-			if divs.length > 1
-				respond_to do |format|
-					format.html {redirect_to :back}
-				end
-			else
-				@doc = divs[0]
-			end
+			@doc = docs[0]
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
@@ -539,11 +489,13 @@ class DocsController < ApplicationController
 	def delete
 		raise SecurityError, "Not authorized" unless current_user && current_user.root? == true
 
-		divs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-		raise "There is no such document." unless divs.present?
+		docs = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
+		raise "Could not find the document." unless docs.present?
+		raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-		sourcedb = divs.first.sourcedb
-		divs.each{|div| div.destroy}
+		doc = docs.first
+		sourcedb = doc.sourcedb
+		doc.destory
 
 		redirect_to doc_sourcedb_index_path(sourcedb)
 	end
@@ -586,12 +538,14 @@ class DocsController < ApplicationController
 	def project_delete_doc
 		begin
 			project = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
+			raise "Could not find the project, or you are not authorized to make a change to the project.\n" unless project.present?
 
-			divs = project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "The document does not exist in the project.\n" unless divs.present?
+			docs = project.docs.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
+			raise "Could not find the document." unless docs.present?
+			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
-			divs.each{|div| project.delete_doc(div)}
+			doc = docs.first
+			project.delete_doc(doc)
 			expire_fragment("sourcedb_counts_#{project.name}")
 			expire_fragment("count_docs_#{project.name}")
 			expire_fragment("count_#{params[:sourcedb]}_#{project.name}")

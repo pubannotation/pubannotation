@@ -7,15 +7,9 @@ module EvaluationsHelper
 			span_helper(pair[:reference], pair[:type], rproject, doc)
 		end
 
-		if pair.has_key?(:divid)
-			s = span_show_project_sourcedb_sourceid_divs_docs_url(sproject.name, pair[:sourcedb], pair[:sourceid], pair[:divid], sbeg, send)
-			r = span_show_project_sourcedb_sourceid_divs_docs_url(rproject.name, pair[:sourcedb], pair[:sourceid], pair[:divid], sbeg, send)
-			[s, r]
-		else
-			s = span_show_project_sourcedb_sourceid_docs_url(sproject.name, pair[:sourcedb], pair[:sourceid], sbeg, send)
-			r = span_show_project_sourcedb_sourceid_docs_url(rproject.name, pair[:sourcedb], pair[:sourceid], sbeg, send)
-			[s, r]
-		end
+		s = span_show_project_sourcedb_sourceid_docs_url(sproject.name, pair[:sourcedb], pair[:sourceid], sbeg, send)
+		r = span_show_project_sourcedb_sourceid_docs_url(rproject.name, pair[:sourcedb], pair[:sourceid], sbeg, send)
+		[s, r]
 	end
 
 	def span_helper(anno, type, project, doc)

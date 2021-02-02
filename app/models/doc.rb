@@ -17,7 +17,6 @@ class Doc < ActiveRecord::Base
 		mappings do
 			indexes :sourcedb, type: :keyword
 			indexes :sourceid, type: :keyword
-			indexes :serial,   type: :integer
 			indexes :body,     type: :text,  analyzer: :standard_normalization, index_options: :offsets
 
 			# indexes :docs_projects, type: 'nested' do
@@ -34,16 +33,9 @@ class Doc < ActiveRecord::Base
 
 	SOURCEDBS = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy', 'CORD-19']
 
-	def as_indexed_json(options={})
-		as_json(
-			only: [:id, :sourcedb, :sourceid, :serial, :body],
-			include: { projects: {only: :id} }  
-		)
-	end
-	
+
 	def self.search_docs(attributes = {})
 		filter_condition = []
-		filter_condition << {term: {'serial' => 0}} unless attributes[:sourceid].present?
 		filter_condition << {term: {'projects.id' => attributes[:project_id]}} if attributes[:project_id].present?
 		filter_condition << {term: {'sourcedb' => attributes[:sourcedb]}} if attributes[:sourcedb].present?
 		filter_condition << {term: {'sourceid' => attributes[:sourceid]}} if attributes[:sourceid].present?
@@ -84,7 +76,7 @@ class Doc < ActiveRecord::Base
 	include ApplicationHelper
 
 	attr_accessor :username, :original_body, :text_aligner
-	attr_accessible :body, :section, :serial, :source, :sourcedb, :sourceid, :username
+	attr_accessible :body, :source, :sourcedb, :sourceid, :username
 
 	has_many :divisions, dependent: :destroy
 	has_many :typesettings, dependent: :destroy
@@ -770,7 +762,6 @@ class Doc < ActiveRecord::Base
 			text: body,
 			sourcedb: sourcedb,
 			sourceid: sourceid,
-			section: section,
 			source_url: source,
 			typesettings: get_typesettings
 		}.compact

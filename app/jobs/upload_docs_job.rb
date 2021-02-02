@@ -54,7 +54,7 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
 				same_doc = if same_docs.count == 1
 					same_docs.first
 				elsif same_docs.count > 1
-					raise ArgumentError, "Documents with multiple divs cannot be updated."
+					raise ArgumentError, "Multiple entries for #{hdoc[:sourcedb]}:#{hdoc[:sourceid]} found."
 				else
 					nil
 				end

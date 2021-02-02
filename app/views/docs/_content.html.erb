@@ -1,9 +1,7 @@
 <table style="width:100%">
-<tr><th style="text-align:left">
-	<%= @doc.section %>
-	<%= '(Title and Abstract)' if @doc.section == 'TIAB' %>
-</th></tr>
-<tr><td class="text"><div id="body" style="max-height:300px; overflow-y:auto"><%= @content.html_safe %></div></td><tr>
+<tr>
+	<td class="text"><div id="body" style="max-height:300px; overflow-y:auto"><%= @content.html_safe %></div></td>
+</tr>
 <tr>
 	<td id="linkSpace"></td>
 </tr>
