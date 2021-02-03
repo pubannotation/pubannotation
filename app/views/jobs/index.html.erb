@@ -42,7 +42,7 @@
 	<td><%= i + 1 %></td>
 	<td><%= job.name %></td>
 	<td><%= job.created_at %></td>
-	<td><%= state(job) %></td>
+	<td><%= job.state %></td>
 	<td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
 	<td style="text-align:right"><%= job.messages.length %></td>
 	<td>

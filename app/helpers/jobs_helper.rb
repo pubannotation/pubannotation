@@ -1,14 +1,4 @@
 module JobsHelper
-	def state(job)
-		if job.begun_at.nil?
-			'Waiting'
-		elsif job.ended_at.nil?
-			'Running'
-		else
-			'Finished'
-		end
-	end
-
 	def time_duration(duration)
 		mm, ss = duration.divmod(60)
 		hh, mm = mm.divmod(60)

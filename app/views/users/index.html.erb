@@ -1,14 +1,18 @@
-<table>
-	<tr>
-		<th><%= t('activerecord.attributes.user.username') -%></th>
-		<th><%= t('activerecord.attributes.user.last_sign_in_at') -%></th>
-	</tr>
-	<% @users.each do |user| -%>
-		<tr>
-			<td><%= user.username -%></td>
-			<td><%= user.last_sign_in_at -%></td>
-		</tr>  
-	<% end -%>
-</table>
 
-<%= paginate @users -%>
+<%=
+	grid(@users_grid) do |g|
+
+		g.column name: 'Username', attribute: 'username' do |user|
+			[link_to(user.username, show_user_path(user.username), style: 'display:block'), {style: 'width:10em'}]
+		end
+
+		g.column name: 'E-mail', attribute: 'email' do |user|
+			[user.email, {style: 'width:10em; text-align:center'}]
+		end
+
+		g.column name: 'Last login', attribute: 'last_sign_in_at' do |user|
+			[user.last_sign_in_at, {style: 'text-align:center'}]
+		end
+
+	end
+-%>

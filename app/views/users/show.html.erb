@@ -25,141 +25,193 @@
 		</table>
 	<% end %>
 
-	<section>
-		<h2>
-			Collections
-			<%= link_to 'create', new_collection_path, {class: 'control button'} if @user == current_user %>
-		</h2>
+	<% if @user == current_user && current_user.root? %>
+		<section>
+			<h2>Jobs</h2>
 
-		<%=
-			grid(@collections_grid) do |g|
+			<table>
+				<tr>
+					<th>waiting</th><td style="text-align:right"><%= @num_waiting %></td>
+				</tr>
+				<tr>
+					<th>running</th><td style="text-align:right"><%= @num_running %></td>
+				</tr>
+				<tr>
+					<th>finished</th><td style="text-align:right"><%= @num_finished %></td>
+				</tr>
+			</table>
 
-				g.column name: 'Name', attribute: 'name' do |collection|
-					[link_to(collection.name, collection_path(collection.name)), {title: collection.name}]
-				end
+			<%=
+				grid(@jobs_grid) do |g|
 
-				if @user == current_user
-					g.column attribute: 'accessibility', filter: false, class: 'column-project-type' do |collection|
-						[badge_accessibility(collection).html_safe, {style: 'text-align:center'}]
+					g.column name: 'Name', attribute: 'name' do |job|
+						[link_to(job.name, project_job_path(job.project.name, job)), {style: 'width:15em'}]
 					end
-				end
 
-				g.column filter: false, class: 'column-project-type' do |collection|
-					[badge_sharedtask(collection).html_safe, {style: 'text-align:center'}]
-				end
-
-				g.column name: 'Description', attribute: 'description' do |collection|
-					[strip_tags(collection.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-				end
-
-				g.column name: 'Updated at', attribute: 'updated_at', filter: false do |collection|
-					[collection.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
-				end
-
-			end
-		-%>
-	</section>
-
-	<section>
-		<h2>
-			Projects
-			<%= link_to 'create', new_project_path, {class: 'control button'} if @user == current_user %>
-		</h2>
-
-		<%=
-			grid(@projects_grid) do |g|
-
-				g.column name: 'Name', attribute: 'name' do |project|
-					[link_to(project.name, project_path(project.name)), {title: project.name}]
-				end
-
-				if @user == current_user
-					g.column name: 'A', attribute: 'accessibility', filter: false, class: 'column-project-type' do |project|
-						[badge_accessibility(project).html_safe, {style: 'text-align:center'}]
+					g.column name: 'State' do |job|
+						job.state
 					end
+
+					g.column name: 'Created at', attribute: 'created_at' do |job|
+						[job.created_at, {style:'text-align:center'}]
+					end
+
+					g.column name: 'Begun at', attribute: 'begun_at' do |job|
+						[job.begun_at || '-', {style:'text-align:center'}]
+					end
+
+					g.column name: 'Ended at', attribute: 'ended_at' do |job|
+						[job.ended_at || '-', {style:'text-align:center'}]
+					end
+
+					g.column name: 'Progress' do |job|
+						[job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}", {style:'text-align:center'}]
+					end
+
+					g.column name: '# Messages' do |job|
+						[job.messages.length, {style:'text-align:right'}]
+					end
+
 				end
+			-%>
+		</section>
+	<% else %>
+		<section>
+			<h2>
+				Collections
+				<%= link_to 'create', new_collection_path, {class: 'control button'} if @user == current_user %>
+			</h2>
 
-				g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
-					[badge_type(project).html_safe, {style: 'text-align:center'}]
-				end
+			<%=
+				grid(@collections_grid) do |g|
 
-				g.column name: 'Description', attribute: 'description' do |project|
-					[strip_tags(project.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-				end
-
-				g.column name: '# Ann.', attribute: 'denotations_num' do |project|
-					# [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:5.5em; text-align:right'}]
-					[number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'width:5.5em; text-align:right'}]
-				end
-
-				g.column name: 'Updated at', attribute: 'updated_at', filter: false do |project|
-					[project.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
-				end
-
-				g.column name: 'Status', attribute: 'status', custom_filter: {'released' => 1, 'beta' => 2, 'uploading' => 3, 'developing' => 8, 'testing' => 9} do |project|
-					[project.status_text, {style: 'width:8em; text-align:center'}]
-				end
-
-			end
-		-%>
-	</section>
-
-	<section>
-		<h2>
-			Automatic annotators
-			<%= link_to 'create', new_annotator_path, {class: 'control button'} if @user == current_user %>
-		</h2>
-
-		<%=
-			if @annotators_grid.resultset.count > 0
-				grid(@annotators_grid) do |g|
-					g.column name: 'Name', attribute: 'name' do |annotator|
-						[link_to(annotator.name, annotator), {style: 'width:10em'}]
+					g.column name: 'Name', attribute: 'name' do |collection|
+						[link_to(collection.name, collection_path(collection.name)), {title: collection.name}]
 					end
 
 					if @user == current_user
-						g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |annotator|
-							[badge_is_public(annotator).html_safe, {style: 'text-align:center'}]
+						g.column attribute: 'accessibility', filter: false, class: 'column-project-type' do |collection|
+							[badge_accessibility(collection).html_safe, {style: 'text-align:center'}]
 						end
 					end
 
-					g.column name: 'Description', attribute: 'description' do |annotator|
-						[strip_tags(annotator.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+					g.column filter: false, class: 'column-project-type' do |collection|
+						[badge_sharedtask(collection).html_safe, {style: 'text-align:center'}]
 					end
+
+					g.column name: 'Description', attribute: 'description' do |collection|
+						[strip_tags(collection.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+					end
+
+					g.column name: 'Updated at', attribute: 'updated_at', filter: false do |collection|
+						[collection.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
+					end
+
 				end
-			else
-				'none'
-			end
-		-%>
-	</section>
+			-%>
+		</section>
 
-	<section>
-		<h2>
-			Editors
-			<%= link_to 'create', new_editor_path, {class: 'control button'} if @user == current_user %>
-		</h2>
+		<section>
+			<h2>
+				Projects
+				<%= link_to 'create', new_project_path, {class: 'control button'} if @user == current_user %>
+			</h2>
 
-		<%=
-			if @editors_grid.resultset.count > 0
-				grid(@editors_grid) do |g|
-					g.column name: 'Name', attribute: 'name' do |editor|
-						[link_to(editor.name, editor), {style: 'width:10em'}]
+			<%=
+				grid(@projects_grid) do |g|
+
+					g.column name: 'Name', attribute: 'name' do |project|
+						[link_to(project.name, project_path(project.name)), {title: project.name}]
 					end
 
 					if @user == current_user
-						g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |editor|
-							[badge_is_public(editor).html_safe, {style: 'text-align:center'}]
+						g.column name: 'A', attribute: 'accessibility', filter: false, class: 'column-project-type' do |project|
+							[badge_accessibility(project).html_safe, {style: 'text-align:center'}]
 						end
 					end
 
-					g.column name: 'Description', attribute: 'description' do |editor|
-						[strip_tags(editor.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+					g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
+						[badge_type(project).html_safe, {style: 'text-align:center'}]
 					end
+
+					g.column name: 'Description', attribute: 'description' do |project|
+						[strip_tags(project.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+					end
+
+					g.column name: '# Ann.', attribute: 'denotations_num' do |project|
+						# [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:5.5em; text-align:right'}]
+						[number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'width:5.5em; text-align:right'}]
+					end
+
+					g.column name: 'Updated at', attribute: 'updated_at', filter: false do |project|
+						[project.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
+					end
+
+					g.column name: 'Status', attribute: 'status', custom_filter: {'released' => 1, 'beta' => 2, 'uploading' => 3, 'developing' => 8, 'testing' => 9} do |project|
+						[project.status_text, {style: 'width:8em; text-align:center'}]
+					end
+
 				end
-			else
-				'none'
-			end
-		-%>
-	</section>
+			-%>
+		</section>
+
+		<section>
+			<h2>
+				Automatic annotators
+				<%= link_to 'create', new_annotator_path, {class: 'control button'} if @user == current_user %>
+			</h2>
+
+			<%=
+				if @annotators_grid.resultset.count > 0
+					grid(@annotators_grid) do |g|
+						g.column name: 'Name', attribute: 'name' do |annotator|
+							[link_to(annotator.name, annotator), {style: 'width:10em'}]
+						end
+
+						if @user == current_user
+							g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |annotator|
+								[badge_is_public(annotator).html_safe, {style: 'text-align:center'}]
+							end
+						end
+
+						g.column name: 'Description', attribute: 'description' do |annotator|
+							[strip_tags(annotator.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+						end
+					end
+				else
+					'none'
+				end
+			-%>
+		</section>
+
+		<section>
+			<h2>
+				Editors
+				<%= link_to 'create', new_editor_path, {class: 'control button'} if @user == current_user %>
+			</h2>
+
+			<%=
+				if @editors_grid.resultset.count > 0
+					grid(@editors_grid) do |g|
+						g.column name: 'Name', attribute: 'name' do |editor|
+							[link_to(editor.name, editor), {style: 'width:10em'}]
+						end
+
+						if @user == current_user
+							g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |editor|
+								[badge_is_public(editor).html_safe, {style: 'text-align:center'}]
+							end
+						end
+
+						g.column name: 'Description', attribute: 'description' do |editor|
+							[strip_tags(editor.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+						end
+					end
+				else
+					'none'
+				end
+			-%>
+		</section>
+	<% end %>
 
 </section>

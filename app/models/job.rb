@@ -9,6 +9,7 @@ class Job < ActiveRecord::Base
 	scope :unfinished, -> {where('ended_at IS NULL')}
 	scope :finished, -> {where('ended_at IS NOT NULL')}
 
+
 	def waiting?
 		begun_at.nil?
 	end
@@ -19,6 +20,16 @@ class Job < ActiveRecord::Base
 
 	def finished?
 		!ended_at.nil?
+	end
+
+	def state
+		if begun_at.nil?
+			'Waiting'
+		elsif ended_at.nil?
+			'Running'
+		else
+			'Finished'
+		end
 	end
 
 	def destroy_if_not_running
