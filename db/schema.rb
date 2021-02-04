@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20210119101837) do
+ActiveRecord::Schema.define(:version => 20210203161056) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -256,8 +256,8 @@ ActiveRecord::Schema.define(:version => 20210119101837) do
     t.string   "name"
     t.text     "description"
     t.string   "author"
-    t.datetime "created_at",                                                          :null => false
-    t.datetime "updated_at",                                                          :null => false
+    t.datetime "created_at",                                                      :null => false
+    t.datetime "updated_at",                                                      :null => false
     t.string   "license"
     t.string   "reference"
     t.integer  "accessibility"
@@ -268,19 +268,17 @@ ActiveRecord::Schema.define(:version => 20210119101837) do
     t.string   "xmlwriter"
     t.string   "bionlpwriter"
     t.string   "type"
-    t.integer  "pmdocs_count",                     :default => 0
-    t.integer  "pmcdocs_count",                    :default => 0
-    t.integer  "denotations_num",                  :default => 0
-    t.integer  "relations_num",                    :default => 0
-    t.integer  "pending_associate_projects_count", :default => 0
-    t.boolean  "annotations_zip_downloadable",     :default => true
-    t.datetime "annotations_updated_at",           :default => '2016-04-08 06:25:21'
+    t.integer  "docs_count",                   :default => 0
+    t.integer  "denotations_num",              :default => 0
+    t.integer  "relations_num",                :default => 0
+    t.boolean  "annotations_zip_downloadable", :default => true
+    t.datetime "annotations_updated_at",       :default => '2016-04-08 06:25:21'
     t.text     "namespaces"
     t.integer  "process"
-    t.integer  "annotations_count",                :default => 0
+    t.integer  "annotations_count",            :default => 0
     t.string   "sample"
-    t.boolean  "anonymize",                        :default => false,                 :null => false
-    t.integer  "modifications_num",                :default => 0
+    t.boolean  "anonymize",                    :default => false,                 :null => false
+    t.integer  "modifications_num",            :default => 0
     t.string   "textae_config"
     t.integer  "annotator_id"
   end

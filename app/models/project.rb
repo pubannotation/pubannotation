@@ -22,7 +22,7 @@ class Project < ActiveRecord::Base
 									:sample, :rdfwriter, :xmlwriter, :bionlpwriter,
 									:textae_config, :annotator_id,
 									:annotations_zip_downloadable, :namespaces, :process,
-									:pmdocs_count, :pmcdocs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
+									:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
 	has_many :denotations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
 	has_many :relations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
 	has_many :attrivutes, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
@@ -125,16 +125,6 @@ class Project < ActiveRecord::Base
 	}
 
 	# scopes for order
-	scope :order_pmdocs_count,
-		joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PubMed'").
-		group('projects.id').
-		order("count(docs.id) DESC")
-		
-	scope :order_pmcdocs_count,
-		joins("LEFT OUTER JOIN docs_projects ON docs_projects.project_id = projects.id LEFT OUTER JOIN docs ON docs.id = docs_projects.doc_id AND docs.sourcedb = 'PMC'").
-		group('projects.id').
-		order("count(docs.id) DESC")
-		
 	scope :order_denotations_num,
 		joins('LEFT OUTER JOIN denotations ON denotations.project_id = projects.id').
 		group('projects.id').
@@ -220,20 +210,6 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def self.order_by(projects, order, current_user)
-		case order
-		when 'pmdocs_count', 'pmcdocs_count', 'denotations_num', 'relations_num'
-			projects.accessible(current_user).order("#{order} DESC")
-		when 'author'
-			projects.accessible(current_user).order_author
-		when 'maintainer'
-			projects.accessible(current_user).order_maintainer
-		else
-			# 'association' or nil
-			projects.accessible(current_user).order_association(current_user)
-		end    
-	end
-
 	def self.statistics
 		counts = Project.where(accessibility: 1).group(:status).group(:process).count
 	end
@@ -297,7 +273,7 @@ class Project < ActiveRecord::Base
 	end
 
 	def json
-		except_columns = %w(pmdocs_count pmcdocs_count pending_associate_projects_count user_id)
+		except_columns = %w(docs_count user_id)
 		to_json(except: except_columns, methods: :maintainer)
 	end
 
@@ -1199,11 +1175,9 @@ class Project < ActiveRecord::Base
 		relations_num = relations.count
 		modifications_num = modifications.count
 
-		pmdocs_count = docs.where(sourcedb: "PubMed").count
-		pmcdocs_count = docs.where(sourcedb: "PMC").count
+		docs_count = docs.count
 		update_attributes(
-			pmdocs_count: pmdocs_count,
-			pmcdocs_count: pmcdocs_count,
+			docs_count: docs_count,
 			denotations_num: denotations_num,
 			relations_num: relations_num,
 			modifications_num: relations_num,
