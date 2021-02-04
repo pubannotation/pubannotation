@@ -291,6 +291,11 @@ class Project < ActiveRecord::Base
 		return false
 	end
 
+	def has_unfinished_jobs?
+		jobs.each{|job| return true if job.unfinished?}
+		return false
+	end
+
 	def has_doc?
 		ProjectDoc.exists?(project_id: id)
 	end
@@ -313,6 +318,10 @@ class Project < ActiveRecord::Base
 
 	def downloads_system_path
 		"#{Rails.root}/public#{Project::DOWNLOADS_PATH}" 
+	end
+
+	def annotations_filename
+		"annotations-#{self.name.gsub(' ', '_')}"
 	end
 
 	def annotations_zip_filename
@@ -463,7 +472,7 @@ class Project < ActiveRecord::Base
 				# batch processing for rdfizing annotations
 				if (num_denotations_in_annotation_queue > 0) && ((num_denotations_in_annotation_queue + num_denotations_in_current_doc) >= size_batch_annotations)
 					annos_ttl = rdfizer_annos.rdfize(annotations_col)
-					filename = "annotations-#{batch_num}.ttl"
+					filename = "#{annotations_filename}-#{batch_num}.ttl"
 					batch_num += 1
 					File.open(annotations_rdf_dir_path + '/' + filename, "w"){|f| f.write(annos_ttl)}
 					annotations_col.clear
@@ -482,7 +491,7 @@ class Project < ActiveRecord::Base
 		unless annotations_col.empty?
 			begin
 				annos_ttl = rdfizer_annos.rdfize(annotations_col)
-				filename = "annotations-#{batch_num}.ttl"
+				filename = "#{annotations_filename}-#{batch_num}.ttl"
 				batch_num += 1
 				File.open(annotations_rdf_dir_path + '/' + filename, "w"){|f| f.write(annos_ttl)}
 			# rescue => e

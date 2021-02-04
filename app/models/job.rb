@@ -22,6 +22,10 @@ class Job < ActiveRecord::Base
 		!ended_at.nil?
 	end
 
+	def unfinished?
+		ended_at.nil?
+	end
+
 	def state
 		if begun_at.nil?
 			'Waiting'

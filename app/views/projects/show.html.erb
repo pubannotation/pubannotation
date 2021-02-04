@@ -146,7 +146,12 @@
 						<% if last_indexed_at = @project.last_indexed_at %>
 							Updated at <%= last_indexed_at %><br/>
 						<% end %>
-						<%= link_to t('views.docs.rdfize_annotations'), rdfize_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+						<% if current_user.root? %>
+							<%= link_to t('views.docs.rdfize_annotations'), rdfize_annotations_project_path(@project.name), class: 'button long_button' -%>
+						<% else %>
+							<a class="button long_button disabled" title="RDFization of individual project is disabled at the moment."><%= t('views.docs.rdfize_annotations') -%></a>
+						<% end %>
+					</td>
 				</tr>
 			<% end %>
 			<tr>
