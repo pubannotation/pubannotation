@@ -3,14 +3,22 @@ require 'text_alignment'
 module AnnotationsHelper
 	def annotations_count_helper(project, doc = nil, span = nil)
 		project = doc.projects.first if project.nil? && doc.projects_num == 1
-		if !project.present? || project.annotations_accessible?(current_user)
-			if doc.present?
-				doc.get_denotations_count(project.id, span)
+		if project
+			if project.annotations_accessible?(current_user)
+				if doc.present?
+					doc.get_denotations_count(project.id, span)
+				else
+					project.denotations_num
+				end
 			else
-				project.denotations_num
+				'<i class="fa fa-bars" aria-hidden="true" title="blinded"></i>'.html_safe
 			end
 		else
-			'<i class="fa fa-bars" aria-hidden="true" title="blinded"></i>'.html_safe
+			if doc.present?
+				doc.get_denotations_count(nil, span)
+			else
+				raise "count of all denotations?"
+			end
 		end
 	end
 
