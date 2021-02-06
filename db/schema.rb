@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20210203161056) do
+ActiveRecord::Schema.define(:version => 20210206020919) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -115,6 +115,8 @@ ActiveRecord::Schema.define(:version => 20210203161056) do
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
+
+  add_index "divisions", ["doc_id"], :name => "index_divisions_on_doc_id"
 
   create_table "docs", :force => true do |t|
     t.text     "body"
@@ -340,6 +342,8 @@ ActiveRecord::Schema.define(:version => 20210203161056) do
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
+
+  add_index "typesettings", ["doc_id"], :name => "index_typesettings_on_doc_id"
 
   create_table "users", :force => true do |t|
     t.string   "email",                  :default => "",    :null => false
