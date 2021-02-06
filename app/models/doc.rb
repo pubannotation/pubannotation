@@ -458,7 +458,6 @@ class Doc < ActiveRecord::Base
 		self.get_denotations_hash(project_id).map{|d| {id:d[:id], span:d[:span], obj:self.span_url(d[:span])}}.uniq{|d| d[:span]}
 	end
 
-
 	def text(params)
 		prev_text, span, next_text = self.span(params)
 		[prev_text, span, next_text].compact.join('') 
@@ -483,7 +482,7 @@ class Doc < ActiveRecord::Base
 			csv << values 
 		end
 	end  
-	
+
 	def highlight_span(span)
 		begin_pos = span[:begin].to_i
 		end_pos = span[:end].to_i
@@ -677,6 +676,19 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
+	def get_divisions(span = nil, context_size = nil)
+		if span.present?
+			context_size ||= 0
+			b = span[:begin] - context_size
+			e = span[:end] + context_size
+			b = 0 if b < 0
+			e = body.length if e > body.length
+			divisions.select{|t| t.begin >= b && t.end < e}.map{|t| t.begin -= b; t.end -= b; t.to_hash}
+		else
+			divisions.map{|t| t.to_hash}
+		end
+	end
+
 	def get_typesettings(span = nil, context_size = nil)
 		if span.present?
 			context_size ||= 0
@@ -690,14 +702,63 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def hannotations(project = nil, span = nil, context_size = nil, options = nil)
-		annotations = {
-			target: graph_uri,
+	def hdoc
+		{
+			text: body,
+			sourcedb: sourcedb,
+			sourceid: sourceid
+		}
+	end
+
+	def to_hash(span = nil, context_size = nil)
+		{
 			sourcedb: sourcedb,
 			sourceid: sourceid,
+			source_url: source,
 			text: get_text(span, context_size),
+			divisions: get_divisions(span, context_size),
 			typesettings: get_typesettings(span, context_size)
+		}.reject{|k, v| k != :text && (v.nil? || v.empty?)}
+	end
+
+	def to_list_hash(doc_type)
+		{
+			sourcedb: sourcedb,
+			sourceid: sourceid,
+			url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(self.sourcedb, self.sourceid)
 		}
+	end
+
+	def self.hash_to_tsv(docs)
+		headers = docs.first.keys
+		tsv = CSV.generate(col_sep:"\t") do |csv|
+			# headers
+			csv << headers
+			docs.each do |doc|
+				csv << doc.values
+			end
+		end
+		return tsv
+	end
+
+	def self.to_tsv(docs, doc_type)
+		headers = docs.first.to_list_hash(doc_type).keys
+		tsv = CSV.generate(col_sep:"\t") do |csv|
+			# headers
+			csv << headers
+			docs.each do |doc|
+				doc_values = Array.new
+				headers.each do |key|
+					doc_values << doc.to_list_hash(doc_type)[key]
+				end
+				csv << doc_values
+			end
+		end
+		return tsv
+	end
+
+	def hannotations(project = nil, span = nil, context_size = nil, options = nil)
+		annotations = self.to_hash(span, context_size)
 
 		if project.present? && !project.respond_to?(:each)
 			annotations.merge!(get_project_annotations(project, span, context_size, options))
@@ -748,60 +809,6 @@ class Doc < ActiveRecord::Base
 		if self_denotations.present?
 			self_denotations.within_span({:begin => params[:begin], :end => params[:end]}).collect{|denotation| denotation.project}.uniq.compact
 		end  
-	end
-
-	def hdoc
-		{
-			text: body,
-			sourcedb: sourcedb,
-			sourceid: sourceid
-		}
-	end
-
-	def to_hash
-		{
-			text: body,
-			sourcedb: sourcedb,
-			sourceid: sourceid,
-			source_url: source,
-			typesettings: get_typesettings
-		}.compact
-	end
-	
-	def to_list_hash(doc_type)
-		{
-			sourcedb: sourcedb,
-			sourceid: sourceid,
-			url: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(self.sourcedb, self.sourceid)
-		}
-	end
-
-	def self.hash_to_tsv(docs)
-		headers = docs.first.keys
-		tsv = CSV.generate(col_sep:"\t") do |csv|
-			# headers
-			csv << headers
-			docs.each do |doc|
-				csv << doc.values
-			end
-		end
-		return tsv
-	end
-
-	def self.to_tsv(docs, doc_type)
-		headers = docs.first.to_list_hash(doc_type).keys
-		tsv = CSV.generate(col_sep:"\t") do |csv|
-			# headers
-			csv << headers
-			docs.each do |doc|
-				doc_values = Array.new
-				headers.each do |key|
-					doc_values << doc.to_list_hash(doc_type)[key]
-				end
-				csv << doc_values
-			end
-		end
-		return tsv
 	end
 
 	def self.sql_find(params, current_user, project)

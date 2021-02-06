@@ -50,69 +50,6 @@ class SpansController < ApplicationController
 			end
 		end
 	end
-
-	def doc_span_show
-		begin
-			docs = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
-			raise "Could not find the document." unless docs.present?
-			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
-
-			@doc = docs.first
-			@span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
-
-			@doc.set_ascii_body if params[:encoding] == 'ascii'
-			@content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
-
-			get_docs_projects
-			valid_projects = @doc.get_projects(@span)
-
-			@projects = @projects & valid_projects
-
-			# @annotations_projects_check = true
-			@annotations_path = "#{url_for(:only_path => true)}/annotations"
-
-			respond_to do |format|
-				format.html {render 'docs/show'}
-				format.json {render json: @doc.to_hash}
-				format.txt  {render text: @doc.body}
-			end
-		rescue => e
-			respond_to do |format|
-				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render text: message, status: :unprocessable_entity}
-			end
-		end
-	end
-
-	def project_doc_span_show
-		begin
-			@project = Project.accessible(current_user).find_by_name(params[:project_id])
-			raise "Could not find the project." unless @project.present?
-
-			docs = @project.docs.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
-			raise "Could not find the document." unless docs.present?
-			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
-
-			@doc = docs.first
-			@span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
-
-			@doc.set_ascii_body if (params[:encoding] == 'ascii')
-			@content = @doc.highlight_span(@span).gsub(/\n/, "<br>")
-
-			respond_to do |format|
-				format.html {render 'docs/show_in_project'}
-				format.txt  {render text: @annotations[:text]}
-				format.json {render json: {text: @annotations[:text]}}
-			end
-		rescue => e
-			respond_to do |format|
-				format.html {redirect_to project_docs_path(@project.name), notice: e.message}
-				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render status: :unprocessable_entity}
-			end
-		end
-	end
 	
 	def sql
 		begin

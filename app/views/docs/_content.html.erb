@@ -1,6 +1,12 @@
 <table style="width:100%">
 <tr>
-	<td class="text"><div id="body" style="max-height:300px; overflow-y:auto"><%= @content.html_safe %></div></td>
+	<td class="text">
+		<% if @span %>
+			<div id="body" class="with_hilight"><%= @doc.highlight_span(@span).html_safe %></div>
+		<% else %>
+			<div id="body"><%= @doc.body %></div>
+		<% end %>
+	</td>
 </tr>
 <tr>
 	<td id="linkSpace"></td>

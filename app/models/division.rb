@@ -15,4 +15,14 @@ class Division < ActiveRecord::Base
 		}
 	end
 
+	def to_hash
+		{
+			label: self.label,
+			span: {
+				begin: self.begin,
+				end: self.end
+			}
+		}
+	end
+
 end

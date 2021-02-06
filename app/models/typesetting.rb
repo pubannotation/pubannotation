@@ -15,13 +15,13 @@ class Typesetting < ActiveRecord::Base
 		}
 	end
 
-  def to_hash
-    {
+	def to_hash
+		{
 			style: self.style,
 			span: {
 				begin: self.begin,
 				end: self.end
 			}
-    }
-  end
+		}
+	end
 end

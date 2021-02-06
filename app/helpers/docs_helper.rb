@@ -1,8 +1,11 @@
 module DocsHelper
 
 	def doc_show_path_helper
-		action = params[:project_id].present? ? :show_in_project : :show
-		params.merge(controller: :docs, action: action).except(:begin, :end)
+		if params.has_key? :project_id
+			show_project_sourcedb_sourceid_docs_path(params[:project_id], params[:sourcedb], params[:sourceid])
+		else
+			doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid])
+		end
 	end
 
 	def span_show_path_helper

@@ -103,21 +103,29 @@ class DocsController < ApplicationController
 
 	def show
 		begin
-			docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+			docs = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
 			raise "Could not find the document: #{params[:sourcedb]}:#{params[:sourceid]}" unless docs.present?
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
 			@doc = docs.first
+			@span = if params.has_key?(:begin) && params.has_key?(:end)
+				{:begin => params[:begin].to_i, :end => params[:end].to_i}
+			else
+				nil
+			end
 
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
-			@content = @doc.body.gsub(/\n/, "<br>")
 
 			get_docs_projects
+			if @span
+				valid_projects = @doc.get_projects(@span)
+				@projects = @projects & valid_projects
+			end
 
 			respond_to do |format|
 				format.html
-				format.json {render json: @doc.to_hash}
-				format.txt  {render text: @doc.body}
+				format.json {render json: @doc.to_hash(@span)}
+				format.txt  {render text: @doc.get_text(@span)}
 			end
 
 		rescue => e
@@ -139,14 +147,18 @@ class DocsController < ApplicationController
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
 			@doc = docs.first
+			@span = if params.has_key?(:begin) && params.has_key?(:end)
+				{:begin => params[:begin].to_i, :end => params[:end].to_i}
+			else
+				nil
+			end
 
 			@doc.set_ascii_body if (params[:encoding] == 'ascii')
-			@content = @doc.body.gsub(/\n/, "<br>")
 
 			respond_to do |format|
 				format.html
-				format.json {render json: @doc.to_hash}
-				format.txt  {render text: @doc.body}
+				format.json {render json: @doc.to_hash(@span)}
+				format.txt  {render text: @doc.get_text(@span)}
 			end
 
 		rescue => e

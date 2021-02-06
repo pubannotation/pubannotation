@@ -1,11 +1,19 @@
 @import 'variables';
 
-.context {
-	color: #888888;
+#body {
+	max-height: 300px;
+	overflow-y: auto;
+	white-space: pre-line;
+}
+
+.with_hilight {
+	background-color: #dde;
+	color: #aaa;
 }
 
 .highlight {
-	background-color: #ffff88;
+	background-color: #fff;
+	color: #000;
 }
 
 .linkSpace {

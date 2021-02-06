@@ -71,13 +71,6 @@ Pubann::Application.routes.draw do
 
 			get :autocomplete_doc_sourcedb
 		end
-		member do
-			get 'annotations' => 'annotations#doc_annotations_index'
-			get 'spans' => 'spans#spans_index', :as => 'spans_index'
-			# get 'spans/:begin-:end' => 'docs#spans', :as => 'spans'
-			get 'spans/:begin-:end' => 'spans#span_show', :as => 'span_show'
-			get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'
-		end
 	end
 
 	# routings for /docs/sourcedb....
@@ -100,7 +93,7 @@ Pubann::Application.routes.draw do
 						delete '/' => 'docs#delete', :as=>'delete'
 						get 'spans' => 'spans#doc_spans_index'
 						post 'spans' => 'spans#get_url'
-						get 'spans/:begin-:end' => 'spans#doc_span_show', :as => 'span_show'
+						get 'spans/:begin-:end' => 'docs#show', :as => 'span_show'
 						get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'
 						get 'spans/:begin-:end/annotations/merge_view' => 'annotations#doc_annotations_merge_view'
 						get 'spans/:begin-:end/annotations/list_view' => 'annotations#doc_annotations_list_view'
@@ -197,7 +190,7 @@ Pubann::Application.routes.draw do
 								post 'annotations/obtain' => 'annotations#obtain'
 								delete 'annotations' => 'annotations#destroy', as: 'destroy_annotations'
 								get 'spans' => 'spans#project_doc_spans_index', :as => 'spans_index'
-								get 'spans/:begin-:end' => 'spans#project_doc_span_show', :as => 'span_show'
+								get 'spans/:begin-:end' => 'docs#show_in_project', :as => 'span_show'
 								get 'spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index', :as => 'span_annotations'
 								post 'spans/:begin-:end/annotations' => 'annotations#create'
 								delete 'spans/:begin-:end/annotations' => 'annotations#destroy', as: 'destroy_annotations_in_span'
@@ -208,12 +201,6 @@ Pubann::Application.routes.draw do
 				end
 			end
 
-			member do
-				get 'annotations' => 'annotations#project_doc_annotations_index'
-				get 'spans' => 'spans#spans_index', :as => 'spans_index'
-				get 'spans/:begin-:end' => 'spans#span_show', :as => 'span_show'
-				get 'spans/:begin-:end/annotations' => 'annotations#project_doc_annotations_index'
-			end
 			resources :annotations do
 			end
 		end

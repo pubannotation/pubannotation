@@ -1,6 +1,6 @@
 <h1>
-	<%= link_to_unless_current "#{params[:sourcedb]}:#{params[:sourceid]}", doc_show_path_helper -%>
-	<%= link_to_unless_current " / #{params[:begin]}-#{params[:end]}", span_show_path_helper if params[:begin].present? -%>
+	<%= link_to "#{params[:sourcedb]}:#{params[:sourceid]}", doc_show_path_helper -%>
+	<%= " / #{params[:begin]}-#{params[:end]}" if params.has_key? :begin %>
 
 	<span class='tab-bar'>
 		<%= json_text_link_helper.html_safe -%>

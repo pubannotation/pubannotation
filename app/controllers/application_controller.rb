@@ -121,10 +121,7 @@ class ApplicationController < ActionController::Base
 		@projects = @doc.projects.annotations_accessible(current_user).order(sort_order)
 		if params[:projects].present?
 			select_project_names = params[:projects].split(',').uniq
-			@selected_projects = Array.new 
-			select_project_names.each do |project_name|
-				@selected_projects.push @projects.detect{|project| project.name == project_name}
-			end
+			@selected_projects = select_project_names.collect{|pname| Project.where(name:pname).first}
 			@projects -= @selected_projects
 		end
 	end
