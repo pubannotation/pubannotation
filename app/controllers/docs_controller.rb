@@ -103,8 +103,16 @@ class DocsController < ApplicationController
 
 	def show
 		begin
-			docs = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
-			raise "Could not find the document: #{params[:sourcedb]}:#{params[:sourceid]}" unless docs.present?
+			sourcedb = params[:sourcedb]
+			sourceid = params[:sourceid]
+
+			docs = Doc.where(sourcedb:sourcedb, sourceid:sourceid)
+
+			unless docs.present?
+				docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid])
+				raise "Could not find the document, #{sourcedb}:#{sourceid}. The document may not be in the Open Access Subset of PMC, or PMC is not responding now." unless docs.present?
+			end
+
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
 			@doc = docs.first
@@ -132,7 +140,7 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render text: message, status: :unprocessable_entity}
+				format.txt  {render text: e.message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -143,7 +151,7 @@ class DocsController < ApplicationController
 			raise "Could not find the project." unless @project.present?
 
 			docs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "Could not find the document: #{params[:sourcedb]}:#{params[:sourceid]} within this project." unless docs.present?
+			raise "Could not find the document, #{params[:sourcedb]}:#{params[:sourceid]}, within this project." unless docs.present?
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
 			@doc = docs.first
