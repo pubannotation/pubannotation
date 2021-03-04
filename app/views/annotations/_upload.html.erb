@@ -1,3 +1,13 @@
+<p>To upload annotations to PubAnnotation, annotations need to be perpared in JSON files.
+For details of the annotations format,
+see the document, <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation annotation format.</a></p>
+
+<p>One JSON file may contain one JSON object, or an array of multiple JSON objects.
+However, one JSON file cannot contain annotations to multiple documents.
+In other words, all the JSON objects in one JSON file have to have the same <i>sourcedb</i> and <i>sourceid</i> specifications.</p>
+
+<p>For uploading, an individual JSON file (<span style="text-decoration:underline">*.json</span>), or a gzip compressed tar file (<span style="text-decoration:underline">*.tgz</span> or <span style="text-decoration:underline">*.tar.gz</span>) may be chosen in the interface below.</p>
+
 <%= form_tag project_create_annotations_from_upload_path(@project.name), multipart: true do -%>
 	<table>
 		<tr>
@@ -16,6 +26,13 @@
 					<li><%= radio_button_tag :mode, :skip %><%= label_tag :mode_skip,
 						'be <span style="font-weight:bold">SKIP</span>ped.'.html_safe %></li>
 				</ul>
+			</td>
+		</tr>
+		<tr>
+			<th>Hint about your json files</th>
+			<td>
+				In case your JSON files are JSON arrays (if a JSON file contains multiple JSON objects, which means the text of a document is scattered across multiple JSON objects), are the texts disjoint to each other?
+				(Yes <%= check_box_tag :to_prevent_overlap, 1, true -%>)
 			</td>
 		</tr>
 		<tr>

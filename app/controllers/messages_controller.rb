@@ -24,7 +24,7 @@ class MessagesController < ApplicationController
 	def data_source
 		message = Message.find(params[:id])
 
-		source_text = message.data[:block_alignment][:source_text]
+		source_text = message.data[:block_alignment][:text]
 		denotations = message.data[:block_alignment][:denotations]
 
 		data = {text: source_text}
@@ -36,7 +36,7 @@ class MessagesController < ApplicationController
 	def data_target
 		message = Message.find(params[:id])
 
-		target = message.data[:block_alignment][:target_text]
+		target = message.data[:block_alignment][:reference_text]
 
 		data = {text: target}
 

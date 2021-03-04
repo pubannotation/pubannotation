@@ -387,6 +387,7 @@ class AnnotationsController < ApplicationController
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
 			options = {mode: params[:mode].present? ? params[:mode] : 'replace'}
+			options[:to_prevent_overlap] = true if params[:to_prevent_overlap] == "1"
 
 			filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
 			FileUtils.mv file.path, filepath

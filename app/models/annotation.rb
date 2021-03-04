@@ -223,10 +223,6 @@ class Annotation < ActiveRecord::Base
 		annotations
 	end
 
-	def self.prepare_annotations!(annotations, doc, options = {})
-		messages = align_annotations!(annotations, doc, options[:span])
-	end
-
 	def self.chain_spans(annotations)
 		r = annotations[:denotations].inject({denotations:[], chains:[]}) do |m, d|
 			if (d[:span].class == Array) && (d[:span].length > 1)
@@ -461,30 +457,7 @@ class Annotation < ActiveRecord::Base
 		messages
 	end
 
-	# to work on the hash representation of denotations
-	# to assume that there is no bag representation to this method
-	def self.align_hdenotations!(hdenotations, str, rstr, size_ngram = nil, size_window = nil, text_similiarity_threshold = nil)
-		return [] unless hdenotations.present? && str != rstr
-
-		messages = []
-
-		align = TextAlignment::TextAlignment.new(str, rstr, hdenotations, size_ngram, size_window, text_similiarity_threshold)
-		denotations_new = align.transform_hdenotations(hdenotations)
-
-		unless align.lost_annotations.empty?
-			messages << {
-				body:"Alignment failed. Invalid denotations found after transformation",
-				data:{
-					block_alignment: align.block_alignment,
-					lost_annotations: align.lost_annotations
-				}
-			}
-		end
-		hdenotations.replace(denotations_new)
-		messages
-	end
-
-	def self.align_denotations!(denotations, str, rstr, size_ngram = nil, size_window = nil, text_similiarity_threshold = nil)
+	def self.align_denotations!(denotations, str, rstr)
 		return [] unless denotations.present? && str != rstr
 
 		messages = []
@@ -500,11 +473,12 @@ class Annotation < ActiveRecord::Base
 			raise message
 		end
 
-		align = TextAlignment::TextAlignment.new(str, rstr, nil, size_ngram, size_window, text_similiarity_threshold)
-		align.transform_denotations!(denotations)
+		aligner = TextAlignment::TextAlignment.new(rstr)
+		aligner.align(str)
+		aligner.transform_denotations!(denotations)
 
 		bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= rstr.length)}
-		unless bads.empty? # && align.similarity > 0.5
+		unless bads.empty? # && aligner.similarity > 0.5
 			message = "Alignment failed. Invalid transformations found: "
 			message += if bads.length > 5
 				bads[0 ... 5].map{|d| d.to_s}.join(", ") + "..."
@@ -518,10 +492,39 @@ class Annotation < ActiveRecord::Base
 	end
 
 	# To align annotations, considering the span specification
-	def self.align_annotations!(annotations, doc, span = nil)
+	def self.align_annotations!(annotations, ref_text, aligner)
 		return [] unless annotations[:denotations].present?
 
-		if span
+		messages = []
+		begin
+			# align_hdenotations
+			denotations = annotations[:denotations]
+			aligner.align(annotations[:text], denotations)
+
+			denotations.replace(aligner.transform_hdenotations(denotations))
+
+			unless aligner.lost_annotations.empty?
+				messages << {
+					sourcedb: annotations[:sourcedb],
+					sourceid: annotations[:sourceid],
+					body:"Alignment failed. Invalid denotations found after transformation",
+					data:{
+						block_alignment: aligner.block_alignment,
+						lost_annotations: aligner.lost_annotations
+					}
+				}
+			end
+		rescue => e
+			raise "[#{annotations[:sourcedb]}:#{annotations[:sourceid]}] #{e.message}"
+		end
+		annotations[:text] = ref_text
+		annotations.delete_if{|k,v| !v.present?}
+		messages
+	end
+
+	def self.prepare_annotations!(annotations, doc, options = {})
+		if options[:span]
+			raise ArgumentError, "Annotations are in array, for which span cannot be specified." if annotations.is_a? Array
 			raise ArgumentError, "The text of the span might be changed, which is not allowed when the span is explictely specified in the URL." if annotations[:text] != doc.get_text(span)
 
 			annotations[:denotations].each do |d|
@@ -532,17 +535,19 @@ class Annotation < ActiveRecord::Base
 			[]
 		else
 			ref_text = doc.original_body.nil? ? doc.body : doc.original_body
-			if annotations[:text] == ref_text
-				[]
+
+			messages = if annotations.is_a? Array
+				aligner = TextAlignment::TextAlignment.new(ref_text, options[:to_prevent_overlap])
+				annotations.map do |a|
+					align_annotations!(a, ref_text, aligner)
+				end.flatten
 			else
-				begin
-					messages = align_hdenotations!(annotations[:denotations], annotations[:text], ref_text)
-				rescue => e
-					raise "[#{annotations[:sourcedb]}:#{annotations[:sourceid]}-#{annotations[:divid]}] #{e.message}"
+				if annotations[:text] == ref_text
+					[]
+				else
+					aligner = TextAlignment::TextAlignment.new(ref_text)
+					align_annotations!(annotations, ref_text, aligner)
 				end
-				annotations[:text] = doc.body
-				annotations.delete_if{|k,v| !v.present?}
-				messages
 			end
 		end
 	end

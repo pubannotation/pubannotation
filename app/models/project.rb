@@ -965,45 +965,64 @@ class Project < ActiveRecord::Base
 		messages = []
 		num_skipped = 0
 
-		aligned_collection = annotations_collection.inject([]) do |col, annotations|
-
-			doc = Doc.find_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
-
-			if doc.present?
-
-				if options[:mode] == 'skip'
-					num = ProjectDoc.where(project_id:id, doc_id:doc.id).limit(1).pluck(:denotations_num).first
-					if num > 0
-						num_skipped += 1
-						next
-					end
-				end
-
-				begin
-					msgs = Annotation.prepare_annotations!(annotations, doc)
-					messages += msgs.map{|msg| msg.merge({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid]})}
-
-					case options[:mode]
-					when 'replace'
-						delete_doc_annotations(doc)
-					when 'add'
-						reid_annotations!(annotations, doc)
-					when 'merge'
-						reid_annotations!(annotations, doc)
-						base_annotations = doc.hannotations(self)
-						Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
-					end
-
-					col << annotations
-				rescue StandardError => e
-					messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message}
-				end
-
+		# To find the doc for each annotation object
+		annotations_collection_with_doc = annotations_collection.collect do |annotations|
+			sourcedb, sourceid = if annotations.is_a? Array
+				a = annotations.first
+				[a[:sourcedb], a[:sourceid]]
 			else
-				messages << {sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: 'document does not exist.'}
+				[annotations[:sourcedb], annotations[:sourceid]]
 			end
 
-			col
+			docs = Doc.where(sourcedb:sourcedb, sourceid:sourceid)
+
+			if docs.count == 1
+				[annotations, docs.first]
+			else
+				error_message = if docs.empty?
+					'Document does not exist.'
+				else
+					'Multiple entries of the document.'
+				end
+				messages << {sourcedb:sourcedb, sourceid:sourceid, body:error_message}
+				[annotations, nil]
+			end
+		end.reject{|e| e[1].nil?}
+
+		num_annotations_with_doc = annotations_collection_with_doc.count
+
+		# skip option
+		if options[:mode] == 'skip'
+			annotations_collection_with_doc.select! do |annotations, doc|
+				ProjectDoc.where(project_id:id, doc_id:doc.id).pluck(:denotations_num).first == 0
+			end
+			num_skipped = num_annotations_with_doc - annotations_collection_with_doc.count
+		end
+
+		annotations_collection_with_doc.each do |annotations, doc|
+			messages += Annotation.prepare_annotations!(annotations, doc, options)
+		end
+
+		aligned_collection = []
+		annotations_collection_with_doc.each do |annotations, doc|
+			ann = annotations.is_a?(Array) ? annotations : [annotations]
+
+			if options[:mode] == 'replace'
+				delete_doc_annotations(doc)
+			else
+				case options[:mode]
+				when 'add'
+					ann.each{|a| reid_annotations!(a, doc)}
+				when 'merge'
+					ann.each{|a| reid_annotations!(a, doc)}
+					base_annotations = doc.hannotations(self)
+					ann.each{|a| Annotation.prepare_annotations_for_merging!(a, base_annotations)}
+				end
+			end
+
+			aligned_collection += ann
+		rescue StandardError => e
+			messages << {sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message}
 		end
 
 		messages << {body: "Uploading for #{num_skipped} documents were skipped due to existing annotations."} if num_skipped > 0

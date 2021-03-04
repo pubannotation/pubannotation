@@ -19,12 +19,13 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 			Dir.glob(File.join(dirpath, '**', '*.json'))
 		end.sort
 
-		# check annotation files
+		# initialize the counter
 		if @job
 			@job.update_attribute(:num_items, jsonfiles.length)
 			@job.update_attribute(:num_dones, 0)
 		end
 
+		# initialize necessary variables
 		@total_num_sequenced = 0
 
 		sourcedb_sourceids_index = Hash.new{|hsh, key| hsh[key] = Set.new}
@@ -32,63 +33,57 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 		transaction_size = 0
 
 		jsonfiles.each_with_index do |jsonfile, i|
-			json = File.read(jsonfile)
-			o =
-				begin
-					JSON.parse(json, symbolize_names:true)
-				rescue => e
-					message = "[#{File.basename(jsonfile)}] JSON parse error. Not a valid JSON object."
-					if @job
-						@job.messages << Message.create({body: "[#{File.basename(jsonfile)}] JSON parse error. Not a valid JSON object."})
-					else
-						raise ArgumentError, message
-					end
-					next
-				end
-			annotation_collection = o.is_a?(Array) ? o : [o]
+			annotation_collection = read_annotation(jsonfile)
 
+			count_denotations = 0
+			sourcedb, sourceid = nil, nil
 			annotation_collection.each do |annotations|
-				begin
-					raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
-					Annotation.normalize!(annotations)
-
-					sourcedb_sourceids_index[annotations[:sourcedb]] << annotations[:sourceid]
-
-					if annotations[:denotations].present?
-						annotation_transaction << annotations
-						transaction_size += annotations[:denotations].size
-					end
-
-					if transaction_size > MAX_SIZE_TRANSACTION
-						begin
-							store(annotation_transaction, sourcedb_sourceids_index)
-							if @job
-								@job.update_attribute(:num_dones, i + 1)
-							end
-						ensure
-							annotation_transaction.clear
-							transaction_size = 0
-							sourcedb_sourceids_index.clear
-						end
-					end
-				rescue ActiveRecord::ActiveRecordError => e
-					if @job
-						@job.messages << Message.create({body: e.message})
-					else
-						raise e
-					end
-				rescue StandardError => e
-					if @job
-						@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
-					else
-						raise ArgumentError, "[#{annotations[:sourcedb]}-#{annotations[:sourceid]}#{annotations[:divid].nil? ? '' : '-' + annotations[:divid]}] #{e.message}"
-					end
+				raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
+				if sourcedb.nil?
+					sourcedb = annotations[:sourcedb]
+					sourceid = annotations[:sourceid]
+				elsif (annotations[:sourcedb] != sourcedb) || (annotations[:sourceid] != sourceid)
+					raise ArgumentError, "One json file has to include annotations to the same document."
 				end
+				Annotation.normalize!(annotations)
+				count_denotations += annotations[:denotations].size if annotations[:denotations].present?
+			end
+
+			sourcedb_sourceids_index[sourcedb] << sourceid
+
+			next unless count_denotations > 0
+
+			if transaction_size + count_denotations > MAX_SIZE_TRANSACTION
+				begin
+					store(annotation_transaction, sourcedb_sourceids_index)
+					@job.update_attribute(:num_dones, i) if @job
+				ensure
+					annotation_transaction.clear
+					transaction_size = 0
+					sourcedb_sourceids_index.clear
+				end
+			end
+
+			annotation_transaction << annotation_collection
+			transaction_size += count_denotations
+
+		rescue ActiveRecord::ActiveRecordError => e
+			if @job
+				@job.messages << Message.create({body: e.message})
+			else
+				raise e
+			end
+		rescue StandardError => e
+			if @job
+				@job.messages << Message.create({sourcedb:sourcedb, sourceid:sourceid, body:e.message})
+			else
+				raise ArgumentError, "[#{sourcedb}:#{sourceid}] #{e.message}"
 			end
 		end
 
 		begin
 			store(annotation_transaction, sourcedb_sourceids_index)
+			@job.update_attribute(:num_dones, jsonfiles.length) if @job
 		rescue StandardError => e
 			if @job
 				@job.messages << Message.create({body: e.message})
@@ -100,10 +95,6 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 		if @total_num_sequenced > 0
 			ActionController::Base.new.expire_fragment('sourcedb_counts')
 			ActionController::Base.new.expire_fragment('docs_count')
-		end
-
-		if @job
-			@job.update_attribute(:num_dones, jsonfiles.length)
 		end
 
 		File.unlink(filepath)
@@ -144,5 +135,22 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 			ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
 			sourcedbs_changed.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
 		end
+	end
+
+	def read_annotation(filename)
+		json = File.read(filename)
+		o = begin
+			JSON.parse(json, symbolize_names:true)
+		rescue => e
+			message = "[#{File.basename(jsonfile)}] JSON parse error. Not a valid JSON object."
+			if @job
+				@job.messages << Message.create({body: "[#{File.basename(jsonfile)}] JSON parse error. Not a valid JSON object."})
+			else
+				raise ArgumentError, message
+			end
+		end
+
+		# To return the annotation in an array
+		o.is_a?(Array) ? o : [o]
 	end
 end

@@ -19,7 +19,7 @@
 		<% end %>
 
 		<% if @message[:data] && @message[:data][:lost_annotations] %>
-			<% source_text = @message[:data][:block_alignment][:source_text] %>
+			<% source_text = @message[:data][:block_alignment][:text] %>
 			<section>
 				<h2>Lost annotations</h2>
 				<table>
@@ -56,8 +56,8 @@
 				<%=
 					render partial: 'annotations/block_alignments', locals: {
 						blocks:@message[:data][:block_alignment][:blocks],
-						source_text:@message[:data][:block_alignment][:source_text],
-						target_text:@message[:data][:block_alignment][:target_text],
+						source_text:@message[:data][:block_alignment][:text],
+						target_text:@message[:data][:block_alignment][:reference_text],
 						denotations:@message[:data][:block_alignment][:denotations]
 					}
 				%>
