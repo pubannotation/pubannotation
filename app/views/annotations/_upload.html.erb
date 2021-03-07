@@ -31,8 +31,10 @@ In other words, all the JSON objects in one JSON file have to have the same <i>s
 		<tr>
 			<th>Hint about your json files</th>
 			<td>
-				In case your JSON files are JSON arrays (if a JSON file contains multiple JSON objects, which means the text of a document is scattered across multiple JSON objects), are the texts disjoint to each other?
-				(Yes <%= check_box_tag :to_prevent_overlap, 1, true -%>)
+				<p style="white-space: normal">
+					In case your JSON files are JSON arrays (if a JSON file contains multiple JSON objects, which means the text of a document is scattered across multiple JSON objects), are the texts disjoint to each other?
+					(Yes <%= check_box_tag :to_prevent_overlap, 1, true -%>)
+				</p>
 			</td>
 		</tr>
 		<tr>
