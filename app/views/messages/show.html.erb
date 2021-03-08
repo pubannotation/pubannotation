@@ -35,7 +35,7 @@
 								<%= "[#{a[:source][:begin]}, #{a[:source][:end]}]" %>
 							</td>
 							<td>
-								<%= "[#{a[:target][:begin]}, #{a[:target][:end]}]" %>
+								<%= a[:target].nil? ? '-' : "[#{a[:target][:begin]}, #{a[:target][:end]}]" %>
 							</td>
 						</tr>
 					<% end %>
