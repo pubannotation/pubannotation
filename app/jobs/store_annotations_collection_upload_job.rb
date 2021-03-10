@@ -7,56 +7,36 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 	MAX_SIZE_TRANSACTION = 5000
 
 	def perform
-		# read the filenames of json files into the array jsonfiles
-		dirpath = nil
-		jsonfiles = if filepath.end_with?('.json')
-			Dir.glob(filepath)
-		else
-			dirpath = File.join('tmp', File.basename(filepath, ".*"))
-			unpack_cmd = "mkdir #{dirpath}; tar -xzf #{filepath} -C #{dirpath}"
-			unpack_success_p = system(unpack_cmd)
-			raise IOError, "Could not unpack the archive file." unless unpack_success_p
-			Dir.glob(File.join(dirpath, '**', '*.json'))
-		end.sort
+		# read the filenames of json files into the array filenames
+		filenames, dirpath = read_filenames(filepath)
 
 		# initialize the counter
 		if @job
-			@job.update_attribute(:num_items, jsonfiles.length)
+			@job.update_attribute(:num_items, filenames.length)
 			@job.update_attribute(:num_dones, 0)
 		end
 
 		# initialize necessary variables
 		@total_num_sequenced = 0
 
-		sourcedb_sourceids_index = Hash.new{|hsh, key| hsh[key] = Set.new}
 		annotation_transaction = []
 		transaction_size = 0
+		sourcedb_sourceids_index = Hash.new{|hsh, key| hsh[key] = Set.new}
 
-		jsonfiles.each_with_index do |jsonfile, i|
-			annotation_collection = read_annotation(jsonfile)
+		(filenames << nil).each_with_index do |jsonfile, i|
+			unless jsonfile.nil?
+				annotation_collection, sourcedb, sourceid = read_annotation(jsonfile)
 
-			count_denotations = 0
-			sourcedb, sourceid = nil, nil
-			annotation_collection.each do |annotations|
-				raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
-				if sourcedb.nil?
-					sourcedb = annotations[:sourcedb]
-					sourceid = annotations[:sourceid]
-				elsif (annotations[:sourcedb] != sourcedb) || (annotations[:sourceid] != sourceid)
-					raise ArgumentError, "One json file has to include annotations to the same document."
+				count_denotations = annotation_collection.inject(0) do |count, annotations|
+					count += annotations[:denotations].present? ? annotations[:denotations].size : 0
 				end
-				Annotation.normalize!(annotations)
-				count_denotations += annotations[:denotations].size if annotations[:denotations].present?
+
+				next unless count_denotations > 0
 			end
 
-			sourcedb_sourceids_index[sourcedb] << sourceid
-
-			next unless count_denotations > 0
-
-			if transaction_size + count_denotations > MAX_SIZE_TRANSACTION
+			if jsonfile.nil? || (transaction_size + count_denotations) > MAX_SIZE_TRANSACTION
 				begin
 					store(annotation_transaction, sourcedb_sourceids_index)
-					@job.update_attribute(:num_dones, i) if @job
 				ensure
 					annotation_transaction.clear
 					transaction_size = 0
@@ -64,8 +44,12 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 				end
 			end
 
-			annotation_transaction << annotation_collection
-			transaction_size += count_denotations
+			unless jsonfile.nil?
+				annotation_transaction << annotation_collection
+				transaction_size += count_denotations
+				sourcedb_sourceids_index[sourcedb] << sourceid
+				@job.update_attribute(:num_dones, i + 1) if @job
+			end
 
 		rescue ActiveRecord::ActiveRecordError => e
 			if @job
@@ -78,17 +62,6 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 				@job.messages << Message.create({sourcedb:sourcedb, sourceid:sourceid, body:e.message})
 			else
 				raise ArgumentError, "[#{sourcedb}:#{sourceid}] #{e.message}"
-			end
-		end
-
-		begin
-			store(annotation_transaction, sourcedb_sourceids_index)
-			@job.update_attribute(:num_dones, jsonfiles.length) if @job
-		rescue StandardError => e
-			if @job
-				@job.messages << Message.create({body: e.message})
-			else
-				raise e
 			end
 		end
 
@@ -137,6 +110,20 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 		end
 	end
 
+	def read_filenames(filepath)
+		dirpath = nil
+		filenames = if filepath.end_with?('.json')
+			Dir.glob(filepath)
+		else
+			dirpath = File.join('tmp', File.basename(filepath, ".*"))
+			unpack_cmd = "mkdir #{dirpath}; tar -xzf #{filepath} -C #{dirpath}"
+			unpack_success_p = system(unpack_cmd)
+			raise IOError, "Could not unpack the archive file." unless unpack_success_p
+			Dir.glob(File.join(dirpath, '**', '*.json'))
+		end.sort
+		[filenames, dirpath]
+	end
+
 	def read_annotation(filename)
 		json = File.read(filename)
 		o = begin
@@ -151,6 +138,21 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 		end
 
 		# To return the annotation in an array
-		o.is_a?(Array) ? o : [o]
+		annotation_collection = o.is_a?(Array) ? o : [o]
+
+		# validation and normalization
+		sourcedb, sourceid = nil, nil
+		annotation_collection.each do |annotations|
+			raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
+			if sourcedb.nil?
+				sourcedb = annotations[:sourcedb]
+				sourceid = annotations[:sourceid]
+			elsif (annotations[:sourcedb] != sourcedb) || (annotations[:sourceid] != sourceid)
+				raise ArgumentError, "One json file has to include annotations to the same document."
+			end
+			Annotation.normalize!(annotations)
+		end
+
+		[annotation_collection, sourcedb, sourceid]
 	end
 end

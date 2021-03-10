@@ -95,9 +95,10 @@ class Doc < ActiveRecord::Base
 		:after_add => [:increment_docs_projects_counter, :update_es_doc],
 		:after_remove => [:decrement_docs_projects_counter, :update_es_doc]
 
-	validates :body,     :presence => true
-	validates :sourcedb, :presence => true
-	validates :sourceid, :presence => true
+	validates :body,     presence: true
+	validates :sourcedb, presence: true
+	validates :sourceid, presence: true
+	validates :sourceid, uniqueness: {scope: :sourcedb}
 	
 	scope :project_name, lambda{|project_name|
 		{:joins => :projects,

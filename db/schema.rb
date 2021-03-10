@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20210206020919) do
+ActiveRecord::Schema.define(:version => 20210310180050) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -137,6 +137,7 @@ ActiveRecord::Schema.define(:version => 20210206020919) do
   add_index "docs", ["denotations_num"], :name => "index_docs_on_denotations_num"
   add_index "docs", ["projects_num"], :name => "index_docs_on_projects_num"
   add_index "docs", ["serial"], :name => "index_docs_on_serial"
+  add_index "docs", ["sourcedb", "sourceid"], :name => "index_docs_on_sourcedb_and_sourceid", :unique => true
   add_index "docs", ["sourcedb"], :name => "index_docs_on_sourcedb"
   add_index "docs", ["sourceid"], :name => "index_docs_on_sourceid"
 
