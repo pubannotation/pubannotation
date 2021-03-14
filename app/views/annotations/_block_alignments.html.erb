@@ -20,7 +20,7 @@
 			<% when :empty %>
 				<tr class='disparate_texts' title='disparate texts'>
 					<td class='text_alignment_left'><%= source_text[block[:source][:begin] ... block[:source][:end]] %></td>
-					<td class='text_alignment_right'><%= target_text[block[:target][:begin] ... block[:target][:end]] %></td>
+					<td class='text_alignment_right'><%= block[:target].nil? ? '' : target_text[block[:target][:begin] ... block[:target][:end]] %></td>
 				</tr>
 			<% else %>
 				<%
