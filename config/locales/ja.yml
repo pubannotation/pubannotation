@@ -440,6 +440,7 @@ ja:
       create_doc: ドキュメント新規作成
       upload_docs: ドキュメントアップロード
       create_a_new_document: ドキュメント生成
+      rdfize_annotations: アノテーションRDF化
       total_number: "全%{total_number}ドキュメント"
     spans:
       projects_that_annotates_this: "<span class='meta'>このspanにアノテーションを付ける</span>プロジェクト"
