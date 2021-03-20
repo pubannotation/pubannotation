@@ -614,7 +614,7 @@ class Project < ActiveRecord::Base
 		ActiveRecord::Base.transaction do
 			delete_annotations if denotations_num > 0
 
-			unless docs.empty?
+			if docs.exists?
 				connection.exec_query(
 					"
 						UPDATE docs
