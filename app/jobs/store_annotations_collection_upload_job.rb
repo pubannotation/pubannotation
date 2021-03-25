@@ -53,13 +53,13 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 
 		rescue ActiveRecord::ActiveRecordError => e
 			if @job
-				@job.messages << Message.create({body: e.message})
+				@job.messages << Message.create({body: e.message[0 .. 250]})
 			else
 				raise e
 			end
 		rescue StandardError => e
 			if @job
-				@job.messages << Message.create({sourcedb:sourcedb, sourceid:sourceid, body:e.message})
+				@job.messages << Message.create({sourcedb:sourcedb, sourceid:sourceid, body:e.message[0 .. 250]})
 			else
 				raise ArgumentError, "[#{sourcedb}:#{sourceid}] #{e.message}"
 			end
@@ -86,7 +86,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 			@total_num_sequenced += num_sequenced
 			if @job
 				messages.each do |message|
-					@job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
+					@job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message[0 .. 250]}))
 				end
 			else
 				raise messages.join("\n") if @messages.present?
@@ -98,7 +98,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 			if @job
 				messages.each{|m| @job.messages << Message.create(m)}
 			else
-				msgs = messages.collect{|m| "[#{m[:sourcedb]}-#{m[:sourceid]}#{m[:divid].nil? ? '' : '-' + m[:divid].to_s}] #{m[:body]}"}
+				msgs = messages.collect{|m| "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}"}
 				raise ArgumentError, msgs.join("\n")
 			end
 		end
