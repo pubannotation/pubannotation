@@ -44,7 +44,7 @@
 	<td><%= job.created_at %></td>
 	<td><%= job.state %></td>
 	<td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
-	<td style="text-align:right"><%= job.messages.length %></td>
+	<td style="text-align:right"><%= job.messages.count %></td>
 	<td>
 		<%= link_to 'Show', project_job_path(@project.name, job), class: :button %>
 		<% if job.running? %>
