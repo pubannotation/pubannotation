@@ -18,6 +18,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 
 		# initialize necessary variables
 		@total_num_sequenced = 0
+		@longest_processing_time = 0
 
 		annotation_transaction = []
 		transaction_size = 0
@@ -93,7 +94,15 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 			end
 		end
 
+		timer_start = Time.now
 		messages = project.store_annotations_collection(annotation_transaction, options)
+		ptime = Time.now - timer_start
+		if options[:debug].present? && ptime > @longest_processing_time
+			doc_specs = sourcedb_sourceids_index.collect{|sourcedb, sourceids| "#{sourcedb}-#{sourceids.to_a.join(",")}"}.join(", ")
+			@job.messages << Message.create({body: "Longest processing time so far (#{ptime}): #{doc_specs}"})
+			@longest_processing_time = ptime
+		end
+
 		if messages.present?
 			if @job
 				messages.each{|m| @job.messages << Message.create(m)}
