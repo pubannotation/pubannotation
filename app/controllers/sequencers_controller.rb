@@ -4,26 +4,18 @@ class SequencersController < ApplicationController
 	respond_to :html
 
 	def index
-		if root_user? || manager?
-			@sequencers = Sequencer.all
-			@sequencers_grid = initialize_grid(Sequencer.accessibles(current_user),
-				order: :name,
-				include: :user
-			)
-			respond_with(@sequencers)
-		else
-			redirect_to root_path, notice: "Unauthorized"
-		end
+		@sequencers = Sequencer.all
+		@sequencers_grid = initialize_grid(Sequencer.accessibles(current_user),
+			order: :name,
+			include: :user
+		)
+		respond_with(@sequencers)
 	end
 
 	def show
-		if root_user? || manager?
-			@sequencer = Sequencer.find(params[:id])
-			@sequencer.parameters = @sequencer.parameters.map{|p| p.join(' = ')}.join("\n")
-			respond_with(@sequencer)
-		else
-			redirect_to root_path, notice: "Unauthorized"
-		end
+		@sequencer = Sequencer.find(params[:id])
+		@sequencer.parameters = @sequencer.parameters.map{|p| p.join(' = ')}.join("\n")
+		respond_with(@sequencer)
 	end
 
 	def new
