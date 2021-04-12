@@ -20,62 +20,66 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 		docs = []
 		docs_size = 0
 		File.foreach(filepath) do |line|
-			docid = line.chomp.strip
-			doc = Doc.find(docid)
-			doc.set_ascii_body if options[:encoding] == 'ascii'
-			doc_length = doc.body.length
+			begin
+			  docid = line.chomp.strip
+			  doc = Doc.find(docid)
+			  doc.set_ascii_body if options[:encoding] == 'ascii'
+			  doc_length = doc.body.length
 
-			if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > @max_text_size)
-				begin
-					if docs.length == 1 && docs.first.body.length > @max_text_size
-						doc1 = docs.first
-						slices = doc1.get_slices(@max_text_size)
-						if @job
-							count = @job.num_items + slices.length - 1
-							@job.update_attribute(:num_items, count)
-							@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."}) if slices.length > 1
-						end
-						# delete all the annotations here for a better performance
-						project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
-						slices.each do |slice|
-							make_request_batch(docs, annotator, options.merge(span:slice))
-						rescue RuntimeError => e
-							@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
-						rescue => e
-							@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
-						end
-					else
-						make_request_batch(docs, annotator, options)
-					end
-				rescue => e
-					if @job
-						if docs.length < 10
-							docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{exception_message(e)}"})}
-						else
-							@job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"})
-						end
-					else
-						raise e
-					end
-				ensure
-					docs.clear
-					docs_size = 0
+			  if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > @max_text_size)
+			  	begin
+			  		if docs.length == 1 && docs.first.body.length > @max_text_size
+			  			doc1 = docs.first
+			  			slices = doc1.get_slices(@max_text_size)
+			  			if @job
+			  				count = @job.num_items + slices.length - 1
+			  				@job.update_attribute(:num_items, count)
+			  				@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."}) if slices.length > 1
+			  			end
+			  			# delete all the annotations here for a better performance
+			  			project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
+			  			slices.each do |slice|
+			  				begin
+			  				  make_request_batch(docs, annotator, options.merge(span:slice))
+			  			  rescue RuntimeError => e
+			  				  @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
+			  			  rescue => e
+			  				  @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
+			  				end
+			  			end
+			  		else
+			  			make_request_batch(docs, annotator, options)
+			  		end
+			  	rescue => e
+			  		if @job
+			  			if docs.length < 10
+			  				docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{exception_message(e)}"})}
+			  			else
+			  				@job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"})
+			  			end
+			  		else
+			  			raise e
+			  		end
+			  	ensure
+			  		docs.clear
+			  		docs_size = 0
+			  	end
+			  end
+
+			  docs << doc
+			  docs_size += doc_length
+
+			  process_tasks_queue unless @annotation_tasks_queue.empty?
+		  rescue RuntimeError => e
+			  if @job
+			  	if docs.length < 10
+			  		docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Runtime error: #{exception_message(e)}"})}
+			  	else
+			  		@job.messages << Message.create({body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"})
+			  	end
+			  else
+			  	raise e
 				end
-			end
-
-			docs << doc
-			docs_size += doc_length
-
-			process_tasks_queue unless @annotation_tasks_queue.empty?
-		rescue RuntimeError => e
-			if @job
-				if docs.length < 10
-					docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Runtime error: #{exception_message(e)}"})}
-				else
-					@job.messages << Message.create({body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"})
-				end
-			else
-				raise e
 			end
 		end
 
@@ -92,12 +96,14 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 					# delete all the annotations here for a better performance
 					project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
 					slices.each do |slice|
-						make_request_batch(docs, annotator, options.merge(span:slice))
-					rescue RuntimeError => e
-						if @job
-							@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"})
-						else
-							raise e
+						begin
+						  make_request_batch(docs, annotator, options.merge(span:slice))
+					  rescue RuntimeError => e
+						  if @job
+							  @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"})
+						  else
+							  raise e
+							end
 						end
 					end
 				else
@@ -195,14 +201,16 @@ private
 				result = annotator.make_request(:get, status[:result_location])
 				annotations_col = (result.class == Array) ? result : [result]
 				annotations_col.each_with_index do |annotations, i|
-					raise RuntimeError, "annotation result is not a valid JSON object." unless annotations.class == Hash
-					Annotation.normalize!(annotations)
-					annotator.annotations_transform!(annotations)
-				rescue => e
-					if @job
-						@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: exception_message(e)})
-					else
-						raise e
+					begin
+					  raise RuntimeError, "annotation result is not a valid JSON object." unless annotations.class == Hash
+					  Annotation.normalize!(annotations)
+					  annotator.annotations_transform!(annotations)
+				  rescue => e
+					  if @job
+						  @job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: exception_message(e)})
+					  else
+						  raise e
+						end
 					end
 				end
 
