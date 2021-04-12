@@ -38,7 +38,7 @@ group :test do
 	gem 'cucumber'
 	gem 'spork-rails'
 	gem 'factory_girl_rails'
-	gem 'simplecov', :require => false
+  gem 'simplecov', '~> 0.11.2', :require => false
 	gem 'vcr'
 	gem 'webmock', '< 1.10.0'
 	gem 'webrat'
@@ -58,15 +58,15 @@ gem 'color-generator'
 
 gem 'rest-client', '~> 2.1.0'
 gem 'htmlentities'
-gem 'libxml-ruby'
+gem 'libxml-ruby', '~> 3.1.0'
 gem 'wikipedia-client'
 gem 'ruby-dictionary'
 gem 'kaminari'
 gem 'devise', git: 'https://github.com/plataformatec/devise' , branch: '3-stable'
 gem 'omniauth'
 gem 'omniauth-google-oauth2'
-gem 'rubyzip'
-gem 'zip-zip'
+gem 'rubyzip', '~> 1.2.0'
+gem 'zip-zip', "~> 0.3"
 gem 'daemons'
 gem 'delayed_job_active_record'
 gem 'backup'
@@ -76,6 +76,7 @@ gem 'elasticsearch-model', '~> 5.1.0'
 gem 'elasticsearch-rails', '~> 5.1.0'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
+gem 'simplecov-html', '~> 0.10.0'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
