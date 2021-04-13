@@ -70,5 +70,7 @@ Pubann::Application.configure do
   # config.active_record.auto_explain_threshold_in_seconds = 0.5
 
   # option for url_helpers in models 
-  Rails.application.routes.default_url_options[:host]= 'pubannotation.org' 
+  Rails.application.routes.default_url_options[:host]= 'pubannotation.org'
+
+  config.eager_load = true
 end

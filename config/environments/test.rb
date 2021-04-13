@@ -38,5 +38,7 @@ Pubann::Application.configure do
   config.i18n.default_locale = :en
 
   # option for url_helpers in models 
-  Rails.application.routes.default_url_options[:host]= 'test.host' 
+  Rails.application.routes.default_url_options[:host]= 'test.host'
+
+  config.eager_load = false
 end
