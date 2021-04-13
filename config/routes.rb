@@ -66,7 +66,7 @@ Pubann::Application.routes.draw do
 		get :autocomplete_username, :on => :collection
 	end
 
-	match '/users/:name' => 'users#show', :as => 'show_user'
+	get '/users/:name' => 'users#show', :as => 'show_user'
 
 	resources :docs do
 		collection do
@@ -291,7 +291,7 @@ Pubann::Application.routes.draw do
 	# You can have the root of your site routed with "root"
 	# just remember to delete public/index.html.
 	root :to => 'home#index'
-	match '/' => 'home#index', :as => :home
+	get '/' => 'home#index', :as => :home
 	get '/search' => 'graphs#show', :as => :sparql
 	get '/projects/:project_name/search' => 'graphs#show', :as => :sparql_project
 	get '/collections/:collection_name/search' => 'graphs#show', :as => :sparql_collection
