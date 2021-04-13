@@ -41,12 +41,12 @@ class Project < ActiveRecord::Base
 		json
 	end
 
-	default_scope where(:type => nil)
+	default_scope { where(:type => nil) }
 
-	scope :for_index, where('accessibility = 1 AND status < 3')
-	scope :for_home, where('accessibility = 1 AND status < 4')
+	scope :for_index, -> { where('accessibility = 1 AND status < 3') }
+	scope :for_home, -> { where('accessibility = 1 AND status < 4') }
 
-	scope :public_or_blind, where(accessibility: [1, 3])
+	scope :public_or_blind, -> { where(accessibility: [1, 3]) }
 
 	scope :accessible, -> (current_user) {
 		if current_user.present?
@@ -87,7 +87,7 @@ class Project < ActiveRecord::Base
 		end
 	}
 
-	scope :indexable, where(accessibility: 1, status: [1, 2, 3, 8])
+	scope :indexable, -> { where(accessibility: 1, status: [1, 2, 3, 8]) }
 
 	def annotations_accessible?(current_user)
 		if accessibility == 1
@@ -102,11 +102,13 @@ class Project < ActiveRecord::Base
 	end
 
 	# scope for home#index
-	scope :top_annotations_count,
-		order('denotations_num DESC').order('projects.updated_at DESC').order('status ASC').limit(10)
+	scope :top_annotations_count, -> {
+				order('denotations_num DESC').order('projects.updated_at DESC').order('status ASC').limit(10)
+	}
 
-	scope :top_recent,
-		order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
+	scope :top_recent, -> {
+				order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
+	}
 
 	scope :not_id_in, lambda{|project_ids|
 		where('projects.id NOT IN (?)', project_ids)
@@ -121,23 +123,25 @@ class Project < ActiveRecord::Base
 	}
 
 	# scopes for order
-	scope :order_denotations_num,
+	scope :order_denotations_num, -> {
 		joins('LEFT OUTER JOIN denotations ON denotations.project_id = projects.id').
 		group('projects.id').
 		order("count(denotations.id) DESC")
+	}
 		
-	scope :order_relations_num,
+	scope :order_relations_num, -> {
 		joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
 		group('projects.id').
 		order('count(relations.id) DESC')
+	}
 		
-	scope :order_author,
-		order('author ASC')
+	scope :order_author, -> { order('author ASC') }
 		
-	scope :order_maintainer,
+	scope :order_maintainer, -> {
 		joins('LEFT OUTER JOIN users ON users.id = projects.user_id').
 		group('projects.id, users.username').
 		order('users.username ASC')
+	}
 	
 	scope :order_association, lambda{|current_user|
 		if current_user.present?
