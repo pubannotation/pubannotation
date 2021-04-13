@@ -38,7 +38,8 @@ Pubann::Application.routes.draw do
 	devise_for :users, controllers: {
 		:omniauth_callbacks => 'callbacks',
 		:confirmations => 'confirmations',
-		:sessions => 'sessions'
+		:sessions => 'sessions',
+		:registrations => 'users/registrations'
 	}
 
 	get "home/index"
