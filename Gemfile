@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.5.7'
+ruby '2.3.4'
 
 gem 'rails', '4.0.13'
 gem 'rake'
@@ -76,6 +76,7 @@ gem 'elasticsearch-model'
 gem 'elasticsearch-rails'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
+gem 'rails-observers'
 gem 'simplecov-html', '~> 0.10.0'
 
 # To use ActiveModel has_secure_password
