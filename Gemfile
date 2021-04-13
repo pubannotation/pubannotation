@@ -20,7 +20,7 @@ group :assets do
 	gem 'uglifier'
 end
 
-gem 'pg'
+gem 'pg', '~> 0.18'
 gem 'friendly_id'
 
 group :development do
