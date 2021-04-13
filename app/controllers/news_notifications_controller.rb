@@ -15,7 +15,7 @@ class NewsNotificationsController < ApplicationController
 	end
 
 	def create
-		@news_notification = NewsNotification.new(params[:news_notification]) 
+		@news_notification = NewsNotification.new(news_notification_params)
 		if @news_notification.valid?
 			@news_notification.save
 			flash[:notice] = I18n.t('controllers.shared.successfully_created', model: I18n.t('activerecord.models.news_notification'))
@@ -35,7 +35,7 @@ class NewsNotificationsController < ApplicationController
 
 	def update
 		@news_notification = NewsNotification.find(params[:id])
-		if @news_notification.update_attributes(params[:news_notification])
+		if @news_notification.update_attributes(news_notification_params)
 			flash[:notice] = I18n.t('controllers.shared.successfully_updated', model: I18n.t('activerecord.models.news_notification'))
 			redirect_to @news_notification
 		else
@@ -48,4 +48,9 @@ class NewsNotificationsController < ApplicationController
 		@news_notification.destroy
 		redirect_to news_notifications_path
 	end
+
+	private
+		def news_notification_params
+			params.require(:news_notification).permit(:title, :body, :category, :active)
+		end
 end
