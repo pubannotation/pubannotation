@@ -46,7 +46,7 @@ class CollectionsController < ApplicationController
 	end
 
 	def create
-		@collection = Collection.new(params[:collection])
+		@collection = Collection.new(collection_params)
 		@collection.user = current_user
 
 		respond_to do |format|
@@ -69,7 +69,7 @@ class CollectionsController < ApplicationController
 		raise "Could not find the collection ID: #{params[:id]}." unless @collection.present?
 		@collection.user = current_user unless current_user.root?
 		respond_to do |format|
-			if @collection.update_attributes(params[:collection])
+			if @collection.update_attributes(collection_params)
 				format.html { redirect_to collection_path(@collection.name), :notice => t('controllers.shared.successfully_updated', :model => t('activerecord.models.collection')) }
 				format.json { head :no_content }
 			else
@@ -180,4 +180,8 @@ class CollectionsController < ApplicationController
 			@collection = Collection.accessible(current_user).find_by_name(params[:id])
 			raise "Could not find the collection: #{params[:id]}." unless @collection.present?
 		end
+
+	def collection_params
+		params.require(:collection).permit(:description, :name, :reference, :is_sharedtask, :accessibility, :is_open, :sparql_ep)
+	end
 end

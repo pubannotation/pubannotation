@@ -2,8 +2,6 @@ require 'fileutils'
 
 class Collection < ActiveRecord::Base
 	belongs_to :user
-	attr_accessible :description, :name, :reference,
-									:is_sharedtask, :accessibility, :is_open, :sparql_ep
 	has_many :collection_projects, dependent: :destroy
 	has_many :projects, through: :collection_projects
 	has_many :jobs, as: :organization, :dependent => :destroy
