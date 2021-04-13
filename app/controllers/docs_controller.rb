@@ -223,8 +223,8 @@ class DocsController < ApplicationController
 			@project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless @project.present?
 
-			doc_hash = if params[:doc].present? && params[:commit].present?
-				params[:doc] 
+			doc_hash = if doc_params.present? && params[:commit].present?
+				doc_params
 			else
 				text = if params[:text]
 					params[:text]
@@ -337,11 +337,12 @@ class DocsController < ApplicationController
 	def update
 		raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-		params[:doc][:body].gsub!(/\r\n/, "\n")
+		params = doc_params
+		params[:body].gsub!(/\r\n/, "\n")
 		@doc = Doc.find(params[:id])
 
 		respond_to do |format|
-			if @doc.update_attributes(params[:doc])
+			if @doc.update_attributes(params)
 				format.html { redirect_to @doc, notice: t('controllers.shared.successfully_updated', :model => t('activerecord.models.doc')) }
 				format.json { head :no_content }
 			else
@@ -621,5 +622,8 @@ class DocsController < ApplicationController
 	# def autocomplete_sourcedb
 	#   render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
 	# end
-
+	private
+		def doc_params
+			params.require(:doc).permit(:body, :source, :sourcedb, :sourceid, :username)
+		end
 end

@@ -76,7 +76,6 @@ class Doc < ActiveRecord::Base
 	include ApplicationHelper
 
 	attr_accessor :username, :original_body, :text_aligner
-	attr_accessible :body, :source, :sourcedb, :sourceid, :username
 
 	has_many :divisions, dependent: :destroy
 	has_many :typesettings, dependent: :destroy
