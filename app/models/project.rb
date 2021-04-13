@@ -17,11 +17,6 @@ class Project < ActiveRecord::Base
 	has_many :evaluations, foreign_key: 'study_project_id'
 	has_many :evaluatees, class_name: 'Evaluation', foreign_key: 'reference_project_id'
 
-	attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
-									:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
-									:textae_config, :annotator_id,
-									:annotations_zip_downloadable, :namespaces, :process,
-									:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
 	has_many :denotations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
 	has_many :relations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
 	has_many :attrivutes, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
