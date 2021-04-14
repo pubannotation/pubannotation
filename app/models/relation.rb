@@ -25,7 +25,7 @@ class Relation < ActiveRecord::Base
 		end
 	}
 
-	scope :project_relations, select(:id).group("relations.project_id")
+	scope :project_relations, -> { select(:id).group("relations.project_id") }
 	scope :project_pmcdoc_cat_relations, lambda{|sourceid|
 		joins("INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation' INNER JOIN docs ON docs.id = denotations.doc_id AND docs.sourcedb = 'PMC'").
 		where("docs.sourceid = ?", sourceid)
