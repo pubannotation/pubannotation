@@ -5,7 +5,6 @@ class Sequencer < ActiveRecord::Base
 	friendly_id :name
 
 	belongs_to :user
-	attr_accessible :description, :home, :name, :parameters, :url, :is_public
 
 	validates :name, :presence => true, :length => {:minimum => 3, :maximum => 16}, uniqueness: true
 	validates_format_of :name, :with => /\A[a-z0-9][a-z0-9\-_]*[a-z0-9]\z/i

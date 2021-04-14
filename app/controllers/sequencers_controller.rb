@@ -38,7 +38,7 @@ class SequencersController < ApplicationController
 
 	def create
 		if root_user? || manager?
-			@sequencer = Sequencer.new(params[:sequencer])
+			@sequencer = Sequencer.new(sequencer_params)
 			@sequencer.user = current_user
 			@sequencer.parameters = @sequencer.parameters.delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if @sequencer.parameters.present?
 			@sequencer.save
@@ -51,7 +51,7 @@ class SequencersController < ApplicationController
 	def update
 		if root_user? || manager?
 			@sequencer = Sequencer.find(params[:id])
-			update = params[:sequencer]
+			update = sequencer_params
 			update['parameters'] = update['parameters'].delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if update['parameters'].present?
 
 			@sequencer.update_attributes(update)
@@ -76,4 +76,9 @@ class SequencersController < ApplicationController
 		@sequencer = Sequencer.find(params[:id])
 		render_status_error(:forbidden) unless @sequencer.changeable?(current_user)
 	end
+
+	private
+		def sequencer_params
+			params.require(:sequencer).permit(:description, :home, :name, :parameters, :url, :is_public)
+		end
 end
