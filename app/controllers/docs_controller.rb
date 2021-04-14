@@ -150,7 +150,7 @@ class DocsController < ApplicationController
 			@project = Project.accessible(current_user).find_by_name(params[:project_id])
 			raise "Could not find the project." unless @project.present?
 
-			docs = @project.docs.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+			docs = @project.docs.where(sourcedb: params[:sourcedb], sourceid: params[:sourceid])
 			raise "Could not find the document, #{params[:sourcedb]}:#{params[:sourceid]}, within this project." unless docs.present?
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
