@@ -12,8 +12,6 @@ class Denotation < ActiveRecord::Base
 	has_many :subrels, :class_name => 'Relation', :as => :subj, :dependent => :destroy
 	has_many :objrels, :class_name => 'Relation', :as => :obj, :dependent => :destroy
 
-	attr_accessible :hid, :begin, :end, :obj, :project_id, :doc_id
-
 	validates :hid,       :presence => true
 	validates :begin,     :presence => true
 	validates :end,       :presence => true
