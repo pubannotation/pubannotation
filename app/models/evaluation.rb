@@ -2,8 +2,6 @@ class Evaluation < ActiveRecord::Base
 	belongs_to :study_project, class_name: 'Project'
 	belongs_to :reference_project, class_name: 'Project'
 	belongs_to :evaluator
-	attr_accessible :result, :is_public, :study_project, :reference_project, :evaluator, :note, :user_id,
-									:soft_match_characters, :soft_match_words, :denotations_type_match, :relations_type_match
 
 	validates :user_id, presence: true
 	validates :study_project, presence: true
