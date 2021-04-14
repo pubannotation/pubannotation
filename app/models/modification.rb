@@ -2,8 +2,6 @@ class Modification < ActiveRecord::Base
 	belongs_to :project
 	belongs_to :obj, :polymorphic => true
 
-	attr_accessible :hid, :pred, :obj, :project_id
-
 	validates :hid, :presence => true
 	validates :pred, :presence => true
 	validates :obj, :presence => true
