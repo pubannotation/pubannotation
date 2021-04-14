@@ -59,7 +59,7 @@
 	<% end -%>
 
 	<% if @project.destroyable?(current_user) -%> 
-		<%= link_to t('views.shared.delete'), @project.name, method: :delete, confirm: t('views.projects.confirm_delete'), class: :button %>
+		<%= link_to t('views.shared.delete'), @project.name, method: :delete, data: { confirm: t('views.projects.confirm_delete') }, class: :button %>
 	<% end -%>
 <% end %>
 </fieldset>

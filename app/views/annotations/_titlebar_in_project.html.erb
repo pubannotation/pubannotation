@@ -48,7 +48,7 @@
 		end
 	-%>
 	<%= form_tag(destroy_path, method: :delete, style: 'display:inline') do%>
-		<%= submit_tag t('views.shared.delete_all'), :confirm => t('views.annotations.index.confirm_destroy_all', :class => 'control button') %>
+		<%= submit_tag t('views.shared.delete_all'), :data => { confirm: t('views.annotations.index.confirm_destroy_all', :class => 'control button') } %>
 	<% end %>
 <% end %>
 </h2>
