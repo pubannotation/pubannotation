@@ -10,7 +10,6 @@ class Annotator < ActiveRecord::Base
 	SkipInterval = 5
 
 	belongs_to :user
-	attr_accessible :name, :description, :home, :url, :method, :payload, :max_text_size, :async_protocol, :is_public, :sample, :receiver_attribute, :new_label
 
 	friendly_id :name
 	validates :name, :presence => true, :length => {:minimum => 5, :maximum => 32}, uniqueness: true

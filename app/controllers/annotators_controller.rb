@@ -71,7 +71,7 @@ class AnnotatorsController < ApplicationController
 	# POST /annotators
 	# POST /annotators.json
 	def create
-		@annotator = Annotator.new(params[:annotator])
+		@annotator = Annotator.new(annotator_params)
 		@annotator.user = current_user
 		@annotator.payload = @annotator.payload.delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if @annotator.payload.present?
 
@@ -93,14 +93,14 @@ class AnnotatorsController < ApplicationController
 	# PUT /annotators/1.json
 	def update
 		@annotator = Annotator.find(params[:id])
-		update = params[:annotator]
-		if update['method'] == '0'
-			update['payload'] = nil
+		params = annotator_params
+		if params['method'] == '0'
+			params['payload'] = nil
 		end
-		update['payload'] = update['payload'].delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if update['payload'].present?
+		params['payload'] = params['payload'].delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if params['payload'].present?
 
 		respond_to do |format|
-			if @annotator.update_attributes(params[:annotator])
+			if @annotator.update_attributes(params)
 				format.html { redirect_to @annotator, notice: 'Annotator was successfully updated.' }
 				format.json { head :no_content }
 			else
@@ -129,4 +129,10 @@ class AnnotatorsController < ApplicationController
 		@annotator = Annotator.find(params[:id])
 		render_status_error(:forbidden) unless @annotator.changeable?(current_user)
 	end
+
+	private
+		def annotator_params
+			params.require(:annotator).permit(:name, :description, :home, :url, :method, :payload, :max_text_size,
+																				:async_protocol, :is_public, :sample, :receiver_attribute, :new_label)
+		end
 end
