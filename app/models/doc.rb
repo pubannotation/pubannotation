@@ -111,10 +111,11 @@ class Doc < ActiveRecord::Base
 		offset(offset).limit(per)
 	}
 
-	scope :relations_num,
+	scope :relations_num, -> {
 		joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
 		.group('docs.id')
 		.order('count(relations.id) DESC')
+	}
 
 	scope :projects_docs, lambda{|project_ids|
 		{
@@ -153,7 +154,7 @@ class Doc < ActiveRecord::Base
 		where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
 	}
 	
-	scope :sourcedbs, where(['sourcedb IS NOT ?', nil])
+	scope :sourcedbs, -> { where(['sourcedb IS NOT ?', nil]) }
 
 	scope :user_source_db, lambda{|username|
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
