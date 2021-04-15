@@ -38,7 +38,8 @@ group :test do
 	gem 'cucumber'
 	gem 'spork-rails'
 	gem 'factory_girl_rails'
-  gem 'simplecov', '~> 0.11.2', :require => false
+  gem 'simplecov', :require => false
+	gem 'simplecov-html'
 	gem 'vcr'
 	gem 'webmock'
 	gem 'webrat'
@@ -77,7 +78,6 @@ gem 'elasticsearch-rails'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
 gem 'rails-observers'
-gem 'simplecov-html', '~> 0.10.0'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
