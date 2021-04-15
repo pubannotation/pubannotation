@@ -2,7 +2,7 @@ class Sequencer < ActiveRecord::Base
 	MAX_NUM_ID = 100
 
 	extend FriendlyId
-	friendly_id :name
+	friendly_id :name, use: :finders
 
 	belongs_to :user
 

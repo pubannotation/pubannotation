@@ -1,6 +1,6 @@
 class Evaluator < ActiveRecord::Base
 	extend FriendlyId
-	friendly_id :name
+	friendly_id :name, use: :finders
 
 	belongs_to :user
 
