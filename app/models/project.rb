@@ -684,7 +684,7 @@ class Project < ActiveRecord::Base
 			delete_annotations if denotations_num > 0
 
 			if docs.exists?
-				connection.exec_query(
+				ActiveRecord::Base.connection.exec_query(
 					"
 						UPDATE docs
 						SET projects_num = projects_num - 1, flag = true
@@ -696,7 +696,7 @@ class Project < ActiveRecord::Base
 						)
 					"
 				)
-				connection.exec_query("DELETE FROM project_docs WHERE project_id = #{id}")
+				ActiveRecord::Base.connection.exec_query("DELETE FROM project_docs WHERE project_id = #{id}")
 			end
 		end
 	end
@@ -710,7 +710,7 @@ class Project < ActiveRecord::Base
 			# connection.exec_query("DELETE FROM docs WHERE (sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0)")
 
 			Doc.__elasticsearch__.import query: -> {where(flag:true)}
-			connection.exec_query('UPDATE docs SET flag = false WHERE flag = true')
+			ActiveRecord::Base.connection.exec_query('UPDATE docs SET flag = false WHERE flag = true')
 		end
 	end
 
@@ -838,12 +838,12 @@ class Project < ActiveRecord::Base
 			end
 
 			if d_num > 0 || r_num > 0 || m_num > 0
-				connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{doc.id}")
-				connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{doc.id}")
-				connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{id}")
+				ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{doc.id}")
+				ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{doc.id}")
+				ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{id}")
 			end
 
-			connection.exec_query("update project_docs set annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
+			ActiveRecord::Base.connection.exec_query("update project_docs set annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
 			update_annotations_updated_at
 			update_updated_at
 		end
@@ -925,15 +925,15 @@ class Project < ActiveRecord::Base
 				r_num = r_stat[did] ||= 0
 				a_num = a_stat[did] ||= 0
 				m_num = m_stat[did] ||= 0
-				connection.exec_query("UPDATE project_docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE project_id=#{id} AND doc_id=#{did}")
-				connection.execute("UPDATE docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE id=#{did}")
+				ActiveRecord::Base.connection.exec_query("UPDATE project_docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE project_id=#{id} AND doc_id=#{did}")
+				ActiveRecord::Base.connection.execute("UPDATE docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE id=#{did}")
 			end
 
 			annotations_collection.each do |ann|
-				connection.exec_query("UPDATE project_docs SET annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{id} AND doc_id=#{ann[:docid]}")
+				ActiveRecord::Base.connection.exec_query("UPDATE project_docs SET annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{id} AND doc_id=#{ann[:docid]}")
 			end
 
-			connection.execute("UPDATE projects SET denotations_num = denotations_num + #{d_stat_all}, relations_num = relations_num + #{r_stat_all}, modifications_num = modifications_num + #{m_stat_all} WHERE id=#{id}")
+			ActiveRecord::Base.connection.execute("UPDATE projects SET denotations_num = denotations_num + #{d_stat_all}, relations_num = relations_num + #{r_stat_all}, modifications_num = modifications_num + #{m_stat_all} WHERE id=#{id}")
 
 			update_annotations_updated_at
 			update_updated_at
@@ -1207,19 +1207,19 @@ class Project < ActiveRecord::Base
 			Relation.delete_all(project_id:self.id)
 			Denotation.delete_all(project_id:self.id)
 
-			connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id}")
+			ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id}")
 
 			if docs.count < 1000000
-				connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})")
-				connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if relations_num > 0
-				connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id)) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if modifications_num > 0
+				ActiveRecord::Base.connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})")
+				ActiveRecord::Base.connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if relations_num > 0
+				ActiveRecord::Base.connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id)) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if modifications_num > 0
 			else
-				connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id)")
-				connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id)") if relations_num > 0
-				connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))") if modifications_num > 0
+				ActiveRecord::Base.connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id)")
+				ActiveRecord::Base.connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id)") if relations_num > 0
+				ActiveRecord::Base.connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))") if modifications_num > 0
 			end
 
-			connection.exec_query("update projects set denotations_num = 0, relations_num=0, modifications_num=0 where id=#{id}")
+			ActiveRecord::Base.connection.exec_query("update projects set denotations_num = 0, relations_num=0, modifications_num=0 where id=#{id}")
 
 			update_annotations_updated_at
 			update_updated_at
@@ -1250,9 +1250,9 @@ class Project < ActiveRecord::Base
 					Denotation.delete(denotations)
 
 					# ActiveRecord::Base.establish_connection
-					connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id} and doc_id=#{doc.id}")
-					connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
-					connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
+					ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id} and doc_id=#{doc.id}")
+					ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
+					ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
 
 					update_annotations_updated_at
 					update_updated_at

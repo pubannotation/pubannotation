@@ -377,15 +377,15 @@ class Doc < ActiveRecord::Base
 	end
 
 	def reset_count_denotations
-		connection.exec_query "UPDATE docs SET (denotations_num) = (SELECT count(*) FROM denotations WHERE denotations.doc_id = #{id}) WHERE docs.id = #{id}"
+		ActiveRecord::Base.connection.exec_query "UPDATE docs SET (denotations_num) = (SELECT count(*) FROM denotations WHERE denotations.doc_id = #{id}) WHERE docs.id = #{id}"
 	end
 
 	def reset_count_relations
-		connection.exec_query "UPDATE docs SET (relations_num) = (SELECT count(*) FROM relations INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type='Denotation' WHERE denotations.doc_id = #{id}) WHERE docs.id = #{id}"
+		ActiveRecord::Base.connection.exec_query "UPDATE docs SET (relations_num) = (SELECT count(*) FROM relations INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type='Denotation' WHERE denotations.doc_id = #{id}) WHERE docs.id = #{id}"
 	end
 
 	def reset_count_modifications
-		connection.exec_query "UPDATE docs SET (modifications_num) = row((SELECT count(*) FROM modifications INNER JOIN denotations ON modifications.obj_id = denotations.id AND modifications.obj_type = 'Denotation' WHERE denotations.doc_id = #{id}) + (SELECT count(*) FROM modifications INNER JOIN relations on modifications.obj_id = relations.id AND modifications.obj_type = 'Relation' INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotations' WHERE denotations.doc_id = #{id})) WHERE docs.id = #{id}"
+		ActiveRecord::Base.connection.exec_query "UPDATE docs SET (modifications_num) = row((SELECT count(*) FROM modifications INNER JOIN denotations ON modifications.obj_id = denotations.id AND modifications.obj_type = 'Denotation' WHERE denotations.doc_id = #{id}) + (SELECT count(*) FROM modifications INNER JOIN relations on modifications.obj_id = relations.id AND modifications.obj_type = 'Relation' INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotations' WHERE denotations.doc_id = #{id})) WHERE docs.id = #{id}"
 	end
 
 	def get_slices(max_size, span = nil)
@@ -633,7 +633,7 @@ class Doc < ActiveRecord::Base
 		end
 	
 		# sort!{|a1, a2| a1[:id] <=> a2[:id]}
-		connection.exec_query(query).to_a.collect{|a| a.symbolize_keys}
+		ActiveRecord::Base.connection.exec_query(query).to_a.collect{|a| a.symbolize_keys}
 	end
 
 	def get_attribute_ids(project_id = nil, base_ids = nil)
@@ -936,7 +936,7 @@ class Doc < ActiveRecord::Base
 
 	def update_numbers
 		# numbers of this doc
-		connection.execute("update docs set denotations_num=#{denotations.count}, relations_num=#{subcatrels.count}, modifications_num=#{catmods.count + subcatrelmods.count} where id=#{id}")
+		ActiveRecord::Base.connection.execute("update docs set denotations_num=#{denotations.count}, relations_num=#{subcatrels.count}, modifications_num=#{catmods.count + subcatrelmods.count} where id=#{id}")
 
 		# numbers of each project_doc
 		d_stat = denotations.group(:project_id).count
@@ -951,7 +951,7 @@ class Doc < ActiveRecord::Base
 			d_num = d_stat[pid] || 0
 			r_num = r_stat[pid] || 0
 			m_num = m_stat[pid] || 0
-			connection.execute("update project_docs set denotations_num=#{d_num}, relations_num=#{r_num}, modifications_num=#{m_num} where doc_id=#{id} and project_id=#{pid}")
+			ActiveRecord::Base.connection.execute("update project_docs set denotations_num=#{d_num}, relations_num=#{r_num}, modifications_num=#{m_num} where doc_id=#{id} and project_id=#{pid}")
 		end
 	end
 end
