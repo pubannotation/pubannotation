@@ -1,0 +1,61 @@
+Index: tao_rdfizer.rb
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tao_rdfizer.rb b/tao_rdfizer.rb
+--- a/tao_rdfizer.rb	(date 1618547105659)
++++ b/tao_rdfizer.rb	(date 1618547105659)
+@@ -73,30 +73,36 @@
+ 
+ 					# denotations preprocessing
+ 					_denotations.each do |d|
+-						span_uri = "<#{text_uri}/spans/#{d[:span][:begin]}-#{d[:span][:end]}>"
+-						d[:span_uri] = span_uri
+-						d[:obj_uri] = "#{prefix_for_this}:#{text_id}-#{d[:id]}"
+-						class_uris = (attributesh[d[:id]] || []).push(d[:obj])
+-						d[:class_uris] = class_uris.map{|uri| find_uri(uri, namespaces, prefix_for_this)}
+-					rescue ArgumentError => e
+-						raise ArgumentError, "[#{sourcedb}-#{sourceid}-#{d[:id]}] " + e.message
++						begin
++							span_uri = "<#{text_uri}/spans/#{d[:span][:begin]}-#{d[:span][:end]}>"
++							d[:span_uri] = span_uri
++							d[:obj_uri] = "#{prefix_for_this}:#{text_id}-#{d[:id]}"
++							class_uris = (attributesh[d[:id]] || []).push(d[:obj])
++							d[:class_uris] = class_uris.map{|uri| find_uri(uri, namespaces, prefix_for_this)}
++						rescue ArgumentError => e
++							raise ArgumentError, "[#{sourcedb}-#{sourceid}-#{d[:id]}] " + e.message
++						end
+ 					end
+ 
+ 					# relations preprocessing
+ 					_relations.each do |r|
+-						r[:subj_uri] = "#{prefix_for_this}:#{text_id}-#{r[:subj]}"
+-						r[:obj_uri] = "#{prefix_for_this}:#{text_id}-#{r[:obj]}"
+-						r[:pred_uri] = find_uri(r[:pred], namespaces, prefix_for_this)
+-					rescue ArgumentError => e
+-						raise ArgumentError, "[#{sourcedb}-#{sourceid}-#{r[:id]}] " + e.message
++						begin
++							r[:subj_uri] = "#{prefix_for_this}:#{text_id}-#{r[:subj]}"
++							r[:obj_uri] = "#{prefix_for_this}:#{text_id}-#{r[:obj]}"
++							r[:pred_uri] = find_uri(r[:pred], namespaces, prefix_for_this)
++						rescue ArgumentError => e
++							raise ArgumentError, "[#{sourcedb}-#{sourceid}-#{r[:id]}] " + e.message
++						end
+ 					end
+ 				else
+ 					# denotations preprocessing
+ 					_denotations.each do |d|
+-						span_uri = "<#{text_uri}/spans/#{d[:span][:begin]}-#{d[:span][:end]}>"
+-						d[:span_uri] = span_uri
+-					rescue ArgumentError => e
+-						raise ArgumentError, "[#{sourcedb}-#{sourceid}-#{d[:id]}] " + e.message
++						begin
++							span_uri = "<#{text_uri}/spans/#{d[:span][:begin]}-#{d[:span][:end]}>"
++							d[:span_uri] = span_uri
++						rescue ArgumentError => e
++							raise ArgumentError, "[#{sourcedb}-#{sourceid}-#{d[:id]}] " + e.message
++						end
+ 					end
+ 				end
+ 			end
