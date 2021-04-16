@@ -1,0 +1,54 @@
+Index: text_alignment.rb
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/text_alignment.rb b/text_alignment.rb
+--- a/text_alignment.rb	(date 1618547595268)
++++ b/text_alignment.rb	(date 1618547595268)
+@@ -108,14 +108,16 @@
+ 		@lost_annotations = []
+ 
+ 		denotations.each do |d|
+-			source = {begin:d.begin, end:d.end}
+-			d.begin = transform_begin_position(d.begin);
+-			d.end = transform_end_position(d.end);
+-			raise "invalid transform" unless !d.begin.nil? && !d.end.nil? && d.begin >= 0 && d.end > d.begin && d.end <= @original_reference_text.length
+-		rescue
+-			@lost_annotations << {source: source, target:{begin:d.begin, end:d.end}}
+-			d.begin = nil
+-			d.end = nil
++			begin
++				source = {begin:d.begin, end:d.end}
++				d.begin = transform_begin_position(d.begin);
++				d.end = transform_end_position(d.end);
++				raise "invalid transform" unless !d.begin.nil? && !d.end.nil? && d.begin >= 0 && d.end > d.begin && d.end <= @original_reference_text.length 
++			rescue
++				@lost_annotations << {source: source, target:{begin:d.begin, end:d.end}}
++				d.begin = nil
++				d.end = nil
++			end
+ 		end
+ 
+ 		@lost_annotations
+@@ -126,12 +128,14 @@
+ 		@lost_annotations = []
+ 
+ 		r = hdenotations.collect do |d|
+-			t = transform_a_span(d[:span])
+-			raise "invalid transform" unless !t[:begin].nil? && !t[:end].nil? && t[:begin] >= 0 && t[:end] > t[:begin] && t[:end] <= @original_reference_text.length
+-			new_d = d.dup.merge({span:t})
+-		rescue
+-			@lost_annotations << {source: d[:span], target:t}
+-			nil
++			begin
++				t = transform_a_span(d[:span])
++				raise "invalid transform" unless !t[:begin].nil? && !t[:end].nil? && t[:begin] >= 0 && t[:end] > t[:begin] && t[:end] <= @original_reference_text.length
++				new_d = d.dup.merge({span:t})
++			rescue
++				@lost_annotations << {source: d[:span], target:t}
++				nil
++			end
+ 		end.compact
+ 
+ 		r
