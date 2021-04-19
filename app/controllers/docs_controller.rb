@@ -516,7 +516,7 @@ class DocsController < ApplicationController
 
 		doc = docs.first
 		sourcedb = doc.sourcedb
-		doc.destory
+		doc.destroy
 
 		redirect_to doc_sourcedb_index_path(sourcedb)
 	end
