@@ -74,7 +74,7 @@ class Project < ActiveRecord::Base
 		if current_user.present?
 			if current_user.root?
 			else
-				includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id)
+				includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id).references(:associate_maintainers)
 			end
 		else
 			where(accessibility: 10)
