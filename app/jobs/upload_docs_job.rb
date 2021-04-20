@@ -75,7 +75,7 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
 					end
 				else
 					doc = Doc.new(hdoc)
-					r = Doc.import [doc]
+					r = Doc.ar_import [doc]
 					raise RuntimeError, "documents import error" unless r.failed_instances.empty?
 					created = true
 					doc.projects << project
