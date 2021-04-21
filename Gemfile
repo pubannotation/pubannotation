@@ -25,24 +25,6 @@ group :development do
 	gem 'guard-livereload'
 end
 
-group :test, :development do
-	gem 'rspec-rails'
-end
-
-group :test do
-	gem 'rspec'
-	gem 'cucumber'
-	gem 'spork-rails'
-	gem 'factory_girl_rails'
-  gem 'simplecov', :require => false
-	gem 'simplecov-html'
-	gem 'vcr'
-	gem 'webmock'
-	gem 'webrat'
-	gem 'database_cleaner'
-	gem 'test-unit'
-end
-
 gem 'text_alignment', '0.11.10'
 gem 'pubannotation_evaluator', '~> 1.0', '>= 1.0.5'
 gem 'wice_grid'
