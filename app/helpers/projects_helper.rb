@@ -34,8 +34,8 @@ module ProjectsHelper
 	def namespaces_prefix_input_fields
 		if @project.namespaces_prefixes.present?
 			render :partial => 'namespace_prefix_input', :collection => @project.namespaces_prefixes
-		else
-			render :partial => 'namespace_prefix_input'
+ 		else
+			render :partial => 'namespace_prefix_input', locals: {namespace_prefix_input: nil}
 		end
 	end
 
