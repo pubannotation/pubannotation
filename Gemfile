@@ -56,6 +56,7 @@ gem 'elasticsearch-rails'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
 gem 'rails-observers'
+gem 'diff-lcs'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

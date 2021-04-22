@@ -71,6 +71,7 @@ GEM
     delayed_job_active_record (4.1.6)
       activerecord (>= 3.0, < 6.2)
       delayed_job (>= 3.0, < 5)
+    diff-lcs (1.4.4)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     dotenv (2.7.6)
@@ -279,6 +280,7 @@ DEPENDENCIES
   daemons
   delayed_job_active_record
   devise!
+  diff-lcs
   dotenv-rails
   elasticsearch-model
   elasticsearch-rails
