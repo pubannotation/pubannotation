@@ -537,7 +537,7 @@ class Annotation < ActiveRecord::Base
 			ref_text = doc.original_body.nil? ? doc.body : doc.original_body
 
 			messages = if annotations.is_a? Array
-				aligner = TextAlignment::TextAlignment.new(ref_text, options[:to_prevent_overlap])
+				aligner = TextAlignment::TextAlignment.new(ref_text, options)
 				annotations.map do |a|
 					align_annotations!(a, ref_text, aligner)
 				end.flatten
@@ -545,7 +545,7 @@ class Annotation < ActiveRecord::Base
 				if annotations[:text] == ref_text
 					[]
 				else
-					aligner = TextAlignment::TextAlignment.new(ref_text)
+					aligner = TextAlignment::TextAlignment.new(ref_text, options)
 					align_annotations!(annotations, ref_text, aligner)
 				end
 			end
@@ -560,6 +560,7 @@ class Annotation < ActiveRecord::Base
 		"#{a[:subj]}-#{a[:pred]}-#{a[:obj]}"
 	end
 
+	# To resolve ID conflict
 	def self.prepare_annotations_for_merging!(annotations, base_annotations)
 		return annotations unless base_annotations[:denotations].present? && annotations[:denotations].present?
 		base_denotations_idx = base_annotations[:denotations].inject({}){|idx, d| idx.merge!({skey_of_denotation(d) => d[:id]})}

@@ -29,12 +29,39 @@ In other words, all the JSON objects in one JSON file have to have the same <i>s
 			</td>
 		</tr>
 		<tr>
-			<th>Hint about your json files</th>
+			<th>Customize options</th>
 			<td>
-				<p style="white-space: normal">
-					In case your JSON files are JSON arrays (if a JSON file contains multiple JSON objects, which means the text of a document is scattered across multiple JSON objects), are the texts disjoint to each other?
-					(Yes <%= check_box_tag :to_prevent_overlap, 1, true -%>)
-				</p>
+				<table>
+					<tr>
+						<th style="text-align: left">
+							<%= check_box_tag :duplicate_texts, 1, false -%>
+							Duplicate texts
+						</th>
+						<td style="white-space: normal">
+							Use this option if your are submitting annotation JSON files which are JSON arrays and there is a chance of duplicate texts.
+						</td>
+					</tr>
+					<tr>
+						<th style="text-align: left">
+							<%= check_box_tag :to_ignore_whitespaces, 1, false -%>
+							Ignore whitespaces
+						</th>
+						<td style="white-space: normal">
+							Try this option for the cases of alignment failure due to highly irregular whitespaces. This option will slow the process a bit.
+						</td>
+					</tr>
+<!--
+					<tr>
+						<th style="text-align: left">
+							<%= check_box_tag :to_ignore_text_order, 1, false -%>
+							Ignore original order
+						</th>
+						<td style="white-space: normal">
+							Try this option for the cases of alignment failure due to different ordering of texts. This option will slow the process a bit.
+						</td>
+					</tr>
+ -->
+				</table>
 			</td>
 		</tr>
 		<tr>
