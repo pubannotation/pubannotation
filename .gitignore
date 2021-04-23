@@ -35,3 +35,5 @@ public/downloads/*
 
 # Ignore devise config file
 #/config/initializers/devise.rb
+
+.idea/
