@@ -36,7 +36,4 @@ public/downloads/*
 # Ignore devise config file
 #/config/initializers/devise.rb
 
-# Ignore vcs
-spec/vcr/*
-
-spec
+.idea/
