@@ -6,7 +6,7 @@
 <h1><%= t('views.shared.edit_model', :model => t('activerecord.models.user')) %></h1>
 
 <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html => { :method => :put }) do |f| %>
-  <%= devise_error_messages! %>
+  <%= render "devise/shared/error_messages", resource: resource %>
 
   <table style="border:none">
   <tr>
