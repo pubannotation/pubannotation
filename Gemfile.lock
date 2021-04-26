@@ -231,6 +231,7 @@ GEM
       sprockets-rails
       tilt
     shellany (0.0.1)
+    spring (1.7.2)
     sprockets (3.7.2)
       concurrent-ruby (~> 1.0)
       rack (> 1, < 3)
@@ -305,6 +306,7 @@ DEPENDENCIES
   ruby-dictionary
   rubyzip (~> 1.2.0)
   sass-rails
+  spring
   stardog-rb!
   tao_rdfizer (~> 0.11.3)
   text_alignment (= 0.11.10)

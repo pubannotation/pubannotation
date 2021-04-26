@@ -23,6 +23,7 @@ group :development do
 	gem 'dotenv-rails'
 	gem 'guard'
 	gem 'guard-livereload'
+  gem 'spring'
 end
 
 gem 'text_alignment', '0.11.10'
