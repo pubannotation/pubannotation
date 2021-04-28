@@ -356,7 +356,7 @@ DEPENDENCIES
   zip-zip (~> 0.3)
 
 RUBY VERSION
-   ruby 2.3.4p301
+   ruby 2.5.7p206
 
 BUNDLED WITH
    1.17.3
