@@ -25,46 +25,44 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 		sourcedb_sourceids_index = Hash.new{|hsh, key| hsh[key] = Set.new}
 
 		(filenames << nil).each_with_index do |jsonfile, i|
-			begin
-			  unless jsonfile.nil?
-			  	annotation_collection, sourcedb, sourceid = read_annotation(jsonfile)
+			unless jsonfile.nil?
+				annotation_collection, sourcedb, sourceid = read_annotation(jsonfile)
 
-			  	count_denotations = annotation_collection.inject(0) do |count, annotations|
-			  		count += annotations[:denotations].present? ? annotations[:denotations].size : 0
-			  	end
-
-			  	next unless count_denotations > 0
-			  end
-
-			  if jsonfile.nil? || (transaction_size + count_denotations) > MAX_SIZE_TRANSACTION
-			  	begin
-			  		store(annotation_transaction, sourcedb_sourceids_index)
-			  	ensure
-			  		annotation_transaction.clear
-			  		transaction_size = 0
-			  		sourcedb_sourceids_index.clear
-			  	end
-			  end
-
-			  unless jsonfile.nil?
-			  	annotation_transaction << annotation_collection
-			  	transaction_size += count_denotations
-			  	sourcedb_sourceids_index[sourcedb] << sourceid
-			  	@job.update_attribute(:num_dones, i + 1) if @job
-			  end
-
-		  rescue ActiveRecord::ActiveRecordError => e
-			  if @job
-			  	@job.messages << Message.create({body: e.message[0 .. 250]})
-			  else
-			  	raise e
-			  end
-		  rescue StandardError => e
-			  if @job
-			  	@job.messages << Message.create({sourcedb:sourcedb, sourceid:sourceid, body:e.message[0 .. 250]})
-			  else
-			  	raise ArgumentError, "[#{sourcedb}:#{sourceid}] #{e.message}"
+				count_denotations = annotation_collection.inject(0) do |count, annotations|
+					count += annotations[:denotations].present? ? annotations[:denotations].size : 0
 				end
+
+				next unless count_denotations > 0
+			end
+
+			if jsonfile.nil? || (transaction_size + count_denotations) > MAX_SIZE_TRANSACTION
+				begin
+					store(annotation_transaction, sourcedb_sourceids_index)
+				ensure
+					annotation_transaction.clear
+					transaction_size = 0
+					sourcedb_sourceids_index.clear
+				end
+			end
+
+			unless jsonfile.nil?
+				annotation_transaction << annotation_collection
+				transaction_size += count_denotations
+				sourcedb_sourceids_index[sourcedb] << sourceid
+				@job.update_attribute(:num_dones, i + 1) if @job
+			end
+
+		rescue ActiveRecord::ActiveRecordError => e
+			if @job
+				@job.messages << Message.create({body: e.message[0 .. 250]})
+			else
+				raise e
+			end
+		rescue StandardError => e
+			if @job
+				@job.messages << Message.create({sourcedb:sourcedb, sourceid:sourceid, body:e.message[0 .. 250]})
+			else
+				raise ArgumentError, "[#{sourcedb}:#{sourceid}] #{e.message}"
 			end
 		end
 
