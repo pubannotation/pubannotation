@@ -7,7 +7,7 @@
 			<%= link_to @study_project.name, project_path(@study_project.name) %>
 		</th>
 		<td>
-			<%= content_tag(:div, "", class: "textae-editor", target: study_url + '/annotations.json', status_bar: "off", style:"margin:2px 0 0 0; border-color:#ffcccc") %>
+			<%= content_tag(:div, "", class: "textae-editor", target: study_url + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ffcccc") %>
 		</td>
 		<td>
 			<%= link_to ">Go", study_url, class: "button" %>
@@ -18,7 +18,7 @@
 			<%= link_to @reference_project.name, project_path(@reference_project.name) %>
 		</th>
 		<td>
-			<%= content_tag(:div, "", class: "textae-editor", target: reference_url + '/annotations.json', status_bar: "off", style:"margin:2px 0 0 0; border-color:#ccccff") %>
+			<%= content_tag(:div, "", class: "textae-editor", target: reference_url + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff") %>
 		</td>
 		<td>
 			<%= link_to ">Go", reference_url, class: "button" %>
