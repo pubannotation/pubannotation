@@ -81,7 +81,7 @@
 
 		<tr>
 			<th><%= f.label :parameters %></th>
-			<td><%= f.text_area :parameters, value: (f.object.parameters == {} ? 'sourceid=_sourceid_' : f.object.parameters) %></td>
+			<td><%= f.text_area :parameters, value: f.object.parameters_to_string %></td>
 			<td>
 				<a href="#help-parameters" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
 				<div id="help-parameters" class="help">
