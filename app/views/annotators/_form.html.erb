@@ -103,7 +103,7 @@
 	</tr>
 	<tr>
 		<th><%= f.label :payload %></th>
-		<td><%= f.text_area :payload, disabled: true %></td>
+		<td><%= f.text_area :payload, disabled: true, required: false, value: f.object.payload_to_string %></td>
 		<td>
 			<a href="#help-payload" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
 			<div id="help-payload" class="help">
@@ -215,8 +215,10 @@
 			if (that.value == 0) {
 				payload_field.value = null;
 				payload_field.disabled = true;
+				payload_field.required = false;
 			} else {
 				payload_field.disabled = false;
+				payload_field.required = true;
 				if (payload_field.value == null || (payload_field.value == "") || (payload_field.value == "{}")) {
 					payload_field.value = "_body_ = _doc_";
 				}

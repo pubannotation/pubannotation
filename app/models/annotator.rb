@@ -160,4 +160,7 @@ class Annotator < ActiveRecord::Base
 		end
 	end
 
+	def payload_to_string
+		payload.map{|p| p.join(' = ')}.join("\n") if payload.present?
+	end
 end
