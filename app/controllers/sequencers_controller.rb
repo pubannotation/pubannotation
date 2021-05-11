@@ -1,4 +1,5 @@
 class SequencersController < ApplicationController
+	include IniFileConvertible
 	before_filter :changeable?, :only => [:edit, :update, :destroy]
 	before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
 	respond_to :html
@@ -37,7 +38,7 @@ class SequencersController < ApplicationController
 	def create
 		if root_user? || manager?
 			params = sequencer_params
-			params[:parameters] = parameters_to_hash(params[:parameters])
+			params[:parameters] = convert_str_to_hash(params[:parameters])
 			params[:user] = current_user
 			@sequencer = Sequencer.create(params)
 			respond_with(@sequencer)
@@ -50,7 +51,7 @@ class SequencersController < ApplicationController
 		if root_user? || manager?
 			@sequencer = Sequencer.find(params[:id])
 			params = sequencer_params
-			params[:parameters] = parameters_to_hash(params[:parameters])
+			params[:parameters] = convert_str_to_hash(params[:parameters])
 
 			@sequencer.update_attributes(params)
 			@sequencer.name = params[:name]
@@ -78,9 +79,5 @@ class SequencersController < ApplicationController
 	private
 		def sequencer_params
 			params.require(:sequencer).permit(:description, :home, :name, :parameters, :url, :is_public)
-		end
-
-		def parameters_to_hash(parameters)
-			parameters.delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if parameters.present?
 		end
 end

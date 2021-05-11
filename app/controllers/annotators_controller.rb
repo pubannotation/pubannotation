@@ -1,4 +1,5 @@
 class AnnotatorsController < ApplicationController
+	include IniFileConvertible
 	before_filter :changeable?, :only => [:edit, :update, :destroy]
 	before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
 
@@ -69,7 +70,7 @@ class AnnotatorsController < ApplicationController
 	# POST /annotators.json
 	def create
 		params = annotator_params
-		params[:payload] = payload_to_hash(params[:payload])
+		params[:payload] = convert_str_to_hash(params[:payload])
 		params[:user] = current_user
 		@annotator = Annotator.new(params)
 
@@ -95,7 +96,7 @@ class AnnotatorsController < ApplicationController
 		if params['method'] == '0'
 			params['payload'] = nil
 		end
-		params['payload'] = payload_to_hash(params['payload'])
+		params['payload'] = convert_str_to_hash(params['payload'])
 
 		respond_to do |format|
 			if @annotator.update_attributes(params)
@@ -133,8 +134,4 @@ class AnnotatorsController < ApplicationController
 			params.require(:annotator).permit(:name, :description, :home, :url, :method, :payload, :max_text_size,
 																				:async_protocol, :is_public, :sample, :receiver_attribute, :new_label)
 		end
-
-	def payload_to_hash(payload)
-		payload.delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if payload.present?
-	end
 end

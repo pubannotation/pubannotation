@@ -1,4 +1,5 @@
 class EditorsController < ApplicationController
+	include IniFileConvertible
 	before_filter :changeable?, :only => [:edit, :update, :destroy]
 	before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
 
@@ -39,7 +40,7 @@ class EditorsController < ApplicationController
 	def create
 		params = editor_params
 		params[:user] = current_user
-		params[:parameters] = parameters_to_hash(params[:parameters])
+		params[:parameters] = convert_str_to_hash(params[:parameters])
 		@editor = Editor.create(params)
 		respond_with(@editor)
 	end
@@ -47,7 +48,7 @@ class EditorsController < ApplicationController
 	def update
 		@editor = Editor.find(params[:id])
 		params = editor_params
-		params[:parameters] = parameters_to_hash(params[:parameters])
+		params[:parameters] = convert_str_to_hash(params[:parameters])
 
 		@editor.update_attributes(params)
 		@editor.name = params[:name]
@@ -68,9 +69,5 @@ class EditorsController < ApplicationController
 	private
 	def editor_params
 		params.require(:editor).permit(:description, :home, :is_public, :name, :parameters, :url)
-	end
-
-	def parameters_to_hash(parameters)
-		parameters.delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if parameters.present?
 	end
 end
