@@ -329,7 +329,7 @@ class Doc < ActiveRecord::Base
 
 	def revise(new_hdoc)
 		messages = []
-		new_body = new_hdoc[:text]
+		new_body = new_hdoc[:text] || new_hdoc[:body]
 
 		if new_body == self.body
 			unless self.divisions == new_hdoc[:divisions]
