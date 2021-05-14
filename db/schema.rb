@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20210310180050) do
+ActiveRecord::Schema.define(:version => 20210513145258) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -75,6 +75,7 @@ ActiveRecord::Schema.define(:version => 20210310180050) do
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
     t.boolean  "is_open",       :default => false
+    t.string   "sparql_ep"
   end
 
   create_table "delayed_jobs", :force => true do |t|
@@ -100,8 +101,9 @@ ActiveRecord::Schema.define(:version => 20210310180050) do
     t.integer  "end"
     t.string   "obj"
     t.integer  "project_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",                    :null => false
+    t.datetime "updated_at",                    :null => false
+    t.boolean  "is_block",   :default => false
   end
 
   add_index "denotations", ["doc_id"], :name => "index_denotations_on_doc_id"
@@ -192,20 +194,21 @@ ActiveRecord::Schema.define(:version => 20210310180050) do
   add_index "evaluators", ["user_id"], :name => "index_evaluators_on_user_id"
 
   create_table "jobs", :force => true do |t|
-    t.integer  "project_id"
+    t.integer  "organization_id"
     t.integer  "delayed_job_id"
     t.integer  "num_items"
     t.integer  "num_dones"
-    t.datetime "created_at",     :null => false
-    t.datetime "updated_at",     :null => false
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
     t.string   "name"
     t.datetime "begun_at"
     t.datetime "ended_at"
     t.datetime "registered_at"
+    t.string   "organization_type"
   end
 
   add_index "jobs", ["delayed_job_id"], :name => "index_jobs_on_delayed_job_id"
-  add_index "jobs", ["project_id"], :name => "index_jobs_on_project_id"
+  add_index "jobs", ["organization_id"], :name => "index_jobs_on_project_id"
 
   create_table "messages", :force => true do |t|
     t.text     "body"
@@ -284,6 +287,7 @@ ActiveRecord::Schema.define(:version => 20210310180050) do
     t.integer  "modifications_num",            :default => 0
     t.string   "textae_config"
     t.integer  "annotator_id"
+    t.string   "sparql_ep"
   end
 
   add_index "projects", ["name"], :name => "index_projects_on_name", :unique => true

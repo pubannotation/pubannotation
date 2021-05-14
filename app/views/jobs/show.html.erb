@@ -1,18 +1,43 @@
 <% content_for :path do %>
 	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
-	> <%= link_to @project.name, project_path(@project.name) %>
-	> <%= link_to 'jobs', project_jobs_path(@project.name) %>
+	<%=
+		if params.has_key? :project_id
+			link_to('> ' + t('activerecord.models.project').pluralize, projects_path) + ' ' +
+			link_to('> ' + @organization.name, project_path(@organization.name)) + ' ' +
+			link_to('jobs', project_jobs_path(@organization.name))
+		else
+			link_to('> ' + t('activerecord.models.collection').pluralize, collections_path) + ' ' +
+			link_to('> ' + @organization.name, collection_path(@organization.name)) + ' ' +
+			link_to('jobs', collection_jobs_path(@organization.name))
+		end
+	%>
 	> <%= @job.delayed_job_id %>
 <% end %>
 
 <section>
-	<%= render :partial => 'projects/titlebar' -%>
+	<%=
+		if params.has_key? :project_id
+			@project = @organization
+			render :partial => 'projects/titlebar'
+		else
+			@collection = @organization
+			render :partial => 'collections/titlebar'
+		end
+	-%>
 
 	<section>
 		<h1>
 		Job #<%= @job.delayed_job_id %>: <%= @job.name %>
-		<%= link_to 'Remove', project_job_path(@project.name, @job), method: :delete, data: { confirm: 'Are you sure?' }, :class => :button unless @job.running? %>
+		<%=
+			unless @job.running?
+				organization_job_path = if params.has_key? :project_id
+					project_job_path(@organization.name, @job)
+				else
+					collection_job_path(@organization.name, @job)
+				end
+				link_to 'Remove', organization_job_path, method: :delete, data: { confirm: 'Are you sure?' }, :class => :button
+			end
+		%>
 		</h1>
 
 		<p id="notice"><%= notice %></p>

@@ -401,7 +401,7 @@ class AnnotationsController < ApplicationController
 			else
 				priority = project.jobs.unfinished.count
 				delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
-				task = Job.create({name:'Upload annotations', project_id:project.id, delayed_job_id:delayed_job.id})
+				task = project.jobs.create({name: 'Upload annotations', delayed_job_id: delayed_job.id})
 				notice = "The task, 'Upload annotations', is created."
 			end
 

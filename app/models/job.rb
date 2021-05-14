@@ -1,8 +1,8 @@
 class Job < ActiveRecord::Base
-	belongs_to :project
+	belongs_to :organization, polymorphic: true, :dependent => :destroy
 	belongs_to :delayed_job
 	has_many :messages, :dependent => :destroy
-	attr_accessible :name, :num_dones, :num_items, :project_id, :delayed_job_id
+	attr_accessible :name, :num_dones, :num_items, :organization_id, :organization_type, :delayed_job_id
 
 	scope :waiting, -> {where('begun_at IS NULL')}
 	scope :running, -> {where('begun_at IS NOT NULL AND ended_at IS NULL')}
@@ -77,21 +77,13 @@ class Job < ActiveRecord::Base
 	end
 
 	def update_related_priority
-		project = begin
-			Project.find(project_id)
-		rescue
-			nil
-		end
-
-		if project.present?
-			project.jobs.waiting.order(:created_at).each_with_index do |j, i|
-				dj = begin
-					Delayed::Job.find(j.delayed_job_id)
-				rescue
-					nil
-				end
-				dj.update_attribute(:priority, i) unless dj.nil?
+		organization.jobs.waiting.order(:created_at).each_with_index do |j, i|
+			dj = begin
+				Delayed::Job.find(j.delayed_job_id)
+			rescue
+				nil
 			end
+			dj.update_attribute(:priority, i) unless dj.nil?
 		end
 	end
 end

@@ -19,7 +19,7 @@ class Project < ActiveRecord::Base
 	has_many :evaluatees, class_name: 'Evaluation', foreign_key: 'reference_project_id'
 
 	attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
-									:sample, :rdfwriter, :xmlwriter, :bionlpwriter,
+									:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
 									:textae_config, :annotator_id,
 									:annotations_zip_downloadable, :namespaces, :process,
 									:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
@@ -29,7 +29,7 @@ class Project < ActiveRecord::Base
 	has_many :modifications, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
 	has_many :associate_maintainers, :dependent => :destroy
 	has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
-	has_many :jobs, :dependent => :destroy
+	has_many :jobs, as: :organization, :dependent => :destroy
 	validates :name, :presence => true, :length => {:minimum => 5, :maximum => 40}, uniqueness: true
 	validates_format_of :name, :with => /\A[a-z0-9\-_]+\z/i
 
@@ -410,6 +410,10 @@ class Project < ActiveRecord::Base
 		"#{self.name.gsub(' ', '_')}-annotations-rdf.zip"
 	end
 
+	def annotations_ttl_filepath
+		rdf_system_path + "#{self.name.gsub(' ', '_')}-annotations.ttl"
+	end
+
 	def annotations_rdf_path
 		"#{Project::DOWNLOADS_PATH}" + self.annotations_rdf_filename
 	end
@@ -451,6 +455,29 @@ class Project < ActiveRecord::Base
 	end
 
 	def create_annotations_RDF
+		rdfizer_annos = TAO::RDFizer.new(:annotations)
+		graph_uri_project = self.graph_uri
+
+		File.open(annotations_ttl_filepath, "w") do |f|
+			docs.each_with_index do |doc, i|
+				if doc.denotations.where("denotations.project_id" => self.id).exists?
+					hannotations = doc.hannotations(self)
+					annos_ttl = rdfizer_annos.rdfize(hannotations)
+					f.write(annos_ttl)
+				end
+				yield(i, doc, message) if block_given?
+			rescue => e
+				message = "failure during rdfization: #{e.message}"
+				if block_given?
+					yield(i, doc, message) if block_given?
+				else
+					raise e
+				end
+			end
+		end
+	end
+
+	def create_annotations_RDF_back
 		size_batch_annotations = 1000000
 		rdfizer_annos = TAO::RDFizer.new(:annotations)
 		graph_uri_project = self.graph_uri
@@ -984,7 +1011,7 @@ class Project < ActiveRecord::Base
 				else
 					'Multiple entries of the document.'
 				end
-				messages << {sourcedb:sourcedb, sourceid:sourceid, body:error_message}
+				messages << {sourcedb:sourcedb, sourceid:sourceid, body:error_message[0 .. 250]}
 				[annotations, nil]
 			end
 		end.reject{|e| e[1].nil?}
@@ -1022,7 +1049,7 @@ class Project < ActiveRecord::Base
 
 			aligned_collection += ann
 		rescue StandardError => e
-			messages << {sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message}
+			messages << {sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message[0 .. 250]}
 		end
 
 		messages << {body: "Uploading for #{num_skipped} documents were skipped due to existing annotations."} if num_skipped > 0

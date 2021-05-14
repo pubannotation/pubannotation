@@ -18,6 +18,12 @@ Pubann::Application.routes.draw do
 				delete '/' => 'collections#remove_project'
 			end
 		end
+		resources :jobs do
+			member do
+				get 'messages' => 'messages#index'
+			end
+		end
+		delete 'jobs' => 'projects#clear_finished_jobs', as: 'clear_finished_jobs'
 	end
 
 	resources :queries

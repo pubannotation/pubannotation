@@ -170,8 +170,9 @@
 		<th><%= f.label :process %></th>
 		<td><%= f.select :process, 
 				options_for_select([
-				[t('activerecord.options.project.process.manual'), 1],
-				[t('activerecord.options.project.process.automatic'), 2]],
+					[t('activerecord.options.project.process.automatic'), 2],
+					[t('activerecord.options.project.process.manual'), 1]
+				],
 				f.object.process) %></td>
 		<td class="help-column"></td>
 	</tr>
@@ -243,6 +244,13 @@
 	</tr>
 
 	<tr>
+		<th><%= f.label :sparql_ep %></th>
+		<td><%= f.text_field :sparql_ep, :class => "input", :placeholder => 'URL' %></td>
+		<td></td>
+	</tr>
+
+<!--
+	<tr>
 		<th><%= f.label :rdfwriter %></th>
 		<td><%= f.text_field :rdfwriter, :class => "input", :placeholder => 'URL' %></td>
 		<td></td>
@@ -252,13 +260,13 @@
 		<td><%= f.text_field :xmlwriter, :class => "input", :placeholder => 'URL' %></td>
 		<td></td>
 	</tr>
-<!--
 	<tr>
 		<th><%= f.label :bionlpwriter %></th>
 		<td><%= f.text_field :bionlpwriter, :class => "input", :placeholder => 'URL' %></td>
 		<td></td>
 	</tr>
  -->
+
 	<tr>
 		<th><%= t('activerecord.attributes.project.annotations_downloadable') %></th>
 		<td><%= f.check_box :annotations_zip_downloadable %><%= f.label :annotations_zip_downloadable, t('views.shared.permit') -%></td>

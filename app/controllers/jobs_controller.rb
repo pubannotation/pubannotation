@@ -3,17 +3,17 @@ class JobsController < ApplicationController
 	# GET /jobs.json
 	def index
 		begin
-			@project = Project.accessible(current_user).find_by_name(params[:project_id])
-			raise "There is no such project." unless @project.present?
-			@jobs = @project.jobs.order(:created_at)
+			@organization = get_organization
+			raise "Could not find the project or collection." unless @organization.present?
+			@jobs = @organization.jobs.order(:created_at)
 
 			respond_to do |format|
-				format.html { redirect_to project_path(@project.name) if @jobs.length == 0}
+				format.html { redirect_to_organization if @jobs.empty? }
 				format.json { render json: @jobs }
 			end
 		rescue
 			respond_to do |format|
-				format.html { redirect_to project_path(@project.name) }
+				format.html { redirect_to_organization }
 				format.json { render status: :no_content }
 			end
 		end
@@ -22,10 +22,12 @@ class JobsController < ApplicationController
 	# GET /jobs/1
 	# GET /jobs/1.json
 	def show
-		@project = Project.accessible(current_user).find_by_name(params[:project_id])
-		raise "There is no such project." unless @project.present?
+		@organization = get_organization
+		raise "Could not find the project or collection." unless @organization.present?
 
 		@job = Job.find(params[:id])
+		raise "The project or collection does not have the job." unless @job.organization == @organization
+
 		@messages_grid = initialize_grid(@job.messages,
 			order: :created_at,
 			per_page: 10
@@ -72,11 +74,11 @@ class JobsController < ApplicationController
 	# PUT /jobs/1
 	# PUT /jobs/1.json
 	def update
-		project = Project.editable(current_user).find_by_name(params[:project_id])
-		raise "There is no such project." unless project.present?
+		organization = get_organization
+		raise "Could not find the project or collection." unless organization.present? && organization.editable?(current_user)
 
 		job = Job.find(params[:id])
-		raise "The project does not have the job." unless job.project == project
+		raise "The project or collection does not have the job." unless job.organization == organization
 
 		job.stop_if_running
 
@@ -88,16 +90,35 @@ class JobsController < ApplicationController
 	# DELETE /jobs/1
 	# DELETE /jobs/1.json
 	def destroy
-		project = Project.editable(current_user).find_by_name(params[:project_id])
-		raise "There is no such project." unless project.present?
+		organization = get_organization
+		raise "Could not find the project or collection." unless organization.present? && organization.editable?(current_user)
 
 		job = Job.find(params[:id])
-		raise "The project does not have the job." unless job.project == project
+		raise "The project or collection does not have the job." unless job.organization == organization
 
 		job.destroy_if_not_running
 
 		respond_to do |format|
-			format.html { redirect_to project_jobs_path(project.name) }
+			format.html { redirect_to_organization }
 		end
 	end
+
+	private
+
+	def get_organization
+		if params.has_key? :project_id
+			Project.accessible(current_user).find_by_name(params[:project_id])
+		elsif params.has_key? :collection_id
+			Collection.accessible(current_user).find_by_name(params[:collection_id])
+		end
+	end
+
+	def redirect_to_organization
+		if params.has_key? :project_id
+			redirect_to project_path(params[:project_id])
+		elsif params.has_key? :collection_id
+			redirect_to collection_path(params[:collection_id])
+		end
+	end
+
 end
