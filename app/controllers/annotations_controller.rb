@@ -253,7 +253,7 @@ class AnnotationsController < ApplicationController
 			priority = project.jobs.unfinished.count
 			# delayed_job = Delayed::Job.enqueue ObtainDocAnnotationsJob.new(annotator, project, doc.id, options.merge(debug: true)), priority: priority, queue: :general
 			delayed_job = Delayed::Job.enqueue ObtainDocAnnotationsJob.new(annotator, project, doc.id, options), priority: priority, queue: :general
-			Job.create({name:"Obtain annotations for a document: #{annotator.name}", project_id:project.id, delayed_job_id:delayed_job.id})
+			project.jobs.create({name:"Obtain annotations for a document: #{annotator.name}", delayed_job_id:delayed_job.id})
 			"A background job was created to obtain annotations."
 		end
 
@@ -353,7 +353,7 @@ class AnnotationsController < ApplicationController
 
 			# delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options.merge(debug: true)), priority: priority, queue: :upload
 			delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options), priority: priority, queue: :upload
-			Job.create({name:"Obtain annotations: #{annotator.name}", project_id:project.id, delayed_job_id:delayed_job.id})
+			project.jobs.create({name:"Obtain annotations: #{annotator.name}", delayed_job_id:delayed_job.id})
 
 			project.update_attributes({annotator_id:annotator.id}) if annotator.persisted?
 
@@ -432,7 +432,7 @@ class AnnotationsController < ApplicationController
 
 					priority = project.jobs.unfinished.count
 					delayed_job = Delayed::Job.enqueue DeleteAnnotationsFromUploadJob.new(filepath, project, options), priority: priority, queue: :upload
-					Job.create({name:'Delete annotations from documents', project_id:project.id, delayed_job_id:delayed_job.id})
+					project.jobs.create({name:'Delete annotations from documents', delayed_job_id:delayed_job.id})
 					notice = "The task, 'Delete annotations from documents', is created."
 				else
 					notice = "Up to 10 jobs can be registered per a project. Please clean your jobs page."
@@ -488,7 +488,7 @@ class AnnotationsController < ApplicationController
 
 			priority = project.jobs.unfinished.count
 			delayed_job = Delayed::Job.enqueue ImportAnnotationsJob.new(source_project, project), priority: priority, queue: :general
-			Job.create({name:"Import annotations from #{source_project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
+			project.jobs.create({name:"Import annotations from #{source_project.name}", delayed_job_id:delayed_job.id})
 			message = "The task, 'import annotations from the project, #{source_project.name}', is created."
 
 		rescue => e
@@ -511,7 +511,7 @@ class AnnotationsController < ApplicationController
 
 			priority = project.jobs.unfinished.count
 			delayed_job = Delayed::Job.enqueue CreateAnnotationsTgzJob.new(project, {}), priority: priority, queue: :general
-			Job.create({name:'Create a downloadable archive', project_id:project.id, delayed_job_id:delayed_job.id})
+			project.jobs.create({name:'Create a downloadable archive', delayed_job_id:delayed_job.id})
 
 			redirect_to :back, notice: "The task 'Create a downloadable archive' is created."
 		rescue => e

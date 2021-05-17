@@ -4,4 +4,11 @@
 	<%= badge_sharedtask(@collection).html_safe %>
 	<%= badge_accessibility(@collection).html_safe %>
 	<%= badge_open(@collection).html_safe %>
+	<% if @collection.jobs.exists? && @collection.editable?(current_user) -%>
+		<span>
+			<a href=<%= collection_jobs_path(@collection.name) %>>
+				<span class = ''><%= icon_job(@collection) %></span>
+			</a>
+		</span>
+	<% end -%>
 </div>

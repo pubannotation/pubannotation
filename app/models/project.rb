@@ -2,7 +2,6 @@ class Project < ActiveRecord::Base
 	include ApplicationHelper
 	include AnnotationsHelper
 	DOWNLOADS_PATH = "/downloads/"
-	RDF_PATH = "/rdf/"
 
 	before_validation :cleanup_namespaces
 	after_validation :user_presence
@@ -92,6 +91,8 @@ class Project < ActiveRecord::Base
 			includes(:associate_maintainers).where('projects.user_id = ? OR associate_maintainers.user_id = ?', current_user.id, current_user.id)
 		end
 	}
+
+	scope :indexable, where(accessibility: 1).where(status: [1, 2, 3, 8])
 
 	def annotations_accessible?(current_user)
 		if accessibility == 1
@@ -312,10 +313,6 @@ class Project < ActiveRecord::Base
 		user.present? ? user.username : ''
 	end
 
-	def rdf_system_path
-		"#{Rails.root}/public#{Project::RDF_PATH}"
-	end
-
 	def downloads_system_path
 		"#{Rails.root}/public#{Project::DOWNLOADS_PATH}" 
 	end
@@ -403,7 +400,7 @@ class Project < ActiveRecord::Base
 	end
 
 	def annotations_rdf_dir_path
-		rdf_system_path + self.annotations_rdf_dirname
+		Rails.application.config.system_path_rdf + self.annotations_rdf_dirname
 	end
 
 	def annotations_rdf_filename
@@ -411,7 +408,7 @@ class Project < ActiveRecord::Base
 	end
 
 	def annotations_ttl_filepath
-		rdf_system_path + "#{self.name.gsub(' ', '_')}-annotations.ttl"
+		Rails.application.config.system_path_rdf + 'projects/' + "#{name.gsub(' ', '_')}-annotations.ttl"
 	end
 
 	def annotations_rdf_path
@@ -443,7 +440,15 @@ class Project < ActiveRecord::Base
 		graph_uri + '/docs'
 	end
 
-	def last_indexed_at(endpoint = nil)
+	def last_indexed_at
+		begin
+			File.mtime(annotations_ttl_filepath)
+		rescue
+			nil
+		end
+	end
+
+	def last_indexed_at_live(endpoint = nil)
 		begin
 			endpoint ||= stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
 			db = Rails.application.config.ep_database
@@ -462,10 +467,10 @@ class Project < ActiveRecord::Base
 			docs.each_with_index do |doc, i|
 				if doc.denotations.where("denotations.project_id" => self.id).exists?
 					hannotations = doc.hannotations(self)
-					annos_ttl = rdfizer_annos.rdfize(hannotations)
+					annos_ttl = rdfizer_annos.rdfize([hannotations])
 					f.write(annos_ttl)
 				end
-				yield(i, doc, message) if block_given?
+				yield(i, doc, nil) if block_given?
 			rescue => e
 				message = "failure during rdfization: #{e.message}"
 				if block_given?
@@ -475,58 +480,11 @@ class Project < ActiveRecord::Base
 				end
 			end
 		end
+		# update_attribute(last_indexed_at, Time.now)
 	end
 
-	def create_annotations_RDF_back
-		size_batch_annotations = 1000000
-		rdfizer_annos = TAO::RDFizer.new(:annotations)
-		graph_uri_project = self.graph_uri
-		annotations_col = []
-		messages = []
-		batch_num = 0
-		num_denotations_in_annotation_queue = 0
-
-		FileUtils.mkdir_p(annotations_rdf_dir_path) unless Dir.exist?(annotations_rdf_dir_path)
-		FileUtils.rm_rf Dir.glob("#{annotations_rdf_dir_path}/*")
-
-		docs.each_with_index do |doc, i|
-
-			if doc.denotations.where("denotations.project_id" => self.id).exists?
-				hannotations = doc.hannotations(self)
-				num_denotations_in_current_doc = hannotations[:denotations].length
-
-				# rdfize and store annotations
-				# batch processing for rdfizing annotations
-				if (num_denotations_in_annotation_queue > 0) && ((num_denotations_in_annotation_queue + num_denotations_in_current_doc) >= size_batch_annotations)
-					annos_ttl = rdfizer_annos.rdfize(annotations_col)
-					filename = "#{annotations_filename}-#{batch_num}.ttl"
-					batch_num += 1
-					File.open(annotations_rdf_dir_path + '/' + filename, "w"){|f| f.write(annos_ttl)}
-					annotations_col.clear
-					num_denotations_in_annotation_queue = 0
-				end
-
-				annotations_col << hannotations
-				num_denotations_in_annotation_queue += num_denotations_in_current_doc
-			end
-
-			yield i, messages if block_given?
-		# rescue => e
-		# 	messages << "failed in storing #{num_denotations_in_annotation_queue} rdfized annotations from #{annotations_col.length} docs: #{e.message}"
-		end
-
-		unless annotations_col.empty?
-			begin
-				annos_ttl = rdfizer_annos.rdfize(annotations_col)
-				filename = "#{annotations_filename}-#{batch_num}.ttl"
-				batch_num += 1
-				File.open(annotations_rdf_dir_path + '/' + filename, "w"){|f| f.write(annos_ttl)}
-			# rescue => e
-			# 	messages << Message.create({body: "failed in storing #{num_denotations_in_annotation_queue} rdfized annotations from the last #{annotations_col.length} docs: #{e.message}"})
-			end
-		end
-
-		messages
+	def rdf_needs_to_be_updated?
+		!annotations_updated_at.nil? && (last_indexed_at.nil? || last_indexed_at < annotations_updated_at)
 	end
 
 	def delete_index

@@ -7,9 +7,10 @@ class CreateAnnotationRdfJob < Struct.new(:project)
 			@job.update_attribute(:num_dones, 0)
 		end
 
-		project.create_annotations_RDF do |i|
+		project.create_annotations_RDF do |i, doc, message|
 			if @job
-				@job.update_attribute(:num_dones, i + 1) 
+				@job.update_attribute(:num_dones, i + 1)
+				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: message}) if message
 			end
 		end
 	end

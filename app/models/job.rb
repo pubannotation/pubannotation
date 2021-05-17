@@ -1,5 +1,5 @@
 class Job < ActiveRecord::Base
-	belongs_to :organization, polymorphic: true, :dependent => :destroy
+	belongs_to :organization, polymorphic: true
 	belongs_to :delayed_job
 	has_many :messages, :dependent => :destroy
 	attr_accessible :name, :num_dones, :num_items, :organization_id, :organization_type, :delayed_job_id
@@ -20,6 +20,10 @@ class Job < ActiveRecord::Base
 
 	def finished?
 		!ended_at.nil?
+	end
+
+	def finished_live?
+		!connection.select_value("select ended_at from jobs where id = #{id}").nil?
 	end
 
 	def unfinished?

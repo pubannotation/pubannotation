@@ -36,7 +36,7 @@ class ProjectsController < ApplicationController
 	def show
 		begin
 			@project = Project.accessible(current_user).find_by_name(params[:id])
-			raise "There is no such project." unless @project.present?
+			raise "Could not find the project: #{params[:id]}." unless @project.present?
 
 			respond_to do |format|
 				format.html
@@ -49,7 +49,6 @@ class ProjectsController < ApplicationController
 			end
 		end
 	end
-
 
 	# GET /projects/new
 	# GET /projects/new.json
@@ -137,7 +136,7 @@ class ProjectsController < ApplicationController
 
 			delayed_job = Delayed::Job.enqueue UptodateDocsJob.new(project), queue: :general
 			task_name = "Uptodate docs in project - #{project.name}"
-			Job.create({name:task_name, project_id:project.id, delayed_job_id:delayed_job.id})
+			project.jobs.create({name:task_name, delayed_job_id:delayed_job.id})
 			flash[:notice] = "The task, '#{task_name}', is created."
 			redirect_to project_path(project.name)
 		rescue => e
@@ -203,7 +202,7 @@ class ProjectsController < ApplicationController
 			# job.perform()
 
 			delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project, filepath, options), queue: :general
-			Job.create({name:"Store RDFized annotations - #{project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
+			project.jobs.create({name:"Store RDFized annotations - #{project.name}", delayed_job_id:delayed_job.id})
 			flash[:notice] = "The task, 'Store RDFized annotations - #{project.name}', is created."
 		rescue => e
 			flash[:notice] = e.message
@@ -237,7 +236,7 @@ class ProjectsController < ApplicationController
 			# job.perform()
 
 			delayed_job = Delayed::Job.enqueue CreateAnnotationRdfJob.new(project), queue: :general
-			Job.create({name:"Create Annotation RDF - #{project.name}", project_id:project.id, delayed_job_id:delayed_job.id})
+			project.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
 			flash[:notice] = "The task, 'Create Annotation RDF - #{project.name}', is created."
 		rescue => e
 			flash[:notice] = e.message
@@ -262,7 +261,7 @@ class ProjectsController < ApplicationController
 
 			projects.each do |project|
 				delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project, Pubann::Application.config.rdfizer_annotations), queue: :general
-				Job.create({name:"Store RDFized annotations - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
+				system.jobs.create({name:"Store RDFized annotations - #{project.name}", delayed_job_id:delayed_job.id})
 			end
 		rescue => e
 			flash[:notice] = e.message
@@ -279,7 +278,7 @@ class ProjectsController < ApplicationController
 			system = Project.find_by_name('system-maintenance')
 
 			delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, docids, Pubann::Application.config.rdfizer_spans), queue: :general
-			Job.create({name:"Store RDFized spans - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
+			system.jobs.create({name:"Store RDFized spans - #{project.name}", delayed_job_id:delayed_job.id})
 		rescue => e
 			flash[:notice] = e.message
 		end
@@ -306,7 +305,7 @@ class ProjectsController < ApplicationController
 
 			# projects.each do |project|
 			#   delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name), queue: :general
-			#   Job.create({name:"Store REDized annotations - #{project.name}", project_id:system.id, delayed_job_id:delayed_job.id})
+			#   system.jobs.create({name:"Store REDized annotations - #{project.name}", delayed_job_id:delayed_job.id})
 			# end
 		# rescue => e
 		#   flash[:notice] = e.message
@@ -326,7 +325,7 @@ class ProjectsController < ApplicationController
 				# job.perform()
 
 				delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project), priority: priority, queue: :general
-				Job.create({name:'Delete all docs', project_id:project.id, delayed_job_id:delayed_job.id})
+				project.jobs.create({name:'Delete all docs', delayed_job_id:delayed_job.id})
 				"The task, 'delete all docs', is created."
 			else
 				"The project had no document. Nothing happened.\n"
@@ -354,7 +353,7 @@ class ProjectsController < ApplicationController
 			priority = project.jobs.unfinished.count
 			taskname = 'Delete all annotations in project'
 			delayed_job = Delayed::Job.enqueue DeleteAllAnnotationsFromProjectJob.new(project), priority: priority, queue: :general
-			Job.create({name: taskname, project_id:project.id, delayed_job_id:delayed_job.id})
+			project.jobs.create({name: taskname, delayed_job_id:delayed_job.id})
 			message = "The task, '#{taskname}', is created."
 
 			respond_to do |format|
@@ -381,7 +380,7 @@ class ProjectsController < ApplicationController
 
 		priority = project.jobs.unfinished.count
 		delayed_job = Delayed::Job.enqueue DestroyProjectJob.new(project), priority: priority, queue: :general
-		Job.create({name:'Destroy project', project_id:sproject.id, delayed_job_id:delayed_job.id})
+		sproject.jobs.create({name:'Destroy project', delayed_job_id:delayed_job.id})
 
 		respond_to do |format|
 			format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, will be deleted soon."}

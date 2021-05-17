@@ -8,12 +8,12 @@ class JobsController < ApplicationController
 			@jobs = @organization.jobs.order(:created_at)
 
 			respond_to do |format|
-				format.html { redirect_to_organization if @jobs.empty? }
+				format.html { redirect_to organization_path if @jobs.empty? }
 				format.json { render json: @jobs }
 			end
-		rescue
+		rescue => e
 			respond_to do |format|
-				format.html { redirect_to_organization }
+				format.html { redirect_to organization_path, notice: e.message }
 				format.json { render status: :no_content }
 			end
 		end
@@ -22,20 +22,27 @@ class JobsController < ApplicationController
 	# GET /jobs/1
 	# GET /jobs/1.json
 	def show
-		@organization = get_organization
-		raise "Could not find the project or collection." unless @organization.present?
+		begin
+			@organization = get_organization
+			raise "Could not find the project or collection." unless @organization.present?
 
-		@job = Job.find(params[:id])
-		raise "The project or collection does not have the job." unless @job.organization == @organization
+			@job = Job.find(params[:id])
+			raise "The project or collection does not have the job." unless @job.organization == @organization
 
-		@messages_grid = initialize_grid(@job.messages,
-			order: :created_at,
-			per_page: 10
-		)
+			@messages_grid = initialize_grid(@job.messages,
+				order: :created_at,
+				per_page: 10
+			)
 
-		respond_to do |format|
-			format.html # show.html.erb
-			format.json { render json: @job }
+			respond_to do |format|
+				format.html # show.html.erb
+				format.json { render json: @job }
+			end
+		rescue => e
+			respond_to do |format|
+				format.html { redirect_to organization_path, notice: e.message }
+				format.json { render status: :no_content }
+			end
 		end
 	end
 
@@ -99,7 +106,7 @@ class JobsController < ApplicationController
 		job.destroy_if_not_running
 
 		respond_to do |format|
-			format.html { redirect_to_organization }
+			format.html { redirect_to organization_path }
 		end
 	end
 
@@ -113,11 +120,11 @@ class JobsController < ApplicationController
 		end
 	end
 
-	def redirect_to_organization
+	def organization_path
 		if params.has_key? :project_id
-			redirect_to project_path(params[:project_id])
+			project_path(params[:project_id])
 		elsif params.has_key? :collection_id
-			redirect_to collection_path(params[:collection_id])
+			collection_path(params[:collection_id])
 		end
 	end
 

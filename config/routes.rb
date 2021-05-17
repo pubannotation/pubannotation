@@ -11,6 +11,7 @@ Pubann::Application.routes.draw do
 
 	resources :collections do
 		member do
+			post 'create_annotation_rdf' => 'collections#create_annotation_rdf'
 			post '/add_project' => 'collections#add_project'
 		end
 		resources :projects do
@@ -291,6 +292,7 @@ Pubann::Application.routes.draw do
 	match '/' => 'home#index', :as => :home
 	get '/search' => 'graphs#show', :as => :sparql
 	get '/projects/:project_name/search' => 'graphs#show', :as => :sparql_project
+	get '/collections/:collection_name/search' => 'graphs#show', :as => :sparql_collection
 
 	# See how all your routes lay out with "rake routes"
 

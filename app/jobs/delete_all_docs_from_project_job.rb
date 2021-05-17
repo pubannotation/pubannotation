@@ -8,7 +8,7 @@ class DeleteAllDocsFromProjectJob < Struct.new(:project)
 		project.delete_docs
 
 		delayed_job = Delayed::Job.enqueue UpdateElasticsearchIndexJob.new(project), queue: :general
-		Job.create({name:'Update text search index', project_id:project.id, delayed_job_id:delayed_job.id})
+		project.jobs.create({name:'Update text search index', delayed_job_id:delayed_job.id})
 
 		@job.update_attribute(:num_dones, 1) if @job
 		ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")

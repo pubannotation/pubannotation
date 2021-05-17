@@ -1,6 +1,6 @@
 class CollectionsController < ApplicationController
 	before_filter :authenticate_user!, :except => [:index, :show]
-	before_filter :set_collection, only: [:show, :edit, :update, :destroy]
+	before_filter :set_collection, only: [:show, :edit, :update, :create_annotation_rdf, :destroy]
 
 	respond_to :html
 
@@ -134,6 +134,23 @@ class CollectionsController < ApplicationController
 			format.html {redirect_to :back, notice: message}
 			format.json {render json:{message:message}}
 		end
+	end
+
+	def create_annotation_rdf
+		message = begin
+			raise "Not authorized" unless @collection.editable?(current_user)
+
+			## for debugging
+			# dj = CreateAnnotationRdfCollectionJob.new(@collection)
+			# dj.perform()
+
+			delayed_job = Delayed::Job.enqueue CreateAnnotationRdfCollectionJob.new(@collection), queue: :general
+			@collection.jobs.create({name:"Create Annotation RDF - #{@collection.name}", delayed_job_id:delayed_job.id})
+			"The task, 'Create Annotation RDF collection - #{@collection.name}', is created."
+		rescue => e
+			e.message
+		end
+		redirect_to collection_path(@collection.name), notice: message
 	end
 
 	def destroy

@@ -18,4 +18,15 @@ module CollectionsHelper
 	def collection_home_button
 		link_to image_tag('home-24.png', alt: 'Home', title: 'Home', class: 'home_button'), @collection.reference, :class => 'home_button' if @collection.reference.present?
 	end
+
+	def icon_job(collection)
+		if collection.has_running_jobs?
+			content_tag(:i, '', class: "fa fa-cog fa-spin fa-lg", "aria-hidden" => "true", title: "jobs")
+		elsif collection.has_waiting_jobs?
+			content_tag(:i, '', class: "fa fa-cog fa-pulse fa-lg", "aria-hidden" => "true", title: "jobs")
+		else
+			content_tag(:i, '', class: "fa fa-cog fa-lg", "aria-hidden" => "true", title: "jobs")
+		end
+	end
+
 end

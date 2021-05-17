@@ -131,7 +131,7 @@ class EvaluationsController < ApplicationController
 
 				priority = evaluation.study_project.jobs.unfinished.count
 				delayed_job = Delayed::Job.enqueue EvaluateAnnotationsJob.new(evaluation), priority: priority, queue: :general
-				Job.create({name:'Evaluate annotations', project_id:evaluation.study_project.id, delayed_job_id:delayed_job.id})
+				evaluation.study_project.jobs.create({name:'Evaluate annotations', delayed_job_id:delayed_job.id})
 				"The task, 'Evaluate annotations', is created. Please reload the page to see the result."
 			end
 		rescue => e

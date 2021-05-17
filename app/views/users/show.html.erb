@@ -45,15 +45,15 @@
 				grid(@jobs_grid) do |g|
 
 					g.column name: 'Name', attribute: 'name' do |job|
-						[link_to(job.name, project_job_path(job.project.name, job)), {style: 'width:15em'}]
+						[link_to(job.name, project_job_path(job.organization.name, job)), {style: 'width:15em'}]
 					end
 
 					g.column name: 'Project' do |job|
-						[link_to(job.project.name, project_path(job.project.name)), {style: 'width:10em'}]
+						[link_to(job.organization.name, project_path(job.organization.name)), {style: 'width:10em'}]
 					end
 
 					g.column name: 'User' do |job|
-						[link_to(job.project.user.username, show_user_path(job.project.user.username)), {style: 'width:10em'}]
+						[link_to(job.organization.user.username, show_user_path(job.organization.user.username)), {style: 'width:10em'}]
 					end
 
 					g.column name: 'State' do |job|

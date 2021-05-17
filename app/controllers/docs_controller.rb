@@ -302,7 +302,7 @@ class DocsController < ApplicationController
 
 				delayed_job = Delayed::Job.enqueue UploadDocsJob.new(dirpath, project, options), priority: priority, queue: :upload
 				task_name = "Upload documents: #{filename}"
-				Job.create({name:task_name, project_id:project.id, delayed_job_id:delayed_job.id})
+				project.jobs.create({name:task_name, delayed_job_id:delayed_job.id})
 				notice = "The task, '#{task_name}', is created."
 			end
 		rescue => e
@@ -373,7 +373,7 @@ class DocsController < ApplicationController
 
 			priority = project.jobs.unfinished.count
 			delayed_job = Delayed::Job.enqueue AddDocsToProjectFromUploadJob.new(sourcedb, filepath, project), priority: priority, queue: :general
-			job = Job.create({name:'Add docs to project from upload', project_id:project.id, delayed_job_id:delayed_job.id})
+			job = project.jobs.create({name:'Add docs to project from upload', delayed_job_id:delayed_job.id})
 			message = "The task, 'Add docs to project from upload', is created."
 
 			respond_to do |format|
@@ -428,7 +428,7 @@ class DocsController < ApplicationController
 
 				priority = project.jobs.unfinished.count
 				delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project), priority: priority, queue: :general
-				Job.create({name:'Add docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
+				project.jobs.create({name:'Add docs to project', delayed_job_id:delayed_job.id})
 				message = "The task, 'add documents to the project', is created."
 			end
 
@@ -466,7 +466,7 @@ class DocsController < ApplicationController
 
 				priority = project.jobs.unfinished.count
 				delayed_job = Delayed::Job.enqueue ImportDocsJob.new(docids_file.path, project), priority: priority, queue: :general
-				Job.create({name:'Import docs to project', project_id:project.id, delayed_job_id:delayed_job.id})
+				project.jobs.create({name:'Import docs to project', delayed_job_id:delayed_job.id})
 
 				m = ""
 				m += "#{num_skip} docs were skipped due to duplication." if num_skip > 0
@@ -595,7 +595,7 @@ class DocsController < ApplicationController
 			system = Project.find_by_name('system-maintenance')
 
 			delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, docids, Pubann::Application.config.rdfizer_spans), queue: :general
-			Job.create({name:"Store RDFized spans for selected projects", project_id:system.id, delayed_job_id:delayed_job.id})
+			system.jobs.create({name:"Store RDFized spans for selected projects", delayed_job_id:delayed_job.id})
 		rescue => e
 			flash[:notice] = e.message
 		end
@@ -608,7 +608,7 @@ class DocsController < ApplicationController
 			system = Project.find_by_name('system-maintenance')
 
 			delayed_job = Delayed::Job.enqueue UpdateAnnotationNumbersJob.new(nil), queue: :general
-			Job.create({name:"Update annotation numbers of each document", project_id:system.id, delayed_job_id:delayed_job.id})
+			system.jobs.create({name:"Update annotation numbers of each document", delayed_job_id:delayed_job.id})
 
 			result = {message: "The task, 'update annotation numbers of each document', created."}
 			redirect_to project_path('system-maintenance')

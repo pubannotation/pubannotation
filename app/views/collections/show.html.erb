@@ -8,27 +8,34 @@
 <%= render :partial => 'titlebar' -%>
 
 <fieldset class="pane description">
-<legend>Description</legend>
-<% if @collection.description.present? -%>
-	<div><%= @collection.description.html_safe %></div>
-<% end -%>
-<br/>
-
-<table class="vertical">
-	<tr>
-		<th><%= t('activerecord.attributes.project.maintainer') %></th>
-		<td><%= collection_maintainer_link(@collection) %></td>
-	</tr>
-</table>
-<% if user_signed_in? -%>
-	<% if @collection.editable?(current_user) -%>
-		<%= link_to t('views.shared.edit'), edit_collection_path(@collection.name), class: :button -%>
+	<legend>Description</legend>
+	<% if @collection.description.present? -%>
+		<div><%= @collection.description.html_safe %></div>
 	<% end -%>
+	<br/>
 
-	<% if @collection.destroyable?(current_user) -%> 
-		<%= link_to t('views.shared.delete'), @collection.name, method: :delete, confirm: t('views.projects.confirm_delete'), class: :button %>
-	<% end -%>
-<% end %>
+	<table class="vertical">
+		<tr>
+			<th><%= t('activerecord.attributes.project.maintainer') %></th>
+			<td><%= collection_maintainer_link(@collection) %></td>
+		</tr>
+	</table>
+
+	<% if user_signed_in? -%>
+		<% if @collection.editable?(current_user) -%>
+			<%= link_to t('views.shared.edit'), edit_collection_path(@collection.name), class: :button -%>
+		<% end -%>
+
+		<% if @collection.destroyable?(current_user) -%>
+			<%= link_to t('views.shared.delete'), @collection.name, method: :delete, confirm: t('views.projects.confirm_delete'), class: :button %>
+		<% end -%>
+
+		<% if current_user.root? %>
+			<br/>
+			<%= link_to t('views.docs.rdfize_annotations'), create_annotation_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
+		<% end %>
+
+	<% end %>
 </fieldset>
 
 <fieldset class="pane projects">
@@ -67,15 +74,20 @@
 			[maintainer_link(project), {title: project.user.username, style: 'text-align:center'}]
 		end
 
-		g.column name: 'Updated_at', attribute: 'updated_at', class: 'column-project-updated' do |project|
-			[project.updated_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
+		g.column name: 'Updated_at', attribute: 'annotations_updated_at', class: 'column-project-updated' do |project|
+			[project.annotations_updated_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
 		end
 
 		g.column name: 'RDFized_at', class: 'column-project-updated' do |project|
 			rdfize_tasks = project.jobs.where(name: "Store RDFized annotations - #{project.name}", ended_at:nil)
 			rdf_create_tasks = project.jobs.where(name: "Create Annotation RDF - #{project.name}", ended_at:nil)
 			if rdfize_tasks.empty? && rdf_create_tasks.empty?
-				[project.last_indexed_at.nil? ? '-' : project.last_indexed_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
+				style = if project.last_indexed_at < project.annotations_updated_at
+					'text-align:center; color:red'
+				else
+					'text-align:center'
+				end
+				[project.last_indexed_at.nil? ? '-' : project.last_indexed_at.strftime('%Y-%m-%d'), {style: style}]
 			else
 				[content_tag(:i, '', class: "fa fa-cog fa-spin fa-lg", "aria-hidden" => "true", title: "jobs"), {style: 'text-align:center'}]
 			end
