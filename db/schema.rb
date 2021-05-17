@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20210513145258) do
+ActiveRecord::Schema.define(:version => 20210517163020) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -221,6 +221,7 @@ ActiveRecord::Schema.define(:version => 20210513145258) do
     t.text     "data"
   end
 
+  add_index "messages", ["created_at"], :name => "index_messages_on_created_at"
   add_index "messages", ["job_id"], :name => "index_messages_on_job_id"
 
   create_table "modifications", :force => true do |t|
