@@ -64,6 +64,14 @@ module Pubann
     config.assets.version = '1.0'
 
     # for TAO RDF indexing
+    # for TAO RDF indexing
+    # config.ep_url = 'http://localhost:5820/'
+    config.ep_url = 'http://ep.pubannotation.org/'
+    config.ep_database = 'PubAnnotation'
+    config.ep_user = 'user'
+    config.ep_password = 'password'
+    config.project_indexable_max_docs = 200000
+
     config.system_path_rdf = "#{Rails.root}/db/rdf/"
     config.project_indexable_max_docs = 200000
   end
