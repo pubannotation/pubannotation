@@ -221,7 +221,7 @@ ActiveRecord::Schema.define(:version => 20210517163020) do
     t.text     "data"
   end
 
-  add_index "messages", ["created_at"], :name => "index_messages_on_created_at"
+  add_index "messages", ["job_id", "created_at"], :name => "index_messages_on_job_id_and_created_at"
   add_index "messages", ["job_id"], :name => "index_messages_on_job_id"
 
   create_table "modifications", :force => true do |t|
