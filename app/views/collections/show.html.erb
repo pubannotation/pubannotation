@@ -33,6 +33,7 @@
 		<% if current_user.root? %>
 			<br/>
 			<%= link_to t('views.docs.rdfize_annotations'), create_annotation_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
+			<%= link_to t('views.docs.rdfize_annotations') + ' (forced)', create_annotation_rdf_collection_path(@collection.name, {forced: true}), method: :post, class: 'button' -%>
 		<% end %>
 
 	<% end %>
@@ -79,9 +80,9 @@
 		end
 
 		g.column name: 'RDFized_at', class: 'column-project-updated' do |project|
-			rdfize_tasks = project.jobs.where(name: "Store RDFized annotations - #{project.name}", ended_at:nil)
-			rdf_create_tasks = project.jobs.where(name: "Create Annotation RDF - #{project.name}", ended_at:nil)
-			if rdfize_tasks.empty? && rdf_create_tasks.empty?
+			# rdfize_tasks = project.jobs.where(name: "Store RDFized annotations - #{project.name}", ended_at:nil)
+			rdf_creation_jobs = project.jobs.where(name: "Create Annotation RDF - #{project.name}", ended_at:nil)
+			if rdf_creation_jobs.empty?
 				style = if project.last_indexed_at < project.annotations_updated_at
 					'text-align:center; color:red'
 				else
@@ -89,7 +90,14 @@
 				end
 				[project.last_indexed_at.nil? ? '-' : project.last_indexed_at.strftime('%Y-%m-%d'), {style: style}]
 			else
-				[content_tag(:i, '', class: "fa fa-cog fa-spin fa-lg", "aria-hidden" => "true", title: "jobs"), {style: 'text-align:center'}]
+				rdf_creation_job = rdf_creation_jobs.first
+				[
+					link_to(
+						content_tag(:i, '', class: "fa fa-cog fa-spin fa-lg", "aria-hidden" => "true", title: "jobs"),
+						project_job_path(project.name, rdf_creation_job.id)
+					),
+					{style: 'text-align:center'}
+				]
 			end
 		end
 
@@ -99,6 +107,10 @@
 		end
 
 		if @collection.editable?(current_user)
+			g.column class: 'column-button' do |project|
+				shape = CollectionProject.where(collection_id:@collection.id, project_id:project.id).first.is_primary ? 'star' : 'star-o'
+				link_to content_tag(:i, '', class: "fa fa-#{shape}", "aria-hidden" => "true"), toggle_primary_collection_project_path(@collection.name, project.name), method: :put, class: :short_button, title: 'Is it a primary project in this collection?'
+			end
 			g.column do |project|
 				link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove this project from the collection'
 			end

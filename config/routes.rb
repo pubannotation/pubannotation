@@ -17,6 +17,7 @@ Pubann::Application.routes.draw do
 		resources :projects do
 			member do
 				delete '/' => 'collections#remove_project'
+				put '/toggle_primary' => "collections#project_toggle_primary"
 			end
 		end
 		resources :jobs do
@@ -24,7 +25,7 @@ Pubann::Application.routes.draw do
 				get 'messages' => 'messages#index'
 			end
 		end
-		delete 'jobs' => 'projects#clear_finished_jobs', as: 'clear_finished_jobs'
+		delete 'jobs' => 'jobs#clear_finished_jobs', as: 'clear_finished_jobs'
 	end
 
 	resources :queries
@@ -136,6 +137,7 @@ Pubann::Application.routes.draw do
 
 		member do
 			post 'create_annotation_rdf' => 'projects#create_annotation_rdf'
+			post 'create_spans_rdf' => 'projects#create_spans_rdf'
 			post 'store_annotation_rdf' => 'projects#store_annotation_rdf'
 			delete 'delete_annotation_rdf' => 'projects#delete_annotation_rdf'
 			get 'store_span_rdf' => 'projects#store_span_rdf'
@@ -167,7 +169,7 @@ Pubann::Application.routes.draw do
 		post 'annotations' => 'annotations#create'
 		delete 'docs' => 'projects#delete_all_docs', as: 'delete_all_docs'
 		delete 'annotations' => 'projects#destroy_all_annotations', as: 'destroy_all_annotations'
-		delete 'jobs' => 'projects#clear_finished_jobs', as: 'clear_finished_jobs'
+		delete 'jobs' => 'jobs#clear_finished_jobs', as: 'clear_finished_jobs'
 
 		resources :evaluations
 

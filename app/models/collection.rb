@@ -50,6 +50,10 @@ class Collection < ActiveRecord::Base
 		current_user.present? && (current_user.root? || current_user == user)
 	end
 
+	def primary_projects
+		Project.joins(:collection_projects).where("collection_projects.collection_id": id, "collection_projects.is_primary": true)
+	end
+
 	def has_running_jobs?
 		jobs.each{|job| return true if job.running?}
 		return false
@@ -65,21 +69,39 @@ class Collection < ActiveRecord::Base
 		return false
 	end
 
-	def annotations_ttl_dirpath
-		@annotations_ttl_dirpath ||= Rails.application.config.system_path_rdf + 'collections/' + "#{name.gsub(' ', '_')}"
+	def annotations_rdf_dirpath
+		@annotations_rdf_dirpath ||= Rails.application.config.system_path_rdf + 'collections/' + "#{name.gsub(' ', '_')}"
 	end
 
-	def create_annotations_RDF
-		FileUtils.mkdir_p annotations_ttl_dirpath unless File.exists? annotations_ttl_dirpath
-		FileUtils.rm_f Dir.glob("#{annotations_ttl_dirpath}/*")
+	def create_spans_RDF
+		pprojects = self.primary_projects
+		unless pprojects.empty?
+			pproject = pprojects.first
+
+			# pproject.create_spans_RDF
+
+			# dj = CreateSpansRdfJob.new(pproject)
+			# dj.perform()
+
+			delayed_job = Delayed::Job.enqueue CreateSpansRdfJob.new(pproject), queue: :general
+			job = pproject.jobs.create({name:"Create Spans RDF - #{pproject.name}", delayed_job_id:delayed_job.id})
+			sleep(1) until job.finished_live?
+
+			FileUtils.ln_sf(pproject.spans_trig_filepath, annotations_rdf_dirpath)
+		end
+	end
+
+	def create_annotations_RDF(forced = false)
+		FileUtils.mkdir_p annotations_rdf_dirpath unless File.exists? annotations_rdf_dirpath
+		FileUtils.rm_f Dir.glob("#{annotations_rdf_dirpath}/*")
 
 		projects.indexable.each_with_index do |project, i|
-			if project.rdf_needs_to_be_updated?
+			if forced || project.rdf_needs_to_be_updated?
 				delayed_job = Delayed::Job.enqueue CreateAnnotationRdfJob.new(project), queue: :general
 				job = project.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
 				sleep(1) until job.finished_live?
 			end
-			FileUtils.ln_sf(project.annotations_ttl_filepath, annotations_ttl_dirpath)
+			FileUtils.ln_sf(project.annotations_trig_filepath, annotations_rdf_dirpath)
 			yield(i, nil) if block_given?
 		rescue => e
 			message = "failure during rdfization of #{project.name}: #{e.message}"

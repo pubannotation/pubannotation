@@ -92,7 +92,7 @@ class Project < ActiveRecord::Base
 		end
 	}
 
-	scope :indexable, where(accessibility: 1).where(status: [1, 2, 3, 8])
+	scope :indexable, where(accessibility: 1, status: [1, 2, 3, 8])
 
 	def annotations_accessible?(current_user)
 		if accessibility == 1
@@ -407,9 +407,14 @@ class Project < ActiveRecord::Base
 		"#{self.name.gsub(' ', '_')}-annotations-rdf.zip"
 	end
 
-	def annotations_ttl_filepath
-		Rails.application.config.system_path_rdf + 'projects/' + "#{name.gsub(' ', '_')}-annotations.ttl"
+	def annotations_trig_filepath
+		Rails.application.config.system_path_rdf + 'projects/' + "#{name.gsub(' ', '_')}-annotations.trig"
 	end
+
+	def spans_trig_filepath
+		Rails.application.config.system_path_rdf + 'projects/' + "#{name.gsub(' ', '_')}-spans.trig"
+	end
+
 
 	def annotations_rdf_path
 		"#{Project::DOWNLOADS_PATH}" + self.annotations_rdf_filename
@@ -442,7 +447,7 @@ class Project < ActiveRecord::Base
 
 	def last_indexed_at
 		begin
-			File.mtime(annotations_ttl_filepath)
+			File.mtime(annotations_trig_filepath)
 		rescue
 			nil
 		end
@@ -461,14 +466,37 @@ class Project < ActiveRecord::Base
 
 	def create_annotations_RDF
 		rdfizer_annos = TAO::RDFizer.new(:annotations)
-		graph_uri_project = self.graph_uri
 
-		File.open(annotations_ttl_filepath, "w") do |f|
+		graph_uri_project = self.graph_uri
+		graph_uri_project_docs = self.docs_uri
+
+		File.open(annotations_trig_filepath, "w") do |f|
 			docs.each_with_index do |doc, i|
 				if doc.denotations.where("denotations.project_id" => self.id).exists?
 					hannotations = doc.hannotations(self)
-					annos_ttl = rdfizer_annos.rdfize([hannotations])
-					f.write(annos_ttl)
+
+					if i == 0
+						prefixes_ttl = rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
+						prefixes_ttl += "\n" unless prefixes_ttl.empty?
+						f.write(prefixes_ttl)
+					end
+
+					annos_ttl = rdfizer_annos.rdfize([hannotations], {with_prefixes: false})
+					annos_trig = <<~HEREDOC
+						<#{graph_uri_project}> rdf:type pubann:Project ;
+							rdf:type oa:Annotation ;
+							oa:has_body <#{graph_uri_project}> ;
+							oa:has_target <#{graph_uri_project_docs}> ;
+							prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+
+						GRAPH <#{graph_uri_project}>
+						{
+							#{annos_ttl.gsub(/\n/, "\n\t")}
+						}
+
+					HEREDOC
+
+					f.write(annos_trig)
 				end
 				yield(i, doc, nil) if block_given?
 			rescue => e
@@ -481,6 +509,49 @@ class Project < ActiveRecord::Base
 			end
 		end
 		# update_attribute(last_indexed_at, Time.now)
+	end
+
+	def create_spans_RDF
+		rdfizer_spans = TAO::RDFizer.new(:spans)
+		graph_uri_project = self.graph_uri
+
+		File.open(spans_trig_filepath, "w") do |f|
+			docs.each_with_index do |doc, i|
+				graph_uri_doc = doc.graph_uri
+				graph_uri_doc_spans = doc.graph_uri + '/spans'
+
+				doc_spans = doc.get_denotations_hash_all
+
+				if i == 0
+					prefixes_ttl = rdfizer_spans.rdfize([doc_spans], {only_prefixes: true})
+					prefixes_ttl += "\n" unless prefixes_ttl.empty?
+					f.write(prefixes_ttl)
+				end
+
+				doc_spans_ttl = rdfizer_spans.rdfize([doc_spans], {with_prefixes: false})
+				doc_spans_trig = <<~HEREDOC
+					<#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
+						oa:has_body <#{graph_uri_doc_spans}> ;
+						oa:has_target <#{graph_uri_doc}> ;
+						prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+
+					GRAPH <#{graph_uri_doc_spans}>
+					{
+						#{doc_spans_ttl.gsub(/\n/, "\n\t")}
+					}
+
+				HEREDOC
+				f.write(doc_spans_trig)
+				yield(i, doc, nil) if block_given?
+			rescue => e
+				message = "failure during rdfization: #{e.message}"
+				if block_given?
+					yield(i, doc, message) if block_given?
+				else
+					raise e
+				end
+			end
+		end
 	end
 
 	def rdf_needs_to_be_updated?

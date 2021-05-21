@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20210517163020) do
+ActiveRecord::Schema.define(:version => 20210521012902) do
 
   create_table "annotators", :force => true do |t|
     t.string   "name"
@@ -61,8 +61,9 @@ ActiveRecord::Schema.define(:version => 20210517163020) do
   create_table "collection_projects", :force => true do |t|
     t.integer  "collection_id"
     t.integer  "project_id"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
+    t.boolean  "is_primary",    :default => false
   end
 
   create_table "collections", :force => true do |t|

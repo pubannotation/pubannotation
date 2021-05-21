@@ -227,7 +227,7 @@ class ProjectsController < ApplicationController
 	end
 
 	def create_annotation_rdf
-		begin
+		message = begin
 			project = Project.editable(current_user).find_by_name(params[:id])
 			raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
@@ -237,13 +237,30 @@ class ProjectsController < ApplicationController
 
 			delayed_job = Delayed::Job.enqueue CreateAnnotationRdfJob.new(project), queue: :general
 			project.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
-			flash[:notice] = "The task, 'Create Annotation RDF - #{project.name}', is created."
+			"The task, 'Create Annotation RDF - #{project.name}', is created."
 		rescue => e
-			flash[:notice] = e.message
+			e.message
 		end
-		redirect_to project_path(project.name)
+		redirect_to project_path(project.name), notice: message
 	end
 
+	def create_spans_rdf
+		message = begin
+			project = Project.editable(current_user).find_by_name(params[:id])
+			raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
+			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+
+			# job = CreateSpansRdfJob.new(project)
+			# job.perform()
+
+			delayed_job = Delayed::Job.enqueue CreateSpansRdfJob.new(project), queue: :general
+			project.jobs.create({name:"Create Spans RDF - #{project.name}", delayed_job_id:delayed_job.id})
+			"The task, 'Create Spans RDF - #{project.name}', is created."
+		rescue => e
+			e.message
+		end
+		redirect_to project_path(project.name), notice: message
+	end
 
 	def store_annotation_rdf_all
 		begin
@@ -385,20 +402,6 @@ class ProjectsController < ApplicationController
 		respond_to do |format|
 			format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, will be deleted soon."}
 			format.json {head :no_content }
-		end
-	end
-
-	def clear_finished_jobs
-		project = Project.editable(current_user).find_by_name(params[:project_id])
-		raise "There is no such project." unless project.present?
-
-		project.jobs.finished.each do |job|
-			job.destroy_if_not_running
-		end
-
-		respond_to do |format|
-			format.html { redirect_to project_jobs_path(project.name) }
-			format.json { head :no_content }
 		end
 	end
 

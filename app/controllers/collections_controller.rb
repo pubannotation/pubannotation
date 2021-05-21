@@ -1,6 +1,6 @@
 class CollectionsController < ApplicationController
 	before_filter :authenticate_user!, :except => [:index, :show]
-	before_filter :set_collection, only: [:show, :edit, :update, :create_annotation_rdf, :destroy]
+	before_filter :set_collection, only: [:show, :update, :create_annotation_rdf, :destroy]
 
 	respond_to :html
 
@@ -22,7 +22,6 @@ class CollectionsController < ApplicationController
 
 	def show
 		begin
-			raise "There is no such collection." unless @collection.present?
 			@projects_grid = initialize_grid(@collection.projects.accessible(current_user),
 				order: 'projects.name',
 				include: :user
@@ -62,6 +61,7 @@ class CollectionsController < ApplicationController
 	end
 
 	def edit
+		@collection = Collection.editable(current_user).find_by_name(params[:id])
 	end
 
 	def update
@@ -136,15 +136,31 @@ class CollectionsController < ApplicationController
 		end
 	end
 
+	def project_toggle_primary
+		collection = Collection.editable(current_user).find_by_name(params[:collection_id])
+		raise "Could not find the collection: #{params[:collection_id]}" unless collection.present?
+
+		project = collection.projects.find_by_name(params[:id])
+		raise "Could not find the project: #{params[:id]}" unless project.present?
+
+		CollectionProject.where(collection_id:collection.id, project_id:project.id).first.toggle_primary
+
+		redirect_to :back
+	rescue => e
+		redirect_to :back, notice: e.message
+	end
+
 	def create_annotation_rdf
 		message = begin
 			raise "Not authorized" unless @collection.editable?(current_user)
 
+			forced = params.has_key?(:forced) ? params[:forced] == 'true' : false
+
 			## for debugging
-			# dj = CreateAnnotationRdfCollectionJob.new(@collection)
+			# dj = CreateAnnotationRdfCollectionJob.new(@collection, {forced:forced})
 			# dj.perform()
 
-			delayed_job = Delayed::Job.enqueue CreateAnnotationRdfCollectionJob.new(@collection), queue: :general
+			delayed_job = Delayed::Job.enqueue CreateAnnotationRdfCollectionJob.new(@collection, {forced:forced}), queue: :general
 			@collection.jobs.create({name:"Create Annotation RDF - #{@collection.name}", delayed_job_id:delayed_job.id})
 			"The task, 'Create Annotation RDF collection - #{@collection.name}', is created."
 		rescue => e
@@ -161,5 +177,6 @@ class CollectionsController < ApplicationController
 	private
 		def set_collection
 			@collection = Collection.accessible(current_user).find_by_name(params[:id])
+			raise "Could not find the collection: #{params[:id]}." unless @collection.present?
 		end
 end
