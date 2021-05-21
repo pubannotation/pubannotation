@@ -1,10 +1,12 @@
 class JobsController < ApplicationController
+	before_filter :authenticate_user!, :except => [:index, :show]
+	before_filter :set_organization, only: [:index, :show]
+	before_filter :set_editable_organization, only: [:destroy, :clear_finished_jobs]
+
 	# GET /jobs
 	# GET /jobs.json
 	def index
 		begin
-			@organization = get_organization
-			raise "Could not find the project or collection." unless @organization.present?
 			@jobs = @organization.jobs.order(:created_at)
 
 			respond_to do |format|
@@ -23,11 +25,8 @@ class JobsController < ApplicationController
 	# GET /jobs/1.json
 	def show
 		begin
-			@organization = get_organization
-			raise "Could not find the project or collection." unless @organization.present?
-
 			@job = Job.find(params[:id])
-			raise "The project or collection does not have the job." unless @job.organization == @organization
+			raise "Could not find the job." unless @job.organization == @organization
 
 			@messages_grid = initialize_grid(@job.messages,
 				order: :created_at,
@@ -40,83 +39,59 @@ class JobsController < ApplicationController
 			end
 		rescue => e
 			respond_to do |format|
-				format.html { redirect_to organization_path, notice: e.message }
+				format.html { redirect_to organization_jobs_path, notice: e.message }
 				format.json { render status: :no_content }
 			end
-		end
-	end
-
-	# GET /jobs/new
-	# GET /jobs/new.json
-	def new
-		@job = Job.new
-
-		respond_to do |format|
-			format.html # new.html.erb
-			format.json { render json: @job }
-		end
-	end
-
-	# GET /jobs/1/edit
-	def edit
-		@job = Job.find(params[:id])
-	end
-
-	# POST /jobs
-	# POST /jobs.json
-	def create
-		@job = Job.new(params[:job])
-
-		respond_to do |format|
-			if @job.save
-				format.html { redirect_to @job, notice: 'Job was successfully created.' }
-				format.json { render json: @job, status: :created, location: @job }
-			else
-				format.html { render action: "new" }
-				format.json { render json: @job.errors, status: :unprocessable_entity }
-			end
-		end
-	end
-
-	# PUT /jobs/1
-	# PUT /jobs/1.json
-	def update
-		organization = get_organization
-		raise "Could not find the project or collection." unless organization.present? && organization.editable?(current_user)
-
-		job = Job.find(params[:id])
-		raise "The project or collection does not have the job." unless job.organization == organization
-
-		job.stop_if_running
-
-		respond_to do |format|
-			format.html { redirect_to :back }
 		end
 	end
 
 	# DELETE /jobs/1
 	# DELETE /jobs/1.json
 	def destroy
-		organization = get_organization
-		raise "Could not find the project or collection." unless organization.present? && organization.editable?(current_user)
-
 		job = Job.find(params[:id])
-		raise "The project or collection does not have the job." unless job.organization == organization
+		raise "Could not find the job." unless job.organization == @organization
 
 		job.destroy_if_not_running
 
 		respond_to do |format|
-			format.html { redirect_to organization_path }
+			format.html { redirect_to organization_jobs_path }
+		end
+	end
+
+	def clear_finished_jobs
+		@organization.jobs.finished.each do |job|
+			job.destroy_if_not_running
+		end
+
+		respond_to do |format|
+			format.html { redirect_to organization_jobs_path }
+			format.json { head :no_content }
 		end
 	end
 
 	private
 
-	def get_organization
+	def set_organization
 		if params.has_key? :project_id
-			Project.accessible(current_user).find_by_name(params[:project_id])
+			@organization = Project.accessible(current_user).find_by_name(params[:project_id])
+			raise "Could not find the project." unless @organization.present?
 		elsif params.has_key? :collection_id
-			Collection.accessible(current_user).find_by_name(params[:collection_id])
+			@organization = Collection.accessible(current_user).find_by_name(params[:collection_id])
+			raise "Could not find the collection." unless @organization.present?
+		else
+			raise "Invalid access."
+		end
+	end
+
+	def set_editable_organization
+		if params.has_key? :project_id
+			@organization = Project.editable(current_user).find_by_name(params[:project_id])
+			raise "Could not find the project." unless @organization.present?
+		elsif params.has_key? :collection_id
+			@organization = Collection.editable(current_user).find_by_name(params[:collection_id])
+			raise "Could not find the collection." unless @organization.present?
+		else
+			raise "Invalid access."
 		end
 	end
 
@@ -125,6 +100,14 @@ class JobsController < ApplicationController
 			project_path(params[:project_id])
 		elsif params.has_key? :collection_id
 			collection_path(params[:collection_id])
+		end
+	end
+
+	def organization_jobs_path
+		if params.has_key? :project_id
+			project_jobs_path(params[:project_id])
+		elsif params.has_key? :collection_id
+			collection_jobs_path(params[:collection_id])
 		end
 	end
 
