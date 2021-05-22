@@ -3,7 +3,7 @@
 	<%= render :partial => 'projects/titlebar' -%>
 	<% if last_indexed_at = @project.last_indexed_at %>
 		<div class="note">
-			RDFization last updated at <%= last_indexed_at %>
+			RDFization last created at <%= last_indexed_at %>, (EP: <%= @project.last_indexed_at_live || '-'%>)
 			<% if @project.editable?(current_user) -%>
 				&nbsp;<%= link_to 'Delete', delete_annotation_rdf_project_path(@project.name), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
 			<% end %>
