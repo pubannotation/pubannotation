@@ -1,7 +1,7 @@
 class JobsController < ApplicationController
 	before_filter :authenticate_user!, :except => [:index, :show]
 	before_filter :set_organization, only: [:index, :show]
-	before_filter :set_editable_organization, only: [:destroy, :clear_finished_jobs]
+	before_filter :set_editable_organization, only: [:update, :destroy, :clear_finished_jobs]
 
 	# GET /jobs
 	# GET /jobs.json
@@ -42,6 +42,19 @@ class JobsController < ApplicationController
 				format.html { redirect_to organization_jobs_path, notice: e.message }
 				format.json { render status: :no_content }
 			end
+		end
+	end
+
+	# PUT /jobs/1
+	# PUT /jobs/1.json
+	def update
+		job = Job.find(params[:id])
+		raise "Could not find the job." unless job.organization == @organization
+
+		job.stop_if_running
+
+		respond_to do |format|
+			format.html { redirect_to :back }
 		end
 	end
 
