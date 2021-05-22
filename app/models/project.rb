@@ -470,19 +470,25 @@ class Project < ActiveRecord::Base
 		graph_uri_project = self.graph_uri
 		graph_uri_project_docs = self.docs_uri
 
-		File.open(annotations_trig_filepath, "w") do |f|
-			docs.each_with_index do |doc, i|
-				if doc.denotations.where("denotations.project_id" => self.id).exists?
-					hannotations = doc.hannotations(self)
+		## begin to produce annotations_trig
+		annotations_trig = ''
 
-					if i == 0
-						prefixes_ttl = rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
-						prefixes_ttl += "\n" unless prefixes_ttl.empty?
-						f.write(prefixes_ttl)
-					end
+		docs.each_with_index do |doc, i|
+			if doc.denotations.where("denotations.project_id" => self.id).exists?
+				hannotations = doc.hannotations(self)
 
-					annos_ttl = rdfizer_annos.rdfize([hannotations], {with_prefixes: false})
-					annos_trig = <<~HEREDOC
+				if i == 0
+					# prefixes
+					annotations_trig += rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
+					annotations_trig += "@prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .\n"
+					annotations_trig += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
+					annotations_trig += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
+					annotations_trig += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
+					annotations_trig += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
+					annotations_trig += "\n" unless annotations_trig.empty?
+
+					# project meta-data
+					annotations_trig += <<~HEREDOC
 						<#{graph_uri_project}> rdf:type pubann:Project ;
 							rdf:type oa:Annotation ;
 							oa:has_body <#{graph_uri_project}> ;
@@ -491,22 +497,26 @@ class Project < ActiveRecord::Base
 
 						GRAPH <#{graph_uri_project}>
 						{
-							#{annos_ttl.gsub(/\n/, "\n\t")}
-						}
-
 					HEREDOC
+				end
 
-					f.write(annos_trig)
-				end
-				yield(i, doc, nil) if block_given?
-			rescue => e
-				message = "failure during rdfization: #{e.message}"
-				if block_given?
-					yield(i, doc, message) if block_given?
-				else
-					raise e
-				end
+				annos_ttl = rdfizer_annos.rdfize([hannotations], {with_prefixes: false})
+				annotations_trig +=	"\t" + annos_ttl.gsub(/\n/, "\n\t")
 			end
+			yield(i, doc, nil) if block_given?
+		rescue => e
+			message = "failure during rdfization: #{e.message}"
+			if block_given?
+				yield(i, doc, message) if block_given?
+			else
+				raise e
+			end
+		end
+
+		annotations_trig = annotations_trig.rstrip + "\n}"
+
+		File.open(annotations_trig_filepath, "w") do |f|
+			f.write(annotations_trig)
 		end
 		# update_attribute(last_indexed_at, Time.now)
 	end
@@ -524,6 +534,8 @@ class Project < ActiveRecord::Base
 
 				if i == 0
 					prefixes_ttl = rdfizer_spans.rdfize([doc_spans], {only_prefixes: true})
+					prefixes_ttl += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
+					prefixes_ttl += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
 					prefixes_ttl += "\n" unless prefixes_ttl.empty?
 					f.write(prefixes_ttl)
 				end
