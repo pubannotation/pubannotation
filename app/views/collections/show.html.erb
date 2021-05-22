@@ -83,7 +83,7 @@
 			# rdfize_tasks = project.jobs.where(name: "Store RDFized annotations - #{project.name}", ended_at:nil)
 			rdf_creation_jobs = project.jobs.where(name: "Create Annotation RDF - #{project.name}", ended_at:nil)
 			if rdf_creation_jobs.empty?
-				style = if project.last_indexed_at < project.annotations_updated_at
+				style = if project.last_indexed_at.nil? || (!project.annotations_updated_at.nil? && project.last_indexed_at < project.annotations_updated_at)
 					'text-align:center; color:red'
 				else
 					'text-align:center'
