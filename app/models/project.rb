@@ -471,54 +471,51 @@ class Project < ActiveRecord::Base
 		graph_uri_project_docs = self.docs_uri
 
 		## begin to produce annotations_trig
-		annotations_trig = ''
-
-		docs.each_with_index do |doc, i|
-			if doc.denotations.where("denotations.project_id" => self.id).exists?
-				hannotations = doc.hannotations(self)
-
-				if i == 0
-					# prefixes
-					annotations_trig += rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
-					annotations_trig += "@prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .\n"
-					annotations_trig += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
-					annotations_trig += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
-					annotations_trig += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
-					annotations_trig += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
-					annotations_trig += "\n" unless annotations_trig.empty?
-
-					# project meta-data
-					annotations_trig += <<~HEREDOC
-						<#{graph_uri_project}> rdf:type pubann:Project ;
-							rdf:type oa:Annotation ;
-							oa:has_body <#{graph_uri_project}> ;
-							oa:has_target <#{graph_uri_project_docs}> ;
-							prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
-
-						GRAPH <#{graph_uri_project}>
-						{
-					HEREDOC
-				end
-
-				annos_ttl = rdfizer_annos.rdfize([hannotations], {with_prefixes: false})
-				annotations_trig +=	"\t" + annos_ttl.gsub(/\n/, "\n\t")
-			end
-			yield(i, doc, nil) if block_given?
-		rescue => e
-			message = "failure during rdfization: #{e.message}"
-			if block_given?
-				yield(i, doc, message) if block_given?
-			else
-				raise e
-			end
-		end
-
-		annotations_trig = annotations_trig.rstrip + "\n}"
-
 		File.open(annotations_trig_filepath, "w") do |f|
-			f.write(annotations_trig)
+			docs.each_with_index do |doc, i|
+				if doc.denotations.where("denotations.project_id" => self.id).exists?
+					hannotations = doc.hannotations(self)
+
+					if i == 0
+						# prefixes
+						preamble  = rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
+						preamble += "@prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .\n"
+						preamble += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
+						preamble += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
+						preamble += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
+						preamble += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
+						preamble += "\n" unless preamble.empty?
+
+						# project meta-data
+						preamble += <<~HEREDOC
+							<#{graph_uri_project}> rdf:type pubann:Project ;
+								rdf:type oa:Annotation ;
+								oa:has_body <#{graph_uri_project}> ;
+								oa:has_target <#{graph_uri_project_docs}> ;
+								prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+
+							GRAPH <#{graph_uri_project}>
+							{
+						HEREDOC
+
+						f.write(preamble)
+					end
+
+					annos_ttl = rdfizer_annos.rdfize([hannotations], {with_prefixes: false})
+					f.write("\t" + annos_ttl.gsub(/\n/, "\n\t").rstrip + "\n")
+				end
+				yield(i, doc, nil) if block_given?
+			rescue => e
+				message = "failure during rdfization: #{e.message}"
+				if block_given?
+					yield(i, doc, message) if block_given?
+				else
+					raise e
+				end
+			end
+			f.write("}")
 		end
-		# update_attribute(last_indexed_at, Time.now)
+
 	end
 
 	def create_spans_RDF
