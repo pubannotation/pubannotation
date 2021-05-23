@@ -473,34 +473,35 @@ class Project < ActiveRecord::Base
 		## begin to produce annotations_trig
 		File.open(annotations_trig_filepath, "w") do |f|
 			docs.each_with_index do |doc, i|
-				if doc.denotations.where("denotations.project_id" => self.id).exists?
+				if i == 0
 					hannotations = doc.hannotations(self)
 
-					if i == 0
-						# prefixes
-						preamble  = rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
-						preamble += "@prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .\n"
-						preamble += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
-						preamble += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
-						preamble += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
-						preamble += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
-						preamble += "\n" unless preamble.empty?
+					# prefixes
+					preamble  = rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
+					preamble += "@prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .\n"
+					preamble += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
+					preamble += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
+					preamble += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
+					preamble += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
+					preamble += "\n" unless preamble.empty?
 
-						# project meta-data
-						preamble += <<~HEREDOC
-							<#{graph_uri_project}> rdf:type pubann:Project ;
-								rdf:type oa:Annotation ;
-								oa:has_body <#{graph_uri_project}> ;
-								oa:has_target <#{graph_uri_project_docs}> ;
-								prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+					# project meta-data
+					preamble += <<~HEREDOC
+						<#{graph_uri_project}> rdf:type pubann:Project ;
+							rdf:type oa:Annotation ;
+							oa:has_body <#{graph_uri_project}> ;
+							oa:has_target <#{graph_uri_project_docs}> ;
+							prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
 
-							GRAPH <#{graph_uri_project}>
-							{
-						HEREDOC
+						GRAPH <#{graph_uri_project}>
+						{
+					HEREDOC
 
-						f.write(preamble)
-					end
+					f.write(preamble)
+				end
 
+				if doc.denotations.where("denotations.project_id" => self.id).exists?
+					hannotations = doc.hannotations(self)
 					annos_ttl = rdfizer_annos.rdfize([hannotations], {with_prefixes: false})
 					f.write("\t" + annos_ttl.gsub(/\n/, "\n\t").rstrip + "\n")
 				end
