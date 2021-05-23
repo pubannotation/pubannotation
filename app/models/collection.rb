@@ -83,7 +83,7 @@ class Collection < ActiveRecord::Base
 			# dj = CreateSpansRdfJob.new(pproject)
 			# dj.perform()
 
-			delayed_job = Delayed::Job.enqueue CreateSpansRdfJob.new(pproject), queue: :general
+			delayed_job = Delayed::Job.enqueue CreateSpansRdfJob.new(pproject, self), queue: :general
 			job = pproject.jobs.create({name:"Create Spans RDF - #{pproject.name}", delayed_job_id:delayed_job.id})
 			sleep(1) until job.finished_live?
 

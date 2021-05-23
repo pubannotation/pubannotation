@@ -558,9 +558,9 @@ class Doc < ActiveRecord::Base
 		denotations.in_project(project_id).in_span(span).pluck(:hid)
 	end
 
-	def get_denotations_hash_all
+	def get_denotations_hash_all(collection = nil)
 		annotations = {}
-		annotations[:denotations] = get_denotations_hash
+		annotations[:denotations] = collection.nil? ? get_denotations_hash : get_denotations_hash(collection.projects.indexable)
 		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, :only_path => false)
 		annotations[:sourcedb] = sourcedb
 		annotations[:sourceid] = sourceid
