@@ -7,6 +7,7 @@ class Collection < ActiveRecord::Base
 	has_many :collection_projects, dependent: :destroy
 	has_many :projects, through: :collection_projects
 	has_many :jobs, as: :organization, :dependent => :destroy
+	validates :name, presence: true, uniqueness: true
 
 	scope :accessible, -> (current_user) {
 		if current_user.present?
