@@ -1,6 +1,6 @@
 class CollectionsController < ApplicationController
 	before_filter :authenticate_user!, :except => [:index, :show]
-	before_filter :set_collection, only: [:show, :update, :create_annotation_rdf, :destroy]
+	before_filter :set_collection, only: [:show, :create_annotation_rdf, :destroy]
 
 	respond_to :html
 
@@ -66,6 +66,7 @@ class CollectionsController < ApplicationController
 
 	def update
 		@collection = Collection.find(params[:id])
+		raise "Could not find the collection ID: #{params[:id]}." unless @collection.present?
 		@collection.user = current_user unless current_user.root?
 		respond_to do |format|
 			if @collection.update_attributes(params[:collection])
