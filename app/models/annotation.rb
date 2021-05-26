@@ -524,6 +524,7 @@ class Annotation < ActiveRecord::Base
 
 	def self.prepare_annotations!(annotations, doc, options = {})
 		if options[:span]
+			span = options[:span]
 			raise ArgumentError, "Annotations are in array, for which span cannot be specified." if annotations.is_a? Array
 			raise ArgumentError, "The text of the span might be changed, which is not allowed when the span is explictely specified in the URL." if annotations[:text] != doc.get_text(span)
 
