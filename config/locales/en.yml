@@ -10,7 +10,7 @@ en:
     - Fri
     - Sat
     abbr_month_names:
-    - 
+    -
     - Jan
     - Feb
     - Mar
@@ -36,7 +36,7 @@ en:
       long: ! '%B %d, %Y'
       short: ! '%b %d'
     month_names:
-    - 
+    -
     - January
     - February
     - March
@@ -132,7 +132,7 @@ en:
         other: is the wrong length (should be %{count} characters)
       save_prohibited: '%{error} prohibited this %{model} from being saved:'
       invalid_character_included: Invalid character included.
-      unupdatable: is unupdatable. 
+      unupdatable: is unupdatable.
       failed_to_destroy: Failed to delete.
     template:
       body: ! 'There were problems with the following fields:'
@@ -223,7 +223,7 @@ en:
       sproject: Super Project
       user: user
       associate_maintainer: sub-maintainer
-      associate_projects_project: associate project 
+      associate_projects_project: associate project
       notice: notice
     attributes:
       doc:
@@ -312,7 +312,7 @@ en:
     application:
       get_project:
         private: The project, %{project_name}, is not accessible.
-        not_exist: The project, %{project_name}, does not exist.        
+        not_exist: The project, %{project_name}, does not exist.
       get_doc:
         not_belong_to: The document, %{sourcedb}:%{sourceid}, does not belong to the project, %{project_name}.
         no_annotation: No annotation to the document, %{sourcedb}:%{sourceid}, exists in PubAnnotation.
@@ -353,9 +353,9 @@ en:
       destroy:
         document_removed_from_annotation_set: "The document, %{sourcedb}:%{sourceid}, was removed from the project, %{project_name}."
         project_does_not_include_document: "the project, %{project_name} does not include the document, %{sourcedb}."
-        project_does_not_exist_in_pubannotation: "The project, %{project_id} does not exist in PubAnnotation." 
+        project_does_not_exist_in_pubannotation: "The project, %{project_id} does not exist in PubAnnotation."
         document_removed_from_pubannotation: "The document, %{sourcedb}:%{sourceid}, was removed from PubAnnotation."
-        document_does_not_exist_in_pubannotation: "the document, PMC:%{id}, does not exist in PubAnnotation." 
+        document_does_not_exist_in_pubannotation: "the document, PMC:%{id}, does not exist in PubAnnotation."
     pmdocs:
       create:
         added_to_document_set: '%{num_added} documents were added to the document set, %{project_name}.'
@@ -444,7 +444,7 @@ en:
     projects:
       project: project
       my_projects: my projecs
-      try_textae: "is the default, but you can use any other RESTful editor." 
+      try_textae: "is the default, but you can use any other RESTful editor."
       annotation_within_annotation_set: "Annotations <span class='meta'>to the document, <span class='pname'>%{sourcedb}:%{sourceid}</span>, within this project</span></span>"
       properties: properties
       contents: Contents
@@ -454,7 +454,7 @@ en:
       list: project list
       confirm_delete: Are you sure? The project, including all the annotations in it, will be deleted.
       user_projects: Your projects
-      associate_maintain_projects: Associated projects 
+      associate_maintain_projects: Associated projects
       belongs_to_sproject: Projects belongs to this Sproject
       associate_project: Associate project
       start_delay_store_annotations:
@@ -494,7 +494,7 @@ en:
       send_reset_password_instructions: Send me instructions
     shared:
       confirm:
-        delete_model: "Are you sure to delete %{model}?"      
+        delete_model: "Are you sure to delete %{model}?"
       add: add
       account: account
       annotation: annotation
@@ -562,6 +562,6 @@ en:
         contact_manager: Contact the manager of this project.
         deleted: Successfully deleted the annotation TGZ file.
       rdf:
-        delayed_job_present: RDF file will be created in a few minutes.      
+        delayed_job_present: RDF file will be created in a few minutes.
         download_not_available: Not available for this project.
         deleted: Successfully deleted the annotation rdf file.

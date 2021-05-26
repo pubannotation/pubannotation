@@ -13,9 +13,9 @@ class ActiveRecord::Base
   end
 end
 
-if defined?(Bundler)
-  Bundler.require(*Rails.groups)
-end
+# Require the gems listed in Gemfile, including any gems
+# you've limited to :test, :development, or :production.
+Bundler.require(*Rails.groups)
 
 module Pubann
   class Application < Rails::Application
@@ -26,7 +26,7 @@ module Pubann
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
     config.autoload_paths += %W(#{config.root}/app/jobs #{Rails.root}/lib)
-    
+
     config.i18n.enforce_available_locales = true
 
     # Only load the plugins named here, in the order given (default is alphabetical).
