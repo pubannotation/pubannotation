@@ -8,17 +8,13 @@ gem 'activerecord-import'
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-# Gems used only for assets and not required
-# in production environments by default.
-group :assets do
-	gem 'sass-rails'
-	gem 'coffee-rails'
+gem 'sass-rails'
+gem 'coffee-rails'
 
-	# See https://github.com/sstephenson/execjs#readme for more supported runtimes
-	# gem 'therubyracer', :platforms => :ruby
+# See https://github.com/sstephenson/execjs#readme for more supported runtimes
+# gem 'therubyracer', :platforms => :ruby
 
-	gem 'uglifier'
-end
+gem 'uglifier'
 
 gem 'pg', '~> 0.18'
 gem 'friendly_id'
@@ -27,24 +23,6 @@ group :development do
 	gem 'dotenv-rails'
 	gem 'guard'
 	gem 'guard-livereload'
-end
-
-group :test, :development do
-	gem 'rspec-rails'
-end
-
-group :test do
-	gem 'rspec'
-	gem 'cucumber'
-	gem 'spork-rails'
-	gem 'factory_girl_rails'
-  gem 'simplecov', :require => false
-	gem 'simplecov-html'
-	gem 'vcr'
-	gem 'webmock'
-	gem 'webrat'
-	gem 'database_cleaner'
-	gem 'test-unit'
 end
 
 gem 'text_alignment', '0.11.10'
@@ -78,6 +56,7 @@ gem 'elasticsearch-rails'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
 gem 'rails-observers'
+gem 'diff-lcs'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

@@ -6,5 +6,5 @@
 
 <% if root_user? -%>
 	<%= link_to t('views.shared.edit'), edit_news_notification_path(@news_notification.id), class: 'button' -%>
-	<%= link_to t('views.shared.delete'), news_notification_path(@news_notification.id), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: 'button' -%>
+	<%= link_to t('views.shared.delete'), news_notification_path(@news_notification.id), method: 'delete', data: { confirm: t('controllers.shared.confirm_delete') }, class: 'button' -%>
 <% end -%>

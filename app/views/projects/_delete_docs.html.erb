@@ -1,4 +1,4 @@
 <%= link_to 'Delete all documents', project_delete_all_docs_path(@project.name),
 method: :delete,
-confirm: "Are you sure? All the documents in the project will be deleted.",
+data: { confirm: "Are you sure? All the documents in the project will be deleted." },
 class: 'button long_button' %>

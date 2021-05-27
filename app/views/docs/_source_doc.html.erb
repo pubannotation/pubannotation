@@ -53,7 +53,7 @@
 	<% end %>
 	<% if @project.present? && @project.editable?(current_user) %>
 		<td style="text-align:center">
-			<%= content_tag(:div, link_to(content_tag(:i, '', class: "fa fa-times", "aria-hidden" => "true"), delete_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', confirm: t('controllers.shared.confirm_delete'), class: "short_button", title: "remove this document from this project."), class: :cell_link) -%>
+			<%= content_tag(:div, link_to(content_tag(:i, '', class: "fa fa-times", "aria-hidden" => "true"), delete_project_sourcedb_sourceid_docs_path(params[:project_id], source_doc.sourcedb, source_doc.sourceid), method: 'delete', data: { confirm: t('controllers.shared.confirm_delete') }, class: "short_button", title: "remove this document from this project."), class: :cell_link) -%>
 		</td>
 	<% end %>
 </tr>

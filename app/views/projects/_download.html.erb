@@ -31,7 +31,7 @@
 						link_to(
 							t('views.shared.update'),
 							project_create_annotations_tgz_path(@project.name, update: true),
-							confirm: t('controllers.annotations.confirm_update_downloadable'),
+							data: { confirm: t('controllers.annotations.confirm_update_downloadable') },
 							title: t('controllers.annotations.help_update_downloadable'),
 							class: 'button',
 							style: 'box-sizing: border-box; width:100%'
@@ -44,7 +44,7 @@
 					link_to(
 						t('views.shared.delete'),
 						project_delete_annotations_tgz_path(@project.name),
-						confirm: t('controllers.shared.confirm_delete'),
+						data: { confirm: t('controllers.shared.confirm_delete') },
 						class: 'button',
 						style: 'box-sizing: border-box; width:100%'
 					)
@@ -74,7 +74,7 @@
 							project_create_annotations_tgz_path(@project.name),
 							:class => 'button long_button',
 							:title => title,
-							:confirm => t('controllers.annotations.confirm_create_downloadable')
+							:data => { confirm: t('controllers.annotations.confirm_create_downloadable') }
 						)
 					%>
 				</td></tr>

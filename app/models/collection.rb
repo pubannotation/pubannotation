@@ -36,10 +36,10 @@ class Collection < ActiveRecord::Base
 		end
 	}
 
-	scope :sharedtasks, where(is_sharedtask: true)
-	scope :no_sharedtasks, where(is_sharedtask: false)
+	scope :sharedtasks, -> { where(is_sharedtask: true) }
+	scope :no_sharedtasks, -> { where(is_sharedtask: false) }
 
-	scope :top_recent, order('collections.updated_at DESC').limit(10)
+	scope :top_recent, -> { order('collections.updated_at DESC').limit(10) }
 
 	def editable?(current_user)
 		current_user.present? && (current_user.root? || current_user == user)

@@ -29,14 +29,13 @@ Pubann::Application.configure do
   # ActionMailer::Base.deliveries array.
   config.action_mailer.delivery_method = :test
 
-  # Raise exception on mass assignment protection for Active Record models
-  config.active_record.mass_assignment_sanitizer = :strict
-
   # Print deprecation notices to the stderr
   config.active_support.deprecation = :stderr
   
   config.i18n.default_locale = :en
 
   # option for url_helpers in models 
-  Rails.application.routes.default_url_options[:host]= 'test.host' 
+  Rails.application.routes.default_url_options[:host]= 'test.host'
+
+  config.eager_load = false
 end
