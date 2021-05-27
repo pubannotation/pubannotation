@@ -25,4 +25,8 @@ class Editor < ActiveRecord::Base
 	def changeable?(current_user)
 		current_user.present? && (current_user.root? || current_user == user)
 	end
+
+	def parameters_to_string
+		parameters == {} ? 'source=_annotations_url_' : parameters.map{|p| p.join(' = ')}.join("\n")
+	end
 end

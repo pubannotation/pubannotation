@@ -1,4 +1,5 @@
 class AnnotatorsController < ApplicationController
+	include IniFileConvertible
 	before_filter :changeable?, :only => [:edit, :update, :destroy]
 	before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
 
@@ -37,8 +38,6 @@ class AnnotatorsController < ApplicationController
 				end
 			end
 
-			@annotator.payload = @annotator.payload.map{|p| p.join(' = ')}.join("\n")
-
 			respond_to do |format|
 				format.html {flash[:notice] = message}
 				format.json { render json: @annotator }
@@ -65,15 +64,15 @@ class AnnotatorsController < ApplicationController
 	# GET /annotators/1/edit
 	def edit
 		@annotator = Annotator.find(params[:id])
-		@annotator.payload = @annotator.payload.map{|p| p.join(' = ')}.join("\n")
 	end
 
 	# POST /annotators
 	# POST /annotators.json
 	def create
-		@annotator = Annotator.new(annotator_params)
-		@annotator.user = current_user
-		@annotator.payload = @annotator.payload.delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if @annotator.payload.present?
+		params = annotator_params
+		params[:payload] = convert_str_to_hash(params[:payload])
+		params[:user] = current_user
+		@annotator = Annotator.new(params)
 
 		respond_to do |format|
 			if @annotator.save
@@ -81,7 +80,7 @@ class AnnotatorsController < ApplicationController
 				format.json { render json: @annotator, status: :created, location: @annotator }
 			else
 				format.html {
-					@annotator.payload = @annotator.payload.map{|p| p.join(' = ')}.join("\n")
+					@annotator.payload = @annotator.payload_to_string
 					render action: "new"
 				}
 				format.json { render json: @annotator.errors, status: :unprocessable_entity }
@@ -97,7 +96,7 @@ class AnnotatorsController < ApplicationController
 		if params['method'] == '0'
 			params['payload'] = nil
 		end
-		params['payload'] = params['payload'].delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if params['payload'].present?
+		params['payload'] = convert_str_to_hash(params['payload'])
 
 		respond_to do |format|
 			if @annotator.update_attributes(params)
@@ -105,7 +104,7 @@ class AnnotatorsController < ApplicationController
 				format.json { head :no_content }
 			else
 				format.html {
-					@annotator.payload = @annotator.payload.map{|p| p.join(' = ')}.join("\n")
+					@annotator.payload = @annotator.payload_to_string
 					render action: "edit"
 				}
 				format.json { render json: @annotator.errors, status: :unprocessable_entity }

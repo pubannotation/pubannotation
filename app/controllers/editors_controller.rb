@@ -1,4 +1,5 @@
 class EditorsController < ApplicationController
+	include IniFileConvertible
 	before_filter :changeable?, :only => [:edit, :update, :destroy]
 	before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
 
@@ -21,7 +22,6 @@ class EditorsController < ApplicationController
 				raise "Could not find the editor, #{params[:id]}."
 			end
 
-			@editor.parameters = @editor.parameters.map{|p| p.join(' = ')}.join("\n")
 			respond_with(@editor)
 		rescue => e
 			redirect_to editors_path, :notice => e.message
@@ -35,24 +35,23 @@ class EditorsController < ApplicationController
 
 	def edit
 		@editor = Editor.find(params[:id])
-		@editor.parameters = @editor.parameters.map{|p| p.join(' = ')}.join("\n")
 	end
 
 	def create
-		@editor = Editor.new(editor_params)
-		@editor.user = current_user
-		@editor.parameters = @editor.parameters.delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if @editor.parameters.present?
-		@editor.save
+		params = editor_params
+		params[:user] = current_user
+		params[:parameters] = convert_str_to_hash(params[:parameters])
+		@editor = Editor.create(params)
 		respond_with(@editor)
 	end
 
 	def update
 		@editor = Editor.find(params[:id])
-		update = editor_params
-		update['parameters'] = update['parameters'].delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if update['parameters'].present?
+		params = editor_params
+		params[:parameters] = convert_str_to_hash(params[:parameters])
 
-		@editor.update_attributes(update)
-		@editor.name = update['name']
+		@editor.update_attributes(params)
+		@editor.name = params[:name]
 		respond_with(@editor)
 	end
 

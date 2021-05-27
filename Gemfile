@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.3.4'
 
-gem 'rails', '4.1.16'
+gem 'rails', '4.2.11.3'
 gem 'rake'
 gem 'activerecord-import'
 
@@ -24,6 +24,7 @@ group :development do
 	gem 'guard'
 	gem 'guard-livereload'
   gem 'spring'
+  gem 'web-console', '~> 2.0'
 end
 
 gem 'text_alignment', '0.11.10'
@@ -73,3 +74,4 @@ gem 'unicorn'
 
 # To use debugger
 # gem 'debugger'
+
