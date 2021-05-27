@@ -49,7 +49,7 @@ class QueriesController < ApplicationController
 	end
 
 	def create
-		query = Query.new(params[:query])
+		query = Query.new(query_params)
 		respond_to do |format|
 			if query.save
 				format.html { redirect_to query.project ? project_query_path(query.project.name, query) : query_path(query) }
@@ -62,7 +62,7 @@ class QueriesController < ApplicationController
 	end
 
 	def update
-		@query.update_attributes(params[:query])
+		@query.update_attributes(query_params)
 		respond_to do |format|
 			format.html { redirect_to @query.project ? project_query_path(@query.project.name, @query) : query_path(@query) }
 			format.json { render json: query, status: :created, location: query_path(@query) }
@@ -91,5 +91,10 @@ class QueriesController < ApplicationController
 
 		def set_query
 			@query = Query.find(params[:id])
+		end
+
+		def query_params
+			params.require(:query).permit(:active, :comment, :priority, :sparql, :reasoning,
+																		:title, :project_id, :show_mode, :projects, :category)
 		end
 end

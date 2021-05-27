@@ -2,7 +2,6 @@ class Job < ActiveRecord::Base
 	belongs_to :organization, polymorphic: true
 	belongs_to :delayed_job
 	has_many :messages, :dependent => :destroy
-	attr_accessible :name, :num_dones, :num_items, :organization_id, :organization_type, :delayed_job_id
 
 	scope :waiting, -> {where('begun_at IS NULL')}
 	scope :running, -> {where('begun_at IS NOT NULL AND ended_at IS NULL')}

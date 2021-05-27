@@ -76,7 +76,6 @@ class Doc < ActiveRecord::Base
 	include ApplicationHelper
 
 	attr_accessor :username, :original_body, :text_aligner
-	attr_accessible :body, :source, :sourcedb, :sourceid, :username
 
 	has_many :divisions, dependent: :destroy
 	has_many :typesettings, dependent: :destroy
@@ -277,7 +276,7 @@ class Doc < ActiveRecord::Base
 			)
 		end
 
-		r = Division.import divisions
+		r = Division.ar_import divisions
 		raise "Failed to save the divisions." unless r.failed_instances.empty?
 
 		divisions
@@ -297,7 +296,7 @@ class Doc < ActiveRecord::Base
 			)
 		end
 
-		r = Typesetting.import typesettings
+		r = Typesetting.ar_import typesettings
 		raise "Failed to save the typesettings." unless r.failed_instances.empty?
 
 		typesettings
@@ -309,12 +308,14 @@ class Doc < ActiveRecord::Base
 
 		hdocs.each do |hdoc|
 			ActiveRecord::Base.transaction do
-				doc = store_hdoc(hdoc)
-				doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
-				doc.store_typesettings(hdoc[:typesettings]) if hdoc.has_key? :typesettings
-				docs_saved << doc
-			rescue => e
-				messages << {sourcedb:hdoc[:sourcedb], sourceid:hdoc[:sourceid], body:e.message}
+				begin
+	  			doc = store_hdoc(hdoc)
+	  			doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
+	  			doc.store_typesettings(hdoc[:typesettings]) if hdoc.has_key? :typesettings
+	  			docs_saved << doc
+	  		rescue => e
+	  			messages << {sourcedb:hdoc[:sourcedb], sourceid:hdoc[:sourceid], body:e.message}
+				end
 			end
 		end
 

@@ -1,6 +1,4 @@
 class Message < ActiveRecord::Base
-	attr_accessible :sourcedb, :sourceid, :divid, :body, :data
-
 	belongs_to :job
 	serialize :data
 

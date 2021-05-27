@@ -1,8 +1,6 @@
 class Typesetting < ActiveRecord::Base
 	belongs_to :doc
 
-	attr_accessible :doc_id, :begin, :end, :style
-
 	def as_json(options={})
 		options ||= {}
 

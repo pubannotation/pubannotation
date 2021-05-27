@@ -72,12 +72,13 @@ class ProjectsController < ApplicationController
 	# POST /projects
 	# POST /projects.json
 	def create
-		if params[:project].class == ActionDispatch::Http::UploadedFile
-			params_from_json = Project.params_from_json(params[:project].tempfile)
-			params[:project] = params_from_json
+		permitted_project_params = project_params
+		if permitted_project_params.class == ActionDispatch::Http::UploadedFile
+			params_from_json = Project.params_from_json(permitted_project_params.tempfile)
+			permitted_project_params = params_from_json
 		end
 
-		@project = Project.new(params[:project])
+		@project = Project.new(permitted_project_params)
 		@project.user = current_user
 
 		@collection = if params[:collection_id].present?
@@ -108,7 +109,7 @@ class ProjectsController < ApplicationController
 	def update
 		@project.user = current_user unless current_user.root?
 		respond_to do |format|
-			if @project.update_attributes(params[:project])
+			if @project.update_attributes(project_params)
 				format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
 				format.json { head :no_content }
 			else
@@ -450,4 +451,13 @@ class ProjectsController < ApplicationController
 			render_status_error(:forbidden)
 		end  
 	end
+
+	private
+		def project_params
+			params.require(:project).permit(:name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
+																			:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
+																			:textae_config, :annotator_id,
+																			:annotations_zip_downloadable, :process,
+																			:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count, { namespaces: [:prefix, :uri] })
+		end
 end

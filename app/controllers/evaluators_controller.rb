@@ -28,14 +28,14 @@ class EvaluatorsController < ApplicationController
 	end
 
 	def create
-		@evaluator = Evaluator.new(params[:evaluator])
+		@evaluator = Evaluator.new(evaluator_params)
 		@evaluator.user = current_user
 		@evaluator.save
 		respond_with(@evaluator)
 	end
 
 	def update
-		@evaluator.update_attributes(params[:evaluator])
+		@evaluator.update_attributes(evaluator_params)
 		respond_with(@evaluator)
 	end
 
@@ -48,4 +48,8 @@ class EvaluatorsController < ApplicationController
 		def set_evaluator
 			@evaluator = Evaluator.find(params[:id])
 		end
+
+	def evaluator_params
+		params.require(:evaluator).permit(:description, :name, :home, :access_type, :url, :is_public)
+	end
 end

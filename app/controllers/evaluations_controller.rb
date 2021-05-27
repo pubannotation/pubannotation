@@ -33,21 +33,22 @@ class EvaluationsController < ApplicationController
 	end
 
 	def create
-		@project = Project.editable(current_user).find_by_name(params[:evaluation][:study_project])
-		params[:evaluation][:study_project] = @project.present? ? @project : nil 
+		permitted_evaluation_params = evaluation_params
+		@project = Project.editable(current_user).find_by_name(permitted_evaluation_params[:study_project])
+		permitted_evaluation_params[:study_project] = @project.present? ? @project : nil
 
-		reference_project = Project.accessible(current_user).find_by_name(params[:evaluation][:reference_project])
-		params[:evaluation][:reference_project] = reference_project.present? ? reference_project : nil
+		reference_project = Project.accessible(current_user).find_by_name(permitted_evaluation_params[:reference_project])
+		permitted_evaluation_params[:reference_project] = reference_project.present? ? reference_project : nil
 
-		evaluator = Evaluator.accessibles(current_user).find_by_name(params[:evaluation][:evaluator])
-		params[:evaluation][:evaluator] = evaluator.present? ? evaluator : nil
+		evaluator = Evaluator.accessibles(current_user).find_by_name(permitted_evaluation_params[:evaluator])
+		permitted_evaluation_params[:evaluator] = evaluator.present? ? evaluator : nil
 
-		params[:evaluation][:denotations_type_match] = nil unless params[:evaluation][:denotations_type_match].present?
-		params[:evaluation][:relations_type_match] = nil unless params[:evaluation][:relations_type_match].present?
+		permitted_evaluation_params[:denotations_type_match] = nil unless permitted_evaluation_params[:denotations_type_match].present?
+		permitted_evaluation_params[:relations_type_match] = nil unless permitted_evaluation_params[:relations_type_match].present?
 
-		params[:evaluation][:user_id] = current_user.id
+		permitted_evaluation_params[:user_id] = current_user.id
 
-		@evaluation = Evaluation.new(params[:evaluation])
+		@evaluation = Evaluation.new(permitted_evaluation_params)
 
 		respond_to do |format|
 			if @evaluation.save
@@ -59,20 +60,21 @@ class EvaluationsController < ApplicationController
 	end
 
 	def update
-		@project = Project.editable(current_user).find_by_name(params[:evaluation][:study_project])
-		params[:evaluation][:study_project] = @project.present? ? @project : nil 
+		permitted_evaluation_params = evaluation_params
+		@project = Project.editable(current_user).find_by_name(permitted_evaluation_params[:study_project])
+		permitted_evaluation_params[:study_project] = @project.present? ? @project : nil
 
-		reference_project = Project.accessible(current_user).find_by_name(params[:evaluation][:reference_project])
-		params[:evaluation][:reference_project] = reference_project.present? ? reference_project : nil
+		reference_project = Project.accessible(current_user).find_by_name(permitted_evaluation_params[:reference_project])
+		permitted_evaluation_params[:reference_project] = reference_project.present? ? reference_project : nil
 
-		evaluator = Evaluator.accessibles(current_user).find_by_name(params[:evaluation][:evaluator])
-		params[:evaluation][:evaluator] = evaluator.present? ? evaluator : nil
+		evaluator = Evaluator.accessibles(current_user).find_by_name(permitted_evaluation_params[:evaluator])
+		permitted_evaluation_params[:evaluator] = evaluator.present? ? evaluator : nil
 
-		params[:evaluation][:denotations_type_match] = nil unless params[:evaluation][:denotations_type_match].present?
-		params[:evaluation][:relations_type_match] = nil unless params[:evaluation][:relations_type_match].present?
+		permitted_evaluation_params[:denotations_type_match] = nil unless permitted_evaluation_params[:denotations_type_match].present?
+		permitted_evaluation_params[:relations_type_match] = nil unless permitted_evaluation_params[:relations_type_match].present?
 
 		respond_to do |format|
-			if @evaluation.update_attributes(params[:evaluation])
+			if @evaluation.update_attributes(permitted_evaluation_params)
 				format.html { redirect_to project_evaluation_path(@project.name, @evaluation), notice: 'Evaluation was successfully created.' }
 			else
 				format.html { render action: "edit" }
@@ -144,5 +146,10 @@ class EvaluationsController < ApplicationController
 	private
 		def set_evaluation
 			@evaluation = Evaluation.find(params[:id])
+		end
+
+		def evaluation_params
+			params.require(:evaluation).permit(:result, :is_public, :study_project, :reference_project, :evaluator, :note, :user_id,
+																				 :soft_match_characters, :soft_match_words, :denotations_type_match, :relations_type_match)
 		end
 end

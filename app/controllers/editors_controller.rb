@@ -39,7 +39,7 @@ class EditorsController < ApplicationController
 	end
 
 	def create
-		@editor = Editor.new(params[:editor])
+		@editor = Editor.new(editor_params)
 		@editor.user = current_user
 		@editor.parameters = @editor.parameters.delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if @editor.parameters.present?
 		@editor.save
@@ -48,7 +48,7 @@ class EditorsController < ApplicationController
 
 	def update
 		@editor = Editor.find(params[:id])
-		update = params[:editor]
+		update = editor_params
 		update['parameters'] = update['parameters'].delete(' ').split(/[\n\r\t]+/).map{|p| p.split(/[:=]/)}.to_h if update['parameters'].present?
 
 		@editor.update_attributes(update)
@@ -65,5 +65,10 @@ class EditorsController < ApplicationController
 	def changeable?
 		@editor = Editor.find(params[:id])
 		render_status_error(:forbidden) unless @editor.changeable?(current_user)
+	end
+
+	private
+	def editor_params
+		params.require(:editor).permit(:description, :home, :is_public, :name, :parameters, :url)
 	end
 end

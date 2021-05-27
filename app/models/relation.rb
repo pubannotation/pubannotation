@@ -5,8 +5,6 @@ class Relation < ActiveRecord::Base
 
 	has_many :modifications, :as => :obj, :dependent => :destroy
 
-	attr_accessible :hid, :pred, :subj, :obj, :project_id
-
 	validates :hid,     :presence => true
 	validates :pred,    :presence => true
 	validates :subj_id, :presence => true

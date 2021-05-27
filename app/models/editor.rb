@@ -1,9 +1,8 @@
 class Editor < ActiveRecord::Base
 	extend FriendlyId
-	friendly_id :name
+	friendly_id :name, use: :finders
 
 	belongs_to :user
-	attr_accessible :description, :home, :is_public, :name, :parameters, :url
 
 	validates :name, :presence => true, :length => {:minimum => 5, :maximum => 32}, uniqueness: true
 	validates_format_of :name, :with => /\A[a-z0-9][a-z0-9\-_]*[a-z0-9]\z/i

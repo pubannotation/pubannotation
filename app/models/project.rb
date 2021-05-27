@@ -17,11 +17,6 @@ class Project < ActiveRecord::Base
 	has_many :evaluations, foreign_key: 'study_project_id'
 	has_many :evaluatees, class_name: 'Evaluation', foreign_key: 'reference_project_id'
 
-	attr_accessible :name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
-									:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
-									:textae_config, :annotator_id,
-									:annotations_zip_downloadable, :namespaces, :process,
-									:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count
 	has_many :denotations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
 	has_many :relations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
 	has_many :attrivutes, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
@@ -79,7 +74,7 @@ class Project < ActiveRecord::Base
 		if current_user.present?
 			if current_user.root?
 			else
-				includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id)
+				includes(:associate_maintainers).where('projects.user_id =? OR associate_maintainers.user_id =?', current_user.id, current_user.id).references(:associate_maintainers)
 			end
 		else
 			where(accessibility: 10)
@@ -473,45 +468,47 @@ class Project < ActiveRecord::Base
 		## begin to produce annotations_trig
 		File.open(annotations_trig_filepath, "w") do |f|
 			docs.each_with_index do |doc, i|
-				if i == 0
-					hannotations = doc.hannotations(self)
+				begin
+					if i == 0
+						hannotations = doc.hannotations(self)
 
-					# prefixes
-					preamble  = rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
-					preamble += "@prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .\n"
-					preamble += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
-					preamble += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
-					preamble += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
-					preamble += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
-					preamble += "\n" unless preamble.empty?
+						# prefixes
+						preamble  = rdfizer_annos.rdfize([hannotations], {only_prefixes: true})
+						preamble += "@prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .\n"
+						preamble += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
+						preamble += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
+						preamble += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
+						preamble += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
+						preamble += "\n" unless preamble.empty?
 
-					# project meta-data
-					preamble += <<~HEREDOC
-						<#{graph_uri_project}> rdf:type pubann:Project ;
-							rdf:type oa:Annotation ;
-							oa:has_body <#{graph_uri_project}> ;
-							oa:has_target <#{graph_uri_project_docs}> ;
-							prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+						# project meta-data
+						preamble += <<~HEREDOC
+							<#{graph_uri_project}> rdf:type pubann:Project ;
+								rdf:type oa:Annotation ;
+								oa:has_body <#{graph_uri_project}> ;
+								oa:has_target <#{graph_uri_project_docs}> ;
+								prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
 
-						GRAPH <#{graph_uri_project}>
-						{
-					HEREDOC
+							GRAPH <#{graph_uri_project}>
+							{
+						HEREDOC
 
-					f.write(preamble)
-				end
+						f.write(preamble)
+					end
 
-				if doc.denotations.where("denotations.project_id" => self.id).exists?
-					hannotations = doc.hannotations(self)
-					annos_ttl = rdfizer_annos.rdfize([hannotations], {with_prefixes: false})
-					f.write("\t" + annos_ttl.gsub(/\n/, "\n\t").rstrip + "\n")
-				end
-				yield(i, doc, nil) if block_given?
-			rescue => e
-				message = "failure during rdfization: #{e.message}"
-				if block_given?
-					yield(i, doc, message) if block_given?
-				else
-					raise e
+					if doc.denotations.where("denotations.project_id" => self.id).exists?
+						hannotations = doc.hannotations(self)
+						annos_ttl = rdfizer_annos.rdfize([hannotations], {with_prefixes: false})
+						f.write("\t" + annos_ttl.gsub(/\n/, "\n\t").rstrip + "\n")
+					end
+					yield(i, doc, nil) if block_given?
+				rescue => e
+					message = "failure during rdfization: #{e.message}"
+					if block_given?
+						yield(i, doc, message) if block_given?
+					else
+						raise e
+					end
 				end
 			end
 			f.write("}")
@@ -525,40 +522,42 @@ class Project < ActiveRecord::Base
 
 		File.open(spans_trig_filepath, "w") do |f|
 			docs.each_with_index do |doc, i|
-				graph_uri_doc = doc.graph_uri
-				graph_uri_doc_spans = doc.graph_uri + '/spans'
+				begin
+					graph_uri_doc = doc.graph_uri
+					graph_uri_doc_spans = doc.graph_uri + '/spans'
 
-				doc_spans = doc.get_denotations_hash_all(in_class)
+					doc_spans = doc.get_denotations_hash_all(in_class)
 
-				if i == 0
-					prefixes_ttl = rdfizer_spans.rdfize([doc_spans], {only_prefixes: true})
-					prefixes_ttl += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
-					prefixes_ttl += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
-					prefixes_ttl += "\n" unless prefixes_ttl.empty?
-					f.write(prefixes_ttl)
-				end
+					if i == 0
+						prefixes_ttl = rdfizer_spans.rdfize([doc_spans], {only_prefixes: true})
+						prefixes_ttl += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
+						prefixes_ttl += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
+						prefixes_ttl += "\n" unless prefixes_ttl.empty?
+						f.write(prefixes_ttl)
+					end
 
-				doc_spans_ttl = rdfizer_spans.rdfize([doc_spans], {with_prefixes: false})
-				doc_spans_trig = <<~HEREDOC
-					<#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
-						oa:has_body <#{graph_uri_doc_spans}> ;
-						oa:has_target <#{graph_uri_doc}> ;
-						prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+					doc_spans_ttl = rdfizer_spans.rdfize([doc_spans], {with_prefixes: false})
+					doc_spans_trig = <<~HEREDOC
+						<#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
+							oa:has_body <#{graph_uri_doc_spans}> ;
+							oa:has_target <#{graph_uri_doc}> ;
+							prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
 
-					GRAPH <#{graph_uri_doc_spans}>
-					{
-						#{doc_spans_ttl.gsub(/\n/, "\n\t")}
-					}
+						GRAPH <#{graph_uri_doc_spans}>
+						{
+							#{doc_spans_ttl.gsub(/\n/, "\n\t")}
+						}
 
-				HEREDOC
-				f.write(doc_spans_trig)
-				yield(i, doc, nil) if block_given?
-			rescue => e
-				message = "failure during rdfization: #{e.message}"
-				if block_given?
-					yield(i, doc, message) if block_given?
-				else
-					raise e
+					HEREDOC
+					f.write(doc_spans_trig)
+					yield(i, doc, nil) if block_given?
+				rescue => e
+					message = "failure during rdfization: #{e.message}"
+					if block_given?
+						yield(i, doc, message) if block_given?
+					else
+						raise e
+					end
 				end
 			end
 		end
@@ -802,7 +801,7 @@ class Project < ActiveRecord::Base
 			if annotations[:denotations].present?
 				instances = instantiate_hdenotations(annotations[:denotations], doc.id)
 				if instances.present?
-					r = Denotation.import instances, validate: false
+					r = Denotation.ar_import instances, validate: false
 					raise "denotations import error" unless r.failed_instances.empty?
 				end
 				d_num = annotations[:denotations].length
@@ -811,7 +810,7 @@ class Project < ActiveRecord::Base
 			if annotations[:relations].present?
 				instances = instantiate_hrelations(annotations[:relations], doc.id)
 				if instances.present?
-					r = Relation.import instances, validate: false
+					r = Relation.ar_import instances, validate: false
 					raise "relations import error" unless r.failed_instances.empty?
 				end
 				r_num = annotations[:denotations].length
@@ -820,7 +819,7 @@ class Project < ActiveRecord::Base
 			if annotations[:attributes].present?
 				instances = instantiate_hattributes(annotations[:attributes], doc.id)
 				if instances.present?
-					r = Attrivute.import instances, validate: false
+					r = Attrivute.ar_import instances, validate: false
 					raise "attributes import error" unless r.failed_instances.empty?
 				end
 			end
@@ -828,7 +827,7 @@ class Project < ActiveRecord::Base
 			if annotations[:modifications].present?
 				instances = instantiate_hmodifications(annotations[:modifications], doc.id)
 				if instances.present?
-					r = Modification.import instances, validate: false
+					r = Modification.ar_import instances, validate: false
 					raise "modifications import error" unless r.failed_instances.empty?
 				end
 				m_num = annotations[:modifications].length
@@ -867,7 +866,7 @@ class Project < ActiveRecord::Base
 			end
 
 			if instances.present?
-				r = Denotation.import instances, validate: false
+				r = Denotation.ar_import instances, validate: false
 				raise "denotations import error" unless r.failed_instances.empty?
 			end
 
@@ -883,7 +882,7 @@ class Project < ActiveRecord::Base
 			end
 
 			if instances.present?
-				r = Relation.import instances, validate: false
+				r = Relation.ar_import instances, validate: false
 				raise "relation import error" unless r.failed_instances.empty?
 			end
 
@@ -898,7 +897,7 @@ class Project < ActiveRecord::Base
 			end
 
 			if instances.present?
-				r = Attrivute.import instances, validate: false
+				r = Attrivute.ar_import instances, validate: false
 				raise "attribute import error" unless r.failed_instances.empty?
 			end
 
@@ -912,7 +911,7 @@ class Project < ActiveRecord::Base
 			end
 
 			if instances.present?
-				r = Modification.import instances, validate: false
+				r = Modification.ar_import instances, validate: false
 				raise "modifications import error" unless r.failed_instances.empty?
 			end
 
@@ -1071,24 +1070,26 @@ class Project < ActiveRecord::Base
 
 		aligned_collection = []
 		annotations_collection_with_doc.each do |annotations, doc|
-			ann = annotations.is_a?(Array) ? annotations : [annotations]
+			begin
+			  ann = annotations.is_a?(Array) ? annotations : [annotations]
 
-			if options[:mode] == 'replace'
-				delete_doc_annotations(doc)
-			else
-				case options[:mode]
-				when 'add'
-					ann.each{|a| reid_annotations!(a, doc)}
-				when 'merge'
-					ann.each{|a| reid_annotations!(a, doc)}
-					base_annotations = doc.hannotations(self)
-					ann.each{|a| Annotation.prepare_annotations_for_merging!(a, base_annotations)}
-				end
+		  	if options[:mode] == 'replace'
+		  		delete_doc_annotations(doc)
+		  	else
+		  		case options[:mode]
+		  		when 'add'
+		  			ann.each{|a| reid_annotations!(a, doc)}
+		  		when 'merge'
+		  			ann.each{|a| reid_annotations!(a, doc)}
+		  			base_annotations = doc.hannotations(self)
+		  			ann.each{|a| Annotation.prepare_annotations_for_merging!(a, base_annotations)}
+		  		end
+		  	end
+
+		  	aligned_collection += ann
+	    rescue StandardError => e
+			  messages << {sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message[0 .. 250]}
 			end
-
-			aligned_collection += ann
-		rescue StandardError => e
-			messages << {sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message[0 .. 250]}
 		end
 
 		messages << {body: "Uploading for #{num_skipped} documents were skipped due to existing annotations."} if num_skipped > 0

@@ -3,8 +3,6 @@ class Attrivute < ActiveRecord::Base
 	belongs_to :project
 	belongs_to :subj, polymorphic: true
 
-	attr_accessible :hid, :project_id, :subj, :obj, :pred
-
 	validates :hid, presence: true
 	validates :subj, presence: true
 	validates :obj, presence: true

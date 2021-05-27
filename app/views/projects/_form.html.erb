@@ -291,7 +291,7 @@
 <% end -%>
 <% content_for :javascript do -%>
 	<script type="text/javascript">
-		var inputTag = '<%= render(partial: "namespace_prefix_input") -%>';
+		var inputTag = `<%= render(partial: "namespace_prefix_input", locals: {namespace_prefix_input: nil}) -%>`;
 		$(document).ready(function(){
 			$('#add_namespaces_input').click(function(){
 				$('#project_namespaces').append(inputTag);

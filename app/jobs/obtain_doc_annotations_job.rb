@@ -15,45 +15,47 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 		end
 
 		slices.each_with_index do |slice, i|
-			timer_start = Time.now
-			slice_text = doc.get_text(slice)
-			text_length = slice_text.length
+			begin
+			  timer_start = Time.now
+			  slice_text = doc.get_text(slice)
+			  text_length = slice_text.length
 
-			annotations = annotator.obtain_annotations([{text:slice_text, sourcedb:doc.sourcedb, sourceid:doc.sourceid}]).first
-			ttime = Time.now - timer_start
+			  annotations = annotator.obtain_annotations([{text:slice_text, sourcedb:doc.sourcedb, sourceid:doc.sourceid}]).first
+			  ttime = Time.now - timer_start
 
-			timer_start = Time.now
-			messages = project.save_annotations!(annotations, doc, options.merge(span:slice))
-			messages.each{|m| @job.messages << Message.create(m)}
-			stime = Time.now - timer_start
+			  timer_start = Time.now
+			  messages = project.save_annotations!(annotations, doc, options.merge(span:slice))
+			  messages.each{|m| @job.messages << Message.create(m)}
+			  stime = Time.now - timer_start
 
-			annotations_num = annotations[:denotations].length
-			if @job && options[:debug]
-				@job.messages << Message.create({body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"})
-			end
+			  annotations_num = annotations[:denotations].length
+			  if @job && options[:debug]
+			  	@job.messages << Message.create({body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"})
+			  end
 
-		rescue RestClient::ExceptionWithResponse => e
-			if e.response.nil?
-				raise RuntimeError, e.message
-			else
-				if e.response.code == 201
-					retrieve_and_store(e.response.headers[:location])
-				elsif e.response.code == 503
-					raise RuntimeError, "Service unavailable"
-				elsif e.response.code == 404
-					raise RuntimeError, "The annotation server does not know the path."
-				else
-					raise RuntimeError, "Received the following message from the server: #{e.message} "
+		  rescue RestClient::ExceptionWithResponse => e
+			  if e.response.nil?
+				  raise RuntimeError, e.message
+			  else
+				  if e.response.code == 201
+					  retrieve_and_store(e.response.headers[:location])
+				  elsif e.response.code == 503
+					  raise RuntimeError, "Service unavailable"
+				  elsif e.response.code == 404
+					  raise RuntimeError, "The annotation server does not know the path."
+				  else
+					  raise RuntimeError, "Received the following message from the server: #{e.message} "
+				  end
 				end
-			end
-		rescue => e
-			if @job
-				@job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: e.message})
-			else
-				raise RuntimeError, e.message
-			end
-		ensure
-			@job.update_attribute(:num_dones, i+1) if @job
+		  rescue => e
+			  if @job
+				  @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: e.message})
+			  else
+				  raise RuntimeError, e.message
+			  end
+		  ensure
+			  @job.update_attribute(:num_dones, i+1) if @job
+		  end
 		end
 	end
 

@@ -2,10 +2,9 @@ class Sequencer < ActiveRecord::Base
 	MAX_NUM_ID = 100
 
 	extend FriendlyId
-	friendly_id :name
+	friendly_id :name, use: :finders
 
 	belongs_to :user
-	attr_accessible :description, :home, :name, :parameters, :url, :is_public
 
 	validates :name, :presence => true, :length => {:minimum => 3, :maximum => 16}, uniqueness: true
 	validates_format_of :name, :with => /\A[a-z0-9][a-z0-9\-_]*[a-z0-9]\z/i

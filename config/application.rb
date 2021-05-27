@@ -3,6 +3,16 @@ require File.expand_path('../boot', __FILE__)
 require 'rails/all'
 require 'csv'
 
+# https://github.com/zdennis/activerecord-import/issues/149
+require 'activerecord-import/base'
+
+class ActiveRecord::Base
+  class << self
+    alias :ar_import :import
+    remove_method :import
+  end
+end
+
 if defined?(Bundler)
   # If you precompile assets before deploying to production, use this line
   Bundler.require(*Rails.groups(:assets => %w(development test)))
