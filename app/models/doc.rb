@@ -309,14 +309,12 @@ class Doc < ActiveRecord::Base
 
 		hdocs.each do |hdoc|
 			ActiveRecord::Base.transaction do
-				begin
-	  			doc = store_hdoc(hdoc)
-	  			doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
-	  			doc.store_typesettings(hdoc[:typesettings]) if hdoc.has_key? :typesettings
-	  			docs_saved << doc
-	  		rescue => e
-	  			messages << {sourcedb:hdoc[:sourcedb], sourceid:hdoc[:sourceid], body:e.message}
-				end
+				doc = store_hdoc(hdoc)
+				doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
+				doc.store_typesettings(hdoc[:typesettings]) if hdoc.has_key? :typesettings
+				docs_saved << doc
+			rescue => e
+				messages << {sourcedb:hdoc[:sourcedb], sourceid:hdoc[:sourceid], body:e.message}
 			end
 		end
 

@@ -95,21 +95,19 @@ class Collection < ActiveRecord::Base
 		FileUtils.rm_f Dir.glob("#{annotations_rdf_dirpath}/*")
 
 		projects.indexable.each_with_index do |project, i|
-			begin
-				if forced || project.rdf_needs_to_be_updated?
-					delayed_job = Delayed::Job.enqueue CreateAnnotationRdfJob.new(project), queue: :general
-					job = project.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
-					sleep(1) until job.finished_live?
-				end
-				FileUtils.ln_sf(project.annotations_trig_filepath, annotations_rdf_dirpath)
-				yield(i, nil) if block_given?
-			rescue => e
-				message = "failure during rdfization of #{project.name}: #{e.message}"
-				if block_given?
-					yield(i, message) if block_given?
-				else
-					raise e
-				end
+			if forced || project.rdf_needs_to_be_updated?
+				delayed_job = Delayed::Job.enqueue CreateAnnotationRdfJob.new(project), queue: :general
+				job = project.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
+				sleep(1) until job.finished_live?
+			end
+			FileUtils.ln_sf(project.annotations_trig_filepath, annotations_rdf_dirpath)
+			yield(i, nil) if block_given?
+		rescue => e
+			message = "failure during rdfization of #{project.name}: #{e.message}"
+			if block_given?
+				yield(i, message) if block_given?
+			else
+				raise e
 			end
 		end
 	end
