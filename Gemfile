@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.3.4'
 
-gem 'rails', '4.0.13'
+gem 'rails', '4.1.16'
 gem 'rake'
 gem 'activerecord-import'
 
@@ -23,6 +23,7 @@ group :development do
 	gem 'dotenv-rails'
 	gem 'guard'
 	gem 'guard-livereload'
+  gem 'spring'
 end
 
 gem 'text_alignment', '0.11.10'
@@ -41,7 +42,7 @@ gem 'libxml-ruby', '~> 3.1.0'
 gem 'wikipedia-client'
 gem 'ruby-dictionary'
 gem 'kaminari'
-gem 'devise', git: 'https://github.com/plataformatec/devise' , branch: '3-stable'
+gem 'devise'
 gem 'omniauth'
 gem 'omniauth-google-oauth2'
 gem 'rubyzip', '~> 1.2.0'

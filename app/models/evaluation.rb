@@ -25,10 +25,10 @@ class Evaluation < ActiveRecord::Base
 		if current_user.present?
 			if current_user.root?
 			else
-				where('is_public = ? OR user_id =?', true, current_user.id)
+				where('evaluations.is_public = ? OR evaluations.user_id = ?', true, current_user.id)
 			end
 		else
-			where(is_public: true)
+			where('evaluations.is_public: true')
 		end
 	}
 

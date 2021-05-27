@@ -417,12 +417,12 @@ class ProjectsController < ApplicationController
 
 	def autocomplete_project_name
 		project_name_to_be_excluded = params[:id] || ''
-		render :json => Project.accessible(current_user).where("name ILIKE ?", "%#{params[:term]}%").delete_if{|r| r.name == project_name_to_be_excluded}.collect{|r| {id:r.id, name:r.name, label:r.name}}
+		render :json => Project.accessible(current_user).where("name ILIKE ?", "%#{params[:term]}%").to_a.delete_if{|r| r.name == project_name_to_be_excluded}.collect{|r| {id:r.id, name:r.name, label:r.name}}
 	end
 
 	def autocomplete_editable_project_name
 		project_name_to_be_excluded = params[:id] || ''
-		render :json => Project.editable(current_user).where("name ILIKE ?", "%#{params[:term]}%").delete_if{|r| r.name == project_name_to_be_excluded}.collect{|r| {id:r.id, name:r.name, label:r.name}}
+		render :json => Project.editable(current_user).where("name ILIKE ?", "%#{params[:term]}%").to_a.delete_if{|r| r.name == project_name_to_be_excluded}.collect{|r| {id:r.id, name:r.name, label:r.name}}
 	end
 
 	def is_owner?
