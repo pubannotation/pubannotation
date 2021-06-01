@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.5.7'
 
-gem 'rails', '4.2.11.3'
+gem 'rails', '5.0.7.2'
 gem 'rake'
 gem 'activerecord-import'
 
