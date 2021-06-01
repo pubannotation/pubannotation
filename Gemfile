@@ -34,7 +34,7 @@ gem 'font-awesome-rails'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'rails3-jquery-autocomplete'
-gem 'facebox-rails'
+gem 'facebox-rails', github: 'KishiKyousuke/facebox-rails'
 gem 'color-generator'
 
 gem 'rest-client'
