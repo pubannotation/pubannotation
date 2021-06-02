@@ -224,7 +224,7 @@ class ProjectsController < ApplicationController
 			flash[:notice] = e.message
 		end
 
-		redirect_to :back
+		redirect_back fallback_location: root_path
 	end
 
 	def create_annotation_rdf

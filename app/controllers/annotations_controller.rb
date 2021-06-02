@@ -82,7 +82,7 @@ class AnnotationsController < ApplicationController
 
 	rescue => e
 		respond_to do |format|
-			format.html {redirect_to :back, notice: e.message}
+			format.html {redirect_back fallback_location: root_path, notice: e.message}
 			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
 			format.tsv  {render text: 'Error'}
 		end
@@ -162,7 +162,7 @@ class AnnotationsController < ApplicationController
 			notice += "\n" + msgs.join("\n") unless msgs.empty?
 
 			respond_to do |format|
-				format.html {redirect_to :back, notice: notice}
+				format.html {redirect_back fallback_location: root_path, notice: notice}
 				format.json {render json: annotations, status: :created}
 			end
 
@@ -258,12 +258,12 @@ class AnnotationsController < ApplicationController
 		end
 
 		respond_to do |format|
-			format.html {redirect_to :back, notice: message}
+			format.html {redirect_back fallback_location: root_path, notice: message}
 			format.json {}
 		end
 	rescue => e
 		respond_to do |format|
-			format.html {redirect_to :back, notice: e.message}
+			format.html {redirect_back fallback_location: root_path, notice: e.message}
 			format.json {render status: :service_unavailable}
 		end
 	end
@@ -361,12 +361,12 @@ class AnnotationsController < ApplicationController
 			message = messages.join("\n")
 
 			respond_to do |format|
-				format.html {redirect_to :back, notice: message}
+				format.html {redirect_back fallback_location: root_path, notice: message}
 				format.json {}
 			end
 		rescue => e
 			respond_to do |format|
-				format.html {redirect_to :back, notice: e.message}
+				format.html {redirect_back fallback_location: root_path, notice: e.message}
 				format.json {render status: :service_unavailable}
 			end
 		end
@@ -406,12 +406,12 @@ class AnnotationsController < ApplicationController
 			end
 
 			respond_to do |format|
-				format.html {redirect_to :back, notice: notice}
+				format.html {redirect_back fallback_location: root_path, notice: notice}
 				format.json {render json: {message: notice, task_location: project_job_url(project.name, task.id, format: :json)}, status: :ok}
 			end
 		rescue => e
 			respond_to do |format|
-				format.html {redirect_to :back, notice: e.message}
+				format.html {redirect_back fallback_location: root_path, notice: e.message}
 				format.json {render json: {message: e.message}, status: :unprocessable_entity}
 			end
 		end
@@ -445,7 +445,7 @@ class AnnotationsController < ApplicationController
 		end
 
 		respond_to do |format|
-			format.html {redirect_to :back, notice: notice}
+			format.html {redirect_back fallback_location: root_path, notice: notice}
 			format.json {}
 		end
 	end
@@ -513,7 +513,7 @@ class AnnotationsController < ApplicationController
 			delayed_job = Delayed::Job.enqueue CreateAnnotationsTgzJob.new(project, {}), priority: priority, queue: :general
 			project.jobs.create({name:'Create a downloadable archive', delayed_job_id:delayed_job.id})
 
-			redirect_to :back, notice: "The task 'Create a downloadable archive' is created."
+			redirect_back fallback_location: root_path, notice: "The task 'Create a downloadable archive' is created."
 		rescue => e
 			redirect_to home_path, notice: e.message
 		end
@@ -541,7 +541,7 @@ class AnnotationsController < ApplicationController
 		rescue => e
 			flash[:notice] = e.message
 		ensure
-			redirect_to :back if status_error == false
+			redirect_back fallback_location: root_path if status_error == false
 		end
 	end
 
@@ -582,7 +582,7 @@ class AnnotationsController < ApplicationController
 		rescue => e
 			flash[:notice] = e.message
 		ensure
-			redirect_to :back if status_error == false
+			redirect_back fallback_location: root_path if status_error == false
 		end
 	end
 
@@ -600,11 +600,11 @@ class AnnotationsController < ApplicationController
 			project.delete_doc_annotations(doc, span)
 
 			respond_to do |format|
-				format.html {redirect_to :back, notice: "annotations deleted"}
+				format.html {redirect_back fallback_location: root_path, notice: "annotations deleted"}
 				format.json {render status: :no_content}
 			end
 		rescue => e
-			redirect_to :back, notice: e.message
+			redirect_back fallback_location: root_path, notice: e.message
 		end
 	end
 
