@@ -88,8 +88,8 @@ module DocsHelper
 		params_to_text.except!(:project, :projects) if except_actions.include?(params[:action])
 		params_to_text = params.merge(controller: :docs, action: :show)
 
-		html += link_to_unless_current 'JSON', params_to_text.merge(format: :json), :class => 'tab'
-		html += link_to_unless_current 'TXT', params_to_text.merge(format: :txt), :class => 'tab'
+		html += link_to_unless_current 'JSON', params_to_text.permit(:controller, :action).merge(format: :json), :class => 'tab'
+		html += link_to_unless_current 'TXT', params_to_text.permit(:controller, :action).merge(format: :txt), :class => 'tab'
 	end
 
 	def doc_snippet(doc)
