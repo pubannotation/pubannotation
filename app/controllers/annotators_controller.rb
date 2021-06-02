@@ -1,7 +1,7 @@
 class AnnotatorsController < ApplicationController
 	include IniFileConvertible
-	before_filter :changeable?, :only => [:edit, :update, :destroy]
-	before_filter :authenticate_user!, :only => [:new, :edit, :destroy]
+	before_action :changeable?, :only => [:edit, :update, :destroy]
+	before_action :authenticate_user!, :only => [:new, :edit, :destroy]
 
 	# GET /annotators
 	# GET /annotators.json

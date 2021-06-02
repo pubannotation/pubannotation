@@ -1,7 +1,7 @@
 class JobsController < ApplicationController
-	before_filter :authenticate_user!, :except => [:index, :show]
-	before_filter :set_organization, only: [:index, :show]
-	before_filter :set_editable_organization, only: [:update, :destroy, :clear_finished_jobs]
+	before_action :authenticate_user!, :except => [:index, :show]
+	before_action :set_organization, only: [:index, :show]
+	before_action :set_editable_organization, only: [:update, :destroy, :clear_finished_jobs]
 
 	# GET /jobs
 	# GET /jobs.json

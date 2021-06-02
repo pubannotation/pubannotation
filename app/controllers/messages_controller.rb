@@ -1,5 +1,5 @@
 class MessagesController < ApplicationController
-	before_filter :authenticate_user!
+	before_action :authenticate_user!
 
 	def index
 		@project = Project.editable(current_user).find_by_name(params[:project_id])

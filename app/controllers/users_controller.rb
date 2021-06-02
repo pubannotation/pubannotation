@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-	before_filter :is_root_user?, only: :index
+	before_action :is_root_user?, only: :index
 	
 	def index
 		@users_grid = initialize_grid(User, per_page: 10)

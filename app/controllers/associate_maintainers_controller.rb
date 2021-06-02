@@ -1,5 +1,5 @@
 class AssociateMaintainersController < ApplicationController
-	before_filter :destroyable?, :only => :destroy
+	before_action :destroyable?, :only => :destroy
 	
 	def destroy
 		if @associate_maintainer.destroy

@@ -1,7 +1,7 @@
 class QueriesController < ApplicationController
-	before_filter :set_query, only: [:show, :edit, :update, :destroy]
-	before_filter :set_organization, only: [:index, :show]
-	before_filter :set_editable_organization, only: [:new, :create, :edit, :update, :destroy]
+	before_action :set_query, only: [:show, :edit, :update, :destroy]
+	before_action :set_organization, only: [:index, :show]
+	before_action :set_editable_organization, only: [:new, :create, :edit, :update, :destroy]
 
 	respond_to :html
 
