@@ -1,6 +1,11 @@
 source 'https://rubygems.org'
 ruby '2.5.7'
 
+git_source(:github) do |repo_name|
+	repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?("/")
+	"https://github.com/#{repo_name}.git"
+end
+
 gem 'rails', '5.0.7.2'
 gem 'rake'
 gem 'activerecord-import'
@@ -59,6 +64,8 @@ gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
 gem 'rails-observers'
 gem 'diff-lcs'
+gem 'listen'
+gem 'spring-watcher-listen'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
