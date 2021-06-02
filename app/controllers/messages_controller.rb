@@ -11,7 +11,7 @@ class MessagesController < ApplicationController
 		respond_to do |format|
 			format.html
 			format.json {render json: @messages.to_json(:only => [:sourcedb, :sourceid, :body, :created_at])}
-			format.tsv  {render text: @messages.as_tsv}
+			format.tsv  {render plain: @messages.as_tsv}
 		end
 	end
 

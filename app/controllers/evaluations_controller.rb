@@ -113,7 +113,7 @@ class EvaluationsController < ApplicationController
 		begin
 			render layout: 'layouts/popup'
 		rescue => e
-			render text: "<h1>Something's wrong</h1><p>#{e.message}</p><p>Please re-generate the evaluation result.</p>", layout: 'layouts/popup'
+			render plain: "<h1>Something's wrong</h1><p>#{e.message}</p><p>Please re-generate the evaluation result.</p>", layout: 'layouts/popup'
 		end
 	end
 

@@ -75,14 +75,14 @@ class DocsController < ApplicationController
 						htexts.each{|h| h[:text] = h[:text].first}
 						hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
 					end
-					render text: Doc.hash_to_tsv(hdocs)
+					render plain: Doc.hash_to_tsv(hdocs)
 				}
 			end
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render text: message, status: :unprocessable_entity}
+				format.txt  {render plain: message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -133,14 +133,14 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html
 				format.json {render json: @doc.to_hash(@span)}
-				format.txt  {render text: @doc.get_text(@span)}
+				format.txt  {render plain: @doc.get_text(@span)}
 			end
 
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render text: e.message, status: :unprocessable_entity}
+				format.txt  {render plain: e.message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -166,7 +166,7 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html
 				format.json {render json: @doc.to_hash(@span)}
-				format.txt  {render text: @doc.get_text(@span)}
+				format.txt  {render plain: @doc.get_text(@span)}
 			end
 
 		rescue => e
@@ -545,13 +545,13 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html { redirect_to redirect_path }
 				format.json { render json: {message: message} }
-				format.txt  { render text: message }
+				format.txt  { render plain: message }
 			end
 		rescue => e
 			respond_to do |format|
 				format.html { redirect_to redirect_path, notice: e.message }
 				format.json { render json: {message: e.message}, status: :unprocessable_entity }
-				format.txt  { render text: e.message, status: :unprocessable_entity }
+				format.txt  { render plain: e.message, status: :unprocessable_entity }
 			end
 		end
 	end
@@ -576,13 +576,13 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html { redirect_to project_docs_path(project.name), notice:message }
 				format.json { render json: {message: message} }
-				format.txt  { render text: message }
+				format.txt  { render plain: message }
 			end
 		rescue => e
 			respond_to do |format|
 				format.html { redirect_to project_docs_path(project.name), notice:e.message }
 				format.json { render json: {message: e.message}, status: :unprocessable_entity }
-				format.txt  { render text: e.message, status: :unprocessable_entity }
+				format.txt  { render plain: e.message, status: :unprocessable_entity }
 			end
 		end
 	end

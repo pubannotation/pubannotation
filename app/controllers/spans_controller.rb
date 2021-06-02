@@ -19,7 +19,7 @@ class SpansController < ApplicationController
 			respond_to do |format|
 				format.html {redirect_to home_path, notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render text: message, status: :unprocessable_entity}
+				format.txt  {render plain: message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -46,7 +46,7 @@ class SpansController < ApplicationController
 			respond_to do |format|
 				format.html {redirect_to project_docs_path(@project.name), notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render text: message, status: :unprocessable_entity}
+				format.txt  {render plain: message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -102,13 +102,13 @@ class SpansController < ApplicationController
 		url += "/spans/#{span[:begin]}-#{span[:end]}"
 
 		respond_to do |format|
-			format.any {render text: url, status: :created, location: url}
+			format.any {render plain: url, status: :created, location: url}
 		end
 	rescue => e
 		respond_to do |format|
-			format.html {render text: e.message, status: :unprocessable_entity}
+			format.html {render plain: e.message, status: :unprocessable_entity}
 			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-			format.txt  {render text: e.message, status: :unprocessable_entity}
+			format.txt  {render plain: e.message, status: :unprocessable_entity}
 		end
 	end
 end

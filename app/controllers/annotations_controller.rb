@@ -10,7 +10,7 @@ class AnnotationsController < ApplicationController
 		respond_to do |format|
 			format.html {redirect_to home_path, notice: message}
 			format.json {render json: {message:message}, status: :unprocessable_entity}
-			format.txt  {render text: message, status: :unprocessable_entity}
+			format.txt  {render plain: message, status: :unprocessable_entity}
 		end
 	end
 
@@ -84,7 +84,7 @@ class AnnotationsController < ApplicationController
 		respond_to do |format|
 			format.html {redirect_back fallback_location: root_path, notice: e.message}
 			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-			format.tsv  {render text: 'Error'}
+			format.tsv  {render plain: 'Error'}
 		end
 	end
 
