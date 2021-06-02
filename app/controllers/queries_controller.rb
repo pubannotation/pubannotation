@@ -1,6 +1,6 @@
 class QueriesController < ApplicationController
-	before_filter :set_query, only: [:show, :edit, :update, :destroy]
-	before_filter :set_project
+	before_action :set_query, only: [:show, :edit, :update, :destroy]
+	before_action :set_project
 
 	respond_to :html
 

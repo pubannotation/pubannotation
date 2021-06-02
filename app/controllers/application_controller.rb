@@ -7,9 +7,9 @@ class ApplicationController < ActionController::Base
 	include ApplicationHelper
 	include AnnotationsHelper
 	protect_from_forgery
-	before_filter :cors_set_access_control_headers
-	before_filter :set_locale
-	after_filter :store_location
+	before_action :cors_set_access_control_headers
+	before_action :set_locale
+	after_action :store_location
 
 	def is_root_user?
 		unless root_user?

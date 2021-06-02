@@ -1,6 +1,6 @@
 class CollectionsController < ApplicationController
-	before_filter :authenticate_user!, :except => [:index, :show]
-	before_filter :set_collection, only: [:show, :create_annotation_rdf, :destroy]
+	before_action :authenticate_user!, :except => [:index, :show]
+	before_action :set_collection, only: [:show, :create_annotation_rdf, :destroy]
 
 	respond_to :html
 

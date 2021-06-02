@@ -1,5 +1,5 @@
 class NewsNotificationsController < ApplicationController
-	before_filter :is_root_user?, except: [:index, :show, :category]
+	before_action :is_root_user?, except: [:index, :show, :category]
 
 	def index
 		@news_notifications = NewsNotification.limit(5) 
