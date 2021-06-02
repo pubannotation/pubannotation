@@ -15,7 +15,7 @@
 			<p class='note'>Below, discontinuous spans are shown in the
 				<%= content_tag :span, ds_model, :class => 'tab active_tab' %> model.
 				You can change it to the
-				<%= link_to alternative, params.merge(discontinuous_span: alternative), :class => 'tab inactive_tab' %> model.</p>
+				<%= link_to alternative, params.permit(:controller, :action).merge(discontinuous_span: alternative), :class => 'tab inactive_tab' %> model.</p>
 		<% end %>
 
 		<table class="ann">
