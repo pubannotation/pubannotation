@@ -104,7 +104,7 @@ class CollectionsController < ApplicationController
 		end
 
 		respond_to do |format|
-			format.html {redirect_to :back, notice: message}
+			format.html {redirect_back fallback_location: root_path, notice: message}
 			format.json {render json:{message:message}}
 		end
 	end
@@ -132,7 +132,7 @@ class CollectionsController < ApplicationController
 		end
 
 		respond_to do |format|
-			format.html {redirect_to :back, notice: message}
+			format.html {redirect_back fallback_location: root_path, notice: message}
 			format.json {render json:{message:message}}
 		end
 	end
@@ -146,9 +146,9 @@ class CollectionsController < ApplicationController
 
 		CollectionProject.where(collection_id:collection.id, project_id:project.id).first.toggle_primary
 
-		redirect_to :back
+		redirect_back fallback_location: root_path
 	rescue => e
-		redirect_to :back, notice: e.message
+		redirect_back fallback_location: root_path, notice: e.message
 	end
 
 	def create_annotation_rdf
