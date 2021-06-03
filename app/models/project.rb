@@ -1197,9 +1197,9 @@ class Project < ActiveRecord::Base
 
 	def delete_annotations
 		ActiveRecord::Base.transaction do
-			Modification.delete_all(project_id:self.id)
-			Relation.delete_all(project_id:self.id)
-			Denotation.delete_all(project_id:self.id)
+			Modification.where(project_id:self.id).delete_all
+			Relation.where(project_id:self.id).delete_all
+			Denotation.where(project_id:self.id).delete_all
 
 			ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id}")
 
