@@ -110,14 +110,14 @@ class Annotation < ActiveRecord::Base
 
 		if annotations[:denotations].present?
 			raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
-			annotations[:denotations].each{|d| d = d.symbolize_keys}
+			symbolized_denotations = annotations[:denotations].map { |d| d.class == Hash ? d.deep_symbolize_keys : d }
 
 			annotations = Annotation.chain_spans(annotations)
 
-			ids = annotations[:denotations].collect{|d| d[:id]}.compact
+			ids = symbolized_denotations.collect{|d| d[:id]}.compact
 			idnum = 1
 
-			annotations[:denotations].each do |a|
+			symbolized_denotations.each do |a|
 				raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'." unless (a[:span].present? && a[:span][:begin].present? && a[:span][:end].present?) || (a[:begin].present? && a[:end].present?)
 				raise ArgumentError, "a denotation must have an 'obj'." unless a[:obj].present?
 
