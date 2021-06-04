@@ -6,7 +6,7 @@ git_source(:github) do |repo_name|
 	"https://github.com/#{repo_name}.git"
 end
 
-gem 'rails', '5.0.7.2'
+gem 'rails', '5.1.7'
 gem 'rake'
 gem 'activerecord-import'
 
