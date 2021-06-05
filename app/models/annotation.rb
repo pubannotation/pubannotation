@@ -605,4 +605,36 @@ class Annotation < ActiveRecord::Base
 		annotations
 	end
 
+	def self.add_source_project_color_coding!(annotations, color_coding = nil)
+		color_coding ||= generate_source_project_color_coding(annotations)
+
+		if color_coding.present?
+			annotations[:config] = {} unless annotations.has_key? :config
+			annotations[:config]["attribute types"] = [] unless annotations[:config].has_key? :attributes_types
+			annotations[:config]["attribute types"] << color_coding
+
+			annotations[:tracks].each_with_index do |track, i|
+				track[:denotations].each do |d|
+					track[:attributes] = [] unless track.has_key? :attributes
+					track[:attributes] << {subj:d[:id], pred:'source', obj:track[:project]}
+				end
+			end
+		end
+		annotations
+	end
+
+	def self.generate_source_project_color_coding(annotations)
+		if annotations[:tracks].present?
+			source_type_values = []
+			color_generator = ColorGenerator.new saturation: 0.7, lightness: 0.75
+			annotations[:tracks].each_with_index do |track, i|
+				source_type_values << {id:track[:project], color: '#' + color_generator.create_hex}
+				source_type_values.last[:default] = true if i == 0
+			end
+			{pred:'source', "value type" => 'selection', values:source_type_values}
+		else
+			nil
+		end
+	end
+
 end

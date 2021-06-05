@@ -627,21 +627,8 @@ class AnnotationsController < ApplicationController
 
 		context_size = params[:context_size].to_i
 
-		color_generator = ColorGenerator.new saturation: 0.7, lightness: 0.75
 		@annotations = @doc.hannotations(@in_projects, @span, context_size)
-		@annotations[:config] = {} unless @annotations.has_key? :config
-		@annotations[:config]["attribute types"] = [] unless @annotations[:config].has_key? :attributes_types
-		source_type_values = []
-		@annotations[:config]["attribute types"] << {pred:'source', "value type" => 'selection', values:source_type_values}
-		@annotations[:tracks].each_with_index do |track, i|
-			pname = track[:project]
-			source_type_values << {id:pname, color: '#' + color_generator.create_hex}
-			source_type_values.last[:default] = true if i == 0
-			track[:denotations].each do |d|
-				track[:attributes] = [] unless track.has_key? :attributes
-				track[:attributes] << {subj:d[:id], pred:'source', obj:track[:project]}
-			end
-		end
+		Annotation.add_source_project_color_coding!(@annotations)
 
 		respond_to do |format|
 			format.html {render 'merge_view'}

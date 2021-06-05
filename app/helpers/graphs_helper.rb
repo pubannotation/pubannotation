@@ -1,16 +1,22 @@
 module GraphsHelper
-
-	def solution2maxspan_url (solution, projects = nil, extension_size = 0, context_size = 0)
+	def solution2span_url (solution, extension_size = 0)
 		span_urls = solution.values.select{|v| span?(v["value"])}.map{|v| v["value"]}
 		ranges = span_urls.map{|s| span_offset(s)}
 		mbeg = ranges.map{|r| r[0]}.min - extension_size
 		mend = ranges.map{|r| r[1]}.max + extension_size
 		span_url = "#{span_prefix(span_urls[0])}#{mbeg}-#{mend}"
-		annotation_url = span_url + '/annotations.json'
-		options = "projects=#{projects.join(',')}&context_size=15"
-		span_url += '?' + options
-		annotation_url += '?' + options
-		[span_url, annotation_url]
+	end
+
+	def parse_span_url (span_url)
+		m = %r|sourcedb/(?<sourcedb>.+)/sourceid/(?<sourceid>.+)/spans/(?<begin>[1-9][0-9]*)-(?<end>[1-9][0-9]*)|.match(span_url)
+		[m[:sourcedb], m[:sourceid], {begin:m[:begin].to_i, end:m[:end].to_i}]
+	end
+
+	def span_url2annotations (span_url, pnames, context_size = 0)
+		sourcedb, sourceid, span = parse_span_url(span_url)
+		doc = Doc.where(sourcedb:sourcedb, sourceid:sourceid).first
+		projects = pnames.respond_to?(:each) ? pnames.map{|n| Project.find_by_name(n)} : Project.find_by_name(pnames)
+		annotations = doc.hannotations(projects, span, context_size)
 	end
 
 	def span?(v)

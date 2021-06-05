@@ -35,7 +35,7 @@ Search
 </div>
 
 <% if @message %>
-<pre style="background-color: #ffdddd">
+<pre style="border:2px solid #ff8888 ;padding:8px 4px; background-color:#ffdddd">
 <%= @message[:message] %>
 </pre>
 <% end %>
@@ -47,9 +47,15 @@ Search
 		<h1>Result spans rendered in <a href="http://textae.pubannotation.org">TextAE</a></h1>
 		<%= render "page_index" %>
 		<% @solutions["results"]["bindings"].each do |solution| %>
-			<% projects = params[:projects].split(',') %>
-			<% span_url, annotation_url = solution2maxspan_url(solution, projects) %>
-			<%= content_tag(:div, "", class: "textae-editor", target: annotation_url, status_bar: "off", style:"margin:2px 0 0 0") %>
+			<%
+				projects = params[:projects].split(',')
+				span_url = solution2span_url(solution)
+				annotations = span_url2annotations(span_url, projects)
+				color_coding ||= Annotation.generate_source_project_color_coding(annotations)
+				Annotation.add_source_project_color_coding!(annotations, color_coding)
+			%>
+
+			<%= content_tag(:div, annotations.to_json, class: "textae-editor", status_bar: "off", style:"margin:2px 0 0 0") %>
 			<%= link_to ">PubAnnotation", span_url, class: "button" %>
 		<% end %>
 	</section>
