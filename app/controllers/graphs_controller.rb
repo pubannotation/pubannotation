@@ -68,8 +68,11 @@ class GraphsController < ApplicationController
 		if results.success?
 			[results.body.to_h, nil]
 		else
-			if results.status == 408
-				[nil, {message: "Request timeout"}]
+			case results.status
+			when 408
+				[nil, {message: "Request timeout: you are advised to re-try with a more specific query."}]
+			when 502, 503
+				[nil, {message: "SPARQL endpoint unavailable (#{results.status}): please re-try after a few minutes, or contact the system administrator if the problem lasts long."}]
 			else
 				begin
 					[nil, JSON.parse(results.body, symbolize_names:true)]
