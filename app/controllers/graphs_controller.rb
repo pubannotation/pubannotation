@@ -64,7 +64,13 @@ class GraphsController < ApplicationController
 
 		sd = Pubann::Application.config.sd
 		db = Pubann::Application.config.db
-		results = sd.query(db, query, {reasoning: reasoning})
+
+		begin
+			results = sd.query(db, query, {reasoning: reasoning})
+		rescue => e
+			return [nil, {message: e.message}]
+		end
+
 		if results.success?
 			[results.body.to_h, nil]
 		else
