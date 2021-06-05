@@ -65,7 +65,19 @@ class GraphsController < ApplicationController
 		sd = Pubann::Application.config.sd
 		db = Pubann::Application.config.db
 		results = sd.query(db, query, {reasoning: reasoning})
-		results.success? ? [results.body.to_h, nil] : [nil, JSON.parse(results.body, symbolize_names:true)]
+		if results.success?
+			[results.body.to_h, nil]
+		else
+			if results.status == 408
+				[nil, {message: "Request timeout"}]
+			else
+				begin
+					[nil, JSON.parse(results.body, symbolize_names:true)]
+				rescue
+					[nil, {message:results.body}]
+				end
+			end
+		end
 	end
 
 	def span?(v)
