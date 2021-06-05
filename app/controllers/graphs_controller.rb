@@ -83,7 +83,7 @@ class GraphsController < ApplicationController
 				begin
 					[nil, JSON.parse(results.body, symbolize_names:true)]
 				rescue
-					[nil, {message:results.body}]
+					[nil, {message:results.body + "\n#{results.status}"}]
 				end
 			end
 		end
