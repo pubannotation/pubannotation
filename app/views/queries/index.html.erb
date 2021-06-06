@@ -48,7 +48,7 @@
 		<br />
 
 		<% if @organization && @organization.editable?(current_user) %>
-			<%= link_to "Create", new_organization_query_path(@organization.name), class: 'button' %>
+			<%= link_to "Create", new_organization_query_path(@organization), class: 'button' %>
 		<% elsif current_user && current_user.root %>
 			<%= link_to "Create", new_query_path, class: 'button' %>
 		<% end %>
