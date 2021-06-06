@@ -4,6 +4,7 @@
 	<%= badge_sharedtask(@collection).html_safe %>
 	<%= badge_accessibility(@collection).html_safe %>
 	<%= badge_open(@collection).html_safe %>
+	<%= link_to content_tag(:i, '', class: "fa fa-search", "aria-hidden" => "true", title: "search"), sparql_collection_path(@collection.name) %>
 	<% if @collection.jobs.exists? && @collection.editable?(current_user) -%>
 		<span>
 			<a href=<%= collection_jobs_path(@collection.name) %>>

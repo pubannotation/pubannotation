@@ -26,6 +26,8 @@ Pubann::Application.routes.draw do
 			end
 		end
 		delete 'jobs' => 'jobs#clear_finished_jobs', as: 'clear_finished_jobs'
+
+		resources :queries
 	end
 
 	resources :queries

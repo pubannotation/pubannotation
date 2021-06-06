@@ -12,7 +12,7 @@ class Project < ActiveRecord::Base
 	has_many :collections, through: :collection_projects
 	has_many :project_docs, dependent: :destroy
 	has_many :docs, through: :project_docs
-	has_many :queries
+	has_many :queries, as: :organization, :dependent => :destroy
 
 	has_many :evaluations, foreign_key: 'study_project_id'
 	has_many :evaluatees, class_name: 'Evaluation', foreign_key: 'reference_project_id'

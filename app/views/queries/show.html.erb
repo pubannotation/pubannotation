@@ -1,8 +1,16 @@
 <section>
 
-<% if @project %>
-	<%= render :partial => 'projects/titlebar' -%>
-<% end %>
+	<% if @organization %>
+		<%=
+			if params.has_key? :project_id
+				@project = @organization
+				render :partial => 'projects/titlebar'
+			else
+				@collection = @organization
+				render :partial => 'collections/titlebar'
+			end
+		-%>
+	<% end %>
 
 <p id="notice"><%= notice %></p>
 
@@ -55,19 +63,13 @@
 </tr>
 
 <tr>
-	<th>Project</th>
-	<td><%= link_to(@query.project.name, project_path(@query.project.name)) if @query.project %></td>
+	<th>belongs to</th>
+	<td><%= link_to(@query.organization.name, organization_path(@query.organization)) if @query.organization %></td>
 </tr>
 </table>
 
-<% if @project %>
-	<%= link_to "List", project_queries_path(@project.name), class: 'button' %>
-	<%= link_to 'Edit', edit_project_query_path(@project.name, @query), class: 'button' %>
-	<%= link_to 'Delete', project_query_path(@project.name, @query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
-<% else %>
-	<%= link_to "List", queries_path, class: 'button' %>
-	<%= link_to 'Edit', edit_query_path(@query), class: 'button' %>
-	<%= link_to 'Delete', @query, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
-<% end %>
+<%= link_to "List", organization_queries_path(@query.organization), class: 'button' %>
+<%= link_to 'Edit', edit_organization_query_path(@query), class: 'button' %>
+<%= link_to 'Delete', organization_query_path(@query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
 
 </section>

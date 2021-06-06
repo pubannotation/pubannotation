@@ -1,46 +1,56 @@
 <section>
 
-<% if @project %>
-	<%= render :partial => 'projects/titlebar' -%>
-<% end %>
-
-<h1>Queries</h1>
-
-<%=
-	grid(@queries_grid) do |g|
-
-		g.column name: 'Title', attribute: 'title' do |query|
-			[link_to(query.title, query), {style: 'width:10em'}]
-		end
-
-		if root_user?
-			g.column name: 'Cat.', attribute: 'category' do |query|
-				[query.category, {style: 'width:4em; text-align:center'}]
+	<% if @organization %>
+		<%=
+			if params.has_key? :project_id
+				@project = @organization
+				render :partial => 'projects/titlebar'
+			else
+				@collection = @organization
+				render :partial => 'collections/titlebar'
 			end
-		end
+		-%>
+	<% end %>
 
-		g.column name: 'Act?', attribute: 'active' do |query|
-			[query.active, {style: 'width:4em; text-align:center'}]
-		end
+	<section>
+		<h1>Query templates</h1>
 
-		g.column name: 'Pri.', attribute: 'priority' do |query|
-			[query.priority, {style: 'width:4em; text-align:center'}]
-		end
+		<%=
+			grid(@queries_grid) do |g|
 
-		unless @project
-			g.column name: 'Project', attribute: 'project_id' do |query|
-				[query.project ? link_to(query.project.name, project_path(query.project.name)) : '-', {style: 'width:4em; text-align:center'}]
+				g.column name: 'Title', attribute: 'title' do |query|
+					[link_to(query.title, organization_query_path(query), style: 'display:block'), {style: 'width:10em'}]
+				end
+
+				if root_user?
+					g.column name: 'Cat.', attribute: 'category' do |query|
+						[query.category, {style: 'width:4em; text-align:center'}]
+					end
+				end
+
+				g.column name: 'Act?', attribute: 'active' do |query|
+					[query.active, {style: 'width:4em; text-align:center'}]
+				end
+
+				g.column name: 'Pri.', attribute: 'priority' do |query|
+					[query.priority, {style: 'width:4em; text-align:center'}]
+				end
+
+				unless @organization
+					g.column name: 'belongs to', attribute: 'organization_id' do |query|
+						organization = query.organization
+						[organization ? link_to(organizatin.name, organization_path(organization)) : '-', {style: 'width:4em; text-align:center'}]
+					end
+				end
 			end
-		end
-	end
--%>
+		-%>
 
-<br />
+		<br />
 
-<% if @project && @project.editable?(current_user) %>
-	<%= link_to "Create", new_project_query_path(@project.name), class: 'button' %>
-<% elsif current_user && current_user.root %>
-	<%= link_to "Create", new_query_path, class: 'button' %>
-<% end %>
-
+		<% if @organization && @organization.editable?(current_user) %>
+			<%= link_to "Create", new_organization_query_path(@organization.name), class: 'button' %>
+		<% elsif current_user && current_user.root %>
+			<%= link_to "Create", new_query_path, class: 'button' %>
+		<% end %>
+	</section>
 </section>

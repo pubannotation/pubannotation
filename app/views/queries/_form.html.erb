@@ -60,7 +60,6 @@
 		<th colspan="2"><%= f.submit %></th>
 	</tr>
 	</table>
-	<% if @project %>
-		<%= f.hidden_field :project_id, value: @project.id %>
-	<% end %>
+	<%= f.hidden_field :organization_id %>
+	<%= f.hidden_field :organization_type %>
 <% end %>

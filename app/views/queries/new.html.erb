@@ -1,22 +1,24 @@
 <section>
 
-<% if @project %>
-	<%= render :partial => 'projects/titlebar' -%>
-<% end %>
+	<% if @organization %>
+		<%=
+			if params.has_key? :project_id
+				@project = @organization
+				render :partial => 'projects/titlebar'
+			else
+				@collection = @organization
+				render :partial => 'collections/titlebar'
+			end
+		-%>
+	<% end %>
 
-<h1>
-New query
-<% if @project %>
-for <%= @project.name %>
-<% end %>
-</h1>
+	<section>
 
-<%= render 'form' %>
+		<h1>New query template</h1>
 
-<% if @project %>
-	<%= link_to "List", project_queries_path(@project.name), class: 'button' %>
-<% else %>
-	<%= link_to "List", queries_path, class: 'button' %>
-<% end %>
+		<%= render 'form' %>
+
+		<%= link_to "List", organization_queries_path(@organization), class: 'button' %>
+	</section>
 
 </section>

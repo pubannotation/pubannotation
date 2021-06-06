@@ -4,6 +4,7 @@ class Collection < ActiveRecord::Base
 	belongs_to :user
 	has_many :collection_projects, dependent: :destroy
 	has_many :projects, through: :collection_projects
+	has_many :queries, as: :organization, :dependent => :destroy
 	has_many :jobs, as: :organization, :dependent => :destroy
 	validates :name, presence: true, uniqueness: true
 
@@ -110,6 +111,18 @@ class Collection < ActiveRecord::Base
 				raise e
 			end
 		end
+	end
+
+	def last_indexed_at
+		begin
+			File.mtime(annotations_rdf_dirpath)
+		rescue
+			nil
+		end
+	end
+
+	def last_indexed_at_live(endpoint = nil)
+		nil
 	end
 
 end

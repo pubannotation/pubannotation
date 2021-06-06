@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210521012902) do
+ActiveRecord::Schema.define(version: 20210606064827) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -298,21 +298,22 @@ ActiveRecord::Schema.define(version: 20210521012902) do
   add_index "projects", ["name"], name: "index_projects_on_name", unique: true, using: :btree
 
   create_table "queries", force: :cascade do |t|
-    t.string   "title",      limit: 255, default: ""
-    t.text     "sparql",                 default: ""
+    t.string   "title",             limit: 255, default: ""
+    t.text     "sparql",                        default: ""
     t.text     "comment"
-    t.string   "show_mode",  limit: 255
-    t.string   "projects",   limit: 255
-    t.integer  "priority",               default: 0,     null: false
-    t.boolean  "active",                 default: true,  null: false
-    t.integer  "project_id"
-    t.datetime "created_at",                             null: false
-    t.datetime "updated_at",                             null: false
-    t.integer  "category",               default: 2
-    t.boolean  "reasoning",              default: false
+    t.string   "show_mode",         limit: 255
+    t.string   "projects",          limit: 255
+    t.integer  "priority",                      default: 0,         null: false
+    t.boolean  "active",                        default: true,      null: false
+    t.integer  "organization_id"
+    t.datetime "created_at",                                        null: false
+    t.datetime "updated_at",                                        null: false
+    t.integer  "category",                      default: 2
+    t.boolean  "reasoning",                     default: false
+    t.string   "organization_type",             default: "Project"
   end
 
-  add_index "queries", ["project_id"], name: "index_queries_on_project_id", using: :btree
+  add_index "queries", ["organization_id"], name: "index_queries_on_organization_id", using: :btree
 
   create_table "relations", force: :cascade do |t|
     t.string   "hid",        limit: 255

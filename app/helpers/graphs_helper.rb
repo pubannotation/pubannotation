@@ -1,4 +1,16 @@
 module GraphsHelper
+	def link_to_predefined_templates
+		path = if params.has_key? :project_name
+			project_queries_path(@organization.name)
+		elsif params.has_key? :collection_name
+			collection_queries_path(@organization.name)
+		else
+			queries_path
+		end
+
+		link_to 'Predefined templates:', path
+	end
+
 	def solution2span_url (solution, extension_size = 0)
 		span_urls = solution.values.select{|v| span?(v["value"])}.map{|v| v["value"]}
 		ranges = span_urls.map{|s| span_offset(s)}

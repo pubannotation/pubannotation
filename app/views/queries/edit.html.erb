@@ -1,19 +1,25 @@
 <section>
 
-<% if @project %>
-	<%= render :partial => 'projects/titlebar' -%>
-<% end %>
+	<% if @organization %>
+		<%=
+			if params.has_key? :project_id
+				@project = @organization
+				render :partial => 'projects/titlebar'
+			else
+				@collection = @organization
+				render :partial => 'collections/titlebar'
+			end
+		-%>
+	<% end %>
 
-<h1>Editing query</h1>
+	<section>
 
-<%= render 'form' %>
+		<h1>Editing query template</h1>
 
-<% if @project %>
-	<%= link_to "List", project_queries_path(@project.name), class: 'button' %>
-	<%= link_to 'Show', project_query_path(@project.name, @query), class: 'button' %>
-<% else %>
-	<%= link_to "List", queries_path, class: 'button' %>
-	<%= link_to 'Show', @query, class: 'button' %>
-<% end %>
+		<%= render 'form' %>
+
+		<%= link_to "List", organization_queries_path(@organization), class: 'button' %>
+		<%= link_to 'Show', organization_query_path(@query), class: 'button' %>
+	</section>
 
 </section>

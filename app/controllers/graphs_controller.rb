@@ -1,10 +1,8 @@
 class GraphsController < ApplicationController
+	before_filter :set_organization, only: [:show]
+
 	def show
-		@project = if params[:project_name].present?
-			p = Project.accessible(current_user).find_by_name(params[:project_name])
-			raise "Could not find the project: #{params[:project_name]}." unless p.present?
-			p
-		end
+		@organization_path = organization_path
 
 		query = params[:query]
 		@reasoning = params[:reasoning] == 'true'
@@ -96,4 +94,37 @@ class GraphsController < ApplicationController
 	def span_prefix(span_url)
 		span_url[0 .. span_url.rindex('/')]
 	end
+
+	def set_organization
+		if params.has_key? :project_name
+			@organization = Project.accessible(current_user).find_by_name(params[:project_name])
+			raise "Could not find the project." unless @organization.present?
+		elsif params.has_key? :collection_name
+			@organization = Collection.accessible(current_user).find_by_name(params[:collection_name])
+			raise "Could not find the collection." unless @organization.present?
+		else
+			raise "Invalid access."
+		end
+	end
+
+	def set_editable_organization
+		if params.has_key? :project_name
+			@organization = Project.editable(current_user).find_by_name(params[:project_name])
+			raise "Could not find the project." unless @organization.present?
+		elsif params.has_key? :collection_name
+			@organization = Collection.editable(current_user).find_by_name(params[:collection_name])
+			raise "Could not find the collection." unless @organization.present?
+		else
+			raise "Invalid access."
+		end
+	end
+
+	def organization_path
+		if params.has_key? :project_name
+			project_path(params[:project_name])
+		elsif params.has_key? :collection_name
+			collection_path(params[:collection_name])
+		end
+	end
+
 end

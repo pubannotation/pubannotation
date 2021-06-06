@@ -11,13 +11,12 @@
 
 		<ul>
 			<li>
-				<% path = @project ? project_queries_path(@project.name) : queries_path %>
-				<%= link_to 'Predefined templates:', path %>
+				<%= link_to_predefined_templates %>
 				<%
 					query_options = Query.where(category: 0, active:true).order(:category).map{|q| [q.title, q.id]}
-					if @project
+					if @organization
 						query_options += Query.where(category: 1, active:true).order(:category).map{|q| [q.title, q.id]}
-						query_options += Query.where(category: 2, project_id:@project, active:true).map{|q| [q.title, q.id]}
+						query_options += @organization.queries.where(category: 2, active:true).map{|q| [q.title, q.id]}
 					end
 				%>
 				<%= select_tag :template_select, options_for_select([["Choose one", nil]] + query_options, params[:template_select]) %>
