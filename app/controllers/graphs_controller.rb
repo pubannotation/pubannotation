@@ -103,7 +103,7 @@ class GraphsController < ApplicationController
 			@organization = Collection.accessible(current_user).find_by_name(params[:collection_name])
 			raise "Could not find the collection." unless @organization.present?
 		else
-			raise "Invalid access."
+			@organization = nil
 		end
 	end
 
