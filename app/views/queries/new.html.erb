@@ -2,7 +2,7 @@
 
 	<% if @organization %>
 		<%=
-			if params.has_key? :project_id
+			if params[:project_id].present?
 				@project = @organization
 				render :partial => 'projects/titlebar'
 			else
