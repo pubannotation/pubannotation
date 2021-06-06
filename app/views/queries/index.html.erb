@@ -39,7 +39,7 @@
 				unless @organization
 					g.column name: 'belongs to', attribute: 'organization_id' do |query|
 						organization = query.organization
-						[organization ? link_to(organizatin.name, organization_path(organization)) : '-', {style: 'width:4em; text-align:center'}]
+						[organization ? link_to(organization.name, organization_path(organization)) : '-', {style: 'width:4em; text-align:center'}]
 					end
 				end
 			end
