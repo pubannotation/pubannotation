@@ -1,8 +1,8 @@
 module GraphsHelper
 	def link_to_predefined_templates
-		path = if params.has_key? :project_name
+		path = if params[:project_name].present?
 			project_queries_path(@organization.name)
-		elsif params.has_key? :collection_name
+		elsif params[:collection_name].present?
 			collection_queries_path(@organization.name)
 		else
 			queries_path

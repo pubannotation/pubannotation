@@ -86,10 +86,10 @@ class QueriesController < ApplicationController
 	private
 
 	def set_organization
-		if params.has_key? :project_id
+		if params[:project_id].present?
 			@organization = Project.accessible(current_user).find_by_name(params[:project_id])
 			raise "Could not find the project." unless @organization.present?
-		elsif params.has_key? :collection_id
+		elsif params[:collection_id].present?
 			@organization = Collection.accessible(current_user).find_by_name(params[:collection_id])
 			raise "Could not find the collection." unless @organization.present?
 		else
@@ -98,10 +98,10 @@ class QueriesController < ApplicationController
 	end
 
 	def set_editable_organization
-		if params.has_key? :project_id
+		if params[:project_id].present?
 			@organization = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "Could not find the project." unless @organization.present?
-		elsif params.has_key? :collection_id
+		elsif params[:collection_id].present?
 			@organization = Collection.editable(current_user).find_by_name(params[:collection_id])
 			raise "Could not find the collection." unless @organization.present?
 		else

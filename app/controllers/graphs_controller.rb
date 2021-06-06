@@ -96,10 +96,10 @@ class GraphsController < ApplicationController
 	end
 
 	def set_organization
-		if params.has_key? :project_name
+		if params[:project_name].present?
 			@organization = Project.accessible(current_user).find_by_name(params[:project_name])
 			raise "Could not find the project." unless @organization.present?
-		elsif params.has_key? :collection_name
+		elsif params[:collection_name].present?
 			@organization = Collection.accessible(current_user).find_by_name(params[:collection_name])
 			raise "Could not find the collection." unless @organization.present?
 		else
@@ -108,10 +108,10 @@ class GraphsController < ApplicationController
 	end
 
 	def set_editable_organization
-		if params.has_key? :project_name
+		if params[:project_name].present?
 			@organization = Project.editable(current_user).find_by_name(params[:project_name])
 			raise "Could not find the project." unless @organization.present?
-		elsif params.has_key? :collection_name
+		elsif params[:collection_name].present?
 			@organization = Collection.editable(current_user).find_by_name(params[:collection_name])
 			raise "Could not find the collection." unless @organization.present?
 		else
