@@ -1,4 +1,4 @@
-class CreateSpansRdfJob < Struct.new(:project, :in_class)
+class CreateSpansRdfJob < Struct.new(:project, :in_collection)
 	include StateManagement
 
 	def perform
@@ -7,7 +7,7 @@ class CreateSpansRdfJob < Struct.new(:project, :in_class)
 			@job.update_attribute(:num_dones, 0)
 		end
 
-		project.create_spans_RDF(in_class) do |i, doc, message|
+		project.create_spans_RDF(in_collection) do |i, doc, message|
 			if @job
 				@job.update_attribute(:num_dones, i + 1)
 				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: message}) if message.present?

@@ -518,7 +518,7 @@ class Project < ActiveRecord::Base
 
 	end
 
-	def create_spans_RDF(in_class = nil)
+	def create_spans_RDF(in_collection = nil)
 		rdfizer_spans = TAO::RDFizer.new(:spans)
 		graph_uri_project = self.graph_uri
 
@@ -527,7 +527,7 @@ class Project < ActiveRecord::Base
 				graph_uri_doc = doc.graph_uri
 				graph_uri_doc_spans = doc.graph_uri + '/spans'
 
-				doc_spans = doc.get_denotations_hash_all(in_class)
+				doc_spans = doc.get_denotations_hash_all(in_collection)
 
 				if i == 0
 					prefixes_ttl = rdfizer_spans.rdfize([doc_spans], {only_prefixes: true})
