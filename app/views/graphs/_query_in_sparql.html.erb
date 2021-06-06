@@ -15,7 +15,9 @@
 				<%
 					query_options = Query.where(category: 0, active:true).order(:category).map{|q| [q.title, q.id]}
 					if @organization
-						query_options += Query.where(category: 1, active:true).order(:category).map{|q| [q.title, q.id]}
+						if @organization.class == Project
+							query_options += Query.where(category: 1, active:true).order(:category).map{|q| [q.title, q.id]}
+						end
 						query_options += @organization.queries.where(category: 2, active:true).map{|q| [q.title, q.id]}
 					end
 				%>
