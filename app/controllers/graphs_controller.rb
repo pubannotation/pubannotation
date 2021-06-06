@@ -75,8 +75,8 @@ class GraphsController < ApplicationController
 			[results.body.to_h, nil]
 		else
 			case results.status
-			when 408
-				[nil, {message: "Request timeout: you are advised to re-try with a more specific query."}]
+			when 408, 504
+				[nil, {message: "Request timeout (#{results.status}): you are advised to re-try with a more specific query."}]
 			when 502, 503
 				[nil, {message: "SPARQL endpoint unavailable (#{results.status}): please re-try after a few minutes, or contact the system administrator if the problem lasts long."}]
 			else
