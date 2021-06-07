@@ -85,17 +85,17 @@ GEM
     dotenv-rails (2.7.6)
       dotenv (= 2.7.6)
       railties (>= 3.2)
-    elasticsearch (7.4.0)
-      elasticsearch-api (= 7.4.0)
-      elasticsearch-transport (= 7.4.0)
-    elasticsearch-api (7.4.0)
+    elasticsearch (5.0.5)
+      elasticsearch-api (= 5.0.5)
+      elasticsearch-transport (= 5.0.5)
+    elasticsearch-api (5.0.5)
       multi_json
-    elasticsearch-model (7.1.0)
+    elasticsearch-model (5.1.0)
       activesupport (> 3)
-      elasticsearch (> 1)
+      elasticsearch (~> 5)
       hashie
-    elasticsearch-rails (7.1.0)
-    elasticsearch-transport (7.4.0)
+    elasticsearch-rails (5.1.0)
+    elasticsearch-transport (5.0.5)
       faraday
       multi_json
     em-websocket (0.5.2)
@@ -319,8 +319,8 @@ DEPENDENCIES
   devise
   diff-lcs
   dotenv-rails
-  elasticsearch-model
-  elasticsearch-rails
+  elasticsearch-model (~> 5.1)
+  elasticsearch-rails (~> 5.1)
   facebox-rails
   font-awesome-rails
   friendly_id
