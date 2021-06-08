@@ -85,7 +85,7 @@ module DocsHelper
 		except_actions = %w(doc_annotations_list_view doc_annotations_merge_view)
 
 		params_to_text = params.dup
-		params_to_text.except!(:project, :projects) if except_actions.include?(params[:action])
+		params_to_text.except(:project, :projects) if except_actions.include?(params[:action])
 		params_to_text = params.merge(controller: :docs, action: :show)
 
 		html += link_to_unless_current 'JSON', params_to_text.permit(:controller, :action).merge(format: :json), :class => 'tab'
