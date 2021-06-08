@@ -1,10 +1,7 @@
 source 'https://rubygems.org'
-ruby '2.5.7'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-git_source(:github) do |repo_name|
-	repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?("/")
-	"https://github.com/#{repo_name}.git"
-end
+ruby '2.5.7'
 
 gem 'rails', '5.2.6'
 gem 'rake'
@@ -23,6 +20,8 @@ gem 'uglifier'
 
 gem 'pg', '~> 0.18'
 gem 'friendly_id'
+# Reduces boot times through caching; required in config/boot.rb
+gem 'bootsnap', '>= 1.1.0', require: false
 
 group :development do
 	gem 'dotenv-rails'
