@@ -101,9 +101,9 @@ class Annotator < ActiveRecord::Base
 		## URL rewrite
 		# assuming only one document is passed.
 		doc = docs.first
-		_url = self.url.gsub('_text_', URI.escape(doc[:text]))
-		_url.gsub!('_sourcedb_', URI.escape(doc[:sourcedb])) if doc[:sourcedb].present?
-		_url.gsub!('_sourceid_', URI.escape(doc[:sourceid])) if doc[:sourceid].present?
+		_url = self.url.gsub('_text_', CGI.escape(doc[:text]))
+		_url.gsub!('_sourcedb_', CGI.escape(doc[:sourcedb])) if doc[:sourcedb].present?
+		_url.gsub!('_sourceid_', CGI.escape(doc[:sourceid])) if doc[:sourceid].present?
 
 		## parameter rewrite
 		if _params.present?
