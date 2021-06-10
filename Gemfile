@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.5.7'
+ruby '2.7.3'
 
 gem 'rails', '5.2.6'
 gem 'rake'
@@ -18,7 +18,7 @@ gem 'coffee-rails'
 
 gem 'uglifier'
 
-gem 'pg', '~> 0.18'
+gem 'pg'
 gem 'friendly_id'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.1.0', require: false
