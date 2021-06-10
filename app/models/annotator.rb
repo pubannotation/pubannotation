@@ -17,7 +17,7 @@ class Annotator < ActiveRecord::Base
 
 	validates :url, :presence => true
 	validates :method, :presence => true
-	validates :payload, :presence => true, if: 'method == 1'
+	validates :payload, :presence => true, if: :method_flagged?
 
 	serialize :payload, Hash
 
@@ -163,4 +163,9 @@ class Annotator < ActiveRecord::Base
 	def payload_to_string
 		payload.map{|p| p.join(' = ')}.join("\n") if payload.present?
 	end
+
+	private
+		def method_flagged?
+			method == 1
+		end
 end

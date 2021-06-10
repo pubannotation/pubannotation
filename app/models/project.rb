@@ -7,7 +7,7 @@ class Project < ActiveRecord::Base
 	after_validation :user_presence
 	serialize :namespaces
 	belongs_to :user
-	belongs_to :annotator
+	belongs_to :annotator, optional: true
 	has_many :collection_projects, dependent: :destroy
 	has_many :collections, through: :collection_projects
 	has_many :project_docs, dependent: :destroy
