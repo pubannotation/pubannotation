@@ -1,6 +1,6 @@
 class EvaluationsController < ApplicationController
-	before_filter :authenticate_user!, except: [:index, :show, :result, :falses]
-	before_filter :set_evaluation, only: [:edit, :update, :destroy]
+	before_action :authenticate_user!, except: [:index, :show, :result, :falses]
+	before_action :set_evaluation, only: [:edit, :update, :destroy]
 
 	respond_to :html
 
@@ -113,7 +113,7 @@ class EvaluationsController < ApplicationController
 		begin
 			render layout: 'layouts/popup'
 		rescue => e
-			render text: "<h1>Something's wrong</h1><p>#{e.message}</p><p>Please re-generate the evaluation result.</p>", layout: 'layouts/popup'
+			render plain: "<h1>Something's wrong</h1><p>#{e.message}</p><p>Please re-generate the evaluation result.</p>", layout: 'layouts/popup'
 		end
 	end
 
@@ -140,7 +140,7 @@ class EvaluationsController < ApplicationController
 			e.message
 		end
 
-		redirect_to :back, notice: message
+		redirect_back fallback_location: root_path, notice: message
 	end
 
 	private

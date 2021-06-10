@@ -3,8 +3,8 @@
 		<h2>
 			Problem report
 			<span class='tab-bar'>
-				<%= link_to_unless_current 'JSON', params.merge(controller: :messages, action: :index, format: :json), :class => 'tab' -%>
-				<%= link_to_unless_current 'TSV', params.merge(controller: :messages, action: :index, format: :tsv), :class => 'tab' -%>
+				<%= link_to_unless_current 'JSON', params.permit(:controller, :action).merge(controller: :messages, action: :index, format: :json), :class => 'tab' -%>
+				<%= link_to_unless_current 'TSV', params.permit(:controller, :action).merge(controller: :messages, action: :index, format: :tsv), :class => 'tab' -%>
 			</span>
 		</h2>
 

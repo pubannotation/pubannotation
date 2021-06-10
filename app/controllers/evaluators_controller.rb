@@ -1,5 +1,5 @@
 class EvaluatorsController < ApplicationController
-	before_filter :set_evaluator, only: [:show, :edit, :update, :destroy]
+	before_action :set_evaluator, only: [:show, :edit, :update, :destroy]
 
 	respond_to :html
 

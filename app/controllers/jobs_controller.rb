@@ -1,7 +1,7 @@
 class JobsController < ApplicationController
-	before_filter :authenticate_user!, :except => [:index, :show]
-	before_filter :set_organization, only: [:index, :show]
-	before_filter :set_editable_organization, only: [:update, :destroy, :clear_finished_jobs]
+	before_action :authenticate_user!, :except => [:index, :show]
+	before_action :set_organization, only: [:index, :show]
+	before_action :set_editable_organization, only: [:update, :destroy, :clear_finished_jobs]
 
 	# GET /jobs
 	# GET /jobs.json
@@ -54,7 +54,7 @@ class JobsController < ApplicationController
 		job.stop_if_running
 
 		respond_to do |format|
-			format.html { redirect_to :back }
+			format.html { redirect_back fallback_location: root_path }
 		end
 	end
 

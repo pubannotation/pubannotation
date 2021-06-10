@@ -1,5 +1,5 @@
 class GraphsController < ApplicationController
-	before_filter :set_organization, only: [:show]
+	before_action :set_organization, only: [:show]
 
 	def show
 		@organization_path = organization_path

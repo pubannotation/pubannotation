@@ -6,7 +6,7 @@
 <span class='info'>(<%= @docs_size -%>)</span>
 <% if @project.present? || params[:action] == 'search' -%>
 	<span class='tab-bar'>
-		<%= link_to 'JSON', params.merge(format: :json), :class => 'tab' -%>
-		<%= link_to 'TSV', params.merge(format: :tsv), :class => 'tab' -%>
+		<%= link_to 'JSON', params.permit(:controller, :action).merge(format: :json), :class => 'tab' -%>
+		<%= link_to 'TSV', params.permit(:controller, :action).merge(format: :tsv), :class => 'tab' -%>
 	</span>
 <% end -%>

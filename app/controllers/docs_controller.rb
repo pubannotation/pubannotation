@@ -3,9 +3,9 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
 	protect_from_forgery :except => [:create]
-	before_filter :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :project_delete_all_docs, :uptodate]
-	before_filter :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
-	skip_before_filter :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
+	before_action :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :project_delete_all_docs, :uptodate]
+	before_action :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
+	skip_before_action :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
 	cache_sweeper :doc_sweeper
 	autocomplete :doc, :sourcedb
@@ -75,14 +75,14 @@ class DocsController < ApplicationController
 						htexts.each{|h| h[:text] = h[:text].first}
 						hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
 					end
-					render text: Doc.hash_to_tsv(hdocs)
+					render plain: Doc.hash_to_tsv(hdocs)
 				}
 			end
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render text: message, status: :unprocessable_entity}
+				format.txt  {render plain: message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -96,7 +96,7 @@ class DocsController < ApplicationController
 
 		rescue => e
 			respond_to do |format|
-				format.html {redirect_to :back, notice: e.message}
+				format.html {redirect_back fallback_location: root_path, flash: { notice: e.message }}
 			end
 		end
 	end 
@@ -133,14 +133,14 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html
 				format.json {render json: @doc.to_hash(@span)}
-				format.txt  {render text: @doc.get_text(@span)}
+				format.txt  {render plain: @doc.get_text(@span)}
 			end
 
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render text: e.message, status: :unprocessable_entity}
+				format.txt  {render plain: e.message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -166,7 +166,7 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html
 				format.json {render json: @doc.to_hash(@span)}
-				format.txt  {render text: @doc.get_text(@span)}
+				format.txt  {render plain: @doc.get_text(@span)}
 			end
 
 		rescue => e
@@ -193,7 +193,7 @@ class DocsController < ApplicationController
 
 		rescue => e
 			respond_to do |format|
-				format.html {redirect_to :back, notice: e.message}
+				format.html {redirect_back fallback_location: root_path, flash: { notice: e.message }}
 			end
 		end
 	end
@@ -310,7 +310,7 @@ class DocsController < ApplicationController
 		end
 
 		respond_to do |format|
-			format.html {redirect_to :back, notice: notice}
+			format.html {redirect_back fallback_location: root_path, flash: { notice: notice }}
 			format.json {}
 		end
 	end
@@ -378,12 +378,12 @@ class DocsController < ApplicationController
 			message = "The task, 'Add docs to project from upload', is created."
 
 			respond_to do |format|
-				format.html {redirect_to :back, notice: message}
+				format.html {redirect_back fallback_location: root_path, notice: message }
 				format.json {render json: {message: message, task_location: project_job_url(project.name, job.id, format: :json)}, status: :ok}
 			end
 		rescue => e
 			respond_to do |format|
-				format.html {redirect_to :back, notice: e.message}
+				format.html {redirect_back fallback_location: root_path, notice: e.message }
 				format.json {render json: {message: e.message}, status: :unprocessable_entity}
 			end
 		end
@@ -438,7 +438,7 @@ class DocsController < ApplicationController
 		end
 
 		respond_to do |format|
-			format.html {redirect_to :back, notice: message}
+			format.html {redirect_back fallback_location: root_path, flash: { notice: message}}
 			format.json {render json:{message:message}}
 		end
 	end
@@ -478,7 +478,7 @@ class DocsController < ApplicationController
 		end
 
 		respond_to do |format|
-			format.html {redirect_to :back, notice: message}
+			format.html {redirect_back fallback_location: root_path, flash: { notice: message }}
 			format.json {render json:{message:message}}
 		end
 	end
@@ -503,7 +503,7 @@ class DocsController < ApplicationController
 			render_status_error(:forbidden)
 		end
 	rescue => e
-		redirect_to :back, notice: e.message
+		redirect_back fallback_location: root_path, flash: { notice: e.message }
 	end
 
 	# DELETE /docs/sourcedb/:sourcedb/sourceid/:sourceid
@@ -545,13 +545,13 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html { redirect_to redirect_path }
 				format.json { render json: {message: message} }
-				format.txt  { render text: message }
+				format.txt  { render plain: message }
 			end
 		rescue => e
 			respond_to do |format|
 				format.html { redirect_to redirect_path, notice: e.message }
 				format.json { render json: {message: e.message}, status: :unprocessable_entity }
-				format.txt  { render text: e.message, status: :unprocessable_entity }
+				format.txt  { render plain: e.message, status: :unprocessable_entity }
 			end
 		end
 	end
@@ -576,13 +576,13 @@ class DocsController < ApplicationController
 			respond_to do |format|
 				format.html { redirect_to project_docs_path(project.name), notice:message }
 				format.json { render json: {message: message} }
-				format.txt  { render text: message }
+				format.txt  { render plain: message }
 			end
 		rescue => e
 			respond_to do |format|
 				format.html { redirect_to project_docs_path(project.name), notice:e.message }
 				format.json { render json: {message: e.message}, status: :unprocessable_entity }
-				format.txt  { render text: e.message, status: :unprocessable_entity }
+				format.txt  { render plain: e.message, status: :unprocessable_entity }
 			end
 		end
 	end
