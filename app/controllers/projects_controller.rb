@@ -396,9 +396,8 @@ class ProjectsController < ApplicationController
 
 		sproject = Project.find_by_name('system-maintenance')
 
-		priority = project.jobs.unfinished.count
-		delayed_job = Delayed::Job.enqueue DestroyProjectJob.new(project), priority: priority, queue: :general
-		sproject.jobs.create({name:'Destroy project', delayed_job_id:delayed_job.id})
+		active_job = DestroyProjectJob.perform_later(project)
+		active_job.create_job_record(sproject.jobs, 'Destroy project')
 
 		respond_to do |format|
 			format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, will be deleted soon."}

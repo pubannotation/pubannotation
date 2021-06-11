@@ -1,7 +1,7 @@
-class DestroyProjectJob < Struct.new(:project)
-	include StateManagement
+class DestroyProjectJob < ApplicationJob
+	queue_as :general
 
-	def perform
+	def perform(project)
 		@job.update_attribute(:num_items, 3)
 		@job.update_attribute(:num_dones, 0)
 
