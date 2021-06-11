@@ -367,10 +367,9 @@ class ProjectsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
-			priority = project.jobs.unfinished.count
 			taskname = 'Delete all annotations in project'
-			delayed_job = Delayed::Job.enqueue DeleteAllAnnotationsFromProjectJob.new(project), priority: priority, queue: :general
-			project.jobs.create({name: taskname, delayed_job_id:delayed_job.id})
+			active_job = DeleteAllAnnotationsFromProjectJob.perform_later(project)
+			active_job.create_job_record(project.jobs, taskname)
 			message = "The task, '#{taskname}', is created."
 
 			respond_to do |format|

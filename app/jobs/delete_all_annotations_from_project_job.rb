@@ -1,7 +1,7 @@
-class DeleteAllAnnotationsFromProjectJob < Struct.new(:project)
-	include StateManagement
+class DeleteAllAnnotationsFromProjectJob < ApplicationJob
+	queue_as :general
 
-	def perform
+	def perform(project)
 		docs = project.docs
 		@job.update_attribute(:num_items, 1)
 		@job.update_attribute(:num_dones, 0)
