@@ -251,11 +251,10 @@ class ProjectsController < ApplicationController
 			raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
-			# job = CreateSpansRdfJob.new(project, nil)
-			# job.perform()
+			# CreateSpansRdfJob.perform_now(project, nil)
 
-			delayed_job = Delayed::Job.enqueue CreateSpansRdfJob.new(project, nil), queue: :general
-			project.jobs.create({name:"Create Spans RDF - #{project.name}", delayed_job_id:delayed_job.id})
+			active_job = CreateSpansRdfJob.perform_later(project, nil)
+			active_job.create_job_record(project.jobs, "Create Spans RDF - #{project.name}")
 			"The task, 'Create Spans RDF - #{project.name}', is created."
 		rescue => e
 			e.message
