@@ -506,12 +506,10 @@ class AnnotationsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "There is no such project in your management." unless project.present?
 
-			# job = CreateAnnotationsTgzJob.new(project, {})
-			# job.perform
+			# CreateAnnotationsTgzJob.perform_now(project, {})
 
-			priority = project.jobs.unfinished.count
-			delayed_job = Delayed::Job.enqueue CreateAnnotationsTgzJob.new(project, {}), priority: priority, queue: :general
-			project.jobs.create({name:'Create a downloadable archive', delayed_job_id:delayed_job.id})
+			active_job = CreateAnnotationsTgzJob.perform_later(project, {})
+			active_job.create_job_record(project.jobs, 'Create a downloadable archive')
 
 			redirect_back fallback_location: root_path, notice: "The task 'Create a downloadable archive' is created."
 		rescue => e
