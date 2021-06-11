@@ -369,12 +369,10 @@ class DocsController < ApplicationController
 			filepath = File.join('tmp', "add-docs-to-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
 			FileUtils.mv params[:upfile].path, filepath
 
-			# job = AddDocsToProjectFromUploadJob.new(sourcedb, filepath, project)
-			# job.perform()
+			# AddDocsToProjectFromUploadJob.perform_now(sourcedb, filepath, project)
 
-			priority = project.jobs.unfinished.count
-			delayed_job = Delayed::Job.enqueue AddDocsToProjectFromUploadJob.new(sourcedb, filepath, project), priority: priority, queue: :general
-			job = project.jobs.create({name:'Add docs to project from upload', delayed_job_id:delayed_job.id})
+			active_job = AddDocsToProjectFromUploadJob.perform_later(sourcedb, filepath, project)
+			job = active_job.create_job_record(project.jobs, 'Add docs to project from upload')
 			message = "The task, 'Add docs to project from upload', is created."
 
 			respond_to do |format|

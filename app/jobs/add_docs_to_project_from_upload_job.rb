@@ -1,7 +1,7 @@
-class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
-	include StateManagement
+class AddDocsToProjectFromUploadJob < ApplicationJob
+	queue_as :general
 
-	def perform
+	def perform(sourcedb, filepath, project)
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		if @job
@@ -20,7 +20,7 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 			ids << line unless line.empty?
 
 			if ids.length >= 1000
-				add_docs(sourcedb, ids)
+				add_docs(project, sourcedb, ids)
 				ids.clear
 			end
 
@@ -29,7 +29,7 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 			end
 		end
 
-		add_docs(sourcedb, ids)
+		add_docs(project, sourcedb, ids)
 
 		if @total_num_sequenced > 0
 			ActionController::Base.new.expire_fragment('sourcedb_counts')
@@ -47,7 +47,7 @@ class AddDocsToProjectFromUploadJob < Struct.new(:sourcedb, :filepath, :project)
 
 	private
 
-	def add_docs(sourcedb, ids)
+	def add_docs(project, sourcedb, ids)
 		num_added, num_sequenced, num_existed, messages = begin
 			project.add_docs(sourcedb, ids)
 		rescue => e
