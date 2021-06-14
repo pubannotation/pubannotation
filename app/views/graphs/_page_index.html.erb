@@ -4,29 +4,29 @@
 		<ul class="page_index">
 		<% if num_pages < 11 %>
 			<% (1 .. num_pages).each do |i| %>
-				<li class="page"><%= link_to_unless_current i, url_for(params.merge(page: i)) %></li>
+				<li class="page"><%= link_to_unless_current i, url_for(params.permit(:controller, :action).merge(page: i)) %></li>
 			<% end %>
 		<% else %>
 			<% if @page < 5 %>
 				<% (1 .. @page + 3).each do |i| %>
-					<li class="page"><%= link_to_unless_current i, url_for(params.merge(page: i)) %></li>
+					<li class="page"><%= link_to_unless_current i, url_for(params.permit(:controller, :action).merge(page: i)) %></li>
 				<% end %>
 				<li>...</li>
-				<li class="page"><%= link_to_unless_current num_pages, url_for(params.merge(page: num_pages)) %></li>
+				<li class="page"><%= link_to_unless_current num_pages, url_for(params.permit(:controller, :action).merge(page: num_pages)) %></li>
 			<% elsif num_pages - @page < 5 %>
-				<li class="page"><%= link_to_unless_current 1, url_for(params.merge(page: 1)) %></li>
+				<li class="page"><%= link_to_unless_current 1, url_for(params.permit(:controller, :action).merge(page: 1)) %></li>
 				<li>...</li>
 				<% ((@page - 3) .. num_pages).each do |i| %>
-					<li class="page"><%= link_to_unless_current i, url_for(params.merge(page: i)) %></li>
+					<li class="page"><%= link_to_unless_current i, url_for(params.permit(:controller, :action).merge(page: i)) %></li>
 				<% end %>
 			<% else %>
-				<li class="page"><%= link_to_unless_current 1, url_for(params.merge(page: 1)) %></li>
+				<li class="page"><%= link_to_unless_current 1, url_for(params.permit(:controller, :action).merge(page: 1)) %></li>
 				<li>...</li>
 				<% ((@page - 3) .. (@page + 3)).each do |i| %>
-					<li class="page"><%= link_to_unless_current i, url_for(params.merge(page: i)) %></li>
+					<li class="page"><%= link_to_unless_current i, url_for(params.permit(:controller, :action).merge(page: i)) %></li>
 				<% end %>
 				<li>...</li>
-				<li class="page"><%= link_to_unless_current num_pages, url_for(params.merge(page: num_pages)) %></li>
+				<li class="page"><%= link_to_unless_current num_pages, url_for(params.permit(:controller, :action).merge(page: num_pages)) %></li>
 			<% end %>
 		<% end %>
 		</ul>
