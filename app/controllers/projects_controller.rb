@@ -336,13 +336,10 @@ class ProjectsController < ApplicationController
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
 			message = if project.has_doc?
-				priority = project.jobs.unfinished.count
+				# DeleteAllDocsFromProjectJob.perform_now(project)
 
-				# job = DeleteAllDocsFromProjectJob.new(project)
-				# job.perform()
-
-				delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project), priority: priority, queue: :general
-				project.jobs.create({name:'Delete all docs', delayed_job_id:delayed_job.id})
+				active_job = DeleteAllDocsFromProjectJob.perform_later(project)
+				active_job.create_job_record(project.jobs, 'Delete all docs')
 				"The task, 'delete all docs', is created."
 			else
 				"The project had no document. Nothing happened.\n"
