@@ -1,4 +1,4 @@
-class DeltaToFlag < ActiveRecord::Migration
+class DeltaToFlag < ActiveRecord::Migration[4.2]
   def up
   	change_table :docs do |t|
   		t.remove :delta

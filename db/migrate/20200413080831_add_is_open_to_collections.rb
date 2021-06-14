@@ -1,4 +1,4 @@
-class AddIsOpenToCollections < ActiveRecord::Migration
+class AddIsOpenToCollections < ActiveRecord::Migration[4.2]
   def up
   	change_table :collections do |t|
   		t.boolean :is_open, default: false

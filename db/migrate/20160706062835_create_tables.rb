@@ -1,4 +1,4 @@
-class CreateTables < ActiveRecord::Migration
+class CreateTables < ActiveRecord::Migration[4.2]
   if ActiveRecord::Base.connection.table_exists?('associate_projects_projects')
     drop_table :associate_projects_projects
   end

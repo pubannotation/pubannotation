@@ -1,4 +1,4 @@
-class CreateNewsNotifications < ActiveRecord::Migration
+class CreateNewsNotifications < ActiveRecord::Migration[4.2]
   def up
     create_table :news_notifications do |t|
       t.string :title

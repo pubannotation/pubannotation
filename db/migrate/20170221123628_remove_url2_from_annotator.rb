@@ -1,4 +1,4 @@
-class RemoveUrl2FromAnnotator < ActiveRecord::Migration
+class RemoveUrl2FromAnnotator < ActiveRecord::Migration[4.2]
   def up
   	change_table :annotators do |t|
   		t.remove :url2, :params2, :method2
