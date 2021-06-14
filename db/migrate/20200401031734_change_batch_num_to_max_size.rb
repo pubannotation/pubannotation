@@ -1,4 +1,4 @@
-class ChangeBatchNumToMaxSize < ActiveRecord::Migration
+class ChangeBatchNumToMaxSize < ActiveRecord::Migration[4.2]
   def up
    	change_table :annotators do |t|
   		t.integer :max_text_size

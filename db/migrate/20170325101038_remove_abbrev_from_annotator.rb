@@ -1,4 +1,4 @@
-class RemoveAbbrevFromAnnotator < ActiveRecord::Migration
+class RemoveAbbrevFromAnnotator < ActiveRecord::Migration[4.2]
   def up
    	change_table :annotators do |t|
   		t.remove :abbrev

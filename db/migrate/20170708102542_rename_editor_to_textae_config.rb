@@ -1,4 +1,4 @@
-class RenameEditorToTextaeConfig < ActiveRecord::Migration
+class RenameEditorToTextaeConfig < ActiveRecord::Migration[4.2]
   def up
    	change_table :projects do |t|
   		t.remove :editor

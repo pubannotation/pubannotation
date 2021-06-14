@@ -1,4 +1,4 @@
-class AddBatchNumToAnnotators < ActiveRecord::Migration
+class AddBatchNumToAnnotators < ActiveRecord::Migration[4.2]
   def up
   	change_table :annotators do |t|
   		t.integer :batch_num, default: 1

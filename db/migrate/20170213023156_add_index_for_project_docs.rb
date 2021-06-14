@@ -1,4 +1,4 @@
-class AddIndexForProjectDocs < ActiveRecord::Migration
+class AddIndexForProjectDocs < ActiveRecord::Migration[4.2]
   def up
     add_index :docs, :denotations_num
     add_index :project_docs, :doc_id

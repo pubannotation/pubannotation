@@ -1,4 +1,4 @@
-class CountersToNumbers < ActiveRecord::Migration
+class CountersToNumbers < ActiveRecord::Migration[4.2]
   def up
   	change_table :projects do |t|
   		t.rename :denotations_count, :denotations_num

@@ -1,4 +1,4 @@
-class CreateQueries < ActiveRecord::Migration
+class CreateQueries < ActiveRecord::Migration[4.2]
   def change
     create_table :queries do |t|
       t.string :title, default: "", nul: false

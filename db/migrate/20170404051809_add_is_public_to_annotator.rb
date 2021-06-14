@@ -1,4 +1,4 @@
-class AddIsPublicToAnnotator < ActiveRecord::Migration
+class AddIsPublicToAnnotator < ActiveRecord::Migration[4.2]
   def up
   	change_table :annotators do |t|
   		t.boolean :is_public, default: false

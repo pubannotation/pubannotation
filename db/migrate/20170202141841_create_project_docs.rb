@@ -1,4 +1,4 @@
-class CreateProjectDocs < ActiveRecord::Migration
+class CreateProjectDocs < ActiveRecord::Migration[4.2]
   def up
     create_table :project_docs do |t|
     	t.belongs_to :project
