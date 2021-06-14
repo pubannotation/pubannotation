@@ -1,4 +1,4 @@
-class CreateSequencers < ActiveRecord::Migration
+class CreateSequencers < ActiveRecord::Migration[4.2]
   def change
     create_table :sequencers do |t|
       t.string :name

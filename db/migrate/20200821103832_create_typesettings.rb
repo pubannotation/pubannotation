@@ -1,4 +1,4 @@
-class CreateTypesettings < ActiveRecord::Migration
+class CreateTypesettings < ActiveRecord::Migration[4.2]
 	def change
 		create_table :typesettings do |t|
 			t.belongs_to :doc

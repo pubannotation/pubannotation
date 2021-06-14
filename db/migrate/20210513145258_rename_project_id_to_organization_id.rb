@@ -1,4 +1,4 @@
-class RenameProjectIdToOrganizationId < ActiveRecord::Migration
+class RenameProjectIdToOrganizationId < ActiveRecord::Migration[4.2]
 	def up
 		change_table :jobs do |t|
 			t.rename :project_id, :organization_id

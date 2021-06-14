@@ -1,4 +1,4 @@
-class AddIsPublicToSequencers < ActiveRecord::Migration
+class AddIsPublicToSequencers < ActiveRecord::Migration[4.2]
   def change
     add_column :sequencers, :is_public, :boolean, default: false
   end

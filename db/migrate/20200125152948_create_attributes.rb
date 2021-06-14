@@ -1,4 +1,4 @@
-class CreateAttributes < ActiveRecord::Migration
+class CreateAttributes < ActiveRecord::Migration[4.2]
 	def change
 		# 'attributes' is renamed to 'attrivute' to avoid conflict with the reserved word 'attributes'
 		create_table :attrivutes do |t|

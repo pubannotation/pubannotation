@@ -1,4 +1,4 @@
-class AddParametersToEvaluation < ActiveRecord::Migration
+class AddParametersToEvaluation < ActiveRecord::Migration[4.2]
   def change
     add_column :evaluations, :soft_match_characters, :integer
     add_column :evaluations, :soft_match_words, :integer

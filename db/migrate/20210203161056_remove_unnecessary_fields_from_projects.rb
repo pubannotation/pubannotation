@@ -1,4 +1,4 @@
-class RemoveUnnecessaryFieldsFromProjects < ActiveRecord::Migration
+class RemoveUnnecessaryFieldsFromProjects < ActiveRecord::Migration[4.2]
 	def up
 		change_table :projects do |t|
 			t.rename :pmdocs_count, :docs_count

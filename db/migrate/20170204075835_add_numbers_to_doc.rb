@@ -1,4 +1,4 @@
-class AddNumbersToDoc < ActiveRecord::Migration
+class AddNumbersToDoc < ActiveRecord::Migration[4.2]
   def up
   	change_table :docs do |t|
   		t.rename :denotations_count, :denotations_num

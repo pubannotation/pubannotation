@@ -1,4 +1,4 @@
-class ChangeProjectReferenceToOrganizationReferenceQuery < ActiveRecord::Migration
+class ChangeProjectReferenceToOrganizationReferenceQuery < ActiveRecord::Migration[4.2]
 	def up
 		change_table :queries do |t|
 			t.rename :project_id, :organization_id
