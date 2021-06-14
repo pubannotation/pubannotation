@@ -20,7 +20,7 @@ module GraphsHelper
 	end
 
 	def parse_span_url (span_url)
-		m = %r|sourcedb/(?<sourcedb>.+)/sourceid/(?<sourceid>.+)/spans/(?<begin>[1-9][0-9]*)-(?<end>[1-9][0-9]*)|.match(span_url)
+		m = %r|sourcedb/(?<sourcedb>.+)/sourceid/(?<sourceid>.+)/spans/(?<begin>[0-9]+)-(?<end>[0-9]+)|.match(span_url)
 		[m[:sourcedb], m[:sourceid], {begin:m[:begin].to_i, end:m[:end].to_i}]
 	end
 
