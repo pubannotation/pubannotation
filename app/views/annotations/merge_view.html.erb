@@ -20,7 +20,7 @@
 	<section>
 		<%= render :partial => 'annotations/titlebar' -%>
 		<section class="textae-wrapper-section">
-			<div class="textae-editor">
+			<div class="textae-editor" control="hidden">
 				<%= @annotations.to_json %>
 			</div>
 		</section>

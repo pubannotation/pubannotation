@@ -68,7 +68,7 @@
 	<fieldset class="pane sample">
 	<legend>Sample</legend>
 		<%= render :partial => 'shared/textae_css_js'-%>
-		<div class="textae-editor" style="border-style:none; background-color:white" source="<%= @project.sample -%>" config="<%= @project.textae_config %>"></div>
+		<div class="textae-editor" control="hidden" style="border-style:none; background-color:white" source="<%= @project.sample -%>" config="<%= @project.textae_config %>"></div>
 	</fieldset>
 <% end -%>
 

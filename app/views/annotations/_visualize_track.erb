@@ -4,7 +4,7 @@
 		<%= link_to visualize_track[:project], project_path(visualize_track[:project]) -%>
 		<i class="fa fa-minus-square remove-textae clickable-text" aria-hidden="true"></i>
 	</h3>
-	<div class="textae-editor oneline">
+	<div class="textae-editor oneline" control="hidden">
 		<%= visualize_track.to_json %>
 	</div>
 	<div class="clear"></div>

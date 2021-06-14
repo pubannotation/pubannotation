@@ -16,7 +16,7 @@
 					Annotation.add_source_project_color_coding!(annotations, color_coding)
 				%>
 
-				<%= content_tag(:div, annotations.to_json, class: "textae-editor", status_bar: "off", style:"margin:2px 0 0 0") %>
+				<%= content_tag(:div, annotations.to_json, class: "textae-editor", status_bar: "off", control: "hidden", style:"margin:2px 0 0 0") %>
 				<%= link_to ">PubAnnotation", span_url, class: "button" %>
 			<% end %>
 		</section>
