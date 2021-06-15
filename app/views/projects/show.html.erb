@@ -77,7 +77,7 @@
 		<%= t('activerecord.models.doc').pluralize.capitalize %>
 	</legend>
 
-		<% cache("sourcedb_counts_#{@project.name}") do -%>
+		<% cache("sourcedb_counts_#{@project.name}", skip_digest: true) do -%>
 			<%= render :partial => "docs/sourcedb_counts" -%>
 		<% end %>
 

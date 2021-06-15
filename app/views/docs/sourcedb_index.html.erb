@@ -20,7 +20,7 @@
 		cache_key += "_#{@project.name}" if @project
 	%>
 
-	<% cache cache_key do -%>
+	<% cache cache_key, skip_digest: true do -%>
 		<%= render :partial => "docs/sourcedb_counts" -%>
 	<% end %>
 
