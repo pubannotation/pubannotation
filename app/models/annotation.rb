@@ -149,7 +149,7 @@ class Annotation < ActiveRecord::Base
 
 			d_ids = annotations[:denotations].collect{|a| a[:id]}
 
-			symbolized_relations = annotations[:relations].map {|a| a == Hash ? a.symbolize_keys : a}
+			symbolized_relations = annotations[:relations].map {|a| a.class == Hash ? a.symbolize_keys : a}
 
 			ids = symbolized_relations.collect{|a| a[:id]}.compact
 			idnum = 1
@@ -168,7 +168,7 @@ class Annotation < ActiveRecord::Base
 
 		if annotations[:attributes].present?
 			raise ArgumentError, "'attributes' must be an array." unless annotations[:attributes].class == Array
-			symbolized_attributes = annotations[:attributes].map {|a| a == Hash ? a.symbolize_keys : a}
+			symbolized_attributes = annotations[:attributes].map {|a| a.class == Hash ? a.symbolize_keys : a}
 
 			d_ids ||= annotations[:denotations].collect{|a| a[:id]}
 
@@ -193,7 +193,7 @@ class Annotation < ActiveRecord::Base
 
 		if annotations[:modifications].present?
 			raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
-			symbolized_modifications = annotations[:modifications].map {|a| a == Hash ? a.symbolize_keys : a}
+			symbolized_modifications = annotations[:modifications].map {|a| a.class == Hash ? a.symbolize_keys : a}
 
 			d_ids ||= annotations[:denotations].collect{|a| a[:id]}
 			dr_ids = d_ids + annotations[:relations].collect{|a| a[:id]}
