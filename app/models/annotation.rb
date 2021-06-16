@@ -149,12 +149,12 @@ class Annotation < ActiveRecord::Base
 
 			d_ids = annotations[:denotations].collect{|a| a[:id]}
 
-			annotations[:relations].each{|a| a = a.symbolize_keys}
+			symbolized_relations = annotations[:relations].map {|a| a == Hash ? a.symbolize_keys : a}
 
-			ids = annotations[:relations].collect{|a| a[:id]}.compact
+			ids = symbolized_relations.collect{|a| a[:id]}.compact
 			idnum = 1
 
-			annotations[:relations].each do |a|
+			symbolized_relations.each do |a|
 				raise ArgumentError, "a relation must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
 				raise ArgumentError, "'subj' and 'obj' of a relation must reference to a denotation: [#{a}]." unless (d_ids.include? a[:subj]) && (d_ids.include? a[:obj])
 
@@ -168,14 +168,14 @@ class Annotation < ActiveRecord::Base
 
 		if annotations[:attributes].present?
 			raise ArgumentError, "'attributes' must be an array." unless annotations[:attributes].class == Array
-			annotations[:attributes].each{|a| a = a.symbolize_keys}
+			symbolized_attributes = annotations[:attributes].map {|a| a == Hash ? a.symbolize_keys : a}
 
 			d_ids ||= annotations[:denotations].collect{|a| a[:id]}
 
-			ids = annotations[:attributes].collect{|a| a[:id]}.compact
+			ids = symbolized_attributes.collect{|a| a[:id]}.compact
 			idnum = 1
 
-			annotations[:attributes].each do |a|
+			symbolized_attributes.each do |a|
 
 				# TODO: to remove the following line after TextAE is updated.
 				a[:obj] = true unless a[:obj].present?
@@ -193,15 +193,15 @@ class Annotation < ActiveRecord::Base
 
 		if annotations[:modifications].present?
 			raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
-			annotations[:modifications].each{|a| a = a.symbolize_keys}
+			symbolized_modifications = annotations[:modifications].map {|a| a == Hash ? a.symbolize_keys : a}
 
 			d_ids ||= annotations[:denotations].collect{|a| a[:id]}
 			dr_ids = d_ids + annotations[:relations].collect{|a| a[:id]}
 
-			ids = annotations[:modifications].collect{|a| a[:id]}.compact
+			ids = symbolized_modifications.collect{|a| a[:id]}.compact
 			idnum = 1
 
-			annotations[:modifications].each do |a|
+			symbolized_modifications.each do |a|
 				raise ArgumentError, "A modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
 				raise ArgumentError, "The 'obj' of a modification must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:obj]
 

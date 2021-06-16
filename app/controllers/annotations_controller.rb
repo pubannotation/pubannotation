@@ -122,7 +122,7 @@ class AnnotationsController < ApplicationController
 			raise "There is no such project in your management." unless project.present?
 
 			annotations = if params[:annotations]
-				params[:annotations].symbolize_keys
+				params[:annotations]
 			elsif params[:text].present?
 				{
 					text: params[:text],
@@ -177,7 +177,7 @@ class AnnotationsController < ApplicationController
 	def align
 		begin
 			if params[:annotations]
-				annotations = params[:annotations].symbolize_keys
+				annotations = params[:annotations]
 			elsif params[:text].present?
 				annotations = {:text => params[:text]}
 				annotations[:denotations] = params[:denotations] if params[:denotations].present?
