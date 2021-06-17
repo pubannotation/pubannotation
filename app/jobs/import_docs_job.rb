@@ -1,7 +1,7 @@
-class ImportDocsJob < Struct.new(:filepath, :project)
-	include StateManagement
+class ImportDocsJob < ApplicationJob
+	queue_as :general
 
-	def perform
+	def perform(filepath, project)
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		@job.update_attribute(:num_items, count)

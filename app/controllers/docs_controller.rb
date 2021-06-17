@@ -461,9 +461,8 @@ class DocsController < ApplicationController
 				docids_file.puts docids
 				docids_file.close
 
-				priority = project.jobs.unfinished.count
-				delayed_job = Delayed::Job.enqueue ImportDocsJob.new(docids_file.path, project), priority: priority, queue: :general
-				project.jobs.create({name:'Import docs to project', delayed_job_id:delayed_job.id})
+				active_job = ImportDocsJob.perform_later(docids_file.path, project)
+				active_job.create_job_record(project.jobs, 'Import docs to project')
 
 				m = ""
 				m += "#{num_skip} docs were skipped due to duplication." if num_skip > 0
