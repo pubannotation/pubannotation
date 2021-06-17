@@ -32,8 +32,9 @@
 
 		<% if current_user.root? %>
 			<br/>
-			<%= link_to t('views.docs.rdfize_annotations'), create_annotation_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
-			<%= link_to t('views.docs.rdfize_annotations') + ' (forced)', create_annotation_rdf_collection_path(@collection.name, {forced: true}), method: :post, class: 'button' -%>
+			<%= link_to t('views.docs.rdfize_annotations'), create_annotations_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
+			<%= link_to t('views.docs.rdfize_annotations') + ' (forced)', create_annotations_rdf_collection_path(@collection.name, {forced: true}), method: :post, class: 'button' -%>
+			<%= link_to t('views.docs.rdfize_spans'), create_spans_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
 		<% end %>
 
 	<% end %>
@@ -108,8 +109,8 @@
 
 		if @collection.editable?(current_user)
 			g.column class: 'column-button' do |project|
-				shape = CollectionProject.where(collection_id:@collection.id, project_id:project.id).first.is_primary ? 'star' : 'star-o'
-				link_to content_tag(:i, '', class: "fa fa-#{shape}", "aria-hidden" => "true"), toggle_primary_collection_project_path(@collection.name, project.name), method: :put, class: :short_button, title: 'Is it a primary project in this collection?'
+				shape = CollectionProject.where(collection_id:@collection.id, project_id:project.id).first.is_primary ? 'check-square-o' : 'square-o'
+				link_to content_tag(:i, '', class: "fa fa-#{shape}", "aria-hidden" => "true"), toggle_primary_collection_project_path(@collection.name, project.name), method: :put, class: :short_button, title: 'Check for it to be included in RDFization'
 			end
 			g.column do |project|
 				link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove this project from the collection'

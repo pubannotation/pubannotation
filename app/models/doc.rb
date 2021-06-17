@@ -543,7 +543,7 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	# the first argument, project, may be a project or an array of projects.
+	# the first argument, project_id, may be a single id or an array of ids.
 	def get_denotations_hash(project_id = nil, span = nil, context_size = nil, sort = false)
 		self.get_denotations(project_id, span, context_size, sort).as_json
 	end
@@ -558,9 +558,10 @@ class Doc < ActiveRecord::Base
 		denotations.in_project(project_id).in_span(span).pluck(:hid)
 	end
 
-	def get_denotations_hash_all(collection = nil)
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_denotations_hash_all(project_id = nil)
 		annotations = {}
-		annotations[:denotations] = collection.nil? ? get_denotations_hash : get_denotations_hash(collection.projects.indexable)
+		annotations[:denotations] = get_denotations_hash(project_id)
 		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, :only_path => false)
 		annotations[:sourcedb] = sourcedb
 		annotations[:sourceid] = sourceid
@@ -951,5 +952,45 @@ class Doc < ActiveRecord::Base
 			m_num = m_stat[pid] || 0
 			ActiveRecord::Base.connection.execute("update project_docs set denotations_num=#{d_num}, relations_num=#{r_num}, modifications_num=#{m_num} where doc_id=#{id} and project_id=#{pid}")
 		end
+	end
+
+	def rdfizer_spans
+		@rdfizer_spans ||= TAO::RDFizer.new(:spans)
+	end
+
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_spans_rdf(project_id, options = {})
+		graph_uri_doc = self.graph_uri
+		graph_uri_doc_spans = self.graph_uri + '/spans'
+
+		doc_spans = self.get_denotations_hash_all(project_id)
+
+		with_prefixes = options.has_key?(:only_prefixes) ? options[:only_prefixes] == true : false
+
+		doc_spans_trig = ''
+
+		if with_prefixes
+			doc_spans_trig += rdfizer_spans.rdfize([doc_spans], {only_prefixes: true})
+			doc_spans_trig += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
+			doc_spans_trig += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
+			doc_spans_trig += "\n"
+		end
+
+		if doc_spans && doc_spans[:denotations].present?
+			doc_spans_ttl = rdfizer_spans.rdfize([doc_spans], {with_prefixes: false})
+			doc_spans_trig += <<~HEREDOC
+				<#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
+					oa:has_body <#{graph_uri_doc_spans}> ;
+					oa:has_target <#{graph_uri_doc}> ;
+					prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+
+				GRAPH <#{graph_uri_doc_spans}>
+				{
+					#{doc_spans_ttl.gsub(/\n/, "\n\t")}
+				}
+			HEREDOC
+		end
+
+		doc_spans_trig
 	end
 end

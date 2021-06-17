@@ -1,0 +1,38 @@
+class CreateSpansRdfCollectionJob < Struct.new(:collection)
+	include StateManagement
+
+	def perform
+		project_ids = collection.primary_projects.pluck(:id)
+		doc_ids = collection.primary_projects.reduce([]){|sum, project| sum.union(project.docs.pluck(:id))}
+
+		if @job
+			@job.update_attribute(:num_items, doc_ids.count)
+			@job.update_attribute(:num_dones, 0)
+		end
+
+		File.open(collection.spans_trig_filepath, "w") do |f|
+			doc_ids.each_with_index do |doc_id, i|
+				doc = Doc.find(doc_id)
+
+				doc_spans_trig = if i == 0
+					doc.get_spans_rdf(project_ids, {with_spans: true})
+				else
+					doc.get_spans_rdf(project_ids, {with_spans: false})
+				end
+
+				f.write("\n") unless i == 0
+				f.write(doc_spans_trig)
+			rescue => e
+				if @job
+					@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message}) if message.present?
+				else
+					raise e
+				end
+			ensure
+				if @job
+					@job.update_attribute(:num_dones, i + 1)
+				end
+			end
+		end
+	end
+end

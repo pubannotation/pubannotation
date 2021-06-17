@@ -520,7 +520,6 @@ class Project < ActiveRecord::Base
 
 	def create_spans_RDF(in_collection = nil)
 		rdfizer_spans = TAO::RDFizer.new(:spans)
-		graph_uri_project = self.graph_uri
 
 		File.open(spans_trig_filepath, "w") do |f|
 			docs.each_with_index do |doc, i|

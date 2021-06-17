@@ -1,4 +1,4 @@
-class CreateAnnotationRdfJob < Struct.new(:project)
+class CreateAnnotationsRdfJob < Struct.new(:project)
 	include StateManagement
 
 	def perform

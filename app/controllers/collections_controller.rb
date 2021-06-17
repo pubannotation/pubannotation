@@ -1,6 +1,6 @@
 class CollectionsController < ApplicationController
 	before_action :authenticate_user!, :except => [:index, :show]
-	before_action :set_collection, only: [:show, :create_annotation_rdf, :destroy]
+	before_action :set_collection, only: [:show, :create_annotations_rdf, :create_spans_rdf, :destroy]
 
 	respond_to :html
 
@@ -151,19 +151,43 @@ class CollectionsController < ApplicationController
 		redirect_back fallback_location: root_path, notice: e.message
 	end
 
-	def create_annotation_rdf
+	def create_annotations_rdf
 		message = begin
 			raise "Not authorized" unless @collection.editable?(current_user)
 
 			forced = params.has_key?(:forced) ? params[:forced] == 'true' : false
 
-			## for debugging
-			# dj = CreateAnnotationRdfCollectionJob.new(@collection, {forced:forced})
+			# for debugging
+			# dj = CreateAnnotationsRdfCollectionJob.new(@collection, {forced:forced})
 			# dj.perform()
 
-			delayed_job = Delayed::Job.enqueue CreateAnnotationRdfCollectionJob.new(@collection, {forced:forced}), queue: :general
-			@collection.jobs.create({name:"Create Annotation RDF - #{@collection.name}", delayed_job_id:delayed_job.id})
-			"The task, 'Create Annotation RDF collection - #{@collection.name}', is created."
+			delayed_job = Delayed::Job.enqueue CreateAnnotationsRdfCollectionJob.new(@collection, {forced:forced}), queue: :general
+			job_name = "Create Annotation RDF Collection - #{@collection.name}"
+			@collection.jobs.create({name:job_name, delayed_job_id:delayed_job.id})
+			"The task, '#{job_name}', was created."
+		rescue => e
+			e.message
+		end
+		redirect_to collection_path(@collection.name), notice: message
+	end
+
+	def create_spans_rdf
+		message = begin
+			raise "Not authorized" unless @collection.editable?(current_user)
+
+			forced = params.has_key?(:forced) ? params[:forced] == 'true' : false
+
+			# for debugging
+			# dj = CreateSpansRdfCollectionJob.new(@collection)
+			# dj.perform()
+			# "Spans were RDFized"
+
+			delayed_job = Delayed::Job.enqueue CreateSpansRdfCollectionJob.new(@collection), queue: :general
+			job_name = "Create Spans RDF Collection- #{@collection.name}"
+			job = @collection.jobs.create({name:job_name, delayed_job_id:delayed_job.id})
+			sleep(1) until job.finished_live?
+
+			"The task, '#{job_name}', was created."
 		rescue => e
 			e.message
 		end

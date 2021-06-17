@@ -227,16 +227,16 @@ class ProjectsController < ApplicationController
 		redirect_back fallback_location: root_path
 	end
 
-	def create_annotation_rdf
+	def create_annotations_rdf
 		message = begin
 			project = Project.editable(current_user).find_by_name(params[:id])
 			raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
-			# job = CreateAnnotationRdfJob.new(project)
+			# job = CreateAnnotationsRdfJob.new(project)
 			# job.perform()
 
-			delayed_job = Delayed::Job.enqueue CreateAnnotationRdfJob.new(project), queue: :general
+			delayed_job = Delayed::Job.enqueue CreateAnnotationsRdfJob.new(project), queue: :general
 			project.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
 			"The task, 'Create Annotation RDF - #{project.name}', is created."
 		rescue => e

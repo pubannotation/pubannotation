@@ -11,7 +11,8 @@ Pubann::Application.routes.draw do
 
 	resources :collections do
 		member do
-			post 'create_annotation_rdf' => 'collections#create_annotation_rdf'
+			post 'create_annotations_rdf' => 'collections#create_annotations_rdf'
+			post 'create_spans_rdf' => 'collections#create_spans_rdf'
 			post '/add_project' => 'collections#add_project'
 		end
 		resources :projects do
@@ -139,7 +140,7 @@ Pubann::Application.routes.draw do
 		end
 
 		member do
-			post 'create_annotation_rdf' => 'projects#create_annotation_rdf'
+			post 'create_annotations_rdf' => 'projects#create_annotations_rdf'
 			post 'create_spans_rdf' => 'projects#create_spans_rdf'
 			post 'store_annotation_rdf' => 'projects#store_annotation_rdf'
 			delete 'delete_annotation_rdf' => 'projects#delete_annotation_rdf'

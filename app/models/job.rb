@@ -22,7 +22,7 @@ class Job < ActiveRecord::Base
 	end
 
 	def finished_live?
-		!connection.select_value("select ended_at from jobs where id = #{id}").nil?
+		!ActiveRecord::Base.connection.select_value("select ended_at from jobs where id = #{id}").nil?
 	end
 
 	def unfinished?

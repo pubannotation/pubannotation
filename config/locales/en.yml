@@ -427,6 +427,7 @@ en:
       create_doc: Create a new document
       upload_docs: Upload documents
       rdfize_annotations: RDFize annotations
+      rdfize_spans: RDFize spans
       create_a_new_document: Create a new document
       total_number: "Total %{total_number} documents"
     spans:

@@ -73,6 +73,10 @@ class Collection < ActiveRecord::Base
 		@annotations_rdf_dirpath ||= Rails.application.config.system_path_rdf + 'collections/' + "#{name.gsub(' ', '_')}"
 	end
 
+	def spans_trig_filepath
+		annotations_rdf_dirpath + "/#{name.gsub(' ', '_')}-spans.trig"
+	end
+
 	def create_spans_RDF
 		pprojects = self.primary_projects
 		unless pprojects.empty?
@@ -88,28 +92,6 @@ class Collection < ActiveRecord::Base
 			sleep(1) until job.finished_live?
 
 			FileUtils.ln_sf(pproject.spans_trig_filepath, annotations_rdf_dirpath)
-		end
-	end
-
-	def create_annotations_RDF(forced = false)
-		FileUtils.mkdir_p annotations_rdf_dirpath unless File.exists? annotations_rdf_dirpath
-		FileUtils.rm_f Dir.glob("#{annotations_rdf_dirpath}/*")
-
-		projects.indexable.each_with_index do |project, i|
-			if forced || project.rdf_needs_to_be_updated?
-				delayed_job = Delayed::Job.enqueue CreateAnnotationRdfJob.new(project), queue: :general
-				job = project.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
-				sleep(1) until job.finished_live?
-			end
-			FileUtils.ln_sf(project.annotations_trig_filepath, annotations_rdf_dirpath)
-			yield(i, nil) if block_given?
-		rescue => e
-			message = "failure during rdfization of #{project.name}: #{e.message}"
-			if block_given?
-				yield(i, message) if block_given?
-			else
-				raise e
-			end
 		end
 	end
 
