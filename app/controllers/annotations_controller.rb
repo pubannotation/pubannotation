@@ -485,9 +485,8 @@ class AnnotationsController < ApplicationController
 
 			docids = shared_docs.collect{|d| d.id}
 
-			priority = project.jobs.unfinished.count
-			delayed_job = Delayed::Job.enqueue ImportAnnotationsJob.new(source_project, project), priority: priority, queue: :general
-			project.jobs.create({name:"Import annotations from #{source_project.name}", delayed_job_id:delayed_job.id})
+			active_job = ImportAnnotationsJob.perform_later(source_project, project)
+			active_job.create_job_record(project.jobs, "Import annotations from #{source_project.name}")
 			message = "The task, 'import annotations from the project, #{source_project.name}', is created."
 
 		rescue => e
