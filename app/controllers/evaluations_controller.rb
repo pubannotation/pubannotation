@@ -128,12 +128,10 @@ class EvaluationsController < ApplicationController
 				evaluation.obtain
 				"Evaluation is successfuly updated."
 			else
-				# job = EvaluateAnnotationsJob.new(evaluation)
-				# job.perform()
+				# EvaluateAnnotationsJob.perform_now(evaluation)
 
-				priority = evaluation.study_project.jobs.unfinished.count
-				delayed_job = Delayed::Job.enqueue EvaluateAnnotationsJob.new(evaluation), priority: priority, queue: :general
-				evaluation.study_project.jobs.create({name:'Evaluate annotations', delayed_job_id:delayed_job.id})
+				active_job = EvaluateAnnotationsJob.perform_later(evaluation)
+				active_job.create_job_record(evaluation.study_project.jobs, 'Evaluate annotations')
 				"The task, 'Evaluate annotations', is created. Please reload the page to see the result."
 			end
 		rescue => e
