@@ -1,10 +1,7 @@
-require 'fileutils'
-include AnnotationsHelper
+class DeleteAnnotationsFromUploadJob < ApplicationJob
+	queue_as :low_priority
 
-class DeleteAnnotationsFromUploadJob < Struct.new(:filepath, :project, :options)
-	include StateManagement
-
-	def perform
+	def perform(filepath, project, options)
 		dirpath = nil
 		jsonfiles = if filepath.end_with?('.json')
 			Dir.glob(filepath)
