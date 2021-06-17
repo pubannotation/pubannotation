@@ -185,7 +185,6 @@ class CollectionsController < ApplicationController
 			delayed_job = Delayed::Job.enqueue CreateSpansRdfCollectionJob.new(@collection), queue: :general
 			job_name = "Create Spans RDF Collection- #{@collection.name}"
 			job = @collection.jobs.create({name:job_name, delayed_job_id:delayed_job.id})
-			sleep(1) until job.finished_live?
 
 			"The task, '#{job_name}', was created."
 		rescue => e
