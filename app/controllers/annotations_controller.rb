@@ -389,13 +389,11 @@ class AnnotationsController < ApplicationController
 			FileUtils.mv file.path, filepath
 
 			if ext == '.json' && file.size < 20.kilobytes
-				job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)
-				res = job.perform()
+				StoreAnnotationsCollectionUploadJob.perform_now(filepath, project, options)
 				notice = "Annotations are successfully uploaded."
 			else
-				priority = project.jobs.unfinished.count
-				delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
-				task = project.jobs.create({name: 'Upload annotations', delayed_job_id: delayed_job.id})
+				active_job = StoreAnnotationsCollectionUploadJob.perform_later(filepath, project, options)
+				task = active_job.create_job_record(project.jobs, 'Upload annotations')
 				notice = "The task, 'Upload annotations', is created."
 			end
 
