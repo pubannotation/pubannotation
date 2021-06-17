@@ -346,14 +346,11 @@ class AnnotationsController < ApplicationController
 				filepath
 			end
 
-			priority = project.jobs.unfinished.count
+			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator, options)
 
-			# job = ObtainAnnotationsJob.new(project, docids_filepath, annotator, options)
-			# job.perform()
-
-			# delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options.merge(debug: true)), priority: priority, queue: :upload
-			delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options), priority: priority, queue: :upload
-			project.jobs.create({name:"Obtain annotations: #{annotator.name}", delayed_job_id:delayed_job.id})
+			# active_job = ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
+			active_job = ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
+			active_job.create_job_record(project.jobs, "Obtain annotations: #{annotator.name}")
 
 			project.update_attributes({annotator_id:annotator.id}) if annotator.persisted?
 
