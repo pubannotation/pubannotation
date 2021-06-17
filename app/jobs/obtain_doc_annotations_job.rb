@@ -1,8 +1,7 @@
-class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :options)
-	include StateManagement
-	include ActionView::Helpers::NumberHelper
+class ObtainDocAnnotationsJob < ApplicationJob
+	queue_as :general
 
-	def perform
+	def perform(annotator, project, docid, options)
 		doc = Doc.find(docid)
 		doc.set_ascii_body if options[:encoding].present? && options[:encoding] == 'ascii'
 		max_text_size = annotator.async_protocol ? Annotator::MaxTextAsync : Annotator::MaxTextSync
@@ -37,7 +36,7 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 				raise RuntimeError, e.message
 			else
 				if e.response.code == 201
-					retrieve_and_store(e.response.headers[:location])
+					retrieve_and_store(e.response.headers[:location], annotator, project, options)
 				elsif e.response.code == 503
 					raise RuntimeError, "Service unavailable"
 				elsif e.response.code == 404
@@ -59,7 +58,7 @@ class ObtainDocAnnotationsJob < Struct.new(:annotator, :project, :docid, :option
 
 	private
 
-	def retrieve_and_store(url)
+	def retrieve_and_store(url, annotator, project, options)
 		status = annotator.make_request(:get, url)
 		while ['IN_QUEUE', 'IN_PROGRESS'].include? status[:status]
 			case status[:status]

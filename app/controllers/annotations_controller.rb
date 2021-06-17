@@ -243,17 +243,14 @@ class AnnotationsController < ApplicationController
 
 		text = doc.get_text(options[:span])
 		message = if text.length < Annotator::MaxTextSync
-			# job = ObtainDocAnnotationsJob.new(annotator, project, doc.id, options.merge(debug: true))
-			job = ObtainDocAnnotationsJob.new(annotator, project, doc.id, options)
-			res = job.perform()
+			# ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options.merge(debug: true))
+			ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options)
 			"Annotations were successfully obtained."
 		else
-			# job = ObtainDocAnnotationsJob.new(annotator, project, doc.id, options)
-			# res = job.perform()
-			priority = project.jobs.unfinished.count
-			# delayed_job = Delayed::Job.enqueue ObtainDocAnnotationsJob.new(annotator, project, doc.id, options.merge(debug: true)), priority: priority, queue: :general
-			delayed_job = Delayed::Job.enqueue ObtainDocAnnotationsJob.new(annotator, project, doc.id, options), priority: priority, queue: :general
-			project.jobs.create({name:"Obtain annotations for a document: #{annotator.name}", delayed_job_id:delayed_job.id})
+			# ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options)
+			# active_job = ObtainDocAnnotationsJob.perform_later(annotator, project, doc.id, options.merge(debug: true))
+			active_job = ObtainDocAnnotationsJob.perform_later(annotator, project, doc.id, options)
+			active_job.create_job_record(project.jobs, "Obtain annotations for a document: #{annotator.name}")
 			"A background job was created to obtain annotations."
 		end
 
