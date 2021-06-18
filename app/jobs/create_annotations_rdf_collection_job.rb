@@ -1,7 +1,7 @@
-class CreateAnnotationsRdfCollectionJob < Struct.new(:collection, :options)
-	include StateManagement
+class CreateAnnotationsRdfCollectionJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(collection, options)
 		if @job
 			@job.update_attribute(:num_items, collection.primary_projects.count + 1)
 			@job.update_attribute(:num_dones, 0)
@@ -12,7 +12,7 @@ class CreateAnnotationsRdfCollectionJob < Struct.new(:collection, :options)
 
 		# creation of annotations RDF
 		collection.primary_projects.each do |project|
-			if forced? || project.rdf_needs_to_be_updated?
+			if forced?(options) || project.rdf_needs_to_be_updated?
 				if @job
 					delayed_job = Delayed::Job.enqueue CreateAnnotationsRdfJob.new(project), queue: :general
 					monitor_job = collection.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
@@ -47,8 +47,7 @@ class CreateAnnotationsRdfCollectionJob < Struct.new(:collection, :options)
 		@job.increment!(:num_dones, 1) if @job
 	end
 
-	def forced?
+	def forced?(options)
 		options && options.has_key?(:forced) ? options[:forced] == true : false
 	end
-
 end

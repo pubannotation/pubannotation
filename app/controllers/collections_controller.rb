@@ -158,12 +158,11 @@ class CollectionsController < ApplicationController
 			forced = params.has_key?(:forced) ? params[:forced] == 'true' : false
 
 			# for debugging
-			# dj = CreateAnnotationsRdfCollectionJob.new(@collection, {forced:forced})
-			# dj.perform()
+			# CreateAnnotationsRdfCollectionJob.perform_now(@collection, {forced:forced})
 
-			delayed_job = Delayed::Job.enqueue CreateAnnotationsRdfCollectionJob.new(@collection, {forced:forced}), queue: :general
+			active_job = CreateAnnotationsRdfCollectionJob.perform_later(@collection, {forced:forced})
 			job_name = "Create Annotation RDF Collection - #{@collection.name}"
-			@collection.jobs.create({name:job_name, delayed_job_id:delayed_job.id})
+			active_job.create_job_record(@collection.jobs, job_name)
 			"The task, '#{job_name}', was created."
 		rescue => e
 			e.message
