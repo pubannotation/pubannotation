@@ -293,8 +293,8 @@ class ProjectsController < ApplicationController
 			docids = project.docs.pluck(:id)
 			system = Project.find_by_name('system-maintenance')
 
-			delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, docids, Pubann::Application.config.rdfizer_spans), queue: :general
-			system.jobs.create({name:"Store RDFized spans - #{project.name}", delayed_job_id:delayed_job.id})
+			active_job = StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
+			active_job.create_job_record(system.jobs, "Store RDFized spans - #{project.name}")
 		rescue => e
 			flash[:notice] = e.message
 		end
