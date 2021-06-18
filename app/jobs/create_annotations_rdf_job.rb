@@ -1,7 +1,7 @@
-class CreateAnnotationsRdfJob < Struct.new(:project)
-	include StateManagement
+class CreateAnnotationsRdfJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(project)
 		if @job
 			@job.update_attribute(:num_items, project.docs.count)
 			@job.update_attribute(:num_dones, 0)
@@ -14,5 +14,4 @@ class CreateAnnotationsRdfJob < Struct.new(:project)
 			end
 		end
 	end
-
 end

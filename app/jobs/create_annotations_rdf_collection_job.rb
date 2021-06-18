@@ -14,13 +14,12 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 		collection.primary_projects.each do |project|
 			if forced?(options) || project.rdf_needs_to_be_updated?
 				if @job
-					delayed_job = Delayed::Job.enqueue CreateAnnotationsRdfJob.new(project), queue: :general
-					monitor_job = collection.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
+					active_job = CreateAnnotationsRdfJob.perform_later(project)
+					monitor_job = active_job.create_job_record(collection.jobs, "Create Annotation RDF - #{project.name}")
 					sleep(1) until monitor_job.finished_live?
 				else
 					puts "start creation, #{project.name} <====="
-					creation_job = CreateAnnotationsRdfJob.new(project)
-					creation_job.perform
+					CreateAnnotationsRdfJob.perform_now(project)
 				end
 			end
 			FileUtils.ln_sf(project.annotations_trig_filepath, collection.annotations_rdf_dirpath)
