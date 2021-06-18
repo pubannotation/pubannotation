@@ -1,7 +1,7 @@
-class UptodateDocsJob < Struct.new(:project)
-	include StateManagement
+class UptodateDocsJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(project)
 		batch_num = Sequencer::MAX_NUM_ID
 		sourcedbs = project.docs.pluck(:sourcedb).uniq
 		count_sourceids = sourcedbs.reduce(0) do |sum, sourcedb|

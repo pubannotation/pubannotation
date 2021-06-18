@@ -132,12 +132,11 @@ class ProjectsController < ApplicationController
 			project = Project.find_by_name(params[:id])
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-			# job = UptodateDocsJob.new(project)
-			# job.perform()
+			# UptodateDocsJob.perform_now(project)
 
-			delayed_job = Delayed::Job.enqueue UptodateDocsJob.new(project), queue: :general
+			active_job = UptodateDocsJob.perform_later(project)
 			task_name = "Uptodate docs in project - #{project.name}"
-			project.jobs.create({name:task_name, delayed_job_id:delayed_job.id})
+			active_job.create_job_record(project.jobs,task_name)
 			flash[:notice] = "The task, '#{task_name}', is created."
 			redirect_to project_path(project.name)
 		rescue => e
