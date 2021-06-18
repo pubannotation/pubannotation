@@ -34,13 +34,12 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 
 		# creation of spans RDF
 		if @job
-			delayed_job = Delayed::Job.enqueue CreateSpansRdfCollectionJob.new(collection), queue: :general
-			monitor_job = collection.jobs.create({name:"Create Spans RDF Collection- #{collection.name}", delayed_job_id:delayed_job.id})
+			active_job = CreateSpansRdfCollectionJob.perform_later(collection)
+			monitor_job = active_job.create_job_record(collection.jobs, "Create Spans RDF Collection- #{collection.name}")
 			sleep(1) until monitor_job.finished_live?
 		else
 			puts "start creation <====="
-			creation_job = CreateSpansRdfCollectionJob.new(collection)
-			creation_job.perform
+			CreateSpansRdfCollectionJob.perform_now(collection)
 		end
 
 		@job.increment!(:num_dones, 1) if @job
