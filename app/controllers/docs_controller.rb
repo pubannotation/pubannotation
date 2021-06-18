@@ -603,8 +603,8 @@ class DocsController < ApplicationController
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 			system = Project.find_by_name('system-maintenance')
 
-			delayed_job = Delayed::Job.enqueue UpdateAnnotationNumbersJob.new(nil), queue: :general
-			system.jobs.create({name:"Update annotation numbers of each document", delayed_job_id:delayed_job.id})
+			active_job = UpdateAnnotationNumbersJob.perform_later
+			active_job.create_job_record(system.jobs, "Update annotation numbers of each document")
 
 			result = {message: "The task, 'update annotation numbers of each document', created."}
 			redirect_to project_path('system-maintenance')
