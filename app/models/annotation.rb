@@ -110,14 +110,15 @@ class Annotation < ActiveRecord::Base
 
 		if annotations[:denotations].present?
 			raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
-			symbolized_denotations = annotations[:denotations].map { |d| d.class == Hash ? d.deep_symbolize_keys : d }
+
+			annotations[:denotations].each { |d| d.deep_symbolize_keys! if d.class == Hash }
 
 			annotations = Annotation.chain_spans(annotations)
 
-			ids = symbolized_denotations.collect{|d| d[:id]}.compact
+			ids = annotations[:denotations].collect{|d| d[:id]}.compact
 			idnum = 1
 
-			symbolized_denotations.each do |a|
+			annotations[:denotations].each do |a|
 				raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'." unless (a[:span].present? && a[:span][:begin].present? && a[:span][:end].present?) || (a[:begin].present? && a[:end].present?)
 				raise ArgumentError, "a denotation must have an 'obj'." unless a[:obj].present?
 
@@ -142,6 +143,7 @@ class Annotation < ActiveRecord::Base
 			end
 		end
 
+
 		d_ids = nil
 
 		if annotations[:relations].present?
@@ -149,12 +151,12 @@ class Annotation < ActiveRecord::Base
 
 			d_ids = annotations[:denotations].collect{|a| a[:id]}
 
-			symbolized_relations = annotations[:relations].map {|a| a.class == Hash ? a.symbolize_keys : a}
+			annotations[:relations].each {|a| a.symbolize_keys! if a.class == Hash }
 
-			ids = symbolized_relations.collect{|a| a[:id]}.compact
+			ids = annotations[:relations].collect{|a| a[:id]}.compact
 			idnum = 1
 
-			symbolized_relations.each do |a|
+			annotations[:relations].each do |a|
 				raise ArgumentError, "a relation must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
 				raise ArgumentError, "'subj' and 'obj' of a relation must reference to a denotation: [#{a}]." unless (d_ids.include? a[:subj]) && (d_ids.include? a[:obj])
 
@@ -168,20 +170,22 @@ class Annotation < ActiveRecord::Base
 
 		if annotations[:attributes].present?
 			raise ArgumentError, "'attributes' must be an array." unless annotations[:attributes].class == Array
-			symbolized_attributes = annotations[:attributes].map {|a| a.class == Hash ? a.symbolize_keys : a}
 
 			d_ids ||= annotations[:denotations].collect{|a| a[:id]}
+			dr_ids = d_ids + annotations[:relations].collect{|a| a[:id]}
 
-			ids = symbolized_attributes.collect{|a| a[:id]}.compact
+			annotations[:attributes].each {|a| a.symbolize_keys! if a.class == Hash }
+
+			ids = annotations[:attributes].collect{|a| a[:id]}.compact
 			idnum = 1
 
-			symbolized_attributes.each do |a|
+			annotations[:attributes].each do |a|
 
 				# TODO: to remove the following line after TextAE is updated.
 				a[:obj] = true unless a[:obj].present?
 
 				raise ArgumentError, "An attribute must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
-				raise ArgumentError, "The 'subj' of an attribute must reference to a denotation: [#{a}]." unless d_ids.include? a[:subj]
+				raise ArgumentError, "The 'subj' of an attribute must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:subj]
 
 				unless a.has_key? :id
 					idnum += 1 until !ids.include?('A' + idnum.to_s)
@@ -193,15 +197,16 @@ class Annotation < ActiveRecord::Base
 
 		if annotations[:modifications].present?
 			raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
-			symbolized_modifications = annotations[:modifications].map {|a| a.class == Hash ? a.symbolize_keys : a}
 
-			d_ids ||= annotations[:denotations].collect{|a| a[:id]}
-			dr_ids = d_ids + annotations[:relations].collect{|a| a[:id]}
+			annotations[:modifications].each {|a| a.symbolize_keys! if a.class == Hash }
 
-			ids = symbolized_modifications.collect{|a| a[:id]}.compact
+			d_ids  ||= annotations[:denotations].collect{|a| a[:id]}
+			dr_ids ||= d_ids + annotations[:relations].collect{|a| a[:id]}
+
+			ids = annotations[:modifications].collect{|a| a[:id]}.compact
 			idnum = 1
 
-			symbolized_modifications.each do |a|
+			annotations[:modifications].each do |a|
 				raise ArgumentError, "A modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
 				raise ArgumentError, "The 'obj' of a modification must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:obj]
 
