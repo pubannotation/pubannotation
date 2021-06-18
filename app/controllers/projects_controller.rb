@@ -199,11 +199,10 @@ class ProjectsController < ApplicationController
 				skip_span_indexing: params[:skip_span_indexing].present?
 			}
 
-			# job = StoreRdfizedAnnotationsJob.new(project, filepath, options)
-			# job.perform()
+			# StoreRdfizedAnnotationsJob.perform_now(project, filepath, options)
 
-			delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project, filepath, options), queue: :general
-			project.jobs.create({name:"Store RDFized annotations - #{project.name}", delayed_job_id:delayed_job.id})
+			active_job = StoreRdfizedAnnotationsJob.perform_later(project, filepath, options)
+			active_job.create_job_record(project.jobs, "Store RDFized annotations - #{project.name}")
 			flash[:notice] = "The task, 'Store RDFized annotations - #{project.name}', is created."
 		rescue => e
 			flash[:notice] = e.message
@@ -277,8 +276,8 @@ class ProjectsController < ApplicationController
 			system = Project.find_by_name('system-maintenance')
 
 			projects.each do |project|
-				delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project, Pubann::Application.config.rdfizer_annotations), queue: :general
-				system.jobs.create({name:"Store RDFized annotations - #{project.name}", delayed_job_id:delayed_job.id})
+				active_job = StoreRdfizedAnnotationsJob.perform_later(system, project, Pubann::Application.config.rdfizer_annotations)
+				active_job.create_job_record(system.jobs, "Store RDFized annotations - #{project.name}")
 			end
 		rescue => e
 			flash[:notice] = e.message
@@ -321,8 +320,8 @@ class ProjectsController < ApplicationController
 			end
 
 			# projects.each do |project|
-			#   delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name), queue: :general
-			#   system.jobs.create({name:"Store REDized annotations - #{project.name}", delayed_job_id:delayed_job.id})
+			#   active_job = StoreRdfizedAnnotationsJob.perform_later(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name)
+			#   active_job.create_job_record(system.jobs, "Store REDized annotations - #{project.name}")
 			# end
 		# rescue => e
 		#   flash[:notice] = e.message
