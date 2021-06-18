@@ -281,7 +281,7 @@ class DocsController < ApplicationController
 			raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json', '.txt'].include?(ext)
 
 			options = {
-				mode: params[:mode].present? ? params[:mode].to_sym : :update,
+				mode: params[:mode].present? ? params[:mode].to_s : "update",
 				root: current_user.root?
 			}
 
@@ -290,19 +290,16 @@ class DocsController < ApplicationController
 			FileUtils.mv file.path, File.join(dirpath, filename)
 
 			if ['.json', '.txt'].include?(ext) && file.size < 100.kilobytes
-				job = UploadDocsJob.new(dirpath, project, options)
-				res = job.perform()
+				UploadDocsJob.perform_now(dirpath, project, options)
 				notice = "Documents are successfully uploaded."
 			else
 				raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
-				priority = project.jobs.unfinished.count
 
-				# job = UploadDocsJob.new(dirpath, project, options)
-				# job.perform()
+				# UploadDocsJob.perform_now(dirpath, project, options)
 
-				delayed_job = Delayed::Job.enqueue UploadDocsJob.new(dirpath, project, options), priority: priority, queue: :upload
+				active_job = UploadDocsJob.perform_later(dirpath, project, options)
 				task_name = "Upload documents: #{filename}"
-				project.jobs.create({name:task_name, delayed_job_id:delayed_job.id})
+				active_job.create_job_record(project.jobs, task_name)
 				notice = "The task, '#{task_name}', is created."
 			end
 		rescue => e

@@ -1,9 +1,7 @@
-require 'fileutils'
+class UploadDocsJob < ApplicationJob
+	queue_as :low_priority
 
-class UploadDocsJob < Struct.new(:dirpath, :project, :options)
-	include StateManagement
-
-	def perform
+	def perform(dirpath, project, options)
 		upfilepath = Dir.glob(File.join(dirpath, '**', '*')).first
 
 		infiles = if upfilepath.end_with?('.json') || upfilepath.end_with?('.txt')
@@ -22,7 +20,7 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
 		end
 
 		username = project.user
-		mode = options[:mode]
+		mode = options[:mode].to_sym
 		created = false
 		num_updated_or_skipped = 0
 		sourcedbs_added = Set[]
@@ -109,5 +107,4 @@ class UploadDocsJob < Struct.new(:dirpath, :project, :options)
 		FileUtils.rm_rf(dirpath) unless dirpath.nil?
 		true
 	end
-
 end
