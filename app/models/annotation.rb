@@ -108,6 +108,8 @@ class Annotation < ActiveRecord::Base
 			annotations[:sourcedb] = 'FirstAuthors' if annotations[:sourcedb].downcase == 'firstauthors'
 		end
 
+		d_ids = r_ids = dr_ids = []
+
 		if annotations[:denotations].present?
 			raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
 
@@ -141,15 +143,12 @@ class Annotation < ActiveRecord::Base
 
 				raise ArgumentError, "the end offset must be bigger than the begin offset: #{a}" unless a[:span][:begin] < a[:span][:end]
 			end
+
+			d_ids = annotations[:denotations].collect{|a| a[:id]}
 		end
-
-
-		d_ids = nil
 
 		if annotations[:relations].present?
 			raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
-
-			d_ids = annotations[:denotations].collect{|a| a[:id]}
 
 			annotations[:relations].each {|a| a.symbolize_keys! if a.class == Hash }
 
@@ -166,13 +165,14 @@ class Annotation < ActiveRecord::Base
 					idnum += 1
 				end
 			end
+
+			r_ids = annotations[:relations].collect{|a| a[:id]}
 		end
+
+		dr_ids = d_ids + r_ids
 
 		if annotations[:attributes].present?
 			raise ArgumentError, "'attributes' must be an array." unless annotations[:attributes].class == Array
-
-			d_ids ||= annotations[:denotations].collect{|a| a[:id]}
-			dr_ids = d_ids + annotations[:relations].collect{|a| a[:id]}
 
 			annotations[:attributes].each {|a| a.symbolize_keys! if a.class == Hash }
 
@@ -199,9 +199,6 @@ class Annotation < ActiveRecord::Base
 			raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
 
 			annotations[:modifications].each {|a| a.symbolize_keys! if a.class == Hash }
-
-			d_ids  ||= annotations[:denotations].collect{|a| a[:id]}
-			dr_ids ||= d_ids + annotations[:relations].collect{|a| a[:id]}
 
 			ids = annotations[:modifications].collect{|a| a[:id]}.compact
 			idnum = 1
