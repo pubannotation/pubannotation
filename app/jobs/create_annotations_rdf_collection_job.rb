@@ -16,7 +16,10 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 				if @job
 					active_job = CreateAnnotationsRdfJob.perform_later(project)
 					monitor_job = active_job.create_job_record(collection.jobs, "Create Annotation RDF - #{project.name}")
-					sleep(1) until monitor_job.finished_live?
+					until monitor_job.finished_live?
+						sleep(1)
+						ActiveRecord::Base.connection.clear_query_cache
+					end
 				else
 					puts "start creation, #{project.name} <====="
 					CreateAnnotationsRdfJob.perform_now(project)
@@ -36,7 +39,10 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 		if @job
 			active_job = CreateSpansRdfCollectionJob.perform_later(collection)
 			monitor_job = active_job.create_job_record(collection.jobs, "Create Spans RDF Collection- #{collection.name}")
-			sleep(1) until monitor_job.finished_live?
+			until monitor_job.finished_live?
+				sleep(1)
+				ActiveRecord::Base.connection.clear_query_cache
+			end
 		else
 			puts "start creation <====="
 			CreateSpansRdfCollectionJob.perform_now(collection)
