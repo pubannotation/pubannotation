@@ -79,5 +79,8 @@ module Pubann
 
     config.system_path_rdf = "#{Rails.root}/db/rdf/"
     config.project_indexable_max_docs = 200000
+
+    # Setting the queuing backend used by ActiveJob
+    config.active_job.queue_adapter = :delayed_job
   end
 end
