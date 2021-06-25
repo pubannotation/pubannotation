@@ -43,6 +43,9 @@ GEM
     activejob (5.2.6)
       activesupport (= 5.2.6)
       globalid (>= 0.3.6)
+    activejob-cancel (0.3.1)
+      activejob (>= 4.2.0)
+      activesupport (>= 4.2.0)
     activemodel (5.2.6)
       activesupport (= 5.2.6)
     activerecord (5.2.6)
@@ -357,6 +360,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activejob-cancel
   activerecord-import
   backup
   bootsnap (>= 1.1.0)
