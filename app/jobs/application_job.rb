@@ -1,7 +1,7 @@
 class ApplicationJob < ActiveJob::Base
   def create_job_record(organization_jobs, job_name)
     delayed_job = Delayed::Job.find(self.provider_job_id)
-    organization_jobs.create({ name: job_name, active_job_id: self.job_id, delayed_job_id: delayed_job.id })
+    organization_jobs.create({ name: job_name, active_job_id: self.job_id, delayed_job_id: delayed_job.id, queue_name: self.queue_name })
   end
 
   rescue_from(StandardError) do |exception|
