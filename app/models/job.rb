@@ -53,15 +53,6 @@ class Job < ActiveRecord::Base
 		end
 	end
 
-	def scan
-		dj = begin
-			Delayed::Job.find(self.delayed_job_id)
-		rescue
-			nil
-		end
-		update_attribute(:ended_at, Time.now) if dj.nil?
-	end
-
 	def stop_if_running
 		if running?
 			dj = begin
@@ -75,17 +66,6 @@ class Job < ActiveRecord::Base
 				`script/delayed_job -i #{worker_id} restart`
 				update_attribute(:ended_at, Time.now)
 			end
-		end
-	end
-
-	def update_related_priority
-		organization.jobs.waiting.order(:created_at).each_with_index do |j, i|
-			dj = begin
-				Delayed::Job.find(j.delayed_job_id)
-			rescue
-				nil
-			end
-			dj.update_attribute(:priority, i) unless dj.nil?
 		end
 	end
 end
