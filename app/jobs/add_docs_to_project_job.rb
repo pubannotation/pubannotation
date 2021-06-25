@@ -1,7 +1,7 @@
-class AddDocsToProjectJob < Struct.new(:docspecs, :project)
-	include StateManagement
+class AddDocsToProjectJob < ApplicationJob
+	queue_as :general
 
-	def perform
+	def perform(docspecs, project)
 		if @job
 			@job.update_attribute(:num_items, docspecs.length)
 			@job.update_attribute(:num_dones, 0)

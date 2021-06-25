@@ -1,5 +1,5 @@
-class UpdateAnnotationNumbersJob < Struct.new(:dummy)
-	include StateManagement
+class UpdateAnnotationNumbersJob < ApplicationJob
+	queue_as :low_priority
 
 	def perform
 		queries = [

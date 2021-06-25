@@ -84,11 +84,10 @@ class Collection < ActiveRecord::Base
 
 			# pproject.create_spans_RDF
 
-			# dj = CreateSpansRdfJob.new(pproject)
-			# dj.perform()
+			# CreateSpansRdfJob.perform_now(pproject)
 
-			delayed_job = Delayed::Job.enqueue CreateSpansRdfJob.new(pproject, self), queue: :general
-			job = pproject.jobs.create({name:"Create Spans RDF - #{pproject.name}", delayed_job_id:delayed_job.id})
+			active_job = CreateSpansRdfJob.perform_later(pproject, self)
+			job = active_job.create_job_record(pproject.jobs, "Create Spans RDF - #{pproject.name}")
 			sleep(1) until job.finished_live?
 
 			FileUtils.ln_sf(pproject.spans_trig_filepath, annotations_rdf_dirpath)

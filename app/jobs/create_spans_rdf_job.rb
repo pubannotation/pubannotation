@@ -1,7 +1,7 @@
-class CreateSpansRdfJob < Struct.new(:project, :in_collection)
-	include StateManagement
+class CreateSpansRdfJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(project, in_collection)
 		if @job
 			@job.update_attribute(:num_items, project.docs.count)
 			@job.update_attribute(:num_dones, 0)
@@ -14,5 +14,4 @@ class CreateSpansRdfJob < Struct.new(:project, :in_collection)
 			end
 		end
 	end
-
 end

@@ -1,7 +1,7 @@
-class StoreRdfizedSpansJob < Struct.new(:sproject, :docids, :rdfizer)
-	include StateManagement
+class StoreRdfizedSpansJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(sproject, docids, rdfizer)
 		if @job
 			@job.update_attribute(:num_items, docids.length)
 			@job.update_attribute(:num_dones, 0)

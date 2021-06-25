@@ -1,10 +1,7 @@
-require 'fileutils'
-include AnnotationsHelper
+class ImportAnnotationsJob < ApplicationJob
+	queue_as :general
 
-class ImportAnnotationsJob < Struct.new(:source_project, :project)
-	include StateManagement
-
-	def perform
+	def perform(source_project, project)
 		docs = project.docs & source_project.docs
 
 		@job.update_attribute(:num_items, docs.length)
