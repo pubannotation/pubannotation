@@ -1,5 +1,5 @@
 class UpdateElasticsearchIndexJob < ApplicationJob
-	queue_as :genral
+	queue_as :general
 
 	def perform(project)
 		@job.update_attribute(:num_items, 1) if @job
