@@ -67,6 +67,7 @@ gem 'listen'
 gem 'spring-watcher-listen'
 gem 'thor', '~> 0.20.3'
 gem 'activejob-cancel'
+gem 'sidekiq'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

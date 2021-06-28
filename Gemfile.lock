@@ -85,6 +85,7 @@ GEM
     coffee-script-source (1.12.2)
     color-generator (0.0.4)
     concurrent-ruby (1.1.9)
+    connection_pool (2.2.5)
     crass (1.0.6)
     daemons (1.4.0)
     delayed_job (4.1.9)
@@ -284,6 +285,7 @@ GEM
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
+    redis (4.3.1)
     responders (3.0.1)
       actionpack (>= 5.0)
       railties (>= 5.0)
@@ -306,6 +308,10 @@ GEM
       sprockets-rails
       tilt
     shellany (0.0.1)
+    sidekiq (6.2.1)
+      connection_pool (>= 2.2.2)
+      rack (~> 2.0)
+      redis (>= 4.2.0)
     spring (2.1.1)
     spring-watcher-listen (2.0.1)
       listen (>= 2.7, < 4.0)
@@ -396,6 +402,7 @@ DEPENDENCIES
   ruby-dictionary
   rubyzip
   sass-rails
+  sidekiq
   spring
   spring-watcher-listen
   stardog-rb!
