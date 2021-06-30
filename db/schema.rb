@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_25_040838) do
+ActiveRecord::Schema.define(version: 2021_06_30_051628) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -200,6 +200,7 @@ ActiveRecord::Schema.define(version: 2021_06_25_040838) do
     t.string "organization_type"
     t.string "active_job_id"
     t.string "queue_name"
+    t.boolean "suspend_flag", default: false
     t.index ["delayed_job_id"], name: "index_jobs_on_delayed_job_id"
     t.index ["organization_id"], name: "index_jobs_on_organization_id"
   end
