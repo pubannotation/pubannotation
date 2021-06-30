@@ -7,8 +7,10 @@ class ApplicationJob < ActiveJob::Base
     if @job
       @job.messages << Message.create({sourcedb: '*', sourceid: '*', divid: nil, body: exception.message})
       set_ended_at
+    else
+      # Exception handling when Job is executed synchronously with perform_now
+      raise exception
     end
-    raise exception
   end
 
   before_perform do |active_job|
