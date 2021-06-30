@@ -11,7 +11,7 @@
 			link_to('jobs', collection_jobs_path(@organization.name))
 		end
 	%>
-	> <%= @job.delayed_job_id %>
+	> <%= @job.id %>
 <% end %>
 
 <section>
@@ -27,7 +27,7 @@
 
 	<section>
 		<h1>
-		Job #<%= @job.delayed_job_id %>: <%= @job.name %>
+		Job #<%= @job.id %>: <%= @job.name %>
 		<%=
 			unless @job.running?
 				organization_job_path = if params.has_key? :project_id
