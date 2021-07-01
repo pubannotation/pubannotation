@@ -7,8 +7,7 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		if @job
-			@job.update_attribute(:num_items, count)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(count)
 		end
 		sd = stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
 		db = Rails.application.config.ep_database
@@ -95,7 +94,8 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 			end
 
 			if @job
-				@job.update_attribute(:num_dones, i + 1)
+				increment_num_dones(i)
+				check_suspend_flag
 			end
 		end
 
