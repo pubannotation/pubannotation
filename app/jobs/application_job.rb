@@ -46,4 +46,9 @@ class ApplicationJob < ActiveJob::Base
   def suspended?
     Job.find(@job.id)&.suspended?
   end
+
+  def prepare_progress_record(scheduled_num)
+    @job.update_attribute(:num_items, scheduled_num)
+    @job.update_attribute(:num_dones, 0)
+  end
 end
