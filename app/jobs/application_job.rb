@@ -43,4 +43,13 @@ class ApplicationJob < ActiveJob::Base
       raise "Job was suspended."
     end
   end
+
+  def prepare_progress_record(scheduled_num)
+    @job.update_attribute(:num_items, scheduled_num)
+    @job.update_attribute(:num_dones, 0)
+  end
+
+  def increment_num_dones(num_dones)
+    @job.update_attribute(:num_dones, num_dones + 1)
+  end
 end
