@@ -15,9 +15,9 @@ class CreateSpansRdfCollectionJob < Struct.new(:collection)
 				doc = Doc.find(doc_id)
 
 				doc_spans_trig = if i == 0
-					doc.get_spans_rdf(project_ids, {with_spans: true})
+					doc.get_spans_rdf(project_ids, {with_prefixes: true})
 				else
-					doc.get_spans_rdf(project_ids, {with_spans: false})
+					doc.get_spans_rdf(project_ids, {with_prefixes: false})
 				end
 
 				f.write("\n") unless i == 0

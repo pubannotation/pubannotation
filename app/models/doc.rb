@@ -168,7 +168,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def graph_uri
-		Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, only_path: false)
+		Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(sourcedb, sourceid, only_path: false)
 	end
 
 	def last_indexed_at(endpoint = nil)
@@ -562,7 +562,7 @@ class Doc < ActiveRecord::Base
 	def get_denotations_hash_all(project_id = nil)
 		annotations = {}
 		annotations[:denotations] = get_denotations_hash(project_id)
-		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, :only_path => false)
+		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(sourcedb, sourceid, :only_path => false)
 		annotations[:sourcedb] = sourcedb
 		annotations[:sourceid] = sourceid
 		annotations[:text] = body
@@ -965,7 +965,7 @@ class Doc < ActiveRecord::Base
 
 		doc_spans = self.get_denotations_hash_all(project_id)
 
-		with_prefixes = options.has_key?(:only_prefixes) ? options[:only_prefixes] == true : false
+		with_prefixes = options.has_key?(:with_prefixes) ? options[:with_prefixes] == true : false
 
 		doc_spans_trig = ''
 
