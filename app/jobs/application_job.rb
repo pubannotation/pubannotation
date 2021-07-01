@@ -36,4 +36,11 @@ class ApplicationJob < ActiveJob::Base
   def set_ended_at
     @job.update_attribute(:ended_at, Time.now)
   end
+
+  def check_suspend_flag
+    job = Job.find(@job.id)
+    if job.suspend_flag == true
+      raise "Job was suspended."
+    end
+  end
 end
