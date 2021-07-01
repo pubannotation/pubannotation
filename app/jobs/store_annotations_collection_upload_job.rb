@@ -1,12 +1,9 @@
-require 'fileutils'
-include AnnotationsHelper
-
-class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :options)
-	include StateManagement
+class StoreAnnotationsCollectionUploadJob < ApplicationJob
+	queue_as :low_priority
 
 	MAX_SIZE_TRANSACTION = 5000
 
-	def perform
+	def perform(filepath, project, options)
 		# read the filenames of json files into the array filenames
 		filenames, dirpath = read_filenames(filepath)
 
@@ -37,7 +34,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 
 			if jsonfile.nil? || (transaction_size + count_denotations) > MAX_SIZE_TRANSACTION
 				begin
-					store(annotation_transaction, sourcedb_sourceids_index)
+					store(annotation_transaction, sourcedb_sourceids_index, project, options)
 				ensure
 					annotation_transaction.clear
 					transaction_size = 0
@@ -78,7 +75,7 @@ class StoreAnnotationsCollectionUploadJob < Struct.new(:filepath, :project, :opt
 
 	private
 
-	def store(annotation_transaction, sourcedb_sourceids_index)
+	def store(annotation_transaction, sourcedb_sourceids_index, project, options)
 		sourcedbs_changed = []
 
 		sourcedb_sourceids_index.each do |sourcedb, sourceids|

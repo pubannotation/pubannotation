@@ -1,7 +1,7 @@
-class EvaluateAnnotationsJob < Struct.new(:evaluation, :detail)
-	include StateManagement
+class EvaluateAnnotationsJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(evaluation)
 		project = evaluation.study_project
 		reference_project = evaluation.reference_project
 

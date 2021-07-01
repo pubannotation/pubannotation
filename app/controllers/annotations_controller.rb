@@ -243,17 +243,14 @@ class AnnotationsController < ApplicationController
 
 		text = doc.get_text(options[:span])
 		message = if text.length < Annotator::MaxTextSync
-			# job = ObtainDocAnnotationsJob.new(annotator, project, doc.id, options.merge(debug: true))
-			job = ObtainDocAnnotationsJob.new(annotator, project, doc.id, options)
-			res = job.perform()
+			# ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options.merge(debug: true))
+			ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options)
 			"Annotations were successfully obtained."
 		else
-			# job = ObtainDocAnnotationsJob.new(annotator, project, doc.id, options)
-			# res = job.perform()
-			priority = project.jobs.unfinished.count
-			# delayed_job = Delayed::Job.enqueue ObtainDocAnnotationsJob.new(annotator, project, doc.id, options.merge(debug: true)), priority: priority, queue: :general
-			delayed_job = Delayed::Job.enqueue ObtainDocAnnotationsJob.new(annotator, project, doc.id, options), priority: priority, queue: :general
-			project.jobs.create({name:"Obtain annotations for a document: #{annotator.name}", delayed_job_id:delayed_job.id})
+			# ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options)
+			# active_job = ObtainDocAnnotationsJob.perform_later(annotator, project, doc.id, options.merge(debug: true))
+			active_job = ObtainDocAnnotationsJob.perform_later(annotator, project, doc.id, options)
+			active_job.create_job_record(project.jobs, "Obtain annotations for a document: #{annotator.name}")
 			"A background job was created to obtain annotations."
 		end
 
@@ -346,14 +343,11 @@ class AnnotationsController < ApplicationController
 				filepath
 			end
 
-			priority = project.jobs.unfinished.count
+			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator, options)
 
-			# job = ObtainAnnotationsJob.new(project, docids_filepath, annotator, options)
-			# job.perform()
-
-			# delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options.merge(debug: true)), priority: priority, queue: :upload
-			delayed_job = Delayed::Job.enqueue ObtainAnnotationsJob.new(project, docids_filepath, annotator, options), priority: priority, queue: :upload
-			project.jobs.create({name:"Obtain annotations: #{annotator.name}", delayed_job_id:delayed_job.id})
+			# active_job = ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
+			active_job = ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
+			active_job.create_job_record(project.jobs, "Obtain annotations: #{annotator.name}")
 
 			project.update_attributes({annotator_id:annotator.id}) if annotator.persisted?
 
@@ -395,13 +389,11 @@ class AnnotationsController < ApplicationController
 			FileUtils.mv file.path, filepath
 
 			if ext == '.json' && file.size < 20.kilobytes
-				job = StoreAnnotationsCollectionUploadJob.new(filepath, project, options)
-				res = job.perform()
+				StoreAnnotationsCollectionUploadJob.perform_now(filepath, project, options)
 				notice = "Annotations are successfully uploaded."
 			else
-				priority = project.jobs.unfinished.count
-				delayed_job = Delayed::Job.enqueue StoreAnnotationsCollectionUploadJob.new(filepath, project, options), priority: priority, queue: :upload
-				task = project.jobs.create({name: 'Upload annotations', delayed_job_id: delayed_job.id})
+				active_job = StoreAnnotationsCollectionUploadJob.perform_later(filepath, project, options)
+				task = active_job.create_job_record(project.jobs, 'Upload annotations')
 				notice = "The task, 'Upload annotations', is created."
 			end
 
@@ -430,9 +422,8 @@ class AnnotationsController < ApplicationController
 					filepath = File.join('tmp', "delete-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.#{ext}")
 					FileUtils.mv params[:upfile].path, filepath
 
-					priority = project.jobs.unfinished.count
-					delayed_job = Delayed::Job.enqueue DeleteAnnotationsFromUploadJob.new(filepath, project, options), priority: priority, queue: :upload
-					project.jobs.create({name:'Delete annotations from documents', delayed_job_id:delayed_job.id})
+					active_job = DeleteAnnotationsFromUploadJob.perform_later(filepath, project, options)
+					active_job.create_job_record(project.jobs, 'Delete annotations from documents')
 					notice = "The task, 'Delete annotations from documents', is created."
 				else
 					notice = "Up to 10 jobs can be registered per a project. Please clean your jobs page."
@@ -486,9 +477,8 @@ class AnnotationsController < ApplicationController
 
 			docids = shared_docs.collect{|d| d.id}
 
-			priority = project.jobs.unfinished.count
-			delayed_job = Delayed::Job.enqueue ImportAnnotationsJob.new(source_project, project), priority: priority, queue: :general
-			project.jobs.create({name:"Import annotations from #{source_project.name}", delayed_job_id:delayed_job.id})
+			active_job = ImportAnnotationsJob.perform_later(source_project, project)
+			active_job.create_job_record(project.jobs, "Import annotations from #{source_project.name}")
 			message = "The task, 'import annotations from the project, #{source_project.name}', is created."
 
 		rescue => e
@@ -506,12 +496,10 @@ class AnnotationsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "There is no such project in your management." unless project.present?
 
-			# job = CreateAnnotationsTgzJob.new(project, {})
-			# job.perform
+			# CreateAnnotationsTgzJob.perform_now(project, {})
 
-			priority = project.jobs.unfinished.count
-			delayed_job = Delayed::Job.enqueue CreateAnnotationsTgzJob.new(project, {}), priority: priority, queue: :general
-			project.jobs.create({name:'Create a downloadable archive', delayed_job_id:delayed_job.id})
+			active_job = CreateAnnotationsTgzJob.perform_later(project, {})
+			active_job.create_job_record(project.jobs, 'Create a downloadable archive')
 
 			redirect_back fallback_location: root_path, notice: "The task 'Create a downloadable archive' is created."
 		rescue => e

@@ -1,11 +1,9 @@
-require 'rubygems/package'
-require 'zlib'
-require 'fileutils'
+require "rubygems/package"
 
-class CreateAnnotationsTgzJob < Struct.new(:project, :options)
-	include StateManagement
+class CreateAnnotationsTgzJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(project, options)
 		if @job
 			@job.update_attribute(:num_items, project.docs.count)
 			@job.update_attribute(:num_dones, 0)
@@ -98,5 +96,4 @@ class CreateAnnotationsTgzJob < Struct.new(:project, :options)
 		FileUtils.mkdir_p(project.downloads_system_path) unless Dir.exist?(project.downloads_system_path)
 		FileUtils.mv tmp_file_path, project.annotations_tgz_system_path
 	end
-
 end

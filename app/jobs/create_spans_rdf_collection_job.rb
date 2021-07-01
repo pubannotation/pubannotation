@@ -1,7 +1,7 @@
-class CreateSpansRdfCollectionJob < Struct.new(:collection)
-	include StateManagement
+class CreateSpansRdfCollectionJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(collection)
 		project_ids = collection.primary_projects.pluck(:id)
 		doc_ids = collection.primary_projects.reduce([]){|sum, project| sum.union(project.docs.pluck(:id))}
 

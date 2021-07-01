@@ -158,12 +158,11 @@ class CollectionsController < ApplicationController
 			forced = params.has_key?(:forced) ? params[:forced] == 'true' : false
 
 			# for debugging
-			# dj = CreateAnnotationsRdfCollectionJob.new(@collection, {forced:forced})
-			# dj.perform()
+			# CreateAnnotationsRdfCollectionJob.perform_now(@collection, {forced:forced})
 
-			delayed_job = Delayed::Job.enqueue CreateAnnotationsRdfCollectionJob.new(@collection, {forced:forced}), queue: :general
+			active_job = CreateAnnotationsRdfCollectionJob.perform_later(@collection, {forced:forced})
 			job_name = "Create Annotation RDF Collection - #{@collection.name}"
-			@collection.jobs.create({name:job_name, delayed_job_id:delayed_job.id})
+			active_job.create_job_record(@collection.jobs, job_name)
 			"The task, '#{job_name}', was created."
 		rescue => e
 			e.message
@@ -178,13 +177,12 @@ class CollectionsController < ApplicationController
 			forced = params.has_key?(:forced) ? params[:forced] == 'true' : false
 
 			# for debugging
-			# dj = CreateSpansRdfCollectionJob.new(@collection)
-			# dj.perform()
+			# CreateSpansRdfCollectionJob.perform_now(@collection)
 			# "Spans were RDFized"
 
-			delayed_job = Delayed::Job.enqueue CreateSpansRdfCollectionJob.new(@collection), queue: :general
+			active_job = CreateSpansRdfCollectionJob.perform_later(@collection)
 			job_name = "Create Spans RDF Collection- #{@collection.name}"
-			job = @collection.jobs.create({name:job_name, delayed_job_id:delayed_job.id})
+			job = active_job.create_job_record(@collection.jobs, job_name)
 
 			"The task, '#{job_name}', was created."
 		rescue => e

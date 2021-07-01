@@ -1,9 +1,7 @@
-class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :options)
-	include StateManagement
-	include ActionView::Helpers::NumberHelper
-	include ActionView::Helpers::DateHelper
+class ObtainAnnotationsJob < ApplicationJob
+	queue_as :low_priority
 
-	def perform
+	def perform(project, filepath, annotator, options)
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		if @job
@@ -39,7 +37,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 						project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
 						slices.each do |slice|
 							begin
-							  make_request_batch(docs, annotator, options.merge(span:slice))
+							  make_request_batch(project, docs, annotator, options.merge(span:slice))
 						  rescue RuntimeError => e
 							  @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
 						  rescue => e
@@ -47,7 +45,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 							end
 						end
 					else
-						make_request_batch(docs, annotator, options)
+						make_request_batch(project, docs, annotator, options)
 					end
 				rescue => e
 					if @job
@@ -68,7 +66,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 			docs << doc
 			docs_size += doc_length
 
-			process_tasks_queue unless @annotation_tasks_queue.empty?
+			process_tasks_queue(project, annotator, options) unless @annotation_tasks_queue.empty?
 		rescue RuntimeError => e
 			if @job
 				if docs.length < 10
@@ -94,7 +92,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 					# delete all the annotations here for a better performance
 					project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
 					slices.each do |slice|
-						make_request_batch(docs, annotator, options.merge(span:slice))
+						make_request_batch(project, docs, annotator, options.merge(span:slice))
 					rescue RuntimeError => e
 						if @job
 							@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"})
@@ -103,14 +101,14 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 						end
 					end
 				else
-					make_request_batch(docs, annotator, options)
+					make_request_batch(project, docs, annotator, options)
 				end
 			end
 		end
 
 		until @annotation_tasks_queue.empty?
 			begin
-				process_tasks_queue
+				process_tasks_queue(project, annotator, options)
 				sleep(skip_interval) unless @annotation_tasks_queue.empty?
 			rescue => e
 				if @job
@@ -126,7 +124,7 @@ class ObtainAnnotationsJob < Struct.new(:project, :filepath, :annotator, :option
 
 private
 
-	def make_request_batch(docs, annotator, options)
+	def make_request_batch(project, docs, annotator, options)
 		hdocs = if options[:span].present?
 			doc = docs.first
 			[{text:doc.get_text(options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
@@ -168,7 +166,7 @@ private
 		if @annotation_tasks_queue.empty?
 			sleep(retry_after || 5)
 		else
-			process_tasks_queue
+			process_tasks_queue(project, annotator, options)
 		end
 		retry
 	rescue RestClient::ExceptionWithResponse => e
@@ -188,7 +186,7 @@ private
 		end
 	end
 
-	def process_tasks_queue
+	def process_tasks_queue(project, annotator, options)
 		@annotation_tasks_queue.each do |task|
 			status = annotator.make_request(:get, task[:url])
 			case status[:status]

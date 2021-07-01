@@ -281,7 +281,7 @@ class DocsController < ApplicationController
 			raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json', '.txt'].include?(ext)
 
 			options = {
-				mode: params[:mode].present? ? params[:mode].to_sym : :update,
+				mode: params[:mode].present? ? params[:mode].to_s : "update",
 				root: current_user.root?
 			}
 
@@ -290,19 +290,16 @@ class DocsController < ApplicationController
 			FileUtils.mv file.path, File.join(dirpath, filename)
 
 			if ['.json', '.txt'].include?(ext) && file.size < 100.kilobytes
-				job = UploadDocsJob.new(dirpath, project, options)
-				res = job.perform()
+				UploadDocsJob.perform_now(dirpath, project, options)
 				notice = "Documents are successfully uploaded."
 			else
 				raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
-				priority = project.jobs.unfinished.count
 
-				# job = UploadDocsJob.new(dirpath, project, options)
-				# job.perform()
+				# UploadDocsJob.perform_now(dirpath, project, options)
 
-				delayed_job = Delayed::Job.enqueue UploadDocsJob.new(dirpath, project, options), priority: priority, queue: :upload
+				active_job = UploadDocsJob.perform_later(dirpath, project, options)
 				task_name = "Upload documents: #{filename}"
-				project.jobs.create({name:task_name, delayed_job_id:delayed_job.id})
+				active_job.create_job_record(project.jobs, task_name)
 				notice = "The task, '#{task_name}', is created."
 			end
 		rescue => e
@@ -369,12 +366,10 @@ class DocsController < ApplicationController
 			filepath = File.join('tmp', "add-docs-to-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
 			FileUtils.mv params[:upfile].path, filepath
 
-			# job = AddDocsToProjectFromUploadJob.new(sourcedb, filepath, project)
-			# job.perform()
+			# AddDocsToProjectFromUploadJob.perform_now(sourcedb, filepath, project)
 
-			priority = project.jobs.unfinished.count
-			delayed_job = Delayed::Job.enqueue AddDocsToProjectFromUploadJob.new(sourcedb, filepath, project), priority: priority, queue: :general
-			job = project.jobs.create({name:'Add docs to project from upload', delayed_job_id:delayed_job.id})
+			active_job = AddDocsToProjectFromUploadJob.perform_later(sourcedb, filepath, project)
+			job = active_job.create_job_record(project.jobs, 'Add docs to project from upload')
 			message = "The task, 'Add docs to project from upload', is created."
 
 			respond_to do |format|
@@ -424,12 +419,10 @@ class DocsController < ApplicationController
 					message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
 				end
 			else
-				# delayed_job = AddDocsToProjectJob.new(docspecs, project)
-				# delayed_job.perform()
+				# AddDocsToProjectJob.perform_now(docspecs, project)
 
-				priority = project.jobs.unfinished.count
-				delayed_job = Delayed::Job.enqueue AddDocsToProjectJob.new(docspecs, project), priority: priority, queue: :general
-				project.jobs.create({name:'Add docs to project', delayed_job_id:delayed_job.id})
+				active_job = AddDocsToProjectJob.perform_later(docspecs, project)
+				active_job.create_job_record(project.jobs, 'Add docs to project')
 				message = "The task, 'add documents to the project', is created."
 			end
 
@@ -465,9 +458,8 @@ class DocsController < ApplicationController
 				docids_file.puts docids
 				docids_file.close
 
-				priority = project.jobs.unfinished.count
-				delayed_job = Delayed::Job.enqueue ImportDocsJob.new(docids_file.path, project), priority: priority, queue: :general
-				project.jobs.create({name:'Import docs to project', delayed_job_id:delayed_job.id})
+				active_job = ImportDocsJob.perform_later(docids_file.path, project)
+				active_job.create_job_record(project.jobs, 'Import docs to project')
 
 				m = ""
 				m += "#{num_skip} docs were skipped due to duplication." if num_skip > 0
@@ -595,8 +587,8 @@ class DocsController < ApplicationController
 			docids = projects.inject([]){|col, p| (col + p.docs.pluck(:id))}.uniq
 			system = Project.find_by_name('system-maintenance')
 
-			delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, docids, Pubann::Application.config.rdfizer_spans), queue: :general
-			system.jobs.create({name:"Store RDFized spans for selected projects", delayed_job_id:delayed_job.id})
+			active_job = StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
+			active_job.create_job_record(system.jobs, "Store RDFized spans for selected projects")
 		rescue => e
 			flash[:notice] = e.message
 		end
@@ -608,8 +600,8 @@ class DocsController < ApplicationController
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 			system = Project.find_by_name('system-maintenance')
 
-			delayed_job = Delayed::Job.enqueue UpdateAnnotationNumbersJob.new(nil), queue: :general
-			system.jobs.create({name:"Update annotation numbers of each document", delayed_job_id:delayed_job.id})
+			active_job = UpdateAnnotationNumbersJob.perform_later
+			active_job.create_job_record(system.jobs, "Update annotation numbers of each document")
 
 			result = {message: "The task, 'update annotation numbers of each document', created."}
 			redirect_to project_path('system-maintenance')

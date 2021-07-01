@@ -132,12 +132,11 @@ class ProjectsController < ApplicationController
 			project = Project.find_by_name(params[:id])
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-			# job = UptodateDocsJob.new(project)
-			# job.perform()
+			# UptodateDocsJob.perform_now(project)
 
-			delayed_job = Delayed::Job.enqueue UptodateDocsJob.new(project), queue: :general
+			active_job = UptodateDocsJob.perform_later(project)
 			task_name = "Uptodate docs in project - #{project.name}"
-			project.jobs.create({name:task_name, delayed_job_id:delayed_job.id})
+			active_job.create_job_record(project.jobs,task_name)
 			flash[:notice] = "The task, '#{task_name}', is created."
 			redirect_to project_path(project.name)
 		rescue => e
@@ -199,11 +198,10 @@ class ProjectsController < ApplicationController
 				skip_span_indexing: params[:skip_span_indexing].present?
 			}
 
-			# job = StoreRdfizedAnnotationsJob.new(project, filepath, options)
-			# job.perform()
+			# StoreRdfizedAnnotationsJob.perform_now(project, filepath, options)
 
-			delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(project, filepath, options), queue: :general
-			project.jobs.create({name:"Store RDFized annotations - #{project.name}", delayed_job_id:delayed_job.id})
+			active_job = StoreRdfizedAnnotationsJob.perform_later(project, filepath, options)
+			active_job.create_job_record(project.jobs, "Store RDFized annotations - #{project.name}")
 			flash[:notice] = "The task, 'Store RDFized annotations - #{project.name}', is created."
 		rescue => e
 			flash[:notice] = e.message
@@ -233,11 +231,10 @@ class ProjectsController < ApplicationController
 			raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
-			# job = CreateAnnotationsRdfJob.new(project)
-			# job.perform()
+			# CreateAnnotationsRdfJob.perform_now(project)
 
-			delayed_job = Delayed::Job.enqueue CreateAnnotationsRdfJob.new(project), queue: :general
-			project.jobs.create({name:"Create Annotation RDF - #{project.name}", delayed_job_id:delayed_job.id})
+			active_job = CreateAnnotationsRdfJob.perform_later(project)
+			active_job.create_job_record(project.jobs, "Create Annotation RDF - #{project.name}")
 			"The task, 'Create Annotation RDF - #{project.name}', is created."
 		rescue => e
 			e.message
@@ -251,11 +248,10 @@ class ProjectsController < ApplicationController
 			raise ArgumentError, "Could not find the project: #{params[id]}." unless project.present?
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
-			# job = CreateSpansRdfJob.new(project, nil)
-			# job.perform()
+			# CreateSpansRdfJob.perform_now(project, nil)
 
-			delayed_job = Delayed::Job.enqueue CreateSpansRdfJob.new(project, nil), queue: :general
-			project.jobs.create({name:"Create Spans RDF - #{project.name}", delayed_job_id:delayed_job.id})
+			active_job = CreateSpansRdfJob.perform_later(project, nil)
+			active_job.create_job_record(project.jobs, "Create Spans RDF - #{project.name}")
 			"The task, 'Create Spans RDF - #{project.name}', is created."
 		rescue => e
 			e.message
@@ -278,8 +274,8 @@ class ProjectsController < ApplicationController
 			system = Project.find_by_name('system-maintenance')
 
 			projects.each do |project|
-				delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project, Pubann::Application.config.rdfizer_annotations), queue: :general
-				system.jobs.create({name:"Store RDFized annotations - #{project.name}", delayed_job_id:delayed_job.id})
+				active_job = StoreRdfizedAnnotationsJob.perform_later(system, project, Pubann::Application.config.rdfizer_annotations)
+				active_job.create_job_record(system.jobs, "Store RDFized annotations - #{project.name}")
 			end
 		rescue => e
 			flash[:notice] = e.message
@@ -295,8 +291,8 @@ class ProjectsController < ApplicationController
 			docids = project.docs.pluck(:id)
 			system = Project.find_by_name('system-maintenance')
 
-			delayed_job = Delayed::Job.enqueue StoreRdfizedSpansJob.new(system, docids, Pubann::Application.config.rdfizer_spans), queue: :general
-			system.jobs.create({name:"Store RDFized spans - #{project.name}", delayed_job_id:delayed_job.id})
+			active_job = StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
+			active_job.create_job_record(system.jobs, "Store RDFized spans - #{project.name}")
 		rescue => e
 			flash[:notice] = e.message
 		end
@@ -322,8 +318,8 @@ class ProjectsController < ApplicationController
 			end
 
 			# projects.each do |project|
-			#   delayed_job = Delayed::Job.enqueue StoreRdfizedAnnotationsJob.new(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name), queue: :general
-			#   system.jobs.create({name:"Store REDized annotations - #{project.name}", delayed_job_id:delayed_job.id})
+			#   active_job = StoreRdfizedAnnotationsJob.perform_later(system, project.annotations_collection, Pubann::Application.config.rdfizer_annotations, project.name)
+			#   active_job.create_job_record(system.jobs, "Store REDized annotations - #{project.name}")
 			# end
 		# rescue => e
 		#   flash[:notice] = e.message
@@ -337,13 +333,10 @@ class ProjectsController < ApplicationController
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
 			message = if project.has_doc?
-				priority = project.jobs.unfinished.count
+				# DeleteAllDocsFromProjectJob.perform_now(project)
 
-				# job = DeleteAllDocsFromProjectJob.new(project)
-				# job.perform()
-
-				delayed_job = Delayed::Job.enqueue DeleteAllDocsFromProjectJob.new(project), priority: priority, queue: :general
-				project.jobs.create({name:'Delete all docs', delayed_job_id:delayed_job.id})
+				active_job = DeleteAllDocsFromProjectJob.perform_later(project)
+				active_job.create_job_record(project.jobs, 'Delete all docs')
 				"The task, 'delete all docs', is created."
 			else
 				"The project had no document. Nothing happened.\n"
@@ -368,10 +361,9 @@ class ProjectsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
-			priority = project.jobs.unfinished.count
 			taskname = 'Delete all annotations in project'
-			delayed_job = Delayed::Job.enqueue DeleteAllAnnotationsFromProjectJob.new(project), priority: priority, queue: :general
-			project.jobs.create({name: taskname, delayed_job_id:delayed_job.id})
+			active_job = DeleteAllAnnotationsFromProjectJob.perform_later(project)
+			active_job.create_job_record(project.jobs, taskname)
 			message = "The task, '#{taskname}', is created."
 
 			respond_to do |format|
@@ -396,9 +388,8 @@ class ProjectsController < ApplicationController
 
 		sproject = Project.find_by_name('system-maintenance')
 
-		priority = project.jobs.unfinished.count
-		delayed_job = Delayed::Job.enqueue DestroyProjectJob.new(project), priority: priority, queue: :general
-		sproject.jobs.create({name:'Destroy project', delayed_job_id:delayed_job.id})
+		active_job = DestroyProjectJob.perform_later(project)
+		active_job.create_job_record(sproject.jobs, 'Destroy project')
 
 		respond_to do |format|
 			format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, will be deleted soon."}

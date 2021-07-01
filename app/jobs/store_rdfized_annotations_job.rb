@@ -1,10 +1,7 @@
-require 'stardog'
+class StoreRdfizedAnnotationsJob < ApplicationJob
+	queue_as :low_priority
 
-class StoreRdfizedAnnotationsJob < Struct.new(:project, :filepath, :options)
-	include StateManagement
-	include Stardog
-
-	def perform
+	def perform(project, filepath, options)
 		size_batch_annotations = 5000
 		size_batch_spans = 5000
 		count = %x{wc -l #{filepath}}.split.first.to_i
