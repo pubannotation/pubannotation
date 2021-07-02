@@ -75,40 +75,6 @@ module AnnotationsHelper
 		return denotations
 	end
 
-	def project_annotations_rdf_link_helper(project)
-		if project.annotations_zip_downloadable == true && project.rdfwriter.present?
-			file_path = project.annotations_rdf_system_path
-			
-			if File.exist?(file_path) == true
-				rdf_created_at = File.ctime(file_path)
-				# when ZIP file exists 
-				html = link_to "Download '#{project.annotations_rdf_filename}'", project_annotations_rdf_path(project.name), :class => 'button'
-				html += content_tag :span, "#{rdf_created_at.strftime("#{t('controllers.shared.created_at')}:%Y-%m-%d %T")}", :class => 'rdf_time_stamp'
-				if rdf_created_at < project.annotations_updated_at
-					html += link_to t('controllers.annotations.update_rdf'), project_create_annotations_rdf_path(project.name, :update => true), :class => 'button', :style => "margin-left: 0.5em", :confirm => t('controllers.annotations.confirm_create_rdf')
-				end
-				if project.user == current_user
-					html += link_to t('views.shared.delete'), project_delete_annotations_rdf_path(project.name), confirm: t('controllers.shared.confirm_delete'), :class => 'button'
-				end
-				html
-			else
-				# when ZIP file deos not exists 
-				delayed_job_tasks = ActiveRecord::Base.connection.execute('SELECT * FROM delayed_jobs').select{|delayed_job| delayed_job['handler'].include?(project.name) && delayed_job['handler'].include?('create_annotations_rdf')}
-				if project.user == current_user
-					if delayed_job_tasks.blank?
-						# when delayed_job exists
-						link_to t('controllers.annotations.create_rdf'), project_create_annotations_rdf_path(project.name), :class => 'button', :confirm => t('controllers.annotations.confirm_create_rdf')
-					else
-						# delayed_job does not exists
-						t('views.shared.rdf.delayed_job_present')
-					end
-				else
-					t('views.shared.rdf.download_not_available')
-				end
-			end    
-		end    
-	end
-
 	def annotations_obtain_path
 		if params[:sourceid].present?
 			if params[:begin].present?

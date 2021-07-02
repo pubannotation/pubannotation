@@ -40,27 +40,17 @@ class Job < ActiveRecord::Base
 	end
 
 	def destroy_if_not_running
-		unless running?
-			dj = begin
-				Delayed::Job.find(self.delayed_job_id)
-			rescue
-				nil
-			end
-			dj.delete unless dj.nil?
-			update_attribute(:begun_at, Time.now)
-			update_related_priority
-			Message.where(job_id: self.id).delete_all
-			self.destroy
+		case state
+		when 'Waiting'
+			ApplicationJob.cancel_adapter_class.new.cancel(active_job_id, queue_name)
+			Message.where(job_id: id).delete_all
+			destroy
+		when 'Finished'
+			Message.where(job_id: id).delete_all
+			destroy
+		when 'Running'
+			# do nothing
 		end
-	end
-
-	def scan
-		dj = begin
-			Delayed::Job.find(self.delayed_job_id)
-		rescue
-			nil
-		end
-		update_attribute(:ended_at, Time.now) if dj.nil?
 	end
 
 	def stop_if_running
@@ -76,17 +66,6 @@ class Job < ActiveRecord::Base
 				`script/delayed_job -i #{worker_id} restart`
 				update_attribute(:ended_at, Time.now)
 			end
-		end
-	end
-
-	def update_related_priority
-		organization.jobs.waiting.order(:created_at).each_with_index do |j, i|
-			dj = begin
-				Delayed::Job.find(j.delayed_job_id)
-			rescue
-				nil
-			end
-			dj.update_attribute(:priority, i) unless dj.nil?
 		end
 	end
 end
