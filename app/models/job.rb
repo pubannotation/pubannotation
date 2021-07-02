@@ -1,6 +1,5 @@
 class Job < ActiveRecord::Base
 	belongs_to :organization, polymorphic: true
-	belongs_to :delayed_job, optional: true
 	has_many :messages, :dependent => :destroy
 
 	scope :waiting, -> {where('begun_at IS NULL')}
