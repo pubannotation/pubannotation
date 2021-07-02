@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_30_051628) do
+ActiveRecord::Schema.define(version: 2021_07_02_011422) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -76,21 +76,6 @@ ActiveRecord::Schema.define(version: 2021_06_30_051628) do
     t.datetime "updated_at"
     t.boolean "is_open", default: false
     t.string "sparql_ep"
-  end
-
-  create_table "delayed_jobs", force: :cascade do |t|
-    t.integer "priority", default: 0, null: false
-    t.integer "attempts", default: 0, null: false
-    t.text "handler", null: false
-    t.text "last_error"
-    t.datetime "run_at"
-    t.datetime "locked_at"
-    t.datetime "failed_at"
-    t.string "locked_by"
-    t.string "queue"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["priority", "run_at"], name: "index_delayed_jobs_on_priority_and_run_at"
   end
 
   create_table "denotations", force: :cascade do |t|
@@ -188,7 +173,6 @@ ActiveRecord::Schema.define(version: 2021_06_30_051628) do
 
   create_table "jobs", force: :cascade do |t|
     t.integer "organization_id"
-    t.integer "delayed_job_id"
     t.integer "num_items"
     t.integer "num_dones"
     t.datetime "created_at", null: false
@@ -201,7 +185,6 @@ ActiveRecord::Schema.define(version: 2021_06_30_051628) do
     t.string "active_job_id"
     t.string "queue_name"
     t.boolean "suspend_flag", default: false
-    t.index ["delayed_job_id"], name: "index_jobs_on_delayed_job_id"
     t.index ["organization_id"], name: "index_jobs_on_organization_id"
   end
 
