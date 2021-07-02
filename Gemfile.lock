@@ -88,11 +88,6 @@ GEM
     connection_pool (2.2.5)
     crass (1.0.6)
     daemons (1.4.0)
-    delayed_job (4.1.9)
-      activesupport (>= 3.0, < 6.2)
-    delayed_job_active_record (4.1.6)
-      activerecord (>= 3.0, < 6.2)
-      delayed_job (>= 3.0, < 5)
     devise (4.8.0)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
@@ -373,7 +368,6 @@ DEPENDENCIES
   coffee-rails
   color-generator
   daemons
-  delayed_job_active_record
   devise
   diff-lcs
   dotenv-rails
