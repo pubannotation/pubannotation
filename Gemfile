@@ -53,7 +53,6 @@ gem 'omniauth-google-oauth2'
 gem 'rubyzip'
 gem 'zip-zip'
 gem 'daemons'
-gem 'delayed_job_active_record'
 gem 'backup'
 gem 'whenever', :require => false
 # gem 'mysql2',          '~> 0.3.13', :platform => :ruby
