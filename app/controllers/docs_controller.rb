@@ -366,11 +366,11 @@ class DocsController < ApplicationController
 			filepath = File.join('tmp', "add-docs-to-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
 			FileUtils.mv params[:upfile].path, filepath
 
-			# AddDocsToProjectFromUploadJob.perform_now(sourcedb, filepath, project)
+			# AddDocsToProjectFromUploadJob.perform_now(project, sourcedb, filepath)
 
-			active_job = AddDocsToProjectFromUploadJob.perform_later(sourcedb, filepath, project)
-			job = active_job.create_job_record(project.jobs, 'Add docs to project from upload')
-			message = "The task, 'Add docs to project from upload', is created."
+			active_job = AddDocsToProjectFromUploadJob.perform_later(project, sourcedb, filepath)
+			job = Job.find_by(active_job_id: active_job.job_id)
+			message = "The task, '#{active_job.job_name}', is created."
 
 			respond_to do |format|
 				format.html {redirect_back fallback_location: root_path, notice: message }
