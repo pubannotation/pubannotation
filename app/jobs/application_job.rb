@@ -1,8 +1,4 @@
 class ApplicationJob < ActiveJob::Base
-  def create_job_record(organization_jobs, job_name)
-    organization_jobs.create({ name: job_name, active_job_id: self.job_id, queue_name: self.queue_name })
-  end
-
   rescue_from(StandardError) do |exception|
     if @job
       @job.messages << Message.create({sourcedb: '*', sourceid: '*', divid: nil, body: exception.message})
@@ -11,6 +7,11 @@ class ApplicationJob < ActiveJob::Base
       # Exception handling when Job is executed synchronously with perform_now
       raise exception
     end
+  end
+
+  before_enqueue do
+    organization = self.arguments.first
+    create_job_record(organization.jobs, self.job_name(organization.name))
   end
 
   before_perform do |active_job|
@@ -26,6 +27,10 @@ class ApplicationJob < ActiveJob::Base
   end
 
   private
+
+  def create_job_record(organization_jobs, job_name)
+    organization_jobs.create({ name: job_name, active_job_id: self.job_id, queue_name: self.queue_name })
+  end
 
   def set_job(active_job)
     @job = Job.find_by(active_job_id: active_job.job_id)
