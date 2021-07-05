@@ -35,4 +35,8 @@ class CreateSpansRdfCollectionJob < ApplicationJob
 			end
 		end
 	end
+
+	def job_name(organization_name)
+		"Create Spans RDF Collection- #{organization_name}"
+	end
 end
