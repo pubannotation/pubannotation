@@ -419,10 +419,9 @@ class DocsController < ApplicationController
 					message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
 				end
 			else
-				# AddDocsToProjectJob.perform_now(docspecs, project)
+				# AddDocsToProjectJob.perform_now(project, docspecs)
 
-				active_job = AddDocsToProjectJob.perform_later(docspecs, project)
-				active_job.create_job_record(project.jobs, 'Add docs to project')
+				AddDocsToProjectJob.perform_later(project, docspecs)
 				message = "The task, 'add documents to the project', is created."
 			end
 
