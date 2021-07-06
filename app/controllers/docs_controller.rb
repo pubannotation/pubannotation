@@ -457,8 +457,7 @@ class DocsController < ApplicationController
 				docids_file.puts docids
 				docids_file.close
 
-				active_job = ImportDocsJob.perform_later(docids_file.path, project)
-				active_job.create_job_record(project.jobs, 'Import docs to project')
+				ImportDocsJob.perform_later(project, docids_file.path)
 
 				m = ""
 				m += "#{num_skip} docs were skipped due to duplication." if num_skip > 0
