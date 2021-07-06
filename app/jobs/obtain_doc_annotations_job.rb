@@ -1,7 +1,7 @@
 class ObtainDocAnnotationsJob < ApplicationJob
 	queue_as :general
 
-	def perform(annotator, project, docid, options)
+	def perform(project, docid, annotator, options)
 		doc = Doc.find(docid)
 		doc.set_ascii_body if options[:encoding].present? && options[:encoding] == 'ascii'
 		max_text_size = annotator.async_protocol ? Annotator::MaxTextAsync : Annotator::MaxTextSync
@@ -58,6 +58,10 @@ class ObtainDocAnnotationsJob < ApplicationJob
 		end
 	end
 
+	def job_name
+		"Obtain annotations for a document: #{resource_name}"
+	end
+
 	private
 
 	def retrieve_and_store(url, annotator, project, options)
@@ -111,5 +115,9 @@ class ObtainDocAnnotationsJob < ApplicationJob
 		else
 			raise ArgumentError, e.message
 		end
+	end
+
+	def resource_name
+		self.arguments[2].name
 	end
 end
