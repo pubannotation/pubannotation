@@ -49,4 +49,15 @@ class EvaluateAnnotationsJob < ApplicationJob
 
 		evaluation.update_attribute(:result, JSON.generate(result))
 	end
+
+	def job_name
+		'Evaluate annotations'
+	end
+
+	private
+
+	def before_enqueue_process
+		organization = self.arguments.first.study_project
+		create_job_record(organization.jobs, job_name)
+	end
 end
