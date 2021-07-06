@@ -161,9 +161,7 @@ class CollectionsController < ApplicationController
 			# CreateAnnotationsRdfCollectionJob.perform_now(@collection, {forced:forced})
 
 			active_job = CreateAnnotationsRdfCollectionJob.perform_later(@collection, {forced:forced})
-			job_name = "Create Annotation RDF Collection - #{@collection.name}"
-			active_job.create_job_record(@collection.jobs, job_name)
-			"The task, '#{job_name}', was created."
+			"The task, '#{active_job.job_name}', was created."
 		rescue => e
 			e.message
 		end
