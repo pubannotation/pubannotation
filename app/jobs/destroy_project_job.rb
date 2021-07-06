@@ -15,4 +15,15 @@ class DestroyProjectJob < ApplicationJob
 		project.destroy
 		@job.update_attribute(:num_dones, 3)
 	end
+
+	private
+
+	def before_enqueue_process
+		sproject = Project.find_by_name('system-maintenance')
+		create_job_record(sproject.jobs, job_name)
+	end
+
+	def job_name
+		'Destroy project'
+	end
 end
