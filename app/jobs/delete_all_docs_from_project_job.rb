@@ -15,4 +15,8 @@ class DeleteAllDocsFromProjectJob < ApplicationJob
 		ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
 		ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
 	end
+
+	def job_name
+		'Delete all docs'
+	end
 end
