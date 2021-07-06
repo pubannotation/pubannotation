@@ -289,4 +289,14 @@ private
 	rescue => e
 		"exception message inaccessible:\n#{exception}:\n#{exception.backtrace.join("\n")}"
 	end
+
+	def before_enqueue_process
+		organization = self.arguments.first
+		annotator = self.arguments[2]
+		create_job_record(organization.jobs, job_name(annotator.name))
+	end
+
+	def job_name(annotator_name)
+		"Obtain annotations: #{annotator_name}"
+	end
 end

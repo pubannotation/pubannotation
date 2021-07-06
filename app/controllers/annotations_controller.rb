@@ -345,9 +345,8 @@ class AnnotationsController < ApplicationController
 
 			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator, options)
 
-			# active_job = ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
-			active_job = ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
-			active_job.create_job_record(project.jobs, "Obtain annotations: #{annotator.name}")
+			# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
+			ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
 
 			project.update_attributes({annotator_id:annotator.id}) if annotator.persisted?
 
