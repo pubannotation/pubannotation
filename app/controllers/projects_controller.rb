@@ -250,8 +250,7 @@ class ProjectsController < ApplicationController
 			# CreateSpansRdfJob.perform_now(project, nil)
 
 			active_job = CreateSpansRdfJob.perform_later(project, nil)
-			active_job.create_job_record(project.jobs, "Create Spans RDF - #{project.name}")
-			"The task, 'Create Spans RDF - #{project.name}', is created."
+			"The task, '#{active_job.job_name}', is created."
 		rescue => e
 			e.message
 		end
