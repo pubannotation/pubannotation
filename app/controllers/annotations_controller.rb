@@ -422,9 +422,8 @@ class AnnotationsController < ApplicationController
 					filepath = File.join('tmp', "delete-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.#{ext}")
 					FileUtils.mv params[:upfile].path, filepath
 
-					active_job = DeleteAnnotationsFromUploadJob.perform_later(filepath, project, options)
-					active_job.create_job_record(project.jobs, 'Delete annotations from documents')
-					notice = "The task, 'Delete annotations from documents', is created."
+					active_job = DeleteAnnotationsFromUploadJob.perform_later(project, filepath, options)
+					notice = "The task, '#{active_job.job_name}', is created."
 				else
 					notice = "Up to 10 jobs can be registered per a project. Please clean your jobs page."
 				end
