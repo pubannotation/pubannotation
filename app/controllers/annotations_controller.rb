@@ -476,8 +476,7 @@ class AnnotationsController < ApplicationController
 
 			docids = shared_docs.collect{|d| d.id}
 
-			active_job = ImportAnnotationsJob.perform_later(source_project, project)
-			active_job.create_job_record(project.jobs, "Import annotations from #{source_project.name}")
+			ImportAnnotationsJob.perform_later(project, source_project)
 			message = "The task, 'import annotations from the project, #{source_project.name}', is created."
 
 		rescue => e
