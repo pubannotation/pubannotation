@@ -499,9 +499,8 @@ class AnnotationsController < ApplicationController
 			# CreateAnnotationsTgzJob.perform_now(project, {})
 
 			active_job = CreateAnnotationsTgzJob.perform_later(project, {})
-			active_job.create_job_record(project.jobs, 'Create a downloadable archive')
 
-			redirect_back fallback_location: root_path, notice: "The task 'Create a downloadable archive' is created."
+			redirect_back fallback_location: root_path, notice: "The task '#{active_job.job_name}' is created."
 		rescue => e
 			redirect_to home_path, notice: e.message
 		end
