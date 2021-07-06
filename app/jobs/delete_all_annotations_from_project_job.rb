@@ -12,4 +12,8 @@ class DeleteAllAnnotationsFromProjectJob < ApplicationJob
 		@job.update_attribute(:num_dones, 1)
 		project.update_attribute(:annotations_count, 0)
 	end
+
+	def job_name
+		'Delete all annotations in project'
+	end
 end
