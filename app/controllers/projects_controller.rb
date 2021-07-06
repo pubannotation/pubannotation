@@ -201,8 +201,7 @@ class ProjectsController < ApplicationController
 			# StoreRdfizedAnnotationsJob.perform_now(project, filepath, options)
 
 			active_job = StoreRdfizedAnnotationsJob.perform_later(project, filepath, options)
-			active_job.create_job_record(project.jobs, "Store RDFized annotations - #{project.name}")
-			flash[:notice] = "The task, 'Store RDFized annotations - #{project.name}', is created."
+			flash[:notice] = "The task, '#{active_job.job_name}', is created."
 		rescue => e
 			flash[:notice] = e.message
 		end
@@ -272,8 +271,7 @@ class ProjectsController < ApplicationController
 			system = Project.find_by_name('system-maintenance')
 
 			projects.each do |project|
-				active_job = StoreRdfizedAnnotationsJob.perform_later(system, project, Pubann::Application.config.rdfizer_annotations)
-				active_job.create_job_record(system.jobs, "Store RDFized annotations - #{project.name}")
+				StoreRdfizedAnnotationsJob.perform_later(system, project, Pubann::Application.config.rdfizer_annotations)
 			end
 		rescue => e
 			flash[:notice] = e.message
