@@ -14,7 +14,7 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 			if forced?(options) || project.rdf_needs_to_be_updated?
 				if @job
 					active_job = CreateAnnotationsRdfJob.perform_later(project)
-					monitor_job = active_job.create_job_record(collection.jobs, "Create Annotation RDF - #{project.name}")
+					monitor_job = Job.find_by(active_job_id: active_job.job_id)
 					until monitor_job.finished_live?
 						sleep(1)
 						ActiveRecord::Base.connection.clear_query_cache

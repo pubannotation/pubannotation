@@ -234,8 +234,7 @@ class ProjectsController < ApplicationController
 			# CreateAnnotationsRdfJob.perform_now(project)
 
 			active_job = CreateAnnotationsRdfJob.perform_later(project)
-			active_job.create_job_record(project.jobs, "Create Annotation RDF - #{project.name}")
-			"The task, 'Create Annotation RDF - #{project.name}', is created."
+			"The task, '#{active_job.job_name}', is created."
 		rescue => e
 			e.message
 		end
