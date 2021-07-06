@@ -135,6 +135,10 @@ class ObtainAnnotationsJob < ApplicationJob
 		File.unlink(filepath)
 	end
 
+	def job_name
+		"Obtain annotations: #{resource_name}"
+	end
+
 private
 
 	def make_request_batch(project, docs, annotator, options)
@@ -288,5 +292,9 @@ private
 		exception.message
 	rescue => e
 		"exception message inaccessible:\n#{exception}:\n#{exception.backtrace.join("\n")}"
+	end
+
+	def resource_name
+		self.arguments[2].name
 	end
 end
