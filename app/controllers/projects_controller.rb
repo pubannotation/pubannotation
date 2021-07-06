@@ -381,10 +381,7 @@ class ProjectsController < ApplicationController
 		project = Project.editable(current_user).find_by_name(params[:id])
 		raise "There is no such project." unless project.present?
 
-		sproject = Project.find_by_name('system-maintenance')
-
-		active_job = DestroyProjectJob.perform_later(project)
-		active_job.create_job_record(sproject.jobs, 'Destroy project')
+		DestroyProjectJob.perform_later(project)
 
 		respond_to do |format|
 			format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, will be deleted soon."}
