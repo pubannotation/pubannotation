@@ -58,4 +58,8 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 	def forced?(options)
 		options && options.has_key?(:forced) ? options[:forced] == true : false
 	end
+
+	def job_name(organization_name)
+		"Create Annotation RDF Collection - #{organization_name}"
+	end
 end
