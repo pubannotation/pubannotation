@@ -359,10 +359,8 @@ class ProjectsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
-			taskname = 'Delete all annotations in project'
 			active_job = DeleteAllAnnotationsFromProjectJob.perform_later(project)
-			active_job.create_job_record(project.jobs, taskname)
-			message = "The task, '#{taskname}', is created."
+			message = "The task, '#{active_job.job_name}', is created."
 
 			respond_to do |format|
 				format.html {redirect_to project_path(project.name), notice: message}
