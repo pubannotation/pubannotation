@@ -14,4 +14,8 @@ class CreateSpansRdfJob < ApplicationJob
 			end
 		end
 	end
+
+	def job_name
+		"Create Spans RDF - #{resource_name}"
+	end
 end
