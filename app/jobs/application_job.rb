@@ -12,8 +12,7 @@ class ApplicationJob < ActiveJob::Base
   before_enqueue do
     # When creating a new job,
     # be sure to pass the organization to which the Job record belongs to the first argument of the perform method.
-    organization = self.arguments.first
-    create_job_record(organization.jobs, self.job_name(organization.name))
+    before_enqueue_process
   end
 
   before_perform do |active_job|
@@ -29,6 +28,12 @@ class ApplicationJob < ActiveJob::Base
   end
 
   private
+
+  def before_enqueue_process
+    # The process in before_enqueue is defined as a method so that it can be overridden in the Job class.
+    organization = self.arguments.first
+    create_job_record(organization.jobs, self.job_name(organization.name))
+  end
 
   def create_job_record(organization_jobs, job_name)
     organization_jobs.create({ name: job_name, active_job_id: self.job_id, queue_name: self.queue_name })
