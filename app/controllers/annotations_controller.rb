@@ -243,14 +243,13 @@ class AnnotationsController < ApplicationController
 
 		text = doc.get_text(options[:span])
 		message = if text.length < Annotator::MaxTextSync
-			# ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options.merge(debug: true))
-			ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options)
+			# ObtainDocAnnotationsJob.perform_now(project, doc.id, annotator, options.merge(debug: true))
+			ObtainDocAnnotationsJob.perform_now(project, doc.id, annotator, options)
 			"Annotations were successfully obtained."
 		else
-			# ObtainDocAnnotationsJob.perform_now(annotator, project, doc.id, options)
-			# active_job = ObtainDocAnnotationsJob.perform_later(annotator, project, doc.id, options.merge(debug: true))
-			active_job = ObtainDocAnnotationsJob.perform_later(annotator, project, doc.id, options)
-			active_job.create_job_record(project.jobs, "Obtain annotations for a document: #{annotator.name}")
+			# ObtainDocAnnotationsJob.perform_now(project, doc.id, annotator, options)
+			# ObtainDocAnnotationsJob.perform_later(project, doc.id, annotator, options.merge(debug: true))
+			ObtainDocAnnotationsJob.perform_later(project, doc.id, annotator, options)
 			"A background job was created to obtain annotations."
 		end
 
