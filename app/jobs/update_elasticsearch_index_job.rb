@@ -8,4 +8,8 @@ class UpdateElasticsearchIndexJob < ApplicationJob
 		project.update_es_index
 		@job.update_attribute(:num_dones, 1) if @job
 	end
+
+	def job_name
+		'Update text search index'
+	end
 end
