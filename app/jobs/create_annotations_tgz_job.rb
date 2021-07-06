@@ -98,4 +98,8 @@ class CreateAnnotationsTgzJob < ApplicationJob
 		FileUtils.mkdir_p(project.downloads_system_path) unless Dir.exist?(project.downloads_system_path)
 		FileUtils.mv tmp_file_path, project.annotations_tgz_system_path
 	end
+
+	def job_name
+		'Create a downloadable archive'
+	end
 end
