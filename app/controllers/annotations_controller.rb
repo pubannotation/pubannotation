@@ -387,12 +387,11 @@ class AnnotationsController < ApplicationController
 			FileUtils.mv file.path, filepath
 
 			if ext == '.json' && file.size < 20.kilobytes
-				StoreAnnotationsCollectionUploadJob.perform_now(filepath, project, options)
+				StoreAnnotationsCollectionUploadJob.perform_now(project, filepath, options)
 				notice = "Annotations are successfully uploaded."
 			else
-				active_job = StoreAnnotationsCollectionUploadJob.perform_later(filepath, project, options)
-				task = active_job.create_job_record(project.jobs, 'Upload annotations')
-				notice = "The task, 'Upload annotations', is created."
+				active_job = StoreAnnotationsCollectionUploadJob.perform_later(project, filepath, options)
+				notice = "The task, '#{active_job.job_name}', is created."
 			end
 
 			respond_to do |format|
