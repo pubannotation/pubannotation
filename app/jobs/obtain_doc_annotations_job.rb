@@ -1,7 +1,7 @@
 class ObtainDocAnnotationsJob < ApplicationJob
 	queue_as :general
 
-	def perform(annotator, project, docid, options)
+	def perform(project, docid, annotator, options)
 		doc = Doc.find(docid)
 		doc.set_ascii_body if options[:encoding].present? && options[:encoding] == 'ascii'
 		max_text_size = annotator.async_protocol ? Annotator::MaxTextAsync : Annotator::MaxTextSync
@@ -111,5 +111,16 @@ class ObtainDocAnnotationsJob < ApplicationJob
 		else
 			raise ArgumentError, e.message
 		end
+	end
+
+
+	def before_enqueue_process
+		organization = self.arguments.first
+		annotator = self.arguments[2]
+		create_job_record(organization.jobs, job_name(annotator.name))
+	end
+
+	def job_name(annotator_name)
+		"Obtain annotations for a document: #{annotator_name}"
 	end
 end
