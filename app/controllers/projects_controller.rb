@@ -334,8 +334,7 @@ class ProjectsController < ApplicationController
 				# DeleteAllDocsFromProjectJob.perform_now(project)
 
 				active_job = DeleteAllDocsFromProjectJob.perform_later(project)
-				active_job.create_job_record(project.jobs, 'Delete all docs')
-				"The task, 'delete all docs', is created."
+				"The task, '#{active_job.job_name}', is created."
 			else
 				"The project had no document. Nothing happened.\n"
 			end
