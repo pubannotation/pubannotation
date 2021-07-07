@@ -135,9 +135,7 @@ class ProjectsController < ApplicationController
 			# UptodateDocsJob.perform_now(project)
 
 			active_job = UptodateDocsJob.perform_later(project)
-			task_name = "Uptodate docs in project - #{project.name}"
-			active_job.create_job_record(project.jobs,task_name)
-			flash[:notice] = "The task, '#{task_name}', is created."
+			flash[:notice] = "The task, '#{active_job.job_name}', is created."
 			redirect_to project_path(project.name)
 		rescue => e
 			flash[:notice] = e.message
