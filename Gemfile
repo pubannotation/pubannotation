@@ -53,7 +53,6 @@ gem 'omniauth-google-oauth2'
 gem 'rubyzip'
 gem 'zip-zip'
 gem 'daemons'
-gem 'delayed_job_active_record'
 gem 'backup'
 gem 'whenever', :require => false
 # gem 'mysql2',          '~> 0.3.13', :platform => :ruby
@@ -67,6 +66,7 @@ gem 'listen'
 gem 'spring-watcher-listen'
 gem 'thor', '~> 0.20.3'
 gem 'activejob-cancel'
+gem 'sidekiq'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

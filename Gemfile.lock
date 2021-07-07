@@ -85,13 +85,9 @@ GEM
     coffee-script-source (1.12.2)
     color-generator (0.0.4)
     concurrent-ruby (1.1.9)
+    connection_pool (2.2.5)
     crass (1.0.6)
     daemons (1.4.0)
-    delayed_job (4.1.9)
-      activesupport (>= 3.0, < 6.2)
-    delayed_job_active_record (4.1.6)
-      activerecord (>= 3.0, < 6.2)
-      delayed_job (>= 3.0, < 5)
     devise (4.8.0)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
@@ -284,6 +280,7 @@ GEM
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
+    redis (4.3.1)
     responders (3.0.1)
       actionpack (>= 5.0)
       railties (>= 5.0)
@@ -306,6 +303,10 @@ GEM
       sprockets-rails
       tilt
     shellany (0.0.1)
+    sidekiq (6.2.1)
+      connection_pool (>= 2.2.2)
+      rack (~> 2.0)
+      redis (>= 4.2.0)
     spring (2.1.1)
     spring-watcher-listen (2.0.1)
       listen (>= 2.7, < 4.0)
@@ -367,7 +368,6 @@ DEPENDENCIES
   coffee-rails
   color-generator
   daemons
-  delayed_job_active_record
   devise
   diff-lcs
   dotenv-rails
@@ -396,6 +396,7 @@ DEPENDENCIES
   ruby-dictionary
   rubyzip
   sass-rails
+  sidekiq
   spring
   spring-watcher-listen
   stardog-rb!

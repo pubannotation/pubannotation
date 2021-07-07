@@ -1,6 +1,5 @@
 class Job < ActiveRecord::Base
 	belongs_to :organization, polymorphic: true
-	belongs_to :delayed_job, optional: true
 	has_many :messages, :dependent => :destroy
 
 	scope :waiting, -> {where('begun_at IS NULL')}
@@ -55,17 +54,7 @@ class Job < ActiveRecord::Base
 
 	def stop_if_running
 		if running?
-			dj = begin
-				Delayed::Job.find(self.delayed_job_id)
-			rescue
-				nil
-			end
-			unless dj.nil?
-				dj.locked_by.match(/delayed_job.(\d+)/)
-				worker_id = $1.to_i
-				`script/delayed_job -i #{worker_id} restart`
-				update_attribute(:ended_at, Time.now)
-			end
+			update(suspend_flag: true, ended_at: Time.now)
 		end
 	end
 end

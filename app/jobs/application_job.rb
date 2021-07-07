@@ -1,15 +1,15 @@
 class ApplicationJob < ActiveJob::Base
   def create_job_record(organization_jobs, job_name)
-    delayed_job = Delayed::Job.find(self.provider_job_id)
-    organization_jobs.create({ name: job_name, active_job_id: self.job_id, delayed_job_id: delayed_job.id, queue_name: self.queue_name })
+    organization_jobs.create({ name: job_name, active_job_id: self.job_id, queue_name: self.queue_name })
   end
 
   rescue_from(StandardError) do |exception|
     if @job
       @job.messages << Message.create({sourcedb: '*', sourceid: '*', divid: nil, body: exception.message})
       set_ended_at
+    else
+      raise exception
     end
-    raise exception
   end
 
   before_perform do |active_job|
@@ -36,5 +36,21 @@ class ApplicationJob < ActiveJob::Base
 
   def set_ended_at
     @job.update_attribute(:ended_at, Time.now)
+  end
+
+  def check_suspend_flag
+    job = Job.find(@job.id)
+    if job.suspend_flag == true
+      raise "Job was suspended."
+    end
+  end
+
+  def prepare_progress_record(scheduled_num)
+    @job.update_attribute(:num_items, scheduled_num)
+    @job.update_attribute(:num_dones, 0)
+  end
+
+  def increment_num_dones(num_dones)
+    @job.update_attribute(:num_dones, num_dones + 1)
   end
 end

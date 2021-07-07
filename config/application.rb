@@ -81,6 +81,6 @@ module Pubann
     config.project_indexable_max_docs = 200000
 
     # Setting the queuing backend used by ActiveJob
-    config.active_job.queue_adapter = :delayed_job
+    config.active_job.queue_adapter = :sidekiq
   end
 end
