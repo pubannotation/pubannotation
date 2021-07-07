@@ -29,6 +29,10 @@ class Job < ActiveRecord::Base
 		ended_at.nil?
 	end
 
+	def suspended?
+		running? && suspend_flag == true
+	end
+
 	def state
 		if begun_at.nil?
 			'Waiting'
