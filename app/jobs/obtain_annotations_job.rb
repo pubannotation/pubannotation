@@ -5,8 +5,7 @@ class ObtainAnnotationsJob < ApplicationJob
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		if @job
-			@job.update_attribute(:num_items, count)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(count)
 		end
 
 		# for asynchronous protocol
@@ -155,6 +154,7 @@ private
 			num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
 			@job.messages << Message.create({body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{num})"}) if options[:debug]
 			@job.update_attribute(:num_dones, @job.num_dones + docs.length)
+			check_suspend_flag
 		end
 	rescue RestClient::ServiceUnavailable => e
 		if @service_unavailable_begins_at.present?
@@ -226,6 +226,7 @@ private
 					num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
 					@job.messages << Message.create({body: "Annotation obtained, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{length}, num:#{num})"}) if options[:debug]
 					@job.update_attribute(:num_dones, @job.num_dones + annotations_col.length)
+					check_suspend_flag
 				end
 			when 'ERROR'
 				task[:delme] = true
