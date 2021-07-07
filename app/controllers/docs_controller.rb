@@ -290,17 +290,15 @@ class DocsController < ApplicationController
 			FileUtils.mv file.path, File.join(dirpath, filename)
 
 			if ['.json', '.txt'].include?(ext) && file.size < 100.kilobytes
-				UploadDocsJob.perform_now(dirpath, project, options)
+				UploadDocsJob.perform_now(project, dirpath, options, filename)
 				notice = "Documents are successfully uploaded."
 			else
 				raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
-				# UploadDocsJob.perform_now(dirpath, project, options)
+				# UploadDocsJob.perform_now(project, dirpath, options, filename)
 
-				active_job = UploadDocsJob.perform_later(dirpath, project, options)
-				task_name = "Upload documents: #{filename}"
-				active_job.create_job_record(project.jobs, task_name)
-				notice = "The task, '#{task_name}', is created."
+				active_job = UploadDocsJob.perform_later(project, dirpath, options, filename)
+				notice = "The task, '#{active_job.job_name}', is created."
 			end
 		rescue => e
 			notice = e.message
