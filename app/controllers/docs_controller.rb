@@ -595,12 +595,10 @@ class DocsController < ApplicationController
 	def update_numbers
 		begin
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
-			system = Project.find_by_name('system-maintenance')
 
 			active_job = UpdateAnnotationNumbersJob.perform_later
-			active_job.create_job_record(system.jobs, "Update annotation numbers of each document")
 
-			result = {message: "The task, 'update annotation numbers of each document', created."}
+			result = {message: "The task, '#{active_job.job_name}', created."}
 			redirect_to project_path('system-maintenance')
 		rescue => e
 			flash[:notice] = e.message
