@@ -1,7 +1,7 @@
 class UploadDocsJob < ApplicationJob
 	queue_as :low_priority
 
-	def perform(dirpath, project, options)
+	def perform(project, dirpath, options, filename)
 		upfilepath = Dir.glob(File.join(dirpath, '**', '*')).first
 
 		infiles = if upfilepath.end_with?('.json') || upfilepath.end_with?('.txt')
@@ -106,5 +106,17 @@ class UploadDocsJob < ApplicationJob
 
 		FileUtils.rm_rf(dirpath) unless dirpath.nil?
 		true
+	end
+
+	def job_name(filename)
+		"Upload documents: #{filename}"
+	end
+
+	private
+
+	def before_enqueue_process
+		organization = self.arguments.first
+		filename = self.arguments[3]
+		create_job_record(organization.jobs, job_name(filename))
 	end
 end
