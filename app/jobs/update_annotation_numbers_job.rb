@@ -26,4 +26,15 @@ class UpdateAnnotationNumbersJob < ApplicationJob
 			end
 		end
 	end
+
+	def job_name
+		"Update annotation numbers of each document"
+	end
+
+	private
+
+	def before_enqueue_process
+		system = Project.find_by_name('system-maintenance')
+		create_job_record(system.jobs, job_name)
+	end
 end
