@@ -69,7 +69,9 @@
 							end
 						%>
 						<%= link_to 'Show', organization_job_path, class: :button %>
-						<% if job.running? %>
+						<% if job.suspended? %>
+							<button disabled="true">stopping<i class='fa fa-refresh fa-spin'></i></button>
+						<% elsif job.running? %>
 							<%= link_to 'Stop', organization_job_path, method: :put, data: { confirm: t('controllers.shared.confirm_stop'), disable_with: "stopping<i class='fa fa-refresh fa-spin'></i>" }, class: :button %>
 						<% else %>
 							<%= link_to 'Remove', organization_job_path, method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
@@ -80,3 +82,7 @@
 		</table>
 	</section>
 </section>
+
+<script>
+  setTimeout("location.reload()",3000);
+</script>
