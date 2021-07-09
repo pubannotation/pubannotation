@@ -3,8 +3,7 @@ class AddDocsToProjectJob < ApplicationJob
 
 	def perform(docspecs, project)
 		if @job
-			@job.update_attribute(:num_items, docspecs.length)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(docspecs.length)
 		end
 
 		@total_num_added = 0
@@ -50,7 +49,10 @@ class AddDocsToProjectJob < ApplicationJob
 			end
 
 			i += docspecs.length
-			@job.update_attribute(:num_dones, i) if @job
+			if @job
+				@job.update_attribute(:num_dones, i)
+				check_suspend_flag
+			end
 		end
 
 		if @total_num_sequenced > 0
