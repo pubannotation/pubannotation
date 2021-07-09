@@ -4,8 +4,7 @@ class ImportDocsJob < ApplicationJob
 	def perform(filepath, project)
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
-		@job.update_attribute(:num_items, count)
-		@job.update_attribute(:num_dones, 0)
+		prepare_progress_record(count)
 
 		sourcedb_h = {}
 		File.foreach(filepath).with_index do |id, i|
@@ -13,6 +12,7 @@ class ImportDocsJob < ApplicationJob
 			sourcedb_h[doc.sourcedb] = true
 			doc.projects << project
 			@job.update_attribute(:num_dones, i + 1)
+			check_suspend_flag
 		end
 
 		unless sourcedb_h.empty?
