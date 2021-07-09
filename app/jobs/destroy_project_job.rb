@@ -2,8 +2,7 @@ class DestroyProjectJob < ApplicationJob
 	queue_as :general
 
 	def perform(project)
-		@job.update_attribute(:num_items, 3)
-		@job.update_attribute(:num_dones, 0)
+		prepare_progress_record(3)
 
 		project.jobs.each do |job|
 			job.destroy_if_not_running
