@@ -15,8 +15,7 @@ class UploadDocsJob < ApplicationJob
 		end.sort
 
 		if @job
-			@job.update_attribute(:num_items, infiles.length)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(infiles.length)
 		end
 
 		username = project.user
@@ -89,6 +88,7 @@ class UploadDocsJob < ApplicationJob
 			ensure
 				if @job
 					@job.update_attribute(:num_dones, i + 1)
+					check_suspend_flag
 				end
 			end
 		end
