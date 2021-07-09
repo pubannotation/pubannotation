@@ -8,8 +8,7 @@ class EvaluateAnnotationsJob < ApplicationJob
 		docs = project.docs & reference_project.docs
 
 		if @job
-			@job.update_attribute(:num_items, docs.count)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(docs.count)
 		end
 
 		soft_match_characters = evaluation.soft_match_characters || PubannotationEvaluator::SOFT_MATCH_CHARACTERS
@@ -33,6 +32,7 @@ class EvaluateAnnotationsJob < ApplicationJob
 			ensure
 				if @job
 					@job.update_attribute(:num_dones, i + 1)
+					check_suspend_flag
 				end
 			end
 		end
