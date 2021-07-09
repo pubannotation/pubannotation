@@ -9,8 +9,7 @@ class ObtainDocAnnotationsJob < ApplicationJob
 
 		if @job
 			@job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(max_text_size)}). For proceding, it was divided into #{slices.length} slices."}) if slices.length > 1
-			@job.update_attribute(:num_items, slices.length)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(slices.length)
 		end
 
 		slices.each_with_index do |slice, i|
@@ -52,7 +51,10 @@ class ObtainDocAnnotationsJob < ApplicationJob
 				raise RuntimeError, e.message
 			end
 		ensure
-			@job.update_attribute(:num_dones, i+1) if @job
+			if @job
+				@job.update_attribute(:num_dones, i + 1)
+				check_suspend_flag
+			end
 		end
 	end
 
