@@ -4,8 +4,7 @@ class ImportAnnotationsJob < ApplicationJob
 	def perform(source_project, project)
 		docs = project.docs & source_project.docs
 
-		@job.update_attribute(:num_items, docs.length)
-		@job.update_attribute(:num_dones, 0)
+		prepare_progress_record(docs.length)
 
 		docs.each_with_index do |doc, i|
 			begin
@@ -16,6 +15,7 @@ class ImportAnnotationsJob < ApplicationJob
 				@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
 			end
 			@job.update_attribute(:num_dones, i + 1)
+			check_suspend_flag
 		end
 	end
 end
