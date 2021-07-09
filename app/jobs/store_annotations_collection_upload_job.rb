@@ -9,8 +9,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 		# initialize the counter
 		if @job
-			@job.update_attribute(:num_items, filenames.length)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(filenames.length)
 		end
 
 		# initialize necessary variables
@@ -46,7 +45,10 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 				annotation_transaction << annotation_collection
 				transaction_size += count_denotations
 				sourcedb_sourceids_index[sourcedb] << sourceid
-				@job.update_attribute(:num_dones, i + 1) if @job
+				if @job
+					@job.update_attribute(:num_dones, i + 1)
+					check_suspend_flag
+				end
 			end
 
 		rescue ActiveRecord::ActiveRecordError => e
@@ -56,7 +58,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 				raise e
 			end
 		rescue StandardError => e
-			if @job
+			if e.class == Exceptions::JobSuspendError
+				raise e
+			elsif @job
 				@job.messages << Message.create({sourcedb:sourcedb, sourceid:sourceid, body:e.message[0 .. 250]})
 			else
 				raise ArgumentError, "[#{sourcedb}:#{sourceid}] #{e.message}"
