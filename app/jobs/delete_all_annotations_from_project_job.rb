@@ -3,8 +3,7 @@ class DeleteAllAnnotationsFromProjectJob < ApplicationJob
 
 	def perform(project)
 		docs = project.docs
-		@job.update_attribute(:num_items, 1)
-		@job.update_attribute(:num_dones, 0)
+		prepare_progress_record(1)
 		begin
 			project.delete_annotations
 		rescue => e
