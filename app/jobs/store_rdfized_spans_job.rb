@@ -3,8 +3,7 @@ class StoreRdfizedSpansJob < ApplicationJob
 
 	def perform(sproject, docids, rdfizer)
 		if @job
-			@job.update_attribute(:num_items, docids.length)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(docids.length)
 		end
 		docids.each_with_index do |docid, i|
 			begin
@@ -19,7 +18,10 @@ class StoreRdfizedSpansJob < ApplicationJob
 					raise ArgumentError, message
 				end
 			ensure
-				@job.update_attribute(:num_dones, i + 1) if @job
+				if @job
+					@job.update_attribute(:num_dones, i + 1)
+					check_suspend_flag
+				end
 			end
 		end
 	end
