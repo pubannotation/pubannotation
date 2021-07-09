@@ -28,8 +28,7 @@ class DeleteAnnotationsFromUploadJob < ApplicationJob
 		docspecs.uniq!
 
 		# check annotation files
-		@job.update_attribute(:num_items, docspecs.length)
-		@job.update_attribute(:num_dones, 0)
+		prepare_progress_record(docspecs.length)
 
 		docspecs.each_with_index do |docspec, i|
 			begin
@@ -39,6 +38,7 @@ class DeleteAnnotationsFromUploadJob < ApplicationJob
 				@job.messages << Message.create({sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid], body: e.message})
 			end
 			@job.update_attribute(:num_dones, i + 1)
+			check_suspend_flag
 		end
 
 		File.unlink(filepath)
