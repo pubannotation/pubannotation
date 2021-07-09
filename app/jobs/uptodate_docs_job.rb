@@ -9,8 +9,7 @@ class UptodateDocsJob < ApplicationJob
 		end
 
 		if @job
-			@job.update_attribute(:num_items, count_sourceids)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(count_sourceids)
 		end
 
 		num = 0
@@ -38,16 +37,25 @@ class UptodateDocsJob < ApplicationJob
 				hdocs_sequenced.each do |hdoc|
 					doc = Doc.where(sourcedb:sourcedb, sourceid:hdoc[:sourceid]).first
 					Doc.uptodate(doc, hdoc)
-					@job.update_attribute(:num_dones, num += 1) if @job
-				rescue => e
 					if @job
+						@job.update_attribute(:num_dones, num += 1)
+						check_suspend_flag
+					end
+				rescue => e
+					if e.class == Exceptions::JobSuspendError
+						raise e
+					elsif @job
 						@job.messages << Message.create({sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid], body: e.message})
 					else
 						raise e.message
 					end
 				end
 			rescue => e
-				@job.messages << Message.create({sourcedb: sourcedb, sourceid: sids.join(", ")[0 ... 200], body: e.message[0 ... 200]})
+				if e.class == Exceptions::JobSuspendError
+					raise e
+				elsif @job
+					@job.messages << Message.create({sourcedb: sourcedb, sourceid: sids.join(", ")[0 ... 200], body: e.message[0 ... 200]})
+				end
 			end
 		end
 	end
