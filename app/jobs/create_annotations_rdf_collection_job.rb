@@ -3,8 +3,7 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 
 	def perform(collection, options)
 		if @job
-			@job.update_attribute(:num_items, collection.primary_projects.count + 1)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(collection.primary_projects.count + 1)
 		end
 
 		FileUtils.mkdir_p collection.annotations_rdf_dirpath unless File.exists? collection.annotations_rdf_dirpath
@@ -26,9 +25,14 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 				end
 			end
 			FileUtils.ln_sf(project.annotations_trig_filepath, collection.annotations_rdf_dirpath)
-			@job.increment!(:num_dones, 1) if @job
-		rescue => e
 			if @job
+				@job.increment!(:num_dones, 1)
+				check_suspend_flag
+			end
+		rescue => e
+			if e.class == Exceptions::JobSuspendError
+				raise e
+			elsif @job
 				@job.messages << Message.create({body: e.message})
 			else
 				raise e
