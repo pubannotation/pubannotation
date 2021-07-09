@@ -2,8 +2,9 @@ class DeleteAllDocsFromProjectJob < ApplicationJob
 	queue_as :general
 
 	def perform(project)
-		@job.update_attribute(:num_items, 1) if @job
-		@job.update_attribute(:num_dones, 0) if @job
+		if @job
+			prepare_progress_record(1)
+		end
 
 		project.delete_docs
 
