@@ -5,8 +5,7 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		if @job
-			@job.update_attribute(:num_items, count)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(count)
 		end
 
 		@total_num_added = 0
@@ -25,7 +24,8 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
 			end
 
 			if @job
-				@job.update_attribute(:num_dones, i+1)
+				@job.update_attribute(:num_dones, i + 1)
+				check_suspend_flag
 			end
 		end
 
