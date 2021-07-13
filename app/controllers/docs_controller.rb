@@ -585,8 +585,7 @@ class DocsController < ApplicationController
 			docids = projects.inject([]){|col, p| (col + p.docs.pluck(:id))}.uniq
 			system = Project.find_by_name('system-maintenance')
 
-			active_job = StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
-			active_job.create_job_record(system.jobs, "Store RDFized spans for selected projects")
+			StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
 		rescue => e
 			flash[:notice] = e.message
 		end
