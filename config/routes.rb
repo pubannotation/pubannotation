@@ -21,6 +21,8 @@ Pubann::Application.routes.draw do
 				put '/toggle_primary' => "collections#project_toggle_primary"
 			end
 		end
+		get 'jobs/latest_jobs_table' => 'jobs#latest_jobs_table'
+		get 'jobs/latest_gear_icon' => 'jobs#latest_gear_icon'
 		resources :jobs do
 			member do
 				get 'messages' => 'messages#index'
@@ -133,6 +135,8 @@ Pubann::Application.routes.draw do
 		get 'tasks' => 'notices#tasks'
 		resources :annotations
 		resources :associate_maintainers, :only => [:destroy]
+		get 'jobs/latest_jobs_table' => 'jobs#latest_jobs_table'
+		get 'jobs/latest_gear_icon' => 'jobs#latest_gear_icon'
 		resources :jobs do
 			member do
 				get 'messages' => 'messages#index'
