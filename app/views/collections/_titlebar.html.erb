@@ -6,10 +6,6 @@
 	<%= badge_open(@collection).html_safe %>
 	<%= link_to content_tag(:i, '', class: "fa fa-search", "aria-hidden" => "true", title: "search"), sparql_collection_path(@collection.name) %>
 	<% if @collection.jobs.exists? && @collection.editable?(current_user) -%>
-		<span>
-			<a href=<%= collection_jobs_path(@collection.name) %>>
-				<span class = ''><%= icon_job(@collection) %></span>
-			</a>
-		</span>
+	  <%= render "collections/gear_icon" %>
 	<% end -%>
 </div>
