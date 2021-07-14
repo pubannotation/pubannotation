@@ -5,11 +5,7 @@
 	<%= badge_accessibility(@project).html_safe %>
 	<%= link_to content_tag(:i, '', class: "fa fa-search", "aria-hidden" => "true", title: "search"), sparql_project_path(@project.name) %>
 	<% if @project.jobs.exists? && @project.editable?(current_user) -%>
-		<span>
-			<a href=<%= project_jobs_path(@project.name) %>>
-				<span class = ''><%= icon_job(@project) %></span>
-			</a>
-		</span>
+		<%= render 'projects/gear_icon' %>
 	<% end -%>
 	&nbsp;
 </div>
