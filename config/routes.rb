@@ -20,7 +20,9 @@ Pubann::Application.routes.draw do
 				delete '/' => 'collections#remove_project'
 				put '/toggle_primary' => "collections#project_toggle_primary"
 			end
-		end
+    end
+		get 'jobs/reload_table' => 'jobs#reload_table'
+		get 'jobs/reload_gear_icon' => 'jobs#reload_gear_icon'
 		resources :jobs do
 			member do
 				get 'messages' => 'messages#index'
@@ -133,11 +135,13 @@ Pubann::Application.routes.draw do
 		get 'tasks' => 'notices#tasks'
 		resources :annotations
 		resources :associate_maintainers, :only => [:destroy]
+		get 'jobs/reload_table' => 'jobs#reload_table'
+    get 'jobs/reload_gear_icon' => 'jobs#reload_gear_icon'
 		resources :jobs do
 			member do
 				get 'messages' => 'messages#index'
-			end
-		end
+      end
+    end
 
 		member do
 			post 'create_annotations_rdf' => 'projects#create_annotations_rdf'

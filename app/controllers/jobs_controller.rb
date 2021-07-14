@@ -1,6 +1,6 @@
 class JobsController < ApplicationController
 	before_action :authenticate_user!, :except => [:index, :show]
-	before_action :set_organization, only: [:index, :show]
+	before_action :set_organization, only: [:index, :show, :reload_table, :reload_gear_icon]
 	before_action :set_editable_organization, only: [:update, :destroy, :clear_finished_jobs]
 
 	# GET /jobs
@@ -79,6 +79,21 @@ class JobsController < ApplicationController
 		respond_to do |format|
 			format.html { redirect_to organization_jobs_path }
 			format.json { head :no_content }
+		end
+	end
+
+	def reload_table
+		@jobs = @organization.jobs.order(:created_at)
+		render :partial => "jobs/jobs_table", locals: {jobs: @jobs }
+	end
+
+	def reload_gear_icon
+		if params.has_key? :project_id
+			@project = @organization
+			render :partial => 'projects/gear_icon'
+		else
+			@collection = @organization
+			render :partial => 'collections/gear_icon'
 		end
 	end
 
