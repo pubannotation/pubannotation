@@ -39,3 +39,12 @@
 		</div>
 	</section>
 </section>
+
+<script>
+  $(document).ready(
+    function() {
+      setInterval(function() {
+        $('.jobs-table').load(`${location.pathname}/reload_table`);
+      }, 3000);
+    });
+</script>
