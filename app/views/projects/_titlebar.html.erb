@@ -9,3 +9,13 @@
 	<% end -%>
 	&nbsp;
 </div>
+
+<script>
+  $(document).ready(
+    function() {
+      setInterval(function() {
+        const pathArray = location.pathname.split('/');
+        $('.gear-icon').load(`/${pathArray[1]}/${pathArray[2]}/jobs/reload_gear_icon`);
+      }, 3000);
+    });
+</script>
