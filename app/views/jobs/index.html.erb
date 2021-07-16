@@ -35,7 +35,7 @@
 			%>
 		</h1>
 		<div class="jobs-table">
-			<%= render :partial => "jobs/jobs_table", :locals => { jobs: @jobs } %>
+			<%= render :partial => "jobs/jobs_table", :locals => { jobs: @jobs, organization: @organization } %>
 		</div>
 	</section>
 </section>
@@ -43,8 +43,12 @@
 <script>
   $(document).ready(
     function() {
-      setInterval(function() {
+      const tableInterval = setInterval(function() {
+        const hasFinished = $(".jobs-table > .jobs-state-passer").text();
         $('.jobs-table').load(`${location.pathname}/reload_table`);
+        if (hasFinished === 'true') {
+          clearInterval(tableInterval)
+				}
       }, 3000);
     });
 </script>
