@@ -1,4 +1,5 @@
 <span class="gear-icon">
+	<div style="display: none" class="jobs-state-passer"><%= !@collection.has_unfinished_jobs? %></div>
 	<a href=<%= collection_jobs_path(@collection.name) %>>
 		<span class = ''><%= icon_job(@collection) %></span>
 	</a>

@@ -13,9 +13,13 @@
 <script>
   $(document).ready(
     function() {
-      setInterval(function() {
-        const pathArray = location.pathname.split('/');
-        $('.gear-icon').load(`/${pathArray[1]}/${pathArray[2]}/jobs/reload_gear_icon`);
+      const separatedPath = location.pathname.split('/');
+      const interval = setInterval(function () {
+        const hasFinished = $(".gear-icon > .jobs-state-passer").text();
+        $('.gear-icon').load(`/${separatedPath[1]}/${separatedPath[2]}/jobs/reload_gear_icon`);
+        if (hasFinished === 'true') {
+          clearInterval(interval);
+        }
       }, 3000);
     });
 </script>
