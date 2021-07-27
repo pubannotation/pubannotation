@@ -80,7 +80,6 @@ class AnnotatorsController < ApplicationController
 				format.json { render json: @annotator, status: :created, location: @annotator }
 			else
 				format.html {
-					@annotator.payload = @annotator.payload_to_string
 					render action: "new"
 				}
 				format.json { render json: @annotator.errors, status: :unprocessable_entity }
@@ -104,7 +103,6 @@ class AnnotatorsController < ApplicationController
 				format.json { head :no_content }
 			else
 				format.html {
-					@annotator.payload = @annotator.payload_to_string
 					render action: "edit"
 				}
 				format.json { render json: @annotator.errors, status: :unprocessable_entity }
