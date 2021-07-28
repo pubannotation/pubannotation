@@ -1,7 +1,16 @@
 <%= render :partial => 'shared/textae_css_js'-%>
 
 <section>
-	<%= render :partial => 'projects/titlebar' -%>
+	<%=
+		if @organization.class == Project
+			@project = @organization
+			render :partial => 'projects/titlebar'
+		else
+			@collection = @organization
+			render :partial => 'collections/titlebar'
+		end
+	-%>
+
 	<section>
 		<h1>Message</h1>
 		<%= @message.body %>
@@ -11,7 +20,7 @@
 			<%= @job.name %>
 		</section>
 
-		<% if @message.sourcedb && @message.sourceid %>
+		<% if @message.sourcedb && @message.sourceid && @project %>
 			<section>
 				<h2>Document</h2>
 				<%= link_to("#{@message.sourcedb}:#{@message.sourceid}", show_project_sourcedb_sourceid_docs_path(@project.name, @message.sourcedb, @message.sourceid)) %>
