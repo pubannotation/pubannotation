@@ -290,15 +290,17 @@ class DocsController < ApplicationController
 			FileUtils.mv file.path, File.join(dirpath, filename)
 
 			if ['.json', '.txt'].include?(ext) && file.size < 100.kilobytes
-				UploadDocsJob.perform_now(project, dirpath, options, filename)
+				UploadDocsJob.perform_now(dirpath, project, options)
 				notice = "Documents are successfully uploaded."
 			else
 				raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
-				# UploadDocsJob.perform_now(project, dirpath, options, filename)
+				# UploadDocsJob.perform_now(dirpath, project, options)
 
-				active_job = UploadDocsJob.perform_later(project, dirpath, options, filename)
-				notice = "The task, '#{active_job.job_name}', is created."
+				active_job = UploadDocsJob.perform_later(dirpath, project, options)
+				task_name = "Upload documents: #{filename}"
+				active_job.create_job_record(project.jobs, task_name)
+				notice = "The task, '#{task_name}', is created."
 			end
 		rescue => e
 			notice = e.message
@@ -364,11 +366,11 @@ class DocsController < ApplicationController
 			filepath = File.join('tmp', "add-docs-to-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
 			FileUtils.mv params[:upfile].path, filepath
 
-			# AddDocsToProjectFromUploadJob.perform_now(project, sourcedb, filepath)
+			# AddDocsToProjectFromUploadJob.perform_now(sourcedb, filepath, project)
 
-			active_job = AddDocsToProjectFromUploadJob.perform_later(project, sourcedb, filepath)
-			job = Job.find_by(active_job_id: active_job.job_id)
-			message = "The task, '#{active_job.job_name}', is created."
+			active_job = AddDocsToProjectFromUploadJob.perform_later(sourcedb, filepath, project)
+			job = active_job.create_job_record(project.jobs, 'Add docs to project from upload')
+			message = "The task, 'Add docs to project from upload', is created."
 
 			respond_to do |format|
 				format.html {redirect_back fallback_location: root_path, notice: message }
@@ -417,9 +419,10 @@ class DocsController < ApplicationController
 					message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
 				end
 			else
-				# AddDocsToProjectJob.perform_now(project, docspecs)
+				# AddDocsToProjectJob.perform_now(docspecs, project)
 
-				AddDocsToProjectJob.perform_later(project, docspecs)
+				active_job = AddDocsToProjectJob.perform_later(docspecs, project)
+				active_job.create_job_record(project.jobs, 'Add docs to project')
 				message = "The task, 'add documents to the project', is created."
 			end
 
@@ -455,7 +458,8 @@ class DocsController < ApplicationController
 				docids_file.puts docids
 				docids_file.close
 
-				ImportDocsJob.perform_later(project, docids_file.path)
+				active_job = ImportDocsJob.perform_later(docids_file.path, project)
+				active_job.create_job_record(project.jobs, 'Import docs to project')
 
 				m = ""
 				m += "#{num_skip} docs were skipped due to duplication." if num_skip > 0
@@ -583,7 +587,8 @@ class DocsController < ApplicationController
 			docids = projects.inject([]){|col, p| (col + p.docs.pluck(:id))}.uniq
 			system = Project.find_by_name('system-maintenance')
 
-			StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
+			active_job = StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
+			active_job.create_job_record(system.jobs, "Store RDFized spans for selected projects")
 		rescue => e
 			flash[:notice] = e.message
 		end
@@ -593,10 +598,12 @@ class DocsController < ApplicationController
 	def update_numbers
 		begin
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+			system = Project.find_by_name('system-maintenance')
 
 			active_job = UpdateAnnotationNumbersJob.perform_later
+			active_job.create_job_record(system.jobs, "Update annotation numbers of each document")
 
-			result = {message: "The task, '#{active_job.job_name}', created."}
+			result = {message: "The task, 'update annotation numbers of each document', created."}
 			redirect_to project_path('system-maintenance')
 		rescue => e
 			flash[:notice] = e.message

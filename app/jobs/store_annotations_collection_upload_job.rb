@@ -3,7 +3,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 	MAX_SIZE_TRANSACTION = 5000
 
-	def perform(project, filepath, options)
+	def perform(filepath, project, options)
 		# read the filenames of json files into the array filenames
 		filenames, dirpath = read_filenames(filepath)
 
@@ -75,10 +75,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		File.unlink(filepath)
 		FileUtils.rm_rf(dirpath) unless dirpath.nil?
 		true
-	end
-
-	def job_name
-		'Upload annotations'
 	end
 
 	private

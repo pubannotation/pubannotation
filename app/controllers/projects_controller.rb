@@ -135,7 +135,9 @@ class ProjectsController < ApplicationController
 			# UptodateDocsJob.perform_now(project)
 
 			active_job = UptodateDocsJob.perform_later(project)
-			flash[:notice] = "The task, '#{active_job.job_name}', is created."
+			task_name = "Uptodate docs in project - #{project.name}"
+			active_job.create_job_record(project.jobs,task_name)
+			flash[:notice] = "The task, '#{task_name}', is created."
 			redirect_to project_path(project.name)
 		rescue => e
 			flash[:notice] = e.message
@@ -199,7 +201,8 @@ class ProjectsController < ApplicationController
 			# StoreRdfizedAnnotationsJob.perform_now(project, filepath, options)
 
 			active_job = StoreRdfizedAnnotationsJob.perform_later(project, filepath, options)
-			flash[:notice] = "The task, '#{active_job.job_name}', is created."
+			active_job.create_job_record(project.jobs, "Store RDFized annotations - #{project.name}")
+			flash[:notice] = "The task, 'Store RDFized annotations - #{project.name}', is created."
 		rescue => e
 			flash[:notice] = e.message
 		end
@@ -231,7 +234,8 @@ class ProjectsController < ApplicationController
 			# CreateAnnotationsRdfJob.perform_now(project)
 
 			active_job = CreateAnnotationsRdfJob.perform_later(project)
-			"The task, '#{active_job.job_name}', is created."
+			active_job.create_job_record(project.jobs, "Create Annotation RDF - #{project.name}")
+			"The task, 'Create Annotation RDF - #{project.name}', is created."
 		rescue => e
 			e.message
 		end
@@ -247,7 +251,8 @@ class ProjectsController < ApplicationController
 			# CreateSpansRdfJob.perform_now(project, nil)
 
 			active_job = CreateSpansRdfJob.perform_later(project, nil)
-			"The task, '#{active_job.job_name}', is created."
+			active_job.create_job_record(project.jobs, "Create Spans RDF - #{project.name}")
+			"The task, 'Create Spans RDF - #{project.name}', is created."
 		rescue => e
 			e.message
 		end
@@ -269,7 +274,8 @@ class ProjectsController < ApplicationController
 			system = Project.find_by_name('system-maintenance')
 
 			projects.each do |project|
-				StoreRdfizedAnnotationsJob.perform_later(system, project, Pubann::Application.config.rdfizer_annotations)
+				active_job = StoreRdfizedAnnotationsJob.perform_later(system, project, Pubann::Application.config.rdfizer_annotations)
+				active_job.create_job_record(system.jobs, "Store RDFized annotations - #{project.name}")
 			end
 		rescue => e
 			flash[:notice] = e.message
@@ -285,7 +291,8 @@ class ProjectsController < ApplicationController
 			docids = project.docs.pluck(:id)
 			system = Project.find_by_name('system-maintenance')
 
-			StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
+			active_job = StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
+			active_job.create_job_record(system.jobs, "Store RDFized spans - #{project.name}")
 		rescue => e
 			flash[:notice] = e.message
 		end
@@ -329,7 +336,8 @@ class ProjectsController < ApplicationController
 				# DeleteAllDocsFromProjectJob.perform_now(project)
 
 				active_job = DeleteAllDocsFromProjectJob.perform_later(project)
-				"The task, '#{active_job.job_name}', is created."
+				active_job.create_job_record(project.jobs, 'Delete all docs')
+				"The task, 'delete all docs', is created."
 			else
 				"The project had no document. Nothing happened.\n"
 			end
@@ -353,8 +361,10 @@ class ProjectsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
+			taskname = 'Delete all annotations in project'
 			active_job = DeleteAllAnnotationsFromProjectJob.perform_later(project)
-			message = "The task, '#{active_job.job_name}', is created."
+			active_job.create_job_record(project.jobs, taskname)
+			message = "The task, '#{taskname}', is created."
 
 			respond_to do |format|
 				format.html {redirect_to project_path(project.name), notice: message}
@@ -376,7 +386,10 @@ class ProjectsController < ApplicationController
 		project = Project.editable(current_user).find_by_name(params[:id])
 		raise "There is no such project." unless project.present?
 
-		DestroyProjectJob.perform_later(project)
+		sproject = Project.find_by_name('system-maintenance')
+
+		active_job = DestroyProjectJob.perform_later(project)
+		active_job.create_job_record(sproject.jobs, 'Destroy project')
 
 		respond_to do |format|
 			format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, will be deleted soon."}

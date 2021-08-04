@@ -25,8 +25,4 @@ class StoreRdfizedSpansJob < ApplicationJob
 			end
 		end
 	end
-
-	def job_name
-		"Store RDFized spans for selected projects"
-	end
 end

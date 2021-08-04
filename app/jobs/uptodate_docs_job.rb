@@ -59,8 +59,4 @@ class UptodateDocsJob < ApplicationJob
 			end
 		end
 	end
-
-	def job_name
-		"Uptodate docs in project - #{resource_name}"
-	end
 end

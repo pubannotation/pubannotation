@@ -161,7 +161,9 @@ class CollectionsController < ApplicationController
 			# CreateAnnotationsRdfCollectionJob.perform_now(@collection, {forced:forced})
 
 			active_job = CreateAnnotationsRdfCollectionJob.perform_later(@collection, {forced:forced})
-			"The task, '#{active_job.job_name}', was created."
+			job_name = "Create Annotation RDF Collection - #{@collection.name}"
+			active_job.create_job_record(@collection.jobs, job_name)
+			"The task, '#{job_name}', was created."
 		rescue => e
 			e.message
 		end
@@ -179,8 +181,10 @@ class CollectionsController < ApplicationController
 			# "Spans were RDFized"
 
 			active_job = CreateSpansRdfCollectionJob.perform_later(@collection)
+			job_name = "Create Spans RDF Collection- #{@collection.name}"
+			job = active_job.create_job_record(@collection.jobs, job_name)
 
-			"The task, '#{active_job.job_name}', was created."
+			"The task, '#{job_name}', was created."
 		rescue => e
 			e.message
 		end

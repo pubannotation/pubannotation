@@ -139,10 +139,6 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 		File.unlink(filepath)
 	end
 
-	def job_name
-		"Store RDFized annotations - #{resource_name}"
-	end
-
 	private
 
 	def update_project_metadata(sd, database, project)

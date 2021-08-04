@@ -26,14 +26,4 @@ class UpdateAnnotationNumbersJob < ApplicationJob
 			end
 		end
 	end
-
-	def job_name
-		"Update annotation numbers of each document"
-	end
-
-	private
-
-	def organization_jobs
-		Project.find_by_name('system-maintenance').jobs
-	end
 end

@@ -1,7 +1,7 @@
 class DeleteAnnotationsFromUploadJob < ApplicationJob
 	queue_as :low_priority
 
-	def perform(project, filepath, options)
+	def perform(filepath, project, options)
 		dirpath = nil
 		jsonfiles = if filepath.end_with?('.json')
 			Dir.glob(filepath)
@@ -43,9 +43,5 @@ class DeleteAnnotationsFromUploadJob < ApplicationJob
 
 		File.unlink(filepath)
 		FileUtils.rm_rf(dirpath) unless dirpath.nil?
-	end
-
-	def job_name
-		'Delete annotations from documents'
 	end
 end

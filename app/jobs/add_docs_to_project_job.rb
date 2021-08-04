@@ -1,7 +1,7 @@
 class AddDocsToProjectJob < ApplicationJob
 	queue_as :general
 
-	def perform(project, docspecs)
+	def perform(docspecs, project)
 		if @job
 			prepare_progress_record(docspecs.length)
 		end
@@ -66,9 +66,5 @@ class AddDocsToProjectJob < ApplicationJob
 			ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
 			sourcedbs.uniq.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
 		end
-	end
-
-	def job_name
-		'Add docs to project'
 	end
 end

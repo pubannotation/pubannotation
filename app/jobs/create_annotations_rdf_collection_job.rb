@@ -14,7 +14,7 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 			if forced?(options) || project.rdf_needs_to_be_updated?
 				if @job
 					active_job = CreateAnnotationsRdfJob.perform_later(project)
-					monitor_job = Job.find_by(active_job_id: active_job.job_id)
+					monitor_job = active_job.create_job_record(collection.jobs, "Create Annotation RDF - #{project.name}")
 					until monitor_job.finished_live?
 						sleep(1)
 						ActiveRecord::Base.connection.clear_query_cache
@@ -42,7 +42,7 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 		# creation of spans RDF
 		if @job
 			active_job = CreateSpansRdfCollectionJob.perform_later(collection)
-			monitor_job = Job.find_by(active_job_id: active_job.job_id)
+			monitor_job = active_job.create_job_record(collection.jobs, "Create Spans RDF Collection- #{collection.name}")
 			until monitor_job.finished_live?
 				sleep(1)
 				ActiveRecord::Base.connection.clear_query_cache
@@ -57,9 +57,5 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 
 	def forced?(options)
 		options && options.has_key?(:forced) ? options[:forced] == true : false
-	end
-
-	def job_name
-		"Create Annotation RDF Collection - #{resource_name}"
 	end
 end

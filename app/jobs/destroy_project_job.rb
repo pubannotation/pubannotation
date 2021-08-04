@@ -15,14 +15,4 @@ class DestroyProjectJob < ApplicationJob
 		project.destroy
 		@job.update_attribute(:num_dones, 3)
 	end
-
-	def job_name
-		'Destroy project'
-	end
-
-	private
-
-	def organization_jobs
-		Project.find_by_name('system-maintenance').jobs
-	end
 end

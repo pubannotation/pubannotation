@@ -8,14 +8,11 @@ class DeleteAllDocsFromProjectJob < ApplicationJob
 
 		project.delete_docs
 
-		UpdateElasticsearchIndexJob.perform_later(project)
+		active_job = UpdateElasticsearchIndexJob.perform_later(project)
+		active_job.create_job_record(project.jobs, 'Update text search index')
 
 		@job.update_attribute(:num_dones, 1) if @job
 		ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
 		ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-	end
-
-	def job_name
-		'Delete all docs'
 	end
 end

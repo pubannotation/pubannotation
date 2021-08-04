@@ -1,7 +1,7 @@
 class UploadDocsJob < ApplicationJob
 	queue_as :low_priority
 
-	def perform(project, dirpath, options, filename)
+	def perform(dirpath, project, options)
 		upfilepath = Dir.glob(File.join(dirpath, '**', '*')).first
 
 		infiles = if upfilepath.end_with?('.json') || upfilepath.end_with?('.txt')
@@ -106,15 +106,5 @@ class UploadDocsJob < ApplicationJob
 
 		FileUtils.rm_rf(dirpath) unless dirpath.nil?
 		true
-	end
-
-	def job_name
-		"Upload documents: #{resource_name}"
-	end
-
-	private
-
-	def resource_name
-		self.arguments[3]
 	end
 end

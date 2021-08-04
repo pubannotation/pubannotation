@@ -14,8 +14,4 @@ class CreateAnnotationsRdfJob < ApplicationJob
 			end
 		end
 	end
-
-	def job_name
-		"Create Annotation RDF - #{resource_name}"
-	end
 end
