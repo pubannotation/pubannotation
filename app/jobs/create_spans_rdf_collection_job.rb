@@ -6,8 +6,7 @@ class CreateSpansRdfCollectionJob < ApplicationJob
 		doc_ids = collection.primary_projects.reduce([]){|sum, project| sum.union(project.docs.pluck(:id))}
 
 		if @job
-			@job.update_attribute(:num_items, doc_ids.count)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(doc_ids.count)
 		end
 
 		File.open(collection.spans_trig_filepath, "w") do |f|
@@ -31,6 +30,7 @@ class CreateSpansRdfCollectionJob < ApplicationJob
 			ensure
 				if @job
 					@job.update_attribute(:num_dones, i + 1)
+					check_suspend_flag
 				end
 			end
 		end

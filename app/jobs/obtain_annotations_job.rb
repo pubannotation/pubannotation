@@ -5,8 +5,7 @@ class ObtainAnnotationsJob < ApplicationJob
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		if @job
-			@job.update_attribute(:num_items, count)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(count)
 		end
 
 		# for asynchronous protocol
@@ -38,9 +37,15 @@ class ObtainAnnotationsJob < ApplicationJob
 						slices.each do |slice|
 							begin
 							  make_request_batch(project, docs, annotator, options.merge(span:slice))
-						  rescue RuntimeError => e
+							rescue RuntimeError => e
+								if e.class == Exceptions::JobSuspendError
+									raise e
+								end
 							  @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
-						  rescue => e
+							rescue => e
+								if e.class == Exceptions::JobSuspendError
+									raise e
+								end
 							  @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
 							end
 						end
@@ -48,7 +53,9 @@ class ObtainAnnotationsJob < ApplicationJob
 						make_request_batch(project, docs, annotator, options)
 					end
 				rescue => e
-					if @job
+					if e.class == Exceptions::JobSuspendError
+						raise e
+					elsif @job
 						if docs.length < 10
 							docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{exception_message(e)}"})}
 						else
@@ -68,7 +75,9 @@ class ObtainAnnotationsJob < ApplicationJob
 
 			process_tasks_queue(project, annotator, options) unless @annotation_tasks_queue.empty?
 		rescue RuntimeError => e
-			if @job
+			if e.class == Exceptions::JobSuspendError
+				raise e
+			elsif @job
 				if docs.length < 10
 					docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Runtime error: #{exception_message(e)}"})}
 				else
@@ -94,7 +103,9 @@ class ObtainAnnotationsJob < ApplicationJob
 					slices.each do |slice|
 						make_request_batch(project, docs, annotator, options.merge(span:slice))
 					rescue RuntimeError => e
-						if @job
+						if e.class == Exceptions::JobSuspendError
+							raise e
+						elsif @job
 							@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"})
 						else
 							raise e
@@ -111,7 +122,9 @@ class ObtainAnnotationsJob < ApplicationJob
 				process_tasks_queue(project, annotator, options)
 				sleep(skip_interval) unless @annotation_tasks_queue.empty?
 			rescue => e
-				if @job
+				if e.class == Exceptions::JobSuspendError
+					raise e
+				elsif @job
 					@job.messages << Message.create({body: exception_message(e)})
 				else
 					raise e
@@ -154,7 +167,8 @@ private
 		if @job
 			num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
 			@job.messages << Message.create({body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{num})"}) if options[:debug]
-			@job.update_attribute(:num_dones, @job.num_dones + docs.length)
+			@job.increment!(:num_dones, docs.length)
+			check_suspend_flag
 		end
 	rescue RestClient::ServiceUnavailable => e
 		if @service_unavailable_begins_at.present?
@@ -225,7 +239,8 @@ private
 					length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
 					num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
 					@job.messages << Message.create({body: "Annotation obtained, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{length}, num:#{num})"}) if options[:debug]
-					@job.update_attribute(:num_dones, @job.num_dones + annotations_col.length)
+					@job.increment!(:num_dones, annotations_col.length)
+					check_suspend_flag
 				end
 			when 'ERROR'
 				task[:delme] = true

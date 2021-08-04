@@ -5,8 +5,7 @@ class CreateAnnotationsTgzJob < ApplicationJob
 
 	def perform(project, options)
 		if @job
-			@job.update_attribute(:num_items, project.docs.count)
-			@job.update_attribute(:num_dones, 0)
+			prepare_progress_record(project.docs.count)
 		end
 
 		blind_p = project.accessibility == 3 ? true : false
@@ -50,7 +49,10 @@ class CreateAnnotationsTgzJob < ApplicationJob
 					rescue => e
 						@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message}) if @job
 					end
-					@job.update_attribute(:num_dones, i + 1) if @job
+					if @job
+						@job.update_attribute(:num_dones, i + 1)
+						check_suspend_flag
+					end
 				end
 
 				unless dic.empty?
