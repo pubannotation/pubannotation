@@ -1,7 +1,7 @@
 class AddDocsToProjectFromUploadJob < ApplicationJob
 	queue_as :general
 
-	def perform(sourcedb, filepath, project)
+	def perform(project, sourcedb, filepath)
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		if @job
@@ -43,6 +43,10 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
 		end
 
 		File.unlink(filepath)
+	end
+
+	def job_name
+		'Add docs to project from upload'
 	end
 
 	private

@@ -131,8 +131,7 @@ class EvaluationsController < ApplicationController
 				# EvaluateAnnotationsJob.perform_now(evaluation)
 
 				active_job = EvaluateAnnotationsJob.perform_later(evaluation)
-				active_job.create_job_record(evaluation.study_project.jobs, 'Evaluate annotations')
-				"The task, 'Evaluate annotations', is created. Please reload the page to see the result."
+				"The task, '#{active_job.job_name}', is created. Please reload the page to see the result."
 			end
 		rescue => e
 			e.message

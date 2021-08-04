@@ -87,7 +87,7 @@ class Collection < ActiveRecord::Base
 			# CreateSpansRdfJob.perform_now(pproject)
 
 			active_job = CreateSpansRdfJob.perform_later(pproject, self)
-			job = active_job.create_job_record(pproject.jobs, "Create Spans RDF - #{pproject.name}")
+			job = Job.find_by(active_job_id: active_job.job_id)
 			sleep(1) until job.finished_live?
 
 			FileUtils.ln_sf(pproject.spans_trig_filepath, annotations_rdf_dirpath)

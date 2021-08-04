@@ -1,7 +1,7 @@
 class ImportDocsJob < ApplicationJob
 	queue_as :general
 
-	def perform(filepath, project)
+	def perform(project, filepath)
 		count = %x{wc -l #{filepath}}.split.first.to_i
 
 		prepare_progress_record(count)
@@ -20,5 +20,9 @@ class ImportDocsJob < ApplicationJob
 			ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
 			sourcedb_h.each_key{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
 		end
+	end
+
+	def job_name
+		'Import docs to project'
 	end
 end
