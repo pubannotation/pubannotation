@@ -26,7 +26,7 @@ class AnnotationsController < ApplicationController
 			project = if params[:project].present?
 				params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
 			else
-				@doc.projects
+				@doc.projects.to_a
 			end
 			project.delete_if{|p| !p.annotations_accessible?(current_user)}
 
@@ -610,6 +610,10 @@ class AnnotationsController < ApplicationController
 		context_size = params[:context_size].to_i
 
 		@annotations = @doc.hannotations(@in_projects, @span, context_size)
+
+		# a temporary solution to avoid rendering problem when there is a wrong typesetting
+		@annotations.delete(:typesettings)
+
 		Annotation.add_source_project_color_coding!(@annotations)
 
 		respond_to do |format|
