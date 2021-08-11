@@ -103,3 +103,30 @@ cp .env.example .env
 CLIENT_ID=[Generated client id]
 CLIENT_SECRET=[Generated client secret]
 ```
+
+## Job execution preparation
+### Redis installation
+
+```
+$ brew install redis
+```
+
+### Launch Redis
+
+Start redis-server by specifying the location of `redis.conf`.
+```
+$ redis-server /usr/local/etc/redis.conf
+```
+
+### Start sidekiq worker
+
+Start the worker by specifying the location of sidekiq.yml.
+
+By starting a worker by specifying a queue, only Jobs that belong to that queue can be executed.
+```
+# Start sidekiq
+$ bundle exec sidekiq -C config/sidekiq.yml
+
+# Start by specifying a queue
+$ bundle exec sidekiq -C config/sidekiq.yml -q general
+```
