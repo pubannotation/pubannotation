@@ -12,14 +12,18 @@ class Annotation < ActiveRecord::Base
 		text = annotations[:text]
 		lexical_cues = {}
 
-		attrs_idx = nil
+		attrs_idx = {}
 		attr_preds = []
 
 		if annotations[:attributes].present?
 			attrs = annotations[:attributes]
-			attrs_idx = attrs.inject({}) do |idx, a|
-				idx.merge("#{a[:subj]}&#{a[:pred]}" => a)
+
+			attrs.each do |a|
+				key = "#{a[:subj]}&#{a[:pred]}"
+				attrs_idx[key] ||= []
+				attrs_idx[key] << a[:obj]
 			end
+
 			attr_preds = if textae_config.present? && textae_config[:"attribute types"].present?
 				textae_config[:"attribute types"].collect{|t| t[:pred]}
 			else
@@ -35,8 +39,8 @@ class Annotation < ActiveRecord::Base
 				lexical_cues[a[:id]] = spans.collect{|s| text[s[:begin]...s[:end]]}.join(' ').chomp
 				spant = spans.collect{|s| "#{s[:begin]}-#{s[:end]}"}.to_csv.chomp
 				attrs = attr_preds.collect do |pred|
-					att = attrs_idx["#{a[:id]}&#{pred}"]
-					att.nil? ? nil : att[:obj]
+					attr_values = attrs_idx["#{a[:id]}&#{pred}"]
+					attr_values.nil? ? nil : attr_values.join('|')
 				end
 				array << [a[:id], spant, a[:obj], 'denotes', lexical_cues[a[:id]]] + attrs
 			end
