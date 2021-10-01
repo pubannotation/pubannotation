@@ -151,6 +151,20 @@ class CollectionsController < ApplicationController
 		redirect_back fallback_location: root_path, notice: e.message
 	end
 
+	def project_toggle_secondary
+		collection = Collection.editable(current_user).find_by_name(params[:collection_id])
+		raise "Could not find the collection: #{params[:collection_id]}" unless collection.present?
+
+		project = collection.projects.find_by_name(params[:id])
+		raise "Could not find the project: #{params[:id]}" unless project.present?
+
+		CollectionProject.where(collection_id:collection.id, project_id:project.id).first.toggle_secondary
+
+		redirect_back fallback_location: root_path
+	rescue => e
+		redirect_back fallback_location: root_path, notice: e.message
+	end
+
 	def create_annotations_rdf
 		message = begin
 			raise "Not authorized" unless @collection.editable?(current_user)

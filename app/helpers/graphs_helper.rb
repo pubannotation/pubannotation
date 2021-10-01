@@ -12,7 +12,7 @@ module GraphsHelper
 	end
 
 	def solution2span_url (solution, extension_size = 0)
-		span_urls = solution.values.select{|v| span?(v["value"])}.map{|v| v["value"]}
+		span_urls = solution.values.select{|v| span?(v[:value])}.map{|v| v[:value]}
 		ranges = span_urls.map{|s| span_offset(s)}
 		mbeg = ranges.map{|r| r[0]}.min - extension_size
 		mend = ranges.map{|r| r[1]}.max + extension_size

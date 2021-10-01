@@ -463,15 +463,23 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def create_annotations_RDF
+	def create_annotations_RDF(doc_ids = nil)
 		rdfizer_annos = TAO::RDFizer.new(:annotations)
 
 		graph_uri_project = self.graph_uri
 		graph_uri_project_docs = self.docs_uri
 
+		_doc_ids = if doc_ids
+			doc_ids & docs.pluck(:id)
+		else
+			docs.pluck(:id)
+		end
+
 		## begin to produce annotations_trig
 		File.open(annotations_trig_filepath, "w") do |f|
-			docs.each_with_index do |doc, i|
+			_doc_ids.each_with_index do |doc_id, i|
+				doc = Doc.find(doc_id)
+
 				if i == 0
 					hannotations = doc.hannotations(self)
 

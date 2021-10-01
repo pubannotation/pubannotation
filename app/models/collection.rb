@@ -54,6 +54,19 @@ class Collection < ActiveRecord::Base
 		Project.joins(:collection_projects).where("collection_projects.collection_id": id, "collection_projects.is_primary": true)
 	end
 
+	def secondary_projects
+		Project.joins(:collection_projects).where("collection_projects.collection_id": id, "collection_projects.is_secondary": true)
+	end
+
+	def primary_project_ids
+		Project.joins(:collection_projects).where("collection_projects.collection_id": id, "collection_projects.is_primary": true).pluck(:id)
+	end
+
+	def secondary_project_ids
+		Project.joins(:collection_projects).where("collection_projects.collection_id": id, "collection_projects.is_secondary": true).pluck(:id)
+	end
+
+
 	def has_running_jobs?
 		jobs.each{|job| return true if job.running?}
 		return false
@@ -69,12 +82,28 @@ class Collection < ActiveRecord::Base
 		return false
 	end
 
-	def annotations_rdf_dirpath
-		@annotations_rdf_dirpath ||= Rails.application.config.system_path_rdf + 'collections/' + "#{name.gsub(' ', '_')}"
+	def self.rdf_dirpath
+		Rails.application.config.system_path_rdf + 'collections/'
+	end
+
+	def rdf_dirname
+		name.gsub(' ', '_') + '-rdf'
+	end
+
+	def rdf_dirpath
+		@rdf_dirpath ||= Collection.rdf_dirpath + rdf_dirname
+	end
+
+	def rdf_zipname
+		rdf_dirname + '.zip'
+	end
+
+	def rdf_zippath
+		@rdf_zippath ||= Collection.rdf_dirpath + rdf_zipname
 	end
 
 	def spans_trig_filepath
-		annotations_rdf_dirpath + "/#{name.gsub(' ', '_')}-spans.trig"
+		rdf_dirpath + "/#{name.gsub(' ', '_')}-spans.trig"
 	end
 
 	def create_spans_RDF
@@ -90,13 +119,17 @@ class Collection < ActiveRecord::Base
 			job = Job.find_by(active_job_id: active_job.job_id)
 			sleep(1) until job.finished_live?
 
-			FileUtils.ln_sf(pproject.spans_trig_filepath, annotations_rdf_dirpath)
+			FileUtils.ln_sf(pproject.spans_trig_filepath, rdf_dirpath)
 		end
+	end
+
+	def create_RDF_zip(encoding = nil)
+		puts `cd #{Collection.rdf_dirpath}; zip #{rdf_zipname} #{rdf_dirname}/*`
 	end
 
 	def last_indexed_at
 		begin
-			File.mtime(annotations_rdf_dirpath)
+			File.mtime(rdf_dirpath)
 		rescue
 			nil
 		end

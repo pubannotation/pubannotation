@@ -714,7 +714,7 @@ class Doc < ActiveRecord::Base
 
 	def to_hash(span = nil, context_size = nil)
 		{
-			target: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_path(sourcedb, sourceid, only_path: false),
+			target: Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(sourcedb, sourceid, only_path: false),
 			sourcedb: sourcedb,
 			sourceid: sourceid,
 			source_url: source,

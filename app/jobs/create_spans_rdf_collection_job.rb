@@ -3,7 +3,7 @@ class CreateSpansRdfCollectionJob < ApplicationJob
 
 	def perform(collection)
 		project_ids = collection.primary_projects.pluck(:id)
-		doc_ids = collection.primary_projects.reduce([]){|sum, project| sum.union(project.docs.pluck(:id))}
+		doc_ids = [].union(*collection.primary_projects.collect{|project| project.docs.pluck(:id)})
 
 		if @job
 			prepare_progress_record(doc_ids.count)

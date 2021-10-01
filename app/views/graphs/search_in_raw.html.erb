@@ -10,14 +10,14 @@
 				<span class="num_solutions"><%= @num_solutions %> results</span>
 			</div>
 
-			<% vars = @solutions["head"]["vars"] %>
+			<% vars = @solutions[:head][:vars].map{|var| var.to_sym} %>
 			<table style="table-layout:fixed; width:100%">
 				<tr>
 					<% vars.each do |h| %>
 						<th><%= h %></th>
 					<% end %>
 				</tr>
-				<% @solutions["results"]["bindings"].each do |binding| %>
+				<% @solutions[:results][:bindings].each do |binding| %>
 					<% if binding.present? %>
 						<tr>
 							<% vars.each do |h| %>
@@ -25,7 +25,7 @@
 								<td>
 									<%=
 										if v.present?
-											v['type'] == 'uri' ? link_to(v['value'], v['value']) : v['value']
+											v[:type] == 'uri' ? link_to(v[:value], v[:value]) : v[:value]
 										else
 											'-'
 										end

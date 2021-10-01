@@ -7,7 +7,7 @@
 			<h1>Result spans rendered in <a href="http://textae.pubannotation.org">TextAE</a></h1>
 			<%= render "page_index" %>
 			<% color_coding = nil %>
-			<% @solutions["results"]["bindings"].each do |solution| %>
+			<% @solutions[:results][:bindings].each do |solution| %>
 				<%
 					projects = params[:projects].split(',')
 					span_url = solution2span_url(solution)

@@ -71,7 +71,7 @@ module Pubann
     # for TAO RDF indexing
     # for TAO RDF indexing
     # config.ep_url = 'http://localhost:5820/'
-    config.ep_url = 'http://ep.pubannotation.org/'
+    config.ep_url = 'https://ep.pubannotation.org/PubAnnotation/query'
     config.ep_database = 'PubAnnotation'
     config.ep_user = 'user'
     config.ep_password = 'password'

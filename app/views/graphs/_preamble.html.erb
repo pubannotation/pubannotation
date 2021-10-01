@@ -9,6 +9,10 @@
 		end
 	-%>
 
+	<div class="note">
+		SPARQL endpoint: <%= link_to @sparql_ep, @sparql_ep %>
+	</div>
+
 	<% if last_indexed_at = @organization.last_indexed_at %>
 		<div class="note">
 			RDFization last created at <%= last_indexed_at %>
@@ -49,7 +53,7 @@
 
 	<% if @message %>
 	<pre style="border:2px solid #ff8888 ;padding:8px 4px; background-color:#ffdddd">
-	<%= @message[:message] %>
+	<%= @message %>
 	</pre>
 	<% end %>
 	<%= render "query_in_sparql" %>

@@ -1,5 +1,12 @@
 Pubann::Application.routes.draw do
 
+  require 'sidekiq/web'
+  devise_scope :user do
+    authenticate :user, ->(user) {user.root} do
+      mount Sidekiq::Web => '/sidekiq'
+    end
+  end
+
 	resources :evaluators
 	resources :evaluations do
 		post 'select_reference_project' => 'projects#select_reference_project'
@@ -19,6 +26,7 @@ Pubann::Application.routes.draw do
 			member do
 				delete '/' => 'collections#remove_project'
 				put '/toggle_primary' => "collections#project_toggle_primary"
+				put '/toggle_secondary' => "collections#project_toggle_secondary"
 			end
 		end
 		get 'jobs/latest_jobs_table' => 'jobs#latest_jobs_table'

@@ -1,12 +1,12 @@
 class CreateAnnotationsRdfJob < ApplicationJob
 	queue_as :low_priority
 
-	def perform(project)
+	def perform(project, doc_ids = nil)
 		if @job
 			prepare_progress_record(project.docs.count)
 		end
 
-		project.create_annotations_RDF do |i, doc, message|
+		project.create_annotations_RDF(doc_ids) do |i, doc, message|
 			if @job
 				@job.update_attribute(:num_dones, i + 1)
 				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: message}) if message

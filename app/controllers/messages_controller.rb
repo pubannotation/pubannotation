@@ -17,8 +17,8 @@ class MessagesController < ApplicationController
 
 	def show
 		@message = Message.find(params[:id])
-		@job     = @message.job
-		@project = @message.job.organization
+		@job = @message.job
+		@organization = @message.job.organization
 	end
 
 	def data_source
