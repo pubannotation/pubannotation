@@ -29,7 +29,7 @@ class Sequencer < ActiveRecord::Base
 	end
 
 	def get_doc(sourceid)
-		response = RestClient::Request.execute(method: :get, url: url, headers:{content_type: :json, accept: :json})
+		response = RestClient::Request.execute(method: :get, url: url, headers:{content_type: :json, accept: :json}, verify_ssl: false)
 
 		result = begin
 			JSON.parse response, :symbolize_names => true
@@ -44,7 +44,7 @@ class Sequencer < ActiveRecord::Base
 
 		ids_groups.inject({docs:[], messages:[]}) do |result, ids|
 			begin
-				response = RestClient::Request.execute(method: :post, url: url, payload: ids.to_json, headers:{content_type: :json, accept: :json})
+				response = RestClient::Request.execute(method: :post, url: url, payload: ids.to_json, headers:{content_type: :json, accept: :json}, verify_ssl: false)
 				begin
 					r = JSON.parse response, :symbolize_names => true
 					result[:docs] += r[:docs]

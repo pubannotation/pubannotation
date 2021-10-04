@@ -1159,9 +1159,9 @@ class Project < ActiveRecord::Base
 		end
 
 		response = if method == :post && !payload.nil?
-			RestClient::Request.execute(method: method, url: url, payload: payload, max_redirects: 0, headers:{content_type: payload_type, accept: :json})
+			RestClient::Request.execute(method: method, url: url, payload: payload, max_redirects: 0, headers:{content_type: payload_type, accept: :json}, verify_ssl: false)
 		else
-			RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers:{params: params, accept: :json})
+			RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers:{params: params, accept: :json}, verify_ssl: false)
 		end
 
 		if response.code == 200

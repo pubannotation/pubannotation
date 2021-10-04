@@ -10,7 +10,7 @@ class Graph
 		params[:default_graph_uri] = default_graph_uri if default_graph_uri
 		params[:named_graph_uri] = named_graph_uri if named_graph_uri
 
-		response = RestClient::Request.execute(method: :get, url: ep_url, max_redirects: 0, headers:{params: params, accept: 'application/sparql-results+json'})
+		response = RestClient::Request.execute(method: :get, url: ep_url, max_redirects: 0, headers:{params: params, accept: 'application/sparql-results+json'}, verify_ssl: false)
 
 		raise "Unexpected response: #{response}" unless response.respond_to?(:code)
 

@@ -49,7 +49,7 @@ class Evaluation < ActiveRecord::Base
 
 	def make_request(url, annotations_col)
 		response = begin
-			RestClient::Request.execute(method: :post, url: url, payload: annotations_col.to_json, max_redirects: 0, headers:{content_type: 'application/json; charset=utf8', accept: :json})
+			RestClient::Request.execute(method: :post, url: url, payload: annotations_col.to_json, max_redirects: 0, headers:{content_type: 'application/json; charset=utf8', accept: :json}, verify_ssl: false)
 		rescue => e
 			raise "The evaluation service reported a problem: #{e.message}"
 		end
