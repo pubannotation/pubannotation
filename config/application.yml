@@ -1,0 +1,15 @@
+defaults: &defaults
+
+development:
+  MY_LOCALHOST_NAME: 'pop-os'
+
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+staging:
+  <<: *defaults
+
+production:
+  <<: *defaults
