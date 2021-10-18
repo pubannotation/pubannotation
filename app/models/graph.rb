@@ -5,7 +5,13 @@ class Graph
 	def num_documents
 	end
 
-	def self.sparql_protocol_query_operation_get(ep_url, query, default_graph_uri = nil, named_graph_uri = nil)
+	def self.sparql_protocol_query_operation_get(ep_url, query, default_graph_uri = nil, named_graph_uri = nil, page = nil, page_size = nil)
+
+		# to get the results of page_size + 1 items to know whether there is any more
+		if page
+			query = query + "\nLIMIT #{page_size + 1}\nOFFSET #{(page - 1) * page_size}"
+		end
+
 		params = {query: query}
 		params[:default_graph_uri] = default_graph_uri if default_graph_uri
 		params[:named_graph_uri] = named_graph_uri if named_graph_uri

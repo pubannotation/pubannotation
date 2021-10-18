@@ -6,47 +6,40 @@ class GraphsController < ApplicationController
 		@sparql_ep = get_sparql_ep
 
 		query = params[:query]
-		@page = params[:page].to_i if params.has_key?(:page)
-		@page_size = params.has_key?(:page_size) ? params[:page_size].to_i : 10
+		if params[:show_mode] == "textae"
+			@page = params.has_key?(:page) ? params[:page].to_i : 1
+			@page_size = params.has_key?(:page_size) ? params[:page_size].to_i : 10
+		end
 
-		@solutions = @message = nil
+		@solutions = @bindings = @message = nil
+		@more_solutions = false
 
 		if query.present?
 			begin
-				@solutions = Graph.sparql_protocol_query_operation_get(@sparql_ep, query)
+				@solutions = Graph.sparql_protocol_query_operation_get(@sparql_ep, query, nil, nil, @page, @page_size)
+				if @page_size && @solutions[:results][:bindings].length > @page_size
+					@more_solutions = true
+					@solutions[:results][:bindings].slice!(@page_size .. -1)
+				end
+				@bindings = @solutions[:results][:bindings]
 			rescue => e
 				@message = e.message
-			end
-
-			@num_solutions = if params.has_key?(:num_solutions)
-				params[:num_solutions].to_i
-			elsif @solutions
-				@solutions[:results][:bindings].length
 			end
 		end
 
 		rendering = begin
 			r = params[:show_mode] == "textae" ? :search_in_textae : :search_in_raw
-			if @solutions && @num_solutions > 0 && r == :search_in_textae
+			if @solutions && @bindings.length > 0 && r == :search_in_textae
 				raise ArgumentError, "For the results to be rendered in TextAE, at least one project needs to be selected." unless params[:projects].present?
 
 				# check whether solutions include spans
-				s = @solutions[:results][:bindings].first
-				spans = s.values.select{|v| span?(v["value"])}.map{|v| v["value"]}
+				s = @bindings.first
+				spans = s.values.select{|v| span?(v[:value])}.map{|v| v[:value]}
 				raise ArgumentError, "Because the results do not include a span, they are shown in table instead rendered in TextAE." if spans.empty?
 
 				# check whether spans in one solutions come from the same documents
 				span_prefixes = spans.map{|s| span_prefix(s)}.uniq
 				raise ArgumentError, "Because the results include spans from different docs, they are shown in table instead rendered in TextAE." if span_prefixes.length > 1
-
-				# check whether paging is necessary
-				if @page.nil? && @num_solutions > @page_size
-					params[:page_size] = @page_size
-					params[:page] = 1
-					@page = 1
-					params[:num_solutions] = @num_solutions
-					@solutions, @message = get_solutions(query, 1, @page_size)
-				end
 			end
 			r
 		rescue => e
@@ -64,71 +57,6 @@ class GraphsController < ApplicationController
 	end
 
 	protected
-
-	def get_solutions(query, page = nil, page_size = nil)
-		if page
-			query = query + "\nLIMIT #{page_size}\nOFFSET #{(page - 1) * page_size}"
-		end
-
-		sd = Pubann::Application.config.sd
-		db = Pubann::Application.config.db
-
-		begin
-			results = sd.query(db, query, {reasoning: reasoning})
-		rescue => e
-			return [nil, {message: e.message}]
-		end
-
-		if results.success?
-			[results.body.to_h, nil]
-		else
-			case results.status
-			when 408, 504
-				[nil, {message: "Request timeout (#{results.status}): you are advised to re-try with a more specific query."}]
-			when 502, 503
-				[nil, {message: "SPARQL endpoint unavailable (#{results.status}): please re-try after a few minutes, or contact the system administrator if the problem lasts long."}]
-			else
-				begin
-					[nil, JSON.parse(results.body, symbolize_names:true)]
-				rescue
-					[nil, {message:results.body + "\n#{results.status}"}]
-				end
-			end
-		end
-	end
-
-
-	def get_solutions_sd(query, reasoning, page = nil, page_size = nil)
-		if page
-			query = query + "\nLIMIT #{page_size}\nOFFSET #{(page - 1) * page_size}"
-		end
-
-		sd = Pubann::Application.config.sd
-		db = Pubann::Application.config.db
-
-		begin
-			results = sd.query(db, query, {reasoning: reasoning})
-		rescue => e
-			return [nil, {message: e.message}]
-		end
-
-		if results.success?
-			[results.body.to_h, nil]
-		else
-			case results.status
-			when 408, 504
-				[nil, {message: "Request timeout (#{results.status}): you are advised to re-try with a more specific query."}]
-			when 502, 503
-				[nil, {message: "SPARQL endpoint unavailable (#{results.status}): please re-try after a few minutes, or contact the system administrator if the problem lasts long."}]
-			else
-				begin
-					[nil, JSON.parse(results.body, symbolize_names:true)]
-				rescue
-					[nil, {message:results.body + "\n#{results.status}"}]
-				end
-			end
-		end
-	end
 
 	def span?(v)
 		!!(%r|/spans/\d+-\d+$|.match(v))

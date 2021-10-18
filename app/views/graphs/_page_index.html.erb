@@ -1,35 +1,23 @@
-<% num_pages = (@num_solutions - 1) / @page_size + 1 %>
 <div class="page_info">
-	<% if num_pages > 1 %>
-		<ul class="page_index">
-		<% if num_pages < 11 %>
-			<% (1 .. num_pages).each do |i| %>
-				<li class="page"><%= link_to_unless_current i, url_for(params.permit(:controller, :action).merge(page: i)) %></li>
+	<ul class="page_index">
+		<% if @page > 5 %>
+			<li class="page"><%= link_to 1, url_for(params.permit(:controller, :action, :query, :show_mode, :project_name, :projects).merge(page: 1)) %></li>
+			<li class="page">...</li>
+			<% (@page - 2 ... @page).each do |i| %>
+				<li class="page"><%= link_to i, url_for(params.permit(:controller, :action, :query, :show_mode, :project_name, :projects).merge(page: i)) %></li>
 			<% end %>
 		<% else %>
-			<% if @page < 5 %>
-				<% (1 .. @page + 3).each do |i| %>
-					<li class="page"><%= link_to_unless_current i, url_for(params.permit(:controller, :action).merge(page: i)) %></li>
-				<% end %>
-				<li>...</li>
-				<li class="page"><%= link_to_unless_current num_pages, url_for(params.permit(:controller, :action).merge(page: num_pages)) %></li>
-			<% elsif num_pages - @page < 5 %>
-				<li class="page"><%= link_to_unless_current 1, url_for(params.permit(:controller, :action).merge(page: 1)) %></li>
-				<li>...</li>
-				<% ((@page - 3) .. num_pages).each do |i| %>
-					<li class="page"><%= link_to_unless_current i, url_for(params.permit(:controller, :action).merge(page: i)) %></li>
-				<% end %>
-			<% else %>
-				<li class="page"><%= link_to_unless_current 1, url_for(params.permit(:controller, :action).merge(page: 1)) %></li>
-				<li>...</li>
-				<% ((@page - 3) .. (@page + 3)).each do |i| %>
-					<li class="page"><%= link_to_unless_current i, url_for(params.permit(:controller, :action).merge(page: i)) %></li>
-				<% end %>
-				<li>...</li>
-				<li class="page"><%= link_to_unless_current num_pages, url_for(params.permit(:controller, :action).merge(page: num_pages)) %></li>
+			<% (1 ... @page).each do |i| %>
+				<li class="page"><%= link_to i, url_for(params.permit(:controller, :action, :query, :show_mode, :project_name, :projects).merge(page: i)) %></li>
 			<% end %>
 		<% end %>
-		</ul>
-	<% end %>
-	<span class="num_solutions"><%= @num_solutions %> results</span>
+
+		<% if @page > 1 || @more_solutions %>
+			<li class="page"><%= @page %></li>
+		<% end %>
+
+		<% if @more_solutions %>
+			<li class="page"><%= link_to '>', url_for(params.permit(:controller, :action, :query, :show_mode, :project_name, :projects).merge(page: @page + 1)) %></li>
+		<% end %>
+	</ul>
 </div>
