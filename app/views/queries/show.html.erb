@@ -69,7 +69,10 @@
 </table>
 
 <%= link_to "List", organization_queries_path(@query.organization), class: 'button' %>
-<%= link_to 'Edit', edit_organization_query_path(@query), class: 'button' %>
-<%= link_to 'Delete', organization_query_path(@query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+
+<% if @query.editable?(current_user) %>
+	<%= link_to 'Edit', edit_organization_query_path(@query), class: 'button' %>
+	<%= link_to 'Delete', organization_query_path(@query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+<% end %>
 
 </section>
