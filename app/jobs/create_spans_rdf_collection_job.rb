@@ -2,7 +2,7 @@ class CreateSpansRdfCollectionJob < ApplicationJob
 	queue_as :low_priority
 
 	def perform(collection)
-		project_ids = collection.primary_projects.pluck(:id)
+		project_ids = collection.primary_projects.pluck(:id) + collection.secondary_projects.pluck(:id)
 		doc_ids = [].union(*collection.primary_projects.collect{|project| project.docs.pluck(:id)})
 
 		if @job
