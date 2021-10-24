@@ -58,14 +58,13 @@ class Collection < ActiveRecord::Base
 		Project.joins(:collection_projects).where("collection_projects.collection_id": id, "collection_projects.is_secondary": true)
 	end
 
-	def primary_project_ids
-		Project.joins(:collection_projects).where("collection_projects.collection_id": id, "collection_projects.is_primary": true).pluck(:id)
+	def active_projects
+		Project.joins(:collection_projects).where("collection_projects.collection_id": id).where("collection_projects.is_primary=? OR collection_projects.is_secondary=?", true, true)
 	end
 
-	def secondary_project_ids
-		Project.joins(:collection_projects).where("collection_projects.collection_id": id, "collection_projects.is_secondary": true).pluck(:id)
+	def primary_docids
+		[].union(*self.primary_projects.collect{|project| project.docs.pluck(:id)})
 	end
-
 
 	def has_running_jobs?
 		jobs.each{|job| return true if job.running?}
@@ -82,49 +81,79 @@ class Collection < ActiveRecord::Base
 		return false
 	end
 
-	def self.rdf_dirpath
+	def identifier
+		name.gsub(' ', '_')
+	end
+
+	def self.rdf_loc
 		Rails.application.config.system_path_rdf + 'collections/'
 	end
 
 	def rdf_dirname
-		name.gsub(' ', '_') + '-rdf'
+		identifier + '-rdf'
 	end
 
-	def rdf_dirpath
-		@rdf_dirpath ||= Collection.rdf_dirpath + rdf_dirname
+	def rdf_new_dirname
+		rdf_dirname + '--new'
 	end
 
 	def rdf_zipname
-		rdf_dirname + '.zip'
+		identifier + '-rdf.zip'
+	end
+
+	def rdf_dirpath
+		@rdf_dirpath ||= Collection.rdf_loc + rdf_dirname
+	end
+
+	def rdf_new_dirpath
+		@rdf_new_dirpath||= Collection.rdf_loc + rdf_new_dirname
 	end
 
 	def rdf_zippath
-		@rdf_zippath ||= Collection.rdf_dirpath + rdf_zipname
+		@rdf_zippath ||= Collection.rdf_loc + rdf_zipname
 	end
 
-	def spans_trig_filepath
-		rdf_dirpath + "/#{name.gsub(' ', '_')}-spans.trig"
+	def spans_rdf_filename
+		"#{identifier}-spans.trig"
 	end
 
-	def create_spans_RDF
-		pprojects = self.primary_projects
-		unless pprojects.empty?
-			pproject = pprojects.first
+	def create_spans_RDF(loc = nil)
+		loc ||= Collection.rdf_loc + rdf_dirname
 
-			# pproject.create_spans_RDF
+		project_ids = active_projects.pluck(:id)
+		doc_ids = [].union(*self.primary_projects.collect{|project| project.docs.pluck(:id)})
 
-			# CreateSpansRdfJob.perform_now(pproject)
+		if @job
+			prepare_progress_record(doc_ids.count)
+		end
 
-			active_job = CreateSpansRdfJob.perform_later(pproject, self)
-			job = Job.find_by(active_job_id: active_job.job_id)
-			sleep(1) until job.finished_live?
+		File.open(loc + '/' + spans_rdf_filename, "w") do |f|
+			doc_ids.each_with_index do |doc_id, i|
+				doc = Doc.find(doc_id)
 
-			FileUtils.ln_sf(pproject.spans_trig_filepath, rdf_dirpath)
+				doc_spans_trig = if i == 0
+					doc.get_spans_rdf(project_ids, {with_prefixes: true})
+				else
+					doc.get_spans_rdf(project_ids, {with_prefixes: false})
+				end
+
+				f.write("\n") unless i == 0
+				f.write(doc_spans_trig)
+			rescue => e
+				message = "failure during rdfization: #{e.message}"
+				if block_given?
+					yield(i, doc, message) if block_given?
+				else
+					raise e
+				end
+			ensure
+				yield(i, doc, nil) if block_given?
+			end
 		end
 	end
 
 	def create_RDF_zip(encoding = nil)
-		puts `cd #{Collection.rdf_dirpath}; zip #{rdf_zipname} #{rdf_dirname}/*`
+		puts `cd #{Collection.rdf_loc}; zip #{rdf_zipname} #{rdf_dirname}/*`
 	end
 
 	def last_indexed_at

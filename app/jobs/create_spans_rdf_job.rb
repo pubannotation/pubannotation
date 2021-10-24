@@ -1,12 +1,12 @@
 class CreateSpansRdfJob < ApplicationJob
 	queue_as :low_priority
 
-	def perform(project, in_collection)
+	def perform(project, in_collection, loc = nil)
 		if @job
 			prepare_progress_record(project.docs.count)
 		end
 
-		project.create_spans_RDF(in_collection) do |i, doc, message|
+		project.create_spans_RDF(in_collection, loc) do |i, doc, message|
 			if @job
 				@job.update_attribute(:num_dones, i + 1)
 				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: message}) if message.present?

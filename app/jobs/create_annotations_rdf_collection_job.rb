@@ -3,49 +3,29 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 
 	def perform(collection, options)
 		if @job
-			prepare_progress_record(collection.primary_projects.count + collection.secondary_projects.count + 2)
+			prepare_progress_record(collection.active_projects.count + 2)
 		end
 
-		FileUtils.mkdir_p collection.rdf_dirpath unless File.exists? collection.rdf_dirpath
-		FileUtils.rm_f Dir.glob("#{collection.rdf_dirpath}/*")
+		# clear
 		FileUtils.rm_f collection.rdf_zippath
+		FileUtils.rm_f Dir.glob("#{collection.rdf_dirpath}/*") if forced?(options) && File.exists?(collection.rdf_dirpath)
 
-		## create annotation RDF of primary projects
-		create_annotation_RDF(collection, collection.primary_projects, options)
+		# prepare
+		FileUtils.rm_f Dir.glob("#{collection.rdf_new_dirpath}/*")
+		FileUtils.mkdir_p collection.rdf_new_dirpath
 
-		## create annotation RDF of secondary projects
-		unless collection.secondary_projects.empty?
-			primary_doc_ids = [].union(collection.primary_projects.collect{|project| project.docs.pluck(:id)})
-			create_annotation_RDF(collection, collection.secondary_projects, options, primary_doc_ids)
-		end
+		docids_in_primary = collection.primary_docids
 
-		# creation of spans RDF
-		if @job
-			active_job = CreateSpansRdfCollectionJob.perform_later(collection)
-			monitor_job = Job.find_by(active_job_id: active_job.job_id)
-			until monitor_job.finished_live?
-				sleep(1)
-				ActiveRecord::Base.connection.clear_query_cache
-			end
-		else
-			puts "start creation of span RDF <====="
-			CreateSpansRdfCollectionJob.perform_now(collection)
-		end
+		collection.active_projects.each do |project|
+			if project.rdf_needs_to_be_updated?(collection.rdf_dirpath)
+				docids_specified = if CollectionProject.is_primary?(collection, project)
+					nil
+				else
+					docids_in_primary
+				end
 
-		@job.increment!(:num_dones, 1) if @job
-
-		puts "start creation of collection RDF zip <====="
-		collection.create_RDF_zip
-		@job.increment!(:num_dones, 1) if @job
-	end
-
-	def create_annotation_RDF(collection, projects, options, doc_ids = nil)
-		pp projects
-		puts "start creation of annotation RDF <============"
-		projects.each do |project|
-			if forced?(options) || project.rdf_needs_to_be_updated?
 				if @job
-					active_job = CreateAnnotationsRdfJob.perform_later(project)
+					active_job = CreateAnnotationsRdfJob.perform_later(project, docids_specified, collection.rdf_new_dirpath)
 					monitor_job = Job.find_by(active_job_id: active_job.job_id)
 					until monitor_job.finished_live?
 						sleep(1)
@@ -53,10 +33,12 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 					end
 				else
 					puts "start creation, #{project.name} <====="
-					CreateAnnotationsRdfJob.perform_now(project)
+					CreateAnnotationsRdfJob.perform_now(project, docids_specified, collection.rdf_new_dirpath)
 				end
+			else
+				FileUtils.cp collection.rdf_dirpath + '/' + project.annotations_rdf_filename, collection.rdf_new_dirpath
 			end
-			FileUtils.ln_sf(project.annotations_trig_filepath, collection.rdf_dirpath)
+
 			if @job
 				@job.increment!(:num_dones, 1)
 				check_suspend_flag
@@ -70,6 +52,29 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 				raise e
 			end
 		end
+
+		# creation of spans RDF
+		if @job
+			active_job = CreateSpansRdfCollectionJob.perform_later(collection, collection.rdf_new_dirpath)
+			monitor_job = Job.find_by(active_job_id: active_job.job_id)
+			until monitor_job.finished_live?
+				sleep(1)
+				ActiveRecord::Base.connection.clear_query_cache
+			end
+		else
+			puts "start creation of span RDF <====="
+			CreateSpansRdfCollectionJob.perform_now(collection)
+		end
+
+		@job.increment!(:num_dones, 1) if @job
+
+		## rename the new RDF dir
+		FileUtils.rm_rf collection.rdf_dirpath if File.exists? collection.rdf_dirpath
+		FileUtils.mv collection.rdf_new_dirpath, collection.rdf_dirpath
+
+		puts "start creation of collection RDF zip <====="
+		collection.create_RDF_zip
+		@job.increment!(:num_dones, 1) if @job
 	end
 
 	def forced?(options)

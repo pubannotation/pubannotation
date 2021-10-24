@@ -182,7 +182,7 @@ class Project < ActiveRecord::Base
 
 	 status_hash[self.status]
 	end
-	
+
 	def accessibility_text
 	 accessibility_hash = {
 		 1 => I18n.t('activerecord.options.project.accessibility.public'),
@@ -191,7 +191,7 @@ class Project < ActiveRecord::Base
 	 }
 	 accessibility_hash[self.accessibility]
 	end
-	
+
 	def process_text
 	 process_hash = {
 		 1 => I18n.t('activerecord.options.project.process.manual'),
@@ -213,7 +213,7 @@ class Project < ActiveRecord::Base
 	def self.statistics
 		counts = Project.where(accessibility: 1).group(:status).group(:process).count
 	end
-	
+
 	def associate_maintainers_addable_for?(current_user)
 		if self.new_record?
 			true
@@ -221,7 +221,7 @@ class Project < ActiveRecord::Base
 			current_user.root? == true || current_user == self.user
 		end
 	end
-	
+
 	def association_for(current_user)
 		if current_user.present?
 			if current_user == self.user
@@ -231,7 +231,7 @@ class Project < ActiveRecord::Base
 			end
 		end
 	end
-	
+
 	def build_associate_maintainers(usernames)
 		if usernames.present?
 			users = User.where('username IN (?)', usernames)
@@ -317,15 +317,15 @@ class Project < ActiveRecord::Base
 	end
 
 	def annotations_filename
-		"annotations-#{self.name.gsub(' ', '_')}"
+		"annotations-#{identifier}"
 	end
 
 	def annotations_zip_filename
-		"#{self.name.gsub(' ', '_')}-annotations.zip"
+		"#{identifier}-annotations.zip"
 	end
 
 	def annotations_tgz_filename
-		"#{self.name.gsub(' ', '_')}-annotations.tgz"
+		"#{identifier}-annotations.tgz"
 	end
 
 	def annotations_zip_path
@@ -394,33 +394,47 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def annotations_rdf_dirname
-		"#{self.name.gsub(' ', '_')}-annotations-rdf"
+	def annotations_rdf_filename
+		"#{identifier}-annotations-rdf.zip"
 	end
 
-	def annotations_rdf_dir_path
-		Rails.application.config.system_path_rdf + self.annotations_rdf_dirname
+	def identifier
+		name.gsub(' ', '_')
+	end
+
+	def rdf_loc
+		Rails.application.config.system_path_rdf + "projects/#{identifier}-rdf/"
+	end
+
+	def rdf_zipfile
+		"#{identifier}-rdf.zip"
 	end
 
 	def annotations_rdf_filename
-		"#{self.name.gsub(' ', '_')}-annotations-rdf.zip"
+		"#{identifier}-annotations.trig"
 	end
 
-	def annotations_trig_filepath
-		Rails.application.config.system_path_rdf + 'projects/' + "#{name.gsub(' ', '_')}-annotations.trig"
+	def spans_rdf_filename
+		"#{identifier}-spans.trig"
 	end
 
-	def spans_trig_filepath
-		Rails.application.config.system_path_rdf + 'projects/' + "#{name.gsub(' ', '_')}-spans.trig"
+	def graph_uri
+		Rails.application.routes.url_helpers.home_url + "projects/#{self.name}"
 	end
 
-
-	def annotations_rdf_path
-		"#{Project::DOWNLOADS_PATH}" + self.annotations_rdf_filename
+	def docs_uri
+		graph_uri + '/docs'
 	end
 
-	def annotations_rdf_system_path
-		self.downloads_system_path + self.annotations_rdf_filename
+	def last_indexed_at_live(endpoint = nil)
+		begin
+			endpoint ||= stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
+			db = Rails.application.config.ep_database
+			result = endpoint.query(db, "select ?o where {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?o}")
+			DateTime.parse(result.body["results"]["bindings"].first["o"]["value"])
+		rescue
+			nil
+		end
 	end
 
 	def create_rdf_zip (ttl)
@@ -436,34 +450,10 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def graph_uri
-		Rails.application.routes.url_helpers.home_url + "projects/#{self.name}"
-	end
+	def create_annotations_RDF(doc_ids = nil, loc = nil)
+		loc ||= rdf_loc
+		FileUtils.mkdir_p loc unless File.exists? loc
 
-	def docs_uri
-		graph_uri + '/docs'
-	end
-
-	def last_indexed_at
-		begin
-			File.mtime(annotations_trig_filepath)
-		rescue
-			nil
-		end
-	end
-
-	def last_indexed_at_live(endpoint = nil)
-		begin
-			endpoint ||= stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
-			db = Rails.application.config.ep_database
-			result = endpoint.query(db, "select ?o where {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?o}")
-			DateTime.parse(result.body["results"]["bindings"].first["o"]["value"])
-		rescue
-			nil
-		end
-	end
-
-	def create_annotations_RDF(doc_ids = nil)
 		rdfizer_annos = TAO::RDFizer.new(:annotations)
 
 		graph_uri_project = self.graph_uri
@@ -476,7 +466,7 @@ class Project < ActiveRecord::Base
 		end
 
 		## begin to produce annotations_trig
-		File.open(annotations_trig_filepath, "w") do |f|
+		File.open(loc + '/' + annotations_rdf_filename, "w") do |f|
 			_doc_ids.each_with_index do |doc_id, i|
 				doc = Doc.find(doc_id)
 
@@ -526,10 +516,13 @@ class Project < ActiveRecord::Base
 
 	end
 
-	def create_spans_RDF(in_collection = nil)
+	def create_spans_RDF(in_collection = nil, loc = nil)
+		loc ||= rdf_loc
+		FileUtils.mkdir_p loc unless File.exists? loc
+
 		rdfizer_spans = TAO::RDFizer.new(:spans)
 
-		File.open(spans_trig_filepath, "w") do |f|
+		File.open(loc + spans_rdf_filename, "w") do |f|
 			docs.each_with_index do |doc, i|
 				graph_uri_doc = doc.graph_uri
 				graph_uri_doc_spans = doc.graph_uri + '/spans'
@@ -570,8 +563,18 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def rdf_needs_to_be_updated?
-		!annotations_updated_at.nil? && (last_indexed_at.nil? || last_indexed_at < annotations_updated_at)
+	def rdf_needs_to_be_updated?(loc)
+		tstamp_last_index = last_indexed_at(loc)
+		!annotations_updated_at.nil? && (tstamp_last_index.nil? || tstamp_last_index < annotations_updated_at)
+	end
+
+	def last_indexed_at(loc = nil)
+		loc ||= rdf_loc
+		begin
+			File.mtime(loc + '/' + annotations_rdf_filename)
+		rescue
+			nil
+		end
 	end
 
 	def delete_index
