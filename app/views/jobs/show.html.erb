@@ -63,6 +63,15 @@
 				<th>Elapsed</th>
 				<td><%= time_duration(@job.ended_at - @job.begun_at) %></td>
 			</tr>
+
+			<tr>
+				<%
+					duration = @job.ended_at - @job.begun_at
+					pace = @job.num_dones / duration
+				%>
+				<th>Pace</th>
+				<td><%= pace.round(3) %> docs/second</td>
+			</tr>
 		<% else %>
 			<tr>
 				<th>Now</th>
