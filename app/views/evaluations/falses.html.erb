@@ -1,9 +1,18 @@
 <%= render :partial => 'shared/textae_css_js'-%>
 <%
 	docspec  = params[:sourcedb] + ':' + params[:sourceid]
-	docspec += '(' + params[:divid] + ')' if params.has_key?(:divid)
+	type = params[:type]
+	element = params[:element]
 %>
-<h1>from <%= docspec %></h1>
+<h1>
+	False cases for <%= docspec %>
+	<% unless type.nil? %>
+		(
+		<%= "'#{element}'-type" unless element.nil? %>
+		<%= type %>s
+		)
+	<% end %>
+</h1>
 <% if @fps && !@fps.empty?%>
 	<section>
 		<h2>False positives</h2>

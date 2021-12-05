@@ -105,16 +105,33 @@ class EvaluationsController < ApplicationController
 
 		sourcedb = params[:sourcedb]
 		sourceid = params[:sourceid]
+		type     = params[:type]
+		element  = params[:element]
+		element  = nil if element && element == 'All'
+
 		@doc = Doc.get_doc(sourcedb:sourcedb, sourceid:sourceid)
 
-		@fps = result[:false_positives].nil? ? [] : result[:false_positives].select{|fp| fp[:sourcedb] == sourcedb && fp[:sourceid] == sourceid}
-		@fns = result[:false_negatives].nil? ? [] : result[:false_negatives].select{|fn| fn[:sourcedb] == sourcedb && fn[:sourceid] == sourceid}
+		element_key = type == 'relation' ? :pred : :obj
+
+		@fps = result[:false_positives] || {}
+		@fps = @fps.select{|c| c[:sourcedb] == sourcedb && c[:sourceid] == sourceid}
+		@fps = @fps.select{|c| c[:type] == type} unless type.nil?
+		@fps = @fps.select{|c| c[:study][element_key] == element} unless element.nil?
+
+		@fns = result[:false_negatives] || {}
+		@fns = @fns.select{|c| c[:sourcedb] == sourcedb && c[:sourceid] == sourceid}
+		@fns = @fns.select{|c| c[:type] == type} unless type.nil?
+		@fns = @fns.select{|c| c[:reference][element_key] == element} unless element.nil?
 	
 		begin
 			render layout: 'layouts/popup'
 		rescue => e
 			render plain: "<h1>Something's wrong</h1><p>#{e.message}</p><p>Please re-generate the evaluation result.</p>", layout: 'layouts/popup'
 		end
+	end
+
+	def index_falses
+		@evaluation = Evaluation.accessible(current_user).find(params[:evaluation_id])
 	end
 
 	def generate

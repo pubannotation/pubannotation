@@ -1,0 +1,53 @@
+<%
+	result = JSON.parse @evaluation.result, :symbolize_names => true
+	type = params[:type]
+	element = params[:element]
+	element = nil if element && element == 'All'
+
+	element_key = params[:type] == 'relation' ? :pred : :obj
+
+	fps = result[:false_positives] || {}
+	fps = fps.select{|c| c[:type] == type} unless type.nil?
+	fps = fps.select{|c| c[:study][element_key] == element} unless element.nil?
+	fps_index = fps.group_by{|c| c[:sourcedb] + ':' + c[:sourceid]}
+
+	fns = result[:false_negatives] || {}
+	fns = fns.select{|c| c[:type] == type} unless type.nil?
+	fns = fns.select{|c| c[:reference][element_key] == element} unless element.nil?
+	fns_index = fns.group_by{|c| c[:sourcedb] + ':' + c[:sourceid]}
+
+	docspecs = (fps_index.keys + fns_index.keys).sort.uniq
+%>
+
+<section>
+	<h1>
+		False positives / negatives
+		(
+		<%= "'#{element}'-type" unless element.nil? %>
+		<%= type %>s
+		)
+	</h1>
+
+	<% if docspecs.empty? %>
+		<p>none</p>
+	<% else %>
+		<table>
+			<tr>
+				<th colspan='2'>Document</th>
+				<th>#FP</th>
+				<th>#FN</th>
+			</tr>
+			<% docspecs.each do |docspec| %>
+				<% sourcedb, sourceid = docspec.split(':') %>
+				<% oq = {sourcedb:sourcedb, sourceid:sourceid, type: type, element:element} %>
+				<tr>
+					<td style="text-align:center"><%= sourcedb %></td>
+					<td style="text-align:right"><%= sourceid %></td>
+					<td style="text-align:right"><%= fps_index.has_key?(docspec) ? fps_index[docspec].count : 0 %></td>
+					<td style="text-align:right"><%= fns_index.has_key?(docspec) ? fns_index[docspec].count : 0 %></td>
+					<td><%= link_to('Show', evaluation_falses_path(@evaluation, oq), class: 'button', target: '_blank') %></td>
+				</tr>
+			<% end %>
+		</table>
+	<% end %>
+</section>

@@ -14,6 +14,7 @@ Pubann::Application.routes.draw do
 		post 'generate' => 'evaluations#generate'
 		get 'result' => 'evaluations#result'
 		get 'falses' => 'evaluations#falses'
+		get 'index_falses' => 'evaluations#index_falses'
 	end
 
 	resources :collections do
