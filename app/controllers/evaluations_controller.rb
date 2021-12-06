@@ -1,5 +1,5 @@
 class EvaluationsController < ApplicationController
-	before_action :authenticate_user!, except: [:index, :show, :result, :falses]
+	before_action :authenticate_user!, except: [:index, :show, :result, :index_falses, :falses]
 	before_action :set_evaluation, only: [:edit, :update, :destroy]
 
 	respond_to :html
