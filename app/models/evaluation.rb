@@ -28,7 +28,7 @@ class Evaluation < ActiveRecord::Base
 				where('evaluations.is_public = ? OR evaluations.user_id = ?', true, current_user.id)
 			end
 		else
-			where('evaluations.is_public: true')
+			where('evaluations.is_public = true')
 		end
 	}
 
