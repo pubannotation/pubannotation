@@ -15,6 +15,8 @@ Pubann::Application.routes.draw do
 		get 'result' => 'evaluations#result'
 		get 'falses' => 'evaluations#falses'
 		get 'index_falses' => 'evaluations#index_falses'
+		get 'index_fps'
+		get 'index_fns'
 	end
 
 	resources :collections do
@@ -118,8 +120,8 @@ Pubann::Application.routes.draw do
 						post 'spans' => 'spans#get_url'
 						get 'spans/:begin-:end' => 'docs#show', :as => 'span_show'
 						get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'
-						get 'spans/:begin-:end/annotations/merge_view' => 'annotations#doc_annotations_merge_view'
-						get 'spans/:begin-:end/annotations/list_view' => 'annotations#doc_annotations_list_view'
+						get 'spans/:begin-:end/annotations/merge_view' => 'annotations#doc_annotations_merge_view', :as => 'span_annotations_merge_view'
+						get 'spans/:begin-:end/annotations/list_view' => 'annotations#doc_annotations_list_view', :as => 'span_annotations_list_view'
 						get 'spans/:begin-:end/annotations/visualize' => 'annotations#doc_annotations_list_view'
 					end
 				end

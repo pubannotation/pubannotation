@@ -14,7 +14,8 @@
 <section>
 	<h1>
 		Evaluation #<%= @evaluation.id %>
-		<%= badge_public(@evaluation.is_public).html_safe %>
+		&nbsp;
+		<%= badge_private(@evaluation.is_public).html_safe %>
 		<%= link_to 'List', project_evaluations_path(@project.name), class: 'button' %>
 		<% if @evaluation.changeable?(current_user) -%>
 			<%= link_to 'Edit', edit_evaluation_path(@evaluation), class: 'button' %>

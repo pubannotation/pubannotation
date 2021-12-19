@@ -29,7 +29,12 @@
 	<td style="text-align:right"><%= measures[:precision][e].present? ? '%.02f' % measures[:precision][e] : '-' %></td>
 	<td style="text-align:right"><%= measures[:recall][e].present? ? '%.02f' % measures[:recall][e] : '-' %></td>
 	<td style="text-align:right"><%= measures[:fscore][e].present? ? '%.02f' % measures[:fscore][e] : '-' %></td>
-	<td><%= link_to('FPs/FNs', evaluation_index_falses_path(@evaluation, {type: type, element:e}), class: 'button', target: '_blank') %></td>
+	<% if @evaluation.changeable?(current_user) -%>
+		<td>
+			<%= link_to('FPs', evaluation_index_fps_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'False positives') %>
+			<%= link_to('FNs', evaluation_index_fns_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'False negatives') %>
+		</td>
+	<% end %>
 </tr>
 <% end %>
 </table>

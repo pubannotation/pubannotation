@@ -761,6 +761,8 @@ class Doc < ActiveRecord::Base
 	end
 
 	def hannotations(project = nil, span = nil, context_size = nil, options = nil)
+		full = options[:full]
+
 		annotations = self.to_hash(span, context_size)
 
 		if project.present? && !project.respond_to?(:each)
@@ -769,7 +771,7 @@ class Doc < ActiveRecord::Base
 			projects = project.present? ? project : self.projects
 			annotations[:tracks] = projects.inject([]) do |tracks, project|
 				track = get_project_annotations(project, span, context_size, options)
-				if track[:denotations].present?
+				if full || track[:denotations].present?
 					tracks << track
 				else
 					tracks

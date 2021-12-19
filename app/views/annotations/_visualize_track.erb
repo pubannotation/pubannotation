@@ -1,7 +1,7 @@
 <section class="textae-wrapper-section">
 <div id="textae-wrapper-<%= visualize_track[:project] -%>" class="textae-wrapper oneline grabbable" data-project-name="<%= visualize_track[:project] -%>">
 	<h3>
-		<%= link_to visualize_track[:project], project_path(visualize_track[:project]) -%>
+		<%= link_to visualize_track[:project], span_show_project_sourcedb_sourceid_docs_path(visualize_track[:project], params[:sourcedb], params[:sourceid], params[:begin], params[:end]) -%>
 		<i class="fa fa-minus-square remove-textae clickable-text" aria-hidden="true"></i>
 	</h3>
 	<div class="textae-editor oneline" control="hidden">

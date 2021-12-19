@@ -626,6 +626,8 @@ class AnnotationsController < ApplicationController
 		@span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
 		@doc.set_ascii_body if params[:encoding] == 'ascii'
 
+		option_full = params[:full].present?
+
 		if params[:projects].present?
 			project_names = params[:projects].split(',').uniq
 			@visualize_projects = Array.new
@@ -641,8 +643,9 @@ class AnnotationsController < ApplicationController
 
 		context_size = params[:context_size].present? ? params[:context_size].to_i : 0
 
-		@annotations = @doc.hannotations(@visualize_projects, @span, context_size)
+		@annotations = @doc.hannotations(@visualize_projects, @span, context_size, {full: option_full})
 		@track_annotations = @annotations[:tracks]
+
 		@track_annotations.each {|a| a[:text] = @annotations[:text]}
 
 		respond_to do |format|

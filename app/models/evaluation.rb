@@ -1,4 +1,6 @@
 class Evaluation < ActiveRecord::Base
+	include Rails.application.routes.url_helpers
+
 	belongs_to :study_project, class_name: 'Project'
 	belongs_to :reference_project, class_name: 'Project'
 	belongs_to :evaluator
@@ -41,10 +43,10 @@ class Evaluation < ActiveRecord::Base
 		raise RuntimeError, "The URL of the evaluation web service is not specified." unless evaluator.url.present?
 
 		annotations_col = study_project.docs.collect{|doc| doc.hannotations(study_project)}
-		result = make_request(evaluator.url, annotations_col)
-		update_attribute(:result, JSON.generate(result))
+		@hresult = make_request(evaluator.url, annotations_col)
+		update_attribute(:result, JSON.generate(@hresult))
 
-		result
+		@hresult
 	end
 
 	def make_request(url, annotations_col)
@@ -54,10 +56,140 @@ class Evaluation < ActiveRecord::Base
 			raise "The evaluation service reported a problem: #{e.message}"
 		end
 
-		result = begin
+		begin
 			JSON.parse response, :symbolize_names => true
 		rescue => e
 			raise RuntimeError, "Received a non-JSON object: [#{response}]"
+		end
+	end
+
+	def hresult
+		@hresult ||= JSON.parse result, :symbolize_names => true
+	end
+
+	def false_positives(type = nil, element = nil, sort_key = nil)
+		fps = hresult[:false_positives] || []
+		fps = fps.select{|c| c[:type] == type} unless type.nil?
+		element_key = type == :relation ? :pred : :obj
+		fps = fps.select{|c| c[:study][element_key] == element} unless element.nil?
+		if sort_key.present?
+			fps = case sort_key
+			when :text
+				count_hash = begin
+					texts = fps.collect{|fn| fn[:study][:text]}
+					texts.uniq.map{|t| [t, texts.count(t)]}.to_h
+				end
+				fps.sort_by do |fn|
+					text = fn[:study][:text]
+					[-count_hash[text], text]
+				end
+			when :doc
+				count_hash = begin
+					docspecs = fps.collect{|fn| fn[:sourcedb] + ':' + fn[:sourceid]}
+					docspecs.uniq.map{|d| [d, docspecs.count(d)]}.to_h
+				end
+				fps.sort_by do |fn|
+					docspec = fn[:sourcedb] + ':' + fn[:sourceid]
+					[-count_hash[docspec], docspec]
+				end
+			when :label
+				count_hash = begin
+					labels = fps.collect{|fn| fn[:study][element_key]}
+					labels.uniq.map{|l| [l, labels.count(l)]}.to_h
+				end
+				fps.sort_by do |fn|
+					label = fn[:study][element_key]
+					[-count_hash[label], label]
+				end
+			end
+		end
+		fps
+	end
+
+	def false_negatives(type = nil, element = nil, sort_key = nil)
+		fns = hresult[:false_negatives] || []
+		fns = fns.select{|c| c[:type] == type} unless type.nil?
+		element_key = type == :relation ? :pred : :obj
+		fns = fns.select{|c| c[:reference][element_key] == element} unless element.nil?
+		if sort_key.present?
+			fns = case sort_key
+			when :text
+				count_hash = begin
+					texts = fns.collect{|fn| fn[:reference][:text]}
+					texts.uniq.map{|t| [t, texts.count(t)]}.to_h
+				end
+				fns.sort_by do |fn|
+					text = fn[:reference][:text]
+					[-count_hash[text], text]
+				end
+			when :doc
+				count_hash = begin
+					docspecs = fns.collect{|fn| fn[:sourcedb] + ':' + fn[:sourceid]}
+					docspecs.uniq.map{|d| [d, docspecs.count(d)]}.to_h
+				end
+				fns.sort_by do |fn|
+					docspec = fn[:sourcedb] + ':' + fn[:sourceid]
+					[-count_hash[docspec], docspec]
+				end
+			when :label
+				count_hash = begin
+					labels = fns.collect{|fn| fn[:reference][element_key]}
+					labels.uniq.map{|l| [l, labels.count(l)]}.to_h
+				end
+				fns.sort_by do |fn|
+					label = fn[:reference][element_key]
+					[-count_hash[label], label]
+				end
+			end
+		end
+		fns
+	end
+
+	def false_positives_csv(type = nil, element = nil, sort_key = nil)
+		element_key = type == :relation ? :pred : :obj
+
+		fps = false_positives(type, element, sort_key)
+		fps.map{|fp| []}
+
+		column_names = %w{sourcedb sourceid begin_offset end_offset text label show_link}
+
+		CSV.generate(col_sep: "\t") do |csv|
+			csv << column_names
+			fps.each do |fp|
+				csv << [
+					fp[:sourcedb],
+					fp[:sourceid],
+					fp[:study][:span][:begin],
+					fp[:study][:span][:end],
+					fp[:study][:text],
+					fp[:study][element_key],
+					doc_sourcedb_sourceid_span_annotations_list_view_url(fp[:sourcedb], fp[:sourceid], fp[:study][:span][:begin], fp[:study][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
+				]
+			end
+		end
+	end
+
+	def false_negatives_csv(type = nil, element = nil, sort_key = nil)
+		element_key = type == :relation ? :pred : :obj
+
+		fps = false_negatives(type, element, sort_key)
+		fps.map{|fp| []}
+
+		column_names = %w{sourcedb sourceid begin_offset end_offset text label show_link}
+
+		CSV.generate(col_sep: "\t") do |csv|
+			csv << column_names
+			fps.each do |fp|
+				csv << [
+					fp[:sourcedb],
+					fp[:sourceid],
+					fp[:reference][:span][:begin],
+					fp[:reference][:span][:end],
+					fp[:reference][:text],
+					fp[:reference][element_key],
+					doc_sourcedb_sourceid_span_annotations_list_view_url(fp[:sourcedb], fp[:sourceid], fp[:reference][:span][:begin], fp[:reference][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
+				]
+			end
 		end
 	end
 end

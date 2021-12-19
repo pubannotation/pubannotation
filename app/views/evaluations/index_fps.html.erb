@@ -1,0 +1,46 @@
+<section>
+	<h1>
+		False positives
+		(
+		<%= "'#{@element}'-type" unless @element.nil? %>
+		<%= @type %>s
+		)
+	</h1>
+
+	<% if @fps.empty? %>
+		<p>none</p>
+	<% else %>
+		<table>
+			<tr>
+				<td style="border-style:none; text-align:left"><%= number_with_delimiter(@fps.length, delimiter: ',') %></td>
+				<td colspan="3" style="border-style:none"></td>
+				<td style="border-style:none; text-align:right">
+					<%= link_to 'TSV', params.permit(:controller, :action, :type, :element).merge(format: :tsv), :class => 'tab' -%>
+				</td>
+			</tr>
+			<tr>
+				<th colspan='2'>Document <%= sort_button_helper(:doc) %></th>
+				<th>text <%= sort_button_helper(:text) %></th>
+				<th>label <%= sort_button_helper(:label) %></th>
+				<th>Show</th>
+			</tr>
+			<% @fps.each do |fp| %>
+				<%
+					sourcedb = fp[:sourcedb]
+					sourceid = fp[:sourceid]
+				%>
+				<tr>
+					<td style="text-align:center"><%= sourcedb %></td>
+					<td style="text-align:right"><%= sourceid %></td>
+					<td style="text-align:center"><%= fp[:study][:text] %></td>
+					<td style="text-align:center"><%= fp[:study][:obj] %></td>
+					<td>
+						<%=
+							link_to('Show', doc_sourcedb_sourceid_span_annotations_list_view_path(sourcedb, sourceid, fp[:study][:span][:begin], fp[:study][:span][:end], {projects:"#{@sproject.name},#{@rproject.name}", full:true, context_size:10}), :class => 'button', title: 'Show the annotations in TextAE')
+						%>
+					</td>
+				</tr>
+			<% end %>
+		</table>
+	<% end %>
+</section>

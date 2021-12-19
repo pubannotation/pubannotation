@@ -26,4 +26,11 @@ module EvaluationsHelper
 		ann.span
 	end
 
+	def sort_button_helper(sort_key)
+		link_to_unless_current(
+			content_tag(:i, '', class: "fa fa-sort-desc", "aria-hidden" => "true"),
+			params.permit(:controller, :action, :type, :element).merge(sort_key: sort_key),
+			title: "Sort by #{sort_key}. Frequent ones come first."
+		)
+	end
 end

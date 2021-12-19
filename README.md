@@ -10,9 +10,11 @@ Requirement
 -----------
 
 Please use it with
-* ruby version 2.7.3
-* Postgresql 9.0 or above, and
-* ElasticSearch 5
+* ruby version 2.7.3,
+* Postgresql 9.0 or above,
+* ElasticSearch 5 or above, and
+* [redis](https://redis.io/)
+
 If your system does not already have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.
 
 Installation
