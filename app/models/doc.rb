@@ -761,6 +761,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def hannotations(project = nil, span = nil, context_size = nil, options = nil)
+		options ||= {}
 		full = options[:full]
 
 		annotations = self.to_hash(span, context_size)
