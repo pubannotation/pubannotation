@@ -7,7 +7,7 @@ gem 'rails', '5.2.6'
 gem 'rake'
 gem 'activerecord-import'
 
-gem 'puma', '~> 3.4'
+gem 'puma', '~> 4.3'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
