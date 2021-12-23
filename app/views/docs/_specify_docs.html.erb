@@ -1,0 +1,16 @@
+<table style="width:100%">
+	<tr>
+		<th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
+		<td style="width:17em"><%= select_tag(:sourcedb, options_for_select(Doc::SOURCEDBS)) -%></td>
+	</tr>
+	<tr>
+		<th><%= t('activerecord.attributes.doc.sourceid')%></th>
+		<td>
+			<p>Specify source IDs below:</p>
+			<%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids')) %>
+			<p style="text-align: center">- or -</p>
+			<p>Upload a text file with source IDs (one at a line):</p>
+			<%= file_field_tag 'upfile', accept: '.txt' -%>
+		</td>
+	</tr>
+</table>
