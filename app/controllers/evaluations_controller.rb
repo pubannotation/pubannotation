@@ -134,7 +134,7 @@ class EvaluationsController < ApplicationController
 		@evaluation = Evaluation.accessible(current_user).find(params[:evaluation_id])
 	end
 
-	def index_fps
+	def index_tps
 		evaluation = Evaluation.accessible(current_user).find(params[:evaluation_id])
 
 		@type = params[:type]
@@ -142,6 +142,25 @@ class EvaluationsController < ApplicationController
 		@element = nil if @element && @element == 'All'
 		@sort_key = params[:sort_key]&.to_sym
 
+		respond_to do |format|
+			format.html {
+				@tps = evaluation.true_positives(@type, @element, @sort_key)
+				@sproject = evaluation.study_project
+				@rproject = evaluation.reference_project
+			}
+			format.tsv {
+				send_data evaluation.true_positives_csv(@type, @element, @sort_key), filename: "true_positives_#{@element || 'all'}_type_#{@type}s.csv"
+			}
+		end
+	end
+
+	def index_fps
+		evaluation = Evaluation.accessible(current_user).find(params[:evaluation_id])
+
+		@type = params[:type]
+		@element = params[:element]
+		@element = nil if @element && @element == 'All'
+		@sort_key = params[:sort_key]&.to_sym
 
 		respond_to do |format|
 			format.html {

@@ -34,7 +34,7 @@ group :development do
 end
 
 gem 'text_alignment', '0.11.10'
-gem 'pubannotation_evaluator', '~> 1.1', '>= 1.1.0'
+gem 'pubannotation_evaluator', '~> 1.1', '>= 1.2.0'
 gem 'wice_grid'
 gem 'font-awesome-rails'
 gem 'jquery-rails'

@@ -67,6 +67,45 @@ class Evaluation < ActiveRecord::Base
 		@hresult ||= JSON.parse result, :symbolize_names => true
 	end
 
+	def true_positives(type = nil, element = nil, sort_key = nil)
+		tps = hresult[:true_positives] || []
+		tps = tps.select{|c| c[:type] == type} unless type.nil?
+		element_key = type == :relation ? :pred : :obj
+		tps = tps.select{|c| c[:study][element_key] == element} unless element.nil?
+		if sort_key.present?
+			tps = case sort_key
+			when :text
+				count_hash = begin
+					texts = tps.collect{|fn| fn[:study][:text]}
+					texts.uniq.map{|t| [t, texts.count(t)]}.to_h
+				end
+				tps.sort_by do |fn|
+					text = fn[:study][:text]
+					[-count_hash[text], text]
+				end
+			when :doc
+				count_hash = begin
+					docspecs = tps.collect{|fn| fn[:sourcedb] + ':' + fn[:sourceid]}
+					docspecs.uniq.map{|d| [d, docspecs.count(d)]}.to_h
+				end
+				tps.sort_by do |fn|
+					docspec = fn[:sourcedb] + ':' + fn[:sourceid]
+					[-count_hash[docspec], docspec]
+				end
+			when :label
+				count_hash = begin
+					labels = tps.collect{|fn| fn[:study][element_key]}
+					labels.uniq.map{|l| [l, labels.count(l)]}.to_h
+				end
+				tps.sort_by do |fn|
+					label = fn[:study][element_key]
+					[-count_hash[label], label]
+				end
+			end
+		end
+		tps
+	end
+
 	def false_positives(type = nil, element = nil, sort_key = nil)
 		fps = hresult[:false_positives] || []
 		fps = fps.select{|c| c[:type] == type} unless type.nil?
@@ -143,6 +182,30 @@ class Evaluation < ActiveRecord::Base
 			end
 		end
 		fns
+	end
+
+	def true_positives_csv(type = nil, element = nil, sort_key = nil)
+		element_key = type == :relation ? :pred : :obj
+
+		tps = true_positives(type, element, sort_key)
+		tps.map{|tp| []}
+
+		column_names = %w{sourcedb sourceid begin_offset end_offset text label show_link}
+
+		CSV.generate(col_sep: "\t") do |csv|
+			csv << column_names
+			tps.each do |tp|
+				csv << [
+					tp[:sourcedb],
+					tp[:sourceid],
+					tp[:study][:span][:begin],
+					tp[:study][:span][:end],
+					tp[:study][:text],
+					tp[:study][element_key],
+					doc_sourcedb_sourceid_span_annotations_list_view_url(tp[:sourcedb], tp[:sourceid], tp[:study][:span][:begin], tp[:study][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
+				]
+			end
+		end
 	end
 
 	def false_positives_csv(type = nil, element = nil, sort_key = nil)

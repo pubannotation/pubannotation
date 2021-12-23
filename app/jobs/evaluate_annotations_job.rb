@@ -45,6 +45,9 @@ class EvaluateAnnotationsJob < ApplicationJob
 
 			false_negatives = comparison.select{|m| m[:study].nil? && m[:reference]}
 			result[:false_negatives] = false_negatives if false_negatives.present?
+
+			true_positives = comparison.select{|m| m[:study] && m[:reference]}
+			result[:true_positives] = true_positives unless true_positives.empty?
 		end
 
 		evaluation.update_attribute(:result, JSON.generate(result))

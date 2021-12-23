@@ -31,6 +31,7 @@
 	<td style="text-align:right"><%= measures[:fscore][e].present? ? '%.02f' % measures[:fscore][e] : '-' %></td>
 	<% if @evaluation.changeable?(current_user) -%>
 		<td>
+			<%= link_to('TPs', evaluation_index_tps_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'True positives') %>
 			<%= link_to('FPs', evaluation_index_fps_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'False positives') %>
 			<%= link_to('FNs', evaluation_index_fns_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'False negatives') %>
 		</td>

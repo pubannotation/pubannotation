@@ -15,6 +15,7 @@ Pubann::Application.routes.draw do
 		get 'result' => 'evaluations#result'
 		get 'falses' => 'evaluations#falses'
 		get 'index_falses' => 'evaluations#index_falses'
+		get 'index_tps'
 		get 'index_fps'
 		get 'index_fns'
 	end
