@@ -1,0 +1,120 @@
+<%= render :partial => 'shared/textae_css_js'-%>
+
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> obtain-annotations
+<% end -%>
+
+<% if @project.present? -%>
+	<section>
+		<%= render partial: 'projects/titlebar' -%>
+<% end %>
+
+		<section>
+			<h2>
+				<%= t('views.docs.clean_annotations') %>
+				<%= link_to(content_tag(:i, '', class: "fa fa-question-circle", "aria-hidden" => "true"), 'http://www.pubannotation.org/docs/clean-annotation/', title: "Help") %>
+			</h2>
+
+			<%= link_to('Analyse', analyse_project_annotations_path(@project.name), method: :post, title: "Analyse the annotations", class: :button) %>
+
+			<%
+				analysis = if @project.analysis.present?
+					JSON.parse @project.analysis, symbolize_names: true
+				else
+					nil
+				end
+
+				embeddings = analysis.present? ? analysis[:embeddings] : []
+				bcrossings = analysis.present? ? analysis[:bcrossings] : []
+				duplabels  = analysis.present? ? analysis[:duplabels] : []
+			%>
+			<section>
+				<table>
+					<tr>
+						<th>Embeddings</th>
+						<td><%= embeddings.length %></td>
+						<td><%= link_to 'remove', remove_embeddings_project_annotations_path(@project.name), method: :post, class: :button %></td>
+					</tr>
+					<tr>
+						<th>Boundary Crossings</th>
+						<td><%= bcrossings.length %></td>
+						<td><%= link_to 'remove', remove_boundary_crossings_project_annotations_path(@project.name), method: :post, class: :button %></td>
+					</tr>
+					<tr>
+						<th>Duplicate labels</th>
+						<td><%= duplabels.length %></td>
+						<td><%= link_to 'remove', remove_duplicate_labels_project_annotations_path(@project.name), method: :post, class: :button %></td>
+					</tr>
+				</table>
+			</section>
+		</section>
+		<% unless analysis.nil? %>
+			<section>
+				<h3>Embeddings</h3>
+					<% unless embeddings.empty? %>
+						<table>
+							<% embeddings.each_with_index do |e, i| %>
+								<%
+									url1 = Denotation.get_span_url_by_hid(@project, e[:sourcedb], e[:sourceid], e[:embedding])
+									url2 = Denotation.get_span_url_by_hid(@project, e[:sourcedb], e[:sourceid], e[:embedded])
+								%>
+								<tr>
+									<th><%= link_to 'PubAnnotation', url1	%></th>
+									<th><%= link_to 'PubAnnotation', url2	%></th>
+								</tr>
+								<tr>
+									<td>
+										<%=
+											content_tag(:div, "", class: "textae-editor", target: url1 + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+										%>
+									</td>
+									<td>
+										<%=
+											content_tag(:div, "", class: "textae-editor", target: url2 + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+										%>
+									</td>
+								</tr>
+								<% break if i > 10 %>
+							<% end %>
+						</table>
+					<% end %>
+				</section>
+
+			<section>
+				<h3>Duplicate Labels</h3>
+					<% unless duplabels.empty? %>
+						<table>
+							<% url = [] %>
+							<% duplabels.each_with_index do |l, i| %>
+								<tr>
+									<% l[:ids].each_with_index do |id, j| %>
+										<th>
+											<%=
+												url[j] = Denotation.get_span_url_by_hid(@project, l[:sourcedb], l[:sourceid], id)
+												link_to 'PubAnnotation', url[j]
+											%>
+										</th>
+									<% end %>
+								</tr>
+								<tr>
+									<% l[:ids].each_with_index do |id, j| %>
+										<td>
+											<%=
+												content_tag(:div, "", class: "textae-editor", target: url[j] + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+											%>
+										</td>
+									<% end %>
+								</tr>
+							<% end %>
+						</table>
+					<% end %>
+			</section>
+		<% end %>
+
+
+<% if @project.present? -%>
+	</section>
+<% end %>

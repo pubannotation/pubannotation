@@ -1,0 +1,11 @@
+For each document, when there is existing annotation, the newly coming annotations will
+<ul>
+	<li><%= radio_button_tag :mode, :replace, checked: true %><%= label_tag :mode_replace,
+		'<span style="font-weight:bold">REPLACE</span> the existing ones,'.html_safe %></li>
+	<li><%= radio_button_tag :mode, :add %><%= label_tag :mode_add,
+		'be <span style="font-weight:bold">ADD</span>ed to the existing ones,'.html_safe %></li>
+	<li><%= radio_button_tag :mode, :merge %><%= label_tag :mode_merge,
+		'be <span style="font-weight:bold">MERGED</span>ed to the existing ones,'.html_safe %></li>
+	<li><%= radio_button_tag :mode, :skip %><%= label_tag :mode_skip,
+		'be <span style="font-weight:bold">SKIP</span>ped.'.html_safe %></li>
+</ul>

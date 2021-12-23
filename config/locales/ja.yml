@@ -427,6 +427,8 @@ ja:
       document_content: ドキュメントのコンテンツ
       projects_that_annotates_this: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       obtain_annotations: アノテーションの取得
+      import_annotations: アノテーションのインポート
+      clean_annotations: アノテーションの掃除
       transform_annotations: アノテーションの変換
       records: ドキュメントレコード一覧
       sourcedb_list: ソースDB一覧
@@ -437,6 +439,7 @@ ja:
       list: ドキュメント一覧
       import: ドキュメントインポート
       add_docs: ドキュメント追加
+      import_docs: ドキュメントインポート
       create_doc: ドキュメント新規作成
       upload_docs: ドキュメントアップロード
       create_a_new_document: ドキュメント生成

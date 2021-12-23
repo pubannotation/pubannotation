@@ -107,4 +107,15 @@ class Denotation < ActiveRecord::Base
 			end       
 		end
 	end
+
+	def self.find_a_denotation(project, sourcedb, sourceid, hid)
+		doc = Doc.where(sourcedb:sourcedb, sourceid:sourceid).first
+		where(doc_id:doc.id, project_id:project.id, hid:hid).first
+	end
+
+	def self.get_span_url_by_hid(project, sourcedb, sourceid, hid)
+		doc = Doc.where(sourcedb:sourcedb, sourceid:sourceid).first
+		d = where(doc_id:doc.id, project_id:project.id, hid:hid).first
+		Rails.application.routes.url_helpers.span_show_project_sourcedb_sourceid_docs_url(project.name, sourcedb, sourceid, d.begin, d.end)
+	end
 end

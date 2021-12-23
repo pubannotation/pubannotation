@@ -166,6 +166,8 @@ Pubann::Application.routes.draw do
 			get 'upload_docs' => 'projects#upload_docs'
 			get 'uptodate_docs' => 'projects#uptodate_docs'
 			get 'obtain_annotations' => 'projects#obtain_annotations'
+			get 'import_annotations' => 'projects#import_annotations'
+			get 'clean_annotations' => 'projects#clean_annotations'
 			get 'rdfize_annotations' => 'projects#rdfize_annotations'
 			get 'upload_annotations' => 'projects#upload_annotations'
 			get 'delete_annotations' => 'projects#delete_annotations'
@@ -237,6 +239,10 @@ Pubann::Application.routes.draw do
 		resources :annotations do
 			collection do
 				post 'import'  => 'annotations#import'
+				post 'analyse' => 'annotations#analyse'
+				post 'remove_embeddings' => 'annotations#remove_embeddings'
+				post 'remove_boundary_crossings' => 'annotations#remove_boundary_crossings'
+				post 'remove_duplicate_labels' => 'annotations#remove_duplicate_labels'
 			end
 		end
 

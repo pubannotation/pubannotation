@@ -147,6 +147,14 @@ class ProjectsController < ApplicationController
 		@project = Project.editable(current_user).find_by_name(params[:id])
 	end
 
+	def import_annotations
+		@project = Project.editable(current_user).find_by_name(params[:id])
+	end
+
+	def clean_annotations
+		@project = Project.editable(current_user).find_by_name(params[:id])
+	end
+
 	def rdfize_annotations
 		@project = Project.editable(current_user).find_by_name(params[:id])
 	end

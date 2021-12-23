@@ -136,8 +136,15 @@
 			</tr>
 			<tr>
 				<th><%= t('views.shared.import') %></th>
-				<td><%= render partial: 'import_annotations_form' -%></td>
+				<td><%= link_to t('views.docs.import_annotations'), import_annotations_project_path(@project.name), class: 'button long_button' -%></td>
 			</tr>
+
+			<% if current_user.root? %>
+				<tr>
+					<th><%= t('views.shared.clean') %></th>
+					<td><%= link_to t('views.docs.clean_annotations'), clean_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+				</tr>
+			<% end %>
 
 			<% if @project.docs.count < Rails.application.config.project_indexable_max_docs || current_user.root? %>
 				<tr>

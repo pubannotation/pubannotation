@@ -67,7 +67,11 @@
 			<tr>
 				<%
 					duration = @job.ended_at - @job.begun_at
-					pace = @job.num_dones / duration
+					pace = if @job.num_dones && @job.num_dones > 0 && duration > 0
+					 @job.num_dones / duration
+					else
+						0
+					end
 				%>
 				<th>Pace</th>
 				<td><%= pace.round(3) %> docs/second</td>

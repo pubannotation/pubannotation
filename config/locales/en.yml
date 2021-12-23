@@ -277,7 +277,9 @@ en:
         project_name: Enter project name.
       doc:
         annotation_server: URL of annotation server
-        ids: source IDs
+        ids: source IDs (comma, space, or newline-delimited)
+      annotation:
+        types: annotation types (comma, space, or newline-delimited)
       sproject:
         project_name: Enter related project name.
     options:
@@ -411,6 +413,8 @@ en:
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_that_annotates_this: "Projects <span class='meta'>that have annotated to this document</span>"
       obtain_annotations: Obtain Annotations
+      import_annotations: Import Annotations
+      clean_annotations: Clean Annotations
       transform_annotations: Transform Annotations
       records: doc records
       list: documents
@@ -424,6 +428,7 @@ en:
         projects_that_have_annotations_to_this_span: that have annotations to this span
       import: Import
       add_docs: Add documents
+      import_docs: Import documents
       create_doc: Create a new document
       upload_docs: Upload documents
       rdfize_annotations: RDFize annotations

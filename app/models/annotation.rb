@@ -643,4 +643,78 @@ class Annotation < ActiveRecord::Base
 		end
 	end
 
+	def self.analyse(annotations)
+		denotations = annotations[:denotations]
+		denotations.sort!{|d1, d2| (d1[:span][:begin] <=> d2[:span][:begin]).nonzero? || (d2[:span][:end] <=> d1[:span][:end])}
+
+		# Embeddings
+		embeddingh = {}
+		(1 ... denotations.length).each do |c|
+			e = find_embedding(denotations, c, embeddingh)
+			embeddingh[c] = e if e.present?
+		end
+		embeddings = embeddingh.to_a
+
+		# Boundary Crossings
+		bcrossings = []
+		(0 ... denotations.length).each do |c|
+			n = c + 1
+			while n < denotations.length && denotations[n][:span][:begin] < denotations[c][:span][:end]
+				bcrossings << [c, n] if bcrossing?(denotations[c], denotations[n])
+				n += 1
+			end
+		end
+
+		# Duplicate labels
+		duplabels = []
+		(1 ... denotations.length).each do |c|
+			p = c - 1
+			if duplicate?(denotations[c], denotations[p])
+				last_dup = duplabels.empty? ? nil : duplabels[-1]
+				if last_dup&.include?(p)
+					last_dup << c
+				else
+					duplabels << [p, c]
+				end
+			end
+		end
+
+		embeddings.map!{|e| {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], embedded:denotations[e.first][:id], embedding:denotations[e.last][:id]}}
+		bcrossings.map!{|c| {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], left:denotations[c.first][:id], right:denotations[c.first][:id]}}
+		duplabels.map!{|d| {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], ids:d.map{|id| denotations[id][:id]}}}
+
+		{embeddings:embeddings, bcrossings:bcrossings, duplabels:duplabels}
+	end
+
+	private
+
+	def self.find_embedding(denotations, c, embeddingh)
+		return nil unless c > 0
+
+		p = c - 1
+		if embedding?(denotations[c], denotations[p])
+			p
+		else
+			pe = embeddingh[p]
+			while pe.present?
+				return pe if embedding?(denotations[c], denotations[pe])
+				pe = embeddingh[pe]
+			end
+			nil
+		end
+	end
+
+	# assume that entries are all sorted
+	def self.embedding?(current, previous)
+		current[:span][:end] <= previous[:span][:end] && ((current[:span][:begin] != previous[:span][:begin]) || (current[:span][:end] != previous[:span][:end]))
+	end
+
+	def self.bcrossing?(current, nnext)
+		(current[:span][:end] > nnext[:span][:begin]) && (current[:span][:end] < nnext[:span][:end])
+	end
+
+	def self.duplicate?(current, previous)
+		(current[:span][:begin] == previous[:span][:begin]) && (current[:span][:end] == previous[:span][:end])
+	end
+
 end

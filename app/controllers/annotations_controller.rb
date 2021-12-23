@@ -459,31 +459,93 @@ class AnnotationsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "There is no such project in your management: #{params[:project_id]}." unless project.present?
 
-			source_project = Project.find_by_name(params[:select_project])
-			raise ArgumentError, "Could not find the project: #{params[:select_project]}." if source_project.nil?
-			raise ArgumentError, "You cannot import annotations from itself." if source_project == project
-			raise ArgumentError, "The annotations in the project are blinded." if source_project.accessibility == 3
+			options = {mode: params[:mode].present? ? params[:mode] : 'merge'}
 
-			source_docs = source_project.docs
+			messages = []
+
+			# source projects
+			sproject_names = params[:select_project].split(/\|/)
+			sprojects = sproject_names.map do |name|
+				sproject = Project.find_by_name(name)
+				if sproject.nil?
+					messages << "Could not find the project: #{name}."
+					nil
+				elsif sproject == project
+					messages << "A project cannot import annotations from itself: #{name}."
+					nil
+				elsif sproject.accessibility == 3
+					messages << "The annotations in the project are blinded: #{name}."
+					nil
+				else
+					sproject
+				end
+			end.compact
+
 			destin_docs = project.docs
-			shared_docs = source_docs & destin_docs
+			sprojects.reject! do |sproject|
+				shared_docs = sproject.docs & destin_docs
+				if shared_docs.length > 3000
+					messages << "The project has more than 3000 shared documents, for which this feature is limited for a performance reason: #{sproject.name}."
+					true
+				elsif shared_docs.empty?
+					messages << "The project has no shared document with it: #{sproject.name}"
+					true
+				else
+					false
+				end
+			end
 
-			raise ArgumentError, "There is no shared document with the project, #{source_project.name}" if shared_docs.length == 0
-			raise ArgumentError, "For a performance reason, current implementation limits this feature to work for less than 3,000 documents." if shared_docs.length > 3000
-
-			docids = shared_docs.collect{|d| d.id}
-
-			ImportAnnotationsJob.perform_later(project, source_project)
-			message = "The task, 'import annotations from the project, #{source_project.name}', is created."
+			ImportAnnotationsJob.perform_later(project, sproject_names, options)
+			messages << "The task, 'import annotations from the projects, #{sprojects.map{|p| p.name}.join(", ")}', is created."
 
 		rescue => e
-			message = e.message
+			messages << e.message
 		end
 
 		respond_to do |format|
-			format.html {redirect_to project_path(project.name), notice: message}
-			format.json {render json:{message:message}}
+			format.html {redirect_to project_path(project.name), notice: messages.join("\n")}
+			# format.json {render json:{messages:messages}}
 		end
+	end
+
+	def analyse
+		begin
+			project = Project.editable(current_user).find_by_name(params[:project_id])
+			raise "There is no such project in your management: #{params[:project_id]}." unless project.present?
+
+			options = {mode: params[:mode].present? ? params[:mode] : 'merge'}
+
+			AnalyseAnnotationsJob.perform_later(project, options)
+			message = "The task, 'analyse project annotations: #{project.name}', is created."
+
+		rescue => e
+			messages = e.message
+		end
+
+		redirect_back fallback_location: project_path(project.name), notice: message
+	end
+
+	def remove_embeddings
+		begin
+			project = Project.editable(current_user).find_by_name(params[:project_id])
+			raise "There is no such project in your management: #{params[:project_id]}." unless project.present?
+
+			options = {mode: params[:mode].present? ? params[:mode] : 'merge'}
+
+			RemoveEmbeddingsJob.perform_later(project, options)
+			message = "The task, 'remove project embedded annotations: #{project.name}', is created."
+
+		rescue => e
+			messages = e.message
+		end
+
+		redirect_back fallback_location: project_path(project.name), notice: message
+	end
+
+	def remove_boundary_crossings
+	end
+
+	def remove_duplicate_labels
 	end
 
 	def create_project_annotations_tgz

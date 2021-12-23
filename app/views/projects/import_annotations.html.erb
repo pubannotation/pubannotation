@@ -1,0 +1,56 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> obtain-annotations
+<% end -%>
+
+<% if @project.present? -%>
+	<section>
+		<%= render partial: 'projects/titlebar' -%>
+<% end %>
+
+		<section>
+			<h2>
+				<%= t('views.docs.import_annotations') %>
+				<%= link_to(content_tag(:i, '', class: "fa fa-question-circle", "aria-hidden" => "true"), 'http://www.pubannotation.org/docs/import-annotation/', title: "Help") %>
+			</h2>
+
+			<%= form_tag(import_project_annotations_path(@project.name), :method => "post") do %>
+				<table>
+					<tr>
+						<th>Source Project</th>
+						<td><%= render partial: "projects/select_project", locals: {placeholder: "the project from which the annotations will be imported"} %></td>
+					</tr>
+<!-- 
+					<tr>
+						<th>Target Documents</th>
+						<td>
+							 Leave sourceID empty to import from all the documents in the source project.
+							 <%= render partial: 'docs/specify_docs' %>
+						</td>
+					</tr>
+					<tr>
+						<th>Target Annotations</th>
+						<td>
+							<%= render partial: 'annotations/specify_annotations' %>
+						</td>
+					</tr>
+ -->
+					<tr>
+						<th>Mode</th>
+						<td><%= render partial: 'annotations/add_modes' %></td>
+					</tr>
+					<tr>
+						<th colspan="2">
+							<%= submit_tag('Import annotation') %>
+						</th>
+					</tr>
+				</table>
+			<% end %>
+
+		</section>
+
+<% if @project.present? -%>
+	</section>
+<% end %>

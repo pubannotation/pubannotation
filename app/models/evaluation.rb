@@ -1,6 +1,4 @@
 class Evaluation < ActiveRecord::Base
-	include Rails.application.routes.url_helpers
-
 	belongs_to :study_project, class_name: 'Project'
 	belongs_to :reference_project, class_name: 'Project'
 	belongs_to :evaluator
@@ -202,7 +200,7 @@ class Evaluation < ActiveRecord::Base
 					tp[:study][:span][:end],
 					tp[:study][:text],
 					tp[:study][element_key],
-					doc_sourcedb_sourceid_span_annotations_list_view_url(tp[:sourcedb], tp[:sourceid], tp[:study][:span][:begin], tp[:study][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
+					Rails.application.routes.url_helpers.doc_sourcedb_sourceid_span_annotations_list_view_url(tp[:sourcedb], tp[:sourceid], tp[:study][:span][:begin], tp[:study][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
 				]
 			end
 		end
@@ -226,7 +224,7 @@ class Evaluation < ActiveRecord::Base
 					fp[:study][:span][:end],
 					fp[:study][:text],
 					fp[:study][element_key],
-					doc_sourcedb_sourceid_span_annotations_list_view_url(fp[:sourcedb], fp[:sourceid], fp[:study][:span][:begin], fp[:study][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
+					Rails.application.routes.url_helpers.doc_sourcedb_sourceid_span_annotations_list_view_url(fp[:sourcedb], fp[:sourceid], fp[:study][:span][:begin], fp[:study][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
 				]
 			end
 		end
@@ -250,7 +248,7 @@ class Evaluation < ActiveRecord::Base
 					fp[:reference][:span][:end],
 					fp[:reference][:text],
 					fp[:reference][element_key],
-					doc_sourcedb_sourceid_span_annotations_list_view_url(fp[:sourcedb], fp[:sourceid], fp[:reference][:span][:begin], fp[:reference][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
+					Rails.application.routes.url_helpers.doc_sourcedb_sourceid_span_annotations_list_view_url(fp[:sourcedb], fp[:sourceid], fp[:reference][:span][:begin], fp[:reference][:span][:end], {projects:"#{study_project.name},#{reference_project.name}", full:true, context_size:10})
 				]
 			end
 		end
