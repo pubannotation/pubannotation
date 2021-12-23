@@ -68,12 +68,12 @@
 								<tr>
 									<td>
 										<%=
-											content_tag(:div, "", class: "textae-editor", target: url1 + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+											content_tag(:div, "", class: "textae-editor", target: url1& + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
 										%>
 									</td>
 									<td>
 										<%=
-											content_tag(:div, "", class: "textae-editor", target: url2 + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+											content_tag(:div, "", class: "textae-editor", target: url2& + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
 										%>
 									</td>
 								</tr>
@@ -103,7 +103,7 @@
 									<% l[:ids].each_with_index do |id, j| %>
 										<td>
 											<%=
-												content_tag(:div, "", class: "textae-editor", target: url[j] + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+												content_tag(:div, "", class: "textae-editor", target: url[j]& + '/annotations.json', status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
 											%>
 										</td>
 									<% end %>
