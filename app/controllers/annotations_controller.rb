@@ -546,6 +546,29 @@ class AnnotationsController < ApplicationController
 	end
 
 	def remove_duplicate_labels
+		begin
+			project = Project.editable(current_user).find_by_name(params[:project_id])
+			raise "There is no such project in your management: #{params[:project_id]}." unless project.present?
+
+			options = {
+									order:[
+										"DiseaseOrPhenotypicFeature",
+										"OrganismTaxon",
+										"ChemicalEntity",
+										"SequenceVariant",
+										"CellLine",
+										"GeneOrGeneProduct"
+									]
+								}
+
+			RemoveDuplicateLabelsJob.perform_later(project, options)
+			message = "The task, 'remove project duplicate labels: #{project.name}', is created."
+
+		rescue => e
+			messages = e.message
+		end
+
+		redirect_back fallback_location: project_path(project.name), notice: message
 	end
 
 	def create_project_annotations_tgz
