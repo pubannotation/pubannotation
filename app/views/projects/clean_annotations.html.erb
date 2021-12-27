@@ -54,69 +54,87 @@
 		<% unless analysis.nil? %>
 			<section>
 				<h3>Embeddings</h3>
-					<% unless embeddings.empty? %>
-						<table>
-							<% embeddings.each_with_index do |e, i| %>
-								<%
-									url1 = Denotation.get_span_url_by_hid(@project, e[:sourcedb], e[:sourceid], e[:embedding])
-									url2 = Denotation.get_span_url_by_hid(@project, e[:sourcedb], e[:sourceid], e[:embedded])
-								%>
-								<tr>
-									<th><%= link_to 'PubAnnotation', url1	%></th>
-									<th><%= link_to 'PubAnnotation', url2	%></th>
-								</tr>
-								<tr>
-									<td>
-										<%=
-											url1 += '/annotations.json' unless url1.nil?
-											content_tag(:div, "", class: "textae-editor", target: url1, status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
-										%>
-									</td>
-									<td>
-										<%=
-											url2 += '/annotations.json' unless url2.nil?
-											content_tag(:div, "", class: "textae-editor", target: url2, status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
-										%>
-									</td>
-								</tr>
-								<% break if i > 10 %>
-							<% end %>
-						</table>
-					<% end %>
-				</section>
+				<% unless embeddings.empty? %>
+					<table>
+						<% embeddings.each_with_index do |e, i| %>
+							<%
+								url1 = Denotation.get_span_url_by_hid(@project, e[:sourcedb], e[:sourceid], e[:embedding])
+							%>
+							<tr>
+								<th><%= link_to 'PubAnnotation', url1	%></th>
+							</tr>
+							<tr>
+								<td>
+									<%=
+										url1 += '/annotations.json' unless url1.nil?
+										content_tag(:div, "", class: "textae-editor", target: url1, status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+									%>
+								</td>
+							</tr>
+							<% break if i > 10 %>
+						<% end %>
+					</table>
+				<% end %>
+			</section>
 
 			<section>
-				<h3>Duplicate Labels</h3>
-					<% unless duplabels.empty? %>
-						<table>
-							<% url = [] %>
-							<% duplabels.each_with_index do |l, i| %>
-								<tr>
-									<% l[:ids].each_with_index do |id, j| %>
-										<th>
-											<%=
-												url[j] = Denotation.get_span_url_by_hid(@project, l[:sourcedb], l[:sourceid], id)
-												link_to 'PubAnnotation', url[j]
-											%>
-										</th>
-									<% end %>
-								</tr>
-								<tr>
-									<% l[:ids].each_with_index do |id, j| %>
-										<td>
-											<%=
-												url[j] += '/annotations.json' unless url[j].nil?
-												content_tag(:div, "", class: "textae-editor", target: url[j], status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
-											%>
-										</td>
-									<% end %>
-								</tr>
-							<% end %>
-						</table>
-					<% end %>
+				<h3>Boundary-crossings</h3>
+				<% unless bcrossings.empty? %>
+					<table>
+						<% bcrossings.each_with_index do |c, i| %>
+							<%
+								url1 = Denotation.get_span_url_by_hid(@project, c[:sourcedb], c[:sourceid], c[:left])
+								url2 = Denotation.get_span_url_by_hid(@project, c[:sourcedb], c[:sourceid], c[:right])
+							%>
+							<tr>
+								<th><%= link_to 'PubAnnotation', url1	%></th>
+								<th><%= link_to 'PubAnnotation', url2	%></th>
+							</tr>
+							<tr>
+								<td>
+									<%=
+										url1 += '/annotations.json' unless url1.nil?
+										content_tag(:div, "", class: "textae-editor", target: url1, status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+									%>
+								</td>
+								<td>
+									<%=
+										url2 += '/annotations.json' unless url2.nil?
+										content_tag(:div, "", class: "textae-editor", target: url2, status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+									%>
+								</td>
+							</tr>
+							<% break if i > 10 %>
+						<% end %>
+					</table>
+				<% end %>
+			</section>
+
+			<section>
+				<h3>Duplicate labels</h3>
+				<% unless duplabels.empty? %>
+					<table>
+						<% duplabels.each_with_index do |l, i| %>
+							<%
+								url1 = Denotation.get_span_url_by_hid(@project, l[:sourcedb], l[:sourceid], l[:ids].first)
+							%>
+							<tr>
+								<th><%= link_to 'PubAnnotation', url1	%></th>
+							</tr>
+							<tr>
+								<td>
+									<%=
+										url1 += '/annotations.json' unless url1.nil?
+										content_tag(:div, "", class: "textae-editor", target: url1, status_bar: "off", control: "hidden", style:"margin:2px 0 0 0; border-color:#ccccff")
+									%>
+								</td>
+							</tr>
+							<% break if i > 10 %>
+						<% end %>
+					</table>
+				<% end %>
 			</section>
 		<% end %>
-
 
 <% if @project.present? -%>
 	</section>

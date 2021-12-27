@@ -680,7 +680,7 @@ class Annotation < ActiveRecord::Base
 		end
 
 		embeddings.map!{|e| {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], embedded:denotations[e.first][:id], embedding:denotations[e.last][:id]}}
-		bcrossings.map!{|c| {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], left:denotations[c.first][:id], right:denotations[c.first][:id]}}
+		bcrossings.map!{|c| {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], left:denotations[c.first][:id], right:denotations[c.second][:id]}}
 		duplabels.map!{|d| {sourcedb:annotations[:sourcedb], sourceid:annotations[:sourceid], ids:d.map{|id| denotations[id][:id]}}}
 
 		{embeddings:embeddings, bcrossings:bcrossings, duplabels:duplabels}
