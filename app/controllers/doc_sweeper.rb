@@ -3,11 +3,11 @@ class DocSweeper < ActionController::Caching::Sweeper
 
 	# If our sweeper detects that a doc was created call this
 	def after_create(doc)
-		expire_fragment("count_docs")
-		expire_fragment("count_#{doc.sourcedb}")
+		ActionController::Base.new.expire_fragment("count_docs")
+		ActionController::Base.new.expire_fragment("count_#{doc.sourcedb}")
 		doc.projects.each do |p|
-			expire_fragment("count_docs_#{p.name}")
-			expire_fragment("count_#{doc.sourcedb}_#{p.name}")
+			ActionController::Base.new.expire_fragment("count_docs_#{p.name}")
+			ActionController::Base.new.expire_fragment("count_#{doc.sourcedb}_#{p.name}")
 		end
 	end
 
@@ -18,11 +18,11 @@ class DocSweeper < ActionController::Caching::Sweeper
 
 	# If our sweeper detects that a doc was deleted call this
 	def after_destroy(doc)
-		expire_fragment('count_docs')
-		expire_fragment("count_#{doc.sourcedb}")
+		ActionController::Base.new.expire_fragment('count_docs')
+		ActionController::Base.new.expire_fragment("count_#{doc.sourcedb}")
 		doc.projects.each do |p|
-			expire_fragment("count_docs_#{p.name}")
-			expire_fragment("count_#{doc.sourcedb}_#{p.name}")
+			ActionController::Base.new.expire_fragment("count_docs_#{p.name}")
+			ActionController::Base.new.expire_fragment("count_#{doc.sourcedb}_#{p.name}")
 		end
 	end
 
