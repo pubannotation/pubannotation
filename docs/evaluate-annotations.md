@@ -31,12 +31,12 @@ Please refer to the descriptions on the [github page of the source code](https:/
 
 ## Example
 
-[bionlp-st-ge-2016-reference-eval](http://pubannotation.org/projects/bionlp-st-ge-2016-reference-eval) is a project cretaed to show the evaluation function of PubAnnotation.
+[bionlp-st-ge-2016-reference-eval](https://pubannotation.org/projects/bionlp-st-ge-2016-reference-eval) is a project cretaed to show the evaluation function of PubAnnotation.
 
 Now, the homepage of a project shows the menu item, _Evaluations_.
 Clicking it opens a page with a list of evaluations.
 
-In the project, [bionlp-st-ge-2016-reference-eval](http://pubannotation.org/projects/bionlp-st-ge-2016-reference-eval), three evaluations are created as examples
+In the project, [bionlp-st-ge-2016-reference-eval](https://pubannotation.org/projects/bionlp-st-ge-2016-reference-eval), three evaluations are created as examples
 ![list of evaluations]({{site.baseurl}}/img/evaluation-ex-list.png)
 
 All the three evlauations use the same evaluation tool, _PubAnnotationGeneric_, but with different settings.

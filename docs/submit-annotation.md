@@ -10,23 +10,23 @@ You can deposit your annotations to PubAnnotation.
 
 To do it,
 
-1. First, __prepare your annotations in [JSON](http://json.org/)__ files, following the guidelines in [Format]({{site.baseurl}}/docs/annotation-format/).
-Once an annotation file is prepared, your are recommended to open it in the [TextAE editor](http://textae.pubannotation.org/editor.html?mode=edit). Then, you will immediately see if the annotation file is well prepared as you intend or not.
+1. First, __prepare your annotations in [JSON](https://json.org/)__ files, following the guidelines in [Format]({{site.baseurl}}/docs/annotation-format/).
+Once an annotation file is prepared, your are recommended to open it in the [TextAE editor](https://textae.pubannotation.org/editor.html?mode=edit). Then, you will immediately see if the annotation file is well prepared as you intend or not.
 2. __[Create an annotation project]({{site.baseurl}}/docs/create-project/)__ on PubAnnotation.
 3. Then, you can store your annotations in your project.
 
 ## Submit annotations, method 1
 
 You can use any REST client to POST annotations to a document in your project.
-For example, [cURL](http://curl.haxx.se/) is a versatile command-line tool you can use as a REST client in major OS environments, e.g., _UNIX_, _iOS_, _DOS_.
+For example, [cURL](https://curl.haxx.se/) is a versatile command-line tool you can use as a REST client in major OS environments, e.g., _UNIX_, _iOS_, _DOS_.
 
-In fact, [TextAE](http://textae.pubannotation.org) is also a REST client that additionally provides graphical user interface for edition of annotation.
+In fact, [TextAE](https://textae.pubannotation.org) is also a REST client that additionally provides graphical user interface for edition of annotation.
 
 Also, most recent major programming languages have modules for REST access, so you can do it using your favorite programming languages.
 
 Following command shows an example usage of cURL:
 <textarea class="bash" style="width:100%; height:6em; background-color:#333333; color:#eeeeee">
-curl -u "your_email_address:your_password" -H "content-type:application/json" -d @your_annotation_file.json http://pubannotation.org/projects/your_project/docs/sourcedb/PubMed/sourceid/123456/annotations.json
+curl -u "your_email_address:your_password" -H "content-type:application/json" -d @your_annotation_file.json https://pubannotation.org/projects/your_project/docs/sourcedb/PubMed/sourceid/123456/annotations.json
 </textarea>
 
 Following is explanation of the option specification:
@@ -38,7 +38,7 @@ Following is explanation of the option specification:
 * __-d @your\_annotation\_file.json__
    * Tells cURL to send the annotation data stored in the specified file.
    * To learn how to prepare an annotation data file, please refer to [Format]({{site.baseurl}}/docs/annotation-format/).
-* __http://pubannotation.org/projects/_your-project_/docs/sourcedb/PubMed/sourceid/123456/annotations.json__
+* __https://pubannotation.org/projects/_your-project_/docs/sourcedb/PubMed/sourceid/123456/annotations.json__
    * The URL for the document, _PubMed:123456_, in your project.
 
 <div class="boxtip">
@@ -65,7 +65,7 @@ With it, the annotation file may look like as follows:
 
 Once the parameters are encoded in the annotation file, they do not need to be encoded again in the URL, and the cURL comman may be shortened as follows:
 <textarea class="bash" style="width:100%; height:4em; background-color:#333333; color:#eeeeee">
-curl -u "your_email_address:your_password" -H "content-type:application/json" -d @your_annotation_file.json http://pubannotation.org/projects/your_project/annotations.json
+curl -u "your_email_address:your_password" -H "content-type:application/json" -d @your_annotation_file.json https://pubannotation.org/projects/your_project/annotations.json
 </textarea>
 
 ## Submit annotations, method 3 (batch upload)
@@ -105,7 +105,7 @@ When you upload annotations to a PMC document, you have two options.
 ### 1. POSTing annotations to a specific division
 
 You can POST annotations to a specific division, e.g., 
-`http://pubannotation.org/projects/your-project/docs/sourcedb/PMC/sourceid/123456/divs/0/annotations.json`
+`https://pubannotation.org/projects/your-project/docs/sourcedb/PMC/sourceid/123456/divs/0/annotations.json`
 
 Note that, in URL, a division is specified as `divs/division_number`.
 
@@ -130,7 +130,7 @@ Note (again) that the value of "divid" is an integer value (without quotes aroun
 ### 2. POSTing annotations without specification of div
  
 You can also POST annotations without specification of a division, e.g., 
-`http://pubannotation.org/projects/your-project/docs/sourcedb/PMC/sourceid/123456/annotations.json`
+`https://pubannotation.org/projects/your-project/docs/sourcedb/PMC/sourceid/123456/annotations.json`
 
 In the case, the division will be automatically found base on the _text_ in your JSON file.
 

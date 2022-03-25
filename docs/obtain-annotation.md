@@ -9,7 +9,7 @@ permalink: /docs/obtain-annotation/
 For documents in a project, annotations can be obtained from an external web service,
 wich we call an annotation server.
 
-Pre-registered annotation servers can be found at the [annotators](http://pubannotation.org/annotators) page of PubAnnotation.
+Pre-registered annotation servers can be found at the [annotators](https://pubannotation.org/annotators) page of PubAnnotation.
 
 An new annotation server can be registered at the same page.
 
@@ -68,5 +68,5 @@ In either case, the response has to be annotations encoded in the [PubAnnotation
 
 ## Annotation web service example
 
-[PubDictionaries](http://pubdictionaries.org) is an example of annotation web service which conforms the specification of PubAnnotation. Through its [_REST API_ interface](http://pubdictionaries.org/text_annotation),
+[PubDictionaries](https://pubdictionaries.org) is an example of annotation web service which conforms the specification of PubAnnotation. Through its [_REST API_ interface](https://pubdictionaries.org/text_annotation),
 the URL of a dictionary-based text annotation service can be obtained. The URL can then be copied into the input box described above.

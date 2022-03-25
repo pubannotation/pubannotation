@@ -31,13 +31,13 @@ You can add a document from a pre-registered database by providing a _document s
 
 ## Using REST API
 
-You can use any REST client, e.g. [cURL](http://curl.haxx.se/), to "[post](https://en.wikipedia.org/wiki/POST_(HTTP))"" a document specification or a list of _document specifications_ to your project.
+You can use any REST client, e.g. [cURL](https://curl.haxx.se/), to "[post](https://en.wikipedia.org/wiki/POST_(HTTP))"" a document specification or a list of _document specifications_ to your project.
 
 Note that most recent major programming languages have modules for REST access, and you can do the same thing using any of your favorite programming languages.
 
 The following example shows a cURL command to include the document PubMed:123456 in the project _your_project_:
 <textarea class="bash" readonly="true" style="height:5em">
-curl -u "your_email_address[:your_password]" -d sourcedb=PubMed -d sourceid=123456 "http://pubannotation.org/projects/your_project/docs/add[.json]"
+curl -u "your_email_address[:your_password]" -d sourcedb=PubMed -d sourceid=123456 "https://pubannotation.org/projects/your_project/docs/add[.json]"
 </textarea>
 Following is explanation of the option specification:
 
@@ -48,13 +48,13 @@ Following is explanation of the option specification:
    * Specifies the sourcedb to be _PubMed_.
 * __-d sourceid=1234546__
    * Specifies the sourceid to be _123456_.
-* __http://pubannotation.org/projects/_your-project_/docs/add[.json]__
+* __https://pubannotation.org/projects/_your-project_/docs/add[.json]__
    * The URL for adding new entries to the document list of your project.
    * By adding the suffix _.json_ in the end, you can get the result message in JSON.
 
 You can also send the document specification in JSON:
 <textarea class="bash" readonly="true" style="height:7em">
-curl -u "your_email_address[:your_password]" -H "content-type:application/json" -d &apos;{"sourcedb":"PubMed","sourceid":"123456"}&apos; "http://pubannotation.org/projects/your_project/docs/add[.json]"
+curl -u "your_email_address[:your_password]" -H "content-type:application/json" -d &apos;{"sourcedb":"PubMed","sourceid":"123456"}&apos; "https://pubannotation.org/projects/your_project/docs/add[.json]"
 </textarea>
 
 * __-H "content-type:application/json"__
@@ -64,7 +64,7 @@ curl -u "your_email_address[:your_password]" -H "content-type:application/json" 
 
 Using JSON, it is easy to send multiple document specifications:
 <textarea class="bash" readonly="true" style="height:7em">
-curl -u "your_email_address[:your_password]" -H "content-type:application/json" -d &apos;[{"sourcedb":"PubMed","sourceid":"123456"},{"sourcedb":"PubMed","sourceid":"123457"}]&apos; "http://pubannotation.org/projects/your_project/docs/add[.json]"
+curl -u "your_email_address[:your_password]" -H "content-type:application/json" -d &apos;[{"sourcedb":"PubMed","sourceid":"123456"},{"sourcedb":"PubMed","sourceid":"123457"}]&apos; "https://pubannotation.org/projects/your_project/docs/add[.json]"
 </textarea>
 
 * __-d '[{"sourcedb":"PubMed","sourceid":"123456"},{"sourcedb":"PubMed","sourceid":"123457"}]'__
@@ -73,7 +73,7 @@ curl -u "your_email_address[:your_password]" -H "content-type:application/json" 
 
 When you have a long list of document specifications, you can put it in a separate file, then specify the filename in the cURL command:
 <textarea class="bash" readonly="true" style="height:5em">
-curl -u "your_email_address[:your_password]" -H "content-type:application/json" -d @filename.json "http://pubannotation.org/projects/your_project/docs/add[.json]"
+curl -u "your_email_address[:your_password]" -H "content-type:application/json" -d @filename.json "https://pubannotation.org/projects/your_project/docs/add[.json]"
 </textarea>
 
 * __-d @filename.json__

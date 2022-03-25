@@ -50,7 +50,7 @@ the format of response body the client will expect may be speficied in the URL o
 in the _Accept_ header.
 
 While different people advocate different approach, there may be pros and cons in both:
-see this [dicussion](http://programmers.stackexchange.com/questions/139654/rest-tradeoffs-between-content-negotiation-via-accept-header-versus-extensions).
+see this [dicussion](https://programmers.stackexchange.com/questions/139654/rest-tradeoffs-between-content-negotiation-via-accept-header-versus-extensions).
 
 However, either should be fine with PubAnnotation.
 
@@ -88,14 +88,14 @@ the annotations will not be available any more from the server.
 In the case, the server can respond with the status code 410 (Gone).
 
 As a model implementation, the API for asynchronous annotation request and retrieval is implemented in PubDictionaries.
-Please take a look at the corresponding API documentation: [PubDictionaries Annotation API](http://docs.pubdictionaries.org/annotation-api/)
+Please take a look at the corresponding API documentation: [PubDictionaries Annotation API](https://docs.pubdictionaries.org/annotation-api/)
 
 ## Example
 
 For an annotation server to be interoperable with PubAnnotation,
 it has to respond **at least one** of the example calls shown below.
 
-Note that all the examples below are shown as [cURL](http://curl.haxx.se/) commands,
+Note that all the examples below are shown as [cURL](https://curl.haxx.se/) commands,
 so that annotation servers can be easily tested.
 
 Note also that PubAnnotation will add _"Accept:application/json"_ header to every request it will made,

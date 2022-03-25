@@ -60,26 +60,31 @@ If the request is determined valid, the server is expected to respond with a sta
 together with the _Location_ header to indicate the URL for retrieval of the annotation.
 Optionally, the _Retry-After_ header can be used to indicate
 how long the clinet is advised to wait before accessing the location of annotation result.
+
 If the server cannot fulfil the request for some reason, e.g., server overload,
 it has to respond with the status code 503 (Service Unavailable).
-It will inform the client that the request is fine,
+The motivation of use of the code is to inform the client that the request is fine,
 and that a later attempt with the same request may be successful.
+Optionally, the _Retry-After_ header can be used to indicate
+how long the clinet is advised to wait before retry.
 
-When the request to retrieve the result of annotation is made, if ready, the server has to respond with the status code 200 (OK)
+When the request to retrieve the result of annotation is made, if ready,
+the server has to respond with the status code 200 (OK)
 and the body has to deliver the result of annotation.
 
-If the server is not ready with annotations, it has to respond with the status code 404 (Not Found).
+If the server is not ready with annotations,
+it has to respond with the status code 404 (Not Found), _together with the Retry-After header_.
 
 After annotations are delivered to the client, if the server removes the annotations,
 the annotations will not be available any more from the server.
 In the case, the server can respond with the status code 410 (Gone).
 
 As a model implementation, the API for asynchronous annotation request and retrieval is implemented in PubDictionaries.
-Please take a look at the corresponding API documentation: [PubDictionaries Annotation API](http://docs.pubdictionaries.org/annotation-api/)
+Please take a look at the corresponding API documentation: [PubDictionaries Annotation API](https://docs.pubdictionaries.org/annotation-api/)
 
 ## Registration of an annotation server
 
-An annotation server can be registered to the [annotators](http://pubannotation.org/annotators) page of PubAnnotation.
+An annotation server can be registered to the [annotators](https://pubannotation.org/annotators) page of PubAnnotation.
 
 Below is an example of registration for an annotation service by PubDictionaries using the dictionary _UBERON-AE_:
 <br/>
@@ -99,7 +104,7 @@ Below is another example to register the same annotation service this time for b
 For an annotation server to be interoperable with PubAnnotation,
 it has to respond **at least one** of the example calls shown below.
 
-Note that all the examples below are shown as [cURL](http://curl.haxx.se/) commands,
+Note that all the examples below are shown as [cURL](https://curl.haxx.se/) commands,
 so that annotation servers can be easily tested.
 
 Note also that PubAnnotation will add _"Accept:application/json"_ header to every request it will made,

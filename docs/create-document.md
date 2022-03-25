@@ -32,13 +32,13 @@ You can create a document by providing PubAnnotation with a block of text and re
 
 ## Using REST API
 
-You can use any REST client, e.g. [cURL](http://curl.haxx.se/), to 'POST' a document to your project.
+You can use any REST client, e.g. [cURL](https://curl.haxx.se/), to 'POST' a document to your project.
 
 Note that most recent major programming languages have modules for REST access, and you can do the same thing using any of your favorite programming languages.
 
 The following example shows a simple cURL command to create a new document in the project _your_project_:
 <textarea class="bash" readonly="true" style="height:5em">
-curl -u "your_email_address:your_password" -F text="This is a sample text." -F sourcedb="TestDocs" -F sourceid="1" http://pubannotation.org/projects/your_project/docs.json
+curl -u "your_email_address:your_password" -F text="This is a sample text." -F sourcedb="TestDocs" -F sourceid="1" https://pubannotation.org/projects/your_project/docs.json
 </textarea>
 Following is explanation of the option specification:
 
@@ -55,13 +55,13 @@ Following is explanation of the option specification:
 * __-F sourceid="1"__
    * Specifies the sourceid of the text to be _1_.
    * It is optional.
-* __http://pubannotation.org/projects/_your-project_/docs.json__
+* __https://pubannotation.org/projects/_your-project_/docs.json__
    * The URL for adding new entries to the document list of your project.
    * By adding the suffix _.json_ in the end, you can get the response in JSON.
 
 You can also send the text in JSON:
 <textarea class="bash" readonly="true" style="height:7em">
-curl -u "your_email_address:your_password" -H "content-type:application/json" -d &apos;{"text":"This is a sample text."}&apos; http://pubannotation.org/projects/your_project/docs.json
+curl -u "your_email_address:your_password" -H "content-type:application/json" -d &apos;{"text":"This is a sample text."}&apos; https://pubannotation.org/projects/your_project/docs.json
 </textarea>
 
 * __-H "content-type:application/json"__
@@ -75,7 +75,7 @@ In such a case. the sourcedb will be set to be _@your_username_, and the sourcei
 If you want, you can also specify the sourcedb and the sourceid as you like.
 However, the sourcedb has to be prefixed with your username, e.g., _sourcedb_name@your_username_:
 <textarea class="bash" readonly="true" style="height:7em">
-curl -u "your_email_address:your_password" -H "content-type:application/json" -d &apos;{"sourcedb":"your_sourcedb@your_username", "text":"This is a sample text."}&apos; http://pubannotation.org/projects/your_project/docs.json
+curl -u "your_email_address:your_password" -H "content-type:application/json" -d &apos;{"sourcedb":"your_sourcedb@your_username", "text":"This is a sample text."}&apos; https://pubannotation.org/projects/your_project/docs.json
 </textarea>
 
 Using JSON, you can send multiple document specifications:

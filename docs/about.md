@@ -14,15 +14,15 @@ permalink: /docs/about/
 * is a **REST service** through which annotations are publicly accessible in various ways, e.g.,
   * annotations to the same text can be accessed collectively and selectively, even if they are produced by different groups or annotators.
 * currently focuses on collecting annotations to **life science literature**:
-  * [PubMed](http://www.ncbi.nlm.nih.gov/pubmed/) abstracts, and
-  * [PMC](http://www.ncbi.nlm.nih.gov/pmc/) full papers.
+  * [PubMed](https://www.ncbi.nlm.nih.gov/pubmed/) abstracts, and
+  * [PMC](https://www.ncbi.nlm.nih.gov/pmc/) full papers.
 * is an **open source project**,
   * with its home at [GitHub](https://github.com/pubannotation/pubannotation).
-* is mainly developed and maintained by **[DBCLS](http://dbcls.rois.ac.jp)**.
+* is mainly developed and maintained by **[DBCLS](https://dbcls.rois.ac.jp)**.
 
 ## People
 
-* [Jin-Dong Kim](http://dbcls.rois.ac.jp/~jdkim) ([DBCLS](http://dbcls.rois.ac.jp)) : Project Leader
-* Yue Wang ([DBCLS](http://dbcls.rois.ac.jp)) : Software Test, Documentation
-* Satoshi Tahara ([Digial Squad](http://digital-squad.net/)) : Software Engineer
-* Shigeru Nakajima ([Luxiar](http://www.luxiar.com)) : Software Engineer
+* [Jin-Dong Kim](https://dbcls.rois.ac.jp/~jdkim) ([DBCLS](https://dbcls.rois.ac.jp)) : Project Leader
+* Yue Wang ([DBCLS](https://dbcls.rois.ac.jp)) : Software Test, Documentation
+* Satoshi Tahara ([Digial Squad](https://digital-squad.net/)) : Software Engineer
+* Shigeru Nakajima ([Luxiar](https://www.luxiar.com)) : Software Engineer
