@@ -152,9 +152,11 @@ class Project < ActiveRecord::Base
 
 	# default sort order priority : left > right
 	# DefaultSort = [['status', 'ASC'], ['projects.updated_at', 'DESC']]
+	def self.sort_order
+	end
 
 	LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
-	
+
 	def public?
 		accessibility == 1
 	end
@@ -198,6 +200,10 @@ class Project < ActiveRecord::Base
 		 2 => I18n.t('activerecord.options.project.process.automatic')
 	 }
 	 process_hash[self.process]
+	end
+
+	def small?
+		docs.count < 200
 	end
 
 	def get_user(current_user)

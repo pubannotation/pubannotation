@@ -34,7 +34,12 @@ class DocsController < ApplicationController
 				htexts = search_results.results.map{|r| {text: r.highlight.body}}
 				search_results.records
 			else
-				sort_order = sort_order(Doc)
+				sort_order = if params[:sort_key].present? && params[:sort_direction].present?
+					"#{params[:sort_key]} #{params[:sort_direction]}"
+				else
+					Doc.sort_order(@project || nil)
+				end
+
 				if params[:randomize]
 					sort_order = sort_order ? sort_order + ', ' : ''
 					sort_order += 'random()'

@@ -44,7 +44,11 @@
 		<%= t('activerecord.attributes.doc.sourcedb') -%>
 	</th>
 	<th>
-		<%= t('activerecord.attributes.doc.sourceid') %>
+		<% if @project.small? %>
+			<%= sortable(Doc, t('activerecord.attributes.doc.sourceid'), 'sourceid') %>
+		<% else %>
+			<%= t('activerecord.attributes.doc.sourceid') %>
+		<% end %>
 	</th>
 	<th class="show-when-wide">
 		<%= t('activerecord.attributes.doc.body') %>

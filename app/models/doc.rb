@@ -162,6 +162,13 @@ class Doc < ActiveRecord::Base
 	
 	# default sort order 
 	#DefaultSort = [['sourceid', 'ASC']]
+	def self.sort_order(project = nil)
+		if project && project.small?
+			"sourceid ASC"
+		else
+			nil
+		end
+	end
 
 	def self.graph_uri
 		"http://pubannotation.org/docs"
