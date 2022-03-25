@@ -44,7 +44,7 @@
 		<%= t('activerecord.attributes.doc.sourcedb') -%>
 	</th>
 	<th>
-		<% if @project.small? %>
+		<% if @project && @project.small? %>
 			<%= sortable(Doc, t('activerecord.attributes.doc.sourceid'), 'sourceid') %>
 		<% else %>
 			<%= t('activerecord.attributes.doc.sourceid') %>
