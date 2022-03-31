@@ -241,7 +241,8 @@ GEM
       method_source (~> 1.0)
     pubannotation_evaluator (1.2.0)
     public_suffix (4.0.6)
-    puma (3.12.6)
+    puma (4.3.12)
+      nio4r (~> 2.0)
     racc (1.5.2)
     rack (2.2.3)
     rack-protection (2.1.0)
@@ -389,7 +390,7 @@ DEPENDENCIES
   omniauth-google-oauth2
   pg
   pubannotation_evaluator (~> 1.1, >= 1.2.0)
-  puma (~> 3.4)
+  puma (~> 4.3)
   rails (= 5.2.6)
   rails-observers
   rails3-jquery-autocomplete
