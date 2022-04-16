@@ -118,18 +118,22 @@ class AnnotationsController < ApplicationController
 	# POST /annotations.json
 	def create
 		begin
+			# use unsafe params for flexible paramater passing
+			unsafe_params = params.permit!.to_hash.deep_symbolize_keys!
+
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "There is no such project in your management." unless project.present?
 
-			annotations = if params[:annotations]
-				params[:annotations]
-			elsif params[:text].present?
+			annotations = if unsafe_params[:annotations]
+				unsafe_params[:annotations].to_hash.to_json
+			elsif unsafe_params[:text].present?
 				{
-					text: params[:text],
-					denotations: params[:denotations].present? ? params[:denotations] : nil,
-					relations: params[:relations].present? ? params[:relations] : nil,
-					attributes: params[:attributes].present? ? params[:attributes] : nil,
-					modification: params[:modification].present? ? params[:modification] : nil,
+					text: unsafe_params[:text],
+					denotations: unsafe_params[:denotations].present? ? unsafe_params[:denotations] : nil,
+					blocks: unsafe_params[:blocks].present? ? unsafe_params[:blocks] : nil,
+					relations: unsafe_params[:relations].present? ? unsafe_params[:relations] : nil,
+					attributes: unsafe_params[:attributes].present? ? unsafe_params[:attributes] : nil,
+					modification: unsafe_params[:modification].present? ? unsafe_params[:modification] : nil,
 				}.delete_if{|k, v| v.nil?}
 			else
 				raise ArgumentError, t('controllers.annotations.create.no_annotation')
