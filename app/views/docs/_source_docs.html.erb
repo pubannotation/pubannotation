@@ -5,8 +5,8 @@
 		(<%= number_with_delimiter(@search_count, :delimiter => ',') + '/' if @search_count.present? -%><%= cache(docs_count_cache_key) do %><%= docs_count %><% end -%>)
 	</span>
 	<span class='tab-bar'>
-		<%= link_to 'JSON', params.permit(:controller, :action).merge(format: :json), class: 'tab', title: "To get the whole list (up to 1,000 items) in JSON" -%>
-		<%= link_to 'TSV', params.permit(:controller, :action).merge(format: :tsv), class: 'tab', title: "To get the whole list (up to 1,000 items) in TSV (Tab-separated values)" -%>
+		<%= link_to 'JSON', params.permit(:controller, :action, :per, :page).merge(format: :json), class: 'tab', title: "To get the whole list (up to 1,000 items) in JSON" -%>
+		<%= link_to 'TSV', params.permit(:controller, :action, :per, :page).merge(format: :tsv), class: 'tab', title: "To get the whole list (up to 1,000 items) in TSV (Tab-separated values)" -%>
 	</span>
 	<%= render partial: 'docs/search_form' -%>
 	<% if @search_count.nil? && docs_count.to_i < 100000 %>

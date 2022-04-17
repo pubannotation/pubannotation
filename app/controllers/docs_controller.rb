@@ -14,17 +14,17 @@ class DocsController < ApplicationController
 		begin
 			if params[:project_id].present?
 				@project = Project.accessible(current_user).find_by_name(params[:project_id])
-				raise "Could not find the project." unless @project.present?
+				raise ArgumentError, "Could not find the project." unless @project.present?
 			end
 
 			@sourcedb = params[:sourcedb]
 
-			page, per = if params[:format] && (params[:format] == "json" || params[:format] == "tsv")
-				params.delete(:page)
-				[1, 1000]
-			else
-				[params[:page], 10]
-			end
+			page = params[:page].to_i || 1
+			per  = params[:per].to_i || 10
+
+			raise ArgumentError, "The value of 'page' must be bigger than or equal to 1." if page < 1
+			raise ArgumentError, "The value of 'per' must be bigger than or equal to 1." if per < 1
+			raise ArgumentError, "The value of 'per' must be less than or equal to 10,000." if per > 10000
 
 			htexts = nil
 			@docs = if params[:keywords].present?
@@ -72,7 +72,7 @@ class DocsController < ApplicationController
 					if htexts
 						hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
 					end
-					render json: hdocs
+					send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
 				}
 				format.tsv  {
 					hdocs = @docs.map{|d| d.to_list_hash('doc')}
@@ -80,14 +80,14 @@ class DocsController < ApplicationController
 						htexts.each{|h| h[:text] = h[:text].first}
 						hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
 					end
-					render plain: Doc.hash_to_tsv(hdocs)
+					send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
 				}
 			end
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
-				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render plain: message, status: :unprocessable_entity}
+				format.json {render json: {message:e.message}, status: :unprocessable_entity}
+				format.tsv  {render plain: e.message, status: :unprocessable_entity}
 			end
 		end
 	end
