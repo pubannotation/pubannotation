@@ -19,8 +19,8 @@ class DocsController < ApplicationController
 
 			@sourcedb = params[:sourcedb]
 
-			page = params[:page].to_i || 1
-			per  = params[:per].to_i || 10
+			page = (params[:page].presence || 1).to_i
+			per  = (params[:per].presence || 10).to_i
 
 			raise ArgumentError, "The value of 'page' must be bigger than or equal to 1." if page < 1
 			raise ArgumentError, "The value of 'per' must be bigger than or equal to 1." if per < 1
