@@ -1271,11 +1271,15 @@ class Project < ActiveRecord::Base
 	def delete_doc_annotations(doc, span = nil)
 		if span.present?
 			Denotation.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
+			Block.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
 		else
 			denotations = doc.denotations.where(project_id: self.id)
 			d_num = denotations.length
 
-			if d_num > 0
+			blocks = doc.blocks.where(project_id: self.id)
+			b_num = blocks.length
+
+			if d_num > 0 || b_num > 0
 				modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
 				m_num = modifications.length
 
@@ -1289,12 +1293,13 @@ class Project < ActiveRecord::Base
 					Modification.delete(modifications) if m_num > 0
 					Relation.delete(relations) if r_num > 0
 					Attrivute.delete(attributes) if a_num > 0
+					Block.delete(blocks)
 					Denotation.delete(denotations)
 
 					# ActiveRecord::Base.establish_connection
-					ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id} and doc_id=#{doc.id}")
-					ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
-					ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
+					ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, blocks_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id} and doc_id=#{doc.id}")
+					ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
+					ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
 
 					update_annotations_updated_at
 					update_updated_at

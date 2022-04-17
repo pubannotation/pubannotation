@@ -46,6 +46,19 @@ class Annotation < ActiveRecord::Base
 			end
 		end
 
+		if annotations[:blocks].present?
+			annotations[:blocks].each do |a|
+				spans = a[:span].class == Array ? a[:span] : [a[:span]]
+				lexical_cues[a[:id]] = spans.collect{|s| text[s[:begin]...s[:end]]}.join(' ').chomp
+				spant = spans.collect{|s| "#{s[:begin]}-#{s[:end]}"}.to_csv.chomp
+				attrs = attr_preds.collect do |pred|
+					attr_values = attrs_idx["#{a[:id]}&#{pred}"]
+					attr_values.nil? ? nil : attr_values.join('|')
+				end
+				array << [a[:id], spant, a[:obj], 'denotes', lexical_cues[a[:id]]] + attrs
+			end
+		end
+
 		if annotations[:relations].present?
 			annotations[:relations].each do |a|
 				lexical_cues[a[:id]] = [lexical_cues[a[:subj]], lexical_cues[a[:obj]]].to_csv.chomp
@@ -151,12 +164,14 @@ class Annotation < ActiveRecord::Base
 		# chaining is the default model of PubAnnotation
 		# annotations = Annotation.chain_spans(annotations)
 
+		dbr_ids = d_ids + b_ids + r_ids
+
 		a_ids = if annotations[:attributes].present?
 			attributes = annotations[:attributes]
 			raise ArgumentError, "'attributes' must be an array." unless attributes.class == Array
 			attributes.each {|a| a.symbolize_keys! if a.class == Hash }
 
-			existing_ids = d_ids + b_ids + r_ids + attributes.collect{|a| a[:id]}.compact
+			existing_ids = dbr_ids + attributes.collect{|a| a[:id]}.compact
 			Attrivute.new_id_init(existing_ids)
 
 			attributes.each do |a|
@@ -164,7 +179,7 @@ class Annotation < ActiveRecord::Base
 				a[:obj] = true unless a[:obj].present?
 
 				raise ArgumentError, "An attribute must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
-				raise ArgumentError, "The 'subj' of an attribute must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:subj]
+				raise ArgumentError, "The 'subj' of an attribute must reference to a denotation or a relation: [#{a}]." unless dbr_ids.include? a[:subj]
 
 				a[:id] = Attrivute.new_id unless a.has_key? :id
 			end
