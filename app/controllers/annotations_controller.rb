@@ -185,6 +185,7 @@ class AnnotationsController < ApplicationController
 			elsif params[:text].present?
 				annotations = {:text => params[:text]}
 				annotations[:denotations] = params[:denotations] if params[:denotations].present?
+				annotations[:blocks] = params[:blocks] if params[:blocks].present?
 				annotations[:relations] = params[:relations] if params[:relations].present?
 				annotations[:modifications] = params[:modifications] if params[:modifications].present?
 			else

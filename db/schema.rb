@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_09_24_112920) do
+ActiveRecord::Schema.define(version: 2022_04_17_010628) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -55,6 +55,17 @@ ActiveRecord::Schema.define(version: 2021_09_24_112920) do
     t.index ["obj"], name: "index_attrivutes_on_obj"
     t.index ["project_id"], name: "index_attrivutes_on_project_id"
     t.index ["subj_id"], name: "index_attrivutes_on_subj_id"
+  end
+
+  create_table "blocks", force: :cascade do |t|
+    t.string "hid"
+    t.integer "doc_id"
+    t.integer "begin"
+    t.integer "end"
+    t.string "obj"
+    t.integer "project_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "collection_projects", id: :serial, force: :cascade do |t|
@@ -117,6 +128,7 @@ ActiveRecord::Schema.define(version: 2021_09_24_112920) do
     t.integer "projects_num", default: 0
     t.boolean "flag", default: false, null: false
     t.integer "modifications_num", default: 0
+    t.integer "blocks_num", default: 0
     t.index ["denotations_num"], name: "index_docs_on_denotations_num"
     t.index ["projects_num"], name: "index_docs_on_projects_num"
     t.index ["serial"], name: "index_docs_on_serial"
@@ -230,6 +242,7 @@ ActiveRecord::Schema.define(version: 2021_09_24_112920) do
     t.integer "relations_num", default: 0
     t.integer "modifications_num", default: 0
     t.datetime "annotations_updated_at"
+    t.integer "blocks_num", default: 0
     t.index ["denotations_num"], name: "index_project_docs_on_denotations_num"
     t.index ["doc_id"], name: "index_project_docs_on_doc_id"
     t.index ["project_id"], name: "index_project_docs_on_project_id"
@@ -265,6 +278,8 @@ ActiveRecord::Schema.define(version: 2021_09_24_112920) do
     t.string "textae_config", limit: 255
     t.integer "annotator_id"
     t.string "sparql_ep", limit: 255
+    t.text "analysis"
+    t.integer "blocks_num", default: 0
     t.index ["name"], name: "index_projects_on_name", unique: true
   end
 

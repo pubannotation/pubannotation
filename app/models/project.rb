@@ -253,6 +253,11 @@ class Project < ActiveRecord::Base
 		doc.get_denotations_count(id, span)
 	end
 
+	def get_blocks_count(doc = nil, span = nil)
+		return self.blocks_num if doc.nil?
+		doc.get_blocks_count(id, span)
+	end
+
 	def get_relations_count(doc = nil, span = nil)
 		return self.relations_num if doc.nil?
 		return doc.subcatrels.where(project_id: self.id).count if span.nil?
@@ -760,6 +765,20 @@ class Project < ActiveRecord::Base
 				end:a[:span][:end],
 				obj:a[:obj],
 				project_id:self.id,
+				doc_id:docid,
+				is_block:a[:block_p]
+			)
+		end
+	end
+
+	def instantiate_hblocks(hblocks, docid)
+		new_entries = hblocks.map do |a|
+			Block.new(
+				hid:a[:id],
+				begin:a[:span][:begin],
+				end:a[:span][:end],
+				obj:a[:obj],
+				project_id:self.id,
 				doc_id:docid
 			)
 		end
@@ -811,16 +830,28 @@ class Project < ActiveRecord::Base
 	def instantiate_and_save_annotations(annotations, doc)
 		res = ActiveRecord::Base.transaction do
 			d_num = 0
+			b_num = 0
 			r_num = 0
 			m_num = 0
 
 			if annotations[:denotations].present?
 				instances = instantiate_hdenotations(annotations[:denotations], doc.id)
+
 				if instances.present?
 					r = Denotation.ar_import instances, validate: false
 					raise "denotations import error" unless r.failed_instances.empty?
 				end
 				d_num = annotations[:denotations].length
+			end
+
+			if annotations[:blocks].present?
+				instances = instantiate_hblocks(annotations[:blocks], doc.id)
+
+				if instances.present?
+					r = Block.ar_import instances, validate: false
+					raise "blocks import error" unless r.failed_instances.empty?
+				end
+				b_num = annotations[:blocks].length
 			end
 
 			if annotations[:relations].present?
@@ -849,10 +880,10 @@ class Project < ActiveRecord::Base
 				m_num = annotations[:modifications].length
 			end
 
-			if d_num > 0 || r_num > 0 || m_num > 0
-				ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{doc.id}")
-				ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{doc.id}")
-				ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{id}")
+			if d_num > 0 || b_num || r_num > 0 || m_num > 0
+				ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{doc.id}")
+				ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{doc.id}")
+				ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{id}")
 			end
 
 			ActiveRecord::Base.connection.exec_query("update project_docs set annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
@@ -952,29 +983,30 @@ class Project < ActiveRecord::Base
 		end
 	end
 
+	# reassign ids to instances in annotations to avoid id confiction
 	def reid_annotations!(annotations, doc)
-		aids_background = doc.get_annotation_hids(id)
-		unless aids_background.empty?
+		existing_ids = doc.get_annotation_hids(id)
+		unless existing_ids.empty?
 			id_change = {}
 			if annotations.has_key?(:denotations)
 				annotations[:denotations].each do |a|
 					id = a[:id]
-					id = Denotation.new_id while aids_background.include?(id)
+					id = Denotation.new_id while existing_ids.include?(id)
 					if id != a[:id]
 						id_change[a[:id]] = id
 						a[:id] = id
-						aids_background << id
+						existing_ids << id
 					end
 				end
 
 				if annotations.has_key?(:relations)
 					annotations[:relations].each do |a|
 						id = a[:id]
-						id = Relation.new_id while aids_background.include?(id)
+						id = Relation.new_id while existing_ids.include?(id)
 						if id != a[:id]
 							id_change[a[:id]] = id
 							a[:id] = id
-							aids_background << id
+							existing_ids << id
 						end
 						a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
 						a[:obj] = id_change[a[:obj]] if id_change.has_key?(a[:obj])
@@ -984,10 +1016,10 @@ class Project < ActiveRecord::Base
 				if annotations.has_key?(:attributes)
 					annotations[:attributes].each do |a|
 						id = a[:id]
-						id = Attrivute.new_id while aids_background.include?(id)
+						id = Attrivute.new_id while existing_ids.include?(id)
 						if id != a[:id]
 							a[:id] = id
-							aids_background << id
+							existing_ids << id
 						end
 						a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
 					end
@@ -996,10 +1028,10 @@ class Project < ActiveRecord::Base
 				if annotations.has_key?(:modifications)
 					annotations[:modifications].each do |a|
 						id = a[:id]
-						id = Modification.new_id while aids_background.include?(id)
+						id = Modification.new_id while existing_ids.include?(id)
 						if id != a[:id]
 							a[:id] = id
-							aids_background << id
+							existing_ids << id
 						end
 					end
 				end

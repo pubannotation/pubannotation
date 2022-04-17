@@ -1,13 +1,10 @@
 require 'zip/zip'
 
-class Denotation < ActiveRecord::Base
-	include DenotationsHelper
-	
+class Block < ActiveRecord::Base
 	belongs_to :project
 	belongs_to :doc
 
 	has_many :attrivutes, :as => :subj, :dependent => :destroy
-	has_many :modifications, :as => :obj, :dependent => :destroy
 
 	has_many :subrels, :class_name => 'Relation', :as => :subj, :dependent => :destroy
 	has_many :objrels, :class_name => 'Relation', :as => :obj, :dependent => :destroy
@@ -24,7 +21,7 @@ class Denotation < ActiveRecord::Base
 	}
 
 	scope :in_span, -> (span) {
-		where('denotations.begin >= ? AND denotations.end <= ?', span[:begin], span[:end]) unless span.nil?
+		where('blocks.begin >= ? AND blocks.end <= ?', span[:begin], span[:end]) unless span.nil?
 	}
 
 	scope :accessible_projects, lambda{|current_user_id|
@@ -33,8 +30,8 @@ class Denotation < ActiveRecord::Base
 	}
 	
 	scope :sql, lambda{|ids|
-		where('denotations.id IN(?)', ids).
-		order('denotations.id ASC') 
+		where('blocks.id IN(?)', ids).
+		order('blocks.id ASC') 
 	}
 	
 	after_create :increment_numbers, :update_project_updated_at
@@ -53,16 +50,16 @@ class Denotation < ActiveRecord::Base
 		{
 			id: hid,
 			span: {begin: self.begin, end: self.end},
-			obj: obj
+			obj: obj,
 		}
 	end
 
 	def get_hash
-		hdenotation = Hash.new
-		hdenotation[:id]   = hid
-		hdenotation[:span] = {:begin => self.begin, :end => self.end}
-		hdenotation[:obj]  = obj
-		hdenotation
+		hblock = Hash.new
+		hblock[:id]   = hid
+		hblock[:span] = {:begin => self.begin, :end => self.end}
+		hblock[:obj]  = obj
+		hblock
 	end
 
 	def valid?(max_offset)
@@ -74,26 +71,26 @@ class Denotation < ActiveRecord::Base
 		self.project.update_updated_at
 	end
 
-	def increment_project_denotations_num
-		self.project.increment!(:denotations_num)
+	def increment_project_blocks_num
+		self.project.increment!(:blocks_num)
 	end
 
-	def decrement_project_denotations_num
-		self.project.decrement!(:denotations_num)
+	def decrement_project_blocks_num
+		self.project.decrement!(:blocks_num)
 	end
 
 	def increment_numbers
 		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
-		pd.increment!(:denotations_num) if pd
-		self.doc.increment!(:denotations_num)
-		self.project.increment!(:denotations_num)
+		pd.increment!(:blocks_num) if pd
+		self.doc.increment!(:blocks_num)
+		self.project.increment!(:blocks_num)
 	end
 
 	def decrement_numbers
 		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
-		pd.decrement!(:denotations_num) if pd
-		self.doc.decrement!(:denotations_num)
-		self.project.decrement!(:denotations_num)
+		pd.decrement!(:blocks_num) if pd
+		self.doc.decrement!(:blocks_num)
+		self.project.decrement!(:blocks_num)
 	end
 
 	def self.new_id_init(to_avoid = nil)
@@ -104,7 +101,7 @@ class Denotation < ActiveRecord::Base
 	def self.new_id
 		loop do
 			@idnum += 1
-			_id = 'T' + @idnum.to_s
+			_id = 'B' + @idnum.to_s
 			break _id if !@to_avoid || !@to_avoid.include?(_id)
 		end
 	end
@@ -116,12 +113,12 @@ class Denotation < ActiveRecord::Base
 			results = self.connection.execute(sanitized_sql, :includes => [:project])
 			if results.present?
 				ids = results.collect{|result| result['id']}
-				denotations = self.accessible_projects(current_user_id).in_project(project.id).sql(ids)
+				blocks = self.accessible_projects(current_user_id).in_project(project.id).sql(ids)
 			end       
 		end
 	end
 
-	def self.find_a_denotation(project, sourcedb, sourceid, hid)
+	def self.find_a_block(project, sourcedb, sourceid, hid)
 		doc = Doc.where(sourcedb:sourcedb, sourceid:sourceid).first
 		where(doc_id:doc.id, project_id:project.id, hid:hid).first
 	end

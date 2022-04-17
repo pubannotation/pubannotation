@@ -215,6 +215,7 @@ en:
       doc: document
       documentation: documentation
       denotations: Denotations
+      blocks: Blocks
       relations: Relations
       instances: Instances
       news_notification: News

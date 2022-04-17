@@ -81,6 +81,7 @@ class Doc < ActiveRecord::Base
 	has_many :typesettings, dependent: :destroy
 
 	has_many :denotations, dependent: :destroy
+	has_many :blocks, dependent: :destroy
 
 	has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
 
@@ -350,7 +351,8 @@ class Doc < ActiveRecord::Base
 			end
 		else
 			_denotations = self.denotations
-			messages += Annotation.align_denotations!(_denotations, self.body, new_body)
+			_blocks = self.blocks
+			messages += Annotation.align_denotations_and_blocks!(_denotations, _blocks, self.body, new_body)
 
 			ActiveRecord::Base.transaction do
 				self.divisions.destroy_all
@@ -360,6 +362,7 @@ class Doc < ActiveRecord::Base
 				self.store_divisions(new_hdoc[:divisions])
 				self.store_typesettings(new_hdoc[:typesettings])
 				_denotations.each{|d| d.save!}
+				_blocks.each{|b| b.save!}
 			end
 		end
 
@@ -550,14 +553,43 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_blocks(project_id = nil, span = nil, context_size = nil, sort = false)
+		_blocks = blocks.in_project(project_id).in_span(span)
+
+		if span.present?
+			b = span[:begin]
+			unless context_size.nil?
+				b -= context_size
+				b = 0 if b < 0
+			end
+			_blocks.each{|a| a.begin -= b; a.end -= b}
+		end
+
+		if sort
+			_blocks.sort{|b1, b2| (b1.begin <=> b2.begin).nonzero? || (b2.end <=> b1.end)}
+		else
+			_blocks
+		end
+	end
+
 	# the first argument, project_id, may be a single id or an array of ids.
 	def get_denotations_hash(project_id = nil, span = nil, context_size = nil, sort = false)
 		self.get_denotations(project_id, span, context_size, sort).as_json
 	end
 
+	def get_blocks_hash(project_id = nil, span = nil, context_size = nil, sort = false)
+		self.get_blocks(project_id, span, context_size, sort).as_json
+	end
+
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotation_ids(project_id = nil, span = nil)
 		denotations.in_project(project_id).in_span(span).pluck(:id)
+	end
+
+	# the first argument, project_id, may be a single id or an array of ids
+	def get_block_ids(project_id = nil, span = nil)
+		blocks.in_project(project_id).in_span(span).pluck(:id)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
@@ -583,6 +615,16 @@ class Doc < ActiveRecord::Base
 			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:denotations_num).first
 		else
 			denotations.in_project(project_id).in_span(span).count
+		end
+	end
+
+	def get_blocks_count(project_id = nil, span = nil)
+		if project_id.nil? && span.nil?
+			blocks_num
+		elsif span.nil?
+			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:blocks_num).first
+		else
+			blocks.in_project(project_id).in_span(span).count
 		end
 	end
 
@@ -801,8 +843,10 @@ class Doc < ActiveRecord::Base
 		ids = nil
 
 		hdenotations = get_denotations_hash(project_id, span, context_size, sort_p)
-
 		ids = get_denotation_ids(project_id, span) unless span.nil?
+
+		hblocks = get_blocks_hash(project_id, span, context_size, sort_p)
+		ids += get_block_ids(project_id, span) unless span.nil?
 
 		hrelations = get_relations_hash(project_id, ids, sort_p)
 		ids += get_relation_ids(project_id, ids) unless span.nil?
@@ -814,7 +858,7 @@ class Doc < ActiveRecord::Base
 			hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
 		end
 
-		{project:project.name, denotations:hdenotations, relations:hrelations, attributes:hattributes, modifications:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
+		{project:project.name, denotations:hdenotations, blocks:hblocks, relations:hrelations, attributes:hattributes, modifications:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
 	end
 
 	def spans_projects(params)

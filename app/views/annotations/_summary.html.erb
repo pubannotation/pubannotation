@@ -13,6 +13,10 @@
 		<%= @project.get_denotations_count(@doc, @span) %>
 	</li>
 	<li>
+		<%= t('activerecord.models.blocks') %>:
+		<%= @project.get_blocks_count(@doc, @span) %>
+	</li>
+	<li>
 		<%= t('activerecord.models.relations') %>:
 		<%= @project.get_relations_count(@doc, @span) %>
 	</li>

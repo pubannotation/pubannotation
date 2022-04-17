@@ -57,8 +57,18 @@ class Modification < ActiveRecord::Base
 		Project.decrement_counter(:modifications_num, self.project.id)
 	end
 
-	def self.new_id
-		'M' + rand(99999).to_s
+	def self.new_id_init(to_avoid = nil)
+		@to_avoid = to_avoid
+		@idnum = 0
 	end
+
+	def self.new_id
+		loop do
+			@idnum += 1
+			_id = 'M' + @idnum.to_s
+			break _id if !@to_avoid || !@to_avoid.include?(_id)
+		end
+	end
+
 
 end

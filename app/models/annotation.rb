@@ -112,110 +112,79 @@ class Annotation < ActiveRecord::Base
 			annotations[:sourcedb] = 'FirstAuthors' if annotations[:sourcedb].downcase == 'firstauthors'
 		end
 
-		d_ids = r_ids = dr_ids = []
+		text_length = annotations[:text].length
 
-		if annotations[:denotations].present?
-			raise ArgumentError, "'denotations' must be an array." unless annotations[:denotations].class == Array
-
-			annotations[:denotations].each { |d| d.deep_symbolize_keys! if d.class == Hash }
-
-			annotations = Annotation.chain_spans(annotations)
-
-			ids = annotations[:denotations].collect{|d| d[:id]}.compact
-			idnum = 1
-
-			annotations[:denotations].each do |a|
-				raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'." unless (a[:span].present? && a[:span][:begin].present? && a[:span][:end].present?) || (a[:begin].present? && a[:end].present?)
-				raise ArgumentError, "a denotation must have an 'obj'." unless a[:obj].present?
-
-				unless a.has_key? :id
-					idnum += 1 until !ids.include?('T' + idnum.to_s)
-					a[:id] = 'T' + idnum.to_s
-					idnum += 1
-				end
-
-				a[:span] = {begin: a[:begin], end: a[:end]} if !a[:span].present? && a[:begin].present? && a[:end].present?
-
-				a[:span][:begin] = a[:span][:begin].to_i if a[:span][:begin].is_a? String
-				a[:span][:end]   = a[:span][:end].to_i   if a[:span][:end].is_a? String
-
-				raise ArgumentError, "the begin offset must be bigger than or equal to 0: #{a}" unless a[:span][:begin] >= 0
-				raise ArgumentError, "the begin offset must be smaller than the length of the text: #{a}" unless a[:span][:begin] < annotations[:text].length
-
-				raise ArgumentError, "the end offset must be bigger than 0: #{a}" unless a[:span][:end] > 0
-				raise ArgumentError, "the end offset must be smaller than or equal to the length of the text: #{a}" unless a[:span][:end] <= annotations[:text].length
-
-				raise ArgumentError, "the end offset must be bigger than the begin offset: #{a}" unless a[:span][:begin] < a[:span][:end]
-			end
-
-			d_ids = annotations[:denotations].collect{|a| a[:id]}
+		d_ids = if annotations[:denotations].present?
+			normalize_denotations!(annotations[:denotations], text_length)
+			annotations[:denotations].collect{|a| a[:id]}
+		else
+			[]
 		end
 
-		if annotations[:relations].present?
-			raise ArgumentError, "'relations' must be an array." unless annotations[:relations].class == Array
+		b_ids = if annotations[:blocks].present?
+			normalize_denotations!(annotations[:blocks], text_length, d_ids)
+			annotations[:blocks].collect{|a| a[:id]}
+		else
+			[]
+		end
 
-			annotations[:relations].each {|a| a.symbolize_keys! if a.class == Hash }
+		r_ids = if annotations[:relations].present?
+			relations = annotations[:relations]
+			raise ArgumentError, "'relations' must be an array." unless relations.class == Array
+			relations.each{|a| a.symbolize_keys! if a.class == Hash }
 
-			ids = annotations[:relations].collect{|a| a[:id]}.compact
-			idnum = 1
+			existing_ids = d_ids + b_ids + relations.collect{|a| a[:id]}.compact
+			Relation.new_id_init(existing_ids)
 
-			annotations[:relations].each do |a|
+			relations.each do |a|
 				raise ArgumentError, "a relation must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
-				raise ArgumentError, "'subj' and 'obj' of a relation must reference to a denotation: [#{a}]." unless (d_ids.include? a[:subj]) && (d_ids.include? a[:obj])
+				raise ArgumentError, "'subj' and 'obj' of a relation must reference to denotations or blocks: [#{a}]." unless ((d_ids.include? a[:subj]) && (d_ids.include? a[:obj])) || ((b_ids.include? a[:subj]) && (b_ids.include? a[:obj]))
 
-				unless a.has_key? :id
-					idnum += 1 until !ids.include?('R' + idnum.to_s)
-					a[:id] = 'R' + idnum.to_s
-					idnum += 1
-				end
+				a[:id] = Relation.new_id unless a.has_key? :id
 			end
 
-			r_ids = annotations[:relations].collect{|a| a[:id]}
+			relations.collect{|a| a[:id]}
+		else
+			[]
 		end
 
-		dr_ids = d_ids + r_ids
+		# chaining is the default model of PubAnnotation
+		# annotations = Annotation.chain_spans(annotations)
 
-		if annotations[:attributes].present?
-			raise ArgumentError, "'attributes' must be an array." unless annotations[:attributes].class == Array
+		a_ids = if annotations[:attributes].present?
+			attributes = annotations[:attributes]
+			raise ArgumentError, "'attributes' must be an array." unless attributes.class == Array
+			attributes.each {|a| a.symbolize_keys! if a.class == Hash }
 
-			annotations[:attributes].each {|a| a.symbolize_keys! if a.class == Hash }
+			existing_ids = d_ids + b_ids + r_ids + attributes.collect{|a| a[:id]}.compact
+			Attrivute.new_id_init(existing_ids)
 
-			ids = annotations[:attributes].collect{|a| a[:id]}.compact
-			idnum = 1
-
-			annotations[:attributes].each do |a|
-
+			attributes.each do |a|
 				# TODO: to remove the following line after TextAE is updated.
 				a[:obj] = true unless a[:obj].present?
 
 				raise ArgumentError, "An attribute must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
 				raise ArgumentError, "The 'subj' of an attribute must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:subj]
 
-				unless a.has_key? :id
-					idnum += 1 until !ids.include?('A' + idnum.to_s)
-					a[:id] = 'A' + idnum.to_s
-					idnum += 1
-				end
+				a[:id] = Attrivute.new_id unless a.has_key? :id
 			end
+		else
+			[]
 		end
 
 		if annotations[:modifications].present?
-			raise ArgumentError, "'modifications' must be an array." unless annotations[:modifications].class == Array
+			modifications = annotations[:modifications]
+			raise ArgumentError, "'modifications' must be an array." unless modifications.class == Array
+			modifications.each {|a| a.symbolize_keys! if a.class == Hash }
 
-			annotations[:modifications].each {|a| a.symbolize_keys! if a.class == Hash }
+			existing_ids = dr_ids + a_ids + modifications.collect{|a| a[:id]}.compact
+			Modification.new_id_init(existing_ids)
 
-			ids = annotations[:modifications].collect{|a| a[:id]}.compact
-			idnum = 1
-
-			annotations[:modifications].each do |a|
+			modifications.each do |a|
 				raise ArgumentError, "A modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
 				raise ArgumentError, "The 'obj' of a modification must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:obj]
 
-				unless a.has_key? :id
-					idnum += 1 until !ids.include?('M' + idnum.to_s)
-					a[:id] = 'M' + idnum.to_s
-					idnum += 1
-				end
+				a[:id] = Modification.new_id unless a.has_key? :id
 			end
 		end
 
@@ -227,6 +196,48 @@ class Annotation < ActiveRecord::Base
 		end
 
 		annotations
+	end
+
+	def self.normalize_denotations!(denotations, text_length, existing_ids = [])
+		if denotations.present?
+			raise ArgumentError, "'denotations' must be an array." unless denotations.class == Array
+
+			denotations.each { |d| d.deep_symbolize_keys! if d.class == Hash }
+
+			existing_ids += denotations.collect{|d| d[:id]}.compact
+			Denotation.new_id_init(existing_ids)
+
+			denotations.each do |a|
+				## object
+				raise ArgumentError, "a denotation must have an 'obj'." unless a[:obj].present?
+
+				## span
+				if a[:span].present?
+					if a[:span].class == Array
+						a[:span].each{|s| validate_span(s, text_length)}
+					else
+						validate_span(a[:span], text_length)
+					end
+				else
+					if a[:begin].present? && a[:end].present?
+						a[:span] = {begin: a[:begin], end: a[:end]}
+					else
+						raise ArgumentError, "a denotation must have a 'span' or a pair of 'begin' and 'end'."
+					end
+				end
+
+				## id
+				a[:id] = Denotation.new_id unless a.has_key? :id
+			end
+		end
+	end
+
+	def self.validate_span(span, text_length)
+		raise ArgumentError, "The span of a denotation must have both 'begin' and 'end': #{a}" unless span[:begin].present? && span[:end].present?
+		raise ArgumentError, "The begin and end of a span must have integer values: #{a}" unless (span[:begin].is_a? Integer) && (span[:end].is_a? Integer)
+		raise ArgumentError, "the begin value must be between 0 and #{text_length - 1} (text length - 1): #{a}" unless span[:begin].between?(0, text_length - 1)
+		raise ArgumentError, "the end value must be between 1 and #{text_length} (text length): #{a}" unless span[:end].between?(1, text_length)
+		raise ArgumentError, "the end value must be bigger than the begin value: #{a}" unless span[:begin] < span[:end]
 	end
 
 	def self.chain_spans(annotations)
@@ -401,74 +412,12 @@ class Annotation < ActiveRecord::Base
 		messages
 	end
 
-	def self.align_denotations_by_sentences!(denotations, str, rstr)
-		tsentences, tsentence_spans = text2sentences(str)
-		rsentences, rsentence_spans = text2sentences(rstr)
-
-		compareDiff = Diff::LCS.sdiff(tsentences, rsentences)
-
-		matchh = {}
-		deltah = {}
-		compareDiff.select{|c| c.action == '='}.each do |c|
-			matchh[c.old_position] = c.new_position
-			deltah[c.old_position] = rsentence_spans[c.new_position].first - tsentence_spans[c.old_position].first
-		end
-
-		messages = []
-		slength = tsentence_spans.length
-		new_spans = {}
-		denotations.each do |d|
-			b = d.begin
-			e = d.end
-			new_span = {begin:b, end:e}
-			span_adjusted = false
-
-			# find the **first** sentence whose end is bigger than the begin of the current span
-			i = 0
-			i += 1 until i == slength || b <= tsentence_spans[i][1]
-			unless i < slength && deltah[i].present?
-				# messages << "An anotation is lost due to a substantial change to the text: #{d} (#{str[b ... e]})"
-				# next
-				return nil
-			end
-			unless b >= tsentence_spans[i][0]
-				new_span[:begin] = tsentence_spans[i][0]
-				span_adjusted = true
-			end
-			new_span[:begin] += deltah[i]
-
-			# find the **first** sentence whose begin is bigger than the end of the current span
-			i = 0;
-			i += 1 until i == slength || e < tsentence_spans[i][0]
-			# step back
-			i -= 1
-			unless deltah[i].present?
-				# messages << "An anotation is lost due to a substantial change to the text: #{d} (#{str[b ... e]})"
-				# next
-				return nil
-			end
-			unless e <= tsentence_spans[i][1]
-				new_span[:end] = tsentence_spans[i][1]
-				span_adjusted = true
-			end
-			new_span[:end] += deltah[i]
-
-			if span_adjusted
-				messages << "The span is adjusted. Please check.\nOriginal:[#{str[b ... e]}]\nAdjusted:[#{rstr[new_span[:begin] ... new_span[:end]]}]"
-			end
-			new_spans[d.hid] = new_span
-		end
-
-		denotations.each{|d| d.begin = new_spans[d.hid][:begin]; d.end = new_spans[d.hid][:end]}
-		messages
-	end
-
-	def self.align_denotations!(denotations, str, rstr)
+	def self.align_denotations_and_blocks!(denotations, blocks, str, rstr)
 		return [] unless denotations.present? && str != rstr
 
 		messages = []
 
-		bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= str.length)}
+		bads = denotations.select{|d| !d.valid?(str.length)}
 		unless bads.empty?
 			message = "Alignment cancelled. Invalid denotations found: "
 			message += if bads.length > 5
@@ -482,8 +431,9 @@ class Annotation < ActiveRecord::Base
 		aligner = TextAlignment::TextAlignment.new(rstr)
 		aligner.align(str)
 		aligner.transform_denotations!(denotations)
+		aligner.transform_denotations!(blocks)
 
-		bads = denotations.select{|d| !(d.begin.kind_of?(Integer) && d.end.kind_of?(Integer) && d.begin >= 0 && d.end > d.begin && d.end <= rstr.length)}
+		bads = denotations.select{|d| !d.valid?(rstr.length)}
 		unless bads.empty? # && aligner.similarity > 0.5
 			message = "Alignment failed. Invalid transformations found: "
 			message += if bads.length > 5
@@ -505,9 +455,12 @@ class Annotation < ActiveRecord::Base
 		begin
 			# align_hdenotations
 			denotations = annotations[:denotations]
-			aligner.align(annotations[:text], denotations)
+			blocks = annotations[:blocks]
+
+			aligner.align(annotations[:text], denotations + blocks)
 
 			denotations.replace(aligner.transform_hdenotations(denotations))
+			blocks.replace(aligner.transform_hdenotations(blocks))
 
 			unless aligner.lost_annotations.empty?
 				messages << {
@@ -536,6 +489,12 @@ class Annotation < ActiveRecord::Base
 
 			if annotations[:denotations].present?
 				annotations[:denotations].each do |d|
+					d[:span][:begin] += span[:begin]
+					d[:span][:end]   += span[:begin]
+				end
+			end
+			if annotations[:blocks].present?
+				annotations[:blocks].each do |d|
 					d[:span][:begin] += span[:begin]
 					d[:span][:end]   += span[:begin]
 				end
