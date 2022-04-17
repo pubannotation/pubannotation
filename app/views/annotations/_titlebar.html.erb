@@ -3,23 +3,23 @@
 
 <span class='tab-bar'>
 	<%=
-		link_to_unless_current 'TAB', params.permit(:controller, :action).merge(controller: :annotations, action: :doc_annotations_index), :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
+		link_to_unless_current 'TAB', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_index), :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
 			content_tag :span, 'TAB', :class => 'tab active_tab', title: 'table'
 		end
 	%>
 
 	<%=
-		link_to 'JSON', params.permit(:controller, :action).merge(controller: :annotations, action: :doc_annotations_index, format: :json), :class => 'tab inactive_tab', id: 'annotations_json', title: 'json'
+		link_to 'JSON', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_index, format: :json), :class => 'tab inactive_tab', id: 'annotations_json', title: 'json'
 	%>
 
 	<%=
-		link_to_unless_current 'ListView', params.permit(:controller, :action).merge(controller: :annotations, action: :doc_annotations_list_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'List view of annotations' do
+		link_to_unless_current 'ListView', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_list_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'List view of annotations' do
 			content_tag :span, 'ListView', :class => 'tab active_tab', title: 'List view of annotations'
 		end
 	%>
 
 	<%=
-		link_to_unless_current 'MergeView', params.permit(:controller, :action).merge(controller: :annotations, action: :doc_annotations_merge_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'Merged view of annotations' do
+		link_to_unless_current 'MergeView', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_merge_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'Merged view of annotations' do
 			content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
 		end
 	%>
