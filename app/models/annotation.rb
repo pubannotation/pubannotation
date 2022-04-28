@@ -464,13 +464,13 @@ class Annotation < ActiveRecord::Base
 
 	# To align annotations, considering the span specification
 	def self.align_annotations!(annotations, ref_text, aligner)
-		return [] unless annotations[:denotations].present?
+		return [] unless annotations[:denotations].present? || annotations[:blocks].present?
 
 		messages = []
 		begin
 			# align_hdenotations
-			denotations = annotations[:denotations]
-			blocks = annotations[:blocks]
+			denotations = annotations[:denotations] || []
+			blocks = annotations[:blocks] || []
 
 			aligner.align(annotations[:text], denotations + blocks)
 
