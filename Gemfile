@@ -3,7 +3,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.7.4'
 
-gem 'rails', '5.2.6'
+gem 'rails', '5.2.8'
 gem 'rake'
 gem 'activerecord-import'
 
