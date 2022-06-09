@@ -72,7 +72,7 @@ class UploadDocsJob < ApplicationJob
 					end
 				else
 					doc = Doc.new(hdoc)
-					r = Doc.ar_import [doc]
+					r = Doc.import [doc]
 					raise RuntimeError, "documents import error" unless r.failed_instances.empty?
 					created = true
 					doc.projects << project

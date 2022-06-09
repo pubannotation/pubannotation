@@ -838,7 +838,7 @@ class Project < ActiveRecord::Base
 				instances = instantiate_hdenotations(annotations[:denotations], doc.id)
 
 				if instances.present?
-					r = Denotation.ar_import instances, validate: false
+					r = Denotation.import instances, validate: false
 					raise "denotations import error" unless r.failed_instances.empty?
 				end
 				d_num = annotations[:denotations].length
@@ -848,7 +848,7 @@ class Project < ActiveRecord::Base
 				instances = instantiate_hblocks(annotations[:blocks], doc.id)
 
 				if instances.present?
-					r = Block.ar_import instances, validate: false
+					r = Block.import instances, validate: false
 					raise "blocks import error" unless r.failed_instances.empty?
 				end
 				b_num = annotations[:blocks].length
@@ -857,7 +857,7 @@ class Project < ActiveRecord::Base
 			if annotations[:relations].present?
 				instances = instantiate_hrelations(annotations[:relations], doc.id)
 				if instances.present?
-					r = Relation.ar_import instances, validate: false
+					r = Relation.import instances, validate: false
 					raise "relations import error" unless r.failed_instances.empty?
 				end
 				r_num = annotations[:denotations].length
@@ -866,7 +866,7 @@ class Project < ActiveRecord::Base
 			if annotations[:attributes].present?
 				instances = instantiate_hattributes(annotations[:attributes], doc.id)
 				if instances.present?
-					r = Attrivute.ar_import instances, validate: false
+					r = Attrivute.import instances, validate: false
 					raise "attributes import error" unless r.failed_instances.empty?
 				end
 			end
@@ -874,7 +874,7 @@ class Project < ActiveRecord::Base
 			if annotations[:modifications].present?
 				instances = instantiate_hmodifications(annotations[:modifications], doc.id)
 				if instances.present?
-					r = Modification.ar_import instances, validate: false
+					r = Modification.import instances, validate: false
 					raise "modifications import error" unless r.failed_instances.empty?
 				end
 				m_num = annotations[:modifications].length
@@ -913,7 +913,7 @@ class Project < ActiveRecord::Base
 			end
 
 			if instances.present?
-				r = Denotation.ar_import instances, validate: false
+				r = Denotation.import instances, validate: false
 				raise "denotations import error" unless r.failed_instances.empty?
 			end
 
@@ -929,7 +929,7 @@ class Project < ActiveRecord::Base
 			end
 
 			if instances.present?
-				r = Relation.ar_import instances, validate: false
+				r = Relation.import instances, validate: false
 				raise "relation import error" unless r.failed_instances.empty?
 			end
 
@@ -944,7 +944,7 @@ class Project < ActiveRecord::Base
 			end
 
 			if instances.present?
-				r = Attrivute.ar_import instances, validate: false
+				r = Attrivute.import instances, validate: false
 				raise "attribute import error" unless r.failed_instances.empty?
 			end
 
@@ -958,7 +958,7 @@ class Project < ActiveRecord::Base
 			end
 
 			if instances.present?
-				r = Modification.ar_import instances, validate: false
+				r = Modification.import instances, validate: false
 				raise "modifications import error" unless r.failed_instances.empty?
 			end
 

@@ -285,7 +285,7 @@ class Doc < ActiveRecord::Base
 			)
 		end
 
-		r = Division.ar_import divisions
+		r = Division.import divisions
 		raise "Failed to save the divisions." unless r.failed_instances.empty?
 
 		divisions
@@ -305,7 +305,7 @@ class Doc < ActiveRecord::Base
 			)
 		end
 
-		r = Typesetting.ar_import typesettings
+		r = Typesetting.import typesettings
 		raise "Failed to save the typesettings." unless r.failed_instances.empty?
 
 		typesettings

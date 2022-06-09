@@ -3,16 +3,6 @@ require_relative 'boot'
 require 'rails/all'
 require 'csv'
 
-# https://github.com/zdennis/activerecord-import/issues/149
-require 'activerecord-import/base'
-
-class ActiveRecord::Base
-  class << self
-    alias :ar_import :import
-    remove_method :import
-  end
-end
-
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
