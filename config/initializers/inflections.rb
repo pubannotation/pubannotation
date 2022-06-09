@@ -14,9 +14,3 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym 'RESTful'
 # end
-
-# Pluralize only if word is alphabetical
-ActiveSupport::Inflector.inflections do |inflect|
-  inflect.plural(/^.*[^A-Za-z]$/, '\0')
-  inflect.singular(/^.*[^A-Za-z]$/, '\0')
-end
