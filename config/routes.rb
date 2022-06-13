@@ -9,8 +9,6 @@ Pubann::Application.routes.draw do
 
 	resources :evaluators
 	resources :evaluations do
-		post 'select_reference_project' => 'projects#select_reference_project'
-		post 'delete_reference_project' => 'projects#delete_reference_project'
 		post 'generate' => 'evaluations#generate'
 		get 'result' => 'evaluations#result'
 		get 'falses' => 'evaluations#falses'
@@ -35,7 +33,7 @@ Pubann::Application.routes.draw do
 		end
 		get 'jobs/latest_jobs_table' => 'jobs#latest_jobs_table'
 		get 'jobs/latest_gear_icon' => 'jobs#latest_gear_icon'
-		resources :jobs do
+		resources :jobs, only: [:index, :show, :update, :destroy] do
 			member do
 				get 'messages' => 'messages#index'
 			end
@@ -61,12 +59,6 @@ Pubann::Application.routes.draw do
 
 	get "home/index"
 
-	resources :notices, only: :destroy do
-		collection do
-			get 'delete_project_notices/:id' => 'notices#delete_project_notices', as: 'delete_project'
-		end
-	end
-
 	namespace :relations do
 		get :sql
 	end
@@ -75,12 +67,9 @@ Pubann::Application.routes.draw do
 		get :sql
 	end
 
-	resource :sql do
-		get :index
-	end
+	resource :sql, only: [:index]
 
-	resource :users do
-		get '/' => 'users#index'
+	resource :users, only: [:index] do
 		get :autocomplete_username, :on => :collection
 	end
 
@@ -91,7 +80,6 @@ Pubann::Application.routes.draw do
 			get 'open' => 'docs#open'
 			# list sourcedb
 			get 'sourcedb' => 'docs#sourcedb_index'
-			get 'search' => 'docs#search'
 			get 'store_span_rdf' => 'docs#store_span_rdf'
 			get 'update_numbers' => 'docs#update_numbers'
 
@@ -135,21 +123,17 @@ Pubann::Application.routes.draw do
 		get 'relations/sql' => 'relations#sql'
 		get 'annotations.tgz' => 'annotations#project_annotations_tgz', :as => 'annotations_tgz'
 		get 'annotations.tgz/create' => 'annotations#create_project_annotations_tgz', :as => 'create_annotations_tgz'
-		post 'annotations.tgz' => 'annotations#create_from_tgz', :as => 'create_annotations_from_tgz'
 		get 'delete_annotations_tgz' => 'annotations#delete_project_annotations_tgz', :as => 'delete_annotations_tgz'
 		get 'annotations.rdf' => 'annotations#project_annotations_rdf', :as => 'annotations_rdf'
-		get 'annotations.rdf/create' => 'annotations#create_project_annotations_rdf', :as => 'create_annotations_rdf'
 		post 'docs/upload' => 'docs#create_from_upload', :as => 'create_docs_from_upload'
 		post 'annotations/upload' => 'annotations#create_from_upload', :as => 'create_annotations_from_upload'
 		post 'annotations/delete' => 'annotations#delete_from_upload', :as => 'delete_annotations_from_upload'
 		post 'annotations/obtain' => 'annotations#obtain_batch'
-		get 'notices' => 'notices#index'
-		get 'tasks' => 'notices#tasks'
-		resources :annotations
+		resources :annotations, only: [:index, :destroy]
 		resources :associate_maintainers, :only => [:destroy]
 		get 'jobs/latest_jobs_table' => 'jobs#latest_jobs_table'
 		get 'jobs/latest_gear_icon' => 'jobs#latest_gear_icon'
-		resources :jobs do
+		resources :jobs, only: [:index, :show, :update, :destroy] do
 			member do
 				get 'messages' => 'messages#index'
 			end
@@ -180,8 +164,6 @@ Pubann::Application.routes.draw do
 			get 'autocomplete_project_name'
 			get 'autocomplete_editable_project_name'
 			get 'autocomplete_project_author'
-			get 'zip_upload' => 'projects#zip_upload'
-			post 'create_from_tgz' => 'projects#create_from_tgz'
 			# get 'store_annotation_rdf' => 'projects#store_annotation_rdf'
 			get 'clean' => 'projects#clean'
 		end
@@ -201,7 +183,6 @@ Pubann::Application.routes.draw do
 				post 'add' => 'docs#add'
 				post 'add_from_upload' => 'docs#add_from_upload'
 				post 'import' => 'docs#import'
-				get 'search' => 'docs#search'
 				get 'open' => 'docs#open'
 				scope 'sourcedb', :as => 'sourcedb' do
 					# list sourcedb
@@ -232,11 +213,11 @@ Pubann::Application.routes.draw do
 				end
 			end
 
-			resources :annotations do
+			resources :annotations, only: [:index, :create, :destroy] do
 			end
 		end
 
-		resources :annotations do
+		resources :annotations, only: [:index, :create, :destroy] do
 			collection do
 				post 'import'  => 'annotations#import'
 				post 'analyse' => 'annotations#analyse'
@@ -249,7 +230,7 @@ Pubann::Application.routes.draw do
 		resources :queries
 	end
 
-	resources :messages do
+	resources :messages, only: [:index, :show] do
 		member do
 			get '/data_source' => 'messages#data_source'
 			get '/data_target' => 'messages#data_target'
