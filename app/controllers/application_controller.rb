@@ -17,13 +17,6 @@ class ApplicationController < ActionController::Base
 		end
 	end
 	
-	def store_location
-		requested_path = url_for(:only_path => true)
-		if requested_path != new_user_session_path && requested_path != new_user_registration_path && (requested_path =~ /password/).blank?  && request.method == 'GET'
-			session[:after_sign_in_path] = request.fullpath
-		end
-	end
-
 	def http_basic_authenticate 
 		authenticate_or_request_with_http_basic do |username, password|
 			user = User.find_by_email(username)
@@ -91,6 +84,13 @@ class ApplicationController < ActionController::Base
 			I18n.locale =  locale
 		else
 			I18n.locale = session[:locale]
+		end
+	end
+
+	def store_location
+		requested_path = url_for(:only_path => true)
+		if requested_path != new_user_session_path && requested_path != new_user_registration_path && (requested_path =~ /password/).blank?  && request.method == 'GET'
+			session[:after_sign_in_path] = request.fullpath
 		end
 	end
 end
