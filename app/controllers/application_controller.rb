@@ -71,13 +71,6 @@ class ApplicationController < ActionController::Base
 		request.referrer
 	end
 
-	def get_projects (options = {})
-		projects = (options.present? && options[:doc].present?)? options[:doc].projects : Project.where('id > ?', 0)
-		# TODO associate projects should be got ?
-		projects.sort!{|x, y| x.name <=> y.name}
-		projects = projects.keep_if{|a| a.accessibility == 1 or (user_signed_in? and a.user == current_user)}
-	end
-
 	def get_navigator ()
 		navigator = []
 		path = ''
