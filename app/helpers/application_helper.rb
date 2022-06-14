@@ -138,14 +138,6 @@ module ApplicationHelper
 		link_to header, params.permit(:controller, :action).merge(sort_key: sort_key, sort_direction: next_sort_direction), {:class => "sortable-" + (current_sort_direction || 'none')}
 	end
 
-	def get_project2 (project_name)
-		authenticate_user!
-		project = Project.find_by_name(project_name)
-		raise ArgumentError, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name) unless project.present?
-		raise ArgumentError, I18n.t('controllers.application.get_project.private', :project_name => project_name) unless (project.accessibility == 1 || (user_signed_in? && project.user == current_user))
-		project
-	end
-
 	def total_number(list, model = nil)
 		if list.respond_to?(:total_entries)
 			list.total_entries
