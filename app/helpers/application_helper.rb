@@ -138,10 +138,6 @@ module ApplicationHelper
 		link_to header, params.permit(:controller, :action).merge(sort_key: sort_key, sort_direction: next_sort_direction), {:class => "sortable-" + (current_sort_direction || 'none')}
 	end
 
-	def root_user?
-		user_signed_in? && current_user.root?
-	end
-
 	def manager?
 		user_signed_in? && current_user.manager?
 	end
@@ -157,4 +153,9 @@ module ApplicationHelper
 		str
 	end
 
+	private
+
+	def root_user?
+		user_signed_in? && current_user.root?
+	end
 end
