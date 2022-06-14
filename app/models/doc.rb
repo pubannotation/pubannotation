@@ -1047,4 +1047,56 @@ class Doc < ActiveRecord::Base
 
 		doc_spans_trig
 	end
+
+	private
+
+	def get_ascii_text(text)
+		rewritetext = Utfrewrite.utf8_to_ascii(text)
+		#rewritetext = text
+
+		# escape non-ascii characters
+		coder = HTMLEntities.new
+		asciitext = coder.encode(rewritetext, :named)
+		# restore back
+		# greek letters
+		asciitext.gsub!(/&[Aa]lpha;/, "alpha")
+		asciitext.gsub!(/&[Bb]eta;/, "beta")
+		asciitext.gsub!(/&[Gg]amma;/, "gamma")
+		asciitext.gsub!(/&[Dd]elta;/, "delta")
+		asciitext.gsub!(/&[Ee]psilon;/, "epsilon")
+		asciitext.gsub!(/&[Zz]eta;/, "zeta")
+		asciitext.gsub!(/&[Ee]ta;/, "eta")
+		asciitext.gsub!(/&[Tt]heta;/, "theta")
+		asciitext.gsub!(/&[Ii]ota;/, "iota")
+		asciitext.gsub!(/&[Kk]appa;/, "kappa")
+		asciitext.gsub!(/&[Ll]ambda;/, "lambda")
+		asciitext.gsub!(/&[Mm]u;/, "mu")
+		asciitext.gsub!(/&[Nn]u;/, "nu")
+		asciitext.gsub!(/&[Xx]i;/, "xi")
+		asciitext.gsub!(/&[Oo]micron;/, "omicron")
+		asciitext.gsub!(/&[Pp]i;/, "pi")
+		asciitext.gsub!(/&[Rr]ho;/, "rho")
+		asciitext.gsub!(/&[Ss]igma;/, "sigma")
+		asciitext.gsub!(/&[Tt]au;/, "tau")
+		asciitext.gsub!(/&[Uu]psilon;/, "upsilon")
+		asciitext.gsub!(/&[Pp]hi;/, "phi")
+		asciitext.gsub!(/&[Cc]hi;/, "chi")
+		asciitext.gsub!(/&[Pp]si;/, "psi")
+		asciitext.gsub!(/&[Oo]mega;/, "omega")
+
+		# symbols
+		asciitext.gsub!(/&apos;/, "'")
+		asciitext.gsub!(/&lt;/, "<")
+		asciitext.gsub!(/&gt;/, ">")
+		asciitext.gsub!(/&quot;/, '"')
+		asciitext.gsub!(/&trade;/, '(TM)')
+		asciitext.gsub!(/&rarr;/, ' to ')
+		asciitext.gsub!(/&hellip;/, '...')
+
+		# change escape characters
+		asciitext.gsub!(/&([a-zA-Z]{1,10});/, '==\1==')
+		asciitext.gsub!('==amp==', '&')
+
+		asciitext
+	end
 end
