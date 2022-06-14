@@ -77,21 +77,6 @@ class ApplicationController < ActionController::Base
 		render 'shared/status_error', :status => status
 	end
 
-	def get_docs_projects
-		sort_order = if params[:sort_key].present? && params[:sort_direction].present?
-			"#{params[:sort_key]} #{params[:sort_direction]}"
-		else
-			Project.sort_order
-		end
-
-		@projects = @doc.projects.annotations_accessible(current_user).order(sort_order)
-		if params[:projects].present?
-			select_project_names = params[:projects].split(',').uniq
-			@selected_projects = select_project_names.collect{|pname| Project.where(name:pname).first}
-			@projects -= @selected_projects
-		end
-	end
-
 	def cors_preflight_check
 		return unless request.method == 'OPTIONS'
 		cors_set_access_control_headers

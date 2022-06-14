@@ -624,4 +624,19 @@ class DocsController < ApplicationController
 		raise ArgumentError, I18n.t('controllers.application.get_project.private', :project_name => project_name) unless (project.accessibility == 1 || (user_signed_in? && project.user == current_user))
 		project
 	end
+
+	def get_docs_projects
+		sort_order = if params[:sort_key].present? && params[:sort_direction].present?
+			"#{params[:sort_key]} #{params[:sort_direction]}"
+		else
+			Project.sort_order
+		end
+
+		@projects = @doc.projects.annotations_accessible(current_user).order(sort_order)
+		if params[:projects].present?
+			select_project_names = params[:projects].split(',').uniq
+			@selected_projects = select_project_names.collect{|pname| Project.where(name:pname).first}
+			@projects -= @selected_projects
+		end
+	end
 end
