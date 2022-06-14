@@ -70,17 +70,6 @@ class ApplicationController < ActionController::Base
 	def after_sign_out_path_for(resource_or_scope)
 		request.referrer
 	end
-
-	def get_navigator ()
-		navigator = []
-		path = ''
-		parts = request.fullpath.split('/')
-		parts.each do |p|
-			path += '/' + p
-			navigator.push([p, path]);
-		end
-		navigator
-	end
 	
 	def render_status_error(status)
 		# translation required for each httpstatus eg: errors.statuses.forbidden
