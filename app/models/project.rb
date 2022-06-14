@@ -1,5 +1,4 @@
 class Project < ActiveRecord::Base
-	include ApplicationHelper
 	DOWNLOADS_PATH = "/downloads/"
 
 	before_validation :cleanup_namespaces

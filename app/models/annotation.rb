@@ -1,5 +1,4 @@
 class Annotation < ActiveRecord::Base
-	include ApplicationHelper
 	include AnnotationsHelper
 
 	# To produce an array of annotations for export.

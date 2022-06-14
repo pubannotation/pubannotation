@@ -4,7 +4,6 @@ require 'utfrewrite'
 require 'text_alignment'
 
 class ApplicationController < ActionController::Base
-	include ApplicationHelper
 	protect_from_forgery
 	before_action :cors_set_access_control_headers
 	before_action :set_locale
