@@ -1,10 +1,4 @@
 class UsersController < ApplicationController
-	before_action :is_root_user?, only: :index
-	
-	def index
-		@users_grid = initialize_grid(User, per_page: 10)
-	end
-
 	def show
 		@user = User.find_by_username(params[:name])
 
