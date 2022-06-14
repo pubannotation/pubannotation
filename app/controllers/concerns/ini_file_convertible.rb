@@ -1,6 +1,8 @@
 module IniFileConvertible
   extend ActiveSupport::Concern
 
+  private
+
   # This method converts a string of a particular format to a hash,
   # such as: "key = value"
   def convert_str_to_hash(str)
