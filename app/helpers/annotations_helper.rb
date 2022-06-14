@@ -45,17 +45,6 @@ module AnnotationsHelper
 		link_to editor.name, url, :class => 'tab', :title => editor.description
 	end
 
-	def get_focus(options)
-		if options.present? && options[:params].present? && options[:params][:begin].present? && options[:params][:context_size]
-			sbeg = options[:params][:begin].to_i
-			send = options[:params][:end].to_i
-			context_size = options[:params][:context_size].to_i
-			fbeg = (context_size < sbeg) ? context_size : sbeg
-			fend = send - sbeg + fbeg
-			{begin: fbeg, end: fend}
-		end
-	end
-
 	def annotations_obtain_path
 		if params[:sourceid].present?
 			if params[:begin].present?
