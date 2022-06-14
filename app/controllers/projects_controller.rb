@@ -1,4 +1,6 @@
 class ProjectsController < ApplicationController
+	include HTTPBasicAuthenticatable
+
 	before_action :updatable?, :only => [:edit, :update]
 	before_action :destroyable?, :only => :destroy
 	before_action :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :autocomplete_project_author, :search]

@@ -2,6 +2,8 @@ require 'fileutils'
 require 'zip/zip'
 
 class DocsController < ApplicationController
+	include HTTPBasicAuthenticatable
+
 	protect_from_forgery :except => [:create]
 	before_action :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :project_delete_all_docs, :uptodate]
 	before_action :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}

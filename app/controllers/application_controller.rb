@@ -11,25 +11,6 @@ class ApplicationController < ActionController::Base
 	before_action :set_locale
 	after_action :store_location
 
-	def http_basic_authenticate 
-		authenticate_or_request_with_http_basic do |username, password|
-			user = User.find_by_email(username)
-			if user.present? && user.valid_password?(password)
-				sign_in :user, user 
-			else
-				respond_to do |format|
-					format.json{
-						res = {
-							status: :unauthorized,
-							message: 'Authentication Failed'
-						}
-						render json: res.to_json
-					}
-				end
-			end
-		end
-	end
-	
 	def after_sign_in_path_for(resource)
 		session[:after_sign_in_path] ||= root_path
 	end
