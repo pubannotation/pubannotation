@@ -122,14 +122,15 @@ class AnnotatorsController < ApplicationController
 		end
 	end
 
+	private
+
+	def annotator_params
+		params.require(:annotator).permit(:name, :description, :home, :url, :method, :payload, :max_text_size,
+																			:async_protocol, :is_public, :sample, :receiver_attribute, :new_label)
+	end
+
 	def changeable?
 		@annotator = Annotator.find(params[:id])
 		render_status_error(:forbidden) unless @annotator.changeable?(current_user)
 	end
-
-	private
-		def annotator_params
-			params.require(:annotator).permit(:name, :description, :home, :url, :method, :payload, :max_text_size,
-																				:async_protocol, :is_public, :sample, :receiver_attribute, :new_label)
-		end
 end
