@@ -115,11 +115,6 @@ module ApplicationHelper
 		asciitext
 	end
 	
-	def sanitize_sql(sql)
-		# sanitized_sql = ActiveRecord::Base::sanitize(params[:sql])#.gsub('\'', '')
-		sql.gsub("\"", '\'')
-	end
-
 	def sortable(model, header, sort_key, initial_sort_direction = 'DESC')
 		current_sort_direction = if params[:sort_key].present? && params[:sort_key] == sort_key && params[:sort_direction].present?
 			params[:sort_direction]

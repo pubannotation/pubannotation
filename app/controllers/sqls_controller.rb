@@ -1,6 +1,5 @@
 class SqlsController < ApplicationController
 	require 'json'
-	include ApplicationHelper
 	
 	def index
 		# TODO
@@ -11,5 +10,12 @@ class SqlsController < ApplicationController
 			@results = ActiveRecord::Base.connection.execute(sanitized_sql).to_a
 			@results = @results.page(params[:page])
 		end
+	end
+
+	private
+
+	def sanitize_sql(sql)
+		# sanitized_sql = ActiveRecord::Base::sanitize(params[:sql])#.gsub('\'', '')
+		sql.gsub("\"", '\'')
 	end
 end
