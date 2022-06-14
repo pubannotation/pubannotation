@@ -19,12 +19,6 @@ class ApplicationController < ActionController::Base
 		request.referrer
 	end
 	
-	def render_status_error(status)
-		# translation required for each httpstatus eg: errors.statuses.forbidden
-		flash[:error] = t("errors.statuses.#{status}")
-		render 'shared/status_error', :status => status
-	end
-
 	protected
 
 	def cors_set_access_control_headers
@@ -67,5 +61,11 @@ class ApplicationController < ActionController::Base
 		if requested_path != new_user_session_path && requested_path != new_user_registration_path && (requested_path =~ /password/).blank?  && request.method == 'GET'
 			session[:after_sign_in_path] = request.fullpath
 		end
+	end
+
+	def render_status_error(status)
+		# translation required for each httpstatus eg: errors.statuses.forbidden
+		flash[:error] = t("errors.statuses.#{status}")
+		render 'shared/status_error', :status => status
 	end
 end
