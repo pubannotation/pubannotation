@@ -14,6 +14,8 @@ class AssociateMaintainersController < ApplicationController
 			redirect_to(project_path(@associate_maintainer.project.name))  
 		end
 	end
+
+	private
 	
 	def destroyable?
 		@associate_maintainer = AssociateMaintainer.find(params[:id])
