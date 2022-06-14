@@ -71,13 +71,6 @@ class ApplicationController < ActionController::Base
 		request.referrer
 	end
 
-	def get_project2 (project_name)
-		project = Project.find_by_name(project_name)
-		raise ArgumentError, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name) unless project.present?
-		raise ArgumentError, I18n.t('controllers.application.get_project.private', :project_name => project_name) unless (project.accessibility == 1 || (user_signed_in? && project.user == current_user))
-		project
-	end
-
 	def get_projects (options = {})
 		projects = (options.present? && options[:doc].present?)? options[:doc].projects : Project.where('id > ?', 0)
 		# TODO associate projects should be got ?

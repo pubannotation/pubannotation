@@ -613,7 +613,15 @@ class DocsController < ApplicationController
 	#   render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
 	# end
 	private
-		def doc_params
-			params.require(:doc).permit(:body, :source, :sourcedb, :sourceid, :username)
-		end
+
+	def doc_params
+		params.require(:doc).permit(:body, :source, :sourcedb, :sourceid, :username)
+	end
+
+	def get_project2 (project_name)
+		project = Project.find_by_name(project_name)
+		raise ArgumentError, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name) unless project.present?
+		raise ArgumentError, I18n.t('controllers.application.get_project.private', :project_name => project_name) unless (project.accessibility == 1 || (user_signed_in? && project.user == current_user))
+		project
+	end
 end
