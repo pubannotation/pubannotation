@@ -11,12 +11,6 @@ class ApplicationController < ActionController::Base
 	before_action :set_locale
 	after_action :store_location
 
-	def is_root_user?
-		unless root_user?
-			render_status_error(:unauthorized)
-		end
-	end
-	
 	def http_basic_authenticate 
 		authenticate_or_request_with_http_basic do |username, password|
 			user = User.find_by_email(username)
