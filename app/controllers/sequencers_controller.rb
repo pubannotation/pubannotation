@@ -77,7 +77,12 @@ class SequencersController < ApplicationController
 	end
 
 	private
-		def sequencer_params
-			params.require(:sequencer).permit(:description, :home, :name, :parameters, :url, :is_public)
-		end
+
+	def sequencer_params
+		params.require(:sequencer).permit(:description, :home, :name, :parameters, :url, :is_public)
+	end
+
+	def manager?
+		user_signed_in? && current_user.manager?
+	end
 end
