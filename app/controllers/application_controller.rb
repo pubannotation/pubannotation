@@ -9,6 +9,10 @@ class ApplicationController < ActionController::Base
 	before_action :set_locale
 	after_action :store_location
 
+	protected
+
+	# Customize Devise rederct hooks
+	# https://qiita.com/ryuuuuuuuuuu/items/b1ded4d17cce688b9732	
 	def after_sign_in_path_for(resource)
 		session[:after_sign_in_path] ||= root_path
 	end
@@ -17,8 +21,6 @@ class ApplicationController < ActionController::Base
 		request.referrer
 	end
 	
-	protected
-
 	def cors_set_access_control_headers
 		if request.referer.present?
 			uri = URI.parse(request.referer)
