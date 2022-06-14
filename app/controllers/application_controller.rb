@@ -77,12 +77,6 @@ class ApplicationController < ActionController::Base
 		render 'shared/status_error', :status => status
 	end
 
-	def cors_preflight_check
-		return unless request.method == 'OPTIONS'
-		cors_set_access_control_headers
-		render json: {}
-	end
-
 	protected
 
 	def cors_set_access_control_headers

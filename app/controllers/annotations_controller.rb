@@ -680,6 +680,12 @@ class AnnotationsController < ApplicationController
 		end
 	end
 
+	def cors_preflight_check
+		return unless request.method == 'OPTIONS'
+		cors_set_access_control_headers
+		render json: {}
+	end
+
 	private
 
 	def annotations_merge_view
