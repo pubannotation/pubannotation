@@ -1,5 +1,5 @@
 module HTTPBasicAuthenticatable
-  include ActiveSupport::Concern
+  extend ActiveSupport::Concern
 
 	private
 
