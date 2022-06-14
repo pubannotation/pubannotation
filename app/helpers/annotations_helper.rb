@@ -57,14 +57,6 @@ module AnnotationsHelper
 		end
 	end
 
-	def annotations_form_action_helper
-		if params[:id].present?
-			annotations_project_doc_path(@project.name, @doc.id)
-		else
-			annotations_generate_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid)
-		end
-	end
-
 	def get_doc_info (annotations)
 		sourcedb = annotations[:sourcedb]
 		sourceid = annotations[:sourceid]
