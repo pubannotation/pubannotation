@@ -17,26 +17,6 @@ class ApplicationController < ActionController::Base
 		end
 	end
 	
-	def set_locale
-		accept_locale = ['en', 'ja']
-		if params[:locale].present? && accept_locale.include?(params[:locale])
-			session[:locale] = params[:locale]
-		end
-		
-		if session[:locale].blank?
-			accept_language = request.env['HTTP_ACCEPT_LANGUAGE'] ||= 'en'
-			locale_string = accept_language.scan(/^[a-z]{2}/).first
-			if accept_locale.include?(locale_string.to_s)
-				locale = locale_string
-			else
-				locale = :en
-			end
-			I18n.locale =  locale
-		else
-			I18n.locale = session[:locale]
-		end
-	end
-	
 	def store_location
 		requested_path = url_for(:only_path => true)
 		if requested_path != new_user_session_path && requested_path != new_user_registration_path && (requested_path =~ /password/).blank?  && request.method == 'GET'
@@ -94,4 +74,23 @@ class ApplicationController < ActionController::Base
 		end
 	end
 
+	def set_locale
+		accept_locale = ['en', 'ja']
+		if params[:locale].present? && accept_locale.include?(params[:locale])
+			session[:locale] = params[:locale]
+		end
+		
+		if session[:locale].blank?
+			accept_language = request.env['HTTP_ACCEPT_LANGUAGE'] ||= 'en'
+			locale_string = accept_language.scan(/^[a-z]{2}/).first
+			if accept_locale.include?(locale_string.to_s)
+				locale = locale_string
+			else
+				locale = :en
+			end
+			I18n.locale =  locale
+		else
+			I18n.locale = session[:locale]
+		end
+	end
 end
