@@ -63,18 +63,6 @@ module AnnotationsHelper
 		end
 	end
 
-	def set_denotations_begin_end(denotations, options)
-		denotations.each do |d|
-			d[:span][:begin] -= options[:params][:begin].to_i
-			d[:span][:end]   -= options[:params][:begin].to_i
-			if options[:params][:context_size].present?
-				d[:span][:begin] += options[:params][:context_size].to_i
-				d[:span][:end] += options[:params][:context_size].to_i
-			end
-		end
-		return denotations
-	end
-
 	def annotations_obtain_path
 		if params[:sourceid].present?
 			if params[:begin].present?
