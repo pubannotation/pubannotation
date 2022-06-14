@@ -56,11 +56,4 @@ module AnnotationsHelper
 			project_annotations_obtain_path(@project.name)
 		end
 	end
-
-	def get_doc_info (annotations)
-		sourcedb = annotations[:sourcedb]
-		sourceid = annotations[:sourceid]
-		docinfo  = "#{sourcedb}-#{sourceid}"
-	end
-
 end

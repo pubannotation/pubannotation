@@ -1,6 +1,5 @@
 class Project < ActiveRecord::Base
 	include ApplicationHelper
-	include AnnotationsHelper
 	DOWNLOADS_PATH = "/downloads/"
 
 	before_validation :cleanup_namespaces
@@ -1329,5 +1328,13 @@ class Project < ActiveRecord::Base
 			modifications_num: relations_num,
 			annotations_count: denotations_num + relations_num + modifications_num
 		)
+	end
+
+	private
+
+	def get_doc_info (annotations)
+		sourcedb = annotations[:sourcedb]
+		sourceid = annotations[:sourceid]
+		docinfo  = "#{sourcedb}-#{sourceid}"
 	end
 end
