@@ -138,16 +138,6 @@ module ApplicationHelper
 		link_to header, params.permit(:controller, :action).merge(sort_key: sort_key, sort_direction: next_sort_direction), {:class => "sortable-" + (current_sort_direction || 'none')}
 	end
 
-	def total_number(list, model = nil)
-		if list.respond_to?(:total_entries)
-			list.total_entries
-		elsif list.respond_to?(:count)
-			list.count
-		else
-			list.length if list.present?
-		end
-	end
-
 	def gen_annotations (annotations, annserver, options = nil)
 		response = if options && options[:method] == 'get'
 			RestClient.get annserver, {:params => {:sourcedb => annotations[:sourcedb], :sourceid => annotations[:sourceid]}, :accept => :json}
