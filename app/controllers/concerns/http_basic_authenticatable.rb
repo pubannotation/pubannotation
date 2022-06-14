@@ -1,7 +1,9 @@
 module HTTPBasicAuthenticatable
   include ActiveSupport::Concern
 
-  def http_basic_authenticate 
+	private
+
+	def http_basic_authenticate 
 		authenticate_or_request_with_http_basic do |username, password|
 			user = User.find_by_email(username)
 			if user.present? && user.valid_password?(password)
