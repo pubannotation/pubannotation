@@ -30,15 +30,6 @@ module ApplicationHelper
 		content_tag(:nav, nav.html_safe, class: 'pagination')
 	end
 
-	# render image tag and title attribute for hint
-	def hint_helper(options = {})
-		content_tag(:i, nil,
-			class: "fa fa-question-circle", "aria-hidden" => "true",
-			style: "color: green; font-size:1.2em",
-			title: I18n.t("views.hints.#{options[:model]}.#{options[:column]}")
-		)
-	end
-
 	def errors_helper(model)
 		if model.errors.count > 0
 			model_name = t("activerecord.models.#{model.class.to_s.downcase}")
