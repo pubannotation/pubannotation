@@ -633,31 +633,6 @@ class AnnotationsController < ApplicationController
 		end
 	end
 
-	def delete_project_annotations_rdf
-		begin
-			status_error = false
-			project = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "There is no such project." unless project.present?
-
-			if File.exist?(project.annotations_rdf_system_path)
-				if project.user == current_user 
-					File.unlink(project.annotations_rdf_system_path)
-					flash[:notice] = t('views.shared.rdf.deleted')
-				else
-					status_error = true
-					render_status_error(:forbidden)
-				end
-			else
-				status_error = true
-				render_status_error(:not_found)
-			end
-		rescue => e
-			flash[:notice] = e.message
-		ensure
-			redirect_back fallback_location: root_path if status_error == false
-		end
-	end
-
 	def destroy
 		begin
 			project = Project.editable(current_user).find_by_name(params[:project_id])
