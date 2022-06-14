@@ -71,20 +71,6 @@ class ApplicationController < ActionController::Base
 		request.referrer
 	end
 
-	# to be deprecated in favor for get_project2
-	def get_project (project_name)
-		project = Project.find_by_name(project_name)
-		if project
-			if (project.accessibility == 1 or (user_signed_in? and project.user == current_user))
-				return project, nil
-			else
-				return nil, I18n.t('controllers.application.get_project.private', :project_name => project_name)
-			end
-		else
-			return nil, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name)
-		end
-	end
-
 	def get_project2 (project_name)
 		project = Project.find_by_name(project_name)
 		raise ArgumentError, I18n.t('controllers.application.get_project.not_exist', :project_name => project_name) unless project.present?
