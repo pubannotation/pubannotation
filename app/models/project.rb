@@ -149,16 +149,6 @@ class Project < ActiveRecord::Base
 		docs.count < 200
 	end
 
-	def association_for(current_user)
-		if current_user.present?
-			if current_user == self.user
-				'M'
-			elsif self.associate_maintainer_users.include?(current_user)
-				'A'
-			end
-		end
-	end
-
 	def build_associate_maintainers(usernames)
 		if usernames.present?
 			users = User.where('username IN (?)', usernames)
