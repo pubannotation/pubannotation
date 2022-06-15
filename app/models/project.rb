@@ -109,8 +109,6 @@ class Project < ActiveRecord::Base
 	}
 
 	# scopes for order
-	scope :order_author, -> { order('author ASC') }
-		
 	scope :order_maintainer, -> {
 		joins('LEFT OUTER JOIN users ON users.id = projects.user_id').
 		group('projects.id, users.username').
