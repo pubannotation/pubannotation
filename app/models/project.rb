@@ -238,10 +238,6 @@ class Project < ActiveRecord::Base
 		"#{identifier}-annotations.tgz"
 	end
 
-	def annotations_zip_path
-		"#{Project::DOWNLOADS_PATH}" + self.annotations_zip_filename
-	end
-
 	def annotations_tgz_path
 		"#{Project::DOWNLOADS_PATH}" + self.annotations_tgz_filename
 	end
