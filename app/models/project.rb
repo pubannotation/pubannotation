@@ -108,8 +108,6 @@ class Project < ActiveRecord::Base
 				order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
 	}
 
-	LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
-
 	def public?
 		accessibility == 1
 	end
