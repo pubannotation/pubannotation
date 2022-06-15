@@ -629,10 +629,10 @@ class DocsController < ApplicationController
 
 	def get_docs_projects
 		sort_order = if params[:sort_key].present? && params[:sort_direction].present?
-			"#{params[:sort_key]} #{params[:sort_direction]}"
-		else
-			Project.sort_order
-		end
+									 "#{params[:sort_key]} #{params[:sort_direction]}"
+								 else
+									 nil
+								 end
 
 		@projects = @doc.projects.annotations_accessible(current_user).order(sort_order)
 		if params[:projects].present?

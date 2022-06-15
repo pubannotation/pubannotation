@@ -108,11 +108,6 @@ class Project < ActiveRecord::Base
 				order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
 	}
 
-	# default sort order priority : left > right
-	# DefaultSort = [['status', 'ASC'], ['projects.updated_at', 'DESC']]
-	def self.sort_order
-	end
-
 	LicenseDefault = 'Creative Commons Attribution 3.0 Unported License'
 
 	def public?
