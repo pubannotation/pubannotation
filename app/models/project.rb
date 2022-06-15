@@ -149,10 +149,6 @@ class Project < ActiveRecord::Base
 		docs.count < 200
 	end
 
-	def self.statistics
-		counts = Project.where(accessibility: 1).group(:status).group(:process).count
-	end
-
 	def associate_maintainers_addable_for?(current_user)
 		if self.new_record?
 			true
