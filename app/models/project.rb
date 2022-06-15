@@ -79,12 +79,6 @@ class Project < ActiveRecord::Base
 		end
 	}
 
-	scope :mine, -> (current_user) {
-		if current_user.present?
-			includes(:associate_maintainers).where('projects.user_id = ? OR associate_maintainers.user_id = ?', current_user.id, current_user.id)
-		end
-	}
-
 	scope :indexable, -> { where(accessibility: 1, status: [1, 2, 3, 8]) }
 
 	def annotations_accessible?(current_user)
