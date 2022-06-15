@@ -71,11 +71,6 @@ class SequencersController < ApplicationController
 		end
 	end
 
-	def changeable?
-		@sequencer = Sequencer.find(params[:id])
-		render_status_error(:forbidden) unless @sequencer.changeable?(current_user)
-	end
-
 	private
 
 	def sequencer_params
@@ -84,5 +79,10 @@ class SequencersController < ApplicationController
 
 	def manager?
 		user_signed_in? && current_user.manager?
+	end
+
+	def changeable?
+		@sequencer = Sequencer.find(params[:id])
+		render_status_error(:forbidden) unless @sequencer.changeable?(current_user)
 	end
 end
