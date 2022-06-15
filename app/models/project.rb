@@ -261,10 +261,6 @@ class Project < ActiveRecord::Base
 		"#{identifier}-annotations.trig"
 	end
 
-	def spans_rdf_filename
-		"#{identifier}-spans.trig"
-	end
-
 	def graph_uri
 		Rails.application.routes.url_helpers.home_url + "projects/#{self.name}"
 	end
@@ -1043,5 +1039,11 @@ class Project < ActiveRecord::Base
 			modifications_num: relations_num,
 			annotations_count: denotations_num + relations_num + modifications_num
 		)
+	end
+
+	private
+
+	def spans_rdf_filename
+		"#{identifier}-spans.trig"
 	end
 end
