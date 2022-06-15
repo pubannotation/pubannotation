@@ -300,19 +300,6 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def create_rdf_zip (ttl)
-		require 'fileutils'
-		begin
-			FileUtils.mkdir_p(self.downloads_system_path) unless Dir.exist?(self.downloads_system_path)
-			file = File.new(self.annotations_rdf_system_path, 'w')
-			Zip::ZipOutputStream.open(file.path) do |z|
-				z.put_next_entry(self.name + '.ttl')
-				z.print ttl
-			end
-			file.close
-		end
-	end
-
 	def create_annotations_RDF(doc_ids = nil, loc = nil)
 		loc ||= rdf_loc
 		FileUtils.mkdir_p loc unless File.exists? loc
