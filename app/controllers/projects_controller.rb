@@ -8,7 +8,6 @@ class ProjectsController < ApplicationController
 	before_action :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 	skip_before_action :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
-	autocomplete :user, :username
 	autocomplete :project, :name, :full => true, :scopes => [:public_or_blind]
 	autocomplete :project, :author
 
