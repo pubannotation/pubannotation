@@ -389,6 +389,16 @@ class ProjectsController < ApplicationController
 		render :json => Project.editable(current_user).where("name ILIKE ?", "%#{params[:term]}%").to_a.delete_if{|r| r.name == project_name_to_be_excluded}.collect{|r| {id:r.id, name:r.name, label:r.name}}
 	end
 
+	private
+
+	def project_params
+		params.require(:project).permit(:name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
+																		:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
+																		:textae_config, :annotator_id,
+																		:annotations_zip_downloadable, :process,
+																		:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count, { namespaces: [:prefix, :uri] })
+	end
+
 	def updatable?
 		case params[:action]
 		when 'edit'
@@ -403,16 +413,6 @@ class ProjectsController < ApplicationController
 		unless @project.editable?(current_user)
 			render_status_error(:forbidden)
 		end
-	end
-	
-	private
-
-	def project_params
-		params.require(:project).permit(:name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
-																		:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
-																		:textae_config, :annotator_id,
-																		:annotations_zip_downloadable, :process,
-																		:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count, { namespaces: [:prefix, :uri] })
 	end
 
 	def destroyable?
