@@ -250,24 +250,6 @@ class Project < ActiveRecord::Base
 		self.downloads_system_path + self.annotations_tgz_filename
 	end
 
-	def create_annotations_zip(encoding = nil)
-		require 'fileutils'
-
-		annotations_collection = self.annotations_collection(encoding)
-
-		FileUtils.mkdir_p(self.downloads_system_path) unless Dir.exist?(self.downloads_system_path)
-		file = File.new(self.annotations_zip_system_path, 'w')
-		Zip::ZipOutputStream.open(file.path) do |z|
-			annotations_collection.each do |annotations|
-				title = get_doc_info(annotations).sub(/\.$/, '').gsub(' ', '_')
-				title += ".json" unless title.end_with?(".json")
-				z.put_next_entry(title)
-				z.print annotations.to_json
-			end
-		end
-		file.close
-	end 
-
 	# incomplete
 	def create_annotations_tgz(encoding = nil)
 		require 'rubygems/package'
