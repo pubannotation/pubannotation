@@ -410,19 +410,20 @@ class ProjectsController < ApplicationController
 		end
 	end
 	
+	private
+
+	def project_params
+		params.require(:project).permit(:name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
+																		:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
+																		:textae_config, :annotator_id,
+																		:annotations_zip_downloadable, :process,
+																		:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count, { namespaces: [:prefix, :uri] })
+	end
+
 	def destroyable?
 		@project = Project.find_by_name(params[:id])
 		unless @project.destroyable?(current_user)
 			render_status_error(:forbidden)
-		end  
-	end
-
-	private
-		def project_params
-			params.require(:project).permit(:name, :description, :author, :anonymize, :license, :status, :accessibility, :reference,
-																			:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
-																			:textae_config, :annotator_id,
-																			:annotations_zip_downloadable, :process,
-																			:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count, { namespaces: [:prefix, :uri] })
 		end
+	end
 end
