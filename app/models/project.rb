@@ -186,14 +186,6 @@ class Project < ActiveRecord::Base
 		doc.catmods.where("denotations.begin >= ? and denotations.end <= ?", span[:begin], span[:end]).count
 	end
 
-	def annotations_collection(encoding = nil)
-		if self.docs.present?
-			self.docs.collect{|doc| doc.set_ascii_body if encoding == 'ascii'; doc.hannotations(self, nil, nil, {sort:true})}
-		else
-			[]
-		end
-	end
-
 	def json
 		except_columns = %w(docs_count user_id)
 		to_json(except: except_columns, methods: :maintainer)
