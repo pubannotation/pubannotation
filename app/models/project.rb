@@ -534,32 +534,6 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def create_user_sourcedb_docs(options = {})
-		divs = []
-		num_failed = 0
-		if options[:docs_array].present?
-			options[:docs_array].each do |doc_array_params|
-				# all of columns insert into database need to be included in this hash.
-				doc_array_params[:sourcedb] = options[:sourcedb] if options[:sourcedb].present?
-				mappings = {
-					:text => :body, 
-					:sourcedb => :sourcedb, 
-					:sourceid => :sourceid, 
-					:source_url => :source
-				}
-				doc_params = Hash[doc_array_params.map{|key, value| [mappings[key], value]}].select{|key| key.present? && Doc.attr_accessible[:default].include?(key)}
-				doc = Doc.new(doc_params) 
-				if doc.valid?
-					doc.save
-					divs << doc
-				else
-					num_failed += 1
-				end
-			end
-		end
-		return [divs, num_failed]
-	end
-
 	def instantiate_hdenotations(hdenotations, docid)
 		new_entries = hdenotations.map do |a|
 			Denotation.new(
