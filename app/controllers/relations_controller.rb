@@ -1,6 +1,4 @@
 class RelationsController < ApplicationController
-	include ApplicationHelper
-
 	def sql
 		@search_path = relations_sql_path 
 		@columns = [:hid, :subj_id, :subj_type, :obj_id, :obj_type, :project_id]
