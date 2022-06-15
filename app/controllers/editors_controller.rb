@@ -61,13 +61,14 @@ class EditorsController < ApplicationController
 		respond_with(@editor)
 	end
 
+	private
+
+	def editor_params
+		params.require(:editor).permit(:description, :home, :is_public, :name, :parameters, :url)
+	end
+
 	def changeable?
 		@editor = Editor.find(params[:id])
 		render_status_error(:forbidden) unless @editor.changeable?(current_user)
-	end
-
-	private
-	def editor_params
-		params.require(:editor).permit(:description, :home, :is_public, :name, :parameters, :url)
 	end
 end
