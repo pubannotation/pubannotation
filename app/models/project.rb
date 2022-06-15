@@ -199,10 +199,6 @@ class Project < ActiveRecord::Base
 		to_json(except: except_columns, methods: :maintainer)
 	end
 
-	def has_jobs?
-		jobs.exists?
-	end
-
 	def has_running_jobs?
 		jobs.each{|job| return true if job.running?}
 		return false
