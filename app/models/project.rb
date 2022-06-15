@@ -108,10 +108,6 @@ class Project < ActiveRecord::Base
 				order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
 	}
 
-	scope :id_in, lambda{|project_ids|
-		where('projects.id IN (?)', project_ids)
-	}
-	
 	scope :name_in, -> (project_names) {
 		where('projects.name IN (?)', project_names) if project_names.present?
 	}
