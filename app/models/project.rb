@@ -109,12 +109,6 @@ class Project < ActiveRecord::Base
 	}
 
 	# scopes for order
-	scope :order_denotations_num, -> {
-		joins('LEFT OUTER JOIN denotations ON denotations.project_id = projects.id').
-		group('projects.id').
-		order("count(denotations.id) DESC")
-	}
-		
 	scope :order_relations_num, -> {
 		joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
 		group('projects.id').
