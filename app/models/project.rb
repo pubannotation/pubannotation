@@ -79,8 +79,6 @@ class Project < ActiveRecord::Base
 		end
 	}
 
-	scope :indexable, -> { where(accessibility: 1, status: [1, 2, 3, 8]) }
-
 	def annotations_accessible?(current_user)
 		if accessibility == 1
 			true
