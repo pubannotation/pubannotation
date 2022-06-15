@@ -109,12 +109,6 @@ class Project < ActiveRecord::Base
 	}
 
 	# scopes for order
-	scope :order_maintainer, -> {
-		joins('LEFT OUTER JOIN users ON users.id = projects.user_id').
-		group('projects.id, users.username').
-		order('users.username ASC')
-	}
-	
 	scope :order_association, lambda{|current_user|
 		if current_user.present?
 			joins("LEFT OUTER JOIN associate_maintainers ON projects.id = associate_maintainers.project_id AND associate_maintainers.user_id = #{current_user.id}").
