@@ -222,10 +222,6 @@ class Project < ActiveRecord::Base
 		relations.where(pred: '_lexicallyChainedTo').exists?
 	end
 
-	def docs_list_hash
-		docs.collect{|doc| doc.to_list_hash} if docs.present?
-	end
-
 	def maintainer
 		user.present? ? user.username : ''
 	end
