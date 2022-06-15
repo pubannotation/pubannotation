@@ -109,12 +109,6 @@ class Project < ActiveRecord::Base
 	}
 
 	# scopes for order
-	scope :order_relations_num, -> {
-		joins('LEFT OUTER JOIN relations ON relations.project_id = projects.id').
-		group('projects.id').
-		order('count(relations.id) DESC')
-	}
-		
 	scope :order_author, -> { order('author ASC') }
 		
 	scope :order_maintainer, -> {
