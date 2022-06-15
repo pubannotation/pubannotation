@@ -149,14 +149,6 @@ class Project < ActiveRecord::Base
 		docs.count < 200
 	end
 
-	def associate_maintainers_addable_for?(current_user)
-		if self.new_record?
-			true
-		else
-			current_user.root? == true || current_user == self.user
-		end
-	end
-
 	def association_for(current_user)
 		if current_user.present?
 			if current_user == self.user
