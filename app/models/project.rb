@@ -245,10 +245,6 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def rdf_loc
-		Rails.application.config.system_path_rdf + "projects/#{identifier}-rdf/"
-	end
-
 	def annotations_rdf_filename
 		"#{identifier}-annotations.trig"
 	end
@@ -1045,5 +1041,9 @@ class Project < ActiveRecord::Base
 
 	def identifier
 		name.gsub(' ', '_')
+	end
+
+	def rdf_loc
+		Rails.application.config.system_path_rdf + "projects/#{identifier}-rdf/"
 	end
 end
