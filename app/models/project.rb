@@ -108,10 +108,6 @@ class Project < ActiveRecord::Base
 				order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
 	}
 
-	scope :not_id_in, lambda{|project_ids|
-		where('projects.id NOT IN (?)', project_ids)
-	}
-
 	scope :id_in, lambda{|project_ids|
 		where('projects.id IN (?)', project_ids)
 	}
