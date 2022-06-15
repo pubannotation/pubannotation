@@ -922,53 +922,6 @@ class Project < ActiveRecord::Base
 		messages
 	end
 
-	def prepare_request(docs, annotator, options)
-		method = (annotator[:method] == 0) ? :get : :post
-
-		params = if method == :get
-			# The URL of an annotator should include the placeholder of either _text_ or  _sourceid_.
-			# Otherwise, the default params will be automatically added.
-			if annotator[:url].include?('_text_') || annotator[:url].include?('_sourceid_')
-				# In this case, the number of document has to be 1.
-				raise RuntimeError, "Only one document can be passed to the annotation server through a GET request." unless docs.length == 1
-				nil
-			else
-				{"text"=>"_text_"}
-			end
-		end
-
-		# In case of GET method, only one document can be passed to the annotation server.
-		doc = docs.first
-
-		url = annotator[:url]
-			.gsub('_text_', CGI.escape(doc.body))
-			.gsub('_sourcedb_', CGI.escape(doc.sourcedb))
-			.gsub('_sourceid_', CGI.escape(doc.sourceid))
-
-		if params.present?
-			params.each do |k, v|
-				params[k] = v.gsub('_text_', doc.body).gsub('_sourcedb_', doc.sourcedb).gsub('_sourceid_', doc.sourceid)
-			end
-		end
-
-		payload = if (method == :post)
-			# The default payload
-			annotator[:payload]['_body_'] = '_doc_' unless annotator[:payload].present?
-
-			if annotator[:payload]['_body_'] == '_text_'
-				docs.map{|doc| doc.body}
-			elsif annotator[:payload]['_body_'] == '_doc_'
-				docs.map{|doc| doc.hannotations(self).select{|k, v| [:text, :sourcedb, :sourceid].include? k}}
-			elsif annotator[:payload]['_body_'] == '_annotation_'
-				docs.map{|doc| doc.hannotations(self)}
-			end
-		end
-
-		payload = payload.first if payload.present? && (!annotator[:batch_num].present? || annotator[:batch_num] == 0)
-
-		[method, url, params, payload]
-	end
-
 	def make_request(method, url, params = nil, payload = nil)
 		payload, payload_type = if payload.class == String
 			[payload, 'text/plain; charset=utf8']
