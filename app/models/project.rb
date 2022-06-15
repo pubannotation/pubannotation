@@ -250,27 +250,6 @@ class Project < ActiveRecord::Base
 		self.downloads_system_path + self.annotations_tgz_filename
 	end
 
-	# incomplete
-	def create_annotations_tgz(encoding = nil)
-		require 'rubygems/package'
-		require 'zlib'
-		require 'fileutils'
-
-		annotations_collection = self.annotations_collection(encoding)
-
-		FileUtils.mkdir_p(downloads_system_path) unless Dir.exist?(downloads_system_path)
-		Zlib::GzipWriter.open(annotations_tgz_system_path, Zlib::BEST_COMPRESSION) do |gz|
-			Gem::Package::TarWriter.new(gz) do |tar|
-				annotations_collection.each do |annotations|
-					title = get_doc_info(annotations).sub(/\.$/, '').gsub(' ', '_')
-					path  = self.name + '/' + title + ".json"
-					stuff = annotations.to_json
-					tar.add_file_simple(path, 0644, stuff.length){|t| t.write(stuff)}
-				end
-			end
-		end
-	end 
-
 	def get_conversion (annotation, converter, identifier = nil)
 		RestClient.post converter, annotation.to_json, :content_type => :json do |response, request, result|
 			case response.code
