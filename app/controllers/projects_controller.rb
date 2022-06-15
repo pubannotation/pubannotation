@@ -390,10 +390,6 @@ class ProjectsController < ApplicationController
 		render :json => Project.editable(current_user).where("name ILIKE ?", "%#{params[:term]}%").to_a.delete_if{|r| r.name == project_name_to_be_excluded}.collect{|r| {id:r.id, name:r.name, label:r.name}}
 	end
 
-	def is_owner?
-		render_status_error(:forbidden) unless @project.present? && @project.user == current_user
-	end
-	
 	def updatable?
 		case params[:action]
 		when 'edit'
