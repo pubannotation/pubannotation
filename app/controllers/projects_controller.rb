@@ -264,29 +264,6 @@ class ProjectsController < ApplicationController
 		redirect_to project_path(project.name), notice: message
 	end
 
-	def store_annotation_rdf_all
-		begin
-			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
-
-			projects = if params[:id].present?
-				project = Project.find_by_name(params[:id])
-				raise ArgumentError, "There is no such project." unless project.present?
-				[project]
-			else
-				Project.for_index
-			end
-
-			system = Project.find_by_name('system-maintenance')
-
-			projects.each do |project|
-				StoreRdfizedAnnotationsJob.perform_later(system, project, Pubann::Application.config.rdfizer_annotations)
-			end
-		rescue => e
-			flash[:notice] = e.message
-		end
-		redirect_to project_path('system-maintenance')
-	end
-
 	def store_span_rdf
 		begin
 			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
