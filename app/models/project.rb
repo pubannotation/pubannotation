@@ -230,10 +230,6 @@ class Project < ActiveRecord::Base
 		"#{Rails.root}/public#{Project::DOWNLOADS_PATH}" 
 	end
 
-	def annotations_filename
-		"annotations-#{identifier}"
-	end
-
 	def annotations_zip_filename
 		"#{identifier}-annotations.zip"
 	end
