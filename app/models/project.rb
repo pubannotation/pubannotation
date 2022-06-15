@@ -443,25 +443,6 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def post_rdf_virtuoso(ttl, project_name = nil, initp = false)
-		require 'open3'
-
-		ttl_file = Tempfile.new("temporary.ttl")
-		ttl_file.write(ttl)
-		ttl_file.close
-
-		graph_uri = project_name.nil? ? "http://pubannotation.org/docs" : "http://pubannotation.org/projects/#{project_name}"
-		destination = "#{Pubann::Application.config.sparql_end_point}/sparql-graph-crud-auth?graph-uri=#{graph_uri}"
-		cmd  = %[curl --digest --user #{Pubann::Application.config.sparql_end_point_auth} --verbose --url #{destination} -T #{ttl_file.path}]
-		cmd += ' -X POST' unless initp
-
-		message, error, state = Open3.capture3(cmd)
-
-		ttl_file.unlink
-
-		raise RuntimeError, 'Could not store RDFized annotations' unless error.include?('201 Created') || error.include?('200 OK')
-	end
-
 	def self.params_from_json(json_file)
 		project_attributes = JSON.parse(File.read(json_file))
 		user = User.find_by_username(project_attributes['maintainer'])
