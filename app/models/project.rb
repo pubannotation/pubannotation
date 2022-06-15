@@ -108,14 +108,6 @@ class Project < ActiveRecord::Base
 				order('projects.updated_at DESC').order('annotations_count DESC').order('status ASC').limit(10)
 	}
 
-	# scopes for order
-	scope :order_association, lambda{|current_user|
-		if current_user.present?
-			joins("LEFT OUTER JOIN associate_maintainers ON projects.id = associate_maintainers.project_id AND associate_maintainers.user_id = #{current_user.id}").
-			order("CASE WHEN projects.user_id = #{current_user.id} THEN 2 WHEN associate_maintainers.user_id = #{current_user.id} THEN 1 ELSE 0 END DESC")
-		end
-	}
-
 	# default sort order priority : left > right
 	# DefaultSort = [['status', 'ASC'], ['projects.updated_at', 'DESC']]
 	def self.sort_order
