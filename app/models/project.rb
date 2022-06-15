@@ -222,10 +222,6 @@ class Project < ActiveRecord::Base
 		"#{Rails.root}/public#{Project::DOWNLOADS_PATH}" 
 	end
 
-	def annotations_zip_filename
-		"#{identifier}-annotations.zip"
-	end
-
 	def annotations_tgz_filename
 		"#{identifier}-annotations.tgz"
 	end
@@ -235,7 +231,7 @@ class Project < ActiveRecord::Base
 	end
 
 	def annotations_zip_system_path
-		self.downloads_system_path + self.annotations_zip_filename
+		self.downloads_system_path + annotations_zip_filename
 	end
 
 	def annotations_tgz_system_path
@@ -1051,5 +1047,11 @@ class Project < ActiveRecord::Base
 			modifications_num: relations_num,
 			annotations_count: denotations_num + relations_num + modifications_num
 		)
+	end
+
+	private
+
+	def annotations_zip_filename
+		"#{identifier}-annotations.zip"
 	end
 end
