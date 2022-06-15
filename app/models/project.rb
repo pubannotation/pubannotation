@@ -157,16 +157,6 @@ class Project < ActiveRecord::Base
 		docs.count < 200
 	end
 
-	def get_user(current_user)
-		if anonymize == true
-			if current_user.present? && (current_user.root? || current_user == user)
-				user
-			end
-		else
-			user
-		end
-	end
-
 	def self.statistics
 		counts = Project.where(accessibility: 1).group(:status).group(:process).count
 	end
