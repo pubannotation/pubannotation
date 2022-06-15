@@ -1044,10 +1044,4 @@ class Project < ActiveRecord::Base
 			annotations_count: denotations_num + relations_num + modifications_num
 		)
 	end
-
-	private
-
-	def annotations_zip_filename
-		"#{identifier}-annotations.zip"
-	end
 end
