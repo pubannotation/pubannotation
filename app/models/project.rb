@@ -1060,12 +1060,4 @@ class Project < ActiveRecord::Base
 			annotations_count: denotations_num + relations_num + modifications_num
 		)
 	end
-
-	private
-
-	def get_doc_info (annotations)
-		sourcedb = annotations[:sourcedb]
-		sourceid = annotations[:sourceid]
-		docinfo  = "#{sourcedb}-#{sourceid}"
-	end
 end
