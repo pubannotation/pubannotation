@@ -245,10 +245,6 @@ class Project < ActiveRecord::Base
 		end
 	end
 
-	def annotations_rdf_filename
-		"#{identifier}-annotations-rdf.zip"
-	end
-
 	def identifier
 		name.gsub(' ', '_')
 	end
@@ -1045,5 +1041,9 @@ class Project < ActiveRecord::Base
 
 	def spans_rdf_filename
 		"#{identifier}-spans.trig"
+	end
+
+	def annotations_rdf_filename
+		"#{identifier}-annotations-rdf.zip"
 	end
 end
