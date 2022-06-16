@@ -25,9 +25,6 @@ module Pubann
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
 
-    ENV.update YAML.load_file('config/application.yml')[Rails.env] rescue {}
-
-
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
     config.autoload_paths += %W(#{Rails.root}/lib)

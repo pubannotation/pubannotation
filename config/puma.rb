@@ -53,7 +53,7 @@ environment ENV.fetch("RAILS_ENV") { "development" }
 #
 
 # Rails server with SSL configuration
-if Socket.gethostname == ENV['MY_LOCALHOST_NAME']
+if Rails.env.development? && Socket.gethostname == 'pop-os'
   key_file = Rails.root.join("config", "certs", "localhost.key")
   cert_file = Rails.root.join("config", "certs", "localhost.cert")
 
