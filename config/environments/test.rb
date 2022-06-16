@@ -41,11 +41,6 @@ Rails.application.configure do
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
-  config.i18n.default_locale = :en
-
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
-
-  # option for url_helpers in models
-  Rails.application.routes.default_url_options[:host]= 'test.host'
 end
