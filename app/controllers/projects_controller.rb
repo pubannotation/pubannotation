@@ -1,5 +1,5 @@
 class ProjectsController < ApplicationController
-	include HTTPBasicAuthenticatable
+	include HttpBasicAuthenticatable
 
 	before_action :updatable?, :only => [:edit, :update]
 	before_action :destroyable?, :only => :destroy

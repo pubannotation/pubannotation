@@ -1,4 +1,4 @@
-module HTTPBasicAuthenticatable
+module HttpBasicAuthenticatable
   extend ActiveSupport::Concern
 
 	private

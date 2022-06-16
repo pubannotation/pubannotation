@@ -2,7 +2,7 @@ require 'fileutils'
 require 'zip/zip'
 
 class DocsController < ApplicationController
-	include HTTPBasicAuthenticatable
+	include HttpBasicAuthenticatable
 
 	protect_from_forgery :except => [:create]
 	before_action :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :project_delete_all_docs, :uptodate]
