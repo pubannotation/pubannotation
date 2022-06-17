@@ -14,6 +14,16 @@ GIT
       nokogiri
       rest-client
 
+GIT
+  remote: https://github.com/kreintjes/wice_grid.git
+  revision: 3ae1bec56232f6420c9db01a4651317d29680c1e
+  branch: fix/all
+  specs:
+    wice_grid (4.1.0)
+      coffee-rails (> 3.2)
+      kaminari (~> 1.1)
+      rails (>= 5.0, < 7)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -162,18 +172,18 @@ GEM
     jquery-ui-rails (6.0.1)
       railties (>= 3.2.16)
     jwt (2.4.1)
-    kaminari (1.1.1)
+    kaminari (1.2.2)
       activesupport (>= 4.1.0)
-      kaminari-actionview (= 1.1.1)
-      kaminari-activerecord (= 1.1.1)
-      kaminari-core (= 1.1.1)
-    kaminari-actionview (1.1.1)
+      kaminari-actionview (= 1.2.2)
+      kaminari-activerecord (= 1.2.2)
+      kaminari-core (= 1.2.2)
+    kaminari-actionview (1.2.2)
       actionview
-      kaminari-core (= 1.1.1)
-    kaminari-activerecord (1.1.1)
+      kaminari-core (= 1.2.2)
+    kaminari-activerecord (1.2.2)
       activerecord
-      kaminari-core (= 1.1.1)
-    kaminari-core (1.1.1)
+      kaminari-core (= 1.2.2)
+    kaminari-core (1.2.2)
     libxml-ruby (3.2.3)
     listen (3.7.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -191,7 +201,7 @@ GEM
     mime-types-data (3.2022.0105)
     mini_mime (1.1.2)
     mini_portile2 (2.8.0)
-    minitest (5.15.0)
+    minitest (5.16.0)
     msgpack (1.5.2)
     multi_json (1.15.0)
     multi_xml (0.6.0)
@@ -293,7 +303,7 @@ GEM
       sprockets-rails
       tilt
     shellany (0.0.1)
-    sidekiq (6.5.0)
+    sidekiq (6.5.1)
       connection_pool (>= 2.2.2)
       rack (~> 2.0)
       redis (>= 4.2.0)
@@ -335,10 +345,6 @@ GEM
     websocket-extensions (0.1.5)
     whenever (1.0.0)
       chronic (>= 0.6.3)
-    wice_grid (4.1.0)
-      coffee-rails (> 3.2)
-      kaminari (~> 1.1.0)
-      rails (~> 5.0, < 5.3)
     wikipedia-client (1.16.0)
       addressable (~> 2.7)
     zip-zip (0.3)
@@ -394,7 +400,7 @@ DEPENDENCIES
   uglifier
   web-console
   whenever
-  wice_grid
+  wice_grid!
   wikipedia-client
   zip-zip
 
