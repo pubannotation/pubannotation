@@ -1,5 +1,3 @@
-require 'fileutils'
-
 class AnnotationsController < ApplicationController
 	protect_from_forgery :except => [:create]
 	before_action :authenticate_user!, :except => [:index, :align, :doc_annotations_index, :project_doc_annotations_index, :doc_annotations_list_view, :doc_annotations_merge_view, :project_annotations_tgz]

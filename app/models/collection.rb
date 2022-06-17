@@ -1,5 +1,3 @@
-require 'fileutils'
-
 class Collection < ActiveRecord::Base
 	belongs_to :user
 	has_many :collection_projects, dependent: :destroy

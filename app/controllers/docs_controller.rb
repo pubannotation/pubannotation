@@ -1,4 +1,3 @@
-require 'fileutils'
 require 'zip/zip'
 
 class DocsController < ApplicationController
