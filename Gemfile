@@ -12,7 +12,7 @@ gem 'puma', '~> 5.6.4'
 gem 'sass-rails'
 gem 'coffee-rails'
 
-gem 'uglifier'
+gem 'terser'
 
 gem 'pg'
 gem 'friendly_id'
