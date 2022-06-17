@@ -1,5 +1,4 @@
 # encoding: UTF-8
-require 'text_alignment'
 
 class ApplicationController < ActionController::Base
 	protect_from_forgery
