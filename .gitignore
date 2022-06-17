@@ -42,3 +42,5 @@ public/downloads/*
 
 /config/certs/*
 !/config/certs/.keep
+
+node_modules/
