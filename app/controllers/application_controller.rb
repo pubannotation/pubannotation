@@ -1,5 +1,4 @@
 # encoding: UTF-8
-require 'pmcdoc'
 require 'utfrewrite'
 require 'text_alignment'
 
