@@ -1,5 +1,4 @@
 # encoding: UTF-8
-require 'utfrewrite'
 require 'text_alignment'
 
 class ApplicationController < ActionController::Base
