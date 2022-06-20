@@ -3,7 +3,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '3.0.4'
 
-gem 'rails', '6.0.5'
+gem 'rails', '6.1.5'
 gem 'rake'
 gem 'activerecord-import'
 
@@ -59,6 +59,5 @@ gem 'rails-observers'
 gem 'diff-lcs'
 gem 'listen'
 gem 'spring-watcher-listen'
-gem 'thor', '~> 0.20.3'
 gem 'activejob-cancel'
 gem 'sidekiq'
