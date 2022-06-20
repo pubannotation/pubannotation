@@ -23,7 +23,6 @@ group :development do
 	gem 'dotenv-rails'
 	gem 'guard'
 	gem 'guard-livereload'
-  gem 'spring'
   gem 'web-console'
 end
 

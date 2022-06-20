@@ -433,7 +433,6 @@ DEPENDENCIES
   rubyzip
   sass-rails
   sidekiq
-  spring
   spring-watcher-listen
   stardog-rb!
   tao_rdfizer (~> 0.11.3)
