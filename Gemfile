@@ -3,7 +3,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '3.1.2'
 
-gem 'rails', '6.1.5'
+gem 'rails', '7.0.3'
 gem 'rake'
 gem 'activerecord-import'
 
@@ -29,7 +29,7 @@ end
 
 gem 'text_alignment', '0.11.10'
 gem 'pubannotation_evaluator', '~> 1.1', '>= 1.2.0'
-gem 'wice_grid', github: 'kreintjes/wice_grid', branch: 'fix/all'
+gem 'wice_grid', github: 'ledsun/wice_grid', branch: 'rails_7'
 gem 'font-awesome-rails'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
