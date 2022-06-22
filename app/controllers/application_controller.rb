@@ -6,6 +6,12 @@ class ApplicationController < ActionController::Base
 	before_action :set_locale
 	after_action :store_location
 
+	def root_user?
+		user_signed_in? && current_user.root?
+	end
+
+	helper_method :root_user?
+
 	protected
 
 	# Customize Devise rederct hooks
