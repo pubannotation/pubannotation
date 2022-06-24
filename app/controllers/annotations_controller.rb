@@ -350,7 +350,7 @@ class AnnotationsController < ApplicationController
 			# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
 			ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
 
-			project.update_attributes({annotator_id:annotator.id}) if annotator.persisted?
+			project.update({annotator_id:annotator.id}) if annotator.persisted?
 
 			messages << "The task 'Obtain annotations was created."
 			message = messages.join("\n")

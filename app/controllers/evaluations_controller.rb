@@ -74,7 +74,7 @@ class EvaluationsController < ApplicationController
 		permitted_evaluation_params[:relations_type_match] = nil unless permitted_evaluation_params[:relations_type_match].present?
 
 		respond_to do |format|
-			if @evaluation.update_attributes(permitted_evaluation_params)
+			if @evaluation.update(permitted_evaluation_params)
 				format.html { redirect_to project_evaluation_path(@project.name, @evaluation), notice: 'Evaluation was successfully created.' }
 			else
 				format.html { render action: "edit" }

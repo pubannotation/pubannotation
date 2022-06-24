@@ -35,7 +35,7 @@ class EvaluatorsController < ApplicationController
 	end
 
 	def update
-		@evaluator.update_attributes(evaluator_params)
+		@evaluator.update(evaluator_params)
 		respond_with(@evaluator)
 	end
 

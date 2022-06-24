@@ -35,7 +35,7 @@ class NewsNotificationsController < ApplicationController
 
 	def update
 		@news_notification = NewsNotification.find(params[:id])
-		if @news_notification.update_attributes(news_notification_params)
+		if @news_notification.update(news_notification_params)
 			flash[:notice] = I18n.t('controllers.shared.successfully_updated', model: I18n.t('activerecord.models.news_notification'))
 			redirect_to @news_notification
 		else

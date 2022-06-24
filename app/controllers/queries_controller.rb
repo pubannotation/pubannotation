@@ -64,7 +64,7 @@ class QueriesController < ApplicationController
 	end
 
 	def update
-		@query.update_attributes(query_params)
+		@query.update(query_params)
 		respond_to do |format|
 			format.html { redirect_to redirect_query_path(@query) }
 			format.json { render json: query, status: :created, location: query_path(@query) }

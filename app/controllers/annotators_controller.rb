@@ -98,7 +98,7 @@ class AnnotatorsController < ApplicationController
 		params['payload'] = convert_str_to_hash(params['payload'])
 
 		respond_to do |format|
-			if @annotator.update_attributes(params)
+			if @annotator.update(params)
 				format.html { redirect_to @annotator, notice: 'Annotator was successfully updated.' }
 				format.json { head :no_content }
 			else

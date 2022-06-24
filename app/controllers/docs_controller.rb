@@ -343,7 +343,7 @@ class DocsController < ApplicationController
 		@doc = Doc.find(params[:id])
 
 		respond_to do |format|
-			if @doc.update_attributes(params)
+			if @doc.update(params)
 				format.html { redirect_to @doc, notice: t('controllers.shared.successfully_updated', :model => t('activerecord.models.doc')) }
 				format.json { head :no_content }
 			else

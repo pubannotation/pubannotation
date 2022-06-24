@@ -69,7 +69,7 @@ class CollectionsController < ApplicationController
 		raise "Could not find the collection ID: #{params[:id]}." unless @collection.present?
 		@collection.user = current_user unless current_user.root?
 		respond_to do |format|
-			if @collection.update_attributes(collection_params)
+			if @collection.update(collection_params)
 				format.html { redirect_to collection_path(@collection.name), :notice => t('controllers.shared.successfully_updated', :model => t('activerecord.models.collection')) }
 				format.json { head :no_content }
 			else

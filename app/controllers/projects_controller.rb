@@ -110,7 +110,7 @@ class ProjectsController < ApplicationController
 	def update
 		@project.user = current_user unless current_user.root?
 		respond_to do |format|
-			if @project.update_attributes(project_params)
+			if @project.update(project_params)
 				format.html { redirect_to project_path(@project.name), :notice => t('controllers.shared.successfully_updated', :model => t('views.shared.annotation_sets')) }
 				format.json { head :no_content }
 			else

@@ -50,7 +50,7 @@ class EditorsController < ApplicationController
 		params = editor_params
 		params[:parameters] = convert_str_to_hash(params[:parameters])
 
-		@editor.update_attributes(params)
+		@editor.update(params)
 		@editor.name = params[:name]
 		respond_with(@editor)
 	end

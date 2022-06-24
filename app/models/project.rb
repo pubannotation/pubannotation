@@ -1020,7 +1020,7 @@ class Project < ActiveRecord::Base
 		modifications_num = modifications.count
 
 		docs_count = docs.count
-		update_attributes(
+		update(
 			docs_count: docs_count,
 			denotations_num: denotations_num,
 			relations_num: relations_num,

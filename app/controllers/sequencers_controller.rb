@@ -53,7 +53,7 @@ class SequencersController < ApplicationController
 			params = sequencer_params
 			params[:parameters] = convert_str_to_hash(params[:parameters])
 
-			@sequencer.update_attributes(params)
+			@sequencer.update(params)
 			@sequencer.name = params[:name]
 			respond_with(@sequencer)
 		else
