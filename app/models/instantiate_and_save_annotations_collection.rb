@@ -14,7 +14,6 @@ class InstantiateAndSaveAnnotationsCollection
 
         d_stat.each do |did, d_num|
           r_num = r_stat[did] ||= 0
-          a_num = a_stat[did] ||= 0
           m_num = m_stat[did] ||= 0
           ActiveRecord::Base.connection.exec_query("UPDATE project_docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE project_id=#{project.id} AND doc_id=#{did}")
           ActiveRecord::Base.connection.execute("UPDATE docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE id=#{did}")
