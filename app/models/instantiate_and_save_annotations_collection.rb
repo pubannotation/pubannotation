@@ -2,10 +2,6 @@ class InstantiateAndSaveAnnotationsCollection
   class << self
     def call(project, annotations_collection)
       ActiveRecord::Base.transaction do
-
-        # collect statistics
-        r_stat, a_stat, m_stat = Hash.new(0), Hash.new(0), Hash.new(0), Hash.new(0)
-
         # record document id
         annotations_collection.each do |ann|
           ann[:docid] = Doc.select(:id).where(sourcedb: ann[:sourcedb], sourceid: ann[:sourceid]).first.id
@@ -18,34 +14,10 @@ class InstantiateAndSaveAnnotationsCollection
         r_stat, r_stat_all = import_relations(project, annotations_collection)
 
         # instantiate and save attributes
-        instances = []
-        instances.clear
-        annotations_collection.each do |ann|
-          next unless ann[:attributes].present?
-          docid = ann[:docid]
-          instances += project.instantiate_hattributes(ann[:attributes], docid)
-        end
-
-        if instances.present?
-          r = Attrivute.import instances, validate: false
-          raise "attribute import error" unless r.failed_instances.empty?
-        end
+        a_stat = import_attributes(project, annotations_collection)
 
         # instantiate and save modifications
-        instances.clear
-        annotations_collection.each do |ann|
-          next unless ann[:modifications].present?
-          docid = ann[:docid]
-          instances += project.instantiate_hmodifications(ann[:modifications], docid)
-          m_stat[docid] += ann[:modifications].length
-        end
-
-        if instances.present?
-          r = Modification.import instances, validate: false
-          raise "modifications import error" unless r.failed_instances.empty?
-        end
-
-        m_stat_all = instances.length
+        m_stat, m_stat_all = import_modifications(project, annotations_collection)
 
         d_stat.each do |did, d_num|
           r_num = r_stat[did] ||= 0
@@ -108,6 +80,45 @@ class InstantiateAndSaveAnnotationsCollection
       r_stat_all = instances.length
 
       [r_stat, r_stat_all]
+    end
+
+    def import_attributes(project, annotations_collection)
+      a_stat = Hash.new(0)
+      instances = []
+
+      annotations_collection.each do |ann|
+        next unless ann[:attributes].present?
+        docid = ann[:docid]
+        instances += project.instantiate_hattributes(ann[:attributes], docid)
+      end
+
+      if instances.present?
+        r = Attrivute.import instances, validate: false
+        raise "attribute import error" unless r.failed_instances.empty?
+      end
+
+      a_stat
+    end
+
+    def import_modifications(project, annotations_collection)
+      m_stat = Hash.new(0)
+      instances = []
+
+      annotations_collection.each do |ann|
+        next unless ann[:modifications].present?
+        docid = ann[:docid]
+        instances += project.instantiate_hmodifications(ann[:modifications], docid)
+        m_stat[docid] += ann[:modifications].length
+      end
+
+      if instances.present?
+        r = Modification.import instances, validate: false
+        raise "modifications import error" unless r.failed_instances.empty?
+      end
+
+      m_stat_all = instances.length
+
+      [m_stat, m_stat_all]
     end
   end
 end
