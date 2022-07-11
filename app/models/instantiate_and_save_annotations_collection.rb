@@ -9,7 +9,7 @@ class InstantiateAndSaveAnnotationsCollection
 
         d_stat, d_stat_all = import_denotations(project, annotations_collection)
         r_stat, r_stat_all = import_relations(project, annotations_collection)
-        a_stat = import_attributes(project, annotations_collection)
+        import_attributes(project, annotations_collection)
         m_stat, m_stat_all = import_modifications(project, annotations_collection)
 
         d_stat.each do |did, d_num|
@@ -75,7 +75,6 @@ class InstantiateAndSaveAnnotationsCollection
     end
 
     def import_attributes(project, annotations_collection)
-      a_stat = Hash.new(0)
       instances = []
 
       annotations_collection.each do |ann|
@@ -88,8 +87,6 @@ class InstantiateAndSaveAnnotationsCollection
         r = Attrivute.import instances, validate: false
         raise "attribute import error" unless r.failed_instances.empty?
       end
-
-      a_stat
     end
 
     def import_modifications(project, annotations_collection)
