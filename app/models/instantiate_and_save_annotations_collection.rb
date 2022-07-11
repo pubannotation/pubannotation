@@ -15,23 +15,10 @@ class InstantiateAndSaveAnnotationsCollection
         d_stat, d_stat_all = import_denotations(project, annotations_collection)
 
         # instantiate and save relations
-        instances = []
-        instances.clear
-        annotations_collection.each do |ann|
-          next unless ann[:relations].present?
-          docid = ann[:docid]
-          instances += project.instantiate_hrelations(ann[:relations], docid)
-          r_stat[docid] += ann[:relations].length
-        end
-
-        if instances.present?
-          r = Relation.import instances, validate: false
-          raise "relation import error" unless r.failed_instances.empty?
-        end
-
-        r_stat_all = instances.length
+        r_stat, r_stat_all = import_relations(project, annotations_collection)
 
         # instantiate and save attributes
+        instances = []
         instances.clear
         annotations_collection.each do |ann|
           next unless ann[:attributes].present?
@@ -100,6 +87,27 @@ class InstantiateAndSaveAnnotationsCollection
       d_stat_all = instances.length
 
       [d_stat, d_stat_all]
+    end
+
+    def import_relations(project, annotations_collection)
+      r_stat = Hash.new(0)
+      instances = []
+
+      annotations_collection.each do |ann|
+        next unless ann[:relations].present?
+        docid = ann[:docid]
+        instances += project.instantiate_hrelations(ann[:relations], docid)
+        r_stat[docid] += ann[:relations].length
+      end
+
+      if instances.present?
+        r = Relation.import instances, validate: false
+        raise "relations import error" unless r.failed_instances.empty?
+      end
+
+      r_stat_all = instances.length
+
+      [r_stat, r_stat_all]
     end
   end
 end
