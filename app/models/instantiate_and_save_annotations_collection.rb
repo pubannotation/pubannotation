@@ -7,16 +7,9 @@ class InstantiateAndSaveAnnotationsCollection
           ann[:docid] = Doc.select(:id).where(sourcedb: ann[:sourcedb], sourceid: ann[:sourceid]).first.id
         end
 
-        # instantiate and save denotations
         d_stat, d_stat_all = import_denotations(project, annotations_collection)
-
-        # instantiate and save relations
         r_stat, r_stat_all = import_relations(project, annotations_collection)
-
-        # instantiate and save attributes
         a_stat = import_attributes(project, annotations_collection)
-
-        # instantiate and save modifications
         m_stat, m_stat_all = import_modifications(project, annotations_collection)
 
         d_stat.each do |did, d_num|
