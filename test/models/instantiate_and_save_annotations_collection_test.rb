@@ -17,6 +17,12 @@ class InstantiateAndSaveAnnotationsCollectionTest < ActiveSupport::TestCase
     assert_equal 0, @project.modifications_num
     assert_equal current, @project.updated_at
     assert_equal current, @project.annotations_updated_at
+
+    # Confirm imported annotations
+    assert_not Denotation.exists?
+    assert_not Relation.exists?
+    assert_not Attrivute.exists?
+    assert_not Modification.exists?
   end
 
   test "update to non-empty annotations" do
@@ -49,5 +55,11 @@ class InstantiateAndSaveAnnotationsCollectionTest < ActiveSupport::TestCase
     assert_equal 2, @project.modifications_num
     assert_equal current, @project.updated_at
     assert_equal current, @project.annotations_updated_at
+
+    # Confirm imported annotations
+    assert_equal 2, Denotation.count
+    assert_equal 2, Relation.count
+    assert_equal 2, Attrivute.count
+    assert_equal 2, Modification.count
   end
 end
