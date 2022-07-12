@@ -63,9 +63,8 @@ class InstantiateAndSaveAnnotationsCollection
 
       return [d_stat, 0, nil] unless instances.present?
 
-      r = Denotation.import instances, validate: false
-      raise "denotations import error" unless r.failed_instances.empty?
-      import_denotations = instances.map.with_index { |d, index| ["#{d[:doc_id]}#{d[:project_id]}#{d[:hid]}", r.ids[index]] }
+      r = Denotation.insert_all! instances
+      import_denotations = instances.map.with_index { |d, index| ["#{d[:doc_id]}#{d[:project_id]}#{d[:hid]}", r.rows[index][0]] }
                                     .to_h
 
       [d_stat, instances.length, import_denotations]
@@ -94,9 +93,7 @@ class InstantiateAndSaveAnnotationsCollection
 
       return [r_stat, 0] unless instances.present?
 
-      r = Relation.import instances, validate: false
-      raise "relations import error" unless r.failed_instances.empty?
-
+      Relation.insert_all! instances
       [r_stat, instances.length]
     end
 
@@ -121,8 +118,7 @@ class InstantiateAndSaveAnnotationsCollection
 
       return unless instances.present?
 
-      r = Attrivute.import instances, validate: false
-      raise "attribute import error" unless r.failed_instances.empty?
+      Attrivute.insert_all! instances
     end
 
     def import_modifications(project, annotations_collection, imported_denotations)
@@ -146,9 +142,7 @@ class InstantiateAndSaveAnnotationsCollection
 
       return [m_stat, 0] unless instances.present?
 
-      r = Modification.import instances, validate: false
-      raise "modifications import error" unless r.failed_instances.empty?
-
+      Modification.insert_all! instances
       [m_stat, instances.length]
     end
 
