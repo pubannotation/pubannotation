@@ -43,7 +43,7 @@ class InstantiateAndSaveAnnotationsCollectionTest < ActiveSupport::TestCase
                                   ],
                                   modifications: [
                                     { id: "m1", pred: "F", obj: "d1" },
-                                    { id: "m1", pred: "G", obj: "d1" }
+                                    { id: "m2", pred: "G", obj: "d1" }
                                   ]
                                 }]
       InstantiateAndSaveAnnotationsCollection.call @project, annotations_collection
@@ -57,9 +57,13 @@ class InstantiateAndSaveAnnotationsCollectionTest < ActiveSupport::TestCase
     assert_equal current, @project.annotations_updated_at
 
     # Confirm imported annotations
-    assert_equal 2, Denotation.count
-    assert_equal 2, Relation.count
-    assert_equal 2, Attrivute.count
-    assert_equal 2, Modification.count
+    assert_equal 'd1', Denotation.first.hid
+    assert_equal 'd2', Denotation.second.hid
+    assert_equal 'r1', Relation.first.hid
+    assert_equal 'r2', Relation.second.hid
+    assert_equal 'a1', Attrivute.first.hid
+    assert_equal 'a2', Attrivute.second.hid
+    assert_equal 'm1', Modification.first.hid
+    assert_equal 'm2', Modification.second.hid
   end
 end
