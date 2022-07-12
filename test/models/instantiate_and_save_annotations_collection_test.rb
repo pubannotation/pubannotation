@@ -58,8 +58,14 @@ class InstantiateAndSaveAnnotationsCollectionTest < ActiveSupport::TestCase
 
     # Confirm imported annotations
     assert_equal 'd1', Denotation.first.hid
+    assert_equal 1, Denotation.first.begin
+    assert_equal 2, Denotation.first.end
+    assert_equal 'A', Denotation.first.obj
     assert_equal 'd2', Denotation.second.hid
     assert_equal 'r1', Relation.first.hid
+    assert_equal 'C', Relation.first.pred
+    assert_equal Denotation.first, Relation.first.subj
+    assert_equal Denotation.second, Relation.first.obj
     assert_equal 'r2', Relation.second.hid
     assert_equal 'a1', Attrivute.first.hid
     assert_equal 'a2', Attrivute.second.hid
