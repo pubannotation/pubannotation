@@ -68,7 +68,16 @@ class InstantiateAndSaveAnnotationsCollection
       annotations_collection.each do |ann|
         next unless ann[:relations].present?
         docid = ann[:docid]
-        instances += project.instantiate_hrelations(ann[:relations], docid)
+        instances += ann[:relations].map do |a|
+          { hid: a[:id],
+            pred: a[:pred],
+            subj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:subj]).id,
+            subj_type: 'Denotation',
+            obj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:obj]).id,
+            obj_type: 'Denotation',
+            project_id: project.id
+          }
+        end
         r_stat[docid] += ann[:relations].length
       end
 
