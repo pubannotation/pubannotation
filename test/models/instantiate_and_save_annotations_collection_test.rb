@@ -68,8 +68,13 @@ class InstantiateAndSaveAnnotationsCollectionTest < ActiveSupport::TestCase
     assert_equal Denotation.second, Relation.first.obj
     assert_equal 'r2', Relation.second.hid
     assert_equal 'a1', Attrivute.first.hid
+    assert_equal 'D', Attrivute.first.pred
+    assert_equal 'E', Attrivute.first.obj
+    assert_equal Denotation.first, Attrivute.first.subj
     assert_equal 'a2', Attrivute.second.hid
     assert_equal 'm1', Modification.first.hid
+    assert_equal 'F', Modification.first.pred
+    assert_equal Denotation.first, Modification.first.obj
     assert_equal 'm2', Modification.second.hid
   end
 end
