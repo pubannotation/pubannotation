@@ -39,7 +39,15 @@ class InstantiateAndSaveAnnotationsCollection
       annotations_collection.each do |ann|
         next unless ann[:denotations].present?
         docid = ann[:docid]
-        instances += project.instantiate_hdenotations(ann[:denotations], docid)
+        instances += ann[:denotations].map do |a|
+          { hid: a[:id],
+            begin: a[:span][:begin],
+            end: a[:span][:end],
+            obj: a[:obj],
+            project_id: project.id,
+            doc_id: docid,
+            is_block: a[:block_p] }
+        end
         d_stat[docid] += ann[:denotations].length
       end
 
