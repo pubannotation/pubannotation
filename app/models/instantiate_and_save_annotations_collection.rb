@@ -97,7 +97,15 @@ class InstantiateAndSaveAnnotationsCollection
       annotations_collection.each do |ann|
         next unless ann[:attributes].present?
         docid = ann[:docid]
-        instances += project.instantiate_hattributes(ann[:attributes], docid)
+        instances += ann[:attributes].map do |a|
+          { hid: a[:id],
+            pred: a[:pred],
+            subj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:subj]).id,
+            subj_type: 'Denotation',
+            obj: a[:obj],
+            project_id: project.id
+          }
+        end
       end
 
       if instances.present?
