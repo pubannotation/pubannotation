@@ -60,7 +60,11 @@ class UploadDocsJob < ApplicationJob
 					if mode == :update
 						error_messages = same_doc.revise(hdoc)
 						if @job
-							error_messages.each{|m| @job.messages << Message.create({sourcedb:same_doc.sourcedb, sourceid:same_doc.sourceid, body:m})}
+							error_messages.each do |m|
+								@job.add_message sourcedb: same_doc.sourcedb,
+																 sourceid: same_doc.sourceid,
+																 body: m
+							end
 						elsif error_messages.present?
 							raise error_messages.join("\n")
 						end
@@ -81,7 +85,7 @@ class UploadDocsJob < ApplicationJob
 			rescue => e
 				message = "[#{fpath}] #{e.message}"
 				if @job
-					@job.messages << Message.create({body: message})
+					@job.add_message body: message
 				else
 					raise ArgumentError, message
 				end

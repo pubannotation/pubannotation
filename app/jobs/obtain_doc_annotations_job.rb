@@ -8,7 +8,11 @@ class ObtainDocAnnotationsJob < ApplicationJob
 		slices = doc.get_slices(max_text_size, options[:span])
 
 		if @job
-			@job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(max_text_size)}). For proceding, it was divided into #{slices.length} slices."}) if slices.length > 1
+			if slices.length > 1
+				@job.add_message sourcedb:doc.sourcedb,
+												 sourceid:doc.sourceid,
+												 body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(max_text_size)}). For proceding, it was divided into #{slices.length} slices."
+			end
 			prepare_progress_record(slices.length)
 		end
 
@@ -22,12 +26,14 @@ class ObtainDocAnnotationsJob < ApplicationJob
 
 			timer_start = Time.now
 			messages = project.save_annotations!(annotations, doc, options.merge(span:slice))
-			messages.each{|m| @job.messages << Message.create(m)}
+			messages.each do |m|
+				@job.add_message m
+			end
 			stime = Time.now - timer_start
 
 			annotations_num = annotations[:denotations].length
 			if @job && options[:debug]
-				@job.messages << Message.create({body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"})
+				@job.add_message body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"
 			end
 
 		rescue RestClient::ExceptionWithResponse => e
@@ -46,7 +52,9 @@ class ObtainDocAnnotationsJob < ApplicationJob
 			end
 		rescue => e
 			if @job
-				@job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: e.message})
+				@job.add_message sourcedb:doc.sourcedb,
+												 sourceid:doc.sourceid,
+												 body: e.message
 			else
 				raise RuntimeError, e.message
 			end
@@ -96,12 +104,14 @@ class ObtainDocAnnotationsJob < ApplicationJob
 			doc = Doc.find_by_sourcedb_and_sourceid(annotations[:sourcedb], annotations[:sourceid])
 			stime = Time.now - timer_start
 			messages = project.save_annotations!(annotations, doc, options)
-			messages.each{|m| @job.messages << Message.create(m)}
+			messages.each do |m|
+				@job.add_message m
+			end
 
 			if @job && options[:debug]
 				ptime = status[:finished_at].to_time - status[:started_at].to_time
 				qtime = status[:started_at].to_time - status[:submitted_at].to_time
-				@job.messages << Message.create({body: "Annotation received, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"})
+				@job.add_message body: "Annotation received, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"
 			end
 		when 'ERROR'
 			raise RuntimeError, "The annotation server issued an error message: #{status[:error_message]}."
@@ -111,7 +121,7 @@ class ObtainDocAnnotationsJob < ApplicationJob
 
 	rescue => e
 		if @job
-			@job.messages << Message.create({body: e.message})
+			@job.add_message body: e.message
 		else
 			raise ArgumentError, e.message
 		end

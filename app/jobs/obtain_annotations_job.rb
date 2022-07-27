@@ -30,7 +30,11 @@ class ObtainAnnotationsJob < ApplicationJob
 						if @job
 							count = @job.num_items + slices.length - 1
 							@job.update_attribute(:num_items, count)
-							@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."}) if slices.length > 1
+							if slices.length > 1
+								@job.add_message sourcedb:doc1.sourcedb,
+																 sourceid:doc1.sourceid,
+																 body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."
+							end
 						end
 						# delete all the annotations here for a better performance
 						project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
@@ -41,12 +45,20 @@ class ObtainAnnotationsJob < ApplicationJob
 								if e.class == Exceptions::JobSuspendError
 									raise e
 								end
-							  @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
+								if @job
+									@job.add_message sourcedb:doc1.sourcedb,
+																	 sourceid:doc1.sourceid,
+																	 body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
+								end
 							rescue => e
 								if e.class == Exceptions::JobSuspendError
 									raise e
 								end
-							  @job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"}) if @job
+								if @job
+									@job.add_message sourcedb:doc1.sourcedb,
+																	 sourceid:doc1.sourceid,
+																	 body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
+								end
 							end
 						end
 					else
@@ -57,9 +69,13 @@ class ObtainAnnotationsJob < ApplicationJob
 						raise e
 					elsif @job
 						if docs.length < 10
-							docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Could not obtain annotations: #{exception_message(e)}"})}
+							docs.each do |doc|
+								@job.add_message sourcedb: doc.sourcedb,
+																 sourceid: doc.sourceid,
+																 body: "Could not obtain annotations: #{exception_message(e)}"
+							end
 						else
-							@job.messages << Message.create({body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"})
+							@job.add_message body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"
 						end
 					else
 						raise e
@@ -79,9 +95,13 @@ class ObtainAnnotationsJob < ApplicationJob
 				raise e
 			elsif @job
 				if docs.length < 10
-					docs.each{|doc| @job.messages << Message.create({sourcedb:doc.sourcedb, sourceid:doc.sourceid, body: "Runtime error: #{exception_message(e)}"})}
+					docs.each do |doc|
+						@job.add_message sourcedb: doc.sourcedb,
+														 sourceid: doc.sourceid,
+														 body: "Runtime error: #{exception_message(e)}"
+					end
 				else
-					@job.messages << Message.create({body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"})
+					@job.add_message body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"
 				end
 			else
 				raise e
@@ -96,7 +116,11 @@ class ObtainAnnotationsJob < ApplicationJob
 					if @job
 						count = @job.num_items + slices.length - 1
 						@job.update_attribute(:num_items, count)
-						@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."}) if slices.length > 1
+						if slices.length > 1
+							@job.add_message sourcedb:doc1.sourcedb,
+															 sourceid:doc1.sourceid,
+															 body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."
+						end
 					end
 					# delete all the annotations here for a better performance
 					project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
@@ -106,7 +130,9 @@ class ObtainAnnotationsJob < ApplicationJob
 						if e.class == Exceptions::JobSuspendError
 							raise e
 						elsif @job
-							@job.messages << Message.create({sourcedb:doc1.sourcedb, sourceid:doc1.sourceid, body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"})
+							@job.add_message sourcedb:doc1.sourcedb,
+															 sourceid:doc1.sourceid,
+															 body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
 						else
 							raise e
 						end
@@ -125,7 +151,7 @@ class ObtainAnnotationsJob < ApplicationJob
 				if e.class == Exceptions::JobSuspendError
 					raise e
 				elsif @job
-					@job.messages << Message.create({body: exception_message(e)})
+					@job.add_message body: exception_message(e)
 				else
 					raise e
 				end
@@ -164,13 +190,15 @@ private
 		end
 		messages.each do |m|
 			m = {body: m} if m.class == String
-			@job.messages << Message.create(m)
+			@job.add_message m
 		end
 		stime = Time.now - timer_start
 
 		if @job
 			num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
-			@job.messages << Message.create({body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{num})"}) if options[:debug]
+			if options[:debug]
+				@job.add_message body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{num})"
+			end
 			@job.increment!(:num_dones, docs.length)
 			check_suspend_flag
 		end
@@ -218,7 +246,9 @@ private
 					annotator.annotations_transform!(annotations)
 				rescue => e
 					if @job
-						@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: exception_message(e)})
+						@job.add_message sourcedb: annotations[:sourcedb],
+														 sourceid: annotations[:sourceid],
+														 body: exception_message(e)
 					else
 						raise e
 					end
@@ -232,7 +262,7 @@ private
 				end
 				messages.each do |m|
 					m = {body: m} if m.class == String
-					@job.messages << Message.create(m)
+					@job.add_message m
 				end
 
 				stime = Time.now - timer_start
@@ -242,7 +272,9 @@ private
 					qtime = status[:started_at].to_time - status[:submitted_at].to_time
 					length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
 					num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
-					@job.messages << Message.create({body: "Annotation obtained, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{length}, num:#{num})"}) if options[:debug]
+					if options[:debug]
+						@job.add_message body: "Annotation obtained, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{length}, num:#{num})"
+					end
 					@job.increment!(:num_dones, annotations_col.length)
 					check_suspend_flag
 				end
@@ -255,9 +287,11 @@ private
 					if @job
 						if task[:span].present?
 							d = Doc.find(task[:docid])
-							@job.messages << Message.create({sourcedb:d.sourcedb, sourceid:d.sourceid, body: message})
+							@job.add_message sourcedb:d.sourcedb,
+															 sourceid:d.sourceid,
+															 body: message
 						else
-							@job.messages << Message.create({body: message})
+							@job.add_message body: message
 						end
 						exit
 					else
@@ -270,9 +304,11 @@ private
 					if @job
 						if task[:span].present?
 							d = Doc.find(task[:docid])
-							@job.messages << Message.create({sourcedb:d.sourcedb, sourceid:d.sourceid, body: message})
+							@job.add_message sourcedb: d.sourcedb,
+															 sourceid: d.sourceid,
+															 body: message
 						else
-							@job.messages << Message.create({body: message})
+							@job.add_message body: message
 						end
 						exit
 					else

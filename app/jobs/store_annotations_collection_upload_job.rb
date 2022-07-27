@@ -53,7 +53,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 		rescue ActiveRecord::ActiveRecordError => e
 			if @job
-				@job.messages << Message.create({body: e.message[0 .. 250]})
+				@job.add_message body: e.message[0 .. 250]
 			else
 				raise e
 			end
@@ -61,7 +61,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			if e.class == Exceptions::JobSuspendError
 				raise e
 			elsif @job
-				@job.messages << Message.create({sourcedb:sourcedb, sourceid:sourceid, body:e.message[0 .. 250]})
+				@job.add_message sourcedb:sourcedb,
+												 sourceid:sourceid,
+												 body:e.message[0 .. 250]
 			else
 				raise ArgumentError, "[#{sourcedb}:#{sourceid}] #{e.message}"
 			end
@@ -92,7 +94,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			@total_num_sequenced += num_sequenced
 			if @job
 				messages.each do |message|
-					@job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message[0 .. 250]}))
+					@job.add_message(message.class == Hash ? message : { body: message[0 .. 250]})
 				end
 			else
 				raise messages.join("\n") if @messages.present?
@@ -104,13 +106,15 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		ptime = Time.now - timer_start
 		if options[:debug].present? && ptime > @longest_processing_time
 			doc_specs = sourcedb_sourceids_index.collect{|sourcedb, sourceids| "#{sourcedb}-#{sourceids.to_a.join(",")}"}.join(", ")
-			@job.messages << Message.create({body: "Longest processing time so far (#{ptime}): #{doc_specs}"})
+			@job.add_message body: "Longest processing time so far (#{ptime}): #{doc_specs}"
 			@longest_processing_time = ptime
 		end
 
 		if messages.present?
 			if @job
-				messages.each{|m| @job.messages << Message.create(m)}
+				messages.each do |m|
+					@job.add_message m
+				end
 			else
 				msgs = messages.collect{|m| "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}"}
 				raise ArgumentError, msgs.join("\n")

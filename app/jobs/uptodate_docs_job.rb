@@ -56,7 +56,9 @@ class UptodateDocsJob < ApplicationJob
 				if e.class == Exceptions::JobSuspendError
 					raise e
 				elsif @job
-					@job.messages << Message.create({sourcedb: sourcedb, sourceid: sids.join(", ")[0 ... 200], body: e.message[0 ... 200]})
+					@job.add_message sourcedb: sourcedb,
+													 sourceid: sids.join(", ")[0 ... 200],
+													 body: e.message[0 ... 200]
 				end
 			end
 		end

@@ -13,7 +13,10 @@ class StoreRdfizedSpansJob < ApplicationJob
 				sproject.post_rdf(doc_ttl, nil, i == 0)
 			rescue => e
 				if @job
-					@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
+					@job.add_message sourcedb: annotations[:sourcedb],
+													 sourceid: annotations[:sourceid],
+													 divid: annotations[:divid],
+													 body: e.message
 				else
 					raise ArgumentError, message
 				end

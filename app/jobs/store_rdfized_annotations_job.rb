@@ -44,7 +44,7 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 						raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
 					rescue => e
 						if @job
-							@job.messages << Message.create({body: "failed in storing #{num_denotations_in_annotation_queue} rdfized annotations from #{annotations_col.length} docs: #{e.message}"})
+							@job.add_message body: "failed in storing #{num_denotations_in_annotation_queue} rdfized annotations from #{annotations_col.length} docs: #{e.message}"
 						else
 							raise ArgumentError, e.message
 						end
@@ -77,7 +77,7 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 								end
 							rescue => e
 								if @job
-									@job.messages << Message.create({body: "failed in storing #{num_spans_in_span_queue} rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"})
+									@job.add_message body: "failed in storing #{num_spans_in_span_queue} rdfized spans from #{spans_indexed_queue.length} docs: #{e.message}"
 								else
 									raise ArgumentError, e.message
 								end
@@ -106,7 +106,7 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 				raise RuntimeError, "failure while adding RDFized data to the endpoint." unless r == 0
 			rescue => e
 				if @job
-					@job.messages << Message.create({body: "failed in storing #{num_denotations_in_annotation_queue} rdfized annotations from the last #{annotations_col.length} docs: #{e.message}"})
+					@job.add_message body: "failed in storing #{num_denotations_in_annotation_queue} rdfized annotations from the last #{annotations_col.length} docs: #{e.message}"
 				else
 					raise ArgumentError, e.message
 				end
@@ -127,7 +127,7 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 				end
 			rescue => e
 				if @job
-					@job.messages << Message.create({body: "failed in storing #{num_spans_in_span_queue} rdfized spans from the last #{spans_indexed_queue.length} docs: #{e.message}"})
+					@job.add_message body: "failed in storing #{num_spans_in_span_queue} rdfized spans from the last #{spans_indexed_queue.length} docs: #{e.message}"
 				else
 					raise ArgumentError, e.message
 				end
