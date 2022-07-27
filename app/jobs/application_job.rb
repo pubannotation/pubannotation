@@ -1,5 +1,12 @@
 class ApplicationJob < ActiveJob::Base
-  rescue_from(StandardError) do |exception|
+  rescue_from(StandardError) { |exception| handle_standard_error(exception) }
+  before_enqueue :before_enqueue
+  before_perform { |active_job_id| before_perform active_job_id }
+  after_perform :after_perform
+
+  private
+
+  def handle_standard_error(exception)
     if @job
       @job.messages << Message.create({sourcedb: '*', sourceid: '*', divid: nil, body: exception.message})
       set_ended_at
@@ -8,12 +15,6 @@ class ApplicationJob < ActiveJob::Base
       raise exception
     end
   end
-
-  before_enqueue :before_enqueue
-  before_perform { |active_job_id| before_perform active_job_id }
-  after_perform :after_perform
-
-  private
 
   def before_enqueue
     # When creating a new job,
