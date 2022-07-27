@@ -15,15 +15,16 @@ class ApplicationJob < ActiveJob::Base
     create_job_record(organization_jobs, self.job_name)
   end
 
-  before_perform do |active_job|
-    if set_job(active_job)
-      set_begun_at
-    end
-  end
-
+  before_perform { |active_job_id| before_perform active_job_id }
   after_perform :after_perform
 
   private
+
+  def before_perform(active_job_id)
+    if set_job active_job_id
+      set_begun_at
+    end
+  end
 
   def after_perform
     set_ended_at
