@@ -23,9 +23,8 @@ class ApplicationJob < ActiveJob::Base
   end
 
   def before_perform(active_job_id)
-    if set_job active_job_id
-      @job.update_attribute(:begun_at, Time.now)
-    end
+    @job = Job.find_by(active_job_id: active_job_id.job_id)
+    @job&.update_attribute(:begun_at, Time.now)
   end
 
   def after_perform
@@ -44,10 +43,6 @@ class ApplicationJob < ActiveJob::Base
     organization_jobs.create({ name: job_name, active_job_id: self.job_id, queue_name: self.queue_name })
   end
 
-  def set_job(active_job)
-    @job = Job.find_by(active_job_id: active_job.job_id)
-  end
-  
   def set_ended_at
     if @job
       @job.update_attribute(:ended_at, Time.now)
