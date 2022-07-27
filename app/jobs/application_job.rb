@@ -9,16 +9,17 @@ class ApplicationJob < ActiveJob::Base
     end
   end
 
-  before_enqueue do
-    # When creating a new job,
-    # be sure to pass the organization to which the Job record belongs to the first argument of the perform method.
-    create_job_record(organization_jobs, self.job_name)
-  end
-
+  before_enqueue :before_enqueue
   before_perform { |active_job_id| before_perform active_job_id }
   after_perform :after_perform
 
   private
+
+  def before_enqueue
+    # When creating a new job,
+    # be sure to pass the organization to which the Job record belongs to the first argument of the perform method.
+    create_job_record(organization_jobs, self.job_name)
+  end
 
   def before_perform(active_job_id)
     if set_job active_job_id
