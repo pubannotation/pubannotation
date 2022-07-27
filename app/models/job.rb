@@ -15,6 +15,10 @@ class Job < ActiveRecord::Base
     update_attribute :ended_at, Time.now
   end
 
+  def add_message(message)
+    messages << Message.create(message)
+  end
+
   def waiting?
     begun_at.nil?
   end

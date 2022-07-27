@@ -8,7 +8,10 @@ class ApplicationJob < ActiveJob::Base
 
   def handle_standard_error(exception)
     if @job
-      @job.messages << Message.create({sourcedb: '*', sourceid: '*', divid: nil, body: exception.message})
+      @job.add_message sourcedb: '*',
+                       sourceid: '*',
+                       divid: nil,
+                       body: exception.message
       @job.finish!
     else
       # Exception handling when Job is executed synchronously with perform_now
