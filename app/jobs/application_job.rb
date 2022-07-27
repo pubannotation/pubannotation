@@ -1,7 +1,7 @@
 class ApplicationJob < ActiveJob::Base
   rescue_from(StandardError) { |exception| handle_standard_error(exception) }
   before_enqueue :before_enqueue
-  before_perform { |active_job_id| before_perform active_job_id }
+  before_perform { |active_job| before_perform active_job }
   after_perform :after_perform
 
   private
@@ -22,8 +22,8 @@ class ApplicationJob < ActiveJob::Base
     create_job_record(organization_jobs, self.job_name)
   end
 
-  def before_perform(active_job_id)
-    @job = Job.find_by(active_job_id: active_job_id.job_id)
+  def before_perform(active_job)
+    @job = Job.find_by(active_job_id: active_job.job_id)
     @job&.update_attribute(:begun_at, Time.now)
   end
 
