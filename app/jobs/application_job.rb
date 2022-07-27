@@ -22,9 +22,7 @@ class ApplicationJob < ActiveJob::Base
   end
 
   after_perform do
-    if @job
-      set_ended_at
-    end
+    set_ended_at
   end
 
   private
@@ -50,7 +48,9 @@ class ApplicationJob < ActiveJob::Base
   end
 
   def set_ended_at
-    @job.update_attribute(:ended_at, Time.now)
+    if @job
+      @job.update_attribute(:ended_at, Time.now)
+    end
   end
 
   def check_suspend_flag
