@@ -21,9 +21,7 @@ class ApplicationJob < ActiveJob::Base
     end
   end
 
-  after_perform do
-    set_ended_at
-  end
+  after_perform :set_ended_at
 
   private
 
