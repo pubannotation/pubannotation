@@ -24,7 +24,7 @@ class ApplicationJob < ActiveJob::Base
 
   def before_perform(active_job)
     @job = Job.find_by(active_job_id: active_job.job_id)
-    @job&.update_attribute(:begun_at, Time.now)
+    @job&.start!
   end
 
   def after_perform

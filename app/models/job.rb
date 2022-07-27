@@ -7,8 +7,12 @@ class Job < ActiveRecord::Base
   scope :unfinished, -> { where('ended_at IS NULL') }
   scope :finished, -> { where('ended_at IS NOT NULL') }
 
+  def start!
+    update_attribute :begun_at, Time.now
+  end
+
   def finish!
-    update_attribute(:ended_at, Time.now)
+    update_attribute :ended_at, Time.now
   end
 
   def waiting?
