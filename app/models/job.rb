@@ -7,6 +7,10 @@ class Job < ActiveRecord::Base
   scope :unfinished, -> { where('ended_at IS NULL') }
   scope :finished, -> { where('ended_at IS NOT NULL') }
 
+  def finish!
+    update_attribute(:ended_at, Time.now)
+  end
+
   def waiting?
     begun_at.nil?
   end
@@ -40,7 +44,7 @@ class Job < ActiveRecord::Base
       'Finished'
     end
   end
-  
+
   def destroy_if_not_running
     case state
     when 'Waiting'

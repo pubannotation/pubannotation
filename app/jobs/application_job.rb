@@ -9,7 +9,7 @@ class ApplicationJob < ActiveJob::Base
   def handle_standard_error(exception)
     if @job
       @job.messages << Message.create({sourcedb: '*', sourceid: '*', divid: nil, body: exception.message})
-      @job.update_attribute(:ended_at, Time.now)
+      @job.finish!
     else
       # Exception handling when Job is executed synchronously with perform_now
       raise exception
@@ -28,7 +28,7 @@ class ApplicationJob < ActiveJob::Base
   end
 
   def after_perform
-    @job&.update_attribute(:ended_at, Time.now)
+    @job&.finish!
   end
 
   def organization_jobs
