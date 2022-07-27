@@ -24,7 +24,7 @@ class ApplicationJob < ActiveJob::Base
 
   def before_perform(active_job_id)
     if set_job active_job_id
-      set_begun_at
+      @job.update_attribute(:begun_at, Time.now)
     end
   end
 
@@ -47,11 +47,7 @@ class ApplicationJob < ActiveJob::Base
   def set_job(active_job)
     @job = Job.find_by(active_job_id: active_job.job_id)
   end
-
-  def set_begun_at
-    @job.update_attribute(:begun_at, Time.now)
-  end
-
+  
   def set_ended_at
     if @job
       @job.update_attribute(:ended_at, Time.now)
