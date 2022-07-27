@@ -18,9 +18,11 @@ class ImportAnnotationsJob < ApplicationJob
 			begin
 				annotations = doc.hannotations(source_project)
 				messages = destin_project.save_annotations!(annotations, doc, options)
-				messages.each{|m| @job.messages << Message.create(m)}
+				messages.each{|m| @job.add_message m}
 			rescue => e
-				@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message})
+				@job.add_message sourcedb: annotations[:sourcedb],
+												 sourceid: annotations[:sourceid],
+												 body: e.message
 			end
 			@job.increment!(:num_dones)
 			check_suspend_flag

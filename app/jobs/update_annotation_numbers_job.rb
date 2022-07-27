@@ -17,7 +17,7 @@ class UpdateAnnotationNumbersJob < ApplicationJob
 			begin
 				ActiveRecord::Base.connection.execute query[:sql]
 			rescue => e
-				@job.messages << Message.create({body: "executions of #{query[:name]} failed."})
+				@job.add_message body: "executions of #{query[:name]} failed."
 			ensure
 				if @job
 					@job.update_attribute(:num_dones, i + 1)

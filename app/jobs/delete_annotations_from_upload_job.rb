@@ -19,7 +19,7 @@ class DeleteAnnotationsFromUploadJob < ApplicationJob
 			begin
 				o = JSON.parse(json, symbolize_names:true)
 			rescue => e
-				@job.messages << Message.create({body: "[#{File.basename(jsonfile)}] " + e.message})
+				@job.add_message body: "[#{File.basename(jsonfile)}] " + e.message
 				next
 			end
 			collection = o.is_a?(Array) ? o : [o]
@@ -35,7 +35,9 @@ class DeleteAnnotationsFromUploadJob < ApplicationJob
 				doc = Doc.find_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
 				project.delete_doc_annotations(doc) if doc.present?
 			rescue => e
-				@job.messages << Message.create({sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid], body: e.message})
+				@job.add_message sourcedb: docspec[:sourcedb],
+												 sourceid: docspec[:sourceid],
+												 body: e.message
 			end
 			@job.update_attribute(:num_dones, i + 1)
 			check_suspend_flag

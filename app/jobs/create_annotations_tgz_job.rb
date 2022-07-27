@@ -47,7 +47,9 @@ class CreateAnnotationsTgzJob < ApplicationJob
 							end
 						end
 					rescue => e
-						@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message}) if @job
+						@job.add_message sourcedb: doc.sourcedb,
+														 sourceid: doc.sourceid,
+														 body: e.message
 					end
 					if @job
 						@job.update_attribute(:num_dones, i + 1)

@@ -24,7 +24,9 @@ class AnalyseAnnotationsJob < ApplicationJob
 				analysis[:duplabels] += a[:duplabels]
 			rescue => e
 				if @job
-					@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], body: e.message})
+					@job.add_message sourcedb: annotations[:sourcedb],
+													 sourceid: annotations[:sourceid],
+													 body: e.message
 				else
 					raise e
 				end
