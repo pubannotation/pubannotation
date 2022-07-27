@@ -9,7 +9,11 @@ class CreateSpansRdfCollectionJob < ApplicationJob
 		collection.create_spans_RDF(loc) do |i, doc, message|
 			if @job
 				@job.update_attribute(:num_dones, i + 1)
-				@job.messages << Message.create({sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: message}) if message
+				if message
+					@job.add_message sourcedb: doc.sourcedb,
+													 sourceid: doc.sourceid,
+													 body: message
+				end
 				check_suspend_flag
 			end
 		end

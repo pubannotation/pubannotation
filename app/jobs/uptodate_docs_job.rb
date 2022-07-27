@@ -30,7 +30,7 @@ class UptodateDocsJob < ApplicationJob
 						else
 							{body: "Unknown message: #{m}"[0 ... 200]}
 						end
-						@job.messages << Message.create(message)
+						@job.add_message message
 					end
 				end
 				hdocs_sequenced = r[:docs]
@@ -45,7 +45,9 @@ class UptodateDocsJob < ApplicationJob
 					if e.class == Exceptions::JobSuspendError
 						raise e
 					elsif @job
-						@job.messages << Message.create({sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid], body: e.message})
+						@job.add_message sourcedb: hdoc[:sourcedb],
+														 sourceid: hdoc[:sourceid],
+														 body: e.message
 					else
 						raise e.message
 					end

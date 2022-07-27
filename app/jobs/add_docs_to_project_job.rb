@@ -18,7 +18,9 @@ class AddDocsToProjectJob < ApplicationJob
 				project.add_docs(sourcedb, ids)
 			rescue => e
 				if @job
-					@job.messages << Message.create({sourcedb: sourcedb, sourceid: "#{ids.first} - #{ids.last}", body: e.message})
+					@job.add_message sourcedb: sourcedb,
+													 sourceid: "#{ids.first} - #{ids.last}",
+													 body: e.message
 					[0, 0, 0, []]
 				else
 					raise e
@@ -41,7 +43,7 @@ class AddDocsToProjectJob < ApplicationJob
 			unless messages.empty?
 				if @job
 					messages.each do |message|
-						@job.messages << (message.class == Hash ? Message.create(message) : Message.create({body: message}))
+						@job.add_message(message.class == Hash ? message : { body: message })
 					end
 				else
 					raise messages.join("\n")

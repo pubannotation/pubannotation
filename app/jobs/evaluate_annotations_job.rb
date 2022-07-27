@@ -25,7 +25,10 @@ class EvaluateAnnotationsJob < ApplicationJob
 				comparison += evaluator.compare(annotations, reference_annotations)
 			rescue => e
 				if @job
-					@job.messages << Message.create({sourcedb: annotations[:sourcedb], sourceid: annotations[:sourceid], divid: annotations[:divid], body: e.message})
+					@job.add_message sourcedb: annotations[:sourcedb],
+													 sourceid: annotations[:sourceid],
+													 divid: annotations[:divid],
+													 body: e.message
 				else
 					raise e
 				end

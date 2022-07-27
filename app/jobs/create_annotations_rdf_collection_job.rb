@@ -47,7 +47,7 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 			if e.class == Exceptions::JobSuspendError
 				raise e
 			elsif @job
-				@job.messages << Message.create({body: e.message})
+				@job.add_message body: e.message
 			else
 				raise e
 			end
