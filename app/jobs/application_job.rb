@@ -21,9 +21,13 @@ class ApplicationJob < ActiveJob::Base
     end
   end
 
-  after_perform :set_ended_at
+  after_perform :after_perform
 
   private
+
+  def after_perform
+    set_ended_at
+  end
 
   def organization_jobs
     self.arguments.first.jobs
