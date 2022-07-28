@@ -98,7 +98,9 @@ class UploadDocsJob < ApplicationJob
 		end
 
 		if @job
-			@job.messages << Message.create({body: "#{num_updated_or_skipped} docs were #{mode == :update ? 'updated' : 'skipped'}."}) if num_updated_or_skipped > 0
+			if num_updated_or_skipped > 0
+				@job.add_message body: "#{num_updated_or_skipped} docs were #{mode == :update ? 'updated' : 'skipped'}."
+			end
 		end
 
 		unless sourcedbs_added.empty?
