@@ -56,9 +56,9 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
                                                         project.add_docs(sourcedb, ids)
                                                       rescue => e
                                                         if @job
-                                                          @job.add_messages sourcedb: sourcedb,
-                                                                            sourceid: "#{ids.first} - #{ids.last}",
-                                                                            body: e.message
+                                                          @job.add_message sourcedb: sourcedb,
+                                                                           sourceid: "#{ids.first} - #{ids.last}",
+                                                                           body: e.message
                                                         end
                                                         [0, 0, 0, []]
                                                       end
