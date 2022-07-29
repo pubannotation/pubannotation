@@ -22,7 +22,7 @@ class ApplicationJob < ActiveJob::Base
   def before_enqueue
     # When creating a new job,
     # be sure to pass the organization to which the Job record belongs to the first argument of the perform method.
-    create_job_record(organization_jobs, self.job_name)
+    create_job_record(self.arguments.first.jobs, self.job_name)
   end
 
   def before_perform(active_job)
@@ -32,10 +32,6 @@ class ApplicationJob < ActiveJob::Base
 
   def after_perform
     @job&.finish!
-  end
-
-  def organization_jobs
-    self.arguments.first.jobs
   end
 
   def resource_name
