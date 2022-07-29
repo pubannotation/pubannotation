@@ -43,6 +43,10 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
     end
 
     File.unlink(filepath)
+  ensure
+    if @total_num_existed > 0
+      @job&.add_message body: "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added."
+    end
   end
 
   def job_name
@@ -66,15 +70,6 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
     @total_num_added += num_added
     @total_num_sequenced += num_sequenced
     @total_num_existed += num_existed
-
-    @message_docs_existed.update_attribute(:body, "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added.") if @message_docs_existed
-
-    if @total_num_existed > 0 && !defined?(@message_docs_existed)
-      @message_docs_existed = Message.create({ body: "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added." })
-      if @job
-        @job.messages << @message_docs_existed
-      end
-    end
 
     messages.each do |message|
       if @job
