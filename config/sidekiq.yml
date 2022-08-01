@@ -1,7 +1,5 @@
 :concurrency: 25
 :max_retries: 0
-:pidfile: ./tmp/pids/sidekiq.pid
-:logfile: ./log/sidekiq.log
 :queues:
   - [general, 1]
   - low_priority
