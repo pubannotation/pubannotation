@@ -24,9 +24,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       unless jsonfile.nil?
         annotation_collection, sourcedb, sourceid = read_annotation(jsonfile)
 
-        count_denotations = annotation_collection.inject(0) do |count, annotations|
-          count += annotations[:denotations].present? ? annotations[:denotations].size : 0
-        end
+        count_denotations = annotation_collection.map { _1[:denotations].present? ? _1[:denotations].size : 0 }
+                                                 .sum
 
         next unless count_denotations > 0
       end
