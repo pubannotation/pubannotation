@@ -1,9 +1,9 @@
 class StoreAnnotationsCollectionUploadJob < ApplicationJob
   class AnnotationCollection
     attr_reader :annotations, :sourcedb, :sourceid
-    def initialize(annotation_collection)
-      @annotations = annotation_collection
-      validation_and_normalization
+    def initialize(json_file)
+      @annotations = read_annotation(json_file)
+      validation_and_normalization! @annotations
     end
 
     def has_denotation?
@@ -16,8 +16,20 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     private
 
-    def validation_and_normalization
-      @annotations.each do |annotations|
+    def read_annotation(filename)
+      json = File.read(filename)
+      o = begin
+            JSON.parse(json, symbolize_names: true)
+          rescue => e
+            raise "[#{File.basename(filename)}] JSON parse error. Not a valid JSON object."
+          end
+
+      # To return the annotation in an array
+      o.is_a?(Array) ? o : [o]
+    end
+
+    def validation_and_normalization!(annotations)
+      annotations.each do |annotations|
         raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
         if @sourcedb.nil?
           @sourcedb = annotations[:sourcedb]
@@ -54,7 +66,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     (filenames << nil).each_with_index do |jsonfile, i|
       unless jsonfile.nil?
-        annotation_collection = read_annotation(jsonfile)
+        annotation_collection = AnnotationCollection.new(jsonfile)
 
         next unless annotation_collection.has_denotation?
       end
@@ -170,18 +182,5 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
                   Dir.glob(File.join(dirpath, '**', '*.json'))
                 end.sort
     [filenames, dirpath]
-  end
-
-  def read_annotation(filename)
-    json = File.read(filename)
-    o = begin
-          JSON.parse(json, symbolize_names: true)
-        rescue => e
-          raise "[#{File.basename(filename)}] JSON parse error. Not a valid JSON object."
-        end
-
-    # To return the annotation in an array
-    annotation_collection = o.is_a?(Array) ? o : [o]
-    AnnotationCollection.new(annotation_collection)
   end
 end
