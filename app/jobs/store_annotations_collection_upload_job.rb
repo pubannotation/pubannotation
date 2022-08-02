@@ -18,7 +18,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     annotation_transaction = []
     transaction_size = 0
-    sourcedb_sourceids_index = Hash.new { |hsh, key| hsh[key] = Set.new }
+    sourcedb_sourceids_index = Hash.new(Set.new)
 
     (filenames << nil).each_with_index do |jsonfile, i|
       unless jsonfile.nil?
