@@ -192,18 +192,15 @@ class Project < ActiveRecord::Base
 	end
 
 	def has_running_jobs?
-		jobs.each{|job| return true if job.running?}
-		return false
+		jobs.any?{|job| job.running?}
 	end
 
 	def has_waiting_jobs?
-		jobs.each{|job| return true if job.waiting?}
-		return false
+		jobs.any?{|job| job.waiting?}
 	end
 
 	def has_unfinished_jobs?
-		jobs.each{|job| return true if job.unfinished?}
-		return false
+		jobs.any?{|job| job.unfinished?}
 	end
 
 	def has_doc?
