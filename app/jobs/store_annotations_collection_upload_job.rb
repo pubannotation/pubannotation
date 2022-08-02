@@ -115,8 +115,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
           @job.add_message m
         end
       else
-        msgs = messages.collect { |m| "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}" }
-        raise ArgumentError, msgs.join("\n")
+        raise ArgumentError, messages.collect { |m| "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}" }.join("\n")
       end
     end
 
