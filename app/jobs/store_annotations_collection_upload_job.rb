@@ -32,7 +32,14 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
       if jsonfile.nil? || (transaction_size + count_denotations) > MAX_SIZE_TRANSACTION
         begin
+          source_dbs_changed = store_docs(project, sourcedb_sourceids_index)
           store(annotation_transaction, sourcedb_sourceids_index, project, options)
+
+          unless source_dbs_changed.empty?
+            ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
+            ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
+            source_dbs_changed.each { |sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}") }
+          end
         ensure
           annotation_transaction.clear
           transaction_size = 0
@@ -85,8 +92,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   private
 
   def store(annotation_transaction, sourcedb_sourceids_index, project, options)
-    source_dbs_changed = store_docs(project, sourcedb_sourceids_index)
-
     timer_start = Time.now
     messages = project.store_annotations_collection(annotation_transaction, options)
     ptime = Time.now - timer_start
@@ -104,12 +109,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       else
         raise ArgumentError, messages.collect { |m| "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}" }.join("\n")
       end
-    end
-
-    unless source_dbs_changed.empty?
-      ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
-      ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-      source_dbs_changed.each { |sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}") }
     end
   end
 
