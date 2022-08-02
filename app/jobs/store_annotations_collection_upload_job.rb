@@ -1,8 +1,9 @@
 class StoreAnnotationsCollectionUploadJob < ApplicationJob
   class AnnotationCollection
-    attr_reader :annotations
+    attr_reader :annotations, :sourcedb, :sourceid
     def initialize(annotation_collection)
       @annotations = annotation_collection
+      validation_and_normalization
     end
 
     def has_denotation?
@@ -11,6 +12,22 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     def number_of_denotations
       @annotations.map { _1[:denotations].present? ? _1[:denotations].size : 0 }
                             .sum
+    end
+
+    private
+
+    def validation_and_normalization
+      @annotations.each do |annotations|
+        raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
+        if @sourcedb.nil?
+          @sourcedb = annotations[:sourcedb]
+          @sourceid = annotations[:sourceid]
+        elsif (annotations[:sourcedb] != @sourcedb) || (annotations[:sourceid] != @sourceid)
+          raise ArgumentError, "One json file has to include annotations to the same document."
+        end
+        Annotation.normalize!(annotations)
+      end
+
     end
   end
 
@@ -37,7 +54,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     (filenames << nil).each_with_index do |jsonfile, i|
       unless jsonfile.nil?
-        annotation_collection, sourcedb, sourceid = read_annotation(jsonfile)
+        annotation_collection = read_annotation(jsonfile)
 
         next unless annotation_collection.has_denotation?
       end
@@ -56,7 +73,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       unless jsonfile.nil?
         annotation_transaction << annotation_collection.annotations
         transaction_size += annotation_collection.number_of_denotations
-        sourcedb_sourceids_index[sourcedb] << sourceid
+        sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
         if @job
           @job.update_attribute(:num_dones, i + 1)
           check_suspend_flag
@@ -73,11 +90,11 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       raise
     rescue StandardError => e
       if @job
-        @job.add_message sourcedb: sourcedb,
-                         sourceid: sourceid,
+        @job.add_message sourcedb: annotation_collection.sourcedb,
+                         sourceid: annotation_collection.sourceid,
                          body: e.message[0..250]
       else
-        raise ArgumentError, "[#{sourcedb}:#{sourceid}] #{e.message}"
+        raise ArgumentError, "[#{annotation_collection.sourcedb}:#{annotation_collection.sourceid}] #{e.message}"
       end
     end
 
@@ -165,20 +182,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     # To return the annotation in an array
     annotation_collection = o.is_a?(Array) ? o : [o]
-
-    # validation and normalization
-    sourcedb, sourceid = nil, nil
-    annotation_collection.each do |annotations|
-      raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
-      if sourcedb.nil?
-        sourcedb = annotations[:sourcedb]
-        sourceid = annotations[:sourceid]
-      elsif (annotations[:sourcedb] != sourcedb) || (annotations[:sourceid] != sourceid)
-        raise ArgumentError, "One json file has to include annotations to the same document."
-      end
-      Annotation.normalize!(annotations)
-    end
-
-    [AnnotationCollection.new(annotation_collection), sourcedb, sourceid]
+    AnnotationCollection.new(annotation_collection)
   end
 end
