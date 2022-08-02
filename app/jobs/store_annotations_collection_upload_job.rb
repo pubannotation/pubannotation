@@ -33,7 +33,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       if jsonfile.nil? || (transaction_size + count_denotations) > MAX_SIZE_TRANSACTION
         begin
           source_dbs_changed = store_docs(project, sourcedb_sourceids_index)
-          store_annotations(annotation_transaction, sourcedb_sourceids_index, project, options)
+          store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
 
           unless source_dbs_changed.empty?
             ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
@@ -91,7 +91,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
   private
 
-  def store_annotations(annotation_transaction, sourcedb_sourceids_index, project, options)
+  def store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
     timer_start = Time.now
     messages = project.store_annotations_collection(annotation_transaction, options)
     ptime = Time.now - timer_start
