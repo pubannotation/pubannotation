@@ -85,11 +85,11 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   private
 
   def store(annotation_transaction, sourcedb_sourceids_index, project, options)
-    sourcedbs_changed = []
+    source_dbs_changed = []
 
     sourcedb_sourceids_index.each do |sourcedb, source_ids|
       num_added, num_sequenced, _, messages = project.add_docs(sourcedb, source_ids.to_a)
-      sourcedbs_changed << sourcedb if num_added > 0
+      source_dbs_changed << sourcedb if num_added > 0
       @total_num_sequenced += num_sequenced
       if @job
         messages.each do |message|
@@ -119,10 +119,10 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       end
     end
 
-    unless sourcedbs_changed.empty?
+    unless source_dbs_changed.empty?
       ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
       ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-      sourcedbs_changed.each { |sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}") }
+      source_dbs_changed.each { |sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}") }
     end
   end
 
