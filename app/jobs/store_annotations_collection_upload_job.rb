@@ -56,10 +56,10 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       else
         raise e
       end
+    rescue Exceptions::JobSuspendError
+      raise
     rescue StandardError => e
-      if e.class == Exceptions::JobSuspendError
-        raise e
-      elsif @job
+      if @job
         @job.add_message sourcedb: sourcedb,
                          sourceid: sourceid,
                          body: e.message[0..250]
