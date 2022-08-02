@@ -5,7 +5,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
   def perform(project, filepath, options)
     # read the filenames of json files into the array filenames
-    filenames, dirpath = read_filenames(filepath)
+    filenames, dir_path = read_filenames(filepath)
 
     # initialize the counter
     if @job
@@ -75,7 +75,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     end
 
     File.unlink(filepath)
-    FileUtils.rm_rf(dirpath) unless dirpath.nil?
+    FileUtils.rm_rf(dir_path) unless dir_path.nil?
     true
   end
 
