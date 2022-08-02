@@ -35,7 +35,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
           source_dbs_changed = store_docs(project, sourcedb_sourceids_index)
           store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
 
-          unless source_dbs_changed.empty?
+          if source_dbs_changed.present?
             ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
             ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
             source_dbs_changed.each { |sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}") }
