@@ -88,8 +88,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   def store(annotation_transaction, sourcedb_sourceids_index, project, options)
     sourcedbs_changed = []
 
-    sourcedb_sourceids_index.each do |sourcedb, sourceids|
-      num_added, num_sequenced, num_existed, messages = project.add_docs(sourcedb, sourceids.to_a)
+    sourcedb_sourceids_index.each do |sourcedb, source_ids|
+      num_added, num_sequenced, num_existed, messages = project.add_docs(sourcedb, source_ids.to_a)
       sourcedbs_changed << sourcedb if num_added > 0
       @total_num_sequenced += num_sequenced
       if @job
