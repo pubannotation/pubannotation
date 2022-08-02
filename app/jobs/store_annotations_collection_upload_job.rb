@@ -1,4 +1,19 @@
 class StoreAnnotationsCollectionUploadJob < ApplicationJob
+  class AnnotationCollection
+    attr_reader :annotations
+    def initialize(annotation_collection)
+      @annotations = annotation_collection
+    end
+
+    def has_denotation?
+      number_of_denotations > 0
+    end
+    def number_of_denotations
+      @annotations.map { _1[:denotations].present? ? _1[:denotations].size : 0 }
+                            .sum
+    end
+  end
+
   queue_as :low_priority
 
   MAX_SIZE_TRANSACTION = 5000
@@ -24,13 +39,10 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       unless jsonfile.nil?
         annotation_collection, sourcedb, sourceid = read_annotation(jsonfile)
 
-        count_denotations = annotation_collection.map { _1[:denotations].present? ? _1[:denotations].size : 0 }
-                                                 .sum
-
-        next unless count_denotations > 0
+        next unless annotation_collection.has_denotation?
       end
 
-      if jsonfile.nil? || (transaction_size + count_denotations) > MAX_SIZE_TRANSACTION
+      if jsonfile.nil? || (transaction_size + annotation_collection.number_of_denotations) > MAX_SIZE_TRANSACTION
         begin
           store_docs(project, sourcedb_sourceids_index)
           store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
@@ -42,8 +54,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       end
 
       unless jsonfile.nil?
-        annotation_transaction << annotation_collection
-        transaction_size += count_denotations
+        annotation_transaction << annotation_collection.annotations
+        transaction_size += annotation_collection.number_of_denotations
         sourcedb_sourceids_index[sourcedb] << sourceid
         if @job
           @job.update_attribute(:num_dones, i + 1)
@@ -167,6 +179,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       Annotation.normalize!(annotations)
     end
 
-    [annotation_collection, sourcedb, sourceid]
+    [AnnotationCollection.new(annotation_collection), sourcedb, sourceid]
   end
 end
