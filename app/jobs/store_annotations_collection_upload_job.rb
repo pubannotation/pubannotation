@@ -32,14 +32,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
       if jsonfile.nil? || (transaction_size + count_denotations) > MAX_SIZE_TRANSACTION
         begin
-          source_dbs_changed = store_docs(project, sourcedb_sourceids_index)
+          store_docs(project, sourcedb_sourceids_index)
           store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
-
-          if source_dbs_changed.present?
-            ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
-            ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-            source_dbs_changed.each { |sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}") }
-          end
         ensure
           annotation_transaction.clear
           transaction_size = 0
@@ -128,7 +122,11 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       end
     end
 
-    source_dbs_changed
+    if source_dbs_changed.present?
+      ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
+      ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
+      source_dbs_changed.each { |sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}") }
+    end
   end
 
   def read_filenames(filepath)
