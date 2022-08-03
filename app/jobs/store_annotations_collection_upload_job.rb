@@ -3,12 +3,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     attr_reader :annotations, :sourcedb, :sourceid
     def initialize(json_file_path)
       @annotations = load_from json_file_path
-
-      annotation = @annotations.first
-      raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotation[:sourcedb].present? && annotation[:sourceid].present?
-      @sourcedb = annotation[:sourcedb]
-      @sourceid = annotation[:sourceid]
-
+      set_sourcedb_and_sourceid @annotations
       validate_and_normalize! @annotations
     end
 
@@ -28,9 +23,15 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
       # To return the annotation in an array
       o.is_a?(Array) ? o : [o]
-
     rescue JSON::ParserError
       raise "[#{File.basename(json_file_path)}] JSON parse error. Not a valid JSON object."
+    end
+
+    def set_sourcedb_and_sourceid(annotations)
+      annotation = annotations.first
+      raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotation[:sourcedb].present? && annotation[:sourceid].present?
+      @sourcedb = annotation[:sourcedb]
+      @sourceid = annotation[:sourceid]
     end
 
     def validate_and_normalize!(annotations)
