@@ -20,7 +20,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       json = File.read(filename)
       o = begin
             JSON.parse(json, symbolize_names: true)
-          rescue => e
+          rescue JSON::ParserError
             raise "[#{File.basename(filename)}] JSON parse error. Not a valid JSON object."
           end
 
