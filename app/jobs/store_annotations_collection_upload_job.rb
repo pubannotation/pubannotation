@@ -2,7 +2,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   class AnnotationCollection
     attr_reader :annotations, :sourcedb, :sourceid
     def initialize(json_file)
-      @annotations = read_annotation(json_file)
+      @annotations = load(json_file)
       validation_and_normalization! @annotations
     end
 
@@ -16,7 +16,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     private
 
-    def read_annotation(filename)
+    def load(filename)
       json = File.read(filename)
       o = begin
             JSON.parse(json, symbolize_names: true)
