@@ -24,14 +24,13 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     def load_from(json_file_path)
       json = File.read(json_file_path)
-      o = begin
-            JSON.parse(json, symbolize_names: true)
-          rescue JSON::ParserError
-            raise "[#{File.basename(json_file_path)}] JSON parse error. Not a valid JSON object."
-          end
+      o = JSON.parse(json, symbolize_names: true)
 
       # To return the annotation in an array
       o.is_a?(Array) ? o : [o]
+
+    rescue JSON::ParserError
+      raise "[#{File.basename(json_file_path)}] JSON parse error. Not a valid JSON object."
     end
 
     def validate_and_normalize!(annotations)
