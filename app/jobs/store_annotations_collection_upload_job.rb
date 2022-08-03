@@ -3,6 +3,12 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     attr_reader :annotations, :sourcedb, :sourceid
     def initialize(json_file)
       @annotations = load(json_file)
+
+      annotation = @annotations.first
+      raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotation[:sourcedb].present? && annotation[:sourceid].present?
+      @sourcedb = annotation[:sourcedb]
+      @sourceid = annotation[:sourceid]
+
       validate_and_normalize! @annotations
     end
 
@@ -30,14 +36,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     def validate_and_normalize!(annotations)
       annotations.each do |annotation|
-        raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotation[:sourcedb].present? && annotation[:sourceid].present?
-
-        if @sourcedb.nil?
-          @sourcedb = annotation[:sourcedb]
-          @sourceid = annotation[:sourceid]
-        elsif (annotation[:sourcedb] != @sourcedb) || (annotation[:sourceid] != @sourceid)
-          raise ArgumentError, "One json file has to include annotations to the same document."
-        end
+        raise ArgumentError, "One json file has to include annotations to the same document." if (annotation[:sourcedb] != @sourcedb) || (annotation[:sourceid] != @sourceid)
 
         Annotation.normalize!(annotation)
       end
