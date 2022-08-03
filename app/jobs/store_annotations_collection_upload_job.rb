@@ -31,15 +31,16 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     def validation_and_normalization!(annotations)
       annotations.each do |annotations|
         raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotations[:sourcedb].present? && annotations[:sourceid].present?
+
         if @sourcedb.nil?
           @sourcedb = annotations[:sourcedb]
           @sourceid = annotations[:sourceid]
         elsif (annotations[:sourcedb] != @sourcedb) || (annotations[:sourceid] != @sourceid)
           raise ArgumentError, "One json file has to include annotations to the same document."
         end
+
         Annotation.normalize!(annotations)
       end
-
     end
   end
 
