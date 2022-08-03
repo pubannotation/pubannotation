@@ -3,7 +3,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     attr_reader :annotations, :sourcedb, :sourceid
     def initialize(json_file)
       @annotations = load(json_file)
-      validation_and_normalization! @annotations
+      validate_and_normalize! @annotations
     end
 
     def has_denotation?
@@ -28,7 +28,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       o.is_a?(Array) ? o : [o]
     end
 
-    def validation_and_normalization!(annotations)
+    def validate_and_normalize!(annotations)
       annotations.each do |annotation|
         raise ArgumentError, "sourcedb and/or sourceid not specified." unless annotation[:sourcedb].present? && annotation[:sourceid].present?
 
