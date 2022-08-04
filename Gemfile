@@ -49,7 +49,6 @@ gem 'rubyzip'
 gem 'zip-zip'
 gem 'daemons'
 gem 'backup'
-gem 'whenever', :require => false
 gem 'elasticsearch-model', '~> 5.1'
 gem 'elasticsearch-rails', '~> 5.1'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
