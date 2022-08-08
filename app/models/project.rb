@@ -410,7 +410,7 @@ class Project < ActiveRecord::Base
 
   def self.params_from_json(json_file)
     project_attributes = JSON.parse(File.read(json_file))
-    user = User.find_by_username(project_attributes['maintainer'])
+    user = User.find_by!(username: project_attributes['maintainer'])
     project_params = project_attributes.select { |key| Project.attr_accessible[:default].include?(key) }
   end
 
@@ -437,7 +437,7 @@ class Project < ActiveRecord::Base
   # returns the doc added to the project
   # returns nil if nothing is added
   def add_doc(sourcedb, sourceid)
-    doc = Doc.find_by_sourcedb_and_sourceid(sourcedb, sourceid)
+    doc = Doc.find_by!(sourcedb: sourcedb, sourceid: sourceid)
     unless doc.present?
       new_docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid])
       unless new_docs.present?
@@ -531,8 +531,8 @@ class Project < ActiveRecord::Base
       Relation.new(
         hid: a[:id],
         pred: a[:pred],
-        subj: Denotation.find_by_doc_id_and_project_id_and_hid(docid, self.id, a[:subj]),
-        obj: Denotation.find_by_doc_id_and_project_id_and_hid(docid, self.id, a[:obj]),
+        subj: Denotation.find_by!(doc_id: docid, project_id: self.id, hid: a[:subj]),
+        obj: Denotation.find_by!(doc_id: docid, project_id: self.id, hid: a[:obj]),
         project_id: self.id
       )
     end
@@ -543,7 +543,7 @@ class Project < ActiveRecord::Base
       Attrivute.new(
         hid: a[:id],
         pred: a[:pred],
-        subj: Denotation.find_by_doc_id_and_project_id_and_hid(docid, self.id, a[:subj]),
+        subj: Denotation.find_by!(doc_id: docid, project_id: self.id, hid: a[:subj]),
         obj: a[:obj],
         project_id: self.id
       )
@@ -553,10 +553,10 @@ class Project < ActiveRecord::Base
   def instantiate_hmodifications(hmodifications, docid)
     new_entries = hmodifications.map do |a|
 
-      obj = Denotation.find_by_doc_id_and_project_id_and_hid(docid, self.id, a[:obj])
+      obj = Denotation.find_by!(doc_id: docid, project_id: self.id, hid: a[:obj])
       if obj.nil?
         doc = Doc.find(docid)
-        doc.subcatrels.find_by_project_id_and_hid(self.id, a[:obj])
+        doc.subcatrels.find_by!(project_id: self.id, hid: a[:obj])
       end
       raise ArgumentError, "Invalid object of modification: #{a[:id]}" if obj.nil?
 
