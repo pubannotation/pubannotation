@@ -48,12 +48,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
         end
       end
 
-    rescue ActiveRecord::ActiveRecordError => e
-      if @job
-        @job.add_message body: e.message[0..250]
-      else
-        raise e
-      end
     rescue Exceptions::JobSuspendError
       raise
     rescue StandardError => e
