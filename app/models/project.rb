@@ -783,7 +783,17 @@ class Project < ActiveRecord::Base
         end
       end
 
-      aligned_collection += ann
+      ann.each_with_index do
+        unless _1[:denotations]
+          messages << {
+            sourcedb: _1[:sourcedb],
+            sourceid: _1[:sourceid],
+            body: "After alignment adjustment of the denotations, annotations with an index of #{_2} have no denotation."
+          }
+        end
+      end
+
+      aligned_collection += ann.reject { _1[:denotations].nil? }
     rescue StandardError => e
       messages << { sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message[0..250] }
     end
