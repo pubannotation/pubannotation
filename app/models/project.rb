@@ -783,17 +783,30 @@ class Project < ActiveRecord::Base
         end
       end
 
-      ann.each_with_index do
-        unless _1[:denotations]
+      aligned_collection += ann.filter.with_index do
+        if _1[:denotations] && _1[:attributes]
+          denotation_ids = _1[:denotations].map { |d| d[:id] }
+          subject_less_attributes = _1[:attributes].map { |a| a[:subj] }
+                                                   .filter { |subj| !denotation_ids.include? subj }
+          if subject_less_attributes.present?
+            messages << {
+              sourcedb: _1[:sourcedb],
+              sourceid: _1[:sourceid],
+              body: "After alignment adjustment of the denotations, annotations with an index of #{_2} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
+            }
+            false
+          else
+            true
+          end
+        else
           messages << {
             sourcedb: _1[:sourcedb],
             sourceid: _1[:sourceid],
             body: "After alignment adjustment of the denotations, annotations with an index of #{_2} have no denotation."
           }
+          false
         end
       end
-
-      aligned_collection += ann.reject { _1[:denotations].nil? }
     rescue StandardError => e
       messages << { sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message[0..250] }
     end
