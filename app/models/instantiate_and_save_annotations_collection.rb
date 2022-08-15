@@ -12,7 +12,7 @@ class InstantiateAndSaveAnnotationsCollection
                                          .to_a
 
         r_stat, r_stat_all = import_relations(project, annotations_collection, imported_denotations)
-        import_attributes(project, annotations_collection)
+        import_attributes(project, annotations_collection, imported_denotations)
         m_stat, m_stat_all = import_modifications(project, annotations_collection)
 
         d_stat.each do |did, d_num|
@@ -92,14 +92,14 @@ class InstantiateAndSaveAnnotationsCollection
       [r_stat, instances.length]
     end
 
-    def import_attributes(project, annotations_collection)
+    def import_attributes(project, annotations_collection, imported_denotations)
       instances = annotations_collection.filter { _1[:attributes].present? }
                                         .inject([]) do |result, ann|
         docid = ann[:docid]
         instances = ann[:attributes].map do |a|
           { hid: a[:id],
             pred: a[:pred],
-            subj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:subj]).id,
+            subj_id: get_id_of_denotation_from(imported_denotations, project, docid, a[:subj]),
             subj_type: 'Denotation',
             obj: a[:obj],
             project_id: project.id
