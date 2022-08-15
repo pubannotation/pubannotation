@@ -135,14 +135,12 @@ class InstantiateAndSaveAnnotationsCollection
         m_stat[docid] += ann[:modifications].length
       end
 
-      if instances.present?
-        r = Modification.import instances, validate: false
-        raise "modifications import error" unless r.failed_instances.empty?
-      end
+      return [m_stat, 0] unless instances.present?
 
-      m_stat_all = instances.length
+      r = Modification.import instances, validate: false
+      raise "modifications import error" unless r.failed_instances.empty?
 
-      [m_stat, m_stat_all]
+      [m_stat, instances.length]
     end
   end
 end
