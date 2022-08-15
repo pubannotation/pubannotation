@@ -79,14 +79,12 @@ class InstantiateAndSaveAnnotationsCollection
         r_stat[docid] += ann[:relations].length
       end
 
-      if instances.present?
-        r = Relation.import instances, validate: false
-        raise "relations import error" unless r.failed_instances.empty?
-      end
+      return [r_stat, 0] unless instances.present?
 
-      r_stat_all = instances.length
+      r = Relation.import instances, validate: false
+      raise "relations import error" unless r.failed_instances.empty?
 
-      [r_stat, r_stat_all]
+      [r_stat, instances.length]
     end
 
     def import_attributes(project, annotations_collection)
