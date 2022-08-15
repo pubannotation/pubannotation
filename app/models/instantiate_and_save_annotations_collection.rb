@@ -90,12 +90,10 @@ class InstantiateAndSaveAnnotationsCollection
     end
 
     def import_attributes(project, annotations_collection)
-      instances = []
-
-      annotations_collection.filter { _1[:attributes].present? }
-                            .each do |ann|
+      instances = annotations_collection.filter { _1[:attributes].present? }
+                                        .inject([]) do |result, ann|
         docid = ann[:docid]
-        instances += ann[:attributes].map do |a|
+        instances = ann[:attributes].map do |a|
           { hid: a[:id],
             pred: a[:pred],
             subj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:subj]).id,
@@ -104,6 +102,10 @@ class InstantiateAndSaveAnnotationsCollection
             project_id: project.id
           }
         end
+
+        result += instances
+
+        result
       end
 
       return unless instances.present?
