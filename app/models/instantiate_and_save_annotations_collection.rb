@@ -9,7 +9,8 @@ class InstantiateAndSaveAnnotationsCollection
 
         d_stat, d_stat_all = import_denotations(project, annotations_collection)
         imported_denotations = Denotation.where(project_id: project.id, doc_id: annotations_collection.map { _1[:docid] })
-                                         .to_a
+                                         .map { ["#{_1.doc_id}#{_1.project_id}#{_1.hid}", _1.id ] }
+                                         .to_h
 
         r_stat, r_stat_all = import_relations(project, annotations_collection, imported_denotations)
         import_attributes(project, annotations_collection, imported_denotations)
@@ -152,7 +153,7 @@ class InstantiateAndSaveAnnotationsCollection
     end
 
     def get_id_of_denotation_from(imported_denotations, project, docid, hid)
-      imported_denotations.find { _1.doc_id == docid && _1.project_id == project.id && _1.hid == hid }.id
+      imported_denotations["#{docid}#{project.id}#{hid}"]
     end
   end
 end
