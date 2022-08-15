@@ -8,7 +8,10 @@ class InstantiateAndSaveAnnotationsCollection
         end
 
         d_stat, d_stat_all = import_denotations(project, annotations_collection)
-        r_stat, r_stat_all = import_relations(project, annotations_collection)
+        imported_denotations = Denotation.where(project_id: project.id, doc_id: annotations_collection.map { _1[:docid] })
+                                         .to_a
+
+        r_stat, r_stat_all = import_relations(project, annotations_collection, imported_denotations)
         import_attributes(project, annotations_collection)
         m_stat, m_stat_all = import_modifications(project, annotations_collection)
 
@@ -60,14 +63,14 @@ class InstantiateAndSaveAnnotationsCollection
       [d_stat, instances.length]
     end
 
-    def import_relations(project, annotations_collection)
+    def import_relations(project, annotations_collection, imported_denotations)
       r_stat, instances = annotations_collection.filter { _1[:relations].present? }
                                                 .inject([Hash.new(0), []]) do |result, ann|
         docid = ann[:docid]
         instances = ann[:relations].map do |a|
           { hid: a[:id],
             pred: a[:pred],
-            subj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:subj]).id,
+            subj_id: get_id_of_denotation_from(imported_denotations, project, docid, a[:subj]),
             subj_type: 'Denotation',
             obj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:obj]).id,
             obj_type: 'Denotation',
@@ -146,6 +149,10 @@ class InstantiateAndSaveAnnotationsCollection
       raise "modifications import error" unless r.failed_instances.empty?
 
       [m_stat, instances.length]
+    end
+
+    def get_id_of_denotation_from(imported_denotations, project, docid, hid)
+      imported_denotations.find { _1.doc_id == docid && _1.project_id == project.id && _1.hid == hid }.id
     end
   end
 end
