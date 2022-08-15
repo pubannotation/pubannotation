@@ -11,7 +11,7 @@ class InstantiateAndSaveAnnotationsCollection
 
         r_stat, r_stat_all = import_relations(project, annotations_collection, imported_denotations)
         import_attributes(project, annotations_collection, imported_denotations)
-        m_stat, m_stat_all = import_modifications(project, annotations_collection)
+        m_stat, m_stat_all = import_modifications(project, annotations_collection, imported_denotations)
 
         d_stat.each do |did, d_num|
           r_num = r_stat[did] ||= 0
@@ -117,16 +117,14 @@ class InstantiateAndSaveAnnotationsCollection
       raise "attribute import error" unless r.failed_instances.empty?
     end
 
-    def import_modifications(project, annotations_collection)
+    def import_modifications(project, annotations_collection, imported_denotations)
       m_stat, instances = annotations_collection.filter { _1[:modifications].present? }
                                                 .inject([Hash.new(0), []]) do |result, ann|
         docid = ann[:docid]
         instances = ann[:modifications].map do |a|
-          obj = Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:obj])
-
           { hid: a[:id],
             pred: a[:pred],
-            obj_id: obj.id,
+            obj_id: get_id_of_denotation_from(imported_denotations, project, docid, a[:obj]),
             obj_type: 'Denotation',
             project_id: project.id
           }
