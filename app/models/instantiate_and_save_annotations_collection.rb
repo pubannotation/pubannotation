@@ -61,13 +61,10 @@ class InstantiateAndSaveAnnotationsCollection
     end
 
     def import_relations(project, annotations_collection)
-      r_stat = Hash.new(0)
-      instances = []
-
-      annotations_collection.filter { _1[:relations].present? }
-                            .each do |ann|
+      r_stat, instances = annotations_collection.filter { _1[:relations].present? }
+                                                .inject([Hash.new(0), []]) do |result, ann|
         docid = ann[:docid]
-        instances += ann[:relations].map do |a|
+        instances = ann[:relations].map do |a|
           { hid: a[:id],
             pred: a[:pred],
             subj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:subj]).id,
@@ -77,7 +74,11 @@ class InstantiateAndSaveAnnotationsCollection
             project_id: project.id
           }
         end
-        r_stat[docid] += ann[:relations].length
+
+        result[0][docid] += instances.length
+        result[1] += instances
+
+        result
       end
 
       return [r_stat, 0] unless instances.present?
