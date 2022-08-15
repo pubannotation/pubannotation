@@ -115,13 +115,10 @@ class InstantiateAndSaveAnnotationsCollection
     end
 
     def import_modifications(project, annotations_collection)
-      m_stat = Hash.new(0)
-      instances = []
-
-      annotations_collection.filter { _1[:modifications].present? }
-                            .each do |ann|
+      m_stat, instances = annotations_collection.filter { _1[:modifications].present? }
+                                                .inject([Hash.new(0), []]) do |result, ann|
         docid = ann[:docid]
-        instances += ann[:modifications].map do |a|
+        instances = ann[:modifications].map do |a|
           obj = Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:obj])
           if obj.nil?
             doc = Doc.find(docid)
@@ -136,7 +133,11 @@ class InstantiateAndSaveAnnotationsCollection
             project_id: project.id
           }
         end
-        m_stat[docid] += ann[:modifications].length
+
+        result[0][docid] += instances.length
+        result[1] += instances
+
+        result
       end
 
       return [m_stat, 0] unless instances.present?
