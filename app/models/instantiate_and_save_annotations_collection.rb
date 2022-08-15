@@ -90,8 +90,8 @@ class InstantiateAndSaveAnnotationsCollection
     def import_attributes(project, annotations_collection)
       instances = []
 
-      annotations_collection.each do |ann|
-        next unless ann[:attributes].present?
+      annotations_collection.filter { _1[:attributes].present? }
+                            .each do |ann|
         docid = ann[:docid]
         instances += ann[:attributes].map do |a|
           { hid: a[:id],
