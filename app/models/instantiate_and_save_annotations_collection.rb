@@ -63,8 +63,8 @@ class InstantiateAndSaveAnnotationsCollection
       r_stat = Hash.new(0)
       instances = []
 
-      annotations_collection.each do |ann|
-        next unless ann[:relations].present?
+      annotations_collection.filter { _1[:relations].present? }
+                            .each do |ann|
         docid = ann[:docid]
         instances += ann[:relations].map do |a|
           { hid: a[:id],
