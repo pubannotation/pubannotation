@@ -114,8 +114,8 @@ class InstantiateAndSaveAnnotationsCollection
       m_stat = Hash.new(0)
       instances = []
 
-      annotations_collection.each do |ann|
-        next unless ann[:modifications].present?
+      annotations_collection.filter { _1[:modifications].present? }
+                            .each do |ann|
         docid = ann[:docid]
         instances += ann[:modifications].map do |a|
           obj = Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:obj])
