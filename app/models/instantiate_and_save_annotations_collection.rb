@@ -72,7 +72,7 @@ class InstantiateAndSaveAnnotationsCollection
             pred: a[:pred],
             subj_id: get_id_of_denotation_from(imported_denotations, project, docid, a[:subj]),
             subj_type: 'Denotation',
-            obj_id: Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:obj]).id,
+            obj_id: get_id_of_denotation_from(imported_denotations, project, docid, a[:obj]),
             obj_type: 'Denotation',
             project_id: project.id
           }
