@@ -7,10 +7,7 @@ class InstantiateAndSaveAnnotationsCollection
           ann[:docid] = Doc.select(:id).where(sourcedb: ann[:sourcedb], sourceid: ann[:sourceid]).first.id
         end
 
-        d_stat, d_stat_all = import_denotations(project, annotations_collection)
-        imported_denotations = Denotation.where(project_id: project.id, doc_id: annotations_collection.map { _1[:docid] })
-                                         .map { ["#{_1.doc_id}#{_1.project_id}#{_1.hid}", _1.id ] }
-                                         .to_h
+        d_stat, d_stat_all, imported_denotations = import_denotations(project, annotations_collection)
 
         r_stat, r_stat_all = import_relations(project, annotations_collection, imported_denotations)
         import_attributes(project, annotations_collection, imported_denotations)
@@ -56,12 +53,14 @@ class InstantiateAndSaveAnnotationsCollection
         result
       end
 
-      return [d_stat, 0] unless instances.present?
+      return [d_stat, 0, nil] unless instances.present?
 
       r = Denotation.import instances, validate: false
       raise "denotations import error" unless r.failed_instances.empty?
+      import_denotations = instances.map.with_index { |d, index| ["#{d[:doc_id]}#{d[:project_id]}#{d[:hid]}", r.ids[index]] }
+                                    .to_h
 
-      [d_stat, instances.length]
+      [d_stat, instances.length, import_denotations]
     end
 
     def import_relations(project, annotations_collection, imported_denotations)
