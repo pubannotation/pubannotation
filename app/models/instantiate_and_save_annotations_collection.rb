@@ -123,11 +123,6 @@ class InstantiateAndSaveAnnotationsCollection
         docid = ann[:docid]
         instances = ann[:modifications].map do |a|
           obj = Denotation.find_by!(doc_id: docid, project_id: project.id, hid: a[:obj])
-          if obj.nil?
-            doc = Doc.find(docid)
-            doc.subcatrels.find_by_project_id_and_hid(project.id, a[:obj])
-          end
-          raise ArgumentError, "Invalid object of modification: #{a[:id]}" if obj.nil?
 
           { hid: a[:id],
             pred: a[:pred],
