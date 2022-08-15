@@ -104,10 +104,10 @@ class InstantiateAndSaveAnnotationsCollection
         end
       end
 
-      if instances.present?
-        r = Attrivute.import instances, validate: false
-        raise "attribute import error" unless r.failed_instances.empty?
-      end
+      return unless instances.present?
+
+      r = Attrivute.import instances, validate: false
+      raise "attribute import error" unless r.failed_instances.empty?
     end
 
     def import_modifications(project, annotations_collection)
