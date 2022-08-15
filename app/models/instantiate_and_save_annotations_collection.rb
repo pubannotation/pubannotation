@@ -33,13 +33,10 @@ class InstantiateAndSaveAnnotationsCollection
     private
 
     def import_denotations(project, annotations_collection)
-      d_stat = Hash.new(0)
-      instances = []
-
-      annotations_collection.filter { _1[:denotations].present? }
-                            .each do |ann|
+      d_stat, instances = annotations_collection.filter { _1[:denotations].present? }
+                                                .inject([Hash.new(0), []]) do |result, ann|
         docid = ann[:docid]
-        instances += ann[:denotations].map do |a|
+        instances = ann[:denotations].map do |a|
           { hid: a[:id],
             begin: a[:span][:begin],
             end: a[:span][:end],
@@ -48,7 +45,11 @@ class InstantiateAndSaveAnnotationsCollection
             doc_id: docid,
             is_block: a[:block_p] }
         end
-        d_stat[docid] += ann[:denotations].length
+
+        result[0][docid] += instances.length
+        result[1] += instances
+
+        result
       end
 
       return [d_stat, 0] unless instances.present?
