@@ -24,8 +24,9 @@ class InstantiateAndSaveAnnotationsCollection
           ActiveRecord::Base.connection.exec_query("UPDATE project_docs SET annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{project.id} AND doc_id=#{ann[:docid]}")
         end
 
-        ActiveRecord::Base.connection.execute("UPDATE projects SET denotations_num = denotations_num + #{d_stat_all}, relations_num = relations_num + #{r_stat_all}, modifications_num = modifications_num + #{m_stat_all} WHERE id=#{project.id}")
-
+        project.increment('denotations_num', d_stat_all)
+        project.increment('relations_num', r_stat_all)
+        project.increment('modifications_num', m_stat_all)
         project.update_annotations_updated_at
         project.update_updated_at
       end
