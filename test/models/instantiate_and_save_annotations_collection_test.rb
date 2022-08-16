@@ -55,6 +55,7 @@ class InstantiateAndSaveAnnotationsCollectionTest < ActiveSupport::TestCase
     assert_equal 2, @project.modifications_num
     assert_equal current, @project.updated_at
     assert_equal current, @project.annotations_updated_at
+    assert_equal current, @project.project_docs.first.annotations_updated_at
 
     # Confirm imported annotations
     assert_equal 'd1', Denotation.first.hid
