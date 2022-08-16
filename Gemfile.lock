@@ -83,8 +83,6 @@ GEM
     activerecord (7.0.3)
       activemodel (= 7.0.3)
       activesupport (= 7.0.3)
-    activerecord-import (1.4.0)
-      activerecord (>= 4.2)
     activestorage (7.0.3)
       actionpack (= 7.0.3)
       activejob (= 7.0.3)
@@ -386,7 +384,6 @@ PLATFORMS
 
 DEPENDENCIES
   activejob-cancel
-  activerecord-import
   bootsnap (>= 1.1.0)
   coffee-rails
   color-generator

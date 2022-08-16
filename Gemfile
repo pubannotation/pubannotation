@@ -5,7 +5,6 @@ ruby '3.1.2'
 
 gem 'rails', '7.0.3'
 gem 'rake'
-gem 'activerecord-import'
 
 gem 'puma', '~> 5.6.4'
 
