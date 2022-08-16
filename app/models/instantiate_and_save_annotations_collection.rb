@@ -4,7 +4,7 @@ class InstantiateAndSaveAnnotationsCollection
       ActiveRecord::Base.transaction do
         # record document id
         annotations_collection.each do |ann|
-          ann[:docid] = Doc.select(:id).where(sourcedb: ann[:sourcedb], sourceid: ann[:sourceid]).first.id
+          ann[:docid] = Doc.where(sourcedb: ann[:sourcedb], sourceid: ann[:sourceid]).pluck(:id).first
         end
 
         d_stat, d_stat_all, imported_denotations = import_denotations(project, annotations_collection)
