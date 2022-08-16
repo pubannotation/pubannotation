@@ -13,14 +13,16 @@ class InstantiateAndSaveAnnotationsCollection
         import_attributes(project, annotations_collection, imported_denotations)
         m_stat, m_stat_all = import_modifications(project, annotations_collection, imported_denotations)
 
-        d_stat.each do |did, d_num|
-          r_num = r_stat[did] ||= 0
-          m_num = m_stat[did] ||= 0
+        doc_ids = Set.new annotations_collection.map { _1[:docid] }
+        doc_ids.each do |did|
+          d_num = d_stat[did] || 0
+          r_num = r_stat[did] || 0
+          m_num = m_stat[did] || 0
           ActiveRecord::Base.connection.exec_query("UPDATE project_docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE project_id=#{project.id} AND doc_id=#{did}")
           ActiveRecord::Base.connection.execute("UPDATE docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE id=#{did}")
         end
 
-        project.project_docs.where(doc_id: annotations_collection.map{_1[:docid]}).update_all(annotations_updated_at: DateTime.now)
+        project.project_docs.where(doc_id: doc_ids).update_all(annotations_updated_at: DateTime.now)
         project.increment('denotations_num', d_stat_all)
         project.increment('relations_num', r_stat_all)
         project.increment('modifications_num', m_stat_all)
