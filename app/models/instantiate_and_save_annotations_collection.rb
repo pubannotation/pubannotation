@@ -26,8 +26,9 @@ class InstantiateAndSaveAnnotationsCollection
           project_doc.increment('relations_num', r_num)
           project_doc.increment('modifications_num', m_num)
           project_doc.update_annotations_updated_at
-
-          ActiveRecord::Base.connection.execute("UPDATE docs SET denotations_num = denotations_num + #{d_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} WHERE id=#{did}")
+          project_doc.doc.increment('denotations_num', d_num)
+          project_doc.doc.increment('relations_num', r_num)
+          project_doc.doc.increment('modifications_num', m_num)
         end
 
         project.increment('denotations_num', d_stat_all)
