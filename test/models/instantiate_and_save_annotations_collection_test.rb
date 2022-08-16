@@ -53,6 +53,9 @@ class InstantiateAndSaveAnnotationsCollectionTest < ActiveSupport::TestCase
     assert_equal 2, @project.denotations_num
     assert_equal 2, @project.relations_num
     assert_equal 2, @project.modifications_num
+    assert_equal 2, @project.project_docs.first.denotations_num
+    assert_equal 2, @project.project_docs.first.relations_num
+    assert_equal 2, @project.project_docs.first.modifications_num
     assert_equal current, @project.updated_at
     assert_equal current, @project.annotations_updated_at
     assert_equal current, @project.project_docs.first.annotations_updated_at
