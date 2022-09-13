@@ -1,7 +1,28 @@
+class AnnotationTransaction
+  MAX_SIZE_TRANSACTION = 5000
+
+  attr_reader :sourcedb_sourceids_index, :annotation_transaction
+
+  def initialize
+    @annotation_transaction = []
+    @transaction_size = 0
+    @sourcedb_sourceids_index = Hash.new(Set.new)
+  end
+
+  def <<(annotation_collection)
+    @annotation_transaction << annotation_collection.annotations
+    @transaction_size += annotation_collection.number_of_denotations
+    @sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
+  end
+
+  def enough?
+    @transaction_size > MAX_SIZE_TRANSACTION
+  end
+end
+
 class StoreAnnotationsCollectionUploadJob < ApplicationJob
   queue_as :low_priority
 
-  MAX_SIZE_TRANSACTION = 5000
 
   def perform(project, filepath, options)
     # read the filenames of json files into the array filenames
@@ -16,14 +37,12 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     @total_num_sequenced = 0
     @longest_processing_time = 0
 
-    annotation_transaction = []
-    transaction_size = 0
-    sourcedb_sourceids_index = Hash.new(Set.new)
+    annotation_transaction = AnnotationTransaction.new
 
     (filenames << nil).each_with_index do |jsonfile, i|
       # I found the guard, so I'll end the loop.
       if jsonfile.nil?
-        store(project, options, sourcedb_sourceids_index, annotation_transaction)
+        store(project, options, annotation_transaction)
         break
       end
 
@@ -33,14 +52,12 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       next unless annotation_collection.has_denotation?
 
       # Add annotations to transaction.
-      annotation_transaction << annotation_collection.annotations
-      transaction_size += annotation_collection.number_of_denotations
-      sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
+      annotation_transaction << annotation_collection
 
       # Save annotations when enough transactions have been stored.
-      if transaction_size > MAX_SIZE_TRANSACTION
-        store(project, options, sourcedb_sourceids_index, annotation_transaction)
-        transaction_size = 0
+      if annotation_transaction.enough?
+        store(project, options, annotation_transaction)
+        annotation_transaction = AnnotationTransaction.new
       end
 
       if @job
@@ -76,20 +93,17 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
   private
 
-  def store(project, options, sourcedb_sourceids_index, annotation_transaction)
-    store_docs(project, sourcedb_sourceids_index)
-    store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
-ensure
-    annotation_transaction.clear
-    sourcedb_sourceids_index.clear
+  def store(project, options, annotation_transaction)
+    store_docs(project, annotation_transaction.sourcedb_sourceids_index)
+    store_annotations(project, annotation_transaction, options)
   end
 
-  def store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
+  def store_annotations(project, annotation_transaction, options)
     timer_start = Time.now
-    messages = project.store_annotations_collection(annotation_transaction, options)
+    messages = project.store_annotations_collection(annotation_transaction.annotation_transaction, options)
     ptime = Time.now - timer_start
     if options[:debug].present? && ptime > @longest_processing_time
-      doc_specs = sourcedb_sourceids_index.collect { |sourcedb, sourceids| "#{sourcedb}-#{sourceids.to_a.join(",")}" }.join(", ")
+      doc_specs = annotation_transaction.sourcedb_sourceids_index.collect { |sourcedb, sourceids| "#{sourcedb}-#{sourceids.to_a.join(",")}" }.join(", ")
       @job.add_message body: "Longest processing time so far (#{ptime}): #{doc_specs}"
       @longest_processing_time = ptime
     end
