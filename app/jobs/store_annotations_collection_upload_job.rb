@@ -32,16 +32,16 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       # No denotation to add to transaction.
       next unless annotation_collection.has_denotation?
 
-      # Save annotations when enough transactions have been stored.
-      if (transaction_size + annotation_collection.number_of_denotations) > MAX_SIZE_TRANSACTION
-        store(project, options, sourcedb_sourceids_index, annotation_transaction)
-        transaction_size = 0
-      end
-
       # Add annotations to transaction.
       annotation_transaction << annotation_collection.annotations
       transaction_size += annotation_collection.number_of_denotations
       sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
+
+      # Save annotations when enough transactions have been stored.
+      if transaction_size > MAX_SIZE_TRANSACTION
+        store(project, options, sourcedb_sourceids_index, annotation_transaction)
+        transaction_size = 0
+      end
 
       if @job
         @job.update_attribute(:num_dones, i + 1)
