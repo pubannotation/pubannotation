@@ -21,27 +21,34 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     sourcedb_sourceids_index = Hash.new(Set.new)
 
     (filenames << nil).each_with_index do |jsonfile, i|
-      if jsonfile.present?
-        annotation_collection = AnnotationCollection.new(jsonfile)
+      if jsonfile.nil?
+        store(project, options, sourcedb_sourceids_index, annotation_transaction)
+        transaction_size = 0
 
-        next unless annotation_collection.has_denotation?
+        # I found the guard, so I'll end the loop.
+        break
       end
 
-      if jsonfile.nil? || (transaction_size + annotation_collection.number_of_denotations) > MAX_SIZE_TRANSACTION
+      annotation_collection = AnnotationCollection.new(jsonfile)
+
+      # No denotation to add to transaction.
+      next unless annotation_collection.has_denotation?
+
+      # Save annotations when enough transactions have been stored.
+      if (transaction_size + annotation_collection.number_of_denotations) > MAX_SIZE_TRANSACTION
         store(project, options, sourcedb_sourceids_index, annotation_transaction)
         transaction_size = 0
       end
 
-      if jsonfile.present?
-        annotation_transaction << annotation_collection.annotations
-        transaction_size += annotation_collection.number_of_denotations
-        sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
-        if @job
-          @job.update_attribute(:num_dones, i + 1)
-          check_suspend_flag
-        end
-      end
+      # Add annotations to transaction.
+      annotation_transaction << annotation_collection.annotations
+      transaction_size += annotation_collection.number_of_denotations
+      sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
 
+      if @job
+        @job.update_attribute(:num_dones, i + 1)
+        check_suspend_flag
+      end
     rescue Exceptions::JobSuspendError
       raise
     rescue StandardError => e
