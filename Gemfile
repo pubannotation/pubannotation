@@ -56,3 +56,5 @@ gem 'diff-lcs'
 gem 'listen'
 gem 'activejob-cancel'
 gem 'sidekiq'
+
+gem "foreman", "~> 0.87.2"

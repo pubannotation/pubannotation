@@ -155,6 +155,7 @@ GEM
     ffi (1.15.5)
     font-awesome-rails (4.7.0.8)
       railties (>= 3.2, < 8.0)
+    foreman (0.87.2)
     formatador (1.1.0)
     friendly_id (5.4.2)
       activerecord (>= 4.0.0)
@@ -395,6 +396,7 @@ DEPENDENCIES
   elasticsearch-rails (~> 5.1)
   facebox-rails!
   font-awesome-rails
+  foreman (~> 0.87.2)
   friendly_id
   guard
   guard-livereload
