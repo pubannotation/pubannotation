@@ -21,7 +21,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     sourcedb_sourceids_index = Hash.new(Set.new)
 
     (filenames << nil).each_with_index do |jsonfile, i|
-      unless jsonfile.nil?
+      if jsonfile.present?
         annotation_collection = AnnotationCollection.new(jsonfile)
 
         next unless annotation_collection.has_denotation?
@@ -38,7 +38,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
         end
       end
 
-      unless jsonfile.nil?
+      if jsonfile.present?
         annotation_transaction << annotation_collection.annotations
         transaction_size += annotation_collection.number_of_denotations
         sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
