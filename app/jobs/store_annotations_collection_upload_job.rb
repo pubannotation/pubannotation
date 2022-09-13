@@ -28,14 +28,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       end
 
       if jsonfile.nil? || (transaction_size + annotation_collection.number_of_denotations) > MAX_SIZE_TRANSACTION
-        begin
-          store_docs(project, sourcedb_sourceids_index)
-          store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
-        ensure
-          annotation_transaction.clear
-          transaction_size = 0
-          sourcedb_sourceids_index.clear
-        end
+        store(project, options, sourcedb_sourceids_index, annotation_transaction)
+        transaction_size = 0
       end
 
       if jsonfile.present?
@@ -76,6 +70,14 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   end
 
   private
+
+  def store(project, options, sourcedb_sourceids_index, annotation_transaction)
+    store_docs(project, sourcedb_sourceids_index)
+    store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
+ensure
+    annotation_transaction.clear
+    sourcedb_sourceids_index.clear
+  end
 
   def store_annotations(project, sourcedb_sourceids_index, annotation_transaction, options)
     timer_start = Time.now
