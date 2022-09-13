@@ -21,11 +21,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     sourcedb_sourceids_index = Hash.new(Set.new)
 
     (filenames << nil).each_with_index do |jsonfile, i|
+      # I found the guard, so I'll end the loop.
       if jsonfile.nil?
         store(project, options, sourcedb_sourceids_index, annotation_transaction)
-        transaction_size = 0
-
-        # I found the guard, so I'll end the loop.
         break
       end
 
