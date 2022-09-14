@@ -99,15 +99,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   end
 
   def store_annotations(project, annotation_transaction, options)
-    timer_start = Time.now
     messages = project.store_annotations_collection(annotation_transaction.annotation_transaction, options)
-    ptime = Time.now - timer_start
-    if options[:debug].present? && ptime > @longest_processing_time
-      doc_specs = annotation_transaction.sourcedb_sourceids_index.collect { |sourcedb, sourceids| "#{sourcedb}-#{sourceids.to_a.join(",")}" }.join(", ")
-      @job.add_message body: "Longest processing time so far (#{ptime}): #{doc_specs}"
-      @longest_processing_time = ptime
-    end
-
     if messages.present?
       if @job
         messages.each do |m|
