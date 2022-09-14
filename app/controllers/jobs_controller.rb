@@ -30,6 +30,7 @@ class JobsController < ApplicationController
 
 			@messages_grid = initialize_grid(@job.messages,
 				order: :created_at,
+				order_direction: :desc,
 				per_page: 10
 			)
 
