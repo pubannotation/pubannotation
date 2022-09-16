@@ -752,6 +752,10 @@ class Project < ActiveRecord::Base
       end
     end.reject { |e| e[1].nil? }
 
+    annotations_collection_with_doc.each do |annotations, doc|
+      messages += Annotation.prepare_annotations!(annotations, doc, options)
+    end
+
     num_annotations_with_doc = annotations_collection_with_doc.count
 
     # skip option
@@ -760,10 +764,6 @@ class Project < ActiveRecord::Base
         ProjectDoc.where(project_id: id, doc_id: doc.id).pluck(:denotations_num).first == 0
       end
       num_skipped = num_annotations_with_doc - annotations_collection_with_doc.count
-    end
-
-    annotations_collection_with_doc.each do |annotations, doc|
-      messages += Annotation.prepare_annotations!(annotations, doc, options)
     end
 
     aligned_collection = []
