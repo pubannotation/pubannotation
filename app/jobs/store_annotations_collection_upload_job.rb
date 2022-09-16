@@ -30,7 +30,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
       # Save annotations when enough transactions have been stored.
       if annotation_transaction.enough?
-        store(project, options, annotation_transaction)
+        @total_num_sequenced += store(project, options, annotation_transaction)
         annotation_transaction = AnnotationTransaction.new
       end
 
@@ -68,8 +68,10 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   private
 
   def store(project, options, annotation_transaction)
-    @total_num_sequenced += store_docs(project, annotation_transaction.sourcedb_sourceids_index)
+    num_sequenced = store_docs(project, annotation_transaction.sourcedb_sourceids_index)
     store_annotations(project, annotation_transaction, options)
+
+    num_sequenced
   end
 
   def store_annotations(project, annotation_transaction, options)
