@@ -11,7 +11,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     end
 
     # initialize necessary variables
-    @total_num_sequenced = 0
+    @is_sequenced = false
     @longest_processing_time = 0
 
     annotation_transaction = AnnotationTransaction.new
@@ -30,7 +30,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
       # Save annotations when enough transactions have been stored.
       if annotation_transaction.enough?
-        @total_num_sequenced += store(project, options, annotation_transaction)
+        num_sequenced = store(project, options, annotation_transaction)
+        @is_sequenced = true if num_sequenced > 0
+
         annotation_transaction = AnnotationTransaction.new
       end
 
@@ -51,7 +53,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       end
     end
 
-    if @total_num_sequenced > 0
+    if @is_sequenced
       ActionController::Base.new.expire_fragment('sourcedb_counts')
       ActionController::Base.new.expire_fragment('docs_count')
     end
