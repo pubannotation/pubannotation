@@ -68,7 +68,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   private
 
   def store(project, options, annotation_transaction)
-    store_docs(project, annotation_transaction.sourcedb_sourceids_index)
+    @total_num_sequenced += store_docs(project, annotation_transaction.sourcedb_sourceids_index)
     store_annotations(project, annotation_transaction, options)
   end
 
@@ -87,11 +87,12 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
   def store_docs(project, sourcedb_sourceids_index)
     source_dbs_changed = []
+    total_num_sequenced = 0
 
     sourcedb_sourceids_index.each do |sourcedb, source_ids|
       num_added, num_sequenced, _, messages = project.add_docs(sourcedb, source_ids.to_a)
       source_dbs_changed << sourcedb if num_added > 0
-      @total_num_sequenced += num_sequenced
+      total_num_sequenced += num_sequenced
       if @job
         messages.each do |message|
           @job.add_message(message.class == Hash ? message : { body: message[0..250] })
@@ -106,6 +107,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
       source_dbs_changed.each { |sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}") }
     end
+
+    total_num_sequenced
   end
 
   def read_filenames(filepath)
