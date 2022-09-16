@@ -7,16 +7,7 @@ class AnnotationCollection
     validate_and_normalize! @annotations
   end
 
-  def has_denotation?
-    number_of_denotations > 0
-  end
-
   private
-
-  def number_of_denotations
-    @annotations.map { _1[:denotations].present? ? _1[:denotations].size : 0 }
-                .sum
-  end
 
   def load_from(json_file_path)
     json = File.read(json_file_path)

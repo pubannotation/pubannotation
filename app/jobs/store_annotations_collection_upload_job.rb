@@ -25,9 +25,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
       annotation_collection = AnnotationCollection.new(jsonfile)
 
-      # No denotation to add to transaction.
-      next unless annotation_collection.has_denotation?
-
       # Add annotations to transaction.
       annotation_transaction << annotation_collection
 
