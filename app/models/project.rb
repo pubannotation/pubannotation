@@ -729,23 +729,8 @@ class Project < ActiveRecord::Base
     num_skipped = 0
 
     # To find the doc for each annotation object
-    annotations_collection_with_doc = annotations_collection.collect do |annotations|
-      source = get_source_of(annotations)
-
-      docs = Doc.where(sourcedb: source.db, sourceid: source.id)
-
-      if docs.count == 1
-        [annotations, docs.first]
-      else
-        error_message = if docs.empty?
-                          'Document does not exist.'
-                        else
-                          'Multiple entries of the document.'
-                        end
-        messages << { sourcedb: source.db, sourceid: source.id, body: error_message[0..250] }
-        [annotations, nil]
-      end
-    end.reject { |e| e[1].nil? }
+    annotations_collection_with_doc, error_messages = find_doc_for(annotations_collection)
+    messages << error_messages if error_messages.present?
 
     annotations_collection_with_doc.each do |annotations, doc|
       messages += Annotation.prepare_annotations!(annotations, doc, options)
@@ -953,6 +938,30 @@ class Project < ActiveRecord::Base
   end
 
   private
+
+  def find_doc_for(annotations_collection)
+    messages = []
+
+    annotations_collection_with_doc = annotations_collection.collect do |annotations|
+      source = get_source_of(annotations)
+
+      docs = Doc.where(sourcedb: source.db, sourceid: source.id)
+
+      if docs.count == 1
+        [annotations, docs.first]
+      else
+        error_message = if docs.empty?
+                          'Document does not exist.'
+                        else
+                          'Multiple entries of the document.'
+                        end
+        messages << { sourcedb: source.db, sourceid: source.id, body: error_message[0..250] }
+        [annotations, nil]
+      end
+    end.reject { |e| e[1].nil? }
+
+    [annotations_collection_with_doc, messages]
+  end
 
   def get_source_of(annotations)
     if annotations.is_a? Array
