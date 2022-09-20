@@ -728,10 +728,6 @@ class Project < ActiveRecord::Base
     # To find the doc for each annotation object
     annotations_collection_with_doc, messages = find_doc_for(annotations_collection)
 
-    annotations_collection_with_doc.each do |annotations, doc|
-      messages += Annotation.prepare_annotations!(annotations, doc, options)
-    end
-
     # skip option
     num_skipped = if options[:mode] == 'skip'
       num_annotations_with_doc = annotations_collection_with_doc.count
@@ -742,6 +738,10 @@ class Project < ActiveRecord::Base
       num_annotations_with_doc - annotations_collection_with_doc.count
     else
       0
+    end
+
+    annotations_collection_with_doc.each do |annotations, doc|
+      messages += Annotation.prepare_annotations!(annotations, doc, options)
     end
 
     aligned_collection = []
