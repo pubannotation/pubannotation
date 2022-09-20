@@ -725,11 +725,8 @@ class Project < ActiveRecord::Base
   # - annotations are already normal, and
   # - documents exist in the database
   def store_annotations_collection(annotations_collection, options)
-    messages = []
-
     # To find the doc for each annotation object
-    annotations_collection_with_doc, error_messages = find_doc_for(annotations_collection)
-    messages << error_messages if error_messages.present?
+    annotations_collection_with_doc, messages = find_doc_for(annotations_collection)
 
     annotations_collection_with_doc.each do |annotations, doc|
       messages += Annotation.prepare_annotations!(annotations, doc, options)
