@@ -730,7 +730,7 @@ class Project < ActiveRecord::Base
 
     # To find the doc for each annotation object
     annotations_collection_with_doc = annotations_collection.collect do |annotations|
-      source = get_sourcedb_sourceid_of(annotations)
+      source = get_source_of(annotations)
 
       docs = Doc.where(sourcedb: source.db, sourceid: source.id)
 
@@ -954,7 +954,7 @@ class Project < ActiveRecord::Base
 
   private
 
-  def get_sourcedb_sourceid_of(annotations)
+  def get_source_of(annotations)
     if annotations.is_a? Array
       a = annotations.first
       DocumentSource.new(a[:sourcedb], a[:sourceid])
