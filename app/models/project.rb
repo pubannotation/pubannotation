@@ -726,7 +726,6 @@ class Project < ActiveRecord::Base
   # - documents exist in the database
   def store_annotations_collection(annotations_collection, options)
     messages = []
-    num_skipped = 0
 
     # To find the doc for each annotation object
     annotations_collection_with_doc, error_messages = find_doc_for(annotations_collection)
@@ -736,14 +735,16 @@ class Project < ActiveRecord::Base
       messages += Annotation.prepare_annotations!(annotations, doc, options)
     end
 
-    num_annotations_with_doc = annotations_collection_with_doc.count
-
     # skip option
-    if options[:mode] == 'skip'
-      annotations_collection_with_doc.select! do |annotations, doc|
+    num_skipped = if options[:mode] == 'skip'
+      num_annotations_with_doc = annotations_collection_with_doc.count
+
+      annotations_collection_with_doc.select! do |_, doc|
         ProjectDoc.where(project_id: id, doc_id: doc.id).pluck(:denotations_num).first == 0
       end
-      num_skipped = num_annotations_with_doc - annotations_collection_with_doc.count
+      num_annotations_with_doc - annotations_collection_with_doc.count
+    else
+      0
     end
 
     aligned_collection = []
