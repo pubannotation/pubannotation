@@ -730,9 +730,9 @@ class Project < ActiveRecord::Base
 
     # To find the doc for each annotation object
     annotations_collection_with_doc = annotations_collection.collect do |annotations|
-      sourcedb, sourceid = get_sourcedb_sourceid_of(annotations)
+      source = get_sourcedb_sourceid_of(annotations)
 
-      docs = Doc.where(sourcedb: sourcedb, sourceid: sourceid)
+      docs = Doc.where(sourcedb: source.db, sourceid: source.id)
 
       if docs.count == 1
         [annotations, docs.first]
@@ -742,7 +742,7 @@ class Project < ActiveRecord::Base
                         else
                           'Multiple entries of the document.'
                         end
-        messages << { sourcedb: sourcedb, sourceid: sourceid, body: error_message[0..250] }
+        messages << { sourcedb: source.db, sourceid: source.id, body: error_message[0..250] }
         [annotations, nil]
       end
     end.reject { |e| e[1].nil? }
@@ -957,9 +957,9 @@ class Project < ActiveRecord::Base
   def get_sourcedb_sourceid_of(annotations)
     if annotations.is_a? Array
       a = annotations.first
-      [a[:sourcedb], a[:sourceid]]
+      DocumentSource.new(a[:sourcedb], a[:sourceid])
     else
-      [annotations[:sourcedb], annotations[:sourceid]]
+      DocumentSource.new([annotations[:sourcedb], annotations[:sourceid]])
     end
   end
 
