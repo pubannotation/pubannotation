@@ -730,12 +730,7 @@ class Project < ActiveRecord::Base
 
     # To find the doc for each annotation object
     annotations_collection_with_doc = annotations_collection.collect do |annotations|
-      sourcedb, sourceid = if annotations.is_a? Array
-                             a = annotations.first
-                             [a[:sourcedb], a[:sourceid]]
-                           else
-                             [annotations[:sourcedb], annotations[:sourceid]]
-                           end
+      sourcedb, sourceid = get_sourcedb_sourceid_of(annotations)
 
       docs = Doc.where(sourcedb: sourcedb, sourceid: sourceid)
 
@@ -958,6 +953,15 @@ class Project < ActiveRecord::Base
   end
 
   private
+
+  def get_sourcedb_sourceid_of(annotations)
+    if annotations.is_a? Array
+      a = annotations.first
+      [a[:sourcedb], a[:sourceid]]
+    else
+      [annotations[:sourcedb], annotations[:sourceid]]
+    end
+  end
 
   def spans_rdf_filename
     "#{identifier}-spans.trig"
