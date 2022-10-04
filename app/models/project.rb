@@ -938,27 +938,20 @@ class Project < ActiveRecord::Base
   private
 
   def find_doc_for(annotations_collection)
-    messages = []
+    annotations_collection.inject([[], []]) do |result, annotations|
+      annotations_collection_with_doc, messages = result
 
-    annotations_collection_with_doc = annotations_collection.collect do |annotations|
       source = get_source_of(annotations)
-
-      docs = Doc.where(sourcedb: source.db, sourceid: source.id)
-
-      if docs.count == 1
-        [annotations, docs.first]
-      else
-        error_message = if docs.empty?
-                          'Document does not exist.'
-                        else
-                          'Multiple entries of the document.'
-                        end
-        messages << { sourcedb: source.db, sourceid: source.id, body: error_message[0..250] }
-        [annotations, nil]
-      end
-    end.reject { |e| e[1].nil? }
-
-    [annotations_collection_with_doc, messages]
+      doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
+      annotations_collection_with_doc << [annotations, doc]
+      result
+    rescue ActiveRecord::RecordNotFound
+      messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
+      result
+    rescue ActiveRecord::SoleRecordExceeded
+      messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
+      result
+    end
   end
 
   def get_source_of(annotations)
