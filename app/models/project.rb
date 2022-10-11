@@ -725,6 +725,15 @@ class Project < ActiveRecord::Base
   # - annotations are already normal, and
   # - documents exist in the database
   def store_annotations_collection(annotations_collection, options)
+    # Standardize annotations into arrays.
+    annotations_collection = annotations_collection.map { |annotations|
+      if annotations.is_a? Array
+        annotations
+      else
+        [annotations]
+      end
+    }
+
     # To find the doc for each annotation object
     annotations_collection_with_doc, messages = find_doc_for(annotations_collection)
 
@@ -746,22 +755,20 @@ class Project < ActiveRecord::Base
 
     aligned_collection = []
     annotations_collection_with_doc.each do |annotations, doc|
-      ann = annotations.is_a?(Array) ? annotations : [annotations]
-
       if options[:mode] == 'replace'
         delete_doc_annotations(doc)
       else
         case options[:mode]
         when 'add'
-          ann.each { |a| reid_annotations!(a, doc) }
+          annotations.each { |a| reid_annotations!(a, doc) }
         when 'merge'
-          ann.each { |a| reid_annotations!(a, doc) }
+          annotations.each { |a| reid_annotations!(a, doc) }
           base_annotations = doc.hannotations(self)
-          ann.each { |a| Annotation.prepare_annotations_for_merging!(a, base_annotations) }
+          annotations.each { |a| Annotation.prepare_annotations_for_merging!(a, base_annotations) }
         end
       end
 
-      aligned_collection += ann.filter.with_index do
+      aligned_collection += annotations.filter.with_index do
         if _1[:denotations] && _1[:attributes]
           denotation_ids = _1[:denotations].map { |d| d[:id] }
           subject_less_attributes = _1[:attributes].map { |a| a[:subj] }
@@ -955,12 +962,8 @@ class Project < ActiveRecord::Base
   end
 
   def get_source_of(annotations)
-    if annotations.is_a? Array
-      a = annotations.first
-      DocumentSource.new(a[:sourcedb], a[:sourceid])
-    else
-      DocumentSource.new([annotations[:sourcedb], annotations[:sourceid]])
-    end
+    a = annotations.first
+    DocumentSource.new(a[:sourcedb], a[:sourceid])
   end
 
   def spans_rdf_filename
