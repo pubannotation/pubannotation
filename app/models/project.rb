@@ -948,7 +948,7 @@ class Project < ActiveRecord::Base
     annotations_collection.inject([[], []]) do |result, annotations|
       annotations_collection_with_doc, messages = result
 
-      source = get_source_of(annotations)
+      source = DocumentSource.new(annotations)
       doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
       annotations_collection_with_doc << [annotations, doc]
       result
@@ -959,11 +959,6 @@ class Project < ActiveRecord::Base
       messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
       result
     end
-  end
-
-  def get_source_of(annotations)
-    a = annotations.first
-    DocumentSource.new(a[:sourcedb], a[:sourceid])
   end
 
   def spans_rdf_filename
