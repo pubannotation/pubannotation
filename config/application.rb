@@ -34,5 +34,8 @@ module Pubann
 
     # Enable the asset pipeline
     config.assets.enabled = true
+
+    # Setting for Psych 4 later
+    config.active_record.yaml_column_permitted_classes = [ActiveSupport::HashWithIndifferentAccess]
   end
 end
