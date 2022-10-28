@@ -10,7 +10,7 @@ class AnnotationTransaction
 
   def <<(annotation_collection)
     @annotation_transaction << annotation_collection.annotations
-    @sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
+    @sourcedb_sourceids_index[annotation_collection.sourcedb] = @sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
   end
 
   def enough?
