@@ -45,8 +45,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     rescue StandardError => e
       if @job
         body = Rails.env.development? ? "#{e.backtrace_locations[0..2] } #{e.message[0..250]}" : e.message[0..250]
-        @job.add_message sourcedb: annotation_collection.sourcedb,
-                         sourceid: annotation_collection.sourceid,
+        @job.add_message sourcedb: annotation_collection&.sourcedb,
+                         sourceid: annotation_collection&.sourceid,
                          body: body
       else
         raise ArgumentError, "[#{annotation_collection.sourcedb}:#{annotation_collection.sourceid}] #{e.message}"
