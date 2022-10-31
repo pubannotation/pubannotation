@@ -49,6 +49,9 @@ gem 'zip-zip'
 gem 'daemons'
 gem 'elasticsearch-model', '~> 5.1'
 gem 'elasticsearch-rails', '~> 5.1'
+# Currently released elasticsearch-model depends on a specific verions of faraday
+# See: https://github.com/uken/fluent-plugin-elasticsearch/issues/699
+gem 'faraday', '~> 1.10'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
 gem 'rails-observers'
