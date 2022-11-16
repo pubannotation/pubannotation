@@ -750,7 +750,7 @@ class Project < ActiveRecord::Base
     end
 
     annotations_collection_with_doc.each do |annotations, doc|
-      ref_text = doc.original_body.nil? ? doc.body : doc.original_body
+      ref_text = doc&.original_body || doc.body
       aligner = TextAlignment::TextAlignment.new(ref_text, options)
       messages += annotations.map do |annotation|
         Annotation.align_annotations!(annotation, ref_text, aligner)
