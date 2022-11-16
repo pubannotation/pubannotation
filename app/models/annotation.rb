@@ -465,34 +465,34 @@ class Annotation < ActiveRecord::Base
 	def self.align_annotations!(annotations, ref_text, aligner)
 		return [] unless annotations[:denotations].present? || annotations[:blocks].present?
 
-		messages = []
+		# align_hdenotations
+		denotations = annotations[:denotations] || []
+		blocks = annotations[:blocks] || []
+
 		begin
-			# align_hdenotations
-			denotations = annotations[:denotations] || []
-			blocks = annotations[:blocks] || []
-
 			aligner.align(annotations[:text], denotations + blocks)
-
-			denotations.replace(aligner.transform_hdenotations(denotations))
-			blocks.replace(aligner.transform_hdenotations(blocks))
-
-			if aligner.lost_annotations.present?
-				messages << {
-					sourcedb: annotations[:sourcedb],
-					sourceid: annotations[:sourceid],
-					body:"Alignment failed. Invalid denotations found after transformation",
-					data:{
-						block_alignment: aligner.block_alignment,
-						lost_annotations: aligner.lost_annotations
-					}
-				}
-			end
 		rescue => e
 			raise "[#{annotations[:sourcedb]}:#{annotations[:sourceid]}] #{e.message}"
 		end
+
 		annotations[:text] = ref_text
+		annotations[:denotations] = aligner.transform_hdenotations(denotations)
+		annotations[:blocks] = aligner.transform_hdenotations(blocks)
 		annotations.delete_if{|k,v| !v.present?}
-		messages
+
+		if aligner.lost_annotations.present?
+			[{
+				sourcedb: annotations[:sourcedb],
+				sourceid: annotations[:sourceid],
+				body:"Alignment failed. Invalid denotations found after transformation",
+				data:{
+					block_alignment: aligner.block_alignment,
+					lost_annotations: aligner.lost_annotations
+				}
+			}]
+		else
+			[]
+		end
 	end
 
 	def self.prepare_annotations!(annotations, doc, options = {})
