@@ -762,17 +762,17 @@ class Project < ActiveRecord::Base
             aligner = TextAlignment::TextAlignment.new(msg[:ref_text], msg[:options])
             aligner.align(msg[:text], msg[:denotations] + msg[:blocks])
 
-            Ractor.yield({
+            Ractor.yield(Ractor.make_shareable({
               index: msg[:index],
               denotations: aligner.transform_hdenotations(msg[:denotations]),
               blocks: aligner.transform_hdenotations(msg[:blocks]),
               lost_annotations: aligner.lost_annotations,
               block_alignment: aligner.block_alignment
-            })
+            }))
           rescue => e
-            Ractor.yield({
+            Ractor.yield(Ractor.make_shareable({
               error: e
-            })
+            }))
           end
         end
       end
@@ -791,14 +791,14 @@ class Project < ActiveRecord::Base
         denotations = annotation[:denotations] || []
         blocks = annotation[:blocks] || []
 
-        pipe.send({
+        pipe.send(Ractor.make_shareable({
           index: index,
           ref_text: ref_text,
           text: text,
           denotations: denotations,
           blocks: blocks,
           options: options
-        })
+        }))
       end.each do |annotation|
         _r, result = Ractor.select(*workers)
 
