@@ -778,8 +778,6 @@ class Project < ActiveRecord::Base
       end
     end
 
-    Ractor.make_shareable(TextAlignment::CHAR_MAPPING)
-    Ractor.make_shareable(TextAlignment::LCSMin::PLACEHOLDER_CHAR)
     annotations_for_doc_collection.each do |annotations, doc|
       ref_text = doc&.original_body || doc.body
       results = {}
