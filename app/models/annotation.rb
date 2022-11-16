@@ -476,7 +476,7 @@ class Annotation < ActiveRecord::Base
 			denotations.replace(aligner.transform_hdenotations(denotations))
 			blocks.replace(aligner.transform_hdenotations(blocks))
 
-			unless aligner.lost_annotations.empty?
+			if aligner.lost_annotations.present?
 				messages << {
 					sourcedb: annotations[:sourcedb],
 					sourceid: annotations[:sourceid],
