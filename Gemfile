@@ -20,9 +20,9 @@ gem 'friendly_id'
 gem 'bootsnap', '>= 1.1.0', require: false
 
 group :development do
-	gem 'dotenv-rails'
-	gem 'guard'
-	gem 'guard-livereload'
+  gem 'dotenv-rails'
+  gem 'guard'
+  gem 'guard-livereload'
   gem 'web-console'
 end
 
