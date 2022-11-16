@@ -785,7 +785,6 @@ class Project < ActiveRecord::Base
       end
     end
 
-    results_table = {}
     annotations_for_doc_collection.each_with_index do |a_and_d, index|
       annotations, doc = a_and_d
       ref_text = doc&.original_body || doc.body
@@ -812,14 +811,12 @@ class Project < ActiveRecord::Base
       }))
     end.each do |annotations, doc|
       _r, results = Ractor.select(*workers)
-      results_table[results[:index]] = results[:results]
-    end.each_with_index do |a_and_d, index|
-      annotations, doc = a_and_d
 
+      annotations, doc = annotations_for_doc_collection[results[:index]]
       ref_text = doc&.original_body || doc.body
       targets = annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
 
-      messages << results_table[index].map.with_index do |result, i|
+      messages << results[:results].map.with_index do |result, i|
         if result[:error]
           raise "[#{annotation[:sourcedb]}:#{annotation[:sourceid]}] #{result[:error].message}"
         else
