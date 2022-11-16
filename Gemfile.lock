@@ -117,6 +117,9 @@ GEM
     connection_pool (2.2.5)
     crass (1.0.6)
     daemons (1.4.1)
+    debug (1.6.3)
+      irb (>= 1.3.6)
+      reline (>= 0.3.1)
     devise (4.8.1)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
@@ -205,6 +208,9 @@ GEM
     http_parser.rb (0.8.0)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
+    io-console (0.5.11)
+    irb (1.4.2)
+      reline (>= 0.3.0)
     jquery-rails (4.5.0)
       rails-dom-testing (>= 1, < 3)
       railties (>= 4.2.0)
@@ -337,6 +343,8 @@ GEM
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     redis (4.7.1)
+    reline (0.3.1)
+      io-console (~> 0.5)
     responders (3.0.1)
       actionpack (>= 5.0)
       railties (>= 5.0)
@@ -412,6 +420,7 @@ DEPENDENCIES
   coffee-rails
   color-generator
   daemons
+  debug
   devise
   diff-lcs
   dotenv-rails
