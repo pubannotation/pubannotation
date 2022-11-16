@@ -768,7 +768,7 @@ class Project < ActiveRecord::Base
               blocks: aligner.transform_hdenotations(msg[:blocks]),
               lost_annotations: aligner.lost_annotations,
               block_alignment: aligner.block_alignment
-            }))
+            }), move: true)
           rescue => e
             Ractor.yield(Ractor.make_shareable({
               error: e
@@ -798,7 +798,7 @@ class Project < ActiveRecord::Base
           denotations: denotations,
           blocks: blocks,
           options: options
-        }))
+        }), move: true)
       end.each do |annotation|
         _r, result = Ractor.select(*workers)
 
