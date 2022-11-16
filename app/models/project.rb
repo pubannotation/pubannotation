@@ -753,7 +753,36 @@ class Project < ActiveRecord::Base
       ref_text = doc&.original_body || doc.body
       aligner = TextAlignment::TextAlignment.new(ref_text, options)
       messages += annotations.map do |annotation|
-        Annotation.align_annotations!(annotation, ref_text, aligner)
+        next [] unless annotation[:denotations].present? || annotation[:blocks].present?
+
+        messages2 = []
+        begin
+          # align_hdenotations
+          denotations = annotation[:denotations] || []
+          blocks = annotation[:blocks] || []
+
+          aligner.align(annotation[:text], denotations + blocks)
+
+          denotations.replace(aligner.transform_hdenotations(denotations))
+          blocks.replace(aligner.transform_hdenotations(blocks))
+
+          unless aligner.lost_annotations.empty?
+            messages2 << {
+              sourcedb: annotation[:sourcedb],
+              sourceid: annotation[:sourceid],
+              body:"Alignment failed. Invalid denotations found after transformation",
+              data:{
+                block_alignment: aligner.block_alignment,
+                lost_annotations: aligner.lost_annotations
+              }
+            }
+          end
+        rescue => e
+          raise "[#{annotation[:sourcedb]}:#{annotation[:sourceid]}] #{e.message}"
+        end
+        annotation[:text] = ref_text
+        annotation.delete_if{|k,v| !v.present?}
+        messages2
       end.flatten
     end
 
