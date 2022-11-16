@@ -1,4 +1,4 @@
-:concurrency: 25
+:concurrency: 2
 :max_retries: 0
 :queues:
   - [general, 1]
