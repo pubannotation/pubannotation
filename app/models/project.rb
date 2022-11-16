@@ -749,41 +749,87 @@ class Project < ActiveRecord::Base
       0
     end
 
+    pipe = Ractor.new do
+      loop do
+        Ractor.yield Ractor.receive
+      end
+    end
+
+    workers = (1..4).map do
+      Ractor.new pipe do |pipe|
+        while msg = pipe.take
+          begin
+            aligner = TextAlignment::TextAlignment.new(msg[:ref_text], msg[:options])
+            aligner.align(msg[:text], msg[:denotations] + msg[:blocks])
+
+            Ractor.yield({
+              index: msg[:index],
+              denotations: aligner.transform_hdenotations(msg[:denotations]),
+              blocks: aligner.transform_hdenotations(msg[:blocks]),
+              lost_annotations: aligner.lost_annotations,
+              block_alignment: aligner.block_alignment
+            })
+          rescue => e
+            Ractor.yield({
+              error: e
+            })
+          end
+        end
+      end
+    end
+
+    Ractor.make_shareable(TextAlignment::CHAR_MAPPING)
+    Ractor.make_shareable(TextAlignment::LCSMin::PLACEHOLDER_CHAR)
     annotations_for_doc_collection.each do |annotations, doc|
       ref_text = doc&.original_body || doc.body
-      aligner = TextAlignment::TextAlignment.new(ref_text, options)
-      messages += annotations.map do |annotation|
-        next [] unless annotation[:denotations].present? || annotation[:blocks].present?
+      results = {}
 
-        messages2 = []
-        begin
-          # align_hdenotations
-          denotations = annotation[:denotations] || []
-          blocks = annotation[:blocks] || []
+      targets = annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
+      targets.each_with_index do |annotation, index|
+        # align_hdenotations
+        text = annotation[:text]
+        denotations = annotation[:denotations] || []
+        blocks = annotation[:blocks] || []
 
-          aligner.align(annotation[:text], denotations + blocks)
+        pipe.send({
+          index: index,
+          ref_text: ref_text,
+          text: text,
+          denotations: denotations,
+          blocks: blocks,
+          options: options
+        })
+      end.each do |annotation|
+        _r, result = Ractor.select(*workers)
 
-          denotations.replace(aligner.transform_hdenotations(denotations))
-          blocks.replace(aligner.transform_hdenotations(blocks))
-
-          unless aligner.lost_annotations.empty?
-            messages2 << {
-              sourcedb: annotation[:sourcedb],
-              sourceid: annotation[:sourceid],
-              body:"Alignment failed. Invalid denotations found after transformation",
-              data:{
-                block_alignment: aligner.block_alignment,
-                lost_annotations: aligner.lost_annotations
-              }
-            }
-          end
-        rescue => e
-          raise "[#{annotation[:sourcedb]}:#{annotation[:sourceid]}] #{e.message}"
+        if result[:error]
+          raise "[#{annotation[:sourcedb]}:#{annotation[:sourceid]}] #{result[:error].message}"
+        else
+          results[result[:index]] = result
         end
+      end
+
+      messages << targets.map.with_index do |annotation, index|
+        result = results[index]
+        annotation[:denotations] = result[:denotations]
+        annotation[:blocks] = result[:blocks]
         annotation[:text] = ref_text
         annotation.delete_if{|k,v| !v.present?}
-        messages2
-      end.flatten
+
+        if result[:lost_annotations].present?
+          {
+            sourcedb: annotation[:sourcedb],
+            sourceid: annotation[:sourceid],
+            body:"Alignment failed. Invalid denotations found after transformation",
+            data:{
+              block_alignment: result[:block_alignment],
+              lost_annotations: result[:lost_annotations]
+            }
+          }
+        else
+          nil
+        end
+      end.compact
     end
 
     aligned_collection = []
