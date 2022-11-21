@@ -25,7 +25,7 @@ class JobsController < ApplicationController
 	# GET /jobs/1.json
 	def show
 		begin
-			@job = Job.find(params[:id])
+			@job = Job.find(params.permit(:id)[:id])
 			raise "Could not find the job." unless @job.organization == @organization
 
 			@messages_grid = initialize_grid(@job.messages,
