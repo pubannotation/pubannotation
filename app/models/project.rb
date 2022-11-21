@@ -735,21 +735,21 @@ class Project < ActiveRecord::Base
     }
 
     # To find the doc for each annotation object
-    annotations_collection_with_doc, messages = find_doc_for(annotations_collection)
+    annotations_for_doc_collection, messages = find_doc_for(annotations_collection)
 
     # skip option
     num_skipped = if options[:mode] == 'skip'
-      num_annotations_with_doc = annotations_collection_with_doc.count
+      num_annotations_for_doc = annotations_for_doc_collection.count
 
-      annotations_collection_with_doc.select! do |_, doc|
+      annotations_for_doc_collection.select! do |_, doc|
         ProjectDoc.where(project_id: id, doc_id: doc.id).pluck(:denotations_num).first == 0
       end
-      num_annotations_with_doc - annotations_collection_with_doc.count
+      num_annotations_for_doc - annotations_for_doc_collection.count
     else
       0
     end
 
-    annotations_collection_with_doc.each do |annotations, doc|
+    annotations_for_doc_collection.each do |annotations, doc|
       ref_text = doc&.original_body || doc.body
       aligner = TextAlignment::TextAlignment.new(ref_text, options)
       messages += annotations.map do |annotation|
@@ -758,7 +758,7 @@ class Project < ActiveRecord::Base
     end
 
     aligned_collection = []
-    annotations_collection_with_doc.each do |annotations, doc|
+    annotations_for_doc_collection.each do |annotations, doc|
       if options[:mode] == 'replace'
         delete_doc_annotations(doc)
       else
@@ -950,11 +950,11 @@ class Project < ActiveRecord::Base
 
   def find_doc_for(annotations_collection)
     annotations_collection.inject([[], []]) do |result, annotations|
-      annotations_collection_with_doc, messages = result
+      annotations_for_doc_collection, messages = result
 
       source = DocumentSource.new(annotations)
       doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
-      annotations_collection_with_doc << [annotations, doc]
+      annotations_for_doc_collection << [annotations, doc]
       result
     rescue ActiveRecord::RecordNotFound
       messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
