@@ -757,15 +757,15 @@ class Project < ActiveRecord::Base
 
     workers = (1..4).map do
       Ractor.new pipe do |pipe|
-        while msgs = pipe.take
-          results = msgs[:data].map do |msg|
+        while msg = pipe.take
+          aligner = TextAlignment::TextAlignment.new(msg[:ref_text], msg[:options])
+          results = msg[:data].map do |datum|
             begin
-              aligner = TextAlignment::TextAlignment.new(msg[:ref_text], msg[:options])
-              aligner.align(msg[:text], msg[:denotations] + msg[:blocks])
+              aligner.align(datum[:text], datum[:denotations] + datum[:blocks])
 
               {
-                denotations: aligner.transform_hdenotations(msg[:denotations]),
-                blocks: aligner.transform_hdenotations(msg[:blocks]),
+                denotations: aligner.transform_hdenotations(datum[:denotations]),
+                blocks: aligner.transform_hdenotations(datum[:blocks]),
                 lost_annotations: aligner.lost_annotations,
                 block_alignment: aligner.lost_annotations.present? ? aligner.block_alignment : nil
               }
@@ -778,7 +778,7 @@ class Project < ActiveRecord::Base
           end
 
           Ractor.yield(Ractor.make_shareable({
-            index: msgs[:index],
+            index: msg[:index],
             results: results
           }), move: true)
         end
@@ -798,8 +798,6 @@ class Project < ActiveRecord::Base
         blocks = annotation[:blocks] || []
 
         {
-          ref_text: ref_text,
-          options: options,
           text: text,
           denotations: denotations,
           blocks: blocks
@@ -807,6 +805,8 @@ class Project < ActiveRecord::Base
       end
       pipe.send(Ractor.make_shareable({
         index: index,
+        ref_text: ref_text,
+        options: options,
         data:data
       }))
     end.each do |annotations, doc|
