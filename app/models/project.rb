@@ -770,10 +770,9 @@ class Project < ActiveRecord::Base
                 block_alignment: aligner.lost_annotations.present? ? aligner.block_alignment : nil
               }
             rescue => e
-              {
-                error: e
+              break {
+                error: e.message
               }
-              break
             end
           end
 
