@@ -779,7 +779,7 @@ class Project < ActiveRecord::Base
           Ractor.yield(Ractor.make_shareable({
             index: msg[:index],
             results: results
-          }), move: true)
+          }))
         end
       end
     end
