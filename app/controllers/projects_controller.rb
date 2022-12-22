@@ -26,7 +26,7 @@ class ProjectsController < ApplicationController
 				@projects_total_number = Project.accessible(current_user).count
 			}
 			format.json {
-				projects = Project.accessible(current_user).order(:status)
+				projects = Project.accessible(current_user).order(:status).load_async
 				render json: projects
 			}
 		end
