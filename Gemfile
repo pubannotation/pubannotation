@@ -7,7 +7,7 @@ gem 'rails', '7.0.4'
 gem 'rake'
 gem 'activerecord-import'
 
-gem 'puma', '~> 5.6.4'
+gem 'puma'
 
 gem 'sass-rails'
 gem 'coffee-rails'
