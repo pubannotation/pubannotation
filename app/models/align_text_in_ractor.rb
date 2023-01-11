@@ -52,9 +52,9 @@ class AlignTextInRactor
       end
     end
 
-    request = Data.define(:index, :ref_text, :options, :data)
+    request = Data.define(:index, :options, :ref_text, :data)
     @annotations_for_doc_collection.each_with_index do |a_with_d, index|
-      pipe.send(Ractor.make_shareable(request.new(index, a_with_d.ref_text, @options, a_with_d.target_data)))
+      pipe.send(Ractor.make_shareable(request.new(index, @options, a_with_d.ref_text, a_with_d.target_data)))
     end.each do
       _r, results = Ractor.select(*workers)
 
