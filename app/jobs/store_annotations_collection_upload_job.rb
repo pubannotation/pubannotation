@@ -70,7 +70,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   end
 
   private
-  
+
   def store_annotations(project, annotation_transaction, options)
     messages = project.store_annotations_collection(annotation_transaction.annotation_transaction, options)
     if messages.present?
