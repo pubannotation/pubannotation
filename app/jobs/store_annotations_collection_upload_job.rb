@@ -19,7 +19,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     (filenames << nil).each_with_index do |jsonfile, i|
       # I found the guard, so I'll end the loop.
       if jsonfile.nil?
-        store(project, options, annotation_transaction)
+        store_docs(project, annotation_transaction.sourcedb_sourceids_index)
+        store_annotations(project, annotation_transaction, options)
         break
       end
 
