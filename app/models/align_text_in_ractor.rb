@@ -54,20 +54,7 @@ class AlignTextInRactor
 
     request = Data.define(:index, :ref_text, :options, :data)
     @annotations_for_doc_collection.each_with_index do |a_with_d, index|
-      data = a_with_d.targets.map do |annotation|
-        # align_hdenotations
-        text = annotation[:text]
-        denotations = annotation[:denotations] || []
-        blocks = annotation[:blocks] || []
-
-        {
-          text: text,
-          denotations: denotations,
-          blocks: blocks
-        }
-      end
-
-      pipe.send(Ractor.make_shareable(request.new(index, a_with_d.ref_text, @options, data)))
+      pipe.send(Ractor.make_shareable(request.new(index, a_with_d.ref_text, @options, a_with_d.target_data)))
     end.each do
       _r, results = Ractor.select(*workers)
 
