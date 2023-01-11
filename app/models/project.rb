@@ -815,10 +815,11 @@ class Project < ActiveRecord::Base
       targets = annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
 
       messages << results[:results].map.with_index do |result, i|
+        annotation = targets[i]
+
         if result[:error]
           raise "[#{annotation[:sourcedb]}:#{annotation[:sourceid]}] #{result[:error].message}"
         else
-          annotation = targets[i]
           annotation[:denotations] = result[:denotations]
           annotation[:blocks] = result[:blocks]
           annotation[:text] = ref_text
