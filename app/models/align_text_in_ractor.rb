@@ -1,20 +1,6 @@
 # frozen_string_literal: true
 
 class AlignTextInRactor
-  Results = Data.define(:index, :processed_annotations)
-
-  class ProcessedAnnotation
-    attr_reader :denotations, :blocks, :lost_annotations, :block_alignments, :error_message
-
-    def initialize(denotations, blocks, lost_annotations, block_alignments, error_message = nil)
-      @denotations = denotations
-      @blocks = blocks
-      @lost_annotations = lost_annotations
-      @block_alignments = block_alignments
-      @error_message = error_message
-    end
-  end
-
   attr_reader :annotations_for_doc_collection, :messages
 
   def initialize(annotations_for_doc_collection, options)
@@ -80,6 +66,20 @@ class AlignTextInRactor
           }
         end
       end
+    end
+  end
+
+  Results = Data.define(:index, :processed_annotations)
+
+  class ProcessedAnnotation
+    attr_reader :denotations, :blocks, :lost_annotations, :block_alignments, :error_message
+
+    def initialize(denotations, blocks, lost_annotations, block_alignments, error_message = nil)
+      @denotations = denotations
+      @blocks = blocks
+      @lost_annotations = lost_annotations
+      @block_alignments = block_alignments
+      @error_message = error_message
     end
   end
 end
