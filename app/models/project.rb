@@ -787,8 +787,6 @@ class Project < ActiveRecord::Base
     annotations_for_doc_collection.each_with_index do |a_and_d, index|
       annotations, doc = a_and_d
       ref_text = doc&.original_body || doc.body
-      results = {}
-
       targets = annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
       data = targets.map do |annotation|
         # align_hdenotations
