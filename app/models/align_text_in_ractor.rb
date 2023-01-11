@@ -18,8 +18,8 @@ class AlignTextInRactor
     workers = (1..4).map do
       Ractor.new pipe do |pipe|
         while msg = pipe.take
-          aligner = TextAlignment::TextAlignment.new(msg[:ref_text], msg[:options])
-          results = msg[:data].map do |datum|
+          aligner = TextAlignment::TextAlignment.new(msg.ref_text, msg.options)
+          results = msg.data.map do |datum|
             begin
               aligner.align(datum[:text], datum[:denotations] + datum[:blocks])
 
@@ -37,13 +37,14 @@ class AlignTextInRactor
           end
 
           Ractor.yield(Ractor.make_shareable({
-                                               index: msg[:index],
+                                               index: msg.index,
                                                results: results
                                              }))
         end
       end
     end
 
+    request = Data.define(:index, :ref_text, :options, :data)
     @annotations_for_doc_collection.each_with_index do |a_and_d, index|
       annotations, doc = a_and_d
       ref_text = doc&.original_body || doc.body
@@ -61,12 +62,7 @@ class AlignTextInRactor
         }
       end
 
-      pipe.send(Ractor.make_shareable({
-                                        index: index,
-                                        ref_text: ref_text,
-                                        options: @options,
-                                        data:data
-                                      }))
+      pipe.send(Ractor.make_shareable(request.new(index, ref_text, @options, data)))
     end.each do
       _r, results = Ractor.select(*workers)
 
