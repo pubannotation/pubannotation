@@ -20,7 +20,7 @@ class AlignTextInRactor
       Ractor.new pipe do |pipe|
         while msg = pipe.take
           aligner = TextAlignment::TextAlignment.new(msg.ref_text, msg.options)
-          results = msg.data.map do |datum|
+          processedAnnotations = msg.data.map do |datum|
             begin
               aligner.align(datum[:text], datum[:denotations] + datum[:blocks])
 
@@ -33,7 +33,7 @@ class AlignTextInRactor
             end
           end
 
-          Ractor.yield(Ractor.make_shareable(Results.new(msg.index, results)))
+          Ractor.yield(Ractor.make_shareable(Results.new(msg.index, processedAnnotations)))
         end
       end
     end
