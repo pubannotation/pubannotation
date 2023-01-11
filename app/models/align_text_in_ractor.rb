@@ -1,13 +1,7 @@
 # frozen_string_literal: true
 
 class AlignTextInRactor
-  class Results
-    attr_reader :index, :processed_annotations
-    def initialize(index, processed_annotations)
-      @index = index
-      @processed_annotations = processed_annotations
-    end
-  end
+  Results = Data.define(:index, :processed_annotations)
 
   class ProcessedAnnotation
     attr_reader :denotations, :blocks, :lost_annotations, :block_alignments, :error_message
