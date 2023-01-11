@@ -741,8 +741,8 @@ class Project < ActiveRecord::Base
     num_skipped = if options[:mode] == 'skip'
       num_annotations_for_doc = annotations_for_doc_collection.count
 
-      annotations_for_doc_collection.select! do |_, doc|
-        ProjectDoc.where(project_id: id, doc_id: doc.id).pluck(:denotations_num).first == 0
+      annotations_for_doc_collection.select! do |annotations_with_doc|
+        ProjectDoc.where(project_id: id, doc_id: annotations_with_doc.doc.id).pluck(:denotations_num).first == 0
       end
       num_annotations_for_doc - annotations_for_doc_collection.count
     else
@@ -755,21 +755,21 @@ class Project < ActiveRecord::Base
     messages.concat aligner.messages
 
     aligned_collection = []
-    annotations_for_doc_collection.each do |annotations, doc|
+    annotations_for_doc_collection.each do |annotations_with_doc|
       if options[:mode] == 'replace'
-        delete_doc_annotations(doc)
+        delete_doc_annotations(annotations_with_doc.doc)
       else
         case options[:mode]
         when 'add'
-          annotations.each { |a| reid_annotations!(a, doc) }
+          annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
         when 'merge'
-          annotations.each { |a| reid_annotations!(a, doc) }
-          base_annotations = doc.hannotations(self)
-          annotations.each { |a| Annotation.prepare_annotations_for_merging!(a, base_annotations) }
+          annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
+          base_annotations = annotations_with_doc.doc.hannotations(self)
+          annotations_with_doc.annotations.each { |a| Annotation.prepare_annotations_for_merging!(a, base_annotations) }
         end
       end
 
-      aligned_collection += annotations.filter.with_index do
+      aligned_collection += annotations_with_doc.annotations.filter.with_index do
         if _1[:denotations] && _1[:attributes]
           denotation_ids = _1[:denotations].map { |d| d[:id] }
           subject_less_attributes = _1[:attributes].map { |a| a[:subj] }
@@ -794,7 +794,7 @@ class Project < ActiveRecord::Base
         end
       end
     rescue StandardError => e
-      messages << { sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: e.message[0..250] }
+      messages << { sourcedb: annotations_with_doc.doc.sourcedb, sourceid: annotations_with_doc.doc.sourceid, body: e.message[0..250] }
     end
 
     messages << { body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." } if num_skipped > 0

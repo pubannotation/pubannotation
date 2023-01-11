@@ -1,13 +1,19 @@
 # frozen_string_literal: true
 
 class AnnotationWithDocument
+  attr_reader :annotations, :doc
+  def initialize(annotations, doc)
+    @annotations = annotations
+    @doc = doc
+  end
+
   def self.find_doc_for(annotations_collection)
     annotations_collection.inject([[], []]) do |result, annotations|
       annotations_for_doc_collection, messages = result
 
       source = DocumentSource.new(annotations)
       doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
-      annotations_for_doc_collection << [annotations, doc]
+      annotations_for_doc_collection << AnnotationWithDocument.new(annotations, doc)
       result
     rescue ActiveRecord::RecordNotFound
       messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }

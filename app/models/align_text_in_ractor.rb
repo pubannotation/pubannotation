@@ -51,10 +51,9 @@ class AlignTextInRactor
     end
 
     request = Data.define(:index, :ref_text, :options, :data)
-    @annotations_for_doc_collection.each_with_index do |a_and_d, index|
-      annotations, doc = a_and_d
-      ref_text = doc&.original_body || doc.body
-      targets = annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
+    @annotations_for_doc_collection.each_with_index do |a_with_d, index|
+      ref_text = a_with_d.doc&.original_body || a_with_d.doc.body
+      targets = a_with_d.annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
       data = targets.map do |annotation|
         # align_hdenotations
         text = annotation[:text]
@@ -72,9 +71,9 @@ class AlignTextInRactor
     end.each do
       _r, results = Ractor.select(*workers)
 
-      annotations, doc = annotations_for_doc_collection[results.index]
-      ref_text = doc&.original_body || doc.body
-      targets = annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
+      a_with_d = @annotations_for_doc_collection[results.index]
+      ref_text = a_with_d.doc&.original_body || a_with_d.doc.body
+      targets = a_with_d.annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
 
       results.processed_annotations.each.with_index do |processed_annotation, i|
         annotation = targets[i]
