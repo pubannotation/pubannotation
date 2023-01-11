@@ -800,13 +800,14 @@ class Project < ActiveRecord::Base
           blocks: blocks
         }
       end
+
       pipe.send(Ractor.make_shareable({
         index: index,
         ref_text: ref_text,
         options: options,
         data:data
       }))
-    end.each do |annotations, doc|
+    end.each do
       _r, results = Ractor.select(*workers)
 
       annotations, doc = annotations_for_doc_collection[results[:index]]
