@@ -1,0 +1,20 @@
+# frozen_string_literal: true
+
+class AnnotationWithDocument
+  def self.find_doc_for(annotations_collection)
+    annotations_collection.inject([[], []]) do |result, annotations|
+      annotations_for_doc_collection, messages = result
+
+      source = DocumentSource.new(annotations)
+      doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
+      annotations_for_doc_collection << [annotations, doc]
+      result
+    rescue ActiveRecord::RecordNotFound
+      messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
+      result
+    rescue ActiveRecord::SoleRecordExceeded
+      messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
+      result
+    end
+  end
+end

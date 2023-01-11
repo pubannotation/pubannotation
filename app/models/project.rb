@@ -735,7 +735,7 @@ class Project < ActiveRecord::Base
     }
 
     # To find the doc for each annotation object
-    annotations_for_doc_collection, messages = find_doc_for(annotations_collection)
+    annotations_for_doc_collection, messages = AnnotationWithDocument.find_doc_for(annotations_collection)
 
     # skip option
     num_skipped = if options[:mode] == 'skip'
@@ -944,23 +944,6 @@ class Project < ActiveRecord::Base
   end
 
   private
-
-  def find_doc_for(annotations_collection)
-    annotations_collection.inject([[], []]) do |result, annotations|
-      annotations_for_doc_collection, messages = result
-
-      source = DocumentSource.new(annotations)
-      doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
-      annotations_for_doc_collection << [annotations, doc]
-      result
-    rescue ActiveRecord::RecordNotFound
-      messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
-      result
-    rescue ActiveRecord::SoleRecordExceeded
-      messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
-      result
-    end
-  end
 
   def spans_rdf_filename
     "#{identifier}-spans.trig"
