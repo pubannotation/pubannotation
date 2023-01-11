@@ -52,7 +52,7 @@ class AlignTextInRactor
 
     request = Data.define(:index, :ref_text, :options, :data)
     @annotations_for_doc_collection.each_with_index do |a_with_d, index|
-      ref_text = a_with_d.doc&.original_body || a_with_d.doc.body
+      ref_text = a_with_d.ref_text
       targets = a_with_d.annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
       data = targets.map do |annotation|
         # align_hdenotations
@@ -72,7 +72,7 @@ class AlignTextInRactor
       _r, results = Ractor.select(*workers)
 
       a_with_d = @annotations_for_doc_collection[results.index]
-      ref_text = a_with_d.doc&.original_body || a_with_d.doc.body
+      ref_text = a_with_d.ref_text
       targets = a_with_d.annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
 
       results.processed_annotations.each.with_index do |processed_annotation, i|

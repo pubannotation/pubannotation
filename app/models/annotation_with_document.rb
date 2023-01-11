@@ -7,6 +7,10 @@ class AnnotationWithDocument
     @doc = doc
   end
 
+  def ref_text
+    doc&.original_body || doc.body
+  end
+
   def self.find_doc_for(annotations_collection)
     annotations_collection.inject([[], []]) do |result, annotations|
       annotations_for_doc_collection, messages = result
