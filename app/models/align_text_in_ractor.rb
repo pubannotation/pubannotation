@@ -22,12 +22,7 @@ class AlignTextInRactor
           aligner = TextAlignment::TextAlignment.new(msg.ref_text, msg.options)
           processedAnnotations = msg.data.map do |datum|
             begin
-              aligner.align(datum[:text], datum[:denotations] + datum[:blocks])
-
-              ProcessedAnnotation.new aligner.transform_hdenotations(datum[:denotations]),
-                                      aligner.transform_hdenotations(datum[:blocks]),
-                                      aligner.lost_annotations,
-                                      aligner.lost_annotations.present? ? aligner.block_alignment : nil
+              align aligner, datum[:text], datum[:denotations], datum[:blocks]
             rescue => e
               break ProcessedAnnotation.new(nil, nil, nil, nil, e.message)
             end
@@ -66,6 +61,17 @@ class AlignTextInRactor
           }
         end
       end
+    end
+
+    private
+
+    def align(aligner, text, denotations, blocks)
+          aligner.align(text, denotations + blocks)
+
+          ProcessedAnnotation.new aligner.transform_hdenotations(denotations),
+                                  aligner.transform_hdenotations(blocks),
+                                  aligner.lost_annotations,
+                                  aligner.lost_annotations.present? ? aligner.block_alignment : nil
     end
   end
 
