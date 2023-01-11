@@ -11,6 +11,10 @@ class AnnotationWithDocument
     doc&.original_body || doc.body
   end
 
+  def targets
+    @targets ||= annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
+  end
+
   def self.find_doc_for(annotations_collection)
     annotations_collection.inject([[], []]) do |result, annotations|
       annotations_for_doc_collection, messages = result
