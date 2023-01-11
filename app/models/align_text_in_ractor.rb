@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 class AlignTextInRactor
-  attr_reader :annotations_for_doc_collection, :messages
+  attr_reader :annotation_with_documents, :messages
 
-  def initialize(annotations_for_doc_collection, options)
-    @annotations_for_doc_collection = annotations_for_doc_collection
+  def initialize(annotation_with_documents, options)
+    @annotation_with_documents = annotation_with_documents
     @options = options
     @messages = []
   end
@@ -39,12 +39,12 @@ class AlignTextInRactor
     end
 
     request = Data.define(:index, :options, :ref_text, :data)
-    @annotations_for_doc_collection.each_with_index do |a_with_d, index|
+    @annotation_with_documents.each_with_index do |a_with_d, index|
       pipe.send(Ractor.make_shareable(request.new(index, @options, a_with_d.ref_text, a_with_d.target_data)))
     end.each do
       _r, results = Ractor.select(*workers)
 
-      a_with_d = @annotations_for_doc_collection[results.index]
+      a_with_d = @annotation_with_documents[results.index]
       results.processed_annotations.each.with_index do |processed_annotation, index|
         original_annotation = a_with_d.targets[index]
         raise "[#{original_annotation[:sourcedb]}:#{original_annotation[:sourceid]}] #{processed_annotation.error_message}" if processed_annotation.error_message
