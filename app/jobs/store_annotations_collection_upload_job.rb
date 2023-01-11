@@ -70,14 +70,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   end
 
   private
-
-  def store(project, options, annotation_transaction)
-    num_sequenced = store_docs(project, annotation_transaction.sourcedb_sourceids_index)
-    store_annotations(project, annotation_transaction, options)
-
-    num_sequenced
-  end
-
+  
   def store_annotations(project, annotation_transaction, options)
     messages = project.store_annotations_collection(annotation_transaction.annotation_transaction, options)
     if messages.present?
