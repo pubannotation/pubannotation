@@ -757,14 +757,19 @@ class Project < ActiveRecord::Base
       pretreatment_according_to(options, annotations_with_doc)
 
       aligned_collection += annotations_with_doc.annotations.filter.with_index do
-        if _1[:denotations] && _1[:attributes]
-          denotation_ids = _1[:denotations].map { |d| d[:id] }
-          subject_less_attributes = _1[:attributes].map { |a| a[:subj] }
+        denotations = _1[:denotations]
+        attributes = _1[:attributes]
+        sourcedb = _1[:sourcedb]
+        sourceid = _1[:sourceid]
+
+        if denotations && attributes
+          denotation_ids = denotations.map { |d| d[:id] }
+          subject_less_attributes = attributes.map { |a| a[:subj] }
                                                    .filter { |subj| !denotation_ids.include? subj }
           if subject_less_attributes.present?
             messages << {
-              sourcedb: _1[:sourcedb],
-              sourceid: _1[:sourceid],
+              sourcedb: sourcedb,
+              sourceid: sourceid,
               body: "After alignment adjustment of the denotations, annotations with an index of #{_2} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
             }
             false
@@ -773,8 +778,8 @@ class Project < ActiveRecord::Base
           end
         else
           messages << {
-            sourcedb: _1[:sourcedb],
-            sourceid: _1[:sourceid],
+            sourcedb: sourcedb,
+            sourceid: sourceid,
             body: "After alignment adjustment of the denotations, annotations with an index of #{_2} have no denotation."
           }
           false
