@@ -756,11 +756,11 @@ class Project < ActiveRecord::Base
     aligned_collection = aligner.annotations_for_doc_collection.reduce([]) do |aligned_collection, annotations_with_doc|
       pretreatment_according_to(options, annotations_with_doc)
 
-      aligned_collection += annotations_with_doc.annotations.filter.with_index do
-        denotations = _1[:denotations]
-        attributes = _1[:attributes]
-        sourcedb = _1[:sourcedb]
-        sourceid = _1[:sourceid]
+      aligned_collection += annotations_with_doc.annotations.filter.with_index do |annotation, index|
+        denotations = annotation[:denotations]
+        attributes = annotation[:attributes]
+        sourcedb = annotation[:sourcedb]
+        sourceid = annotation[:sourceid]
 
         if denotations && attributes
           denotation_ids = denotations.map { |d| d[:id] }
@@ -770,7 +770,7 @@ class Project < ActiveRecord::Base
             messages << {
               sourcedb: sourcedb,
               sourceid: sourceid,
-              body: "After alignment adjustment of the denotations, annotations with an index of #{_2} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
+              body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
             }
             false
           else
@@ -780,7 +780,7 @@ class Project < ActiveRecord::Base
           messages << {
             sourcedb: sourcedb,
             sourceid: sourceid,
-            body: "After alignment adjustment of the denotations, annotations with an index of #{_2} have no denotation."
+            body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
           }
           false
         end
