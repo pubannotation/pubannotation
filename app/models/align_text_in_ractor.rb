@@ -21,7 +21,7 @@ class AlignTextInRactor
       _r, results = Ractor.select(*workers)
 
       a_with_d = @annotation_with_documents[results.index]
-      results.processed_annotations.each.with_index do |processed_annotation, index|
+      results.aligned_annotations.each.with_index do |processed_annotation, index|
         original_annotation = a_with_d.targets[index]
         raise "[#{original_annotation[:sourcedb]}:#{original_annotation[:sourceid]}] #{processed_annotation.error_message}" if processed_annotation.error_message
 
@@ -48,7 +48,7 @@ class AlignTextInRactor
   private
 
   Request = Data.define(:options, :ref_text, :data, :index)
-  Results = Data.define(:processed_annotations, :index)
+  Results = Data.define(:aligned_annotations, :index)
 
   def pipe
     @pipe ||= Ractor.new do
