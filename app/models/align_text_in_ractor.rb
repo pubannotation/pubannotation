@@ -19,15 +19,7 @@ class AlignTextInRactor
     workers = (1..4).map do
       Ractor.new pipe do |pipe|
         while msg = pipe.take
-          aligner = TextAlignment::TextAlignment.new(msg.ref_text, msg.options)
-          processedAnnotations = msg.data.map do |datum|
-            begin
-              datum.align(aligner)
-            rescue => e
-              break [ProcessedAnnotation.new(nil, nil, nil, nil, e.message)]
-            end
-          end
-
+          processedAnnotations = AlignTextInRactor.align_data(msg.ref_text, msg.options, msg.data)
           Ractor.yield(Ractor.make_shareable(Results.new(msg.index, processedAnnotations)))
         end
       end
@@ -60,6 +52,19 @@ class AlignTextInRactor
             }
           }
         end
+      end
+    end
+  end
+
+  # The self of the block to be processed by Ractor is the running Ractor instance.
+  # This method should be made a class method so that it can be called without reference to an instance of the AlignTextInRactor class.
+  def self.align_data(ref_text, options, aligners)
+    text_alignment = TextAlignment::TextAlignment.new(ref_text, options)
+    aligners.map do |a|
+      begin
+        a.align(text_alignment)
+      rescue => e
+        break [ProcessedAnnotation.new(nil, nil, nil, nil, e.message)]
       end
     end
   end
