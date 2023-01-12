@@ -735,7 +735,7 @@ class Project < ActiveRecord::Base
     }
 
     # To find the doc for each annotation object
-    annotations_for_doc_collection, messages = AnnotationWithDocument.find_doc_for(annotations_collection)
+    annotations_for_doc_collection, messages = AnnotationsForDocument.find_doc_for(annotations_collection)
 
     # skip option
     num_skipped = if options[:mode] == 'skip'

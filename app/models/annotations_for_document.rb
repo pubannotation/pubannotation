@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AnnotationWithDocument
+class AnnotationsForDocument
   attr_reader :annotations, :doc
   def initialize(annotations, doc)
     @annotations = annotations
@@ -25,7 +25,7 @@ class AnnotationWithDocument
 
       source = DocumentSource.new(annotations)
       doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
-      annotations_for_doc_collection << AnnotationWithDocument.new(annotations, doc)
+      annotations_for_doc_collection << AnnotationsForDocument.new(annotations, doc)
       result
     rescue ActiveRecord::RecordNotFound
       messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
