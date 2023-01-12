@@ -17,7 +17,7 @@ class AnnotationsForDocument
 
   def aligners
     Aligners.new ref_text,
-                 having_denotations_or_blocks.map { |annotation| Aligner.new(annotation[:text], annotation[:denotations], annotation[:blocks]) }
+                 having_denotations_or_blocks
   end
 
   def self.find_doc_for(annotations_collection)
@@ -34,53 +34,6 @@ class AnnotationsForDocument
     rescue ActiveRecord::SoleRecordExceeded
       messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
       result
-    end
-  end
-
-  class Aligners
-    def initialize(ref_text, aligners)
-      @ref_text = ref_text
-      @aligners = aligners
-    end
-
-    def align_all(options)
-      text_alignment = TextAlignment::TextAlignment.new(@ref_text, options)
-      @aligners.map do |a|
-        begin
-          a.align(text_alignment)
-        rescue => e
-          break [AlignedAnnotation.new(nil, nil, nil, nil, e.message)]
-        end
-      end
-    end
-  end
-
-  class Aligner
-    def initialize(text, denotations, blocks)
-      @text = text
-      @denotations = denotations || []
-      @blocks = blocks || []
-    end
-
-    def align(aligner)
-      aligner.align(@text, @denotations + @blocks)
-
-      AlignedAnnotation.new aligner.transform_hdenotations(@denotations),
-                            aligner.transform_hdenotations(@blocks),
-                            aligner.lost_annotations,
-                            aligner.lost_annotations.present? ? aligner.block_alignment : nil
-    end
-  end
-
-  class AlignedAnnotation
-    attr_reader :denotations, :blocks, :lost_annotations, :block_alignments, :error_message
-
-    def initialize(denotations, blocks, lost_annotations, block_alignments, error_message = nil)
-      @denotations = denotations
-      @blocks = blocks
-      @lost_annotations = lost_annotations
-      @block_alignments = block_alignments
-      @error_message = error_message
     end
   end
 end
