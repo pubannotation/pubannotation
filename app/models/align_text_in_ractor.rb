@@ -18,7 +18,7 @@ class AlignTextInRactor
 
       pipe.send(Ractor.make_shareable(request))
     end.each do
-      _r, results = Ractor.select(*workers)
+      _ractor, results = Ractor.select(*workers)
 
       a_with_d = @annotation_with_documents[results.index]
       results.aligned_annotations.each.with_index do |aligned_annotation, index|
