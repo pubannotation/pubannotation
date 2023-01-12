@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
 class AlignTextInRactor
-  attr_reader :annotation_with_documents, :messages
+  attr_reader :annotations_for_doc_collection, :messages
 
-  def initialize(annotation_with_documents, options)
-    @annotation_with_documents = annotation_with_documents
+  def initialize(annotations_for_doc_collection, options)
+    @annotations_for_doc_collection = annotations_for_doc_collection
     @options = options
     @messages = []
   end
 
   def call
-    @annotation_with_documents.each_with_index do |input_chunk, index|
+    @annotations_for_doc_collection.each_with_index do |input_chunk, index|
       request = Request.new @options,
                             input_chunk.aligners,
                             index
@@ -23,7 +23,7 @@ class AlignTextInRactor
       # Results are returned in the order in which they were processed.
       # The order of the results is different from the order of the input.
       # The index of the input is used to retrieve the original data.
-      input_chunk = @annotation_with_documents[result.index_on_input]
+      input_chunk = @annotations_for_doc_collection[result.index_on_input]
 
       result.aligned_annotations.each.with_index do |aligned_annotation, index|
         original_annotation = input_chunk.having_denotations_or_blocks[index]
@@ -49,6 +49,8 @@ class AlignTextInRactor
         end
       end
     end
+
+    self
   end
 
   private

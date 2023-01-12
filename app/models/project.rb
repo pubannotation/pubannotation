@@ -751,7 +751,7 @@ class Project < ActiveRecord::Base
 
     aligner = AlignTextInRactor.new(annotations_for_doc_collection, options)
     aligner.call
-    annotations_for_doc_collection = aligner.annotation_with_documents
+    annotations_for_doc_collection = aligner.annotations_for_doc_collection
     messages.concat aligner.messages
 
     aligned_collection = []
