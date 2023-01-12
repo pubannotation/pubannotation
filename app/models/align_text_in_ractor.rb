@@ -12,7 +12,6 @@ class AlignTextInRactor
   def call
     @annotation_with_documents.each_with_index do |a_with_d, index|
       request = Request.new @options,
-                            a_with_d.ref_text,
                             a_with_d.aligners,
                             index
 
@@ -47,7 +46,7 @@ class AlignTextInRactor
 
   private
 
-  Request = Data.define(:options, :ref_text, :data, :index)
+  Request = Data.define(:options, :aligners, :index)
   Results = Data.define(:aligned_annotations, :index)
 
   def pipe
@@ -62,24 +61,9 @@ class AlignTextInRactor
     @workers ||= (1..4).map do
       Ractor.new pipe do |pipe|
         while request = pipe.take
-          alignedAnnotations = AlignTextInRactor.align_data request.options,
-                                                              request.ref_text,
-                                                              request.data
+          alignedAnnotations = request.aligners.align_all request.options
           Ractor.yield(Ractor.make_shareable(Results.new(alignedAnnotations, request.index)))
         end
-      end
-    end
-  end
-
-  # The self of the block to be processed by Ractor is the running Ractor instance.
-  # This method should be made a class method so that it can be called without reference to an instance of the AlignTextInRactor class.
-  def self.align_data(options, ref_text, aligners)
-    text_alignment = TextAlignment::TextAlignment.new(ref_text, options)
-    aligners.map do |a|
-      begin
-        a.align(text_alignment)
-      rescue => e
-        break [AlignedAnnotation.new(nil, nil, nil, nil, e.message)]
       end
     end
   end

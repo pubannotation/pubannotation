@@ -16,7 +16,8 @@ class AnnotationsForDocument
   end
 
   def aligners
-    having_denotations_or_blocks.map { |annotation| Aligner.new(annotation[:text], annotation[:denotations], annotation[:blocks]) }
+    Aligners.new ref_text,
+                 having_denotations_or_blocks.map { |annotation| Aligner.new(annotation[:text], annotation[:denotations], annotation[:blocks]) }
   end
 
   def self.find_doc_for(annotations_collection)
@@ -36,6 +37,24 @@ class AnnotationsForDocument
     end
   end
 
+  class Aligners
+    def initialize(ref_text, aligners)
+      @ref_text = ref_text
+      @aligners = aligners
+    end
+
+    def align_all(options)
+      text_alignment = TextAlignment::TextAlignment.new(@ref_text, options)
+      @aligners.map do |a|
+        begin
+          a.align(text_alignment)
+        rescue => e
+          break [AlignedAnnotation.new(nil, nil, nil, nil, e.message)]
+        end
+      end
+    end
+  end
+
   class Aligner
     def initialize(text, denotations, blocks)
       @text = text
@@ -50,7 +69,6 @@ class AnnotationsForDocument
                             aligner.transform_hdenotations(@blocks),
                             aligner.lost_annotations,
                             aligner.lost_annotations.present? ? aligner.block_alignment : nil
-
     end
   end
 
