@@ -24,9 +24,11 @@ class AlignTextInRactor
         original_annotation = a_with_d.having_denotations_or_blocks[index]
         raise "[#{original_annotation[:sourcedb]}:#{original_annotation[:sourceid]}] #{aligned_annotation.error_message}" if aligned_annotation.error_message
 
-        original_annotation[:denotations] = aligned_annotation.denotations
-        original_annotation[:blocks] = aligned_annotation.blocks
-        original_annotation[:text] = a_with_d.ref_text
+        original_annotation.merge!({
+                                     text: a_with_d.ref_text,
+                                     denotations: aligned_annotation.denotations,
+                                     blocks: aligned_annotation.blocks
+                                   })
         original_annotation.delete_if { |_, v| !v.present? }
 
         if aligned_annotation.lost_annotations.present?
