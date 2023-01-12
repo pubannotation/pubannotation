@@ -751,11 +751,10 @@ class Project < ActiveRecord::Base
 
     aligner = AlignTextInRactor.new(annotations_for_doc_collection, options)
     aligner.call
-    annotations_for_doc_collection = aligner.annotations_for_doc_collection
     messages.concat aligner.messages
 
     aligned_collection = []
-    annotations_for_doc_collection.each do |annotations_with_doc|
+    aligner.annotations_for_doc_collection.each do |annotations_with_doc|
       if options[:mode] == 'replace'
         delete_doc_annotations(annotations_with_doc.doc)
       else
