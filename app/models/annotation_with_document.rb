@@ -15,7 +15,7 @@ class AnnotationWithDocument
     @targets ||= annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
   end
 
-  def having_denotations_or_blocks
+  def aligners
     targets.map { |annotation| Aligner.new(annotation[:text], annotation[:denotations], annotation[:blocks]) }
   end
 

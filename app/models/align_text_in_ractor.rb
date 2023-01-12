@@ -13,7 +13,7 @@ class AlignTextInRactor
     @annotation_with_documents.each_with_index do |a_with_d, index|
       request = Request.new @options,
                             a_with_d.ref_text,
-                            a_with_d.having_denotations_or_blocks,
+                            a_with_d.aligners,
                             index
 
       pipe.send(Ractor.make_shareable(request))
