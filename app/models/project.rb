@@ -753,8 +753,7 @@ class Project < ActiveRecord::Base
     aligner.call
     messages.concat aligner.messages
 
-    aligned_collection = []
-    aligner.annotations_for_doc_collection.each do |annotations_with_doc|
+    aligned_collection = aligner.annotations_for_doc_collection.reduce([]) do |aligned_collection, annotations_with_doc|
       if options[:mode] == 'replace'
         delete_doc_annotations(annotations_with_doc.doc)
       else
@@ -792,6 +791,8 @@ class Project < ActiveRecord::Base
           false
         end
       end
+
+      aligned_collection
     rescue StandardError => e
       messages << { sourcedb: annotations_with_doc.doc.sourcedb, sourceid: annotations_with_doc.doc.sourceid, body: e.message[0..250] }
     end
