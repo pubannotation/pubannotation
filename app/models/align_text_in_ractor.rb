@@ -10,26 +10,27 @@ class AlignTextInRactor
   end
 
   def call
-    @annotation_with_documents.each_with_index do |a_with_d, index|
+    @annotation_with_documents.each_with_index do |input_chunk, index|
       request = Request.new @options,
-                            a_with_d.aligners,
+                            input_chunk.aligners,
                             index
 
       pipe.send(Ractor.make_shareable(request))
     end.each do
-      _ractor, results = Ractor.select(*workers)
+      _ractor, result = Ractor.select(*workers)
 
       # Ractor runs in parallel.
       # Results are returned in the order in which they were processed.
       # The order of the results is different from the order of the input.
       # The index of the input is used to retrieve the original data.
-      a_with_d = @annotation_with_documents[results.index]
-      results.aligned_annotations.each.with_index do |aligned_annotation, index|
-        original_annotation = a_with_d.having_denotations_or_blocks[index]
+      input_chunk = @annotation_with_documents[result.index_on_input]
+
+      result.aligned_annotations.each.with_index do |aligned_annotation, index|
+        original_annotation = input_chunk.having_denotations_or_blocks[index]
         raise "[#{original_annotation[:sourcedb]}:#{original_annotation[:sourceid]}] #{aligned_annotation.error_message}" if aligned_annotation.error_message
 
         original_annotation.merge!({
-                                     text: a_with_d.ref_text,
+                                     text: input_chunk.ref_text,
                                      denotations: aligned_annotation.denotations,
                                      blocks: aligned_annotation.blocks
                                    })
@@ -52,8 +53,8 @@ class AlignTextInRactor
 
   private
 
-  Request = Data.define(:options, :aligners, :index)
-  Results = Data.define(:aligned_annotations, :index)
+  Request = Data.define(:options, :aligners, :index_on_input)
+  Result = Data.define(:aligned_annotations, :index_on_input)
 
   def pipe
     @pipe ||= Ractor.new do
@@ -68,7 +69,7 @@ class AlignTextInRactor
       Ractor.new pipe do |pipe|
         while request = pipe.take
           alignedAnnotations = request.aligners.align_all request.options
-          Ractor.yield(Ractor.make_shareable(Results.new(alignedAnnotations, request.index)))
+          Ractor.yield(Ractor.make_shareable(Result.new(alignedAnnotations, request.index_on_input)))
         end
       end
     end
