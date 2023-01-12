@@ -29,7 +29,7 @@ class AlignTextInRactor
                                       aligner.lost_annotations,
                                       aligner.lost_annotations.present? ? aligner.block_alignment : nil
             rescue => e
-              break ProcessedAnnotation.new(nil, nil, nil, nil, e.message)
+              break [ProcessedAnnotation.new(nil, nil, nil, nil, e.message)]
             end
           end
 
