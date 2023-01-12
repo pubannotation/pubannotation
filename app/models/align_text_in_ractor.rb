@@ -22,7 +22,7 @@ class AlignTextInRactor
 
       a_with_d = @annotation_with_documents[results.index]
       results.aligned_annotations.each.with_index do |aligned_annotation, index|
-        original_annotation = a_with_d.targets[index]
+        original_annotation = a_with_d.having_denotations_or_blocks[index]
         raise "[#{original_annotation[:sourcedb]}:#{original_annotation[:sourceid]}] #{aligned_annotation.error_message}" if aligned_annotation.error_message
 
         original_annotation[:denotations] = aligned_annotation.denotations

@@ -11,12 +11,12 @@ class AnnotationWithDocument
     doc&.original_body || doc.body
   end
 
-  def targets
-    @targets ||= annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
+  def having_denotations_or_blocks
+    @having_denotations_or_blocks ||= annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
   end
 
   def aligners
-    targets.map { |annotation| Aligner.new(annotation[:text], annotation[:denotations], annotation[:blocks]) }
+    having_denotations_or_blocks.map { |annotation| Aligner.new(annotation[:text], annotation[:denotations], annotation[:blocks]) }
   end
 
   def self.find_doc_for(annotations_collection)
