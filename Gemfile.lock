@@ -375,6 +375,7 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
+    stackprof (0.2.23)
     string-similarity (2.1.0)
     tao_rdfizer (0.11.3)
     terser (1.1.13)
@@ -450,6 +451,7 @@ DEPENDENCIES
   rubyzip
   sass-rails
   sidekiq
+  stackprof
   stardog-rb!
   tao_rdfizer (~> 0.11.3)
   terser

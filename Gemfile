@@ -25,6 +25,7 @@ group :development do
   gem 'guard-livereload'
   gem 'web-console'
   gem 'debug'
+  gem "stackprof"
 end
 
 gem 'text_alignment', '0.11.10'
