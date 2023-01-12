@@ -15,7 +15,7 @@ class AnnotationWithDocument
     @targets ||= annotations.filter {|a| a[:denotations].present? || a[:blocks].present? }
   end
 
-  def target_data
+  def having_denotations_or_blocks
     targets.map { |annotation| Aligner.new(annotation[:text], annotation[:denotations], annotation[:blocks]) }
   end
 
@@ -46,15 +46,15 @@ class AnnotationWithDocument
     def align(aligner)
       aligner.align(@text, @denotations + @blocks)
 
-      ProcessedAnnotation.new aligner.transform_hdenotations(@denotations),
-                              aligner.transform_hdenotations(@blocks),
-                              aligner.lost_annotations,
-                              aligner.lost_annotations.present? ? aligner.block_alignment : nil
+      AlignedAnnotation.new aligner.transform_hdenotations(@denotations),
+                            aligner.transform_hdenotations(@blocks),
+                            aligner.lost_annotations,
+                            aligner.lost_annotations.present? ? aligner.block_alignment : nil
 
     end
   end
 
-  class ProcessedAnnotation
+  class AlignedAnnotation
     attr_reader :denotations, :blocks, :lost_annotations, :block_alignments, :error_message
 
     def initialize(denotations, blocks, lost_annotations, block_alignments, error_message = nil)

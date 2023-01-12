@@ -10,24 +10,13 @@ class AlignTextInRactor
   end
 
   def call
-    pipe = Ractor.new do
-      loop do
-        Ractor.yield Ractor.receive
-      end
-    end
-
-    workers = (1..4).map do
-      Ractor.new pipe do |pipe|
-        while msg = pipe.take
-          processedAnnotations = AlignTextInRactor.align_data(msg.ref_text, msg.options, msg.data)
-          Ractor.yield(Ractor.make_shareable(Results.new(msg.index, processedAnnotations)))
-        end
-      end
-    end
-
-    request = Data.define(:index, :options, :ref_text, :data)
     @annotation_with_documents.each_with_index do |a_with_d, index|
-      pipe.send(Ractor.make_shareable(request.new(index, @options, a_with_d.ref_text, a_with_d.target_data)))
+      request = Request.new @options,
+                            a_with_d.ref_text,
+                            a_with_d.having_denotations_or_blocks,
+                            index
+
+      pipe.send(Ractor.make_shareable(request))
     end.each do
       _r, results = Ractor.select(*workers)
 
@@ -56,18 +45,42 @@ class AlignTextInRactor
     end
   end
 
+  private
+
+  Request = Data.define(:options, :ref_text, :data, :index)
+  Results = Data.define(:processed_annotations, :index)
+
+  def pipe
+    @pipe ||= Ractor.new do
+      loop do
+        Ractor.yield Ractor.receive
+      end
+    end
+  end
+
+  def workers
+    @workers ||= (1..4).map do
+      Ractor.new pipe do |pipe|
+        while request = pipe.take
+          alignedAnnotations = AlignTextInRactor.align_data request.options,
+                                                              request.ref_text,
+                                                              request.data
+          Ractor.yield(Ractor.make_shareable(Results.new(alignedAnnotations, request.index)))
+        end
+      end
+    end
+  end
+
   # The self of the block to be processed by Ractor is the running Ractor instance.
   # This method should be made a class method so that it can be called without reference to an instance of the AlignTextInRactor class.
-  def self.align_data(ref_text, options, aligners)
+  def self.align_data(options, ref_text, aligners)
     text_alignment = TextAlignment::TextAlignment.new(ref_text, options)
     aligners.map do |a|
       begin
         a.align(text_alignment)
       rescue => e
-        break [ProcessedAnnotation.new(nil, nil, nil, nil, e.message)]
+        break [AlignedAnnotation.new(nil, nil, nil, nil, e.message)]
       end
     end
   end
-
-  Results = Data.define(:index, :processed_annotations)
 end
