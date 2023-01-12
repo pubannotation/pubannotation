@@ -753,47 +753,21 @@ class Project < ActiveRecord::Base
     aligner.call
     messages.concat aligner.messages
 
-    aligned_collection = aligner.annotations_for_doc_collection.reduce([]) do |aligned_collection, annotations_with_doc|
+    valid_annotations = aligner.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_with_doc|
       pretreatment_according_to(options, annotations_with_doc)
 
-      aligned_collection += annotations_with_doc.annotations.filter.with_index do |annotation, index|
-        denotations = annotation[:denotations]
-        attributes = annotation[:attributes]
-        sourcedb = annotation[:sourcedb]
-        sourceid = annotation[:sourceid]
-
-        if denotations && attributes
-          denotation_ids = denotations.map { |d| d[:id] }
-          subject_less_attributes = attributes.map { |a| a[:subj] }
-                                                   .filter { |subj| !denotation_ids.include? subj }
-          if subject_less_attributes.present?
-            messages << {
-              sourcedb: sourcedb,
-              sourceid: sourceid,
-              body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
-            }
-            false
-          else
-            true
-          end
-        else
-          messages << {
-            sourcedb: sourcedb,
-            sourceid: sourceid,
-            body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
-          }
-          false
-        end
+      valid_annotations + annotations_with_doc.annotations.filter.with_index do |annotation, index|
+        inspect_annotation messages,
+                           annotation,
+                           index
       end
-
-      aligned_collection
     rescue StandardError => e
       messages << { sourcedb: annotations_with_doc.doc.sourcedb, sourceid: annotations_with_doc.doc.sourceid, body: e.message[0..250] }
     end
 
     messages << { body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." } if num_skipped > 0
 
-    InstantiateAndSaveAnnotationsCollection.call(self, aligned_collection) if aligned_collection.present?
+    InstantiateAndSaveAnnotationsCollection.call(self, valid_annotations) if valid_annotations.present?
 
     messages
   end
@@ -967,6 +941,36 @@ class Project < ActiveRecord::Base
         base_annotations = annotations_with_doc.doc.hannotations(self)
         annotations_with_doc.annotations.each { |a| Annotation.prepare_annotations_for_merging!(a, base_annotations) }
       end
+    end
+  end
+
+  def inspect_annotation(messages, annotation, index)
+    denotations = annotation[:denotations]
+    attributes = annotation[:attributes]
+    sourcedb = annotation[:sourcedb]
+    sourceid = annotation[:sourceid]
+
+    if denotations && attributes
+      denotation_ids = denotations.map { |d| d[:id] }
+      subject_less_attributes = attributes.map { |a| a[:subj] }
+                                          .filter { |subj| !denotation_ids.include? subj }
+      if subject_less_attributes.present?
+        messages << {
+          sourcedb: sourcedb,
+          sourceid: sourceid,
+          body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
+        }
+        false
+      else
+        true
+      end
+    else
+      messages << {
+        sourcedb: sourcedb,
+        sourceid: sourceid,
+        body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
+      }
+      false
     end
   end
 end
