@@ -19,6 +19,10 @@ class AlignTextInRactor
     end.each do
       _ractor, results = Ractor.select(*workers)
 
+      # Ractor runs in parallel.
+      # Results are returned in the order in which they were processed.
+      # The order of the results is different from the order of the input.
+      # The index of the input is used to retrieve the original data.
       a_with_d = @annotation_with_documents[results.index]
       results.aligned_annotations.each.with_index do |aligned_annotation, index|
         original_annotation = a_with_d.having_denotations_or_blocks[index]
