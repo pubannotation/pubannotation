@@ -754,18 +754,7 @@ class Project < ActiveRecord::Base
     messages.concat aligner.messages
 
     aligned_collection = aligner.annotations_for_doc_collection.reduce([]) do |aligned_collection, annotations_with_doc|
-      if options[:mode] == 'replace'
-        delete_doc_annotations(annotations_with_doc.doc)
-      else
-        case options[:mode]
-        when 'add'
-          annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
-        when 'merge'
-          annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
-          base_annotations = annotations_with_doc.doc.hannotations(self)
-          annotations_with_doc.annotations.each { |a| Annotation.prepare_annotations_for_merging!(a, base_annotations) }
-        end
-      end
+      pretreatment_according_to(options, annotations_with_doc)
 
       aligned_collection += annotations_with_doc.annotations.filter.with_index do
         if _1[:denotations] && _1[:attributes]
@@ -959,5 +948,20 @@ class Project < ActiveRecord::Base
 
   def rdf_loc
     Rails.application.config.system_path_rdf + "projects/#{identifier}-rdf/"
+  end
+
+  def pretreatment_according_to(options, annotations_with_doc)
+    if options[:mode] == 'replace'
+      delete_doc_annotations(annotations_with_doc.doc)
+    else
+      case options[:mode]
+      when 'add'
+        annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
+      when 'merge'
+        annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
+        base_annotations = annotations_with_doc.doc.hannotations(self)
+        annotations_with_doc.annotations.each { |a| Annotation.prepare_annotations_for_merging!(a, base_annotations) }
+      end
+    end
   end
 end
