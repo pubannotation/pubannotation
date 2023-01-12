@@ -21,23 +21,23 @@ class AlignTextInRactor
       _r, results = Ractor.select(*workers)
 
       a_with_d = @annotation_with_documents[results.index]
-      results.aligned_annotations.each.with_index do |processed_annotation, index|
+      results.aligned_annotations.each.with_index do |aligned_annotation, index|
         original_annotation = a_with_d.targets[index]
-        raise "[#{original_annotation[:sourcedb]}:#{original_annotation[:sourceid]}] #{processed_annotation.error_message}" if processed_annotation.error_message
+        raise "[#{original_annotation[:sourcedb]}:#{original_annotation[:sourceid]}] #{aligned_annotation.error_message}" if aligned_annotation.error_message
 
-        original_annotation[:denotations] = processed_annotation.denotations
-        original_annotation[:blocks] = processed_annotation.blocks
+        original_annotation[:denotations] = aligned_annotation.denotations
+        original_annotation[:blocks] = aligned_annotation.blocks
         original_annotation[:text] = a_with_d.ref_text
         original_annotation.delete_if { |_, v| !v.present? }
 
-        if processed_annotation.lost_annotations.present?
+        if aligned_annotation.lost_annotations.present?
           @messages << {
             sourcedb: original_annotation[:sourcedb],
             sourceid: original_annotation[:sourceid],
             body: "Alignment failed. Invalid denotations found after transformation",
             data: {
-              block_alignment: processed_annotation.block_alignment,
-              lost_annotations: processed_annotation.lost_annotations
+              block_alignment: aligned_annotation.block_alignment,
+              lost_annotations: aligned_annotation.lost_annotations
             }
           }
         end
