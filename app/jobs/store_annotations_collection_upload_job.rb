@@ -51,7 +51,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
                          sourceid: annotation_collection&.sourceid,
                          body: body
       else
-        raise ArgumentError, "[#{annotation_collection.sourcedb}:#{annotation_collection.sourceid}] #{e.message}"
+        raise ArgumentError, "[#{annotation_collection&.sourcedb}:#{annotation_collection&.sourceid}] #{e.message}"
       end
     end
 
