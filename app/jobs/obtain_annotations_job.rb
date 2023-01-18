@@ -180,7 +180,6 @@ private
 		ttime = Time.now - timer_start
 
 		## In case of synchronous protocol
-		timer_start = Time.now
 		text_length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
 		timer_start = Time.now
 		messages = if options[:span].present?
