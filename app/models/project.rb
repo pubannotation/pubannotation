@@ -732,7 +732,7 @@ class Project < ActiveRecord::Base
 
     # skip option
     num_skipped = if options[:mode] == 'skip'
-                    AnnotationsForDocument.num_skipped(id, annotations_for_doc_collection)
+                    AnnotationsForDocument.skip!(id, annotations_for_doc_collection)
                   else
                     0
                   end

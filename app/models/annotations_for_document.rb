@@ -47,7 +47,7 @@ class AnnotationsForDocument
     end
   end
 
-  def self.num_skipped(project_id, annotations_for_doc_collection)
+  def self.skip!(project_id, annotations_for_doc_collection)
     num_annotations_for_doc = annotations_for_doc_collection.count
 
     annotations_for_doc_collection.select! do |annotations_for_doc|
