@@ -21,6 +21,16 @@ class AnnotationsForDocument
   end
 
   def self.find_doc_for(annotations_collection)
+    # Standardize annotations into arrays.
+    annotations_collection = annotations_collection.map { |annotations|
+      if annotations.is_a? Array
+        annotations
+      else
+        [annotations]
+      end
+    }
+
+    # Find the document for the annotations.
     annotations_collection.inject([[], []]) do |result, annotations|
       annotations_for_doc_collection, messages = result
 

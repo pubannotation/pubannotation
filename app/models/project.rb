@@ -725,15 +725,6 @@ class Project < ActiveRecord::Base
   # - annotations are already normal, and
   # - documents exist in the database
   def store_annotations_collection(annotations_collection, options, job)
-    # Standardize annotations into arrays.
-    annotations_collection = annotations_collection.map { |annotations|
-      if annotations.is_a? Array
-        annotations
-      else
-        [annotations]
-      end
-    }
-
     # To find the doc for each annotation object
     annotations_for_doc_collection, messages = AnnotationsForDocument.find_doc_for(annotations_collection)
 
