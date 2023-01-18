@@ -724,7 +724,7 @@ class Project < ActiveRecord::Base
   # It assumes that
   # - annotations are already normal, and
   # - documents exist in the database
-  def store_annotations_collection(annotations_collection, options)
+  def store_annotations_collection(annotations_collection, options, job)
     # Standardize annotations into arrays.
     annotations_collection = annotations_collection.map { |annotations|
       if annotations.is_a? Array
@@ -769,7 +769,15 @@ class Project < ActiveRecord::Base
 
     InstantiateAndSaveAnnotationsCollection.call(self, valid_annotations) if valid_annotations.present?
 
-    messages
+    if messages.present?
+      if job
+        messages.each do |m|
+          job.add_message m
+        end
+      else
+        raise ArgumentError, messages.collect { |m| "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}" }.join("\n")
+      end
+    end
   end
 
   def make_request(method, url, params = nil, payload = nil)

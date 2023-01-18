@@ -182,14 +182,14 @@ private
 		## In case of synchronous protocol
 		text_length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
 		timer_start = Time.now
-		messages = if options[:span].present?
-			project.save_annotations!(annotations_col.first, docs.first, options)
+		if options[:span].present?
+			messages = project.save_annotations!(annotations_col.first, docs.first, options)
+			messages.each do |m|
+				m = {body: m} if m.class == String
+				@job.add_message m
+			end
 		else
-			project.store_annotations_collection(annotations_col, options)
-		end
-		messages.each do |m|
-			m = {body: m} if m.class == String
-			@job.add_message m
+			project.store_annotations_collection(annotations_col, options, @job)
 		end
 		stime = Time.now - timer_start
 
@@ -254,14 +254,14 @@ private
 				end
 
 				timer_start = Time.now
-				messages = if task[:span].present?
-					project.save_annotations!(annotations_col.first, Doc.find(task[:docid]), options.merge(span:task[:span]))
+				if task[:span].present?
+					messages = project.save_annotations!(annotations_col.first, Doc.find(task[:docid]), options.merge(span:task[:span]))
+					messages.each do |m|
+						m = {body: m} if m.class == String
+						@job.add_message m
+					end
 				else
-					project.store_annotations_collection(annotations_col, options)
-				end
-				messages.each do |m|
-					m = {body: m} if m.class == String
-					@job.add_message m
+					project.store_annotations_collection(annotations_col, options, @job)
 				end
 
 				stime = Time.now - timer_start

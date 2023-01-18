@@ -72,16 +72,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   private
 
   def store_annotations(project, annotation_transaction, options)
-    messages = project.store_annotations_collection(annotation_transaction.annotation_transaction, options)
-    if messages.present?
-      if @job
-        messages.each do |m|
-          @job.add_message m
-        end
-      else
-        raise ArgumentError, messages.collect { |m| "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}" }.join("\n")
-      end
-    end
+    project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
   end
 
   def store_docs(project, sourcedb_sourceids_index)
