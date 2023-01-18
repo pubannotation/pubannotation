@@ -20,7 +20,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       # I found the guard, so I'll end the loop.
       if jsonfile.nil?
         store_docs(project, annotation_transaction.sourcedb_sourceids_index)
-        store_annotations(project, annotation_transaction, options)
+        project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
         break
       end
 
@@ -32,7 +32,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       # Save annotations when enough transactions have been stored.
       if annotation_transaction.enough?
         num_sequenced = store_docs(project, annotation_transaction.sourcedb_sourceids_index)
-        store_annotations(project, annotation_transaction, options)
+        project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
         @is_sequenced = true if num_sequenced > 0
 
         annotation_transaction = AnnotationTransaction.new
@@ -70,10 +70,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   end
 
   private
-
-  def store_annotations(project, annotation_transaction, options)
-    project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
-  end
 
   def store_docs(project, sourcedb_sourceids_index)
     source_dbs_changed = []
