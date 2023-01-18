@@ -16,14 +16,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     annotation_transaction = AnnotationTransaction.new
 
-    (filenames << nil).each_with_index do |jsonfile, i|
-      # I found the guard, so I'll end the loop.
-      if jsonfile.nil?
-        store_docs(project, annotation_transaction.sourcedb_sourceids_index)
-        project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
-        break
-      end
-
+    filenames.each_with_index do |jsonfile, i|
       annotation_collection = AnnotationCollection.new(jsonfile)
 
       # Add annotations to transaction.
@@ -46,12 +39,34 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       raise
     rescue StandardError => e
       if @job
-        body = Rails.env.development? ? "#{e.backtrace_locations ? e.backtrace_locations[0..2] : 'no backtrace;'} #{e.message[0..250]}" : e.message[0..250]
+        body = ''
+        body << "#{e.backtrace_locations ? e.backtrace_locations[0..2] : 'no backtrace;'}" if Rails.env.development?
+        body << e.message[0..250]
         @job.add_message sourcedb: annotation_collection&.sourcedb,
                          sourceid: annotation_collection&.sourceid,
                          body: body
       else
         raise ArgumentError, "[#{annotation_collection&.sourcedb}:#{annotation_collection&.sourceid}] #{e.message}"
+      end
+    end
+
+    # Process the remaining annotations.
+    begin
+      num_sequenced = store_docs(project, annotation_transaction.sourcedb_sourceids_index)
+      @is_sequenced = true if num_sequenced > 0
+      project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
+
+      if @job
+        @job.update_attribute(:num_dones, filenames.length)
+      end
+    rescue StandardError => e
+      if @job
+        body = ''
+        body << "#{e.backtrace_locations ? e.backtrace_locations[0..2] : 'no backtrace;'}" if Rails.env.development?
+        body << e.message[0..250]
+        @job.add_message body: body
+      else
+        raise ArgumentError, "#{e.message}"
       end
     end
 
