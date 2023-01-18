@@ -753,16 +753,16 @@ class Project < ActiveRecord::Base
     aligner.call
     messages.concat aligner.messages
 
-    valid_annotations = aligner.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_with_doc|
-      pretreatment_according_to(options, annotations_with_doc)
+    valid_annotations = aligner.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
+      pretreatment_according_to(options, annotations_for_doc)
 
-      valid_annotations + annotations_with_doc.annotations.filter.with_index do |annotation, index|
+      valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
         inspect_annotation messages,
                            annotation,
                            index
       end
     rescue StandardError => e
-      messages << { sourcedb: annotations_with_doc.doc.sourcedb, sourceid: annotations_with_doc.doc.sourceid, body: e.message[0..250] }
+      messages << { sourcedb: annotations_for_doc.doc.sourcedb, sourceid: annotations_for_doc.doc.sourceid, body: e.message[0..250] }
     end
 
     messages << { body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." } if num_skipped > 0
