@@ -24,10 +24,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
       # Save annotations when enough transactions have been stored.
       if batch_item.enough?
-        num_sequenced = store_docs(project, batch_item.sourcedb_sourceids_index)
-        @is_sequenced = true if num_sequenced > 0
-        project.store_annotations_collection(batch_item.annotation_transaction, options, @job)
-
+        execute_batch project, options, batch_item
         batch_item = BatchItem.new
       end
 
@@ -50,11 +47,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       end
     end
 
-    # Process the remaining annotations.
+    # Process the remaining batch items.
     begin
-      num_sequenced = store_docs(project, batch_item.sourcedb_sourceids_index)
-      @is_sequenced = true if num_sequenced > 0
-      project.store_annotations_collection(batch_item.annotation_transaction, options, @job)
+      execute_batch project, options, batch_item
 
       if @job
         @job.update_attribute(:num_dones, filenames.length)
@@ -85,6 +80,12 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   end
 
   private
+
+  def execute_batch(project, options, batch_item)
+    num_sequenced = store_docs(project, batch_item.sourcedb_sourceids_index)
+    @is_sequenced = true if num_sequenced > 0
+    project.store_annotations_collection(batch_item.annotation_transaction, options, @job)
+  end
 
   def store_docs(project, sourcedb_sourceids_index)
     source_dbs_changed = []
