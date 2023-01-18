@@ -14,21 +14,21 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     @is_sequenced = false
     @longest_processing_time = 0
 
-    annotation_transaction = BatchItem.new
+    batch_item = BatchItem.new
 
     filenames.each_with_index do |jsonfile, i|
       annotation_collection = AnnotationCollection.new(jsonfile)
 
       # Add annotations to transaction.
-      annotation_transaction << annotation_collection
+      batch_item << annotation_collection
 
       # Save annotations when enough transactions have been stored.
-      if annotation_transaction.enough?
-        num_sequenced = store_docs(project, annotation_transaction.sourcedb_sourceids_index)
+      if batch_item.enough?
+        num_sequenced = store_docs(project, batch_item.sourcedb_sourceids_index)
         @is_sequenced = true if num_sequenced > 0
-        project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
+        project.store_annotations_collection(batch_item.annotation_transaction, options, @job)
 
-        annotation_transaction = BatchItem.new
+        batch_item = BatchItem.new
       end
 
       if @job
@@ -52,9 +52,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     # Process the remaining annotations.
     begin
-      num_sequenced = store_docs(project, annotation_transaction.sourcedb_sourceids_index)
+      num_sequenced = store_docs(project, batch_item.sourcedb_sourceids_index)
       @is_sequenced = true if num_sequenced > 0
-      project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
+      project.store_annotations_collection(batch_item.annotation_transaction, options, @job)
 
       if @job
         @job.update_attribute(:num_dones, filenames.length)
