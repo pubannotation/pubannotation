@@ -14,7 +14,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     @is_sequenced = false
     @longest_processing_time = 0
 
-    annotation_transaction = AnnotationTransaction.new
+    annotation_transaction = BatchItem.new
 
     filenames.each_with_index do |jsonfile, i|
       annotation_collection = AnnotationCollection.new(jsonfile)
@@ -28,7 +28,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
         @is_sequenced = true if num_sequenced > 0
         project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
 
-        annotation_transaction = AnnotationTransaction.new
+        annotation_transaction = BatchItem.new
       end
 
       if @job

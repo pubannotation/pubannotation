@@ -1,4 +1,4 @@
-class AnnotationTransaction
+class BatchItem
   MAX_SIZE_TRANSACTION = 5000
 
   attr_reader :sourcedb_sourceids_index, :annotation_transaction
