@@ -20,6 +20,8 @@ class AnnotationsForDocument
                  having_denotations_or_blocks
   end
 
+  Result = Data.define(:annotations_for_doc_collection, :messages)
+
   def self.find_doc_for(annotations_collection)
     # Standardize annotations into arrays.
     annotations_collection = annotations_collection.map { |annotations|
@@ -31,18 +33,16 @@ class AnnotationsForDocument
     }
 
     # Find the document for the annotations.
-    annotations_collection.inject([[], []]) do |result, annotations|
-      annotations_for_doc_collection, messages = result
-
+    annotations_collection.inject(Result.new([], [])) do |result, annotations|
       source = DocumentSource.new(annotations)
       doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
-      annotations_for_doc_collection << AnnotationsForDocument.new(annotations, doc)
+      result.annotations_for_doc_collection << AnnotationsForDocument.new(annotations, doc)
       result
     rescue ActiveRecord::RecordNotFound
-      messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
+      result.messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
       result
     rescue ActiveRecord::SoleRecordExceeded
-      messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
+      result.messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
       result
     end
   end
