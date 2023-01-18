@@ -32,8 +32,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       # Save annotations when enough transactions have been stored.
       if annotation_transaction.enough?
         num_sequenced = store_docs(project, annotation_transaction.sourcedb_sourceids_index)
-        project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
         @is_sequenced = true if num_sequenced > 0
+        project.store_annotations_collection(annotation_transaction.annotation_transaction, options, @job)
 
         annotation_transaction = AnnotationTransaction.new
       end
