@@ -10,12 +10,27 @@ Requirement
 -----------
 
 Please use it with
-* ruby version 2.7.3,
+* ruby version 3.2.0,
 * Postgresql 9.0 or above,
 * ElasticSearch 5 or above, and
 * [redis](https://redis.io/)
 
 If your system does not already have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.
+
+### Job execution preparation for Mac
+#### Redis installation
+
+```
+$ brew install redis
+```
+
+#### Launch Redis
+
+Start redis-server by specifying the location of `redis.conf`.
+```
+$ redis-server /usr/local/etc/redis.conf
+```
+
 
 Installation
 ------------
@@ -30,6 +45,28 @@ Setup
 2. RAILE_ENV=production rake db:create
 3. RAILE_ENV=production rake db:migration
 4. RAILE_ENV=production rake assets:precompile
+
+## Start
+
+`foreman start`
+
+or
+
+`bundle exec foreman start`
+
+### Start sidekiq worker only
+
+Start the worker by specifying the location of sidekiq.yml.
+
+By starting a worker by specifying a queue, only Jobs that belong to that queue can be executed.
+```
+# Start sidekiq
+$ bundle exec sidekiq -C config/sidekiq.yml
+
+# Start by specifying a queue
+$ bundle exec sidekiq -C config/sidekiq.yml -q general
+```
+
 
 Deploy
 -----
@@ -104,31 +141,4 @@ cp .env.example .env
 ```
 CLIENT_ID=[Generated client id]
 CLIENT_SECRET=[Generated client secret]
-```
-
-## Job execution preparation
-### Redis installation
-
-```
-$ brew install redis
-```
-
-### Launch Redis
-
-Start redis-server by specifying the location of `redis.conf`.
-```
-$ redis-server /usr/local/etc/redis.conf
-```
-
-### Start sidekiq worker
-
-Start the worker by specifying the location of sidekiq.yml.
-
-By starting a worker by specifying a queue, only Jobs that belong to that queue can be executed.
-```
-# Start sidekiq
-$ bundle exec sidekiq -C config/sidekiq.yml
-
-# Start by specifying a queue
-$ bundle exec sidekiq -C config/sidekiq.yml -q general
 ```
