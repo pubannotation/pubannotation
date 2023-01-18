@@ -66,6 +66,7 @@ Rails.application.configure do
 
   # for "devise"
   config.action_mailer.default_url_options = { :host => 'localhost:3000' }
+  config.action_mailer.delivery_method = :file
 
   # option for url_helpers in models
   Rails.application.routes.default_url_options[:host]= 'localhost:3000'
