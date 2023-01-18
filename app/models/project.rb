@@ -726,16 +726,10 @@ class Project < ActiveRecord::Base
   # - documents exist in the database
   def store_annotations_collection(annotations_collection, options, job)
     # To find the doc for each annotation object
-    result = AnnotationsForDocument.find_doc_for(annotations_collection)
+    result = AnnotationsForDocument.find_doc_for(annotations_collection, options[:mode] == 'skip' ? id : nil)
     annotations_for_doc_collection = result.annotations_for_doc_collection
     messages = result.messages
-
-    # skip option
-    num_skipped = if options[:mode] == 'skip'
-                    AnnotationsForDocument.skip!(id, annotations_for_doc_collection)
-                  else
-                    0
-                  end
+    num_skipped = result.num_skipped
 
     aligner = AlignTextInRactor.new(annotations_for_doc_collection, options)
     aligner.call

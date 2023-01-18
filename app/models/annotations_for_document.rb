@@ -20,9 +20,9 @@ class AnnotationsForDocument
                  having_denotations_or_blocks
   end
 
-  Result = Data.define(:annotations_for_doc_collection, :messages)
+  Result = Struct.new(:annotations_for_doc_collection, :messages, :num_skipped)
 
-  def self.find_doc_for(annotations_collection)
+  def self.find_doc_for(annotations_collection, project_id_for_skip)
     # Standardize annotations into arrays.
     annotations_collection = annotations_collection.map { |annotations|
       if annotations.is_a? Array
@@ -33,10 +33,22 @@ class AnnotationsForDocument
     }
 
     # Find the document for the annotations.
-    annotations_collection.inject(Result.new([], [])) do |result, annotations|
+    annotations_collection.inject(Result.new([], [], 0)) do |result, annotations|
       source = DocumentSource.new(annotations)
       doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
-      result.annotations_for_doc_collection << AnnotationsForDocument.new(annotations, doc)
+      annotations_for_doc = AnnotationsForDocument.new(annotations, doc)
+
+      if project_id_for_skip
+        # skip option
+        if ProjectDoc.where(project_id: project_id_for_skip, doc_id: annotations_for_doc.doc.id).pluck(:denotations_num).first == 0
+          result.annotations_for_doc_collection << AnnotationsForDocument.new(annotations, doc)
+        else
+          result.num_skipped += 1
+        end
+      else
+        result.annotations_for_doc_collection << annotations_for_doc
+      end
+
       result
     rescue ActiveRecord::RecordNotFound
       result.messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
@@ -45,14 +57,5 @@ class AnnotationsForDocument
       result.messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
       result
     end
-  end
-
-  def self.skip!(project_id, annotations_for_doc_collection)
-    num_annotations_for_doc = annotations_for_doc_collection.count
-
-    annotations_for_doc_collection.select! do |annotations_for_doc|
-      ProjectDoc.where(project_id: project_id, doc_id: annotations_for_doc.doc.id).pluck(:denotations_num).first == 0
-    end
-    num_annotations_for_doc - annotations_for_doc_collection.count
   end
 end
