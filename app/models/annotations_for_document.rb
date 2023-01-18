@@ -46,4 +46,13 @@ class AnnotationsForDocument
       result
     end
   end
+
+  def self.num_skipped(project_id, annotations_for_doc_collection)
+    num_annotations_for_doc = annotations_for_doc_collection.count
+
+    annotations_for_doc_collection.select! do |annotations_for_doc|
+      ProjectDoc.where(project_id: project_id, doc_id: annotations_for_doc.doc.id).pluck(:denotations_num).first == 0
+    end
+    num_annotations_for_doc - annotations_for_doc_collection.count
+  end
 end

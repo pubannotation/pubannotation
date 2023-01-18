@@ -732,15 +732,10 @@ class Project < ActiveRecord::Base
 
     # skip option
     num_skipped = if options[:mode] == 'skip'
-      num_annotations_for_doc = annotations_for_doc_collection.count
-
-      annotations_for_doc_collection.select! do |annotations_with_doc|
-        ProjectDoc.where(project_id: id, doc_id: annotations_with_doc.doc.id).pluck(:denotations_num).first == 0
-      end
-      num_annotations_for_doc - annotations_for_doc_collection.count
-    else
-      0
-    end
+                    AnnotationsForDocument.num_skipped(id, annotations_for_doc_collection)
+                  else
+                    0
+                  end
 
     aligner = AlignTextInRactor.new(annotations_for_doc_collection, options)
     aligner.call
