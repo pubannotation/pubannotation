@@ -8,10 +8,16 @@ class ApplicationJob < ActiveJob::Base
 
   def handle_standard_error(exception)
     if @job
+      body = exception.message[0..250]
+
+      if Rails.env.development? && !exception.is_a?(Exceptions::JobSuspendError)
+        body << "\n#{exception.backtrace_locations ? exception.backtrace_locations[0..2] : 'no backtrace;'}"
+      end
+
       @job.add_message sourcedb: '*',
                        sourceid: '*',
                        divid: nil,
-                       body: exception.message
+                       body: body
       @job.finish!
     else
       # Exception handling when Job is executed synchronously with perform_now

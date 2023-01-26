@@ -32,37 +32,13 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
         @job.update_attribute(:num_dones, i + 1)
         check_suspend_flag
       end
-    rescue Exceptions::JobSuspendError
-      raise
-    rescue StandardError => e
-      if @job
-        body = ''
-        body << "#{e.backtrace_locations ? e.backtrace_locations[0..2] : 'no backtrace;'}" if Rails.env.development?
-        body << e.message[0..250]
-        @job.add_message sourcedb: annotation_collection&.sourcedb,
-                         sourceid: annotation_collection&.sourceid,
-                         body: body
-      else
-        raise ArgumentError, "[#{annotation_collection&.sourcedb}:#{annotation_collection&.sourceid}] #{e.message}"
-      end
     end
 
     # Process the remaining batch items.
-    begin
-      execute_batch project, options, batch_item
+    execute_batch project, options, batch_item
 
-      if @job
-        @job.update_attribute(:num_dones, filenames.length)
-      end
-    rescue StandardError => e
-      if @job
-        body = ''
-        body << "#{e.backtrace_locations ? e.backtrace_locations[0..2] : 'no backtrace;'}" if Rails.env.development?
-        body << e.message[0..250]
-        @job.add_message body: body
-      else
-        raise ArgumentError, "#{e.message}"
-      end
+    if @job
+      @job.update_attribute(:num_dones, filenames.length)
     end
 
     if @is_sequenced
