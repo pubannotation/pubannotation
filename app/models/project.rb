@@ -735,9 +735,11 @@ class Project < ActiveRecord::Base
     aligner.call
     messages.concat aligner.messages
 
-    valid_annotations = aligner.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
+    aligner.annotations_for_doc_collection.each do |annotations_for_doc|
       pretreatment_according_to(options, annotations_for_doc)
+    end
 
+    valid_annotations = aligner.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
       valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
         inspect_annotation messages,
                            annotation,
