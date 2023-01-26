@@ -743,8 +743,6 @@ class Project < ActiveRecord::Base
                            annotation,
                            index
       end
-    rescue StandardError => e
-      messages << { sourcedb: annotations_for_doc.doc.sourcedb, sourceid: annotations_for_doc.doc.sourceid, body: e.message[0..250] }
     end
 
     messages << { body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." } if num_skipped > 0
