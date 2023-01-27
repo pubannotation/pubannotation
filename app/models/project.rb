@@ -729,7 +729,7 @@ class Project < ActiveRecord::Base
     result = AnnotationsForDocument.find_doc_for(annotations_collection, options[:mode] == 'skip' ? id : nil)
     annotations_for_doc_collection = result.annotations_for_doc_collection
     messages = result.messages
-    num_skipped = result.num_skipped
+    messages << { body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." } if result.num_skipped > 0
 
     aligner = AlignTextInRactor.new(annotations_for_doc_collection, options)
     aligner.call
@@ -746,8 +746,6 @@ class Project < ActiveRecord::Base
                            index
       end
     end
-
-    messages << { body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." } if num_skipped > 0
 
     InstantiateAndSaveAnnotationsCollection.call(self, valid_annotations) if valid_annotations.present?
 
