@@ -15,21 +15,23 @@ class StoreAnnotationsCollection
     result = aligner.call
     @warnings.concat result.warnings
 
-    result.annotations_for_doc_collection.each do |annotations_for_doc|
-      @project.pretreatment_according_to(@options, annotations_for_doc)
-    end
-
-    valid_annotations = result.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
-      valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
-        inspect_annotations @warnings,
-                            annotation,
-                            index
+    Thread.new do
+      result.annotations_for_doc_collection.each do |annotations_for_doc|
+        @project.pretreatment_according_to(@options, annotations_for_doc)
       end
+
+      valid_annotations = result.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
+        valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
+          inspect_annotations @warnings,
+                              annotation,
+                              index
+        end
+      end
+
+      InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
+
+      @warnings.finalize
     end
-
-    InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
-
-    @warnings.finalize
   end
 
   private
