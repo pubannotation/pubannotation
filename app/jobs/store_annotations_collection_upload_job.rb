@@ -60,7 +60,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   def execute_batch(project, options, batch_item)
     num_sequenced = store_docs(project, batch_item.sourcedb_sourceids_index)
     @is_sequenced = true if num_sequenced > 0
-    StoreAnnotationsCollection.call(project, batch_item.annotation_transaction, options, @job)
+    StoreAnnotationsCollection.new(project, batch_item.annotation_transaction, options, @job).call
   end
 
   def store_docs(project, sourcedb_sourceids_index)

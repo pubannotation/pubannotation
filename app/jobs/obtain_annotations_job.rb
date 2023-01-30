@@ -189,7 +189,7 @@ private
 				@job.add_message m
 			end
 		else
-			StoreAnnotationsCollection.call(project, annotations_col, options, @job)
+			StoreAnnotationsCollection.new(project, annotations_col, options, @job).call
 		end
 		stime = Time.now - timer_start
 
@@ -261,7 +261,7 @@ private
 						@job.add_message m
 					end
 				else
-					StoreAnnotationsCollection.call(project, annotations_col, options, @job)
+					StoreAnnotationsCollection.new(project, annotations_col, options, @job).call
 				end
 
 				stime = Time.now - timer_start
