@@ -725,11 +725,13 @@ class Project < ActiveRecord::Base
   # - annotations are already normal, and
   # - documents exist in the database
   def store_annotations_collection(annotations_collection, options, job)
+    messages = StoreAnnotationCollectionMessages.new(job)
+
     # To find the doc for each annotation object
     result = AnnotationsForDocument.find_doc_for(annotations_collection, options[:mode] == 'skip' ? id : nil)
     annotations_for_doc_collection = result.annotations_for_doc_collection
-    messages = result.messages
-    messages << { body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." } if result.num_skipped > 0
+    messages.concat result.messages
+    messages.concat [{ body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
 
     aligner = AlignTextInRactor.new(annotations_for_doc_collection, options)
     aligner.call
@@ -749,15 +751,7 @@ class Project < ActiveRecord::Base
 
     InstantiateAndSaveAnnotationsCollection.call(self, valid_annotations) if valid_annotations.present?
 
-    if messages.present?
-      if job
-        messages.each do |m|
-          job.add_message m
-        end
-      else
-        raise ArgumentError, messages.collect { |m| "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}" }.join("\n")
-      end
-    end
+    messages.finalize
   end
 
   def make_request(method, url, params = nil, payload = nil)
@@ -943,21 +937,21 @@ class Project < ActiveRecord::Base
       subject_less_attributes = attributes.map { |a| a[:subj] }
                                           .filter { |subj| !denotation_ids.include? subj }
       if subject_less_attributes.present?
-        messages << {
+        messages.concat [{
           sourcedb: sourcedb,
           sourceid: sourceid,
           body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
-        }
+        }]
         false
       else
         true
       end
     else
-      messages << {
+      messages.concat [{
         sourcedb: sourcedb,
         sourceid: sourceid,
         body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
-      }
+      }]
       false
     end
   end
