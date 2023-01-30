@@ -570,7 +570,7 @@ class Project < ActiveRecord::Base
   end
 
   def instantiate_and_save_annotations(annotations, doc)
-    res = ActiveRecord::Base.transaction do
+    ActiveRecord::Base.transaction do
       d_num = 0
       b_num = 0
       r_num = 0
