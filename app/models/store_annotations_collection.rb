@@ -8,12 +8,12 @@ class StoreAnnotationsCollection
     @project = project
     @annotations_collection = annotations_collection
     @options = options
-    @messages = StoreAnnotationsCollectionMessages.new(job)
+    @warnings = StoreAnnotationsCollectionWarnings.new(job)
   end
 
   def call
     result = aligner.call
-    @messages.concat result.warnings
+    @warnings.concat result.warnings
 
     result.annotations_for_doc_collection.each do |annotations_for_doc|
       @project.pretreatment_according_to(@options, annotations_for_doc)
@@ -21,7 +21,7 @@ class StoreAnnotationsCollection
 
     valid_annotations = result.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
       valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
-        inspect_annotations @messages,
+        inspect_annotations @warnings,
                             annotation,
                             index
       end
@@ -29,7 +29,7 @@ class StoreAnnotationsCollection
 
     InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
 
-    @messages.finalize
+    @warnings.finalize
   end
 
   private
@@ -42,8 +42,8 @@ class StoreAnnotationsCollection
     # To find the doc for each annotation object
     result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? id : nil)
     annotations_for_doc_collection = result.annotations_for_doc_collection
-    @messages.concat result.messages
-    @messages.concat [{ body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
+    @warnings.concat result.messages
+    @warnings.concat [{ body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
 
     AlignTextInRactor.new(annotations_for_doc_collection, @options)
   end
