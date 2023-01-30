@@ -10,11 +10,7 @@ class AlignTextInRactor
 
   def call
     @result.annotations_for_doc_collection.each_with_index do |input_chunk, index|
-      raw = Raw.new @options,
-                    input_chunk.aligners,
-                    index
-
-      pipe.send(Ractor.make_shareable(raw))
+      pipe.send send_message_for(index, input_chunk)
     end.each do
       _ractor, result = Ractor.select(*workers)
 
@@ -54,8 +50,15 @@ class AlignTextInRactor
 
   private
 
-  Raw = Data.define(:options, :aligners, :index_on_input)
+  SendMessage = Data.define(:options, :aligners, :index_on_input)
   Aligned = Data.define(:aligned_annotations, :index_on_input)
+
+  def send_message_for(index, input_chunk)
+    m = SendMessage.new @options,
+                        input_chunk.aligners,
+                        index
+    Ractor.make_shareable(m)
+  end
 
   def pipe
     @pipe ||= Ractor.new do
@@ -68,9 +71,9 @@ class AlignTextInRactor
   def workers
     @workers ||= (1..4).map do
       Ractor.new pipe do |pipe|
-        while raw = pipe.take
-          alignedAnnotations = raw.aligners.align_all raw.options
-          Ractor.yield(Ractor.make_shareable(Aligned.new(alignedAnnotations, raw.index_on_input)))
+        while sent = pipe.take
+          alignedAnnotations = sent.aligners.align_all sent.options
+          Ractor.yield(Ractor.make_shareable(Aligned.new(alignedAnnotations, sent.index_on_input)))
         end
       end
     end
