@@ -12,14 +12,14 @@ class StoreAnnotationsCollection
   end
 
   def call
-    aligner.call
-    @messages.concat aligner.messages
+    result = aligner.call
+    @messages.concat result.messages
 
-    aligner.annotations_for_doc_collection.each do |annotations_for_doc|
+    result.annotations_for_doc_collection.each do |annotations_for_doc|
       @project.pretreatment_according_to(@options, annotations_for_doc)
     end
 
-    valid_annotations = aligner.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
+    valid_annotations = result.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
       valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
         @project.inspect_annotation @messages,
                                     annotation,
