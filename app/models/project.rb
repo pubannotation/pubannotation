@@ -725,7 +725,7 @@ class Project < ActiveRecord::Base
   # - annotations are already normal, and
   # - documents exist in the database
   def store_annotations_collection(annotations_collection, options, job)
-    messages = StoreAnnotationCollectionMessages.new(job)
+    messages = StoreAnnotationsCollectionMessages.new(job)
 
     # To find the doc for each annotation object
     result = AnnotationsForDocument.find_doc_for(annotations_collection, options[:mode] == 'skip' ? id : nil)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class StoreAnnotationCollectionMessages
+class StoreAnnotationsCollectionMessages
   def initialize (job)
     @job = job
     @messages = []
