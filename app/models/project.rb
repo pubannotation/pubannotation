@@ -721,39 +721,6 @@ class Project < ActiveRecord::Base
     messages
   end
 
-  # It assumes that
-  # - annotations are already normal, and
-  # - documents exist in the database
-  def store_annotations_collection(annotations_collection, options, job)
-    messages = StoreAnnotationsCollectionMessages.new(job)
-
-    # To find the doc for each annotation object
-    result = AnnotationsForDocument.find_doc_for(annotations_collection, options[:mode] == 'skip' ? id : nil)
-    annotations_for_doc_collection = result.annotations_for_doc_collection
-    messages.concat result.messages
-    messages.concat [{ body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
-
-    aligner = AlignTextInRactor.new(annotations_for_doc_collection, options)
-    aligner.call
-    messages.concat aligner.messages
-
-    aligner.annotations_for_doc_collection.each do |annotations_for_doc|
-      pretreatment_according_to(options, annotations_for_doc)
-    end
-
-    valid_annotations = aligner.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
-      valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
-        inspect_annotation messages,
-                           annotation,
-                           index
-      end
-    end
-
-    InstantiateAndSaveAnnotationsCollection.call(self, valid_annotations) if valid_annotations.present?
-
-    messages.finalize
-  end
-
   def make_request(method, url, params = nil, payload = nil)
     payload, payload_type = if payload.class == String
                               [payload, 'text/plain; charset=utf8']
@@ -893,24 +860,6 @@ class Project < ActiveRecord::Base
     )
   end
 
-  private
-
-  def spans_rdf_filename
-    "#{identifier}-spans.trig"
-  end
-
-  def annotations_rdf_filename
-    "#{identifier}-annotations-rdf.zip"
-  end
-
-  def identifier
-    name.gsub(' ', '_')
-  end
-
-  def rdf_loc
-    Rails.application.config.system_path_rdf + "projects/#{identifier}-rdf/"
-  end
-
   def pretreatment_according_to(options, annotations_with_doc)
     if options[:mode] == 'replace'
       delete_doc_annotations(annotations_with_doc.doc)
@@ -938,21 +887,39 @@ class Project < ActiveRecord::Base
                                           .filter { |subj| !denotation_ids.include? subj }
       if subject_less_attributes.present?
         messages.concat [{
-          sourcedb: sourcedb,
-          sourceid: sourceid,
-          body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
-        }]
+                           sourcedb: sourcedb,
+                           sourceid: sourceid,
+                           body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
+                         }]
         false
       else
         true
       end
     else
       messages.concat [{
-        sourcedb: sourcedb,
-        sourceid: sourceid,
-        body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
-      }]
+                         sourcedb: sourcedb,
+                         sourceid: sourceid,
+                         body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
+                       }]
       false
     end
+  end
+
+  private
+
+  def spans_rdf_filename
+    "#{identifier}-spans.trig"
+  end
+
+  def annotations_rdf_filename
+    "#{identifier}-annotations-rdf.zip"
+  end
+
+  def identifier
+    name.gsub(' ', '_')
+  end
+
+  def rdf_loc
+    Rails.application.config.system_path_rdf + "projects/#{identifier}-rdf/"
   end
 end
