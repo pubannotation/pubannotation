@@ -12,13 +12,6 @@ class StoreAnnotationsCollection
   end
 
   def call
-    # To find the doc for each annotation object
-    result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? id : nil)
-    annotations_for_doc_collection = result.annotations_for_doc_collection
-    @messages.concat result.messages
-    @messages.concat [{ body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
-
-    aligner = AlignTextInRactor.new(annotations_for_doc_collection, @options)
     aligner.call
     @messages.concat aligner.messages
 
@@ -37,5 +30,21 @@ class StoreAnnotationsCollection
     InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
 
     @messages.finalize
+  end
+
+  private
+
+  def aligner
+    @aligner ||= initialize_aligner
+  end
+
+  def initialize_aligner
+    # To find the doc for each annotation object
+    result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? id : nil)
+    annotations_for_doc_collection = result.annotations_for_doc_collection
+    @messages.concat result.messages
+    @messages.concat [{ body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
+
+    AlignTextInRactor.new(annotations_for_doc_collection, @options)
   end
 end
