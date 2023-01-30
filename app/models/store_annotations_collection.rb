@@ -42,7 +42,7 @@ class StoreAnnotationsCollection
     # To find the doc for each annotation object
     result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? id : nil)
     annotations_for_doc_collection = result.annotations_for_doc_collection
-    @warnings.concat result.messages
+    @warnings.concat result.warnings
     @warnings.concat [{ body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
 
     AlignTextInRactor.new(annotations_for_doc_collection, @options)

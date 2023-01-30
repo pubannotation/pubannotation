@@ -20,7 +20,7 @@ class AnnotationsForDocument
                  having_denotations_or_blocks
   end
 
-  Result = Struct.new(:annotations_for_doc_collection, :messages, :num_skipped)
+  Result = Struct.new(:annotations_for_doc_collection, :warnings, :num_skipped)
 
   def self.find_doc_for(annotations_collection, project_id_for_skip)
     # Standardize annotations into arrays.
@@ -51,10 +51,10 @@ class AnnotationsForDocument
 
       result
     rescue ActiveRecord::RecordNotFound
-      result.messages << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
+      result.warnings << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
       result
     rescue ActiveRecord::SoleRecordExceeded
-      result.messages << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
+      result.warnings << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
       result
     end
   end
