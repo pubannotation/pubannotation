@@ -15,6 +15,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     @longest_processing_time = 0
 
     batch_item = BatchItem.new
+    threads = []
 
     filenames.each_with_index do |jsonfile, i|
       annotation_collection = AnnotationCollection.new(jsonfile)
@@ -24,7 +25,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
       # Save annotations when enough transactions have been stored.
       if batch_item.enough?
-        execute_batch project, options, batch_item
+        threads << execute_batch(project, options, batch_item)
         batch_item = BatchItem.new
       end
 
@@ -35,7 +36,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     end
 
     # Process the remaining batch items.
-    execute_batch project, options, batch_item
+    threads << execute_batch(project, options, batch_item)
+    threads.each(&:join)
 
     if @job
       @job.update_attribute(:num_dones, filenames.length)
@@ -60,7 +62,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   def execute_batch(project, options, batch_item)
     num_sequenced = store_docs(project, batch_item.sourcedb_sourceids_index)
     @is_sequenced = true if num_sequenced > 0
-    StoreAnnotationsCollection.new(project, batch_item.annotation_transaction, options, @job).call.join
+    StoreAnnotationsCollection.new(project, batch_item.annotation_transaction, options, @job).call
   end
 
   def store_docs(project, sourcedb_sourceids_index)
