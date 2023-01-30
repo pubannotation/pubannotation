@@ -875,36 +875,6 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def inspect_annotation(messages, annotation, index)
-    denotations = annotation[:denotations]
-    attributes = annotation[:attributes]
-    sourcedb = annotation[:sourcedb]
-    sourceid = annotation[:sourceid]
-
-    if denotations && attributes
-      denotation_ids = denotations.map { |d| d[:id] }
-      subject_less_attributes = attributes.map { |a| a[:subj] }
-                                          .filter { |subj| !denotation_ids.include? subj }
-      if subject_less_attributes.present?
-        messages.concat [{
-                           sourcedb: sourcedb,
-                           sourceid: sourceid,
-                           body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
-                         }]
-        false
-      else
-        true
-      end
-    else
-      messages.concat [{
-                         sourcedb: sourcedb,
-                         sourceid: sourceid,
-                         body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
-                       }]
-      false
-    end
-  end
-
   private
 
   def spans_rdf_filename
