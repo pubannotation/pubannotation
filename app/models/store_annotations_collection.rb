@@ -13,7 +13,7 @@ class StoreAnnotationsCollection
 
   def call
     result = aligner.call
-    @messages.concat result.messages
+    @messages.concat result.warnings
 
     result.annotations_for_doc_collection.each do |annotations_for_doc|
       @project.pretreatment_according_to(@options, annotations_for_doc)

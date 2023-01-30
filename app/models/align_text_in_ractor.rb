@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
 class AlignTextInRactor
-  Result = Data.define(:annotations_for_doc_collection, :messages)
+  Result = Data.define(:annotations_for_doc_collection, :warnings)
 
   def initialize(annotations_for_doc_collection, options)
+    @annotations_for_doc_collection = annotations_for_doc_collection
     @options = options
-    @result = Result.new annotations_for_doc_collection, []
   end
 
   def call
-    @result.annotations_for_doc_collection.each_with_index do |input_chunk, index|
+    warnings = []
+
+    @annotations_for_doc_collection.each_with_index do |input_chunk, index|
       pipe.send send_message_for(index, input_chunk)
     end.each do
       _ractor, result = Ractor.select(*workers)
@@ -18,7 +20,7 @@ class AlignTextInRactor
       # Results are returned in the order in which they were processed.
       # The order of the results is different from the order of the input.
       # The index of the input is used to retrieve the original data.
-      input_chunk = @result.annotations_for_doc_collection[result.index_on_input]
+      input_chunk = @annotations_for_doc_collection[result.index_on_input]
 
       result.aligned_annotations.each.with_index do |aligned_annotation, index|
         original_annotation = input_chunk.having_denotations_or_blocks[index]
@@ -32,7 +34,7 @@ class AlignTextInRactor
         original_annotation.delete_if { |_, v| !v.present? }
 
         if aligned_annotation.lost_annotations.present?
-          @result.messages << {
+          warnings << {
             sourcedb: original_annotation[:sourcedb],
             sourceid: original_annotation[:sourceid],
             body: "Alignment failed. Invalid denotations found after transformation",
@@ -45,7 +47,7 @@ class AlignTextInRactor
       end
     end
 
-    @result
+    Result.new @annotations_for_doc_collection, warnings
   end
 
   private
