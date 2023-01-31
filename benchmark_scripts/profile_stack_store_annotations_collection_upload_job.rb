@@ -5,7 +5,7 @@ options = { mode: "replace" }
 StackProf.run(out: 'tmp/stackprof.dump', raw: true) do
   begin
     StoreAnnotationsCollectionUploadJob.perform_now project, filepath, options
-  rescue ArgumentError
-    puts "ArgumentError"
+  rescue StoreAnnotationsCollectionWarnings::Exception
+    # ignore logs
   end
 end

@@ -16,7 +16,7 @@ class StoreAnnotationsCollectionWarnings
     if @job
       @warnings.each { |m| @job.add_message m }
     else
-      raise ArgumentError, to_string
+      raise Exception, to_string
     end
   end
 
@@ -26,5 +26,8 @@ class StoreAnnotationsCollectionWarnings
     @warnings.collect do |m|
       "[#{m[:sourcedb]}-#{m[:sourceid]}] #{m[:body]}"
     end.join("\n")
+  end
+
+  class Exception < StandardError
   end
 end
