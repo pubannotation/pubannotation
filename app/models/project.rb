@@ -416,14 +416,12 @@ class Project < ActiveRecord::Base
 
   def add_docs(sourcedb, source_ids)
     ids_in_pa = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid)
-    ids_in_pj = self.docs.where(sourcedb: sourcedb).pluck(:sourceid)
-
-    ids_to_add = ids_in_pa - ids_in_pj
-    docs_to_add = Doc.where(sourcedb: sourcedb, sourceid: ids_to_add)
-
     ids_to_sequence = source_ids - ids_in_pa
     docs_sequenced, messages = ids_to_sequence.present? ? Doc.sequence_and_store_docs(sourcedb, ids_to_sequence) : [[], []]
 
+    ids_in_pj = self.docs.where(sourcedb: sourcedb).pluck(:sourceid)
+    ids_to_add = ids_in_pa - ids_in_pj
+    docs_to_add = Doc.where(sourcedb: sourcedb, sourceid: ids_to_add)
     docs_to_add += docs_sequenced
 
     docs_to_add.each { |doc| doc.projects << self }
