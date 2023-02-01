@@ -416,8 +416,8 @@ class Project < ActiveRecord::Base
 
   def add_docs(sourcedb, source_ids)
     # Import documents that are not in the DB.
-    ids_in_pa = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid)
-    ids_to_sequence = source_ids - ids_in_pa
+    source_ids_existing_in_db = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid)
+    ids_to_sequence = source_ids - source_ids_existing_in_db
     docs_sequenced, messages = ids_to_sequence.present? ? Doc.sequence_and_store_docs(sourcedb, ids_to_sequence) : [[], []]
 
     number_of_documents_in_project_before_update = self.docs.where(sourcedb: sourcedb).count
