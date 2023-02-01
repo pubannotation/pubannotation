@@ -414,14 +414,14 @@ class Project < ActiveRecord::Base
     project_params = project_attributes.select { |key| Project.attr_accessible[:default].include?(key) }
   end
 
-  def add_docs(sourcedb, sourceids)
-    ids_in_pa = Doc.where(sourcedb: sourcedb, sourceid: sourceids).pluck(:sourceid).uniq
+  def add_docs(sourcedb, source_ids)
+    ids_in_pa = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid).uniq
     ids_in_pj = ids_in_pa & docs.pluck(:sourceid).uniq
 
     ids_to_add = ids_in_pa - ids_in_pj
     docs_to_add = Doc.where(sourcedb: sourcedb, sourceid: ids_to_add)
 
-    ids_to_sequence = sourceids - ids_in_pa
+    ids_to_sequence = source_ids - ids_in_pa
     docs_sequenced, messages = ids_to_sequence.present? ? Doc.sequence_and_store_docs(sourcedb, ids_to_sequence) : [[], []]
 
     docs_to_add += docs_sequenced
