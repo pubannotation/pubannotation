@@ -428,7 +428,6 @@ class Project < ActiveRecord::Base
     docs_to_add += docs_sequenced
 
     docs_to_add.each { |doc| doc.projects << self }
-    num_docs_existed = ids_in_pj.length
 
     [docs_to_add.length, docs_sequenced.length, ids_in_pj.length, messages]
   end
