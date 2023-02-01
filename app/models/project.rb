@@ -415,7 +415,7 @@ class Project < ActiveRecord::Base
   end
 
   def add_docs(sourcedb, source_ids)
-    ids_in_pa = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid).uniq
+    ids_in_pa = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid)
     ids_in_pj = ids_in_pa & docs.pluck(:sourceid).uniq
 
     ids_to_add = ids_in_pa - ids_in_pj
