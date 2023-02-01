@@ -2,10 +2,7 @@ class InstantiateAndSaveAnnotationsCollection
   class << self
     def call(project, annotations_collection)
       ActiveRecord::Base.transaction do
-        # record document id
-        annotations_collection.each do |ann|
-          ann[:docid] = Doc.where(sourcedb: ann[:sourcedb], sourceid: ann[:sourceid]).pluck(:id).first
-        end
+        record_docid(annotations_collection)
 
         d_stat, d_stat_all, imported_denotations = import_denotations(project, annotations_collection)
 
@@ -17,29 +14,43 @@ class InstantiateAndSaveAnnotationsCollection
         project_docs = project.project_docs.where(doc_id: doc_ids)
 
         doc_ids.each do |did|
+          project_doc = project_docs.find { _1.doc_id == did }
           d_num = d_stat[did] || 0
           r_num = r_stat[did] || 0
           m_num = m_stat[did] || 0
 
-          project_doc = project_docs.find { _1.doc_id == did }
-          project_doc.increment('denotations_num', d_num)
-          project_doc.increment('relations_num', r_num)
-          project_doc.increment('modifications_num', m_num)
-          project_doc.update_annotations_updated_at
-          project_doc.doc.increment('denotations_num', d_num)
-          project_doc.doc.increment('relations_num', r_num)
-          project_doc.doc.increment('modifications_num', m_num)
+          update_project_doc(project_doc, d_num, r_num, m_num)
         end
 
-        project.increment('denotations_num', d_stat_all)
-        project.increment('relations_num', r_stat_all)
-        project.increment('modifications_num', m_stat_all)
-        project.update_annotations_updated_at
-        project.update_updated_at
+        update_project(project, d_stat_all, r_stat_all, m_stat_all)
       end
     end
 
     private
+
+    def record_docid(annotations_collection)
+      annotations_collection.each do |ann|
+        ann[:docid] = Doc.where(sourcedb: ann[:sourcedb], sourceid: ann[:sourceid]).pluck(:id).first
+      end
+    end
+
+    def update_project_doc(project_doc,  d_num, r_num, m_num)
+      project_doc.increment('denotations_num', d_num)
+      project_doc.increment('relations_num', r_num)
+      project_doc.increment('modifications_num', m_num)
+      project_doc.update_annotations_updated_at
+      project_doc.doc.increment('denotations_num', d_num)
+      project_doc.doc.increment('relations_num', r_num)
+      project_doc.doc.increment('modifications_num', m_num)
+    end
+
+    def update_project(project, d_stat_all, r_stat_all, m_stat_all)
+      project.increment('denotations_num', d_stat_all)
+      project.increment('relations_num', r_stat_all)
+      project.increment('modifications_num', m_stat_all)
+      project.update_annotations_updated_at
+      project.update_updated_at
+    end
 
     def import_denotations(project, annotations_collection)
       d_stat, instances = annotations_collection.filter { _1[:denotations].present? }
