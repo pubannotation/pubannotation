@@ -15,18 +15,18 @@ class AddDocsToProjectJob < ApplicationJob
     docspecs_group_by_sourcedb.each do |sourcedb, docspecs|
       ids = docspecs.map { |docspec| docspec[:sourceid] }
       num_existed = project.docs.where(sourcedb: sourcedb).count
-      num_added, num_sequenced, _, messages = begin
-                                                          project.add_docs(sourcedb, ids.uniq)
-                                                        rescue => e
-                                                          if @job
-                                                            @job.add_message sourcedb: sourcedb,
-                                                                             sourceid: "#{ids.first} - #{ids.last}",
-                                                                             body: e.message
-                                                            [0, 0, 0, []]
-                                                          else
-                                                            raise e
-                                                          end
-                                                        end
+      num_added, num_sequenced, messages = begin
+                                              project.add_docs(sourcedb, ids.uniq)
+                                            rescue => e
+                                              if @job
+                                                @job.add_message sourcedb: sourcedb,
+                                                                 sourceid: "#{ids.first} - #{ids.last}",
+                                                                 body: e.message
+                                                [0, 0, 0, []]
+                                              else
+                                                raise e
+                                              end
+                                            end
 
       @total_num_added += num_added
       @total_num_sequenced += num_sequenced

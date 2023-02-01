@@ -420,14 +420,12 @@ class Project < ActiveRecord::Base
     ids_to_sequence = source_ids - source_ids_existing_in_db
     docs_sequenced, messages = ids_to_sequence.present? ? Doc.sequence_and_store_docs(sourcedb, ids_to_sequence) : [[], []]
 
-    number_of_documents_in_project_before_update = self.docs.where(sourcedb: sourcedb).count
-
     # Tie the documents to the project.
     added_documents = Doc.where(sourcedb: sourcedb)
                          .where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
                          .each { |doc| doc.projects << self }
 
-    [added_documents.length, docs_sequenced.length, number_of_documents_in_project_before_update, messages]
+    [added_documents.length, docs_sequenced.length, messages]
   end
 
   # returns the doc added to the project

@@ -57,16 +57,16 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
 
   def add_docs(project, sourcedb, ids)
     num_existed = project.docs.where(sourcedb: sourcedb).count
-    num_added, num_sequenced, _, messages = begin
-                                                        project.add_docs(sourcedb, ids.uniq)
-                                                      rescue => e
-                                                        if @job
-                                                          @job.add_message sourcedb: sourcedb,
-                                                                           sourceid: "#{ids.first} - #{ids.last}",
-                                                                           body: e.message
-                                                        end
-                                                        [0, 0, 0, []]
-                                                      end
+    num_added, num_sequenced, messages = begin
+                                            project.add_docs(sourcedb, ids.uniq)
+                                          rescue => e
+                                            if @job
+                                              @job.add_message sourcedb: sourcedb,
+                                                               sourceid: "#{ids.first} - #{ids.last}",
+                                                               body: e.message
+                                            end
+                                            [0, 0, 0, []]
+                                          end
 
     @total_num_added += num_added
     @total_num_sequenced += num_sequenced
