@@ -422,9 +422,7 @@ class Project < ActiveRecord::Base
 
     # Tie the documents to the project.
     ids_in_pj = self.docs.where(sourcedb: sourcedb).pluck(:sourceid)
-    ids_to_add = ids_in_pa - ids_in_pj
-    docs_to_add = Doc.where(sourcedb: sourcedb, sourceid: ids_to_add)
-    docs_to_add += docs_sequenced
+    docs_to_add = Doc.where(sourcedb: sourcedb).where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
 
     docs_to_add.each { |doc| doc.projects << self }
 
