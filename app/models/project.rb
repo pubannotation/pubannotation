@@ -416,16 +416,31 @@ class Project < ActiveRecord::Base
 
   def add_docs(sourcedb, source_ids)
     # Import documents that are not in the DB.
-    source_ids_existing_in_db = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid)
-    ids_to_sequence = source_ids - source_ids_existing_in_db
-    docs_sequenced, messages = ids_to_sequence.present? ? Doc.sequence_and_store_docs(sourcedb, ids_to_sequence) : [[], []]
+    docs_sequenced, messages = sequence sourcedb, source_ids
 
     # Tie the documents to the project.
-    added_documents = Doc.where(sourcedb: sourcedb)
-                         .where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
-                         .each { |doc| doc.projects << self }
+    added_documents = tie_documents sourcedb, source_ids
 
-    [added_documents.length, docs_sequenced.length, messages]
+    [added_documents, docs_sequenced, messages]
+  end
+
+  private def sequence(sourcedb, source_ids)
+    source_ids_existing_in_db = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid)
+    ids_to_sequence = source_ids - source_ids_existing_in_db
+
+    if ids_to_sequence.present?
+      docs_sequenced, messages = Doc.sequence_and_store_docs(sourcedb, ids_to_sequence)
+      [docs_sequenced.length, messages]
+    else
+      [0, []]
+    end
+  end
+
+  private def tie_documents(sourcedb, source_ids)
+    Doc.where(sourcedb: sourcedb, sourceid: source_ids)
+       .where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
+       .each { |doc| doc.projects << self }
+       .length
   end
 
   # returns the doc added to the project
