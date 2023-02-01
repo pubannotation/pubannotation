@@ -15,7 +15,7 @@ class AddDocsToProjectJob < ApplicationJob
     docspecs_group_by_sourcedb.each do |sourcedb, docspecs|
       ids = docspecs.map { |docspec| docspec[:sourceid] }
       num_added, num_sequenced, num_existed, messages = begin
-                                                          project.add_docs(sourcedb, ids)
+                                                          project.add_docs(sourcedb, ids.uniq)
                                                         rescue => e
                                                           if @job
                                                             @job.add_message sourcedb: sourcedb,

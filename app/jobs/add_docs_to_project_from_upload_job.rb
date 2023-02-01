@@ -57,7 +57,7 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
 
   def add_docs(project, sourcedb, ids)
     num_added, num_sequenced, num_existed, messages = begin
-                                                        project.add_docs(sourcedb, ids)
+                                                        project.add_docs(sourcedb, ids.uniq)
                                                       rescue => e
                                                         if @job
                                                           @job.add_message sourcedb: sourcedb,

@@ -414,8 +414,7 @@ class Project < ActiveRecord::Base
     project_params = project_attributes.select { |key| Project.attr_accessible[:default].include?(key) }
   end
 
-  def add_docs(sourcedb, _sourceids)
-    sourceids = _sourceids.uniq
+  def add_docs(sourcedb, sourceids)
     ids_in_pa = Doc.where(sourcedb: sourcedb, sourceid: sourceids).pluck(:sourceid).uniq
     ids_in_pj = ids_in_pa & docs.pluck(:sourceid).uniq
 
