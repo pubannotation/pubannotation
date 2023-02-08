@@ -59,7 +59,6 @@ gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
 gem 'rails-observers'
 gem 'diff-lcs'
-gem 'listen'
 gem 'activejob-cancel'
 gem 'sidekiq'
 

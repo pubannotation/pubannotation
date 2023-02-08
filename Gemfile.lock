@@ -436,7 +436,6 @@ DEPENDENCIES
   jquery-ui-rails
   kaminari
   libxml-ruby
-  listen
   omniauth
   omniauth-google-oauth2
   pg
