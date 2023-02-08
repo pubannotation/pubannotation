@@ -21,25 +21,25 @@ ions_collection.rb ./PMC-7646410.json
 This script is benchmarking the speed for each process of inserting annotations. 
 It is using the PMC-7646410.json file.
 
-To run this script, you need to install the StackProf gem.
+### InstantiateAndSaveAnnotationsCollection
+
 
 ```bash
-bundle add stackprof
+bin/rails runner profile_stack_instantiate_and_save_annotations_collection.rb
 ```
 
-and run:
+### StoreAnnotationsCollectionUploadJob
+
 
 ```bash
-bin/rails runner profile_stack_instantiate_and_save_a
-nnotations_collection.rb
-stackprof --d3-flamegraph tmp/stackprof.dump > frameg
-raph.html
+bin/rails runner profile_stack_store_annotations_collection_upload_job.rb
+```
+
+
+### View profiles in browesers
+
+```bash
+stackprof --d3-flamegraph tmp/stackprof.dump > framegraph.html
 ```
 
 Open the framegraph.html to see the flame graph.
-
-If you want uninstall the StacProf gem, run:
-
-```bash
-bundle remove stackprof
-```
