@@ -50,8 +50,8 @@ gem 'omniauth-google-oauth2'
 gem 'rubyzip'
 gem 'zip-zip'
 gem 'daemons'
-gem 'elasticsearch-model', '~> 5.1'
-gem 'elasticsearch-rails', '~> 5.1'
+gem 'elasticsearch-model', '~> 7.2'
+gem 'elasticsearch-rails', '~> 7.2'
 # Currently released elasticsearch-model depends on a specific verions of faraday
 # See: https://github.com/uken/fluent-plugin-elasticsearch/issues/699
 gem 'faraday', '~> 1.10'
