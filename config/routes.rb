@@ -237,9 +237,6 @@ Pubann::Application.routes.draw do
 		end
 	end
 
-	match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/annotations' => 'annotations#cors_preflight_check', :via => ["OPTIONS"]
-	match '/projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations' => 'annotations#cors_preflight_check', :via => ["OPTIONS"]
-
 	match '/annotations/align' => 'annotations#align', :via => ["POST"]
 
 	resources :news_notifications, path: :news do

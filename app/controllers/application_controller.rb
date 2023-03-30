@@ -2,7 +2,6 @@
 
 class ApplicationController < ActionController::Base
 	protect_from_forgery
-	before_action :cors_set_access_control_headers
 	before_action :set_locale
 	after_action :store_location
 
@@ -24,21 +23,6 @@ class ApplicationController < ActionController::Base
 		request.referrer
 	end
 	
-	def cors_set_access_control_headers
-		if request.referer.present?
-			uri = URI.parse(request.referer)
-			referer_uri = "#{uri.scheme}://#{uri.host}"
-			referer_uri += ":#{uri.port}" unless uri.port == 80 || uri.port == 443
-
-			response.headers['Access-Control-Allow-Origin'] = referer_uri
-			response.headers['Access-Control-Allow-Methods'] = 'POST, GET, PUT, PATCH, DELETE, OPTIONS'
-			response.headers['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept, Authorization, Token, ' \
-				'Auth-Token, Email, X-User-Token, X-User-Email, x-xsrf-token'
-			response.headers['Access-Control-Max-Age'] = '86400'
-			response.headers['Access-Control-Allow-Credentials'] = 'true'
-		end
-	end
-
 	def set_locale
 		accept_locale = ['en', 'ja']
 		if params[:locale].present? && accept_locale.include?(params[:locale])
