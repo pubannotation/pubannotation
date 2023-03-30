@@ -552,7 +552,7 @@ class Project < ActiveRecord::Base
       Attrivute.new(
         hid: a[:id],
         pred: a[:pred],
-        subj: Denotation.find_by!(doc_id: docid, project_id: self.id, hid: a[:subj]),
+        subj: Denotation.find_by(doc_id: docid, project_id: self.id, hid: a[:subj]) || Block.find_by!(doc_id: docid, project_id: self.id, hid: a[:subj]),
         obj: a[:obj],
         project_id: self.id
       )

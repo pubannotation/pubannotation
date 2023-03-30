@@ -663,24 +663,28 @@ class Doc < ActiveRecord::Base
 		return [] if base_ids == []
 		# continue if base_ids.nil? || base_ids.present?
 
-		query = "SELECT attrivutes.hid AS id, attrivutes.pred AS pred, denotations.hid AS subj, attrivutes.obj AS obj FROM attrivutes INNER JOIN denotations ON attrivutes.subj_id = denotations.id WHERE denotations.doc_id = #{self.id}"
+		query_a4d = "SELECT attrivutes.hid AS id, attrivutes.pred AS pred, denotations.hid AS subj, attrivutes.obj AS obj FROM attrivutes INNER JOIN denotations ON attrivutes.subj_id = denotations.id WHERE denotations.doc_id = #{self.id}"
+		query_a4b = "SELECT attrivutes.hid AS id, attrivutes.pred AS pred, blocks.hid AS subj, attrivutes.obj AS obj FROM attrivutes INNER JOIN blocks ON attrivutes.subj_id = blocks.id WHERE blocks.doc_id = #{self.id}"
 
 		# project condition
 		unless project_id.nil?
-			query += if project_id.respond_to?(:each)
+			postfix = if project_id.respond_to?(:each)
 				" AND attrivutes.project_id IN (#{project.map{|p| p.id}.join(', ')})"
 			else
 				" AND attrivutes.project_id = #{project_id}"
 			end
+			query_a4d += postfix
+			query_a4b += postfix
 		end
 
 		# base_id condition
 		unless base_ids.nil?
-			query += " AND attrivutes.subj_id IN (#{base_ids.join(', ')})"
+			query_a4d += " AND attrivutes.subj_id IN (#{base_ids.join(', ')})"
+			query_a4b += " AND attrivutes.subj_id IN (#{base_ids.join(', ')})"
 		end
 	
 		# sort!{|a1, a2| a1[:id] <=> a2[:id]}
-		ActiveRecord::Base.connection.exec_query(query).to_a.collect{|a| a.symbolize_keys}
+		(ActiveRecord::Base.connection.exec_query(query_a4d).to_a + ActiveRecord::Base.connection.exec_query(query_a4b).to_a).collect{|a| a.symbolize_keys}
 	end
 
 	def get_attribute_ids(project_id = nil, base_ids = nil)
