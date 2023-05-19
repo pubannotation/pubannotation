@@ -2,14 +2,12 @@ class Doc < ActiveRecord::Base
 	include Elasticsearch::Model
 	include Elasticsearch::Model::Callbacks
 
-	LIST_MAX_SIZE = 50
-
 	settings index: {
 		analysis: {
 			analyzer: {
 				standard_normalization: {
 					tokenizer: :standard,
-					filter: [:standard, :lowercase, :stop, :asciifolding, :snowball]
+					filter: [:lowercase, :stop, :asciifolding, :snowball]
 				}
 			}
 		}
@@ -99,12 +97,6 @@ class Doc < ActiveRecord::Base
 	validates :sourceid, presence: true
 	validates :sourceid, uniqueness: {scope: :sourcedb}
 	
-	scope :project_name, lambda{|project_name|
-		{:joins => :projects,
-			:conditions => ['projects.name =?', project_name]
-		}
-	}
-
 	scope :simple_paginate, -> (page, per = 10) {
 		page = page.nil? ? 1 : page.to_i
 		offset = (page - 1) * per
@@ -428,11 +420,6 @@ class Doc < ActiveRecord::Base
 	# returns relations count which belongs to project and doc
 	def project_relations_num(project_id)
 		count = Relation.project_relations_num(project_id, subcatrels)
-	end
-	
-	# returns doc.relations count
-	def relations_num
-		subcatrels.size
 	end
 	
 	def same_sourceid_denotations_num
