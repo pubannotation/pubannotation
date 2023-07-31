@@ -772,6 +772,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def self.hash_to_tsv(docs)
+		return nil unless docs.present?
 		headers = docs.first.keys
 		tsv = CSV.generate(col_sep:"\t") do |csv|
 			# headers
