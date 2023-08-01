@@ -8,7 +8,7 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 
 		# clear
 		FileUtils.rm_f collection.rdf_zippath
-		FileUtils.rm_f Dir.glob("#{collection.rdf_dirpath}/*") if forced?(options) && File.exists?(collection.rdf_dirpath)
+		FileUtils.rm_f Dir.glob("#{collection.rdf_dirpath}/*") if forced?(options) && File.exist?(collection.rdf_dirpath)
 
 		# prepare
 		FileUtils.rm_f Dir.glob("#{collection.rdf_new_dirpath}/*")
@@ -69,7 +69,7 @@ class CreateAnnotationsRdfCollectionJob < ApplicationJob
 		@job.increment!(:num_dones, 1) if @job
 
 		## rename the new RDF dir
-		FileUtils.rm_rf collection.rdf_dirpath if File.exists? collection.rdf_dirpath
+		FileUtils.rm_rf collection.rdf_dirpath if File.exist? collection.rdf_dirpath
 		FileUtils.mv collection.rdf_new_dirpath, collection.rdf_dirpath
 
 		puts "start creation of collection RDF zip <====="

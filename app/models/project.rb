@@ -267,7 +267,7 @@ class Project < ActiveRecord::Base
 
   def create_annotations_RDF(doc_ids = nil, loc = nil)
     loc ||= rdf_loc
-    FileUtils.mkdir_p loc unless File.exists? loc
+    FileUtils.mkdir_p loc unless File.exist? loc
 
     rdfizer_annos = TAO::RDFizer.new(:annotations)
 
@@ -333,7 +333,7 @@ class Project < ActiveRecord::Base
 
   def create_spans_RDF(in_collection = nil, loc = nil)
     loc ||= rdf_loc
-    FileUtils.mkdir_p loc unless File.exists? loc
+    FileUtils.mkdir_p loc unless File.exist? loc
 
     rdfizer_spans = TAO::RDFizer.new(:spans)
 
