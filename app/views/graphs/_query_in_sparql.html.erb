@@ -110,7 +110,7 @@
 	}
 
 	function init_template() {
-		var query = decodeURIComponent("<%= URI::escape(params[:query]) if params.has_key?(:query) %>");
+		var query = decodeURIComponent("<%= CGI.escape(params[:query]) if params.has_key?(:query) %>".replace(/\+/g, " "));
 		if (query){
 			var projects = "<%= params[:projects] ? params[:projects] : (@project ? @project.name : '') %>";
 			var show_mode = "<%= params[:show_mode] %>";
