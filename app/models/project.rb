@@ -674,6 +674,7 @@ class Project < ActiveRecord::Base
         end
 
         if annotations.has_key?(:attributes)
+          Attrivute.new_id_init
           annotations[:attributes].each do |a|
             id = a[:id]
             id = Attrivute.new_id while existing_ids.include?(id)
