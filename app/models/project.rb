@@ -446,7 +446,7 @@ class Project < ActiveRecord::Base
   # returns the doc added to the project
   # returns nil if nothing is added
   def add_doc(sourcedb, sourceid)
-    doc = Doc.find_by!(sourcedb: sourcedb, sourceid: sourceid)
+    doc = Doc.find_by(sourcedb: sourcedb, sourceid: sourceid)
     unless doc.present?
       new_docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid])
       unless new_docs.present?
