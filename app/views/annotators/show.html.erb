@@ -61,8 +61,11 @@
 			<td>
 				<div style="width:90%; white-space:normal">
 					<ul>
-						<li>The labels (the object) will be transformed to the value of the attrbitue: <i><%= @annotator.receiver_attribute %></i>, and</li>
-						<li>The labels will be filled with: <i><%= @annotator.new_label %></i></li>
+						<li>Transform the label (the object) into the value of the attribute, <i><%= @annotator.receiver_attribute %></i>,</li>
+						<li>for the entity whose label is <i><%= @annotator.new_label %></i>.<br/>
+							(The entity will be created if it does not already exist.)<br/>
+							(In the 'merge' mode, the attribute will be merged to the existing entity with the same label if any.)</li>
+
 					</ul>
 				</div>
 			</td>

@@ -177,8 +177,10 @@
 		<td>
 			<div style="width:90%; white-space:normal">
 				<ul>
-					<li>The labels (the object) will be transformed to the value of the attrbitue: <%= f.text_field :receiver_attribute, placeholder: "the predicate of an attribute", style: "width:6em" %>, and</li>
-					<li>The labels will be filled with: <%= f.text_field :new_label, placeholder: "new label", style: "width:6em" %></li>
+					<li>Transform the label (the object) into the value of the attribute, <%= f.text_field :receiver_attribute, placeholder: "the predicate of an attribute", style: "width:6em" %>,</li>
+					<li>for the entity whose label is <%= f.text_field :new_label, placeholder: "new label", style: "width:6em" %>.<br/>
+					(The entity will be created if it does not already exist.)<br/>
+					(In the 'merge' mode, the attribute will be merged to the existing entity with the same label if any.)</li>
 				</ul>
 			</div>
 		</td>
