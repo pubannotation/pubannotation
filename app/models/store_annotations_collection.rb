@@ -56,29 +56,32 @@ class StoreAnnotationsCollection
     sourcedb = annotation[:sourcedb]
     sourceid = annotation[:sourceid]
 
-    if denotations && attributes
-      denotation_ids = denotations.map { |d| d[:id] }
-      subject_less_attributes = attributes.map { |a| a[:subj] }
-                                          .filter { |subj| !denotation_ids.include? subj }
-      if subject_less_attributes.present?
-        messages.concat [{
-                           sourcedb: sourcedb,
-                           sourceid: sourceid,
-                           body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
-                         }]
-        false
-      else
-        true
-      end
-    else
+    # denotations must be present
+    unless denotations
       messages.concat [{
                          sourcedb: sourcedb,
                          sourceid: sourceid,
                          body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
                        }]
+      return false
+    end
+
+    # There is denotations but no attributes.
+    return true unless attributes
+
+    # Check attributes if attributes are present.
+    denotation_ids = denotations.map { |d| d[:id] }
+    subject_less_attributes = attributes.map { |a| a[:subj] }
+                                        .filter { |subj| !denotation_ids.include? subj }
+    if subject_less_attributes.present?
+      messages.concat [{
+                         sourcedb: sourcedb,
+                         sourceid: sourceid,
+                         body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
+                       }]
       false
+    else
+      true
     end
   end
-
-
 end
