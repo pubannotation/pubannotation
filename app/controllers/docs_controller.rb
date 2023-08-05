@@ -30,9 +30,9 @@ class DocsController < ApplicationController
 			htexts = nil
 			@docs = if params[:keywords].present?
 				project_id = @project.nil? ? nil : @project.id
-				search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:page, per:per})
-				@search_count = search_results.results.total
-				htexts = search_results.results.map{|r| {text: r.highlight.body}}
+				search_results = Doc.search_docs({body: params[:keywords].strip.downcase, sourcedb: @sourcedb, project_id: project_id, page:page, per:per})
+				@search_count = 0 #search_results.results.total
+				htexts = nil #search_results.results.map{|r| {text: r.highlight.body}}
 				search_results.records
 			else
 				sort_order = if params[:sort_key].present? && params[:sort_direction].present?

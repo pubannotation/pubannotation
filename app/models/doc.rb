@@ -2,69 +2,22 @@ class Doc < ActiveRecord::Base
 	include Elasticsearch::Model
 	include Elasticsearch::Model::Callbacks
 
-	settings index: {
-		analysis: {
-			analyzer: {
-				standard_normalization: {
-					tokenizer: :standard,
-					filter: [:lowercase, :stop, :asciifolding, :snowball]
-				}
-			}
-		}
-	} do
-		mappings do
-			indexes :sourcedb, type: :keyword
-			indexes :sourceid, type: :keyword
-			indexes :body,     type: :text,  analyzer: :standard_normalization, index_options: :offsets
-
-			# indexes :docs_projects, type: 'nested' do
-			indexes :docs_projects do
-				indexes :doc_id
-				indexes :project_id
-			end
-
-			indexes :projects do
-				indexes :id, type: :integer
-			end
+	settings do
+		mappings dynamic: 'false' do
+			indexes :body, type: :text, analyzer: :english, index_options: :offsets
 		end
 	end
 
 	SOURCEDBS = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy', 'CORD-19']
 
-
 	def self.search_docs(attributes = {})
-		filter_condition = []
-		filter_condition << {term: {'projects.id' => attributes[:project_id]}} if attributes[:project_id].present?
-		filter_condition << {term: {'sourcedb' => attributes[:sourcedb]}} if attributes[:sourcedb].present?
-		filter_condition << {term: {'sourceid' => attributes[:sourceid]}} if attributes[:sourceid].present?
-
-		filter_phrase = {
-			bool: {
-				must: filter_condition
-			}
-		}
-
-		docs = search(
-			query: {
-				bool: {
-					must: {
-						match: {
-							body: {
-								query: attributes[:body]
-							}
-						}
-					},
-					filter: filter_phrase
-				}
-			},
-			highlight: {
-				fields: {
-					body: {}
-				}
-			}
-		).page(attributes[:page]).per(attributes[:per])
-
-		return docs
+		if attributes[:project_id].present? || attributes[:sourcedb].present?
+			search(query: {match: {body: attributes[:body]}}, highlight: {fields: {body: {}}})
+				.records.in_sourcedb(attributes[:sourcedb]).in_project(attributes[:project_id]).simple_paginate(attributes[:page], attributes[:per])
+		else
+			search(query: {match: {body: attributes[:body]}}, highlight: {fields: {body: {}}})
+				.page(attributes[:page]).per(attributes[:per]).records
+		end
 	end
 
 	UserSourcedbSeparator = '@'
@@ -89,14 +42,26 @@ class Doc < ActiveRecord::Base
 
 	has_many :project_docs, dependent: :destroy
 	has_many :projects, through: :project_docs,
-		:after_add => [:increment_docs_projects_counter, :update_es_doc],
-		:after_remove => [:decrement_docs_projects_counter, :update_es_doc]
+		:after_add => [:increment_docs_projects_counter],
+		:after_remove => [:decrement_docs_projects_counter]
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
 	validates :sourceid, presence: true
 	validates :sourceid, uniqueness: {scope: :sourcedb}
 	
+	scope :in_project, -> (project_id) {
+		if project_id.present?
+			includes(:project_docs).where("project_docs.project_id": project_id)
+		end
+	}
+
+	scope :in_sourcedb, -> (sourcedb) {
+		if sourcedb.present?
+			where(sourcedb: sourcedb)
+		end
+	}
+
 	scope :simple_paginate, -> (page, per = 10) {
 		page = page.nil? ? 1 : page.to_i
 		offset = (page - 1) * per
