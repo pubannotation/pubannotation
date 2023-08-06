@@ -4,21 +4,51 @@ class Doc < ActiveRecord::Base
 
 	settings do
 		mappings dynamic: 'false' do
+			indexes :sourcedb, type: :keyword
 			indexes :body, type: :text, analyzer: :english, index_options: :offsets
+			indexes :project_ids, type: :integer
 		end
+	end
+
+	def as_indexed_json(options = {})
+		{
+			id: self.id,
+			body: self.body,
+			sourcedb: self.sourcedb,
+			project_ids: self.projects.pluck(:id)
+		}
+	end
+
+	def self.search_docs(attributes = {})
+		filters = []
+		filters << {term: {'project_ids' => attributes[:project_id]}} if attributes[:project_id].present?
+		filters << {term: {'sourcedb' => attributes[:sourcedb]}} if attributes[:sourcedb].present?
+
+		# docs = search(attributes[:body])
+		docs = search(
+			query: {
+				bool: {
+					must: {
+						match: {
+							body: {
+								query: attributes[:body]
+							}
+						}
+					},
+					filter: filters
+				}
+			},
+			highlight: {
+				fields: {
+					body: {}
+				}
+			}
+		).page(attributes[:page]).per(attributes[:per])
+
+		return docs
 	end
 
 	SOURCEDBS = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy', 'CORD-19']
-
-	def self.search_docs(attributes = {})
-		if attributes[:project_id].present? || attributes[:sourcedb].present?
-			search(query: {match: {body: attributes[:body]}}, highlight: {fields: {body: {}}})
-				.records.in_sourcedb(attributes[:sourcedb]).in_project(attributes[:project_id]).simple_paginate(attributes[:page], attributes[:per])
-		else
-			search(query: {match: {body: attributes[:body]}}, highlight: {fields: {body: {}}})
-				.page(attributes[:page]).per(attributes[:per]).records
-		end
-	end
 
 	UserSourcedbSeparator = '@'
 	after_save :expire_page_cache
