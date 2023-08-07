@@ -11,7 +11,7 @@
 <tr class="clickable-row" data-href="<%= doc_href %>">
 	<td style="text-align:center"><%= link_to(source_doc.sourcedb, doc_href, class: :row_link) -%></td>
 	<td style="text-align:center"><%= link_to(source_doc.sourceid, doc_href, class: :row_link) -%></td>
-	<td class="snippet show-when-wide"><%= link_to(doc_snippet(source_doc).html_safe, doc_href, class: "row_link") -%></td>
+	<td class="snippet show-when-wide"><%= link_to(doc_snippet(source_doc, source_doc_counter).html_safe, doc_href, class: "row_link") -%></td>
 	<td style="text-align:right"><%= link_to(number_to_human_size(source_doc.body.length), doc_href, class: :row_link) %></td>
 	<td class="show-when-wide" style="text-align:center"><%= link_to(doc_updated_at.to_date, doc_href, class: :row_link, title: "This document was last updated_at #{source_doc.updated_at.to_date}.") %></td>
 	<td class="table_cell_col_sep"></td>

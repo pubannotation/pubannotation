@@ -92,24 +92,17 @@ module DocsHelper
 		html += link_to_unless_current 'TXT', params_to_text.permit(:controller, :action).merge(format: :txt), :class => 'tab'
 	end
 
-	def doc_snippet(doc)
-		snippet = doc.body
-		em_open_pos = snippet.index('<em>')
-		if em_open_pos
-			em_close_pos = snippet.rindex('</em>')
-			m = em_open_pos + (em_close_pos - em_open_pos) / 2
-			b = m - 40
-			e = m + 60
-			if b < 0
-				e -= b
-				b = 0
+	def doc_snippet(doc, doc_counter)
+		if @searched_docs.present?
+			htext = @searched_docs[doc_counter].highlight.body.join(' ')
+			em_open_pos = htext.index('<em>')
+			if em_open_pos > 40
+				'⋯' + htext[(em_open_pos - 20) ... -1]
+			else
+				htext
 			end
-			if e > snippet.length
-				e = snippet.length
-			end
-			snippet[b...e]
 		else
-			snippet[0 ... 100]
+			doc.body
 		end
 	end
 end
