@@ -17,13 +17,13 @@ class ImportDocsJob < ApplicationJob
 				# the 'import' method does not utilize callbacks and skips uniqueness validation
 				r = ProjectDoc.import [:project_id, :doc_id], ids_to_import.map{|doc_id| [project.id, doc_id]}, on_duplicate_key_ignore:true
 				raise "failed in importing #{ids_to_import.count - r.ids.count} documents" unless r.ids.count == ids_to_import.count
+
+				# to take care of the project_num attribute and elasticsearch index of each imported document
 				ActiveRecord::Base.connection.exec_query "UPDATE docs SET projects_num = projects_num + 1 WHERE id IN (#{ids_to_import.join(', ')})"
 				ids_to_import.each{|doc_id| Indexer.perform_later(nil, :update, doc_id)}
 
 				sum_imported += ids_to_import.count
 			end
-
-			# to take care of the project_num attribute and elasticsearch index of each imported document
 
 			@job.update_attribute(:num_dones, BatchSize * i) if @job
 			check_suspend_flag
