@@ -1,6 +1,11 @@
 class ProjectDoc < ActiveRecord::Base
+	after_save    {Indexer.perform_later(nil, :update, self.doc_id)}
+	after_destroy {Indexer.perform_later(nil, :update, self.doc_id)}
+
 	belongs_to :project
 	belongs_to :doc
+
+	validates :doc_id, uniqueness: {scope: :project_id}
 
 	scope :simple_paginate, -> (page, per = 10) {
 		page = page.nil? ? 1 : page.to_i

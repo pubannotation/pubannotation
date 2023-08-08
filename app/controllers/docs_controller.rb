@@ -452,18 +452,8 @@ class DocsController < ApplicationController
 			if docids.empty?
 				"There is no document to import from the project, '#{params["select_project"]}'."
 			else
-				num_source_docs = source_project.docs.count
-				num_skip = num_source_docs - docids.length
-
-				docids_file = Tempfile.new("docids")
-				docids_file.puts docids
-				docids_file.close
-
-				ImportDocsJob.perform_later(project, docids_file.path)
-
-				m = ""
-				m += "#{num_skip} docs were skipped due to duplication." if num_skip > 0
-				m += "The task, 'import documents to the project', is created."
+				ImportDocsJob.perform_later(project, source_project.id)
+				"The task, 'import documents to the project', is created."
 			end
 		rescue => e
 			e.message

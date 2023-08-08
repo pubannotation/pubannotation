@@ -469,7 +469,7 @@ class Project < ActiveRecord::Base
   def delete_doc(doc)
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
     delete_doc_annotations(doc)
-    doc.projects.delete(self)
+    doc.projects.destroy(self)
     doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{user.username}") && doc.projects_num == 0
   end
 

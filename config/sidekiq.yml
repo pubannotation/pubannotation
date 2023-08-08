@@ -2,4 +2,5 @@
 :max_retries: 0
 :queues:
   - [general, 1]
+  - elasticsearch
   - low_priority

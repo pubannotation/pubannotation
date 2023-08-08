@@ -28,9 +28,11 @@ class ApplicationJob < ActiveJob::Base
   def before_enqueue
     # When creating a new job,
     # be sure to pass the organization to which the Job record belongs to the first argument of the perform method.
-    self.arguments.first.jobs.create name: self.job_name,
-                                     active_job_id: self.job_id,
-                                     queue_name: self.queue_name
+    unless self.arguments.first.nil?
+      self.arguments.first.jobs.create name: self.job_name,
+                                       active_job_id: self.job_id,
+                                       queue_name: self.queue_name
+    end
   end
 
   def before_perform(active_job)
@@ -53,11 +55,13 @@ class ApplicationJob < ActiveJob::Base
   end
 
   def suspended?
-    Job.find(@job.id)&.suspended?
+    Job.find(@job.id)&.suspended? if @job
   end
 
   def prepare_progress_record(scheduled_num)
-    @job.update_attribute(:num_items, scheduled_num)
-    @job.update_attribute(:num_dones, 0)
+    if @job
+      @job.update_attribute(:num_items, scheduled_num)
+      @job.update_attribute(:num_dones, 0)
+    end
   end
 end

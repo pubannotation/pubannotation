@@ -1,6 +1,7 @@
 class Doc < ActiveRecord::Base
 	include Elasticsearch::Model
-	include Elasticsearch::Model::Callbacks
+	after_save    {Indexer.perform_later(nil, :index,  self.id)}
+	after_destroy {Indexer.perform_later(nil, :delete, self.id)}
 
 	settings do
 		mappings dynamic: 'false' do
@@ -15,7 +16,7 @@ class Doc < ActiveRecord::Base
 			id: self.id,
 			body: self.body,
 			sourcedb: self.sourcedb,
-			project_ids: self.projects.pluck(:id)
+			project_ids: self.projects.map{|p| p.id}
 		}
 	end
 
@@ -74,7 +75,6 @@ class Doc < ActiveRecord::Base
 	has_many :projects, through: :project_docs,
 		:after_add => [:increment_docs_projects_counter],
 		:after_remove => [:decrement_docs_projects_counter]
-
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
 	validates :sourceid, presence: true
@@ -176,10 +176,6 @@ class Doc < ActiveRecord::Base
 		rescue
 			nil
 		end
-	end
-
-	def update_es_doc(project)
-		self.__elasticsearch__.index_document
 	end
 
 	def increment_docs_projects_counter(project)
