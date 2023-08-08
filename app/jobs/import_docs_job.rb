@@ -1,6 +1,6 @@
 class ImportDocsJob < ApplicationJob
 	queue_as :general
-	BatchSize = 100
+	BatchSize = 1000
 
 	def perform(project, sproject_id)
 		total_num = ProjectDoc.where(project_id:sproject_id).count
