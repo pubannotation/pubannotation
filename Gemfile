@@ -54,6 +54,8 @@ gem 'elasticsearch-rails', '~> 7.2'
 gem 'faraday', '~> 1.10'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.11.3'
+
+# Use to clear page or fragment caches in app/controllers/doc_sweeper.rb
 gem 'rails-observers'
 gem 'diff-lcs'
 gem 'activejob-cancel'
