@@ -115,7 +115,6 @@ GEM
     concurrent-ruby (1.2.2)
     connection_pool (2.4.1)
     crass (1.0.6)
-    daemons (1.4.1)
     date (3.3.3)
     debug (1.8.0)
       irb (>= 1.5.0)
@@ -389,7 +388,6 @@ DEPENDENCIES
   bootsnap (>= 1.1.0)
   coffee-rails
   color-generator
-  daemons
   debug
   devise
   diff-lcs
