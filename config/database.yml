@@ -15,8 +15,11 @@ development:
 test:
   adapter: postgresql
   encoding: unicode
-  database: pubannotation_test
-  pool: 5
+  database: test_database
+  username: postgres
+  password: postgres
+  host: localhost
+  port: 5432
 
 production:
   adapter: postgresql
