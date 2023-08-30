@@ -62,3 +62,8 @@ gem 'activejob-cancel'
 gem 'sidekiq'
 
 gem "foreman", "~> 0.87.2"
+
+# For the RSpec
+group :development, :test do
+  gem 'rspec-rails'
+end
