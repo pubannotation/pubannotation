@@ -14,11 +14,11 @@ class InstantiateAndSaveAnnotationsCollection
         project_docs = project.project_docs.where(doc_id: doc_ids)
 
         doc_ids.each do |did|
-          project_doc = project_docs.find { _1.doc_id == did }
           d_num = d_stat[did] || 0
           r_num = r_stat[did] || 0
           m_num = m_stat[did] || 0
 
+          project_doc = project_docs.find { _1.doc_id == did }
           update_project_doc(project_doc, d_num, r_num, m_num)
         end
 
@@ -35,6 +35,8 @@ class InstantiateAndSaveAnnotationsCollection
     end
 
     def update_project_doc(project_doc,  d_num, r_num, m_num)
+      raise unless project_doc
+
       project_doc.increment('denotations_num', d_num)
       project_doc.increment('relations_num', r_num)
       project_doc.increment('modifications_num', m_num)
