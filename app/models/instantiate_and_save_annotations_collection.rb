@@ -11,17 +11,18 @@ class InstantiateAndSaveAnnotationsCollection
         m_stat, m_stat_all = import_modifications(project, annotations_collection, imported_denotations)
 
         doc_ids = Set.new annotations_collection.map { _1[:docid] }
-        project_docs = project.project_docs.where(doc_id: doc_ids)
 
-        raise unless project_docs.present?
+        if doc_ids.present?
+          project_docs = project.project_docs.where(doc_id: doc_ids)
 
-        doc_ids.each do |did|
-          d_num = d_stat[did] || 0
-          r_num = r_stat[did] || 0
-          m_num = m_stat[did] || 0
+          doc_ids.each do |did|
+            d_num = d_stat[did] || 0
+            r_num = r_stat[did] || 0
+            m_num = m_stat[did] || 0
 
-          project_doc = project_docs.find { _1.doc_id == did }
-          update_project_doc(project_doc, d_num, r_num, m_num)
+            project_doc = project_docs.find { _1.doc_id == did }
+            update_project_doc(project_doc, d_num, r_num, m_num)
+          end
         end
 
         update_project(project, d_stat_all, r_stat_all, m_stat_all)
