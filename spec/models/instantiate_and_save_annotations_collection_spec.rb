@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
-  fixtures :projects
+  fixtures :all
 
   before do
     @project = projects(:one)
