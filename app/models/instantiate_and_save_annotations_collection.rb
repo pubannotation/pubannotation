@@ -13,6 +13,8 @@ class InstantiateAndSaveAnnotationsCollection
         doc_ids = Set.new annotations_collection.map { _1[:docid] }
         project_docs = project.project_docs.where(doc_id: doc_ids)
 
+        raise unless project_docs.present?
+
         doc_ids.each do |did|
           d_num = d_stat[did] || 0
           r_num = r_stat[did] || 0
