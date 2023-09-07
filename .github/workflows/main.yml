@@ -21,6 +21,13 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+        env:
+          discovery.type: single-node
+        ports:
+          - 9200:9200
+        options: "-e ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
     steps:
       - uses: actions/checkout@v3
@@ -33,10 +40,15 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
+      - name: Wait for Elasticsearch to become available
+        run: |
+          curl -X GET "localhost:9200/"
+
       - name: Run tests
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_database
+          ELASTICSEARCH_URL: http://localhost:9200
 
         run: |
           bin/rails db:setup
