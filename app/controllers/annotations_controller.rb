@@ -15,31 +15,29 @@ class AnnotationsController < ApplicationController
 	# annotations for doc without project
 	def doc_annotations_index
 		@doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-		if @doc.present?
-			@span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
-			@doc.set_ascii_body if params[:encoding] == 'ascii'
+		return render_status_error(:not_found) unless @doc.present?
 
-			params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
+		@span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
+		@doc.set_ascii_body if params[:encoding] == 'ascii'
 
-			project = if params[:project].present?
-				params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
-			else
-				@doc.projects.to_a
-			end
-			project.delete_if{|p| !p.annotations_accessible?(current_user)}
+		params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
 
-			context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-
-			options = {}
-			options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
-			@annotations = @doc.hannotations(project, @span, context_size, options)
-
-			respond_to do |format|
-				format.html {render 'index'}
-				format.json {render json: @annotations}
-			end
+		project = if params[:project].present?
+			params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
 		else
-			render_status_error(:not_found)
+			@doc.projects.to_a
+		end
+		project.delete_if{|p| !p.annotations_accessible?(current_user)}
+
+		context_size = params[:context_size].present? ? params[:context_size].to_i : 0
+
+		options = {}
+		options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
+		@annotations = @doc.hannotations(project, @span, context_size, options)
+
+		respond_to do |format|
+			format.html {render 'index'}
+			format.json {render json: @annotations}
 		end
 	rescue => e
 		Rails.logger.error e.message
