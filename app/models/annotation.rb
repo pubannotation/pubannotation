@@ -431,7 +431,7 @@ class Annotation < ActiveRecord::Base
 
 		messages = []
 
-		bads = denotations.select{|d| !d.valid?(str.length)}
+		bads = denotations.select{|d| !d.range_valid?(str.length)}
 		unless bads.empty?
 			message = "Alignment cancelled. Invalid denotations found: "
 			message += if bads.length > 5
@@ -447,7 +447,7 @@ class Annotation < ActiveRecord::Base
 		aligner.transform_denotations!(denotations)
 		aligner.transform_denotations!(blocks)
 
-		bads = denotations.select{|d| !d.valid?(rstr.length)}
+		bads = denotations.select{|d| !d.range_valid?(rstr.length)}
 		unless bads.empty? # && aligner.similarity > 0.5
 			message = "Alignment failed. Invalid transformations found: "
 			message += if bads.length > 5
