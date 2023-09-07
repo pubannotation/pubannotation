@@ -66,4 +66,5 @@ gem "foreman", "~> 0.87.2"
 # For the RSpec
 group :development, :test do
   gem 'rspec-rails'
+  gem 'factory_bot_rails'
 end

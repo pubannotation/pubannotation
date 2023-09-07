@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
-  fixtures :project_docs, :projects, :docs
-
   before do
-    @project = projects(:one)
+    create(:project_doc)
+    @project = Project.first
+
     travel_to current do
       InstantiateAndSaveAnnotationsCollection.call @project, annotations_collection
     end
