@@ -34,7 +34,7 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
   describe "update to non-empty annotations" do
     let(:current) { Time.zone.local(2022, 7, 11, 10, 04, 44) }
     let(:annotations_collection) do
-      [{ sourcedb: "test_db", sourceid: "1234",
+      [{ sourcedb: "PubMed", sourceid: "12345678",
          denotations: [
            { id: "d1", span: { begin: 1, end: 2 }, obj: "A" },
            { id: "d2", span: { begin: 100, end: 200 }, obj: "B" }
