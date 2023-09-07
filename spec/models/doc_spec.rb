@@ -43,7 +43,7 @@ RSpec.describe Doc, type: :model do
   end
 
   describe 'get_denotations' do
-    subject { doc.get_denotations(project) }
+    subject { doc.get_denotations(project.id) }
     let(:doc) { create(:doc) }
     let(:project) { create(:project) }
 
@@ -53,6 +53,18 @@ RSpec.describe Doc, type: :model do
 
     context 'when there are no denotations' do
       it { is_expected.to be_empty }
+    end
+
+    context 'when there are denotations' do
+      before do
+        create(:denotation, doc: doc, project: project)
+      end
+
+      it { is_expected.not_to be_empty }
+
+      it 'returns an array of denotations' do
+        expect(subject.first).to be_a(Denotation)
+      end
     end
   end
 end
