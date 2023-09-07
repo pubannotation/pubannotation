@@ -41,4 +41,19 @@ RSpec.describe Doc, type: :model do
       expect(doc.get_project_annotations(project)[:project]).to eq('TestProject')
     end
   end
+
+  describe 'get_denotations' do
+    let(:doc) { create(:doc) }
+    let(:project) { create(:project) }
+
+    it 'returns an array' do
+      expect(doc.get_denotations(project)).to be_a(ActiveRecord::AssociationRelation)
+    end
+
+    context 'when there are no denotations' do
+      it 'returns an array with denotations' do
+        expect(doc.get_denotations(project)).to be_empty
+      end
+    end
+  end
 end
