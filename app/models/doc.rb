@@ -521,7 +521,7 @@ class Doc < ActiveRecord::Base
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotations(project_id, span, context_size, sort)
-		_denotations = denotations.in_project(project_id).in_span(span)
+		ret = denotations.in_project(project_id).in_span(span)
 
 		if span.present?
 			b = span[:begin]
@@ -529,13 +529,13 @@ class Doc < ActiveRecord::Base
 				b -= context_size
 				b = 0 if b < 0
 			end
-			_denotations.each{|d| d.begin -= b; d.end -= b}
+			ret.each{|d| d.begin -= b; d.end -= b}
 		end
 
 		if sort
-			_denotations.sort{|d1, d2| (d1.begin <=> d2.begin).nonzero? || (d2.end <=> d1.end)}
+			ret.sort{|d1, d2| (d1.begin <=> d2.begin).nonzero? || (d2.end <=> d1.end)}
 		else
-			_denotations
+			ret
 		end
 	end
 
