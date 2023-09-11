@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :doc do
     sourcedb { "PubMed" }
-    sourceid { "12345678" }
+    sequence(:sourceid) { _1.to_s }
     body { "This is a test." }
   end
 end
