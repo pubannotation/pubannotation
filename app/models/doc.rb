@@ -452,7 +452,13 @@ class Doc < ActiveRecord::Base
 	end
 
 	def spans_index(project_id = nil)
-		self.get_denotations_hash(project_id).map{|d| {id:d[:id], span:d[:span], obj:self.span_url(d[:span])}}.uniq{|d| d[:span]}
+		self.get_denotations_hash(project_id).map do |d|
+			{
+				id: d[:id],
+				span: d[:span],
+				obj: self.span_url(d[:span])
+			}
+		end.uniq{|d| d[:span]}
 	end
 
 	def text(params)
