@@ -43,9 +43,11 @@ RSpec.describe Doc, type: :model do
   end
 
   describe 'get_denotations' do
-    subject { doc.get_denotations(project.id, nil, nil, false) }
+    subject { doc.get_denotations(project.id, span, nil, false) }
+
     let(:doc) { create(:doc) }
     let(:project) { create(:project) }
+    let(:span) { nil }
 
     it 'returns an array' do
       is_expected.to be_a(ActiveRecord::AssociationRelation)
@@ -64,6 +66,20 @@ RSpec.describe Doc, type: :model do
 
       it 'returns an array of denotations' do
         expect(subject.first).to be_a(Denotation)
+      end
+
+      context 'when span is specified' do
+        let(:span) { {begin: 8, end: 14} }
+        let!(:object_denotation) { create(:object_denotation, doc: doc, project: project) }
+
+        it 'returns an array of denotations between the specified span' do
+          expect(subject.first.hid).to eq(object_denotation.hid)
+        end
+
+        it 'returns an array of denotations offset by the specified span' do
+          expect(subject.first.begin).to eq(object_denotation.begin - span[:begin])
+          expect(subject.first.end).to eq(object_denotation.end - span[:begin])
+        end
       end
     end
   end
