@@ -452,7 +452,9 @@ class Doc < ActiveRecord::Base
 	end
 
 	def spans_index(project_id = nil)
-		self.get_denotations_hash(project_id).map do |d|
+		denotations.in_project(project_id)
+							 .as_json
+							 .map do |d|
 			{
 				id: d[:id],
 				span: d[:span],
