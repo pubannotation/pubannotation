@@ -5,6 +5,6 @@ FactoryBot.define do
     hid { 'T1' }
     add_attribute(:begin) { 0 }
     add_attribute(:end) { 4 }
-    obj { 'Test' }
+    obj { 'subject' }
   end
 end
