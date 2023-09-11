@@ -833,7 +833,7 @@ class Doc < ActiveRecord::Base
 
 		ids = nil
 
-		hdenotations = get_denotations_hash(project_id, span, context_size, sort_p)
+		hdenotations = get_denotations(project_id, span, context_size, sort_p).as_json
 		ids = get_denotation_ids(project_id, span) unless span.nil?
 
 		hblocks = get_blocks_hash(project_id, span, context_size, sort_p)
