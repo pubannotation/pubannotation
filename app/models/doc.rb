@@ -561,7 +561,7 @@ class Doc < ActiveRecord::Base
 
 	# the first argument, project_id, may be a single id or an array of ids.
 	def get_denotations_hash(project_id)
-		self.get_denotations(project_id, nil, nil, false).as_json
+		self.denotations.in_project(project_id).as_json
 	end
 
 	def get_blocks_hash(project_id = nil, span = nil, context_size = nil, sort = false)
