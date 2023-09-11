@@ -1,14 +1,16 @@
 require 'rails_helper'
 
 RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
+  let(:project_doc) { create(:project_doc) }
+  let(:project) { project_doc.project }
+  let(:doc) { project_doc.doc }
+  
   before do
-    create(:project_doc)
-    @project = Project.first
-
     travel_to current do
-      InstantiateAndSaveAnnotationsCollection.call @project, annotations_collection
+      InstantiateAndSaveAnnotationsCollection.call project, annotations_collection
     end
-    @project.reload
+    
+    project.reload
   end
 
   describe "update to empty annotations" do
@@ -16,11 +18,11 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
     let(:annotations_collection) { [] }
 
     it "sets all annotation counts to 0 and updates timestamps" do
-      expect(@project.denotations_num).to eq(0)
-      expect(@project.relations_num).to eq(0)
-      expect(@project.modifications_num).to eq(0)
-      expect(@project.updated_at).to eq(current)
-      expect(@project.annotations_updated_at).to eq(current)
+      expect(project.denotations_num).to eq(0)
+      expect(project.relations_num).to eq(0)
+      expect(project.modifications_num).to eq(0)
+      expect(project.updated_at).to eq(current)
+      expect(project.annotations_updated_at).to eq(current)
     end
 
     it "does not create any annotations" do
@@ -34,7 +36,7 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
   describe "update to non-empty annotations" do
     let(:current) { Time.zone.local(2022, 7, 11, 10, 04, 44) }
     let(:annotations_collection) do
-      [{ sourcedb: "PubMed", sourceid: "12345678",
+      [{ sourcedb: "PubMed", sourceid: doc.sourceid,
          denotations: [
            { id: "d1", span: { begin: 1, end: 2 }, obj: "A" },
            { id: "d2", span: { begin: 100, end: 200 }, obj: "B" }
@@ -56,20 +58,20 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
 
     before do
       travel_to current do
-        InstantiateAndSaveAnnotationsCollection.call @project, []
+        InstantiateAndSaveAnnotationsCollection.call project, []
       end
     end
 
     it "sets all annotation counts to 0 and updates timestamps" do
-      expect(@project.denotations_num).to eq(2)
-      expect(@project.relations_num).to eq(2)
-      expect(@project.modifications_num).to eq(2)
-      expect(@project.project_docs.first.denotations_num).to eq(2)
-      expect(@project.project_docs.first.relations_num).to eq(2)
-      expect(@project.project_docs.first.modifications_num).to eq(2)
-      expect(@project.updated_at).to eq(current)
-      expect(@project.annotations_updated_at).to eq(current)
-      expect(@project.project_docs.first.annotations_updated_at).to eq(current)
+      expect(project.denotations_num).to eq(2)
+      expect(project.relations_num).to eq(2)
+      expect(project.modifications_num).to eq(2)
+      expect(project.project_docs.first.denotations_num).to eq(2)
+      expect(project.project_docs.first.relations_num).to eq(2)
+      expect(project.project_docs.first.modifications_num).to eq(2)
+      expect(project.updated_at).to eq(current)
+      expect(project.annotations_updated_at).to eq(current)
+      expect(project.project_docs.first.annotations_updated_at).to eq(current)
     end
 
     it 'creates annotations' do

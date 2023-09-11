@@ -9,7 +9,7 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'returns a hash with target' do
-      expect(doc.hannotations[:target]).to eq('http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/12345678')
+      expect(doc.hannotations[:target]).to eq("http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}")
     end
 
     it 'returns a hash with sourcedb' do doc = create(:doc)
@@ -17,7 +17,7 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'returns a hash with sourceid' do
-      expect(doc.hannotations[:sourceid]).to eq('12345678')
+      expect(doc.hannotations[:sourceid]).to eq(doc.sourceid)
     end
 
     it 'returns a hash with text' do
