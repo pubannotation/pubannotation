@@ -520,7 +520,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
-	def get_denotations(project_id = nil, span = nil, context_size = nil, sort = false)
+	def get_denotations(project_id, span, context_size, sort)
 		_denotations = denotations.in_project(project_id).in_span(span)
 
 		if span.present?

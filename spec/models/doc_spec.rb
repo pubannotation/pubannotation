@@ -43,7 +43,7 @@ RSpec.describe Doc, type: :model do
   end
 
   describe 'get_denotations' do
-    subject { doc.get_denotations(project.id) }
+    subject { doc.get_denotations(project.id, nil, nil, false) }
     let(:doc) { create(:doc) }
     let(:project) { create(:project) }
 
