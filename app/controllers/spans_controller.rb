@@ -16,6 +16,8 @@ class SpansController < ApplicationController
 				format.json {render json: {text: @doc.body, denotations: @spans_index}}
 			end
 		rescue => e
+			Rails.logger.error e.message
+
 			respond_to do |format|
 				format.html {redirect_to home_path, notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
