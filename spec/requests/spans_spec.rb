@@ -41,12 +41,12 @@ RSpec.describe "Spans", type: :request do
           expect(JSON.parse(response.body)['denotations']).to eq([
             {
               "id" => "T1",
-              "obj" => "http://www.example.com/docs/sourcedb/PubMed/sourceid/4/spans/0-4",
+              "obj" => "http://www.example.com/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}/spans/0-4",
               "span"=>{"begin"=>0, "end"=>4}
             },
             {
               "id" => "T2",
-              "obj" => "http://www.example.com/docs/sourcedb/PubMed/sourceid/4/spans/10-14",
+              "obj" => "http://www.example.com/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}/spans/10-14",
               "span"=>{"begin"=>10, "end"=>14}
             }
                                                                  ])
