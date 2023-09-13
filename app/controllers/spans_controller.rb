@@ -1,4 +1,5 @@
 class SpansController < ApplicationController
+	include SpansHelper
 
 	def doc_spans_index
 		begin
@@ -9,7 +10,15 @@ class SpansController < ApplicationController
 			@doc = docs.first
 
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
-			@spans_index = @doc.spans_index
+			@spans_index = @doc.denotations
+												 .as_json
+												 .map do |d|
+				{
+					id: d[:id],
+					span: d[:span],
+					obj: self.span_url(@doc, d[:span])
+				}
+			end.uniq{|d| d[:span]}
 
 			respond_to do |format|
 				format.html {render 'spans_index'}
