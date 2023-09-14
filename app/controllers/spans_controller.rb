@@ -108,12 +108,14 @@ class SpansController < ApplicationController
           obj:'span'
       }]
     }
-
-    url  = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
-    url += "/spans/#{span[:begin]}-#{span[:end]}"
+    url = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}/spans/#{span[:begin]}-#{span[:end]}"
 
     respond_to do |format|
-      format.any {render plain: url, status: :created, location: url}
+      format.any do
+        render plain: url,
+               status: :created,
+               location: url
+      end
     end
   rescue => e
     respond_to do |format|
