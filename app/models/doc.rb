@@ -451,18 +451,6 @@ class Doc < ActiveRecord::Base
 		return [prev_text, body[span[:begin]...span[:end]], post_text]
 	end
 
-	def spans_index(project_id = nil)
-		denotations.in_project(project_id)
-							 .as_json
-							 .map do |d|
-			{
-				id: d[:id],
-				span: d[:span],
-				obj: self.span_url(d[:span])
-			}
-		end.uniq{|d| d[:span]}
-	end
-
 	def text(params)
 		prev_text, span, next_text = self.span(params)
 		[prev_text, span, next_text].compact.join('') 
