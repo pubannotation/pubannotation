@@ -28,14 +28,6 @@ RSpec.describe Doc, type: :model do
       expect(doc.hannotations[:tracks]).to eq([])
     end
 
-    context 'when specified project is single' do
-      let(:project) { create(:project) }
-
-      it 'returns a hash without tracks' do
-        expect(doc.hannotations(project)[:tracks]).to be_nil
-      end
-    end
-
     context 'when document has denotations' do
       let(:project) { create(:project) }
       let!(:denotation) { create(:denotation, doc: doc, project: project) }
@@ -49,6 +41,21 @@ RSpec.describe Doc, type: :model do
                                                                             span: {begin: 0, end: 4}
                                                                           }]
                                              )
+      end
+
+      context 'when specified project is single' do
+        let(:project) { create(:project) }
+
+        it 'returns a hash without tracks' do
+          expect(doc.hannotations(project)[:tracks]).to be_nil
+        end
+
+        it 'returns a hash with denotations' do
+          expect(doc.hannotations(project)[:denotations]).to include(id: "T1",
+                                                                      obj: "subject",
+                                                                      span: {begin: 0, end: 4}
+                                                                    )
+        end
       end
     end
   end
