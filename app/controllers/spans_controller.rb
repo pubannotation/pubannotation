@@ -108,8 +108,6 @@ class SpansController < ApplicationController
       }]
     }
 
-    raise "Could not find the string in the specified document." if annotations.nil?
-
     url  = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
 
     span = annotations[:denotations].first[:span]
