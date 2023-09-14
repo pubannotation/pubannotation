@@ -3,10 +3,7 @@ class SpansController < ApplicationController
 
   def doc_spans_index
     begin
-      docs = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
-      raise "Could not find the document." unless docs.present?
-
-      @doc = docs.first
+      @doc = Doc.find_by!(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
       @doc.set_ascii_body if params[:encoding] == 'ascii'
 
       @spans_index = Denotation.where(doc: @doc)
@@ -30,13 +27,9 @@ class SpansController < ApplicationController
 
   def project_doc_spans_index
     begin
-      @project = Project.accessible(current_user).find_by_name(params[:project_id])
-      raise "Could not find the project." unless @project.present?
+      @project = Project.accessible(current_user).find_by!(name: params[:project_id])
 
-      docs = @project.docs.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
-      raise "Could not find the document." unless docs.present?
-
-      @doc = docs.first
+      @doc = @project.docs.find_by!(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
       @doc.set_ascii_body if params[:encoding] == 'ascii'
 
       @spans_index = Denotation.where(doc: @doc)
