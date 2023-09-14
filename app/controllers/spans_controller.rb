@@ -25,7 +25,6 @@ class SpansController < ApplicationController
 			respond_to do |format|
 				format.html {redirect_to home_path, notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render plain: message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -58,7 +57,6 @@ class SpansController < ApplicationController
 			respond_to do |format|
 				format.html {redirect_to project_docs_path(@project.name), notice: e.message}
 				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render plain: message, status: :unprocessable_entity}
 			end
 		end
 	end
@@ -120,7 +118,6 @@ class SpansController < ApplicationController
 		respond_to do |format|
 			format.html {render plain: e.message, status: :unprocessable_entity}
 			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-			format.txt  {render plain: e.message, status: :unprocessable_entity}
 		end
 	end
 
