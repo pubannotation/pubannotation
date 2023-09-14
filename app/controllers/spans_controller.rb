@@ -12,13 +12,8 @@ class SpansController < ApplicationController
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
 			@spans_index = @doc.denotations
 												 .as_json
-												 .map do |d|
-				{
-					id: d[:id],
-					span: d[:span],
-					obj: self.span_url(@doc, d[:span])
-				}
-			end.uniq{|d| d[:span]}
+												 .map{ format_denotation_json _1 }
+												 .uniq{ _1[:span] }
 
 			respond_to do |format|
 				format.html {render 'spans_index'}
@@ -50,13 +45,8 @@ class SpansController < ApplicationController
 			@spans_index = @doc.denotations
 												 .in_project(@project)
 												 .as_json
-												 .map do |d|
-				{
-					id: d[:id],
-					span: d[:span],
-					obj: self.span_url(@doc, d[:span])
-				}
-			end.uniq{|d| d[:span]}
+												 .map{ format_denotation_json _1 }
+												 .uniq{ _1[:span] }
 
 			respond_to do |format|
 				format.html {render 'spans_index'}
@@ -132,5 +122,15 @@ class SpansController < ApplicationController
 			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
 			format.txt  {render plain: e.message, status: :unprocessable_entity}
 		end
+	end
+
+	private
+
+	def format_denotation_json(denotation)
+		{
+			id: denotation[:id],
+			span: denotation[:span],
+			obj: self.span_url(@doc, denotation[:span])
+		}
 	end
 end
