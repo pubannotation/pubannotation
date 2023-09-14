@@ -95,22 +95,21 @@ class SpansController < ApplicationController
     raise ArgumentError, "The value of the 'text' parameter is not a string." unless params[:text].class == String
 
     text = params[:text].strip
+    span = {
+      begin: 0,
+      end: text.length
+    }
     annotations = {
       text: text,
       sourcedb: params[:sourcedb],
       sourceid: params[:sourceid],
       denotations:[{
-          span: {
-            begin: 0,
-            end: text.length
-          },
+          span:,
           obj:'span'
       }]
     }
 
     url  = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
-
-    span = annotations[:denotations].first[:span]
     url += "/spans/#{span[:begin]}-#{span[:end]}"
 
     respond_to do |format|
