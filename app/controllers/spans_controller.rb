@@ -10,10 +10,10 @@ class SpansController < ApplicationController
 			@doc = docs.first
 
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
-			@spans_index = @doc.denotations
-												 .as_json
-												 .map{ format_denotation_json _1 }
-												 .uniq{ _1[:span] }
+			@spans_index = Denotation.where(doc: @doc)
+															 .as_json
+															 .map{ format_denotation_json _1 }
+															 .uniq{ _1[:span] }
 
 			respond_to do |format|
 				format.html {render 'spans_index'}
@@ -42,11 +42,11 @@ class SpansController < ApplicationController
 			@doc = docs.first
 
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
-			@spans_index = @doc.denotations
-												 .in_project(@project)
-												 .as_json
-												 .map{ format_denotation_json _1 }
-												 .uniq{ _1[:span] }
+			@spans_index = Denotation.where(doc: @doc)
+															 .where(project: @project)
+															 .as_json
+															 .map{ format_denotation_json _1 }
+															 .uniq{ _1[:span] }
 
 			respond_to do |format|
 				format.html {render 'spans_index'}
