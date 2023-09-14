@@ -517,7 +517,7 @@ class Doc < ActiveRecord::Base
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotations(project_id, span, context_size, sort)
-		ret = denotations.in_project(project_id).in_span(span)
+		ret = denotations_in(project_id).in_span(span)
 
 		if span.present?
 			b = span[:begin]
@@ -561,7 +561,7 @@ class Doc < ActiveRecord::Base
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotation_ids(project_id = nil, span = nil)
-		denotations.in_project(project_id).in_span(span).pluck(:id)
+		denotations_in(project_id).in_span(span).pluck(:id)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
@@ -571,13 +571,13 @@ class Doc < ActiveRecord::Base
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotation_hids(project_id = nil, span = nil)
-		denotations.in_project(project_id).in_span(span).pluck(:hid)
+		denotations_in(project_id).in_span(span).pluck(:hid)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotations_hash_all(project_id = nil)
 		annotations = {}
-		annotations[:denotations] = denotations.in_project(project_id).as_json
+		annotations[:denotations] = denotations_in(project_id).as_json
 		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(sourcedb, sourceid, :only_path => false)
 		annotations[:sourcedb] = sourcedb
 		annotations[:sourceid] = sourceid
@@ -591,7 +591,7 @@ class Doc < ActiveRecord::Base
 		elsif span.nil?
 			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:denotations_num).first
 		else
-			denotations.in_project(project_id).in_span(span).count
+			denotations_in(project_id).in_span(span).count
 		end
 	end
 
@@ -1080,5 +1080,9 @@ class Doc < ActiveRecord::Base
 		asciitext.gsub!('==amp==', '&')
 
 		asciitext
+	end
+
+	def denotations_in(project_id)
+		denotations.in_project(project_id)
 	end
 end
