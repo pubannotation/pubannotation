@@ -85,11 +85,10 @@ class SpansController < ApplicationController
 	def get_url
 		doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
 		unless doc.present?
-			docs, messages = Doc.sequence_and_store_docs(params[:sourcedb], [params[:sourceid]])
+			docs, _ = Doc.sequence_and_store_docs(params[:sourcedb], [params[:sourceid]])
 			raise IOError, "Failed to get the document" unless docs.length == 1
 			expire_fragment("sourcedb_counts")
 			expire_fragment("count_#{params[:sourcedb]}")
-			doc = docs.first
 		end
 
 		raise ArgumentError, "The 'text' parameter is missing." unless params[:text].present?
@@ -103,7 +102,6 @@ class SpansController < ApplicationController
 			denotations:[{span:{begin:0, end:text.length}, obj:'span'}]
 		}
 
-		m = Annotation.prepare_annotations!(annotations, doc)
 		raise "Could not find the string in the specified document." if annotations.nil?
 
 		url  = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}"
