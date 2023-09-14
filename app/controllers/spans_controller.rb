@@ -5,7 +5,6 @@ class SpansController < ApplicationController
     begin
       docs = Doc.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
       raise "Could not find the document." unless docs.present?
-      raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
       @doc = docs.first
       @doc.set_ascii_body if params[:encoding] == 'ascii'
@@ -36,7 +35,6 @@ class SpansController < ApplicationController
 
       docs = @project.docs.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
       raise "Could not find the document." unless docs.present?
-      raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
       @doc = docs.first
       @doc.set_ascii_body if params[:encoding] == 'ascii'
