@@ -99,7 +99,13 @@ class SpansController < ApplicationController
       text: text,
       sourcedb: params[:sourcedb],
       sourceid: params[:sourceid],
-      denotations:[{span:{begin:0, end:text.length}, obj:'span'}]
+      denotations:[{
+          span: {
+            begin: 0,
+            end: text.length
+          },
+          obj:'span'
+      }]
     }
 
     raise "Could not find the string in the specified document." if annotations.nil?
