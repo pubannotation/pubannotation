@@ -35,6 +35,22 @@ RSpec.describe Doc, type: :model do
         expect(doc.hannotations(project)[:tracks]).to be_nil
       end
     end
+
+    context 'when document has denotations' do
+      let(:project) { create(:project) }
+      let!(:denotation) { create(:denotation, doc: doc, project: project) }
+      let!(:project_doc) { create(:project_doc, project: project, doc: doc) }
+
+      it 'returns a hash with tracks that includes denotations' do
+        expect(doc.hannotations[:tracks]).to include(project: "TestProject",
+                                                            denotations: [{
+                                                                            id: "T1",
+                                                                            obj: "subject",
+                                                                            span: {begin: 0, end: 4}
+                                                                          }]
+                                             )
+      end
+    end
   end
 
   describe 'get_project_annotations' do
