@@ -18,13 +18,13 @@ RSpec.describe "Spans", type: :request do
         expect(response).to have_http_status(200)
       end
 
-      it 'returns text of doc' do
+      it 'returns text of document' do
         get doc_sourcedb_sourceid_spans_path sourcedb: 'PubMed', sourceid: doc.sourceid, format: :json
 
         expect(JSON.parse(response.body)['text']).to eq(doc.body)
       end
 
-      context 'when doc has denotations' do
+      context 'when document has denotations' do
         let(:project) { create(:project) }
         let!(:denotation) { create(:denotation, project: project, doc: doc) }
         let!(:object_denotation) { create(:object_denotation, project: project, doc: doc) }
@@ -35,7 +35,7 @@ RSpec.describe "Spans", type: :request do
           expect(response).to have_http_status(200)
         end
 
-        it 'returns denotations of foc' do
+        it 'returns denotations of document' do
           get doc_sourcedb_sourceid_spans_path sourcedb: 'PubMed', sourceid: doc.sourceid, format: :json
 
           expect(JSON.parse(response.body)['denotations']).to eq([
@@ -83,10 +83,33 @@ RSpec.describe "Spans", type: :request do
           expect(response).to have_http_status(200)
         end
 
-        it "returns text of doc" do
+        it "returns text of document" do
           get spans_index_project_sourcedb_sourceid_docs_path project_id: project.name, sourcedb: 'PubMed', sourceid: doc.sourceid, format: :json
 
           expect(JSON.parse(response.body)['text']).to eq(doc.body)
+        end
+
+        context 'when document has denotations' do
+          let!(:denotation) { create(:denotation, project: project, doc: doc) }
+          let!(:object_denotation) { create(:object_denotation, project: create(:project, name: 'another_project')) }
+
+          it "returns 200 response" do
+            get spans_index_project_sourcedb_sourceid_docs_path project_id: project.name, sourcedb: 'PubMed', sourceid: doc.sourceid, format: :json
+
+            expect(response).to have_http_status(200)
+          end
+
+          it 'returns denotations in project' do
+            get spans_index_project_sourcedb_sourceid_docs_path project_id: project.name, sourcedb: 'PubMed', sourceid: doc.sourceid, format: :json
+
+            expect(JSON.parse(response.body)['denotations']).to eq([
+              {
+                "id" => "T1",
+                "obj" => "http://www.example.com/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}/spans/0-4",
+                "span"=>{"begin"=>0, "end"=>4}
+              }
+                                                                     ])
+          end
         end
       end
     end

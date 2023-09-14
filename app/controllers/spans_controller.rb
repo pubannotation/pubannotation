@@ -47,7 +47,16 @@ class SpansController < ApplicationController
 			@doc = docs.first
 
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
-			@spans_index = @doc.spans_index(@project.id)
+			@spans_index = @doc.denotations
+												 .in_project(@project)
+												 .as_json
+												 .map do |d|
+				{
+					id: d[:id],
+					span: d[:span],
+					obj: self.span_url(@doc, d[:span])
+				}
+			end.uniq{|d| d[:span]}
 
 			respond_to do |format|
 				format.html {render 'spans_index'}
