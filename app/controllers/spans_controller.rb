@@ -8,8 +8,8 @@ class SpansController < ApplicationController
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
 			@doc = docs.first
-
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
+
 			@spans_index = Denotation.where(doc: @doc)
 															 .as_json
 															 .uniq{ _1[:span] }
@@ -40,8 +40,8 @@ class SpansController < ApplicationController
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
 			@doc = docs.first
-
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
+
 			@spans_index = Denotation.where(doc: @doc)
 															 .where(project: @project)
 															 .as_json
