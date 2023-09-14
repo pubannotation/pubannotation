@@ -23,7 +23,9 @@ class AnnotationsController < ApplicationController
 		params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
 
 		project = if params[:project].present?
-			params[:project].split(',').uniq.map{|project_name| Project.accessible(current_user).find_by_name(project_name)}
+								params[:project].split(',').uniq.map do |project_name|
+									Project.accessible(current_user).find_by_name(project_name)
+								end
 		else
 			@doc.projects.to_a
 		end
