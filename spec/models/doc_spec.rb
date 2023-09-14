@@ -27,6 +27,14 @@ RSpec.describe Doc, type: :model do
     it 'returns a hash with tracks' do
       expect(doc.hannotations[:tracks]).to eq([])
     end
+
+    context 'when specified project is single' do
+      let(:project) { create(:project) }
+
+      it 'returns a hash without tracks' do
+        expect(doc.hannotations(project)[:tracks]).to be_nil
+      end
+    end
   end
 
   describe 'get_project_annotations' do
