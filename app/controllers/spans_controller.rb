@@ -12,8 +12,8 @@ class SpansController < ApplicationController
 			@doc.set_ascii_body if params[:encoding] == 'ascii'
 			@spans_index = Denotation.where(doc: @doc)
 															 .as_json
-															 .map{ to_span _1 }
 															 .uniq{ _1[:span] }
+															 .map{ to_span _1 }
 
 			respond_to do |format|
 				format.html {render 'spans_index'}
@@ -45,8 +45,8 @@ class SpansController < ApplicationController
 			@spans_index = Denotation.where(doc: @doc)
 															 .where(project: @project)
 															 .as_json
-															 .map{ to_span _1 }
 															 .uniq{ _1[:span] }
+															 .map{ to_span _1 }
 
 			respond_to do |format|
 				format.html {render 'spans_index'}
