@@ -26,9 +26,9 @@ class AnnotationsController < ApplicationController
 								params[:project].split(',').uniq.map do |project_name|
 									Project.accessible(current_user).find_by_name(project_name)
 								end
-		else
-			@doc.projects.to_a
-		end
+							else
+								@doc.projects.to_a
+							end
 		project.delete_if{|p| !p.annotations_accessible?(current_user)}
 
 		context_size = params[:context_size].present? ? params[:context_size].to_i : 0
