@@ -57,6 +57,21 @@ RSpec.describe Doc, type: :model do
                                                                     )
         end
       end
+
+      context 'when document has multiple projects' do
+        let(:project2) { create(:project, name: 'AnotherProject') }
+        let!(:project_doc2) { create(:project_doc, project: project2, doc: doc) }
+
+        it 'returns a hash with tracks that has denotations' do
+          expect(doc.hannotations[:tracks].size).to eq(1)
+        end
+
+        context 'when full option is specified' do
+          it 'returns a hash with tracks that has denotations or not' do
+            expect(doc.hannotations(nil, nil, nil, {full: true})[:tracks].size).to eq(2)
+          end
+        end
+      end
     end
   end
 
