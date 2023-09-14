@@ -14,7 +14,7 @@ class AnnotationsController < ApplicationController
 
 	# annotations for doc without project
 	def doc_annotations_index
-		@doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
+		@doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid])
 		return render_status_error(:not_found) unless @doc.present?
 
 		@span = params[:begin].present? ? {:begin => params[:begin].to_i, :end => params[:end].to_i} : nil
