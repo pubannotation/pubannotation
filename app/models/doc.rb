@@ -533,7 +533,7 @@ class Doc < ActiveRecord::Base
 
 
 	# the first argument, project_id, may be a single id or an array of ids
-	def get_blocks(project_id = nil, span = nil, context_size = nil, sort = false)
+	def get_blocks(project_id, span, context_size, sort)
 		_blocks = blocks_in(project_id).in_span(span)
 
 		if span.present?
