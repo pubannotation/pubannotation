@@ -13,5 +13,12 @@ FactoryBot.define do
       add_attribute(:end) { 14 }
       obj { 'object' }
     end
+
+    factory :verb_denotation do
+      hid { 'T3' }
+      add_attribute(:begin) { 6 }
+      add_attribute(:end) { 7 }
+      obj { 'verb' }
+    end
   end
 end
