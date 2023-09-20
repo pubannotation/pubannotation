@@ -518,17 +518,14 @@ class Doc < ActiveRecord::Base
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotations(project_id, span, context_size, sort)
 		ret = denotations_in(project_id).in_span(span)
-		Denotation.arrange_for(ret, span , context_size , sort)
+		RangeArranger.new(ret, span , context_size , sort).call.ranges
 	end
-
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_blocks(project_id, span, context_size, sort)
 		ret = blocks_in(project_id).in_span(span)
-		Block.arrange_for(ret, span , context_size , sort)
+		RangeArranger.new(ret, span , context_size , sort).call.ranges
 	end
-
-
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotation_ids(project_id = nil, span = nil)
