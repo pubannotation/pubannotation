@@ -520,12 +520,14 @@ class Doc < ActiveRecord::Base
 		ret = denotations_in(project_id).in_span(span)
 
 		if span.present?
-			b = span[:begin]
-			unless context_size.nil?
-				b -= context_size
-				b = 0 if b < 0
+			offset = span[:begin]
+
+			if context_size.present?
+				offset -= context_size
+				offset = 0 if offset < 0
 			end
-			ret.each{|d| d.begin -= b; d.end -= b}
+
+			ret.each { _1.moveForward(offset) }
 		end
 
 		if sort

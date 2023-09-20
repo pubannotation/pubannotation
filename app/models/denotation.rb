@@ -82,6 +82,11 @@ class Denotation < ActiveRecord::Base
 		self.project.decrement!(:denotations_num)
 	end
 
+	def moveForward(offset)
+		self.begin -= offset
+		self.end -= offset
+	end
+
 	def increment_numbers
 		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
 		pd.increment!(:denotations_num) if pd
