@@ -534,7 +534,7 @@ class Doc < ActiveRecord::Base
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_blocks(project_id = nil, span = nil, context_size = nil, sort = false)
-		_blocks = blocks.in_project(project_id).in_span(span)
+		_blocks = blocks_in(project_id).in_span(span)
 
 		if span.present?
 			offset = offset_size_for span, context_size
@@ -559,7 +559,7 @@ class Doc < ActiveRecord::Base
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_block_ids(project_id = nil, span = nil)
-		blocks.in_project(project_id).in_span(span).pluck(:id)
+		blocks_in(project_id).in_span(span).pluck(:id)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
@@ -594,7 +594,7 @@ class Doc < ActiveRecord::Base
 		elsif span.nil?
 			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:blocks_num).first
 		else
-			blocks.in_project(project_id).in_span(span).count
+			blocks_in(project_id).in_span(span).count
 		end
 	end
 
@@ -1077,6 +1077,10 @@ class Doc < ActiveRecord::Base
 
 	def denotations_in(project_id)
 		denotations.in_project(project_id)
+	end
+
+	def blocks_in(project_id)
+		blocks.in_project(project_id)
 	end
 
 	def offset_size_for(span, context_size)
