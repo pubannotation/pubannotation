@@ -1,4 +1,6 @@
 class Relation < ActiveRecord::Base
+	include ProjectMemberConcern
+
 	belongs_to :project
 	belongs_to :subj, :polymorphic => true
 	belongs_to :obj, :polymorphic => true
@@ -9,10 +11,6 @@ class Relation < ActiveRecord::Base
 	validates :pred,    :presence => true
 	validates :subj_id, :presence => true
 	validates :obj_id,  :presence => true
-
-	scope :in_project, -> (project_id) {
-		where(project_id: project_id) unless project_id.nil?
-	}
 
 	scope :among_denotations, -> (denotation_ids) {
 		case denotation_ids

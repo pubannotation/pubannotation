@@ -1,4 +1,6 @@
 class Attrivute < ActiveRecord::Base
+	include ProjectMemberConcern
+
 	# The name of the class is changed to avoid conflict with the reserved word 'attribute'
 	belongs_to :project
 	belongs_to :subj, polymorphic: true
@@ -33,10 +35,6 @@ class Attrivute < ActiveRecord::Base
 			pred: pred
 		}
 	end
-
-	scope :in_project, -> (project_id) {
-		where(project_id: project_id) unless project_id.nil?
-	}
 
 	scope :among_entities, -> (entity_ids) {
 		case entity_ids

@@ -1,4 +1,6 @@
 class Modification < ActiveRecord::Base
+	include ProjectMemberConcern
+
 	belongs_to :project
 	belongs_to :obj, :polymorphic => true
 
@@ -29,10 +31,6 @@ class Modification < ActiveRecord::Base
 		hmodification[:obj] = obj.hid
 		hmodification
 	end
-
-	scope :in_project, -> (project_id) {
-		where('modifications.project_id': project_id) unless project_id.nil?
-	}
 
 	scope :among_entities, -> (entity_ids) {
 		case entity_ids
@@ -69,6 +67,4 @@ class Modification < ActiveRecord::Base
 			break _id if !@to_avoid || !@to_avoid.include?(_id)
 		end
 	end
-
-
 end

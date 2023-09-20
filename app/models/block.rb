@@ -1,6 +1,7 @@
 require 'zip/zip'
 
 class Block < ActiveRecord::Base
+	include ProjectMemberConcern
 	include RangeConcern
 
 	belongs_to :project
@@ -17,10 +18,6 @@ class Block < ActiveRecord::Base
 	validates :obj,        presence: true
 	validates :project_id, presence: true
 	validates :doc_id,     presence: true
-
-	scope :in_project, -> (project_id) {
-		where(project_id: project_id) unless project_id.nil?
-	}
 
 	scope :accessible_projects, lambda{|current_user_id|
 		joins([:project, :doc]).

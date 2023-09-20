@@ -1,9 +1,10 @@
 require 'zip/zip'
 
 class Denotation < ActiveRecord::Base
-	include DenotationsHelper
+	include ProjectMemberConcern
 	include RangeConcern
-	
+	include DenotationsHelper
+
 	belongs_to :project
 	belongs_to :doc
 
@@ -19,10 +20,6 @@ class Denotation < ActiveRecord::Base
 	validates :obj,        presence: true
 	validates :project_id, presence: true
 	validates :doc_id,     presence: true
-
-	scope :in_project, -> (project_id) {
-		where(project_id: project_id) unless project_id.nil?
-	}
 
 	scope :accessible_projects, lambda{|current_user_id|
 		joins([:project, :doc]).
