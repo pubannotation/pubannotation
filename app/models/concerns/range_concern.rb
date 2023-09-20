@@ -2,6 +2,7 @@
 
 module RangeConcern
   extend ActiveSupport::Concern
+  include ProjectMemberConcern
 
   included do
     scope :in_span, -> (span) do

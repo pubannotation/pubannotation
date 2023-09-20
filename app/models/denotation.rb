@@ -1,7 +1,6 @@
 require 'zip/zip'
 
 class Denotation < ActiveRecord::Base
-	include ProjectMemberConcern
 	include RangeConcern
 	include DenotationsHelper
 
