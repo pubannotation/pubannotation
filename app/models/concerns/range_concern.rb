@@ -11,6 +11,10 @@ module RangeConcern
           .where('"end" <= ?', span[:end])
       end
     end
+
+    scope :in_project_and_span, -> (project_id, span) do
+      in_project(project_id).in_span(span)
+    end
   end
 
   def <=>(other)

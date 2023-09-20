@@ -517,29 +517,29 @@ class Doc < ActiveRecord::Base
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotations(project_id, span, context_size, sort)
-		ret = denotations_in(project_id).in_span(span)
+		ret = denotations.in_project_and_span(project_id, span)
 		RangeArranger.new(ret, span , context_size , sort).call.ranges
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_blocks(project_id, span, context_size, sort)
-		ret = blocks_in(project_id).in_span(span)
+		ret = blocks.in_project_and_span(project_id, span)
 		RangeArranger.new(ret, span , context_size , sort).call.ranges
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotation_ids(project_id = nil, span = nil)
-		denotations_in(project_id).in_span(span).pluck(:id)
+		denotations.in_project_and_span(project_id, span).pluck(:id)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_block_ids(project_id = nil, span = nil)
-		blocks_in(project_id).in_span(span).pluck(:id)
+		blocks.in_project_and_span(project_id, span).pluck(:id)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotation_hids(project_id = nil, span = nil)
-		denotations_in(project_id).in_span(span).pluck(:hid)
+		denotations.in_project_and_span(project_id, span).pluck(:hid)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
@@ -559,7 +559,7 @@ class Doc < ActiveRecord::Base
 		elsif span.nil?
 			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:denotations_num).first
 		else
-			denotations_in(project_id).in_span(span).count
+			denotations.in_project_and_span(project_id, span).count
 		end
 	end
 
@@ -569,7 +569,7 @@ class Doc < ActiveRecord::Base
 		elsif span.nil?
 			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:blocks_num).first
 		else
-			blocks_in(project_id).in_span(span).count
+			blocks.in_project_and_span(project_id, span).count
 		end
 	end
 
@@ -1048,13 +1048,5 @@ class Doc < ActiveRecord::Base
 		asciitext.gsub!('==amp==', '&')
 
 		asciitext
-	end
-
-	def denotations_in(project_id)
-		denotations.in_project(project_id)
-	end
-
-	def blocks_in(project_id)
-		blocks.in_project(project_id)
 	end
 end
