@@ -793,7 +793,15 @@ class Doc < ActiveRecord::Base
 			hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
 		end
 
-		{project:project.name, denotations:hdenotations, blocks:hblocks, relations:hrelations, attributes:hattributes, modifications:hmodifications, namespaces:project.namespaces}.select{|k, v| v.present?}
+		{
+			project: project.name,
+			denotations: hdenotations,
+			blocks: hblocks,
+			relations: hrelations,
+			attributes: hattributes,
+			modifications: hmodifications,
+			namespaces: project.namespaces
+		}.select{|k, v| v.present?}
 	end
 
 	def spans_projects(params)
