@@ -1,6 +1,8 @@
 require 'zip/zip'
 
 class Block < ActiveRecord::Base
+	include RangeConcern
+
 	belongs_to :project
 	belongs_to :doc
 
@@ -91,11 +93,6 @@ class Block < ActiveRecord::Base
 		pd.decrement!(:blocks_num) if pd
 		self.doc.decrement!(:blocks_num)
 		self.project.decrement!(:blocks_num)
-	end
-
-	def moveForward(offset)
-		self.begin -= offset
-		self.end -= offset
 	end
 
 	def self.new_id_init(to_avoid = nil)

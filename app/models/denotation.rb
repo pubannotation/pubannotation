@@ -2,6 +2,7 @@ require 'zip/zip'
 
 class Denotation < ActiveRecord::Base
 	include DenotationsHelper
+	include RangeConcern
 	
 	belongs_to :project
 	belongs_to :doc
@@ -80,11 +81,6 @@ class Denotation < ActiveRecord::Base
 
 	def decrement_project_denotations_num
 		self.project.decrement!(:denotations_num)
-	end
-
-	def moveForward(offset)
-		self.begin -= offset
-		self.end -= offset
 	end
 
 	def increment_numbers
