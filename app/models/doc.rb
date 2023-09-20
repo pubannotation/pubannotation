@@ -503,7 +503,7 @@ class Doc < ActiveRecord::Base
 		denotation_hids = get_denotation_hids(project_id, span)
 		return [] if denotation_hids.empty?
 
-		base_ids = span.nil? ? nil : get_denotation_ids(project_id, span)
+		base_ids = span.nil? ? nil : denotations.in_project_and_span(project_id, span).pluck(:id)
 
 		relation_hids = get_relation_hids(project_id, base_ids)
 
@@ -525,11 +525,6 @@ class Doc < ActiveRecord::Base
 	def get_blocks(project_id, span, context_size, sort)
 		ret = blocks.in_project_and_span(project_id, span)
 		RangeArranger.new(ret, span , context_size , sort).call.ranges
-	end
-
-	# the first argument, project_id, may be a single id or an array of ids
-	def get_denotation_ids(project_id = nil, span = nil)
-		denotations.in_project_and_span(project_id, span).pluck(:id)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
@@ -793,7 +788,7 @@ class Doc < ActiveRecord::Base
 		ids = nil
 
 		hdenotations = get_denotations(project_id, span, context_size, sort_p).as_json
-		ids = get_denotation_ids(project_id, span) unless span.nil?
+		ids = denotations.in_project_and_span(project_id, span).pluck(:id) unless span.nil?
 
 		hblocks = get_blocks(project_id, span, context_size, sort_p).as_json
 		ids += get_block_ids(project_id, span) unless span.nil?
