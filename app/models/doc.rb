@@ -537,12 +537,8 @@ class Doc < ActiveRecord::Base
 		_blocks = blocks.in_project(project_id).in_span(span)
 
 		if span.present?
-			b = span[:begin]
-			unless context_size.nil?
-				b -= context_size
-				b = 0 if b < 0
-			end
-			_blocks.each{|a| a.begin -= b; a.end -= b}
+			offset = offset_size_for span, context_size
+			_blocks.each{ _1.moveForward(offset) }
 		end
 
 		if sort

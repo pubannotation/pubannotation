@@ -93,6 +93,11 @@ class Block < ActiveRecord::Base
 		self.project.decrement!(:blocks_num)
 	end
 
+	def moveForward(offset)
+		self.begin -= offset
+		self.end -= offset
+	end
+
 	def self.new_id_init(to_avoid = nil)
 		@to_avoid = to_avoid
 		@idnum = 0
