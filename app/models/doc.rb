@@ -548,10 +548,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def get_blocks_hash(project_id = nil, span = nil, context_size = nil, sort = false)
-		self.get_blocks(project_id, span, context_size, sort).as_json
-	end
-
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotation_ids(project_id = nil, span = nil)
 		denotations_in(project_id).in_span(span).pluck(:id)
@@ -820,7 +816,7 @@ class Doc < ActiveRecord::Base
 		hdenotations = get_denotations(project_id, span, context_size, sort_p).as_json
 		ids = get_denotation_ids(project_id, span) unless span.nil?
 
-		hblocks = get_blocks_hash(project_id, span, context_size, sort_p)
+		hblocks = get_blocks(project_id, span, context_size, sort_p).as_json
 		ids += get_block_ids(project_id, span) unless span.nil?
 
 		hrelations = get_relations_hash(project_id, ids, sort_p)
