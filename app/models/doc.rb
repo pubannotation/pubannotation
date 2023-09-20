@@ -525,7 +525,7 @@ class Doc < ActiveRecord::Base
 		end
 
 		if sort
-			ret.sort{|d1, d2| (d1.begin <=> d2.begin).nonzero? || (d2.end <=> d1.end)}
+			ret.sort
 		else
 			ret
 		end
@@ -542,7 +542,7 @@ class Doc < ActiveRecord::Base
 		end
 
 		if sort
-			_blocks.sort{|b1, b2| (b1.begin <=> b2.begin).nonzero? || (b2.end <=> b1.end)}
+			_blocks.sort
 		else
 			_blocks
 		end
