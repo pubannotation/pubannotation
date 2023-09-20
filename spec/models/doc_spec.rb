@@ -29,9 +29,12 @@ RSpec.describe Doc, type: :model do
     end
 
     context 'when document has denotations' do
-      let(:project) { create(:project) }
+      let(:project) { create(:project, accessibility: 1) }
       let!(:denotation) { create(:denotation, doc: doc, project: project) }
       let!(:project_doc) { create(:project_doc, project: project, doc: doc) }
+
+      # Add project_doc after denotation is created
+      before { doc.reload }
 
       it 'returns a hash with tracks that includes denotations' do
         expect(doc.hannotations[:tracks]).to include(project: "TestProject",
