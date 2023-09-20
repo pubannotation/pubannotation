@@ -24,10 +24,6 @@ class Denotation < ActiveRecord::Base
 		where(project_id: project_id) unless project_id.nil?
 	}
 
-	scope :in_span, -> (span) {
-		where('denotations.begin >= ? AND denotations.end <= ?', span[:begin], span[:end]) unless span.nil?
-	}
-
 	scope :accessible_projects, lambda{|current_user_id|
 		joins([:project, :doc]).
 		where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
