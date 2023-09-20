@@ -520,8 +520,7 @@ class Doc < ActiveRecord::Base
 		ret = denotations_in(project_id).in_span(span)
 
 		if span.present?
-			offset = offset_size_for span, context_size
-			ret.each { _1.moveForward(offset) }
+			ret.each { _1.moveForward(span ,context_size) }
 		end
 
 		if sort
@@ -537,8 +536,7 @@ class Doc < ActiveRecord::Base
 		_blocks = blocks_in(project_id).in_span(span)
 
 		if span.present?
-			offset = offset_size_for span, context_size
-			_blocks.each{ _1.moveForward(offset) }
+			_blocks.each{ _1.moveForward(span, context_size) }
 		end
 
 		if sort
@@ -1077,16 +1075,5 @@ class Doc < ActiveRecord::Base
 
 	def blocks_in(project_id)
 		blocks.in_project(project_id)
-	end
-
-	def offset_size_for(span, context_size)
-		offset = span[:begin]
-
-		if context_size.present?
-			offset -= context_size
-			offset = 0 if offset < 0
-		end
-
-		offset
 	end
 end
