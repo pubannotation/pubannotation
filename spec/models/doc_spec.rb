@@ -92,11 +92,12 @@ RSpec.describe Doc, type: :model do
   end
 
   describe 'get_denotations' do
-    subject { doc.get_denotations(project.id, span, nil, false) }
+    subject { doc.get_denotations(project.id, span, context_size, false) }
 
     let(:doc) { create(:doc) }
     let(:project) { create(:project) }
     let(:span) { nil }
+    let(:context_size) { nil }
 
     it 'returns an array' do
       is_expected.to be_a(ActiveRecord::AssociationRelation)
@@ -128,6 +129,33 @@ RSpec.describe Doc, type: :model do
         it 'returns an array of denotations offset by the specified span' do
           expect(subject.first.begin).to eq(object_denotation.begin - span[:begin])
           expect(subject.first.end).to eq(object_denotation.end - span[:begin])
+        end
+
+        context 'when context_size is specified' do
+          let(:context_size) { 6 }
+
+          it 'returns an array of denotations offset by the specified span and context_size' do
+            expect(subject.first.begin).to eq(object_denotation.begin - span[:begin] + context_size)
+            expect(subject.first.end).to eq(object_denotation.end - span[:begin] + context_size)
+          end
+
+          context 'when context_size equals to begin of the span' do
+            let(:context_size) { 8 }
+
+            it 'returns an array of denotations without offset' do
+              expect(subject.first.begin).to eq(object_denotation.begin)
+              expect(subject.first.end).to eq(object_denotation.end)
+            end
+          end
+
+          context 'when context_size is bigger than begin of the span' do
+            let(:context_size) { 10 }
+
+            it 'returns an array of denotations without offset' do
+              expect(subject.first.begin).to eq(object_denotation.begin)
+              expect(subject.first.end).to eq(object_denotation.end)
+            end
+          end
         end
       end
     end
