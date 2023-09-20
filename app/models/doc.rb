@@ -520,13 +520,7 @@ class Doc < ActiveRecord::Base
 		ret = denotations_in(project_id).in_span(span)
 
 		if span.present?
-			offset = span[:begin]
-
-			if context_size.present?
-				offset -= context_size
-				offset = 0 if offset < 0
-			end
-
+			offset = offset_size_for span, context_size
 			ret.each { _1.moveForward(offset) }
 		end
 
@@ -536,6 +530,7 @@ class Doc < ActiveRecord::Base
 			ret
 		end
 	end
+
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_blocks(project_id = nil, span = nil, context_size = nil, sort = false)
@@ -1086,5 +1081,16 @@ class Doc < ActiveRecord::Base
 
 	def denotations_in(project_id)
 		denotations.in_project(project_id)
+	end
+
+	def offset_size_for(span, context_size)
+		offset = span[:begin]
+
+		if context_size.present?
+			offset -= context_size
+			offset = 0 if offset < 0
+		end
+
+		offset
 	end
 end
