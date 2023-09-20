@@ -500,7 +500,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def get_annotation_hids(project_id, span = nil)
-		denotation_hids = get_denotation_hids(project_id, span)
+		denotation_hids = denotations.in_project_and_span(project_id, span).pluck(:hid)
 		return [] if denotation_hids.empty?
 
 		base_ids = span.nil? ? nil : denotations.in_project_and_span(project_id, span).pluck(:id)
@@ -530,11 +530,6 @@ class Doc < ActiveRecord::Base
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_block_ids(project_id = nil, span = nil)
 		blocks.in_project_and_span(project_id, span).pluck(:id)
-	end
-
-	# the first argument, project_id, may be a single id or an array of ids
-	def get_denotation_hids(project_id = nil, span = nil)
-		denotations.in_project_and_span(project_id, span).pluck(:hid)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
