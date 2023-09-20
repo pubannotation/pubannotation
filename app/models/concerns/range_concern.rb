@@ -13,6 +13,14 @@ module RangeConcern
     (self.begin <=> other.begin).nonzero? || (self.end <=> other.end)
   end
 
+  class_methods do
+    def arrange_for(ranges, span, context_size, sort)
+      ranges.each{ _1.moveForward(span, context_size) } if span.present?
+      ranges = ranges.sort if sort
+      ranges
+    end
+  end
+
   private
 
   def offset_size_for(span, context_size)

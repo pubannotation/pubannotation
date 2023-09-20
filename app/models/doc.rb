@@ -518,33 +518,17 @@ class Doc < ActiveRecord::Base
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotations(project_id, span, context_size, sort)
 		ret = denotations_in(project_id).in_span(span)
-
-		if span.present?
-			ret.each { _1.moveForward(span ,context_size) }
-		end
-
-		if sort
-			ret.sort
-		else
-			ret
-		end
+		Denotation.arrange_for(ret, span , context_size , sort)
 	end
 
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_blocks(project_id, span, context_size, sort)
-		_blocks = blocks_in(project_id).in_span(span)
-
-		if span.present?
-			_blocks.each{ _1.moveForward(span, context_size) }
-		end
-
-		if sort
-			_blocks.sort
-		else
-			_blocks
-		end
+		ret = blocks_in(project_id).in_span(span)
+		Block.arrange_for(ret, span , context_size , sort)
 	end
+
+
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotation_ids(project_id = nil, span = nil)
