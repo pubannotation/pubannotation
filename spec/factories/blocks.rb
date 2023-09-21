@@ -1,7 +1,5 @@
 FactoryBot.define do
   factory :block do
-    project
-    doc
     hid { 'B1' }
     add_attribute(:begin) { 0 }
     add_attribute(:end) { 14 }
