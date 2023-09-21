@@ -568,12 +568,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	# the first argument, project, may be a project or an array of projects.
-	def get_relations_hash(project_id = nil, base_ids = nil, sort = false)
-		return [] if base_ids == []
-		get_relations(project_id, base_ids, sort).as_json
-	end
-
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_relation_ids(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
@@ -783,7 +777,11 @@ class Doc < ActiveRecord::Base
 		hblocks = get_blocks(project_id, span, context_size, sort_p).as_json
 		ids += blocks.in_project_and_span(project_id, span).pluck(:id) unless span.nil?
 
-		hrelations = get_relations_hash(project_id, ids, sort_p)
+		hrelations = if ids == []
+									 []
+								 else
+									 get_relations(project_id, ids, sort_p).as_json
+								 end
 		ids += get_relation_ids(project_id, ids) unless span.nil?
 
 		hattributes = get_attributes_hash(project_id, ids)
