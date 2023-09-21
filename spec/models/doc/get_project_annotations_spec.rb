@@ -7,8 +7,13 @@ RSpec.describe Doc, type: :model do
 
     before do
       create(:project_doc, doc: doc, project: project)
-      create(:denotation, doc: doc, project: project)
-      create(:block, doc: doc, project: project)
+      denotation1 = create(:denotation, doc: doc, project: project)
+      denotation2 = create(:object_denotation, doc: doc, project: project)
+      @relation1 = create(:relation, project: project, subj: denotation1, obj: denotation2, pred: 'predicate')
+
+      block1 = create(:block, doc: doc, project: project)
+      block2 = create(:second_block, doc: doc, project: project)
+      create(:relation, project: project, subj: block1, obj: block2, pred: 'next')
     end
 
     it 'returns an hash' do
@@ -25,6 +30,10 @@ RSpec.describe Doc, type: :model do
 
      it 'returns an hash with blocks' do
         expect(doc.get_project_annotations(project)[:blocks]).to include(id: "B1", obj: '1st line', span: {begin: 0, end: 14})
+     end
+
+     it 'returns an hash with relations' do
+        expect(doc.get_project_annotations(project)[:relations]).to include(id: @relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2')
      end
   end
 end
