@@ -731,8 +731,6 @@ class Doc < ActiveRecord::Base
 			ids += _relations.pluck(:id)
 		end
 
-		hattributes = _denotations.map{ _1.attrivutes }.flatten.as_json +
-			_blocks.map { _1.attrivutes }.flatten.as_json
 		hmodifications = get_modifications_hash(project_id, ids)
 
 		hdenotations = _denotations.as_json
@@ -746,7 +744,7 @@ class Doc < ActiveRecord::Base
 			denotations: hdenotations,
 			blocks: _blocks.as_json,
 			relations: hrelations,
-			attributes: hattributes,
+			attributes: _denotations.map{ _1.attrivutes }.flatten.as_json + _blocks.map { _1.attrivutes }.flatten.as_json,
 			modifications: hmodifications,
 			namespaces: project.namespaces
 		}.select{|k, v| v.present?}
