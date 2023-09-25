@@ -757,14 +757,17 @@ class Doc < ActiveRecord::Base
 						nil
 					end
 
-		hrelations = if ids != []
-									 r = project_doc.get_relations_of(ids)
-									 ids += project_doc.get_relations_of(ids).pluck(:id)  if span.present?
-									 r = r.sort{|r1, r2| r1.hid <=> r2.hid} if sort_p
-									 r.as_json
-								 else
-									 []
-								 end
+		_relations = project_doc.get_relations_of(ids)
+
+		if sort_p
+			_relations = _relations.sort { |r1, r2| r1.hid <=> r2.hid }
+		end
+
+		hrelations = _relations.as_json
+
+		if span.present?
+			ids += _relations.pluck(:id)
+		end
 
 		hattributes = get_attributes_hash(project_id, ids)
 		hmodifications = get_modifications_hash(project_id, ids)
