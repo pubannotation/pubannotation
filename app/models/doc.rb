@@ -750,17 +750,17 @@ class Doc < ActiveRecord::Base
 	end
 
 	def get_project_annotations(project, span = nil, context_size = nil, options = {})
+		raise unless project.present?
+		raise unless project.instance_of? Project
+
 		options ||= {}
 		sort_p = options[:sort]
 
-		project_id = unless project.nil?
-			project.respond_to?(:each) ? project.map{|p| p.id} : project.id
-		end
-
-		project_doc = project_docs.find_by(project: project_id)
+		project_doc = project_docs.find_by(project: project)
 		hdenotations = project_doc.get_denotations(span, context_size, sort_p).as_json
 		hblocks = project_doc.get_blocks(span, context_size, sort_p).as_json
 
+		project_id = project.id
 		ids = if span.present?
 			denotations.in_project_and_span(project_id, span).pluck(:id)
 			+ blocks.in_project_and_span(project_id, span).pluck(:id)
