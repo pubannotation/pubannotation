@@ -127,10 +127,6 @@ class CreateTables < ActiveRecord::Migration[4.2]
     end
   end
 
-  unless DocsProject.connection.index_exists?(:docs_projects, [:project_id, :doc_id])
-    add_index :docs_projects, [:project_id, :doc_id], unique: :true
-  end
-
   unless ActiveRecord::Base.connection.table_exists?('jobs')
     create_table "jobs" do |t|
       t.integer  "project_id"
