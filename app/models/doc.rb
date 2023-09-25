@@ -753,10 +753,8 @@ class Doc < ActiveRecord::Base
 		raise unless project.present?
 		raise unless project.instance_of? Project
 
-		options ||= {}
-		sort_p = options[:sort]
-
 		project_doc = project_docs.find_by(project: project)
+		sort_p = options[:sort]
 		hdenotations = project_doc.get_denotations(span, context_size, sort_p).as_json
 		hblocks = project_doc.get_blocks(span, context_size, sort_p).as_json
 
