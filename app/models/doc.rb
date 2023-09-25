@@ -546,16 +546,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	# project_id may be either a single project or a set of projects
-	def get_relations(project_id = nil, base_ids = nil, sort = false)
-		_relations = self.subcatrels.in_project(project_id).among_denotations(base_ids)
-		if sort
-			_relations.sort{|r1, r2| r1.id <=> r2.id}
-		else
-			_relations
-		end
-	end
-
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_relation_ids(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
@@ -770,7 +760,7 @@ class Doc < ActiveRecord::Base
 		hrelations = if ids == []
 									 []
 								 else
-									 get_relations(project_id, ids, sort_p).as_json
+									 project_doc.get_relations(ids, sort_p).as_json
 								 end
 		ids += get_relation_ids(project_id, ids) unless span.nil?
 

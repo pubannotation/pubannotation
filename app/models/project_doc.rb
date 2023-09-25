@@ -3,6 +3,7 @@ class ProjectDoc < ActiveRecord::Base
 	belongs_to :doc
 	has_many :denotations, through: :doc
 	has_many :blocks, through: :doc
+	has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
 
 	scope :simple_paginate, -> (page, per = 10) {
 		page = page.nil? ? 1 : page.to_i
@@ -18,6 +19,16 @@ class ProjectDoc < ActiveRecord::Base
 	def get_blocks(span, context_size, sort)
 		ret = blocks.in_project(project).in_span(span)
 		RangeArranger.new(ret, span , context_size , sort).call.ranges
+	end
+
+	def get_relations(base_ids = nil, sort = false)
+		_relations = subcatrels.among_denotations(base_ids)
+
+		if sort
+			_relations.sort{|r1, r2| r1.id <=> r2.id}
+		else
+			_relations
+		end
 	end
 
 	def graph_uri
