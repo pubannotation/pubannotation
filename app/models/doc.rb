@@ -564,7 +564,6 @@ class Doc < ActiveRecord::Base
 	end
 
 	def get_modifications(project_id = nil, base_ids = nil)
-		return [] if base_ids == []
 		self.catmods.in_project(project_id).among_entities(base_ids) + self.subcatrelmods.in_project(project_id).among_entities(base_ids)
 	end
 
