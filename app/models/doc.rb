@@ -757,14 +757,16 @@ class Doc < ActiveRecord::Base
 			project.respond_to?(:each) ? project.map{|p| p.id} : project.id
 		end
 
-		ids = nil
-
 		project_doc = project_docs.find_by(project: project_id)
 		hdenotations = project_doc.get_denotations(span, context_size, sort_p).as_json
-		ids = denotations.in_project_and_span(project_id, span).pluck(:id) unless span.nil?
-
 		hblocks = project_doc.get_blocks(span, context_size, sort_p).as_json
-		ids += blocks.in_project_and_span(project_id, span).pluck(:id) unless span.nil?
+
+		ids = if span.present?
+			denotations.in_project_and_span(project_id, span).pluck(:id)
+			+ blocks.in_project_and_span(project_id, span).pluck(:id)
+		else
+			nil
+		end
 
 		hrelations = if ids == []
 									 []
