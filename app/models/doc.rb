@@ -558,10 +558,6 @@ class Doc < ActiveRecord::Base
 		subcatrels.in_project(project_id).among_denotations(base_ids).pluck(:hid)
 	end
 
-	def get_attributes(project_id = nil, base_ids = nil)
-		self.denotation_attributes.in_project(project_id).among_entities(base_ids)
-	end
-
 	def get_attributes_hash(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
 		# continue if base_ids.nil? || base_ids.present?
