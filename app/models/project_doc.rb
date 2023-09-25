@@ -18,7 +18,6 @@ class ProjectDoc < ActiveRecord::Base
     _denotations = get_denotations(span, context_size, sort_p)
     _blocks = get_blocks(span, context_size, sort_p)
 
-    project_id = project.id
     ids = if span.present?
             denotations.in_span(span).pluck(:id).concat(
               blocks.in_span(span).pluck(:id)
