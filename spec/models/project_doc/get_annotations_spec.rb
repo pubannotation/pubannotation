@@ -1,7 +1,7 @@
 require 'rails_helper'
 
-RSpec.describe Doc, type: :model do
-  describe '#get_project_annotations' do
+RSpec.describe ProjectDoc, type: :model do
+  describe '#get_annotations' do
     let!(:doc) { create(:doc) }
     let!(:project) { create(:project) }
     let!(:project_doc) { create(:project_doc, doc: doc, project: project) }
@@ -25,7 +25,7 @@ RSpec.describe Doc, type: :model do
       create(:attrivute, project: project, subj: relation1, obj: 'true', pred: 'negation')
     end
 
-    subject { doc.get_project_annotations(project, span, nil, options) }
+    subject { project_doc.get_annotations(span, nil, options) }
 
     it { is_expected.to be_a(Hash) }
 

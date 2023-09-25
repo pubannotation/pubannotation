@@ -14,23 +14,46 @@ class ProjectDoc < ActiveRecord::Base
 		offset(offset).limit(per)
 	}
 
-	def get_denotations(span, context_size, sort)
-		ret = denotations.in_project(project).in_span(span)
-		RangeArranger.new(ret, span , context_size , sort).call.ranges
-	end
 
-	def get_blocks(span, context_size, sort)
-		ret = blocks.in_project(project).in_span(span)
-		RangeArranger.new(ret, span , context_size , sort).call.ranges
-	end
+	def get_annotations(span = nil, context_size = nil, options = {})
+		sort_p = options[:sort]
+		_denotations = get_denotations(span, context_size, sort_p)
+		_blocks = get_blocks(span, context_size, sort_p)
 
-	def get_relations_of(base_ids)
-		subcatrels.in_project(project).among_denotations(base_ids)
-	end
+		project_id = project.id
+		ids = if span.present?
+						denotations.in_span(span).pluck(:id).concat(
+							blocks.in_span(span).pluck(:id)
+						)
+					else
+						nil
+					end
 
-	def get_modifications_of(base_ids)
-		catmods.in_project(project).among_entities(base_ids) +
-			subcatrelmods.in_project(project).among_entities(base_ids)
+		_relations = get_relations_of(ids)
+
+		if sort_p
+			_relations = _relations.sort
+		end
+
+		if span.present?
+			ids += _relations.pluck(:id)
+		end
+
+		hdenotations = _denotations.as_json
+		hrelations = _relations.as_json
+		if options[:discontinuous_span] == :bag
+			hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
+		end
+
+		{
+			project: project.name,
+			denotations: hdenotations,
+			blocks: _blocks.as_json,
+			relations: hrelations,
+			attributes: _denotations.map{ _1.attrivutes }.flatten.as_json + _blocks.map { _1.attrivutes }.flatten.as_json,
+			modifications: get_modifications_of(ids).as_json,
+			namespaces: project.namespaces
+		}.select{|k, v| v.present?}
 	end
 
 	def graph_uri
@@ -63,5 +86,26 @@ class ProjectDoc < ActiveRecord::Base
 
 	def update_annotations_updated_at
 		self.update_attribute(:annotations_updated_at, DateTime.now)
+	end
+
+	private
+
+	def get_denotations(span, context_size, sort)
+		ret = denotations.in_project(project).in_span(span)
+		RangeArranger.new(ret, span , context_size , sort).call.ranges
+	end
+
+	def get_blocks(span, context_size, sort)
+		ret = blocks.in_project(project).in_span(span)
+		RangeArranger.new(ret, span , context_size , sort).call.ranges
+	end
+
+	def get_relations_of(base_ids)
+		subcatrels.in_project(project).among_denotations(base_ids)
+	end
+
+	def get_modifications_of(base_ids)
+		catmods.in_project(project).among_entities(base_ids) +
+			subcatrelmods.in_project(project).among_entities(base_ids)
 	end
 end

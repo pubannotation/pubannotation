@@ -672,11 +672,13 @@ class Doc < ActiveRecord::Base
 		annotations = self.to_hash(span, context_size)
 
 		if project.present? && !project.respond_to?(:each)
-			annotations.merge!(get_project_annotations(project, span, context_size, options))
+			project_doc = project_docs.find_by(project: project)
+			annotations.merge!(project_doc.get_annotations(span, context_size, options))
 		else
 			projects = project.present? ? project : self.projects
 			annotations[:tracks] = projects.inject([]) do |tracks, project|
-				track = get_project_annotations(project, span, context_size, options)
+				project_doc = project_docs.find_by(project: project)
+				track = project_doc.get_annotations(span, context_size, options)
 				if full || track[:denotations].present?
 					tracks << track
 				else
@@ -688,50 +690,6 @@ class Doc < ActiveRecord::Base
 		annotations
 	end
 
-	def get_project_annotations(project, span = nil, context_size = nil, options = {})
-		raise unless project.present?
-		raise unless project.instance_of? Project
-
-		project_doc = project_docs.find_by(project: project)
-		sort_p = options[:sort]
-		_denotations = project_doc.get_denotations(span, context_size, sort_p)
-		_blocks = project_doc.get_blocks(span, context_size, sort_p)
-
-		project_id = project.id
-		ids = if span.present?
-						project_doc.denotations.in_span(span).pluck(:id).concat(
-						 project_doc.blocks.in_span(span).pluck(:id)
-						)
-					else
-						nil
-					end
-
-		_relations = project_doc.get_relations_of(ids)
-
-		if sort_p
-			_relations = _relations.sort
-		end
-
-		if span.present?
-			ids += _relations.pluck(:id)
-		end
-
-		hdenotations = _denotations.as_json
-		hrelations = _relations.as_json
-		if options[:discontinuous_span] == :bag
-			hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
-		end
-
-		{
-			project: project.name,
-			denotations: hdenotations,
-			blocks: _blocks.as_json,
-			relations: hrelations,
-			attributes: _denotations.map{ _1.attrivutes }.flatten.as_json + _blocks.map { _1.attrivutes }.flatten.as_json,
-			modifications: project_doc.get_modifications_of(ids).as_json,
-			namespaces: project.namespaces
-		}.select{|k, v| v.present?}
-	end
 
 	def spans_projects(params)
 		self_denotations = self.denotations

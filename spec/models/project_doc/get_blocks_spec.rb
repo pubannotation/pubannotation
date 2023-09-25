@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe ProjectDoc, type: :model do
   describe 'get_blocks' do
-    subject { project_doc.get_blocks(span, context_size, sort) }
+    subject { project_doc.send(:get_blocks, span, context_size, sort) }
 
     let(:doc) { create(:doc) }
     let(:project) { create(:project) }
