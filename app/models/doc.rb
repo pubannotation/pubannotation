@@ -737,8 +737,8 @@ class Doc < ActiveRecord::Base
 
 		project_doc = project_docs.find_by(project: project)
 		sort_p = options[:sort]
-		hdenotations = project_doc.get_denotations(span, context_size, sort_p).as_json
-		hblocks = project_doc.get_blocks(span, context_size, sort_p).as_json
+		_denotations = project_doc.get_denotations(span, context_size, sort_p)
+		_blocks = project_doc.get_blocks(span, context_size, sort_p)
 
 		project_id = project.id
 		ids = if span.present?
@@ -755,8 +755,6 @@ class Doc < ActiveRecord::Base
 			_relations = _relations.sort
 		end
 
-		hrelations = _relations.as_json
-
 		if span.present?
 			ids += _relations.pluck(:id)
 		end
@@ -764,6 +762,8 @@ class Doc < ActiveRecord::Base
 		hattributes = get_attributes_hash(project_id, ids)
 		hmodifications = get_modifications_hash(project_id, ids)
 
+		hdenotations = _denotations.as_json
+		hrelations = _relations.as_json
 		if options[:discontinuous_span] == :bag
 			hdenotations, hrelations = Annotation.bag_denotations(hdenotations, hrelations)
 		end
@@ -771,7 +771,7 @@ class Doc < ActiveRecord::Base
 		{
 			project: project.name,
 			denotations: hdenotations,
-			blocks: hblocks,
+			blocks: _blocks.as_json,
 			relations: hrelations,
 			attributes: hattributes,
 			modifications: hmodifications,
