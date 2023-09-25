@@ -673,12 +673,12 @@ class Doc < ActiveRecord::Base
 
 		if project.present? && !project.respond_to?(:each)
 			project_doc = project_docs.find_by(project: project)
-			annotations.merge!(project_doc.get_annotations(span, context_size, options))
+			annotations.merge!(project_doc.get_annotations(span, context_size, options[:sort], options))
 		else
 			projects = project.present? ? project : self.projects
 			annotations[:tracks] = projects.inject([]) do |tracks, project|
 				project_doc = project_docs.find_by(project: project)
-				track = project_doc.get_annotations(span, context_size, options)
+				track = project_doc.get_annotations(span, context_size, options[:sort], options)
 				if full || track[:denotations].present?
 					tracks << track
 				else

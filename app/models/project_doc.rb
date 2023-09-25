@@ -13,10 +13,12 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def get_annotations(span = nil, context_size = nil, options = {})
-    sort_p = options[:sort]
-    _denotations = get_denotations(span, context_size, sort_p)
-    _blocks = get_blocks(span, context_size, sort_p)
+  def get_annotations(span = nil,
+                      context_size = nil,
+                      is_sort = false,
+                      options = {})
+    _denotations = get_denotations(span, context_size, is_sort)
+    _blocks = get_blocks(span, context_size, is_sort)
 
     ids = if span.present?
             denotations.in_span(span).pluck(:id).concat(
@@ -28,7 +30,7 @@ class ProjectDoc < ActiveRecord::Base
 
     _relations = get_relations_of(ids)
 
-    if sort_p
+    if is_sort
       _relations = _relations.sort
     end
 

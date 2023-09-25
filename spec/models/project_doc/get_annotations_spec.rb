@@ -6,6 +6,7 @@ RSpec.describe ProjectDoc, type: :model do
     let!(:project) { create(:project) }
     let!(:project_doc) { create(:project_doc, doc: doc, project: project) }
     let(:span) { nil }
+    let(:sort) { false }
     let(:options) { {} }
 
     let!(:denotation2) { create(:object_denotation, doc: doc, project: project) }
@@ -25,14 +26,23 @@ RSpec.describe ProjectDoc, type: :model do
       create(:attrivute, project: project, subj: relation1, obj: 'true', pred: 'negation')
     end
 
-    subject { project_doc.get_annotations(span, nil, options) }
+    subject { project_doc.get_annotations(span, nil, sort, options) }
 
     it { is_expected.to be_a(Hash) }
 
     it { expect(subject[:project]).to eq('TestProject') }
-    it { expect(subject[:denotations]).to include(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
-    it { expect(subject[:blocks]).to include(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
-    it { expect(subject[:relations]).to include(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
+
+    # Denotations are sorted by creation order
+    it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
+    it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
+
+    # Blocks are sorted by creation order
+    it { expect(subject[:blocks].first).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
+    it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
+
+    it { expect(subject[:relations].first).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
+    it { expect(subject[:relations].second).to be_nil } # Relation of blocks is not included
+
     it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
     it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
 
@@ -57,14 +67,13 @@ RSpec.describe ProjectDoc, type: :model do
     end
 
     context 'sort option is specified' do
-      let(:options) { { sort: true } }
+      let(:sort) { true }
 
       it { expect(subject[:denotations].first).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
       it { expect(subject[:denotations].second).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
       it { expect(subject[:blocks].first).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
       it { expect(subject[:blocks].second).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
       it { expect(subject[:relations].first).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
-      it { expect(subject[:relations].second).to be_nil } # Relation of blocks is not included
     end
   end
 end
