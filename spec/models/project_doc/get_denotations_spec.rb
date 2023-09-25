@@ -11,66 +11,53 @@ RSpec.describe ProjectDoc, type: :model do
     let(:context_size) { nil }
     let(:sort) { false }
 
-    it 'returns an array' do
-      is_expected.to be_a(ActiveRecord::AssociationRelation)
-    end
+    it { is_expected.to be_a(ActiveRecord::AssociationRelation) }
 
     context 'when there are no denotations' do
       it { is_expected.to be_empty }
     end
 
     context 'when there are denotations' do
-      before do
-        create(:denotation, doc: doc, project: project)
-        create(:object_denotation, doc: doc, project: project)
-        create(:verb_denotation, doc: doc, project: project)
-      end
+      let!(:denotation) { create(:denotation, doc: doc, project: project) }
+      let!(:object_denotation) { create(:object_denotation, doc: doc, project: project) }
+      let!(:verb_denotation) { create(:verb_denotation, doc: doc, project: project) }
 
       it { is_expected.not_to be_empty }
 
-      it 'returns an array of denotations' do
-        expect(subject.first).to be_a(Denotation)
-      end
-
-      it 'return an array of denotations sorted by creation order' do
+      it 'returns denotations' do
+        expect(subject).to all(be_a(Denotation))
         expect(subject.second.hid).to eq('T2')
         expect(subject.third.hid).to eq('T3')
       end
 
-      context 'when span is specified' do
+      context 'with specified span' do
         let(:span) { {begin: 8, end: 14} }
-        let(:object_denotation) { Denotation.find_by(hid: 'T2') }
 
-        it 'returns an array of denotations between the specified span' do
+        it 'returns denotations between the span and adjusts by span and context_size' do
+          adjusted_begin = object_denotation.begin - span[:begin] + (context_size || 0)
+          adjusted_end = object_denotation.end - span[:begin] + (context_size || 0)
+
           expect(subject.first.hid).to eq(object_denotation.hid)
+          expect(subject.first.begin).to eq(adjusted_begin)
+          expect(subject.first.end).to eq(adjusted_end)
         end
 
-        it 'returns an array of denotations offset by the specified span' do
-          expect(subject.first.begin).to eq(object_denotation.begin - span[:begin])
-          expect(subject.first.end).to eq(object_denotation.end - span[:begin])
-        end
-
-        context 'when context_size is specified' do
+        context 'with specified context_size' do
           let(:context_size) { 6 }
 
-          it 'returns an array of denotations offset by the specified span and context_size' do
-            expect(subject.first.begin).to eq(object_denotation.begin - span[:begin] + context_size)
-            expect(subject.first.end).to eq(object_denotation.end - span[:begin] + context_size)
-          end
-
-          context 'when context_size equals to begin of the span' do
+          context 'equal to begin of the span' do
             let(:context_size) { 8 }
 
-            it 'returns an array of denotations without offset' do
+            it 'returns denotations without offset' do
               expect(subject.first.begin).to eq(object_denotation.begin)
               expect(subject.first.end).to eq(object_denotation.end)
             end
           end
 
-          context 'when context_size is bigger than begin of the span' do
+          context 'bigger than begin of the span' do
             let(:context_size) { 10 }
 
-            it 'returns an array of denotations without offset' do
+            it 'returns denotations without offset' do
               expect(subject.first.begin).to eq(object_denotation.begin)
               expect(subject.first.end).to eq(object_denotation.end)
             end
@@ -78,10 +65,10 @@ RSpec.describe ProjectDoc, type: :model do
         end
       end
 
-      context 'when sort is specified' do
+      context 'with sort specified' do
         let(:sort) { true }
 
-        it 'return an array of denotations sorted by begin' do
+        it 'returns denotations sorted by begin' do
           expect(subject.second.hid).to eq('T3')
           expect(subject.third.hid).to eq('T2')
         end
