@@ -21,14 +21,8 @@ class ProjectDoc < ActiveRecord::Base
 		RangeArranger.new(ret, span , context_size , sort).call.ranges
 	end
 
-	def get_relations(base_ids = nil, sort = false)
-		_relations = subcatrels.among_denotations(base_ids)
-
-		if sort
-			_relations.sort{|r1, r2| r1.id <=> r2.id}
-		else
-			_relations
-		end
+	def get_relations_of(base_ids)
+		subcatrels.among_denotations(base_ids)
 	end
 
 	def graph_uri
