@@ -44,6 +44,16 @@ RSpec.describe Doc, type: :model do
       it { expect(subject[:relations]).to be_nil }
       it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
       it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
+
+      context 'no annotation among span' do
+        let(:span) { { begin: 100, end: 200 } }
+
+        it { expect(subject[:denotations]).to be_nil }
+        it { expect(subject[:blocks]).to be_nil }
+        it { expect(subject[:relations]).to be_nil }
+        it { expect(subject[:modifications]).to be_nil }
+        it { expect(subject[:attributes]).to be_nil }
+      end
     end
 
     context 'sort option is specified' do
