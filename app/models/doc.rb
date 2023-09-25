@@ -760,7 +760,7 @@ class Doc < ActiveRecord::Base
 		_relations = project_doc.get_relations_of(ids)
 
 		if sort_p
-			_relations = _relations.sort { |r1, r2| r1.hid <=> r2.hid }
+			_relations = _relations.sort
 		end
 
 		hrelations = _relations.as_json

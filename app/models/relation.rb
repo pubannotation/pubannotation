@@ -68,6 +68,10 @@ class Relation < ActiveRecord::Base
 		hrelation[:obj]  = obj.hid
 		hrelation
 	end
+
+	def <=>(other)
+		(self.hid <=> other.hid)
+	end
 	
 	def self.project_relations_num(project_id, relations)
 		relations.project_relations.count[project_id].to_i
