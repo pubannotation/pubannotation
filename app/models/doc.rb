@@ -562,12 +562,7 @@ class Doc < ActiveRecord::Base
 		return [] if base_ids == []
 		self.denotation_attributes.in_project(project_id).among_entities(base_ids).pluck(:hid)
 	end
-
-	def get_modifications(project_id = nil, base_ids = nil)
-		self.catmods.in_project(project_id).among_entities(base_ids) + self.subcatrelmods.in_project(project_id).among_entities(base_ids)
-		# sort{|m1, m2| m1.id <=> m2.id}
-	end
-
+	
 	def get_modifications_hash(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
 		self.catmods.in_project(project_id).among_entities(base_ids).as_json + self.subcatrelmods.in_project(project_id).among_entities(base_ids).as_json
