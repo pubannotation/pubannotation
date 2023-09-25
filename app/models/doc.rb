@@ -760,8 +760,9 @@ class Doc < ActiveRecord::Base
 
 		project_id = project.id
 		ids = if span.present?
-						project_doc.denotations.in_span(project_id, span).pluck(:id)
-						+ project_doc.blocks.in_span(project_id, span).pluck(:id)
+						project_doc.denotations.in_span(span).pluck(:id).concat(
+						 project_doc.blocks.in_span(span).pluck(:id)
+						)
 					else
 						nil
 					end

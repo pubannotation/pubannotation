@@ -5,6 +5,7 @@ RSpec.describe Doc, type: :model do
     let!(:doc) { create(:doc) }
     let!(:project) { create(:project) }
     let!(:project_doc) { create(:project_doc, doc: doc, project: project) }
+    let(:span) { nil }
 
     let!(:denotation1) { create(:denotation, doc: doc, project: project) }
     let!(:denotation2) { create(:object_denotation, doc: doc, project: project) }
@@ -23,7 +24,7 @@ RSpec.describe Doc, type: :model do
       create(:attrivute, project: project, subj: relation1, obj: 'true', pred: 'negation')
     end
 
-    subject { doc.get_project_annotations(project) }
+    subject { doc.get_project_annotations(project, span) }
 
     it { is_expected.to be_a(Hash) }
 
@@ -33,5 +34,11 @@ RSpec.describe Doc, type: :model do
     it { expect(subject[:relations]).to include(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
     it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
     it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
+
+    context 'span is specified' do
+      let(:span) { { begin: 0, end: 4 } }
+
+      it { expect(subject[:denotations]).to include(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
+    end
   end
 end
