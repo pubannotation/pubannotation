@@ -1,12 +1,18 @@
 class ProjectDoc < ActiveRecord::Base
 	belongs_to :project
 	belongs_to :doc
+	has_many :denotations, through: :doc
 
 	scope :simple_paginate, -> (page, per = 10) {
 		page = page.nil? ? 1 : page.to_i
 		offset = (page - 1) * per
 		offset(offset).limit(per)
 	}
+
+	def get_denotations(span, context_size, sort)
+		ret = denotations.in_project(project).in_span(span)
+		RangeArranger.new(ret, span , context_size , sort).call.ranges
+	end
 
 	def graph_uri
 		project.graph_uri + "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
