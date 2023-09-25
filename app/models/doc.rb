@@ -974,15 +974,15 @@ class Doc < ActiveRecord::Base
 		if doc_spans && doc_spans[:denotations].present?
 			doc_spans_ttl = rdfizer_spans.rdfize([doc_spans], {with_prefixes: false})
 			doc_spans_trig += <<~HEREDOC
-				<#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
-					oa:has_body <#{graph_uri_doc_spans}> ;
-					oa:has_target <#{graph_uri_doc}> ;
-					prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+			  <#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
+			  	oa:has_body <#{graph_uri_doc_spans}> ;
+			  	oa:has_target <#{graph_uri_doc}> ;
+			  	prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
 
-				GRAPH <#{graph_uri_doc_spans}>
-				{
-					#{doc_spans_ttl.gsub(/\n/, "\n\t")}
-				}
+			  GRAPH <#{graph_uri_doc_spans}>
+			  {
+			  	#{doc_spans_ttl.gsub(/\n/, "\n\t")}
+			  }
 			HEREDOC
 		end
 
