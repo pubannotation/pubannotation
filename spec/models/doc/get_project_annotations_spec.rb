@@ -39,6 +39,10 @@ RSpec.describe Doc, type: :model do
       let(:span) { { begin: 0, end: 4 } }
 
       it { expect(subject[:denotations]).to include(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
+      it { expect(subject[:blocks]).to be_nil }
+      it { expect(subject[:relations]).to be_nil }
+      it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
+      it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
     end
   end
 end
