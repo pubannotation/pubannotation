@@ -586,10 +586,6 @@ class Doc < ActiveRecord::Base
 		(ActiveRecord::Base.connection.exec_query(query_a4d).to_a + ActiveRecord::Base.connection.exec_query(query_a4b).to_a).collect{|a| a.symbolize_keys}
 	end
 
-	def get_attribute_ids(project_id = nil, base_ids = nil)
-		self.denotation_attributes.in_project(project_id).among_entities(base_ids).pluck(:id)
-	end
-
 	def get_attribute_hids(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
 		self.denotation_attributes.in_project(project_id).among_entities(base_ids).pluck(:hid)
