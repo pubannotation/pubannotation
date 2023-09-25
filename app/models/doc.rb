@@ -760,11 +760,11 @@ class Doc < ActiveRecord::Base
 
 		project_id = project.id
 		ids = if span.present?
-			denotations.in_project_and_span(project_id, span).pluck(:id)
-			+ blocks.in_project_and_span(project_id, span).pluck(:id)
-		else
-			nil
-		end
+						project_doc.denotations.in_span(project_id, span).pluck(:id)
+						+ project_doc.blocks.in_span(project_id, span).pluck(:id)
+					else
+						nil
+					end
 
 		hrelations = if ids == []
 									 []
