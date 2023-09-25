@@ -4,6 +4,9 @@ class ProjectDoc < ActiveRecord::Base
 	has_many :denotations, through: :doc
 	has_many :blocks, through: :doc
 	has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
+	has_many :catmods, class_name: 'Modification', :through => :denotations, :source => :modifications
+	has_many :subcatrelmods, class_name: 'Modification', :through => :subcatrels, :source => :modifications
+
 
 	scope :simple_paginate, -> (page, per = 10) {
 		page = page.nil? ? 1 : page.to_i
@@ -22,7 +25,12 @@ class ProjectDoc < ActiveRecord::Base
 	end
 
 	def get_relations_of(base_ids)
-		subcatrels.among_denotations(base_ids)
+		subcatrels.in_project(project).among_denotations(base_ids)
+	end
+
+	def get_modifications_of(base_ids)
+		catmods.in_project(project).among_entities(base_ids) +
+			subcatrelmods.in_project(project).among_entities(base_ids)
 	end
 
 	def graph_uri

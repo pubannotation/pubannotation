@@ -563,10 +563,6 @@ class Doc < ActiveRecord::Base
 		self.denotation_attributes.in_project(project_id).among_entities(base_ids).pluck(:hid)
 	end
 
-	def get_modifications(project_id = nil, base_ids = nil)
-		self.catmods.in_project(project_id).among_entities(base_ids) + self.subcatrelmods.in_project(project_id).among_entities(base_ids)
-	end
-
 	def get_modification_hids(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
 		self.catmods.in_project(project_id).among_entities(base_ids).pluck(:hid) + self.subcatrelmods.in_project(project_id).among_entities(base_ids).pluck(:hid)
@@ -720,8 +716,6 @@ class Doc < ActiveRecord::Base
 			ids += _relations.pluck(:id)
 		end
 
-		hmodifications = get_modifications(project_id, ids).as_json
-
 		hdenotations = _denotations.as_json
 		hrelations = _relations.as_json
 		if options[:discontinuous_span] == :bag
@@ -734,7 +728,7 @@ class Doc < ActiveRecord::Base
 			blocks: _blocks.as_json,
 			relations: hrelations,
 			attributes: _denotations.map{ _1.attrivutes }.flatten.as_json + _blocks.map { _1.attrivutes }.flatten.as_json,
-			modifications: hmodifications,
+			modifications: project_doc.get_modifications_of(ids).as_json,
 			namespaces: project.namespaces
 		}.select{|k, v| v.present?}
 	end
