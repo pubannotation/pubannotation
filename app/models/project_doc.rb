@@ -2,6 +2,7 @@ class ProjectDoc < ActiveRecord::Base
 	belongs_to :project
 	belongs_to :doc
 	has_many :denotations, through: :doc
+	has_many :blocks, through: :doc
 
 	scope :simple_paginate, -> (page, per = 10) {
 		page = page.nil? ? 1 : page.to_i
@@ -11,6 +12,11 @@ class ProjectDoc < ActiveRecord::Base
 
 	def get_denotations(span, context_size, sort)
 		ret = denotations.in_project(project).in_span(span)
+		RangeArranger.new(ret, span , context_size , sort).call.ranges
+	end
+
+	def get_blocks(span, context_size, sort)
+		ret = blocks.in_project(project).in_span(span)
 		RangeArranger.new(ret, span , context_size , sort).call.ranges
 	end
 
