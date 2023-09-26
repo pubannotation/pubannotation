@@ -19,14 +19,8 @@ class ProjectDoc < ActiveRecord::Base
                       options = {})
     _denotations = get_denotations(span, context_size, is_sort)
     _blocks = get_blocks(span, context_size, is_sort)
-
-    ids = if span.present?
-            denotations.in_span(span).pluck(:id).concat(
-              blocks.in_span(span).pluck(:id)
-            )
-          else
-            nil
-          end
+    _ranges = _denotations + _blocks
+    ids = _ranges.map { _1.id } if span.present?
 
     _relations = get_relations_of(ids)
 
@@ -49,7 +43,7 @@ class ProjectDoc < ActiveRecord::Base
       denotations: hdenotations,
       blocks: _blocks.as_json,
       relations: hrelations,
-      attributes: get_attributes_of(_denotations, _blocks).as_json,
+      attributes: _ranges.map { _1.attrivutes }.flatten.as_json,
       modifications: get_modifications_of(ids).as_json,
       namespaces: project.namespaces
     }.select { |k, v| v.present? }
@@ -101,11 +95,6 @@ class ProjectDoc < ActiveRecord::Base
 
   def get_relations_of(base_ids)
     subcatrels.in_project(project).among_denotations(base_ids)
-  end
-
-  def get_attributes_of(_denotations, _blocks)
-    (_denotations + _blocks).map { _1.attrivutes }
-                            .flatten
   end
 
   def get_modifications_of(base_ids)
