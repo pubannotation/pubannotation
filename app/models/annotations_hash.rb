@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
-# Data class representing annotations as a hash
+# A class that collects annotations for a document.
 class AnnotationsHash
+  # Annotations may belong to multiple projects.
+  # When putting annotations from multiple projects into the hash, the has_track option should be enabled.
+  # Otherwise, only the annotation of the first project will be put into the hash.
   def initialize(doc, span, context_size, is_sort, is_full, options, project_doc_list, has_track)
     @doc = doc
     @span = span
@@ -17,14 +20,7 @@ class AnnotationsHash
     hash = @doc.to_hash(@span, @context_size)
 
     if has_track?
-      hash[:tracks] = @project_doc_list.inject([]) do |tracks, project_doc |
-        track = annotations_in project_doc
-        if full? || track[:denotations].present?
-          tracks << track
-        else
-          tracks
-        end
-      end
+      hash[:tracks] = annotations_tracks
     else
       project_doc = @project_doc_list.first
       hash.merge!(annotations_in project_doc)
@@ -34,6 +30,17 @@ class AnnotationsHash
   end
 
   private
+
+  def annotations_tracks
+    @annotations_tracks ||= @project_doc_list.inject([]) do |tracks, project_doc |
+      track = annotations_in project_doc
+      if full? || track[:denotations].present?
+        tracks << track
+      else
+        tracks
+      end
+    end
+  end
 
   def annotations_in(project_doc)
     project_doc.get_annotations(@span, @context_size, sort?, @options)
