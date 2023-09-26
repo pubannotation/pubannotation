@@ -665,7 +665,7 @@ class Doc < ActiveRecord::Base
 		return tsv
 	end
 
-	def hannotations(project = nil, span = nil, context_size = nil, options = { })
+	def hannotations(project, span, context_size, options)
 		annotations_hash = if project.present?
 												 AnnotationsHash.new self,
 																						 span,

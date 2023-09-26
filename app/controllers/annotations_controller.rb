@@ -674,7 +674,7 @@ class AnnotationsController < ApplicationController
 
 		context_size = params[:context_size].to_i
 
-		@annotations = @doc.hannotations(@in_projects, @span, context_size)
+		@annotations = @doc.hannotations(@in_projects, @span, context_size, {})
 
 		# a temporary solution to avoid rendering problem when there is a wrong typesetting
 		@annotations.delete(:typesettings)

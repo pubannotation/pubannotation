@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Doc, type: :model do
   describe 'hannotations' do
     let(:doc) { create(:doc) }
-    subject { doc.hannotations }
+    subject { doc.hannotations nil, nil , nil, {} }
 
     it 'returns a hash' do
       expect(subject).to be_a(Hash)
@@ -53,7 +53,7 @@ RSpec.describe Doc, type: :model do
         let(:project) { create(:project) }
 
         it 'returns denotations but no tracks' do
-          annotations = doc.hannotations(project)
+          annotations = doc.hannotations(project, nil, nil, {})
           expect(annotations[:tracks]).to be_nil
           expect(annotations[:denotations]).to include(id: "T1",
                                                        obj: "subject",
