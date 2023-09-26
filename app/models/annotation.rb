@@ -1,4 +1,4 @@
-class Annotation
+module Annotation
 	include AnnotationsConcern
 
 	class << self
