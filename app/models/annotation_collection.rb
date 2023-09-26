@@ -30,7 +30,7 @@ class AnnotationCollection
     annotations.each do |annotation|
       raise ArgumentError, "One json file has to include annotations to the same document." if (annotation[:sourcedb] != @sourcedb) || (annotation[:sourceid] != @sourceid)
 
-      Annotation.normalize!(annotation)
+      AnnotationUtils.normalize!(annotation)
     end
   end
 end

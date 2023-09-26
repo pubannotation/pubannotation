@@ -17,7 +17,7 @@ class AnalyseAnnotationsJob < ApplicationJob
 		docs.each_with_index do |doc, i|
 			begin
 				annotations = doc.hannotations(project)
-				a = Annotation.analyse(annotations)
+				a = AnnotationUtils.analyse(annotations)
 
 				analysis[:embeddings] += a[:embeddings]
 				analysis[:bcrossings] += a[:bcrossings]

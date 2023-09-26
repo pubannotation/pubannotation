@@ -241,7 +241,7 @@ private
 				annotations_col = (result.class == Array) ? result : [result]
 				annotations_col.each_with_index do |annotations, i|
 					raise RuntimeError, "annotation result is not a valid JSON object." unless annotations.class == Hash
-					Annotation.normalize!(annotations)
+					AnnotationUtils.normalize!(annotations)
 					annotator.annotations_transform!(annotations)
 				rescue => e
 					if @job

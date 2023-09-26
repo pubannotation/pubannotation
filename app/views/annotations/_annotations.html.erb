@@ -5,7 +5,7 @@
 
 	<% if annotations.present? -%>
 		<% annotations[:text] = body unless annotations[:text].present? -%>
-		<% array = Annotation.hash_to_array(annotations, project.get_textae_config) -%>
+		<% array = AnnotationUtils.hash_to_array(annotations, project.get_textae_config) -%>
 		<% headers = array.shift %>
 
 		<% if project.has_discontinuous_span? %>

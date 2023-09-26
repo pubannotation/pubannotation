@@ -76,8 +76,8 @@ class AnnotationsController < ApplicationController
 		respond_to do |format|
 			format.html {render 'index_in_project'}
 			format.json {render json: @annotations}
-			format.tsv  {send_data Annotation.hash_to_tsv(@annotations, textae_config), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.tsv"}
-			format.dic  {send_data Annotation.hash_to_dic(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.dic"}
+			format.tsv  {send_data AnnotationUtils.hash_to_tsv(@annotations, textae_config), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.tsv"}
+			format.dic  {send_data AnnotationUtils.hash_to_dic(@annotations), filename: "#{params[:sourcedb]}-#{params[:sourceid]}.dic"}
 		end
 
 	rescue => e
@@ -142,7 +142,7 @@ class AnnotationsController < ApplicationController
 			annotations[:sourcedb] = params[:sourcedb]
 			annotations[:sourceid] = params[:sourceid]
 
-			annotations = Annotation.normalize!(annotations)
+			annotations = AnnotationUtils.normalize!(annotations)
 
 			options = {}
 			options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
@@ -195,7 +195,7 @@ class AnnotationsController < ApplicationController
 			annotations[:sourcedb] = params[:sourcedb]
 			annotations[:sourceid] = params[:sourceid]
 
-			annotations = Annotation.normalize!(annotations)
+			annotations = AnnotationUtils.normalize!(annotations)
 			annotations_collection = [annotations]
 
 			doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
@@ -207,7 +207,7 @@ class AnnotationsController < ApplicationController
 				expire_fragment("count_#{params[:sourcedb]}")
 			end
 
-			m = Annotation.prepare_annotations!(annotations, doc)
+			m = AnnotationUtils.prepare_annotations!(annotations, doc)
 
 			respond_to do |format|
 				format.json {render json: annotations}
@@ -679,7 +679,7 @@ class AnnotationsController < ApplicationController
 		# a temporary solution to avoid rendering problem when there is a wrong typesetting
 		@annotations.delete(:typesettings)
 
-		Annotation.add_source_project_color_coding!(@annotations)
+		AnnotationUtils.add_source_project_color_coding!(@annotations)
 
 		respond_to do |format|
 			format.html {render 'merge_view'}

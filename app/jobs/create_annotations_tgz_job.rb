@@ -33,16 +33,16 @@ class CreateAnnotationsTgzJob < ApplicationJob
 								annotations = doc.hannotations(project)
 								file = annotations.to_json
 								tar.add_file_simple(project.name + '/annotations/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
-								file = Annotation.hash_to_tsv(annotations, textae_config)
+								file = AnnotationUtils.hash_to_tsv(annotations, textae_config)
 								tar.add_file_simple(project.name + '/annotations/tsv/' + filename + ".tsv", 0644, file.bytesize){|t| t.write(file)}
-								dic += Annotation.hash_to_dic_array(annotations)
+								dic += AnnotationUtils.hash_to_dic_array(annotations)
 								if has_discontinuous_span
 									annotations = doc.hannotations(project, nil, nil, {discontinuous_span: :bag})
 									file = annotations.to_json
 									tar.add_file_simple(project.name + '/annotations/bag_json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
-									file = Annotation.hash_to_tsv(annotations, textae_config)
+									file = AnnotationUtils.hash_to_tsv(annotations, textae_config)
 									tar.add_file_simple(project.name + '/annotations/bag_tsv/' + filename + ".tsv", 0644, file.bytesize){|t| t.write(file)}
-									dic_bag += Annotation.hash_to_dic_array(annotations)
+									dic_bag += AnnotationUtils.hash_to_dic_array(annotations)
 								end
 							end
 						end
@@ -59,13 +59,13 @@ class CreateAnnotationsTgzJob < ApplicationJob
 
 				unless dic.empty?
 					dic.uniq!
-					file = Annotation.dic_array_to_tsv(dic)
+					file = AnnotationUtils.dic_array_to_tsv(dic)
 					tar.add_file_simple(project.name + '/dictionary/' + project.name + "_dictionary.tsv", 0644, file.bytesize){|t| t.write(file)}
 				end
 
 				unless dic_bag.empty?
 					dic_bag.uniq!
-					file = Annotation.dic_array_to_tsv(dic_bag)
+					file = AnnotationUtils.dic_array_to_tsv(dic_bag)
 					tar.add_file_simple(project.name + '/dictionary/' + project.name + "_bag_dictionary.tsv", 0644, file.bytesize){|t| t.write(file)}
 				end
 

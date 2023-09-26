@@ -1,4 +1,4 @@
-module Annotation
+module AnnotationUtils
 	include AnnotationsConcern
 
 	class << self
@@ -313,7 +313,7 @@ module Annotation
 			annotations[:relations] = new_relations
 			annotations
 		end
-		
+
 		def text2sentences(text)
 			sentences = []
 			sentence_spans = []

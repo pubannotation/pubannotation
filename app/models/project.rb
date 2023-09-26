@@ -710,7 +710,7 @@ class Project < ActiveRecord::Base
 
     return ['upload is skipped due to existing annotations'] if options[:mode] == 'skip' && doc.denotations_num > 0
 
-    messages = Annotation.prepare_annotations!(annotations, doc, options)
+    messages = AnnotationUtils.prepare_annotations!(annotations, doc, options)
 
     case options[:mode]
     when 'replace'
@@ -721,7 +721,7 @@ class Project < ActiveRecord::Base
     when 'merge'
       reid_annotations!(annotations, doc)
       base_annotations = doc.hannotations(self, options[:span])
-      Annotation.prepare_annotations_for_merging!(annotations, base_annotations)
+      AnnotationUtils.prepare_annotations_for_merging!(annotations, base_annotations)
     else
       reid_annotations!(annotations, doc) if options[:span].present?
     end
@@ -880,7 +880,7 @@ class Project < ActiveRecord::Base
       when 'merge'
         annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
         base_annotations = annotations_with_doc.doc.hannotations(self)
-        annotations_with_doc.annotations.each { |a| Annotation.prepare_annotations_for_merging!(a, base_annotations) }
+        annotations_with_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
       end
     end
   end

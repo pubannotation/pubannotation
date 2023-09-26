@@ -9,11 +9,11 @@
 			<% color_coding = nil %>
 			<% @bindings.each do |solution| %>
 				<%
-					projects = params[:projects].split(',')
+          projects = params[:projects].split(',')
 					span_url = solution2span_url(solution)
 					annotations = span_url2annotations(span_url, projects)
-					color_coding ||= Annotation.generate_source_project_color_coding(annotations)
-					Annotation.add_source_project_color_coding!(annotations, color_coding)
+					color_coding ||= AnnotationUtils.generate_source_project_color_coding(annotations)
+					AnnotationUtils.add_source_project_color_coding!(annotations, color_coding)
 				%>
 
 				<%= content_tag(:div, annotations.to_json, class: "textae-editor", status_bar: "off", control: "hidden", style:"margin:2px 0 0 0") %>

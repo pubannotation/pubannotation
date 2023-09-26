@@ -343,7 +343,7 @@ class Doc < ActiveRecord::Base
 		else
 			_denotations = self.denotations
 			_blocks = self.blocks
-			messages += Annotation.align_denotations_and_blocks!(_denotations, _blocks, self.body, new_body)
+			messages += AnnotationUtils.align_denotations_and_blocks!(_denotations, _blocks, self.body, new_body)
 
 			ActiveRecord::Base.transaction do
 				self.divisions.destroy_all

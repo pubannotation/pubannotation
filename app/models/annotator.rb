@@ -48,7 +48,7 @@ class Annotator < ActiveRecord::Base
 			annotations[:text] = docs[i][:text] unless annotations[:text].present?
 			annotations[:sourcedb] = docs[i][:sourcedb] unless annotations[:sourcedb].present?
 			annotations[:sourceid] = docs[i][:sourceid] unless annotations[:sourceid].present?
-			Annotation.normalize!(annotations)
+			AnnotationUtils.normalize!(annotations)
 			annotations_transform!(annotations)
 		end
 		annotations_col
@@ -61,7 +61,7 @@ class Annotator < ActiveRecord::Base
 		denotations_idx = {}
 		a_id_num = 0
 		annotations[:denotations].each do |d|
-			skey = Annotation.skey_of_denotation(d, new_label)
+			skey = AnnotationUtils.skey_of_denotation(d, new_label)
 			unless denotations_idx.has_key? skey
 				new_attributes << {id:"A#{a_id_num += 1}", subj:d[:id], pred:receiver_attribute, obj:d[:obj]}
 				d[:obj] = new_label
