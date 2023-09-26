@@ -1,4 +1,4 @@
-class Annotation < ActiveRecord::Base
+class Annotation
 	include AnnotationsConcern
 
 	# To produce an array of annotations for export.
