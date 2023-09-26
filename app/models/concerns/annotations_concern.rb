@@ -1,4 +1,6 @@
-module AnnotationsHelper
+module AnnotationsConcern
+	extend ActiveSupport::Concern
+
 	def annotations_count_helper(project, doc = nil, span = nil)
 		project = doc.projects.first if project.nil? && doc.projects_num == 1
 		if project

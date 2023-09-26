@@ -1,5 +1,5 @@
 class Annotation < ActiveRecord::Base
-	include AnnotationsHelper
+	include AnnotationsConcern
 
 	# To produce an array of annotations for export.
 	# The initial row of the array to contain the headers
