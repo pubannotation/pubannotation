@@ -19,8 +19,8 @@ class ProjectDoc < ActiveRecord::Base
                       options = {})
     _denotations = get_denotations(span, context_size, is_sort)
     _blocks = get_blocks(span, context_size, is_sort)
-    _ranges = _denotations + _blocks
-    ids = _ranges.map { _1.id } if span.present?
+
+    ids = (_denotations + _blocks).pluck(:id) if span.present?
 
     _relations = get_relations_of(ids)
 
@@ -32,21 +32,14 @@ class ProjectDoc < ActiveRecord::Base
       ids += _relations.pluck(:id)
     end
 
-    hdenotations = _denotations.as_json
-    hrelations = _relations.as_json
-    if options[:discontinuous_span] == :bag
-      hdenotations, hrelations = self.class.bag_denotations(hdenotations, hrelations)
-    end
-
-    {
-      project: project.name,
-      denotations: hdenotations,
-      blocks: _blocks.as_json,
-      relations: hrelations,
-      attributes: _ranges.map { _1.attrivutes }.flatten.as_json,
-      modifications: get_modifications_of(ids).as_json,
-      namespaces: project.namespaces
-    }.select { |k, v| v.present? }
+    Annotation.new(
+      project,
+      _denotations,
+      _blocks,
+      _relations,
+      get_modifications_of(ids),
+      options[:discontinuous_span] == :bag
+    ).as_json
   end
 
   def graph_uri
