@@ -1,5 +1,5 @@
 module AnnotationUtils
-	include AnnotationsConcern
+	include AnnotationsHelper
 
 	class << self
 		# To produce an array of annotations for export.
