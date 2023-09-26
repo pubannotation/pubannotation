@@ -665,9 +665,7 @@ class Doc < ActiveRecord::Base
 		return tsv
 	end
 
-	def hannotations(project = nil, span = nil, context_size = nil, options = nil)
-		options ||= {}
-
+	def hannotations(project = nil, span = nil, context_size = nil, options = { })
 		annotations_hash = if project.present? && !project.respond_to?(:each)
 												 # Just one project is specified.
 												 project_doc = project_docs.find_by(project: project)
