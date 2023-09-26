@@ -667,27 +667,32 @@ class Doc < ActiveRecord::Base
 
 	def hannotations(project = nil, span = nil, context_size = nil, options = nil)
 		options ||= {}
-		full = options[:full]
 
-		annotations = self.to_hash(span, context_size)
+		annotations_hash = if project.present? && !project.respond_to?(:each)
+												 # Just one project is specified.
+												 project_doc = project_docs.find_by(project: project)
+												 AnnotationsHash.new self,
+																						 span,
+																						 context_size,
+																						 options[:sort],
+																						 options[:full],
+																						 options,
+																						 [project_doc],
+																						 false
+											 else
+												 projects = project.present? ? project : self.projects
+												 project_doc_list = projects.map { |project| project_docs.find_by(project: project) }
+												 AnnotationsHash.new self,
+																						 span,
+																						 context_size,
+																						 options[:sort],
+																						 options[:full],
+																						 options,
+																						 project_doc_list,
+																						 true
+											 end
 
-		if project.present? && !project.respond_to?(:each)
-			project_doc = project_docs.find_by(project: project)
-			annotations.merge!(project_doc.get_annotations(span, context_size, options[:sort], options))
-		else
-			projects = project.present? ? project : self.projects
-			annotations[:tracks] = projects.inject([]) do |tracks, project|
-				project_doc = project_docs.find_by(project: project)
-				track = project_doc.get_annotations(span, context_size, options[:sort], options)
-				if full || track[:denotations].present?
-					tracks << track
-				else
-					tracks
-				end
-			end
-		end
-
-		annotations
+		annotations_hash.to_hash
 	end
 
 
