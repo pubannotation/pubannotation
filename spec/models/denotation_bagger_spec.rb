@@ -1,8 +1,10 @@
 require 'rails_helper'
 
-RSpec.describe ProjectDoc, type: :model do
+RSpec.describe DenotationBagger, type: :model do
   describe '#bag_denotations' do
-    subject { ProjectDoc.bag_denotations(denotations, relations) }
+    let(:dummy_class) { Class.new { include DenotationBagger } }
+    let(:instance) { dummy_class.new }
+    subject { instance.bag_denotations(denotations, relations) }
 
     let(:sample_denotations) do
       [

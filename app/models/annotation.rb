@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Annotation
+  include DenotationBagger
+
   def initialize(project, denotations, blocks, relations, modifications, is_bag)
     @project = project
     @denotations = denotations
@@ -13,7 +15,7 @@ class Annotation
   def as_json(options = {})
     denotations = @denotations.as_json
     relations = @relations.as_json
-    denotations, relations = ProjectDoc.bag_denotations(denotations, relations) if @is_bag
+    denotations, relations = bag_denotations(denotations, relations) if @is_bag
 
     {
       project: @project.name,
