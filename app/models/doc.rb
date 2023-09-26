@@ -666,28 +666,25 @@ class Doc < ActiveRecord::Base
 	end
 
 	def hannotations(project = nil, span = nil, context_size = nil, options = { })
-		annotations_hash = if project.present? && !project.respond_to?(:each)
-												 # Just one project is specified.
-												 project_doc = project_docs.find_by(project: project)
+		annotations_hash = if project.present?
 												 AnnotationsHash.new self,
 																						 span,
 																						 context_size,
 																						 options[:sort],
 																						 options[:full],
 																						 options,
-																						 [project_doc],
-																						 false
+																						 project_docs.where(project: project),
+																						 project.respond_to?(:each) # When project is single, return annotations without track.
 											 else
-												 projects = project.present? ? project : self.projects
-												 project_doc_list = projects.map { |project| project_docs.find_by(project: project) }
 												 AnnotationsHash.new self,
 																						 span,
 																						 context_size,
 																						 options[:sort],
 																						 options[:full],
 																						 options,
-																						 project_doc_list,
+																						 project_docs,
 																						 true
+
 											 end
 
 		annotations_hash.to_hash
