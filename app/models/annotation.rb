@@ -3,11 +3,12 @@
 class Annotation
   include DenotationBagger
 
-  def initialize(project, denotations, blocks, relations, modifications, is_bag)
+  def initialize(project, denotations, blocks, relations, attributes, modifications, is_bag)
     @project = project
     @denotations = denotations
     @blocks = blocks
     @relations = relations
+    @attributes = attributes
     @modifications = modifications
     @is_bag = is_bag
   end
@@ -22,15 +23,9 @@ class Annotation
       denotations:,
       blocks: @blocks.as_json,
       relations:,
-      attributes: attributes.as_json,
+      attributes: @attributes.as_json,
       modifications: @modifications.as_json,
       namespaces: @project.namespaces
     }.select { |_, v| v.present? }
-  end
-
-  private
-
-  def attributes
-    (@denotations + @blocks).map { _1.attrivutes }.flatten
   end
 end

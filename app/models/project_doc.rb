@@ -3,6 +3,7 @@ class ProjectDoc < ActiveRecord::Base
   belongs_to :doc
   has_many :denotations, through: :doc
   has_many :blocks, through: :doc
+  has_many :attrivutes, class_name: 'Attrivute', through: :project
   has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
   has_many :catmods, class_name: 'Modification', :through => :denotations, :source => :modifications
   has_many :subcatrelmods, class_name: 'Modification', :through => :subcatrels, :source => :modifications
@@ -37,6 +38,7 @@ class ProjectDoc < ActiveRecord::Base
       _denotations,
       _blocks,
       _relations,
+      get_attributes_of(ids),
       get_modifications_of(ids),
       options[:discontinuous_span] == :bag
     ).as_json
@@ -88,6 +90,10 @@ class ProjectDoc < ActiveRecord::Base
 
   def get_relations_of(base_ids)
     subcatrels.in_project(project).among_denotations(base_ids)
+  end
+
+  def get_attributes_of(base_ids)
+    attrivutes.among_entities(base_ids)
   end
 
   def get_modifications_of(base_ids)
