@@ -49,7 +49,7 @@ class ProjectDoc < ActiveRecord::Base
       denotations: hdenotations,
       blocks: _blocks.as_json,
       relations: hrelations,
-      attributes: _denotations.map { _1.attrivutes }.flatten.as_json + _blocks.map { _1.attrivutes }.flatten.as_json,
+      attributes: get_attributes_of(_denotations, _blocks).as_json,
       modifications: get_modifications_of(ids).as_json,
       namespaces: project.namespaces
     }.select { |k, v| v.present? }
@@ -101,6 +101,11 @@ class ProjectDoc < ActiveRecord::Base
 
   def get_relations_of(base_ids)
     subcatrels.in_project(project).among_denotations(base_ids)
+  end
+
+  def get_attributes_of(_denotations, _blocks)
+    (_denotations + _blocks).map { _1.attrivutes }
+                            .flatten
   end
 
   def get_modifications_of(base_ids)
