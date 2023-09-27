@@ -13,7 +13,7 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def get_annotations(span)
+  def annotation_in(span)
     _denotations = get_denotations_in span
     _blocks = get_blocks_in span
 

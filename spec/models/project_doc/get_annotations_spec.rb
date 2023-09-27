@@ -22,7 +22,7 @@ RSpec.describe ProjectDoc, type: :model do
     let!(:relation2) { create(:relation, project: project, subj: block1, obj: block2, pred: 'next') }
 
     let(:span) { nil }
-    subject { project_doc.get_annotations(span) }
+    subject { project_doc.annotation_in span }
 
     it { is_expected.to be_a(Annotation) }
 
