@@ -43,7 +43,7 @@ gem 'wikipedia-client'
 gem 'ruby-dictionary'
 gem 'kaminari'
 gem 'devise'
-gem 'omniauth'
+gem "omniauth-rails_csrf_protection"
 gem 'omniauth-google-oauth2'
 gem 'rubyzip'
 gem 'zip-zip'
