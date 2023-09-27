@@ -20,8 +20,8 @@ class Annotation
     end
 
     if(options[:span])
-      @denotations = RangeArranger.new(@denotations, options[:span], options[:context_size]).call.ranges
-      @blocks = RangeArranger.new(@blocks, options[:span], options[:context_size]).call.ranges
+      @denotations = TermOffsetAdjuster.new(@denotations, options[:span], options[:context_size]).call.terms
+      @blocks = TermOffsetAdjuster.new(@blocks, options[:span], options[:context_size]).call.terms
     end
 
     denotations = @denotations.as_json

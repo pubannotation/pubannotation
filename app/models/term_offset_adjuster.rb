@@ -1,25 +1,25 @@
 # frozen_string_literal: true
 
-class RangeArranger
-  attr_reader :ranges
+class TermOffsetAdjuster
+  attr_reader :terms
 
-  def initialize(ranges, span, context_size)
-    @ranges = ranges
+  def initialize(terms, span, context_size)
+    @terms = terms
     @span = span
     @offset_size = offset_size(span, context_size) if span.present?
   end
 
   def call
-    @ranges.each{ moveForward _1 } if @offset_size.present?
+    @terms.each{ moveForward _1 } if @offset_size.present?
 
     self
   end
 
   private
 
-  def moveForward(range)
-    range.begin -= @offset_size
-    range.end -= @offset_size
+  def moveForward(term)
+    term.begin -= @offset_size
+    term.end -= @offset_size
   end
 
   def offset_size(span, context_size)
