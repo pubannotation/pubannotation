@@ -665,14 +665,14 @@ class Doc < ActiveRecord::Base
 		return tsv
 	end
 
-	def hannotations(project, span, context_size, is_sort: false, is_full: false, is_bag_dennotations: false)
+	def hannotations(project, span, context_size, is_sort: false, is_full: false, is_bag_denotations: false)
 		annotations_hash = if project.present?
 												 AnnotationsHash.new self,
 																						 span,
 																						 context_size,
 																						 is_sort,
 																						 is_full,
-																						 is_bag_dennotations,
+																						 is_bag_denotations,
 																						 project_docs.where(project: project),
 																						 project.respond_to?(:each) # When project is single, return annotations without track.
 											 else
@@ -681,7 +681,7 @@ class Doc < ActiveRecord::Base
 																						 context_size,
 																						 is_sort,
 																						 is_full,
-																						 is_bag_dennotations,
+																						 is_bag_denotations,
 																						 project_docs,
 																						 true
 
