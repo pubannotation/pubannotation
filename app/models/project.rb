@@ -286,7 +286,7 @@ class Project < ActiveRecord::Base
         doc = Doc.find(doc_id)
 
         if i == 0
-          hannotations = doc.hannotations(self)
+          hannotations = doc.hannotations(self, nil, nil)
 
           # prefixes
           preamble = rdfizer_annos.rdfize([hannotations], { only_prefixes: true })
@@ -313,7 +313,7 @@ class Project < ActiveRecord::Base
         end
 
         if doc.denotations.where("denotations.project_id" => self.id).exists?
-          hannotations = doc.hannotations(self)
+          hannotations = doc.hannotations(self, nil, nil)
           annos_ttl = rdfizer_annos.rdfize([hannotations], { with_prefixes: false })
           f.write("\t" + annos_ttl.gsub(/\n/, "\n\t").rstrip + "\n")
         end
@@ -720,7 +720,7 @@ class Project < ActiveRecord::Base
       reid_annotations!(annotations, doc)
     when 'merge'
       reid_annotations!(annotations, doc)
-      base_annotations = doc.hannotations(self, options[:span])
+      base_annotations = doc.hannotations(self, options[:span], nil)
       AnnotationUtils.prepare_annotations_for_merging!(annotations, base_annotations)
     else
       reid_annotations!(annotations, doc) if options[:span].present?
@@ -879,7 +879,7 @@ class Project < ActiveRecord::Base
         annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
       when 'merge'
         annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
-        base_annotations = annotations_with_doc.doc.hannotations(self)
+        base_annotations = annotations_with_doc.doc.hannotations(self, nil, nil)
         annotations_with_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
       end
     end

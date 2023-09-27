@@ -20,8 +20,8 @@ class EvaluateAnnotationsJob < ApplicationJob
 		comparison = []
 		docs.each_with_index do |doc, i|
 			begin
-				annotations = doc.hannotations(project)
-				reference_annotations = doc.hannotations(reference_project)
+				annotations = doc.hannotations(project, nil, nil)
+				reference_annotations = doc.hannotations(reference_project, nil, nil)
 				comparison += evaluator.compare(annotations, reference_annotations)
 			rescue => e
 				if @job

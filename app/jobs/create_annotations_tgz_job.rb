@@ -30,7 +30,7 @@ class CreateAnnotationsTgzJob < ApplicationJob
 								file = doc.to_hash.to_json
 								tar.add_file_simple(project.name + '/annotations/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
 							else
-								annotations = doc.hannotations(project)
+								annotations = doc.hannotations(project, nil, nil)
 								file = annotations.to_json
 								tar.add_file_simple(project.name + '/annotations/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
 								file = AnnotationUtils.hash_to_tsv(annotations, textae_config)

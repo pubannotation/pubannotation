@@ -8,7 +8,7 @@ class StoreRdfizedSpansJob < ApplicationJob
 		docids.each_with_index do |docid, i|
 			begin
 				doc = Doc.find(docid)
-				annotations = doc.hannotations
+				annotations = doc.hannotations(nil, nil, nil)
 				doc_ttl = sproject.get_conversion(annotations, rdfizer)
 				sproject.post_rdf(doc_ttl, nil, i == 0)
 			rescue => e

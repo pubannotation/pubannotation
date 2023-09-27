@@ -16,7 +16,7 @@ class ImportAnnotationsJob < ApplicationJob
 
 		docs.each do |doc|
 			begin
-				annotations = doc.hannotations(source_project)
+				annotations = doc.hannotations(source_project, nil, nil)
 				messages = destin_project.save_annotations!(annotations, doc, options)
 				messages.each{|m| @job.add_message m}
 			rescue => e

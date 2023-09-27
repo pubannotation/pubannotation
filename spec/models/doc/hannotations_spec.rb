@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Doc, type: :model do
   describe 'hannotations' do
     let(:doc) { create(:doc) }
-    subject { doc.hannotations nil, nil , nil, {} }
+    subject { doc.hannotations nil, nil , nil }
 
     it 'returns a hash' do
       expect(subject).to be_a(Hash)
@@ -53,7 +53,7 @@ RSpec.describe Doc, type: :model do
         let(:project) { create(:project) }
 
         it 'returns denotations but no tracks' do
-          annotations = doc.hannotations(project, nil, nil, {})
+          annotations = doc.hannotations(project, nil, nil)
           expect(annotations[:tracks]).to be_nil
           expect(annotations[:denotations]).to include(id: "T1",
                                                        obj: "subject",
@@ -72,7 +72,7 @@ RSpec.describe Doc, type: :model do
 
         context 'when full option is specified' do
           it 'includes all tracks regardless of denotations' do
-            full_annotations = doc.hannotations(nil, nil, nil, {full: true})
+            full_annotations = doc.hannotations(nil, nil, nil, is_full: true)
             expect(full_annotations[:tracks].size).to eq(2)
           end
         end

@@ -40,7 +40,7 @@ class Evaluation < ActiveRecord::Base
 		raise RuntimeError, "The method is valid only when the evaluator is a web service."unless evaluator.access_type == 2
 		raise RuntimeError, "The URL of the evaluation web service is not specified." unless evaluator.url.present?
 
-		annotations_col = study_project.docs.collect{|doc| doc.hannotations(study_project)}
+		annotations_col = study_project.docs.collect{|doc| doc.hannotations(study_project, nil, nil)}
 		@hresult = make_request(evaluator.url, annotations_col)
 		update_attribute(:result, JSON.generate(@hresult))
 
