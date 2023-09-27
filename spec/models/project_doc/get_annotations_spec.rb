@@ -17,6 +17,7 @@ RSpec.describe ProjectDoc, type: :model do
 
     let!(:block2) { create(:second_block, doc: doc, project: project) }
     let!(:block1) { create(:block, doc: doc, project: project) }
+    let!(:relation2) { create(:relation, project: project, subj: block1, obj: block2, pred: 'next') }
 
     before do
       create(:relation, project: project, subj: block1, obj: block2, pred: 'next')
@@ -41,7 +42,7 @@ RSpec.describe ProjectDoc, type: :model do
     it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
 
     it { expect(subject[:relations].first).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
-    it { expect(subject[:relations].second).to be_nil } # Relation of blocks is not included
+    it { expect(subject[:relations].second).to eq(id: relation2.hid, pred: 'next', subj: 'B1', obj: 'B2') }
 
     it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
     it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }

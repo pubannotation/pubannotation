@@ -3,8 +3,9 @@ class ProjectDoc < ActiveRecord::Base
   belongs_to :doc
   has_many :denotations, through: :doc
   has_many :blocks, through: :doc
-  has_many :attrivutes, class_name: 'Attrivute', through: :project
-  has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
+  has_many :relations, through: :project
+  has_many :attrivutes, through: :project
+  has_many :subcatrels, class_name: 'Relation', through: :denotations, :source => :subrels
   has_many :catmods, class_name: 'Modification', :through => :denotations, :source => :modifications
   has_many :subcatrelmods, class_name: 'Modification', :through => :subcatrels, :source => :modifications
 
@@ -86,7 +87,7 @@ class ProjectDoc < ActiveRecord::Base
   end
 
   def get_relations_of(base_ids)
-    subcatrels.in_project(project).among_denotations(base_ids)
+    relations.among_denotations(base_ids)
   end
 
   def get_attributes_of(base_ids)
