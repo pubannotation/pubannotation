@@ -3,6 +3,8 @@
 class Annotation
   include DenotationBagger
 
+  attr_reader :project, :denotations, :blocks, :relations, :attributes, :modifications
+
   def initialize(project, denotations, blocks, relations, attributes, modifications)
     @project = project
     @denotations = denotations

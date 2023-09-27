@@ -25,43 +25,43 @@ RSpec.describe ProjectDoc, type: :model do
       create(:attrivute, project: project, subj: relation1, obj: 'true', pred: 'negation')
     end
 
-    subject { project_doc.get_annotations(span).as_json }
+    subject { project_doc.get_annotations(span) }
 
-    it { is_expected.to be_a(Hash) }
+    it { is_expected.to be_a(Annotation) }
 
-    it { expect(subject[:project]).to eq('TestProject') }
+    it { expect(subject.project).to eq(project) }
 
     # Denotations are sorted by creation order
-    it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
-    it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
+    it { expect(subject.denotations.first).to eq(denotation2) }
+    it { expect(subject.denotations.second).to eq(denotation1) }
 
     # Blocks are sorted by creation order
-    it { expect(subject[:blocks].first).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
-    it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
+    it { expect(subject.blocks.first).to eq(block2) }
+    it { expect(subject.blocks.second).to eq(block1) }
 
-    it { expect(subject[:relations].first).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
-    it { expect(subject[:relations].second).to eq(id: relation2.hid, pred: 'next', subj: 'B1', obj: 'B2') }
+    it { expect(subject.relations.first).to eq(relation1) }
+    it { expect(subject.relations.second).to eq(relation2) }
 
-    it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
-    it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
+    it { expect(subject.modifications).to include(modification1) }
+    it { expect(subject.attributes).to include(attribute1) }
 
     context 'span is specified' do
       let(:span) { { begin: 0, end: 4 } }
 
-      it { expect(subject[:denotations]).to include(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
-      it { expect(subject[:blocks]).to be_nil }
-      it { expect(subject[:relations]).to be_nil }
-      it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
-      it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
+      it { expect(subject.denotations).to include(denotation1) }
+      it { expect(subject.blocks).to be_empty }
+      it { expect(subject.relations).to be_empty }
+      it { expect(subject.modifications).to include(modification1) }
+      it { expect(subject.attributes).to include(attribute1) }
 
       context 'no annotation among span' do
         let(:span) { { begin: 100, end: 200 } }
 
-        it { expect(subject[:denotations]).to be_nil }
-        it { expect(subject[:blocks]).to be_nil }
-        it { expect(subject[:relations]).to be_nil }
-        it { expect(subject[:modifications]).to be_nil }
-        it { expect(subject[:attributes]).to be_nil }
+        it { expect(subject.denotations).to be_empty }
+        it { expect(subject.blocks).to be_empty }
+        it { expect(subject.relations).to be_empty }
+        it { expect(subject.modifications).to be_empty }
+        it { expect(subject.attributes).to be_empty }
       end
     end
   end
