@@ -14,10 +14,7 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def get_annotations(span = nil,
-                      context_size = nil,
-                      is_sort = false,
-                      options = {})
+  def get_annotations(span, context_size, is_sort, options)
     _denotations = get_denotations(span, context_size, is_sort)
     _blocks = get_blocks(span, context_size, is_sort)
 
