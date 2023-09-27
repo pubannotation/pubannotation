@@ -11,7 +11,7 @@ RSpec.describe ProjectDoc, type: :model do
 
     let!(:denotation2) { create(:object_denotation, doc: doc, project: project) }
     let!(:denotation1) { create(:denotation, doc: doc, project: project) }
-    let!(:relation1) { create(:relation, project: project, subj: denotation1, obj: denotation2, pred: 'predicate') }
+    let!(:relation1) { create(:relation, hid: "S1", project: project, subj: denotation1, obj: denotation2, pred: 'predicate') }
     let!(:modification1) { create(:modification, project: project, obj: denotation1, pred: 'negation') }
     let!(:attribute1) { create(:attrivute, project: project, subj: denotation1, obj: 'Protein', pred: 'type') }
 
@@ -20,7 +20,6 @@ RSpec.describe ProjectDoc, type: :model do
     let!(:relation2) { create(:relation, project: project, subj: block1, obj: block2, pred: 'next') }
 
     before do
-      create(:relation, project: project, subj: block1, obj: block2, pred: 'next')
       create(:modification, project: project, obj: block1, pred: 'negation')
       create(:attrivute, project: project, subj: block1, obj: 'true', pred: 'suspect')
       create(:modification, project: project, obj: relation1, pred: 'suspect')
@@ -74,7 +73,10 @@ RSpec.describe ProjectDoc, type: :model do
       it { expect(subject[:denotations].second).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
       it { expect(subject[:blocks].first).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
       it { expect(subject[:blocks].second).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
-      it { expect(subject[:relations].first).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
+
+      # Relations are sorted by hid in string order
+      it { expect(subject[:relations].first).to eq(id: relation2.hid, pred: 'next', subj: 'B1', obj: 'B2') }
+      it { expect(subject[:relations].second).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
     end
 
     context 'discontinuous_span option is specified' do
