@@ -58,17 +58,7 @@ class Relation < ActiveRecord::Base
 			obj: obj.hid
 		}
 	end
-
-	# to be deprecated in favor of as_json
-	def get_hash
-		hrelation = Hash.new
-		hrelation[:id]   = hid
-		hrelation[:pred] = pred
-		hrelation[:subj] = subj.hid
-		hrelation[:obj]  = obj.hid
-		hrelation
-	end
-
+	
 	def <=>(other)
 		(self.hid <=> other.hid)
 	end
