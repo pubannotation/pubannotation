@@ -43,7 +43,7 @@ class AnnotationsHash
   end
 
   def annotations_in(project_doc)
-    project_doc.get_annotations(@span, @context_size, sort?, bag_denotations?)
+    project_doc.get_annotations(@span, @context_size, sort?, bag_denotations?).as_json
   end
 
   # If true, multiple project annotations are set to the track property.

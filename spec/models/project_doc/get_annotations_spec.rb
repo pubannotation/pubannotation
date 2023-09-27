@@ -26,7 +26,7 @@ RSpec.describe ProjectDoc, type: :model do
       create(:attrivute, project: project, subj: relation1, obj: 'true', pred: 'negation')
     end
 
-    subject { project_doc.get_annotations(span, nil, sort, options) }
+    subject { project_doc.get_annotations(span, nil, sort, options).as_json }
 
     it { is_expected.to be_a(Hash) }
 

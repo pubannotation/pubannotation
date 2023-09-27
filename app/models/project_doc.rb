@@ -38,7 +38,7 @@ class ProjectDoc < ActiveRecord::Base
       get_attributes_of(ids),
       get_modifications_of(ids),
       is_bag_denotations
-    ).as_json
+    )
   end
 
   def graph_uri
