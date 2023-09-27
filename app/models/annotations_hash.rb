@@ -43,7 +43,7 @@ class AnnotationsHash
   end
 
   def annotations_in(project_doc)
-    project_doc.get_annotations(@span, @context_size, sort?, @options)
+    project_doc.get_annotations(@span, @context_size, sort?, @options[:discontinuous_span] == :bag)
   end
 
   def sort? = @is_sort

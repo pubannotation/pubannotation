@@ -7,7 +7,7 @@ RSpec.describe ProjectDoc, type: :model do
     let!(:project_doc) { create(:project_doc, doc: doc, project: project) }
     let(:span) { nil }
     let(:sort) { false }
-    let(:options) { {} }
+    let(:options) { false }
 
     let!(:denotation2) { create(:object_denotation, doc: doc, project: project) }
     let!(:denotation1) { create(:denotation, doc: doc, project: project) }
@@ -77,7 +77,7 @@ RSpec.describe ProjectDoc, type: :model do
     end
 
     context 'discontinuous_span option is specified' do
-      let(:options) { { discontinuous_span: :bag } }
+      let(:options) { true }
 
       it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
       it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }

@@ -14,7 +14,7 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def get_annotations(span, context_size, is_sort, options)
+  def get_annotations(span, context_size, is_sort, is_bag_denotations)
     _denotations = get_denotations(span, context_size, is_sort)
     _blocks = get_blocks(span, context_size, is_sort)
 
@@ -37,7 +37,7 @@ class ProjectDoc < ActiveRecord::Base
       _relations,
       get_attributes_of(ids),
       get_modifications_of(ids),
-      options[:discontinuous_span] == :bag
+      is_bag_denotations
     ).as_json
   end
 
