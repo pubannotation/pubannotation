@@ -6,7 +6,7 @@ RSpec.describe ProjectDoc, type: :model do
     let!(:project) { create(:project) }
     let!(:project_doc) { create(:project_doc, doc: doc, project: project) }
     let(:span) { nil }
-    let(:options) { false }
+    let(:is_bag_denotations) { false }
 
     let!(:denotation2) { create(:object_denotation, doc: doc, project: project) }
     let!(:denotation1) { create(:denotation, doc: doc, project: project) }
@@ -25,7 +25,7 @@ RSpec.describe ProjectDoc, type: :model do
       create(:attrivute, project: project, subj: relation1, obj: 'true', pred: 'negation')
     end
 
-    subject { project_doc.get_annotations(span, nil, options).as_json }
+    subject { project_doc.get_annotations(span, nil, is_bag_denotations).as_json }
 
     it { is_expected.to be_a(Hash) }
 
@@ -66,7 +66,7 @@ RSpec.describe ProjectDoc, type: :model do
     end
 
     context 'discontinuous_span option is specified' do
-      let(:options) { true }
+      let(:is_bag_denotations) { true }
 
       it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
       it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
