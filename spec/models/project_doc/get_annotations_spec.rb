@@ -6,7 +6,6 @@ RSpec.describe ProjectDoc, type: :model do
     let!(:project) { create(:project) }
     let!(:project_doc) { create(:project_doc, doc: doc, project: project) }
     let(:span) { nil }
-    let(:is_bag_denotations) { false }
 
     let!(:denotation2) { create(:object_denotation, doc: doc, project: project) }
     let!(:denotation1) { create(:denotation, doc: doc, project: project) }
