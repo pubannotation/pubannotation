@@ -5,9 +5,7 @@ class ProjectDoc < ActiveRecord::Base
   has_many :blocks, through: :doc
   has_many :relations, through: :project
   has_many :attrivutes, through: :project
-  has_many :subcatrels, class_name: 'Relation', through: :denotations, :source => :subrels
-  has_many :catmods, class_name: 'Modification', :through => :denotations, :source => :modifications
-  has_many :subcatrelmods, class_name: 'Modification', :through => :subcatrels, :source => :modifications
+  has_many :modifications, through: :project
 
   scope :simple_paginate, -> (page, per = 10) {
     page = page.nil? ? 1 : page.to_i
@@ -95,7 +93,6 @@ class ProjectDoc < ActiveRecord::Base
   end
 
   def get_modifications_of(base_ids)
-    catmods.in_project(project).among_entities(base_ids) +
-      subcatrelmods.in_project(project).among_entities(base_ids)
+    modifications.among_entities(base_ids)
   end
 end
