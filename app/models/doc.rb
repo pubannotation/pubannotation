@@ -672,7 +672,7 @@ class Doc < ActiveRecord::Base
 																						 context_size,
 																						 options[:sort],
 																						 options[:full],
-																						 options,
+																						 options[:discontinuous_spans] == :bag,
 																						 project_docs.where(project: project),
 																						 project.respond_to?(:each) # When project is single, return annotations without track.
 											 else
@@ -681,7 +681,7 @@ class Doc < ActiveRecord::Base
 																						 context_size,
 																						 options[:sort],
 																						 options[:full],
-																						 options,
+																						 options[:discontinuous_spans] == :bag,
 																						 project_docs,
 																						 true
 
