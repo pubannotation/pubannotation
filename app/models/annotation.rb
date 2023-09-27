@@ -3,14 +3,13 @@
 class Annotation
   include DenotationBagger
 
-  def initialize(project, denotations, blocks, relations, attributes, modifications, is_bag)
+  def initialize(project, denotations, blocks, relations, attributes, modifications)
     @project = project
     @denotations = denotations
     @blocks = blocks
     @relations = relations
     @attributes = attributes
     @modifications = modifications
-    @is_bag = is_bag
   end
 
   def as_json(options = {})
@@ -20,9 +19,17 @@ class Annotation
       @relations = @relations.sort
     end
 
+    if(options[:span])
+      @denotations = RangeArranger.new(@denotations, options[:span], options[:context_size]).call.ranges
+      @blocks = RangeArranger.new(@blocks, options[:span], options[:context_size]).call.ranges
+    end
+
     denotations = @denotations.as_json
     relations = @relations.as_json
-    denotations, relations = bag_denotations(denotations, relations) if @is_bag
+
+    if(options[:is_bag_denotations])
+      denotations, relations = bag_denotations(denotations, relations)
+    end
 
     {
       project: @project.name,

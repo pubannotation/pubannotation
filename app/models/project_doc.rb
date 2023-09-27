@@ -13,13 +13,13 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def get_annotations(span, context_size, is_bag_denotations)
-    _denotations = get_denotations(span, context_size)
-    _blocks = get_blocks(span, context_size)
+  def get_annotations(span)
+    _denotations = get_denotations_in span
+    _blocks = get_blocks_in span
 
     ids = (_denotations + _blocks).pluck(:id) if span.present?
 
-    _relations = get_relations_of(ids)
+    _relations = get_relations_of ids
 
     if span.present?
       ids += _relations.pluck(:id)
@@ -31,8 +31,7 @@ class ProjectDoc < ActiveRecord::Base
       _blocks,
       _relations,
       get_attributes_of(ids),
-      get_modifications_of(ids),
-      is_bag_denotations
+      get_modifications_of(ids)
     )
   end
 
@@ -70,14 +69,12 @@ class ProjectDoc < ActiveRecord::Base
 
   private
 
-  def get_denotations(span, context_size)
-    ret = denotations.in_project(project).in_span(span)
-    RangeArranger.new(ret, span, context_size).call.ranges
+  def get_denotations_in(span)
+    denotations.in_project(project).in_span(span)
   end
 
-  def get_blocks(span, context_size)
-    ret = blocks.in_project(project).in_span(span)
-    RangeArranger.new(ret, span, context_size).call.ranges
+  def get_blocks_in(span)
+    blocks.in_project(project).in_span(span)
   end
 
   def get_relations_of(base_ids)

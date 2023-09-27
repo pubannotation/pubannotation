@@ -25,7 +25,7 @@ RSpec.describe Annotation, type: :model do
                      [relation2, relation1],
                      [attribute1, attribute2],
                      [modification1, modification2],
-                     true).as_json(option)
+                     ).as_json(option)
     end
 
     it { is_expected.to be_a(Hash) }
@@ -57,6 +57,67 @@ RSpec.describe Annotation, type: :model do
       # Relations are sorted by hid in string order
       it { expect(subject[:relations].first).to eq(id: relation1.hid,  pred: 'predicate', subj: 'T1', obj: 'T2') }
       it { expect(subject[:relations].second).to eq(id: relation2.hid, pred: 'next', subj: 'B1', obj: 'B2') }
+    end
+
+    context 'is_bag_denotations is specified' do
+      let(:option) { { is_bag_denotations: true } }
+
+      it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
+      it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
+      it { expect(subject[:blocks].first).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
+      it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
+      it { expect(subject[:relations].first).to eq(id: relation2.hid, pred: 'next', subj: 'B1', obj: 'B2') }
+    end
+
+    context 'span is specified' do
+      let(:option)  { { span: { begin: 8, end: 14 } } }
+
+      it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 2, end: 6 }) }
+      it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: -8, end: -4 }) }
+      it { expect(subject[:blocks].first).to eq(id: "B2", obj: '2nd line', span: { begin: 8, end: 29 }) }
+      it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: -8, end: 6 }) }
+
+      context 'context_size is specified' do
+        let(:option) do
+          {
+            span: { begin: 8, end: 14 },
+            context_size: 6
+          }
+        end
+
+        it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 8, end: 12 }) }
+        it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: -2, end: 2 }) }
+        it { expect(subject[:blocks].first).to eq(id: "B2", obj: '2nd line', span: { begin: 14, end: 35 }) }
+        it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: -2, end: 12 }) }
+
+        context 'context_size equals to begin of the span' do
+          let(:option) do
+            {
+              span: { begin: 8, end: 14 },
+              context_size:8
+            }
+          end
+
+          it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
+          it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
+          it { expect(subject[:blocks].first).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
+          it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
+        end
+
+        context "context_size is bigger than begin of span " do
+          let(:option) do
+            {
+              span: { begin: 8, end: 14 },
+              context_size: 10
+            }
+          end
+
+          it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
+          it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
+          it { expect(subject[:blocks].first).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
+          it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
+        end
+      end
     end
   end
 end
