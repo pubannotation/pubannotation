@@ -5,7 +5,7 @@ class AnnotationsHash
   # Annotations may belong to multiple projects.
   # When putting annotations from multiple projects into the hash, the has_track option should be enabled.
   # Otherwise, only the annotation of the first project will be put into the hash.
-  def initialize(doc, span, context_size, is_sort, is_full, is_bag_denotations, project_doc_list, has_track)
+  def initialize(doc, projects, span, context_size, is_sort, is_full, is_bag_denotations, has_track)
     @doc = doc
     @span = span
     @context_size = context_size
@@ -13,7 +13,11 @@ class AnnotationsHash
     @is_full = is_full
     @is_bag_denotations = is_bag_denotations
     @has_track = has_track
-    @project_doc_list = project_doc_list
+    @project_doc_list = if projects.present?
+                          doc.project_docs.where(project: projects)
+                        else
+                          doc.project_docs
+                        end
   end
 
   def to_hash
@@ -32,7 +36,7 @@ class AnnotationsHash
   private
 
   def annotations_tracks
-    @annotations_tracks ||= @project_doc_list.inject([]) do |tracks, project_doc |
+    @annotations_tracks ||= @project_doc_list.inject([]) do |tracks, project_doc|
       track = annotations_in project_doc
       if full? || track[:denotations].present?
         tracks << track
