@@ -14,6 +14,12 @@ class Annotation
   end
 
   def as_json(options = {})
+    if(options[:is_sort])
+      @denotations = @denotations.sort
+      @blocks = @blocks.sort
+      @relations = @relations.sort
+    end
+
     denotations = @denotations.as_json
     relations = @relations.as_json
     denotations, relations = bag_denotations(denotations, relations) if @is_bag

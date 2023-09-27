@@ -2,14 +2,13 @@ require 'rails_helper'
 
 RSpec.describe ProjectDoc, type: :model do
   describe 'get_denotations' do
-    subject { project_doc.send(:get_denotations, span, context_size, sort) }
+    subject { project_doc.send(:get_denotations, span, context_size) }
 
     let(:doc) { create(:doc) }
     let(:project) { create(:project) }
     let(:project_doc) { create(:project_doc, doc: doc, project: project) }
     let(:span) { nil }
     let(:context_size) { nil }
-    let(:sort) { false }
 
     it { is_expected.to be_a(ActiveRecord::AssociationRelation) }
 
@@ -62,15 +61,6 @@ RSpec.describe ProjectDoc, type: :model do
               expect(subject.first.end).to eq(object_denotation.end)
             end
           end
-        end
-      end
-
-      context 'with sort specified' do
-        let(:sort) { true }
-
-        it 'returns denotations sorted by begin' do
-          expect(subject.second.hid).to eq('T3')
-          expect(subject.third.hid).to eq('T2')
         end
       end
     end

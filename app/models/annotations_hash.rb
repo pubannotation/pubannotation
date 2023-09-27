@@ -43,7 +43,8 @@ class AnnotationsHash
   end
 
   def annotations_in(project_doc)
-    project_doc.get_annotations(@span, @context_size, sort?, bag_denotations?).as_json
+    _annotations = project_doc.get_annotations(@span, @context_size, bag_denotations?)
+    _annotations.as_json(is_sort: @is_sort)
   end
 
   # If true, multiple project annotations are set to the track property.
@@ -51,9 +52,6 @@ class AnnotationsHash
 
   # When true, annotations with a Denotation of 0 are also set to the track property.
   def full? = @is_full
-
-  # If true, Denotation, Block, and Relation are reordered.
-  def sort? = @is_sort
 
   def bag_denotations? = @is_bag_denotations
 end

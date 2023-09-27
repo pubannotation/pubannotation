@@ -3,16 +3,14 @@
 class RangeArranger
   attr_reader :ranges
 
-  def initialize(ranges, span, context_size, sort)
+  def initialize(ranges, span, context_size)
     @ranges = ranges
     @span = span
     @offset_size = offset_size(span, context_size) if span.present?
-    @sort = sort
   end
 
   def call
     @ranges.each{ moveForward _1 } if @offset_size.present?
-    @ranges = @ranges.sort if @sort
 
     self
   end

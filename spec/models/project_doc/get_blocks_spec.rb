@@ -2,14 +2,13 @@ require 'rails_helper'
 
 RSpec.describe ProjectDoc, type: :model do
   describe 'get_blocks' do
-    subject { project_doc.send(:get_blocks, span, context_size, sort) }
+    subject { project_doc.send(:get_blocks, span, context_size) }
 
     let(:doc) { create(:doc) }
     let(:project) { create(:project) }
     let(:project_doc) { create(:project_doc, doc: doc, project: project) }
     let(:span) { nil }
     let(:context_size) { nil }
-    let(:sort) { false }
 
     it { is_expected.to be_a(ActiveRecord::AssociationRelation) }
 
@@ -62,15 +61,6 @@ RSpec.describe ProjectDoc, type: :model do
               expect(subject.first.end).to eq(37)
             end
           end
-        end
-      end
-
-      context 'with sort specified' do
-        let(:sort) { true }
-
-        it 'returns blocks sorted by begin' do
-          expect(subject.second.hid).to eq('B2')
-          expect(subject.third.hid).to eq('B3')
         end
       end
     end

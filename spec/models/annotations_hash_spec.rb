@@ -1,12 +1,16 @@
 require 'rails_helper'
 
-RSpec.describe ProjectDoc, type: :model do
-  describe '#get_annotations' do
+RSpec.describe AnnotationsHash, type: :model do
+  describe 'to_hash' do
     let!(:doc) { create(:doc) }
     let!(:project) { create(:project) }
     let!(:project_doc) { create(:project_doc, doc: doc, project: project) }
     let(:span) { nil }
-    let(:options) { false }
+    let(:context_size) { nil }
+    let(:is_sort) { false }
+    let(:is_full) { false }
+    let(:is_bag_denotations) { false }
+    let(:has_track) { false }
 
     let!(:denotation2) { create(:object_denotation, doc: doc, project: project) }
     let!(:denotation1) { create(:denotation, doc: doc, project: project) }
@@ -25,7 +29,7 @@ RSpec.describe ProjectDoc, type: :model do
       create(:attrivute, project: project, subj: relation1, obj: 'true', pred: 'negation')
     end
 
-    subject { project_doc.get_annotations(span, nil, options).as_json }
+    subject { AnnotationsHash.new(doc, span, context_size, is_sort, is_full, is_bag_denotations, [project_doc], has_track).to_hash }
 
     it { is_expected.to be_a(Hash) }
 
@@ -45,34 +49,18 @@ RSpec.describe ProjectDoc, type: :model do
     it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
     it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
 
-    context 'span is specified' do
-      let(:span) { { begin: 0, end: 4 } }
+    context 'sort option is specified' do
+      let(:is_sort) { true }
 
-      it { expect(subject[:denotations]).to include(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
-      it { expect(subject[:blocks]).to be_nil }
-      it { expect(subject[:relations]).to be_nil }
-      it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
-      it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
+      it { expect(subject[:denotations].first).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
+      it { expect(subject[:denotations].second).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
+      it { expect(subject[:blocks].first).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
+      it { expect(subject[:blocks].second).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
 
-      context 'no annotation among span' do
-        let(:span) { { begin: 100, end: 200 } }
-
-        it { expect(subject[:denotations]).to be_nil }
-        it { expect(subject[:blocks]).to be_nil }
-        it { expect(subject[:relations]).to be_nil }
-        it { expect(subject[:modifications]).to be_nil }
-        it { expect(subject[:attributes]).to be_nil }
-      end
+      # Relations are sorted by hid in string order
+      it { expect(subject[:relations].first).to eq(id: relation2.hid, pred: 'next', subj: 'B1', obj: 'B2') }
+      it { expect(subject[:relations].second).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
     end
 
-    context 'discontinuous_span option is specified' do
-      let(:options) { true }
-
-      it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }
-      it { expect(subject[:denotations].second).to eq(id: "T1", obj: 'subject', span: { begin: 0, end: 4 }) }
-      it { expect(subject[:blocks].first).to eq(id: "B2", obj: '2nd line', span: { begin: 16, end: 37 }) }
-      it { expect(subject[:blocks].second).to eq(id: "B1", obj: '1st line', span: { begin: 0, end: 14 }) }
-      it { expect(subject[:relations].first).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
-    end
   end
 end
