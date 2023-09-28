@@ -16,14 +16,10 @@ class ProjectDoc < ActiveRecord::Base
   def annotation_in(span)
     _denotations = get_denotations_in span
     _blocks = get_blocks_in span
-
-    ids = (_denotations + _blocks).pluck(:id) if span.present?
+    ids = (_denotations + _blocks).pluck(:id)
 
     _relations = get_relations_of ids
-
-    if span.present?
-      ids += _relations.pluck(:id)
-    end
+    ids += _relations.pluck(:id)
 
     Annotation.new(
       project,
