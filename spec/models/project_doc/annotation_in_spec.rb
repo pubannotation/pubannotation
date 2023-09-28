@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe ProjectDoc, type: :model do
-  describe '#get_annotations' do
+  describe '#annotatoin_in' do
     let!(:doc) { create(:doc) }
     let!(:project) { create(:project) }
     let!(:project_doc) { create(:project_doc, doc: doc, project: project) }
