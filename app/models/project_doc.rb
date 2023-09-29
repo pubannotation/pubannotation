@@ -13,7 +13,7 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def annotation_in(span, term)
+  def annotation_about(span, term)
 
     if term
       _denotations = get_denotations_in span, term

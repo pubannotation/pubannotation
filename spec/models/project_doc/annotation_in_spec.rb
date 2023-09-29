@@ -23,7 +23,7 @@ RSpec.describe ProjectDoc, type: :model do
 
     let(:span) { nil }
     let(:term) { nil }
-    subject { project_doc.annotation_in span, term }
+    subject { project_doc.annotation_about span, term }
 
     it { is_expected.to be_a(Annotation) }
 
