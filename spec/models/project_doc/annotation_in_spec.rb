@@ -22,7 +22,8 @@ RSpec.describe ProjectDoc, type: :model do
     let!(:relation2) { create(:relation, project: project, subj: block1, obj: block2, pred: 'next') }
 
     let(:span) { nil }
-    subject { project_doc.annotation_in span }
+    let(:term) { nil }
+    subject { project_doc.annotation_in span, term }
 
     it { is_expected.to be_a(Annotation) }
 
@@ -51,6 +52,17 @@ RSpec.describe ProjectDoc, type: :model do
         it { expect(subject.modifications).to be_empty }
         it { expect(subject.attributes).to be_empty }
       end
+    end
+
+    context 'term is specified' do
+      let(:term) { 'Protein' }
+
+      it { expect(subject.denotations.count).to eq(1) }
+      it { expect(subject.denotations).to include(denotation1) }
+      it { expect(subject.blocks).to be_empty }
+      it { expect(subject.relations).to be_empty }
+      it { expect(subject.modifications).to be_empty }
+      it { expect(subject.attributes).to include(attribute1) }
     end
   end
 end

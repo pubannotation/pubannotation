@@ -47,7 +47,7 @@ class AnnotationsHash
   end
 
   def annotations_in(project_doc)
-    _annotations = project_doc.annotation_in @span
+    _annotations = project_doc.annotation_in @span, nil
     _annotations.as_json(is_sort: @is_sort,
                          is_bag_denotations: @is_bag_denotations,
                          span: @span,

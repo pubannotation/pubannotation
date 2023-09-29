@@ -29,7 +29,8 @@ class Denotation < ActiveRecord::Base
 		where('denotations.id IN(?)', ids).
 		order('denotations.id ASC') 
 	}
-	
+
+
 	after_create :increment_numbers, :update_project_updated_at
 	after_update :update_project_updated_at
 	after_destroy :decrement_numbers, :update_project_updated_at

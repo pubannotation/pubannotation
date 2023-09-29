@@ -13,22 +13,41 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def annotation_in(span)
-    _denotations = get_denotations_in span
-    _blocks = get_blocks_in span
-    ids = (_denotations + _blocks).pluck(:id)
+  def annotation_in(span, term)
 
-    _relations = get_relations_of ids
-    ids += _relations.pluck(:id)
+    if term
+      _denotations = get_denotations_in span, term
+      _blocks = get_blocks_in span, term
 
-    Annotation.new(
-      project,
-      _denotations,
-      _blocks,
-      _relations,
-      get_attributes_of(ids),
-      get_modifications_of(ids)
-    )
+      ids = (_denotations + _blocks).pluck(:id)
+
+      Annotation.new(
+        project,
+        _denotations,
+        _blocks,
+        [],
+        get_attributes_of(ids),
+        []
+      )
+    else
+      _denotations = get_denotations_in span, nil
+      _blocks = get_blocks_in span, nil
+
+      ids = (_denotations + _blocks).pluck(:id)
+
+      _relations = get_relations_of ids
+      ids += _relations.pluck(:id)
+
+      Annotation.new(
+        project,
+        _denotations,
+        _blocks,
+        _relations,
+        get_attributes_of(ids),
+        get_modifications_of(ids)
+      )
+
+    end
   end
 
   def graph_uri
@@ -65,12 +84,16 @@ class ProjectDoc < ActiveRecord::Base
 
   private
 
-  def get_denotations_in(span)
-    denotations.in_project(project).in_span(span)
+  def get_denotations_in(span, term)
+    denotations.in_project(project)
+               .in_span(span)
+               .with_term(term)
   end
 
-  def get_blocks_in(span)
-    blocks.in_project(project).in_span(span)
+  def get_blocks_in(span, term)
+    blocks.in_project(project)
+          .in_span(span)
+          .with_term(term)
   end
 
   def get_relations_of(base_ids)

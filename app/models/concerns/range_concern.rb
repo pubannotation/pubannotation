@@ -12,6 +12,13 @@ module RangeConcern
       end
     end
 
+    scope :with_term, lambda { |term|
+      if term
+        joins(:attrivutes).where(attrivutes: { obj: term })
+                          .or(joins(:attrivutes).where(obj: term))
+      end
+    }
+
     scope :in_project_and_span, -> (project_id, span) do
       in_project(project_id).in_span(span)
     end
