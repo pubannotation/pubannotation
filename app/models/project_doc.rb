@@ -17,7 +17,7 @@ class ProjectDoc < ActiveRecord::Base
 
     if term
       _denotations = denotations_about span, term
-      _blocks = get_blocks_in span, term
+      _blocks = blocks_about span, term
 
       ids = (_denotations + _blocks).pluck(:id)
 
@@ -31,7 +31,7 @@ class ProjectDoc < ActiveRecord::Base
       )
     else
       _denotations = denotations_about span, nil
-      _blocks = get_blocks_in span, nil
+      _blocks = blocks_about span, nil
 
       ids = (_denotations + _blocks).pluck(:id)
 
@@ -90,7 +90,7 @@ class ProjectDoc < ActiveRecord::Base
                .with_term(term)
   end
 
-  def get_blocks_in(span, term)
+  def blocks_about(span, term)
     blocks.in_project(project)
           .in_span(span)
           .with_term(term)
