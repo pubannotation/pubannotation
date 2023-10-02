@@ -665,13 +665,14 @@ class Doc < ActiveRecord::Base
 		return tsv
 	end
 
-	def hannotations(projects, span, context_size, is_sort: false, is_full: false, is_bag_denotations: false)
+	def hannotations(projects, span, context_size,
+									 term: nil, is_sort: false, is_full: false, is_bag_denotations: false)
 		annotations_hash = if projects.present?
 												 AnnotationsHash.new self,
 																						 projects,
 																						 span,
 																						 context_size,
-																						 nil,
+																						 term,
 																						 is_sort,
 																						 is_full,
 																						 is_bag_denotations,
@@ -681,7 +682,7 @@ class Doc < ActiveRecord::Base
 																						 nil,
 																						 span,
 																						 context_size,
-																						 nil,
+																						 term,
 																						 is_sort,
 																						 is_full,
 																						 is_bag_denotations,
