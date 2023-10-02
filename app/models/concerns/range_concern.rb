@@ -14,8 +14,8 @@ module RangeConcern
 
     scope :with_term, lambda { |term|
       if term
-        joins(:attrivutes).where(attrivutes: { obj: term })
-                          .or(joins(:attrivutes).where(obj: term))
+        left_outer_joins(:attrivutes).where(attrivutes: { obj: term })
+                                     .or(left_outer_joins(:attrivutes).where(obj: term))
       end
     }
 
