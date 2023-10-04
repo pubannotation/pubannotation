@@ -6,18 +6,24 @@ RSpec.describe "Annotations", type: :request do
   describe "GET /docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations(.:format)" do
     let(:doc) { create(:doc) }
 
+    def get_annotation(source_id, begin_value = nil, end_value = nil)
+      url = "#{BASE_PATH}/#{source_id}"
+      url += "/spans/#{begin_value}-#{end_value}" if begin_value && end_value
+      get "#{url}/annotations.json"
+    end
+
     describe 'document status' do
       subject { response }
 
       context 'when document is not found' do
-        before { get "#{BASE_PATH}/123/annotations.json" }
+        before { get_annotation(123)  }
 
         it { is_expected.to have_http_status(404) }
         it { is_expected.to match_response_body({ message: 'File not found.' }.to_json) }
       end
 
       context 'when document is found' do
-        before { get "#{BASE_PATH}/#{doc.sourceid}/annotations.json" }
+        before { get_annotation(doc.sourceid) }
 
         it { is_expected.to have_http_status(200) }
         it { is_expected.to match_response_body(doc_as_json(doc)) }
@@ -28,9 +34,7 @@ RSpec.describe "Annotations", type: :request do
       let(:begin_value) { 1 }
       let(:end_value) { 2 }
 
-      before do
-        get "#{BASE_PATH}/#{doc.sourceid}/spans/#{begin_value}-#{end_value}/annotations.json"
-      end
+      before { get_annotation(doc.sourceid, begin_value, end_value) }
 
       it 'returns JSON with annotation of part of document' do
         expect(response.body).to eq({
@@ -47,7 +51,7 @@ RSpec.describe "Annotations", type: :request do
       context 'when document has annotations' do
         let(:doc) { create(:doc, :with_annotation) }
 
-        before { get "#{BASE_PATH}/#{doc.sourceid}/annotations.json" }
+        before { get_annotation(doc.sourceid) }
 
         it 'returns JSON' do
           expect(response.body).to eq({
