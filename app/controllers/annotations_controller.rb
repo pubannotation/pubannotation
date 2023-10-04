@@ -36,7 +36,7 @@ class AnnotationsController < ApplicationController
 		options = {}
 		options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
 
-		@annotations = @doc.hannotations(project, @span, context_size, is_bag_denotations: options[:discontinuous_span] == :bag)
+		@annotations = @doc.hannotations(project, @span, context_size, term: params[:terms], is_bag_denotations: options[:discontinuous_span] == :bag)
 
 		respond_to do |format|
 			format.html {render 'index'}

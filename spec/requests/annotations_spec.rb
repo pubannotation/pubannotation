@@ -6,17 +6,17 @@ RSpec.describe "Annotations", type: :request do
   describe "GET /docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations(.:format)" do
     let(:doc) { create(:doc) }
 
-    def get_annotation(source_id, begin_value = nil, end_value = nil)
+    def get_annotation(source_id, begin_value: nil, end_value: nil, terms: nil)
       url = "#{BASE_PATH}/#{source_id}"
       url += "/spans/#{begin_value}-#{end_value}" if begin_value && end_value
-      get "#{url}/annotations.json"
+      get "#{url}/annotations.json" + (terms ? "?terms=#{terms}" : "")
     end
 
     describe 'document status' do
       subject { response }
 
       context 'when document is not found' do
-        before { get_annotation(123)  }
+        before { get_annotation(123) }
 
         it { is_expected.to have_http_status(404) }
         it { is_expected.to match_response_body({ message: 'File not found.' }.to_json) }
@@ -34,7 +34,7 @@ RSpec.describe "Annotations", type: :request do
       let(:begin_value) { 1 }
       let(:end_value) { 2 }
 
-      before { get_annotation(doc.sourceid, begin_value, end_value) }
+      before { get_annotation(doc.sourceid, begin_value:, end_value:) }
 
       it 'returns JSON with annotation of part of document' do
         expect(response.body).to eq(doc_as_json(doc, 'h'))
@@ -49,6 +49,44 @@ RSpec.describe "Annotations", type: :request do
 
         it 'returns JSON' do
           expect(response.body).to eq(doc_as_json_with_annotations(doc))
+        end
+      end
+
+      context 'term is specified' do
+        let(:doc) { create(:doc, :with_annotation) }
+
+        before { get_annotation(doc.sourceid, terms: 'Protein') }
+
+        it 'returns JSON' do
+          expect(response.body).to eq({
+                                        target: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
+                                        sourcedb: 'PubMed',
+                                        sourceid: doc.sourceid,
+                                        text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
+                                        tracks: [
+                                          {
+                                            project: "TestProject",
+                                            denotations: [
+                                              {
+                                                id: "T1",
+                                                span: {
+                                                  begin: 0,
+                                                  end: 4
+                                                },
+                                                obj: "subject"
+                                              }
+                                            ],
+                                            "attributes" => [
+                                              {
+                                                "id" => "A1",
+                                                "pred" => "type",
+                                                "subj" => "T1",
+                                                "obj" => "Protein"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }.to_json)
         end
       end
     end
