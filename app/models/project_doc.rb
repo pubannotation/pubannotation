@@ -13,11 +13,11 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def annotation_about(span, term)
+  def annotation_about(span, terms)
 
-    if term
-      _denotations = denotations_about span, term
-      _blocks = blocks_about span, term
+    if terms
+      _denotations = denotations_about span, terms
+      _blocks = blocks_about span, terms
 
       ids = (_denotations + _blocks).pluck(:id)
 
@@ -84,16 +84,16 @@ class ProjectDoc < ActiveRecord::Base
 
   private
 
-  def denotations_about(span, term)
+  def denotations_about(span, terms)
     denotations.in_project(project)
                .in_span(span)
-               .with_term(term)
+               .with_terms(terms)
   end
 
-  def blocks_about(span, term)
+  def blocks_about(span, terms)
     blocks.in_project(project)
           .in_span(span)
-          .with_term(term)
+          .with_terms(terms)
   end
 
   def get_relations_of(base_ids)

@@ -22,8 +22,8 @@ RSpec.describe ProjectDoc, type: :model do
     let!(:relation2) { create(:relation, project: project, subj: block1, obj: block2, pred: 'next') }
 
     let(:span) { nil }
-    let(:term) { nil }
-    subject { project_doc.annotation_about span, term }
+    let(:terms) { nil }
+    subject { project_doc.annotation_about span, terms }
 
     it { is_expected.to be_a(Annotation) }
 
@@ -54,8 +54,8 @@ RSpec.describe ProjectDoc, type: :model do
       end
     end
 
-    context 'term is specified' do
-      let(:term) { 'Protein' }
+    context 'terms is specified' do
+      let(:terms) { ['Protein'] }
 
       it { expect(subject.denotations.count).to eq(1) }
       it { expect(subject.denotations).to include(denotation1) }
@@ -65,7 +65,7 @@ RSpec.describe ProjectDoc, type: :model do
       it { expect(subject.attributes).to include(attribute1) }
 
       context 'obj of denotation is matched' do
-        let(:term) { 'object' }
+        let(:terms) { ['object'] }
 
 
         it { expect(subject.denotations.count).to eq(1) }
@@ -77,7 +77,7 @@ RSpec.describe ProjectDoc, type: :model do
       end
 
       context 'obj of block is matched' do
-        let(:term) { '1st line' }
+        let(:terms) { ['1st line'] }
 
         it { expect(subject.denotations).to be_empty }
         it { expect(subject.blocks.count).to eq(1) }
@@ -89,7 +89,7 @@ RSpec.describe ProjectDoc, type: :model do
       end
 
       context 'obj of attribute of block is matched' do
-        let(:term) { 'true' }
+        let(:terms) { ['true'] }
 
         it { expect(subject.denotations).to be_empty }
         it { expect(subject.blocks.count).to eq(1) }
@@ -98,6 +98,19 @@ RSpec.describe ProjectDoc, type: :model do
         it { expect(subject.modifications).to be_empty }
         it { expect(subject.attributes.count).to eq(1) }
         it { expect(subject.attributes).to include(attribute3) }
+      end
+
+      context 'multiple terms are specified' do
+        let(:terms) { ['Protein', 'true'] }
+
+        it { expect(subject.denotations.count).to eq(1) }
+        it { expect(subject.denotations).to include(denotation1) }
+        it { expect(subject.blocks.count).to eq(1) }
+        it { expect(subject.blocks).to include(block1) }
+        it { expect(subject.relations).to be_empty }
+        it { expect(subject.modifications).to be_empty }
+        it { expect(subject.attributes.count).to eq(2) }
+        it { expect(subject.attributes).to include(attribute1, attribute3) }
       end
     end
   end

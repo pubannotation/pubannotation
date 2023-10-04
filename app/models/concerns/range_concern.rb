@@ -12,10 +12,10 @@ module RangeConcern
       end
     end
 
-    scope :with_term, lambda { |term|
-      if term
-        left_outer_joins(:attrivutes).where(attrivutes: { obj: term })
-                                     .or(left_outer_joins(:attrivutes).where(obj: term))
+    scope :with_terms, lambda { |terms|
+      if terms
+        left_outer_joins(:attrivutes).where(attrivutes: { obj: terms })
+                                     .or(left_outer_joins(:attrivutes).where(obj: terms))
       end
     }
 
