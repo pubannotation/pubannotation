@@ -37,13 +37,7 @@ RSpec.describe "Annotations", type: :request do
       before { get_annotation(doc.sourceid, begin_value, end_value) }
 
       it 'returns JSON with annotation of part of document' do
-        expect(response.body).to eq({
-                                      target: "http://test.pubannotation.org#{BASE_PATH}/#{doc.sourceid}",
-                                      sourcedb: 'PubMed',
-                                      sourceid: doc.sourceid,
-                                      text: "h",
-                                      tracks: []
-                                    }.to_json)
+        expect(response.body).to eq(doc_as_json(doc, 'h'))
       end
     end
 
@@ -54,105 +48,109 @@ RSpec.describe "Annotations", type: :request do
         before { get_annotation(doc.sourceid) }
 
         it 'returns JSON' do
-          expect(response.body).to eq({
-            "target" => "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
-            "sourcedb" => "PubMed",
-            "sourceid" => "#{doc.sourceid}",
-            "text" => "This is a test.\nTest are implemented.\nImplementation is difficult.",
-            "tracks" => [
-              {
-                "project" => "TestProject",
-                "denotations" => [
-                  {
-                    "id" => "T1",
-                    "span" => {
-                      "begin" => 0,
-                      "end" => 4
-                    },
-                    "obj" => "subject"
-                  },
-                  {
-                    "id" => "T2",
-                    "span" => {
-                      "begin" => 10,
-                      "end" => 14
-                    },
-                    "obj" => "object"
-                  }
-                ],
-                "blocks" => [
-                  {
-                    "id" => "B1",
-                    "span" => {
-                      "begin" => 0,
-                      "end" => 14
-                    },
-                    "obj" => "1st line"
-                  },
-                  {
-                    "id" => "B2",
-                    "span" => {
-                      "begin" => 16,
-                      "end" => 37
-                    },
-                    "obj" => "2nd line"
-                  }
-                ],
-                "relations" => [
-                  {
-                    "id" => "R1",
-                    "pred" => "predicate",
-                    "subj" => "T1",
-                    "obj" => "T2"
-                  },
-                  {
-                    "id" => "S1",
-                    "pred" => "next",
-                    "subj" => "B1",
-                    "obj" => "B2"
-                  }
-                ],
-                "attributes" => [
-                  {
-                    "id" => "A1",
-                    "pred" => "type",
-                    "subj" => "T1",
-                    "obj" => "Protein"
-                  },
-                  {
-                    "id" => "A2",
-                    "pred" => "suspect",
-                    "subj" => "B1",
-                    "obj" => "true"
-                  }
-                ],
-                "modifications" => [
-                  {
-                    "id" => "M1",
-                    "pred" => "negation",
-                    "obj" => "T1"
-                  },
-                  {
-                    "id" => "M2",
-                    "pred" => "negation",
-                    "obj" => "B1"
-                  }
-                ]
-              }
-            ]
-          }.to_json)
+          expect(response.body).to eq(doc_as_json_with_annotations(doc))
         end
       end
     end
   end
 
-  def doc_as_json(doc)
+  def doc_as_json(doc, text = nil)
+    {
+      target: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
+      sourcedb: 'PubMed',
+      sourceid: doc.sourceid,
+      text: text || "This is a test.\nTest are implemented.\nImplementation is difficult.",
+      tracks: []
+    }.to_json
+  end
+
+  def doc_as_json_with_annotations(doc)
     {
       target: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
       sourcedb: 'PubMed',
       sourceid: doc.sourceid,
       text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
-      tracks: []
+      tracks: [
+        {
+          project: "TestProject",
+          denotations: [
+            {
+              id: "T1",
+              span: {
+                begin: 0,
+                end: 4
+              },
+              obj: "subject"
+            },
+            {
+              id: "T2",
+              span: {
+                begin: 10,
+                end: 14
+              },
+              obj: "object"
+            }
+          ],
+          "blocks" => [
+            {
+              "id" => "B1",
+              "span" => {
+                "begin" => 0,
+                "end" => 14
+              },
+              "obj" => "1st line"
+            },
+            {
+              "id" => "B2",
+              "span" => {
+                "begin" => 16,
+                "end" => 37
+              },
+              "obj" => "2nd line"
+            }
+          ],
+          "relations" => [
+            {
+              "id" => "R1",
+              "pred" => "predicate",
+              "subj" => "T1",
+              "obj" => "T2"
+            },
+            {
+              "id" => "S1",
+              "pred" => "next",
+              "subj" => "B1",
+              "obj" => "B2"
+            }
+          ],
+          "attributes" => [
+            {
+              "id" => "A1",
+              "pred" => "type",
+              "subj" => "T1",
+              "obj" => "Protein"
+            },
+            {
+              "id" => "A2",
+              "pred" => "suspect",
+              "subj" => "B1",
+              "obj" => "true"
+            }
+          ],
+          "modifications" => [
+            {
+              "id" => "M1",
+              "pred" => "negation",
+              "obj" => "T1"
+            },
+            {
+              "id" => "M2",
+              "pred" => "negation",
+              "obj" => "B1"
+            }
+          ]
+        }
+      ]
     }.to_json
   end
 
