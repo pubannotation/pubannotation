@@ -1,22 +1,23 @@
 require 'rails_helper'
 
 RSpec.describe "Annotations", type: :request do
+  BASE_PATH = "/docs/sourcedb/PubMed/sourceid".freeze
+
   describe "GET /docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations(.:format)" do
     let(:doc) { create(:doc) }
-    let(:base_path) { "/docs/sourcedb/PubMed/sourceid" }
 
     describe 'document status' do
       subject { response }
 
       context 'when document is not found' do
-        before { get "#{base_path}/123/annotations.json" }
+        before { get "#{BASE_PATH}/123/annotations.json" }
 
         it { is_expected.to have_http_status(404) }
         it { is_expected.to match_response_body({ message: 'File not found.' }.to_json) }
       end
 
       context 'when document is found' do
-        before { get "#{base_path}/#{doc.sourceid}/annotations.json" }
+        before { get "#{BASE_PATH}/#{doc.sourceid}/annotations.json" }
 
         it { is_expected.to have_http_status(200) }
         it { is_expected.to match_response_body(doc_as_json(doc)) }
@@ -28,17 +29,115 @@ RSpec.describe "Annotations", type: :request do
       let(:end_value) { 2 }
 
       before do
-        get "#{base_path}/#{doc.sourceid}/spans/#{begin_value}-#{end_value}/annotations.json"
+        get "#{BASE_PATH}/#{doc.sourceid}/spans/#{begin_value}-#{end_value}/annotations.json"
       end
 
       it 'returns JSON with annotation of part of document' do
         expect(response.body).to eq({
-                                      target: "http://test.pubannotation.org#{base_path}/#{doc.sourceid}",
+                                      target: "http://test.pubannotation.org#{BASE_PATH}/#{doc.sourceid}",
                                       sourcedb: 'PubMed',
                                       sourceid: doc.sourceid,
                                       text: "h",
                                       tracks: []
                                     }.to_json)
+      end
+    end
+
+    describe 'full document annotation' do
+      context 'when document has annotations' do
+        let(:doc) { create(:doc, :with_annotation) }
+
+        before { get "#{BASE_PATH}/#{doc.sourceid}/annotations.json" }
+
+        it 'returns JSON' do
+          expect(response.body).to eq({
+            "target" => "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
+            "sourcedb" => "PubMed",
+            "sourceid" => "#{doc.sourceid}",
+            "text" => "This is a test.\nTest are implemented.\nImplementation is difficult.",
+            "tracks" => [
+              {
+                "project" => "TestProject",
+                "denotations" => [
+                  {
+                    "id" => "T1",
+                    "span" => {
+                      "begin" => 0,
+                      "end" => 4
+                    },
+                    "obj" => "subject"
+                  },
+                  {
+                    "id" => "T2",
+                    "span" => {
+                      "begin" => 10,
+                      "end" => 14
+                    },
+                    "obj" => "object"
+                  }
+                ],
+                "blocks" => [
+                  {
+                    "id" => "B1",
+                    "span" => {
+                      "begin" => 0,
+                      "end" => 14
+                    },
+                    "obj" => "1st line"
+                  },
+                  {
+                    "id" => "B2",
+                    "span" => {
+                      "begin" => 16,
+                      "end" => 37
+                    },
+                    "obj" => "2nd line"
+                  }
+                ],
+                "relations" => [
+                  {
+                    "id" => "R1",
+                    "pred" => "predicate",
+                    "subj" => "T1",
+                    "obj" => "T2"
+                  },
+                  {
+                    "id" => "S1",
+                    "pred" => "next",
+                    "subj" => "B1",
+                    "obj" => "B2"
+                  }
+                ],
+                "attributes" => [
+                  {
+                    "id" => "A1",
+                    "pred" => "type",
+                    "subj" => "T1",
+                    "obj" => "Protein"
+                  },
+                  {
+                    "id" => "A2",
+                    "pred" => "suspect",
+                    "subj" => "B1",
+                    "obj" => "true"
+                  }
+                ],
+                "modifications" => [
+                  {
+                    "id" => "M1",
+                    "pred" => "negation",
+                    "obj" => "T1"
+                  },
+                  {
+                    "id" => "M2",
+                    "pred" => "negation",
+                    "obj" => "B1"
+                  }
+                ]
+              }
+            ]
+          }.to_json)
+        end
       end
     end
   end
