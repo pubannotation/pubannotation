@@ -55,7 +55,7 @@ RSpec.describe "Annotations", type: :request do
       context 'term is specified' do
         let(:doc) { create(:doc, :with_annotation) }
 
-        before { get_annotation(doc.sourceid, terms: 'Protein') }
+        before { get_annotation(doc.sourceid, terms: 'Protein,true') }
 
         it 'returns JSON' do
           expect(response.body).to eq({
@@ -76,12 +76,28 @@ RSpec.describe "Annotations", type: :request do
                                                 obj: "subject"
                                               }
                                             ],
+                                            blocks: [
+                                              {
+                                                id: "B1",
+                                                span: {
+                                                  begin: 0,
+                                                  end: 14
+                                                },
+                                                obj: "1st line"
+                                              }
+                                            ],
                                             "attributes" => [
                                               {
                                                 "id" => "A1",
                                                 "pred" => "type",
                                                 "subj" => "T1",
                                                 "obj" => "Protein"
+                                              },
+                                              {
+                                                "id" => "A2",
+                                                "pred" => "suspect",
+                                                "subj" => "B1",
+                                                "obj" => "true"
                                               }
                                             ]
                                           }
