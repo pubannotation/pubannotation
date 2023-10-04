@@ -32,11 +32,9 @@ class AnnotationsController < ApplicationController
 		project.delete_if{|p| !p.annotations_accessible?(current_user)}
 
 		context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-
-		options = {}
-		options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
-
-		@annotations = @doc.hannotations(project, @span, context_size, term: params[:terms], is_bag_denotations: options[:discontinuous_span] == :bag)
+		terms = params[:terms].present? ? params[:terms].split(',').map{|term| term.strip} : nil
+		is_bag_denotations = params[:discontinuous_span].present? && params[:discontinuous_span] == 'bag'
+		@annotations = @doc.hannotations(project, @span, context_size, terms:, is_bag_denotations:)
 
 		respond_to do |format|
 			format.html {render 'index'}
