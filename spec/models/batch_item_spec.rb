@@ -11,17 +11,32 @@ RSpec.describe BatchItem, type: :model do
   end
 
   describe '#<<' do
-    subject { batch_item << annotation_collection }
-
     let(:batch_item) { described_class.new }
-    let(:annotation_collection) { [] }
+
+    before do
+      batch_item << AnnotationCollection.new([
+                                               { sourcedb: 'PubMed', sourceid: '001', text: 'text' },
+                                               { sourcedb: 'PubMed', sourceid: '001', text: 'text' },
+                                             ].to_json)
+
+      batch_item << AnnotationCollection.new([
+                                               { sourcedb: 'PubMed', sourceid: '002', text: 'text' },
+                                             ].to_json)
+
+      batch_item << AnnotationCollection.new([
+                                               { sourcedb: 'PMC', sourceid: 'A01', text: 'text' },
+                                             ].to_json)
+    end
 
     it 'adds an annotation collection to the transaction' do
-      expect { subject }.to change { batch_item.annotation_transaction.length }.by(1)
+      expect(batch_item.annotation_transaction.length).to eq(3)
     end
 
     it 'adds a sourcedb and sourceid to the index' do
-      expect { subject }.to change { batch_item.sourcedb_sourceids_index[annotation_collection.sourcedb].include?(annotation_collection.sourceid) }.from(false).to(true)
+      expect(batch_item.sourcedb_sourceids_index).to eq({
+                                                          'PubMed' => Set.new(%w[001 002 A01]),
+                                                          'PMC' => Set.new(%w[001 002 A01]),
+                                                        })
     end
   end
 end
