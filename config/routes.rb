@@ -51,7 +51,7 @@ Pubann::Application.routes.draw do
 	resources :editors
 
 	devise_for :users, controllers: {
-		:omniauth_callbacks => 'callbacks',
+		:omniauth_callbacks => 'users/omniauth_callbacks',
 		:confirmations => 'confirmations',
 		:sessions => 'sessions',
 		:registrations => 'users/registrations'
