@@ -18,7 +18,12 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     threads = []
 
     filenames.each_with_index do |jsonfile, i|
-      annotation_collection = AnnotationCollection.new(jsonfile)
+      json_string = File.read(jsonfile)
+      begin
+        annotation_collection = AnnotationCollection.new(json_string)
+      rescue JSON::ParserError
+        raise "[#{File.basename(jsonfile)}] JSON parse error. Not a valid JSON object."
+      end
 
       # Add annotations to transaction.
       batch_item << annotation_collection
