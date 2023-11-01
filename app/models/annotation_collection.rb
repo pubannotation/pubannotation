@@ -10,10 +10,8 @@ class AnnotationCollection
   private
 
   def parse(json_string)
-    o = JSON.parse(json_string, symbolize_names: true)
-
     # To return the annotation in an array
-    o.is_a?(Array) ? o : [o]
+    Array(JSON.parse(json_string, symbolize_names: true))
   end
 
   def set_sourcedb_and_sourceid(annotations)
