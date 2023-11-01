@@ -104,4 +104,49 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
       expect(modification2).to have_attributes(pred: 'G', obj: denotation1)
     end
   end
+
+  describe "update to multi sourceid annotations" do
+    let(:doc2) { create(:doc) }
+    let!(:project_doc2) { create(:project_doc, project: project, doc: doc2) }
+
+    let(:current) { Time.zone.local(2022, 7, 11, 10, 04, 44) }
+    let(:annotations_collection) do
+      [{ sourcedb: "PubMed", sourceid: doc.sourceid,
+         denotations: [
+           { id: "d1", span: { begin: 1, end: 2 }, obj: "A" }
+         ]
+        },
+        { sourcedb: "PubMed", sourceid: doc2.sourceid,
+          denotations: [
+            { id: "d2", span: { begin: 100, end: 200 }, obj: "B" }
+          ]
+        }]
+    end
+
+    before { invoke_service }
+
+    it "updates annotations and timestamps" do
+      expect(project).to have_attributes(
+                           denotations_num: 2,
+                           relations_num: 0,
+                           modifications_num: 0,
+                           updated_at: current,
+                           annotations_updated_at: current
+                         )
+
+      expect(project.project_docs.first).to have_attributes(
+                                              denotations_num: 1,
+                                              relations_num: 0,
+                                              modifications_num: 0,
+                                              annotations_updated_at: current
+                                            )
+
+      expect(project.project_docs.second).to have_attributes(
+                                              denotations_num: 1,
+                                              relations_num: 0,
+                                              modifications_num: 0,
+                                              annotations_updated_at: current
+                                            )
+    end
+  end
 end
