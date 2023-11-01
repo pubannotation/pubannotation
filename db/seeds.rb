@@ -1,7 +1,18 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
-#
-# Examples:
-#
-#   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
-#   Mayor.create(name: 'Emanuel', city: cities.first)
+# This seed only for development environment
+return if Rails.env.production?
+
+User.create! username: 'admin',
+             email: 'admin@pubannotatio.org',
+             password: 'abc123',
+             password_confirmation: 'abc123',
+             confirmed_at: Time.now,
+             root: true,
+             manager: true
+
+Project.create! name: 'First',
+                user: User.first
+
+Sequencer.create! name: 'PMC',
+                  url: 'http://pubmed-sequencer.pubannotation.org/?sourcedb=PMC',
+                  parameters: { 'sourceid' => '_sourceid_' },
+                  user: User.first

@@ -1,22 +1,17 @@
 class AnnotationCollection
   attr_reader :annotations, :sourcedb, :sourceid
 
-  def initialize(json_file_path)
-    @annotations = load_from json_file_path
+  def initialize(json_string)
+    @annotations = parse json_string
     set_sourcedb_and_sourceid @annotations
     validate_and_normalize! @annotations
   end
 
   private
 
-  def load_from(json_file_path)
-    json = File.read(json_file_path)
-    o = JSON.parse(json, symbolize_names: true)
-
+  def parse(json_string)
     # To return the annotation in an array
-    o.is_a?(Array) ? o : [o]
-  rescue JSON::ParserError
-    raise "[#{File.basename(json_file_path)}] JSON parse error. Not a valid JSON object."
+    Array(JSON.parse(json_string, symbolize_names: true))
   end
 
   def set_sourcedb_and_sourceid(annotations)
