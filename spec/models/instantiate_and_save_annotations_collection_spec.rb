@@ -4,12 +4,11 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
   let(:project_doc) { create(:project_doc) }
   let(:project) { project_doc.project }
   let(:doc) { project_doc.doc }
-  
-  before do
+
+  let(:invoke_service) do
     travel_to current do
       InstantiateAndSaveAnnotationsCollection.call project, annotations_collection
     end
-    
     project.reload
   end
 
@@ -17,12 +16,16 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
     let(:current) { Time.zone.local(2022, 7, 11, 10, 04, 44) }
     let(:annotations_collection) { [] }
 
-    it "sets all annotation counts to 0 and updates timestamps" do
-      expect(project.denotations_num).to eq(0)
-      expect(project.relations_num).to eq(0)
-      expect(project.modifications_num).to eq(0)
-      expect(project.updated_at).to eq(current)
-      expect(project.annotations_updated_at).to eq(current)
+    before { invoke_service }
+
+    it "resets annotations and updates timestamps" do
+      expect(project).to have_attributes(
+                           denotations_num: 0,
+                           relations_num: 0,
+                           modifications_num: 0,
+                           updated_at: current,
+                           annotations_updated_at: current
+                         )
     end
 
     it "does not create any annotations" do
@@ -56,44 +59,49 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
        }]
     end
 
-    before do
-      travel_to current do
-        InstantiateAndSaveAnnotationsCollection.call project, []
-      end
-    end
+    before { invoke_service }
 
-    it "sets all annotation counts to 0 and updates timestamps" do
-      expect(project.denotations_num).to eq(2)
-      expect(project.relations_num).to eq(2)
-      expect(project.modifications_num).to eq(2)
-      expect(project.project_docs.first.denotations_num).to eq(2)
-      expect(project.project_docs.first.relations_num).to eq(2)
-      expect(project.project_docs.first.modifications_num).to eq(2)
-      expect(project.updated_at).to eq(current)
-      expect(project.annotations_updated_at).to eq(current)
-      expect(project.project_docs.first.annotations_updated_at).to eq(current)
+    it "updates annotations and timestamps" do
+      expect(project).to have_attributes(
+                           denotations_num: 2,
+                           relations_num: 2,
+                           modifications_num: 2,
+                           updated_at: current,
+                           annotations_updated_at: current
+                         )
+
+      expect(project.project_docs.first).to have_attributes(
+                                              denotations_num: 2,
+                                              relations_num: 2,
+                                              modifications_num: 2,
+                                              annotations_updated_at: current
+                                            )
     end
 
     it 'creates annotations' do
-      expect(Denotation.first.hid).to eq('d1')
-      expect(Denotation.first.begin).to eq(1)
-      expect(Denotation.first.end).to eq(2)
-      expect(Denotation.first.obj).to eq('A')
-      expect(Denotation.second.hid).to eq('d2')
-      expect(Relation.first.hid).to eq('r1')
-      expect(Relation.first.pred).to eq('C')
-      expect(Relation.first.subj).to eq(Denotation.first)
-      expect(Relation.first.obj).to eq(Denotation.second)
-      expect(Relation.second.hid).to eq('r2')
-      expect(Attrivute.first.hid).to eq('a1')
-      expect(Attrivute.first.pred).to eq('D')
-      expect(Attrivute.first.obj).to eq('E')
-      expect(Attrivute.first.subj).to eq(Denotation.first)
-      expect(Attrivute.second.hid).to eq('a2')
-      expect(Modification.first.hid).to eq('m1')
-      expect(Modification.first.pred).to eq('F')
-      expect(Modification.first.obj).to eq(Denotation.first)
-      expect(Modification.second.hid).to eq('m2')
+      denotation1 = Denotation.find_by(hid: 'd1')
+      denotation2 = Denotation.find_by(hid: 'd2')
+
+      expect(denotation1).to have_attributes(begin: 1, end: 2, obj: 'A')
+      expect(denotation2).to have_attributes(begin: 100, end: 200, obj: 'B')
+
+      relation1 = Relation.find_by(hid: 'r1')
+      relation2 = Relation.find_by(hid: 'r2')
+
+      expect(relation1).to have_attributes(pred: 'C', subj: denotation1, obj: denotation2)
+      expect(relation2).to have_attributes(pred: 'C', subj: denotation2, obj: denotation1)
+
+      attribute1 = Attrivute.find_by(hid: 'a1')
+      attribute2 = Attrivute.find_by(hid: 'a2')
+
+      expect(attribute1).to have_attributes(pred: 'D', obj: 'E', subj: denotation1)
+      expect(attribute2).to have_attributes(pred: 'D', obj: 'E', subj: denotation2)
+
+      modification1 = Modification.find_by(hid: 'm1')
+      modification2 = Modification.find_by(hid: 'm2')
+
+      expect(modification1).to have_attributes(pred: 'F', obj: denotation1)
+      expect(modification2).to have_attributes(pred: 'G', obj: denotation1)
     end
   end
 end
