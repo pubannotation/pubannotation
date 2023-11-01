@@ -16,10 +16,6 @@ test:
   adapter: postgresql
   encoding: unicode
   database: test_database
-  username: postgres
-  password: postgres
-  host: localhost
-  port: 5432
 
 production:
   adapter: postgresql
