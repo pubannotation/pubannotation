@@ -20,7 +20,7 @@ class AnnotationsForDocument
                  having_denotations_or_blocks
   end
 
-  Result = Struct.new(:annotations_for_doc_collection, :warnings, :num_skipped)
+  Result = Data.define(:annotations_for_doc_collection, :warnings, :num_skipped)
 
   def self.find_doc_for(annotations_collection, project_id_for_skip)
     # Standardize annotations into arrays.
