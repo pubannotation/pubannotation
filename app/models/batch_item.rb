@@ -1,7 +1,7 @@
 class BatchItem
   MAX_SIZE_TRANSACTION = 5000
 
-  attr_reader :sourcedb_sourceids_index, :annotation_transaction
+  attr_reader :annotation_transaction
 
   def initialize
     @annotation_transaction = []
@@ -11,11 +11,11 @@ class BatchItem
   def <<(annotation_collection)
     @annotation_transaction << annotation_collection.annotations
 
-    sourcedb = annotation_collection.sourcedb
+    sourcedb = annotation_collection.sourcedb_sourceid_index.db
     if @sourcedb_sourceids_index[sourcedb]
-      @sourcedb_sourceids_index[sourcedb] << annotation_collection.sourceid
+      @sourcedb_sourceids_index[sourcedb].merge annotation_collection.sourcedb_sourceid_index
     else
-      @sourcedb_sourceids_index[sourcedb] = DocumentSourceIndex.new(sourcedb,[annotation_collection.sourceid])
+      @sourcedb_sourceids_index[sourcedb] = annotation_collection.sourcedb_sourceid_index
     end
   end
 

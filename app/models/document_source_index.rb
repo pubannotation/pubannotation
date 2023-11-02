@@ -15,4 +15,10 @@ class DocumentSourceIndex
   def <<(id)
     @ids << id
   end
+
+  def merge(index)
+    raise unless @db == index.db
+
+    @ids.merge index.ids
+  end
 end
