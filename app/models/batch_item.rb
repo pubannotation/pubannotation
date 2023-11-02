@@ -5,15 +5,17 @@ class BatchItem
 
   def initialize
     @annotation_transaction = []
-    @sourcedb_sourceids_index = Hash.new(Set.new)
+    @sourcedb_sourceids_index = Hash.new
   end
 
   def <<(annotation_collection)
     @annotation_transaction << annotation_collection.annotations
-    if @sourcedb_sourceids_index[annotation_collection.sourcedb].empty?
-      @sourcedb_sourceids_index[annotation_collection.sourcedb] = Set.new([annotation_collection.sourceid])
+
+    sourcedb = annotation_collection.sourcedb
+    if @sourcedb_sourceids_index[sourcedb]
+      @sourcedb_sourceids_index[sourcedb] << annotation_collection.sourceid
     else
-      @sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
+      @sourcedb_sourceids_index[sourcedb] = Set.new([annotation_collection.sourceid])
     end
   end
 
