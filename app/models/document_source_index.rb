@@ -21,4 +21,8 @@ class DocumentSourceIndex
 
     @ids.merge index.ids
   end
+
+  def ==(other)
+    @db == other.db && self.ids == other.ids
+  end
 end

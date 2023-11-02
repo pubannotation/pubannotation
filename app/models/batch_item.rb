@@ -23,11 +23,8 @@ class BatchItem
     transaction_size > MAX_SIZE_TRANSACTION
   end
 
-  def sourcedb_sourceids_index
-    @sourcedb_sourceids_index.inject({}) do |hash, (sourcedb, document_source)|
-      hash[sourcedb] = document_source.ids
-      hash
-    end
+  def sourcedb_sourceids_indexes
+    @sourcedb_sourceids_index.values
   end
 
   private
