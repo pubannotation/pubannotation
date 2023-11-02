@@ -10,7 +10,11 @@ class BatchItem
 
   def <<(annotation_collection)
     @annotation_transaction << annotation_collection.annotations
-    @sourcedb_sourceids_index[annotation_collection.sourcedb] = @sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
+    if @sourcedb_sourceids_index[annotation_collection.sourcedb].empty?
+      @sourcedb_sourceids_index[annotation_collection.sourcedb] = Set.new([annotation_collection.sourceid])
+    else
+      @sourcedb_sourceids_index[annotation_collection.sourcedb] << annotation_collection.sourceid
+    end
   end
 
   def enough?
