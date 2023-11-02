@@ -15,12 +15,19 @@ class BatchItem
     if @sourcedb_sourceids_index[sourcedb]
       @sourcedb_sourceids_index[sourcedb] << annotation_collection.sourceid
     else
-      @sourcedb_sourceids_index[sourcedb] = Set.new([annotation_collection.sourceid])
+      @sourcedb_sourceids_index[sourcedb] = DocumentSourceIndex.new(sourcedb,[annotation_collection.sourceid])
     end
   end
 
   def enough?
     transaction_size > MAX_SIZE_TRANSACTION
+  end
+
+  def sourcedb_sourceids_index
+    @sourcedb_sourceids_index.inject({}) do |hash, (sourcedb, document_source)|
+      hash[sourcedb] = Set.new document_source.ids
+      hash
+    end
   end
 
   private
