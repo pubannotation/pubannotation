@@ -17,7 +17,10 @@ RSpec.describe BatchItem, type: :model do
       before do
         batch_item << create_annotation_collection('PubMed', '001', 'text')
         batch_item << create_annotation_collection('PubMed', '002', 'text')
-        batch_item << create_annotation_collection('PMC', 'A01', 'text')
+        batch_item << AnnotationCollection.new([
+                                                 { sourcedb: 'PMC', sourceid: 'A01', text: 'text' },
+                                                 { sourcedb: 'PMC', sourceid: 'A02', text: 'text' }
+                                               ].to_json)
       end
 
       it 'adds an annotation collection to the transaction' do
@@ -27,7 +30,7 @@ RSpec.describe BatchItem, type: :model do
       it 'adds a sourcedb and sourceid to the index' do
         expect(batch_item.sourcedb_sourceids_indexes).to eq([
                                                             DocumentSourceIndex.new('PubMed', %w[001 002]),
-                                                            DocumentSourceIndex.new('PMC', ['A01'])
+                                                            DocumentSourceIndex.new('PMC', %w[A01 A02])
                                                           ])
       end
     end
