@@ -21,6 +21,7 @@ class AnnotationsForDocument
   end
 
   Result = Data.define(:annotations_for_doc_collection, :warnings, :num_skipped)
+  Source = Data.define(:db, :id)
 
   def self.find_doc_for(annotations_collection, project_id_for_skip)
     # Standardize annotations into arrays.
@@ -34,7 +35,7 @@ class AnnotationsForDocument
 
     # Find the document for the annotations.
     annotations_collection.inject(Result.new([], [], 0)) do |result, annotations|
-      source = DocumentSource.new(annotations)
+      source = Source.new(annotations.first[:sourcedb], annotations.first[:sourceid])
       doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
       annotations_for_doc = AnnotationsForDocument.new(annotations, doc)
 
