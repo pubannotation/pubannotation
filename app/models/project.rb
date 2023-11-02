@@ -414,12 +414,12 @@ class Project < ActiveRecord::Base
     project_params = project_attributes.select { |key| Project.attr_accessible[:default].include?(key) }
   end
 
-  def add_docs(sourcedb, source_ids)
+  def add_docs(index)
     # Import documents that are not in the DB.
-    docs_sequenced, messages = sequence sourcedb, source_ids
+    docs_sequenced, messages = sequence index.db, index.ids
 
     # Tie the documents to the project.
-    added_documents = tie_documents sourcedb, source_ids
+    added_documents = tie_documents index.db, index.ids
 
     [added_documents, docs_sequenced, messages]
   end

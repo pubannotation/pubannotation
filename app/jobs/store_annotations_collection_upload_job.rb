@@ -75,7 +75,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     total_num_sequenced = 0
 
     indexes.each do |index|
-      num_added, num_sequenced, messages = project.add_docs(index.db, index.ids)
+      num_added, num_sequenced, messages = project.add_docs(index)
       source_dbs_changed << sourcedb if num_added > 0
       total_num_sequenced += num_sequenced
       if @job
