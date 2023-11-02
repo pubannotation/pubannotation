@@ -25,7 +25,7 @@ class BatchItem
 
   def sourcedb_sourceids_index
     @sourcedb_sourceids_index.inject({}) do |hash, (sourcedb, document_source)|
-      hash[sourcedb] = Set.new document_source.ids
+      hash[sourcedb] = document_source.ids
       hash
     end
   end
