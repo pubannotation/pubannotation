@@ -32,12 +32,12 @@ class ValidatedAnnotations
 
   def build_index(annotations)
     annotation = annotations.shift
-    index = DocumentSourceIndex.new(annotation[:sourcedb], [annotation[:sourceid]])
+    ids = DocumentSourceIds.new(annotation[:sourcedb], [annotation[:sourceid]])
 
     annotations.each do |annotation|
-      index.merge DocumentSourceIndex.new(annotation[:sourcedb], [annotation[:sourceid]])
+      ids.merge DocumentSourceIds.new(annotation[:sourcedb], [annotation[:sourceid]])
     end
 
-    index
+    ids
   end
 end

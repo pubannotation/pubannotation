@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class DocumentSourceIndex
+class DocumentSourceIds
   attr_reader :db
 
   def initialize(db, ids)

@@ -29,8 +29,8 @@ RSpec.describe BatchItem, type: :model do
 
       it 'adds a sourcedb and sourceid to the index' do
         expect(batch_item.sourcedb_sourceids_indexes).to eq([
-                                                            DocumentSourceIndex.new('PubMed', %w[001 002]),
-                                                            DocumentSourceIndex.new('PMC', %w[A01 A02])
+                                                              DocumentSourceIds.new('PubMed', %w[001 002]),
+                                                              DocumentSourceIds.new('PMC', %w[A01 A02])
                                                           ])
       end
     end
