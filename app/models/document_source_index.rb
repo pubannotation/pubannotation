@@ -4,9 +4,7 @@ class DocumentSourceIndex
   attr_reader :index
 
   def initialize(annotations = [])
-    @index = Hash.new
-
-    build_index annotations
+    @index = build_index annotations
   end
 
   def merge(other)
@@ -26,14 +24,16 @@ class DocumentSourceIndex
   private
 
   def build_index(annotation)
-    annotation.each do |annotation|
+    annotation.inject({}) do |index, annotation|
       ids = DocumentSourceIds.new(annotation[:sourcedb], [annotation[:sourceid]])
 
-      if @index[annotation[:sourcedb]]
-        @index[annotation[:sourcedb]].merge ids
+      if index[annotation[:sourcedb]]
+        index[annotation[:sourcedb]].merge ids
       else
-        @index[annotation[:sourcedb]] = ids
+        index[annotation[:sourcedb]] = ids
       end
+
+      index
     end
   end
 end
