@@ -1,6 +1,5 @@
 # for TAO RDF indexing
-# Pubann::Application.config.ep_url = 'http://localhost:5820/'
-Pubann::Application.config.ep_url = 'https://ep.pubannotation.org/sparql'
+Pubann::Application.config.ep_url = 'http://localhost:5820/'
 Pubann::Application.config.ep_database = 'PubAnnotation'
 Pubann::Application.config.ep_user = 'user'
 Pubann::Application.config.ep_password = 'password'
