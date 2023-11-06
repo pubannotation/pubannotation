@@ -8,7 +8,7 @@ class ValidatedAnnotations
     parsed_json = parse json_string
     validate! parsed_json
     @annotations = normalize parsed_json
-    @sourcedb_sourceid_index = build_index @annotations
+    @sourcedb_sourceid_index = DocumentSourceIndex.new @annotations
   end
 
   private
@@ -28,16 +28,5 @@ class ValidatedAnnotations
 
   def normalize(annotations)
     annotations.map { AnnotationUtils.normalize! _1 }
-  end
-
-  def build_index(annotations)
-    annotation = annotations.shift
-    ids = DocumentSourceIds.new(annotation[:sourcedb], [annotation[:sourceid]])
-
-    annotations.each do |annotation|
-      ids.merge DocumentSourceIds.new(annotation[:sourcedb], [annotation[:sourceid]])
-    end
-
-    ids
   end
 end

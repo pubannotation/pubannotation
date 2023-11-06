@@ -5,18 +5,12 @@ class BatchItem
 
   def initialize
     @annotation_transaction = []
-    @sourcedb_sourceids_index = Hash.new
+    @sourcedb_sourceids_index = DocumentSourceIndex.new
   end
 
   def <<(annotation_collection)
     @annotation_transaction << annotation_collection.annotations
-
-    sourcedb = annotation_collection.sourcedb_sourceid_index.db
-    if @sourcedb_sourceids_index[sourcedb]
-      @sourcedb_sourceids_index[sourcedb].merge annotation_collection.sourcedb_sourceid_index
-    else
-      @sourcedb_sourceids_index[sourcedb] = annotation_collection.sourcedb_sourceid_index
-    end
+    @sourcedb_sourceids_index.merge annotation_collection.sourcedb_sourceid_index
   end
 
   def enough?
