@@ -449,24 +449,9 @@ class DocsController < ApplicationController
 
 			raise ArgumentError, "You cannot import documents from itself." if source_project == project
 
-			docids = source_project.docs.pluck(:id) - project.docs.pluck(:id)
+			ImportDocsJob.perform_later(project, source_project)
 
-			if docids.empty?
-				"There is no document to import from the project, '#{params["select_project"]}'."
-			else
-				num_source_docs = source_project.docs.count
-				num_skip = num_source_docs - docids.length
-
-				docids_file = Tempfile.new("docids")
-				docids_file.puts docids
-				docids_file.close
-
-				ImportDocsJob.perform_later(project, docids_file.path)
-
-				m = ""
-				m += "#{num_skip} docs were skipped due to duplication." if num_skip > 0
-				m += "The task, 'import documents to the project', is created."
-			end
+			"The task, 'import documents to the project', is created."
 		rescue => e
 			e.message
 		end
