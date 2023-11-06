@@ -15,9 +15,9 @@ RSpec.describe BatchItem, type: :model do
 
     context 'when adding multiple annotation collections' do
       before do
-        batch_item << create_annotation_collection('PubMed', '001', 'text')
-        batch_item << create_annotation_collection('PubMed', '002', 'text')
-        batch_item << AnnotationCollection.new([
+        batch_item << create_validated_annotations('PubMed', '001', 'text')
+        batch_item << create_validated_annotations('PubMed', '002', 'text')
+        batch_item << ValidatedAnnotations.new([
                                                  { sourcedb: 'PMC', sourceid: 'A01', text: 'text' },
                                                  { sourcedb: 'PMC', sourceid: 'A02', text: 'text' }
                                                ].to_json)
@@ -37,8 +37,8 @@ RSpec.describe BatchItem, type: :model do
   end
 
   # Helper method to DRY up the code
-  def create_annotation_collection(sourcedb, sourceid, text)
-    AnnotationCollection.new([
+  def create_validated_annotations(sourcedb, sourceid, text)
+    ValidatedAnnotations.new([
                                { sourcedb: sourcedb, sourceid: sourceid, text: text }
                              ].to_json)
   end

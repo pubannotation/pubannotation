@@ -1,4 +1,7 @@
-class AnnotationCollection
+# frozen_string_literal: true
+
+# Validated annotations in JSON format received from external sources
+class ValidatedAnnotations
   attr_reader :annotations, :sourcedb_sourceid_index
 
   def initialize(json_string)
