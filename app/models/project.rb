@@ -891,10 +891,6 @@ class Project < ActiveRecord::Base
     "#{identifier}-spans.trig"
   end
 
-  def annotations_rdf_filename
-    "#{identifier}-annotations-rdf.zip"
-  end
-
   def identifier
     name.gsub(' ', '_')
   end
