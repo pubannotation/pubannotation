@@ -36,6 +36,10 @@ module Pubann
     config.assets.enabled = true
 
     # Setting for Psych 4 later
-    config.active_record.yaml_column_permitted_classes = [ActiveSupport::HashWithIndifferentAccess]
+    config.active_record.yaml_column_permitted_classes = [
+      Symbol,
+      ActiveSupport::HashWithIndifferentAccess,
+      ActionController::Parameters
+    ]
   end
 end
