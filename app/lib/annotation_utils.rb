@@ -229,9 +229,9 @@ module AnnotationUtils
 					## span
 					if a[:span].present?
 						if a[:span].class == Array
-							a[:span].each{|s| validate_span(s, text_length)}
+							a[:span].each{|s| validate_span(a, s, text_length)}
 						else
-							validate_span(a[:span], text_length)
+							validate_span(a, a[:span], text_length)
 						end
 					else
 						if a[:begin].present? && a[:end].present?
@@ -247,7 +247,7 @@ module AnnotationUtils
 			end
 		end
 
-		def validate_span(span, text_length)
+		def validate_span(a, span, text_length)
 			raise ArgumentError, "The span of a denotation must have both 'begin' and 'end': #{a}" unless span[:begin].present? && span[:end].present?
 			raise ArgumentError, "The begin and end of a span must have integer values: #{a}" unless (span[:begin].is_a? Integer) && (span[:end].is_a? Integer)
 			raise ArgumentError, "the begin value must be between 0 and #{text_length - 1} (text length - 1): #{a}" unless span[:begin].between?(0, text_length - 1)
