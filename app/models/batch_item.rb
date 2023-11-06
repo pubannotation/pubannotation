@@ -17,7 +17,7 @@ class BatchItem
     transaction_size > MAX_SIZE_TRANSACTION
   end
 
-  def sourcedb_sourceids_indexes
+  def source_ids_list
     @sourcedb_sourceids_index.values
   end
 

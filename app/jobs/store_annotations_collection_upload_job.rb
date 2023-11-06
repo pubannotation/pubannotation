@@ -65,17 +65,17 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
   private
 
   def execute_batch(project, options, batch_item)
-    num_sequenced = store_docs(project, batch_item.sourcedb_sourceids_indexes)
+    num_sequenced = store_docs(project, batch_item.source_ids_list)
     @is_sequenced = true if num_sequenced > 0
     StoreAnnotationsCollection.new(project, batch_item.annotation_transaction, options, @job).call
   end
 
-  def store_docs(project, indexes)
+  def store_docs(project, ids_list)
     source_dbs_changed = []
     total_num_sequenced = 0
 
-    indexes.each do |index|
-      num_added, num_sequenced, messages = project.add_docs(index)
+    ids_list.each do |ids|
+      num_added, num_sequenced, messages = project.add_docs(ids)
       source_dbs_changed << sourcedb if num_added > 0
       total_num_sequenced += num_sequenced
       if @job
