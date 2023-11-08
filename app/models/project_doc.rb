@@ -14,40 +14,22 @@ class ProjectDoc < ActiveRecord::Base
   }
 
   def annotation_about(span, terms)
+    _denotations = denotations_about span, terms
+    _blocks = blocks_about span, terms
 
-    if terms
-      _denotations = denotations_about span, terms
-      _blocks = blocks_about span, terms
+    ids = (_denotations + _blocks).pluck(:id)
 
-      ids = (_denotations + _blocks).pluck(:id)
+    _relations = get_relations_of ids, terms
+    ids += _relations.pluck(:id)
 
-      Annotation.new(
-        project,
-        _denotations,
-        _blocks,
-        [],
-        get_attributes_of(ids),
-        []
-      )
-    else
-      _denotations = denotations_about span, nil
-      _blocks = blocks_about span, nil
-
-      ids = (_denotations + _blocks).pluck(:id)
-
-      _relations = get_relations_of ids
-      ids += _relations.pluck(:id)
-
-      Annotation.new(
-        project,
-        _denotations,
-        _blocks,
-        _relations,
-        get_attributes_of(ids),
-        get_modifications_of(ids)
-      )
-
-    end
+    Annotation.new(
+      project,
+      _denotations,
+      _blocks,
+      _relations,
+      get_attributes_of(ids),
+      get_modifications_of(ids, terms)
+    )
   end
 
   def graph_uri
@@ -96,7 +78,9 @@ class ProjectDoc < ActiveRecord::Base
           .with_terms(terms)
   end
 
-  def get_relations_of(base_ids)
+  def get_relations_of(base_ids, terms)
+    return [] if terms.present?
+
     relations.among_denotations(base_ids)
   end
 
@@ -104,7 +88,9 @@ class ProjectDoc < ActiveRecord::Base
     attrivutes.among_entities(base_ids)
   end
 
-  def get_modifications_of(base_ids)
+  def get_modifications_of(base_ids, terms)
+    return [] if terms.present?
+
     modifications.among_entities(base_ids)
   end
 end
