@@ -19,7 +19,7 @@ class ProjectDoc < ActiveRecord::Base
 
     ids = (_denotations + _blocks).pluck(:id)
 
-    _relations = get_relations_of ids, terms
+    _relations = relations_about ids, terms
     ids += _relations.pluck(:id)
 
     Annotation.new(
@@ -28,7 +28,7 @@ class ProjectDoc < ActiveRecord::Base
       _blocks,
       _relations,
       get_attributes_of(ids),
-      get_modifications_of(ids, terms)
+      modifications_about(ids, terms)
     )
   end
 
@@ -78,7 +78,7 @@ class ProjectDoc < ActiveRecord::Base
           .with_terms(terms)
   end
 
-  def get_relations_of(base_ids, terms)
+  def relations_about(base_ids, terms)
     return [] if terms.present?
 
     relations.among_denotations(base_ids)
@@ -88,7 +88,7 @@ class ProjectDoc < ActiveRecord::Base
     attrivutes.among_entities(base_ids)
   end
 
-  def get_modifications_of(base_ids, terms)
+  def modifications_about(base_ids, terms)
     return [] if terms.present?
 
     modifications.among_entities(base_ids)
