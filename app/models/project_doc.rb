@@ -27,7 +27,7 @@ class ProjectDoc < ActiveRecord::Base
       _denotations,
       _blocks,
       _relations,
-      get_attributes_of(ids),
+      attributes_about(ids, predicates),
       modifications_about(ids, terms, predicates)
     )
   end
@@ -86,8 +86,12 @@ class ProjectDoc < ActiveRecord::Base
     relations.among_denotations(base_ids)
   end
 
-  def get_attributes_of(base_ids)
-    attrivutes.among_entities(base_ids)
+  def attributes_about(base_ids, predicates)
+    if predicates
+      attrivutes.among_entities(base_ids).where(pred: predicates)
+    else
+      attrivutes.among_entities(base_ids)
+    end
   end
 
   def modifications_about(base_ids, terms, predicates)

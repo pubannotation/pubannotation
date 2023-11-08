@@ -30,6 +30,16 @@ class Denotation < ActiveRecord::Base
 		order('denotations.id ASC') 
 	}
 
+	scope :with_predicates, lambda { |predicates|
+		if predicates
+			if predicates.include?('denotes')
+				left_outer_joins(:attrivutes).where(attrivutes: { pred: predicates })
+																		 .or(left_outer_joins(:attrivutes))
+			else
+				left_outer_joins(:attrivutes).where(attrivutes: { pred: predicates })
+			end
+		end
+	}
 
 	after_create :increment_numbers, :update_project_updated_at
 	after_update :update_project_updated_at

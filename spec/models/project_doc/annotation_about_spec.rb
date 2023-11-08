@@ -139,6 +139,18 @@ RSpec.describe ProjectDoc, type: :model do
         it { expect(subject.attributes).to include(attribute1) }
         it { expect(subject.attributes).to include(attribute3) }
       end
+
+      context 'denotes is specified' do
+        let(:predicates) { ['denotes'] }
+
+        it { expect(subject.denotations.count).to eq(2) }
+        it { expect(subject.denotations).to include(denotation1) }
+        it { expect(subject.denotations).to include(denotation2) }
+        it { expect(subject.blocks).to be_empty }
+        it { expect(subject.relations).to be_empty }
+        it { expect(subject.modifications).to be_empty }
+        it { expect(subject.attributes).to be_empty }
+      end
     end
   end
 end

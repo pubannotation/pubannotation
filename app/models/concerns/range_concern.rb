@@ -19,12 +19,6 @@ module RangeConcern
       end
     }
 
-    scope :with_predicates, lambda { |predicates|
-      if predicates
-        left_outer_joins(:attrivutes).where(attrivutes: { pred: predicates })
-      end
-    }
-
     scope :in_project_and_span, -> (project_id, span) do
       in_project(project_id).in_span(span)
     end
