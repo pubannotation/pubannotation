@@ -2,6 +2,10 @@
 
 # A class that collects annotations for a document.
 class AnnotationsHash
+  # @param is_bag_denotations [Boolean] If true, discontinuous spans into bagging model format.
+  # See discontinuous spans at http://www.pubannotation.org/docs/annotation-format/ for more information.
+  #
+  # @param has_track [Boolean] If true, multiple project annotations are set to the track property.
   # Annotations may belong to multiple projects.
   # When putting annotations from multiple projects into the hash, the has_track option should be enabled.
   # Otherwise, only the annotation of the first project will be put into the hash.
