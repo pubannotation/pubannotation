@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe ProjectDoc, type: :model do
   describe 'get_denotations' do
-    subject { project_doc.send(:denotations_about, span, nil) }
+    subject { project_doc.send(:denotations_about, span, nil, nil) }
 
     let(:doc) { create(:doc) }
     let(:project) { create(:project) }

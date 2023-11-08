@@ -23,7 +23,8 @@ RSpec.describe ProjectDoc, type: :model do
 
     let(:span) { nil }
     let(:terms) { nil }
-    subject { project_doc.annotation_about span, terms }
+    let(:predicates) { nil }
+    subject { project_doc.annotation_about span, terms, predicates }
 
     it { is_expected.to be_a(Annotation) }
 
@@ -112,6 +113,18 @@ RSpec.describe ProjectDoc, type: :model do
         it { expect(subject.attributes.count).to eq(2) }
         it { expect(subject.attributes).to include(attribute1, attribute3) }
       end
+    end
+
+    context 'predicates is specified' do
+      let(:predicates) { ['type'] }
+
+      it { expect(subject.denotations.count).to eq(1) }
+      it { expect(subject.denotations).to include(denotation1) }
+      it { expect(subject.blocks).to be_empty }
+      it { expect(subject.relations).to be_empty }
+      it { expect(subject.modifications).to be_empty }
+      it { expect(subject.attributes.count).to eq(1) }
+      it { expect(subject.attributes).to include(attribute1) }
     end
   end
 end

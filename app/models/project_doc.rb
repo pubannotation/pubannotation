@@ -13,13 +13,13 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def annotation_about(span, terms)
-    _denotations = denotations_about span, terms
-    _blocks = blocks_about span, terms
+  def annotation_about(span, terms, predicates)
+    _denotations = denotations_about span, terms, predicates
+    _blocks = blocks_about span, terms, predicates
 
     ids = (_denotations + _blocks).pluck(:id)
 
-    _relations = relations_about ids, terms
+    _relations = relations_about ids, terms, predicates
     ids += _relations.pluck(:id)
 
     Annotation.new(
@@ -28,7 +28,7 @@ class ProjectDoc < ActiveRecord::Base
       _blocks,
       _relations,
       get_attributes_of(ids),
-      modifications_about(ids, terms)
+      modifications_about(ids, terms, predicates)
     )
   end
 
@@ -66,20 +66,22 @@ class ProjectDoc < ActiveRecord::Base
 
   private
 
-  def denotations_about(span, terms)
+  def denotations_about(span, terms, predicates)
     denotations.in_project(project)
                .in_span(span)
                .with_terms(terms)
+               .with_predicates(predicates)
   end
 
-  def blocks_about(span, terms)
+  def blocks_about(span, terms, predicates)
     blocks.in_project(project)
           .in_span(span)
           .with_terms(terms)
+          .with_predicates(predicates)
   end
 
-  def relations_about(base_ids, terms)
-    return [] if terms.present?
+  def relations_about(base_ids, terms, predicates)
+    return [] if terms.present? || predicates.present?
 
     relations.among_denotations(base_ids)
   end
@@ -88,8 +90,8 @@ class ProjectDoc < ActiveRecord::Base
     attrivutes.among_entities(base_ids)
   end
 
-  def modifications_about(base_ids, terms)
-    return [] if terms.present?
+  def modifications_about(base_ids, terms, predicates)
+    return [] if terms.present? || predicates.present?
 
     modifications.among_entities(base_ids)
   end
