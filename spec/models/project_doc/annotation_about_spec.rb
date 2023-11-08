@@ -102,7 +102,7 @@ RSpec.describe ProjectDoc, type: :model do
       end
 
       context 'multiple terms are specified' do
-        let(:terms) { ['Protein', 'true'] }
+        let(:terms) { %w[Protein true] }
 
         it { expect(subject.denotations.count).to eq(1) }
         it { expect(subject.denotations).to include(denotation1) }
