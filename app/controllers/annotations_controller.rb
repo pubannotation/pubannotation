@@ -33,8 +33,9 @@ class AnnotationsController < ApplicationController
 
 		context_size = params[:context_size].present? ? params[:context_size].to_i : 0
 		terms = params[:terms].present? ? params[:terms].split(',').map{|term| term.strip} : nil
+		predicates = params[:predicates].present? ? params[:predicates].split(',').map{|predicate| predicate.strip} : nil
 		is_bag_denotations = params[:discontinuous_span].present? && params[:discontinuous_span] == 'bag'
-		@annotations = @doc.hannotations(project, @span, context_size, terms:, is_bag_denotations:)
+		@annotations = @doc.hannotations(project, @span, context_size, terms:, predicates:, is_bag_denotations:)
 
 		respond_to do |format|
 			format.html {render 'index'}
