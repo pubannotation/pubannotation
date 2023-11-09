@@ -31,14 +31,14 @@ class Denotation < ActiveRecord::Base
 	}
 
 	scope :with_predicates, lambda { |predicates|
-		if predicates
-			if predicates.include?('denotes')
-				left_outer_joins(:attrivutes).where(attrivutes: { pred: predicates })
-																		 .or(left_outer_joins(:attrivutes))
-			else
-				left_outer_joins(:attrivutes).where(attrivutes: { pred: predicates })
-			end
-		end
+		return unless predicates
+
+		query = left_outer_joins(:attrivutes)
+							.where(attrivutes: { pred: predicates })
+
+		query = query.or(left_outer_joins(:attrivutes)) if predicates.include?('denotes')
+
+		query
 	}
 
 	after_create :increment_numbers, :update_project_updated_at
