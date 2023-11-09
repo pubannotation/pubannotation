@@ -87,11 +87,11 @@ class ProjectDoc < ActiveRecord::Base
   end
 
   def attributes_about(base_ids, predicates)
-    if predicates
-      attrivutes.among_entities(base_ids).where(pred: predicates)
-    else
-      attrivutes.among_entities(base_ids)
-    end
+    query = attrivutes.among_entities(base_ids)
+
+    query = query.where(pred: predicates) if predicates
+
+    query
   end
 
   def modifications_about(base_ids, terms, predicates)
