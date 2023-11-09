@@ -68,7 +68,6 @@ RSpec.describe ProjectDoc, type: :model do
       context 'obj of denotation is matched' do
         let(:terms) { ['object'] }
 
-
         it { expect(subject.denotations.count).to eq(1) }
         it { expect(subject.denotations).to include(denotation2) }
         it { expect(subject.blocks).to be_empty }
@@ -163,6 +162,44 @@ RSpec.describe ProjectDoc, type: :model do
         it { expect(subject.relations).to be_empty }
         it { expect(subject.modifications).to be_empty }
         it { expect(subject.attributes.count).to eq(1) }
+      end
+    end
+
+    context 'terms and predicates are specified' do
+      let(:terms) { ['Protein'] }
+      let(:predicates) { ['type'] }
+
+      it { expect(subject.denotations.count).to eq(1) }
+      it { expect(subject.denotations).to include(denotation1) }
+      it { expect(subject.blocks).to be_empty }
+      it { expect(subject.relations).to be_empty }
+      it { expect(subject.modifications).to be_empty }
+      it { expect(subject.attributes.count).to eq(1) }
+      it { expect(subject.attributes).to include(attribute1) }
+
+      context 'suspect is specified as predicate' do
+        let(:predicates) { ['suspect'] }
+
+        it { expect(subject.denotations).to be_empty }
+        it { expect(subject.blocks).to be_empty }
+        it { expect(subject.relations).to be_empty }
+        it { expect(subject.modifications).to be_empty }
+        it { expect(subject.attributes).to be_empty }
+      end
+
+      context 'multiple terms and predicates are specified' do
+        let(:terms) { %w[Protein true] }
+        let(:predicates) { %w[type suspect] }
+
+        it { expect(subject.denotations.count).to eq(1) }
+        it { expect(subject.denotations).to include(denotation1) }
+        it { expect(subject.blocks.count).to eq(1) }
+        it { expect(subject.blocks).to include(block1) }
+        it { expect(subject.relations).to be_empty }
+        it { expect(subject.modifications).to be_empty }
+        it { expect(subject.attributes.count).to eq(2) }
+        it { expect(subject.attributes).to include(attribute1) }
+        it { expect(subject.attributes).to include(attribute3) }
       end
     end
   end
