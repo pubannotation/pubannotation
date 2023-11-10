@@ -427,6 +427,8 @@ en:
       repository: repository
       documentation: documentation
       about: about
+    confirm_dangerous_process:
+      "Dangerous Process: Please confirm your decision. Once you proceed, it cannot be undone."
     annotations:
       index:
         confirm_destroy_all: Are you sure? All the annotations will be deleted.

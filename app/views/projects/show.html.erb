@@ -17,7 +17,18 @@
 <% end %>
 
 <fieldset class="pane description">
-<legend>Description</legend>
+<legend>
+	Project info
+	<% if user_signed_in? -%>
+		<% if @project.editable?(current_user) -%>
+			<%= button :edit, edit_project_path(@project.name), 'Edit project info' -%>
+		<% end -%>
+
+		<% if @project.destroyable?(current_user) -%>
+			<%= button_destroy @project.name, 'Delete the project' %>
+		<% end -%>
+	<% end %>
+</legend>
 <% if @project.description.present? -%>
 	<div><%= @project.description.html_safe %></div>
 <% end -%>
@@ -53,15 +64,6 @@
 		</tr>
 	<% end %>
 </table>
-<% if user_signed_in? -%>
-	<% if @project.editable?(current_user) -%>
-		<%= link_to t('views.shared.edit'), edit_project_path(@project.name), class: :button -%>
-	<% end -%>
-
-	<% if @project.destroyable?(current_user) -%> 
-		<%= link_to t('views.shared.delete'), @project.name, method: :delete, data: { confirm: t('views.projects.confirm_delete') }, class: :button %>
-	<% end -%>
-<% end %>
 </fieldset>
 
 <% if @project.sample.present? -%>

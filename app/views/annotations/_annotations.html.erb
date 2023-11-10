@@ -1,7 +1,8 @@
 <% project = Project.find_by_name(annotations[:project]) %>
-
 <section>
-	<h2><%= link_to project.name, project_path(project.name) -%></h2>
+	<% unless params.has_key? :project_id %>
+		<h2><%= link_to project.name, project_path(project.name) -%></h2>
+	<% end %>
 
 	<% if annotations.present? -%>
 		<% annotations[:text] = body unless annotations[:text].present? -%>

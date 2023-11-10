@@ -4,7 +4,10 @@
 <% end -%>
 
 <section>
-<h1>Evaluators</h1>
+<h1>
+	Evaluators
+	<%= button :create, new_evaluator_path, 'Create a new evaluator' %>
+</h1>
 
 <%=
 	grid(@evaluators_grid) do |g|
@@ -34,5 +37,4 @@
 	end
 -%>
 
-<%= link_to 'Create a new evaluator', new_evaluator_path, {:class=> 'control button'} %>
 </section>

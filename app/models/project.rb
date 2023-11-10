@@ -466,6 +466,10 @@ class Project < ActiveRecord::Base
     doc
   end
 
+  def add_doc!(sourcedb, sourceid)
+    add_doc(sourcedb, sourceid) || raise("Could not add the document to the project.")
+  end
+
   def delete_doc(doc)
     raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
     delete_doc_annotations(doc)

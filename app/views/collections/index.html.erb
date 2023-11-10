@@ -8,7 +8,7 @@
 	<%= link_to t('activerecord.models.collection').pluralize.capitalize.html_safe, collections_path %>
 
 	<% if user_signed_in?%>
-		<%= link_to t('views.shared.create'), new_collection_path, {:class=> 'control button'} %>
+		<%= button :create, new_collection_path, 'Create a new collection' %>
 	<% end %>
 </h1>
 <div class="projects-list show-when-wide">

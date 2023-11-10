@@ -113,6 +113,7 @@ class AnnotationsController < ApplicationController
 		end
 	end
 
+
 	# POST /annotations
 	# POST /annotations.json
 	def create
@@ -123,66 +124,107 @@ class AnnotationsController < ApplicationController
 			head 401 and return
 		end
 
-		begin
-			# use unsafe params for flexible paramater passing
-			unsafe_params = params.permit!.to_hash.deep_symbolize_keys!
+		# use unsafe params for flexible paramater passing
+		unsafe_params = params.permit!.to_hash.deep_symbolize_keys!
 
-			project = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "There is no such project in your management." unless project.present?
 
-			annotations = if unsafe_params[:annotations]
-				unsafe_params[:annotations].to_hash.to_json
-			elsif unsafe_params[:text].present?
-				{
-					text: unsafe_params[:text],
-					denotations: unsafe_params[:denotations].present? ? unsafe_params[:denotations] : nil,
-					blocks: unsafe_params[:blocks].present? ? unsafe_params[:blocks] : nil,
-					relations: unsafe_params[:relations].present? ? unsafe_params[:relations] : nil,
-					attributes: unsafe_params[:attributes].present? ? unsafe_params[:attributes] : nil,
-					modification: unsafe_params[:modification].present? ? unsafe_params[:modification] : nil,
-				}.delete_if{|k, v| v.nil?}
+		##########
+		# determine the project
+		##########
+		project = begin
+			if unsafe_params.has_key? :project_id
+				# if a project is specified in the path, it should exists and accessible. Otherwise an exception should be thrown.
+				_project = Project.editable(current_user).find_by! name: unsafe_params[:project_id]
 			else
-				raise ArgumentError, t('controllers.annotations.create.no_annotation')
+				# if a project is specified in the annotation, better to use it
+				_project = Project.editable(current_user).find_by_name(unsafe_params[:project]) if unsafe_params.has_key? :project
+
+				# return _project if present. Otherwise return the default project of the current user
+				_project || _project = current_user.default_project
 			end
+		rescue ActiveRecord::RecordNotFound => e
+			raise "No project by the name exists under your management."
+		end
 
-			annotations[:sourcedb] = params[:sourcedb]
-			annotations[:sourceid] = params[:sourceid]
 
-			annotations = AnnotationUtils.normalize!(annotations)
-
-			options = {}
-			options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
-			options[:prefix] = params[:prefix] if params[:prefix].present?
-			options[:span] = {begin: params[:begin].to_i, end: params[:end].to_i} if params[:begin].present? && params[:end].present?
-
-			doc = project.docs.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			unless doc.present?
-				doc = project.add_doc(params[:sourcedb], params[:sourceid])
-				unless doc == nil
-					expire_fragment("sourcedb_counts_#{project.name}")
-					expire_fragment("count_docs_#{project.name}")
-					expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
-				end
+		##########
+		# determine the document
+		##########
+		doc = if params[:sourcedb] && params[:sourceid]
+			_doc = project.docs.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid])
+			if _doc.nil?
+				_doc = project.add_doc!(params[:sourcedb], params[:sourceid])
+				expire_fragment("sourcedb_counts_#{project.name}")
+				expire_fragment("count_docs_#{project.name}")
+				expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
 			end
-			raise "Could not add the document to the project." unless doc.present?
+			_doc
+		else
+			raise "Text is missing." unless params.has_key? :text
 
-			doc.set_ascii_body if params[:encoding] == 'ascii'
-			msgs = project.save_annotations!(annotations, doc, options)
-			notice = "annotations saved."
-			notice += "\n" + msgs.join("\n") unless msgs.empty?
+			# Create a doc
+			doc_hash = {body: params[:text]}
+			doc_hash[:source] = params[:source] if params[:source].present?
+			doc_hash[:divisions] = params[:divisions] if params[:divisions].present?
+			doc_hash[:typesettings] = params[:typesettings] if params[:typesettings].present?
 
-			respond_to do |format|
-				format.html {redirect_back fallback_location: root_path, notice: notice}
-				format.json {render json: annotations, status: :created}
-			end
+			doc_hash = Doc.hdoc_normalize!(doc_hash, current_user, current_user.root?)
+			docs_saved, messages = Doc.store_hdocs([doc_hash])
+			raise IOError, "Could not create the document: #{messages.join("\n")}" if messages.present?
 
-		rescue => e
-			respond_to do |format|
-				format.html {redirect_to (project.present? ? project_path(project.name) : home_path), notice: e.message}
-				format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
-			end
+			_doc = docs_saved.first
+			_doc.projects << project
+			expire_fragment("sourcedb_counts_#{project.name}")
+			expire_fragment("count_docs_#{project.name}")
+			expire_fragment("count_#{_doc.sourcedb}_#{project.name}")
+
+			_doc
+		end
+
+
+		##########
+		# determine the annotation
+		##########
+		annotations = if unsafe_params[:annotations]
+			unsafe_params[:annotations].to_hash.to_json
+		elsif unsafe_params[:text].present?
+			{
+				text: unsafe_params[:text],
+				denotations: unsafe_params[:denotations].present? ? unsafe_params[:denotations] : nil,
+				blocks: unsafe_params[:blocks].present? ? unsafe_params[:blocks] : nil,
+				relations: unsafe_params[:relations].present? ? unsafe_params[:relations] : nil,
+				attributes: unsafe_params[:attributes].present? ? unsafe_params[:attributes] : nil,
+				modification: unsafe_params[:modification].present? ? unsafe_params[:modification] : nil,
+			}.delete_if{|k, v| v.nil?}
+		else
+			raise ArgumentError, t('controllers.annotations.create.no_annotation')
+		end
+
+		annotations = AnnotationUtils.normalize!(annotations)
+
+
+		options = {}
+		options[:mode] = params[:mode].present? ? params[:mode] : 'replace'
+		options[:prefix] = params[:prefix] if params[:prefix].present?
+		options[:span] = {begin: params[:begin].to_i, end: params[:end].to_i} if params[:begin].present? && params[:end].present?
+
+		doc.set_ascii_body if params[:encoding] == 'ascii'
+		msgs = project.save_annotations!(annotations, doc, options)
+		notice = "annotations saved."
+		notice += "\n" + msgs.join("\n") unless msgs.empty?
+
+		respond_to do |format|
+			format.html {redirect_back fallback_location: root_path, notice: notice}
+			format.json {render json: annotations, status: :created}
+		end
+
+	rescue => e
+		respond_to do |format|
+			format.html {redirect_to (project.present? ? project_path(project.name) : home_path), notice: e.message}
+			format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
 		end
 	end
+
 
 	def align
 		begin

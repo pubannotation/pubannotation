@@ -47,8 +47,9 @@
 			destroy_annotations_project_sourcedb_sourceid_docs_path
 		end
 	-%>
-	<%= form_tag(destroy_path, method: :delete, style: 'display:inline') do%>
-		<%= submit_tag t('views.shared.delete_all'), :data => { confirm: t('views.annotations.index.confirm_destroy_all', :class => 'control button') } %>
-	<% end %>
+	<span class='tab-bar'></span>
+	<span class='tab-bar'>
+		<%= button_destroy destroy_path, 'Delete all the annotations' %>
+	</span>
 <% end %>
 </h2>

@@ -4,7 +4,10 @@
 <% end -%>
 
 <section>
-<h1>Editors</h1>
+<h1>
+	Editors
+	<%= button :create, new_editor_path, 'Create a new editor' %>
+</h1>
 <p>Below is a list of annotation editors which are interoperable with PubAnnotation.</p>
 
 <%=
@@ -25,5 +28,4 @@
 	end
 -%>
 
-<%= link_to 'Create a new editor', new_editor_path, {:class=> 'control button'} %>
 </section>

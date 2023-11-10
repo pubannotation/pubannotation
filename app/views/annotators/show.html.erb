@@ -11,10 +11,9 @@
 		<%= badge_private(@annotator.is_public).html_safe %>
 
 		<% if @annotator.changeable?(current_user) -%>
-			<%= link_to 'Edit', edit_annotator_path(@annotator), class: 'button' %>
-			<%= link_to 'Destroy', @annotator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+			<%= button :edit, edit_annotator_path(@annotator), 'Edit' %>
+			<%= button_destroy @annotator, 'Delete' %>
 		<% end %>
-		<%= link_to 'List', annotators_path, class: 'button' %>
 	</h1>
 
 	<% if @annotator.description.present? %>

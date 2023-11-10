@@ -5,31 +5,35 @@
 <% end %>
 
 <section>
-	<h1>
-		User '<%= @user.username %>'
-		<% if @user == current_user %>
-			<%= link_to 'Edit', edit_user_registration_path, :class => :button %>
-		<% end %>
-	</h1>
-	
-	<% if @user == current_user %>
-		<table>
-		<tr>
-		<th>E-mail</th>
-		<td><%= @user.email -%></td>
-		</tr>
-		<tr>
-		<th>Last login</th>
-		<td><%= @user.last_sign_in_at -%></td>
-		</tr>
-		</table>
-	<% end %>
+	<%= render :partial => 'titlebar' -%>
 
-	<section>
-		<h2>
+	<fieldset class="pane">
+		<legend>
+			User info
+			<% if @user == current_user %>
+				<%= button(:edit, edit_user_registration_path, 'Edit user information') if @user == current_user -%>
+			<% end %>
+		</legend>
+
+		<% if @user == current_user %>
+			<table>
+			<tr>
+			<th>E-mail</th>
+			<td><%= @user.email -%></td>
+			</tr>
+			<tr>
+			<th>Last login</th>
+			<td><%= @user.last_sign_in_at -%></td>
+			</tr>
+			</table>
+		<% end %>
+	</fieldset>
+
+	<fieldset class="pane">
+		<legend>
 			Collections
-			<%= link_to 'create', new_collection_path, {class: 'control button'} if @user == current_user %>
-		</h2>
+			<%= button(:create, new_collection_path, 'Create a new collection') if @user == current_user %>
+		</legend>
 
 		<%=
 			grid(@collections_grid) do |g|
@@ -62,13 +66,13 @@
 
 			end
 		-%>
-	</section>
+	</fieldset>
 
-	<section>
-		<h2>
+	<fieldset class="pane">
+		<legend>
 			Projects
-			<%= link_to 'create', new_project_path, {class: 'control button'} if @user == current_user %>
-		</h2>
+			<%= button(:create, new_project_path, 'Create a new project') if @user == current_user %>
+		</legend>
 
 		<%=
 			grid(@projects_grid) do |g|
@@ -110,13 +114,13 @@
 
 			end
 		-%>
-	</section>
+	</fieldset>
 
-	<section>
-		<h2>
+	<fieldset class="pane">
+		<legend>
 			Automatic annotators
-			<%= link_to 'create', new_annotator_path, {class: 'control button'} if @user == current_user %>
-		</h2>
+			<%= button(:create, new_annotator_path, 'Create a new annotator') if @user == current_user %>
+		</legend>
 
 		<%=
 			grid(@annotators_grid) do |g|
@@ -139,13 +143,13 @@
 				end
 			end
 		-%>
-	</section>
+	</fieldset>
 
-	<section>
-		<h2>
+	<fieldset class="pane">
+		<legend>
 			Editors
-			<%= link_to 'create', new_editor_path, {class: 'control button'} if @user == current_user %>
-		</h2>
+			<%= button(:create, new_editor_path, 'Create a new editor') if @user == current_user %>
+		</legend>
 
 		<%=
 			grid(@editors_grid) do |g|
@@ -168,15 +172,15 @@
 				end
 			end
 		-%>
-	</section>
+	</fieldset>
 
 	<% if @user == current_user && current_user.root? %>
-		<section>
-			<h2>
+		<fieldset class="pane">
+			<legend>
 				Jobs
 				(for admin)
 				<%=  link_to 'sidekiq', home_path + 'sidekiq', class: 'button' %>
-			</h2>
+			</legend>
 
 			<table>
 				<tr>
@@ -231,7 +235,7 @@
 
 				end
 			-%>
-		</section>
+		</fieldset>
 	<% end %>
 
 </section>

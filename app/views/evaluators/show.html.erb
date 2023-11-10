@@ -9,6 +9,10 @@
 		<%= @evaluator.name %>
 		<%= button_home(@evaluator.home) -%>
 		<%= badge_public(@evaluator.is_public).html_safe %>
+		<% if @evaluator.changeable?(current_user) -%>
+			<%= button :edit, edit_evaluator_path(@evaluator), 'Edit' %>
+			<%= button_destroy @evaluator, 'Delete' %>
+		<% end %>
 	</h1>
 
 	<% if @evaluator.description.present? %>
@@ -32,10 +36,4 @@
 			<td><%= @evaluator.user.username %></td>
 		</tr>
 	</table>
-
-	<% if @evaluator.changeable?(current_user) -%>
-		<%= link_to 'Edit', edit_evaluator_path(@evaluator), class: 'button' %>
-		<%= link_to 'Destroy', @evaluator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
-	<% end %>
-	<%= link_to 'List', evaluators_path, class: 'button' %>
 </section>

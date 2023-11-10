@@ -1,4 +1,4 @@
-<%= render :partial => 'docs/path'-%>
+<%= render :partial => 'annotations/path'-%>
 <section>
 	<%= render :partial => 'projects/titlebar' -%>
 	<section>
@@ -6,7 +6,11 @@
 		<section>
 			<%= render :partial => 'annotations/titlebar_in_project' -%>
 			<section>
-				<%= render :partial => 'annotations/annotations', locals: {annotations:@annotations, doc: @doc, body: @annotations[:text]} -%>
+				<% if @annotations[:denotations].present? -%>
+					<%= render :partial => 'annotations/annotations', locals: {annotations:@annotations, doc: @doc, body: @annotations[:text]} -%>
+				<% else -%>
+					<%= t('controllers.shared.not_exists', model: t('views.shared.annotation')) %>
+				<% end -%>
 			</section>
 		</section>
 	</section>

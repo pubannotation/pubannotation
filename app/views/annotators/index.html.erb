@@ -4,7 +4,10 @@
 <% end -%>
 
 <section>
-<h1>Annotators</h1>
+<h1>
+	Annotators
+	<%= button :create, new_annotator_path, 'Create a new annotator' %>
+</h1>
 <p>Below is a list of pre-registered, automatic annotation services which are interoperable with PubAnnotation.</p>
 <p>If you do not know an applicable annotation service to your purpose, you may want to take a look at <a href="http://pubdictionaries.org">PubDictionaries</a>, which is a highly customizable, dictionary-based text annotation service.</p>
 
@@ -29,5 +32,4 @@
 	end
 -%>
 
-<%= link_to 'Create a new annotator', new_annotator_path, {:class=> 'control button'} %>
 </section>

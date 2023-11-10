@@ -118,6 +118,8 @@ Pubann::Application.routes.draw do
 		end
 	end
 
+	resources :annotations, only: [:create]
+
 	resources :projects do
 		get 'spans/sql' => 'spans#sql'
 		get 'relations/sql' => 'relations#sql'

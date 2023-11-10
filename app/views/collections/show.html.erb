@@ -8,7 +8,26 @@
 <%= render :partial => 'titlebar' -%>
 
 <fieldset class="pane description">
-	<legend>Description</legend>
+	<legend>
+		Collection info
+		<% if user_signed_in? -%>
+			<% if @collection.editable?(current_user) -%>
+				<%= button :edit, edit_collection_path(@collection.name), 'Edit' -%>
+			<% end -%>
+
+			<% if @collection.destroyable?(current_user) -%>
+				<%= button_destroy @collection.name, 'Delete' %>
+			<% end -%>
+
+			<% if current_user.root? %>
+				<%= link_to t('views.docs.rdfize_annotations'), create_annotations_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
+				<%= link_to t('views.docs.rdfize_annotations') + ' (forced)', create_annotations_rdf_collection_path(@collection.name, {forced: true}), method: :post, class: 'button' -%>
+				<%= link_to t('views.docs.rdfize_spans'), create_spans_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
+			<% end %>
+
+		<% end %>
+	</legend>
+
 	<% if @collection.description.present? -%>
 		<div><%= @collection.description.html_safe %></div>
 	<% end -%>
@@ -20,24 +39,6 @@
 			<td><%= collection_maintainer_link(@collection) %></td>
 		</tr>
 	</table>
-
-	<% if user_signed_in? -%>
-		<% if @collection.editable?(current_user) -%>
-			<%= link_to t('views.shared.edit'), edit_collection_path(@collection.name), class: :button -%>
-		<% end -%>
-
-		<% if @collection.destroyable?(current_user) -%>
-			<%= link_to t('views.shared.delete'), @collection.name, method: :delete, data: { confirm: t('views.projects.confirm_delete') }, class: :button %>
-		<% end -%>
-
-		<% if current_user.root? %>
-			<br/>
-			<%= link_to t('views.docs.rdfize_annotations'), create_annotations_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
-			<%= link_to t('views.docs.rdfize_annotations') + ' (forced)', create_annotations_rdf_collection_path(@collection.name, {forced: true}), method: :post, class: 'button' -%>
-			<%= link_to t('views.docs.rdfize_spans'), create_spans_rdf_collection_path(@collection.name), method: :post, class: 'button' -%>
-		<% end %>
-
-	<% end %>
 </fieldset>
 
 <fieldset class="pane projects">
@@ -117,12 +118,12 @@
 				link_to content_tag(:i, '', class: "fa fa-#{shape}", "aria-hidden" => "true"), toggle_secondary_collection_project_path(@collection.name, project.name), method: :put, class: :short_button, title: 'Check for it to be included in RDFization'
 			end
 			g.column do |project|
-				link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove this project from the collection'
+				link_to content_tag(:i, '', class: "fa fa-sign-out", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove this project from the collection'
 			end
 		elsif @collection.is_open
 			g.column do |project|
 				if project.editable?(current_user)
-					link_to content_tag(:i, '', class: "fa fa-minus", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove this project from the collection'
+					link_to content_tag(:i, '', class: "fa fa-sign-out", "aria-hidden" => "true"), collection_project_path(@collection.name, project.name), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :short_button, title: 'Remove this project from the collection'
 				else
 					''
 				end

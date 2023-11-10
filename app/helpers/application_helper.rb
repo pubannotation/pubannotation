@@ -1,6 +1,27 @@
 # encoding: UTF-8
 module ApplicationHelper
 
+	def button(type, path, title)
+		icon = case type
+		when :edit
+			'edit'
+		when :create
+			'plus-square'
+		when :delete
+			'minus-square'
+		when :destroy
+			'bomb'
+		else
+			raise 'Button of unknown type'
+		end
+
+		link_to fa_icon(icon), path, title: title
+	end
+
+	def button_destroy(path, title)
+		link_to fa_icon('trash'), path, method: :delete, title: title, data: { confirm: t('views.confirm_dangerous_process') }
+	end
+
 	def button_home(url)
 		# link_to t('activerecord.attributes.project.reference'), @project.reference, :class => 'home_button' if @project.reference.present?
 		link_to image_tag('home-24.png', alt: 'Home', title: 'Home', class: 'home_button'), url, :class => 'home_button' if url.present?

@@ -8,7 +8,12 @@
 	<h1>
 		<%= @editor.name %>
 		<%= button_home(@editor.home) -%>
-		<%= badge_public(@editor.is_public).html_safe %>
+		<%= badge_private(@editor.is_public).html_safe %>
+
+		<% if @editor.changeable?(current_user) -%>
+			<%= button :edit, edit_editor_path(@editor), 'Edit' %>
+			<%= button_destroy @editor, 'Delete' %>
+		<% end %>
 	</h1>
 
 	<% if @editor.description.present? %>
@@ -34,9 +39,4 @@
 
 	</table>
 
-	<% if @editor.changeable?(current_user) -%>
-		<%= link_to 'Edit', edit_editor_path(@editor), class: 'button' %>
-		<%= link_to 'Destroy', @editor, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
-	<% end %>
-	<%= link_to 'List', editors_path, class: 'button' %>
 </section>

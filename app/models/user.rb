@@ -55,6 +55,18 @@ class User < ActiveRecord::Base
 		manager
 	end
 
+	def default_project
+		@default_project ||= projects.find_by(name: default_project_name) || Project.create!(name: default_project_name, user: self, accessibility: 2, process: 1)
+	end
+
+	def default_project_name
+		@defult_project_name ||= "_annotations_by_#{identifier}"
+	end
+
+	def identifier
+		username.tr(' ', '_')
+	end
+
 	def check_invalid_character
 		if username =~/(\/|\?|\#|\%)/
 			errors.add(:username, I18n.t('errors.messages.invalid_character_included'))

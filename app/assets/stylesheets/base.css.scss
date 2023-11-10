@@ -1,5 +1,13 @@
 @import 'variables';
 
+body {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-family: Meiryo, "メイリオ", "MS PGothic","MS Pゴシック", osaka, Verdana, Geneva, sans-serif;
+  font-size: small;
+}
+
 .meta {
 	font-weight: normal;
 	color: #888888;
@@ -63,6 +71,7 @@ div.project-title h1 .badge {
 .pane {
 	margin: 5px;
 	padding: 5px 20px;
+	background-color: #eff;
 
 	legend {
 		font-size: medium;
@@ -102,9 +111,19 @@ section {
 	padding: 5px 5px 0 5px;
 }
 
-.project-title, .collection-title, h1, h2, h3, h4 {
+.page-title-box, h1, h2, h3, h4 {
 	margin: 8px 0 8px -5px;
 	font-family: sans-serif;
+}
+
+.page-title-box {
+	display: inline-block;
+	position: relative;
+	padding: 4px 8px 4px 4px;
+	border-style: ridge;
+	border-width: 5px;
+	font-size: x-large;
+	font-weight: bold;
 }
 
 h1 {

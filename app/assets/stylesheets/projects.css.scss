@@ -1,19 +1,6 @@
 @import 'variables';
 
-.wice-grid-title-row {
-	th:last-of-type {
-		width: 1.8em;
-	}
-}
-
 .project-title {
-	display: inline-block;
-	position: relative;
-	padding: 4px 8px 4px 4px;
-	border-style: ridge;
-	border-width: 5px;
-	font-size: x-large;
-	font-weight: bold;
 	background: repeating-linear-gradient(
 		45deg,
 		#a0adec,
@@ -23,6 +10,11 @@
 	);
 }
 
+.wice-grid-title-row {
+	th:last-of-type {
+		width: 1.8em;
+	}
+}
 
 #grid_filter_row {
 	input,select {

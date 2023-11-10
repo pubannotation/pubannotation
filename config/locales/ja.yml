@@ -410,6 +410,8 @@ ja:
       repository: レポジトリ
       documentation: 使用案内
       about: 紹介
+    confirm_dangerous_process:
+      "危険な処理です。本当によろしいですか？実行後は元に戻せません。"
     annotations:
       index:
         confirm_destroy_all: "関連するインスタンス、リレーションも全て削除されますがよろしいですか？"

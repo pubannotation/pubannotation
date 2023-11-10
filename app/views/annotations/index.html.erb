@@ -1,10 +1,4 @@
-<% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to "docs", docs_path %>
-	> <%= link_to t('views.shared.a_doc_id', :sourcedb => @doc.sourcedb, :sourceid => @doc.sourceid), doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) %>
-	> annotations
-<% end %>
-
+<%= render :partial => 'annotations/path'-%>
 <section>
 	<%= render :partial => 'docs/titlebar' -%>
 	<section>
