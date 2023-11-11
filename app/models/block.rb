@@ -27,7 +27,13 @@ class Block < ActiveRecord::Base
 		where('blocks.id IN(?)', ids).
 		order('blocks.id ASC') 
 	}
-	
+
+	scope :with_predicates, lambda { |predicates|
+		if predicates
+			left_outer_joins(:attrivutes).where(attrivutes: { pred: predicates })
+		end
+	}
+
 	after_create :increment_numbers, :update_project_updated_at
 	after_update :update_project_updated_at
 	after_destroy :decrement_numbers, :update_project_updated_at

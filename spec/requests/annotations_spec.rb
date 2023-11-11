@@ -6,10 +6,10 @@ RSpec.describe "Annotations", type: :request do
   describe "GET /docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/:begin-:end/annotations(.:format)" do
     let(:doc) { create(:doc) }
 
-    def get_annotation(source_id, begin_value: nil, end_value: nil, terms: nil)
+    def get_annotation(source_id, begin_value: nil, end_value: nil, terms: nil, predicates: nil)
       url = "#{BASE_PATH}/#{source_id}"
       url += "/spans/#{begin_value}-#{end_value}" if begin_value && end_value
-      get "#{url}/annotations.json" + (terms ? "?terms=#{terms}" : "")
+      get "#{url}/annotations.json" + (terms ? "?terms=#{terms}" : "") + (predicates ? "&predicates=#{predicates}" : "")
     end
 
     describe 'document status' do
@@ -105,8 +105,48 @@ RSpec.describe "Annotations", type: :request do
                                       }.to_json)
         end
       end
+
+      context 'terms and predicates are specified' do
+        let(:doc) { create(:doc, :with_annotation) }
+
+        before { get_annotation(doc.sourceid, terms: 'Protein,true', predicates: 'type') }
+
+        it 'returns JSON' do
+          expect(response.body).to eq({
+                                        target: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
+                                        sourcedb: 'PubMed',
+                                        sourceid: doc.sourceid,
+                                        text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
+                                        tracks: [
+                                          {
+                                            project: "TestProject",
+                                            denotations: [
+                                              {
+                                                id: "T1",
+                                                span: {
+                                                  begin: 0,
+                                                  end: 4
+                                                },
+                                                obj: "subject"
+                                              }
+                                            ],
+                                            "attributes" => [
+                                              {
+                                                "id" => "A1",
+                                                "pred" => "type",
+                                                "subj" => "T1",
+                                                "obj" => "Protein"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }.to_json)
+        end
+      end
     end
+
   end
+
 
   def doc_as_json(doc, text = nil)
     {

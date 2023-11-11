@@ -13,41 +13,23 @@ class ProjectDoc < ActiveRecord::Base
     offset(offset).limit(per)
   }
 
-  def annotation_about(span, terms)
+  def annotation_about(span, terms, predicates)
+    _denotations = denotations_about span, terms, predicates
+    _blocks = blocks_about span, terms, predicates
 
-    if terms
-      _denotations = denotations_about span, terms
-      _blocks = blocks_about span, terms
+    ids = (_denotations + _blocks).pluck(:id)
 
-      ids = (_denotations + _blocks).pluck(:id)
+    _relations = relations_about ids, terms, predicates
+    ids += _relations.pluck(:id)
 
-      Annotation.new(
-        project,
-        _denotations,
-        _blocks,
-        [],
-        get_attributes_of(ids),
-        []
-      )
-    else
-      _denotations = denotations_about span, nil
-      _blocks = blocks_about span, nil
-
-      ids = (_denotations + _blocks).pluck(:id)
-
-      _relations = get_relations_of ids
-      ids += _relations.pluck(:id)
-
-      Annotation.new(
-        project,
-        _denotations,
-        _blocks,
-        _relations,
-        get_attributes_of(ids),
-        get_modifications_of(ids)
-      )
-
-    end
+    Annotation.new(
+      project,
+      _denotations,
+      _blocks,
+      _relations,
+      attributes_about(ids, predicates),
+      modifications_about(ids, terms, predicates)
+    )
   end
 
   def graph_uri
@@ -84,27 +66,37 @@ class ProjectDoc < ActiveRecord::Base
 
   private
 
-  def denotations_about(span, terms)
+  def denotations_about(span, terms, predicates)
     denotations.in_project(project)
                .in_span(span)
                .with_terms(terms)
+               .with_predicates(predicates)
   end
 
-  def blocks_about(span, terms)
+  def blocks_about(span, terms, predicates)
     blocks.in_project(project)
           .in_span(span)
           .with_terms(terms)
+          .with_predicates(predicates)
   end
 
-  def get_relations_of(base_ids)
+  def relations_about(base_ids, terms, predicates)
+    return [] if terms.present? || predicates.present?
+
     relations.among_denotations(base_ids)
   end
 
-  def get_attributes_of(base_ids)
-    attrivutes.among_entities(base_ids)
+  def attributes_about(base_ids, predicates)
+    query = attrivutes.among_entities(base_ids)
+
+    query = query.where(pred: predicates) if predicates
+
+    query
   end
 
-  def get_modifications_of(base_ids)
+  def modifications_about(base_ids, terms, predicates)
+    return [] if terms.present? || predicates.present?
+
     modifications.among_entities(base_ids)
   end
 end

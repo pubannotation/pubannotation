@@ -666,13 +666,15 @@ class Doc < ActiveRecord::Base
 	end
 
 	def hannotations(projects, span, context_size,
-									 terms: nil, is_sort: false, is_full: false, is_bag_denotations: false)
+									 terms: nil, predicates: nil,
+									 is_sort: false, is_full: false, is_bag_denotations: false)
 		annotations_hash = if projects.present?
 												 AnnotationsHash.new self,
 																						 projects,
 																						 span,
 																						 context_size,
 																						 terms,
+																						 predicates,
 																						 is_sort,
 																						 is_full,
 																						 is_bag_denotations,
@@ -683,6 +685,7 @@ class Doc < ActiveRecord::Base
 																						 span,
 																						 context_size,
 																						 terms,
+																						 predicates,
 																						 is_sort,
 																						 is_full,
 																						 is_bag_denotations,
