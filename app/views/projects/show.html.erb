@@ -77,11 +77,9 @@
 <fieldset class="pane documents">
 	<legend>
 		<%= t('activerecord.models.doc').pluralize.capitalize %>
+		<span class='info'>(<%= number_with_delimiter(docs_count, :delimiter => ',') %>)</span>
 	</legend>
-
-		<% cache("sourcedb_counts_#{@project.name}", skip_digest: true) do -%>
-			<%= render :partial => "docs/sourcedb_counts" -%>
-		<% end %>
+		<%= render :partial => "docs/sourcedb_counts" -%>
 
 		<table class="vertical">
 		<% if user_signed_in? && @project.editable?(current_user) %>
@@ -111,7 +109,8 @@
 
 <fieldset class="pane annotations">
 	<legend>
-		Annotations <span class='info'>(<%= number_with_delimiter(annotations_count_helper(@project, @doc, @span), :delimiter => ',') %>)</span>
+		Annotations
+		<span class='info'>(<%= number_with_delimiter(annotations_count_helper(@project, @doc, @span), :delimiter => ',') %>)</span>
 	</legend>
 
 	<table class="vertical">

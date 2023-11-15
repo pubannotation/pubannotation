@@ -1,9 +1,11 @@
 <table style="font-size:smaller">
 	<%
-		docs_counts = sourcedb_count(current_user, @project)
+		docs_counts = sourcedb_counts(@project)
 		sourcedbs = docs_counts.keys.sort{|a, b| docs_counts[b] <=> docs_counts[a]}
 	%>
 	<% sourcedbs.each do |sourcedb| -%>
+		<% next if docs_counts[sourcedb] == 0 %>
+		<% next unless @project || Doc::SOURCEDBS.include?(sourcedb) %>
 		<%
 			index_path, open_path = if @project.nil?
 				[doc_sourcedb_index_path(sourcedb), open_docs_path]

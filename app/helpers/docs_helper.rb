@@ -23,26 +23,27 @@ module DocsHelper
 	def docs_count
 		count = if @project
 			if @sourcedb
-				@project.docs.where(sourcedb: @sourcedb).count
+				@project.docs_stat[@sourcedb]
 			else
-				@project.docs.count #if count < 1000
+				@project.docs_count
 			end
 		else
 			if @sourcedb
-				Doc.where(sourcedb: @sourcedb).count
+				Project.docs_stat[@sourcedb]
 			else
-				Doc.docs_count(current_user)
+				Project.docs_count
 			end
 		end
 		number_with_delimiter(count, :delimiter => ',')
 	end
 
-	def sourcedb_count(user, project)
-		counts = if project.nil?
-			# Doc.count_per_sourcedb(user)
-			Doc.count_per_sourcedb(nil)
+	def sourcedb_counts(project = nil)
+		if project.nil?
+			# Project.docs_stat.present? ? Project.docs_stat : Project.docs_stat_update
+			Project.docs_stat_update
 		else
-			project.docs.select(:sourcedb).group(:sourcedb).count
+			project.docs_stat.present? ? project.docs_stat : project.docs_stat_update
+			# project.docs_stat_update
 		end
 	end
 

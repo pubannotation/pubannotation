@@ -29,8 +29,7 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	SOURCEDBS = ["PubMed", "PMC", "FirstAuthors", 'GrayAnatomy', 'CORD-19']
-
+	SOURCEDBS = ['PubMed', 'PMC', 'GrayAnatomy']
 
 	def self.search_docs(attributes = {})
 		filter_condition = []
@@ -79,13 +78,8 @@ class Doc < ActiveRecord::Base
 
 	has_many :denotations, dependent: :destroy
 	has_many :blocks, dependent: :destroy
-
-	has_many :subcatrels, class_name: 'Relation', :through => :denotations, :source => :subrels
-
-	has_many :denotation_attributes, class_name: 'Attrivute', :through => :denotations, :source => :attrivutes
-
-	has_many :catmods, class_name: 'Modification', :through => :denotations, :source => :modifications
-	has_many :subcatrelmods, class_name: 'Modification', :through => :subcatrels, :source => :modifications
+	has_many :relations, dependent: :destroy
+	has_many :attrivutes, dependent: :destroy
 
 	has_many :project_docs, dependent: :destroy
 	has_many :projects, through: :project_docs,
@@ -246,22 +240,6 @@ class Doc < ActiveRecord::Base
 		result
 	end
 
-	def self.store_hdoc(hdoc)
-		hdoc[:text] = hdoc[:body] if !hdoc[:text] && hdoc[:body]
-
-		doc = Doc.new(
-			{
-				body: hdoc[:text],
-				sourcedb: hdoc[:sourcedb],
-				sourceid: hdoc[:sourceid],
-				source: hdoc[:source_url]
-			}
-		)
-
-		doc.save!
-		doc
-	end
-
 	def store_divisions(hdivisions)
 		return [] if hdivisions.nil?
 
@@ -302,22 +280,47 @@ class Doc < ActiveRecord::Base
 		typesettings
 	end
 
+	def self.store_hdoc!(hdoc)
+		hdoc[:text] = hdoc[:body] if !hdoc[:text] && hdoc[:body]
+
+		doc = nil
+		ActiveRecord::Base.transaction do
+			doc = Doc.create!(
+				{
+					body: hdoc[:text],
+					sourcedb: hdoc[:sourcedb],
+					sourceid: hdoc[:sourceid],
+					source: hdoc[:source_url]
+				}
+			)
+			doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
+			doc.store_typesettings(hdoc[:typesettings]) if hdoc.has_key? :typesettings
+		end
+
+		Project.docs_stat_increment!(doc.sourcedb)
+		Project.docs_count_increment!
+
+		doc
+	end
+
 	def self.store_hdocs(hdocs)
 		docs_saved = []
 		messages = []
 
 		hdocs.each do |hdoc|
-			ActiveRecord::Base.transaction do
-				doc = store_hdoc(hdoc)
-				doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
-				doc.store_typesettings(hdoc[:typesettings]) if hdoc.has_key? :typesettings
-				docs_saved << doc
-			rescue => e
-				messages << {sourcedb:hdoc[:sourcedb], sourceid:hdoc[:sourceid], body:e.message}
-			end
+			doc = store_hdoc!(hdoc)
+			docs_saved << doc
+		rescue => e
+			messages << {sourcedb:hdoc[:sourcedb], sourceid:hdoc[:sourceid], body:e.message}
 		end
 
 		[docs_saved, messages]
+	end
+
+	def self.sequence_and_store_doc!(sourcedb, sourceid)
+		result = sequence_docs(sourcedb, [sourceid])
+		raise result[:messages].join("\n") unless result[:docs].present?
+		doc = store_hdoc!(result[:docs].first)
 	end
 
 	def self.sequence_and_store_docs(sourcedb, sourceids)
@@ -375,18 +378,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def reset_count_denotations
-		ActiveRecord::Base.connection.exec_query "UPDATE docs SET (denotations_num) = (SELECT count(*) FROM denotations WHERE denotations.doc_id = #{id}) WHERE docs.id = #{id}"
-	end
-
-	def reset_count_relations
-		ActiveRecord::Base.connection.exec_query "UPDATE docs SET (relations_num) = (SELECT count(*) FROM relations INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type='Denotation' WHERE denotations.doc_id = #{id}) WHERE docs.id = #{id}"
-	end
-
-	def reset_count_modifications
-		ActiveRecord::Base.connection.exec_query "UPDATE docs SET (modifications_num) = row((SELECT count(*) FROM modifications INNER JOIN denotations ON modifications.obj_id = denotations.id AND modifications.obj_type = 'Denotation' WHERE denotations.doc_id = #{id}) + (SELECT count(*) FROM modifications INNER JOIN relations on modifications.obj_id = relations.id AND modifications.obj_type = 'Relation' INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotations' WHERE denotations.doc_id = #{id})) WHERE docs.id = #{id}"
-	end
-
 	def get_slices(max_size, span = nil)
 		text = get_text(span)
 		length = text.length
@@ -419,7 +410,7 @@ class Doc < ActiveRecord::Base
 
 	# returns relations count which belongs to project and doc
 	def project_relations_num(project_id)
-		count = Relation.project_relations_num(project_id, subcatrels)
+		ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{project_id} AND doc_id=#{id}"
 	end
 	
 	def same_sourceid_denotations_num
@@ -501,18 +492,28 @@ class Doc < ActiveRecord::Base
 
 	def get_annotation_hids(project_id, span = nil)
 		denotation_hids = denotations.in_project_and_span(project_id, span).pluck(:hid)
-		return [] if denotation_hids.empty?
+		block_hids = blocks.in_project_and_span(project_id, span).pluck(:hid)
 
-		base_ids = span.nil? ? nil : denotations.in_project_and_span(project_id, span).pluck(:id)
+		return [] if denotation_hids.empty? && block_hids.empty?
+
+		denotation_ids = denotations.in_project_and_span(project_id, span).pluck(:id)
+		block_ids = blocks.in_project_and_span(project_id, span).pluck(:id)
+
+		base_ids = span.nil? ? nil : denotation_ids + block_ids
 
 		relation_hids = get_relation_hids(project_id, base_ids)
 
 		base_ids += get_relation_ids(project_id, base_ids) unless span.nil?
 
 		attribute_hids = get_attribute_hids(project_id, base_ids)
-		modification_hids = get_modification_hids(project_id, base_ids)
 
-		denotation_hids + relation_hids + attribute_hids + modification_hids
+		denotation_hids + block_hids + relation_hids + attribute_hids
+	end
+
+	def copy_annotations(source_project, destin_project, options = {})
+		if options[:mode] == 'replace'
+			
+		end
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
@@ -549,23 +550,18 @@ class Doc < ActiveRecord::Base
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_relation_ids(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
-		subcatrels.in_project(project_id).among_denotations(base_ids).pluck(:id)
+		relations.in_project(project_id).among_denotations(base_ids).pluck(:id)
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_relation_hids(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
-		subcatrels.in_project(project_id).among_denotations(base_ids).pluck(:hid)
+		relations.in_project(project_id).among_denotations(base_ids).pluck(:hid)
 	end
 
 	def get_attribute_hids(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
-		self.denotation_attributes.in_project(project_id).among_entities(base_ids).pluck(:hid)
-	end
-
-	def get_modification_hids(project_id = nil, base_ids = nil)
-		return [] if base_ids == []
-		self.catmods.in_project(project_id).among_entities(base_ids).pluck(:hid) + self.subcatrelmods.in_project(project_id).among_entities(base_ids).pluck(:hid)
+		attributes.in_project(project_id).among_entities(base_ids).pluck(:hid)
 	end
 
 	def get_text(span = nil, context_size = nil)
@@ -818,30 +814,27 @@ class Doc < ActiveRecord::Base
 	end
 
 	def self.update_numbers
-		Doc.all.each do |d|
-			d.update_numbers
-		end
-	end
+		# the number of projects of each doc
+		ActiveRecord::Base.connection.update <<~SQL.squish
+			UPDATE docs
+			SET	projects_num=(SELECT count(*) FROM project_docs WHERE project_docs.doc_id=docs.id)
+		SQL
 
-	def update_numbers
-		# numbers of this doc
-		ActiveRecord::Base.connection.execute("update docs set denotations_num=#{denotations.count}, relations_num=#{subcatrels.count}, modifications_num=#{catmods.count + subcatrelmods.count} where id=#{id}")
+		# the number of annotations of each doc
+		ActiveRecord::Base.connection.update <<~SQL.squish
+			UPDATE docs
+			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=docs.id),
+				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=docs.id),
+				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=docs.id)
+		SQL
 
-		# numbers of each project_doc
-		d_stat = denotations.group(:project_id).count
-		r_stat = subcatrels.group("relations.project_id").count
-
-		m_stat1 = catmods.group("modifications.project_id").count
-		m_stat2 = subcatrelmods.group("modifications.project_id").count
-		m_stat  = m_stat1.merge(m_stat2){|k,v1,v2| v1 + v2}
-
-		pids = (d_stat.keys + r_stat.keys + m_stat.keys).uniq
-		pids.each do |pid|
-			d_num = d_stat[pid] || 0
-			r_num = r_stat[pid] || 0
-			m_num = m_stat[pid] || 0
-			ActiveRecord::Base.connection.execute("update project_docs set denotations_num=#{d_num}, relations_num=#{r_num}, modifications_num=#{m_num} where doc_id=#{id} and project_id=#{pid}")
-		end
+		# the number of annotations of each doc in each project
+		ActiveRecord::Base.connection.update <<~SQL.squish
+			UPDATE project_docs
+			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=project_docs.doc_id AND denotations.project_id=project_docs.project_id),
+				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=project_docs.doc_id AND blocks.project_id=project_docs.project_id),
+				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=project_docs.doc_id AND relations.project_id=project_docs.project_id)
+		SQL
 	end
 
 	def rdfizer_spans
@@ -882,6 +875,10 @@ class Doc < ActiveRecord::Base
 		end
 
 		doc_spans_trig
+	end
+
+	def self.delete_orphan_docs_of_user_sourcedb
+		d_num = ActiveRecord::Base.connection.delete("DELETE FROM docs WHERE sourcedb LIKE '%#{Doc::UserSourcedbSeparator}%' AND NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = docs.id)")
 	end
 
 	private

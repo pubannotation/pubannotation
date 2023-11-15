@@ -269,13 +269,13 @@ class ProjectsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:id])
 			raise ArgumentError, "There is no such project." unless project.present?
 			docids = project.docs.pluck(:id)
-			system = Project.find_by_name('system-maintenance')
+			system = Project.admin_project
 
 			StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
 		rescue => e
 			flash[:notice] = e.message
 		end
-		redirect_to project_path('system-maintenance')
+		redirect_to project_path(system.name)
 	end
 
 	def clean
@@ -290,7 +290,7 @@ class ProjectsController < ApplicationController
 				Project.all
 			end
 
-			system = Project.find_by_name('system-maintenance')
+			system = Project.admin_project
 
 			projects.each do |project|
 				project.clean
@@ -303,7 +303,7 @@ class ProjectsController < ApplicationController
 		# rescue => e
 		#   flash[:notice] = e.message
 		end
-		redirect_to project_path('system-maintenance')
+		redirect_to project_path(system.name)
 	end
 
 	def delete_all_docs
@@ -311,13 +311,11 @@ class ProjectsController < ApplicationController
 			project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
 
-			message = if project.has_doc?
-				# DeleteAllDocsFromProjectJob.perform_now(project)
-
+			message = if project.empty?
+				"The project had no document. Nothing happened.\n"
+			else
 				active_job = DeleteAllDocsFromProjectJob.perform_later(project)
 				"The task, '#{active_job.job_name}', is created."
-			else
-				"The project had no document. Nothing happened.\n"
 			end
 
 			respond_to do |format|
@@ -362,10 +360,11 @@ class ProjectsController < ApplicationController
 		project = Project.editable(current_user).find_by_name(params[:id])
 		raise "There is no such project." unless project.present?
 
-		DestroyProjectJob.perform_later(project)
+		# project.destroy!
+		DestroyProjectJob.perform_later(Project.admin_project, project)
 
 		respond_to do |format|
-			format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, will be deleted soon."}
+			format.html {redirect_to projects_path, status: :see_other, notice: "The project, #{@project.name}, is deleted."}
 			format.json {head :no_content }
 		end
 	end
@@ -396,7 +395,7 @@ class ProjectsController < ApplicationController
 																		:sample, :rdfwriter, :xmlwriter, :bionlpwriter, :sparql_ep,
 																		:textae_config, :annotator_id,
 																		:annotations_zip_downloadable, :process,
-																		:docs_count, :denotations_num, :relations_num, :modifications_num, :annotations_count, { namespaces: [:prefix, :uri] })
+																		:docs_count, :denotations_num, :blocks_num, :relations_num, :annotations_count, { namespaces: [:prefix, :uri] })
 	end
 
 	def updatable?

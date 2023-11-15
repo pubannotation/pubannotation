@@ -8,7 +8,6 @@ class Denotation < ActiveRecord::Base
 	belongs_to :doc
 
 	has_many :attrivutes, :as => :subj, :dependent => :destroy
-	has_many :modifications, :as => :obj, :dependent => :destroy
 
 	has_many :subrels, :class_name => 'Relation', :as => :subj, :dependent => :destroy
 	has_many :objrels, :class_name => 'Relation', :as => :obj, :dependent => :destroy
@@ -19,6 +18,37 @@ class Denotation < ActiveRecord::Base
 	validates :obj,        presence: true
 	validates :project_id, presence: true
 	validates :doc_id,     presence: true
+
+	after_create :increment_numbers, :update_project_updated_at
+	after_update :update_project_updated_at
+	after_destroy :decrement_numbers, :update_project_updated_at
+
+	# after save
+	def update_project_updated_at
+		self.project.update_updated_at
+	end
+
+	def increment_project_denotations_num
+		self.project.increment!(:denotations_num)
+	end
+
+	def decrement_project_denotations_num
+		self.project.decrement!(:denotations_num)
+	end
+
+	def increment_numbers
+		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
+		pd.increment!(:denotations_num) if pd
+		self.doc.increment!(:denotations_num)
+		self.project.increment!(:denotations_num)
+	end
+
+	def decrement_numbers
+		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
+		pd.decrement!(:denotations_num) if pd
+		self.doc.decrement!(:denotations_num)
+		self.project.decrement!(:denotations_num)
+	end
 
 	scope :accessible_projects, lambda{|current_user_id|
 		joins([:project, :doc]).
@@ -40,10 +70,6 @@ class Denotation < ActiveRecord::Base
 
 		query
 	}
-
-	after_create :increment_numbers, :update_project_updated_at
-	after_update :update_project_updated_at
-	after_destroy :decrement_numbers, :update_project_updated_at
 
 	def to_s
 		"#{self.project.name}:[#{self.begin}, #{self.end}]"
@@ -71,33 +97,6 @@ class Denotation < ActiveRecord::Base
 
 	def range_valid?(max_offset)
 		self.begin.is_a?(Integer) && self.end.is_a?(Integer) && self.begin >= 0 && self.end > self.begin && self.end <= max_offset
-	end
-
-	# after save
-	def update_project_updated_at
-		self.project.update_updated_at
-	end
-
-	def increment_project_denotations_num
-		self.project.increment!(:denotations_num)
-	end
-
-	def decrement_project_denotations_num
-		self.project.decrement!(:denotations_num)
-	end
-
-	def increment_numbers
-		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
-		pd.increment!(:denotations_num) if pd
-		self.doc.increment!(:denotations_num)
-		self.project.increment!(:denotations_num)
-	end
-
-	def decrement_numbers
-		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
-		pd.decrement!(:denotations_num) if pd
-		self.doc.decrement!(:denotations_num)
-		self.project.decrement!(:denotations_num)
 	end
 
 	def self.new_id_init(to_avoid = nil)

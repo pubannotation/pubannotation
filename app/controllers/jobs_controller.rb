@@ -6,43 +6,39 @@ class JobsController < ApplicationController
 	# GET /jobs
 	# GET /jobs.json
 	def index
-		begin
-			@jobs = @organization.jobs.order(:created_at)
+		@jobs = @organization&.jobs.order(:created_at)
 
-			respond_to do |format|
-				format.html { redirect_to organization_path if @jobs.empty? }
-				format.json { render json: @jobs }
-			end
-		rescue => e
-			respond_to do |format|
-				format.html { redirect_to organization_path, notice: e.message }
-				format.json { render status: :no_content }
-			end
+		respond_to do |format|
+			format.html { redirect_to organization_path if @jobs.nil? || @jobs.empty? }
+			format.json { render json: @jobs }
+		end
+	rescue => e
+		respond_to do |format|
+			format.html { redirect_to organization_path, fallback_location: root_path, notice: e.message }
+			format.json { render status: :no_content }
 		end
 	end
 
 	# GET /jobs/1
 	# GET /jobs/1.json
 	def show
-		begin
-			@job = Job.find(params.permit(:id)[:id])
-			raise "Could not find the job." unless @job.organization == @organization
+		@job = Job.find(params.permit(:id)[:id])
+		raise "Could not find the job." unless @job.organization == @organization
 
-			@messages_grid = initialize_grid(@job.messages,
-				order: :created_at,
-				order_direction: :desc,
-				per_page: 10
-			)
+		@messages_grid = initialize_grid(@job.messages,
+			order: :created_at,
+			order_direction: :desc,
+			per_page: 10
+		)
 
-			respond_to do |format|
-				format.html # show.html.erb
-				format.json { render json: @job }
-			end
-		rescue => e
-			respond_to do |format|
-				format.html { redirect_to organization_jobs_path, notice: e.message }
-				format.json { render status: :no_content }
-			end
+		respond_to do |format|
+			format.html # show.html.erb
+			format.json { render json: @job }
+		end
+	rescue => e
+		respond_to do |format|
+			format.html { redirect_to organization_jobs_path, fallback_location: root_path, notice: e.message }
+			format.json { render status: :no_content }
 		end
 	end
 
@@ -65,7 +61,7 @@ class JobsController < ApplicationController
 		job = Job.find(params[:id])
 		raise "Could not find the job." unless job.organization == @organization
 
-		job.destroy_if_not_running
+		job.destroy_unless_running
 
 		respond_to do |format|
 			format.html { redirect_to organization_jobs_path }
@@ -73,9 +69,7 @@ class JobsController < ApplicationController
 	end
 
 	def clear_finished_jobs
-		@organization.jobs.finished.each do |job|
-			job.destroy_if_not_running
-		end
+		Job.batch_destroy_finished(@organization)
 
 		respond_to do |format|
 			format.html { redirect_to organization_jobs_path }
@@ -101,26 +95,22 @@ class JobsController < ApplicationController
 	private
 
 	def set_organization
-		if params.has_key? :project_id
-			@organization = Project.accessible(current_user).find_by_name(params[:project_id])
-			raise "Could not find the project." unless @organization.present?
+		@organization = if params.has_key? :project_id
+			Project.accessible(current_user).find_by_name(params[:project_id])
 		elsif params.has_key? :collection_id
-			@organization = Collection.accessible(current_user).find_by_name(params[:collection_id])
-			raise "Could not find the collection." unless @organization.present?
+			Collection.accessible(current_user).find_by_name(params[:collection_id])
 		else
-			raise "Invalid access."
+			nil
 		end
 	end
 
 	def set_editable_organization
-		if params.has_key? :project_id
-			@organization = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "Could not find the project." unless @organization.present?
+		@organization = if params.has_key? :project_id
+			Project.editable(current_user).find_by_name(params[:project_id])
 		elsif params.has_key? :collection_id
-			@organization = Collection.editable(current_user).find_by_name(params[:collection_id])
-			raise "Could not find the collection." unless @organization.present?
+			Collection.editable(current_user).find_by_name(params[:collection_id])
 		else
-			raise "Invalid access."
+			nil
 		end
 	end
 

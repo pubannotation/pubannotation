@@ -4,9 +4,7 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
   def perform(project, sourcedb, filepath)
     count = %x{wc -l #{filepath}}.split.first.to_i
 
-    if @job
-      prepare_progress_record(count)
-    end
+    prepare_progress_record(count)
 
     @total_num_added = 0
     @total_num_sequenced = 0
@@ -23,10 +21,8 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
         ids.clear
       end
 
-      if @job
-        @job.update_attribute(:num_dones, i + 1)
-        check_suspend_flag
-      end
+      @job&.update_attribute(:num_dones, i + 1)
+      check_suspend_flag
     end
 
     add_docs(project, sourcedb, ids)
@@ -56,25 +52,23 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
   private
 
   def add_docs(project, sourcedb, ids)
-    num_existed = project.docs.where(sourcedb: sourcedb).count
+    num_existed = project.docs.where(sourcedb: sourcedb, sourceid: ids).count
     num_added, num_sequenced, messages = begin
-                                            project.add_docs(DocumentSourceIds.new(sourcedb, ids))
-                                          rescue => e
-                                            if @job
-                                              @job.add_message sourcedb: sourcedb,
-                                                               sourceid: "#{ids.first} - #{ids.last}",
-                                                               body: e.message
-                                            end
-                                            [0, 0, 0, []]
-                                          end
+      project.add_docs(DocumentSourceIds.new(sourcedb, ids))
+    rescue => e
+      @job.add_message sourcedb: sourcedb,
+                       sourceid: "#{ids.first} - #{ids.last}",
+                       body: e.message
+      [0, 0, 0, []]
+    end
 
     @total_num_added += num_added
     @total_num_sequenced += num_sequenced
     @total_num_existed += num_existed
 
-    messages.each do |message|
-      if @job
-        @job.add_message(message.class == Hash ? message : { body: message })
+    if @job
+      messages.each do |message|
+        @job&.add_message(message.class == Hash ? message : { body: message })
       end
     end
   end

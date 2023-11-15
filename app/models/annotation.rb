@@ -3,15 +3,14 @@
 class Annotation
   include DenotationBagger
 
-  attr_reader :project, :denotations, :blocks, :relations, :attributes, :modifications
+  attr_reader :project, :denotations, :blocks, :relations, :attributes
 
-  def initialize(project, denotations, blocks, relations, attributes, modifications)
+  def initialize(project, denotations, blocks, relations, attributes)
     @project = project
     @denotations = denotations
     @blocks = blocks
     @relations = relations
     @attributes = attributes
-    @modifications = modifications
   end
 
   def as_json(options = {})
@@ -39,8 +38,14 @@ class Annotation
       blocks: @blocks.as_json,
       relations:,
       attributes: @attributes.as_json,
-      modifications: @modifications.as_json,
       namespaces: @project.namespaces
     }.select { |_, v| v.present? }
+  end
+
+  def self.delete_orphan_annotations
+    ActiveRecord::Base.connection.delete("DELETE FROM denotations WHERE NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = denotations.doc_id)")
+    ActiveRecord::Base.connection.delete("DELETE FROM blocks WHERE NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = blocks.doc_id)")
+    ActiveRecord::Base.connection.delete("DELETE FROM relations WHERE NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = relations.doc_id)")
+    ActiveRecord::Base.connection.delete("DELETE FROM attrivutes WHERE NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = attrivutes.doc_id)")
   end
 end

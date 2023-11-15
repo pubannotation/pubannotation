@@ -1,30 +1,32 @@
 class ImportAnnotationsJob < ApplicationJob
 	queue_as :general
 
-	def perform(project, source_project_names, options = {})
-		source_projects = source_project_names.map{|name| Project.find_by_name(name)}.compact
+	def perform(project, source_project_id, options = {})
+		shared_docs_ids = if options[:mode] == 'skip'
+			ActiveRecord::Base.connection.exec_query("SELECT doc_id FROM project_docs WHERE project_id=#{source_project_id} INTERSECT SELECT doc_id FROM project_docs WHERE project_id=#{project.id} AND denotations_num=0").pluck("doc_id")
+		else
+			ActiveRecord::Base.connection.exec_query("SELECT doc_id FROM project_docs WHERE project_id=#{source_project_id} INTERSECT SELECT doc_id FROM project_docs WHERE project_id=#{project.id}").pluck("doc_id")
+		end
 
-		destin_docs = project.docs
-		num_docs = source_projects.map{|source_project| (source_project.docs & destin_docs).length}.reduce(:+)
-		prepare_progress_record(num_docs)
+		raise "Importing annotations for more than 1M documents is prohibited for a performance issue." if shared_docs_ids.length > 1000000
+		raise "There is no shared document in the two projects." if shared_docs_ids.empty?
 
-		source_projects.each{|source_project|	import_annotations(source_project, project, options)}
-	end
+		source_project = Project.find(source_project_id)
+		destin_project = project
 
-	def import_annotations(source_project, destin_project, options = {})
-		docs = source_project.docs & destin_project.docs
+		prepare_progress_record(shared_docs_ids.length)
 
-		docs.each do |doc|
+		shared_docs_ids.each do |doc_id|
 			begin
 				annotations = doc.hannotations(source_project, nil, nil)
 				messages = destin_project.save_annotations!(annotations, doc, options)
-				messages.each{|m| @job.add_message m}
+				messages.each{|m| @job&.add_message m}
 			rescue => e
-				@job.add_message sourcedb: annotations[:sourcedb],
-												 sourceid: annotations[:sourceid],
-												 body: e.message
+				@job&.add_message sourcedb: annotations[:sourcedb],
+								  sourceid: annotations[:sourceid],
+								  body: e.message
 			end
-			@job.increment!(:num_dones)
+			@job&.increment!(:num_dones)
 			check_suspend_flag
 		end
 	end

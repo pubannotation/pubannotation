@@ -2,7 +2,7 @@
 	<% @docs_path = @project.present? ? project_docs_path(@project.name) : docs_path -%>
 	<%= link_to t('views.docs.list').capitalize, @docs_path -%>
 	<span class='info'>
-		(<%= number_with_delimiter(@search_count, :delimiter => ',') + '/' if @search_count.present? -%><%= cache(docs_count_cache_key) do %><%= docs_count %><% end -%>)
+		(<%= number_with_delimiter(@search_count, :delimiter => ',') + '/' if @search_count.present? -%><%= docs_count %>)
 	</span>
 	<span class='tab-bar'>
 		<%= link_to 'JSON', params.permit(:controller, :action, :per, :page).merge(format: :json), class: 'tab', title: "To get the whole list (up to 1,000 items) in JSON" -%>

@@ -2,15 +2,32 @@ class Relation < ActiveRecord::Base
 	include ProjectMemberConcern
 
 	belongs_to :project
+	belongs_to :doc
 	belongs_to :subj, :polymorphic => true
 	belongs_to :obj, :polymorphic => true
 
-	has_many :modifications, :as => :obj, :dependent => :destroy
+	has_many :attrivutes, :as => :subj, :dependent => :destroy
 
 	validates :hid,     :presence => true
 	validates :pred,    :presence => true
 	validates :subj_id, :presence => true
 	validates :obj_id,  :presence => true
+
+	after_save :increment_project_relations_num, :update_project_updated_at
+	after_destroy :decrement_project_relations_num, :update_project_updated_at
+	after_update :update_project_updated_at
+
+	def increment_project_relations_num
+		Project.increment_counter(:relations_num, self.project.id)
+	end
+
+	def decrement_project_relations_num
+		Project.decrement_counter(:relations_num, self.project.id)
+	end
+
+	def update_project_updated_at
+		self.project.update_updated_at
+	end
 
 	scope :among_denotations, -> (denotation_ids) {
 		case denotation_ids
@@ -42,9 +59,6 @@ class Relation < ActiveRecord::Base
 			order('relations.id ASC') 
 	}
 		
-	after_save :increment_project_relations_num, :update_project_updated_at
-	after_destroy :decrement_project_relations_num, :update_project_updated_at
-	
 	def span
 		positions = (subj.span + obj.span).sort
 		[positions.first, positions.last]
@@ -58,25 +72,9 @@ class Relation < ActiveRecord::Base
 			obj: obj.hid
 		}
 	end
-	
+
 	def <=>(other)
 		(self.hid <=> other.hid)
-	end
-	
-	def self.project_relations_num(project_id, relations)
-		relations.project_relations.count[project_id].to_i
-	end
-	
-	def increment_project_relations_num
-		Project.increment_counter(:relations_num, self.project.id)
-	end
-
-	def decrement_project_relations_num
-		Project.decrement_counter(:relations_num, self.project.id)
-	end
-
-	def update_project_updated_at
-		self.project.update_updated_at
 	end
 
 	def self.sql_find(params, current_user, project)

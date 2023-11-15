@@ -18,6 +18,37 @@ class Block < ActiveRecord::Base
 	validates :project_id, presence: true
 	validates :doc_id,     presence: true
 
+	after_create :increment_numbers, :update_project_updated_at
+	after_update :update_project_updated_at
+	after_destroy :decrement_numbers, :update_project_updated_at
+
+	# after save
+	def update_project_updated_at
+		self.project.update_updated_at
+	end
+
+	def increment_project_blocks_num
+		self.project.increment!(:blocks_num)
+	end
+
+	def decrement_project_blocks_num
+		self.project.decrement!(:blocks_num)
+	end
+
+	def increment_numbers
+		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
+		pd.increment!(:blocks_num) if pd
+		self.doc.increment!(:blocks_num)
+		self.project.increment!(:blocks_num)
+	end
+
+	def decrement_numbers
+		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
+		pd.decrement!(:blocks_num) if pd
+		self.doc.decrement!(:blocks_num)
+		self.project.decrement!(:blocks_num)
+	end
+
 	scope :accessible_projects, lambda{|current_user_id|
 		joins([:project, :doc]).
 		where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
@@ -33,10 +64,6 @@ class Block < ActiveRecord::Base
 			left_outer_joins(:attrivutes).where(attrivutes: { pred: predicates })
 		end
 	}
-
-	after_create :increment_numbers, :update_project_updated_at
-	after_update :update_project_updated_at
-	after_destroy :decrement_numbers, :update_project_updated_at
 
 	def to_s
 		"#{self.project.name}:[#{self.begin}, #{self.end}]"
@@ -64,33 +91,6 @@ class Block < ActiveRecord::Base
 
 	def range_valid?(max_offset)
 		self.begin.is_a?(Integer) && self.end.is_a?(Integer) && self.begin >= 0 && self.end > self.begin && self.end <= max_offset
-	end
-
-	# after save
-	def update_project_updated_at
-		self.project.update_updated_at
-	end
-
-	def increment_project_blocks_num
-		self.project.increment!(:blocks_num)
-	end
-
-	def decrement_project_blocks_num
-		self.project.decrement!(:blocks_num)
-	end
-
-	def increment_numbers
-		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
-		pd.increment!(:blocks_num) if pd
-		self.doc.increment!(:blocks_num)
-		self.project.increment!(:blocks_num)
-	end
-
-	def decrement_numbers
-		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
-		pd.decrement!(:blocks_num) if pd
-		self.doc.decrement!(:blocks_num)
-		self.project.decrement!(:blocks_num)
 	end
 
 	def self.new_id_init(to_avoid = nil)

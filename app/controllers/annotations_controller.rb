@@ -152,14 +152,9 @@ class AnnotationsController < ApplicationController
 		# determine the document
 		##########
 		doc = if params[:sourcedb] && params[:sourceid]
-			_doc = project.docs.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid])
-			if _doc.nil?
-				_doc = project.add_doc!(params[:sourcedb], params[:sourceid])
-				expire_fragment("sourcedb_counts_#{project.name}")
-				expire_fragment("count_docs_#{project.name}")
-				expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
-			end
-			_doc
+		    _doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
+		            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
+			project.add_doc!(_doc)
 		else
 			raise "Text is missing." unless params.has_key? :text
 
@@ -194,8 +189,7 @@ class AnnotationsController < ApplicationController
 				denotations: unsafe_params[:denotations].present? ? unsafe_params[:denotations] : nil,
 				blocks: unsafe_params[:blocks].present? ? unsafe_params[:blocks] : nil,
 				relations: unsafe_params[:relations].present? ? unsafe_params[:relations] : nil,
-				attributes: unsafe_params[:attributes].present? ? unsafe_params[:attributes] : nil,
-				modification: unsafe_params[:modification].present? ? unsafe_params[:modification] : nil,
+				attributes: unsafe_params[:attributes].present? ? unsafe_params[:attributes] : nil
 			}.delete_if{|k, v| v.nil?}
 		else
 			raise ArgumentError, t('controllers.annotations.create.no_annotation')
@@ -236,7 +230,7 @@ class AnnotationsController < ApplicationController
 				annotations[:denotations] = params[:denotations] if params[:denotations].present?
 				annotations[:blocks] = params[:blocks] if params[:blocks].present?
 				annotations[:relations] = params[:relations] if params[:relations].present?
-				annotations[:modifications] = params[:modifications] if params[:modifications].present?
+				annotations[:attributes] = params[:attributes] if params[:attributes].present?
 			else
 				raise ArgumentError, t('controllers.annotations.create.no_annotation')
 			end

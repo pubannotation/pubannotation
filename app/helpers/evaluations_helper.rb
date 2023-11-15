@@ -15,11 +15,11 @@ module EvaluationsHelper
 	def span_helper(anno, type, project, doc)
 		ann = case type
 		when 'denotation'
-			Denotation.where(project_id:project, doc_id:doc, hid:anno[:id]).first
+			Denotation.find_by(project_id:project, doc_id:doc, hid:anno[:id])
+		when 'block'
+			Block.find_by(project_id:project, doc_id:doc, hid:anno[:id])
 		when 'relation'
-			doc.subcatrels.where(project_id:project, hid:anno[:id]).first
-		when 'modification'
-			Modification.where(project_id:project, hid:anno[:id]).first
+			Relation.find_by(project_id:project, doc_id:doc, hid:anno[:id])
 		end
 
 		raise "Could not find the annotation. Annotations might be changed." if ann.nil?

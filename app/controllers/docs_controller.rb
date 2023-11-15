@@ -229,7 +229,7 @@ class DocsController < ApplicationController
 			@project = Project.editable(current_user).find_by_name(params[:project_id])
 			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless @project.present?
 
-			doc_hash = if doc_params.present? && params[:commit].present?
+			hdoc = if doc_params.present? && params[:commit].present?
 				doc_params
 			else
 				text = if params[:text]
@@ -252,18 +252,12 @@ class DocsController < ApplicationController
 				_doc
 			end
 
-			doc_hash = Doc.hdoc_normalize!(doc_hash, current_user, current_user.root?)
-			docs_saved, messages = Doc.store_hdocs([doc_hash])
-			raise IOError, "Could not create the document: #{messages.join("\n")}" if messages.present?
-
-			@doc = docs_saved.first
-			@doc.projects << @project
-			expire_fragment("sourcedb_counts_#{@project.name}")
-			expire_fragment("count_docs_#{@project.name}")
-			expire_fragment("count_#{@doc.sourcedb}_#{@project.name}")
+			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)
+			@doc = Doc.store_hdoc!(hdoc)
+			@project.add_doc!(@doc)
 
 			respond_to do |format|
-				format.html { redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, doc_hash[:sourcedb], doc_hash[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc')) }
+				format.html { redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, hdoc[:sourcedb], hdoc[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc')) }
 				format.json { render json: @doc.to_hash, status: :created, location: @doc }
 			end
 		rescue => e
@@ -390,9 +384,9 @@ class DocsController < ApplicationController
 
 	# add new docs to a project
 	def add
-		begin
+		message = begin
 			project = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
+			raise "No project by the name exists under your management." unless project.present?
 
 			# get the docspecs list
 			docspecs =  if params["_json"] && params["_json"].class == Array
@@ -412,25 +406,17 @@ class DocsController < ApplicationController
 
 			if docspecs.length == 1
 				docspec = docspecs.first
-				begin
-					result = project.add_doc(docspec[:sourcedb], docspec[:sourceid])
-					raise ArgumentError, "The document already exists." if result == nil
-					expire_fragment("sourcedb_counts_#{project.name}")
-					expire_fragment("count_docs_#{project.name}")
-					expire_fragment("count_#{docspec[:sourcedb]}_#{project.name}")
-					message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - added."
-				rescue => e
-					message = "#{docspec[:sourcedb]}:#{docspec[:sourceid]} - #{e.message}"
-				end
+			    doc = Doc.find_by(sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid]) \
+			            || Doc.sequence_and_store_doc!(docspec[:sourcedb], docspec[:sourceid])
+			    project.add_doc!(doc)
+				"#{docspec[:sourcedb]}:#{docspec[:sourceid]} - added."
 			else
-				# AddDocsToProjectJob.perform_now(project, docspecs)
-
-				AddDocsToProjectJob.perform_later(project, docspecs)
-				message = "The task, 'add documents to the project', is created."
+				# AddDocsToProjectJob.perform_later(project, docspecs)
+				AddDocsToProjectJob.perform_now(project, docspecs)
+				"The task, 'add documents to the project', is created."
 			end
-
-		rescue => e
-			message = e.message
+		# rescue => e
+		# 	e.message
 		end
 
 		respond_to do |format|
@@ -441,19 +427,20 @@ class DocsController < ApplicationController
 
 	def import
 		message = begin
-			project = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "The project (#{params[:project_id]}) does not exist, or you are not authorized to make a change to it.\n" unless project.present?
+			project = Project.editable(current_user).find_by! name: params[:project_id]
 
 			source_project = Project.find_by_name(params["select_project"])
 			raise ArgumentError, "The project (#{params["select_project"]}) does not exist, or you are not authorized to access it.\n" unless source_project.present?
 
 			raise ArgumentError, "You cannot import documents from itself." if source_project == project
 
-			ImportDocsJob.perform_later(project, source_project)
+			ImportDocsJob.perform_later(project, source_project.id)
 
 			"The task, 'import documents to the project', is created."
-		rescue => e
-			e.message
+		rescue ActiveRecord::RecordNotFound => e
+			raise "No project by the name exists under your management."
+		# rescue => e
+		# 	e.message
 		end
 
 		respond_to do |format|
@@ -536,33 +523,26 @@ class DocsController < ApplicationController
 	end
 
 	def project_delete_doc
-		begin
-			project = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "Could not find the project, or you are not authorized to make a change to the project.\n" unless project.present?
+		project = Project.editable(current_user).find_by name: params[:project_id]
+		raise "Could not find the project, or you are not authorized to make a change to the project.\n" unless project.present?
 
-			docs = project.docs.where(sourcedb:params[:sourcedb], sourceid:params[:sourceid])
-			raise "Could not find the document." unless docs.present?
-			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
+		doc = project.docs.find_by sourcedb:params[:sourcedb], sourceid:params[:sourceid]
+		raise "Could not find the document." unless doc.present?
 
-			doc = docs.first
-			project.delete_doc(doc)
-			expire_fragment("sourcedb_counts_#{project.name}")
-			expire_fragment("count_docs_#{project.name}")
-			expire_fragment("count_#{params[:sourcedb]}_#{project.name}")
+		project.delete_doc(doc)
 
-			message = "the document is deleted from the project.\n"
+		message = "the document is deleted from the project.\n"
 
-			respond_to do |format|
-				format.html { redirect_to project_docs_path(project.name), notice:message }
-				format.json { render json: {message: message} }
-				format.txt  { render plain: message }
-			end
-		rescue => e
-			respond_to do |format|
-				format.html { redirect_to project_docs_path(project.name), notice:e.message }
-				format.json { render json: {message: e.message}, status: :unprocessable_entity }
-				format.txt  { render plain: e.message, status: :unprocessable_entity }
-			end
+		respond_to do |format|
+			format.html { redirect_to project_docs_path(project.name), notice:message }
+			format.json { render json: {message: message} }
+			format.txt  { render plain: message }
+		end
+	rescue => e
+		respond_to do |format|
+			format.html { redirect_to project_docs_path(project.name), notice:e.message }
+			format.json { render json: {message: e.message}, status: :unprocessable_entity }
+			format.txt  { render plain: e.message, status: :unprocessable_entity }
 		end
 	end
 
@@ -572,27 +552,25 @@ class DocsController < ApplicationController
 
 			projects = Project.for_index
 			docids = projects.inject([]){|col, p| (col + p.docs.pluck(:id))}.uniq
-			system = Project.find_by_name('system-maintenance')
+			system = Project.admin_project
 
 			StoreRdfizedSpansJob.perform_later(system, docids, Pubann::Application.config.rdfizer_spans)
 		rescue => e
 			flash[:notice] = e.message
 		end
-		redirect_to project_path('system-maintenance')
+		redirect_to project_path(system.name)
 	end
 
 	def update_numbers
-		begin
-			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+		raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
 
-			active_job = UpdateAnnotationNumbersJob.perform_later
+		active_job = UpdateNumbersForDocsJob.perform_later(Project.admin_project)
 
-			result = {message: "The task, '#{active_job.job_name}', created."}
-			redirect_to project_path('system-maintenance')
-		rescue => e
-			flash[:notice] = e.message
-			redirect_to home_path
-		end
+		result = {message: "The task, '#{active_job.job_name}', created."}
+		redirect_to project_path(Project.admin_project.name)
+	rescue => e
+		flash[:notice] = e.message
+		redirect_to home_path
 	end
 
 	# def autocomplete_sourcedb

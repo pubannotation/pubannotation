@@ -10,9 +10,7 @@
 			<%= link_to t('activerecord.models.doc').pluralize.capitalize.html_safe, docs_path -%>
 			<%= render partial: 'docs/search_form', locals: {path: docs_path} -%>
 		</h1>
-		<% cache 'sourcedb_counts', skip_digest: true do -%>
-			<%= render :partial => "docs/sourcedb_counts" -%>
-		<% end %>
+		<%= render :partial => "docs/sourcedb_counts" -%>
 	</section>
 </div>
 

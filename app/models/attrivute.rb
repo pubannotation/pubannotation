@@ -3,6 +3,7 @@ class Attrivute < ActiveRecord::Base
 
 	# The name of the class is changed to avoid conflict with the reserved word 'attribute'
 	belongs_to :project
+	belongs_to :doc
 	belongs_to :subj, polymorphic: true
 
 	validates :hid, presence: true
@@ -12,6 +13,11 @@ class Attrivute < ActiveRecord::Base
 
 	after_save :update_project_updated_at
 	after_destroy :update_project_updated_at
+	after_update :update_project_updated_at
+
+	def update_project_updated_at
+		self.project.update_updated_at
+	end
 
 	def span
 		subj.span

@@ -18,7 +18,6 @@ class Project < ActiveRecord::Base
   has_many :denotations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
   has_many :relations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
   has_many :attrivutes, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
-  has_many :modifications, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
   has_many :associate_maintainers, :dependent => :destroy
   has_many :associate_maintainer_users, :through => :associate_maintainers, :source => :user, :class_name => 'User'
   has_many :jobs, as: :organization, :dependent => :destroy
@@ -171,19 +170,10 @@ class Project < ActiveRecord::Base
 
   def get_relations_count(doc = nil, span = nil)
     return self.relations_num if doc.nil?
-    return doc.subcatrels.where(project_id: self.id).count if span.nil?
+    return ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{id} AND doc_id=#{doc.id}" if span.nil?
 
     # when the span is specified
-    doc.subcatrels.where("denotations.begin >= ? and denotations.end <= ?", span[:begin], span[:end]).count
-  end
-
-  def get_modifications_count(doc = nil, span = nil)
-    return self.modifications_num if doc.nil?
-    return doc.catmods.where(project_id: self.id).count + doc.subcatrelmods.where(project_id: self.id).count if span.nil?
-
-    # when the span is specified
-    # ToDo: check modificaitons of relations
-    doc.catmods.where("denotations.begin >= ? and denotations.end <= ?", span[:begin], span[:end]).count
+    doc.relations.where("denotations.begin >= ? and denotations.end <= ?", span[:begin], span[:end]).count
   end
 
   def json
@@ -203,8 +193,12 @@ class Project < ActiveRecord::Base
     jobs.any? { |job| job.unfinished? }
   end
 
-  def has_doc?
-    ProjectDoc.exists?(project_id: id)
+  def empty?
+    ProjectDoc.where(project_id: id).empty?
+  end
+
+  def has_doc?(doc)
+    ProjectDoc.exists?(project_id: id, doc_id:doc.id)
   end
 
   def has_discontinuous_span?
@@ -444,59 +438,75 @@ class Project < ActiveRecord::Base
   end
 
   # returns the doc added to the project
-  # returns nil if nothing is added
-  def add_doc(sourcedb, sourceid)
-    doc = Doc.find_by(sourcedb: sourcedb, sourceid: sourceid)
-    unless doc.present?
-      new_docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid])
-      unless new_docs.present?
-        message = messages.map do |m|
-          if m.class == Hash
-            m[:body]
-          else
-            m
-          end
-        end.join("\n")
-        raise RuntimeError, "Failed to get the document: #{message}"
-      end
-      doc = new_docs.first
-    end
-    return nil if self.docs.include?(doc)
+  # raise exception if nothing is added
+  def add_doc!(doc)
+    raise RuntimeError, "The project already has the doc: #{doc.descriptor}" if has_doc?(doc)
     doc.projects << self
+    increment!(:docs_count)
+    docs_stat_increment!(doc.sourcedb)
     doc
   end
 
-  def add_doc!(sourcedb, sourceid)
-    add_doc(sourcedb, sourceid) || raise("Could not add the document to the project.")
+  def docs_stat_increment!(sourcedb, by = 1)
+    raise RuntimeError, "sourcedb is not specified." unless sourcedb.present?
+    docs_stat[sourcedb] ||= 0
+    docs_stat[sourcedb] += by
+    update_attribute(:docs_stat, docs_stat)
   end
 
-  def delete_doc(doc)
-    raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
-    delete_doc_annotations(doc)
-    doc.projects.delete(self)
-    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{user.username}") && doc.projects_num == 0
+  def docs_stat_decrement!(sourcedb, by = 1)
+    raise RuntimeError, "sourcedb is not specified." unless sourcedb.present?
+    docs_stat[sourcedb] ||= 0
+    docs_stat[sourcedb] -= by
+    update_attribute(:docs_stat, docs_stat)
   end
 
-  def delete_docs
-    ActiveRecord::Base.transaction do
-      delete_annotations if denotations_num > 0
+  def docs_stat_update
+    # count
+    stat = (id == Pubann::Application.config.admin_project_id ? Doc : docs).group(:sourcedb).count
 
-      if docs.exists?
-        ActiveRecord::Base.connection.exec_query(
-          "
-						UPDATE docs
-						SET projects_num = projects_num - 1, flag = true
-						WHERE docs.id
-						IN (
-							SELECT project_docs.doc_id
-							FROM project_docs
-							WHERE project_docs.project_id = #{id}
-						)
-					"
-        )
-        ActiveRecord::Base.connection.exec_query("DELETE FROM project_docs WHERE project_id = #{id}")
-      end
-    end
+    # sort
+    o = Doc::SOURCEDBS
+    stat = stat.to_a.sort{|a, b| (o.index(a.first) || 99) <=> (o.index(b.first) || 99)}.to_h
+
+    update_attribute(:docs_stat, stat)
+
+    _docs_count = stat.values.reduce(:+) || 0
+    update_attribute(:docs_count, _docs_count)
+
+    docs_stat
+  end
+
+  def self.admin_project
+    @admin_project ||= Project.find(Pubann::Application.config.admin_project_id)
+  end
+
+  def self.docs_stat
+    admin_project.docs_stat
+  end
+
+  def self.docs_count
+    admin_project.docs_count
+  end
+
+  def self.docs_stat_increment!(sourcedb, by = 1)
+    admin_project.docs_stat_increment!(sourcedb, by)
+  end
+
+  def self.docs_stat_decrement!(sourcedb, by = 1)
+    admin_project.docs_stat_decrement!(sourcedb, by)
+  end
+
+  def self.docs_count_increment!(by = 1)
+    admin_project.increment!(:docs_count, by)
+  end
+
+  def self.docs_count_decrement!(by = 1)
+    admin_project.increment!(:docs_count, by)
+  end
+
+  def self.docs_stat_update
+    admin_project.docs_stat_update
   end
 
   def update_es_index
@@ -563,25 +573,6 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def instantiate_hmodifications(hmodifications, docid)
-    new_entries = hmodifications.map do |a|
-
-      obj = Denotation.find_by!(doc_id: docid, project_id: self.id, hid: a[:obj])
-      if obj.nil?
-        doc = Doc.find(docid)
-        doc.subcatrels.find_by!(project_id: self.id, hid: a[:obj])
-      end
-      raise ArgumentError, "Invalid object of modification: #{a[:id]}" if obj.nil?
-
-      Modification.new(
-        hid: a[:id],
-        pred: a[:pred],
-        obj: obj,
-        project_id: self.id
-      )
-    end
-  end
-
   def instantiate_and_save_annotations(annotations, doc)
     ActiveRecord::Base.transaction do
       d_num = 0
@@ -626,19 +617,10 @@ class Project < ActiveRecord::Base
         end
       end
 
-      if annotations[:modifications].present?
-        instances = instantiate_hmodifications(annotations[:modifications], doc.id)
-        if instances.present?
-          r = Modification.import instances, validate: false
-          raise "modifications import error" unless r.failed_instances.empty?
-        end
-        m_num = annotations[:modifications].length
-      end
-
-      if d_num > 0 || b_num || r_num > 0 || m_num > 0
-        ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where project_id=#{id} and doc_id=#{doc.id}")
-        ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{doc.id}")
-        ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num}, modifications_num = modifications_num + #{m_num} where id=#{id}")
+      if d_num > 0 || b_num || r_num > 0
+        ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num} where project_id=#{id} and doc_id=#{doc.id}")
+        ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num} where id=#{doc.id}")
+        ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num} where id=#{id}")
       end
 
       ActiveRecord::Base.connection.exec_query("update project_docs set annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
@@ -687,17 +669,6 @@ class Project < ActiveRecord::Base
               existing_ids << id
             end
             a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
-          end
-        end
-
-        if annotations.has_key?(:modifications)
-          annotations[:modifications].each do |a|
-            id = a[:id]
-            id = Modification.new_id while existing_ids.include?(id)
-            if id != a[:id]
-              a[:id] = id
-              existing_ids << id
-            end
           end
         end
       end
@@ -786,71 +757,6 @@ class Project < ActiveRecord::Base
     namespaces.reject! { |namespace| namespace['prefix'].blank? || namespace['uri'].blank? } if namespaces.present?
   end
 
-  def delete_annotations
-    ActiveRecord::Base.transaction do
-      Modification.where(project_id: self.id).delete_all
-      Relation.where(project_id: self.id).delete_all
-      Denotation.where(project_id: self.id).delete_all
-
-      ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id}")
-
-      if docs.count < 1000000
-        ActiveRecord::Base.connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})")
-        ActiveRecord::Base.connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if relations_num > 0
-        ActiveRecord::Base.connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id)) WHERE docs.id IN (SELECT docs.id FROM docs INNER JOIN project_docs ON docs.id = project_docs.doc_id WHERE project_docs.project_id = #{id})") if modifications_num > 0
-      else
-        ActiveRecord::Base.connection.exec_query("update docs set denotations_num = (select count(*) from denotations where denotations.doc_id = docs.id)")
-        ActiveRecord::Base.connection.exec_query("update docs set relations_num = (select count(*) from relations inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotation' where denotations.doc_id = docs.id)") if relations_num > 0
-        ActiveRecord::Base.connection.exec_query("update docs set modifications_num = ((select count(*) from modifications inner join denotations on modifications.obj_id=denotations.id and modifications.obj_type='Denotation' where denotations.doc_id = docs.id) + (select count(*) from modifications inner join relations on modifications.obj_id=relations.id and modifications.obj_type='Relation' inner join denotations on relations.subj_id=denotations.id and relations.subj_type='Denotations' where denotations.doc_id=docs.id))") if modifications_num > 0
-      end
-
-      ActiveRecord::Base.connection.exec_query("update projects set denotations_num = 0, relations_num=0, modifications_num=0 where id=#{id}")
-
-      update_annotations_updated_at
-      update_updated_at
-    end
-  end
-
-  def delete_doc_annotations(doc, span = nil)
-    if span.present?
-      Denotation.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
-      Block.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
-    else
-      denotations = doc.denotations.where(project_id: self.id)
-      d_num = denotations.length
-
-      blocks = doc.blocks.where(project_id: self.id)
-      b_num = blocks.length
-
-      if d_num > 0 || b_num > 0
-        modifications = doc.catmods.where(project_id: self.id) + doc.subcatrelmods.where(project_id: self.id)
-        m_num = modifications.length
-
-        relations = doc.subcatrels.where(project_id: self.id)
-        r_num = relations.length
-
-        attributes = doc.denotation_attributes.where(project_id: self.id)
-        a_num = attributes.length
-
-        ActiveRecord::Base.transaction do
-          Modification.delete(modifications) if m_num > 0
-          Relation.delete(relations) if r_num > 0
-          Attrivute.delete(attributes) if a_num > 0
-          Block.delete(blocks)
-          Denotation.delete(denotations)
-
-          # ActiveRecord::Base.establish_connection
-          ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, blocks_num = 0, relations_num = 0, modifications_num = 0, annotations_updated_at = NULL where project_id=#{id} and doc_id=#{doc.id}")
-          ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{doc.id}")
-          ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num}, modifications_num = modifications_num - #{m_num} where id=#{id}")
-
-          update_annotations_updated_at
-          update_updated_at
-        end
-      end
-    end
-  end
-
   def update_updated_at
     self.update_attribute(:updated_at, DateTime.now)
   end
@@ -861,16 +767,16 @@ class Project < ActiveRecord::Base
 
   def clean
     denotations_num = denotations.count
+    blocks_num = blocks.count
     relations_num = relations.count
-    modifications_num = modifications.count
 
     docs_count = docs.count
     update(
       docs_count: docs_count,
       denotations_num: denotations_num,
+      blocks_num: blocks_num,
       relations_num: relations_num,
-      modifications_num: relations_num,
-      annotations_count: denotations_num + relations_num + modifications_num
+      annotations_count: denotations_num
     )
   end
 
@@ -887,6 +793,125 @@ class Project < ActiveRecord::Base
         annotations_with_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
       end
     end
+  end
+
+  def import_docs_from_another_project(source_project_id)
+    count = 0
+    ActiveRecord::Base.transaction do
+      count = ActiveRecord::Base.connection.update <<~SQL.squish
+            INSERT INTO project_docs (project_id, doc_id, flag)
+            SELECT #{id}, doc_id, true
+            FROM project_docs
+            WHERE project_id=#{source_project_id}
+            ON CONFLICT
+            DO NOTHING
+          SQL
+
+      ActiveRecord::Base.connection.update <<~SQL.squish
+        UPDATE docs
+        SET projects_num = projects_num + 1
+        WHERE EXISTS (SELECT 1 FROM project_docs WHERE flag=true AND project_docs.doc_id=docs.id)
+      SQL
+
+      ActiveRecord::Base.connection.update <<~SQL.squish
+        UPDATE project_docs
+        SET flag = false
+        WHERE flag = true
+      SQL
+
+      docs_stat_update
+    end
+
+    count
+  end
+
+  def delete_doc_annotations(doc, span = nil)
+    if span.present?
+      Denotation.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
+      Block.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
+    else
+      ActiveRecord::Base.transaction do
+        d_num = ActiveRecord::Base.connection.delete("delete from denotations where project_id=#{self.id} AND doc_id=#{doc.id}")
+        b_num = ActiveRecord::Base.connection.delete("delete from blocks where project_id=#{self.id} AND doc_id=#{doc.id}")
+        r_num = ActiveRecord::Base.connection.delete("delete from relations where project_id=#{self.id} AND doc_id=#{doc.id}")
+        a_num = ActiveRecord::Base.connection.delete("delete from attrivutes where project_id=#{self.id} AND doc_id=#{doc.id}")
+
+        if d_num > 0 || b_num > 0
+          ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
+          ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{doc.id}")
+          ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{id}")
+
+          update_annotations_updated_at
+          update_updated_at
+        end
+      end
+    end
+  end
+
+  def delete_annotations
+    if denotations_num > 0 
+      ActiveRecord::Base.transaction do
+        # destroy annotations
+        a_num = ActiveRecord::Base.connection.delete("DELETE FROM attrivutes WHERE project_id = #{id}")
+        r_num = ActiveRecord::Base.connection.delete("DELETE FROM relations WHERE project_id = #{id}")
+        b_num = ActiveRecord::Base.connection.delete("DELETE FROM blocks WHERE project_id = #{id}")
+        d_num = ActiveRecord::Base.connection.delete("DELETE FROM denotations WHERE project_id = #{id}")
+
+        # update annotation counts for the project
+        ActiveRecord::Base.connection.exec_query("UPDATE projects SET denotations_num = 0, blocks_num=0, relations_num=0 WHERE id=#{id}")
+
+        # update annotation counts for each doc within the project
+        ActiveRecord::Base.connection.exec_query("UPDATE project_docs SET denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{id}")
+
+        # update annotation counts for each doc
+        ActiveRecord::Base.connection.exec_query("UPDATE docs SET denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} WHERE EXISTS (SELECT 1 FROM project_docs WHERE project_id=#{id} AND doc_id=docs.id)")
+
+        update_annotations_updated_at
+        update_updated_at
+      end
+    end
+  end
+
+  def delete_doc(doc)
+    raise RuntimeError, "The project does not include the document." unless self.docs.include?(doc)
+    delete_doc_annotations(doc)
+    doc.projects.delete(self)
+
+    decrement!(:docs_count)
+    docs_stat_decrement!(doc.sourcedb)
+
+    doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{user.username}") && doc.projects_num == 0
+  end
+
+  def delete_docs
+    if docs.exists?
+      ActiveRecord::Base.transaction do
+        delete_annotations
+
+        # update project counts for each doc
+        ActiveRecord::Base.connection.update("UPDATE docs SET projects_num = projects_num - 1 WHERE EXISTS (SELECT 1 FROM project_docs WHERE project_docs.project_id = #{id} AND project_docs.doc_id = docs.id)")
+
+        # delete docs from the project
+        ActiveRecord::Base.connection.delete("DELETE FROM project_docs WHERE project_id = #{id}")
+
+        docs_stat_update
+
+        Annotation.delete_orphan_annotations
+        Doc.delete_orphan_docs_of_user_sourcedb
+      end
+    end
+  end
+
+  def destroy!
+    # delete jobs (with messages)
+    Job.batch_destroy_unless_running(self)
+    jobs.each {|job| raise 'There is a running job within this project.' if job.running?}
+
+    # delete docs (with annotations)
+    delete_docs
+
+    # delete self
+    self.delete
   end
 
   private
