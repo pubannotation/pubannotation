@@ -70,7 +70,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
     ids_list.each do |ids|
       num_added, num_sequenced, messages = project.add_docs(ids)
-      source_dbs_changed << sourcedb if num_added > 0
+      source_dbs_changed << ids.db if num_added > 0
       total_num_sequenced += num_sequenced
       messages.each do |message|
         @job&.add_message(message.class == Hash ? message : { body: message[0..250] })
