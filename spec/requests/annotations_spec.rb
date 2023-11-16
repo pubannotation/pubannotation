@@ -230,18 +230,6 @@ RSpec.describe "Annotations", type: :request do
               "subj" => "B1",
               "obj" => "true"
             }
-          ],
-          "modifications" => [
-            {
-              "id" => "M1",
-              "pred" => "negation",
-              "obj" => "T1"
-            },
-            {
-              "id" => "M2",
-              "pred" => "negation",
-              "obj" => "B1"
-            }
           ]
         }
       ]

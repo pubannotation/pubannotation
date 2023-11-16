@@ -24,7 +24,6 @@ RSpec.describe Annotation, type: :model do
                      [block2, block1],
                      [relation2, relation1],
                      [attribute1, attribute2],
-                     [modification1, modification2],
                      ).as_json(option)
     end
 
@@ -43,7 +42,6 @@ RSpec.describe Annotation, type: :model do
     it { expect(subject[:relations].first).to eq(id: relation2.hid, pred: 'next', subj: 'B1', obj: 'B2') }
     it { expect(subject[:relations].second).to eq(id: relation1.hid, pred: 'predicate', subj: 'T1', obj: 'T2') }
 
-    it { expect(subject[:modifications]).to include(id: modification1.hid, pred: 'negation', obj: 'T1') }
     it { expect(subject[:attributes]).to include(id: attribute1.hid, pred: 'type', subj: 'T1', obj: 'Protein') }
 
     context 'sort option is specified' do
