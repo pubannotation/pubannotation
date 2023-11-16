@@ -16,7 +16,7 @@
 require 'benchmark'
 require 'text_alignment'
 require 'active_support'
-require_relative 'config/initializers/ractor.rb'
+require_relative '../config/initializers/ractor.rb'
 
 MAX=16
 
