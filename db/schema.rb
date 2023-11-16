@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_04_17_010628) do
+ActiveRecord::Schema[7.0].define(version: 2023_11_14_193746) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -51,6 +51,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_17_010628) do
     t.integer "project_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.bigint "doc_id"
+    t.index ["doc_id"], name: "index_attrivutes_on_doc_id"
     t.index ["obj"], name: "index_attrivutes_on_obj"
     t.index ["project_id"], name: "index_attrivutes_on_project_id"
     t.index ["subj_id"], name: "index_attrivutes_on_subj_id"
@@ -209,8 +211,11 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_17_010628) do
     t.string "sourceid"
     t.integer "divid"
     t.text "data"
+    t.string "organization_type"
+    t.bigint "organization_id"
     t.index ["job_id", "created_at"], name: "index_messages_on_job_id_and_created_at"
     t.index ["job_id"], name: "index_messages_on_job_id"
+    t.index ["organization_type", "organization_id"], name: "index_messages_on_organization"
   end
 
   create_table "modifications", force: :cascade do |t|
@@ -242,6 +247,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_17_010628) do
     t.integer "modifications_num", default: 0
     t.datetime "annotations_updated_at", precision: nil
     t.integer "blocks_num", default: 0
+    t.boolean "flag", default: false
     t.index ["denotations_num"], name: "index_project_docs_on_denotations_num"
     t.index ["doc_id"], name: "index_project_docs_on_doc_id"
     t.index ["project_id"], name: "index_project_docs_on_project_id"
@@ -279,6 +285,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_17_010628) do
     t.string "sparql_ep"
     t.text "analysis"
     t.integer "blocks_num", default: 0
+    t.json "docs_stat", default: {}
     t.index ["annotator_id"], name: "index_projects_on_annotator_id"
     t.index ["name"], name: "index_projects_on_name", unique: true
   end
@@ -310,6 +317,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_17_010628) do
     t.integer "project_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.bigint "doc_id"
+    t.index ["doc_id"], name: "index_relations_on_doc_id"
     t.index ["obj_id"], name: "index_relations_on_obj_id"
     t.index ["project_id"], name: "index_relations_on_project_id"
     t.index ["subj_id"], name: "index_relations_on_subj_id"
@@ -364,4 +373,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_17_010628) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "attrivutes", "docs"
+  add_foreign_key "relations", "docs"
 end
