@@ -45,11 +45,9 @@ class DocsController < ApplicationController
 			end
 
 			if @project.present?
-				if @sourcedb.present?
-					@project.docs.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
-				else
-					@project.docs.order(sort_order).simple_paginate(page, per)
-				end
+				@docs = @project.docs
+				@docs = @docs.where(sourcedb: @sourcedb) if @sourcedb.present?
+				@docs.order(sort_order).simple_paginate(page, per)
 			else
 				if @sourcedb.present?
 					Doc.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
