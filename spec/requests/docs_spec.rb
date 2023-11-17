@@ -13,6 +13,7 @@ RSpec.describe "Docs", type: :request do
 
     context 'when there are docs' do
       before do
+        Doc.__elasticsearch__.create_index! force: true
         create(:doc)
         get "/docs.json"
       end

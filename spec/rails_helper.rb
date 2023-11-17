@@ -64,10 +64,4 @@ RSpec.configure do |config|
 
   # To use FactoryBot
   config.include FactoryBot::Syntax::Methods
-
-  # When the test is run, the Doc index is created in Elasticsearch.
-  # It will be deleted at the end of the test.
-  config.after(:each) do
-    Doc.__elasticsearch__.delete_index!
-  end
 end
