@@ -13,7 +13,7 @@ class DocsController < ApplicationController
 	def index
 		begin
 			if params[:project_id].present?
-				@project = Project.accessible(current_user).find_by_name(params[:project_id])
+				@project = Project.accessible(current_user).find_by(name: params[:project_id])
 				raise ArgumentError, "Could not find the project." unless @project.present?
 			end
 
