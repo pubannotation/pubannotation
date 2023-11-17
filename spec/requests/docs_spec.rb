@@ -45,6 +45,17 @@ RSpec.describe "Docs", type: :request do
 
           expect(response.body).to eq(expected_data.to_json)
         end
+
+        context 'when the project is not found' do
+          before do
+            project = create(:project, name: 'test2')
+            create(:project_doc, doc: Doc.last, project: project)
+            get "/docs.json?project_id=foo_bar"
+          end
+
+          it { is_expected.to have_http_status(422) }
+          it { expect(response.body).to eq({message: "Could not find the project."}.to_json) }
+        end
       end
     end
   end
