@@ -76,6 +76,23 @@ RSpec.describe "Docs", type: :request do
           end
         end
       end
+
+      context 'when the sourcedb is specified' do
+        before do
+          get "/docs.json?sourcedb=PubMed"
+        end
+
+        it { is_expected.to have_http_status(200) }
+        it 'returns the doc data' do
+          expected_data = [{
+                             sourcedb: "PubMed",
+                             sourceid: Doc.last.sourceid,
+                             url: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
+                           }]
+
+          expect(response.body).to eq(expected_data.to_json)
+        end
+      end
     end
   end
 end
