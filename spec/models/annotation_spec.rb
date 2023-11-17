@@ -29,7 +29,7 @@ RSpec.describe Annotation, type: :model do
 
     it { is_expected.to be_a(Hash) }
 
-    it { expect(subject[:project]).to eq('TestProject') }
+    it { expect(subject[:project]).to eq(project.name) }
 
     # Denotations are sorted by creation order
     it { expect(subject[:denotations].first).to eq(id: "T2", obj: 'object', span: { begin: 10, end: 14 }) }

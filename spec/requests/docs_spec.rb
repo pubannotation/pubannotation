@@ -48,7 +48,7 @@ RSpec.describe "Docs", type: :request do
 
         context 'when the project is not found' do
           before do
-            project = create(:project, name: 'test2')
+            project = create(:project)
             create(:project_doc, doc: Doc.last, project: project)
             get "/docs.json?project_id=foo_bar"
           end

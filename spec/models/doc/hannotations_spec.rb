@@ -40,7 +40,7 @@ RSpec.describe Doc, type: :model do
       end
 
       it 'includes denotations in tracks' do
-        expect(subject[:tracks]).to include(project: "TestProject",
+        expect(subject[:tracks]).to include(project: project.name,
                                             denotations: [{
                                                             id: "T1",
                                                             obj: "subject",

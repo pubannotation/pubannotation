@@ -6,7 +6,7 @@ FactoryBot.define do
 
     trait :with_annotation do
       after(:create) do |doc, _|
-        project = create(:project, accessibility: 1)
+        project = create(:project, accessibility: 1, name: 'TestProject')
         create(:project_doc, doc: doc, project: project)
 
         denotation1 = create(:denotation, doc: doc, project: project)

@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :project do
-    name { "TestProject" }
+    sequence(:name) { "TestProject#{_1.to_s}" }
     user
 
     factory :another_project do
