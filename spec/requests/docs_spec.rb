@@ -96,15 +96,22 @@ RSpec.describe "Docs", type: :request do
 
       context 'when the keywords "Test" is specified' do
         before do
+          # Elasticsearch indexing is asynchronous.
+          # For testing purposes, the index is forced to be updated.
+          Doc.__elasticsearch__.refresh_index!
           get "/docs.json?keywords=test"
         end
 
         it { is_expected.to have_http_status(200) }
         it 'returns the doc data' do
-          # I would like to be able to search by text of registered documents.
-          # However, currently there are 0 cases with.
-          # It may be a problem with elasticsearch configuration.
-          expect(response.body).to eq([].to_json)
+          expected_data = [{
+                             sourcedb: "PubMed",
+                             sourceid: Doc.last.sourceid,
+                             url: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
+                             text: ["This is a \u003cem\u003etest\u003c/em\u003e.\n\u003cem\u003eTest\u003c/em\u003e are implemented.\nImplementation is difficult."]
+                           }]
+
+          expect(response.body).to eq(expected_data.to_json)
         end
       end
     end
