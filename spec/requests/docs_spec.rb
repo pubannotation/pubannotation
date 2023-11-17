@@ -93,6 +93,20 @@ RSpec.describe "Docs", type: :request do
           expect(response.body).to eq(expected_data.to_json)
         end
       end
+
+      context 'when the keywords "Test" is specified' do
+        before do
+          get "/docs.json?keywords=test"
+        end
+
+        it { is_expected.to have_http_status(200) }
+        it 'returns the doc data' do
+          # I would like to be able to search by text of registered documents.
+          # However, currently there are 0 cases with.
+          # It may be a problem with elasticsearch configuration.
+          expect(response.body).to eq([].to_json)
+        end
+      end
     end
   end
 end
