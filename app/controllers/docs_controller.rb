@@ -44,17 +44,10 @@ class DocsController < ApplicationController
 				sort_order += 'random()'
 			end
 
-			if @project.present?
-				@docs = @project.docs
-				@docs = @docs.where(sourcedb: @sourcedb) if @sourcedb.present?
-				@docs.order(sort_order).simple_paginate(page, per)
-			else
-				if @sourcedb.present?
-					Doc.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
-				else
-					Doc.order(sort_order).simple_paginate(page, per)
-				end
-			end
+			@docs = Doc.all
+			@docs = @docs.joins(:projects).where(projects: {id: @project.id}) if @project.present?
+			@docs = @docs.where(sourcedb: @sourcedb) if @sourcedb.present?
+			@docs.order(sort_order).simple_paginate(page, per)
 		end
 
 		respond_to do |format|
