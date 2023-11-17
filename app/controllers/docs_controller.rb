@@ -11,84 +11,82 @@ class DocsController < ApplicationController
 	autocomplete :doc, :sourcedb
 
 	def index
-		begin
-			if params[:project_id].present?
-				@project = Project.accessible(current_user).find_by(name: params[:project_id])
-				raise ArgumentError, "Could not find the project." unless @project.present?
-			end
+		if params[:project_id].present?
+			@project = Project.accessible(current_user).find_by(name: params[:project_id])
+			raise ArgumentError, "Could not find the project." unless @project.present?
+		end
 
-			@sourcedb = params[:sourcedb]
+		@sourcedb = params[:sourcedb]
 
-			page = (params[:page].presence || 1).to_i
-			per  = (params[:per].presence || 10).to_i
+		page = (params[:page].presence || 1).to_i
+		per  = (params[:per].presence || 10).to_i
 
-			raise ArgumentError, "The value of 'page' must be bigger than or equal to 1." if page < 1
-			raise ArgumentError, "The value of 'per' must be bigger than or equal to 1." if per < 1
-			raise ArgumentError, "The value of 'per' must be less than or equal to 10,000." if per > 10000
+		raise ArgumentError, "The value of 'page' must be bigger than or equal to 1." if page < 1
+		raise ArgumentError, "The value of 'per' must be bigger than or equal to 1." if per < 1
+		raise ArgumentError, "The value of 'per' must be less than or equal to 10,000." if per > 10000
 
-			htexts = nil
-			@docs = if params[:keywords].present?
-				project_id = @project.nil? ? nil : @project.id
-				search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:page, per:per})
-				@search_count = search_results.results.total
-				htexts = search_results.results.map{|r| {text: r.highlight.body}}
-				search_results.records
+		htexts = nil
+		@docs = if params[:keywords].present?
+			project_id = @project.nil? ? nil : @project.id
+			search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:page, per:per})
+			@search_count = search_results.results.total
+			htexts = search_results.results.map{|r| {text: r.highlight.body}}
+			search_results.records
+		else
+			sort_order = if params[:sort_key].present? && params[:sort_direction].present?
+				"#{params[:sort_key]} #{params[:sort_direction]}"
 			else
-				sort_order = if params[:sort_key].present? && params[:sort_direction].present?
-					"#{params[:sort_key]} #{params[:sort_direction]}"
+				Doc.sort_order(@project || nil)
+			end
+
+			if params[:randomize]
+				sort_order = sort_order ? sort_order + ', ' : ''
+				sort_order += 'random()'
+			end
+
+			if @project.present?
+				if @sourcedb.present?
+					@project.docs.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
 				else
-					Doc.sort_order(@project || nil)
+					@project.docs.order(sort_order).simple_paginate(page, per)
 				end
-
-				if params[:randomize]
-					sort_order = sort_order ? sort_order + ', ' : ''
-					sort_order += 'random()'
-				end
-
-				if @project.present?
-					if @sourcedb.present?
-						@project.docs.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
-					else
-						@project.docs.order(sort_order).simple_paginate(page, per)
-					end
+			else
+				if @sourcedb.present?
+					Doc.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
 				else
-					if @sourcedb.present?
-						Doc.where(sourcedb: @sourcedb).order(sort_order).simple_paginate(page, per)
-					else
-						Doc.order(sort_order).simple_paginate(page, per)
-					end
+					Doc.order(sort_order).simple_paginate(page, per)
 				end
 			end
+		end
 
-			respond_to do |format|
-				format.html {
-					if htexts
-						htexts = htexts.map{|h| h[:text].first}
-						@docs = @docs.zip(htexts).each{|d,t| d.body = t}.map{|d,t| d}
-					end
-				}
-				format.json {
-					hdocs = @docs.map{|d| d.to_list_hash('doc')}
-					if htexts
-						hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
-					end
-					send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
-				}
-				format.tsv  {
-					hdocs = @docs.map{|d| d.to_list_hash('doc')}
-					if htexts
-						htexts.each{|h| h[:text] = h[:text].first}
-						hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
-					end
-					send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
-				}
-			end
-		rescue => e
-			respond_to do |format|
-				format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
-				format.json {render json: {message:e.message}, status: :unprocessable_entity}
-				format.tsv  {render plain: e.message, status: :unprocessable_entity}
-			end
+		respond_to do |format|
+			format.html {
+				if htexts
+					htexts = htexts.map{|h| h[:text].first}
+					@docs = @docs.zip(htexts).each{|d,t| d.body = t}.map{|d,t| d}
+				end
+			}
+			format.json {
+				hdocs = @docs.map{|d| d.to_list_hash('doc')}
+				if htexts
+					hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+				end
+				send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
+			}
+			format.tsv  {
+				hdocs = @docs.map{|d| d.to_list_hash('doc')}
+				if htexts
+					htexts.each{|h| h[:text] = h[:text].first}
+					hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+				end
+				send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
+			}
+		end
+	rescue => e
+		respond_to do |format|
+			format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
+			format.json {render json: {message:e.message}, status: :unprocessable_entity}
+			format.tsv  {render plain: e.message, status: :unprocessable_entity}
 		end
 	end
  
