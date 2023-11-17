@@ -54,7 +54,7 @@ RSpec.describe "Docs", type: :request do
           end
 
           it { is_expected.to have_http_status(422) }
-          it { expect(response.body).to eq({message: "Could not find the project."}.to_json) }
+          it { expect(response.body).to eq({ message: "Could not find the project." }.to_json) }
         end
 
         context 'when the sourcedb is specified' do
