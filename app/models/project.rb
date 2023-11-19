@@ -16,6 +16,7 @@ class Project < ActiveRecord::Base
   has_many :evaluatees, class_name: 'Evaluation', foreign_key: 'reference_project_id'
 
   has_many :denotations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
+  has_many :blocks, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
   has_many :relations, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
   has_many :attrivutes, :dependent => :destroy, after_add: [:update_annotations_updated_at, :update_updated_at]
   has_many :associate_maintainers, :dependent => :destroy
@@ -776,7 +777,7 @@ class Project < ActiveRecord::Base
       denotations_num: denotations_num,
       blocks_num: blocks_num,
       relations_num: relations_num,
-      annotations_count: denotations_num
+      annotations_count: denotations_num + blocks_num + relations_num
     )
   end
 
@@ -793,6 +794,165 @@ class Project < ActiveRecord::Base
         annotations_with_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
       end
     end
+  end
+
+  def import_annotations_from_another_project_skip(source_project_id)
+    flag_duplicate_docs_without_annotations(source_project_id)
+    cnt_add_d, cnt_add_b, cnt_add_r, cnt_add_a = import_annotations_for_flagged_docs(source_project_id)
+    update_numbers_for_flagged_docs(cnt_add_d, cnt_add_b, cnt_add_r, cnt_add_a)
+    clear_flags
+  end
+
+  def import_annotations_from_another_project_replace(source_project_id)
+    flag_duplicate_docs(source_project_id)
+    cnt_del_d, cnt_del_b, cnt_del_r, cnt_del_a = delete_annotations_in_flagged_docs
+    cnt_add_d, cnt_add_b, cnt_add_r, cnt_add_a = import_annotations_for_flagged_docs(source_project_id)
+    update_numbers_for_flagged_docs(cnt_add_d - cnt_del_d, cnt_add_b - cnt_del_b, cnt_add_r - cnt_del_r, cnt_add_a - cnt_del_a)
+    clear_flags
+  end
+
+  def import_annotations_from_another_project_add(source_project_id)
+    flag_duplicate_docs(source_project_id)
+    cnt_add_d, cnt_add_b, cnt_add_r, cnt_add_a = import_annotations_for_flagged_docs(source_project_id)
+    update_numbers_for_flagged_docs(cnt_add_d, cnt_add_b, cnt_add_r, cnt_add_a)
+    clear_flags
+  end
+
+  private def flag_duplicate_docs(another_project_id)
+    ActiveRecord::Base.connection.update <<~SQL.squish
+      UPDATE project_docs
+      SET flag = true
+      WHERE project_id = #{id}
+      AND doc_id IN (SELECT doc_id FROM project_docs WHERE project_id = #{another_project_id})
+    SQL
+  end
+
+  private def flag_duplicate_docs_without_annotations(another_project_id)
+    ActiveRecord::Base.connection.update <<~SQL.squish
+      UPDATE project_docs
+      SET flag = true
+      WHERE project_id = #{id}
+      AND doc_id IN (SELECT doc_id FROM project_docs WHERE project_id = #{another_project_id})
+      AND denotations_num = 0 AND blocks_num = 0
+    SQL
+  end
+
+  private def clear_flags
+    ActiveRecord::Base.connection.update <<~SQL.squish
+      UPDATE project_docs
+      SET flag = false
+      WHERE flag = true
+    SQL
+  end
+
+  private def delete_annotations_in_flagged_docs
+    count_del_denotations = ActiveRecord::Base.connection.update <<~SQL.squish
+      DELETE FROM denotations
+      WHERE project_id=#{id} AND EXISTS (SELECT 1 FROM project_docs WHERE denotations.doc_id = project_docs.doc_id AND project_docs.flag = true)
+    SQL
+
+    count_del_blocks = ActiveRecord::Base.connection.update <<~SQL.squish
+      DELETE FROM blocks
+      WHERE project_id=#{id} AND EXISTS (SELECT 1 FROM project_docs WHERE blocks.doc_id = project_docs.doc_id AND project_docs.flag = true)
+    SQL
+
+    count_del_relations = ActiveRecord::Base.connection.update <<~SQL.squish
+      DELETE FROM relations
+      WHERE project_id=#{id} AND EXISTS (SELECT 1 FROM project_docs WHERE relations.doc_id = project_docs.doc_id AND project_docs.flag = true)
+    SQL
+
+    count_del_attrivutes = ActiveRecord::Base.connection.update <<~SQL.squish
+      DELETE FROM attrivutes
+      WHERE project_id=#{id} AND EXISTS (SELECT 1 FROM project_docs WHERE attrivutes.doc_id = project_docs.doc_id AND project_docs.flag = true)
+    SQL
+
+    p [count_del_denotations, count_del_blocks, count_del_relations, count_del_attrivutes]
+    p "---"
+
+    [count_del_denotations, count_del_blocks, count_del_relations, count_del_attrivutes]
+  end
+
+  private def import_annotations_for_flagged_docs(source_project_id)
+    count_add_denotations = ActiveRecord::Base.connection.update <<~SQL.squish
+      INSERT INTO denotations (doc_id, project_id, hid, "begin", "end", obj, is_block, created_at, updated_at)
+      SELECT doc_id, #{id}, hid, "begin", "end", obj, is_block, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      FROM denotations
+      WHERE project_id=#{source_project_id}
+      AND denotations.doc_id IN (SELECT doc_id FROM project_docs WHERE flag = true)
+    SQL
+
+    count_add_blocks = ActiveRecord::Base.connection.update <<~SQL.squish
+      INSERT INTO blocks (doc_id, project_id, hid, "begin", "end", obj, created_at, updated_at)
+      SELECT doc_id, #{id}, hid, "begin", "end", obj, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      FROM blocks
+      WHERE project_id=#{source_project_id}
+      AND blocks.doc_id IN (SELECT doc_id FROM project_docs WHERE flag = true)
+    SQL
+
+    count_add_relations = ActiveRecord::Base.connection.update <<~SQL.squish
+      INSERT INTO relations (doc_id, project_id, hid, subj_id, subj_type, obj_id, obj_type, pred, created_at, updated_at)
+      SELECT
+        doc_id, #{id}, hid,
+        CASE subj_type
+          WHEN 'Denotation' THEN (SELECT id FROM denotations AS t_d WHERE t_d.hid = (SELECT hid FROM denotations AS s_d WHERE s_d.id = relations.subj_id) AND t_d.doc_id = relations.doc_id AND t_d.project_id = #{id})
+          WHEN 'Block' THEN (SELECT id FROM blocks AS t_b WHERE t_b.hid = (SELECT hid FROM blocks AS s_b WHERE s_b.id = relations.subj_id) AND t_b.doc_id = relations.doc_id AND t_b.project_id = #{id})
+        END,
+        subj_type,
+        CASE obj_type
+          WHEN 'Denotation' THEN (SELECT id FROM denotations AS t_d WHERE t_d.hid = (SELECT hid FROM denotations AS s_d WHERE s_d.id = relations.obj_id) AND t_d.doc_id = relations.doc_id AND t_d.project_id = #{id})
+          WHEN 'Block' THEN (SELECT id FROM blocks AS t_b WHERE t_b.hid = (SELECT hid FROM blocks AS s_b WHERE s_b.id = relations.obj_id) AND t_b.doc_id = relations.doc_id AND t_b.project_id = #{id})
+        END,
+        obj_type, pred, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      FROM relations
+      WHERE project_id = #{source_project_id}
+      AND relations.doc_id IN (SELECT doc_id FROM project_docs WHERE flag = true)
+    SQL
+
+    count_add_attrivutes = ActiveRecord::Base.connection.update <<~SQL.squish
+      INSERT INTO attrivutes (doc_id, project_id, hid, subj_id, subj_type, obj, pred, created_at, updated_at)
+      SELECT
+        doc_id, #{id}, hid,
+        CASE subj_type
+          WHEN 'Denotation' THEN (SELECT id FROM denotations AS t_d WHERE t_d.hid = (SELECT hid FROM denotations AS s_d WHERE s_d.id = attrivutes.subj_id) AND t_d.doc_id = attrivutes.doc_id AND t_d.project_id = #{id})
+          WHEN 'Block' THEN (SELECT id FROM blocks AS t_b WHERE t_b.hid = (SELECT hid FROM blocks AS s_b WHERE s_b.id = attrivutes.subj_id) AND t_b.doc_id = attrivutes.doc_id AND t_b.project_id = #{id})
+          WHEN 'Relation' THEN (SELECT id FROM relations AS t_r WHERE t_r.hid = (SELECT hid FROM relations AS s_r WHERE s_r.id = attrivutes.subj_id) AND t_r.doc_id = attrivutes.doc_id AND t_r.project_id = #{id})
+        END,
+        subj_type, obj, pred, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      FROM attrivutes
+      WHERE project_id = #{source_project_id}
+      AND attrivutes.doc_id IN (SELECT doc_id FROM project_docs WHERE flag = true)
+    SQL
+
+    [count_add_denotations, count_add_blocks, count_add_relations, count_add_attrivutes]
+  end
+
+  private def update_numbers_for_flagged_docs(count_diff_denotations, count_diff_blocks, count_diff_relations, count_diff_attrivutes)
+    ActiveRecord::Base.connection.update <<~SQL.squish
+      UPDATE project_docs
+      SET
+        denotations_num = (SELECT count(*) FROM denotations WHERE denotations.doc_id = project_docs.id AND denotations.project_id = project_docs.project_id),
+        blocks_num = (SELECT count(*) FROM blocks WHERE blocks.doc_id = project_docs.id AND blocks.project_id = project_docs.project_id),
+        relations_num = (SELECT count(*) FROM relations WHERE relations.doc_id = project_docs.id AND relations.project_id = project_docs.project_id)
+      WHERE flag = true
+    SQL
+
+    ActiveRecord::Base.connection.update <<~SQL.squish
+      UPDATE docs
+      SET
+        denotations_num = (SELECT count(*) FROM denotations WHERE denotations.doc_id = docs.id),
+        blocks_num = (SELECT count(*) FROM blocks WHERE blocks.doc_id = docs.id),
+        relations_num = (SELECT count(*) FROM relations WHERE relations.doc_id = docs.id)
+      WHERE EXISTS (SELECT 1 FROM project_docs WHERE project_docs.id = docs.id AND project_docs.flag = true)
+    SQL
+
+    ActiveRecord::Base.connection.update <<~SQL.squish
+      UPDATE projects
+      SET
+        denotations_num = denotations_num + #{count_diff_denotations},
+        blocks_num = blocks_num + #{count_diff_blocks},
+        relations_num = relations_num + #{count_diff_relations}
+      WHERE id=#{id}
+    SQL
   end
 
   def import_docs_from_another_project(source_project_id)
@@ -831,15 +991,15 @@ class Project < ActiveRecord::Base
       Block.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
     else
       ActiveRecord::Base.transaction do
-        d_num = ActiveRecord::Base.connection.delete("delete from denotations where project_id=#{self.id} AND doc_id=#{doc.id}")
-        b_num = ActiveRecord::Base.connection.delete("delete from blocks where project_id=#{self.id} AND doc_id=#{doc.id}")
-        r_num = ActiveRecord::Base.connection.delete("delete from relations where project_id=#{self.id} AND doc_id=#{doc.id}")
-        a_num = ActiveRecord::Base.connection.delete("delete from attrivutes where project_id=#{self.id} AND doc_id=#{doc.id}")
+        d_num = ActiveRecord::Base.connection.update("delete from denotations where project_id=#{self.id} AND doc_id=#{doc.id}")
+        b_num = ActiveRecord::Base.connection.update("delete from blocks where project_id=#{self.id} AND doc_id=#{doc.id}")
+        r_num = ActiveRecord::Base.connection.update("delete from relations where project_id=#{self.id} AND doc_id=#{doc.id}")
+        a_num = ActiveRecord::Base.connection.update("delete from attrivutes where project_id=#{self.id} AND doc_id=#{doc.id}")
 
         if d_num > 0 || b_num > 0
-          ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
-          ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{doc.id}")
-          ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{id}")
+          ActiveRecord::Base.connection.update("update project_docs set denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
+          ActiveRecord::Base.connection.update("update docs set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{doc.id}")
+          ActiveRecord::Base.connection.update("update projects set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{id}")
 
           update_annotations_updated_at
           update_updated_at
@@ -852,19 +1012,19 @@ class Project < ActiveRecord::Base
     if denotations_num > 0 
       ActiveRecord::Base.transaction do
         # destroy annotations
-        a_num = ActiveRecord::Base.connection.delete("DELETE FROM attrivutes WHERE project_id = #{id}")
-        r_num = ActiveRecord::Base.connection.delete("DELETE FROM relations WHERE project_id = #{id}")
-        b_num = ActiveRecord::Base.connection.delete("DELETE FROM blocks WHERE project_id = #{id}")
-        d_num = ActiveRecord::Base.connection.delete("DELETE FROM denotations WHERE project_id = #{id}")
+        a_num = ActiveRecord::Base.connection.update("DELETE FROM attrivutes WHERE project_id = #{id}")
+        r_num = ActiveRecord::Base.connection.update("DELETE FROM relations WHERE project_id = #{id}")
+        b_num = ActiveRecord::Base.connection.update("DELETE FROM blocks WHERE project_id = #{id}")
+        d_num = ActiveRecord::Base.connection.update("DELETE FROM denotations WHERE project_id = #{id}")
 
         # update annotation counts for the project
-        ActiveRecord::Base.connection.exec_query("UPDATE projects SET denotations_num = 0, blocks_num=0, relations_num=0 WHERE id=#{id}")
+        ActiveRecord::Base.connection.update("UPDATE projects SET denotations_num = 0, blocks_num=0, relations_num=0, annotations_updated_at = CURRENT_TIMESTAMP WHERE id=#{id}")
 
         # update annotation counts for each doc within the project
-        ActiveRecord::Base.connection.exec_query("UPDATE project_docs SET denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{id}")
+        ActiveRecord::Base.connection.update("UPDATE project_docs SET denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP WHERE project_id=#{id}")
 
         # update annotation counts for each doc
-        ActiveRecord::Base.connection.exec_query("UPDATE docs SET denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} WHERE EXISTS (SELECT 1 FROM project_docs WHERE project_id=#{id} AND doc_id=docs.id)")
+        ActiveRecord::Base.connection.update("UPDATE docs SET denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} WHERE EXISTS (SELECT 1 FROM project_docs WHERE project_id=#{id} AND doc_id=docs.id)")
 
         update_annotations_updated_at
         update_updated_at

@@ -11,6 +11,6 @@ class ImportDocsJob < ApplicationJob
 	end
 
 	def job_name
-		'Import docs to project'
+		'Import docs'
 	end
 end

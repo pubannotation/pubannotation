@@ -7,9 +7,9 @@ class DeleteAllAnnotationsFromProjectJob < ApplicationJob
 		begin
 			project.delete_annotations
 		rescue => e
-			@job.add_message body: e.message
+			@job&.add_message body: e.message
 		end
-		@job.update_attribute(:num_dones, 1)
+		@job&.update_attribute(:num_dones, 1)
 		project.update_attribute(:annotations_count, 0)
 	end
 

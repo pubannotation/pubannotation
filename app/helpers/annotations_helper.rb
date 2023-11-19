@@ -5,16 +5,28 @@ module AnnotationsHelper
 		if project
 			if project.annotations_accessible?(current_user)
 				if doc.present?
-					doc.get_denotations_count(project.id, span)
+					ActiveRecord::Base.connection.select_value <<~SQL.squish
+						SELECT denotations_num + blocks_num + relations_num
+						FROM project_docs
+						WHERE project_id = #{project.id} AND doc_id = #{doc.id}
+					SQL
 				else
-					project.denotations_num
+					ActiveRecord::Base.connection.select_value <<~SQL.squish
+						SELECT denotations_num + blocks_num + relations_num
+						FROM projects
+						WHERE id = #{project.id}
+					SQL
 				end
 			else
 				'<i class="fa fa-bars" aria-hidden="true" title="blinded"></i>'.html_safe
 			end
 		else
 			if doc.present?
-				doc.get_denotations_count(nil, span)
+				ActiveRecord::Base.connection.select_value <<~SQL.squish
+					SELECT denotations_num + blocks_num + relations_num
+					FROM docs
+					WHERE id = #{doc.id}
+				SQL
 			else
 				raise "count of all denotations?"
 			end

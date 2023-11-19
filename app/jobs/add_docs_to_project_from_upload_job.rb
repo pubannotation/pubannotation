@@ -28,21 +28,22 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
     add_docs(project, sourcedb, ids)
 
     if @total_num_sequenced > 0
-      ActionController::Base.new.expire_fragment('sourcedb_counts')
-      ActionController::Base.new.expire_fragment('docs_count')
+      Project.docs_stat_increment!(sourcedb, @total_num_sequenced)
+      Project.docs_count_increment!(@total_num_sequenced)
     end
 
     if @total_num_added > 0
-      ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
-      ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-      ActionController::Base.new.expire_fragment("count_#{sourcedb}_#{project.name}")
+      project.docs_stat_increment!(sourcedb, @total_num_added)
+      project.increment!(:docs_count, @total_num_added)
     end
 
     File.unlink(filepath)
   ensure
-    if @total_num_existed > 0
-      @job&.add_message body: "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added."
-    end
+    messages  = []
+    messages << "#{@total_num_existed} doc(s) existed." if @total_num_existed > 0
+    messages << "#{@total_num_added} doc(s) sequenced." if @total_num_sequenced > 0
+    messages << "#{@total_num_added} doc(s) added."
+    @job&.add_message body: messages.join(' ')
   end
 
   def job_name
@@ -66,10 +67,8 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
     @total_num_sequenced += num_sequenced
     @total_num_existed += num_existed
 
-    if @job
-      messages.each do |message|
-        @job&.add_message(message.class == Hash ? message : { body: message })
-      end
+    messages.each do |message|
+      @job&.add_message(message.class == Hash ? message : { body: message })
     end
   end
 end

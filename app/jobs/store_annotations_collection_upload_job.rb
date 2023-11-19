@@ -6,9 +6,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
     filenames, dir_path = read_filenames(filepath)
 
     # initialize the counter
-    if @job
-      prepare_progress_record(filenames.length)
-    end
+    prepare_progress_record(filenames.length)
 
     # initialize necessary variables
     @is_sequenced = false
@@ -34,19 +32,15 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
         batch_item = BatchItem.new
       end
 
-      if @job
-        @job.update_attribute(:num_dones, i + 1)
-        check_suspend_flag
-      end
+      @job&.update_attribute(:num_dones, i + 1)
+      check_suspend_flag
     end
 
     # Process the remaining batch items.
     threads << execute_batch(project, options, batch_item)
     threads.each(&:join)
 
-    if @job
-      @job.update_attribute(:num_dones, filenames.length)
-    end
+    @job&.update_attribute(:num_dones, filenames.length)
 
     if @is_sequenced
       ActionController::Base.new.expire_fragment('sourcedb_counts')
@@ -78,12 +72,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
       num_added, num_sequenced, messages = project.add_docs(ids)
       source_dbs_changed << sourcedb if num_added > 0
       total_num_sequenced += num_sequenced
-      if @job
-        messages.each do |message|
-          @job.add_message(message.class == Hash ? message : { body: message[0..250] })
-        end
-      else
-        raise messages.join("\n") if @messages.present?
+      messages.each do |message|
+        @job&.add_message(message.class == Hash ? message : { body: message[0..250] })
       end
     end
 

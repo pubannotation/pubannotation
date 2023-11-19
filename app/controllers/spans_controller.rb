@@ -74,13 +74,8 @@ class SpansController < ApplicationController
   end
 
   def get_url
-    doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-    unless doc.present?
-      docs, _ = Doc.sequence_and_store_docs(params[:sourcedb], [params[:sourceid]])
-      raise IOError, "Failed to get the document" unless docs.length == 1
-      expire_fragment("sourcedb_counts")
-      expire_fragment("count_#{params[:sourcedb]}")
-    end
+    doc = Doc.find_by sourcedb:params[:sourcedb], sourceid:params[:sourceid] \
+            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
 
     raise ArgumentError, "The 'text' parameter is missing." unless params[:text].present?
     raise ArgumentError, "The value of the 'text' parameter is not a string." unless params[:text].class == String

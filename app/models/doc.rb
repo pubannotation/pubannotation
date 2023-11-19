@@ -67,8 +67,6 @@ class Doc < ActiveRecord::Base
 	end
 
 	UserSourcedbSeparator = '@'
-	after_save :expire_page_cache
-	after_destroy :expire_page_cache
 	# before_validation :attach_sourcedb_suffix
 
 	attr_accessor :username, :original_body, :text_aligner
@@ -800,11 +798,6 @@ class Doc < ActiveRecord::Base
 	def self.docs_count(current_user)
 		docs_count_per_sourcedb = Doc.count_per_sourcedb(current_user)
 		docs_count_per_sourcedb.values.inject(0){|sum, v| sum + v}
-	end
-
-	def expire_page_cache
-		ActionController::Base.new.expire_fragment('sourcedb_counts')
-		ActionController::Base.new.expire_fragment('docs_count')
 	end
 
 	def self.dummy(repeat_times)

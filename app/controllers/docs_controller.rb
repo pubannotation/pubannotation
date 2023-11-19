@@ -8,7 +8,6 @@ class DocsController < ApplicationController
 	before_action :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 	skip_before_action :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 
-	cache_sweeper :doc_sweeper
 	autocomplete :doc, :sourcedb
 
 	def index
@@ -349,36 +348,34 @@ class DocsController < ApplicationController
 
 	# add new docs to a project
 	def add_from_upload
-		begin
-			project = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
-			raise ArgumentError, "sourcedb is not specified." unless params["sourcedb"].present?
+		project = Project.editable(current_user).find_by_name(params[:project_id])
+		raise "The project does not exist, or you are not authorized to make a change to the project.\n" unless project.present?
+		raise ArgumentError, "sourcedb is not specified." unless params["sourcedb"].present?
 
-			sourcedb = params["sourcedb"]
-			filename = params[:upfile].original_filename
-			ext = File.extname(filename)
-			raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.txt'].include?(ext)
+		sourcedb = params["sourcedb"]
+		filename = params[:upfile].original_filename
+		ext = File.extname(filename)
+		raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.txt'].include?(ext)
 
-			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+		raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
-			filepath = File.join('tmp', "add-docs-to-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
-			FileUtils.mv params[:upfile].path, filepath
+		filepath = File.join('tmp', "add-docs-to-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
+		FileUtils.mv params[:upfile].path, filepath
 
-			# AddDocsToProjectFromUploadJob.perform_now(project, sourcedb, filepath)
+		# AddDocsToProjectFromUploadJob.perform_now(project, sourcedb, filepath)
 
-			active_job = AddDocsToProjectFromUploadJob.perform_later(project, sourcedb, filepath)
-			job = Job.find_by(active_job_id: active_job.job_id)
-			message = "The task, '#{active_job.job_name}', is created."
+		active_job = AddDocsToProjectFromUploadJob.perform_later(project, sourcedb, filepath)
+		job = Job.find_by(active_job_id: active_job.job_id)
+		message = "The task, '#{active_job.job_name}', is created."
 
-			respond_to do |format|
-				format.html {redirect_back fallback_location: root_path, notice: message }
-				format.json {render json: {message: message, task_location: project_job_url(project.name, job.id, format: :json)}, status: :ok}
-			end
-		rescue => e
-			respond_to do |format|
-				format.html {redirect_back fallback_location: root_path, notice: e.message }
-				format.json {render json: {message: e.message}, status: :unprocessable_entity}
-			end
+		respond_to do |format|
+			format.html {redirect_back fallback_location: root_path, notice: message }
+			format.json {render json: {message: message, task_location: project_job_url(project.name, job.id, format: :json)}, status: :ok}
+		end
+	rescue => e
+		respond_to do |format|
+			format.html {redirect_back fallback_location: root_path, notice: e.message }
+			format.json {render json: {message: e.message}, status: :unprocessable_entity}
 		end
 	end
 
@@ -429,9 +426,8 @@ class DocsController < ApplicationController
 		message = begin
 			project = Project.editable(current_user).find_by! name: params[:project_id]
 
-			source_project = Project.find_by_name(params["select_project"])
+			source_project = Project.find_by name: params["select_project"]
 			raise ArgumentError, "The project (#{params["select_project"]}) does not exist, or you are not authorized to access it.\n" unless source_project.present?
-
 			raise ArgumentError, "You cannot import documents from itself." if source_project == project
 
 			ImportDocsJob.perform_later(project, source_project.id)
@@ -439,8 +435,8 @@ class DocsController < ApplicationController
 			"The task, 'import documents to the project', is created."
 		rescue ActiveRecord::RecordNotFound => e
 			raise "No project by the name exists under your management."
-		# rescue => e
-		# 	e.message
+		rescue => e
+			e.message
 		end
 
 		respond_to do |format|
@@ -493,12 +489,9 @@ class DocsController < ApplicationController
 		begin
 			doc = Doc.find(params[:id])
 			if params[:project_id].present?
-				project = Project.editable(current_user).find_by_name(params[:project_id])
-				raise "There is no such project in your management." unless project.present?
-				project.docs.delete(doc)
-				expire_fragment("sourcedb_counts_#{project.name}")
-				expire_fragment("count_docs_#{project.name}")
-				expire_fragment("count_#{doc.sourcedb}_#{project.name}")
+				project = Project.editable(current_user).find_by name: params[:project_id]
+				raise "No project by the name exists under your management." unless project.present?
+				project.delete_doc(doc)
 
 				redirect_path = project_docs_path(params[:project_id])
 			else

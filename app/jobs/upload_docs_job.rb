@@ -14,15 +14,11 @@ class UploadDocsJob < ApplicationJob
 			Dir.glob(File.join(unpackpath, '**', '*.json')) + Dir.glob(File.join(unpackpath, '**', '*.txt'))
 		end.sort
 
-		if @job
-			prepare_progress_record(infiles.length)
-		end
+		prepare_progress_record(infiles.length)
 
 		username = project.user
 		mode = options[:mode].to_sym
-		created = false
 		num_updated_or_skipped = 0
-		sourcedbs_added = Set[]
 		infiles.each_with_index do |fpath, i|
 			begin
 				ext = File.extname(fpath)
@@ -34,81 +30,38 @@ class UploadDocsJob < ApplicationJob
 					JSON.parse(json, symbolize_names:true).select{|k,v| [:sourcedb, :sourceid, :text, :source].include? k}
 				when '.txt'
 					fparts = fname.split('-')
-					raise "The filename is expected to be in the form 'sourcedb-sourceid.txt'." unless fparts.length == 2
-
-					text = File.read(fpath)
-
+					raise "The filename is expected to be in the form 'sourcedb-sourceid.txt'." unless fparts.length > 1
+					sourceid = fparts.pop
+					sourcedb = fparts.join('-')
 					{
-						text: text,
-						sourcedb: fparts[0],
-						sourceid: fparts[1]
+						text: File.read(fpath),
+						sourcedb: sourcedb,
+						sourceid: sourceid
 					}
 				end
-
 				hdoc = Doc.hdoc_normalize!(hdoc, username, options[:root] == true)
 
-				same_docs = Doc.where(sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid])
-				same_doc = if same_docs.count == 1
-					same_docs.first
-				elsif same_docs.count > 1
-					raise ArgumentError, "Multiple entries for #{hdoc[:sourcedb]}:#{hdoc[:sourceid]} found."
-				else
-					nil
-				end
-
+				same_doc = Doc.find_by sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid]
 				if same_doc.present?
 					if mode == :update
 						error_messages = same_doc.revise(hdoc)
-						if @job
-							error_messages.each do |m|
-								@job.add_message sourcedb: same_doc.sourcedb,
-																 sourceid: same_doc.sourceid,
-																 body: m
-							end
-						elsif error_messages.present?
-							raise error_messages.join("\n")
-						end
+						raise RuntimeError, error_messages.join("\n") if error_messages.present?
 					end
 					num_updated_or_skipped += 1
-					unless same_doc.projects.include? project
-						same_doc.projects << project
-						sourcedbs_added << hdoc[:sourcedb]
-					end
+					project.has_doc?(same_doc) || project.add_doc!(same_doc)
 				else
-					doc = Doc.new(hdoc)
-					r = Doc.import [doc]
-					raise RuntimeError, "documents import error" unless r.failed_instances.empty?
-					created = true
-					doc.projects << project
-					sourcedbs_added << hdoc[:sourcedb]
+					doc = Doc.store_hdoc!(hdoc)
+					project.add_doc!(doc)
 				end
 			rescue => e
-				message = "[#{fpath}] #{e.message}"
-				if @job
-					@job.add_message body: message
-				else
-					raise ArgumentError, message
-				end
+				@job&.add_message body: "[#{fpath}] #{e.message}"
 			ensure
-				if @job
-					@job.update_attribute(:num_dones, i + 1)
-					check_suspend_flag
-				end
+				@job&.update_attribute(:num_dones, i + 1)
+				check_suspend_flag
 			end
 		end
 
-		if @job
-			if num_updated_or_skipped > 0
-				@job.add_message body: "#{num_updated_or_skipped} docs were #{mode == :update ? 'updated' : 'skipped'}."
-			end
-		end
-
-		unless sourcedbs_added.empty?
-			ActionController::Base.new.expire_fragment("sourcedb_counts") if created
-			ActionController::Base.new.expire_fragment("sourcedb_counts_#{project.name}")
-			ActionController::Base.new.expire_fragment("count_docs_#{project.name}")
-			sourcedbs_added.each{|sdb| ActionController::Base.new.expire_fragment("count_#{sdb}_#{project.name}")}
-		end
+		@job&.add_message body: "#{num_updated_or_skipped} docs were #{mode == :update ? 'updated' : 'skipped'}." if num_updated_or_skipped > 0
 
 		FileUtils.rm_rf(dirpath) unless dirpath.nil?
 		true

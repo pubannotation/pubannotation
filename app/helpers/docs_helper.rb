@@ -39,8 +39,8 @@ module DocsHelper
 
 	def sourcedb_counts(project = nil)
 		if project.nil?
-			# Project.docs_stat.present? ? Project.docs_stat : Project.docs_stat_update
-			Project.docs_stat_update
+			Project.docs_stat.present? ? Project.docs_stat : Project.docs_stat_update
+			# Project.docs_stat_update
 		else
 			project.docs_stat.present? ? project.docs_stat : project.docs_stat_update
 			# project.docs_stat_update

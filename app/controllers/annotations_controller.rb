@@ -154,27 +154,20 @@ class AnnotationsController < ApplicationController
 		doc = if params[:sourcedb] && params[:sourceid]
 		    _doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
 		            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
-			project.add_doc!(_doc)
+			project.add_doc!(_doc) unless project.has_doc?(_doc)
+			_doc
 		else
 			raise "Text is missing." unless params.has_key? :text
 
 			# Create a doc
-			doc_hash = {body: params[:text]}
-			doc_hash[:source] = params[:source] if params[:source].present?
-			doc_hash[:divisions] = params[:divisions] if params[:divisions].present?
-			doc_hash[:typesettings] = params[:typesettings] if params[:typesettings].present?
+			hdoc = {body: params[:text]}
+			hdoc[:source] = params[:source] if params[:source].present?
+			hdoc[:divisions] = params[:divisions] if params[:divisions].present?
+			hdoc[:typesettings] = params[:typesettings] if params[:typesettings].present?
 
-			doc_hash = Doc.hdoc_normalize!(doc_hash, current_user, current_user.root?)
-			docs_saved, messages = Doc.store_hdocs([doc_hash])
-			raise IOError, "Could not create the document: #{messages.join("\n")}" if messages.present?
-
-			_doc = docs_saved.first
-			_doc.projects << project
-			expire_fragment("sourcedb_counts_#{project.name}")
-			expire_fragment("count_docs_#{project.name}")
-			expire_fragment("count_#{_doc.sourcedb}_#{project.name}")
-
-			_doc
+			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)
+			_doc = Doc.store_hdoc!(hdoc)
+			project.add_doc!(_doc)
 		end
 
 
@@ -241,14 +234,9 @@ class AnnotationsController < ApplicationController
 			annotations = AnnotationUtils.normalize!(annotations)
 			annotations_collection = [annotations]
 
-			doc = Doc.find_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			unless doc.present?
-				docs, messages = Doc.sequence_and_store_docs(params[:sourcedb], [params[:sourceid]])
-				raise IOError, "Failed to get the document" unless docs.length == 1
-				doc = docs.first
-				expire_fragment("sourcedb_counts")
-				expire_fragment("count_#{params[:sourcedb]}")
-			end
+
+		    doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
+		            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
 
 			m = AnnotationUtils.prepare_annotations!(annotations, doc)
 
@@ -503,56 +491,29 @@ class AnnotationsController < ApplicationController
 	end
 
 	def import
-		begin
-			project = Project.editable(current_user).find_by_name(params[:project_id])
-			raise "There is no such project in your management: #{params[:project_id]}." unless project.present?
+		message = begin
+			project = Project.editable(current_user).find_by! name: params[:project_id]
 
-			options = {mode: params[:mode].present? ? params[:mode] : 'merge'}
+			source_project = Project.find_by name: params["select_project"]
+			raise ArgumentError, "The project (#{params["select_project"]}) does not exist, or you are not authorized to access it.\n" unless source_project.present?
+			raise ArgumentError, "You cannot import annotations from itself." if source_project == project
+			raise ArgumentError, "The annotations in the project are blinded: #{name}." if source_project.accessibility == 3
 
-			messages = []
+			options = {mode: params[:mode]&.to_sym || :skip}
+			raise ArgumentError, "The 'Merge' mode of importing annotations is disabled at the moment." if options[:mode] == :merge
 
-			# source projects
-			sproject_names = params[:select_project].split(/\|/)
-			sprojects = sproject_names.map do |name|
-				sproject = Project.find_by_name(name)
-				if sproject.nil?
-					messages << "Could not find the project: #{name}."
-					nil
-				elsif sproject == project
-					messages << "A project cannot import annotations from itself: #{name}."
-					nil
-				elsif sproject.accessibility == 3
-					messages << "The annotations in the project are blinded: #{name}."
-					nil
-				else
-					sproject
-				end
-			end.compact
+			# ImportAnnotationsJob.perform_later(project, source_project.id, options)
+			ImportAnnotationsJob.perform_now(project, source_project.id, options)
 
-			destin_docs = project.docs
-			sprojects.reject! do |sproject|
-				shared_docs = sproject.docs & destin_docs
-				if shared_docs.length > 3000
-					messages << "The project has more than 3000 shared documents, for which this feature is limited for a performance reason: #{sproject.name}."
-					true
-				elsif shared_docs.empty?
-					messages << "The project has no shared document with it: #{sproject.name}"
-					true
-				else
-					false
-				end
-			end
-
-			ImportAnnotationsJob.perform_later(project, sproject_names, options)
-			messages << "The task, 'import annotations from the projects, #{sprojects.map{|p| p.name}.join(", ")}', is created."
-
+			"The task, 'import annotations' (from the project, '#{source_project.name}') is created."
+		rescue ActiveRecord::RecordNotFound => e
+			raise "No project by the name exists under your management."
 		rescue => e
-			messages << e.message
+			e.message
 		end
 
 		respond_to do |format|
-			format.html {redirect_to project_path(project.name), notice: messages.join("\n")}
-			# format.json {render json:{messages:messages}}
+			format.html {redirect_to project_path(project.name), notice: message}
 		end
 	end
 

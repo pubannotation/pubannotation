@@ -6,6 +6,7 @@ class ValidatedAnnotations
 
   def initialize(json_string)
     parsed_json = parse json_string
+
     validate! parsed_json
     @annotations = normalize parsed_json
     @sourcedb_sourceid_index = DocumentSourceIndex.new @annotations
@@ -15,7 +16,8 @@ class ValidatedAnnotations
 
   def parse(json_string)
     # To return the annotation in an array
-    Array(JSON.parse(json_string, symbolize_names: true))
+    parsed_json = JSON.parse(json_string, symbolize_names: true)
+    parsed_json.class == Array ? parsed_json : [parsed_json]
   end
 
   def validate!(annotations)

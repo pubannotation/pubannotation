@@ -2,33 +2,42 @@ class ImportAnnotationsJob < ApplicationJob
 	queue_as :general
 
 	def perform(project, source_project_id, options = {})
-		shared_docs_ids = if options[:mode] == 'skip'
-			ActiveRecord::Base.connection.exec_query("SELECT doc_id FROM project_docs WHERE project_id=#{source_project_id} INTERSECT SELECT doc_id FROM project_docs WHERE project_id=#{project.id} AND denotations_num=0").pluck("doc_id")
+		prepare_progress_record(1)
+
+		count_shared_docs = case options[:mode]
+		when :skip
+			ActiveRecord::Base.connection.select_value <<~SQL.squish
+				SELECT count(*)
+				FROM project_docs AS target
+				WHERE target.project_id=#{project.id}
+				AND EXISTS (SELECT 1 FROM project_docs AS source WHERE source.project_id=#{source_project_id} AND source.doc_id = target.doc_id)
+				AND target.denotations_num = 0 AND target.blocks_num = 0
+			SQL
 		else
-			ActiveRecord::Base.connection.exec_query("SELECT doc_id FROM project_docs WHERE project_id=#{source_project_id} INTERSECT SELECT doc_id FROM project_docs WHERE project_id=#{project.id}").pluck("doc_id")
+			ActiveRecord::Base.connection.select_value <<~SQL.squish
+				SELECT count(*)
+				FROM project_docs AS target
+				WHERE target.project_id=#{project.id}
+				AND EXISTS (SELECT 1 FROM project_docs AS source WHERE source.project_id=#{source_project_id} AND source.doc_id = target.doc_id)
+			SQL
 		end
 
-		raise "Importing annotations for more than 1M documents is prohibited for a performance issue." if shared_docs_ids.length > 1000000
-		raise "There is no shared document in the two projects." if shared_docs_ids.empty?
+		raise "Importing annotations for more than 1M documents is prohibited for a performance issue." if count_shared_docs > 1000000
+		raise "There is no shared document in the two projects." unless count_shared_docs > 0
 
-		source_project = Project.find(source_project_id)
-		destin_project = project
-
-		prepare_progress_record(shared_docs_ids.length)
-
-		shared_docs_ids.each do |doc_id|
-			begin
-				annotations = doc.hannotations(source_project, nil, nil)
-				messages = destin_project.save_annotations!(annotations, doc, options)
-				messages.each{|m| @job&.add_message m}
-			rescue => e
-				@job&.add_message sourcedb: annotations[:sourcedb],
-								  sourceid: annotations[:sourceid],
-								  body: e.message
-			end
-			@job&.increment!(:num_dones)
-			check_suspend_flag
+		count_docs = case options[:mode]
+		when :skip
+			project.import_annotations_from_another_project_skip(source_project_id)
+		when :replace
+			project.import_annotations_from_another_project_replace(source_project_id)
+		when :add
+			project.import_annotations_from_another_project_add(source_project_id)
+		else
+			@job&.add_message body: "The 'Merge' mode of importing annotations is disabled at the moment."
 		end
+
+		@job&.add_message body: "Annotations for #{count_docs} doc(s) were imported."
+		@job&.update_attribute(:num_dones, 1)
 	end
 
 	def job_name
@@ -38,6 +47,6 @@ class ImportAnnotationsJob < ApplicationJob
 	private
 
 	def resource_name
-		self.arguments[1].join(', ')
+		Project.find(self.arguments[1])&.name
 	end
 end

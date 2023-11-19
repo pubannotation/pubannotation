@@ -8,6 +8,7 @@
 	<section>
 		<h1>
 			<%= link_to t('activerecord.models.doc').pluralize.capitalize.html_safe, docs_path -%>
+			<span class='info'>(<%= docs_count -%>)</span>
 			<%= render partial: 'docs/search_form', locals: {path: docs_path} -%>
 		</h1>
 		<%= render :partial => "docs/sourcedb_counts" -%>
