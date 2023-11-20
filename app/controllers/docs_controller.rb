@@ -55,32 +55,31 @@ class DocsController < ApplicationController
 		respond_to do |format|
 			format.html do
 				if use_elasticsearch
-					@docs = search_results.records.map.with_index do |doc, index|
-						set_highlight_text doc, get_highlight_texts_from(search_results, index).first
-					end
+					@docs = search_results.records
+																.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i).first }
 				end
 			end
 			format.json do
-				hdocs = if use_elasticsearch
-									search_results.records
-																.map(&:to_list_hash)
-																.map.with_index { |doc, index| set_highlight_text doc, get_highlight_texts_from(search_results, index) }
-								else
-									@docs.map(&:to_list_hash)
-								end
+				docs = if use_elasticsearch
+								 search_results.records
+															 .map(&:to_list_hash)
+															 .map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i) }
+							 else
+								 @docs.map(&:to_list_hash)
+							 end
 
-				send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
+				send_data docs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
 			end
 			format.tsv do
-				hdocs = if use_elasticsearch
-									search_results.records
-																.map(&:to_list_hash)
-																.map.with_index { |doc, index| set_highlight_text doc, get_highlight_texts_from(search_results, index).first }
-								else
-									@docs.map(&:to_list_hash)
-								end
+				docs = if use_elasticsearch
+								 search_results.records
+															 .map(&:to_list_hash)
+															 .map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i).first }
+							 else
+								 @docs.map(&:to_list_hash)
+							 end
 
-				send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
+				send_data Doc.hash_to_tsv(docs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
 			end
 		end
 	rescue => e
