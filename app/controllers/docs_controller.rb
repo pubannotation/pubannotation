@@ -30,8 +30,12 @@ class DocsController < ApplicationController
 		use_elasticsearch = params[:keywords].present?
 
 		if use_elasticsearch
-			project_id = @project.nil? ? nil : @project.id
-			search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:page, per:per})
+			search_results = Doc.search_by_elasticsearch params[:keywords].strip.downcase,
+																									 @project,
+																									 @sourcedb,
+																									 page,
+																									 per
+
 			@search_count = search_results.results.total
 			@docs = search_results.records
 		else

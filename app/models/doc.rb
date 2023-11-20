@@ -31,7 +31,15 @@ class Doc < ActiveRecord::Base
 
 	SOURCEDBS = ['PubMed', 'PMC', 'GrayAnatomy']
 
-	def self.search_docs(attributes = {})
+	def self.search_by_elasticsearch(keywords, project, sourcedb, page, per)
+		attributes = {
+			body: keywords,
+			project_id: project&.id,
+			sourcedb:,
+			page:,
+			per:
+		}
+
 		filter_condition = []
 		filter_condition << {term: {'projects.id' => attributes[:project_id]}} if attributes[:project_id].present?
 		filter_condition << {term: {'sourcedb' => attributes[:sourcedb]}} if attributes[:sourcedb].present?
