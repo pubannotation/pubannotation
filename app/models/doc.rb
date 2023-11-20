@@ -622,7 +622,7 @@ class Doc < ActiveRecord::Base
 		}.reject{|k, v| k != :text && (v.nil? || v.empty?)}
 	end
 
-	def to_list_hash(doc_type)
+	def to_list_hash
 		{
 			sourcedb: sourcedb,
 			sourceid: sourceid,
@@ -644,14 +644,14 @@ class Doc < ActiveRecord::Base
 	end
 
 	def self.to_tsv(docs, doc_type)
-		headers = docs.first.to_list_hash(doc_type).keys
+		headers = docs.first.to_list_hash().keys
 		tsv = CSV.generate(col_sep:"\t") do |csv|
 			# headers
 			csv << headers
 			docs.each do |doc|
 				doc_values = Array.new
 				headers.each do |key|
-					doc_values << doc.to_list_hash(doc_type)[key]
+					doc_values << doc.to_list_hash()[key]
 				end
 				csv << doc_values
 			end
