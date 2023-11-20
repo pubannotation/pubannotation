@@ -56,7 +56,8 @@ class DocsController < ApplicationController
 		respond_to do |format|
 			format.html do
 				if use_elasticsearch
-					@docs = @docs.zip(htexts).map do |doc, htext|
+					@docs = @docs.map.with_index do |doc, index|
+						htext = htexts[index]
 						doc.body = htext[:text].first
 						doc
 					end
