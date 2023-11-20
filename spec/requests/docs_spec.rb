@@ -128,6 +128,18 @@ RSpec.describe "Docs", type: :request do
             expect(response.body).to include("This is a <em>test</em>.\n<em>Test</em> are implemented.\nImplementation is difficult.")
           end
         end
+
+        context 'when tsv is specified as format' do
+          before do
+            get "/docs.tsv?keywords=test"
+          end
+
+          it { is_expected.to have_http_status(200) }
+          it 'returns the doc data' do
+            expect(response.body).to include("/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}")
+            expect(response.body).to include("This is a <em>test</em>.\n<em>Test</em> are implemented.\nImplementation is difficult.")
+          end
+        end
       end
     end
   end
