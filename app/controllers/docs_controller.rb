@@ -56,9 +56,10 @@ class DocsController < ApplicationController
 		respond_to do |format|
 			format.html do
 				if use_elasticsearch
-					@docs = @docs.zip(htexts)
-											 .each { |d, t| d.body = t[:text].first }
-											 .map { _1.first }
+					@docs = @docs.zip(htexts).map do |doc, htext|
+						doc.body = htext[:text].first
+						doc
+					end
 				end
 			end
 			format.json do
