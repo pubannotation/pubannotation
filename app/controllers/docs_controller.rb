@@ -87,7 +87,9 @@ class DocsController < ApplicationController
 			end
 		end
 	rescue => e
+		raise e if Rails.env.test? && !e.is_a?(ArgumentError)
 		logger.debug "[DEBUG] #{e.class}: #{e.message}"
+
 		respond_to do |format|
 			format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
 			format.json {render json: {message:e.message}, status: :unprocessable_entity}
