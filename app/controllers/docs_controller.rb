@@ -54,27 +54,27 @@ class DocsController < ApplicationController
 		end
 
 		respond_to do |format|
-			format.html {
+			format.html do
 				if use_elasticsearch
-					htexts = htexts.map{|h| h[:text].first}
-					@docs = @docs.zip(htexts).each{|d,t| d.body = t}.map{|d,t| d}
+					htexts = htexts.map { |h| h[:text].first }
+					@docs = @docs.zip(htexts).each { |d, t| d.body = t }.map { |d, t| d }
 				end
-			}
-			format.json {
-				hdocs = @docs.map{|d| d.to_list_hash('doc')}
+			end
+			format.json do
+				hdocs = @docs.map { |d| d.to_list_hash('doc') }
 				if use_elasticsearch
-					hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+					hdocs = hdocs.zip(htexts).map { |d| d.reduce(:merge) }
 				end
 				send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
-			}
-			format.tsv  {
-				hdocs = @docs.map{|d| d.to_list_hash('doc')}
+			end
+			format.tsv do
+				hdocs = @docs.map { |d| d.to_list_hash('doc') }
 				if use_elasticsearch
-					htexts.each{|h| h[:text] = h[:text].first}
-					hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
+					htexts.each { |h| h[:text] = h[:text].first }
+					hdocs = hdocs.zip(htexts).map { |d| d.reduce(:merge) }
 				end
 				send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
-			}
+			end
 		end
 	rescue => e
 		logger.debug "[DEBUG] #{e.class}: #{e.message}"
