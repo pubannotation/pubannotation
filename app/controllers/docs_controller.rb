@@ -39,21 +39,8 @@ class DocsController < ApplicationController
 			@search_count = search_results.results.total
 			@docs = search_results.records
 		else
-			sort_order = if params[:sort_key].present? && params[:sort_direction].present?
-										 "#{params[:sort_key]} #{params[:sort_direction]}"
-									 else
-										 Doc.sort_order(@project || nil)
-									 end
-
-			if params[:randomize]
-				sort_order = sort_order ? sort_order + ', ' : ''
-				sort_order += 'random()'
-			end
-
-			@docs = Doc.all
-			@docs = @docs.joins(:projects).where(projects: {id: @project.id}) if @project.present?
-			@docs = @docs.where(sourcedb: @sourcedb) if @sourcedb.present?
-			@docs = @docs.order(sort_order).simple_paginate(page, per)
+			@docs = Doc.search_by_active_record page, per, @project, @sourcedb,
+																					params[:sort_key], params[:sort_direction], params[:randomize]
 		end
 
 		respond_to do |format|

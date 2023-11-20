@@ -151,15 +151,21 @@ class Doc < ActiveRecord::Base
 	scope :user_source_db, lambda{|username|
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
 	}
-	
-	# default sort order 
-	#DefaultSort = [['sourceid', 'ASC']]
-	def self.sort_order(project = nil)
-		if project && project.small?
-			"sourceid ASC"
-		else
-			nil
-		end
+
+	def self.search_by_active_record(page, per, project = nil, sourcedb = nil,
+																	 sort_key = nil, sort_direction = nil, is_randomize = false)
+		docs = all
+		docs = docs.joins(:projects).where(projects: { id: project.id }) if project.present?
+		docs = docs.where(sourcedb: sourcedb) if sourcedb.present?
+
+		sort_order = if sort_key.present? && sort_direction.present?
+									 "#{sort_key} #{sort_direction}"
+								 else
+									 default_sort_order_for project
+								 end
+		sort_order = [sort_order, 'random()'].join(', ') if is_randomize
+
+		docs.order(sort_order).simple_paginate(page, per)
 	end
 
 	def self.graph_uri
@@ -883,6 +889,14 @@ class Doc < ActiveRecord::Base
 	end
 
 	private
+
+	# default sort order
+	#DefaultSort = [['sourceid', 'ASC']]
+	def self.default_sort_order_for(project)
+		return "sourceid ASC" if project&.small?
+
+		''
+	end
 
 	def get_ascii_text(text)
 		rewritetext = Utfrewrite.utf8_to_ascii(text)
