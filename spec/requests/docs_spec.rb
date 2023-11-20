@@ -153,7 +153,7 @@ RSpec.describe "Docs", type: :request do
 
       context 'when sort options are specified' do
         before do
-          get "/docs.json?sort_key=text&sort_direction=desc&randomize=true"
+          get "/docs.json?sort_key=projects_num&sort_direction=desc&randomize=true"
         end
 
         it { is_expected.to have_http_status(200) }

@@ -53,7 +53,7 @@ class DocsController < ApplicationController
 			@docs = Doc.all
 			@docs = @docs.joins(:projects).where(projects: {id: @project.id}) if @project.present?
 			@docs = @docs.where(sourcedb: @sourcedb) if @sourcedb.present?
-			@docs.order(sort_order).simple_paginate(page, per)
+			@docs = @docs.order(sort_order).simple_paginate(page, per)
 		end
 
 		respond_to do |format|
