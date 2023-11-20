@@ -25,19 +25,22 @@ class DocsController < ApplicationController
 		raise ArgumentError, "The value of 'per' must be bigger than or equal to 1." if per < 1
 		raise ArgumentError, "The value of 'per' must be less than or equal to 10,000." if per > 10000
 
-		htexts = nil
-		@docs = if params[:keywords].present?
+		# If a keyword parameter is specified, Elasticsearch is used to search the full text of the Doc.
+		# The results will also include a text string highlighting the matches in the full-text search.
+		use_elasticsearch = params[:keywords].present?
+
+		if use_elasticsearch
 			project_id = @project.nil? ? nil : @project.id
 			search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:page, per:per})
 			@search_count = search_results.results.total
 			htexts = search_results.results.map{|r| {text: r.highlight.body}}
-			search_results.records
+			@docs = search_results.records
 		else
 			sort_order = if params[:sort_key].present? && params[:sort_direction].present?
-				"#{params[:sort_key]} #{params[:sort_direction]}"
-			else
-				Doc.sort_order(@project || nil)
-			end
+										 "#{params[:sort_key]} #{params[:sort_direction]}"
+									 else
+										 Doc.sort_order(@project || nil)
+									 end
 
 			if params[:randomize]
 				sort_order = sort_order ? sort_order + ', ' : ''
@@ -52,21 +55,21 @@ class DocsController < ApplicationController
 
 		respond_to do |format|
 			format.html {
-				if htexts
+				if use_elasticsearch
 					htexts = htexts.map{|h| h[:text].first}
 					@docs = @docs.zip(htexts).each{|d,t| d.body = t}.map{|d,t| d}
 				end
 			}
 			format.json {
 				hdocs = @docs.map{|d| d.to_list_hash('doc')}
-				if htexts
+				if use_elasticsearch
 					hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
 				end
 				send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
 			}
 			format.tsv  {
 				hdocs = @docs.map{|d| d.to_list_hash('doc')}
-				if htexts
+				if use_elasticsearch
 					htexts.each{|h| h[:text] = h[:text].first}
 					hdocs = hdocs.zip(htexts).map{|d| d.reduce(:merge)}
 				end
