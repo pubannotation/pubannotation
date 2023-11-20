@@ -57,19 +57,16 @@ class DocsController < ApplicationController
 			format.html do
 				if use_elasticsearch
 					@docs = @docs.map.with_index do |doc, index|
-						htext = htexts[index]
-						doc.body = htext[:text].first
-						doc
+						set_highlight_text(doc, htexts[index][:text].first)
 					end
+
 				end
 			end
 			format.json do
 				hdocs = @docs.map { |d| d.to_list_hash }
 				if use_elasticsearch
 					hdocs = hdocs.map.with_index do |doc, index|
-						htext = htexts[index]
-						doc[:text] = htext[:text]
-						doc
+						set_highlight_text(doc, htexts[index][:text])
 					end
 				end
 				send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
@@ -78,9 +75,7 @@ class DocsController < ApplicationController
 				hdocs = @docs.map { |d| d.to_list_hash }
 				if use_elasticsearch
 					hdocs = hdocs.map.with_index do |doc, index|
-						htext = htexts[index]
-						doc[:text] = htext[:text].first
-						doc
+						set_highlight_text(doc, htexts[index][:text].first)
 					end
 				end
 				send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
@@ -573,6 +568,16 @@ class DocsController < ApplicationController
 	#   render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
 	# end
 	private
+
+	def set_highlight_text(doc, highlight_text)
+		if doc.is_a? Hash
+			doc[:text] = highlight_text
+		else
+			doc.body = highlight_text
+		end
+
+		doc
+	end
 
 	def doc_params
 		params.require(:doc).permit(:body, :source, :sourcedb, :sourceid, :username)
