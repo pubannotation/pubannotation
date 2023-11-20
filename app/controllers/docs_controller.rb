@@ -46,15 +46,13 @@ class DocsController < ApplicationController
 		respond_to do |format|
 			format.html do
 				if use_elasticsearch
-					@docs = search_results.records
-																.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i).first }
+					@docs = @docs.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i).first }
 				end
 			end
 			format.json do
 				docs = if use_elasticsearch
-								 search_results.records
-															 .map(&:to_list_hash)
-															 .map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i) }
+								 @docs.map(&:to_list_hash)
+											.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i) }
 							 else
 								 @docs.map(&:to_list_hash)
 							 end
@@ -63,9 +61,8 @@ class DocsController < ApplicationController
 			end
 			format.tsv do
 				docs = if use_elasticsearch
-								 search_results.records
-															 .map(&:to_list_hash)
-															 .map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i).first }
+								 @docs.map(&:to_list_hash)
+											.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i).first }
 							 else
 								 @docs.map(&:to_list_hash)
 							 end
