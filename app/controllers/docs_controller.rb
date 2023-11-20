@@ -66,15 +66,22 @@ class DocsController < ApplicationController
 			format.json do
 				hdocs = @docs.map { |d| d.to_list_hash }
 				if use_elasticsearch
-					hdocs = hdocs.zip(htexts).map { |d| d.reduce(:merge) }
+					hdocs = hdocs.map.with_index do |doc, index|
+						htext = htexts[index]
+						doc[:text] = htext[:text]
+						doc
+					end
 				end
 				send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
 			end
 			format.tsv do
 				hdocs = @docs.map { |d| d.to_list_hash }
 				if use_elasticsearch
-					htexts.each { |h| h[:text] = h[:text].first }
-					hdocs = hdocs.zip(htexts).map { |d| d.reduce(:merge) }
+					hdocs = hdocs.map.with_index do |doc, index|
+						htext = htexts[index]
+						doc[:text] = htext[:text].first
+						doc
+					end
 				end
 				send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
 			end
