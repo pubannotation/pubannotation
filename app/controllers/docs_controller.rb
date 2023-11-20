@@ -33,7 +33,6 @@ class DocsController < ApplicationController
 			project_id = @project.nil? ? nil : @project.id
 			search_results = Doc.search_docs({body: params[:keywords].strip.downcase, project_id: project_id, sourcedb: @sourcedb, page:page, per:per})
 			@search_count = search_results.results.total
-			htexts = search_results.results.map{|r| {text: r.highlight.body}}
 			@docs = search_results.records
 		else
 			sort_order = if params[:sort_key].present? && params[:sort_direction].present?
@@ -56,17 +55,16 @@ class DocsController < ApplicationController
 		respond_to do |format|
 			format.html do
 				if use_elasticsearch
-					@docs = @docs.map.with_index do |doc, index|
-						set_highlight_text(doc, htexts[index][:text].first)
+					@docs = search_results.records.map.with_index do |doc, index|
+						set_highlight_text doc, get_highlight_texts_from(search_results, index).first
 					end
-
 				end
 			end
 			format.json do
 				hdocs = @docs.map { |d| d.to_list_hash }
 				if use_elasticsearch
 					hdocs = hdocs.map.with_index do |doc, index|
-						set_highlight_text(doc, htexts[index][:text])
+						set_highlight_text doc, get_highlight_texts_from(search_results, index)
 					end
 				end
 				send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
@@ -75,7 +73,7 @@ class DocsController < ApplicationController
 				hdocs = @docs.map { |d| d.to_list_hash }
 				if use_elasticsearch
 					hdocs = hdocs.map.with_index do |doc, index|
-						set_highlight_text(doc, htexts[index][:text].first)
+						set_highlight_text doc, get_highlight_texts_from(search_results, index).first
 					end
 				end
 				send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
@@ -89,6 +87,7 @@ class DocsController < ApplicationController
 			format.tsv  {render plain: e.message, status: :unprocessable_entity}
 		end
 	end
+
  
 	def sourcedb_index
 		begin
@@ -568,6 +567,10 @@ class DocsController < ApplicationController
 	#   render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
 	# end
 	private
+
+	def get_highlight_texts_from(search_results, index)
+		search_results[index].highlight.body
+	end
 
 	def set_highlight_text(doc, highlight_text)
 		if doc.is_a? Hash
