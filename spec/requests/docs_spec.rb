@@ -136,8 +136,17 @@ RSpec.describe "Docs", type: :request do
 
           it { is_expected.to have_http_status(200) }
           it 'returns the doc data' do
-            expect(response.body).to include("/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}")
-            expect(response.body).to include("This is a <em>test</em>.\n<em>Test</em> are implemented.\nImplementation is difficult.")
+            expected_header = %w[sourcedb sourceid url text].join("\t")
+            expected_data = [
+              "PubMed",
+              "#{Doc.last.sourceid}",
+              "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
+              "\"This is a <em>test</em>.\n<em>Test</em> are implemented.\nImplementation is difficult.\"\n"
+            ]
+
+            header, body = response.body.split("\n", 2)
+            expect(header).to eq(expected_header)
+            expect(body.split("\t")).to eq(expected_data)
           end
         end
       end
