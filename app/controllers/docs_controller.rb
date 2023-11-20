@@ -72,12 +72,14 @@ class DocsController < ApplicationController
 				send_data hdocs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
 			end
 			format.tsv do
-				hdocs = @docs.map { |d| d.to_list_hash }
-				if use_elasticsearch
-					hdocs = hdocs.map.with_index do |doc, index|
-						set_highlight_text doc, get_highlight_texts_from(search_results, index).first
-					end
-				end
+				hdocs = if use_elasticsearch
+									search_results.records
+																.map(&:to_list_hash)
+																.map.with_index { |doc, index| set_highlight_text doc, get_highlight_texts_from(search_results, index).first }
+								else
+									@docs.map(&:to_list_hash)
+								end
+
 				send_data Doc.hash_to_tsv(hdocs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
 			end
 		end
