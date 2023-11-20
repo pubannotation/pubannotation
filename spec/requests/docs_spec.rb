@@ -150,6 +150,23 @@ RSpec.describe "Docs", type: :request do
           end
         end
       end
+
+      context 'when sort options are specified' do
+        before do
+          get "/docs.json?sort_key=text&sort_direction=desc&randomize=true"
+        end
+
+        it { is_expected.to have_http_status(200) }
+        it 'returns the doc data' do
+          expected_data = [{
+                             sourcedb: "PubMed",
+                             sourceid: Doc.last.sourceid,
+                             url: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
+                           }]
+
+          expect(response.body).to eq(expected_data.to_json)
+        end
+      end
     end
   end
 end
