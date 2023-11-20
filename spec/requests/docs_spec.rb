@@ -114,6 +114,20 @@ RSpec.describe "Docs", type: :request do
 
           expect(response.body).to eq(expected_data.to_json)
         end
+
+        context 'when html is specified as format' do
+          before do
+            project = create(:project, accessibility: 1)
+            Pubann::Application.config.admin_project_id = project.id
+            get "/docs.html?keywords=test"
+          end
+
+          it { is_expected.to have_http_status(200) }
+          it 'returns the doc data' do
+            expect(response.body).to include("/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}")
+            expect(response.body).to include("This is a <em>test</em>.\n<em>Test</em> are implemented.\nImplementation is difficult.")
+          end
+        end
       end
     end
   end
