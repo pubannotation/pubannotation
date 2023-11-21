@@ -302,9 +302,8 @@ Pubann::Application.routes.draw do
 	get '/projects/:project_name/search' => 'graphs#show', :as => :sparql_project
 	get '/collections/:collection_name/search' => 'graphs#show', :as => :sparql_collection
 
-	# See how all your routes lay out with "rake routes"
-
-	# This is a legacy wild controller route that's not recommended for RESTful applications.
-	# Note: This route will make all actions in every controller accessible via GET requests.
-	# match ':controller(/:action(/:id))(.:format)'
+  # Evidence Block Search API
+  namespace :term_search do
+    resources :docs, only: [:index]
+  end
 end
