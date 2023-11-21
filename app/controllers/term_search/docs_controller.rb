@@ -3,7 +3,14 @@
 module TermSearch
   class DocsController < ApplicationController
     def index
-      doc_fields = Doc.select('sourcedb', 'sourceid').map(&:to_list_hash)
+      if params[:base_project].present?
+        base_project = Project.accessible(current_user).find_by!(name: params[:base_project])
+      end
+
+      docs = Doc.all
+      docs = docs.joins(:project_docs).where(project_docs: { project: base_project }) if base_project.present?
+
+      doc_fields = docs.select('sourcedb', 'sourceid').map(&:to_list_hash)
 
       respond_to do |format|
         format.json { send_doc_data(doc_fields.to_json, 'docs.json', 'application/json') }

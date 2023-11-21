@@ -44,5 +44,19 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
         expect(response.body.split("\n").second).to eq(docs[0].to_list_hash.values.join("\t"))
       end
     end
+
+    context 'when base_project is specified' do
+      let(:doc) { docs.first }
+      let(:project) { create(:project, accessibility: 1) }
+      let!(:doc_project) { create(:project_doc, doc: doc, project: project) }
+
+      before { get term_search_docs_path(base_project: doc_project.project.name), as: :json }
+
+      it 'returns only doc in the project' do
+        json_response = JSON.parse(response.body)
+        expect(json_response.size).to eq(1)
+        expect(json_response.first).to eq(docs.first.to_list_hash.stringify_keys)
+      end
+    end
   end
 end
