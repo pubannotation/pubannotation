@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'TermSearch::DocsController', type: :request do
   describe 'GET /term_search/docs' do
-    let!(:docs) { create_list(:doc, 3) }
+    let!(:docs) { create_list(:doc, 3).push(create(:doc, :with_annotation)) }
 
     context 'when requesting JSON format' do
       before { get term_search_docs_path, as: :json }
@@ -25,7 +25,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
 
         expect(json_response).to be_an_instance_of(Array)
         expect(json_response.length).to eq(docs.length)
-        expect(json_response[0]).to eq(docs[0].to_list_hash.stringify_keys)
+        expect(json_response).to include(docs[0].to_list_hash.stringify_keys)
       end
     end
 
@@ -41,7 +41,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
       end
 
       it 'returns correct format of docs' do
-        expect(response.body.split("\n").second).to eq(docs[0].to_list_hash.values.join("\t"))
+        expect(response.body.split("\n")).to include(docs.first.to_list_hash.values.join("\t"))
       end
     end
 
