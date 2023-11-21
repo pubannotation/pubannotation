@@ -43,6 +43,8 @@ class DocsController < ApplicationController
 																					params[:sort_key], params[:sort_direction], params[:randomize]
 		end
 
+		@docs = @docs.with_terms(params[:terms].split(',').map { |term| term.strip }) if params[:terms].present?
+
 		respond_to do |format|
 			format.html do
 				if use_elasticsearch

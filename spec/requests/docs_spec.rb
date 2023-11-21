@@ -167,6 +167,53 @@ RSpec.describe "Docs", type: :request do
           expect(response.body).to eq(expected_data.to_json)
         end
       end
+
+      context 'when the terms "test" is specified' do
+        before do
+          get "/docs.json?terms=test"
+        end
+
+        it { is_expected.to have_http_status(200) }
+        it 'returns no doc data' do
+          expect(response.body).to eq([].to_json)
+        end
+      end
+    end
+
+    context 'there are docs with annotations' do
+      before do
+        Doc.__elasticsearch__.create_index! force: true
+        create(:doc, :with_annotation)
+        get "/docs.json"
+      end
+
+      it { is_expected.to have_http_status(200) }
+      it 'returns the doc data' do
+        expected_data = [{
+                           sourcedb: "PubMed",
+                           sourceid: Doc.last.sourceid,
+                           url: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
+                         }]
+
+        expect(response.body).to eq(expected_data.to_json)
+      end
+
+      context 'when the terms "Protein" is specified' do
+        before do
+          get "/docs.json?terms=Protein"
+        end
+
+        it { is_expected.to have_http_status(200) }
+        it 'returns the doc data' do
+          expected_data = [{
+                             sourcedb: "PubMed",
+                             sourceid: Doc.last.sourceid,
+                             url: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
+                           }]
+
+          expect(response.body).to eq(expected_data.to_json)
+        end
+      end
     end
   end
 end
