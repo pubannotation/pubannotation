@@ -752,7 +752,7 @@ class Doc < ActiveRecord::Base
 		raise ArgumentError, "Text is missing." unless hdoc[:body].present?
 
 		if no_personalize
-			raise ArgumentError, "sourcedb is missing." unless hdoc[:sourcedb].present?
+			raise ArgumentError, "For admin, the 'sourcedb' cannot be automatically generated." unless hdoc[:sourcedb].present?
 		else
 			# personalize the sourcedb unless no_personalize
 			if hdoc[:sourcedb].present?
