@@ -3,12 +3,8 @@
 module TermSearch
   class DocsController < ApplicationController
     def index
-      if params[:base_project].present?
-        base_project = Project.accessible(current_user).find_by!(name: params[:base_project])
-      end
-
-      docs = Doc.all
-      docs = docs.joins(:project_docs).where(project_docs: { project: base_project }) if base_project.present?
+      base_project = Project.accessible(current_user).find_by!(name: params[:base_project]) if params[:base_project].present?
+      docs = base_project.present? ? base_project.docs : Doc.all
 
       doc_fields = docs.select('sourcedb', 'sourceid').map(&:to_list_hash)
 
