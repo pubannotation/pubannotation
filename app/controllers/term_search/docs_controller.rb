@@ -3,22 +3,21 @@
 module TermSearch
   class DocsController < ApplicationController
     def index
-      docs = Doc.all.map(&:to_list_hash)
+      doc_fields = Doc.select('sourcedb', 'sourceid').map(&:to_list_hash)
 
       respond_to do |format|
-        format.json do
-          send_data docs.to_json,
-                    filename: 'docs.json',
-                    type: 'application/json',
-                    disposition: 'inline'
-        end
-        format.tsv do
-          send_data Doc.hash_to_tsv(docs),
-                    filename: 'docs.tsv',
-                    type: 'text/tab-separated-values',
-                    disposition: 'inline'
-        end
+        format.json { send_doc_data(doc_fields, 'docs.json', 'application/json') }
+        format.tsv { send_doc_data(Doc.hash_to_tsv(doc_fields), 'docs.tsv', 'text/tab-separated-values') }
       end
+    end
+
+    private
+
+    def send_doc_data(data, filename, type)
+      send_data data,
+                filename:,
+                type:,
+                disposition: 'inline'
     end
   end
 end
