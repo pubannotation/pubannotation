@@ -2,7 +2,6 @@ class DeleteAllAnnotationsFromProjectJob < ApplicationJob
 	queue_as :general
 
 	def perform(project)
-		docs = project.docs
 		prepare_progress_record(1)
 		begin
 			project.delete_annotations

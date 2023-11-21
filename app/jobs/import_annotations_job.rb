@@ -25,18 +25,23 @@ class ImportAnnotationsJob < ApplicationJob
 		raise "Importing annotations for more than 1M documents is prohibited for a performance issue." if count_shared_docs > 1000000
 		raise "There is no shared document in the two projects." unless count_shared_docs > 0
 
-		count_docs = case options[:mode]
+		count_add_annotations, count_del_annotations = case options[:mode]
 		when :skip
 			project.import_annotations_from_another_project_skip(source_project_id)
 		when :replace
 			project.import_annotations_from_another_project_replace(source_project_id)
 		when :add
-			project.import_annotations_from_another_project_add(source_project_id)
+			raise RuntimeError, "The 'Add' mode of importing annotations is disabled at the moment."
+		when :merge
+			raise RuntimeError, "The 'Merge' mode of importing annotations is disabled at the moment."
 		else
-			@job&.add_message body: "The 'Merge' mode of importing annotations is disabled at the moment."
+			raise RuntimeError, "Unknown mode of importing annotations: #{options[:mode]}."
 		end
 
-		@job&.add_message body: "Annotations for #{count_docs} doc(s) were imported."
+		message = "#{count_add_annotations} annotations for #{count_shared_docs} doc(s) were imported" +
+			(count_del_annotations > 0 ? ", after #{count_del_annotations} annotations were deleted." : '.')
+
+		@job&.add_message body: message
 		@job&.update_attribute(:num_dones, 1)
 	end
 

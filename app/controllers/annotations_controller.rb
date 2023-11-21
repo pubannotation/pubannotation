@@ -501,9 +501,9 @@ class AnnotationsController < ApplicationController
 
 			options = {mode: params[:mode]&.to_sym || :skip}
 			raise ArgumentError, "The 'Merge' mode of importing annotations is disabled at the moment." if options[:mode] == :merge
+			raise ArgumentError, "The 'Add' mode of importing annotations is disabled at the moment." if options[:mode] == :add
 
-			# ImportAnnotationsJob.perform_later(project, source_project.id, options)
-			ImportAnnotationsJob.perform_now(project, source_project.id, options)
+			ImportAnnotationsJob.perform_later(project, source_project.id, options)
 
 			"The task, 'import annotations' (from the project, '#{source_project.name}') is created."
 		rescue ActiveRecord::RecordNotFound => e
