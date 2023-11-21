@@ -6,7 +6,7 @@ module TermSearch
       doc_fields = Doc.select('sourcedb', 'sourceid').map(&:to_list_hash)
 
       respond_to do |format|
-        format.json { send_doc_data(doc_fields, 'docs.json', 'application/json') }
+        format.json { send_doc_data(doc_fields.to_json, 'docs.json', 'application/json') }
         format.tsv { send_doc_data(Doc.hash_to_tsv(doc_fields), 'docs.tsv', 'text/tab-separated-values') }
       end
     end
