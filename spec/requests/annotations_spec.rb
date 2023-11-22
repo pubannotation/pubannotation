@@ -65,7 +65,7 @@ RSpec.describe "Annotations", type: :request do
                                         text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
                                         tracks: [
                                           {
-                                            project: "TestProject",
+                                            project: doc.projects.first.name,
                                             denotations: [
                                               {
                                                 id: "T1",
@@ -119,7 +119,7 @@ RSpec.describe "Annotations", type: :request do
                                         text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
                                         tracks: [
                                           {
-                                            project: "TestProject",
+                                            project: doc.projects.first.name,
                                             denotations: [
                                               {
                                                 id: "T1",
@@ -166,7 +166,7 @@ RSpec.describe "Annotations", type: :request do
       text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
       tracks: [
         {
-          project: "TestProject",
+          project: doc.projects.first.name,
           denotations: [
             {
               id: "T1",
