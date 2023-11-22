@@ -2,6 +2,7 @@ class AnnotationsController < ApplicationController
 	protect_from_forgery :except => [:create]
 	before_action :authenticate_user!, :except => [:create, :index, :align, :doc_annotations_index, :project_doc_annotations_index, :doc_annotations_list_view, :doc_annotations_merge_view, :project_annotations_tgz]
 	include DenotationsHelper
+	include ArrayParameterConcern
 
 	def index
 		message = "The route does not exist.\n"
@@ -23,7 +24,7 @@ class AnnotationsController < ApplicationController
 		params[:project] = params[:projects] if params[:projects].present? && params[:project].blank?
 
 		project = if params[:project].present?
-								params[:project].split(',').uniq.map do |project_name|
+								to_array(params[:project]).map do |project_name|
 									Project.accessible(current_user).find_by_name(project_name)
 								end
 							else
@@ -32,8 +33,8 @@ class AnnotationsController < ApplicationController
 		project.delete_if{|p| !p.annotations_accessible?(current_user)}
 
 		context_size = params[:context_size].present? ? params[:context_size].to_i : 0
-		terms = params[:terms].present? ? params[:terms].split(',').map{|term| term.strip} : nil
-		predicates = params[:predicates].present? ? params[:predicates].split(',').map{|predicate| predicate.strip} : nil
+		terms = params[:terms].present? ? to_array(params[:terms]) : nil
+		predicates = params[:predicates].present? ? to_array(params[:predicates]) : nil
 		is_bag_denotations = params[:discontinuous_span].present? && params[:discontinuous_span] == 'bag'
 		@annotations = @doc.hannotations(project, @span, context_size, terms:, predicates:, is_bag_denotations:)
 
@@ -698,7 +699,7 @@ class AnnotationsController < ApplicationController
 		option_full = params[:full].present?
 
 		if params[:projects].present?
-			project_names = params[:projects].split(',').uniq
+			project_names = to_array(params[:projects])
 			@visualize_projects = Array.new
 			projects = Project.accessible(current_user).where(['name IN (?)', project_names]).annotations_accessible(current_user)
 			project_names.each do |project_name|
