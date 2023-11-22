@@ -61,5 +61,17 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
         it { expect { get term_search_docs_path(base_project: 'not_found'), as: :json }.to raise_error(ActiveRecord::RecordNotFound) }
       end
     end
+
+    context 'when terms are specified' do
+      let(:doc) { docs.last }
+
+      before { get term_search_docs_path(terms: "Protein, true"), as: :json }
+
+      it 'returns only doc with the term' do
+        json_response = JSON.parse(response.body)
+        expect(json_response.size).to eq(1)
+        expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+      end
+    end
   end
 end
