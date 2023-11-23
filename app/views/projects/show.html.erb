@@ -125,8 +125,10 @@
 		<% if @project.editable?(current_user) -%>
 			<tr>
 				<th><%= t('views.shared.upload') %></th>
-				<!-- <td><%= link_to t('views.docs.upload_annotations'), upload_annotations_project_path(@project.name), class: 'button long_button' -%></td> -->
+				<td><%= link_to t('views.docs.upload_annotations'), upload_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+<!--
 				<td><%= content_tag :span, t('views.docs.upload_annotations'), class: 'button long_button disabled', title: 'This feature is disabled at the moment due to a reported bug' -%></td>
+-->
 			</tr>
 			<tr>
 				<th><%= t('views.shared.obtain') %></th>
