@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'TermSearch::DocsController', type: :request do
   describe 'GET /term_search/docs' do
-    let!(:docs) { create_list(:doc, 3).push(create(:doc, :with_annotation)) }
+    let!(:docs) { [create(:doc), create(:doc, :with_annotation), create(:doc, :with_private_annotation)] }
 
     context 'when requesting JSON format' do
       before { get term_search_docs_path, as: :json }
@@ -46,7 +46,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
     end
 
     context 'when base_project is specified' do
-      let(:doc) { docs.last }
+      let(:doc) { docs.second }
       let(:project) { doc.projects.first }
 
       before { get term_search_docs_path(base_project: project.name), as: :json }
@@ -63,7 +63,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
     end
 
     context 'when terms are specified' do
-      let(:doc) { docs.last }
+      let(:doc) { docs.second }
 
       before { get term_search_docs_path(terms: "Protein, true"), as: :json }
 
