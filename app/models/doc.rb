@@ -152,17 +152,23 @@ class Doc < ActiveRecord::Base
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
 	}
 
-	scope :with_terms, lambda { |terms, user|
-		joined_relation = joins(:projects).merge(Project.accessible(user))
-																			.joins(projects: :attrivutes)
-																			.joins(projects: :denotations)
+	scope :with_terms, lambda { |terms, user, predicates|
+		base_query = joins(:projects).merge(Project.accessible(user))
+																 .joins(projects: :attrivutes)
+																 .joins(projects: :denotations)
 
-		joined_relation
-			.where(attrivutes: { obj: terms })
-			.or(
-				joined_relation.where(denotations: { obj: terms })
+		# Search attributes
+		query = base_query.where(attrivutes: { obj: terms })
+		query = query.where(attrivutes: { pred: predicates }) if predicates.present?
+
+		# Search denotations
+		if predicates.nil? || predicates.include?('denotes')
+			query = query.or(
+				base_query.where(denotations: { obj: terms })
 			)
-			.distinct
+		end
+
+		query.distinct
 	}
 
 	def self.search_by_active_record(page, per, project = nil, sourcedb = nil,

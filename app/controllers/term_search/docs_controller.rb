@@ -7,7 +7,12 @@ module TermSearch
     def index
       base_project = Project.accessible(current_user).find_by!(name: params[:base_project]) if params[:base_project].present?
       docs = base_project.present? ? base_project.docs : Doc.all
-      docs = docs.with_terms(to_array(params[:terms]), current_user) if params[:terms].present?
+
+      if params[:terms].present?
+        docs = docs.with_terms to_array(params[:terms]),
+                               current_user,
+                               to_array(params[:predicates])
+      end
 
       doc_fields = docs.select('sourcedb', 'sourceid').map(&:to_list_hash)
 

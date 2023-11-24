@@ -84,6 +84,44 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
           expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
         end
       end
+
+      context 'when predicates are specified' do
+        before { get term_search_docs_path(terms: "Protein", predicates: "type"), as: :json }
+
+        it 'returns only doc with the term and predicate' do
+          json_response = JSON.parse(response.body)
+          expect(json_response.size).to eq(1)
+          expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+        end
+
+        context 'when predicate is missmatched' do
+          before { get term_search_docs_path(terms: "Protein", predicates: "missmatched"), as: :json }
+
+          it 'returns empty' do
+            json_response = JSON.parse(response.body)
+            expect(json_response.size).to eq(0)
+          end
+        end
+
+        context 'when denotes is specified as predicate' do
+          before { get term_search_docs_path(terms: "Protein", predicates: "denotes"), as: :json }
+
+          it 'returns empty' do
+            json_response = JSON.parse(response.body)
+            expect(json_response.size).to eq(0)
+          end
+
+          context 'when denotaiton object is specified as term' do
+            before { get term_search_docs_path(terms: "subject", predicates: "denotes"), as: :json }
+
+            it 'returns only doc with the term' do
+              json_response = JSON.parse(response.body)
+              expect(json_response.size).to eq(1)
+              expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+            end
+          end
+        end
+      end
     end
   end
 end
