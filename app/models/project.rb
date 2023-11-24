@@ -414,9 +414,12 @@ class Project < ActiveRecord::Base
     docs_sequenced, messages = sequence index.db, index.ids
 
     # Tie the documents to the project.
-    added_documents = tie_documents index.db, index.ids
+    num_docs_added = tie_documents index.db, index.ids
 
-    [added_documents, docs_sequenced, messages]
+    increment!(:docs_count, num_docs_added)
+    docs_stat_increment!(index.db, num_docs_added)
+
+    [num_docs_added, docs_sequenced, messages]
   end
 
   private def sequence(sourcedb, source_ids)
@@ -579,7 +582,6 @@ class Project < ActiveRecord::Base
       d_num = 0
       b_num = 0
       r_num = 0
-      m_num = 0
 
       if annotations[:denotations].present?
         instances = instantiate_hdenotations(annotations[:denotations], doc.id)
@@ -607,7 +609,7 @@ class Project < ActiveRecord::Base
           r = Relation.import instances, validate: false
           raise "relations import error" unless r.failed_instances.empty?
         end
-        r_num = annotations[:denotations].length
+        r_num = annotations[:relations].length
       end
 
       if annotations[:attributes].present?
@@ -618,13 +620,41 @@ class Project < ActiveRecord::Base
         end
       end
 
-      if d_num > 0 || b_num || r_num > 0
-        ActiveRecord::Base.connection.exec_query("update project_docs set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num} where project_id=#{id} and doc_id=#{doc.id}")
-        ActiveRecord::Base.connection.exec_query("update docs set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num} where id=#{doc.id}")
-        ActiveRecord::Base.connection.exec_query("update projects set denotations_num = denotations_num + #{d_num}, blocks_num = blocks_num + #{b_num}, relations_num = relations_num + #{r_num} where id=#{id}")
+      if d_num > 0 || b_num > 0
+        ActiveRecord::Base.connection.update <<~SQL
+          UPDATE project_docs
+          SET
+            denotations_num = denotations_num + #{d_num},
+            blocks_num = blocks_num + #{b_num},
+            relations_num = relations_num + #{r_num}
+          WHERE project_id=#{id}
+          AND doc_id=#{doc.id}
+        SQL
+        ActiveRecord::Base.connection.update <<~SQL
+          UPDATE docs
+          SET
+            denotations_num = denotations_num + #{d_num},
+            blocks_num = blocks_num + #{b_num},
+            relations_num = relations_num + #{r_num}
+          WHERE id=#{doc.id}
+        SQL
+        ActiveRecord::Base.connection.update <<~SQL
+          UPDATE projects
+          SET
+            denotations_num = denotations_num + #{d_num},
+            blocks_num = blocks_num + #{b_num},
+            relations_num = relations_num + #{r_num}
+          WHERE id=#{id}
+        SQL
       end
 
-      ActiveRecord::Base.connection.exec_query("update project_docs set annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
+      ActiveRecord::Base.connection.update <<~SQL
+        UPDATE project_docs
+        SET annotations_updated_at = CURRENT_TIMESTAMP
+        WHERE project_id=#{id}
+        AND doc_id=#{doc.id}
+      SQL
+
       update_annotations_updated_at
       update_updated_at
     end
