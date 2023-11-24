@@ -109,7 +109,7 @@ RSpec.describe "Docs", type: :request do
                              sourcedb: "PubMed",
                              sourceid: Doc.last.sourceid,
                              url: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
-                             text: ["This is a \u003cem\u003etest\u003c/em\u003e.\n\u003cem\u003eTest\u003c/em\u003e are implemented.\nImplementation is difficult."]
+                             text: ["This is a \u003cem\u003etest\u003c/em\u003e.\n\u003cem\u003eTests\u003c/em\u003e are implemented.\nImplementation is difficult."]
                            }]
 
           expect(response.body).to eq(expected_data.to_json)
@@ -125,7 +125,7 @@ RSpec.describe "Docs", type: :request do
           it { is_expected.to have_http_status(200) }
           it 'returns the doc data' do
             expect(response.body).to include("/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}")
-            expect(response.body).to include("This is a <em>test</em>.\n<em>Test</em> are implemented.\nImplementation is difficult.")
+            expect(response.body).to include("This is a <em>test</em>.\n<em>Tests</em> are implemented.\nImplementation is difficult.")
           end
         end
 
@@ -141,7 +141,7 @@ RSpec.describe "Docs", type: :request do
               "PubMed",
               "#{Doc.last.sourceid}",
               "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
-              "\"This is a <em>test</em>.\n<em>Test</em> are implemented.\nImplementation is difficult.\"\n"
+              "\"This is a <em>test</em>.\n<em>Tests</em> are implemented.\nImplementation is difficult.\"\n"
             ]
 
             header, body = response.body.split("\n", 2)

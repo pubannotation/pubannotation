@@ -62,7 +62,7 @@ RSpec.describe "Annotations", type: :request do
                                         target: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
                                         sourcedb: 'PubMed',
                                         sourceid: doc.sourceid,
-                                        text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
+                                        text: "This is a test.\nTests are implemented.\nImplementation is difficult.",
                                         tracks: [
                                           {
                                             project: doc.projects.first.name,
@@ -116,7 +116,7 @@ RSpec.describe "Annotations", type: :request do
                                         target: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
                                         sourcedb: 'PubMed',
                                         sourceid: doc.sourceid,
-                                        text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
+                                        text: "This is a test.\nTests are implemented.\nImplementation is difficult.",
                                         tracks: [
                                           {
                                             project: doc.projects.first.name,
@@ -153,7 +153,7 @@ RSpec.describe "Annotations", type: :request do
       target: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
       sourcedb: 'PubMed',
       sourceid: doc.sourceid,
-      text: text || "This is a test.\nTest are implemented.\nImplementation is difficult.",
+      text: text || "This is a test.\nTests are implemented.\nImplementation is difficult.",
       tracks: []
     }.to_json
   end
@@ -163,7 +163,7 @@ RSpec.describe "Annotations", type: :request do
       target: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{doc.sourceid}",
       sourcedb: 'PubMed',
       sourceid: doc.sourceid,
-      text: "This is a test.\nTest are implemented.\nImplementation is difficult.",
+      text: "This is a test.\nTests are implemented.\nImplementation is difficult.",
       tracks: [
         {
           project: doc.projects.first.name,

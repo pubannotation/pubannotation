@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :doc do
     sourcedb { "PubMed" }
     sequence(:sourceid, &:to_s)
-    body { "This is a test.\nTest are implemented.\nImplementation is difficult." }
+    body { "This is a test.\nTests are implemented.\nImplementation is difficult." }
 
     trait :with_annotation do
       after(:create) do |doc, _|
