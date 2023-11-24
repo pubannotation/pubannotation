@@ -152,15 +152,15 @@ class Doc < ActiveRecord::Base
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
 	}
 
-	scope :with_terms, lambda { |term, user|
+	scope :with_terms, lambda { |terms, user|
 		joined_relation = joins(:projects).merge(Project.accessible(user))
 																			.joins(projects: :attrivutes)
 																			.joins(projects: :denotations)
 
 		joined_relation
-			.where(attrivutes: { obj: term })
+			.where(attrivutes: { obj: terms })
 			.or(
-				joined_relation.where(denotations: { obj: term })
+				joined_relation.where(denotations: { obj: terms })
 			)
 			.distinct
 	}
