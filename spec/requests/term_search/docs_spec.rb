@@ -5,7 +5,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
     let!(:docs) { [create(:doc), create(:doc, :with_annotation), create(:doc, :with_private_annotation)] }
 
     context 'when requesting JSON format' do
-      before { get term_search_docs_path, as: :json }
+      before { get term_search_docs_path(page: 1, per: 10), as: :json }
 
       it 'returns http success' do
         expect(response).to have_http_status(:ok)

@@ -15,7 +15,9 @@ module TermSearch
                                to_array(params[:projects])
       end
 
-      doc_fields = docs.select('sourcedb', 'sourceid').map(&:to_list_hash)
+      doc_fields = docs.select('sourcedb', 'sourceid')
+                       .simple_paginate(params[:page]&.to_i || 1, params[:per]&.to_i || 10)
+                       .map(&:to_list_hash)
 
       respond_to do |format|
         format.json { send_doc_data(doc_fields.to_json, 'docs.json', 'application/json') }
