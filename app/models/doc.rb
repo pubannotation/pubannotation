@@ -152,15 +152,15 @@ class Doc < ActiveRecord::Base
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
 	}
 
-	scope :with_terms, lambda { |term|
-		left_outer_joins(:attrivutes).left_outer_joins(:denotations)
-																 .where(attrivutes: { obj: term })
-																 .or(
-																	 left_outer_joins(:attrivutes).left_outer_joins(:denotations)
-																																.where(denotations: { obj: term })
-																 )
-																 .distinct
-	}
+  scope :with_terms, lambda { |term|
+    joins(:attrivutes).joins(:denotations)
+                      .where(attrivutes: { obj: term })
+                      .or(
+                        joins(:attrivutes).joins(:denotations)
+                                          .where(denotations: { obj: term })
+                      )
+                      .distinct
+  }
 
 	def self.search_by_active_record(page, per, project = nil, sourcedb = nil,
 																	 sort_key = nil, sort_direction = nil, is_randomize = false)
