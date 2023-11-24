@@ -122,6 +122,27 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
           end
         end
       end
+
+      context 'when projects are specified' do
+        let(:doc) { docs.second }
+
+        before { get term_search_docs_path(terms: "Protein", projects: doc.projects.first.name), as: :json }
+
+        it 'returns only doc with the term' do
+          json_response = JSON.parse(response.body)
+          expect(json_response.size).to eq(1)
+          expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+        end
+
+        context 'when project is missmatched' do
+          before { get term_search_docs_path(terms: "Protein", projects: "missmatched"), as: :json }
+
+          it 'returns empty' do
+            json_response = JSON.parse(response.body)
+            expect(json_response.size).to eq(0)
+          end
+        end
+      end
     end
   end
 end

@@ -11,7 +11,8 @@ module TermSearch
       if params[:terms].present?
         docs = docs.with_terms to_array(params[:terms]),
                                current_user,
-                               to_array(params[:predicates])
+                               to_array(params[:predicates]),
+                               to_array(params[:projects])
       end
 
       doc_fields = docs.select('sourcedb', 'sourceid').map(&:to_list_hash)

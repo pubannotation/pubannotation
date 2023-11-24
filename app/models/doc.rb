@@ -152,10 +152,11 @@ class Doc < ActiveRecord::Base
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
 	}
 
-	scope :with_terms, lambda { |terms, user, predicates|
+	scope :with_terms, lambda { |terms, user, predicates, project_names|
 		base_query = joins(:projects).merge(Project.accessible(user))
 																 .joins(projects: :attrivutes)
 																 .joins(projects: :denotations)
+		base_query = base_query.where(projects: { name: project_names }) if project_names.present?
 
 		# Search attributes
 		query = base_query.where(attrivutes: { obj: terms })
