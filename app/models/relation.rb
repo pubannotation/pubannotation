@@ -41,10 +41,12 @@ class Relation < ActiveRecord::Base
 	}
 
 	scope :project_relations, -> { select(:id).group("relations.project_id") }
+
 	scope :project_pmcdoc_cat_relations, lambda{|sourceid|
 		joins("INNER JOIN denotations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation' INNER JOIN docs ON docs.id = denotations.doc_id AND docs.sourcedb = 'PMC'").
 		where("docs.sourceid = ?", sourceid)
 	}
+
 	scope :projects_relations, lambda{|project_ids|
 		where('project_id IN (?)', project_ids)
 	}
@@ -60,8 +62,12 @@ class Relation < ActiveRecord::Base
 	}
 		
 	def span
-		positions = (subj.span + obj.span).sort
-		[positions.first, positions.last]
+		positions = subj.span + obj.span
+		[positions.min, positions.max]
+	end
+
+	def in_span?(a_span)
+		span.first >= a_span[:begin] && span.second <= a_span[:end]
 	end
 
 	def as_json(options={})

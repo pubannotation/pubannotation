@@ -553,7 +553,12 @@ class Doc < ActiveRecord::Base
 		if project_id.nil? && span.nil?
 			denotations_num
 		elsif span.nil?
-			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:denotations_num).first
+			ActiveRecord::Base.connection.select_value <<~SQL.squish
+				SELECT denotations_num
+				FROM project_docs
+				WHERE project_id=#{project_id}
+				AND doc_id=#{id}
+			SQL
 		else
 			denotations.in_project_and_span(project_id, span).count
 		end
@@ -563,9 +568,30 @@ class Doc < ActiveRecord::Base
 		if project_id.nil? && span.nil?
 			blocks_num
 		elsif span.nil?
-			ProjectDoc.where(project_id:project_id, doc_id:id).pluck(:blocks_num).first
+			ActiveRecord::Base.connection.select_value <<~SQL.squish
+				SELECT blocks_num
+				FROM project_docs
+				WHERE project_id=#{project_id}
+				AND doc_id=#{id}
+			SQL
 		else
 			blocks.in_project_and_span(project_id, span).count
+		end
+	end
+
+	def get_relations_count(project_id = nil, span = nil)
+		if project_id.nil?
+			relations_num
+		elsif span.nil?
+			ActiveRecord::Base.connection.select_value <<~SQL.squish
+				SELECT relations_num
+				FROM project_docs
+				WHERE project_id=#{project_id}
+				AND doc_id=#{id}
+			SQL
+		else
+			# slow. should not be used for sort by this count
+			relations.count{|r| r.in_span?(span)}
 		end
 	end
 

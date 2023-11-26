@@ -160,21 +160,27 @@ class Project < ActiveRecord::Base
   end
 
   def get_denotations_count(doc = nil, span = nil)
-    return self.denotations_num if doc.nil?
-    doc.get_denotations_count(id, span)
+    if doc.nil?
+      self.denotations_num
+    else
+      doc.get_denotations_count(id, span)
+    end
   end
 
   def get_blocks_count(doc = nil, span = nil)
-    return self.blocks_num if doc.nil?
-    doc.get_blocks_count(id, span)
+    if doc.nil?
+      self.blocks_num
+    else
+      doc.get_blocks_count(id, span)
+    end
   end
 
   def get_relations_count(doc = nil, span = nil)
-    return self.relations_num if doc.nil?
-    return ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{id} AND doc_id=#{doc.id}" if span.nil?
-
-    # when the span is specified
-    doc.relations.where("denotations.begin >= ? and denotations.end <= ?", span[:begin], span[:end]).count
+    if doc.nil?
+      self.relations_num
+    else
+      doc.get_relations_count(id, span)
+    end
   end
 
   def json
@@ -560,7 +566,8 @@ class Project < ActiveRecord::Base
         pred: a[:pred],
         subj: Denotation.find_by!(doc_id: docid, project_id: self.id, hid: a[:subj]),
         obj: Denotation.find_by!(doc_id: docid, project_id: self.id, hid: a[:obj]),
-        project_id: self.id
+        project_id: self.id,
+        doc_id: docid
       )
     end
   end
@@ -572,7 +579,8 @@ class Project < ActiveRecord::Base
         pred: a[:pred],
         subj: Denotation.find_by(doc_id: docid, project_id: self.id, hid: a[:subj]) || Block.find_by!(doc_id: docid, project_id: self.id, hid: a[:subj]),
         obj: a[:obj],
-        project_id: self.id
+        project_id: self.id,
+        doc_id: docid
       )
     end
   end
@@ -621,7 +629,7 @@ class Project < ActiveRecord::Base
       end
 
       if d_num > 0 || b_num > 0
-        ActiveRecord::Base.connection.update <<~SQL
+        ActiveRecord::Base.connection.update <<~SQL.squish
           UPDATE project_docs
           SET
             denotations_num = denotations_num + #{d_num},
@@ -630,7 +638,7 @@ class Project < ActiveRecord::Base
           WHERE project_id=#{id}
           AND doc_id=#{doc.id}
         SQL
-        ActiveRecord::Base.connection.update <<~SQL
+        ActiveRecord::Base.connection.update <<~SQL.squish
           UPDATE docs
           SET
             denotations_num = denotations_num + #{d_num},
@@ -638,7 +646,7 @@ class Project < ActiveRecord::Base
             relations_num = relations_num + #{r_num}
           WHERE id=#{doc.id}
         SQL
-        ActiveRecord::Base.connection.update <<~SQL
+        ActiveRecord::Base.connection.update <<~SQL.squish
           UPDATE projects
           SET
             denotations_num = denotations_num + #{d_num},
@@ -648,7 +656,7 @@ class Project < ActiveRecord::Base
         SQL
       end
 
-      ActiveRecord::Base.connection.update <<~SQL
+      ActiveRecord::Base.connection.update <<~SQL.squish
         UPDATE project_docs
         SET annotations_updated_at = CURRENT_TIMESTAMP
         WHERE project_id=#{id}
