@@ -609,7 +609,7 @@ class Doc < ActiveRecord::Base
 
 	def get_attribute_hids(project_id = nil, base_ids = nil)
 		return [] if base_ids == []
-		attributes.in_project(project_id).among_entities(base_ids).pluck(:hid)
+		attrivutes.in_project(project_id).among_entities(base_ids).pluck(:hid)
 	end
 
 	def get_text(span = nil, context_size = nil)
