@@ -15,13 +15,5 @@
 		<%= t('views.docs.sourcedb_list')-%>
 	</h1>
 
-	<%
-		cache_key  = 'sourcedb_counts'
-		cache_key += "_#{@project.name}" if @project
-	%>
-
-	<% cache cache_key, skip_digest: true do -%>
-		<%= render :partial => "docs/sourcedb_counts" -%>
-	<% end %>
-
+	<%= render :partial => "docs/sourcedb_counts" -%>
 </section>

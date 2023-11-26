@@ -11,7 +11,5 @@
 		<%= t('views.docs.sourcedb_list')-%>
 	</h1>
 
-	<% cache "sourcedb_counts_in_#{@project.name}", skip_digest: true do -%>
-		<%= render :partial => "docs/sourcedb_counts" -%>
-	<% end %>
+	<%= render :partial => "docs/sourcedb_counts" -%>
 </section>
