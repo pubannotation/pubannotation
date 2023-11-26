@@ -22,7 +22,7 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'has the expected text' do
-      expect(subject[:text]).to eq("This is a test.\nTest are implemented.\nImplementation is difficult.")
+      expect(subject[:text]).to eq("This is a test.\nTests are implemented.\nImplementation is difficult.")
     end
 
     it 'has empty tracks' do

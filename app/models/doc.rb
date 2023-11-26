@@ -152,14 +152,24 @@ class Doc < ActiveRecord::Base
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
 	}
 
-	scope :with_terms, lambda { |term|
-		left_outer_joins(:attrivutes).left_outer_joins(:denotations)
-																 .where(attrivutes: { obj: term })
-																 .or(
-																	 left_outer_joins(:attrivutes).left_outer_joins(:denotations)
-																																.where(denotations: { obj: term })
-																 )
-																 .distinct
+	scope :with_terms, lambda { |terms, user, predicates, project_names|
+		base_query = joins(:projects).merge(Project.accessible(user))
+																 .joins(projects: :attrivutes)
+																 .joins(projects: :denotations)
+		base_query = base_query.where(projects: { name: project_names }) if project_names.present?
+
+		# Search attributes
+		query = base_query.where(attrivutes: { obj: terms })
+		query = query.where(attrivutes: { pred: predicates }) if predicates.present?
+
+		# Search denotations
+		if predicates.nil? || predicates.include?('denotes')
+			query = query.or(
+				base_query.where(denotations: { obj: terms })
+			)
+		end
+
+		query.distinct
 	}
 
 	def self.search_by_active_record(page, per, project = nil, sourcedb = nil,
@@ -859,25 +869,25 @@ class Doc < ActiveRecord::Base
 	def self.update_numbers
 		# the number of projects of each doc
 		ActiveRecord::Base.connection.update <<~SQL.squish
-			UPDATE docs
-			SET	projects_num=(SELECT count(*) FROM project_docs WHERE project_docs.doc_id=docs.id)
-		SQL
+      UPDATE docs
+      SET	projects_num=(SELECT count(*) FROM project_docs WHERE project_docs.doc_id=docs.id)
+    SQL
 
 		# the number of annotations of each doc
 		ActiveRecord::Base.connection.update <<~SQL.squish
-			UPDATE docs
-			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=docs.id),
-				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=docs.id),
-				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=docs.id)
-		SQL
+      UPDATE docs
+      SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=docs.id),
+      	blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=docs.id),
+      	relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=docs.id)
+    SQL
 
 		# the number of annotations of each doc in each project
 		ActiveRecord::Base.connection.update <<~SQL.squish
-			UPDATE project_docs
-			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=project_docs.doc_id AND denotations.project_id=project_docs.project_id),
-				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=project_docs.doc_id AND blocks.project_id=project_docs.project_id),
-				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=project_docs.doc_id AND relations.project_id=project_docs.project_id)
-		SQL
+      UPDATE project_docs
+      SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=project_docs.doc_id AND denotations.project_id=project_docs.project_id),
+      	blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=project_docs.doc_id AND blocks.project_id=project_docs.project_id),
+      	relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=project_docs.doc_id AND relations.project_id=project_docs.project_id)
+    SQL
 	end
 
 	def rdfizer_spans
@@ -905,16 +915,16 @@ class Doc < ActiveRecord::Base
 		if doc_spans && doc_spans[:denotations].present?
 			doc_spans_ttl = rdfizer_spans.rdfize([doc_spans], {with_prefixes: false})
 			doc_spans_trig += <<~HEREDOC
-			  <#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
-			  	oa:has_body <#{graph_uri_doc_spans}> ;
-			  	oa:has_target <#{graph_uri_doc}> ;
-			  	prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+        <#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
+        	oa:has_body <#{graph_uri_doc_spans}> ;
+        	oa:has_target <#{graph_uri_doc}> ;
+        	prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
 
-			  GRAPH <#{graph_uri_doc_spans}>
-			  {
-			  	#{doc_spans_ttl.gsub(/\n/, "\n\t")}
-			  }
-			HEREDOC
+        GRAPH <#{graph_uri_doc_spans}>
+        {
+        	#{doc_spans_ttl.gsub(/\n/, "\n\t")}
+        }
+      HEREDOC
 		end
 
 		doc_spans_trig
