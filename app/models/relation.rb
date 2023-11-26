@@ -13,16 +13,22 @@ class Relation < ActiveRecord::Base
 	validates :subj_id, :presence => true
 	validates :obj_id,  :presence => true
 
-	after_save :increment_project_relations_num, :update_project_updated_at
-	after_destroy :decrement_project_relations_num, :update_project_updated_at
+	after_save :increment_numbers, :update_project_updated_at
+	after_destroy :decrement_numbers, :update_project_updated_at
 	after_update :update_project_updated_at
 
-	def increment_project_relations_num
-		Project.increment_counter(:relations_num, self.project.id)
+	def increment_numbers
+		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
+		pd.increment!(:relations_num) if pd
+		self.doc.increment!(:relations_num)
+		self.project.increment!(:relations_num)
 	end
 
-	def decrement_project_relations_num
-		Project.decrement_counter(:relations_num, self.project.id)
+	def decrement_numbers
+		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
+		pd.decrement!(:relations_num) if pd
+		self.doc.decrement!(:relations_num)
+		self.project.decrement!(:relations_num)
 	end
 
 	def update_project_updated_at
