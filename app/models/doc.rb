@@ -188,6 +188,22 @@ class Doc < ActiveRecord::Base
 		docs.order(sort_order).simple_paginate(page, per)
 	end
 
+	def self.search_by_term(user, base_project_name, terms, predicates, projects, page, per)
+		base_project = Project.accessible(user).find_by!(name: base_project_name) if base_project_name.present?
+		docs = base_project.present? ? base_project.docs : Doc.all
+
+		if terms.present?
+			docs = docs.with_terms terms,
+														 user,
+														 predicates,
+														 projects
+		end
+
+		docs.select('sourcedb', 'sourceid')
+				.simple_paginate(page || 1, per || 10)
+				.map(&:to_list_hash)
+	end
+
 	def self.graph_uri
 		"http://pubannotation.org/docs"
 	end

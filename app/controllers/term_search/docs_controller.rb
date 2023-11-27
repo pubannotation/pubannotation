@@ -5,13 +5,13 @@ module TermSearch
     include ArrayParameterConcern
 
     def index
-      base_project = Project.accessible(current_user).find_by!(name: params[:base_project]) if params[:base_project].present?
-      doc_fields = search_by_term base_project,
-                                  params[:terms],
-                                  params[:predicates],
-                                  params[:projects],
-                                  params[:page]&.to_i,
-                                  params[:per]&.to_i
+      doc_fields = Doc.search_by_term current_user,
+                                      params[:base_project],
+                                      to_array(params[:terms]),
+                                      to_array(params[:predicates]),
+                                      to_array(params[:projects]),
+                                      params[:page]&.to_i,
+                                      params[:per]&.to_i
 
       respond_to do |format|
         format.json { send_doc_data(doc_fields.to_json, 'docs.json', 'application/json') }
@@ -23,21 +23,6 @@ module TermSearch
     end
 
     private
-
-    def search_by_term(base_project, terms , predicates, projects, page, per)
-      docs = base_project.present? ? base_project.docs : Doc.all
-
-      if terms.present?
-        docs = docs.with_terms to_array(terms),
-                               current_user,
-                               to_array(predicates),
-                               to_array(projects)
-      end
-
-      docs.select('sourcedb', 'sourceid')
-                       .simple_paginate(page || 1, per || 10)
-                       .map(&:to_list_hash)
-    end
 
     def send_doc_data(data, filename, type)
       send_data data,
