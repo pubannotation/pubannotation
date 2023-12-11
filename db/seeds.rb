@@ -10,7 +10,9 @@ User.create! username: 'admin',
              manager: true
 
 Project.create! name: 'First',
-                user: User.first
+                user: User.first,
+                accessibility: 1
+
 
 Sequencer.create! name: 'PMC',
                   url: 'http://pubmed-sequencer.pubannotation.org/?sourcedb=PMC',
