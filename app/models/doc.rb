@@ -160,7 +160,8 @@ class Doc < ActiveRecord::Base
 
 		# Search attributes
 		query = base_query.where(attrivutes: { obj: terms })
-		query = query.where(attrivutes: { pred: predicates }) if predicates.present?
+		predicates_for_attrivutes = predicates.reject { |p| p == 'denotes' } if predicates.present?
+		query = query.where(attrivutes: { pred: predicates_for_attrivutes }) if predicates_for_attrivutes.present?
 
 		# Search denotations
 		if predicates.nil? || predicates.include?('denotes')
