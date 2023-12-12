@@ -115,7 +115,7 @@ module AnnotationUtils
 		end
 
 		# normalize annotations passed by an HTTP call
-		def normalize!(annotations, prefix = nil)
+		def normalize!(annotations)
 			raise ArgumentError, "annotations must be a hash." unless annotations.class == Hash
 			raise ArgumentError, "annotations must include a 'text'"  unless annotations[:text].present?
 
@@ -166,48 +166,23 @@ module AnnotationUtils
 
 			dbr_ids = d_ids + b_ids + r_ids
 
-			a_ids = if annotations[:attributes].present?
-								attributes = annotations[:attributes]
-								raise ArgumentError, "'attributes' must be an array." unless attributes.class == Array
-								attributes.each {|a| a.symbolize_keys! if a.class == Hash }
+			if annotations[:attributes].present?
+				attributes = annotations[:attributes]
+				raise ArgumentError, "'attributes' must be an array." unless attributes.class == Array
+				attributes.each {|a| a.symbolize_keys! if a.class == Hash }
 
-								existing_ids = dbr_ids + attributes.collect{|a| a[:id]}.compact
-								Attrivute.new_id_init(existing_ids)
+				existing_ids = dbr_ids + attributes.collect{|a| a[:id]}.compact
+				Attrivute.new_id_init(existing_ids)
 
-								attributes.each do |a|
-									# TODO: to remove the following line after TextAE is updated.
-									a[:obj] = true unless a[:obj].present?
+				attributes.each do |a|
+					# TODO: to remove the following line after TextAE is updated.
+					a[:obj] = true unless a[:obj].present?
 
-									raise ArgumentError, "An attribute must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
-									raise ArgumentError, "The 'subj' of an attribute must reference to a denotation or a relation: [#{a}]." unless dbr_ids.include? a[:subj]
+					raise ArgumentError, "An attribute must have 'subj', 'obj' and 'pred'." unless a[:subj].present? && a[:obj].present? && a[:pred].present?
+					raise ArgumentError, "The 'subj' of an attribute must reference to a denotation, a block or a relation: [#{a}]." unless dbr_ids.include? a[:subj]
 
-									a[:id] = Attrivute.new_id unless a.has_key? :id
-								end
-							else
-								[]
-							end
-
-			if annotations[:modifications].present?
-				modifications = annotations[:modifications]
-				raise ArgumentError, "'modifications' must be an array." unless modifications.class == Array
-				modifications.each {|a| a.symbolize_keys! if a.class == Hash }
-
-				existing_ids = dr_ids + a_ids + modifications.collect{|a| a[:id]}.compact
-				Modification.new_id_init(existing_ids)
-
-				modifications.each do |a|
-					raise ArgumentError, "A modification must have 'pred' and 'obj'." unless a[:pred].present? && a[:obj].present?
-					raise ArgumentError, "The 'obj' of a modification must reference to a denotation or a relation: [#{a}]." unless dr_ids.include? a[:obj]
-
-					a[:id] = Modification.new_id unless a.has_key? :id
+					a[:id] = Attrivute.new_id unless a.has_key? :id
 				end
-			end
-
-			if prefix.present?
-				annotations[:denotations].each {|a| a[:id] = prefix + '_' + a[:id]} if annotations[:denotations].present?
-				annotations[:relations].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:relations].present?
-				annotations[:attributes].each {|a| a[:id] = prefix + '_' + a[:id]; a[:subj] = prefix + '_' + a[:subj]} if annotations[:attributes].present?
-				annotations[:modifications].each {|a| a[:id] = prefix + '_' + a[:id]; a[:obj] = prefix + '_' + a[:obj]} if annotations[:modifications].present?
 			end
 
 			annotations
