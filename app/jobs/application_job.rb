@@ -42,6 +42,14 @@ class ApplicationJob < ActiveJob::Base
     @job&.finish!
   end
 
+  def process_exception(message)
+    if @job
+      @job.add_message body: message
+    else
+      raise ArgumentError, message
+    end
+  end
+
   def resource_name
     self.arguments.first.name
   end
@@ -59,5 +67,9 @@ class ApplicationJob < ActiveJob::Base
   def prepare_progress_record(scheduled_num)
     @job&.update_attribute(:num_items, scheduled_num)
     @job&.update_attribute(:num_dones, 0)
+  end
+
+  def scheduled_num_increment!(by = 1)
+    @job&.increment!(:num_items, by)
   end
 end
