@@ -23,8 +23,8 @@ class DocumentSourceIndex
 
   private
 
-  def build_index(annotation)
-    annotation.inject({}) do |index, annotation|
+  def build_index(annotations)
+    annotations.inject({}) do |index, annotation|
       ids = DocumentSourceIds.new(annotation[:sourcedb], [annotation[:sourceid]])
 
       if index[annotation[:sourcedb]]
