@@ -61,7 +61,9 @@ class ProjectDoc < ActiveRecord::Base
   end
 
   def attributes_about(base_ids, predicates)
-    query = attrivutes.among_entities(base_ids)
+    # The inucludes method is used to prevent searching denotation by attribute.
+    query = attrivutes.includes(:subj)
+                      .among_entities(base_ids)
 
     query = query.where(pred: predicates) if predicates
 
