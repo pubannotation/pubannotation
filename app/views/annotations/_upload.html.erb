@@ -12,18 +12,18 @@ In other words, all the JSON objects in one JSON file have to have the same <i>s
 	<table>
 		<tr>
 			<th>Choose file</th>
-			<td><%= file_field_tag 'upfile', accept: '.tgz,.tar.gz,.json', required: true -%></td>
+			<td><%= file_field_tag 'upfile', accept: '.tgz,.tar.gz,.json,.jsonl', required: true -%></td>
 		</tr>
 		<tr>
 			<th>Choose mode</th>
 			<td>
 				For each document, when there are existing annotations, the upload will
 				<ul>
-					<li><%= radio_button_tag :mode, :replace, checked: true %><%= label_tag :mode_replace,
+					<li><%= radio_button_tag :mode, :replace, true %><%= label_tag :mode_replace,
 						'<span style="font-weight:bold">REPLACE</span> the existing ones,'.html_safe %></li>
-					<li><%= radio_button_tag :mode, :add %><%= label_tag :mode_add,
+					<li class='disabled' title='This mode is disabled at the moment.'><%= radio_button_tag :mode, :add, false, disabled: true %><%= label_tag :mode_add,
 						'<span style="font-weight:bold">ADD</span> the new annotations to the existing ones, or'.html_safe %></li>
-					<li><%= radio_button_tag :mode, :skip %><%= label_tag :mode_skip,
+					<li class='disabled' title='This mode is disabled at the moment.'><%= radio_button_tag :mode, :skip, false, disabled:true %><%= label_tag :mode_skip,
 						'be <span style="font-weight:bold">SKIP</span>ped.'.html_safe %></li>
 				</ul>
 			</td>
