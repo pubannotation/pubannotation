@@ -410,8 +410,9 @@ class AnnotationsController < ApplicationController
 
 			filename = file.original_filename
 			ext = File.extname(filename).downcase
-			ext = '.tar.gz' if ext == '.gz' && filename.end_with?('.tar.gz')
-			raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json'].include?(ext)
+			# rename *.tar.gz to *.tgz
+			ext = '.tgz' if ext == '.gz' && filename.end_with?('.tar.gz')
+			raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.json', '.jsonl'].include?(ext)
 
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
@@ -420,10 +421,10 @@ class AnnotationsController < ApplicationController
 			options[:to_ignore_whitespaces] = true if params[:to_ignore_whitespaces] == "1"
 			options[:to_ignore_text_order] = true if params[:to_ignore_text_order] == "1"
 
-			filepath = File.join('tmp', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
+			filepath = File.join('tmp', 'uploads', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
 			FileUtils.mv file.path, filepath
 
-			if ext == '.json' && file.size < 20.kilobytes
+			if (ext == '.json' || ext == '.jsonl') && file.size < 20.kilobytes
 				StoreAnnotationsCollectionUploadJob.perform_now(project, filepath, options)
 				notice = "Annotations are successfully uploaded."
 			else
