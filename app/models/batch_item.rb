@@ -17,6 +17,10 @@ class BatchItem
     transaction_size > MAX_SIZE_TRANSACTION
   end
 
+  def empty?
+    @annotation_transaction.empty?
+  end
+
   def source_ids_list
     @sourcedb_sourceids_index.values
   end
