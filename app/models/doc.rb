@@ -160,7 +160,8 @@ class Doc < ActiveRecord::Base
 
 		# Search attributes
 		query = base_query.where(attrivutes: { obj: terms })
-		query = query.where(attrivutes: { pred: predicates }) if predicates.present?
+		predicates_for_attrivutes = predicates.reject { |p| p == 'denotes' } if predicates.present?
+		query = query.where(attrivutes: { pred: predicates_for_attrivutes }) if predicates_for_attrivutes.present?
 
 		# Search denotations
 		if predicates.nil? || predicates.include?('denotes')
@@ -186,6 +187,22 @@ class Doc < ActiveRecord::Base
 		sort_order = [sort_order, 'random()'].join(', ') if is_randomize
 
 		docs.order(sort_order).simple_paginate(page, per)
+	end
+
+	def self.search_by_term(user, base_project_name, terms, predicates, projects, page, per)
+		base_project = Project.accessible(user).find_by!(name: base_project_name) if base_project_name.present?
+		docs = base_project.present? ? base_project.docs : Doc.all
+
+		if terms.present?
+			docs = docs.with_terms terms,
+														 user,
+														 predicates,
+														 projects
+		end
+
+		docs.select('sourcedb', 'sourceid')
+				.simple_paginate(page, per)
+				.map(&:to_list_hash)
 	end
 
 	def self.graph_uri

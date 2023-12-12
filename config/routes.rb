@@ -303,7 +303,8 @@ Pubann::Application.routes.draw do
 	get '/collections/:collection_name/search' => 'graphs#show', :as => :sparql_collection
 
   # Evidence Block Search API
-  namespace :term_search do
+  resources :term_search, only: [:index]
+  namespace :term_search, only: [:show] do
     resources :docs, only: [:index]
   end
 end

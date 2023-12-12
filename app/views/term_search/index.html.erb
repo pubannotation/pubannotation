@@ -1,0 +1,94 @@
+<%= render :partial => 'shared/textae_css_js' -%>
+<% content_for :css do %>
+  <style>
+      .textae-editor {
+          height: 200px;
+          overflow-y: scroll;
+      }
+
+      .term-search-form {
+          p {
+              display: flex;
+              align-items: center;
+          }
+
+          label {
+              width: 100px;
+              text-align: right;
+              margin-right: 10px;
+          }
+
+          input[type="text"] {
+              width: 200px;
+              margin-right: 10px;
+          }
+
+          input[type="number"] {
+              width: 50px;
+          }
+
+          input[type="submit"] {
+              margin-left: 110px;
+          }
+      }
+
+  </style>
+<% end %>
+
+<h1>Term Search</h1>
+
+<%= form_with model: @query,
+              url: '/term_search',
+              method: :get,
+              class: 'term-search-form' do |form| %>
+  <p>
+    <%= form.label :terms, "Terms" %>
+    <%= form.text_field :terms %>
+    Multiple comma-separated entries are allowed.
+  </p>
+
+  <p>
+    <%= form.label :predicates, "Predicates" %>
+    <%= form.text_field :predicates %>
+    Multiple comma-separated entries are allowed.
+  </p>
+
+  <p>
+    <%= form.label :projects, "Projects" %>
+    <%= form.text_field :projects %>
+    Multiple comma-separated entries are allowed.
+  </p>
+  <p>
+    <%= form.label :base_project, "Base Project" %>
+    <%= form.text_field :base_project %>
+  </p>
+
+  <p>
+    <%= form.label :page, "Page" %>
+    <%= form.text_field :page, type: :number %>
+  </p>
+
+  <p>
+    <%= form.label :per, "Per Page" %>
+    <%= form.text_field :per, type: :number  %>
+  </p>
+
+  <p>
+    <%= form.submit "Search" %>
+  </p>
+<% end %>
+
+<% @pub_annotation_url_list&.each do |url| %>
+  <section>
+    <h2><%= url %></h2>
+
+    <section class="textae-wrapper-section">
+      <div
+        class="textae-editor"
+        control="hidden"
+        source="<%= url %>"
+      ></div>
+    </section>
+  </section>
+<% end %>
+
