@@ -10,8 +10,8 @@ module TermSearch
                                       to_array(params[:terms]),
                                       to_array(params[:predicates]),
                                       to_array(params[:projects]),
-                                      params[:page]&.to_i,
-                                      params[:per]&.to_i
+                                      params[:page]&.to_i || 1,
+                                      params[:per]&.to_i || 10
 
       respond_to do |format|
         format.json { send_doc_data(doc_fields.to_json, 'docs.json', 'application/json') }

@@ -201,7 +201,7 @@ class Doc < ActiveRecord::Base
 		end
 
 		docs.select('sourcedb', 'sourceid')
-				.simple_paginate(page || 1, per || 10)
+				.simple_paginate(page, per)
 				.map(&:to_list_hash)
 	end
 
