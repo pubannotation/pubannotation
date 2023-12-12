@@ -825,9 +825,9 @@ class Project < ActiveRecord::Base
     else
       case options[:mode]
       when 'add'
-        annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
+        annotations_with_doc.annotations.each { |a| reid_annotations!(a, annotations_with_doc.doc) }
       when 'merge'
-        annotations_with_doc.annotations.each { |a| reid_annotations!(a, doc) }
+        annotations_with_doc.annotations.each { |a| reid_annotations!(a, annotations_with_doc.doc) }
         base_annotations = annotations_with_doc.doc.hannotations(self, nil, nil)
         annotations_with_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
       end
@@ -1048,7 +1048,8 @@ class Project < ActiveRecord::Base
   end
 
   def delete_annotations
-    if denotations_num > 0 
+    # if denotations_num > 0
+    if true
       ActiveRecord::Base.transaction do
         # destroy annotations
         a_num = ActiveRecord::Base.connection.update("DELETE FROM attrivutes WHERE project_id = #{id}")
