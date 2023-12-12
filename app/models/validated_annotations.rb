@@ -16,8 +16,14 @@ class ValidatedAnnotations
 
   def parse(json_string)
     # To return the annotation in an array
-    parsed_json = JSON.parse(json_string, symbolize_names: true)
-    parsed_json.class == Array ? parsed_json : [parsed_json]
+    parsed_json = begin
+      JSON.parse(json_string, symbolize_names: true)
+    rescue JSON::ParserError => e
+      raise ArgumentError, "JSON parse error. Not a valid JSON object: " + e.message
+    end
+
+    raise ArgumentError, "JSON array is not a valid format for annotation." if parsed_json.class == Array
+    [parsed_json]
   end
 
   def validate!(annotations)

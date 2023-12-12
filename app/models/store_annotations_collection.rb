@@ -42,50 +42,51 @@ class StoreAnnotationsCollection
 
   def initialize_aligner
     # To find the doc for each annotation object
-    result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? id : nil)
+    result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? @project.id : nil)
     annotations_for_doc_collection = result.annotations_for_doc_collection
     @warnings.concat result.warnings
-    @warnings.concat [{ body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
+    @warnings.concat [{ body: "Uploading for #{result.num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
 
     AlignTextInRactor.new(annotations_for_doc_collection, @options)
   end
 
   def inspect_annotations(messages, annotation, index)
-    denotations = annotation[:denotations]
-    attributes = annotation[:attributes]
+    denotations = annotation[:denotations] || []
+    blocks = annotation[:blocks] || []
+    relations = annotation[:relations] || []
+    attributes = annotation[:attributes] || []
+
     sourcedb = annotation[:sourcedb]
     sourceid = annotation[:sourceid]
 
-    case [attributes.present?, denotations.present?]
-    in [true, true]
-      # Are there any denotations referenced by the attribute?
-      subject_less_attributes = subject_less_attributes_between(attributes, denotations)
-      if subject_less_attributes.present?
-        messages.concat [{
-                           sourcedb: sourcedb,
-                           sourceid: sourceid,
-                           body: "After alignment adjustment of the denotations, annotations with an index of #{index} does not have denotations #{subject_less_attributes.join ", "} that is the subject of attributes."
-                         }]
-        false
+    db_ids = denotations.map { |d| d[:id] } + blocks.map { |b| b[:id] }
+    dbr_ids = db_ids + relations.map { |d| d[:id] }
+
+    dangling_references = if denotations.present? || blocks.present?
+      relations.map { |r| r[:subj] }.filter { |subj| !db_ids.include? subj } +
+      relations.map { |r| r[:obj] }.filter { |obj| !db_ids.include? obj } +
+      attributes.map { |a| a[:subj] }.filter { |obj| !dbr_ids.include? obj }
+    else
+      _dangling_references = []
+      if relations.present?
+        _dangling_references += relations.map { |r| r[:subj] } + relations.map { |r| r[:obj] }
+
+        r_ids = relations.map { |d| d[:id] }
+        _dangling_references += attributes.map { |a| a[:subj] }.filter { |obj| !r_ids.include? obj }
       else
-        true
+        _dangling_references += attributes.map { |a| a[:subj] }
       end
-    in [true, false]
-      # Only attributes, no denotations.
+    end
+
+    if dangling_references.present?
       messages.concat [{
                          sourcedb: sourcedb,
                          sourceid: sourceid,
-                         body: "After alignment adjustment of the denotations, annotations with an index of #{index} have no denotation."
+                         body: "After alignment, #{dangling_references.length} dangling references were found: #{dangling_references.join ", "}."
                        }]
       false
-    in [false, true] | [false, false]
+    else
       true
     end
-  end
-
-  def subject_less_attributes_between(attributes, denotations)
-    denotation_ids = denotations.map { |d| d[:id] }
-    attributes.map { |a| a[:subj] }
-              .filter { |subj| !denotation_ids.include? subj }
   end
 end
