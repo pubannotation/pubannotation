@@ -17,15 +17,13 @@ RSpec.describe BatchItem, type: :model do
       before do
         batch_item << create_validated_annotations('PubMed', '001', 'text')
         batch_item << create_validated_annotations('PubMed', '002', 'text')
-        batch_item << ValidatedAnnotations.new([
-                                                 { sourcedb: 'PMC', sourceid: 'A01', text: 'text' },
-                                                 { sourcedb: 'PMC', sourceid: 'A02', text: 'text' },
-                                                 { sourcedb: 'BMX', sourceid: '1P&', text: 'text' }
-                                               ].to_json)
+        batch_item << create_validated_annotations('PMC', 'A01', 'text')
+        batch_item << create_validated_annotations('PMC', 'A02', 'text')
+        batch_item << create_validated_annotations('BMX', '1P&', 'text')
       end
 
       it 'adds an annotation collection to the transaction' do
-        expect(batch_item.annotation_transaction.length).to eq(3)
+        expect(batch_item.annotation_transaction.length).to eq(5)
       end
 
       it 'adds a sourcedb and sourceid to the index' do
@@ -40,8 +38,6 @@ RSpec.describe BatchItem, type: :model do
 
   # Helper method to DRY up the code
   def create_validated_annotations(sourcedb, sourceid, text)
-    ValidatedAnnotations.new([
-                               { sourcedb: sourcedb, sourceid: sourceid, text: text }
-                             ].to_json)
+    ValidatedAnnotations.new({ sourcedb: sourcedb, sourceid: sourceid, text: text }.to_json)
   end
 end
