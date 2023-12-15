@@ -20,7 +20,7 @@ RSpec.describe BatchItem, type: :model do
         batch_item << ValidatedAnnotations.new([
                                                  { sourcedb: 'PMC', sourceid: 'A01', text: 'text' },
                                                  { sourcedb: 'PMC', sourceid: 'A02', text: 'text' },
-                                                 { sourcedb: 'BMX', sourceid: '1P&', text: 'text'}
+                                                 { sourcedb: 'BMX', sourceid: '1P&', text: 'text' }
                                                ].to_json)
       end
 
@@ -30,10 +30,10 @@ RSpec.describe BatchItem, type: :model do
 
       it 'adds a sourcedb and sourceid to the index' do
         expect(batch_item.source_ids_list).to eq([
-                                                              DocumentSourceIds.new('PubMed', %w[001 002]),
-                                                              DocumentSourceIds.new('PMC', %w[A01 A02]),
-                                                              DocumentSourceIds.new('BMX', %w[1P&])
-                                                          ])
+                                                   DocumentSourceIds.new('PubMed', %w[001 002]),
+                                                   DocumentSourceIds.new('PMC', %w[A01 A02]),
+                                                   DocumentSourceIds.new('BMX', %w[1P&])
+                                                 ])
       end
     end
   end
