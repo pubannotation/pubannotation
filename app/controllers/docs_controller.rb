@@ -2,7 +2,6 @@ require 'zip/zip'
 
 class DocsController < ApplicationController
 	include HttpBasicAuthenticatable
-	include ArrayParameterConcern
 
 	protect_from_forgery :except => [:create]
 	before_action :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :project_delete_all_docs, :uptodate]
@@ -43,8 +42,6 @@ class DocsController < ApplicationController
 			@docs = Doc.search_by_active_record page, per, @project, @sourcedb,
 																					params[:sort_key], params[:sort_direction], params[:randomize]
 		end
-
-		@docs = @docs.with_terms(to_array(params[:terms])) if params[:terms].present?
 
 		respond_to do |format|
 			format.html do
