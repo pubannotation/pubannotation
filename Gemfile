@@ -68,3 +68,6 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'factory_bot_rails'
 end
+
+# For term search, Union attrivutes term search results and denotations term search results
+gem "active_record_union", "~> 1.3"
