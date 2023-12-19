@@ -13,10 +13,16 @@ Project.create! name: 'First',
                 user: User.first,
                 accessibility: 1
 
-Project.create! id: Pubann::Application.config.admin_project_id,
-                name: 'ForAdmin',
-                user: User.first,
-                accessibility: 0
+# To Avoid initialize error, Create admin project.
+# Note that if the id is missing teeth, the test will fail in a CI environment.
+i = 0
+loop do
+  project = Project.create! name: "ForAdmin#{i}",
+                            user: User.first,
+                            accessibility: 0
+  i += 1
+  break if project.id == Pubann::Application.config.admin_project_id
+end
 
 Sequencer.create! name: 'PMC',
                   url: 'http://pubmed-sequencer.pubannotation.org/?sourcedb=PMC',
