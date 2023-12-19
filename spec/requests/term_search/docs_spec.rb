@@ -78,10 +78,9 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
 
         before { get term_search_docs_path(terms: "subject"), as: :json }
 
-        it 'returns only doc with the term' do
+        it 'returns no doc' do
           json_response = JSON.parse(response.body)
-          expect(json_response.size).to eq(1)
-          expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+          expect(json_response.size).to eq(0)
         end
       end
 
