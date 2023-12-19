@@ -154,8 +154,8 @@ class Doc < ActiveRecord::Base
 
 	scope :with_terms, lambda { |terms, user, predicates, project_names|
 		base_query = joins(:projects).merge(Project.accessible(user))
-																 .joins(projects: :attrivutes)
-																 .joins(projects: :denotations)
+																 .joins("JOIN attrivutes ON attrivutes.project_id = projects.id AND attrivutes.doc_id = docs.id")
+																 .joins("JOIN denotations ON denotations.project_id = projects.id AND denotations.doc_id = docs.id")
 		base_query = base_query.where(projects: { name: project_names }) if project_names.present?
 
 		# Search attributes
@@ -164,7 +164,7 @@ class Doc < ActiveRecord::Base
 		query = query.where(attrivutes: { pred: predicates_for_attrivutes }) if predicates_for_attrivutes.present?
 
 		# Search denotations
-		if predicates.nil? || predicates.include?('denotes')
+		if predicates&.include?('denotes')
 			query = query.or(
 				base_query.where(denotations: { obj: terms })
 			)
