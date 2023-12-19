@@ -34,7 +34,8 @@ RSpec.describe Denotation, type: :model do
   end
 
   describe 'in_span' do
-    let(:denotation) { create(:denotation) }
+    let(:project) { create(:project) }
+    let(:denotation) { create(:denotation, project: project) }
 
     it 'should return denotations in span' do
       expect(Denotation.in_span({begin: 0, end: 4})).to include(denotation)
