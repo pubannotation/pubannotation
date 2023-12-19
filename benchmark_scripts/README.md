@@ -12,8 +12,7 @@ This script is benchmarking the total speed of inserting annotations.
 It is using the PMC-7646410.json file.
 
 ```bash
-bin/rails runner ./bench_instantiate_and_save_annotat
-ions_collection.rb ./PMC-7646410.json
+bin/rails runner benchmark_scripts/bench_instantiate_and_save_annotations_collection.rb benchmark_scripts/PMC-7646410.json
 ```
 
 ## Benchmarking speed for each process
