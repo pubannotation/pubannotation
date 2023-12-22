@@ -1,26 +1,25 @@
 class Division < ActiveRecord::Base
-	belongs_to :doc
+  belongs_to :doc
 
-	def as_json(options={})
-		options ||= {}
+  def as_json(options = {})
+    options ||= {}
 
-		{
-			label: self.label,
-			span: {
-				begin: self.begin,
-				end: self.end
-			}
-		}
-	end
+    {
+      label: self.label,
+      span: {
+        begin: self.begin,
+        end: self.end
+      }
+    }
+  end
 
-	def to_hash
-		{
-			label: self.label,
-			span: {
-				begin: self.begin,
-				end: self.end
-			}
-		}
-	end
-
+  def to_hash
+    {
+      label: self.label,
+      span: {
+        begin: self.begin,
+        end: self.end
+      }
+    }
+  end
 end
