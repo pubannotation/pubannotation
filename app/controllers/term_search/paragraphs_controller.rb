@@ -3,20 +3,7 @@
 module TermSearch
   class ParagraphsController < ApplicationController
     def index
-      data = [
-        {
-          sourcedb: 'PubMed',
-          sourceid: '12345678',
-          begin: 0,
-          end: 100,
-        },
-        {
-          sourcedb: 'PubMed',
-          sourceid: '12345678',
-          begin: 100,
-          end: 200,
-        }
-      ]
+      data = Division.paragpahs.map(&:to_list_hash)
 
       respond_to do |format|
         format.json { send_paragraph_data data.to_json, 'paragraphs.json', 'application/json' }
