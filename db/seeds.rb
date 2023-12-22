@@ -28,3 +28,23 @@ Sequencer.create! name: 'PMC',
                   url: 'http://pubmed-sequencer.pubannotation.org/?sourcedb=PMC',
                   parameters: { 'sourceid' => '_sourceid_' },
                   user: User.first
+
+doc = Doc.create! sourcedb: 'PMC',
+                  sourceid: 'PMC0000001',
+                  body: 'This is a test.'
+
+doc.divisions.create! begin: 0,
+                      end: 4,
+                      label: 'p'
+
+doc.divisions.create! begin: 6,
+                      end: 7,
+                      label: 'i'
+
+doc.divisions.create! begin: 9,
+                      end: 10,
+                      label: 'b'
+
+doc.divisions.create! begin: 12,
+                      end: 15,
+                      label: 'p'
