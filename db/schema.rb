@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_11_14_193746) do
+ActiveRecord::Schema[7.0].define(version: 2023_12_25_072023) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -239,6 +239,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_14_193746) do
     t.boolean "active", default: false
   end
 
+  create_table "paragraph_attrivutes", force: :cascade do |t|
+    t.bigint "division_id", null: false
+    t.bigint "attrivute_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["attrivute_id"], name: "index_paragraph_attrivutes_on_attrivute_id"
+    t.index ["division_id"], name: "index_paragraph_attrivutes_on_division_id"
+  end
+
   create_table "project_docs", id: :serial, force: :cascade do |t|
     t.integer "project_id"
     t.integer "doc_id"
@@ -374,5 +383,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_14_193746) do
   end
 
   add_foreign_key "attrivutes", "docs"
+  add_foreign_key "paragraph_attrivutes", "attrivutes"
+  add_foreign_key "paragraph_attrivutes", "divisions"
   add_foreign_key "relations", "docs"
 end
