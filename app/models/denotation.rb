@@ -95,6 +95,8 @@ class Denotation < ActiveRecord::Base
 		hdenotation
 	end
 
+	def range = (self.begin..self.end)
+
 	def range_valid?(max_offset)
 		self.begin.is_a?(Integer) && self.end.is_a?(Integer) && self.begin >= 0 && self.end > self.begin && self.end <= max_offset
 	end
