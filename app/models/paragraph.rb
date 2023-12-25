@@ -6,6 +6,8 @@ class Paragraph < ApplicationRecord
 
   has_many :paragraph_attrivutes, foreign_key: :division_id
   has_many :attrivutes, through: :paragraph_attrivutes
+  has_many :paragraph_denotations, foreign_key: :division_id
+  has_many :denotations, through: :paragraph_denotations
 
   scope :with_term, lambda { |term|
     joins(:attrivutes)
