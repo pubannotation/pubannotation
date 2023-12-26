@@ -17,14 +17,14 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
 
       it 'returns correct number of docs' do
         json_response = JSON.parse(response.body)
-        expect(json_response.size).to eq(docs.size)
+        expect(json_response.size).to eq(Doc.all.count)
       end
 
       it 'returns docs in correct format' do
         json_response = JSON.parse(response.body)
 
         expect(json_response).to be_an_instance_of(Array)
-        expect(json_response.length).to eq(docs.length)
+        expect(json_response.length).to eq(Doc.all.count)
         expect(json_response).to include(docs[0].to_list_hash.stringify_keys)
       end
     end
