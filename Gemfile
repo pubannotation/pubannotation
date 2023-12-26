@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
-
 ruby '3.2.2'
 
 gem 'rails', '~> 7.0.0'
@@ -26,7 +25,7 @@ group :development do
   gem "stackprof"
 end
 
-gem 'text_alignment', '0.11.10'
+gem 'text_alignment', '0.12.1'
 gem 'pubannotation_evaluator', '~> 1.1', '>= 1.2.0'
 gem 'wice_grid', github: 'ledsun/wice_grid', branch: 'rails_7'
 gem 'font-awesome-rails'
