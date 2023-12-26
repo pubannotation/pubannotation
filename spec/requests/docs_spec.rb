@@ -3,12 +3,15 @@ require 'rails_helper'
 RSpec.describe "Docs", type: :request do
   describe "GET /docs(.:format)" do
     subject { response }
+    let(:existed_doc) { Doc.all.map(&:to_list_hash) }
 
     context 'when no docs' do
-      before { get "/docs.json" }
+      before do
+        get "/docs.json"
+      end
 
       it { is_expected.to have_http_status(200) }
-      it { expect(response.body).to eq([].to_json) }
+      it { expect(response.body).to eq(existed_doc.to_json) }
     end
 
     context 'when there are docs' do
@@ -20,13 +23,7 @@ RSpec.describe "Docs", type: :request do
 
       it { is_expected.to have_http_status(200) }
       it 'returns the doc data' do
-        expected_data = [{
-                           sourcedb: "PubMed",
-                           sourceid: Doc.last.sourceid,
-                           url: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
-                         }]
-
-        expect(response.body).to eq(expected_data.to_json)
+        expect(response.body).to eq(existed_doc.to_json)
       end
 
       context 'when project name is specified as project_id' do
@@ -158,13 +155,7 @@ RSpec.describe "Docs", type: :request do
 
         it { is_expected.to have_http_status(200) }
         it 'returns the doc data' do
-          expected_data = [{
-                             sourcedb: "PubMed",
-                             sourceid: Doc.last.sourceid,
-                             url: "http://test.pubannotation.org/docs/sourcedb/PubMed/sourceid/#{Doc.last.sourceid}",
-                           }]
-
-          expect(response.body).to eq(expected_data.to_json)
+          expect(response.body).to eq(existed_doc.to_json)
         end
       end
     end
