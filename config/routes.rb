@@ -306,5 +306,6 @@ Pubann::Application.routes.draw do
   resources :term_search, only: [:index]
   namespace :term_search, only: [:show] do
     resources :docs, only: [:index]
+		resources :paragraphs, only: [:index]
   end
 end

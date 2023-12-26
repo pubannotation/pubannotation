@@ -14,7 +14,7 @@ class TermSearchController < ApplicationController
                                     @query.page,
                                     @query.per
 
-    @pub_annotation_url_list = doc_fields.map { |doc_field| convert_to_annotations_url_from doc_field }
+    @pub_annotation_url_list = doc_fields.map { |doc_field| convert_to_annotations_url_from doc_field, @query }
   end
 
   private
@@ -26,16 +26,16 @@ class TermSearchController < ApplicationController
                   :page, :per
   end
 
-  def convert_to_annotations_url_from(doc_field)
+  def convert_to_annotations_url_from(doc_field, query)
     url = "#{doc_field[:url]}/annotations.json"
 
     params2 = {
-      'projects' => params[:projects],
-      'terms' => params[:terms],
-      'predicates' => params[:predicates]
-    }.compact
+      'projects' => query.projects,
+      'terms' => query.terms,
+      'predicates' => query.predicates,
+    }.select { |_, v| v.present? }
 
-    url << "?#{URI.encode_www_form(params2)}" if params[:projects].present? || params[:terms].present? || params[:predicates].present?
+    url << "?#{URI.encode_www_form(params2)}"
     url
   end
 
