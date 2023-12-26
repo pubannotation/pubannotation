@@ -22,17 +22,15 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
       expect(project).to have_attributes(
                            denotations_num: 0,
                            relations_num: 0,
-                           modifications_num: 0,
                            updated_at: current,
                            annotations_updated_at: current
                          )
     end
 
     it "does not create any annotations" do
-      expect(Denotation.exists?).to be_falsey
-      expect(Relation.exists?).to be_falsey
-      expect(Attrivute.exists?).to be_falsey
-      expect(Modification.exists?).to be_falsey
+      expect(project.denotations.exists?).to be_falsey
+      expect(project.relations.exists?).to be_falsey
+      expect(project.attrivutes.exists?).to be_falsey
     end
   end
 
@@ -51,10 +49,6 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
          attributes: [
            { id: "a1", pred: "D", obj: "E", subj: "d1" },
            { id: "a2", pred: "D", obj: "E", subj: "d2" }
-         ],
-         modifications: [
-           { id: "m1", pred: "F", obj: "d1" },
-           { id: "m2", pred: "G", obj: "d1" }
          ]
        }]
     end
@@ -65,7 +59,6 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
       expect(project).to have_attributes(
                            denotations_num: 2,
                            relations_num: 2,
-                           modifications_num: 0,
                            updated_at: current,
                            annotations_updated_at: current
                          )
@@ -73,7 +66,6 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
       expect(project.project_docs.first).to have_attributes(
                                               denotations_num: 2,
                                               relations_num: 2,
-                                              modifications_num: 0,
                                               annotations_updated_at: current
                                             )
     end
@@ -123,7 +115,6 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
       expect(project).to have_attributes(
                            denotations_num: 2,
                            relations_num: 0,
-                           modifications_num: 0,
                            updated_at: current,
                            annotations_updated_at: current
                          )
@@ -131,14 +122,12 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
       expect(project.project_docs.first).to have_attributes(
                                               denotations_num: 1,
                                               relations_num: 0,
-                                              modifications_num: 0,
                                               annotations_updated_at: current
                                             )
 
       expect(project.project_docs.second).to have_attributes(
                                               denotations_num: 1,
                                               relations_num: 0,
-                                              modifications_num: 0,
                                               annotations_updated_at: current
                                             )
     end
