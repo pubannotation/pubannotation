@@ -26,10 +26,13 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 					validated_annotations = ValidatedAnnotations.new(json_string)
 					batch_item << validated_annotations
 					if batch_item.enough?
-						threads << execute_batch(project, options, batch_item)
-						batch_item = BatchItem.new
+						begin
+							threads << execute_batch(project, options, batch_item)
+						ensure
+							batch_item = BatchItem.new
+						end
 					end
-				rescue ArgumentError => e
+				rescue => e
 					process_exception("[#{File.basename(filepath)}] #{e.message}")
 				end
 
@@ -40,7 +43,11 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 		# Process the remaining batch items.
 		unless batch_item.empty?
-			threads << execute_batch(project, options, batch_item)
+			begin
+				threads << execute_batch(project, options, batch_item)
+			rescue => e
+				process_exception("[#{File.basename(filepath)}] #{e.message}")
+			end
 			batch_item = BatchItem.new
 		end
 
@@ -57,11 +64,14 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 							validated_annotations = ValidatedAnnotations.new(json_string)
 							batch_item << validated_annotations
 							if batch_item.enough?
-								threads << execute_batch(project, options, batch_item)
-								batch_item = BatchItem.new
+								begin
+									threads << execute_batch(project, options, batch_item)
+								ensure
+									batch_item = BatchItem.new
+								end
 							end
-						rescue ArgumentError => e
-							process_exception("[#{File.basename(filepath)}:L#{i+1}] #{e.message}")
+						rescue => e
+							process_exception("[#{File.basename(filepath)}] #{e.message}")
 						end
 
 						@job&.increment!(:num_dones)
@@ -71,7 +81,11 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 				# Process the remaining batch items.
 				unless batch_item.empty?
-					threads << execute_batch(project, options, batch_item)
+					begin
+						threads << execute_batch(project, options, batch_item)
+					rescue => e
+						process_exception("[#{File.basename(filepath)}] #{e.message}")
+					end
 					batch_item = BatchItem.new
 				end
 			end
