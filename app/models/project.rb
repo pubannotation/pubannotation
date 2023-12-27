@@ -1111,8 +1111,9 @@ class Project < ActiveRecord::Base
 
         docs_stat_update
 
-        Annotation.delete_orphan_annotations
-        Doc.delete_orphan_docs_of_user_sourcedb
+        # The two processes below take a too long time
+        # Annotation.delete_orphan_annotations
+        # Doc.delete_orphan_docs_of_user_sourcedb
       end
     end
   end
