@@ -80,6 +80,9 @@ class Doc < ActiveRecord::Base
 	attr_accessor :username, :original_body, :text_aligner
 
 	has_many :divisions, dependent: :destroy
+	# Paragraph is a kind of division which has label 'p'.
+	has_many :paragraphs
+
 	has_many :typesettings, dependent: :destroy
 
 	has_many :denotations, dependent: :destroy
@@ -951,6 +954,12 @@ class Doc < ActiveRecord::Base
 
 	def self.delete_orphan_docs_of_user_sourcedb
 		d_num = ActiveRecord::Base.connection.delete("DELETE FROM docs WHERE sourcedb LIKE '%#{Doc::UserSourcedbSeparator}%' AND NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = docs.id)")
+	end
+
+	def update_all_references_in_paragraphs
+		self.paragraphs.each do
+			_1.update_references denotations
+		end
 	end
 
 	private
