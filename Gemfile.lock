@@ -279,7 +279,7 @@ GEM
     pg (1.5.4)
     psych (5.1.1.1)
       stringio
-    pubannotation_evaluator (1.2.0)
+    pubannotation_evaluator (3.0.0)
     public_suffix (5.0.3)
     puma (6.4.0)
       nio4r (~> 2.0)
@@ -389,7 +389,7 @@ GEM
     tao_rdfizer (0.11.3)
     terser (1.1.19)
       execjs (>= 0.3.0, < 3)
-    text_alignment (0.12.1)
+    text_alignment (0.12.2)
       ruby-dictionary (~> 1.1, >= 1.1.1)
       string-similarity (~> 2.1)
     thor (1.3.0)
@@ -447,7 +447,7 @@ DEPENDENCIES
   omniauth-google-oauth2
   omniauth-rails_csrf_protection
   pg
-  pubannotation_evaluator (~> 1.1, >= 1.2.0)
+  pubannotation_evaluator (~> 3.0.0)
   puma
   rack-cors
   rails (~> 7.0.0)
@@ -464,7 +464,7 @@ DEPENDENCIES
   stardog-rb!
   tao_rdfizer (~> 0.11.3)
   terser
-  text_alignment (= 0.12.1)
+  text_alignment (= 0.12.2)
   web-console
   wice_grid!
   wikipedia-client

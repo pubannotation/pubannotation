@@ -25,8 +25,8 @@ group :development do
   gem "stackprof"
 end
 
-gem 'text_alignment', '0.12.1'
-gem 'pubannotation_evaluator', '~> 1.1', '>= 1.2.0'
+gem 'text_alignment', '0.12.2'
+gem 'pubannotation_evaluator', '~> 3.0.0'
 gem 'wice_grid', github: 'ledsun/wice_grid', branch: 'rails_7'
 gem 'font-awesome-rails'
 gem 'jquery-rails'
