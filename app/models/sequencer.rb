@@ -28,6 +28,10 @@ class Sequencer < ActiveRecord::Base
 		Sequencer.accessibles(current_user).pluck(:name)
 	end
 
+	def self.accessible?(sequencer_name, current_user = nil)
+		Sequencer.where(name: sequencer_name).exists?
+	end
+
 	def get_doc(sourceid)
 		response = RestClient::Request.execute(method: :get, url: url, headers:{content_type: :json, accept: :json}, verify_ssl: false)
 

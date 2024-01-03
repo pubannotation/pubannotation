@@ -2,13 +2,13 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	queue_as :low_priority
 
 	def perform(project, filepath, options)
-		dirpath = prepare_files(filepath)
+		dirpath = prepare_upload_files(filepath)
 
 		all_json_files  = "*.json"
 		all_jsonl_files = "*.jsonl"
-		all_json_and_jsonl_files = "*.{json,jsonl}"
+		all_applicable_files = "*.{json,jsonl}"
 
-		file_count = Dir.glob(File.join(dirpath, '**', all_json_and_jsonl_files)).count { |file| File.file?(file) }
+		file_count = Dir.glob(File.join(dirpath, '**', all_applicable_files)).count { |file| File.file?(file) }
 
 		# initialize the counter
 		prepare_progress_record(file_count)
@@ -94,8 +94,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		# Process the remaining batch items.
 		threads.each(&:join)
 	ensure
-		FileUtils.rm_rf(dirpath) unless dirpath.nil?
-		File.unlink(filepath)
+		remove_upload_files(filepath, dirpath)
 	end
 
 	def job_name
@@ -124,18 +123,5 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		file.each_line { line_count += 1 }
 		end
 		line_count
-	end
-
-	def prepare_files(filepath)
-		dirpath = File.join('tmp', 'uploads', File.basename(filepath, ".*"))
-		if filepath.end_with?('.tgz')
-			unpack_cmd = "mkdir #{dirpath}; tar -xzf #{filepath} -C #{dirpath}"
-			unpack_success_p = system(unpack_cmd)
-			raise IOError, "Could not unpack the archive file." unless unpack_success_p
-		else
-			FileUtils.mkdir dirpath
-			FileUtils.cp filepath, dirpath
-		end
-		dirpath
 	end
 end

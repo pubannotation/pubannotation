@@ -252,6 +252,14 @@ class Doc < ActiveRecord::Base
 		"#{sourcedb}-#{sourceid}"
 	end
 
+	def self.parse_filename(_filename)
+		parts = _filename.split('-')
+		raise ArgumentError, "The filename of a txt file has to be in the form of 'sourcedb-sourceid': #{_filename}" unless parts.length > 1
+		sourceid = parts.pop
+		sourcedb = parts.join('-')
+		[sourcedb, sourceid]
+	end
+
 	def self.get_doc(docspec)
 		if docspec[:sourcedb].present? && docspec[:sourceid].present?
 			Doc.find_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
@@ -273,21 +281,21 @@ class Doc < ActiveRecord::Base
 
 	# returns {docs:..., messages:...}
 	def self.sequence_docs(sourcedb, sourceids)
+		raise RuntimeError
 		raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
 		raise ArgumentError, "sourceids is empty" unless sourceids.present?
 
-		sequencer = begin
-			Sequencer.find(sourcedb)
+		begin
+			sequencer = Sequencer.find(sourcedb)
 		rescue ActiveRecord::ActiveRecordError => e
-			nil
+			raise ArgumentError, "Could not find the sequencer for the sourcedb: [#{sourcedb}]"
 		end
-		raise "Could not find the sequencer for the sourcedb: [#{sourcedb}]" unless sequencer.present?
 
 		result = sequencer.get_docs(sourceids)
 
 		invalid_docs = result[:docs].select{|doc| !Doc.hdoc_valid?(doc)}
 		invalid_docs.each do |doc|
-			result[:messages] << {sourcedb:sourcedb, sourceid:doc[:sourceid], body:"Invalid document entry."} unless Doc.hdoc_valid?(doc)
+			result[:messages] << {sourcedb:sourcedb, sourceid:doc[:sourceid], body:"Invalid document entry."}
 		end
 
 		result[:docs] = result[:docs] - invalid_docs
@@ -819,20 +827,13 @@ class Doc < ActiveRecord::Base
 	end
 
 	def self.hdoc_normalize!(hdoc, current_user, no_personalize = false)
-		raise RuntimeError, "You have to be logged in to create a document." unless current_user.present?
+		raise SecurityError, "You have to be logged in to create a document." unless current_user.present?
 
-		unless hdoc[:body].present?
-			if hdoc[:text].present?
-				hdoc[:body] = hdoc[:text]
-			else
-				raise ArgumentError, "Text is missing."
-			end
-		end
-
+		# body = text
+		hdoc[:body] ||= hdoc[:text] || raise(ArgumentError, "Text is missing.")
 		hdoc.delete(:text) if hdoc[:text].present?
 
-		raise ArgumentError, "Text is missing." unless hdoc[:body].present?
-
+		# sourcedb, to be personalized
 		if no_personalize
 			raise ArgumentError, "For admin, the 'sourcedb' cannot be automatically generated." unless hdoc[:sourcedb].present?
 		else
@@ -841,7 +842,8 @@ class Doc < ActiveRecord::Base
 				if hdoc[:sourcedb].include?(Doc::UserSourcedbSeparator)
 					parts = hdoc[:sourcedb].split(Doc::UserSourcedbSeparator)
 					raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
-					raise ArgumentError, "'#{parts[1]}' is not your username." unless parts[1] == current_user.username
+					sourcedb, username = parts
+					raise ArgumentError, "'#{username}' is not your username." unless username == current_user.username
 				else
 					hdoc[:sourcedb] += UserSourcedbSeparator + current_user.username
 				end

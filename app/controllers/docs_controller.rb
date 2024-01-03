@@ -266,27 +266,31 @@ class DocsController < ApplicationController
 
 			filename = file.original_filename
 			ext = File.extname(filename).downcase
-			ext = '.tar.gz' if ext == '.gz' && filename.end_with?('.tar.gz')
-			raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.tar.gz', '.json', '.txt'].include?(ext)
+			# rename *.tar.gz to *.tgz
+			ext = '.tgz' if ext == '.gz' && filename.end_with?('.tar.gz')
+			raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.json', '.txt'].include?(ext)
+
+			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
 			options = {
 				mode: params[:mode].present? ? params[:mode].to_s : "update",
 				root: current_user.root?
 			}
 
-			dirpath = File.join('tmp/uploads', "#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}")
-			FileUtils.mkdir_p dirpath
-			FileUtils.mv file.path, File.join(dirpath, filename)
+			if ext == '.txt'
+				sourcedb, sourceid = Doc.parse_filename(File.basename(filename, ext))
+				options[:sourcedb] = sourcedb
+				options[:sourceid] = sourceid
+			end
 
-			if ['.json', '.txt'].include?(ext) && file.size < 100.kilobytes
-				UploadDocsJob.perform_now(project, dirpath, options, filename)
+			filepath = File.join('tmp', 'uploads', "upload-#{params[:project_id]}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}#{ext}")
+			FileUtils.mv file.path, filepath
+
+			if ['.json', '.txt'].include?(ext)
+				UploadDocsJob.perform_now(project, filepath, options)
 				notice = "Documents are successfully uploaded."
 			else
-				raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
-
-				# UploadDocsJob.perform_now(project, dirpath, options, filename)
-
-				active_job = UploadDocsJob.perform_later(project, dirpath, options, filename)
+				active_job = UploadDocsJob.perform_later(project, filepath, options)
 				notice = "The task, '#{active_job.job_name}', is created."
 			end
 		rescue => e
