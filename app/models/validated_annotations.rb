@@ -19,7 +19,7 @@ class ValidatedAnnotations
     parsed_json = begin
       JSON.parse(json_string, symbolize_names: true)
     rescue JSON::ParserError => e
-      raise ArgumentError, "JSON parse error. Not a valid JSON object: " + e.message
+      raise ArgumentError, "JSON parse error. Not a valid JSON object."
     end
 
     raise ArgumentError, "JSON array is not a valid format for annotation." if parsed_json.class == Array
