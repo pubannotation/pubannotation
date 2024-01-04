@@ -473,7 +473,7 @@ class Project < ActiveRecord::Base
 
   def docs_stat_update
     # count
-    stat = (id == Pubann::Application.config.admin_project_id ? Doc : docs).group(:sourcedb).count
+    stat = (id == Pubann::Admin::ProjectId ? Doc : docs).group(:sourcedb).count
 
     # sort
     o = Doc::SOURCEDBS
@@ -488,7 +488,7 @@ class Project < ActiveRecord::Base
   end
 
   def self.admin_project
-    @admin_project ||= Project.find(Pubann::Application.config.admin_project_id)
+    @admin_project ||= Project.find(Pubann::Admin::ProjectId)
   end
 
   def self.docs_stat
