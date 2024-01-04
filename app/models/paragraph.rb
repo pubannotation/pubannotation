@@ -2,7 +2,7 @@
 
 class Paragraph < ApplicationRecord
   self.table_name = 'divisions'
-  default_scope { where label: 'p' }
+  default_scope { where label: Pubann::Paragraph::Labels }
 
   has_many :paragraph_attrivutes, foreign_key: :division_id
   has_many :attrivutes, through: :paragraph_attrivutes
