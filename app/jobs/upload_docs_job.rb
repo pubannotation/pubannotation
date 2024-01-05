@@ -1,4 +1,6 @@
 class UploadDocsJob < ApplicationJob
+	include UploadFilesConcern
+
 	queue_as :low_priority
 
 	def perform(project, filepath, options)
