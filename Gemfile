@@ -70,3 +70,7 @@ end
 
 # For term search, Union attrivutes term search results and denotations term search results
 gem "active_record_union", "~> 1.3"
+
+group :production do
+  gem 'unicorn'
+end
