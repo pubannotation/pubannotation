@@ -72,6 +72,9 @@
   end
 
   def update_num_dones
-    @job.update_attribute(:num_dones, @job.num_dones + @docs.size)
+    @job.transaction do
+      @job.reload
+      @job.update_attribute(:num_dones, @job.num_dones + @docs.size)
+    end
   end
 end
