@@ -68,8 +68,4 @@ class ApplicationJob < ActiveJob::Base
     @job&.update_attribute(:num_items, scheduled_num)
     @job&.update_attribute(:num_dones, 0)
   end
-
-  def scheduled_num_increment!(by = 1)
-    @job&.increment!(:num_items, by)
-  end
 end

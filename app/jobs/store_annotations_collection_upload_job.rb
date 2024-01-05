@@ -126,4 +126,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		end
 		line_count
 	end
+
+	def scheduled_num_increment!(by = 1)
+		@job.increment!(:num_items, by)
+	end
 end
