@@ -1,4 +1,6 @@
 class DeleteAnnotationsFromUploadJob < ApplicationJob
+	include UseJobRecordConcern
+
 	queue_as :low_priority
 
 	def perform(project, filepath, options)

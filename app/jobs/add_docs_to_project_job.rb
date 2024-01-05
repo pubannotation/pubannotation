@@ -1,4 +1,6 @@
 class AddDocsToProjectJob < ApplicationJob
+  include UseJobRecordConcern
+
   queue_as :general
 
   def perform(project, docspecs)

@@ -1,4 +1,7 @@
 class StoreAnnotationsCollectionUploadJob < ApplicationJob
+	include UseJobRecordConcern
+	include UploadFilesConcern
+
 	queue_as :low_priority
 
 	def perform(project, filepath, options)
@@ -123,5 +126,13 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		file.each_line { line_count += 1 }
 		end
 		line_count
+	end
+
+	def scheduled_num_increment!(by = 1)
+		@job.increment!(:num_items, by)
+	end
+
+	def process_exception(message)
+		@job.add_message body: message
 	end
 end

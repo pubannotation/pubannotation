@@ -307,5 +307,8 @@ Pubann::Application.routes.draw do
   namespace :term_search, only: [:show] do
     resources :docs, only: [:index]
 		resources :paragraphs, only: [:index]
-  end
+	end
+	scope :jobs do
+		resource :update_paragraph_references_job, only: [:show, :create, :destroy]
+	end
 end
