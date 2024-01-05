@@ -130,4 +130,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	def scheduled_num_increment!(by = 1)
 		@job.increment!(:num_items, by)
 	end
+
+	def process_exception(message)
+		@job.add_message body: message
+	end
 end

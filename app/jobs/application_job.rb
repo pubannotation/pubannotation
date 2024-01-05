@@ -42,14 +42,6 @@ class ApplicationJob < ActiveJob::Base
     @job&.finish!
   end
 
-  def process_exception(message)
-    if @job
-      @job.add_message body: message
-    else
-      raise ArgumentError, message
-    end
-  end
-
   def resource_name
     self.arguments.first.name
   end
