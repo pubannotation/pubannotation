@@ -1,4 +1,5 @@
 class StoreAnnotationsCollectionUploadJob < ApplicationJob
+	include UseJobRecordConcern
 	include UploadFilesConcern
 
 	queue_as :low_priority

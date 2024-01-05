@@ -1,4 +1,6 @@
 class AnalyseAnnotationsJob < ApplicationJob
+	include UseJobRecordConcern
+
 	queue_as :low_priority
 
 	def perform(project, options)

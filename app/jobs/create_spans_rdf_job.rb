@@ -1,4 +1,6 @@
 class CreateSpansRdfJob < ApplicationJob
+	include UseJobRecordConcern
+
 	queue_as :low_priority
 
 	def perform(project, in_collection, loc = nil)

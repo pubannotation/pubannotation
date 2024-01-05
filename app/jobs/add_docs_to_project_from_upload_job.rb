@@ -1,4 +1,6 @@
 class AddDocsToProjectFromUploadJob < ApplicationJob
+  include UseJobRecordConcern
+
   queue_as :general
 
   def perform(project, sourcedb, filepath)

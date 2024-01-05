@@ -1,4 +1,6 @@
 class CreateAnnotationsRdfJob < ApplicationJob
+	include UseJobRecordConcern
+
 	queue_as :low_priority
 
 	def perform(project, doc_ids = nil, loc = nil)

@@ -7,10 +7,6 @@ class EvaluateAnnotationsJob < ApplicationJob
 
 		docs = project.docs & reference_project.docs
 
-		if @job
-			prepare_progress_record(docs.count)
-		end
-
 		soft_match_characters = evaluation.soft_match_characters || PubannotationEvaluator::SOFT_MATCH_CHARACTERS
 		soft_match_words = evaluation.soft_match_words || PubannotationEvaluator::SOFT_MATCH_WORDS
 		denotations_type_match = evaluation.denotations_type_match || PubannotationEvaluator::EXACT_TYPE_MATCH
@@ -19,25 +15,9 @@ class EvaluateAnnotationsJob < ApplicationJob
 		evaluator = PubannotationEvaluator.new(soft_match_characters, soft_match_words, denotations_type_match, relations_type_match)
 		comparison = []
 		docs.each_with_index do |doc, i|
-			begin
-				annotations = doc.hannotations(project, nil, nil)
-				reference_annotations = doc.hannotations(reference_project, nil, nil)
-				comparison += evaluator.compare(annotations, reference_annotations)
-			rescue => e
-				if @job
-					@job.add_message sourcedb: annotations[:sourcedb],
-													 sourceid: annotations[:sourceid],
-													 divid: annotations[:divid],
-													 body: e.message
-				else
-					raise e
-				end
-			ensure
-				if @job
-					@job.update_attribute(:num_dones, i + 1)
-					check_suspend_flag
-				end
-			end
+			annotations = doc.hannotations(project, nil, nil)
+			reference_annotations = doc.hannotations(reference_project, nil, nil)
+			comparison += evaluator.compare(annotations, reference_annotations)
 		end
 
 		result = evaluator.evaluate(comparison)
@@ -58,11 +38,5 @@ class EvaluateAnnotationsJob < ApplicationJob
 
 	def job_name
 		'Evaluate annotations'
-	end
-
-	private
-
-	def organization_jobs
-		self.arguments.first.study_project.jobs
 	end
 end
