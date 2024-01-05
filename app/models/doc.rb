@@ -281,7 +281,6 @@ class Doc < ActiveRecord::Base
 
 	# returns {docs:..., messages:...}
 	def self.sequence_docs(sourcedb, sourceids)
-		raise RuntimeError
 		raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
 		raise ArgumentError, "sourceids is empty" unless sourceids.present?
 
