@@ -115,7 +115,7 @@ RSpec.describe "Docs", type: :request do
         context 'when html is specified as format' do
           before do
             project = create(:project, accessibility: 1)
-            Pubann::Application.config.admin_project_id = project.id
+            stub_const('Pubann::Admin::ProjectId', project.id)
             get "/docs.html?keywords=test"
           end
 

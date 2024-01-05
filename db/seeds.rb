@@ -21,7 +21,7 @@ loop do
                             user: User.first,
                             accessibility: 0
   i += 1
-  break if project.id == Pubann::Application.config.admin_project_id
+  break if project.id == Pubann::Admin::ProjectId
 end
 
 Sequencer.create! name: 'PMC',
