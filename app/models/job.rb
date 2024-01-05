@@ -87,4 +87,12 @@ class Job < ActiveRecord::Base
     ActiveRecord::Base.connection.exec_query("DELETE FROM messages WHERE job_id = #{id}")
     self.delete
   end
+
+  def will_finish_at
+    if begun_at.nil? || num_dones.nil? || num_dones == 0
+      nil
+    else
+      begun_at + (Time.now - begun_at) * num_items / num_dones
+    end
+  end
 end
