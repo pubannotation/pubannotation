@@ -3,7 +3,7 @@
 module TermSearch
   class ParagraphsController < ApplicationController
     def index
-      data = Division.paragpahs.map(&:to_list_hash)
+      data = Paragraph.all.map(&:to_list_hash)
 
       respond_to do |format|
         format.json { send_paragraph_data data.to_json, 'paragraphs.json', 'application/json' }

@@ -4,6 +4,7 @@ class Paragraph < ApplicationRecord
   self.table_name = 'divisions'
   default_scope { where label: Pubann::Paragraph::Labels }
 
+  belongs_to :doc
   has_many :paragraph_attrivutes, foreign_key: :division_id
   has_many :attrivutes, through: :paragraph_attrivutes
   has_many :paragraph_denotations, foreign_key: :division_id
@@ -29,6 +30,15 @@ class Paragraph < ApplicationRecord
         end
       end
     end
+  end
+
+  def to_list_hash
+    {
+      sourcedb: doc.sourcedb,
+      sourceid: doc.sourceid,
+      begin: self.begin,
+      end: self.end
+    }
   end
 
   private
