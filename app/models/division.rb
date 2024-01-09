@@ -2,8 +2,6 @@ class Division < ActiveRecord::Base
   belongs_to :doc
 
   def as_json(options = {})
-    options ||= {}
-
     {
       label: self.label,
       span: {
