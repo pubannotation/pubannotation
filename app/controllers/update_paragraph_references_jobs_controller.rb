@@ -1,6 +1,8 @@
 class UpdateParagraphReferencesJobsController < ApplicationController
   include DocsHelper
 
+  before_action :authenticate_root_user!
+
   def create
     UpdateParagraphReferencesJob.create_jobs params[:sourcedb], false, 1
     redirect_to update_paragraph_references_job_path
