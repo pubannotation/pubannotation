@@ -1,5 +1,5 @@
   class UpdateParagraphReferencesJob < ApplicationJob
-  queue_as :update_paragraph_references
+  queue_as :low_priority
 
   before_perform :before_perform
   after_perform :after_perform
