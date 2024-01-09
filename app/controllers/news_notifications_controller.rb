@@ -1,5 +1,5 @@
 class NewsNotificationsController < ApplicationController
-	before_action :is_root_user?, except: [:index, :show, :category]
+	before_action :authenticate_root_user!, except: [:index, :show, :category]
 
 	def index
 		@news_notifications = NewsNotification.limit(5) 
@@ -55,7 +55,7 @@ class NewsNotificationsController < ApplicationController
 		params.require(:news_notification).permit(:title, :body, :category, :active)
 	end
 
-	def is_root_user?
+	def authenticate_root_user!
 		unless root_user?
 			render_status_error(:unauthorized)
 		end
