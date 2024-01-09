@@ -54,10 +54,4 @@ class NewsNotificationsController < ApplicationController
 	def news_notification_params
 		params.require(:news_notification).permit(:title, :body, :category, :active)
 	end
-
-	def authenticate_root_user!
-		unless root_user?
-			render_status_error(:unauthorized)
-		end
-	end	
 end
