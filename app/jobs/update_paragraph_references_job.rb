@@ -1,5 +1,13 @@
-  class UpdateParagraphReferencesJob < ApplicationJob
-  queue_as :low_priority
+require 'sidekiq/api'
+
+# Paragraph references are updated on a source DB basis.
+# The source DB may contain 10 million documents.
+# An ActiveJob job is created for every 100,000 documents.
+# The progress of the ActiveJob jobs is stored in the jobs table;
+# The ActiveJob job uses a dedicated queue,
+# and the entire queue is destroyed when the update process is stopped.
+class UpdateParagraphReferencesJob < ApplicationJob
+  queue_as :update_paragraph_references
 
   before_perform :before_perform
   after_perform :after_perform
@@ -30,6 +38,7 @@
 
   # This method is for debug.
   def self.destroy_jobs
+    Sidekiq::Queue.new(queue_name).clear
     jobs.destroy_all
   end
 
@@ -44,9 +53,13 @@
   end
 
   def self.job_name = self.class.name
+
   def self.jobs = Job.where(name: job_name)
+
   def jobs = self.class.jobs
+
   def self.queued_jobs = jobs.where(ended_at: nil)
+
   def queued_jobs = self.class.queued_jobs
 
   private

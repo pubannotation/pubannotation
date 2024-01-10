@@ -1,7 +1,11 @@
 class UpdateParagraphReferencesJobsController < ApplicationController
   include DocsHelper
 
-  before_action :authenticate_root_user!
+  before_action :authenticate_root_user! if Rails.env.production?
+
+  def index
+    @jobs = UpdateParagraphReferencesJob.queued_jobs
+  end
 
   def create
     UpdateParagraphReferencesJob.create_jobs params[:sourcedb], false, 1

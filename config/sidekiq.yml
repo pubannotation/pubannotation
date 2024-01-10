@@ -3,3 +3,4 @@
 :queues:
   - general
   - low_priority
+  - update_paragraph_references
