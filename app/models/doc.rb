@@ -1,6 +1,7 @@
 class Doc < ActiveRecord::Base
 	include Elasticsearch::Model
 	include Elasticsearch::Model::Callbacks
+	include PaginateConcern
 
 	settings index: {
 		analysis: {
@@ -99,12 +100,6 @@ class Doc < ActiveRecord::Base
 	validates :sourcedb, presence: true
 	validates :sourceid, presence: true
 	validates :sourceid, uniqueness: {scope: :sourcedb}
-	
-	scope :simple_paginate, -> (page, per = 10) {
-		page = page.nil? ? 1 : page.to_i
-		offset = (page - 1) * per
-		offset(offset).limit(per)
-	}
 
 	scope :relations_num, -> {
 		joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")

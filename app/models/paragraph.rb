@@ -2,6 +2,7 @@
 
 class Paragraph < ApplicationRecord
   include Rails.application.routes.url_helpers
+  include PaginateConcern
 
   self.table_name = 'divisions'
   default_scope { where label: Pubann::Paragraph::Labels }
@@ -37,12 +38,6 @@ class Paragraph < ApplicationRecord
     else
       attributes_query.distinct
     end
-  }
-
-  scope :simple_paginate, -> (page, per = 10) {
-    page = page.nil? ? 1 : page.to_i
-    offset = (page - 1) * per
-    offset(offset).limit(per)
   }
 
   def self.search_by_term(user, base_project_name, terms, predicates, projects, page, per)
