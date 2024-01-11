@@ -42,6 +42,11 @@
               method: :get,
               class: 'term-search-form' do |form| %>
   <p>
+    <%= form.label :block_type, "Block type" %>
+    <%= form.radio_button :block_type, "doc", checked: true %> Doc
+    <%= form.radio_button :block_type, "paragraph" %> Paragraph
+  </p>
+  <p>
     <%= form.label :terms, "Terms" %>
     <%= form.text_field :terms %>
     Multiple comma-separated entries are allowed.
