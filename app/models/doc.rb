@@ -88,6 +88,9 @@ class Doc < ActiveRecord::Base
 
 	has_many :denotations, dependent: :destroy
 	has_many :blocks, dependent: :destroy
+	# Sentence is a kind of block which has obj 'sentence'.
+	has_many :sentences
+
 	has_many :relations, dependent: :destroy
 	has_many :attrivutes, dependent: :destroy
 
@@ -952,11 +955,9 @@ class Doc < ActiveRecord::Base
 		d_num = ActiveRecord::Base.connection.delete("DELETE FROM docs WHERE sourcedb LIKE '%#{Doc::UserSourcedbSeparator}%' AND NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = docs.id)")
 	end
 
-	def update_all_references_in_paragraphs
-		self.paragraphs.each do
-			_1.update_references denotations
-		end
-	end
+	def update_all_references_in_paragraphs = paragraphs.each { _1.update_references denotations }
+
+	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
 	private
 
