@@ -13,33 +13,44 @@ class UpdateParagraphReferencesJob < ApplicationJob
   after_perform :after_perform
   rescue_from(StandardError) { |exception| rescue_from exception }
 
-  # We assume a maximum of 14 million docs in a single data source;
-  # we will create about 100 jobs, divided into 100,000 jobs every 100,000 docs.
-  def self.create_jobs(source_db, is_immediate = false, chunk_size = 100_000)
-    docs = Doc.where(sourcedb: source_db)
-    return if docs.empty?
+  class << self
+    # We assume a maximum of 14 million docs in a single data source;
+    # we will create about 100 jobs, divided into 100,000 jobs every 100,000 docs.
+    def create_jobs(source_db, is_immediate = false, chunk_size = 100_000)
+      docs = Doc.where(sourcedb: source_db)
+      return if docs.empty?
 
-    # A series of update processes could take several days.
-    # Avoid queuing multiple processes.
-    raise 'already queued' if queued_jobs.exists?
+      # A series of update processes could take several days.
+      # Avoid queuing multiple processes.
+      raise 'already queued' if job_record_exists?(job_name)
 
-    # Job must has a organization, so we use admin project as a dummy.
-    project = Project.find_by id: Pubann::Admin::ProjectId
-    project.jobs.create! name: job_name,
-                         num_items: docs.size,
-                         num_dones: 0
+      create_job_record job_name, docs
+      docs.each_slice(chunk_size) do |docs|
+        is_immediate ? perform_now(docs) : self.perform_later(docs)
+      end
 
-    docs.each_slice(chunk_size) do |docs|
-      is_immediate ? perform_now(docs) : self.perform_later(docs)
+      true
     end
 
-    true
-  end
+    # This method is for debug.
+    def destroy_jobs
+      Sidekiq::Queue.new(queue_name).clear
+      jobs.destroy_all
+    end
 
-  # This method is for debug.
-  def self.destroy_jobs
-    Sidekiq::Queue.new(queue_name).clear
-    jobs.destroy_all
+    private
+
+    def job_record_exists?(job_name)
+      queued_jobs.exists?
+    end
+
+    def create_job_record(job_name, docs)
+      # Job must has a organization, so we use admin project as a dummy.
+      project = Project.find_by id: Pubann::Admin::ProjectId
+      project.jobs.create! name: job_name,
+                           num_items: docs.size,
+                           num_dones: 0
+    end
   end
 
   def perform(docs)
