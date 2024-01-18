@@ -42,7 +42,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
     private
 
     def job_record_exists?(job_name)
-      queued_jobs.exists?
+      jobs.where(ended_at: nil).exists?
     end
 
     def create_job_record(job_name, docs)
@@ -70,15 +70,11 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
   def jobs = self.class.jobs
 
-  def self.queued_jobs = jobs.where(ended_at: nil)
-
-  def queued_jobs = self.class.queued_jobs
-
   private
 
   def before_perform
     # It is assumed that only one job is queued at a time.
-    @job = queued_jobs.first
+    @job = jobs.where(ended_at: nil).first
     @job.start! if @job.waiting?
   end
 
