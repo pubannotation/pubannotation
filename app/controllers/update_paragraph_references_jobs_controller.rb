@@ -13,7 +13,7 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   end
 
   def show
-    @job = UpdateParagraphReferencesJob.job_for(UpdateParagraphReferencesJob::PARAGRAPH_QUEUE_NAME)
+    @job = UpdateParagraphReferencesJob.job_for(UpdateParagraphReferencesJob::PARAGRAPH)
     if @job
 
       @messages_grid = initialize_grid @job.messages,

@@ -11,7 +11,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
   after_perform :after_perform
   rescue_from(StandardError) { |exception| rescue_from exception }
 
-  PARAGRAPH_QUEUE_NAME = 'update_paragraph_references'
+  PARAGRAPH = 'update_paragraph_references'
 
   class << self
     # We assume a maximum of 14 million docs in a single data source;
@@ -22,33 +22,33 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
       # A series of update processes could take several days.
       # Avoid queuing multiple processes.
-      raise 'already queued' if job_for(PARAGRAPH_QUEUE_NAME)
+      raise 'already queued' if job_for(PARAGRAPH)
 
-      create_job_record PARAGRAPH_QUEUE_NAME, docs
+      create_job_record PARAGRAPH, docs
       docs.each_slice(chunk_size) do |docs|
-        set(queue: PARAGRAPH_QUEUE_NAME)
+        set(queue: PARAGRAPH)
         is_immediate ? perform_now(docs) : perform_later(docs)
       end
 
       true
     end
 
-    def job_for(queue_name)
-      Job.where(name: queue_name).where(ended_at: nil).first
+    def job_for(target_name)
+      Job.where(name: target_name).where(ended_at: nil).first
     end
 
     # This method is for debug.
     def destroy_jobs
-      Sidekiq::Queue.new(PARAGRAPH_QUEUE_NAME).clear
-      Job.where(name: PARAGRAPH_QUEUE_NAME).destroy_all
+      Sidekiq::Queue.new(PARAGRAPH).clear
+      Job.where(name: PARAGRAPH).destroy_all
     end
 
     private
 
-    def create_job_record(job_name, docs)
+    def create_job_record(target_name, docs)
       # Job must has a organization, so we use admin project as a dummy.
       project = Project.find_by id: Pubann::Admin::ProjectId
-      project.jobs.create! name: job_name,
+      project.jobs.create! name: target_name,
                            num_items: docs.size,
                            num_dones: 0
     end
@@ -68,7 +68,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
   def before_perform
     # It is assumed that only one job is queued at a time.
-    @job = Job.where(name: PARAGRAPH_QUEUE_NAME).where(ended_at: nil).first
+    @job = Job.where(name: PARAGRAPH).where(ended_at: nil).first
     @job.start! if @job.waiting?
   end
 
