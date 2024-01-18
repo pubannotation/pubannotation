@@ -4,13 +4,13 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   before_action :authenticate_root_user! if Rails.env.production?
 
   def create
-    UpdateParagraphReferencesJob.create_jobs params[:sourcedb],
-                                             target
+    UpdateEvidenceBlockReferencesJob.create_jobs params[:sourcedb],
+                                                 target
     redirect_to update_paragraph_references_job_path
   end
 
   def show
-    @job = UpdateParagraphReferencesJob.job_for target
+    @job = UpdateEvidenceBlockReferencesJob.job_for target
     if @job
       @messages_grid = initialize_grid @job.messages,
                                        order: :created_at,
@@ -22,11 +22,11 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   end
 
   def destroy
-    UpdateParagraphReferencesJob.destroy_jobs target
+    UpdateEvidenceBlockReferencesJob.destroy_jobs target
     redirect_to update_paragraph_references_job_path
   end
 
   private
 
-  def target = UpdateParagraphReferencesJob::PARAGRAPH
+  def target = UpdateEvidenceBlockReferencesJob::PARAGRAPH
 end

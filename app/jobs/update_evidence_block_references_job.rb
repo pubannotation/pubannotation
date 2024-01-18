@@ -6,7 +6,7 @@ require 'sidekiq/api'
 # The progress of the ActiveJob jobs is stored in the jobs table;
 # The ActiveJob job uses a dedicated queue,
 # and the entire queue is destroyed when the update process is stopped.
-class UpdateParagraphReferencesJob < ApplicationJob
+class UpdateEvidenceBlockReferencesJob < ApplicationJob
   before_perform { |job| before_perform job }
   after_perform :after_perform
   rescue_from(StandardError) { |exception| rescue_from exception }
@@ -85,9 +85,9 @@ class UpdateParagraphReferencesJob < ApplicationJob
     # If exception occurs during before_perform, @job is nil.
     if @job
       @job.add_message sourcedb: @sourcedb,
-                        sourceid: @sourceid,
-                        divid: nil,
-                        body: exception.message[0..250]
+                       sourceid: @sourceid,
+                       divid: nil,
+                       body: exception.message[0..250]
       after_perform
     end
 
