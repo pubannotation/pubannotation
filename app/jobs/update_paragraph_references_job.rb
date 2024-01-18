@@ -22,7 +22,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
       # A series of update processes could take several days.
       # Avoid queuing multiple processes.
-      raise 'already queued' if job_record_exists?(PARAGRAPH_QUEUE_NAME)
+      raise 'already queued' if job_for(PARAGRAPH_QUEUE_NAME)
 
       create_job_record PARAGRAPH_QUEUE_NAME, docs
       docs.each_slice(chunk_size) do |docs|
@@ -33,6 +33,10 @@ class UpdateParagraphReferencesJob < ApplicationJob
       true
     end
 
+    def job_for(queue_name)
+      Job.where(name: queue_name).where(ended_at: nil).first
+    end
+
     # This method is for debug.
     def destroy_jobs
       Sidekiq::Queue.new(PARAGRAPH_QUEUE_NAME).clear
@@ -40,10 +44,6 @@ class UpdateParagraphReferencesJob < ApplicationJob
     end
 
     private
-
-    def job_record_exists?(job_name)
-      Job.where(name: job_name).where(ended_at: nil).exists?
-    end
 
     def create_job_record(job_name, docs)
       # Job must has a organization, so we use admin project as a dummy.

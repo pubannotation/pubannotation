@@ -13,13 +13,13 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   end
 
   def show
-    @job = job
+    @job = UpdateParagraphReferencesJob.job_for(UpdateParagraphReferencesJob::PARAGRAPH_QUEUE_NAME)
     if @job
 
-    @messages_grid = initialize_grid @job.messages,
-                                     order: :created_at,
-                                     order_direction: :desc,
-                                     per_page: 10
+      @messages_grid = initialize_grid @job.messages,
+                                       order: :created_at,
+                                       order_direction: :desc,
+                                       per_page: 10
     else
       @sourcedbs = sourcedb_counts(@project).keys
     end
@@ -28,11 +28,5 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   def destroy
     UpdateParagraphReferencesJob.destroy_jobs
     redirect_to update_paragraph_references_job_path
-  end
-
-  private
-
-  def job
-    Job.where(name: UpdateParagraphReferencesJob::PARAGRAPH_QUEUE_NAME).where(ended_at: nil).first
   end
 end
