@@ -7,7 +7,7 @@ require 'sidekiq/api'
 # The ActiveJob job uses a dedicated queue,
 # and the entire queue is destroyed when the update process is stopped.
 class UpdateParagraphReferencesJob < ApplicationJob
-  before_perform :before_perform
+  before_perform { |job| before_perform job }
   after_perform :after_perform
   rescue_from(StandardError) { |exception| rescue_from exception }
 
@@ -16,17 +16,18 @@ class UpdateParagraphReferencesJob < ApplicationJob
   class << self
     # We assume a maximum of 14 million docs in a single data source;
     # we will create about 100 jobs, divided into 100,000 jobs every 100,000 docs.
-    def create_jobs(source_db, is_immediate = false, chunk_size = 100_000)
+    def create_jobs(target_name, source_db, is_immediate = false, chunk_size = 100_000)
       docs = Doc.where(sourcedb: source_db)
       return if docs.empty?
 
       # A series of update processes could take several days.
       # Avoid queuing multiple processes.
-      raise 'already queued' if job_for(PARAGRAPH)
+      raise 'already queued' if job_for target_name
 
-      create_job_record PARAGRAPH, docs
+      create_job_record target_name, docs
       docs.each_slice(chunk_size) do |docs|
-        set(queue: PARAGRAPH)
+        # Set queue to target to separate the queue each target.
+        set(queue: target_name)
         is_immediate ? perform_now(docs) : perform_later(docs)
       end
 
@@ -66,9 +67,10 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
   private
 
-  def before_perform
+  def before_perform(job)
     # It is assumed that only one job is queued at a time.
-    @job = Job.where(name: PARAGRAPH).where(ended_at: nil).first
+    target_name = job.arguments.first
+    @job = Job.where(name: target_name).where(ended_at: nil).first
     @job.start! if @job.waiting?
   end
 

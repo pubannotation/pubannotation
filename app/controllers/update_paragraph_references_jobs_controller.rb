@@ -3,12 +3,11 @@ class UpdateParagraphReferencesJobsController < ApplicationController
 
   before_action :authenticate_root_user! if Rails.env.production?
 
-  def index
-    @jobs = UpdateParagraphReferencesJob.queued_jobs
-  end
-
   def create
-    UpdateParagraphReferencesJob.create_jobs params[:sourcedb], false, 1
+    UpdateParagraphReferencesJob.create_jobs UpdateParagraphReferencesJob::PARAGRAPH,
+                                             params[:sourcedb],
+                                             false,
+                                             1
     redirect_to update_paragraph_references_job_path
   end
 
