@@ -82,11 +82,15 @@ class UpdateParagraphReferencesJob < ApplicationJob
   end
 
   def rescue_from(exception)
-    @job.add_message sourcedb: @sourcedb,
-                     sourceid: @sourceid,
-                     divid: nil,
-                     body: exception.message[0..250]
-    after_perform
+    # If exception occurs during before_perform, @job is nil.
+    if @job
+      @job.add_message sourcedb: @sourcedb,
+                        sourceid: @sourceid,
+                        divid: nil,
+                        body: exception.message[0..250]
+      after_perform
+    end
+
     raise exception
   end
 
