@@ -72,7 +72,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
   def before_perform(job)
     # It is assumed that only one job is queued at a time.
     target_name = job.arguments.second
-    @job = Job.where(name: target_name).where(ended_at: nil).first
+    @job = self.class.job_for target_name
     @job.start! if @job.waiting?
   end
 
