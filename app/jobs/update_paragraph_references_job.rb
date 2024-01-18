@@ -38,9 +38,9 @@ class UpdateParagraphReferencesJob < ApplicationJob
     end
 
     # This method is for debug.
-    def destroy_jobs
-      Sidekiq::Queue.new(PARAGRAPH).clear
-      Job.where(name: PARAGRAPH).destroy_all
+    def destroy_jobs(target_name)
+      Sidekiq::Queue.new(target_name).clear
+      Job.where(name: target_name).destroy_all
     end
 
     private

@@ -13,9 +13,8 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   end
 
   def show
-    @job = UpdateParagraphReferencesJob.job_for(UpdateParagraphReferencesJob::PARAGRAPH)
+    @job = UpdateParagraphReferencesJob.job_for UpdateParagraphReferencesJob::PARAGRAPH
     if @job
-
       @messages_grid = initialize_grid @job.messages,
                                        order: :created_at,
                                        order_direction: :desc,
@@ -26,7 +25,7 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   end
 
   def destroy
-    UpdateParagraphReferencesJob.destroy_jobs
+    UpdateParagraphReferencesJob.destroy_jobs UpdateParagraphReferencesJob::PARAGRAPH
     redirect_to update_paragraph_references_job_path
   end
 end
