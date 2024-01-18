@@ -1,6 +1,6 @@
 require 'sidekiq/api'
 
-# Paragraph references are updated on a source DB basis.
+# References are updated on a source DB basis.
 # The source DB may contain 10 million documents.
 # An ActiveJob job is created for every 100,000 documents.
 # The progress of the ActiveJob jobs is stored in the jobs table;
@@ -16,7 +16,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
   class << self
     # We assume a maximum of 14 million docs in a single data source;
     # we will create about 100 jobs, divided into 100,000 jobs every 100,000 docs.
-    def create_jobs(target_name, source_db, is_immediate = false, chunk_size = 100_000)
+    def create_jobs(source_db, target_name, chunk_size = 100_000, is_immediate = false)
       docs = Doc.where(sourcedb: source_db)
       return if docs.empty?
 
