@@ -7,11 +7,11 @@ require 'sidekiq/api'
 # The ActiveJob job uses a dedicated queue,
 # and the entire queue is destroyed when the update process is stopped.
 class UpdateParagraphReferencesJob < ApplicationJob
-  queue_as :update_paragraph_references
-
   before_perform :before_perform
   after_perform :after_perform
   rescue_from(StandardError) { |exception| rescue_from exception }
+
+  PARAGRAPH_QUEUE_NAME = 'update_paragraph_references'
 
   class << self
     # We assume a maximum of 14 million docs in a single data source;
@@ -26,7 +26,8 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
       create_job_record job_name, docs
       docs.each_slice(chunk_size) do |docs|
-        is_immediate ? perform_now(docs) : self.perform_later(docs)
+        set(queue: PARAGRAPH_QUEUE_NAME)
+        is_immediate ? perform_now(docs) : perform_later(docs)
       end
 
       true
@@ -34,7 +35,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
     # This method is for debug.
     def destroy_jobs
-      Sidekiq::Queue.new(queue_name).clear
+      Sidekiq::Queue.new(PARAGRAPH_QUEUE_NAME).clear
       jobs.destroy_all
     end
 
