@@ -28,7 +28,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
       docs.each_slice(chunk_size) do |docs|
         # Set queue to target to separate the queue each target.
         set(queue: target_name)
-        is_immediate ? perform_now(docs) : perform_later(docs)
+        is_immediate ? perform_now(docs, target_name) : perform_later(docs, target_name)
       end
 
       true
@@ -55,13 +55,16 @@ class UpdateParagraphReferencesJob < ApplicationJob
     end
   end
 
-  def perform(docs)
+  def perform(docs, target_name)
     @sourcedb = docs.first.sourcedb
     @docs = docs
 
     docs.each do |doc|
       @sourceid = doc.sourceid
-      doc.update_all_references_in_paragraphs
+      case target_name
+      in PARAGRAPH
+        doc.update_all_references_in_paragraphs
+      end
     end
   end
 
