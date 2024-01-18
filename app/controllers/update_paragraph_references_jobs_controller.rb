@@ -33,6 +33,6 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   private
 
   def job
-    UpdateParagraphReferencesJob.jobs.where(ended_at: nil).first
+    Job.where(name: UpdateParagraphReferencesJob.job_name).where(ended_at: nil).first
   end
 end

@@ -36,13 +36,13 @@ class UpdateParagraphReferencesJob < ApplicationJob
     # This method is for debug.
     def destroy_jobs
       Sidekiq::Queue.new(PARAGRAPH_QUEUE_NAME).clear
-      jobs.destroy_all
+      Job.where(name: job_name).destroy_all
     end
 
     private
 
     def job_record_exists?(job_name)
-      jobs.where(ended_at: nil).exists?
+      Job.where(name: job_name).where(ended_at: nil).exists?
     end
 
     def create_job_record(job_name, docs)
@@ -74,7 +74,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
   def before_perform
     # It is assumed that only one job is queued at a time.
-    @job = jobs.where(ended_at: nil).first
+    @job = Job.where(name: job_name).where(ended_at: nil).first
     @job.start! if @job.waiting?
   end
 
