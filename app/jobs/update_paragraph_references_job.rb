@@ -27,8 +27,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
       create_job_record target_name, docs
       docs.each_slice(chunk_size) do |docs|
         # Set queue to target to separate the queue each target.
-        set(queue: target_name)
-        is_immediate ? perform_now(docs, target_name) : perform_later(docs, target_name)
+        is_immediate ? perform_now(docs, target_name) : set(queue: target_name).perform_later(docs, target_name)
       end
 
       true
@@ -72,7 +71,7 @@ class UpdateParagraphReferencesJob < ApplicationJob
 
   def before_perform(job)
     # It is assumed that only one job is queued at a time.
-    target_name = job.arguments.first
+    target_name = job.arguments.second
     @job = Job.where(name: target_name).where(ended_at: nil).first
     @job.start! if @job.waiting?
   end
