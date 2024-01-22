@@ -46,6 +46,18 @@ RSpec.describe Paragraph, type: :model do
         it 'returns paragraphs in doc in base_project' do
           expect(subject.size).to eq(3)
         end
+
+        it 'return value contains url' do
+          expect(subject.first[:url]).to be_present
+        end
+
+        it 'return value contains begin' do
+          expect(subject.first[:begin]).to be_present
+        end
+
+        it 'return value contains end' do
+          expect(subject.first[:end]).to be_present
+        end
       end
     end
   end
