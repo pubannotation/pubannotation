@@ -41,7 +41,7 @@ RSpec.describe Paragraph, type: :model do
       end
 
       it 'returns all paragraphs' do
-        expect(subject.size).to eq(6)
+        expect(subject.size).to eq(Paragraph.count)
       end
 
       context 'when base_project_name is specified' do
