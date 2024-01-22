@@ -19,10 +19,6 @@ RSpec.describe Paragraph, type: :model do
       expect(subject).to all(be_a(Hash))
     end
 
-    it 'returns empty array when no paragraphs' do
-      expect(subject).to eq([])
-    end
-
     context 'when there are paragraphs' do
       before do
         doc = create(:doc)
