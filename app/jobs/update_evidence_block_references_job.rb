@@ -12,6 +12,7 @@ class UpdateEvidenceBlockReferencesJob < ApplicationJob
   rescue_from(StandardError) { |exception| rescue_from exception }
 
   PARAGRAPH = 'update_paragraph_references'
+  SENTENCE = 'update_sentence_references'
 
   class << self
     # We assume a maximum of 14 million docs in a single data source;

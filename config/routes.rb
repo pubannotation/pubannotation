@@ -310,5 +310,6 @@ Pubann::Application.routes.draw do
 	end
 	scope :jobs do
 		resource :update_paragraph_references_job, only: [:show, :create, :destroy]
+		resource :update_sentence_references_job, only: [:show, :create, :destroy]
 	end
 end

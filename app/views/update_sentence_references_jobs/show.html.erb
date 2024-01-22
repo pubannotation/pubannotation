@@ -1,0 +1,38 @@
+<% content_for :path do -%>
+  <%= link_to t('views.paths.home'), home_path -%>
+  > Update sentence references Job
+<% end -%>
+
+<section>
+  <h1>Update sentence references Job</h1>
+
+  <% if @job %>
+    <span class="tab-bar">
+      <%= link_to 'Stop', update_sentence_references_job_path, method: :delete, :class => 'tab' %>
+    </span>
+    <table>
+      <tbody>
+      <tr>
+        <th>Begun at</th>
+        <td><%= @job.begun_at %></td>
+      </tr>
+      <tr>
+        <th>Progress</th>
+        <td><%= @job.num_dones %>/<%= @job.num_items %></td>
+      </tr>
+      <tr>
+        <th>Estimated time of termination</th>
+        <td><%= @job.will_finish_at %></td>
+      </tbody>
+    </table>
+
+    <%= render partial: 'messages/messages_grid' -%>
+  <% else %>
+    <span class="tab-bar">
+      <% @sourcedbs.each do |sourcedb| %>
+        <%= link_to "#{sourcedb} Start", update_sentence_references_job_path(sourcedb: sourcedb ), method: :post, :class => 'tab' %>
+      <% end %>
+    </span>
+  <% end %>
+
+</section>
