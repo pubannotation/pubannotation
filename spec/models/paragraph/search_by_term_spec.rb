@@ -20,9 +20,10 @@ RSpec.describe Paragraph, type: :model do
     end
 
     context 'when there are paragraphs' do
+      let(:project) { create(:project, name: 'Project', user: user) }
+
       before do
         doc = create(:doc)
-        project = create(:project, name: 'Project', user: user)
         doc.projects << project
         create(:paragraph, doc: doc, begin: 0, end: 10)
         create(:paragraph, doc: doc, begin: 11, end: 20)
@@ -62,7 +63,6 @@ RSpec.describe Paragraph, type: :model do
 
       context 'when paragraph has denotations' do
         before do
-          project = Project.find_by(name: 'Project')
           denotation = create(:denotation, project: project, obj: 'test')
           paragraph = Paragraph.first
           paragraph.denotations << denotation
