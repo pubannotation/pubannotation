@@ -9,7 +9,7 @@ RSpec.describe Paragraph, type: :model do
     let(:projects) { nil }
     let(:page) { 1 }
     let(:per) { 10 }
-    subject{ Paragraph.search_by_term user, base_project_name, terms, predicates, projects, page, per }
+    subject { Paragraph.search_by_term user, base_project_name, terms, predicates, projects, page, per }
 
     it 'returns an array' do
       expect(subject).to be_a(Array)
@@ -57,6 +57,23 @@ RSpec.describe Paragraph, type: :model do
 
         it 'return value contains end' do
           expect(subject.first[:end]).to be_present
+        end
+      end
+
+      context 'when paragraph has denotations' do
+        before do
+          project = Project.find_by(name: 'Project')
+          denotation = create(:denotation, project: project, obj: 'test')
+          paragraph = Paragraph.first
+          paragraph.denotations << denotation
+          paragraph.save!
+        end
+
+        let(:terms) { ['test'] }
+        let(:predicates) { ['denotes'] }
+
+        it 'returns paragraphs with denotations' do
+          expect(subject.size).to eq(1)
         end
       end
     end
