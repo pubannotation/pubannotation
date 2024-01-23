@@ -5,33 +5,36 @@ module TermSearchConcern
 
   included do
     scope :with_terms, lambda { |terms, user, predicates, project_names|
-      base_query = joins(:attrivutes).joins(attrivutes: :project)
-                                     .merge(Project.accessible(user))
-      base_query = base_query.where(projects: { name: project_names }) if project_names.present?
+      with_attributes = search_in_attributes(terms, user, predicates, project_names)
+                          .select(:doc_id, 'docs.sourcedb', :'docs.sourceid')
 
-      # Search attributes
-      attributes_query = base_query.where(attrivutes: { obj: terms })
-      predicates_for_attrivutes = predicates.reject { |p| p == 'denotes' } if predicates.present?
-      attributes_query = attributes_query.where(attrivutes: { pred: predicates_for_attrivutes }) if predicates_for_attrivutes.present?
-      attributes_query = attributes_query.joins(attrivutes: :doc)
-                                         .select(:doc_id, 'docs.sourcedb', :'docs.sourceid')
-
-      # Search denotations
       if predicates&.include?('denotes')
-        base_query = joins(:denotations).joins(denotations: :project)
-                                        .merge(Project.accessible(user))
-        base_query = base_query.where(projects: { name: project_names }) if project_names.present?
-        denotes_query = base_query.where(denotations: { obj: terms })
-                                  .joins(denotations: :doc)
-                                  .select(:doc_id, 'docs.sourcedb', :'docs.sourceid')
+        with_denotations = search_in_denotations(terms, user, project_names)
+                             .select(:doc_id, 'docs.sourcedb', :'docs.sourceid')
 
-        attributes_query.union(denotes_query)
+        with_attributes.union(with_denotations)
       else
-        attributes_query.distinct
+        with_attributes.distinct
       end
     }
 
     scope :with_terms_with_begin_end, lambda { |terms, user, predicates, project_names|
+      with_attributes = search_in_attributes(terms, user, predicates, project_names)
+                          .select(:doc_id, :begin, :end, 'docs.sourcedb', :'docs.sourceid')
+
+      if predicates&.include?('denotes')
+        with_denotations = search_in_denotations(terms, user, project_names)
+                             .select(:doc_id, :begin, :end, 'docs.sourcedb', :'docs.sourceid')
+
+        with_attributes.union(with_denotations)
+      else
+        with_attributes.distinct
+      end
+    }
+  end
+
+  class_methods do
+    def search_in_attributes(terms, user, predicates, project_names)
       base_query = joins(:attrivutes).joins(attrivutes: :project)
                                      .merge(Project.accessible(user))
       base_query = base_query.where(projects: { name: project_names }) if project_names.present?
@@ -40,22 +43,16 @@ module TermSearchConcern
       attributes_query = base_query.where(attrivutes: { obj: terms })
       predicates_for_attrivutes = predicates.reject { |p| p == 'denotes' } if predicates.present?
       attributes_query = attributes_query.where(attrivutes: { pred: predicates_for_attrivutes }) if predicates_for_attrivutes.present?
-      attributes_query = attributes_query.joins(attrivutes: :doc)
-                                         .select(:doc_id, :begin, :end, 'docs.sourcedb', :'docs.sourceid')
+      attributes_query.joins(attrivutes: :doc)
+    end
 
-      # Search denotations
-      if predicates&.include?('denotes')
-        base_query = joins(:denotations).joins(denotations: :project)
-                                        .merge(Project.accessible(user))
-        base_query = base_query.where(projects: { name: project_names }) if project_names.present?
-        denotes_query = base_query.where(denotations: { obj: terms })
-                                  .joins(denotations: :doc)
-                                  .select(:doc_id, :begin, :end, 'docs.sourcedb', :'docs.sourceid')
+    def search_in_denotations(terms, user, project_names)
+      base_query = joins(:denotations).joins(denotations: :project)
+                                      .merge(Project.accessible(user))
+      base_query = base_query.where(projects: { name: project_names }) if project_names.present?
+      base_query.where(denotations: { obj: terms })
+                .joins(denotations: :doc)
 
-        attributes_query.union(denotes_query)
-      else
-        attributes_query.distinct
-      end
-    }
+    end
   end
 end
