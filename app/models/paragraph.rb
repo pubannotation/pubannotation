@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class Paragraph < ApplicationRecord
-  include Rails.application.routes.url_helpers
   include PaginateConcern
+  include Rails.application.routes.url_helpers
 
   self.table_name = 'divisions'
   default_scope { where label: Pubann::Paragraph::Labels }
@@ -55,6 +55,14 @@ class Paragraph < ApplicationRecord
               .map(&:to_list_hash)
   end
 
+  def to_list_hash
+    {
+      url: doc_sourcedb_sourceid_show_url(doc.sourcedb, doc.sourceid),
+      begin: self.begin,
+      end: self.end
+    }
+  end
+
   def update_references(denotations)
     denotations.each do |denotation|
       if range.include?(denotation.range)
@@ -69,14 +77,6 @@ class Paragraph < ApplicationRecord
         end
       end
     end
-  end
-
-  def to_list_hash
-    {
-      url: doc_sourcedb_sourceid_show_url(doc.sourcedb, doc.sourceid),
-      begin: self.begin,
-      end: self.end
-    }
   end
 
   private
