@@ -35,7 +35,7 @@ class UpdateEvidenceBlockReferencesJob < ApplicationJob
     end
 
     def job_for(target_name)
-      Job.where(name: target_name).where(ended_at: nil).first
+      Job.where(name: target_name).first
     end
 
     # This method is for debug.
