@@ -19,10 +19,10 @@ class Paragraph < ApplicationRecord
     paragraphs = base_project.present? ? Paragraph.where(docs: base_project.docs) : Paragraph.all
 
     if terms.present?
-      paragraphs = paragraphs.with_terms terms,
-                                         user,
-                                         predicates,
-                                         projects
+      paragraphs = paragraphs.with_terms_with_begin_end terms,
+                                                        user,
+                                                        predicates,
+                                                        projects
     end
 
     paragraphs.simple_paginate(page, per).tap { |q| logger.debug q.to_sql }

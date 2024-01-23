@@ -19,10 +19,10 @@ class Sentence < ApplicationRecord
     sentences = base_project.present? ? Sentence.where(docs: base_project.docs) : Sentence.all
 
     if terms.present?
-      sentences = sentences.with_terms terms,
-                                       user,
-                                       predicates,
-                                       projects
+      sentences = sentences.with_terms_with_begin_end terms,
+                                                      user,
+                                                      predicates,
+                                                      projects
     end
 
     sentences.simple_paginate(page, per).tap { |q| logger.debug q.to_sql }
