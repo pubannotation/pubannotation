@@ -7,24 +7,30 @@ class TermSearchController < ApplicationController
 
     @query = Query.new query_params
     evidence_blocks = case @query.block_type
-                      when 'doc'
-                        Doc.search_by_term current_user,
-                                           @query.base_project,
-                                           to_array(@query.terms),
-                                           to_array(@query.predicates),
-                                           to_array(@query.projects),
-                                           @query.page,
-                                           @query.per
-                      when 'paragraph'
-                        Paragraph.search_by_term current_user,
-                                                 @query.base_project,
-                                                 to_array(@query.terms),
-                                                 to_array(@query.predicates),
-                                                 to_array(@query.projects),
-                                                 @query.page,
-                                                 @query.per
-                      else
-                        []
+    in 'doc'
+      Doc.search_by_term current_user,
+                         @query.base_project,
+                         to_array(@query.terms),
+                         to_array(@query.predicates),
+                         to_array(@query.projects),
+                         @query.page,
+                         @query.per
+    in 'paragraph'
+      Paragraph.search_by_term current_user,
+                               @query.base_project,
+                               to_array(@query.terms),
+                               to_array(@query.predicates),
+                               to_array(@query.projects),
+                               @query.page,
+                               @query.per
+    in 'sentence'
+      Sentence.search_by_term current_user,
+                              @query.base_project,
+                              to_array(@query.terms),
+                              to_array(@query.predicates),
+                              to_array(@query.projects),
+                              @query.page,
+                              @query.per
                       end
 
     @pub_annotation_url_list = evidence_blocks.map { convert_to_annotations_url_from _1, @query }
@@ -49,7 +55,7 @@ class TermSearchController < ApplicationController
       'predicates' => query.predicates,
     }.select { |_, v| v.present? }
 
-    if query.block_type == 'paragraph'
+    unless query.block_type == 'doc'
       params2.merge!({
                        'begin' => evidence_block[:begin],
                        'end' => evidence_block[:end]
