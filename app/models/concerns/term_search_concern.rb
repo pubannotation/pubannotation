@@ -39,7 +39,6 @@ module TermSearchConcern
                                      .merge(Project.accessible(user))
       base_query = base_query.where(projects: { name: project_names }) if project_names.present?
 
-      # Search attributes
       attributes_query = base_query.where(attrivutes: { obj: terms })
       predicates_for_attrivutes = predicates.reject { |p| p == 'denotes' } if predicates.present?
       attributes_query = attributes_query.where(attrivutes: { pred: predicates_for_attrivutes }) if predicates_for_attrivutes.present?
