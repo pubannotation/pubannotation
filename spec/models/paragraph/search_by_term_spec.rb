@@ -20,10 +20,10 @@ RSpec.describe Paragraph, type: :model do
     end
 
     context 'when there are paragraphs' do
+      let(:doc) { create(:doc) }
       let(:project) { create(:project, name: 'Project', user: user) }
 
       before do
-        doc = create(:doc)
         doc.projects << project
         create(:paragraph, doc: doc, begin: 0, end: 10)
         create(:paragraph, doc: doc, begin: 11, end: 20)
@@ -62,18 +62,47 @@ RSpec.describe Paragraph, type: :model do
       end
 
       context 'when paragraph has denotations' do
+        let (:denotation) { create(:denotation, project: project, obj: 'test_denotation') }
+
         before do
-          denotation = create(:denotation, project: project, obj: 'test')
           paragraph = Paragraph.first
           paragraph.denotations << denotation
-          paragraph.save!
         end
 
-        let(:terms) { ['test'] }
+        let(:terms) { ['test_denotation'] }
         let(:predicates) { ['denotes'] }
 
         it 'returns paragraphs with denotations' do
           expect(subject.size).to eq(1)
+        end
+
+        context 'when paragraph has attributes' do
+          before do
+            paragraph = Paragraph.first
+            attrivute = create(:attrivute,
+                               doc: paragraph.doc,
+                               project: project,
+                               subj: paragraph.denotations.first,
+                               pred: 'test_predicate',
+                               obj: 'test_attrivute')
+            paragraph.attrivutes << attrivute
+          end
+
+          let(:terms) { ['test_attrivute'] }
+          let(:predicates) { ['test_predicate'] }
+
+          it 'returns paragraphs with attributes' do
+            expect(subject.size).to eq(1)
+          end
+
+          context 'without predicates parameter' do
+            let(:terms) { ['test_attrivute'] }
+            let(:predicates) { nil }
+
+            it 'returns paragraphs with attributes' do
+              expect(subject.size).to eq(1)
+            end
+          end
         end
       end
     end
