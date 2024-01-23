@@ -76,6 +76,14 @@ RSpec.describe Paragraph, type: :model do
           expect(subject.size).to eq(1)
         end
 
+        context 'with projects parameter' do
+          let(:projects) { ['Project2'] }
+
+          it 'returns paragraphs with denotations' do
+            expect(subject.size).to eq(0)
+          end
+        end
+
         context 'when paragraph has attributes' do
           before do
             paragraph = Paragraph.first
