@@ -62,10 +62,9 @@ RSpec.describe Sentence, type: :model do
       end
 
       context 'when sentence has denotations' do
-        let (:denotation) { create(:denotation, project: project, obj: 'test_denotation') }
-
         before do
           sentence = Sentence.first
+          denotation = create(:denotation, project: project, obj: 'test_denotation')
           sentence.denotations << denotation
         end
 
