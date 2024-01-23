@@ -1,6 +1,7 @@
 class Doc < ActiveRecord::Base
 	include Elasticsearch::Model
 	include Elasticsearch::Model::Callbacks
+	include TermSearchConcern
 	include PaginateConcern
 
 	settings index: {
@@ -151,29 +152,6 @@ class Doc < ActiveRecord::Base
 
 	scope :user_source_db, lambda{|username|
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
-	}
-
-	scope :with_terms, lambda { |terms, user, predicates, project_names|
-		base_query = joins(:projects).merge(Project.accessible(user))
-																 .joins("JOIN attrivutes ON attrivutes.project_id = projects.id AND attrivutes.doc_id = docs.id")
-		base_query = base_query.where(projects: { name: project_names }) if project_names.present?
-
-		# Search attributes
-		query = base_query.where(attrivutes: { obj: terms })
-		predicates_for_attrivutes = predicates.reject { |p| p == 'denotes' } if predicates.present?
-		query = query.where(attrivutes: { pred: predicates_for_attrivutes }) if predicates_for_attrivutes.present?
-
-		# Search denotations
-		if predicates&.include?('denotes')
-			base_query = joins(:projects).merge(Project.accessible(user))
-																	 .joins("JOIN denotations ON denotations.project_id = projects.id AND denotations.doc_id = docs.id")
-			base_query = base_query.where(projects: { name: project_names }) if project_names.present?
-			denotes_query = base_query.where(denotations: { obj: terms })
-
-			query.union(denotes_query)
-		else
-			query.distinct
-		end
 	}
 
 	def self.search_by_active_record(page, per, project = nil, sourcedb = nil,
