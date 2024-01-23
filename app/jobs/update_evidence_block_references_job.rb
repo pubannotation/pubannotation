@@ -64,6 +64,8 @@ class UpdateEvidenceBlockReferencesJob < ApplicationJob
       case target_name
       in PARAGRAPH
         doc.update_all_references_in_paragraphs
+      in SENTENCE
+        doc.update_all_references_in_sentences
       end
     end
   end
