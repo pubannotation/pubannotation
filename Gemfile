@@ -27,7 +27,7 @@ end
 
 gem 'text_alignment', '0.12.3'
 gem 'pubannotation_evaluator', '~> 3.0.0'
-gem 'wice_grid', github: 'ledsun/wice_grid', branch: 'rails_7'
+gem 'wice_grid', github: 'ledsun/wice_grid', branch: 'rails_7_1'
 gem 'font-awesome-rails'
 gem 'jquery-rails'
 gem "jquery-ui-rails", github: 'jquery-ui-rails/jquery-ui-rails'
