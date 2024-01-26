@@ -16,7 +16,7 @@ class Paragraph < ApplicationRecord
 
   def self.search_by_term(user, base_project_name, terms, predicates, projects, page, per)
     base_project = Project.accessible(user).find_by!(name: base_project_name) if base_project_name.present?
-    paragraphs = base_project.present? ? Paragraph.where(docs: base_project.docs) : Paragraph.all
+    paragraphs = base_project.present? ? Paragraph.joins(:doc).where(docs: { id: base_project.docs }) : Paragraph.all
 
     if terms.present?
       paragraphs = paragraphs.with_terms_with_begin_end terms,
