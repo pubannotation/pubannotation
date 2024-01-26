@@ -23,7 +23,7 @@ GIT
 
 GIT
   remote: https://github.com/ledsun/wice_grid.git
-  revision: c9895f16411ae3867421a67db303d83938b1351c
+  revision: 8e08de1c28ad39369b7ce79746d8b4ceb16c37b6
   branch: rails_7_1
   specs:
     wice_grid (4.1.0)
