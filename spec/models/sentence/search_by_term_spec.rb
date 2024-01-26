@@ -8,7 +8,7 @@ RSpec.describe Sentence, type: :model do
     let(:predicates) { nil }
     let(:projects) { nil }
     let(:page) { 1 }
-    let(:per) { 10 }
+    let(:per) { 20 }
     subject { Sentence.search_by_term user, base_project_name, terms, predicates, projects, page, per }
 
     it 'returns an array' do
