@@ -11,7 +11,7 @@ class Sequencer < ActiveRecord::Base
 
 	validates :url, :presence => true
 
-	serialize :parameters, YAML
+	serialize :parameters, coder: YAML
 
 	scope :accessibles, -> (current_user) {
 		if current_user.present?
