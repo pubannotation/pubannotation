@@ -3,7 +3,7 @@ class Project < ActiveRecord::Base
 
   before_validation :cleanup_namespaces
   after_validation :user_presence
-  serialize :namespaces
+  serialize :namespaces, coder: YAML
   belongs_to :user
   belongs_to :annotator, optional: true
   has_many :collection_projects, dependent: :destroy

@@ -3,7 +3,7 @@ class ProjectsController < ApplicationController
 
 	before_action :updatable?, :only => [:edit, :update]
 	before_action :destroyable?, :only => :destroy
-	before_action :authenticate_user!, :except => [:index, :show, :autocomplete_pmcdoc_sourceid, :autocomplete_pmdoc_sourceid, :autocomplete_project_author, :search]
+	before_action :authenticate_user!, :except => [:index, :show, :autocomplete_project_author]
 	# JSON POST
 	before_action :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
 	skip_before_action :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}

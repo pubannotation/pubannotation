@@ -1,4 +1,4 @@
-class UpdateParagraphReferencesJobsController < ApplicationController
+class UpdateSentenceReferencesJobsController < ApplicationController
   include DocsHelper
 
   before_action :authenticate_root_user! if Rails.env.production?
@@ -6,7 +6,7 @@ class UpdateParagraphReferencesJobsController < ApplicationController
   def create
     UpdateEvidenceBlockReferencesJob.create_jobs params[:sourcedb],
                                                  target
-    redirect_to update_paragraph_references_job_path
+    redirect_to update_sentence_references_job_path
   end
 
   def show
@@ -23,10 +23,10 @@ class UpdateParagraphReferencesJobsController < ApplicationController
 
   def destroy
     UpdateEvidenceBlockReferencesJob.destroy_jobs target
-    redirect_to update_paragraph_references_job_path
+    redirect_to update_sentence_references_job_path
   end
 
   private
 
-  def target = UpdateEvidenceBlockReferencesJob::PARAGRAPH
+  def target = UpdateEvidenceBlockReferencesJob::SENTENCE
 end

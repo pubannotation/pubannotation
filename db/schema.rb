@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_12_25_083317) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_12_020922) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -342,6 +342,24 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_25_083317) do
     t.index ["subj_id"], name: "index_relations_on_subj_id"
   end
 
+  create_table "sentence_attrivutes", force: :cascade do |t|
+    t.bigint "block_id", null: false
+    t.bigint "attrivute_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["attrivute_id"], name: "index_sentence_attrivutes_on_attrivute_id"
+    t.index ["block_id"], name: "index_sentence_attrivutes_on_block_id"
+  end
+
+  create_table "sentence_denotations", force: :cascade do |t|
+    t.bigint "block_id", null: false
+    t.bigint "denotation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["block_id"], name: "index_sentence_denotations_on_block_id"
+    t.index ["denotation_id"], name: "index_sentence_denotations_on_denotation_id"
+  end
+
   create_table "sequencers", id: :serial, force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -397,4 +415,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_25_083317) do
   add_foreign_key "paragraph_denotations", "denotations"
   add_foreign_key "paragraph_denotations", "divisions"
   add_foreign_key "relations", "docs"
+  add_foreign_key "sentence_attrivutes", "attrivutes"
+  add_foreign_key "sentence_attrivutes", "blocks"
+  add_foreign_key "sentence_denotations", "blocks"
+  add_foreign_key "sentence_denotations", "denotations"
 end

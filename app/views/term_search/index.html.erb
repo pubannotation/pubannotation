@@ -42,6 +42,12 @@
               method: :get,
               class: 'term-search-form' do |form| %>
   <p>
+    <%= form.label :block_type, "Block type" %>
+    <%= form.radio_button :block_type, "doc", checked: true %> Doc
+    <%= form.radio_button :block_type, "paragraph" %> Paragraph
+    <%= form.radio_button :block_type, "sentence" %> Sentence
+  </p>
+  <p>
     <%= form.label :terms, "Terms" %>
     <%= form.text_field :terms %>
     Multiple comma-separated entries are allowed.
@@ -93,3 +99,13 @@
   </section>
 <% end %>
 
+<% if !@pub_annotation_url_list.present? && (root_user? || Rails.env.development? )%>
+  <section>
+    <h2>Update references</h2>
+    This area is show only root user.
+    <ul>
+      <li><%= link_to update_paragraph_references_job_path, update_paragraph_references_job_path %></li>
+      <li><%= link_to update_sentence_references_job_path, update_sentence_references_job_path %></li>
+    </ul>
+  </section>
+<% end %>

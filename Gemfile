@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
-ruby '3.2.2'
+ruby '3.3.0'
 
-gem 'rails', '~> 7.0.0'
+gem 'rails', '~> 7.1.3'
 gem 'rake'
 gem 'activerecord-import'
 
@@ -27,7 +27,7 @@ end
 
 gem 'text_alignment', '0.12.3'
 gem 'pubannotation_evaluator', '~> 3.0.0'
-gem 'wice_grid', github: 'ledsun/wice_grid', branch: 'rails_7'
+gem 'wice_grid', github: 'ledsun/wice_grid', branch: 'rails_7_1'
 gem 'font-awesome-rails'
 gem 'jquery-rails'
 gem "jquery-ui-rails", github: 'jquery-ui-rails/jquery-ui-rails'

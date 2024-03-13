@@ -2,8 +2,16 @@
 
 module TermSearch
   class ParagraphsController < ApplicationController
+    include ArrayParameterConcern
+
     def index
-      data = Division.paragpahs.map(&:to_list_hash)
+      data = Paragraph.search_by_term current_user,
+                                      params[:base_project],
+                                      to_array(params[:terms]),
+                                      to_array(params[:predicates]),
+                                      to_array(params[:projects]),
+                                      params[:page]&.to_i || 1,
+                                      params[:per]&.to_i || 10
 
       respond_to do |format|
         format.json { send_paragraph_data data.to_json, 'paragraphs.json', 'application/json' }

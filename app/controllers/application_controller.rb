@@ -21,6 +21,12 @@ class ApplicationController < ActionController::Base
 		request.referrer
 	end
 
+	def authenticate_root_user!
+		unless root_user?
+			render_status_error(:unauthorized)
+		end
+	end
+
 	def render_status_error(status)
 		# translation required for each httpstatus eg: errors.statuses.forbidden
 		flash[:error] = t("errors.statuses.#{status}")

@@ -8,4 +8,7 @@ module Pubann
   module Paragraph
     Labels = ['p']
   end
+  module Sentence
+    Obj = ['sentence']
+  end
 end

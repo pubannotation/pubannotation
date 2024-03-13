@@ -1,16 +1,12 @@
 class ProjectDoc < ActiveRecord::Base
+  include PaginateConcern
+
   belongs_to :project
   belongs_to :doc
   has_many :denotations, through: :doc
   has_many :blocks, through: :doc
   has_many :relations, through: :project
   has_many :attrivutes, through: :project
-
-  scope :simple_paginate, -> (page, per = 10) {
-    page = page.nil? ? 1 : page.to_i
-    offset = (page - 1) * per
-    offset(offset).limit(per)
-  }
 
   def annotation_about(span, terms, predicates)
     _denotations = denotations_about span, terms, predicates

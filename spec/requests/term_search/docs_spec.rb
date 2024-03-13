@@ -58,7 +58,8 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
       end
 
       context 'when project is not found' do
-        it { expect { get term_search_docs_path(base_project: 'not_found'), as: :json }.to raise_error(ActiveRecord::RecordNotFound) }
+        let(:project) { build(:project, name: 'not_found') }
+        it { expect(response.status).to eq(404) }
       end
     end
 

@@ -1,6 +1,7 @@
 :concurrency: 2
 :max_retries: 0
 :queues:
-  - [general, 1]
+  - general
   - low_priority
-  - [update_paragraph_references, 1]
+  - update_paragraph_references
+  - update_sentence_references

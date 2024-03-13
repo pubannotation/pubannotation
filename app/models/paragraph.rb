@@ -1,19 +1,41 @@
 # frozen_string_literal: true
 
 class Paragraph < ApplicationRecord
+  include TermSearchConcern
+  include PaginateConcern
+  include Rails.application.routes.url_helpers
+
   self.table_name = 'divisions'
   default_scope { where label: Pubann::Paragraph::Labels }
 
+  belongs_to :doc
   has_many :paragraph_attrivutes, foreign_key: :division_id
   has_many :attrivutes, through: :paragraph_attrivutes
   has_many :paragraph_denotations, foreign_key: :division_id
   has_many :denotations, through: :paragraph_denotations
 
-  scope :with_term, lambda { |term|
-    joins(:attrivutes)
-      .where(attrivutes: { obj: term })
+  def self.search_by_term(user, base_project_name, terms, predicates, projects, page, per)
+    base_project = Project.accessible(user).find_by!(name: base_project_name) if base_project_name.present?
+    paragraphs = base_project.present? ? Paragraph.joins(:doc).where(docs: { id: base_project.docs }) : Paragraph.all
 
-  }
+    if terms.present?
+      paragraphs = paragraphs.with_terms_with_begin_end terms,
+                                                        user,
+                                                        predicates,
+                                                        projects
+    end
+
+    paragraphs.simple_paginate(page, per).tap { |q| logger.debug q.to_sql }
+              .map(&:to_list_hash)
+  end
+
+  def to_list_hash
+    {
+      url: doc_sourcedb_sourceid_show_url(doc.sourcedb, doc.sourceid),
+      begin: self.begin,
+      end: self.end
+    }
+  end
 
   def update_references(denotations)
     denotations.each do |denotation|

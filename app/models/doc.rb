@@ -1,6 +1,8 @@
 class Doc < ActiveRecord::Base
 	include Elasticsearch::Model
 	include Elasticsearch::Model::Callbacks
+	include TermSearchConcern
+	include PaginateConcern
 
 	settings index: {
 		analysis: {
@@ -87,6 +89,9 @@ class Doc < ActiveRecord::Base
 
 	has_many :denotations, dependent: :destroy
 	has_many :blocks, dependent: :destroy
+	# Sentence is a kind of block which has obj 'sentence'.
+	has_many :sentences
+
 	has_many :relations, dependent: :destroy
 	has_many :attrivutes, dependent: :destroy
 
@@ -99,12 +104,6 @@ class Doc < ActiveRecord::Base
 	validates :sourcedb, presence: true
 	validates :sourceid, presence: true
 	validates :sourceid, uniqueness: {scope: :sourcedb}
-	
-	scope :simple_paginate, -> (page, per = 10) {
-		page = page.nil? ? 1 : page.to_i
-		offset = (page - 1) * per
-		offset(offset).limit(per)
-	}
 
 	scope :relations_num, -> {
 		joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
@@ -153,29 +152,6 @@ class Doc < ActiveRecord::Base
 
 	scope :user_source_db, lambda{|username|
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
-	}
-
-	scope :with_terms, lambda { |terms, user, predicates, project_names|
-		base_query = joins(:projects).merge(Project.accessible(user))
-																 .joins("JOIN attrivutes ON attrivutes.project_id = projects.id AND attrivutes.doc_id = docs.id")
-		base_query = base_query.where(projects: { name: project_names }) if project_names.present?
-
-		# Search attributes
-		query = base_query.where(attrivutes: { obj: terms })
-		predicates_for_attrivutes = predicates.reject { |p| p == 'denotes' } if predicates.present?
-		query = query.where(attrivutes: { pred: predicates_for_attrivutes }) if predicates_for_attrivutes.present?
-
-		# Search denotations
-		if predicates&.include?('denotes')
-			base_query = joins(:projects).merge(Project.accessible(user))
-																	 .joins("JOIN denotations ON denotations.project_id = projects.id AND denotations.doc_id = docs.id")
-			base_query = base_query.where(projects: { name: project_names }) if project_names.present?
-			denotes_query = base_query.where(denotations: { obj: terms })
-
-			query.union(denotes_query)
-		else
-			query.distinct
-		end
 	}
 
 	def self.search_by_active_record(page, per, project = nil, sourcedb = nil,
@@ -957,11 +933,9 @@ class Doc < ActiveRecord::Base
 		d_num = ActiveRecord::Base.connection.delete("DELETE FROM docs WHERE sourcedb LIKE '%#{Doc::UserSourcedbSeparator}%' AND NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = docs.id)")
 	end
 
-	def update_all_references_in_paragraphs
-		self.paragraphs.each do
-			_1.update_references denotations
-		end
-	end
+	def update_all_references_in_paragraphs = paragraphs.each { _1.update_references denotations }
+
+	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
 	private
 
