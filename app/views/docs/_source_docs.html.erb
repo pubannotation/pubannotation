@@ -5,18 +5,18 @@
 		(<%= number_with_delimiter(@search_count, :delimiter => ',') + '/' if @search_count.present? -%><%= docs_count %>)
 	</span>
 	<span class='tab-bar'>
-		<%= link_to 'JSON', params.permit(:controller, :action, :per, :page).merge(format: :json), class: 'tab', title: "To get the whole list (up to 1,000 items) in JSON" -%>
-		<%= link_to 'TSV', params.permit(:controller, :action, :per, :page).merge(format: :tsv), class: 'tab', title: "To get the whole list (up to 1,000 items) in TSV (Tab-separated values)" -%>
+		<%= link_to 'JSON', params.permit(:controller, :action, :project_id, :sourcedb, :per, :page).merge(format: :json), class: 'tab', title: "To get the whole list (up to 1,000 items) in JSON" -%>
+		<%= link_to 'TSV', params.permit(:controller, :action, :project_id, :sourcedb, :per, :page).merge(format: :tsv), class: 'tab', title: "To get the whole list (up to 1,000 items) in TSV (Tab-separated values)" -%>
 	</span>
 	<%= render partial: 'docs/search_form' -%>
 	<% if @search_count.nil? && docs_count.to_i < 100000 %>
 		<span class='option'>
 			<% if params[:randomize] == 'true' %>
 				<% params.delete(:randomize) %>
-				<%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.permit(:controller, :action), class: 'pushdown-button pressed', title: "randomize the order (only for projects with <0.1M documents)" -%>
+				<%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb), class: 'pushdown-button pressed', title: "randomize the order (only for projects with <0.1M documents)" -%>
 			<% else %>
 				<a href=<%= params %>YYY</a>
-				<%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.permit(:controller, :action).merge(randomize: true), class: 'pushdown-button', title: "randomize the order (only for projects with <0.1M documents)" -%>
+				<%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb).merge(randomize: true), class: 'pushdown-button', title: "randomize the order (only for projects with <0.1M documents)" -%>
 			<% end %>
 		</span>
 	<% end %>
@@ -82,7 +82,7 @@
 		</span>
 	</th>
 	<% if @project %>
-		<th><%= sortable(Doc, "updated_at", 'project_docs.annotations_updated_at') -%></th>
+		<th><%= sortable(Doc, "updated_at", 'project_docs.annotations_updated_at', 'ASC') -%></th>
 	<% end %>
 </tr>
 
