@@ -9,7 +9,7 @@ class Editor < ActiveRecord::Base
 
 	validates :url, :presence => true
 
-	serialize :parameters, coder: YAML
+	serialize :parameters, coder: JSON
 
 	scope :accessibles, -> (current_user) {
 		if current_user.present?
