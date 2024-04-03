@@ -29,13 +29,8 @@ class AnnotatorsController < ApplicationController
 		end
 
 		@result = if params[:text]
-			begin
-				@annotator.obtain_annotations([{text:params[:text]}]).first
-			rescue => e
-				message = "A problem is reported from the server: #{e.message}."
-				nil
-			end
-		end
+								@annotator.obtain_annotations([{text:params[:text]}]).first
+							end
 
 		respond_to do |format|
 			format.html {flash[:notice] = message}
@@ -43,7 +38,10 @@ class AnnotatorsController < ApplicationController
 		end
 	rescue => e
 		respond_to do |format|
-			format.html {flash[:notice] = message}
+			format.html do
+				message = "A problem is reported from the server: #{e.message}."
+				flash[:notice] = message
+			end
 			format.json {head :unprocessable_entity}
 		end
 	end
