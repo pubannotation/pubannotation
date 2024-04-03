@@ -37,6 +37,8 @@ class AnnotatorsController < ApplicationController
 			format.json { render json: @annotator }
 		end
 	rescue => e
+		raise e if Rails.env.development?
+
 		respond_to do |format|
 			format.html do
 				message = "A problem is reported from the server: #{e.message}."
