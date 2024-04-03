@@ -239,7 +239,7 @@ class AnnotationsController < ApplicationController
 		    doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
 		            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
 
-			m = AnnotationUtils.prepare_annotations!(annotations, doc)
+			AnnotationUtils.prepare_annotations!(annotations, doc)
 
 			respond_to do |format|
 				format.json {render json: annotations}
