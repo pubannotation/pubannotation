@@ -198,9 +198,9 @@ class AnnotationsController < ApplicationController
 		options[:span] = {begin: params[:begin].to_i, end: params[:end].to_i} if params[:begin].present? && params[:end].present?
 
 		doc.set_ascii_body if params[:encoding] == 'ascii'
-		msgs = project.save_annotations!(annotations, doc, options)
+		messages = project.save_annotations!(annotations, doc, options)
 		notice = "annotations saved."
-		notice += "\n" + msgs.join("\n") unless msgs.empty?
+		notice += "\n" + messages.join("\n") unless messages.empty?
 
 		respond_to do |format|
 			format.html {redirect_back fallback_location: root_path, notice: notice}
