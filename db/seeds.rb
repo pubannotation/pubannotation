@@ -2,7 +2,7 @@
 return if Rails.env.production?
 
 User.create! username: 'admin',
-             email: 'admin@pubannotatio.org',
+             email: 'admin@pubannotation.org',
              password: 'abc123',
              password_confirmation: 'abc123',
              confirmed_at: Time.now,
@@ -65,3 +65,28 @@ doc.blocks.create! project: project, hid: 'B5', begin: 475, end: 522, obj: 'sent
 doc.blocks.create! project: project, hid: 'B6', begin: 523, end: 658, obj: 'sentence'
 doc.blocks.create! project: project, hid: 'B7', begin: 659, end: 792, obj: 'sentence'
 doc.blocks.create! project: project, hid: 'B8', begin: 793, end: 990, obj: 'sentence'
+
+Editor.create! user: User.first,
+               is_public: true,
+               name: 'TextAE',
+               url: 'http://textae.pubannotation.org/editor.html?mode=edit',
+               parameters: { 'source' => '_annotations_url_' }
+
+Annotator.create! user: User.first,
+                  is_public: true,
+                  name: 'PD-UBERON-AE-2023',
+                  url: 'https://pubdictionaries.org/text_annotation.json?dictionary=UBERON-AE-2023&threshold=0.92&abbreviation=true&longest=true',
+                  method: 'POST',
+                  payload: { '_body_' => '_doc_' },
+                  max_text_size: 50000,
+                  receiver_attribute: 'uberon_id',
+                  new_label: 'Body_part',
+                  sample: 'We have shown that synthetic multivalent sialyl Lewis x glycans inhibit strongly the adhesion of lymphocytes to endothelium at sites of inflammation.'
+
+doc2 = Doc.create! sourcedb: 'PMC',
+                   sourceid: 'PMC0000002',
+                   body: <<~BODY
+We have shown that synthetic multivalent sialyl Lewis x glycans inhibit strongly the adhesion of lymphocytes to endothelium at sites of inflammation.
+BODY
+
+doc2.projects << Project.first
