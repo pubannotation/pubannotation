@@ -97,7 +97,12 @@ class DocsController < ApplicationController
 	end 
 
 	def show
-		begin
+		if params[:id].present?
+			@doc = Doc.find_by(id: params[:id])
+
+			params[:sourcedb] = @doc.sourcedb
+			params[:sourceid] = @doc.sourceid
+		else
 			sourcedb = params[:sourcedb]
 			sourceid = params[:sourceid]
 
@@ -111,32 +116,33 @@ class DocsController < ApplicationController
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
 			@doc = docs.first
-			@span = if params.has_key?(:begin) && params.has_key?(:end)
-				{:begin => params[:begin].to_i, :end => params[:end].to_i}
-			else
-				nil
-			end
+		end
 
-			@doc.set_ascii_body if params[:encoding] == 'ascii'
+		@span = if params.has_key?(:begin) && params.has_key?(:end)
+			{:begin => params[:begin].to_i, :end => params[:end].to_i}
+		else
+			nil
+		end
 
-			get_docs_projects
-			if @span
-				valid_projects = @doc.get_projects(@span)
-				@projects = @projects & valid_projects
-			end
+		@doc.set_ascii_body if params[:encoding] == 'ascii'
 
-			respond_to do |format|
-				format.html
-				format.json {render json: @doc.to_hash(@span)}
-				format.txt  {render plain: @doc.get_text(@span)}
-			end
+		get_docs_projects
+		if @span
+			valid_projects = @doc.get_projects(@span)
+			@projects = @projects & valid_projects
+		end
 
-		rescue => e
-			respond_to do |format|
-				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render plain: e.message, status: :unprocessable_entity}
-			end
+		respond_to do |format|
+			format.html
+			format.json {render json: @doc.to_hash(@span)}
+			format.txt  {render plain: @doc.get_text(@span)}
+		end
+
+	rescue => e
+		respond_to do |format|
+			format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
+			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+			format.txt  {render plain: e.message, status: :unprocessable_entity}
 		end
 	end
 
