@@ -233,11 +233,8 @@ class AnnotationsController < ApplicationController
 			annotations[:sourceid] = params[:sourceid]
 
 			annotations = AnnotationUtils.normalize!(annotations)
-			annotations_collection = [annotations]
-
-
-		    doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
-		            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
+			doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
+							|| Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
 
 			AnnotationUtils.prepare_annotations!(annotations, doc)
 
