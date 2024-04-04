@@ -317,14 +317,16 @@ class DocsController < ApplicationController
 	# PUT /docs/1
 	# PUT /docs/1.json
 	def update
-		raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+		raise RuntimeError, "Not authorized" unless current_user&.root? == true
+
+		@doc = Doc.find_by(id: params[:id])
 
 		params = doc_params
 		params[:body].gsub!(/\r\n/, "\n")
-		@doc = Doc.find(params[:id])
+		is_success = @doc.update(params)
 
 		respond_to do |format|
-			if @doc.update(params)
+			if is_success
 				format.html { redirect_to @doc, notice: t('controllers.shared.successfully_updated', :model => t('activerecord.models.doc')) }
 				format.json { head :no_content }
 			else
