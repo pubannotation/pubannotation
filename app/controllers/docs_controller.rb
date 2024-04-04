@@ -314,6 +314,8 @@ class DocsController < ApplicationController
 
 			@doc = docs[0]
 		rescue => e
+			raise e if Rails.env.development?
+
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
 			end
