@@ -305,21 +305,13 @@ class DocsController < ApplicationController
 
 	# GET /docs/1/edit
 	def edit
-		begin
-			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+		raise RuntimeError, "Not authorized" unless current_user&.root? == true
 
-			docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "There is no such document" unless docs.present?
-			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
-
-			@doc = docs[0]
-		rescue => e
-			raise e if Rails.env.development?
-
-			respond_to do |format|
-				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-			end
-		end
+		@doc = Doc.find_by(id: params[:id])
+		raise "There is no such document" unless @doc
+	rescue => e
+		raise e if Rails.env.development?
+		redirect_back fallback_location: root_path, notice: e.message
 	end
 
 	# PUT /docs/1
