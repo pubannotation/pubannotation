@@ -292,6 +292,8 @@ class AnnotationsController < ApplicationController
 			format.json {}
 		end
 	rescue => e
+		raise e if Rails.env.development?
+		
 		respond_to do |format|
 			format.html {redirect_back fallback_location: root_path, notice: e.message}
 			format.json {render status: :service_unavailable}

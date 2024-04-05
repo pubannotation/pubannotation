@@ -11,6 +11,9 @@ module UseJobRecordConcern
   end
 
   def handle_standard_error(exception)
+    # If the job instance is not set, this job is called by perform_now.
+    raise exception unless @job
+
     body = exception.message[0..250]
 
     if Rails.env.development? && !exception.is_a?(Exceptions::JobSuspendError)
