@@ -37,11 +37,13 @@ module UseJobRecordConcern
 
   def before_perform(active_job)
     @job = Job.find_by(active_job_id: active_job.job_id)
-    @job.start!
+
+    # @job is created when the job is called by perform_later.
+    @job&.start!
   end
 
   def after_perform
-    @job.finish!
+    @job&.finish!
   end
 
   def resource_name
