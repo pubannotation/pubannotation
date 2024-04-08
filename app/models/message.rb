@@ -1,6 +1,6 @@
 class Message < ActiveRecord::Base
 	belongs_to :job
-	serialize :data, coder: YAML
+	serialize :data, coder: JSON
 
 	def as_json(options={})
 		options||={}
