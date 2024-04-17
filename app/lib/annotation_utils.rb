@@ -466,19 +466,19 @@ module AnnotationUtils
 			else
 				ref_text = doc.original_body.nil? ? doc.body : doc.original_body
 
-				messages = if annotations.is_a? Array
-										 aligner = TextAlignment::TextAlignment.new(ref_text, options)
-										 annotations.map do |a|
-											 align_annotations!(a, ref_text, aligner)
-										 end.flatten
-									 else
-										 if annotations[:text] == ref_text
-											 []
-										 else
-											 aligner = TextAlignment::TextAlignment.new(ref_text, options)
-											 align_annotations!(annotations, ref_text, aligner)
-										 end
-									 end
+				if annotations.is_a? Array
+					aligner = TextAlignment::TextAlignment.new(ref_text, options)
+					annotations.map do |a|
+						align_annotations!(a, ref_text, aligner)
+					end.flatten
+				else
+					if annotations[:text] == ref_text
+						[]
+					else
+						aligner = TextAlignment::TextAlignment.new(ref_text, options)
+						align_annotations!(annotations, ref_text, aligner)
+					end
+			 end
 			end
 		end
 

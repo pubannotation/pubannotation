@@ -150,12 +150,15 @@ RSpec.describe "Docs", type: :request do
 
       context 'when sort options are specified' do
         before do
-          get "/docs.json?sort_key=projects_num&sort_direction=desc&randomize=true"
+          get "/docs.json?sort_key=sourceid&sort_direction=asc&randomize=true"
         end
 
         it { is_expected.to have_http_status(200) }
         it 'returns the doc data' do
-          expect(response.body).to eq(existed_doc.to_json)
+          expected_data = Doc.all
+                              .order(sourceid: :asc)
+                              .map(&:to_list_hash)
+          expect(response.body).to eq(expected_data.to_json)
         end
       end
     end

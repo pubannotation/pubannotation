@@ -11,7 +11,7 @@ class Sequencer < ActiveRecord::Base
 
 	validates :url, :presence => true
 
-	serialize :parameters, coder: YAML
+	serialize :parameters, coder: JSON
 
 	scope :accessibles, -> (current_user) {
 		if current_user.present?
@@ -68,6 +68,10 @@ class Sequencer < ActiveRecord::Base
 	end
 
 	def parameters_to_string
-		parameters == {} ? 'sourceid=_sourceid_' : parameters.map{|p| p.join(' = ')}.join("\n")
+		if parameters.nil? || parameters.empty?
+			return 'sourceid=_sourceid_'
+		else
+			return parameters.map{|p| p.join(' = ')}.join("\n")
+		end
 	end
 end

@@ -198,9 +198,9 @@ class AnnotationsController < ApplicationController
 		options[:span] = {begin: params[:begin].to_i, end: params[:end].to_i} if params[:begin].present? && params[:end].present?
 
 		doc.set_ascii_body if params[:encoding] == 'ascii'
-		msgs = project.save_annotations!(annotations, doc, options)
+		messages = project.save_annotations!(annotations, doc, options)
 		notice = "annotations saved."
-		notice += "\n" + msgs.join("\n") unless msgs.empty?
+		notice += "\n" + messages.join("\n") unless messages.empty?
 
 		respond_to do |format|
 			format.html {redirect_back fallback_location: root_path, notice: notice}
@@ -233,13 +233,10 @@ class AnnotationsController < ApplicationController
 			annotations[:sourceid] = params[:sourceid]
 
 			annotations = AnnotationUtils.normalize!(annotations)
-			annotations_collection = [annotations]
+			doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
+							|| Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
 
-
-		    doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
-		            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
-
-			m = AnnotationUtils.prepare_annotations!(annotations, doc)
+			AnnotationUtils.prepare_annotations!(annotations, doc)
 
 			respond_to do |format|
 				format.json {render json: annotations}
@@ -295,6 +292,8 @@ class AnnotationsController < ApplicationController
 			format.json {}
 		end
 	rescue => e
+		raise e if Rails.env.development?
+		
 		respond_to do |format|
 			format.html {redirect_back fallback_location: root_path, notice: e.message}
 			format.json {render status: :service_unavailable}

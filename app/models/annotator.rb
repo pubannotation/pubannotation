@@ -19,7 +19,7 @@ class Annotator < ActiveRecord::Base
 	validates :method, :presence => true
 	validates :payload, :presence => true, if: :method_flagged?
 
-	serialize :payload, coder: YAML
+	serialize :payload, coder: JSON
 
 	scope :accessibles, -> (current_user) {
 		if current_user.present?

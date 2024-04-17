@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :doc do
     sourcedb { "PubMed" }
-    sequence(:sourceid, &:to_s)
+    sequence(:sourceid) { |n| "PMD#{n.to_s.rjust(7, '0')}" }
     body { "This is a test.\nTests are implemented.\nImplementation is difficult." }
 
     trait :with_annotation do

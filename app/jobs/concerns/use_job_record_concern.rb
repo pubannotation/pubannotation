@@ -11,6 +11,9 @@ module UseJobRecordConcern
   end
 
   def handle_standard_error(exception)
+    # If the job instance is not set, this job is called by perform_now.
+    raise exception unless @job
+
     body = exception.message[0..250]
 
     if Rails.env.development? && !exception.is_a?(Exceptions::JobSuspendError)
@@ -34,11 +37,13 @@ module UseJobRecordConcern
 
   def before_perform(active_job)
     @job = Job.find_by(active_job_id: active_job.job_id)
-    @job.start!
+
+    # @job is created when the job is called by perform_later.
+    @job&.start!
   end
 
   def after_perform
-    @job.finish!
+    @job&.finish!
   end
 
   def resource_name

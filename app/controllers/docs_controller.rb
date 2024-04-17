@@ -97,7 +97,12 @@ class DocsController < ApplicationController
 	end 
 
 	def show
-		begin
+		if params[:id].present?
+			@doc = Doc.find_by(id: params[:id])
+
+			params[:sourcedb] = @doc.sourcedb
+			params[:sourceid] = @doc.sourceid
+		else
 			sourcedb = params[:sourcedb]
 			sourceid = params[:sourceid]
 
@@ -111,32 +116,33 @@ class DocsController < ApplicationController
 			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
 
 			@doc = docs.first
-			@span = if params.has_key?(:begin) && params.has_key?(:end)
-				{:begin => params[:begin].to_i, :end => params[:end].to_i}
-			else
-				nil
-			end
+		end
 
-			@doc.set_ascii_body if params[:encoding] == 'ascii'
+		@span = if params.has_key?(:begin) && params.has_key?(:end)
+			{:begin => params[:begin].to_i, :end => params[:end].to_i}
+		else
+			nil
+		end
 
-			get_docs_projects
-			if @span
-				valid_projects = @doc.get_projects(@span)
-				@projects = @projects & valid_projects
-			end
+		@doc.set_ascii_body if params[:encoding] == 'ascii'
 
-			respond_to do |format|
-				format.html
-				format.json {render json: @doc.to_hash(@span)}
-				format.txt  {render plain: @doc.get_text(@span)}
-			end
+		get_docs_projects
+		if @span
+			valid_projects = @doc.get_projects(@span)
+			@projects = @projects & valid_projects
+		end
 
-		rescue => e
-			respond_to do |format|
-				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render plain: e.message, status: :unprocessable_entity}
-			end
+		respond_to do |format|
+			format.html
+			format.json {render json: @doc.to_hash(@span)}
+			format.txt  {render plain: @doc.get_text(@span)}
+		end
+
+	rescue => e
+		respond_to do |format|
+			format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
+			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+			format.txt  {render plain: e.message, status: :unprocessable_entity}
 		end
 	end
 
@@ -305,32 +311,28 @@ class DocsController < ApplicationController
 
 	# GET /docs/1/edit
 	def edit
-		begin
-			raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+		raise RuntimeError, "Not authorized" unless current_user&.root? == true
 
-			docs = Doc.find_all_by_sourcedb_and_sourceid(params[:sourcedb], params[:sourceid])
-			raise "There is no such document" unless docs.present?
-			raise "Multiple entries for #{params[:sourcedb]}:#{params[:sourceid]} found." if docs.length > 1
-
-			@doc = docs[0]
-		rescue => e
-			respond_to do |format|
-				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-			end
-		end
+		@doc = Doc.find_by(id: params[:id])
+		raise "There is no such document" unless @doc
+	rescue => e
+		raise e if Rails.env.development?
+		redirect_back fallback_location: root_path, notice: e.message
 	end
 
 	# PUT /docs/1
 	# PUT /docs/1.json
 	def update
-		raise RuntimeError, "Not authorized" unless current_user && current_user.root? == true
+		raise RuntimeError, "Not authorized" unless current_user&.root? == true
+
+		@doc = Doc.find_by(id: params[:id])
 
 		params = doc_params
 		params[:body].gsub!(/\r\n/, "\n")
-		@doc = Doc.find(params[:id])
+		is_success = @doc.update(params)
 
 		respond_to do |format|
-			if @doc.update(params)
+			if is_success
 				format.html { redirect_to @doc, notice: t('controllers.shared.successfully_updated', :model => t('activerecord.models.doc')) }
 				format.json { head :no_content }
 			else
