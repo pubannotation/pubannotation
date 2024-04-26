@@ -79,9 +79,10 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
 
         before { get term_search_docs_path(terms: "subject"), as: :json }
 
-        it 'returns no doc' do
+        it 'returns denotation object is specified as term' do
           json_response = JSON.parse(response.body)
-          expect(json_response.size).to eq(0)
+          expect(json_response.size).to eq(1)
+          expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
         end
       end
 
@@ -112,7 +113,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
             expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
           end
 
-          context 'when denotaiton object is specified as term' do
+          context 'when denotation object is specified as term' do
             before { get term_search_docs_path(terms: "subject", predicates: "denotes"), as: :json }
 
             it 'returns only doc with the term' do
