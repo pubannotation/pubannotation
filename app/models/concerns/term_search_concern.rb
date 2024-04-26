@@ -8,7 +8,7 @@ module TermSearchConcern
       with_attributes = search_in_attributes(terms, user, predicates, project_names)
                           .select(:doc_id, 'docs.sourcedb', :'docs.sourceid')
 
-      if predicates&.include?('denotes')
+      if predicates.nil? || predicates&.include?('denotes')
         with_denotations = search_in_denotations(terms, user, project_names)
                              .select(:doc_id, 'docs.sourcedb', :'docs.sourceid')
 
