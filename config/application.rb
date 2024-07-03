@@ -35,5 +35,12 @@ module Pubann
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Setting for Psych 4 later
+    config.active_record.yaml_column_permitted_classes = [
+      Symbol,
+      ActiveSupport::HashWithIndifferentAccess,
+      ActionController::Parameters
+    ]
   end
 end
