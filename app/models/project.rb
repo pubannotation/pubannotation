@@ -488,15 +488,15 @@ class Project < ActiveRecord::Base
   end
 
   def self.admin_project
-    @admin_project ||= Project.find(Pubann::Admin::ProjectId)
+    @admin_project ||= Project.find_by(id: Pubann::Admin::ProjectId)
   end
 
   def self.docs_stat
-    admin_project.docs_stat
+    admin_project.nil? ? {} : admin_project.docs_stat
   end
 
   def self.docs_count
-    admin_project.docs_count
+    admin_project.nil? ? 0 : admin_project.docs_count
   end
 
   def self.docs_stat_increment!(sourcedb, by = 1)
@@ -516,7 +516,7 @@ class Project < ActiveRecord::Base
   end
 
   def self.docs_stat_update
-    admin_project.docs_stat_update
+    admin_project.nil? ? {} : admin_project.docs_stat_update
   end
 
   def update_es_index
