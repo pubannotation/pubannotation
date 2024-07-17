@@ -54,7 +54,8 @@ Pubann::Application.routes.draw do
 		:omniauth_callbacks => 'users/omniauth_callbacks',
 		:confirmations => 'confirmations',
 		:sessions => 'sessions',
-		:registrations => 'users/registrations'
+		:registrations => 'users/registrations',
+		:passwords => 'users/passwords'
 	}
 
 	get "home/index"
