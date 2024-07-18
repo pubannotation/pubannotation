@@ -142,3 +142,41 @@ cp .env.example .env
 CLIENT_ID=[Generated client id]
 CLIENT_SECRET=[Generated client secret]
 ```
+
+### ReCAPTCHA settings procedure
+
+Access the Google reCAPTCHA site and log in with your Google account.
+```
+https://www.google.com/recaptcha/admin/create
+```
+
+The first screen that opens is the paid Enterprise version.  
+Click "Switch to create a legacy key" to switch to the free version.
+```
+Switch to create a legacy key
+```
+
+Enter the required information.
+
+label:
+```
+pubannotation
+```
+
+reCAPTCHA type:
+```
+v2 "I'm not a robot" checkbox
+```
+
+domain:  
+Add your domain, example:
+```
+example.com
+```
+
+After you register your site, site_key and secret_key are generated.  
+Add keys to .env file to use reCAPTCHA on your app.
+```
+RECAPTCHA_SITE_KEY=[Generated site key]
+RECAPTCHA_SECRET_KEY=[Generated secret key]
+```
