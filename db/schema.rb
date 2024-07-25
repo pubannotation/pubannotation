@@ -10,9 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_12_020922) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_25_003116) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "annotation_receptions", force: :cascade do |t|
+    t.string "uuid", null: false
+    t.integer "annotator_id", null: false
+    t.integer "project_id", null: false
+    t.json "options", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "annotators", force: :cascade do |t|
     t.string "name"

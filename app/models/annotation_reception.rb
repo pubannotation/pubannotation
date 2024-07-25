@@ -1,0 +1,2 @@
+class AnnotationReception < ApplicationRecord
+end
