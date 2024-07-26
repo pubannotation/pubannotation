@@ -10,17 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_26_022324) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_25_003116) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "annotation_receptions", force: :cascade do |t|
     t.string "uuid", null: false
     t.json "options", default: {}
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.bigint "annotator_id"
     t.bigint "project_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["annotator_id"], name: "index_annotation_receptions_on_annotator_id"
     t.index ["project_id"], name: "index_annotation_receptions_on_project_id"
   end
