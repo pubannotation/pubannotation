@@ -8,8 +8,7 @@ class AnnotationReceptionController < ApplicationController
     project = Project.find(annotation_reception.project_id)
     options = annotation_reception.options
 
-    result = get_result_from_json_body
-    annotations_col = (result.class == Array) ? result : [result]
+    annotations_col = get_result_from_json_body
 
     annotations_col.each_with_index do |annotations, i|
       raise RuntimeError, "annotation result is not a valid JSON object." unless annotations.class == Hash
