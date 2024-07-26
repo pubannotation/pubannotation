@@ -22,6 +22,9 @@ class AnnotationReceptionController < ApplicationController
     respond_to do |format|
       format.any {head :no_content}
     end
+
+  ensure
+    annotation_reception.delete
   end
 
   private
