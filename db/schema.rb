@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_25_003116) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_26_013946) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -418,6 +418,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_25_003116) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "annotation_receptions", "annotators"
+  add_foreign_key "annotation_receptions", "projects"
   add_foreign_key "attrivutes", "docs"
   add_foreign_key "paragraph_attrivutes", "attrivutes"
   add_foreign_key "paragraph_attrivutes", "divisions"
