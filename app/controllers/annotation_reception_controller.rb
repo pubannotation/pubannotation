@@ -28,7 +28,7 @@ class AnnotationReceptionController < ApplicationController
     end
 
   ensure
-    annotation_reception.delete
+    annotation_reception.delete unless annotation_reception.nil?
   end
 
   private
