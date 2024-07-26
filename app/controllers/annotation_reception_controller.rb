@@ -3,7 +3,7 @@ class AnnotationReceptionController < ApplicationController
 
   def update
     uuid = extract_uuid_from_params
-    annotation_reception = AnnotationReception.find_by(uuid:)
+    annotation_reception = AnnotationReception.find_by!(uuid:)
     annotator = Annotator.find(annotation_reception.annotator_id)
     project = Project.find(annotation_reception.project_id)
     options = annotation_reception.options
@@ -21,6 +21,10 @@ class AnnotationReceptionController < ApplicationController
 
     respond_to do |format|
       format.any {head :no_content}
+    end
+  rescue ActiveRecord::RecordNotFound
+    respond_to do |format|
+      format.any {head :not_found}
     end
 
   ensure
