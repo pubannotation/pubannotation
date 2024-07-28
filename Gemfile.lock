@@ -264,6 +264,8 @@ GEM
       net-protocol
     netrc (0.11.0)
     nio4r (2.7.1)
+    nokogiri (1.16.5-arm64-darwin)
+      racc (~> 1.4)
     nokogiri (1.16.5-x86_64-linux)
       racc (~> 1.4)
     oauth2 (2.0.9)
@@ -347,6 +349,7 @@ GEM
     rake (13.2.1)
     rdoc (6.6.3.1)
       psych (>= 4.0.0)
+    recaptcha (5.17.0)
     redis-client (0.22.1)
       connection_pool
     reline (0.5.3)
@@ -440,6 +443,7 @@ GEM
       rubyzip (>= 1.0.0)
 
 PLATFORMS
+  arm64-darwin-23
   x86_64-linux
 
 DEPENDENCIES
@@ -476,6 +480,7 @@ DEPENDENCIES
   rails-observers
   rails3-jquery-autocomplete
   rake
+  recaptcha
   rest-client
   rspec-rails
   ruby-dictionary

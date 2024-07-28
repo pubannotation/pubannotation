@@ -54,7 +54,8 @@ Pubann::Application.routes.draw do
 		:omniauth_callbacks => 'users/omniauth_callbacks',
 		:confirmations => 'confirmations',
 		:sessions => 'sessions',
-		:registrations => 'users/registrations'
+		:registrations => 'users/registrations',
+		:passwords => 'users/passwords'
 	}
 
 	get "home/index"
@@ -301,6 +302,7 @@ Pubann::Application.routes.draw do
 	get '/search' => 'graphs#show', :as => :sparql
 	get '/projects/:project_name/search' => 'graphs#show', :as => :sparql_project
 	get '/collections/:collection_name/search' => 'graphs#show', :as => :sparql_collection
+	put '/annotation_reception/:uuid' => 'annotation_reception#update'
 
   # Evidence Block Search API
   resources :term_search, only: [:index]

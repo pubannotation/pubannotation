@@ -17,6 +17,10 @@
   	<td><%= f.text_field :login, :placeholder => "Your username or e-mail address" %></td>
   </tr>
   <tr>
+    <th></th>
+    <td><%= recaptcha_tags %></td>
+  </tr>
+  <tr>
   	<th colspan="2" style="text-align:center"><%= f.submit t('views.users.send_reset_password_instructions') %></th>
   </tr>
   </table>
