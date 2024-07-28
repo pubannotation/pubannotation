@@ -1067,7 +1067,7 @@ class Project < ActiveRecord::Base
         # update annotation counts for each doc within the project
         ActiveRecord::Base.connection.update <<~SQL.squish
           UPDATE project_docs
-          SET denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP
+          SET denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = NULL
           WHERE project_id=#{id}
         SQL
 
