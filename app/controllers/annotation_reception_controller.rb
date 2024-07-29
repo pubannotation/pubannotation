@@ -10,7 +10,7 @@ class AnnotationReceptionController < ApplicationController
 
     annotations_col = get_result_from_json_body
 
-    annotation_reception.process_annotation(annotations_col, annotator, project, options)
+    annotation_reception.process_annotation!(annotations_col, annotator, project, options)
 
     respond_to do |format|
       format.any {head :no_content}
