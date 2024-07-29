@@ -20,7 +20,7 @@ class AnnotationReceptionController < ApplicationController
   private
 
   def get_result_from_json_body
-    raise ArgumentError, "No annotation result was supplied." unless request.body.present?
+    raise ArgumentError, "No annotation result was supplied." unless request.body.read.present?
 
     JSON.parse request.body.read, symbolize_names: true
   end
