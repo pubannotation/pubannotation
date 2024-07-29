@@ -13,6 +13,6 @@ class AnnotationReception < ApplicationRecord
       annotator.annotations_transform!(annotations)
     end
 
-    StoreAnnotationsCollection.new(project, annotations_col, options).call.join
+    StoreAnnotationsCollection.new(project, annotations_collection, options).call.join
   end
 end
