@@ -3,9 +3,9 @@ class AnnotationReceptionController < ApplicationController
 
   def update
     annotation_reception = AnnotationReception.find_by!(uuid: params[:uuid])
-    annotations_col = get_result_from_json_body
+    annotations_collection = get_result_from_json_body
 
-    annotation_reception.process_annotation!(annotations_col)
+    annotation_reception.process_annotation!(annotations_collection)
 
     respond_to do |format|
       format.any {head :no_content}
