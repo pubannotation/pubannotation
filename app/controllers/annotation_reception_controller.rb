@@ -7,13 +7,9 @@ class AnnotationReceptionController < ApplicationController
 
     annotation_reception.process_annotation!(annotations_collection)
 
-    respond_to do |format|
-      format.any {head :no_content}
-    end
+    head :no_content
   rescue ActiveRecord::RecordNotFound
-    respond_to do |format|
-      format.any {head :not_found}
-    end
+    head :not_found
 
   ensure
     annotation_reception.destroy if annotation_reception.present?
