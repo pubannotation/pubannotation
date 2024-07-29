@@ -2,8 +2,7 @@ class AnnotationReceptionController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:update]
 
   def update
-    uuid = extract_uuid_from_params
-    annotation_reception = AnnotationReception.find_by!(uuid:)
+    annotation_reception = AnnotationReception.find_by!(uuid: params[:uuid])
     annotations_col = get_result_from_json_body
 
     annotation_reception.process_annotation!(annotations_col)
@@ -26,13 +25,5 @@ class AnnotationReceptionController < ApplicationController
     if request.body.present?
       JSON.parse request.body.read, symbolize_names: true
     end
-  end
-
-  def extract_uuid_from_params
-    url = params[:_json].first[:callback_url]
-    uuid_pattern = %r{([0-9a-fA-F\-]{36})$}
-
-    match = url.match(uuid_pattern)
-    match[1] if match
   end
 end
