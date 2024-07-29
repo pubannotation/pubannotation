@@ -4,7 +4,7 @@ class AnnotationReception < ApplicationRecord
   validates :uuid, presence: true
 
   def process_annotation(annotations_col, annotator, project, options)
-    annotations_col.each_with_index do |annotations, i|
+    annotations_col.each do |annotations|
       raise RuntimeError, "annotation result is not a valid JSON object." unless annotations.class == Hash
       AnnotationUtils.normalize!(annotations)
       annotator.annotations_transform!(annotations)
