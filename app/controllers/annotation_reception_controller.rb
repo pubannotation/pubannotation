@@ -33,7 +33,7 @@ class AnnotationReceptionController < ApplicationController
   end
 
   def extract_uuid_from_params
-    url = params[:callback_url]
+    url = params[:_json].first[:callback_url]
     uuid_pattern = %r{([0-9a-fA-F\-]{36})$}
 
     match = url.match(uuid_pattern)
