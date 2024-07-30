@@ -91,7 +91,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 			docs << doc
 			docs_size += doc_length
 
-			process_tasks_queue(project, annotator, options) unless @annotation_tasks_queue.empty?
 		rescue RuntimeError => e
 			if e.class == Exceptions::JobSuspendError
 				raise e
@@ -141,21 +140,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 					end
 				else
 					make_request_batch(project, docs, annotator, options)
-				end
-			end
-		end
-
-		until @annotation_tasks_queue.empty?
-			begin
-				process_tasks_queue(project, annotator, options)
-				sleep(skip_interval) unless @annotation_tasks_queue.empty?
-			rescue => e
-				if e.class == Exceptions::JobSuspendError
-					raise e
-				elsif @job
-					@job.add_message body: exception_message(e)
-				else
-					raise e
 				end
 			end
 		end
@@ -223,117 +207,8 @@ private
 		retry_after = e.response.headers[:retry_after].to_i if e.response.headers[:retry_after].present?
 		if @annotation_tasks_queue.empty?
 			sleep(retry_after || 5)
-		else
-			process_tasks_queue(project, annotator, options)
 		end
 		retry
-	rescue RestClient::ExceptionWithResponse => e
-		if e.response.present? && e.response.respond_to?(:code)
-			case e.response.code
-			when 201
-				## In case of asynchronous protocol
-				task = {url: e.response.headers[:location]}
-				task.merge!(span:options[:span], docid:docs.first.id) if options[:span].present?
-				@annotation_tasks_queue << task
-				@service_unavailable_begins_at = nil
-			else
-				raise e
-			end
-		else
-			raise e
-		end
-	end
-
-	def process_tasks_queue(project, annotator, options)
-		@annotation_tasks_queue.each do |task|
-			status = annotator.make_request(:get, task[:url])
-			case status[:status]
-			when 'DONE'
-				task[:delme] = true
-				result = annotator.make_request(:get, status[:result_location])
-				annotations_col = (result.class == Array) ? result : [result]
-				annotations_col.each_with_index do |annotations, i|
-					raise RuntimeError, "annotation result is not a valid JSON object." unless annotations.class == Hash
-					AnnotationUtils.normalize!(annotations)
-					annotator.annotations_transform!(annotations)
-				rescue => e
-					if @job
-						@job.add_message sourcedb: annotations[:sourcedb],
-														 sourceid: annotations[:sourceid],
-														 body: exception_message(e)
-					else
-						raise e
-					end
-				end
-
-				timer_start = Time.now
-				if task[:span].present?
-					messages = project.save_annotations!(annotations_col.first, Doc.find(task[:docid]), options.merge(span:task[:span]))
-					messages.each do |m|
-						m = {body: m} if m.class == String
-						@job.add_message m
-					end
-				else
-					StoreAnnotationsCollection.new(project, annotations_col, options, @job).call.join
-				end
-
-				stime = Time.now - timer_start
-
-				if @job
-					ptime = status[:finished_at].to_time - status[:started_at].to_time
-					qtime = status[:started_at].to_time - status[:submitted_at].to_time
-					length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
-					num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
-					if options[:debug]
-						@job.add_message body: "Annotation obtained, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{length}, num:#{num})"
-					end
-					@job.increment!(:num_dones, annotations_col.length)
-					check_suspend_flag
-				end
-			when 'ERROR'
-				task[:delme] = true
-				raise RuntimeError, "The annotation server issued an error message: #{status[:error_message]}."
-			when 'IN_QUEUE'
-				if Time.now - status[:submitted_at].to_time > Annotator::MaxWaitInQueueBatch
-					message = "The task is terminated because an annotation task has been waiting for more than #{Annotator::MaxWaitInQueue} seconds in the queue - submitted_at: #{status[:submitted_at]}, terminated_at: #{Time.now}"
-					if @job
-						if task[:span].present?
-							d = Doc.find(task[:docid])
-							@job.add_message sourcedb:d.sourcedb,
-															 sourceid:d.sourceid,
-															 body: message
-						else
-							@job.add_message body: message
-						end
-						exit
-					else
-						raise message
-					end
-				end
-			when 'IN_PROGRESS'
-				if Time.now - status[:started_at].to_time > Annotator::MaxWaitInProcessingBatch
-					message = "The task is terminated because an annotation task has been in processing for more than #{Annotator::MaxWaitInProcessing} seconds - started_at: #{status[:started_at]}, terminated_at: #{Time.now}."
-					if @job
-						if task[:span].present?
-							d = Doc.find(task[:docid])
-							@job.add_message sourcedb: d.sourcedb,
-															 sourceid: d.sourceid,
-															 body: message
-						else
-							@job.add_message body: message
-						end
-						exit
-					else
-						raise message
-					end
-				end
-			else
-				task[:delme] = true
-				raise RuntimeError, "The annotation server reported an unknown status of the annotation task: #{status[:status]}."
-			end
-		end
-	ensure
-		@annotation_tasks_queue.delete_if{|task| task[:delme]}
 	end
 
 	def exception_message(exception)
