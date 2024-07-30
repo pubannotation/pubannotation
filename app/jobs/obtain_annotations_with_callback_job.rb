@@ -178,7 +178,18 @@ private
 		end
 
 		timer_start = Time.now
-		annotations_col = annotator.obtain_annotations(hdocs)
+
+		if annotator.url.include?('annotation_request')
+			## In case of requesting to annotation_request, send only the request and skip other process
+			uuid = SecureRandom.uuid
+			AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, uuid:, options:)
+			method, url, params, payload = annotator.prepare_request(hdocs, uuid)
+			annotator.make_request(method, url, params, payload)
+			return
+		else
+			annotations_col = annotator.obtain_annotations(hdocs)
+		end
+
 		ttime = Time.now - timer_start
 
 		## In case of synchronous protocol

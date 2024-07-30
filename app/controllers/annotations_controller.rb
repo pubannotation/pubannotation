@@ -378,10 +378,13 @@ class AnnotationsController < ApplicationController
 				filepath
 			end
 
-			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator, options)
-
-			# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
-			ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
+			if annotator.url.include?('annotation_request')
+				ObtainAnnotationsWithCallbackJob.perform_later(project, docids_filepath, annotator, options)
+			else
+				# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator, options)
+				# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
+				ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
+			end
 
 			project.update({annotator_id:annotator.id}) if annotator.persisted?
 
