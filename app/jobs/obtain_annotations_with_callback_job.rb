@@ -11,10 +11,8 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 		end
 
 		# for asynchronous protocol
-		@annotation_tasks_queue = []
 		@max_text_size = annotator.max_text_size || (annotator.async_protocol ? Annotator::MaxTextAsync : Annotator::MaxTextSync)
 		single_doc_processing_p = annotator.single_doc_processing?
-		skip_interval = Annotator::SkipInterval
 
 		docs = []
 		docs_size = 0
@@ -161,54 +159,10 @@ private
 			docs.map{|d| d.hdoc}
 		end
 
-		timer_start = Time.now
-
-		if annotator.url.include?('annotation_request')
-			## In case of requesting to annotation_request, send only the request and skip other process
-			uuid = SecureRandom.uuid
-			AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, uuid:, options:)
-			method, url, params, payload = annotator.prepare_request(hdocs, uuid)
-			annotator.make_request(method, url, params, payload)
-			return
-		else
-			annotations_col = annotator.obtain_annotations(hdocs)
-		end
-
-		ttime = Time.now - timer_start
-
-		## In case of synchronous protocol
-		text_length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
-		timer_start = Time.now
-		if options[:span].present?
-			messages = project.save_annotations!(annotations_col.first, docs.first, options)
-			messages.each do |m|
-				m = {body: m} if m.class == String
-				@job.add_message m
-			end
-		else
-			StoreAnnotationsCollection.new(project, annotations_col, options, @job).call.join
-		end
-		stime = Time.now - timer_start
-
-		if @job
-			num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
-			if options[:debug]
-				@job.add_message body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{num})"
-			end
-			@job.increment!(:num_dones, docs.length)
-			check_suspend_flag
-		end
-	rescue RestClient::ServiceUnavailable => e
-		if @service_unavailable_begins_at.present?
-			raise e if (Time.now - @service_unavailable_begins_at) > 3600
-		else
-			@service_unavailable_begins_at = Time.now
-		end
-		retry_after = e.response.headers[:retry_after].to_i if e.response.headers[:retry_after].present?
-		if @annotation_tasks_queue.empty?
-			sleep(retry_after || 5)
-		end
-		retry
+    uuid = SecureRandom.uuid
+    AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, uuid:, options:)
+    method, url, params, payload = annotator.prepare_request(hdocs, uuid)
+    annotator.make_request(method, url, params, payload)
 	end
 
 	def exception_message(exception)
