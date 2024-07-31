@@ -76,5 +76,8 @@ Rails.application.configure do
 
   # option for url_helpers in models
   Rails.application.routes.default_url_options = { host: "localhost", port: 3000 }
-  
+
+  # option for callback url
+  config.host_url = 'http://localhost:3000'
+  # config.host_url = 'http://host.docker.internal:3000' # if PubDictionaries is running on docker with mac/windows
 end
