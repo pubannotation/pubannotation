@@ -6,7 +6,6 @@ class AnnotationReceptionController < ApplicationController
     annotations_collection = get_result_from_json_body
 
     annotation_reception.process_annotation!(annotations_collection)
-    annotation_reception.destroy
 
     head :no_content
   rescue ActiveRecord::RecordNotFound => e

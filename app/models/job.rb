@@ -1,6 +1,7 @@
 class Job < ActiveRecord::Base
   belongs_to :organization, polymorphic: true
   has_many :messages # "dependent: :destroy" is omitted. They are explicitly deleted in the destroy method
+  has_many :annotation_receptions, dependent: :destroy
 
   scope :waiting, -> { where('begun_at IS NULL') }
   scope :running, -> { where('begun_at IS NOT NULL AND ended_at IS NULL') }
