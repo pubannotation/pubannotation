@@ -14,5 +14,8 @@ class AnnotationReception < ApplicationRecord
     end
 
     StoreAnnotationsCollection.new(project, annotations_collection, options).call.join
+
+    job.increment!(:num_dones, annotations_collection.length)
+    job.finish!
   end
 end
