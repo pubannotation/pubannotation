@@ -80,7 +80,7 @@ class Annotator < ActiveRecord::Base
 		method == 0 || url.include?('_text_') || url.include?('_sourceid_') || ['_text_', '_doc_', '_annotation_'].include?(payload['_body_'])
 	end
 
-	def prepare_request(docs, uuid = nil)
+	def prepare_request(docs)
 		_method = (method == 0) ? :get : :post
 
 		## URL check and set the default parameter
@@ -129,10 +129,6 @@ class Annotator < ActiveRecord::Base
 			when '_annotations_'
 				docs
 			end
-		end
-
-		if uuid
-			_payload[:callback_url] = "https://pubannotation.org/annotation_reception/#{uuid}"
 		end
 
 		[_method, _url, _params, _payload]

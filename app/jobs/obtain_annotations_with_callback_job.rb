@@ -161,7 +161,8 @@ private
 
     uuid = SecureRandom.uuid
     AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, uuid:, options:)
-    method, url, params, payload = annotator.prepare_request(hdocs, uuid)
+    method, url, params, payload = annotator.prepare_request(hdocs)
+    payload[:callback_url] = "https://pubannotation.org/annotation_reception/#{uuid}"
     annotator.make_request(method, url, params, payload)
   end
 
