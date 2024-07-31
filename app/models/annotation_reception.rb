@@ -1,6 +1,7 @@
 class AnnotationReception < ApplicationRecord
   belongs_to :annotator
   belongs_to :project
+  belongs_to :job
 
   validates :annotator_id, presence: true
   validates :project_id, presence: true

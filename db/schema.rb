@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_25_003116) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -21,7 +21,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_25_003116) do
     t.bigint "project_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "job_id"
     t.index ["annotator_id"], name: "index_annotation_receptions_on_annotator_id"
+    t.index ["job_id"], name: "index_annotation_receptions_on_job_id"
     t.index ["project_id"], name: "index_annotation_receptions_on_project_id"
   end
 
@@ -421,6 +423,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_25_003116) do
   end
 
   add_foreign_key "annotation_receptions", "annotators"
+  add_foreign_key "annotation_receptions", "jobs"
   add_foreign_key "annotation_receptions", "projects"
   add_foreign_key "attrivutes", "docs"
   add_foreign_key "paragraph_attrivutes", "attrivutes"
