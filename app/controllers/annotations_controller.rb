@@ -379,6 +379,7 @@ class AnnotationsController < ApplicationController
 			end
 
 			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator, options)
+
 			# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
 			ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
 
