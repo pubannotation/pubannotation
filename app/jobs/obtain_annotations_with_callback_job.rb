@@ -1,5 +1,6 @@
 class ObtainAnnotationsWithCallbackJob < ApplicationJob
   include UseJobRecordConcern
+  include ActionView::Helpers::NumberHelper
 
   queue_as :low_priority
 
