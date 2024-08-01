@@ -27,15 +27,9 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         rescue Exceptions::JobSuspendError
           raise
         rescue => e
-          if docs.length < 10
-            docs.each do |doc|
-              @job.add_message sourcedb: doc.sourcedb,
-                               sourceid: doc.sourceid,
-                               body: "Could not obtain annotations: #{exception_message(e)}"
-            end
-          else
-            @job.add_message body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"
-          end
+          less_docs_message = 'Could not obtain annotations:'
+          many_docs_message = 'Could not obtain annotations for'
+          add_exception_message_to_job(docs, e, less_docs_message, many_docs_message)
         ensure
           docs.clear
           docs_size = 0
@@ -48,15 +42,9 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     rescue Exceptions::JobSuspendError
       raise
     rescue RuntimeError => e
-      if docs.length < 10
-        docs.each do |doc|
-          @job.add_message sourcedb: doc.sourcedb,
-                           sourceid: doc.sourceid,
-                           body: "Runtime error: #{exception_message(e)}"
-        end
-      else
-        @job.add_message body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"
-      end
+      less_docs_message = 'Runtime error:'
+      many_docs_message = 'Runtime error while processing'
+      add_exception_message_to_job(docs, e, less_docs_message, many_docs_message)
     end
 
     if docs.present?
@@ -116,6 +104,18 @@ private
     payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{uuid}"
 
     annotator.make_request(method, url, params, payload)
+  end
+
+  def add_exception_message_to_job(docs, e, less_docs_message, many_docs_message)
+    if docs.length < 10
+      docs.each do |doc|
+        @job.add_message sourcedb: doc.sourcedb,
+                         sourceid: doc.sourceid,
+                         body: "#{less_docs_message} #{exception_message(e)}"
+      end
+    else
+      @job.add_message body: "#{many_docs_message} #{docs.length} docs: #{exception_message(e)}"
+    end
   end
 
   def exception_message(exception)
