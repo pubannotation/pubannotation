@@ -77,7 +77,7 @@ private
       slice_large_document(project, docs.first, annotator, options, max_text_size)
     else
       hdocs = docs.map{|d| d.hdoc}
-      make_request_batch(project, docs, hdocs, annotator, options)
+      make_request(project, docs, hdocs, annotator, options)
     end
   end
 
@@ -95,7 +95,7 @@ private
     project.delete_doc_annotations(doc) if options[:mode] == 'replace'
     slices.each do |slice|
       hdoc = [{text:doc.get_text(options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
-      make_request_batch(project, doc, hdoc, annotator, options.merge(span:slice))
+      make_request(project, doc, hdoc, annotator, options.merge(span:slice))
     rescue Exceptions::JobSuspendError
       raise
     rescue RuntimeError => e
@@ -109,7 +109,7 @@ private
     end
   end
 
-  def make_request_batch(project, docs, hdocs, annotator, options)
+  def make_request(project, docs, hdocs, annotator, options)
     uuid = SecureRandom.uuid
     AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, uuid:, options:)
     method, url, params, payload = annotator.prepare_request(hdocs)
