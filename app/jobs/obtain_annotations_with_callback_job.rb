@@ -10,7 +10,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     prepare_progress_record(line_count)
 
     # for asynchronous protocol
-    @max_text_size = annotator.max_text_size || (annotator.async_protocol ? Annotator::MaxTextAsync : Annotator::MaxTextSync)
+    max_text_size = annotator.max_text_size || (annotator.async_protocol ? Annotator::MaxTextAsync : Annotator::MaxTextSync)
     single_doc_processing_p = annotator.single_doc_processing?
 
     docs = []
@@ -21,10 +21,10 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       doc.set_ascii_body if options[:encoding] == 'ascii'
       doc_length = doc.body.length
 
-      if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > @max_text_size)
+      if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > max_text_size)
         begin
-          if docs.length == 1 && docs.first.body.length > @max_text_size
-            slice_large_document(project, docs, annotator, options, @max_text_size)
+          if docs.length == 1 && docs.first.body.length > max_text_size
+            slice_large_document(project, docs, annotator, options, max_text_size)
           else
             make_request_batch(project, docs, annotator, options)
           end
@@ -64,8 +64,8 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     end
 
     if docs.present?
-      if docs.length == 1 && docs.first.body.length > @max_text_size
-        slice_large_document(project, docs, annotator, options, @max_text_size)
+      if docs.length == 1 && docs.first.body.length > max_text_size
+        slice_large_document(project, docs, annotator, options, max_text_size)
       else
         make_request_batch(project, docs, annotator, options)
       end
