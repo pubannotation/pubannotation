@@ -23,11 +23,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
       if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > max_text_size)
         begin
-          if docs.length == 1 && docs.first.body.length > max_text_size
-            slice_large_document(project, docs.first, annotator, options, max_text_size)
-          else
-            make_request_batch(project, docs, annotator, options)
-          end
+          handle_annotate_request(annotator, project, docs, options, max_text_size)
         rescue Exceptions::JobSuspendError
           raise
         rescue => e
@@ -64,11 +60,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     end
 
     if docs.present?
-      if docs.length == 1 && docs.first.body.length > max_text_size
-        slice_large_document(project, docs.first, annotator, options, max_text_size)
-      else
-        make_request_batch(project, docs, annotator, options)
-      end
+      handle_annotate_request(annotator, project, docs, options, max_text_size)
     end
 
     File.unlink(filepath)
@@ -79,6 +71,15 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
   end
 
 private
+
+  def handle_annotate_request(annotator, project, docs, options, max_text_size)
+    if docs.length == 1 && docs.first.body.length > max_text_size
+      slice_large_document(project, docs.first, annotator, options, max_text_size)
+    else
+      hdocs = docs.map{|d| d.hdoc}
+      make_request_batch(project, docs, hdocs, annotator, options)
+    end
+  end
 
   def slice_large_document(project, doc, annotator, options, max_text_size)
     slices = doc.get_slices(max_text_size)
@@ -93,7 +94,8 @@ private
     # delete all the annotations here for a better performance
     project.delete_doc_annotations(doc) if options[:mode] == 'replace'
     slices.each do |slice|
-      make_request_batch(project, doc, annotator, options.merge(span:slice))
+      hdoc = [{text:doc.get_text(options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
+      make_request_batch(project, doc, hdoc, annotator, options.merge(span:slice))
     rescue Exceptions::JobSuspendError
       raise
     rescue RuntimeError => e
@@ -107,14 +109,7 @@ private
     end
   end
 
-  def make_request_batch(project, docs, annotator, options)
-    hdocs = if options[:span].present?
-      doc = docs.first
-      [{text:doc.get_text(options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
-    else
-      docs.map{|d| d.hdoc}
-    end
-
+  def make_request_batch(project, docs, hdocs, annotator, options)
     uuid = SecureRandom.uuid
     AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, uuid:, options:)
     method, url, params, payload = annotator.prepare_request(hdocs)
