@@ -12,7 +12,7 @@ class DocCollection
     @size += doc.body.length
   end
 
-  def present?
+  def rest?
     @docs.any?
   end
 

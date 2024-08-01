@@ -18,7 +18,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       doc = Doc.find(docid)
       doc.set_ascii_body if options[:encoding] == 'ascii'
 
-      if doc_collection.present? && (single_doc_processing_p || (doc_collection.size + doc.body.length) > annotator.find_or_define_max_text_size)
+      if doc_collection.rest? && (single_doc_processing_p || (doc_collection.size + doc.body.length) > annotator.find_or_define_max_text_size)
         begin
           handle_annotate_request(annotator, project, doc_collection.docs, options)
         rescue Exceptions::JobSuspendError
@@ -42,7 +42,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
     end
 
-    if doc_collection.present?
+    if doc_collection.rest?
       handle_annotate_request(annotator, project, doc_collection.docs, options)
     end
 
