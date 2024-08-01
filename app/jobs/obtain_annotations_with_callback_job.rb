@@ -12,42 +12,38 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     # for asynchronous protocol
     single_doc_processing_p = annotator.single_doc_processing?
 
-    docs = []
-    docs_size = 0
+    doc_collection = DocCollection.new
     File.foreach(filepath) do |line|
       docid = line.chomp.strip
       doc = Doc.find(docid)
       doc.set_ascii_body if options[:encoding] == 'ascii'
-      doc_length = doc.body.length
 
-      if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > annotator.find_or_define_max_text_size)
+      if doc_collection.present? && (single_doc_processing_p || (doc_collection.size + doc.body.length) > annotator.find_or_define_max_text_size)
         begin
-          handle_annotate_request(annotator, project, docs, options)
+          handle_annotate_request(annotator, project, doc_collection.docs, options)
         rescue Exceptions::JobSuspendError
           raise
         rescue => e
           less_docs_message = 'Could not obtain annotations:'
           many_docs_message = 'Could not obtain annotations for'
-          add_exception_message_to_job(docs, e, less_docs_message, many_docs_message)
+          add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
         ensure
-          docs.clear
-          docs_size = 0
+          doc_collection.clear
         end
       end
 
-      docs << doc
-      docs_size += doc_length
+      doc_collection << doc
 
     rescue Exceptions::JobSuspendError
       raise
     rescue RuntimeError => e
       less_docs_message = 'Runtime error:'
       many_docs_message = 'Runtime error while processing'
-      add_exception_message_to_job(docs, e, less_docs_message, many_docs_message)
+      add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
     end
 
-    if docs.present?
-      handle_annotate_request(annotator, project, docs, options)
+    if doc_collection.present?
+      handle_annotate_request(annotator, project, doc_collection.docs, options)
     end
 
     File.unlink(filepath)
