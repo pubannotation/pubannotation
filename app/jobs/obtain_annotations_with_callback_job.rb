@@ -38,38 +38,32 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
             slices.each do |slice|
               begin
                 make_request_batch(project, docs, annotator, options.merge(span:slice))
+              rescue Exceptions::JobSuspendError
+                raise
               rescue RuntimeError => e
-                if e.class == Exceptions::JobSuspendError
-                  raise e
-                end
                 @job.add_message sourcedb:doc1.sourcedb,
-                                  sourceid:doc1.sourceid,
-                                  body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
+                                 sourceid:doc1.sourceid,
+                                 body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
               rescue => e
-                if e.class == Exceptions::JobSuspendError
-                  raise e
-                end
                 @job.add_message sourcedb:doc1.sourcedb,
-                                  sourceid:doc1.sourceid,
-                                  body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
+                                 sourceid:doc1.sourceid,
+                                 body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
               end
             end
           else
             make_request_batch(project, docs, annotator, options)
           end
+        rescue Exceptions::JobSuspendError
+          raise
         rescue => e
-          if e.class == Exceptions::JobSuspendError
-            raise e
-          else
-            if docs.length < 10
-              docs.each do |doc|
-                @job.add_message sourcedb: doc.sourcedb,
-                                 sourceid: doc.sourceid,
-                                 body: "Could not obtain annotations: #{exception_message(e)}"
-              end
-            else
-              @job.add_message body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"
+          if docs.length < 10
+            docs.each do |doc|
+              @job.add_message sourcedb: doc.sourcedb,
+                               sourceid: doc.sourceid,
+                               body: "Could not obtain annotations: #{exception_message(e)}"
             end
+          else
+            @job.add_message body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"
           end
         ensure
           docs.clear
@@ -80,19 +74,17 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       docs << doc
       docs_size += doc_length
 
+    rescue Exceptions::JobSuspendError
+      raise
     rescue RuntimeError => e
-      if e.class == Exceptions::JobSuspendError
-        raise e
-      else
-        if docs.length < 10
-          docs.each do |doc|
-            @job.add_message sourcedb: doc.sourcedb,
-                             sourceid: doc.sourceid,
-                             body: "Runtime error: #{exception_message(e)}"
-          end
-        else
-          @job.add_message body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"
+      if docs.length < 10
+        docs.each do |doc|
+          @job.add_message sourcedb: doc.sourcedb,
+                           sourceid: doc.sourceid,
+                           body: "Runtime error: #{exception_message(e)}"
         end
+      else
+        @job.add_message body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"
       end
     end
 
@@ -113,14 +105,12 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
           project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
           slices.each do |slice|
             make_request_batch(project, docs, annotator, options.merge(span:slice))
+          rescue Exceptions::JobSuspendError
+            raise
           rescue RuntimeError => e
-            if e.class == Exceptions::JobSuspendError
-              raise e
-            else
-              @job.add_message sourcedb:doc1.sourcedb,
-                               sourceid:doc1.sourceid,
-                               body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
-            end
+            @job.add_message sourcedb:doc1.sourcedb,
+                             sourceid:doc1.sourceid,
+                             body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
           end
         else
           make_request_batch(project, docs, annotator, options)
