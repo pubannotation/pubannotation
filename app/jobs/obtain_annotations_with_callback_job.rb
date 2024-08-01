@@ -55,7 +55,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
   end
 
   def job_name
-    "Obtain annotations: #{resource_name}"
+    "Obtain annotations with callback: #{resource_name}"
   end
 
 private
