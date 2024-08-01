@@ -10,7 +10,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     prepare_progress_record(line_count)
 
     # for asynchronous protocol
-    max_text_size = annotator.find_or_define_max_text_size
     single_doc_processing_p = annotator.single_doc_processing?
 
     docs = []
@@ -21,9 +20,9 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       doc.set_ascii_body if options[:encoding] == 'ascii'
       doc_length = doc.body.length
 
-      if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > max_text_size)
+      if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > annotator.find_or_define_max_text_size)
         begin
-          handle_annotate_request(annotator, project, docs, options, max_text_size)
+          handle_annotate_request(annotator, project, docs, options)
         rescue Exceptions::JobSuspendError
           raise
         rescue => e
@@ -48,7 +47,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     end
 
     if docs.present?
-      handle_annotate_request(annotator, project, docs, options, max_text_size)
+      handle_annotate_request(annotator, project, docs, options)
     end
 
     File.unlink(filepath)
@@ -60,23 +59,23 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
 private
 
-  def handle_annotate_request(annotator, project, docs, options, max_text_size)
-    if docs.length == 1 && docs.first.body.length > max_text_size
-      slice_large_document(project, docs.first, annotator, options, max_text_size)
+  def handle_annotate_request(annotator, project, docs, options)
+    if docs.length == 1 && docs.first.body.length > annotator.find_or_define_max_text_size
+      slice_large_document(project, docs.first, annotator, options)
     else
       hdocs = docs.map{|d| d.hdoc}
       make_request(project, hdocs, annotator, options)
     end
   end
 
-  def slice_large_document(project, doc, annotator, options, max_text_size)
-    slices = doc.get_slices(max_text_size)
+  def slice_large_document(project, doc, annotator, options)
+    slices = doc.get_slices(annotator.find_or_define_max_text_size)
     count = @job.num_items + slices.length - 1
     @job.update_attribute(:num_items, count)
     if slices.length > 1
       @job.add_message sourcedb:doc.sourcedb,
                        sourceid:doc.sourceid,
-                       body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(max_text_size)}). For proceding, it was divided into #{slices.length} slices."
+                       body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{slices.length} slices."
     end
 
     # delete all the annotations here for a better performance
