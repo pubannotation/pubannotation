@@ -6,9 +6,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
   def perform(project, filepath, annotator, options)
     line_count = File.read(filepath).each_line.count
 
-    if @job
-      prepare_progress_record(line_count)
-    end
+    prepare_progress_record(line_count)
 
     # for asynchronous protocol
     @max_text_size = annotator.max_text_size || (annotator.async_protocol ? Annotator::MaxTextAsync : Annotator::MaxTextSync)
@@ -27,15 +25,14 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
           if docs.length == 1 && docs.first.body.length > @max_text_size
             doc1 = docs.first
             slices = doc1.get_slices(@max_text_size)
-            if @job
-              count = @job.num_items + slices.length - 1
-              @job.update_attribute(:num_items, count)
-              if slices.length > 1
-                @job.add_message sourcedb:doc1.sourcedb,
-                                 sourceid:doc1.sourceid,
-                                 body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."
-              end
+            count = @job.num_items + slices.length - 1
+            @job.update_attribute(:num_items, count)
+            if slices.length > 1
+              @job.add_message sourcedb:doc1.sourcedb,
+                               sourceid:doc1.sourceid,
+                               body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."
             end
+
             # delete all the annotations here for a better performance
             project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
             slices.each do |slice|
@@ -45,20 +42,16 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
                 if e.class == Exceptions::JobSuspendError
                   raise e
                 end
-                if @job
-                  @job.add_message sourcedb:doc1.sourcedb,
-                                   sourceid:doc1.sourceid,
-                                   body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
-                end
+                @job.add_message sourcedb:doc1.sourcedb,
+                                  sourceid:doc1.sourceid,
+                                  body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
               rescue => e
                 if e.class == Exceptions::JobSuspendError
                   raise e
                 end
-                if @job
-                  @job.add_message sourcedb:doc1.sourcedb,
-                                   sourceid:doc1.sourceid,
-                                   body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
-                end
+                @job.add_message sourcedb:doc1.sourcedb,
+                                  sourceid:doc1.sourceid,
+                                  body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
               end
             end
           else
@@ -67,7 +60,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         rescue => e
           if e.class == Exceptions::JobSuspendError
             raise e
-          elsif @job
+          else
             if docs.length < 10
               docs.each do |doc|
                 @job.add_message sourcedb: doc.sourcedb,
@@ -77,8 +70,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
             else
               @job.add_message body: "Could not obtain annotations for #{docs.length} docs: #{exception_message(e)}"
             end
-          else
-            raise e
           end
         ensure
           docs.clear
@@ -92,7 +83,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     rescue RuntimeError => e
       if e.class == Exceptions::JobSuspendError
         raise e
-      elsif @job
+      else
         if docs.length < 10
           docs.each do |doc|
             @job.add_message sourcedb: doc.sourcedb,
@@ -102,8 +93,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         else
           @job.add_message body: "Runtime error while processing #{docs.length} docs: #{exception_message(e)}"
         end
-      else
-        raise e
       end
     end
 
@@ -112,15 +101,14 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         if docs.length == 1 && docs.first.body.length > @max_text_size
           doc1 = docs.first
           slices = doc1.get_slices(@max_text_size)
-          if @job
-            count = @job.num_items + slices.length - 1
-            @job.update_attribute(:num_items, count)
-            if slices.length > 1
-              @job.add_message sourcedb:doc1.sourcedb,
-                               sourceid:doc1.sourceid,
-                               body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."
-            end
+          count = @job.num_items + slices.length - 1
+          @job.update_attribute(:num_items, count)
+          if slices.length > 1
+            @job.add_message sourcedb:doc1.sourcedb,
+                             sourceid:doc1.sourceid,
+                             body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."
           end
+
           # delete all the annotations here for a better performance
           project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
           slices.each do |slice|
@@ -128,12 +116,10 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
           rescue RuntimeError => e
             if e.class == Exceptions::JobSuspendError
               raise e
-            elsif @job
+            else
               @job.add_message sourcedb:doc1.sourcedb,
                                sourceid:doc1.sourceid,
                                body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
-            else
-              raise e
             end
           end
         else
