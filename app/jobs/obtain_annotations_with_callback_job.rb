@@ -24,7 +24,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       if docs.present? && (single_doc_processing_p || (docs_size + doc_length) > max_text_size)
         begin
           if docs.length == 1 && docs.first.body.length > max_text_size
-            slice_large_document(project, docs, annotator, options, max_text_size)
+            slice_large_document(project, docs.first, annotator, options, max_text_size)
           else
             make_request_batch(project, docs, annotator, options)
           end
@@ -65,7 +65,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
     if docs.present?
       if docs.length == 1 && docs.first.body.length > max_text_size
-        slice_large_document(project, docs, annotator, options, max_text_size)
+        slice_large_document(project, docs.first, annotator, options, max_text_size)
       else
         make_request_batch(project, docs, annotator, options)
       end
@@ -80,30 +80,29 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
 private
 
-  def slice_large_document(project, docs, annotator, options, max_text_size)
-    doc1 = docs.first
-    slices = doc1.get_slices(max_text_size)
+  def slice_large_document(project, doc, annotator, options, max_text_size)
+    slices = doc.get_slices(max_text_size)
     count = @job.num_items + slices.length - 1
     @job.update_attribute(:num_items, count)
     if slices.length > 1
-      @job.add_message sourcedb:doc1.sourcedb,
-                       sourceid:doc1.sourceid,
-                       body: "The document was too big to be processed at once (#{number_with_delimiter(doc1.body.length)} > #{number_with_delimiter(max_text_size)}). For proceding, it was divided into #{slices.length} slices."
+      @job.add_message sourcedb:doc.sourcedb,
+                       sourceid:doc.sourceid,
+                       body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(max_text_size)}). For proceding, it was divided into #{slices.length} slices."
     end
 
     # delete all the annotations here for a better performance
-    project.delete_doc_annotations(doc1) if options[:mode] == 'replace'
+    project.delete_doc_annotations(doc) if options[:mode] == 'replace'
     slices.each do |slice|
-      make_request_batch(project, docs, annotator, options.merge(span:slice))
+      make_request_batch(project, doc, annotator, options.merge(span:slice))
     rescue Exceptions::JobSuspendError
       raise
     rescue RuntimeError => e
-      @job.add_message sourcedb:doc1.sourcedb,
-                       sourceid:doc1.sourceid,
+      @job.add_message sourcedb:doc.sourcedb,
+                       sourceid:doc.sourceid,
                        body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
     rescue => e
-      @job.add_message sourcedb:doc1.sourcedb,
-                       sourceid:doc1.sourceid,
+      @job.add_message sourcedb:doc.sourcedb,
+                       sourceid:doc.sourceid,
                        body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
     end
   end
