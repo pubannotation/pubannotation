@@ -10,7 +10,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     prepare_progress_record(line_count)
 
     # for asynchronous protocol
-    max_text_size = annotator.max_text_size || (annotator.async_protocol ? Annotator::MaxTextAsync : Annotator::MaxTextSync)
+    max_text_size = annotator.find_or_define_max_text_size
     single_doc_processing_p = annotator.single_doc_processing?
 
     docs = []
