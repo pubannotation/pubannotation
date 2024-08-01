@@ -148,7 +148,6 @@ class Annotator < ActiveRecord::Base
 		end
 
 		raise "Unexpected response: #{response}" unless response.respond_to?(:code)
-		return if self.url.include?('annotation_request')
 
 		if response.code == 200
 			result = begin
