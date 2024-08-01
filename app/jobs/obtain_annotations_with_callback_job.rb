@@ -4,10 +4,10 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
   queue_as :low_priority
 
   def perform(project, filepath, annotator, options)
-    count = %x{wc -l #{filepath}}.split.first.to_i
+    line_count = File.read(filepath).each_line.count
 
     if @job
-      prepare_progress_record(count)
+      prepare_progress_record(line_count)
     end
 
     # for asynchronous protocol
