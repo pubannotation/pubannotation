@@ -15,17 +15,16 @@ class DocCollection
   end
 
   def request_annotate
-    if @docs.length == 1 && @docs.first.body.length > @max_text_size
-      slice_large_document(@docs.first)
+    if document_too_large?
+      slice(@docs.first)
     else
-      hdocs = docs.map{|d| d.hdoc}
+      hdocs = docs.map{_1.hdoc}
       make_request(hdocs, @options)
     end
   end
 
-  def filled_for?(doc)
-    single_doc_processing_p = @annotator.single_doc_processing?
-    rest? && (single_doc_processing_p || (@size + doc.body.length) > @max_text_size)
+  def filled_with?(doc)
+    rest? && (@annotator.single_doc_processing? || (@size + doc.body.length) > @max_text_size)
   end
 
   def <<(doc)
@@ -44,7 +43,7 @@ class DocCollection
 
   private
 
-  def slice_large_document(doc)
+  def slice(doc)
     slices = doc.get_slices(@max_text_size)
     count = @job.num_items + slices.length - 1
     @job.update_attribute(:num_items, count)
@@ -79,5 +78,9 @@ class DocCollection
     payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{uuid}"
 
     @annotator.make_request(method, url, params, payload)
+  end
+
+  def document_too_large?
+    @docs.length == 1 && @docs.first.body.length > @max_text_size
   end
 end

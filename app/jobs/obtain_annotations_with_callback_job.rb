@@ -9,7 +9,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     prepare_progress_record(doc_count)
 
     # for asynchronous protocol
-    single_doc_processing_p = annotator.single_doc_processing?
     doc_collection = DocCollection.new(project, annotator, options, @job)
 
     File.foreach(filepath) do |line|
@@ -17,7 +16,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       doc = Doc.find(docid)
       doc.set_ascii_body if options[:encoding] == 'ascii'
 
-      if doc_collection.filled_for?(doc)
+      if doc_collection.filled_with?(doc)
         begin
           doc_collection.request_annotate
         rescue Exceptions::JobSuspendError
