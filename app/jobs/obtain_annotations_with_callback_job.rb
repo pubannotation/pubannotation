@@ -1,5 +1,6 @@
 class ObtainAnnotationsWithCallbackJob < ApplicationJob
   include UseJobRecordConcern
+  include ActionView::Helpers::NumberHelper
 
   queue_as :low_priority
 
@@ -18,7 +19,8 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
       if doc_collection.filled_with?(doc)
         begin
-          doc_collection.request_annotate
+          request_count = doc_collection.request_annotate
+          update_job_items(annotator, doc_collection.docs.first, request_count)
         rescue Exceptions::JobSuspendError
           raise
         rescue => e
@@ -41,7 +43,8 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     end
 
     if doc_collection.rest?
-      doc_collection.request_annotate
+      request_count = doc_collection.request_annotate
+      update_job_items(annotator, doc_collection.docs.first, request_count)
     end
 
     File.unlink(filepath)
@@ -52,6 +55,17 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
   end
 
 private
+
+  def update_job_items(annotator, doc, request_count)
+    count = @job.num_items + request_count - 1
+    binding.break
+    @job.update_attribute(:num_items, count)
+    if request_count > 1
+      @job.add_message sourcedb:doc.sourcedb,
+                       sourceid:doc.sourceid,
+                       body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."
+    end
+  end
 
   def add_exception_message_to_job(docs, e, less_docs_message, many_docs_message)
     if docs.length < 10

@@ -1,6 +1,4 @@
 class DocCollection
-  include ActionView::Helpers::NumberHelper
-
   attr_accessor :docs
   attr_reader :size
 
@@ -15,12 +13,17 @@ class DocCollection
   end
 
   def request_annotate
+    request_count = 0
+
     if document_too_large?
-      slice(@docs.first)
+      request_count = slice(@docs.first)
     else
       hdocs = docs.map{_1.hdoc}
       make_request(hdocs, @options)
+      request_count = 1
     end
+
+    request_count
   end
 
   def filled_with?(doc)
@@ -45,13 +48,7 @@ class DocCollection
 
   def slice(doc)
     slices = doc.get_slices(@max_text_size)
-    count = @job.num_items + slices.length - 1
-    @job.update_attribute(:num_items, count)
-    if slices.length > 1
-      @job.add_message sourcedb:doc.sourcedb,
-                       sourceid:doc.sourceid,
-                       body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(@max_text_size)}). For proceding, it was divided into #{slices.length} slices."
-    end
+    request_count = slices.length
 
     # delete all the annotations here for a better performance
     @project.delete_doc_annotations(doc) if @options[:mode] == 'replace'
@@ -69,6 +66,8 @@ class DocCollection
                        sourceid:doc.sourceid,
                        body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
     end
+
+    request_count
   end
 
   def make_request(hdocs, options)
