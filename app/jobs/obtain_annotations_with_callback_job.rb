@@ -4,9 +4,9 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
   queue_as :low_priority
 
   def perform(project, filepath, annotator, options)
-    line_count = File.read(filepath).each_line.count
+    doc_count = File.read(filepath).each_line.count
 
-    prepare_progress_record(line_count)
+    prepare_progress_record(doc_count)
 
     # for asynchronous protocol
     single_doc_processing_p = annotator.single_doc_processing?
