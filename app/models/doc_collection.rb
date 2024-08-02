@@ -72,10 +72,9 @@ class DocCollection
   end
 
   def make_request(hdocs, options)
-    uuid = SecureRandom.uuid
-    AnnotationReception.create!(annotator_id: @annotator.id, project_id: @project.id, uuid:, options:)
+    annotation_reception = AnnotationReception.create!(annotator_id: @annotator.id, project_id: @project.id, options:)
     method, url, params, payload = @annotator.prepare_request(hdocs)
-    payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{uuid}"
+    payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
 
     @annotator.make_request(method, url, params, payload)
   end
