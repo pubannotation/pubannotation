@@ -33,8 +33,9 @@ class ObtainDocAnnotationsJob < ApplicationJob
 			end
 			stime = Time.now - timer_start
 
-			annotations_num = annotations[:denotations].length
 			if @job && options[:debug]
+				annotations_num = annotations[:denotations]&.length || 0
+				annotations_num += annotations[:blocks]&.length || 0
 				@job.add_message body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"
 			end
 
@@ -99,7 +100,6 @@ class ObtainDocAnnotationsJob < ApplicationJob
 			result = annotator.make_request(:get, status[:result_location])
 			annotations = result.class == Array ? result.first : result
 			text_length = annotations[:text].length
-			annotations_num = annotations[:denotations].length
 
 			timer_start = Time.now
 			annotations = AnnotationUtils.normalize!(annotations)
@@ -111,6 +111,8 @@ class ObtainDocAnnotationsJob < ApplicationJob
 			end
 
 			if @job && options[:debug]
+				annotations_num = annotations[:denotations]&.length || 0
+				annotations_num += annotations[:blocks]&.length || 0
 				ptime = status[:finished_at].to_time - status[:started_at].to_time
 				qtime = status[:started_at].to_time - status[:submitted_at].to_time
 				@job.add_message body: "Annotation received, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"

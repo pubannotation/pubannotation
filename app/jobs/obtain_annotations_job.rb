@@ -196,8 +196,11 @@ private
 		stime = Time.now - timer_start
 
 		if @job
-			num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
 			if options[:debug]
+				num = annotations_col.reduce(0) do |sum, annotations|
+					sum += annotations[:denotations]&.length || 0
+					sum += annotations[:blocks]&.length || 0
+				end
 				@job.add_message body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{num})"
 			end
 			@job.increment!(:num_dones, docs.length)
@@ -272,8 +275,11 @@ private
 					ptime = status[:finished_at].to_time - status[:started_at].to_time
 					qtime = status[:started_at].to_time - status[:submitted_at].to_time
 					length = annotations_col.reduce(0){|sum, annotations| sum += annotations[:text].length}
-					num = annotations_col.reduce(0){|sum, annotations| sum += annotations[:denotations].length}
 					if options[:debug]
+						num = annotations_col.reduce(0) do |sum, annotations|
+							sum += annotations[:denotations]&.length || 0
+							sum += annotations[:blocks]&.length || 0
+						end
 						@job.add_message body: "Annotation obtained, async (qtime:#{qtime}, ptime:#{ptime}, stime:#{stime}, length:#{length}, num:#{num})"
 					end
 					@job.increment!(:num_dones, annotations_col.length)
