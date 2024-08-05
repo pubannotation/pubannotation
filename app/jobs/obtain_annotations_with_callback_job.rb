@@ -10,7 +10,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     prepare_progress_record(doc_count)
 
     # for asynchronous protocol
-    doc_collection = DocCollection.new(project, annotator, options)
+    doc_collection = DocCollection.new(project, annotator, @job.id, options)
 
     File.foreach(filepath) do |line|
       docid = line.chomp.strip
