@@ -10,7 +10,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     prepare_progress_record(doc_count)
 
     # for asynchronous protocol
-    doc_collection = DocCollection.new(project, annotator, options, @job)
+    doc_collection = DocCollection.new(project, annotator, options)
 
     File.foreach(filepath) do |line|
       docid = line.chomp.strip
@@ -19,8 +19,10 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
       if doc_collection.filled_with?(doc)
         begin
-          request_count = doc_collection.request_annotate
-          update_job_items(annotator, doc_collection.docs.first, request_count)
+          request_info = doc_collection.request_annotate
+          add_sliced_doc_exception_message_to_job(request_info, doc) if error_occured?(request_info)
+          update_job_items(annotator, doc_collection.docs.first, request_info[:request_count])
+
         rescue Exceptions::JobSuspendError
           raise
         rescue => e
@@ -43,8 +45,9 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     end
 
     if doc_collection.rest?
-      request_count = doc_collection.request_annotate
-      update_job_items(annotator, doc_collection.docs.first, request_count)
+      request_info = doc_collection.request_annotate
+      add_sliced_doc_exception_message_to_job(request_info, doc_collection.docs.first) if error_occured?(request_info)
+      update_job_items(annotator, doc_collection.docs.first, request_info[:request_count])
     end
 
     File.unlink(filepath)
@@ -58,12 +61,31 @@ private
 
   def update_job_items(annotator, doc, request_count)
     count = @job.num_items + request_count - 1
-    binding.break
     @job.update_attribute(:num_items, count)
     if request_count > 1
       @job.add_message sourcedb:doc.sourcedb,
                        sourceid:doc.sourceid,
                        body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."
+    end
+  end
+
+  def add_sliced_doc_exception_message_to_job(request_info, doc)
+    slices = request_info[:slices]
+    errors = request_info[:errors]
+
+    slices.each_with_index do |slice, i|
+      next if errors[i].blank?
+
+      if errors[i].class == RuntimeError
+        @job.add_message sourcedb:doc.sourcedb,
+                          sourceid:doc.sourceid,
+                          body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(errors[i])}"
+      else
+        @job.add_message sourcedb:doc.sourcedb,
+                        sourceid:doc.sourceid,
+                        body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(errors[i])}"
+      end
+
     end
   end
 
@@ -77,6 +99,10 @@ private
     else
       @job.add_message body: "#{many_docs_message} #{docs.length} docs: #{exception_message(e)}"
     end
+  end
+
+  def error_occured?(request_info)
+    request_info.key?(:errors) && request_info[:errors].reject(&:blank?).any?
   end
 
   def exception_message(exception)

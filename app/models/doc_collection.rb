@@ -2,28 +2,27 @@ class DocCollection
   attr_accessor :docs
   attr_reader :size
 
-  def initialize(project, annotator, options, job)
+  def initialize(project, annotator, options)
     @project = project
     @annotator = annotator
     @max_text_size = annotator.find_or_define_max_text_size
     @options = options
-    @job = job
     @docs = []
     @size = 0
   end
 
   def request_annotate
-    request_count = 0
+    request_info = {}
 
     if document_too_large?
-      request_count = slice(@docs.first)
+      request_info = slice(@docs.first)
     else
       hdocs = docs.map{_1.hdoc}
       make_request(hdocs, @options)
-      request_count = 1
+      request_info[:request_count] = 1
     end
 
-    request_count
+    request_info
   end
 
   def filled_with?(doc)
@@ -52,22 +51,19 @@ class DocCollection
 
     # delete all the annotations here for a better performance
     @project.delete_doc_annotations(doc) if @options[:mode] == 'replace'
+    errors = []
+
     slices.each do |slice|
       hdoc = [{text:doc.get_text(@options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
       make_request(hdoc, @options.merge(span:slice))
+      errors << ""
     rescue Exceptions::JobSuspendError
       raise
-    rescue RuntimeError => e
-      @job.add_message sourcedb:doc.sourcedb,
-                       sourceid:doc.sourceid,
-                       body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
     rescue => e
-      @job.add_message sourcedb:doc.sourcedb,
-                       sourceid:doc.sourceid,
-                       body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(e)}"
+      errors << e
     end
 
-    request_count
+    {request_count:, slices:, errors:}
   end
 
   def make_request(hdocs, options)
