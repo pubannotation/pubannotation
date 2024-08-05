@@ -74,13 +74,6 @@ private
                        sourceid:doc.sourceid,
                        body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."
     end
-
-    uuid = SecureRandom.uuid
-    AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, job_id: @job.id, uuid:, options:)
-    method, url, params, payload = annotator.prepare_request(hdocs)
-    payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{uuid}"
-
-    annotator.make_request(method, url, params, payload)
   end
 
   def add_sliced_doc_exception_message_to_job(request_info, doc)
