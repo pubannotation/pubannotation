@@ -54,13 +54,18 @@ class DocCollection
     errors = []
 
     slices.each do |slice|
-      hdoc = [{text:doc.get_text(@options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
-      make_request(hdoc, @options.merge(span:slice))
-      errors << ""
-    rescue Exceptions::JobSuspendError
-      raise
-    rescue => e
-      errors << e
+      begin
+        hdoc = [{text:doc.get_text(@options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
+        make_request(hdoc, @options.merge(span:slice))
+        errors << ""
+      rescue Exceptions::JobSuspendError
+        raise
+      rescue RestClient::InternalServerError => e
+        errors << e
+        break
+      rescue => e
+        errors << e
+      end
     end
 
     {request_count:, slices:, errors:}
