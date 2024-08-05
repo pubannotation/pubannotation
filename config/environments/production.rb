@@ -89,4 +89,7 @@ Rails.application.configure do
 
   # option for url_helpers in models
   Rails.application.routes.default_url_options[:host]= 'pubannotation.org'
+
+  # option for callback url
+  config.host_url = 'https://pubannotation.org'
 end

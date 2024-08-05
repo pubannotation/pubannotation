@@ -4,7 +4,6 @@ class AnnotationReception < ApplicationRecord
 
   validates :annotator_id, presence: true
   validates :project_id, presence: true
-  validates :uuid, presence: true
 
   def process_annotation!(annotations_collection)
     annotations_collection.each do |annotations|
