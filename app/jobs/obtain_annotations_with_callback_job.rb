@@ -25,7 +25,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
         rescue Exceptions::JobSuspendError
           raise
-        rescue => e
+        rescue StandardError, RestClient::RequestFailed => e
           less_docs_message = 'Could not obtain annotations:'
           many_docs_message = 'Could not obtain annotations for'
           add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
@@ -45,9 +45,16 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     end
 
     if doc_collection.rest?
-      request_info = doc_collection.request_annotate
-      add_sliced_doc_exception_message_to_job(request_info, doc_collection.docs.first) if error_occured?(request_info)
-      update_job_items(annotator, doc_collection.docs.first, request_info[:request_count])
+      begin
+        request_info = doc_collection.request_annotate
+        add_sliced_doc_exception_message_to_job(request_info, doc_collection.docs.first) if error_occured?(request_info)
+        update_job_items(annotator, doc_collection.docs.first, request_info[:request_count])
+
+      rescue StandardError, RestClient::RequestFailed => e
+        less_docs_message = 'Could not obtain annotations:'
+        many_docs_message = 'Could not obtain annotations for'
+        add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
+      end
     end
 
     File.unlink(filepath)
