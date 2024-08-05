@@ -86,11 +86,11 @@ private
       if errors[i].class == RuntimeError
         @job.add_message sourcedb:doc.sourcedb,
                           sourceid:doc.sourceid,
-                          body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(errors[i])}"
+                          body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{errors[i].message}"
       else
         @job.add_message sourcedb:doc.sourcedb,
                         sourceid:doc.sourceid,
-                        body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{exception_message(errors[i])}"
+                        body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{errors[i].message}"
       end
 
     end
@@ -101,21 +101,15 @@ private
       docs.each do |doc|
         @job.add_message sourcedb: doc.sourcedb,
                          sourceid: doc.sourceid,
-                         body: "#{less_docs_message} #{exception_message(e)}"
+                         body: "#{less_docs_message} #{e.message}"
       end
     else
-      @job.add_message body: "#{many_docs_message} #{docs.length} docs: #{exception_message(e)}"
+      @job.add_message body: "#{many_docs_message} #{docs.length} docs: #{e.message}"
     end
   end
 
   def error_occured?(request_info)
     request_info.key?(:errors) && request_info[:errors].reject(&:blank?).any?
-  end
-
-  def exception_message(exception)
-    exception.message
-  rescue => e
-    "exception message inaccessible:\n#{exception}:\n#{exception.backtrace.join("\n")}"
   end
 
   def resource_name
