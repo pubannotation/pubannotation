@@ -59,8 +59,6 @@ class DocCollection
         hdoc = [{text:doc.get_text(@options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
         make_request(hdoc, @options.merge(span:slice))
         errors << ""
-      rescue Exceptions::JobSuspendError
-        raise
       rescue RestClient::InternalServerError => e
         errors << e
         break
