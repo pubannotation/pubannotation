@@ -153,6 +153,7 @@ Pubann::Application.routes.draw do
 			get 'upload_docs' => 'projects#upload_docs'
 			get 'uptodate_docs' => 'projects#uptodate_docs'
 			get 'obtain_annotations' => 'projects#obtain_annotations'
+			get 'obtain_annotations_with_callback' => 'projects#obtain_annotations_with_callback'
 			get 'import_annotations' => 'projects#import_annotations'
 			get 'clean_annotations' => 'projects#clean_annotations'
 			get 'rdfize_annotations' => 'projects#rdfize_annotations'

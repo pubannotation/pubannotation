@@ -148,6 +148,10 @@ class ProjectsController < ApplicationController
 		@project = Project.editable(current_user).find_by_name(params[:id])
 	end
 
+	def obtain_annotations_with_callback
+		@project = Project.editable(current_user).find_by_name(params[:id])
+	end
+
 	def import_annotations
 		@project = Project.editable(current_user).find_by_name(params[:id])
 	end
