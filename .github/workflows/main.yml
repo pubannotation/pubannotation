@@ -53,6 +53,8 @@ jobs:
             sleep 5
           done
 
+      # The gen_random_uuid() function used on AnnotationReception is included in the "pgcrypto" extension of PostgreSQL.
+      # Install PostgreSQL pgcrypto extension to use gen_random_uuid() function.
       - name: Create pgcrypto extension
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d test_database -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
