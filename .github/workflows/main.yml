@@ -1,13 +1,6 @@
 name: Ruby CI
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - fix_postgresql_ci_settings
+on: [push]
 
 jobs:
   test:
