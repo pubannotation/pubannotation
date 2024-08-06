@@ -1,6 +1,12 @@
 name: Ruby CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - fix_postgresql_ci_settings
 
 jobs:
   test:
@@ -45,6 +51,17 @@ jobs:
 
       - name: Install dependencies
         run: bundle install
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 5
+          done
+
+      - name: Create pgcrypto extension
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_database -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
 
       - name: Wait for Elasticsearch to become available
         run: |
