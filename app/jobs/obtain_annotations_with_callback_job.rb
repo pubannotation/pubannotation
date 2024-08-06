@@ -23,8 +23,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
           add_sliced_doc_exception_message_to_job(request_info, doc) if error_occured?(request_info)
           update_job_items(annotator, doc_collection.docs.first, request_info[:request_count])
 
-        rescue Exceptions::JobSuspendError
-          raise
         rescue StandardError, RestClient::RequestFailed => e
           less_docs_message = 'Could not obtain annotations:'
           many_docs_message = 'Could not obtain annotations for'
@@ -36,8 +34,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
       doc_collection << doc
 
-    rescue Exceptions::JobSuspendError
-      raise
     rescue RuntimeError => e
       less_docs_message = 'Runtime error:'
       many_docs_message = 'Runtime error while processing'
