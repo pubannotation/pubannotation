@@ -400,6 +400,8 @@ class AnnotationsController < ApplicationController
 		end
 	end
 
+	def obtain_with_callback; end
+
 	def create_from_upload
 		begin
 			project = Project.editable(current_user).find_by_name(params[:project_id])
