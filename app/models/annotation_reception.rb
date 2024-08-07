@@ -22,7 +22,7 @@ class AnnotationReception < ApplicationRecord
         job.add_message m
       end
     else
-      StoreAnnotationsCollection.new(project, annotations_collection, symbolized_options).call.join
+      StoreAnnotationsCollection.new(project, annotations_collection, symbolized_options, job).call.join
     end
 
     job.increment!(:num_dones, annotations_collection.length)
