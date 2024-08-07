@@ -133,8 +133,8 @@
 			<tr>
 				<th><%= t('views.shared.obtain') %></th>
 				<td>
-					<%= render partial: 'reobtain' -%>
-					<%= render partial: 'obtain_missing_annotations' -%>
+					<%= render partial: 'reobtain', locals: { obtain_path: annotations_obtain_path } -%>
+					<%= render partial: 'obtain_missing_annotations', locals: { obtain_path: annotations_obtain_path } -%>
 					<%= link_to t('views.docs.obtain_annotations'), obtain_annotations_project_path(@project.name), class: 'button long_button' -%><br/>
 				</td>
 			</tr>
@@ -142,6 +142,8 @@
 				<tr>
 					<th><%= t('views.shared.obtain') %>(test)</th>
 					<td>
+						<%= render partial: 'reobtain', locals: { obtain_path: project_obtain_annotations_with_callback_job_path(@project.name) } -%>
+						<%= render partial: 'obtain_missing_annotations', locals: { obtain_path: project_obtain_annotations_with_callback_job_path(@project.name) } -%>
 						<%= link_to t('views.docs.obtain_annotations_with_callback'), new_project_obtain_annotations_with_callback_job_path(@project.name), class: 'button long_button' -%><br/>
 					</td>
 				</tr>
