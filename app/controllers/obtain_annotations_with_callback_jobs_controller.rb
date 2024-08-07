@@ -22,7 +22,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
       # to deterine the docids
       docids =
         if options[:mode] == 'fill'
-          # options[:mode] == 'add'
+          options[:mode] = 'add'
           ProjectDoc.where(project_id:project.id, annotations_updated_at:nil).pluck(:doc_id)
         else
           docids = []
