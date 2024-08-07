@@ -4,7 +4,6 @@
   > <%= link_to @project.name, project_path(@project.name) -%>
   > obtain-annotations-with-callback
 <% end -%>
-
 <% if @project.present? -%>
   <section>
     <%= render partial: 'projects/titlebar' -%>
@@ -15,7 +14,7 @@
         <%= t('views.docs.obtain_annotations') %>
         <%= link_to(content_tag(:i, '', class: "fa fa-question-circle", "aria-hidden" => "true"), 'http://www.pubannotation.org/docs/obtain-annotation/', title: "Help") %>
       </h2>
-      <%= render partial: 'annotations/obtain_annotation_with_callback' -%>
+      <%= render partial: 'obtain_annotation_with_callback_job' -%>
     </section>
 
 <% if @project.present? -%>

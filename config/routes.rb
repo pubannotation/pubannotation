@@ -132,7 +132,7 @@ Pubann::Application.routes.draw do
 		post 'annotations/upload' => 'annotations#create_from_upload', :as => 'create_annotations_from_upload'
 		post 'annotations/delete' => 'annotations#delete_from_upload', :as => 'delete_annotations_from_upload'
 		post 'annotations/obtain' => 'annotations#obtain_batch'
-		post 'annotations/obtain_with_callback' => 'annotations#obtain_with_callback'
+		resource :obtain_annotations_with_callback_job, only: [:new, :create]
 		resources :annotations, only: [:index, :destroy]
 		resources :associate_maintainers, :only => [:destroy]
 		get 'jobs/latest_jobs_table' => 'jobs#latest_jobs_table'
@@ -154,7 +154,6 @@ Pubann::Application.routes.draw do
 			get 'upload_docs' => 'projects#upload_docs'
 			get 'uptodate_docs' => 'projects#uptodate_docs'
 			get 'obtain_annotations' => 'projects#obtain_annotations'
-			get 'obtain_annotations_with_callback' => 'projects#obtain_annotations_with_callback'
 			get 'import_annotations' => 'projects#import_annotations'
 			get 'clean_annotations' => 'projects#clean_annotations'
 			get 'rdfize_annotations' => 'projects#rdfize_annotations'
