@@ -138,6 +138,14 @@
 					<%= link_to t('views.docs.obtain_annotations'), obtain_annotations_project_path(@project.name), class: 'button long_button' -%><br/>
 				</td>
 			</tr>
+			<% if current_user.root? %>
+				<tr>
+					<th><%= t('views.shared.obtain') %>(test)</th>
+					<td>
+						<%= link_to t('views.docs.obtain_annotations_with_callback'), new_project_obtain_annotations_with_callback_job_path(@project.name), class: 'button long_button' -%><br/>
+					</td>
+				</tr>
+			<% end %>
 			<tr>
 				<th><%= t('views.shared.import') %></th>
 				<td><%= link_to t('views.docs.import_annotations'), import_annotations_project_path(@project.name), class: 'button long_button' -%></td>

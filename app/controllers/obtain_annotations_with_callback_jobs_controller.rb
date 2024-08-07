@@ -1,4 +1,6 @@
 class ObtainAnnotationsWithCallbackJobsController < ApplicationController
+  before_action :authenticate_root_user!, only: :new
+
   def new
     @project = Project.editable(current_user).find_by_name(params[:project_id])
   end
