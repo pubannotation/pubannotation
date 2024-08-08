@@ -21,7 +21,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         begin
           request_info = doc_collection.request_annotate
           add_sliced_doc_exception_message_to_job(request_info, doc) if error_occured?(request_info)
-          update_job_items(annotator, doc_collection.docs.first, request_info[:request_count])
+          update_job_items(annotator, doc_collection.docs.first, request_info.count)
 
         rescue StandardError, RestClient::RequestFailed => e
           less_docs_message = 'Could not obtain annotations:'
@@ -44,7 +44,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       begin
         request_info = doc_collection.request_annotate
         add_sliced_doc_exception_message_to_job(request_info, doc_collection.docs.first) if error_occured?(request_info)
-        update_job_items(annotator, doc_collection.docs.first, request_info[:request_count])
+        update_job_items(annotator, doc_collection.docs.first, request_info.count)
 
       rescue StandardError, RestClient::RequestFailed => e
         less_docs_message = 'Could not obtain annotations:'
@@ -73,8 +73,8 @@ private
   end
 
   def add_sliced_doc_exception_message_to_job(request_info, doc)
-    slices = request_info[:slices]
-    errors = request_info[:errors]
+    slices = request_info.slices
+    errors = request_info.errors
 
     slices.each_with_index do |slice, i|
       next if errors[i].blank?
@@ -105,7 +105,7 @@ private
   end
 
   def error_occured?(request_info)
-    request_info.key?(:errors) && request_info[:errors].reject(&:blank?).any?
+    request_info.errors.reject(&:blank?).any?
   end
 
   def resource_name
