@@ -19,7 +19,7 @@ class DocPacker
 
   def each
     @doc_packages.each do |doc_package|
-      yield doc_package.hdocs
+      yield doc_package.hdocs, doc_package.docs.first
     end
   end
 

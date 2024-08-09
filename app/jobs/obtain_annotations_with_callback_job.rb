@@ -15,7 +15,9 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       doc_packer << line.chomp.strip
     end
 
-    doc_packer.each do |hdocs|
+    doc_packer.each do |hdocs, doc|
+      update_job_items(annotator, doc, hdocs.length)
+
       hdocs.each do |hdoc|
         begin
           make_request(annotator, project, hdoc, options)

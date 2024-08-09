@@ -1,4 +1,6 @@
 class DocPackage
+  attr_reader :docs
+
   def initialize(max_text_size, single_doc_processing = false)
     @max_text_size = max_text_size
     @single_doc_processing = single_doc_processing
