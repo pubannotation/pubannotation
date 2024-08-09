@@ -23,6 +23,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
           make_request(annotator, project, hdoc, options)
         rescue StandardError, RestClient::RequestFailed => e
           add_exception_message_to_job(hdoc, e, 'Could not obtain annotations:', 'Could not obtain annotations for')
+          break if e.class == RestClient::InternalServerError
         end
       end
     end
