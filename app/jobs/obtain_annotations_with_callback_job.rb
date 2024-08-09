@@ -9,47 +9,19 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
     prepare_progress_record(doc_count)
 
-    # for asynchronous protocol
-    doc_collection = DocCollection.new(project, annotator, @job.id, options)
+    doc_packer = DocPacker.new(annotator, encoding: options[:encoding])
 
     File.foreach(filepath) do |line|
-      docid = line.chomp.strip
-      doc = Doc.find(docid)
-      doc.set_ascii_body if options[:encoding] == 'ascii'
-
-      if doc_collection.filled_with?(doc)
-        begin
-          request_info = doc_collection.request_annotate
-          add_sliced_doc_exception_message_to_job(request_info, doc) if error_occured?(request_info)
-          update_job_items(annotator, doc_collection.docs.first, request_info.count)
-
-        rescue StandardError, RestClient::RequestFailed => e
-          less_docs_message = 'Could not obtain annotations:'
-          many_docs_message = 'Could not obtain annotations for'
-          add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
-        ensure
-          doc_collection.clear
-        end
-      end
-
-      doc_collection << doc
-
-    rescue RuntimeError => e
-      less_docs_message = 'Runtime error:'
-      many_docs_message = 'Runtime error while processing'
-      add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
+      doc_packer << line.chomp.strip
     end
 
-    if doc_collection.rest?
-      begin
-        request_info = doc_collection.request_annotate
-        add_sliced_doc_exception_message_to_job(request_info, doc_collection.docs.first) if error_occured?(request_info)
-        update_job_items(annotator, doc_collection.docs.first, request_info.count)
-
-      rescue StandardError, RestClient::RequestFailed => e
-        less_docs_message = 'Could not obtain annotations:'
-        many_docs_message = 'Could not obtain annotations for'
-        add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
+    doc_packer.each do |hdocs|
+      hdocs.each do |hdoc|
+        begin
+          make_request(annotator, project, hdoc, options)
+        rescue StandardError, RestClient::RequestFailed => e
+          add_exception_message_to_job(hdoc, e, 'Could not obtain annotations:', 'Could not obtain annotations for')
+        end
       end
     end
 
@@ -62,6 +34,14 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
 private
 
+  def make_request(annotator, project, hdocs, options)
+    annotation_reception = AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, job_id: @job.id, options:)
+    method, url, params, payload = annotator.prepare_request(hdocs)
+    payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
+
+    annotator.make_request(method, url, params, payload)
+  end
+
   def update_job_items(annotator, doc, request_count)
     count = @job.num_items + request_count - 1
     @job.update_attribute(:num_items, count)
@@ -72,35 +52,15 @@ private
     end
   end
 
-  def add_sliced_doc_exception_message_to_job(request_info, doc)
-    slices = request_info.slices
-    errors = request_info.errors
-
-    slices.each_with_index do |slice, i|
-      next if errors[i].blank?
-
-      if errors[i].class == RuntimeError
-        @job.add_message sourcedb:doc.sourcedb,
-                          sourceid:doc.sourceid,
-                          body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{errors[i].message}"
-      else
-        @job.add_message sourcedb:doc.sourcedb,
-                        sourceid:doc.sourceid,
-                        body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{errors[i].message}"
-      end
-
-    end
-  end
-
-  def add_exception_message_to_job(docs, e, less_docs_message, many_docs_message)
-    if docs.length < 10
-      docs.each do |doc|
-        @job.add_message sourcedb: doc.sourcedb,
-                         sourceid: doc.sourceid,
+  def add_exception_message_to_job(hdocs, e, less_docs_message, many_docs_message)
+    if hdocs.length < 10
+      hdocs.each do |hdoc|
+        @job.add_message sourcedb: hdoc[:sourcedb],
+                         sourceid: hdoc[:sourceid],
                          body: "#{less_docs_message} #{e.message}"
       end
     else
-      @job.add_message body: "#{many_docs_message} #{docs.length} docs: #{e.message}"
+      @job.add_message body: "#{many_docs_message} #{hdocs.length} docs: #{e.message}"
     end
   end
 
