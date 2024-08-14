@@ -24,7 +24,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
       hdocs.each do |hdoc|
         begin
-          make_request(annotator, project, [hdoc], options.merge(span: hdoc[:span]))
+          make_request(annotator, project, [hdoc], options.merge(span: hdoc[:span], docid: hdoc[:docid]))
         rescue StandardError, RestClient::RequestFailed => e
           add_exception_message_to_job(hdoc, e)
           break if e.class == RestClient::InternalServerError

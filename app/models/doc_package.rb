@@ -28,7 +28,8 @@ class DocPackage
           text: doc.get_text(slice),
           sourcedb: doc.sourcedb,
           sourceid: doc.sourceid,
-          span: slice
+          span: slice,
+          docid: doc.id
         }
       end
     else
