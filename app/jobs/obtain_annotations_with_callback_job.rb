@@ -22,7 +22,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         begin
           make_request(annotator, project, hdoc, options.merge(span: hdoc[0][:span]))
         rescue StandardError, RestClient::RequestFailed => e
-          add_exception_message_to_job(hdoc, e, 'Could not obtain annotations:', 'Could not obtain annotations for')
+          add_exception_message_to_job(hdoc, e)
           break if e.class == RestClient::InternalServerError
         end
       end
@@ -55,16 +55,22 @@ private
     end
   end
 
-  def add_exception_message_to_job(hdocs, e, less_docs_message, many_docs_message)
-    if hdocs.length < 10
-      hdocs.each do |hdoc|
-        @job.add_message sourcedb: hdoc[:sourcedb],
-                         sourceid: hdoc[:sourceid],
-                         body: "#{less_docs_message} #{e.message}"
+  def add_exception_message_to_job(hdoc, e)
+    hdoc = hdoc[0]
+    e_explanation =
+      if hdoc[:span].present?
+        if e.class == RuntimeError
+          "Could not obtain for the slice (#{hdoc[:span][:begin]}, #{hdoc[:span][:end]}):"
+        else
+          "Error while processing the slice (#{hdoc[:span][:begin]}, #{hdoc[:span][:end]}):"
+        end
+      else
+        "Could not obtain annotations:"
       end
-    else
-      @job.add_message body: "#{many_docs_message} #{hdocs.length} docs: #{e.message}"
-    end
+
+    @job.add_message sourcedb: hdoc[:sourcedb],
+                     sourceid: hdoc[:sourceid],
+                     body: "#{e_explanation} #{e.message}"
   end
 
   def error_occured?(request_info)
