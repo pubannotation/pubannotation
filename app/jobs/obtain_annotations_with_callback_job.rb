@@ -14,7 +14,12 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       doc_packer << line.chomp.strip
     end
 
-    doc_packer.each do |hdocs, doc|
+    doc_packer.each do |hdocs, doc, error|
+      if error
+        add_exception_message_to_job(doc, error)
+        next
+      end
+
       update_job_items(annotator, doc, hdocs.length)
 
       hdocs.each do |hdoc|
