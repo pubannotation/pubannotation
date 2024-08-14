@@ -6,7 +6,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
   def perform(project, filepath, annotator, options)
     doc_count = File.read(filepath).each_line.count
-
     prepare_progress_record(doc_count)
 
     doc_packer = DocPacker.new(annotator, encoding: options[:encoding])
@@ -37,9 +36,9 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
 private
 
-  def make_request(annotator, project, hdocs, options)
+  def make_request(annotator, project, hdoc, options)
     annotation_reception = AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, job_id: @job.id, options:)
-    method, url, params, payload = annotator.prepare_request(hdocs)
+    method, url, params, payload = annotator.prepare_request(hdoc)
     payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
 
     annotator.make_request(method, url, params, payload)
@@ -70,10 +69,6 @@ private
     @job.add_message sourcedb: hdoc[:sourcedb],
                      sourceid: hdoc[:sourceid],
                      body: "#{e_explanation} #{e.message}"
-  end
-
-  def error_occured?(request_info)
-    request_info.errors.reject(&:blank?).any?
   end
 
   def resource_name
