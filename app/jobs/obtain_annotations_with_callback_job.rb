@@ -41,7 +41,14 @@ private
     method, url, params, payload = annotator.prepare_request(hdoc)
     payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
 
-    annotator.make_request(method, url, params, payload)
+    payload, payload_type =
+      if payload.class == String
+        [payload, 'text/plain; charset=utf8']
+      else
+        [payload.to_json, 'application/json; charset=utf8']
+      end
+
+    RestClient::Request.execute(method:, url:, payload:, max_redirects: 0, headers:{content_type: payload_type, accept: :json}, verify_ssl: false)
   end
 
   def update_job_items(annotator, doc, request_count)
