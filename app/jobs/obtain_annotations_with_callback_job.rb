@@ -20,7 +20,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
       hdocs.each do |hdoc|
         begin
-          make_request(annotator, project, hdoc, options.merge(span: hdoc[0][:span]))
+          make_request(annotator, project, [hdoc], options.merge(span: hdoc[:span]))
         rescue StandardError, RestClient::RequestFailed => e
           add_exception_message_to_job(hdoc, e)
           break if e.class == RestClient::InternalServerError
@@ -56,7 +56,6 @@ private
   end
 
   def add_exception_message_to_job(hdoc, e)
-    hdoc = hdoc[0]
     e_explanation =
       if hdoc[:span].present?
         if e.class == RuntimeError

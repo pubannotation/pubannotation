@@ -24,16 +24,15 @@ class DocPackage
       doc = @docs.first
       slices = doc.get_slices(@max_text_size)
       slices.map do |slice|
-        [{
+        {
           text: doc.get_text(slice),
           sourcedb: doc.sourcedb,
           sourceid: doc.sourceid,
           span: slice
-        }]
+        }
       end
     else
-      hdocs = @docs.map{_1.hdoc}
-      [hdocs]
+      @docs.map{_1.hdoc}
     end
   end
 
