@@ -24,8 +24,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     docids = docids_for(project, options[:mode])
 
     # to determine the docids_filepath
-    messages = []
-    docids_filepath = determine_docids_filepath(project, docids, options, messages)
+    docids_filepath, messages = filepath_for(project, docids)
 
     ObtainAnnotationsWithCallbackJob.perform_later(project, docids_filepath, annotator, options)
 
@@ -48,40 +47,48 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
   private
 
   def docids_for(project, mode)
-    if mode == 'fill'
+    docids = prepare_default_docids(project, mode)
+    mode == 'fill' ? 'add' : mode
+    messages = []
+
+    # To update docids according to the options
+    if mode == 'skip'
+      docids, num_skipped = handle_skip_mode(docids, mode)
+      messages << "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
       mode = 'add'
+    elsif docids.empty?
+      docids = project.project_docs.pluck(:doc_id)
+    end
+
+    [docids, messages]
+  end
+
+  def prepare_default_docids(project, mode)
+    if mode == 'fill'
       project.docs_without_annotation.pluck(:id)
     else
       []
     end
   end
 
-  def determine_docids_filepath(project, docids, options, messages)
-    # To update docids according to the options
-    if options[:mode] == 'skip'
-      docids, num_skipped = if docids.empty?
-        if project.project_docs.without_denotations.count == 0
-          raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
-        end
-        docids = project.project_docs.without_denotations.pluck(:doc_id)
-        num_skipped = project.project_docs.with_denotations.count
-        [docids, num_skipped]
-      else
-        num_docs = docids.length
-        docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
-        raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
-        num_skipped = num_docs - docids.length
-        [docids, num_skipped]
+  def handle_skip_mode(project, docids)
+    if docids.empty?
+      if project.project_docs.without_denotations.count == 0
+        raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
       end
-
-      messages << "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
-      options[:mode] = 'add'
+      docids = project.project_docs.without_denotations.pluck(:doc_id)
+      num_skipped = project.project_docs.with_denotations.count
+      [docids, num_skipped]
     else
-      if docids.empty?
-        docids = project.project_docs.pluck(:doc_id)
-      end
+      num_docs = docids.length
+      docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
+      raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
+      num_skipped = num_docs - docids.length
+      [docids, num_skipped]
     end
+  end
 
+  def filepath_for(project, docids)
     filepath = File.join('tmp', "obtain-#{project.name}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
     File.open(filepath, "w"){|f| f.puts(docids)}
     filepath
