@@ -2,6 +2,8 @@ class DocCollection
   attr_accessor :docs
   attr_reader :size
 
+  RequestInfo = Data.define(:count, :slices, :errors)
+
   def initialize(project, annotator, job_id, options)
     @project = project
     @annotator = annotator
@@ -13,17 +15,13 @@ class DocCollection
   end
 
   def request_annotate
-    request_info = {}
-
     if document_too_large?
-      request_info = slice(@docs.first)
+      slice(@docs.first)
     else
       hdocs = docs.map{_1.hdoc}
       make_request(hdocs, @options)
-      request_info[:request_count] = 1
+      RequestInfo.new(1, [], [])
     end
-
-    request_info
   end
 
   def filled_with?(doc)
@@ -67,7 +65,7 @@ class DocCollection
       end
     end
 
-    {request_count:, slices:, errors:}
+    RequestInfo.new(request_count, slices, errors)
   end
 
   def make_request(hdocs, options)
