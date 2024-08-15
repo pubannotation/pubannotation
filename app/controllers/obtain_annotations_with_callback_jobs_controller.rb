@@ -12,6 +12,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
 
     # to determine the annotator
     annotator = Annotator.find(params[:annotator])
+    raise "Could not find annotator: #{params[:project_id]}." unless project.present?
 
     # to determine the options
     options = {
