@@ -24,7 +24,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     }
 
     # to determine the docids_filepath
-    docids_filepath = filepath_for(project, docids)
+    docids_filepath = create_file_for(project, docids)
 
     ObtainAnnotationsWithCallbackJob.perform_later(project, docids_filepath, annotator, options)
 
@@ -66,7 +66,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     [mode, docids, [message].compact]
   end
 
-  def filepath_for(project, docids)
+  def create_file_for(project, docids)
     filepath = File.join('tmp', "obtain-#{project.name}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
     File.open(filepath, "w"){|f| f.puts(docids)}
     filepath
