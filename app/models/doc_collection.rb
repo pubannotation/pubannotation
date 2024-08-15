@@ -56,8 +56,8 @@ class DocCollection
 
     slices.each do |slice|
       begin
-        hdoc = [{text:doc.get_text(@options[:span]), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
-        make_request(hdoc, @options.merge(span:slice))
+        hdoc = [{text:doc.get_text(slice), sourcedb:doc.sourcedb, sourceid:doc.sourceid}]
+        make_request(hdoc, @options.merge(span:slice, docid: doc.id))
         errors << ""
       rescue RestClient::InternalServerError => e
         errors << e
