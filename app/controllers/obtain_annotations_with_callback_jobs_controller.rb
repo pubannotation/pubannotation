@@ -14,14 +14,14 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     annotator = Annotator.find(params[:annotator])
     raise "Could not find annotator: #{params[:annotator]}." unless annotator.present?
 
+    # to determine the docids
+    mode, docids, messages = docids_for(project, params[:mode])
+
     # to determine the options
     options = {
-      mode: params[:mode],
+      mode:,
       prefix: annotator.name
     }
-
-    # to determine the docids
-    options[:mode], docids, messages = docids_for(project, options[:mode])
 
     # to determine the docids_filepath
     docids_filepath = filepath_for(project, docids)
