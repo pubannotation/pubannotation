@@ -14,9 +14,10 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     annotator = Annotator.find(params[:annotator])
 
     # to determine the options
-    options = {}
-    options[:mode] = params[:mode]
-    options[:prefix] = annotator.name
+    options = {
+      mode: params[:mode],
+      prefix: annotator.name
+    }
 
     # to determine the docids
     docids = determine_docids(project, options)
