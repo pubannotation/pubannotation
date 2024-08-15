@@ -15,7 +15,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     raise "Could not find annotator: #{params[:annotator]}." unless annotator.present?
 
     # to determine the docids
-    mode, docids, messages = docids_for(project, params[:mode])
+    mode, docids, messages = project.fetch_docids_by_mode(params[:mode])
 
     # to determine the options
     options = {
@@ -45,26 +45,6 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
   end
 
   private
-
-  def docids_for(project, mode)
-    case mode
-    when 'fill'
-      docids = project.docs_without_annotation.pluck(:id)
-      mode = 'add'
-    when 'skip'
-      if project.project_docs.without_denotations.count == 0
-        raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
-      end
-      docids = project.project_docs.without_denotations.pluck(:doc_id)
-      mode = 'add'
-      num_skipped = project.project_docs.with_denotations.count
-      message = "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
-    else
-      docids = project.project_docs.pluck(:doc_id)
-    end
-
-    [mode, docids, [message].compact]
-  end
 
   def create_file_for(project, docids)
     filepath = File.join('tmp', "obtain-#{project.name}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")

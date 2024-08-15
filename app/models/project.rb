@@ -1132,6 +1132,26 @@ class Project < ActiveRecord::Base
     self.delete
   end
 
+  def fetch_docids_by_mode(mode)
+    case mode
+    when 'fill'
+      docids = docs_without_annotation.pluck(:id)
+      mode = 'add'
+    when 'skip'
+      if project_docs.without_denotations.count == 0
+        raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
+      end
+      docids = project_docs.without_denotations.pluck(:doc_id)
+      mode = 'add'
+      num_skipped = project_docs.with_denotations.count
+      message = "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
+    else
+      docids = project_docs.pluck(:doc_id)
+    end
+
+    [mode, docids, [message].compact]
+  end
+
   private
 
   def spans_rdf_filename
