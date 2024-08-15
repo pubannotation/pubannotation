@@ -59,17 +59,19 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
   def determine_docids_filepath(project, docids, options, messages)
     # To update docids according to the options
     if options[:mode] == 'skip'
-      num_skipped = if docids.empty?
+      docids, num_skipped = if docids.empty?
         if project.project_docs.without_denotations.count == 0
           raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
         end
         docids = project.project_docs.without_denotations.pluck(:doc_id)
-        project.project_docs.with_denotations.count
+        num_skipped = project.project_docs.with_denotations.count
+        [docids, num_skipped]
       else
         num_docs = docids.length
         docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
         raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
-        num_docs - docids.length
+        num_skipped = num_docs - docids.length
+        [docids, num_skipped]
       end
 
       messages << "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
