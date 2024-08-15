@@ -9,7 +9,9 @@ class Project < ActiveRecord::Base
   has_many :collection_projects, dependent: :destroy
   has_many :collections, through: :collection_projects
   has_many :project_docs, dependent: :destroy
+  has_many :project_docs_without_annotation, -> { where(annotations_updated_at: nil) }, class_name: 'ProjectDoc'
   has_many :docs, through: :project_docs
+  has_many :docs_without_annotation, through: :project_docs_without_annotation, source: :doc
   has_many :queries, as: :organization, :dependent => :destroy
 
   has_many :evaluations, foreign_key: 'study_project_id'

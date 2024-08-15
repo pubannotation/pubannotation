@@ -21,7 +21,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     }
 
     # to determine the docids
-    docids = determine_docids(project, options)
+    docids = docids_for(project, options[:mode])
 
     # to determine the docids_filepath
     messages = []
@@ -47,10 +47,10 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
 
   private
 
-  def determine_docids(project, options)
-    if options[:mode] == 'fill'
-      options[:mode] = 'add'
-      ProjectDoc.where(project_id:project.id, annotations_updated_at:nil).pluck(:doc_id)
+  def docids_for(project, mode)
+    if mode == 'fill'
+      mode = 'add'
+      project.docs_without_annotation.pluck(:id)
     else
       []
     end
