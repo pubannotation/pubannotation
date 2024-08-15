@@ -1139,7 +1139,7 @@ class Project < ActiveRecord::Base
       mode = 'add'
     when 'skip'
       if project_docs.without_denotations.count == 0
-        raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
+        raise 'Obtaining annotation was skipped because all the docs already had annotations'
       end
       docids = project_docs.without_denotations.pluck(:doc_id)
       mode = 'add'
