@@ -60,11 +60,11 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     # To update docids according to the options
     if options[:mode] == 'skip'
       num_skipped = if docids.empty?
-        if ProjectDoc.where(project_id:project.id, denotations_num:0).count == 0
+        if project.project_docs.without_denotations.count == 0
           raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
         end
-        docids = ProjectDoc.where(project_id:project.id, denotations_num:0 ).pluck(:doc_id)
-        ProjectDoc.where("project_id=#{project.id} and denotations_num > 0").count
+        docids = project.project_docs.without_denotations.pluck(:doc_id)
+        project.project_docs.with_denotations.count
       else
         num_docs = docids.length
         docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
@@ -76,7 +76,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
       options[:mode] = 'add'
     else
       if docids.empty?
-        docids = ProjectDoc.where(project_id:project.id).pluck(:doc_id)
+        docids = project.project_docs.pluck(:doc_id)
       end
     end
 
