@@ -15,7 +15,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     raise "Could not find annotator: #{params[:annotator]}." unless annotator.present?
 
     # to determine the docids
-    mode, docids, skip_message = project.fetch_docids_by_mode(params[:mode])
+    mode, docids, skip_message = project.fetch_docids_to_obtain_annotations_by(params[:mode])
 
     # to determine the options
     options = {
@@ -23,10 +23,10 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
       prefix: annotator.name
     }
 
-    # to determine the docids_filepath
-    docids_filepath = create_file_for(project, docids)
+    # to determine the filepath
+    filepath = create_file_for(project, docids)
 
-    ObtainAnnotationsWithCallbackJob.perform_later(project, docids_filepath, annotator, options)
+    ObtainAnnotationsWithCallbackJob.perform_later(project, filepath, annotator, options)
 
     project.update({annotator_id:annotator.id}) if annotator.persisted?
 

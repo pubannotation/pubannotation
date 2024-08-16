@@ -1132,7 +1132,7 @@ class Project < ActiveRecord::Base
     self.delete
   end
 
-  def fetch_docids_by_mode(mode)
+  def fetch_docids_to_obtain_annotations_by(mode)
     case mode
     when 'fill'
       docids = docs_without_annotation.pluck(:id)
