@@ -2,11 +2,11 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
   before_action :authenticate_root_user!, only: :new
 
   def new
-    @project = Project.editable(current_user).find_by_name(params[:project_id])
+    @project = Project.editable(current_user).find_by(name: params[:project_id])
   end
 
   def create
-    project = Project.editable(current_user).find_by_name(params[:project_id])
+    project = Project.editable(current_user).find_by(name: params[:project_id])
     raise "Could not find the project: #{params[:project_id]}." unless project.present?
     raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
