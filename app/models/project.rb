@@ -1144,12 +1144,12 @@ class Project < ActiveRecord::Base
       docids = project_docs.without_denotations.pluck(:doc_id)
       mode = 'add'
       num_skipped = project_docs.with_denotations.count
-      message = "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
+      skip_message = "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
     else
       docids = project_docs.pluck(:doc_id)
     end
 
-    [mode, docids, [message].compact]
+    [mode, docids, skip_message]
   end
 
   private

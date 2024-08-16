@@ -15,7 +15,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
     raise "Could not find annotator: #{params[:annotator]}." unless annotator.present?
 
     # to determine the docids
-    mode, docids, messages = project.fetch_docids_by_mode(params[:mode])
+    mode, docids, skip_message = project.fetch_docids_by_mode(params[:mode])
 
     # to determine the options
     options = {
@@ -30,11 +30,10 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
 
     project.update({annotator_id:annotator.id}) if annotator.persisted?
 
-    messages << "The task 'Obtain annotations was created."
-    message = messages.join("\n")
+    notice = [skip_message, "The task 'Obtain annotations was created."].compact.join("\n")
 
     respond_to do |format|
-      format.html {redirect_back fallback_location: root_path, notice: message}
+      format.html {redirect_back fallback_location: root_path, notice:}
       format.json {}
     end
   rescue => e
