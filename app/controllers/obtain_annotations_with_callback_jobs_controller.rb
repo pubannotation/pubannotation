@@ -47,7 +47,7 @@ class ObtainAnnotationsWithCallbackJobsController < ApplicationController
 
   def create_file_for(project, docids)
     filepath = File.join('tmp', "obtain-#{project.name}-#{Time.now.to_s[0..18].gsub(/[ :]/, '-')}.txt")
-    File.open(filepath, "w"){|f| f.puts(docids)}
+    File.open(filepath, "w"){_1.puts(docids)}
     filepath
   end
 end
