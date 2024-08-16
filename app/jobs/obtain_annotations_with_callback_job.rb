@@ -20,15 +20,13 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         next
       end
 
-      update_job_items(annotator, doc, hdocs.length)
+      update_job_items(annotator, doc, hdocs) if hdocs.any? { _1.key?(:span) }
 
-      hdocs.each do |hdoc|
-        begin
-          make_request(annotator, project, [hdoc], options.merge(span: hdoc[:span], docid: hdoc[:docid]))
-        rescue StandardError, RestClient::RequestFailed => e
-          add_exception_message_to_job(hdoc, e)
-          break if e.class == RestClient::InternalServerError
-        end
+      begin
+        make_request(annotator, project, hdocs, options)
+      rescue StandardError, RestClient::RequestFailed => e
+        add_exception_message_to_job(hdocs, e)
+        break if e.class == RestClient::InternalServerError
       end
     end
 
@@ -41,10 +39,9 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
 private
 
-  def make_request(annotator, project, hdoc, options)
+  def make_request(annotator, project, hdocs, options)
     annotation_reception = AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, job_id: @job.id, options:)
-    method, url, params, payload = annotator.prepare_request(hdoc)
-    payload[:callback_url] = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
+    method, url, params, payload = annotator.prepare_request(hdocs)
 
     payload, payload_type =
       if payload.class == String
@@ -53,7 +50,8 @@ private
         [payload.to_json, 'application/json; charset=utf8']
       end
 
-    RestClient::Request.execute(method:, url:, payload:, max_redirects: 0, headers:{content_type: payload_type, accept: :json}, verify_ssl: false)
+    callback_url = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
+    RestClient::Request.execute(method:, url:, payload:, max_redirects: 0, headers:{content_type: payload_type, accept: :json, callback_url:}, verify_ssl: false)
   end
 
   def update_job_items(annotator, doc, request_count)
