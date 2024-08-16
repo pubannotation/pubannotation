@@ -8,6 +8,9 @@ class ProjectDoc < ActiveRecord::Base
   has_many :relations, through: :project
   has_many :attrivutes, through: :project
 
+  scope :without_denotations, -> { where(denotations_num: 0) }
+  scope :with_denotations, -> { where('denotations_num > ?', 0) }
+
   def annotation_about(span, terms, predicates)
     _denotations = denotations_about span, terms, predicates
     _blocks = blocks_about span, terms, predicates

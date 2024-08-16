@@ -132,6 +132,7 @@ Pubann::Application.routes.draw do
 		post 'annotations/upload' => 'annotations#create_from_upload', :as => 'create_annotations_from_upload'
 		post 'annotations/delete' => 'annotations#delete_from_upload', :as => 'delete_annotations_from_upload'
 		post 'annotations/obtain' => 'annotations#obtain_batch'
+		resource :obtain_annotations_with_callback_job, only: [:new, :create]
 		resources :annotations, only: [:index, :destroy]
 		resources :associate_maintainers, :only => [:destroy]
 		get 'jobs/latest_jobs_table' => 'jobs#latest_jobs_table'
