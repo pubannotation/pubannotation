@@ -17,6 +17,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
   create_table "annotation_receptions", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.json "options", default: {}
+    t.json "hdoc_metadata", default: {}
     t.bigint "annotator_id"
     t.bigint "project_id"
     t.datetime "created_at", null: false

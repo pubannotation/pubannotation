@@ -33,7 +33,14 @@ class DocPackage
         }
       end
     else
-      @docs.map{_1.hdoc}
+      @docs.map do |doc|
+        {
+          text: doc.body,
+          sourcedb: doc.sourcedb,
+          sourceid: doc.sourceid,
+          docid: doc.id
+        }
+      end
     end
   end
 
