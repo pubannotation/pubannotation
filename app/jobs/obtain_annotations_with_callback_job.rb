@@ -22,11 +22,14 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
       update_job_items(annotator, doc, hdocs) if hdocs.any? { _1.key?(:span) }
 
-      begin
-        make_request(annotator, project, hdocs, options)
-      rescue StandardError, RestClient::RequestFailed => e
-        add_exception_message_to_job(hdocs, e)
-        break if e.class == RestClient::InternalServerError
+      hdocs_to_request = annotator.single_doc_processing? ? hdocs.map { [_1] } : [hdocs]
+      hdocs_to_request.each do |hdoc|
+        begin
+          make_request(annotator, project, hdoc, options)
+        rescue StandardError, RestClient::RequestFailed => e
+          add_exception_message_to_job(hdoc, e)
+          break if e.class == RestClient::InternalServerError
+        end
       end
     end
 
