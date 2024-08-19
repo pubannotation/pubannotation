@@ -20,7 +20,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         next
       end
 
-      update_job_items(annotator, doc, hdocs) if hdocs.any? { _1.key?(:span) }
+      update_job_items(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
 
       hdocs_to_request = annotator.single_doc_processing? ? hdocs.map { [_1] } : [hdocs]
       hdocs_to_request.each do |hdoc|
@@ -64,13 +64,11 @@ private
   end
 
   def update_job_items(annotator, doc, request_count)
-    count = @job.num_items + request_count - 1
-    @job.update_attribute(:num_items, count)
-    if request_count > 1
-      @job.add_message sourcedb:doc.sourcedb,
-                       sourceid:doc.sourceid,
-                       body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."
-    end
+    additional_items = request_count - 1
+    @job.increment!(:num_items, additional_items)
+    @job.add_message sourcedb:doc.sourcedb,
+                     sourceid:doc.sourceid,
+                     body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."
   end
 
   def add_exception_message_to_job(hdoc, e)
