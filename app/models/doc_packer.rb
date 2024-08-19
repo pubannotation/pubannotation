@@ -20,9 +20,9 @@ class DocPacker
   def each
     @doc_packages.each do |doc_package|
       begin
-        yield doc_package.hdocs, doc_package.docs.first, nil
+        yield doc_package.hdocs, doc_package.first_doc, nil
       rescue RuntimeError => e
-        yield [], doc_package.docs.first, e
+        yield [], doc_package.first_doc, e
       end
     end
   end
