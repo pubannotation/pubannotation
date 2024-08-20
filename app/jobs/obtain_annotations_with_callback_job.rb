@@ -51,7 +51,6 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 private
 
   def make_request(annotator, project, hdocs, options)
-    raise RuntimeError
     hdoc_metadata = hdocs.map do |hdoc|
       {
         docid: hdoc[:docid],
