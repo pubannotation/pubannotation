@@ -23,13 +23,20 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
       update_job_items(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
 
-      hdocs_to_request = annotator.single_doc_processing? ? hdocs.map { [_1] } : [hdocs]
-      hdocs_to_request.each do |hdoc|
+      if annotator.single_doc_processing?
+        hdocs.each do |hdoc|
+          begin
+            make_request(annotator, project, [hdoc], options)
+          rescue StandardError, RestClient::RequestFailed => e
+            add_exception_message_to_job(hdoc, e)
+            break if e.class == RestClient::InternalServerError
+          end
+        end
+      else
         begin
-          make_request(annotator, project, hdoc, options)
+          make_request(annotator, project, hdocs, options)
         rescue StandardError, RestClient::RequestFailed => e
-          add_exception_message_to_job(annotator.single_doc_processing? ? hdoc.first : hdoc, e)
-          break if e.class == RestClient::InternalServerError
+          add_exception_message_to_job(hdocs, e)
         end
       end
     end
@@ -44,6 +51,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 private
 
   def make_request(annotator, project, hdocs, options)
+    raise RuntimeError
     hdoc_metadata = hdocs.map do |hdoc|
       {
         docid: hdoc[:docid],
