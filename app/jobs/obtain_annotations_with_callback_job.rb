@@ -20,7 +20,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         next
       end
 
-      add_slice_message_to_job(annotator, doc, hdocs.length)
+      add_slice_message_to_job(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
 
       if annotator.single_doc_processing?
         update_job_items(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
