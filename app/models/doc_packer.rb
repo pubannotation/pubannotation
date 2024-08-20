@@ -27,6 +27,10 @@ class DocPacker
     end
   end
 
+  def hdocs_count
+    @doc_packages.length
+  end
+
   private
 
   def current_doc_package

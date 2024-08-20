@@ -5,14 +5,13 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
   queue_as :low_priority
 
   def perform(project, filepath, annotator, options)
-    doc_count = File.read(filepath).each_line.count
-    prepare_progress_record(doc_count)
-
     doc_packer = DocPacker.new(annotator, encoding: options[:encoding])
 
     File.foreach(filepath) do |line|
       doc_packer << line.chomp.strip
     end
+
+    prepare_progress_record(doc_packer.hdocs_count)
 
     doc_packer.each do |hdocs, doc, error|
       # Handle document slice error
@@ -21,9 +20,11 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         next
       end
 
-      update_job_items(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
+      add_slice_message_to_job(annotator, doc, hdocs.length)
 
       if annotator.single_doc_processing?
+        update_job_items(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
+
         hdocs.each do |hdoc|
           begin
             make_request(annotator, project, [hdoc], options)
@@ -74,6 +75,9 @@ private
   def update_job_items(annotator, doc, request_count)
     additional_items = request_count - 1
     @job.increment!(:num_items, additional_items)
+  end
+
+  def add_slice_message_to_job(annotator, doc, request_count)
     @job.add_message sourcedb:doc.sourcedb,
                      sourceid:doc.sourceid,
                      body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."

@@ -29,7 +29,7 @@ class AnnotationReception < ApplicationRecord
       end
     end
 
-    job.increment!(:num_dones, annotations_collection.length)
+    job.increment!(:num_dones)
     job.finish!
   end
 end
