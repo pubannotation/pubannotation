@@ -6,50 +6,38 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
   def perform(project, filepath, annotator, options)
     doc_count = File.read(filepath).each_line.count
-
     prepare_progress_record(doc_count)
 
-    # for asynchronous protocol
-    doc_collection = DocCollection.new(project, annotator, @job.id, options)
+    doc_packer = DocPacker.new(annotator, encoding: options[:encoding])
 
     File.foreach(filepath) do |line|
-      docid = line.chomp.strip
-      doc = Doc.find(docid)
-      doc.set_ascii_body if options[:encoding] == 'ascii'
-
-      if doc_collection.filled_with?(doc)
-        begin
-          request_info = doc_collection.request_annotate
-          add_sliced_doc_exception_message_to_job(request_info, doc) if error_occured?(request_info)
-          update_job_items(annotator, doc_collection.docs.first, request_info.count)
-
-        rescue StandardError, RestClient::RequestFailed => e
-          less_docs_message = 'Could not obtain annotations:'
-          many_docs_message = 'Could not obtain annotations for'
-          add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
-        ensure
-          doc_collection.clear
-        end
-      end
-
-      doc_collection << doc
-
-    rescue RuntimeError => e
-      less_docs_message = 'Runtime error:'
-      many_docs_message = 'Runtime error while processing'
-      add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
+      doc_packer << line.chomp.strip
     end
 
-    if doc_collection.rest?
-      begin
-        request_info = doc_collection.request_annotate
-        add_sliced_doc_exception_message_to_job(request_info, doc_collection.docs.first) if error_occured?(request_info)
-        update_job_items(annotator, doc_collection.docs.first, request_info.count)
+    doc_packer.each do |hdocs, doc, error|
+      # Handle document slice error
+      if error
+        add_exception_message_to_job(doc, error)
+        next
+      end
 
-      rescue StandardError, RestClient::RequestFailed => e
-        less_docs_message = 'Could not obtain annotations:'
-        many_docs_message = 'Could not obtain annotations for'
-        add_exception_message_to_job(doc_collection.docs, e, less_docs_message, many_docs_message)
+      update_job_items(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
+
+      if annotator.single_doc_processing?
+        hdocs.each do |hdoc|
+          begin
+            make_request(annotator, project, [hdoc], options)
+          rescue StandardError, RestClient::RequestFailed => e
+            add_exception_message_to_job(hdoc, e)
+            break if e.class == RestClient::InternalServerError
+          end
+        end
+      else
+        begin
+          make_request(annotator, project, hdocs, options)
+        rescue StandardError, RestClient::RequestFailed => e
+          add_exception_message_to_job(hdocs, e)
+        end
       end
     end
 
@@ -62,50 +50,56 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
 private
 
-  def update_job_items(annotator, doc, request_count)
-    count = @job.num_items + request_count - 1
-    @job.update_attribute(:num_items, count)
-    if request_count > 1
-      @job.add_message sourcedb:doc.sourcedb,
-                       sourceid:doc.sourceid,
-                       body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."
+  def make_request(annotator, project, hdocs, options)
+    hdoc_metadata = hdocs.map do |hdoc|
+      {
+        docid: hdoc[:docid],
+        span: hdoc[:span]
+      }
     end
-  end
+    annotation_reception = AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, job_id: @job.id, options:, hdoc_metadata:)
+    method, url, params, payload = annotator.prepare_request(hdocs)
 
-  def add_sliced_doc_exception_message_to_job(request_info, doc)
-    slices = request_info.slices
-    errors = request_info.errors
-
-    slices.each_with_index do |slice, i|
-      next if errors[i].blank?
-
-      if errors[i].class == RuntimeError
-        @job.add_message sourcedb:doc.sourcedb,
-                          sourceid:doc.sourceid,
-                          body: "Could not obtain for the slice (#{slice[:begin]}, #{slice[:end]}): #{errors[i].message}"
+    payload, payload_type =
+      if payload.class == String
+        [payload, 'text/plain; charset=utf8']
       else
-        @job.add_message sourcedb:doc.sourcedb,
-                        sourceid:doc.sourceid,
-                        body: "Error while processing the slice (#{slice[:begin]}, #{slice[:end]}): #{errors[i].message}"
+        [payload.to_json, 'application/json; charset=utf8']
       end
 
-    end
+    callback_url = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
+    RestClient::Request.execute(method:, url:, payload:, max_redirects: 0, headers:{content_type: payload_type, accept: :json, callback_url:}, verify_ssl: false)
   end
 
-  def add_exception_message_to_job(docs, e, less_docs_message, many_docs_message)
-    if docs.length < 10
-      docs.each do |doc|
-        @job.add_message sourcedb: doc.sourcedb,
-                         sourceid: doc.sourceid,
-                         body: "#{less_docs_message} #{e.message}"
-      end
+  def update_job_items(annotator, doc, request_count)
+    additional_items = request_count - 1
+    @job.increment!(:num_items, additional_items)
+    @job.add_message sourcedb:doc.sourcedb,
+                     sourceid:doc.sourceid,
+                     body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."
+  end
+
+  def add_exception_message_to_job(hdoc, e)
+    if hdoc.is_a?(Array)
+      sourcedb = hdoc.map { _1[:sourcedb] }.uniq.join(', ')
+      sourceid = hdoc.map { _1[:sourceid] }.uniq.join(', ')
     else
-      @job.add_message body: "#{many_docs_message} #{docs.length} docs: #{e.message}"
+      sourcedb = hdoc[:sourcedb]
+      sourceid = hdoc[:sourceid]
     end
-  end
 
-  def error_occured?(request_info)
-    request_info.errors.reject(&:blank?).any?
+    e_explanation =
+      if hdoc.is_a?(Hash) && hdoc[:span].present?
+        if e.class == RuntimeError
+          "Could not obtain for the slice (#{hdoc[:span][:begin]}, #{hdoc[:span][:end]}):"
+        else
+          "Error while processing the slice (#{hdoc[:span][:begin]}, #{hdoc[:span][:end]}):"
+        end
+      else
+        "Could not obtain annotations:"
+      end
+
+    @job.add_message sourcedb:, sourceid:, body: "#{e_explanation} #{e.message}"
   end
 
   def resource_name
