@@ -30,7 +30,7 @@ class DocPacker
           end
         end
       rescue RuntimeError => e
-        yield [], doc_package.first_doc, e
+        yield [doc_package.first_doc.hdoc], nil, e
       end
     end
   end

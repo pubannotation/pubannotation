@@ -16,7 +16,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
     doc_packer.each do |hdocs, doc, error, slice_count|
       # Handle document slice error
       if error
-        add_exception_message_to_job(doc, error)
+        add_exception_message_to_job(hdocs, error)
         next
       end
 
