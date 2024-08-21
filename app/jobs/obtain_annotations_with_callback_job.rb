@@ -11,7 +11,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
       doc_packer << line.chomp.strip
     end
 
-    prepare_progress_record(doc_packer.hdocs_count)
+    prepare_progress_record(doc_packer.request_count)
 
     doc_packer.each do |hdocs, doc, error, slice_count|
       # Handle document slice error

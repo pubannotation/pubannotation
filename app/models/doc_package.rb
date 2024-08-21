@@ -19,8 +19,7 @@ class DocPackage
 
   def hdocs
     if document_too_large?
-      doc = @docs.first
-      slices = doc.get_slices(@max_text_size)
+      slices = slice_document
       slices.map do |slice|
         {
           text: doc.get_text(slice),
@@ -48,8 +47,7 @@ class DocPackage
 
   def calculate_hdoc_count
     if @single_doc_processing && document_too_large?
-      slices = @docs.first.get_slices(@max_text_size)
-      slices.length
+      slice_document.length
     else
       1
     end
@@ -59,5 +57,10 @@ class DocPackage
 
   def document_too_large?
     @docs.length == 1 && @docs.first.body.length > @max_text_size
+  end
+
+  def slice_document
+    doc = @docs.first
+    doc.get_slices(@max_text_size)
   end
 end

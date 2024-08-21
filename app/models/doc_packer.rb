@@ -21,9 +21,13 @@ class DocPacker
     @doc_packages.each do |doc_package|
       begin
         if @single_doc_processing
-          process_single_doc(doc_package) { |hdocs, first_doc, error, total_slices| yield hdocs, first_doc, error, total_slices }
+          process_single_doc(doc_package) do |hdocs, doc, error, total_slices|
+            yield hdocs, doc, error, total_slices
+          end
         else
-          process_multiple_docs(doc_package) { |hdocs, first_doc, error, total_slices| yield hdocs, first_doc, error, total_slices }
+          process_multiple_docs(doc_package) do |hdocs, doc, error, total_slices|
+            yield hdocs, doc, error, total_slices
+          end
         end
       rescue RuntimeError => e
         yield [], doc_package.first_doc, e
@@ -31,7 +35,7 @@ class DocPacker
     end
   end
 
-  def hdocs_count
+  def request_count
     @doc_packages.map(&:calculate_hdoc_count).sum
   end
 
