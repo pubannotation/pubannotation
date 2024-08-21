@@ -59,13 +59,6 @@ private
     end
     annotation_reception = AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, job_id: @job.id, options:, hdoc_metadata:)
     method, url, params, payload = annotator.prepare_request(hdocs)
-    callback_url = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
-
-    if payload.class == Hash
-      payload[:callback_url] = callback_url
-    elsif payload.class == Array
-      payload = { hdocs: payload, callback_url: }
-    end
 
     payload, payload_type =
       if payload.class == String
@@ -74,7 +67,8 @@ private
         [payload.to_json, 'application/json; charset=utf8']
       end
 
-    RestClient::Request.execute(method:, url:, payload:, max_redirects: 0, headers:{content_type: payload_type, accept: :json}, verify_ssl: false)
+    callback_url = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
+    RestClient::Request.execute(method:, url:, payload:, max_redirects: 0, headers:{content_type: payload_type, accept: :json, callback_url:}, verify_ssl: false)
   end
 
   def update_job_items(annotator, doc, request_count)
