@@ -19,6 +19,7 @@ class DocPackage
 
   def hdocs
     if document_too_large?
+      doc = first_doc
       slices = slice_document
       slices.map do |slice|
         {
@@ -60,7 +61,6 @@ class DocPackage
   end
 
   def slice_document
-    doc = @docs.first
-    doc.get_slices(@max_text_size)
+    first_doc.get_slices(@max_text_size)
   end
 end
