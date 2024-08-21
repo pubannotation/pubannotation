@@ -56,8 +56,18 @@ private
         [payload.to_json, 'application/json; charset=utf8']
       end
 
-    callback_url = "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
-    RestClient::Request.execute(method:, url:, payload:, max_redirects: 0, headers:{content_type: payload_type, accept: :json, callback_url:}, verify_ssl: false)
+    RestClient::Request.execute(
+      method:,
+      url:,
+      payload:,
+      max_redirects: 0,
+      headers: {
+        content_type: payload_type,
+        accept: :json,
+        'Annotation-Reception-Callback-URL' => "#{Rails.application.config.host_url}/annotation_reception/#{annotation_reception.uuid}"
+      },
+      verify_ssl: false
+    )
   end
 
   def add_slice_message_to_job(annotator, doc, slice_count)
