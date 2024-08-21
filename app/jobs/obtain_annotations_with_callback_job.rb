@@ -13,32 +13,20 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
     prepare_progress_record(doc_packer.hdocs_count)
 
-    doc_packer.each do |hdocs, doc, error|
+    doc_packer.each do |hdocs, doc, error, slice_count|
       # Handle document slice error
       if error
         add_exception_message_to_job(doc, error)
         next
       end
 
-      add_slice_message_to_job(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
+      add_slice_message_to_job(annotator, doc, slice_count) if slice_count.present?
 
-      if annotator.single_doc_processing?
-        update_job_items(annotator, doc, hdocs.length) if hdocs.any? { _1.key?(:span) }
-
-        hdocs.each do |hdoc|
-          begin
-            make_request(annotator, project, [hdoc], options)
-          rescue StandardError, RestClient::RequestFailed => e
-            add_exception_message_to_job([hdoc], e)
-            break if e.class == RestClient::InternalServerError
-          end
-        end
-      else
-        begin
-          make_request(annotator, project, hdocs, options)
-        rescue StandardError, RestClient::RequestFailed => e
-          add_exception_message_to_job(hdocs, e)
-        end
+      begin
+        make_request(annotator, project, hdocs, options)
+      rescue StandardError, RestClient::RequestFailed => e
+        add_exception_message_to_job(hdocs, e)
+        break if e.class == RestClient::InternalServerError
       end
     end
 
@@ -72,15 +60,10 @@ private
     RestClient::Request.execute(method:, url:, payload:, max_redirects: 0, headers:{content_type: payload_type, accept: :json, callback_url:}, verify_ssl: false)
   end
 
-  def update_job_items(annotator, doc, request_count)
-    additional_items = request_count - 1
-    @job.increment!(:num_items, additional_items)
-  end
-
-  def add_slice_message_to_job(annotator, doc, request_count)
+  def add_slice_message_to_job(annotator, doc, slice_count)
     @job.add_message sourcedb:doc.sourcedb,
                      sourceid:doc.sourceid,
-                     body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{request_count} slices."
+                     body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{slice_count} slices."
   end
 
   def add_exception_message_to_job(hdocs, e)

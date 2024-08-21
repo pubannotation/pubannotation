@@ -46,6 +46,15 @@ class DocPackage
     @docs.first
   end
 
+  def calculate_hdoc_count
+    if @single_doc_processing && document_too_large?
+      slices = @docs.first.get_slices(@max_text_size)
+      slices.length
+    else
+      1
+    end
+  end
+
   private
 
   def document_too_large?
