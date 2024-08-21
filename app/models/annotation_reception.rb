@@ -9,12 +9,13 @@ class AnnotationReception < ApplicationRecord
   def process_annotation!(annotations_collection)
     hdoc_metadata.map!(&:deep_symbolize_keys)
 
-    annotations_collection.zip(hdoc_metadata).each do |annotations, hdoc_info|
+    annotations_collection.each_with_index do |annotations, i|
       raise RuntimeError, "Annotation result is not a valid JSON object." unless annotations.is_a?(Hash)
 
       AnnotationUtils.normalize!(annotations)
       annotator.annotations_transform!(annotations)
 
+      hdoc_info = hdoc_metadata[i]
       symbolized_options = options.deep_symbolize_keys.merge(span: hdoc_info[:span])
 
       if symbolized_options[:span].present?
@@ -28,7 +29,7 @@ class AnnotationReception < ApplicationRecord
       end
     end
 
-    job.increment!(:num_dones, annotations_collection.length)
+    job.increment!(:num_dones)
     job.finish!
   end
 end

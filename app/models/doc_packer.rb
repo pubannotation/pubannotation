@@ -20,14 +20,44 @@ class DocPacker
   def each
     @doc_packages.each do |doc_package|
       begin
-        yield doc_package.hdocs, doc_package.first_doc, nil
+        if @single_doc_processing
+          process_single_doc(doc_package) do |hdocs, doc, error, total_slices|
+            yield hdocs, doc, error, total_slices
+          end
+        else
+          process_multiple_docs(doc_package) do |hdocs, doc, error, total_slices|
+            yield hdocs, doc, error, total_slices
+          end
+        end
       rescue RuntimeError => e
-        yield [], doc_package.first_doc, e
+        yield [doc_package.first_doc.hdoc], nil, e
       end
     end
   end
 
+  def request_count
+    @doc_packages.map(&:calculate_hdoc_count).sum
+  end
+
   private
+
+  def process_single_doc(doc_package)
+    doc_package.hdocs.each_with_index do |hdoc, i|
+      if i == 0 && hdoc[:span].present?
+        yield [hdoc], doc_package.first_doc, nil, doc_package.hdocs.length
+      else
+        yield [hdoc], doc_package.first_doc, nil
+      end
+    end
+  end
+
+  def process_multiple_docs(doc_package)
+    if doc_package.hdocs.any? { _1.key?(:span) }
+      yield doc_package.hdocs, doc_package.first_doc, nil, doc_package.hdocs.length
+    else
+      yield doc_package.hdocs, doc_package.first_doc, nil
+    end
+  end
 
   def current_doc_package
     @doc_packages.last
