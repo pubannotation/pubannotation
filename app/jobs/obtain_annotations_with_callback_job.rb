@@ -13,19 +13,19 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
 
     prepare_progress_record(doc_packer.request_count)
 
-    doc_packer.each do |hdocs, doc, error, slice_count|
+    doc_packer.each do |annotation_request|
       # Handle document slice error
-      if error
-        add_exception_message_to_job(hdocs, error)
+      if annotation_request.error
+        add_exception_message_to_job(annotation_request.hdocs, annotation_request.error)
         next
       end
 
-      add_slice_message_to_job(annotator, doc, slice_count) if slice_count.present?
+      add_slice_message_to_job(annotator, annotation_request.doc, annotation_request.slice_count) if annotation_request.slice_count.present?
 
       begin
-        make_request(annotator, project, hdocs, options)
+        make_request(annotator, project, annotation_request.hdocs, options)
       rescue StandardError, RestClient::RequestFailed => e
-        add_exception_message_to_job(hdocs, e)
+        add_exception_message_to_job(annotation_request.hdocs, e)
         break if e.class == RestClient::InternalServerError
       end
     end
