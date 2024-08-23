@@ -21,16 +21,16 @@ class DocPacker
     @doc_packages.each do |doc_package|
       begin
         if @single_doc_processing
-          process_single_doc(doc_package) do |hdocs, doc, error, total_slices|
-            yield hdocs, doc, error, total_slices
+          process_single_doc(doc_package) do |annotation_request|
+            yield annotation_request
           end
         else
-          process_multiple_docs(doc_package) do |hdocs, doc, error, total_slices|
-            yield hdocs, doc, error, total_slices
+          process_multiple_docs(doc_package) do |annotation_request|
+            yield annotation_request
           end
         end
       rescue RuntimeError => e
-        yield [doc_package.first_doc.hdoc], nil, e
+        yield AnnotationRequest.new([doc_package.first_doc.hdoc], error: e)
       end
     end
   end
@@ -44,18 +44,18 @@ class DocPacker
   def process_single_doc(doc_package)
     doc_package.hdocs.each_with_index do |hdoc, i|
       if i == 0 && hdoc[:span].present?
-        yield [hdoc], doc_package.first_doc, nil, doc_package.hdocs.length
+        yield AnnotationRequest.new([hdoc], doc: doc_package.first_doc, slice_count: doc_package.hdocs.length)
       else
-        yield [hdoc], doc_package.first_doc, nil
+        yield AnnotationRequest.new([hdoc])
       end
     end
   end
 
   def process_multiple_docs(doc_package)
     if doc_package.hdocs.any? { _1.key?(:span) }
-      yield doc_package.hdocs, doc_package.first_doc, nil, doc_package.hdocs.length
+      yield AnnotationRequest.new(doc_package.hdocs, doc: doc_package.first_doc, slice_count: doc_package.hdocs.length)
     else
-      yield doc_package.hdocs, doc_package.first_doc, nil
+      yield AnnotationRequest.new(doc_package.hdocs)
     end
   end
 
