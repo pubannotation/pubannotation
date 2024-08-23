@@ -30,7 +30,7 @@ class DocPacker
           end
         end
       rescue RuntimeError => e
-        yield AnnotationRequest.new(hdocs: [doc_package.first_doc.hdoc], error: e)
+        yield AnnotationRequest.new([doc_package.first_doc.hdoc], error: e)
       end
     end
   end
@@ -44,18 +44,18 @@ class DocPacker
   def process_single_doc(doc_package)
     doc_package.hdocs.each_with_index do |hdoc, i|
       if i == 0 && hdoc[:span].present?
-        yield AnnotationRequest.new(hdocs: [hdoc], doc: doc_package.first_doc, slice_count: doc_package.hdocs.length)
+        yield AnnotationRequest.new([hdoc], doc: doc_package.first_doc, slice_count: doc_package.hdocs.length)
       else
-        yield AnnotationRequest.new(hdocs: [hdoc], doc: doc_package.first_doc)
+        yield AnnotationRequest.new([hdoc], doc: doc_package.first_doc)
       end
     end
   end
 
   def process_multiple_docs(doc_package)
     if doc_package.hdocs.any? { _1.key?(:span) }
-      yield AnnotationRequest.new(hdocs: doc_package.hdocs, doc: doc_package.first_doc, slice_count: doc_package.hdocs.length)
+      yield AnnotationRequest.new(doc_package.hdocs, doc: doc_package.first_doc, slice_count: doc_package.hdocs.length)
     else
-      yield AnnotationRequest.new(hdocs: doc_package.hdocs, doc: doc_package.first_doc)
+      yield AnnotationRequest.new(doc_package.hdocs, doc: doc_package.first_doc)
     end
   end
 
