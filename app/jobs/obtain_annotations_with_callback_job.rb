@@ -20,7 +20,7 @@ class ObtainAnnotationsWithCallbackJob < ApplicationJob
         next
       end
 
-      add_slice_message_to_job(annotator, annotation_request.doc, annotation_request.slice_count) if annotation_request.slice_count.present?
+      add_slice_message_to_job(annotator, annotation_request) if annotation_request.slice_count.present?
 
       begin
         make_request(annotator, project, annotation_request.hdocs, options)
@@ -70,10 +70,14 @@ private
     )
   end
 
-  def add_slice_message_to_job(annotator, doc, slice_count)
+  def add_slice_message_to_job(annotator, annotation_request)
+    doc = annotation_request.doc
     @job.add_message sourcedb:doc.sourcedb,
                      sourceid:doc.sourceid,
-                     body: "The document was too big to be processed at once (#{number_with_delimiter(doc.body.length)} > #{number_with_delimiter(annotator.find_or_define_max_text_size)}). For proceding, it was divided into #{slice_count} slices."
+                     body: "The document was too big to be processed at once " \
+                           "(#{number_with_delimiter(doc.body.length)} > " \
+                           "#{number_with_delimiter(annotator.find_or_define_max_text_size)}). " \
+                           "For proceding, it was divided into #{annotation_request.slice_count} slices."
   end
 
   def add_exception_message_to_job(hdocs, e)
