@@ -46,7 +46,7 @@ class DocPacker
       if i == 0 && hdoc[:span].present?
         yield AnnotationRequest.new([hdoc], doc: doc_package.first_doc, slice_count: doc_package.hdocs.length)
       else
-        yield AnnotationRequest.new([hdoc], doc: doc_package.first_doc)
+        yield AnnotationRequest.new([hdoc])
       end
     end
   end
@@ -55,7 +55,7 @@ class DocPacker
     if doc_package.hdocs.any? { _1.key?(:span) }
       yield AnnotationRequest.new(doc_package.hdocs, doc: doc_package.first_doc, slice_count: doc_package.hdocs.length)
     else
-      yield AnnotationRequest.new(doc_package.hdocs, doc: doc_package.first_doc)
+      yield AnnotationRequest.new(doc_package.hdocs)
     end
   end
 
