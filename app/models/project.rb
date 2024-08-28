@@ -9,7 +9,9 @@ class Project < ActiveRecord::Base
   has_many :collection_projects, dependent: :destroy
   has_many :collections, through: :collection_projects
   has_many :project_docs, dependent: :destroy
+  has_many :project_docs_without_annotation, -> { where(annotations_updated_at: nil) }, class_name: 'ProjectDoc'
   has_many :docs, through: :project_docs
+  has_many :docs_without_annotation, through: :project_docs_without_annotation, source: :doc
   has_many :queries, as: :organization, :dependent => :destroy
 
   has_many :evaluations, foreign_key: 'study_project_id'
@@ -1128,6 +1130,26 @@ class Project < ActiveRecord::Base
 
     # delete self
     self.delete
+  end
+
+  def fetch_docids_to_obtain_annotations_by(mode)
+    case mode
+    when 'fill'
+      docids = docs_without_annotation.pluck(:id)
+      mode = 'add'
+    when 'skip'
+      if project_docs.without_denotations.count == 0
+        raise 'Obtaining annotation was skipped because all the docs already had annotations'
+      end
+      docids = project_docs.without_denotations.pluck(:doc_id)
+      mode = 'add'
+      num_skipped = project_docs.with_denotations.count
+      skip_message = "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
+    else
+      docids = project_docs.pluck(:doc_id)
+    end
+
+    [mode, docids, skip_message]
   end
 
   private

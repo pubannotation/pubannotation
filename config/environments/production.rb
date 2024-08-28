@@ -43,10 +43,8 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
-  # Log to STDOUT by default
-  config.logger = ActiveSupport::Logger.new(STDOUT)
-    .tap  { |logger| logger.formatter = ::Logger::Formatter.new }
-    .then { |logger| ActiveSupport::TaggedLogging.new(logger) }
+  # Rotate log file daily, weekly monthly
+  config.logger = Logger.new("#{Rails.root}/log/production.log", 'daily', 30)
 
   # Prepend all log lines with the following tags.
   config.log_tags = [ :request_id ]
@@ -89,4 +87,7 @@ Rails.application.configure do
 
   # option for url_helpers in models
   Rails.application.routes.default_url_options[:host]= 'pubannotation.org'
+
+  # option for callback url
+  config.host_url = 'https://pubannotation.org'
 end

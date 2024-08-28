@@ -7,7 +7,7 @@
 		</tr>
 		<tr>
 			<td style="text-align:center">
-				<%= form_tag annotations_obtain_path, style: 'width:100%' do %>
+				<%= form_tag obtain_path, style: 'width:100%' do %>
 					<%= hidden_field_tag :annotator, @project.annotator.name %>
 					<%= hidden_field_tag :mode, :fill %>
 					<%= submit_tag 'annotate the doc(s)', class: 'button long_button', title: 'To obtain annotations from the last annotation service, for the documents which have not been annotated' %>

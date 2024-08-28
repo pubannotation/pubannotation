@@ -164,6 +164,10 @@ class Annotator < ActiveRecord::Base
 		payload.map{|p| p.join(' = ')}.join("\n") if payload.present?
 	end
 
+	def find_or_define_max_text_size
+		max_text_size || (async_protocol ? MaxTextAsync : MaxTextSync)
+	end
+
 	private
 		def method_flagged?
 			method == 1
