@@ -1,4 +1,6 @@
 class DestroyProjectJob < ApplicationJob
+	include UseJobRecordConcern
+
 	queue_as :general
 
 	def perform(admin_project, project)
