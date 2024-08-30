@@ -83,7 +83,8 @@ class EvaluationsController < ApplicationController
 	end
 
 	def destroy
-		raise "You are not authorized" unless @evaluation.changeable?(current_user)
+		render_status_error(:forbidden) unless @evaluation.changeable?(current_user)
+
 		@project = @evaluation.study_project
 		@evaluation.destroy
 		redirect_to project_evaluations_path(@project.name)
