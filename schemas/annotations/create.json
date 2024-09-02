@@ -8,11 +8,11 @@
     "sourceid": { "type": "string", "description": "Document source ID" },
     "text": { "type": "string", "description": "Document text" },
     "project": { "type": "string", "description": "Project name" },
-    "denotations": { "$ref": "#/definitions/denotations" },
-    "attributes": { "$ref": "#/definitions/attributes" },
-    "relations": { "$ref": "#/definitions/relations" },
-    "blocks": { "$ref": "#/definitions/blocks" },
-    "typesettings": { "$ref": "#/definitions/typesettings" },
+    "denotations": { "type": "array", "items": { "$ref": "#/definitions/denotation" } },
+    "attributes": { "type": "array", "items": { "$ref": "#/definitions/attribute" } },
+    "relations": { "type": "array", "items": { "$ref": "#/definitions/relation" } },
+    "blocks": { "type": "array", "items": { "$ref": "#/definitions/block" } },
+    "typesettings": { "type": "array", "items": { "$ref": "#/definitions/typesetting" } },
     "config": { "$ref": "#/definitions/config" },
     "project_id": { "type": "string", "description": "Project ID" },
     "annotation": {
@@ -24,11 +24,11 @@
         "sourceid": { "type": "string", "description": "Document source ID" },
         "text": { "type": "string", "description": "Document text" },
         "project": { "type": "string", "description": "Project name" },
-        "denotations": { "$ref": "#/definitions/denotations" },
-        "attributes": { "$ref": "#/definitions/attributes" },
-        "relations": { "$ref": "#/definitions/relations" },
-        "blocks": { "$ref": "#/definitions/blocks" },
-        "typesettings": { "$ref": "#/definitions/typesettings" },
+        "denotations": { "type": "array", "items": { "$ref": "#/definitions/denotation" } },
+        "attributes": { "type": "array", "items": { "$ref": "#/definitions/attribute" } },
+        "relations": { "type": "array", "items": { "$ref": "#/definitions/relation" } },
+        "blocks": { "type": "array", "items": { "$ref": "#/definitions/block" } },
+        "typesettings": { "type": "array", "items": { "$ref": "#/definitions/typesetting" } },
         "config": { "$ref": "#/definitions/config" }
       }
     }
@@ -41,60 +41,45 @@
         "end": { "type": "integer" }
       }
     },
-    "denotations": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "span": { "$ref": "#/definitions/span" },
-          "obj": { "type": ["string", "null"] }
-        }
+    "denotation": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "span": { "$ref": "#/definitions/span" },
+        "obj": { "type": ["string", "null"] }
       }
     },
-    "attributes": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "pred": { "type": "string" },
-          "subj": { "type": "string" },
-          "obj": { "type": ["string", "number", "boolean"] }
-        }
+    "attribute": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "pred": { "type": "string" },
+        "subj": { "type": "string" },
+        "obj": { "type": ["string", "number", "boolean"] }
       }
     },
-    "relations": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "pred": { "type": "string" },
-          "subj": { "type": "string" },
-          "obj": { "type": "string" }
-        }
+    "relation": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "pred": { "type": "string" },
+        "subj": { "type": "string" },
+        "obj": { "type": "string" }
       }
     },
-    "blocks": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "span": { "$ref": "#/definitions/span" },
-          "obj": { "type": "string" }
-        }
+    "block": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "span": { "$ref": "#/definitions/span" },
+        "obj": { "type": "string" }
       }
     },
-    "typesettings": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "span": { "$ref": "#/definitions/span" },
-          "style": { "type": "string" }
-        }
+    "typesetting": {
+      "type": "object",
+      "properties": {
+        "span": { "$ref": "#/definitions/span" },
+        "style": { "type": "string" }
       }
     },
     "config": {
