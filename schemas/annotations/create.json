@@ -48,7 +48,7 @@
         "properties": {
           "id": { "type": "string" },
           "span": { "$ref": "#/definitions/span" },
-          "obj": { "type": "string" }
+          "obj": { "type": ["string", "null"] }
         }
       }
     },
@@ -60,7 +60,7 @@
           "id": { "type": "string" },
           "pred": { "type": "string" },
           "subj": { "type": "string" },
-          "obj": { "type": "string" }
+          "obj": { "type": ["string", "number", "boolean"] }
         }
       }
     },
@@ -109,8 +109,9 @@
           "items": {
             "type": "object",
             "properties": {
-              "color": { "type": "string" },
               "id": { "type": "string" },
+              "color": { "type": "string" },
+              "label": { "type": "string" },
               "default": { "type": "boolean" }
             }
           }
@@ -149,12 +150,15 @@
               "max": { "type": "number" },
               "step": { "type": "number" },
               "color": { "type": "string" },
+              "label": { "type": "string" },
               "values": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "id": { "type": "string" },
+                    "range": { "type": "string" },
+                    "pattern": { "type": "string" },
                     "color": { "type": "string" },
                     "label": { "type": "string" }
                   }
