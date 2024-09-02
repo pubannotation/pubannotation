@@ -11,7 +11,7 @@
         "properties": {
           "id": { "type": "string" },
           "span": { "$ref": "#/definitions/span" },
-          "obj": { "type": ["string", "null"] }
+          "obj": { "type": "string" }
         }
       }
     },
