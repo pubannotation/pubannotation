@@ -13,7 +13,7 @@
     "relations": { "type": "array", "items": { "$ref": "#/definitions/relation" } },
     "blocks": { "type": "array", "items": { "$ref": "#/definitions/block" } },
     "typesettings": { "type": "array", "items": { "$ref": "#/definitions/typesetting" } },
-    "config": { "$ref": "#/definitions/config" },
+    "config": { "type": "object" },
     "project_id": { "type": "string", "description": "Project ID" },
     "annotation": {
       "type": "object",
@@ -29,7 +29,7 @@
         "relations": { "type": "array", "items": { "$ref": "#/definitions/relation" } },
         "blocks": { "type": "array", "items": { "$ref": "#/definitions/block" } },
         "typesettings": { "type": "array", "items": { "$ref": "#/definitions/typesetting" } },
-        "config": { "$ref": "#/definitions/config" }
+        "config": { "type": "object" }
       }
     }
   },
@@ -80,79 +80,6 @@
       "properties": {
         "span": { "$ref": "#/definitions/span" },
         "style": { "type": "string" }
-      }
-    },
-    "config": {
-      "type": "object",
-      "properties": {
-        "autocompletion_ws": { "type": "string" },
-        "autosave": { "type": "boolean" },
-        "autolineheight": { "type": "boolean" },
-        "boundarydetection": { "type": "boolean" },
-        "entity types": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "color": { "type": "string" },
-              "label": { "type": "string" },
-              "default": { "type": "boolean" }
-            }
-          }
-        },
-        "block types": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "color": { "type": "string" },
-              "label": { "type": "string" },
-              "default": { "type": "boolean" }
-            }
-          }
-        },
-        "relation types": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "color": { "type": "string" }
-            }
-          }
-        },
-        "attribute types": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "pred": { "type": "string" },
-              "value type": { "type": "string" },
-              "default": { "type": "number" },
-              "min": { "type": "number" },
-              "max": { "type": "number" },
-              "step": { "type": "number" },
-              "color": { "type": "string" },
-              "label": { "type": "string" },
-              "values": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "string" },
-                    "range": { "type": "string" },
-                    "pattern": { "type": "string" },
-                    "color": { "type": "string" },
-                    "label": { "type": "string" }
-                  }
-                }
-              },
-              "media height": { "type": "number" }
-            }
-          }
-        }
       }
     }
   }
