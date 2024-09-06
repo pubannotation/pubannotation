@@ -61,7 +61,7 @@ gem 'diff-lcs'
 gem 'activejob-cancel'
 gem 'sidekiq'
 
-gem "foreman", "~> 0.87.2"
+gem "foreman", "~> 0.88.1"
 
 # For the RSpec
 group :development, :test do
