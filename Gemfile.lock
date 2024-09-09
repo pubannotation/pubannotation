@@ -292,7 +292,7 @@ GEM
       actionpack (>= 4.2)
       omniauth (~> 2.0)
     orm_adapter (0.5.0)
-    pg (1.5.6)
+    pg (1.5.8)
     psych (5.1.2)
       stringio
     pubannotation_evaluator (3.0.1)
