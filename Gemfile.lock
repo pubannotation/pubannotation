@@ -466,7 +466,7 @@ DEPENDENCIES
   factory_bot_rails
   faraday (~> 1.10)
   font-awesome-rails
-  foreman (~> 0.88.1)
+  foreman
   friendly_id
   htmlentities
   jquery-rails
