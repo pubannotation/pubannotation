@@ -206,7 +206,7 @@ GEM
     hashie (5.0.0)
     htmlentities (4.3.4)
     http-accept (1.7.0)
-    http-cookie (1.0.5)
+    http-cookie (1.0.7)
       domain_name (~> 0.5)
     i18n (1.14.5)
       concurrent-ruby (~> 1.0)
