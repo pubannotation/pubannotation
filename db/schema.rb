@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
+ActiveRecord::Schema[7.2].define(version: 2024_07_31_020157) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -36,8 +36,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.string "url"
     t.text "payload"
     t.integer "method"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "is_public", default: false
     t.text "sample"
     t.integer "max_text_size"
@@ -50,8 +50,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
   create_table "associate_maintainers", force: :cascade do |t|
     t.integer "user_id"
     t.integer "project_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["project_id"], name: "index_associate_maintainers_on_project_id"
     t.index ["user_id"], name: "index_associate_maintainers_on_user_id"
   end
@@ -112,8 +112,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.integer "end"
     t.string "obj"
     t.integer "project_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "is_block", default: false
     t.index ["doc_id"], name: "index_denotations_on_doc_id"
     t.index ["project_id"], name: "index_denotations_on_project_id"
@@ -136,8 +136,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.string "sourceid"
     t.integer "serial"
     t.string "section"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "denotations_num", default: 0
     t.integer "relations_num", default: 0
     t.integer "projects_num", default: 0
@@ -203,12 +203,12 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.integer "organization_id"
     t.integer "num_items"
     t.integer "num_dones"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "name"
-    t.datetime "begun_at"
-    t.datetime "ended_at"
-    t.datetime "registered_at"
+    t.datetime "begun_at", precision: nil
+    t.datetime "ended_at", precision: nil
+    t.datetime "registered_at", precision: nil
     t.string "organization_type"
     t.string "active_job_id"
     t.string "queue_name"
@@ -219,8 +219,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
   create_table "messages", force: :cascade do |t|
     t.text "body"
     t.integer "job_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "sourcedb"
     t.string "sourceid"
     t.integer "divid"
@@ -238,8 +238,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.string "obj_type"
     t.string "pred"
     t.integer "project_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["obj_id"], name: "index_modifications_on_obj_id"
     t.index ["project_id"], name: "index_modifications_on_project_id"
   end
@@ -282,7 +282,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.boolean "flag", default: false
     t.index ["denotations_num"], name: "index_project_docs_on_denotations_num"
     t.index ["doc_id"], name: "index_project_docs_on_doc_id"
-    t.index ["project_id", "doc_id"], name: "index_project_docs_on_project_id_and_doc_id", unique: true
     t.index ["project_id"], name: "index_project_docs_on_project_id"
   end
 
@@ -290,8 +289,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.string "name"
     t.text "description"
     t.string "author"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "license"
     t.string "reference"
     t.integer "accessibility"
@@ -306,7 +305,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.integer "denotations_num", default: 0
     t.integer "relations_num", default: 0
     t.boolean "annotations_zip_downloadable", default: true
-    t.datetime "annotations_updated_at", default: "2016-04-08 06:25:21"
+    t.datetime "annotations_updated_at", precision: nil, default: "2016-04-08 06:25:21"
     t.text "namespaces"
     t.integer "process"
     t.integer "annotations_count", default: 0
@@ -348,8 +347,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.string "obj_type"
     t.string "pred"
     t.integer "project_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "doc_id"
     t.index ["doc_id"], name: "index_relations_on_doc_id"
     t.index ["obj_id"], name: "index_relations_on_obj_id"
@@ -402,15 +401,15 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_31_020157) do
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"
-    t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
+    t.datetime "reset_password_sent_at", precision: nil
+    t.datetime "remember_created_at", precision: nil
     t.integer "sign_in_count", default: 0
-    t.datetime "current_sign_in_at"
-    t.datetime "last_sign_in_at"
+    t.datetime "current_sign_in_at", precision: nil
+    t.datetime "last_sign_in_at", precision: nil
     t.string "current_sign_in_ip"
     t.string "last_sign_in_ip"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.text "username", default: "", null: false
     t.boolean "root", default: false
     t.string "confirmation_token"
