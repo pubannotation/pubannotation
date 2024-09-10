@@ -184,6 +184,7 @@
 					<tr>
 						<th>Access Token</th>
 						<td><%= @user.access_token.token %></td>
+						<td><%= link_to fa_icon('trash'), access_token_path(@user.access_token), method: :delete, data: { confirm: 'Are you sure?' } %></td>
 					</tr>
 				</table>
 			<% else %>

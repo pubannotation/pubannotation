@@ -6,4 +6,10 @@ class AccessTokensController < ApplicationController
 
     redirect_back fallback_location: root_path, notice: "Access token was successfully created."
   end
+
+  def destroy
+    current_user.access_token.destroy
+
+    redirect_back fallback_location: root_path, notice: 'Access token was successfully deleted.'
+  end
 end
