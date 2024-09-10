@@ -15,6 +15,7 @@ class User < ActiveRecord::Base
 	has_many :projects, :dependent => :destroy
 	has_many :associate_maintainers, :dependent => :destroy
 	has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
+	has_one :access_token, dependent: :destroy
 	validates :username, :presence => true, :length => {:minimum => 5, :maximum => 20}, uniqueness: true
 	validates_format_of :username, :with => /\A[a-zA-Z0-9][a-zA-Z0-9 _-]+\z/i
 	validate :username_changed, on: :update
