@@ -119,16 +119,17 @@ class AnnotationsController < ApplicationController
 	# POST /annotations
 	# POST /annotations.json
 	def create
-		# token authentication
-		if api_call_from_non_textae?
-			return unless token_authenticated?
-		end
+		unless user_signed_in?
+			# for TextAE
+			if request.headers['Origin'] == 'https://textae.pubannotation.org'
+				response.headers['WWW-Authenticate'] = 'ServerPage'
+				response.headers['Location'] = new_user_session_url
+				response.headers['Access-Control-Expose-Headers'] = 'WWW-Authenticate, Location'
+				head 401 and return
+			end
 
-		unless user_signed_in? then
-			response.headers['WWW-Authenticate'] = 'ServerPage'
-			response.headers['Location'] = new_user_session_url
-			response.headers['Access-Control-Expose-Headers'] = 'WWW-Authenticate, Location'
-			head 401 and return
+			# for token authentication
+			return unless token_authenticated?
 		end
 
 		# use unsafe params for flexible paramater passing
@@ -727,10 +728,6 @@ class AnnotationsController < ApplicationController
 			format.html {render 'list_view'}
 			format.json {render json: @annotations}
 		end
-	end
-
-	def api_call_from_non_textae?
-		request.path.include?('annotations.json') && request.headers['Origin'] != 'https://textae.pubannotation.org'
 	end
 
 	def token_authenticated?
