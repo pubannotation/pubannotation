@@ -50,6 +50,8 @@ Pubann::Application.routes.draw do
 	resources :annotators
 	resources :editors
 
+	resources :access_tokens, only: %i[create destroy]
+
 	devise_for :users, controllers: {
 		:omniauth_callbacks => 'users/omniauth_callbacks',
 		:confirmations => 'confirmations',

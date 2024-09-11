@@ -10,9 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_07_31_020157) do
+ActiveRecord::Schema[7.2].define(version: 2024_09_10_014942) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "access_tokens", force: :cascade do |t|
+    t.string "token", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_access_tokens_on_user_id"
+  end
 
   create_table "annotation_receptions", force: :cascade do |t|
     t.string "uuid", default: -> { "gen_random_uuid()" }, null: false
@@ -423,6 +431,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_07_31_020157) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "access_tokens", "users"
   add_foreign_key "annotation_receptions", "annotators"
   add_foreign_key "annotation_receptions", "jobs"
   add_foreign_key "annotation_receptions", "projects"

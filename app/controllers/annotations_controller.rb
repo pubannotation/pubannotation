@@ -119,11 +119,17 @@ class AnnotationsController < ApplicationController
 	# POST /annotations
 	# POST /annotations.json
 	def create
-		unless user_signed_in? then
-			response.headers['WWW-Authenticate'] = 'ServerPage'
-			response.headers['Location'] = new_user_session_url
-			response.headers['Access-Control-Expose-Headers'] = 'WWW-Authenticate, Location'
-			head 401 and return
+		unless user_signed_in?
+			# for TextAE
+			if request.headers['Origin'] == 'https://textae.pubannotation.org'
+				response.headers['WWW-Authenticate'] = 'ServerPage'
+				response.headers['Location'] = new_user_session_url
+				response.headers['Access-Control-Expose-Headers'] = 'WWW-Authenticate, Location'
+				head 401 and return
+			end
+
+			# for token authentication
+			return render_token_invalid_error unless token_authenticated?
 		end
 
 		# use unsafe params for flexible paramater passing
@@ -722,5 +728,33 @@ class AnnotationsController < ApplicationController
 			format.html {render 'list_view'}
 			format.json {render json: @annotations}
 		end
+	end
+
+	def token_authenticated?
+		if token
+			sign_in(token.user)
+			true
+		else
+			false
+		end
+	end
+
+	def token
+		bearer_token = extract_bearer_token
+		AccessToken.find_by(token: bearer_token) if bearer_token
+	end
+
+	def extract_bearer_token
+		case request.authorization
+		in /^Bearer (.+)$/
+			Regexp.last_match(1)
+		else
+			nil
+		end
+	end
+
+	def render_token_invalid_error
+		render json: { error: "The access token is missing or invalid." }, status: :unauthorized
+		response.headers['WWW-Authenticate'] = 'Bearer'
 	end
 end

@@ -174,6 +174,27 @@
 		-%>
 	</fieldset>
 
+	<% if @user == current_user %>
+		<fieldset class="pane">
+			<legend>Access Token</legend>
+
+			<% if @user.access_token.present? %>
+				<button disabled>Generate Access Token</button>
+				<table>
+					<tr>
+						<th>Access Token</th>
+						<td><%= @user.access_token.token %></td>
+						<td><%= link_to fa_icon('trash'), access_token_path(@user.access_token), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+					</tr>
+				</table>
+			<% else %>
+				<%= form_with url: access_tokens_path, method: :post do %>
+					<button type="submit" class="button">Generate Access Token</button>
+				<% end %>
+			<% end %>
+		</fieldset>
+	<% end %>
+
 	<% if @user == current_user && current_user.root? %>
 		<fieldset class="pane">
 			<legend>
