@@ -119,6 +119,11 @@ class AnnotationsController < ApplicationController
 	# POST /annotations
 	# POST /annotations.json
 	def create
+		# token authentication
+		if api_call_from_non_textae?
+			return unless token_authenticated?
+		end
+
 		unless user_signed_in? then
 			response.headers['WWW-Authenticate'] = 'ServerPage'
 			response.headers['Location'] = new_user_session_url
@@ -722,5 +727,38 @@ class AnnotationsController < ApplicationController
 			format.html {render 'list_view'}
 			format.json {render json: @annotations}
 		end
+	end
+
+	def api_call_from_non_textae?
+		request.path.include?('annotations.json') && request.headers['Origin'] != 'https://textae.pubannotation.org'
+	end
+
+	def token_authenticated?
+		if token
+			sign_in(token.user)
+			true
+		else
+			render_token_invalid_error
+			false
+		end
+	end
+
+	def token
+		bearer_token = bearer_token_in(request.headers)
+		AccessToken.find_by(token: bearer_token) if bearer_token
+	end
+
+	def bearer_token_in(headers)
+		case headers['Authorization']
+		in /^Bearer (.+)$/
+			Regexp.last_match(1)
+		else
+			nil
+		end
+	end
+
+	def render_token_invalid_error
+		render json: { error: "The access token is missing or invalid." }, status: :unauthorized
+		response.headers['WWW-Authenticate'] = 'Bearer'
 	end
 end
