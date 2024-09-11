@@ -129,7 +129,7 @@ class AnnotationsController < ApplicationController
 			end
 
 			# for token authentication
-			return unless token_authenticated?
+			return render_token_invalid_error unless token_authenticated?
 		end
 
 		# use unsafe params for flexible paramater passing
@@ -735,7 +735,6 @@ class AnnotationsController < ApplicationController
 			sign_in(token.user)
 			true
 		else
-			render_token_invalid_error
 			false
 		end
 	end
