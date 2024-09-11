@@ -744,12 +744,12 @@ class AnnotationsController < ApplicationController
 	end
 
 	def token
-		bearer_token = bearer_token_in(request.headers)
+		bearer_token = extract_bearer_token
 		AccessToken.find_by(token: bearer_token) if bearer_token
 	end
 
-	def bearer_token_in(headers)
-		case headers['Authorization']
+	def extract_bearer_token
+		case request.authorization
 		in /^Bearer (.+)$/
 			Regexp.last_match(1)
 		else
