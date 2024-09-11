@@ -183,7 +183,8 @@
 				<table>
 					<tr>
 						<th>Access Token</th>
-						<td><%= @user.access_token.token %></td>
+						<td id="access-token"><%= @user.access_token.token %></td>
+						<td><button id="clipboard-btn" style="cursor: pointer" data-clipboard-target="#access-token"><%= fa_icon('copy') %></button></td>
 						<td><%= link_to fa_icon('trash'), access_token_path(@user.access_token), method: :delete, data: { confirm: 'Are you sure?' } %></td>
 					</tr>
 				</table>
@@ -260,3 +261,7 @@
 	<% end %>
 
 </section>
+
+<script>
+	new ClipboardJS('#clipboard-btn')
+</script>
