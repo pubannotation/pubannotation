@@ -116,7 +116,7 @@ class Annotator < ActiveRecord::Base
 			end
 		end
 
-		raise "Unsuccessful response (#{response.status})" unless response.status == 200
+		raise "Unsuccessful response from the annotator (#{response.status}: #{response.reason_phrase})" unless response.status == 200
 
 		JSON.parse(response.body).deep_symbolize_keys
 	rescue => e
