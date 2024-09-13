@@ -142,7 +142,7 @@ class Annotator < ActiveRecord::Base
 	end
 
 	def annotations_transform!(annotations)
-		return unless receiver_attribute.present?
+		return annotations unless receiver_attribute.present?
 		raise 'new label needs to be defined' unless new_label.present?
 		new_attributes = []
 		denotations_idx = {}
