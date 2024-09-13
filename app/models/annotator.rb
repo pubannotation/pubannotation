@@ -47,7 +47,12 @@ class Annotator < ActiveRecord::Base
 	# To obtain annotations from an annotator and to save them in the project
 	def obtain_annotations_for_a_doc(doc)
 		_url, _params, _payload = prepare_request_for_a_doc(doc)
-		make_request_for_a_doc(_url, _params, _payload)
+		annotations = make_request_for_a_doc(_url, _params, _payload)
+		annotations[:text] = doc[:text]
+		annotations[:sourcedb] = doc[:sourcedb]
+		annotations[:sourceid] = doc[:sourceid]
+		AnnotationUtils.normalize!(annotations)
+		annotations_transform!(annotations)
 	end
 
 	def prepare_request_for_a_doc(doc)
@@ -143,7 +148,7 @@ class Annotator < ActiveRecord::Base
 		denotations_idx = {}
 		a_id_num = 0
 		annotations[:denotations].each do |d|
-			skey = AnnotationUtils.skey_of_denotation(d, new_label)
+			skey = AnnotationUtils.skey_of_denotation_or_block(d, new_label)
 			unless denotations_idx.has_key? skey
 				new_attributes << {id:"A#{a_id_num += 1}", subj:d[:id], pred:receiver_attribute, obj:d[:obj]}
 				d[:obj] = new_label
@@ -156,6 +161,7 @@ class Annotator < ActiveRecord::Base
 		annotations[:denotations].delete_if{|d| d[:obj] == '__delme__'}
 		annotations[:attributes] ||= []
 		annotations[:attributes] += new_attributes
+		annotations
 	end
 
 	def single_doc_processing?

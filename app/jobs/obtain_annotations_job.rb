@@ -55,15 +55,25 @@ private
 						begin
 							obtain_and_store_annotations(pdoc)
 						rescue => e
-							doc = pdoc.doc
-							@job&.add_message(sourcedb:doc.sourcedb, sourceid:doc.sourceid, body:e.message)
-							failure_count.increment
+							if @job
+								doc = pdoc.doc
+								@job.add_message(sourcedb:doc.sourcedb, sourceid:doc.sourceid, body:e.message)
+								failure_count.increment
+							else
+								puts e.message
+								puts e.backtrace.join("\n")
+								puts "Error in a thread <-----"
+							end
 						end
 					end
 				end
 			end
 		rescue => e
-			puts "Error processing batch: #{e.message}"
+			if @job
+				@job.add_message(sourcedb:doc.sourcedb, sourceid:doc.sourceid, body:e.message)
+			else
+				puts "Error processing batch: #{e.message}"
+			end
 		ensure
 			@job&.increment!(:num_dones, id_batch.size)
 		end
@@ -71,7 +81,6 @@ private
 
 	def obtain_and_store_annotations(project_doc)
 		annotations = @annotator.obtain_annotations_for_a_doc(project_doc.doc.hdoc)
-		AnnotationUtils.normalize!(annotations)
 		messages = project_doc.save_annotations(annotations, @options)
 		messages.each {|message| @job&.add_message message}
 	end
