@@ -336,12 +336,12 @@ class AnnotationsController < ApplicationController
 
 			# to determine the options
 			options = {}
-			options[:mode] = params[:mode] || 'replace'
+			options[:mode] = params[:mode]&.to_sym || :replace
 			options[:prefix] = annotator.name
 
 			# to deterine the docids
-			docids = if options[:mode] == 'fill'
-				options[:mode] == 'add'
+			docids = if options[:mode] == :fill
+				options[:mode] = :add
 				ProjectDoc.where(project_id:project.id, annotations_updated_at:nil).pluck(:doc_id)
 			else
 				sourceids.collect {|sourceid| project.docs.where(sourcedb:sourcedb, sourceid:sourceid).pluck(:id).first}
@@ -385,7 +385,6 @@ class AnnotationsController < ApplicationController
 			end
 
 			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator, options)
-
 			# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
 			ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
 
