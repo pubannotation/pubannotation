@@ -37,7 +37,141 @@ class ProjectDoc < ActiveRecord::Base
     self.update_attribute(:annotations_updated_at, DateTime.now)
   end
 
-  private
+  # annotations need to be normal
+  def save_annotations(annotations, options = nil)
+    options ||= {}
+
+    return ['Upload is skipped due to existing annotations'] if options[:mode] == :skip && (denotations_num > 0 || blocks_num > 0)
+    return ['The text in the annotations is no identical to the original document'] unless annotations[:text] == doc.body
+
+    case options[:mode]
+    when :replace
+      delete_annotations(options[:span])
+      reid_annotations!(annotations) if options[:span].present?
+    when :add
+      reid_annotations!(annotations)
+    when :merge
+      reid_annotations!(annotations)
+      base_annotations = get_hannotations
+      AnnotationUtils.prepare_annotations_for_merging!(annotations, base_annotations)
+    else
+      reid_annotations!(annotations) if options[:span].present?
+    end
+
+    project.instantiate_and_save_annotations(annotations, doc)
+
+    []
+  end
+
+  def delete_annotations(span = nil)
+    if span.present?
+      Denotation.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', project_id, doc_id, span[:begin], span[:end]).destroy_all
+      Block.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', project_id, doc_id, span[:begin], span[:end]).destroy_all
+    else
+      ActiveRecord::Base.transaction do
+        d_num = ActiveRecord::Base.connection.update("delete from denotations where project_id=#{project_id} AND doc_id=#{doc_id}")
+        b_num = ActiveRecord::Base.connection.update("delete from blocks where project_id=#{project_id} AND doc_id=#{doc_id}")
+        r_num = ActiveRecord::Base.connection.update("delete from relations where project_id=#{project_id} AND doc_id=#{doc_id}")
+        a_num = ActiveRecord::Base.connection.update("delete from attrivutes where project_id=#{project_id} AND doc_id=#{doc_id}")
+
+        if d_num > 0 || b_num > 0
+          ActiveRecord::Base.connection.update("update project_docs set denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{project_id} and doc_id=#{doc_id}")
+          ActiveRecord::Base.connection.update("update docs set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{doc_id}")
+          ActiveRecord::Base.connection.update("update projects set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{project_id}")
+
+          project.update_annotations_updated_at
+          project.update_updated_at
+        end
+      end
+    end
+  end
+
+  # reassign ids to instances in annotations to avoid id confiction
+  # ToDo: del the same one in the Project class
+  def reid_annotations!(annotations)
+    existing_ids = get_annotation_hids
+    unless existing_ids.empty?
+      id_change = {}
+      if annotations.has_key?(:denotations)
+        annotations[:denotations].each do |a|
+          id = a[:id]
+          id = Denotation.new_id while existing_ids.include?(id)
+          if id != a[:id]
+            id_change[a[:id]] = id
+            a[:id] = id
+            existing_ids << id
+          end
+        end
+      end
+
+      if annotations.has_key?(:blocks)
+        annotations[:blocks].each do |a|
+          id = a[:id]
+          id = Block.new_id while existing_ids.include?(id)
+          if id != a[:id]
+            id_change[a[:id]] = id
+            a[:id] = id
+            existing_ids << id
+          end
+        end
+      end
+
+      if annotations.has_key?(:relations)
+        annotations[:relations].each do |a|
+          id = a[:id]
+          id = Relation.new_id while existing_ids.include?(id)
+          if id != a[:id]
+            id_change[a[:id]] = id
+            a[:id] = id
+            existing_ids << id
+          end
+          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+          a[:obj] = id_change[a[:obj]] if id_change.has_key?(a[:obj])
+        end
+      end
+
+      if annotations.has_key?(:attributes)
+        Attrivute.new_id_init
+        annotations[:attributes].each do |a|
+          id = a[:id]
+          id = Attrivute.new_id while existing_ids.include?(id)
+          if id != a[:id]
+            a[:id] = id
+            existing_ids << id
+          end
+          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+        end
+      end
+    end
+
+    annotations
+  end
+
+  def get_annotation_hids
+    denotation_hids = Denotations.in_doc(doc_id).in_project(project_id).pluck(:hid)
+    block_hids = Block.in_doc(doc_id).in_project(project_id).pluck(:hid)
+
+    return [] if denotation_hids.empty? && block_hids.empty?
+
+    relation_hids = Relation.in_doc(doc_id).in_project(project_id).pluck(:hid)
+    attribute_hids = Attrivute.in_doc(doc_id).in_project(project_id).pluck(:hid)
+
+    denotation_hids + block_hids + relation_hids + attribute_hids
+  end
+
+  def get_hannotations
+    hdenotation = Denotations.in_doc(doc_id).in_project(project_id).to_json
+    hblock = Block.in_doc(doc_id).in_project(project_id).to_json
+
+    return [] if denotation.empty? && block.empty?
+
+    hrelation = Relation.in_doc(doc_id).in_project(project_id).to_json
+    hattribute = Attrivute.in_doc(doc_id).in_project(project_id).to_json
+
+    hdenotation + hblock + hrelation + hattribute
+  end
+
+private
 
   def denotations_about(span, terms, predicates)
     denotations.in_project(project)

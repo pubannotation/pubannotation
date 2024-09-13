@@ -36,6 +36,88 @@ class Annotator < ActiveRecord::Base
 		current_user.present? && (current_user.root? || current_user == user)
 	end
 
+	def use_get_method?
+		method == 0
+	end
+
+	def use_post_method?
+		method == 1
+	end
+
+	# To obtain annotations from an annotator and to save them in the project
+	def obtain_annotations_for_a_doc(doc)
+		_url, _params, _payload = prepare_request_for_a_doc(doc)
+		make_request_for_a_doc(_url, _params, _payload)
+	end
+
+	def prepare_request_for_a_doc(doc)
+		## URL check and set the default parameter
+		_params = if use_get_method?
+			# The URL of an annotator who receives a GET request, should include the placeholder(s) of either _text_ or _sourcedb_/_sourcedb_ .
+			# Otherwise, the default params will be automatically added.
+			if self.url.include?('_text_') || (self.url.include?('_sourcedb_') && self.url.include?('_sourceid_'))
+				nil
+			else
+				{'text' => '_text_'}
+			end
+		end
+
+		## URL rewrite
+		# assuming only one document is passed.
+		_url = self.url.gsub('_text_', CGI.escape(doc[:text]))
+		_url.gsub!('_sourcedb_', CGI.escape(doc[:sourcedb])) if doc[:sourcedb].present?
+		_url.gsub!('_sourceid_', CGI.escape(doc[:sourceid])) if doc[:sourceid].present?
+
+		## parameter rewrite
+		if _params.present?
+			_params.each do |k, v|
+				_params[k] = v.gsub('_text_', doc[:text]).gsub('_sourcedb_', doc[:sourcedb]).gsub('_sourceid_', doc[:sourceid])
+			end
+		end
+
+		## payload rewrite
+		_payload = unless use_get_method?
+			# The default payload
+			self.payload['_body_'] = '_doc_' unless self.payload.present?
+
+			case self.payload['_body_']
+			when '_text_'
+				doc[:text]
+			when '_doc_'
+				doc.select{|k, v| [:text, :sourcedb, :sourceid].include? k}
+			when '_annotation_'
+				doc
+			end
+		end
+
+		[_url, _params, _payload]
+	end
+
+	def make_request_for_a_doc(_url, _params = nil, _payload = nil)
+		payload, content_type = if _payload.class == String
+			[_payload, 'text/plain; charset=utf8']
+		else
+			[_payload.to_json, 'application/json; charset=utf8']
+		end
+
+		response = if use_post_method? && payload.present?
+			Faraday.post(_url, payload) do |request|
+				request.headers['Content-Type'] = content_type
+				request.headers['Accept'] = 'application/json'
+			end
+		else
+			Faraday.get(_url, _params) do |request|
+				request.headers['Accept'] = 'application/json'
+			end
+		end
+
+		raise "Unsuccessful response (#{response.status})" unless response.status == 200
+
+		JSON.parse(response.body).deep_symbolize_keys
+	rescue => e
+		raise "Could not obtain annotations: #{e.message}"
+	end
+
 	# To obtain annotations from an annotator and to save them in the project
 	def obtain_annotations(docs)
 		method, url, params, payload = prepare_request(docs)
@@ -77,6 +159,7 @@ class Annotator < ActiveRecord::Base
 	end
 
 	def single_doc_processing?
+		# when it is 'get' method, or ...
 		method == 0 || url.include?('_text_') || url.include?('_sourceid_') || ['_text_', '_doc_', '_annotation_'].include?(payload['_body_'])
 	end
 

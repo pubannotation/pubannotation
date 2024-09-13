@@ -527,6 +527,7 @@ class Doc < ActiveRecord::Base
 		denotations.where("denotations.begin >= ? AND denotations.end <= ?", span[:begin], span[:end]).pluck(:project_id).uniq.collect{|pid| Project.find(pid)}
 	end
 
+	# ToDo: to move to the ProjectDoc class
 	def get_annotation_hids(project_id, span = nil)
 		denotation_hids = denotations.in_project_and_span(project_id, span).pluck(:hid)
 		block_hids = blocks.in_project_and_span(project_id, span).pluck(:hid)
@@ -724,6 +725,7 @@ class Doc < ActiveRecord::Base
 		return tsv
 	end
 
+	# ToDo: del me in favor of the identical one in the ProjectDoc class
 	def hannotations(projects, span, context_size,
 									 terms: nil, predicates: nil,
 									 is_sort: false, is_full: false, is_bag_denotations: false)

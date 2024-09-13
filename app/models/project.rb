@@ -671,6 +671,7 @@ class Project < ActiveRecord::Base
   end
 
   # reassign ids to instances in annotations to avoid id confiction
+  # ToDo: del me in favor of the same one in the ProjectDoc class
   def reid_annotations!(annotations, doc)
     existing_ids = doc.get_annotation_hids(id)
     unless existing_ids.empty?
@@ -685,32 +686,44 @@ class Project < ActiveRecord::Base
             existing_ids << id
           end
         end
+      end
 
-        if annotations.has_key?(:relations)
-          annotations[:relations].each do |a|
-            id = a[:id]
-            id = Relation.new_id while existing_ids.include?(id)
-            if id != a[:id]
-              id_change[a[:id]] = id
-              a[:id] = id
-              existing_ids << id
-            end
-            a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
-            a[:obj] = id_change[a[:obj]] if id_change.has_key?(a[:obj])
+      if annotations.has_key?(:blocks)
+        annotations[:blocks].each do |a|
+          id = a[:id]
+          id = Block.new_id while existing_ids.include?(id)
+          if id != a[:id]
+            id_change[a[:id]] = id
+            a[:id] = id
+            existing_ids << id
           end
         end
+      end
 
-        if annotations.has_key?(:attributes)
-          Attrivute.new_id_init
-          annotations[:attributes].each do |a|
-            id = a[:id]
-            id = Attrivute.new_id while existing_ids.include?(id)
-            if id != a[:id]
-              a[:id] = id
-              existing_ids << id
-            end
-            a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+      if annotations.has_key?(:relations)
+        annotations[:relations].each do |a|
+          id = a[:id]
+          id = Relation.new_id while existing_ids.include?(id)
+          if id != a[:id]
+            id_change[a[:id]] = id
+            a[:id] = id
+            existing_ids << id
           end
+          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
+          a[:obj] = id_change[a[:obj]] if id_change.has_key?(a[:obj])
+        end
+      end
+
+      if annotations.has_key?(:attributes)
+        Attrivute.new_id_init
+        annotations[:attributes].each do |a|
+          id = a[:id]
+          id = Attrivute.new_id while existing_ids.include?(id)
+          if id != a[:id]
+            a[:id] = id
+            existing_ids << id
+          end
+          a[:subj] = id_change[a[:subj]] if id_change.has_key?(a[:subj])
         end
       end
     end
@@ -724,7 +737,7 @@ class Project < ActiveRecord::Base
     raise ArgumentError, "the project does not have the document" unless doc.projects.include?(self)
     options ||= {}
 
-    return ['upload is skipped due to existing annotations'] if options[:mode] == 'skip' && doc.denotations_num > 0
+    return ['upload is skipped due to existing annotations'] if options[:mode] == 'skip' && (doc.denotations_num > 0 || doc.blocks_num > 0)
 
     messages = AnnotationUtils.prepare_annotations!(annotations, doc, options)
 
@@ -819,6 +832,22 @@ class Project < ActiveRecord::Base
       relations_num: relations_num,
       annotations_count: denotations_num + blocks_num + relations_num
     )
+  end
+
+
+  def pretreatment_annotations!(annotations, options)
+    if options[:mode] == 'replace'
+      delete_doc_annotations(annotations_with_doc.doc)
+    else
+      case options[:mode]
+      when 'add'
+        annotations_with_doc.annotations.each { |a| reid_annotations!(a, annotations_with_doc.doc) }
+      when 'merge'
+        annotations_with_doc.annotations.each { |a| reid_annotations!(a, annotations_with_doc.doc) }
+        base_annotations = annotations_with_doc.doc.hannotations(self, nil, nil)
+        annotations_with_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
+      end
+    end
   end
 
   def pretreatment_according_to(options, annotations_with_doc)
@@ -1026,6 +1055,7 @@ class Project < ActiveRecord::Base
     count
   end
 
+  # Delme
   def delete_doc_annotations(doc, span = nil)
     if span.present?
       Denotation.where('project_id = ? AND doc_id = ? AND begin >= ? AND "end" <= ?', self.id, doc.id, span[:begin], span[:end]).destroy_all
