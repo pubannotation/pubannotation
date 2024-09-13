@@ -482,7 +482,7 @@ module AnnotationUtils
 			end
 		end
 
-		def skey_of_denotation(d, obj = nil)
+		def skey_of_denotation_or_block(d, obj = nil)
 			obj.nil? ? "#{d[:span][:begin]}-#{d[:span][:end]}-#{d[:obj]}" : "#{d[:span][:begin]}-#{d[:span][:end]}-#{obj}"
 		end
 
@@ -492,22 +492,26 @@ module AnnotationUtils
 
 		# To resolve ID conflict
 		def prepare_annotations_for_merging!(annotations, base_annotations)
-			return annotations unless base_annotations[:denotations].present? && annotations[:denotations].present?
-			base_denotations_idx = base_annotations[:denotations].inject({}){|idx, d| idx.merge!({skey_of_denotation(d) => d[:id]})}
+			return annotations unless (annotations[:denotations].present? && base_annotations[:denotations].present?) || (annotations[:blocks].present? && base_annotations[:blocks].present?)
 
-			dup_denotations_idx = {}
-			annotations[:denotations].each do |d|
-				key = skey_of_denotation(d)
-				dup_denotations_idx[d[:id]] = base_denotations_idx[key] if base_denotations_idx.has_key? key
+			base_db_annotations = base_annotations[:denotations] + base_annotations[:blocks]
+			base_db_idx = base_db_annotations.inject({}){|idx, a| idx.merge!({skey_of_denotation_or_block(a) => a[:id]})}
+
+			db_annotations = annotations[:denotations] + annotations[:blocks]
+
+			dup_db_annotations_idx = {}
+			db_annotations.each do |a|
+				key = skey_of_denotation_or_block(a)
+				dup_db_annotations_idx[a[:id]] = base_db_idx[key] if base_db_idx.has_key? key
 			end
 
-			annotations[:denotations].delete_if{|d| dup_denotations_idx.has_key? d[:id]}
+			db_annotations.delete_if{|a| dup_db_annotations_idx.has_key? a[:id]}
 
 			if annotations[:attributes].present?
 				base_attributes_idx = base_annotations[:attributes].inject({}){|idx, a| idx.merge!({skey_of_attribute(a) => a[:id]})}
 				annotations[:attributes].each do |a|
 					s = a[:subj]
-					a[:subj] = dup_denotations_idx[s] if dup_denotations_idx.has_key? s
+					a[:subj] = dup_db_annotations_idx[s] if dup_db_annotations_idx.has_key? s
 					a[:obj] = '__delme__' if base_attributes_idx.has_key? skey_of_attribute(a)
 				end
 			end
@@ -516,16 +520,9 @@ module AnnotationUtils
 			if annotations[:relations].present?
 				annotations[:relations].each do |r|
 					s = r[:subj]
-					r[:subj] = dup_denotations_idx[s] if dup_denotations_idx.has_key? s
+					r[:subj] = dup_db_annotations_idx[s] if dup_db_annotations_idx.has_key? s
 					o = r[:obj]
-					r[:obj] = dup_denotations_idx[o] if dup_denotations_idx.has_key? o
-				end
-			end
-
-			if annotations[:modification].present?
-				annotations[:modification].each do |m|
-					s = m[:subj]
-					m[:subj] = dup_denotations_idx[s] if dup_denotations_idx.has_key? s
+					r[:obj] = dup_db_annotations_idx[o] if dup_db_annotations_idx.has_key? o
 				end
 			end
 
