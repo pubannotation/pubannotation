@@ -1,4 +1,5 @@
 class ObtainDocAnnotationsJob < ApplicationJob
+	include ActionView::Helpers::NumberHelper
 	include UseJobRecordConcern
 
 	queue_as :general
