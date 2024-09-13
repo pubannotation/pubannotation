@@ -497,7 +497,7 @@ module AnnotationUtils
 			base_db_annotations = base_annotations[:denotations] + base_annotations[:blocks]
 			base_db_idx = base_db_annotations.inject({}){|idx, a| idx.merge!({skey_of_denotation_or_block(a) => a[:id]})}
 
-			db_annotations = annotations[:denotations] + annotations[:blocks]
+			db_annotations = (annotations[:denotations] || []) + (annotations[:blocks] || [])
 
 			dup_db_annotations_idx = {}
 			db_annotations.each do |a|
@@ -514,8 +514,8 @@ module AnnotationUtils
 					a[:subj] = dup_db_annotations_idx[s] if dup_db_annotations_idx.has_key? s
 					a[:obj] = '__delme__' if base_attributes_idx.has_key? skey_of_attribute(a)
 				end
+				annotations[:attributes].delete_if{|a| a[:obj] == '__delme__'}
 			end
-			annotations[:attributes].delete_if{|a| a[:obj] == '__delme__'}
 
 			if annotations[:relations].present?
 				annotations[:relations].each do |r|
