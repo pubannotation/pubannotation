@@ -3,7 +3,7 @@
 		<tr>
 			<th>Choose a predefined annotator</th>
 			<td>
-				<%= select_tag(:annotator, options_for_select(annotator_options), prompt: 'choose one') %>
+				<%= select_tag(:annotator, options_for_select(annotator_options), prompt: 'choose one', required: true) %>
 			</td>
 		</tr>
 
