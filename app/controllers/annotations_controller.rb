@@ -321,6 +321,8 @@ class AnnotationsController < ApplicationController
 				raise ArgumentError, "Annotator URL is not specified"
 			end
 
+			raise ArgumentError, "Obtaining annotations via an asynchronous protocol has been temporarily suspended." if annotator.async_protocol
+
 			# to determine the sourceids
 			sourceids = if params[:upfile].present?
 				File.readlines(params[:upfile].path).map(&:chomp)
