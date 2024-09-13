@@ -494,25 +494,34 @@ module AnnotationUtils
 		def prepare_annotations_for_merging!(annotations, base_annotations)
 			return annotations unless (annotations[:denotations].present? && base_annotations[:denotations].present?) || (annotations[:blocks].present? && base_annotations[:blocks].present?)
 
-			base_db_annotations = base_annotations[:denotations] + base_annotations[:blocks]
-			base_db_idx = base_db_annotations.inject({}){|idx, a| idx.merge!({skey_of_denotation_or_block(a) => a[:id]})}
-
-			db_annotations = (annotations[:denotations] || []) + (annotations[:blocks] || [])
-
-			dup_db_annotations_idx = {}
-			db_annotations.each do |a|
-				key = skey_of_denotation_or_block(a)
-				dup_db_annotations_idx[a[:id]] = base_db_idx[key] if base_db_idx.has_key? key
+			idx_denotations_to_be_merged = {}
+			if annotations[:denotations].present? && base_annotations[:denotations].present?
+				idx_base_denotations = base_annotations[:denotations]&.inject({}){|idx, d| idx.merge!({skey_of_denotation_or_block(d) => d[:id]})}
+				annotations[:denotations].each do |d|
+					key = skey_of_denotation_or_block(d)
+					idx_denotations_to_be_merged[d[:id]] = idx_base_denotations[key] if idx_base_denotations.has_key? key
+				end
+				annotations[:denotations].delete_if{|d| idx_denotations_to_be_merged.has_key? d[:id]}
 			end
 
-			db_annotations.delete_if{|a| dup_db_annotations_idx.has_key? a[:id]}
+			idx_blocks_to_be_merged = {}
+			if annotations[:blocks].present? && base_annotations[:blocks].present?
+				idx_base_blocks = base_annotations[:blocks]&.inject({}){|idx, b| idx.merge!({skey_of_denotation_or_block(b) => b[:id]})}
+				annotations[:blocks].each do |b|
+					key = skey_of_denotation_or_block(b)
+					idx_blocks_to_be_merged[b[:id]] = idx_base_blocks[key] if idx_base_blocks.has_key? key
+				end
+				annotations[:blocks].delete_if{|b| idx_blocks_to_be_merged.has_key? b[:id]}
+			end
+
+			idx_db_to_be_merged = idx_denotations_to_be_merged.merge(idx_blocks_to_be_merged)
 
 			if annotations[:attributes].present?
-				base_attributes_idx = base_annotations[:attributes].inject({}){|idx, a| idx.merge!({skey_of_attribute(a) => a[:id]})}
+				idx_base_attributes = base_annotations[:attributes].inject({}){|idx, a| idx.merge!({skey_of_attribute(a) => a[:id]})}
 				annotations[:attributes].each do |a|
 					s = a[:subj]
-					a[:subj] = dup_db_annotations_idx[s] if dup_db_annotations_idx.has_key? s
-					a[:obj] = '__delme__' if base_attributes_idx.has_key? skey_of_attribute(a)
+					a[:subj] = idx_db_to_be_merged[s] if idx_db_to_be_merged.has_key? s
+					a[:obj] = '__delme__' if idx_base_attributes.has_key? skey_of_attribute(a)
 				end
 				annotations[:attributes].delete_if{|a| a[:obj] == '__delme__'}
 			end
@@ -520,9 +529,9 @@ module AnnotationUtils
 			if annotations[:relations].present?
 				annotations[:relations].each do |r|
 					s = r[:subj]
-					r[:subj] = dup_db_annotations_idx[s] if dup_db_annotations_idx.has_key? s
+					r[:subj] = idx_db_to_be_merged[s] if idx_db_to_be_merged.has_key? s
 					o = r[:obj]
-					r[:obj] = dup_db_annotations_idx[o] if dup_db_annotations_idx.has_key? o
+					r[:obj] = idx_db_to_be_merged[o] if idx_db_to_be_merged.has_key? o
 				end
 			end
 
