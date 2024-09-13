@@ -315,10 +315,8 @@ class AnnotationsController < ApplicationController
 			# to determine the annotator
 			annotator = if params[:annotator].present?
 				Annotator.find(params[:annotator])
-			elsif params[:url].present?
-				Annotator.new({name:params[:prefix], url:params[:url], method:params[:method]})
 			else
-				raise ArgumentError, "Annotator URL is not specified"
+				raise ArgumentError, "Annotator is not specified"
 			end
 
 			raise ArgumentError, "Obtaining annotations via an asynchronous protocol has been temporarily suspended." if annotator.async_protocol
