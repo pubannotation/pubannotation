@@ -61,7 +61,7 @@ module UseJobRecordConcern
   end
 
   def prepare_progress_record(scheduled_num)
-    @job.update_attribute(:num_items, scheduled_num)
-    @job.update_attribute(:num_dones, 0)
+    @job&.update_attribute(:num_items, scheduled_num)
+    @job&.update_attribute(:num_dones, 0)
   end
 end
