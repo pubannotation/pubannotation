@@ -357,22 +357,20 @@ class AnnotationsController < ApplicationController
 
 			docids_filepath = begin
 				# To update docids according to the options
-				if options[:mode] == 'skip'
+				if options[:mode] == :skip
 					num_skipped = if docids.empty?
-						if ProjectDoc.where(project_id:project.id, denotations_num:0).count == 0
-							raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations'
-						end
-						docids = ProjectDoc.where(project_id:project.id, denotations_num:0 ).pluck(:doc_id)
-						ProjectDoc.where("project_id=#{project.id} and denotations_num > 0").count
-					else
-						num_docs = docids.length
-						docids.delete_if{|docid| ProjectDoc.where(project_id:project.id, doc_id:docid).pluck(:denotations_num).first > 0}
+						docids = ProjectDoc.where(project_id:project.id, denotations_num:0, blocks_num:0).pluck(:doc_id)
 						raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
-						num_docs - docids.length
+						ProjectDoc.where(project_id:project.id).count  - docids.length
+					else
+						old_docids = docids
+						docids = ProjectDoc.where(project_id:project.id, doc_id:docids, denotations_num:0, blocks_num:0).pluck(:doc_id)
+						raise RuntimeError, 'Obtaining annotation was skipped because all the docs already had annotations' if docids.empty?
+						old_docids.length - docids.length
 					end
 
 					messages << "#{num_skipped} document(s) was/were skipped due to existing annotations." if num_skipped > 0
-					options[:mode] = 'add'
+					options[:mode] = :add
 				else
 					if docids.empty?
 						docids = ProjectDoc.where(project_id:project.id).pluck(:doc_id)
