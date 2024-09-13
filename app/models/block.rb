@@ -1,6 +1,7 @@
 require 'zip/zip'
 
 class Block < ActiveRecord::Base
+	include DocMemberConcern
 	include RangeConcern
 
 	belongs_to :project

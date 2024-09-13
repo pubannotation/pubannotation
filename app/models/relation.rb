@@ -1,4 +1,5 @@
 class Relation < ActiveRecord::Base
+	include DocMemberConcern
 	include ProjectMemberConcern
 
 	belongs_to :project

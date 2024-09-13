@@ -1,4 +1,5 @@
 class Attrivute < ActiveRecord::Base
+	include DocMemberConcern
 	include ProjectMemberConcern
 
 	# The name of the class is changed to avoid conflict with the reserved word 'attribute'

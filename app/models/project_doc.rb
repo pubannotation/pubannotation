@@ -105,6 +105,7 @@ class ProjectDoc < ActiveRecord::Base
       end
 
       if annotations.has_key?(:blocks)
+        Block.new_id_init
         annotations[:blocks].each do |a|
           id = a[:id]
           id = Block.new_id while existing_ids.include?(id)
@@ -117,6 +118,7 @@ class ProjectDoc < ActiveRecord::Base
       end
 
       if annotations.has_key?(:relations)
+        Relation.new_id_init
         annotations[:relations].each do |a|
           id = a[:id]
           id = Relation.new_id while existing_ids.include?(id)
@@ -148,7 +150,7 @@ class ProjectDoc < ActiveRecord::Base
   end
 
   def get_annotation_hids
-    denotation_hids = Denotations.in_doc(doc_id).in_project(project_id).pluck(:hid)
+    denotation_hids = Denotation.in_doc(doc_id).in_project(project_id).pluck(:hid)
     block_hids = Block.in_doc(doc_id).in_project(project_id).pluck(:hid)
 
     return [] if denotation_hids.empty? && block_hids.empty?
@@ -160,15 +162,15 @@ class ProjectDoc < ActiveRecord::Base
   end
 
   def get_hannotations
-    hdenotation = Denotations.in_doc(doc_id).in_project(project_id).to_json
-    hblock = Block.in_doc(doc_id).in_project(project_id).to_json
+    hdenotations = Denotation.in_doc(doc_id).in_project(project_id).as_json
+    hblocks = Block.in_doc(doc_id).in_project(project_id).as_json
 
-    return [] if denotation.empty? && block.empty?
+    return [] if hdenotations.empty? && hblocks.empty?
 
-    hrelation = Relation.in_doc(doc_id).in_project(project_id).to_json
-    hattribute = Attrivute.in_doc(doc_id).in_project(project_id).to_json
+    hrelations = Relation.in_doc(doc_id).in_project(project_id).as_json
+    hattributes = Attrivute.in_doc(doc_id).in_project(project_id).as_json
 
-    hdenotation + hblock + hrelation + hattribute
+    {denotations:hdenotations, blocks:hblocks, relations:hrelations, attributes:hattributes}
   end
 
 private
