@@ -100,4 +100,8 @@ private
 			end
 		end
 	end
+
+	def resource_name
+		self.arguments[2].name
+	end
 end
