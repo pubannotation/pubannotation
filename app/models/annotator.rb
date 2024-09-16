@@ -21,7 +21,7 @@ class Annotator < ActiveRecord::Base
 
 	serialize :payload, coder: YAML
 
-	scope :accessibles, -> (current_user) {
+	scope :accessible, -> (current_user) {
 		if current_user.present?
 			if current_user.root?
 			else

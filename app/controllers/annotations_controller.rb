@@ -313,12 +313,11 @@ class AnnotationsController < ApplicationController
 			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
 			# to determine the annotator
-			annotator = if params[:annotator].present?
-				Annotator.find(params[:annotator])
-			else
-				raise ArgumentError, "Annotator is not specified"
-			end
+			annotator_name = params[:annotator]
+			raise ArgumentError, "Annotator is not specified" unless annotator_name.present?
 
+			annotator = Annotator.accessible(current_user).find(annotator_name)
+			raise ArgumentError, "Could not find the annotator: #{annotator_name}." unless annotator.present?
 			raise ArgumentError, "Obtaining annotations via an asynchronous protocol has been temporarily suspended." if annotator.async_protocol
 
 			# to determine the sourceids
@@ -337,7 +336,6 @@ class AnnotationsController < ApplicationController
 			# to determine the options
 			options = {}
 			options[:mode] = params[:mode]&.to_sym || :replace
-			options[:prefix] = annotator.name
 
 			# to deterine the docids
 			docids = if options[:mode] == :fill
@@ -382,11 +380,11 @@ class AnnotationsController < ApplicationController
 				filepath
 			end
 
-			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator, options)
-			# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options.merge(debug: true))
-			ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator, options)
+			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator.name, options)
+			# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator.name, options.merge(debug: true))
+			ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator.name, options)
 
-			project.update({annotator_id:annotator.id}) if annotator.persisted?
+			project.update({annotator_id:annotator.id})
 
 			messages << "The task 'Obtain annotations was created."
 			message = messages.join("\n")

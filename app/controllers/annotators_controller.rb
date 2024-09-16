@@ -6,7 +6,7 @@ class AnnotatorsController < ApplicationController
 	# GET /annotators
 	# GET /annotators.json
 	def index
-		@annotators_grid = initialize_grid(Annotator.accessibles(current_user),
+		@annotators_grid = initialize_grid(Annotator.accessible(current_user),
 			order: :updated_at,
 			order_direction: :desc,
 			include: :user
@@ -23,7 +23,7 @@ class AnnotatorsController < ApplicationController
 	def show
 		message = ""
 		begin
-			@annotator = Annotator.accessibles(current_user).find(params[:id])
+			@annotator = Annotator.accessible(current_user).find(params[:id])
 		rescue
 			raise "Could not find the annotator, #{params[:id]}."
 		end
