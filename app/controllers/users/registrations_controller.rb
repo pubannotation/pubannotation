@@ -1,6 +1,8 @@
 class Users::RegistrationsController < Devise::RegistrationsController
+  include Recaptchable
+
   before_action :configure_permitted_parameters
-  before_action :validate_recaptcha, only: [:create]
+  before_action :validate_recaptcha, only: [:create], if: :recaptcha_usable?
 
   protected
     def configure_permitted_parameters
