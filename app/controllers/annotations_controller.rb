@@ -121,7 +121,7 @@ class AnnotationsController < ApplicationController
 	def create
 		unless user_signed_in?
 			# for TextAE
-			if request.headers['Origin'] == 'https://textae.pubannotation.org'
+			if request.headers['App-Name'] == 'TextAE'
 				response.headers['WWW-Authenticate'] = 'ServerPage'
 				response.headers['Location'] = new_user_session_url
 				response.headers['Access-Control-Expose-Headers'] = 'WWW-Authenticate, Location'
