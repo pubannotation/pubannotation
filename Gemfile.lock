@@ -169,29 +169,12 @@ GEM
     factory_bot_rails (6.4.3)
       factory_bot (~> 6.4)
       railties (>= 5.0.0)
-    faraday (1.10.3)
-      faraday-em_http (~> 1.0)
-      faraday-em_synchrony (~> 1.0)
-      faraday-excon (~> 1.1)
-      faraday-httpclient (~> 1.0)
-      faraday-multipart (~> 1.0)
-      faraday-net_http (~> 1.0)
-      faraday-net_http_persistent (~> 1.0)
-      faraday-patron (~> 1.0)
-      faraday-rack (~> 1.0)
-      faraday-retry (~> 1.0)
-      ruby2_keywords (>= 0.0.4)
-    faraday-em_http (1.0.0)
-    faraday-em_synchrony (1.0.0)
-    faraday-excon (1.1.0)
-    faraday-httpclient (1.0.1)
-    faraday-multipart (1.0.4)
-      multipart-post (~> 2)
-    faraday-net_http (1.0.2)
-    faraday-net_http_persistent (1.2.0)
-    faraday-patron (1.0.0)
-    faraday-rack (1.0.0)
-    faraday-retry (1.0.3)
+    faraday (2.12.0)
+      faraday-net_http (>= 2.0, < 3.4)
+      json
+      logger
+    faraday-net_http (3.3.0)
+      net-http
     ffi (1.17.0-arm64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
     font-awesome-rails (4.7.0.8)
@@ -216,6 +199,7 @@ GEM
       rails-dom-testing (>= 1, < 3)
       railties (>= 4.2.0)
       thor (>= 0.14, < 2.0)
+    json (2.7.2)
     jwt (2.8.2)
       base64
     kaminari (1.2.2)
@@ -251,7 +235,8 @@ GEM
     multi_json (1.15.0)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
-    multipart-post (2.4.1)
+    net-http (0.4.1)
+      uri
     net-imap (0.4.17)
       date
       net-protocol
@@ -379,7 +364,6 @@ GEM
       rspec-support (~> 3.13)
     rspec-support (3.13.1)
     ruby-dictionary (1.1.1)
-    ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
     sass-rails (6.0.0)
       sassc-rails (~> 2.1, >= 2.1.1)
@@ -425,6 +409,7 @@ GEM
     unicorn (6.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
+    uri (0.13.1)
     useragent (0.16.10)
     version_gem (1.1.4)
     warden (1.2.9)
@@ -463,7 +448,7 @@ DEPENDENCIES
   elasticsearch-rails (~> 7.2)
   facebox-rails!
   factory_bot_rails
-  faraday (~> 1.10)
+  faraday
   font-awesome-rails
   foreman
   friendly_id
