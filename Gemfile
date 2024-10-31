@@ -9,7 +9,6 @@ gem 'activerecord-import'
 gem 'puma'
 gem 'rack-cors'
 gem 'sass-rails'
-gem 'coffee-rails'
 
 gem 'terser'
 
