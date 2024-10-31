@@ -7,6 +7,17 @@ GIT
       thor (>= 0.14)
 
 GIT
+  remote: https://github.com/jaredbeck/rest-client.git
+  revision: 149f282c74cb6c48aca007ec6659a6f67116d789
+  branch: patch-1
+  specs:
+    rest-client (2.1.0)
+      http-accept (>= 1.7.0, < 3.0)
+      http-cookie (>= 1.0.2, < 2.0)
+      mime-types (>= 1.16, < 4.0)
+      netrc (~> 0.8)
+
+GIT
   remote: https://github.com/jdkim/stardog-rb.git
   revision: 1a27d7dc25fbe324b4ce170688fef1eeb1cf432a
   specs:
@@ -186,7 +197,7 @@ GEM
       activesupport (>= 6.1)
     hashie (5.0.0)
     htmlentities (4.3.4)
-    http-accept (1.7.0)
+    http-accept (2.2.1)
     http-cookie (1.0.7)
       domain_name (~> 0.5)
     i18n (1.14.6)
@@ -342,11 +353,6 @@ GEM
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
-    rest-client (2.1.0)
-      http-accept (>= 1.7.0, < 2.0)
-      http-cookie (>= 1.0.2, < 2.0)
-      mime-types (>= 1.16, < 4.0)
-      netrc (~> 0.8)
     rspec-core (3.13.2)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.3)
@@ -468,7 +474,7 @@ DEPENDENCIES
   rails3-jquery-autocomplete
   rake
   recaptcha
-  rest-client
+  rest-client!
   rspec-rails
   ruby-dictionary
   rubyzip
