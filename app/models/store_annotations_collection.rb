@@ -15,12 +15,15 @@ class StoreAnnotationsCollection
     result = aligner.call
     @warnings.concat result.warnings
 
+    # To avoid frozen error in after process, make a deep copy for result.
+    dup_result = Marshal.load(Marshal.dump(result))
+
     Thread.new do
-      result.annotations_for_doc_collection.each do |annotations_for_doc|
+      dup_result.annotations_for_doc_collection.each do |annotations_for_doc|
         @project.pretreatment_according_to(@options, annotations_for_doc)
       end
 
-      valid_annotations = result.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
+      valid_annotations = dup_result.annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
         valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
           inspect_annotations @warnings,
                               annotation,
