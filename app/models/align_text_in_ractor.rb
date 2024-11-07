@@ -28,8 +28,8 @@ class AlignTextInRactor
 
         original_annotation.merge!({
                                      text: input_chunk.ref_text,
-                                     denotations: aligned_annotation.denotations,
-                                     blocks: aligned_annotation.blocks
+                                     denotations: aligned_annotation.denotations.map {_1.dup},
+                                     blocks: aligned_annotation.blocks.map {_1.dup}
                                    })
         original_annotation.delete_if { |_, v| !v.present? }
 
