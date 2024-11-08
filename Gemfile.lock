@@ -416,7 +416,7 @@ GEM
     unicorn (6.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
-    uri (0.13.1)
+    uri (1.0.1)
     useragent (0.16.10)
     version_gem (1.1.4)
     warden (1.2.9)
