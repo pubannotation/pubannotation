@@ -190,8 +190,8 @@ GEM
       net-http
     ffi (1.17.0-arm64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
-    font-awesome-rails (4.7.0.8)
-      railties (>= 3.2, < 8.0)
+    font-awesome-rails (4.7.0.9)
+      railties (>= 3.2, < 9.0)
     foreman (0.88.1)
     friendly_id (5.5.1)
       activerecord (>= 4.0.0)
@@ -251,7 +251,7 @@ GEM
       bigdecimal (~> 3.1)
     net-http (0.5.0)
       uri
-    net-imap (0.5.0)
+    net-imap (0.5.1)
       date
       net-protocol
     net-pop (0.1.2)
@@ -362,7 +362,7 @@ GEM
     rspec-mocks (3.13.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-rails (7.0.1)
+    rspec-rails (7.1.0)
       actionpack (>= 7.0)
       activesupport (>= 7.0)
       railties (>= 7.0)
