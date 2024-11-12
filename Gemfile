@@ -66,8 +66,9 @@ group :development, :test do
   gem 'factory_bot_rails'
 end
 
-# For term search, Union attrivutes term search results and denotations term search results
-gem "active_record_union", "~> 1.3"
+# For term search, Union attrivutes term search results and denotations term search results.
+# Remove the GitHub specification below once the Rails 8-compatible version is released on RubyGems.
+gem "active_record_union", "~> 1.3", github: 'brianhempel/active_record_union'
 
 group :production do
   gem 'unicorn'
