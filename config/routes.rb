@@ -70,9 +70,9 @@ Pubann::Application.routes.draw do
 		get :sql
 	end
 
-	resource :sql, only: [:index]
+	resources :sql, only: [:index]
 
-	resource :users, only: [:index] do
+	resources :users, only: [:index] do
 		get :autocomplete_username, :on => :collection
 	end
 
