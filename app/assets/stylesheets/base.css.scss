@@ -126,7 +126,7 @@ section {
 
 h1 {
 	width: 560px;
-	border:solid $main_color;
+	border:solid var(--main-color);
 	border-width: 0px 0px 1px 7px;
 	padding-left: 6px;
 	font-size: large;
@@ -136,7 +136,7 @@ h2 {
 	white-space: nowrap;
 	width:500px;
 	padding:0px 2px 1px 4px;
-	border: solid $main_color;
+	border: solid var(--main-color);
 	border-width: 0 0 1px 7px;
 	border-top-left-radius:7px;
 	border-bottom-left-radius:7px;
@@ -149,19 +149,19 @@ h3 {
 	white-space:nowrap;
 
 	border-style: solid;
-	border-color: $main_color;
+	border-color: var(--main-color);
 	border-width: 0 0 0 1px;
 	border-top-left-radius: 5px;
 	padding: 0 8px;
 	font-size: small;
 	/* fallback (Opera) */
-	background: $main_color;
+	background: var(--main-color);
 	/* Mozilla: */
-	background: -moz-linear-gradient(left, $main_color, #FFFFFF);
+	background: -moz-linear-gradient(left, #002266, #FFFFFF);
 	/* Chrome, Safari:*/
-	background: -webkit-gradient(linear, left top, right top, from($main_color), to(#FFFFFF));
+	background: -webkit-gradient(linear, left top, right top, from(#002266), to(#FFFFFF));
 	/* MSIE */
-	filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='$main_color', EndColorStr='#FFFFFF', GradientType=1);
+	filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#002266', EndColorStr='#FFFFFF', GradientType=1);
 }
 
 ul.note {
@@ -185,11 +185,11 @@ dl dt {
 
 a {
 		text-decoration: none;
-		color: $main_color;
+		color: var(--main-color);
 }
 
 a:hover {
-	color: lighten($main_color, 40%);
+	color: #3377FF;
 }
 
 table form {
@@ -211,7 +211,7 @@ td {
 }
 
 th, td{
-	border: 1px solid lighten($main_color, 70%);
+	border: 1px solid #CCDDFF;
 }
 
 table.full {
@@ -233,7 +233,7 @@ table.view_options {
 th {
 	padding: 5px;
 	text-align: center;
-	background-color: lighten($main_color, 45%);
+	background-color: #4D88FF;
 	font-weight: normal;
 	color: white;
 }
@@ -458,18 +458,18 @@ h1,h2 {
 	text-decoration: none;
 }
 .tab-bar .label{
-	color: $sub_color;
-	background-color: $main_color;
+	color: var(--sub-color);
+	background-color: var(--main-color);
 }
 .tab {
 	margin: 1px;
-	border: 1px solid $main_color;
+	border: 1px solid var(--main-color);
 	border-radius: 3px;
 	padding: 1px 3px;
 }
 
 .active_tab {
-	background-color: $sub_color;
+	background-color: var(--sub-color);
 }
 
 .inactive_tab {
@@ -496,7 +496,7 @@ h1,h2 {
 
 .sortable-th {
 	padding-left: 15px;
-	background: url(/assets/sort_asc.png) no-repeat 5px center $sub_color;
+	background: url(/assets/sort_asc.png) no-repeat 5px center var(--sub-color);
 	text-align :left;
 }
 
@@ -545,20 +545,20 @@ h1,h2 {
 .time_stamp{
 	font-size: 80%;
 }
-$indicator_size : 100px;
+
 #Indicator{
-	width: $indicator_size;
-	height: $indicator_size;
+	--indicator-size: 100px;
+
+	width: var(--indicator-size);
+	height: var(--indicator-size);
 	position:fixed;
 	top:50%;
 	left:50%;
-	margin-top: -$indicator_size;
-	margin-left: -$indicator_size/2;
 	background: url(/assets/ajax-loader.gif) no-repeat center #000;
 	opacity: 0.8;
 	border-radius: 10px;
-	margin-left:- ($indicator_size / 2) + px;
-	margin-topt:- ($indicator_size / 2) + px;
+	margin-left: calc(-1 * var(--indicator-size) / 2);
+	margin-top: calc(-1 * var(--indicator-size) / 2);
 	display: none;
 	z-index: 9999;
 }
@@ -660,7 +660,7 @@ div.oneline {
 	display: none;
 }
 
-@media screen and (max-width: $min_width_wide) {
+@media screen and (max-width: var(--min-width-wide)) {
 	.show-when-wide {
 		display: none;
 	}
