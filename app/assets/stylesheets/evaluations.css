@@ -1,0 +1,12 @@
+ /* Place all the styles related to the evaluations controller here. */
+ /* They will automatically be included in application.css. */
+ /* You can use Sass (SCSS) here: http://sass-lang.com/ */
+
+table.false-cases {
+	margin: 10px 0;
+	border:0 none;
+
+	th, td {
+		border:0 none;
+	}
+}
