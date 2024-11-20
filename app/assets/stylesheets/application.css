@@ -12,6 +12,6 @@
  *= require font-awesome
  *= require jquery-ui
  *= require jquery.facebox
+ *= require variables
  *= require_tree .
  */
-@import "font-awesome";
