@@ -1,5 +1,3 @@
-@import 'variables';
-
 .content {
 	position: relative;
 	margin: 0 auto;
@@ -10,7 +8,7 @@
 
 .frame {
 	position: relative;
-	background-color: $main_color;
+	background-color: var(--main-color);
 	color: #aaaaaa;
 	a {
 		color: #aaaaff;
@@ -26,10 +24,10 @@
 }
 
 #top-ribbon {
-	background-color: $sub_color;
+	background-color: var(--sub-color);
 
 	.content {
-		padding: 2px $base_padding;
+		padding: 2px var(--base-padding);
 	}
 }
 
@@ -57,9 +55,9 @@
 		margin-left: 0.5em;
 	}
 	a {
-		background-color: $sub_color;
+		background-color: var(--sub-color);
 		border-radius: 3px;
-		color: $main_color;
+		color: var(--main-color);
 	}
 }
 

@@ -1,5 +1,7 @@
 class Users::PasswordsController < Devise::PasswordsController
-  before_action :validate_recaptcha, only: [:create]
+  include Recaptchable
+
+  before_action :validate_recaptcha, only: [:create], if: :recaptcha_usable?
 
   private
 

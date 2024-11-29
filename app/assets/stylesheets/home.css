@@ -1,5 +1,3 @@
-@import 'variables';
-
 .panel {
 	display: inline-block;
 	vertical-align: top;
@@ -24,7 +22,7 @@
 #news_frame {
 	width: 550px;
 	margin: 5px;
-	border: $main_color 1px solid;
+	border: var(--main-color) 1px solid;
 	box-shadow: 2px 2px 2px;
 	background-color: #fff0f0;
 	ul {
@@ -51,7 +49,7 @@
 	}
 }
 
-@media screen and (max-width: $min_width_wide) {
+@media screen and (max-width: var(--min-width-wide)) {
 	#news_frame {
 		width: calc(99% - 30px);
 	}
