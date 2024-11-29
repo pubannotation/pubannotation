@@ -730,29 +730,28 @@ class Doc < ActiveRecord::Base
 									 terms: nil, predicates: nil,
 									 is_sort: false, is_full: false, is_bag_denotations: false)
 		annotations_hash = if projects.present?
-												 AnnotationsHash.new self,
-																						 projects,
-																						 span,
-																						 context_size,
-																						 terms,
-																						 predicates,
-																						 is_sort,
-																						 is_full,
-																						 is_bag_denotations,
-																						 projects.respond_to?(:each) # When project is single, return annotations without track.
-											 else
-												 AnnotationsHash.new self,
-																						 nil,
-																						 span,
-																						 context_size,
-																						 terms,
-																						 predicates,
-																						 is_sort,
-																						 is_full,
-																						 is_bag_denotations,
-																						 true
-
-											 end
+			AnnotationsHash.new self,
+								projects,
+								span,
+								context_size,
+								terms,
+								predicates,
+								is_sort,
+								is_full,
+								is_bag_denotations,
+								projects.respond_to?(:each) # When project is single, return annotations without track.
+		else
+			AnnotationsHash.new self,
+								nil,
+								span,
+								context_size,
+								terms,
+								predicates,
+								is_sort,
+								is_full,
+								is_bag_denotations,
+								true
+		end
 
 		annotations_hash.to_hash
 	end
@@ -762,7 +761,7 @@ class Doc < ActiveRecord::Base
 		self_denotations = self.denotations
 		if self_denotations.present?
 			self_denotations.within_span({:begin => params[:begin], :end => params[:end]}).collect{|denotation| denotation.project}.uniq.compact
-		end  
+		end
 	end
 
 	def self.sql_find(params, current_user, project)
@@ -779,7 +778,7 @@ class Doc < ActiveRecord::Base
 					# within accessible projects
 					docs = self.accessible_projects(current_user_id).sql(ids)
 				end
-			end       
+			end
 		end
 	end
 	
@@ -870,25 +869,25 @@ class Doc < ActiveRecord::Base
 	def self.update_numbers
 		# the number of projects of each doc
 		ActiveRecord::Base.connection.update <<~SQL.squish
-      UPDATE docs
-      SET	projects_num=(SELECT count(*) FROM project_docs WHERE project_docs.doc_id=docs.id)
-    SQL
+			UPDATE docs
+			SET	projects_num=(SELECT count(*) FROM project_docs WHERE project_docs.doc_id=docs.id)
+		SQL
 
 		# the number of annotations of each doc
 		ActiveRecord::Base.connection.update <<~SQL.squish
-      UPDATE docs
-      SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=docs.id),
-      	blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=docs.id),
-      	relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=docs.id)
-    SQL
+			UPDATE docs
+			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=docs.id),
+				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=docs.id),
+				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=docs.id)
+		SQL
 
 		# the number of annotations of each doc in each project
 		ActiveRecord::Base.connection.update <<~SQL.squish
-      UPDATE project_docs
-      SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=project_docs.doc_id AND denotations.project_id=project_docs.project_id),
-      	blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=project_docs.doc_id AND blocks.project_id=project_docs.project_id),
-      	relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=project_docs.doc_id AND relations.project_id=project_docs.project_id)
-    SQL
+			UPDATE project_docs
+			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=project_docs.doc_id AND denotations.project_id=project_docs.project_id),
+				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=project_docs.doc_id AND blocks.project_id=project_docs.project_id),
+				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=project_docs.doc_id AND relations.project_id=project_docs.project_id)
+		SQL
 	end
 
 	def rdfizer_spans
@@ -916,16 +915,16 @@ class Doc < ActiveRecord::Base
 		if doc_spans && doc_spans[:denotations].present?
 			doc_spans_ttl = rdfizer_spans.rdfize([doc_spans], {with_prefixes: false})
 			doc_spans_trig += <<~HEREDOC
-        <#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
-        	oa:has_body <#{graph_uri_doc_spans}> ;
-        	oa:has_target <#{graph_uri_doc}> ;
-        	prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+				<#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
+					oa:has_body <#{graph_uri_doc_spans}> ;
+					oa:has_target <#{graph_uri_doc}> ;
+					prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
 
-        GRAPH <#{graph_uri_doc_spans}>
-        {
-        	#{doc_spans_ttl.gsub(/\n/, "\n\t")}
-        }
-      HEREDOC
+				GRAPH <#{graph_uri_doc_spans}>
+				{
+					#{doc_spans_ttl.gsub(/\n/, "\n\t")}
+				}
+			HEREDOC
 		end
 
 		doc_spans_trig
