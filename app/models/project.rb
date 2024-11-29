@@ -1,5 +1,6 @@
 class Project < ActiveRecord::Base
   DOWNLOADS_PATH = "/downloads/"
+  MAX_NUM_STUDY_DOCS = 1000
 
   before_validation :cleanup_namespaces
   after_validation :user_presence
@@ -1180,6 +1181,30 @@ class Project < ActiveRecord::Base
     end
 
     [mode, docids, skip_message]
+  end
+
+  def get_shared_doc_ids(reference_project_id)
+    shared_doc_ids = ActiveRecord::Base.connection.select_values <<~SQL.squish
+      SELECT doc_id
+      FROM project_docs
+      WHERE project_id IN (#{id}, #{reference_project_id})
+      GROUP BY doc_id
+      HAVING COUNT(DISTINCT project_id) = 2
+    SQL
+
+    if shared_doc_ids.length > MAX_NUM_STUDY_DOCS
+      shared_doc_ids = ActiveRecord::Base.connection.select_values <<~SQL.squish
+        SELECT doc_id
+        FROM project_docs
+        WHERE project_id IN (#{id}, #{reference_project_id})
+        GROUP BY doc_id
+        HAVING COUNT(DISTINCT project_id) = 2
+        ORDER BY MAX(denotations_num) DESC
+        LIMIT #{MAX_NUM_STUDY_DOCS}
+      SQL
+    end
+
+    shared_doc_ids
   end
 
   private

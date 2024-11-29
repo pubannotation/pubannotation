@@ -14,6 +14,8 @@ module UseJobRecordConcern
     # If the job instance is not set, this job is called by perform_now.
     raise exception unless @job
 
+    @pool.kill if @pool.present?
+
     body = exception.message[0..250]
 
     if Rails.env.development? && !exception.is_a?(Exceptions::JobSuspendError)
@@ -52,7 +54,7 @@ module UseJobRecordConcern
 
   def check_suspend_flag
     if suspended?
-      raise Exceptions::JobSuspendError
+      raise Exceptions::JobSuspendError, "Job suspended."
     end
   end
 

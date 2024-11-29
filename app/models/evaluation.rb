@@ -16,7 +16,6 @@ class Evaluation < ActiveRecord::Base
 				docs_ref = value.docs
 				docs_common = docs_std & docs_ref
 				record.errors.add(attr, "has no shared document with the study project.") if docs_common.length == 0
-				record.errors.add(attr, "has too many (> 5,000) shared document with the study project.") if docs_common.length > 5000
 			end
 		end
 	end

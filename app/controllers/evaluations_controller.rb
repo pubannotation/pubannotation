@@ -206,9 +206,9 @@ class EvaluationsController < ApplicationController
 				evaluation.obtain
 				"Evaluation is successfuly updated."
 			else
-				# EvaluateAnnotationsJob.perform_now(evaluation)
+				# EvaluateAnnotationsJob.perform_now(evaluation.study_project, evaluation)
 
-				active_job = EvaluateAnnotationsJob.perform_later(evaluation)
+				active_job = EvaluateAnnotationsJob.perform_later(evaluation.study_project, evaluation)
 				"The task, '#{active_job.job_name}', is created. Please reload the page to see the result."
 			end
 		rescue => e
