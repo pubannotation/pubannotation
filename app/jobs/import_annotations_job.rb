@@ -1,4 +1,6 @@
 class ImportAnnotationsJob < ApplicationJob
+	include UseJobRecordConcern
+
 	queue_as :general
 
 	def perform(project, source_project_id, options = {})
