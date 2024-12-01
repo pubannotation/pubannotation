@@ -50,7 +50,7 @@ gem 'elasticsearch-model', '~> 7.2'
 gem 'elasticsearch-rails', '~> 7.2'
 gem 'faraday'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
-gem 'tao_rdfizer', '~> 0.11.3'
+gem 'tao_rdfizer', '~> 0.12'
 
 # Use to clear page or fragment caches in app/controllers/doc_sweeper.rb
 gem 'rails-observers'

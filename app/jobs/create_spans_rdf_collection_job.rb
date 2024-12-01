@@ -3,10 +3,12 @@ class CreateSpansRdfCollectionJob < ApplicationJob
 
 	queue_as :low_priority
 
-	def perform(collection, loc)
+	def perform(collection)
 		if @job
 			prepare_progress_record(collection.primary_docids.count)
 		end
+
+		loc = collection.rdf_new_dirpath
 
 		collection.create_spans_RDF(loc) do |i, doc, message|
 			if @job

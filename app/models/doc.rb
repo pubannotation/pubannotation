@@ -557,7 +557,7 @@ class Doc < ActiveRecord::Base
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotations_hash_all(project_id = nil)
 		annotations = {}
-		annotations[:denotations] = denotations.in_project(project_id).as_json
+		annotations[:denotations] = denotations.in_project(project_id).as_json + blocks.in_project(project_id).as_json
 		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(sourcedb, sourceid, :only_path => false)
 		annotations[:sourcedb] = sourcedb
 		annotations[:sourceid] = sourceid

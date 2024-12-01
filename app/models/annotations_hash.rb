@@ -45,7 +45,7 @@ class AnnotationsHash
   def annotations_tracks
     @annotations_tracks ||= @project_doc_list.inject([]) do |tracks, project_doc|
       track = annotations_in project_doc
-      if full? || track[:denotations].present?
+      if full? || track[:denotations].present? || track[:blocks].present?
         tracks << track
       else
         tracks

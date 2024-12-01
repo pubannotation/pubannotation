@@ -387,7 +387,7 @@ GEM
     stackprof (0.2.26)
     string-similarity (2.1.0)
     stringio (3.1.2)
-    tao_rdfizer (0.11.3)
+    tao_rdfizer (0.12)
     terser (1.2.4)
       execjs (>= 0.3.0, < 3)
     text_alignment (0.12.3)
@@ -466,7 +466,7 @@ DEPENDENCIES
   sprockets-rails
   stackprof
   stardog-rb!
-  tao_rdfizer (~> 0.11.3)
+  tao_rdfizer (~> 0.12)
   terser
   text_alignment (= 0.12.3)
   unicorn

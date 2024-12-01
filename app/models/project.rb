@@ -316,7 +316,8 @@ class Project < ActiveRecord::Base
           f.write(preamble)
         end
 
-        if doc.denotations.where("denotations.project_id" => self.id).exists?
+        if doc.denotations.where("denotations.project_id" => self.id).exists? ||
+           doc.blocks.where("blocks.project_id" => self.id).exists?
           hannotations = doc.hannotations(self, nil, nil)
           annos_ttl = rdfizer_annos.rdfize([hannotations], { with_prefixes: false })
           f.write("\t" + annos_ttl.gsub(/\n/, "\n\t").rstrip + "\n")
