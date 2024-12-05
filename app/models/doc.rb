@@ -187,7 +187,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def self.graph_uri
-		"http://pubannotation.org/docs"
+		"https://pubannotation.org/docs"
 	end
 
 	def graph_uri

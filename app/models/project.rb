@@ -294,7 +294,7 @@ class Project < ActiveRecord::Base
 
           # prefixes
           preamble = rdfizer_annos.rdfize([hannotations], { only_prefixes: true })
-          preamble += "@prefix pubann: <http://pubannotation.org/ontology/pubannotation.owl#> .\n"
+          preamble += "@prefix pubann: <https://pubannotation.org/ontology/pubannotation.owl#> .\n"
           preamble += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
           preamble += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
           preamble += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
