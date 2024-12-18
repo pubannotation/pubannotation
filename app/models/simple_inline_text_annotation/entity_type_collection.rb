@@ -12,6 +12,12 @@ class SimpleInlineTextAnnotation
       entity_types[label]
     end
 
+    # to_config returns a Array of hashes of each entity type.
+    # Example:
+    #   [
+    #     {id: "https://example.com/Person", label: "Person"},
+    #     {id: "https://example.com/Organization", label: "Organization"}
+    #   ]
     def to_config
       entity_types.map do |label, id|
         { id: id, label: label }
