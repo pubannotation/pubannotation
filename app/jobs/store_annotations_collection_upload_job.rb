@@ -25,18 +25,14 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			# Check if it's a file and not a directory (glob should return only files, but just to be safe)
 			if File.file?(filepath)
 				json_string = File.read(filepath)
-				begin
-					validated_annotations = ValidatedAnnotations.new(json_string)
-					batch_item << validated_annotations
-					if batch_item.enough?
-						begin
-							threads << execute_batch(project, options, batch_item)
-						ensure
-							batch_item = BatchItem.new
-						end
+				validated_annotations = ValidatedAnnotations.new(json_string)
+				batch_item << validated_annotations
+				if batch_item.enough?
+					begin
+						threads << execute_batch(project, options, batch_item)
+					ensure
+						batch_item = BatchItem.new
 					end
-				rescue => e
-					process_exception("[#{File.basename(filepath)}] #{e.message}")
 				end
 
 				@job&.increment!(:num_dones)
@@ -46,11 +42,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 		# Process the remaining batch items.
 		unless batch_item.empty?
-			begin
-				threads << execute_batch(project, options, batch_item)
-			rescue => e
-				process_exception("[#{File.basename(filepath)}] #{e.message}")
-			end
+			threads << execute_batch(project, options, batch_item)
 			batch_item = BatchItem.new
 		end
 
@@ -63,18 +55,14 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 				File.open(filepath, "r") do |file|
 					file.each_line.with_index do |json_string, i|
-						begin
-							validated_annotations = ValidatedAnnotations.new(json_string)
-							batch_item << validated_annotations
-							if batch_item.enough?
-								begin
-									threads << execute_batch(project, options, batch_item)
-								ensure
-									batch_item = BatchItem.new
-								end
+						validated_annotations = ValidatedAnnotations.new(json_string)
+						batch_item << validated_annotations
+						if batch_item.enough?
+							begin
+								threads << execute_batch(project, options, batch_item)
+							ensure
+								batch_item = BatchItem.new
 							end
-						rescue => e
-							process_exception("[#{File.basename(filepath)}] #{e.message}")
 						end
 
 						@job&.increment!(:num_dones)
@@ -84,11 +72,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 				# Process the remaining batch items.
 				unless batch_item.empty?
-					begin
-						threads << execute_batch(project, options, batch_item)
-					rescue => e
-						process_exception("[#{File.basename(filepath)}] #{e.message}")
-					end
+					threads << execute_batch(project, options, batch_item)
 					batch_item = BatchItem.new
 				end
 			end
@@ -129,10 +113,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	end
 
 	def scheduled_num_increment!(by = 1)
-		@job.increment!(:num_items, by)
-	end
-
-	def process_exception(message)
-		@job.add_message body: message
+		@job&.increment!(:num_items, by)
 	end
 end
