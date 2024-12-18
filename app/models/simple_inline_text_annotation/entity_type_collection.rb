@@ -30,23 +30,13 @@ class SimpleInlineTextAnnotation
 
     private
 
+    # entity_types returns a Hash structured with label as key and id as value.
+    # Example:
+    #   {
+    #     "Person": "https://example.com/Person",
+    #     "Organization": "https://example.com/Organization"
+    #   }
     def entity_types
-      # entity_type is a Hash structured with label as key and id as value.
-
-      # Structure:
-      #   Key: Label (String) - The label defined within square brackets (e.g., "Person").
-      #   Value: ID (String)  - The URL or value following the colon (e.g., "https://example.com/Person").
-
-      # Example Input (Source):
-      #   [Person]: https://example.com/Person
-      #   [Organization]: https://example.com/Organization
-
-      # Example Output (Hash):
-      #   {
-      #     "Person": "https://example.com/Person",
-      #     "Organization": "https://example.com/Organization"
-      #   }
-
       @entity_types ||= read_entities_from_source
     end
 
