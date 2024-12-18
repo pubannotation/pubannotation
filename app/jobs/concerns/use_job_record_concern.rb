@@ -59,7 +59,7 @@ module UseJobRecordConcern
   end
 
   def suspended?
-    Job.find(@job.id)&.suspended?
+    Job.find(@job.id)&.suspended? if @job
   end
 
   def prepare_progress_record(scheduled_num)
