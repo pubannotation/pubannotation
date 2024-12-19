@@ -13,6 +13,10 @@ class SimpleInlineTextAnnotation
     @config = config
   end
 
+  def self.parse(source)
+    SimpleInlineTextAnnotation::Parser.new(source).parse
+  end
+
   def to_h
     {
       text: @text,
