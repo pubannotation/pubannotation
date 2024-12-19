@@ -176,5 +176,26 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
         is_expected.to eq(expected_format)
       end
     end
+
+    context 'when consecutive newlines in source' do
+      let(:source) do
+        <<~MD2
+          [Elon Musk][Person] is a member of the PayPal Mafia.
+
+
+          Elon Musk is a member of the PayPal Mafia.
+          MD2
+      end
+      let(:expected_format) { {
+        "text": "Elon Musk is a member of the PayPal Mafia.\n\nElon Musk is a member of the PayPal Mafia.",
+        "denotation":[
+            {"span":{"begin": 0, "end": 8}, "obj":"Person"},
+          ]
+      }.to_json }
+
+      it 'is parsed as single newline' do
+        is_expected.to eq(expected_format)
+      end
+    end
   end
 end
