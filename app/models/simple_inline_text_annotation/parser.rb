@@ -32,11 +32,11 @@ class SimpleInlineTextAnnotation
         full_text[match.begin(0)...match.end(0)] = target_text
       end
 
-      {
-        text: text_without_escape_backslash(full_text),
-        denotation: @denotations.map(&:to_h),
-        config: config
-      }.compact
+      SimpleInlineTextAnnotation.new(
+        text_without_escape_backslash(full_text),
+        @denotations.map(&:to_h),
+        config
+      ).to_h
     end
 
     private
