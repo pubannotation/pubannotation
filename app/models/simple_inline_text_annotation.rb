@@ -47,8 +47,8 @@ class SimpleInlineTextAnnotation
     text.gsub(ESCAPE_PATTERN, '')
   end
 
+  # Reduce consecutive newlines to a single newline.
   def reduce_consecutive_newlines_from(text)
-    # Replaces consecutive newlines to a single newline.
     text.gsub(/\n{2,}/, "\n\n")
   end
 
