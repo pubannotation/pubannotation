@@ -45,16 +45,12 @@ class SimpleInlineTextAnnotation::EntityTypeCollection
     @source.scan(SimpleInlineTextAnnotation::ENTITY_TYPE_BLOCK_PATTERN).each do |entity_block|
       entity_block[0].each_line do |line|
         match = line.strip.match(ENTITY_TYPE_PATTERN)
+        next unless match
 
-        if match
-          if match[1] == match[2]
-            # Do not create entity_type if label and id is same.
-            next
-          else
-            label, id = match[1], match[2]
-            entity_types[label] ||= id
-          end
-        end
+        label, id = match[1], match[2]
+        next if label == id # Do not create entity_type if label and id is same.
+
+        entity_types[label] ||= id
       end
     end
 
