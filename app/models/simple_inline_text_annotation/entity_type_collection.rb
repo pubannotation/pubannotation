@@ -47,8 +47,13 @@ class SimpleInlineTextAnnotation::EntityTypeCollection
         match = line.strip.match(ENTITY_TYPE_PATTERN)
 
         if match
-          label, id = match[1], match[2]
-          entity_types[label] ||= id
+          if match[1] == match[2]
+            # Do not create entity_type if label and id is same.
+            next
+          else
+            label, id = match[1], match[2]
+            entity_types[label] ||= id
+          end
         end
       end
     end
