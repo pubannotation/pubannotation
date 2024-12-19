@@ -37,9 +37,8 @@ class SimpleInlineTextAnnotation
 
     private
 
+    # Remove references from the source.
     def source_without_references
-      # Remove references from the source.
-
       @source.gsub(ENTITY_TYPE_BLOCK_PATTERN) do |block|
         block.start_with?("\n\n") ? "\n\n" : ""
       end.strip
