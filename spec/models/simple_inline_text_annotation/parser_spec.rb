@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
   describe '#parse' do
-    subject { SimpleInlineTextAnnotation.parse(source).to_json }
+    subject { SimpleInlineTextAnnotation.parse(source) }
 
     context 'when source has annotation structure' do
       let(:source) { '[Elon Musk][Person] is a member of the [PayPal Mafia][Organization].' }
@@ -12,7 +12,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
             {"span":{"begin": 0, "end": 8}, "obj":"Person"},
             {"span":{"begin": 29, "end": 40}, "obj":"Organization"},
           ]
-      }.to_json }
+      } }
 
       it 'parse as denotation' do
         is_expected.to eq(expected_format)
@@ -40,7 +40,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
             { "id": "https://example.com/Organization", "label": "Organization" }
           ]
         }
-      }.to_json }
+      } }
 
       it 'parse as entity types and apply id to denotation obj' do
         is_expected.to eq(expected_format)
@@ -54,7 +54,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
         "denotation":[
             {"span":{"begin": 40, "end": 51}, "obj":"Organization"}
           ]
-      }.to_json }
+      } }
 
       it 'is not parsed as annotation' do
         is_expected.to eq(expected_format)
@@ -73,7 +73,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
         "denotation":[
             {"span":{"begin": 0, "end": 8}, "obj":"Person"}
           ]
-      }.to_json }
+      } }
 
       it 'does not use as references' do
         is_expected.to eq(expected_format)
@@ -98,7 +98,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
             { "id": "https://example.com/Person", "label": "Person" }
           ]
         }
-      }.to_json }
+      } }
 
       it 'use definitions as references' do
         is_expected.to eq(expected_format)
@@ -124,7 +124,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
             { "id": "https://example.com/Person", "label": "Person" }
           ]
         }
-      }.to_json }
+      } }
 
       it 'parse as expected format' do
         is_expected.to eq(expected_format)
@@ -150,7 +150,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
             { "id": "https://example.com/Person", "label": "Person" }
           ]
         }
-      }.to_json }
+      } }
 
       it 'use first defined id in priority' do
         is_expected.to eq(expected_format)
@@ -170,7 +170,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
         "denotation":[
             {"span":{"begin": 0, "end": 8}, "obj":"Person"},
           ],
-      }.to_json }
+      } }
 
       it 'is do not create config' do
         is_expected.to eq(expected_format)
@@ -191,7 +191,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
         "denotation":[
             {"span":{"begin": 0, "end": 8}, "obj":"Person"},
           ]
-      }.to_json }
+      } }
 
       it 'is parsed as single newline' do
         is_expected.to eq(expected_format)
