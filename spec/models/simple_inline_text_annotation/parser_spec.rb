@@ -2,6 +2,8 @@ require 'rails_helper'
 
 RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
   describe '#parse' do
+    subject { SimpleInlineTextAnnotation.parse(source).to_json }
+
     context 'when source has annotation structure' do
       let(:source) { '[Elon Musk][Person] is a member of the [PayPal Mafia][Organization].' }
       let(:expected_format) { {
@@ -13,8 +15,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       }.to_json }
 
       it 'parse as denotation' do
-        output = SimpleInlineTextAnnotation.parse(source)
-        expect(output.to_json).to eq(expected_format)
+        is_expected.to eq(expected_format)
       end
     end
 
@@ -42,8 +43,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       }.to_json }
 
       it 'parse as entity types and apply id to denotation obj' do
-        output = SimpleInlineTextAnnotation.parse(source)
-        expect(output.to_json).to eq(expected_format)
+        is_expected.to eq(expected_format)
       end
     end
 
@@ -57,8 +57,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       }.to_json }
 
       it 'is not parsed as annotation' do
-        output = SimpleInlineTextAnnotation.parse(source)
-        expect(output.to_json).to eq(expected_format)
+        is_expected.to eq(expected_format)
       end
     end
 
@@ -77,8 +76,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       }.to_json }
 
       it 'does not use as references' do
-        output = SimpleInlineTextAnnotation.parse(source)
-        expect(output.to_json).to eq(expected_format)
+        is_expected.to eq(expected_format)
       end
     end
 
@@ -103,8 +101,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       }.to_json }
 
       it 'use definitions as references' do
-        output = SimpleInlineTextAnnotation.parse(source)
-        expect(output.to_json).to eq(expected_format)
+        is_expected.to eq(expected_format)
       end
     end
 
@@ -130,8 +127,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       }.to_json }
 
       it 'parse as expected format' do
-        output = SimpleInlineTextAnnotation.parse(source)
-        expect(output.to_json).to eq(expected_format)
+        is_expected.to eq(expected_format)
       end
     end
   end
