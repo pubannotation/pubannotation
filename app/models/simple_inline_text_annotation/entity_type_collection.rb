@@ -42,8 +42,8 @@ class SimpleInlineTextAnnotation::EntityTypeCollection
   def read_entities_from_source
     entity_types = {}
 
-    @source.scan(SimpleInlineTextAnnotation::ENTITY_TYPE_BLOCK_PATTERN).each do |block|
-      block[0].each_line do |line|
+    @source.scan(SimpleInlineTextAnnotation::ENTITY_TYPE_BLOCK_PATTERN).each do |entity_block|
+      entity_block[0].each_line do |line|
         match = line.strip.match(ENTITY_TYPE_PATTERN)
 
         if match
