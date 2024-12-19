@@ -130,5 +130,31 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
         is_expected.to eq(expected_format)
       end
     end
+
+    context 'when reference id is duplicated' do
+      let(:source) do
+        <<~MD2
+          [Elon Musk][Person] is a member of the PayPal Mafia.
+
+          [Person]: https://example.com/Person
+          [Person]: https://example.com/Organization
+        MD2
+      end
+      let(:expected_format) { {
+        "text": "Elon Musk is a member of the PayPal Mafia.",
+        "denotation":[
+            {"span":{"begin": 0, "end": 8}, "obj":"https://example.com/Person"},
+          ],
+        "config": {
+          "entity types": [
+            { "id": "https://example.com/Person", "label": "Person" }
+          ]
+        }
+      }.to_json }
+
+      it 'use first defined id in priority' do
+        is_expected.to eq(expected_format)
+      end
+    end
   end
 end
