@@ -31,7 +31,7 @@ class SimpleInlineTextAnnotation::Parser
       full_text,
       @denotations,
       @entity_type_collection
-    ).to_h
+    )
   end
 
   private

@@ -18,7 +18,8 @@ class SimpleInlineTextAnnotation
   end
 
   def self.parse(source)
-    SimpleInlineTextAnnotation::Parser.new(source).parse
+    result = SimpleInlineTextAnnotation::Parser.new(source).parse
+    result.to_h
   end
 
   def to_h
