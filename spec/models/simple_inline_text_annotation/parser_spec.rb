@@ -106,6 +106,34 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
     end
 
     context 'when reference contains additional text after url' do
+      context 'when text is enclosed with quotation' do
+        let(:source) do
+          <<~MD2
+            [Elon Musk][Person] is a member of the [PayPal Mafia][Organization].
+
+            [Person]: https://example.com/Person "text"
+            [Organization]: https://example.com/Organization 'text'
+          MD2
+        end
+        let(:expected_format) { {
+          "text": "Elon Musk is a member of the PayPal Mafia.",
+          "denotation":[
+              {"span":{"begin": 0, "end": 8}, "obj":"https://example.com/Person"},
+              {"span":{"begin": 29, "end": 40}, "obj":"https://example.com/Organization"},
+            ],
+          "config": {
+            "entity types": [
+              { "id": "https://example.com/Person", "label": "Person" },
+              { "id": "https://example.com/Organization", "label": "Organization" }
+            ]
+          }
+        } }
+
+        it 'parsed as reference link' do
+          is_expected.to eq(expected_format)
+        end
+      end
+
       context 'when text is not enclosed with quotation' do
         let(:source) do
           <<~MD2

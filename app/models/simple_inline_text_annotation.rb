@@ -5,7 +5,7 @@ class SimpleInlineTextAnnotation
   #
   # [Label1]: URL1
   # [Label2]: URL2
-  ENTITY_TYPE_BLOCK_PATTERN = /(?:\A|\n{2,})((?:^\[[^\]]+\]:\s+\S+\n(?!\s))+)/
+  ENTITY_TYPE_BLOCK_PATTERN = /(?:\A|\n{2,})((?:^\[[^\]]+\]:\s+\S+(?:\s+(?:"[^"]*"|'[^']*'))?\s*(?:\n|$))+)/
 
   # ESCAPE_PATTERN matches a backslash (\) preceding two consecutive pairs of square brackets.
   # Example: \[This is a part of][original text]

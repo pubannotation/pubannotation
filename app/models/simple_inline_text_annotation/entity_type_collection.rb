@@ -1,8 +1,11 @@
 class SimpleInlineTextAnnotation
   class EntityTypeCollection
     # ENTITY_TYPE_PATTERN matches a pair of square brackets which is followed by a colon and URL.
-    # Example: [Label]: URL
-    ENTITY_TYPE_PATTERN = /^\[([^\]]+)\]:\s+(\S+)$/
+    # Similar to Markdown, this also matches when there is text enclosed in "" or '' after the URL.
+    # Match example:
+    #  - [Label]: URL
+    #  - [Label]: URL "text"
+    ENTITY_TYPE_PATTERN = /^\[([^\]]+)\]:\s+(\S+)(?:\s+(?:"[^"]*"|'[^']*'))?\s*$/
 
     def initialize(source)
       @source = source
