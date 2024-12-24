@@ -17,5 +17,15 @@ RSpec.describe "Spans", type: :request do
         expect(response).to have_http_status(200)
       end
     end
+
+    context 'when payload size exceeds the limit' do
+      let(:large_payload) { "A" * 10.megabytes }
+
+      it 'returns 413 payload too large' do
+        post "/conversions/inline2json", params: large_payload
+
+        expect(response).to have_http_status(:payload_too_large)
+      end
+    end
   end
 end
