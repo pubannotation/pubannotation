@@ -1,11 +1,14 @@
 class SimpleInlineTextAnnotation
+  # ENTITY_TYPE_PATTERN matches a pair of square brackets which is followed by a colon and URL.
+  # Similar to Markdown, this also matches when there is text enclosed in "" or '' after the URL.
+  # Match example:
+  #  - [Label]: URL
+  #  - [Label]: URL "text"
+  ENTITY_TYPE_PATTERN = /^\[([^\]]+)\]:\s+(\S+)(?:\s+(?:"[^"]*"|'[^']*'))?\s*$/
+
   # ENTITY_TYPE_BLOCK_PATTERN matches a block of the entity type definitions.
   # Requires a blank line above the block definition.
-  # Example:
-  #
-  # [Label1]: URL1
-  # [Label2]: URL2
-  ENTITY_TYPE_BLOCK_PATTERN = /(?:\A|\n{2,})((?:^\[[^\]]+\]:\s+\S+(?:\s+(?:"[^"]*"|'[^']*'))?\s*(?:\n|$))+)/
+  ENTITY_TYPE_BLOCK_PATTERN = /(?:\A|\n{2,})((?:#{ENTITY_TYPE_PATTERN}*(?:\n|$))+)/
 
   # ESCAPE_PATTERN matches a backslash (\) preceding two consecutive pairs of square brackets.
   # Example: \[This is a part of][original text]
