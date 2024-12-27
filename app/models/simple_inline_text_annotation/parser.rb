@@ -19,7 +19,7 @@ class SimpleInlineTextAnnotation
         label = match[2]
 
         begin_pos = match.begin(0)
-        end_pos = begin_pos + target_text.length - 1 # -1 to adapt with zero-based indexing.
+        end_pos = begin_pos + target_text.length
         obj = get_obj_for(label)
 
         @denotations << Denotation.new(begin_pos, end_pos, obj)
