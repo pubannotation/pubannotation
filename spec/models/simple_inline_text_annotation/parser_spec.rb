@@ -8,7 +8,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       let(:source) { '[Elon Musk][Person] is a member of the [PayPal Mafia][Organization].' }
       let(:expected_format) { {
         "text": "Elon Musk is a member of the PayPal Mafia.",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 0, "end": 8}, "obj":"Person"},
             {"span":{"begin": 29, "end": 40}, "obj":"Organization"},
           ]
@@ -30,7 +30,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       end
       let(:expected_format) { {
         "text": "Elon Musk is a member of the PayPal Mafia.",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 0, "end": 8}, "obj":"https://example.com/Person"},
             {"span":{"begin": 29, "end": 40}, "obj":"https://example.com/Organization"},
           ],
@@ -51,7 +51,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       let(:source) { '\[Elon Musk][Person] is a member of the [PayPal Mafia][Organization].' }
       let(:expected_format) { {
         "text": "[Elon Musk][Person] is a member of the PayPal Mafia.",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 40, "end": 51}, "obj":"Organization"}
           ]
       } }
@@ -70,7 +70,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       end
       let(:expected_format) { {
         "text": "Elon Musk is a member of the PayPal Mafia.\n[Person]: https://example.com/Person",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 0, "end": 8}, "obj":"Person"}
           ]
       } }
@@ -90,7 +90,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       end
       let(:expected_format) { {
         "text": "Elon Musk is a member of the PayPal Mafia.",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 0, "end": 8}, "obj":"https://example.com/Person"}
           ],
         "config": {
@@ -117,7 +117,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
         end
         let(:expected_format) { {
           "text": "Elon Musk is a member of the PayPal Mafia.",
-          "denotation":[
+          "denotations":[
               {"span":{"begin": 0, "end": 8}, "obj":"https://example.com/Person"},
               {"span":{"begin": 29, "end": 40}, "obj":"https://example.com/Organization"},
             ],
@@ -144,7 +144,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
         end
         let(:expected_format) { {
           "text": "Elon Musk is a member of the PayPal Mafia.\n\n[Person]: https://example.com/Person text",
-          "denotation":[
+          "denotations":[
               {"span":{"begin": 0, "end": 8}, "obj":"Person"}
             ]
         } }
@@ -166,7 +166,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       end
       let(:expected_format) { {
         "text": "Elon Musk is a member of the PayPal Mafia.\n\nhello",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 0, "end": 8}, "obj":"https://example.com/Person"}
           ],
         "config": {
@@ -192,7 +192,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       end
       let(:expected_format) { {
         "text": "Elon Musk is a member of the PayPal Mafia.",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 0, "end": 8}, "obj":"https://example.com/Person"},
           ],
         "config": {
@@ -217,7 +217,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       end
       let(:expected_format) { {
         "text": "Elon Musk is a member of the PayPal Mafia.",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 0, "end": 8}, "obj":"Person"},
           ],
       } }
@@ -238,7 +238,7 @@ RSpec.describe SimpleInlineTextAnnotation::Parser, type: :model do
       end
       let(:expected_format) { {
         "text": "Elon Musk is a member of the PayPal Mafia.\n\nElon Musk is a member of the PayPal Mafia.",
-        "denotation":[
+        "denotations":[
             {"span":{"begin": 0, "end": 8}, "obj":"Person"},
           ]
       } }

@@ -28,7 +28,7 @@ class SimpleInlineTextAnnotation
   def to_h
     {
       text: format_text(@text),
-      denotation: @denotations.map(&:to_h),
+      denotations: @denotations.map(&:to_h),
       config: config
     }.compact
   end
