@@ -25,6 +25,10 @@ class SimpleInlineTextAnnotation
     result.to_h
   end
 
+  def self.generate(source)
+    SimpleInlineTextAnnotation::Generator.new(source).generate
+  end
+
   def to_h
     {
       text: format_text(@text),
