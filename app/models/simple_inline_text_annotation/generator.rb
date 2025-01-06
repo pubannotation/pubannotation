@@ -9,7 +9,7 @@ class SimpleInlineTextAnnotation
       denotations = standardize_denotations(@source[:denotations] || [])
       config = @source[:config]
 
-      annotated_text = annotate_text(text, denotations)
+      annotated_text = annotate_text(text, denotations, config)
       label_definitions = build_label_definitions(config)
 
       [annotated_text, label_definitions].compact.join("\n\n")
@@ -24,17 +24,24 @@ class SimpleInlineTextAnnotation
                  .sort_by { |denotation| -denotation[:span][:begin] }
     end
 
-    def annotate_text(text, denotations)
+    def annotate_text(text, denotations, config)
       denotations.each do |denotation|
         begin_pos = denotation[:span][:begin]
         end_pos = denotation[:span][:end]
-        obj = denotation[:obj]
+        obj = get_obj(denotation[:obj], config)
 
         annotated_text = "[#{text[begin_pos...end_pos]}][#{obj}]"
         text = text[0...begin_pos] + annotated_text + text[end_pos..]
       end
 
       text
+    end
+
+    def get_obj(obj, config)
+      return obj unless config && config[:"entity types"]
+
+      entity = config[:"entity types"].find { |entity_type| entity_type[:id] == obj }
+      entity ? entity[:label] : obj
     end
 
     def build_label_definitions(config)
