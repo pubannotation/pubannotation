@@ -49,6 +49,21 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
       end
     end
 
+    context 'when source has boundary-crossing denotations' do
+      let(:source) { {
+        "text": "Elon Musk is a member of the PayPal Mafia.",
+        "denotations":[
+          {"span":{"begin": 0, "end": 9}, "obj":"Person"},
+          {"span":{"begin": 8, "end": 11}, "obj":"Organization"},
+        ]
+        } }
+      let(:expected_format) { 'Elon Musk is a member of the PayPal Mafia.' }
+
+      it 'should use only outer denotation' do
+        is_expected.to eq(expected_format)
+      end
+    end
+
     context 'when source has config' do
       let(:source) { {
         "text": "Elon Musk is a member of the PayPal Mafia.",
