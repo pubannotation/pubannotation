@@ -123,5 +123,33 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
         is_expected.to eq(expected_format)
       end
     end
+
+    context 'when denotations span is negative' do
+      let(:source) { {
+        "text": "Elon Musk is a member of the PayPal Mafia.",
+        "denotations":[
+          {"span":{"begin": -1, "end": 9}, "obj":"Person"},
+        ]
+        } }
+      let(:expected_format) { 'Elon Musk is a member of the PayPal Mafia.' }
+
+      it 'generate annotation structure' do
+        is_expected.to eq(expected_format)
+      end
+    end
+
+    context 'when denotations span is invalid' do
+      let(:source) { {
+        "text": "Elon Musk is a member of the PayPal Mafia.",
+        "denotations":[
+          {"span":{"begin": 4, "end": 0}, "obj":"Person"},
+        ]
+        } }
+      let(:expected_format) { 'Elon Musk is a member of the PayPal Mafia.' }
+
+      it 'generate annotation structure' do
+        is_expected.to eq(expected_format)
+      end
+    end
   end
 end

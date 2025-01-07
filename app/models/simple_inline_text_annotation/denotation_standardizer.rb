@@ -3,6 +3,8 @@ class SimpleInlineTextAnnotation
     # Standardize denotations by removing duplicates, nested, and boundary-crossing spans.
     def standardize(denotations)
       result = remove_duplicates_from(denotations)
+      result = remove_negative_positions_from(result)
+      result = remove_invalid_positions_from(result)
       result = remove_nests_from(result)
       remove_boundary_crosses_from(result)
     end
@@ -11,6 +13,18 @@ class SimpleInlineTextAnnotation
 
     def remove_duplicates_from(denotations)
       denotations.uniq { |denotation| denotation.span }
+    end
+
+    def remove_negative_positions_from(denotations)
+      denotations.reject do |denotation|
+        denotation.begin_pos < 0 || denotation.end_pos < 0
+      end
+    end
+
+    def remove_invalid_positions_from(denotations)
+      denotations.reject do |denotation|
+        denotation.end_pos < denotation.begin_pos
+      end
     end
 
     def remove_nests_from(denotations)
