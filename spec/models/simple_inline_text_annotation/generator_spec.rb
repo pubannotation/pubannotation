@@ -34,18 +34,50 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
       end
     end
 
-    context 'when source has nested spans' do
-      let(:source) { {
-        "text": "Elon Musk is a member of the PayPal Mafia.",
-        "denotations":[
-          {"span":{"begin": 0, "end": 9}, "obj":"Person"},
-          {"span":{"begin": 2, "end": 6}, "obj":"Organization"},
-        ]
-        } }
-      let(:expected_format) { '[Elon Musk][Person] is a member of the PayPal Mafia.' }
+    context 'when source has nested span within another span' do
+      context 'when both begin and end are inside' do
+        let(:source) { {
+          "text": "Elon Musk is a member of the PayPal Mafia.",
+          "denotations":[
+            {"span":{"begin": 0, "end": 9}, "obj":"Person"},
+            {"span":{"begin": 2, "end": 6}, "obj":"Organization"},
+          ]
+          } }
+        let(:expected_format) { '[Elon Musk][Person] is a member of the PayPal Mafia.' }
 
-      it 'should use only outer denotation' do
-        is_expected.to eq(expected_format)
+        it 'should use only outer denotation' do
+          is_expected.to eq(expected_format)
+        end
+      end
+
+      context 'when begin is inside' do
+        let(:source) { {
+          "text": "Elon Musk is a member of the PayPal Mafia.",
+          "denotations":[
+            {"span":{"begin": 0, "end": 4}, "obj":"First name"},
+            {"span":{"begin": 0, "end": 9}, "obj":"Full name"},
+          ]
+          } }
+        let(:expected_format) { '[Elon Musk][Full name] is a member of the PayPal Mafia.' }
+
+        it 'should use only outer denotation' do
+          is_expected.to eq(expected_format)
+        end
+      end
+
+      context 'when end is inside' do
+        let(:source) { {
+          "text": "Elon Musk is a member of the PayPal Mafia.",
+          "denotations":[
+            {"span":{"begin": 6, "end": 9}, "obj":"Last name"},
+            {"span":{"begin": 0, "end": 9}, "obj":"Full name"},
+          ]
+          } }
+        let(:expected_format) { '[Elon Musk][Full name] is a member of the PayPal Mafia.' }
+
+        it 'should use only outer denotation' do
+          is_expected.to eq(expected_format)
+        end
       end
     end
 
