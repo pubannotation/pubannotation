@@ -17,15 +17,24 @@ class SimpleInlineTextAnnotation
 
     private
 
-    # Only use the first denotation if the span range is the same.
-    # Also sort denotations in descending for later annotation process.
+    # Standardize denotations by removing duplicates and nested spans.
     def standardize_denotations(denotations)
-      denotations.uniq { |denotation| denotation[:span] }
-                 .sort_by { |denotation| -denotation[:span][:begin] }
+      sorted_denotations = denotations.uniq { |denotation| denotation[:span] }
+                                      .sort_by { |denotation| denotation[:span][:begin] }
+
+      result = []
+      sorted_denotations.each do |denotation|
+        unless result.any? { |r| r[:span][:begin] <= denotation[:span][:begin] && r[:span][:end] >= denotation[:span][:end] }
+          result << denotation
+        end
+      end
+
+      result
     end
 
     def annotate_text(text, denotations, config)
-      denotations.each do |denotation|
+      # Annotate text from the end to ensure position calculation.
+      denotations.reverse_each do |denotation|
         begin_pos = denotation[:span][:begin]
         end_pos = denotation[:span][:end]
         obj = get_obj(denotation[:obj], config)

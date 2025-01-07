@@ -19,6 +19,36 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
       end
     end
 
+    context 'when source has same span denotations' do
+      let(:source) { {
+        "text": "Elon Musk is a member of the PayPal Mafia.",
+        "denotations":[
+          {"span":{"begin": 0, "end": 9}, "obj":"Person"},
+          {"span":{"begin": 0, "end": 9}, "obj":"Organization"},
+        ]
+        } }
+      let(:expected_format) { '[Elon Musk][Person] is a member of the PayPal Mafia.' }
+
+      it 'should use first denotation' do
+        is_expected.to eq(expected_format)
+      end
+    end
+
+    context 'when source has nested spans' do
+      let(:source) { {
+        "text": "Elon Musk is a member of the PayPal Mafia.",
+        "denotations":[
+          {"span":{"begin": 0, "end": 9}, "obj":"Person"},
+          {"span":{"begin": 2, "end": 6}, "obj":"Organization"},
+        ]
+        } }
+      let(:expected_format) { '[Elon Musk][Person] is a member of the PayPal Mafia.' }
+
+      it 'should use only outer denotation' do
+        is_expected.to eq(expected_format)
+      end
+    end
+
     context 'when source has config' do
       let(:source) { {
         "text": "Elon Musk is a member of the PayPal Mafia.",
