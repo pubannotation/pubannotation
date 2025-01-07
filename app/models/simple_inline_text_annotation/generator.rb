@@ -1,6 +1,6 @@
 class SimpleInlineTextAnnotation
   class Generator
-    include DenotationStandardizer
+    include DenotationValidator
 
     def initialize(source)
       @source = source
@@ -9,7 +9,7 @@ class SimpleInlineTextAnnotation
 
     def generate
       text = @source[:text]
-      denotations = standardize(@denotations)
+      denotations = validate(@denotations)
       config = @source[:config]
 
       annotated_text = annotate_text(text, denotations, config)

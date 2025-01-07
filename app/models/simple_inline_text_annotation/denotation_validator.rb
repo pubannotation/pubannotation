@@ -1,7 +1,6 @@
 class SimpleInlineTextAnnotation
-  module DenotationStandardizer
-    # Standardize denotations by removing duplicates, nested, and boundary-crossing spans.
-    def standardize(denotations)
+  module DenotationValidator
+    def validate(denotations)
       result = remove_duplicates_from(denotations)
       result = remove_negative_positions_from(result)
       result = remove_invalid_positions_from(result)
