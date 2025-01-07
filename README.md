@@ -67,6 +67,12 @@ $ bundle exec sidekiq -C config/sidekiq.yml
 $ bundle exec sidekiq -C config/sidekiq.yml -q general
 ```
 
+Test
+-----
+This project uses RSpec for testing. To run the tests, execute:
+```
+bundle exec rspec
+```
 
 Deploy
 -----
