@@ -18,5 +18,16 @@ class SimpleInlineTextAnnotation
     def to_h
       { span: @span, obj: @obj }
     end
+
+    def nested_within?(other)
+      other.begin_pos <= begin_pos && end_pos <= other.end_pos
+    end
+
+    def boundary_crossing?(other)
+      starts_inside_other = begin_pos > other.begin_pos && begin_pos < other.end_pos
+      ends_inside_other = end_pos > other.begin_pos && end_pos < other.end_pos
+
+      starts_inside_other || ends_inside_other
+    end
   end
 end
