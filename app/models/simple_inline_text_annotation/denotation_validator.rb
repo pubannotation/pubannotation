@@ -27,6 +27,7 @@ class SimpleInlineTextAnnotation
     end
 
     def remove_nests_from(denotations)
+      # Sort by begin_pos in ascending order. If begin_pos is the same, sort by end_pos in descending order.
       sorted_denotations = denotations.sort_by { |d| [d.begin_pos, -d.end_pos] }
       result = []
 
