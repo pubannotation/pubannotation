@@ -119,7 +119,7 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
         } }
       let(:expected_format) { 'Elon Musk is a member of the PayPal Mafia.' }
 
-      it 'should use only outer denotation' do
+      it 'should be both ignored' do
         is_expected.to eq(expected_format)
       end
     end
@@ -133,7 +133,7 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
         } }
       let(:expected_format) { 'Elon Musk is a member of the PayPal Mafia.' }
 
-      it 'generate annotation structure' do
+      it 'should be ignored' do
         is_expected.to eq(expected_format)
       end
     end
@@ -147,7 +147,7 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
         } }
       let(:expected_format) { 'Elon Musk is a member of the PayPal Mafia.' }
 
-      it 'generate annotation structure' do
+      it 'should be ignored' do
         is_expected.to eq(expected_format)
       end
     end
