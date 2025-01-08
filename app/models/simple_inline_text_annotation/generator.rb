@@ -3,7 +3,7 @@ class SimpleInlineTextAnnotation
     include DenotationValidator
 
     def initialize(source)
-      @source = source
+      @source = source.freeze
       @denotations = build_denotations(source[:denotations] || [])
     end
 
@@ -26,7 +26,7 @@ class SimpleInlineTextAnnotation
 
     def annotate_text(text, denotations, config)
       # Annotate text from the end to ensure position calculation.
-      denotations.reverse_each do |denotation|
+      denotations.sort_by(&:begin_pos).reverse_each do |denotation|
         begin_pos = denotation.begin_pos
         end_pos = denotation.end_pos
         obj = get_obj(denotation.obj, config)
