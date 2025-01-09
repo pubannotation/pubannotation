@@ -325,5 +325,6 @@ Pubann::Application.routes.draw do
 	end
 
 	# TextAE open API
-	resources :textae, only: %i[create show]
+	resource :textae, only: :create
+	get '/textae/:uuid' => 'textae#show'
 end
