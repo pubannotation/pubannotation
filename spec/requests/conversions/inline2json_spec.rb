@@ -29,5 +29,13 @@ RSpec.describe "Spans", type: :request do
         expect(response).to have_http_status(:payload_too_large)
       end
     end
+
+    context 'when no content-type specified' do
+      it 'returns 415 unsupported_media_type' do
+        post "/conversions/inline2json"
+
+        expect(response).to have_http_status(415)
+      end
+    end
   end
 end
