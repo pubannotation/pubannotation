@@ -323,4 +323,7 @@ Pubann::Application.routes.draw do
 	namespace :conversions do
 		resources :inline2json, only: :create
 	end
+
+	# TextAE open API
+	resources :textae, only: %i[create show]
 end
