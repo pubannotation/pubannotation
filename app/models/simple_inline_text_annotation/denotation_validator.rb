@@ -15,15 +15,11 @@ class SimpleInlineTextAnnotation
     end
 
     def remove_negative_positions_from(denotations)
-      denotations.reject do |denotation|
-        denotation.begin_pos < 0 || denotation.end_pos < 0
-      end
+      denotations.reject { |denotation| denotation.position_negative? }
     end
 
     def remove_invalid_positions_from(denotations)
-      denotations.reject do |denotation|
-        denotation.end_pos < denotation.begin_pos
-      end
+      denotations.reject { |denotation| denotation.position_invalid? }
     end
 
     def remove_nests_from(denotations)
