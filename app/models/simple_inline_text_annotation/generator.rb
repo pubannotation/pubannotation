@@ -3,7 +3,7 @@ class SimpleInlineTextAnnotation
     include DenotationValidator
 
     def initialize(source)
-      @source = source.freeze
+      @source = source.dup.freeze
       @denotations = build_denotations(source[:denotations] || [])
     end
 
