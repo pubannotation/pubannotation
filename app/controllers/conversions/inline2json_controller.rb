@@ -4,6 +4,11 @@ class Conversions::Inline2jsonController < ApplicationController
   MAX_PAYLOAD_SIZE = 10.megabytes
 
   def create
+    unless request.content_type == 'text/plain' || request.content_type == 'text/markdown'
+      render plain: "ERROR: Invalid content type. Please set text/plain or text/markdown to Content-Type.", status: :unsupported_media_type
+      return
+    end
+
     if request.content_length >= MAX_PAYLOAD_SIZE
       render json: { error: 'Payload too large. The size should be less than 10 MB.' }, status: :payload_too_large
       return
