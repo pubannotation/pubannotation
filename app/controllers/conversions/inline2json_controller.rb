@@ -10,7 +10,7 @@ class Conversions::Inline2jsonController < ApplicationController
     end
 
     if request.content_length >= MAX_PAYLOAD_SIZE
-      render json: { error: 'Payload too large. The size should be less than 10 MB.' }, status: :payload_too_large
+      render plain: "ERROR: Payload too large. The size should be less than 10 MB.", status: :payload_too_large
       return
     end
 
@@ -19,6 +19,6 @@ class Conversions::Inline2jsonController < ApplicationController
 
     render json: result, status: :ok
   rescue => e
-    render json: { error: e.message }, status: :internal_server_error
+    render plain: "ERROR: #{e.message}", status: :internal_server_error
   end
 end
