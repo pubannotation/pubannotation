@@ -1,0 +1,2 @@
+class TextaeAnnotation < ApplicationRecord
+end
