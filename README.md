@@ -186,3 +186,40 @@ Add keys to .env file to use reCAPTCHA on your app.
 RECAPTCHA_SITE_KEY=[Generated site key]
 RECAPTCHA_SECRET_KEY=[Generated secret key]
 ```
+
+### POST /textae
+Sending a POST request to /textae with an annotation in the body returns a URL that generates HTML with the annotation opened in TextAE.     
+Specify JSON or SimpleInlineTextAnnotationFormat annotation to the body.
+
+#### JSON example
+```
+curl --globoff -X POST https://pubannotation.org/textae \
+  -H "Content-Type: application/json" \
+  -d '{
+         "text": "Elon Musk is a member of the PayPal Mafia.",
+         "denotation":[
+           {"span":{"begin": 0, "end": 8}, "obj":"Person"},
+         ]
+       }'
+```
+
+
+#### SimpleInlineTextAnnotationFormat example
+```
+curl -X POST https://pubannotation.org/textae \
+  -H "Content-Type: text/markdown" \
+  -d "[Elon Musk][Person] is a member of the PayPal Mafia.
+
+      [Person]: https://example.com/Person"
+```
+
+Notes:   
+If you want to specify BODY from a file, you need to send the data in binary format to maintain the newline code.
+
+curl example:   
+Use `--data-binary` option instead of `-d`
+```
+curl -X POST http://pubannotation.org/textae \
+  -H "Content-Type: text/markdown" \
+  --data-binary @sample.md
+```
