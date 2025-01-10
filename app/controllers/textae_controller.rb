@@ -15,7 +15,7 @@ class TextaeController < ApplicationController
       return
     end
 
-    annotation = parse_request_body(body)
+    annotation = parse(body)
     textae_annotation = TextaeAnnotation.create!(annotation: annotation)
 
     TextaeAnnotation.older_than_one_day.destroy_all
@@ -39,11 +39,12 @@ class TextaeController < ApplicationController
 
   private
 
-  def parse_request_body(body)
-    if request.content_type == 'text/markdown'
+  def parse(body)
+    case request.content_type
+    when 'text/markdown'
       annotation = SimpleInlineTextAnnotation.parse(body)
       JSON.pretty_generate(annotation)
-    elsif request.content_type == 'application/json'
+    when 'application/json'
       body
     end
   end
