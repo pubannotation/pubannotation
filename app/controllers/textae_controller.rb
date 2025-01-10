@@ -9,7 +9,13 @@ class TextaeController < ApplicationController
       return
     end
 
-    annotation = parse_request_body
+    body = request.body.read
+    if body.blank?
+      render json: { error: 'Request body cannot be empty.' }, status: :bad_request
+      return
+    end
+
+    annotation = parse_request_body(body)
     textae_annotation = TextaeAnnotation.create!(annotation: annotation)
 
     TextaeAnnotation.older_than_one_day.destroy_all
@@ -33,9 +39,7 @@ class TextaeController < ApplicationController
 
   private
 
-  def parse_request_body
-    body = request.body.read
-
+  def parse_request_body(body)
     if request.content_type == 'text/markdown'
       annotation = SimpleInlineTextAnnotation.parse(body)
       JSON.pretty_generate(annotation)

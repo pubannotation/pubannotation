@@ -53,6 +53,14 @@ RSpec.describe "Textae", type: :request do
         expect(response).to have_http_status(415)
       end
     end
+
+    context 'when request body is empty' do
+      it 'returns 400 unsupported_media_type' do
+        post "/textae", headers: { 'Content-Type' => 'application/json' }
+
+        expect(response).to have_http_status(400)
+      end
+    end
   end
 
   describe 'GET /textae/:uuid' do
