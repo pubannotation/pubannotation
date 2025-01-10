@@ -1,6 +1,8 @@
 class TextaeController < ApplicationController
   skip_before_action :verify_authenticity_token, only: %i[create show]
 
+  rescue_from StandardError, with: :render_standard_error
+
   def create
     unless ['text/markdown', 'application/json'].include?(request.content_type)
       render json: { error: 'Invalid content-type. Please set the correct content-type according to the request.' }, status: :unsupported_media_type
@@ -21,6 +23,12 @@ class TextaeController < ApplicationController
   end
 
   def show
+    textae_annotation = TextaeAnnotation.find_by!(uuid: params[:uuid])
+    textae_html = TextaeAnnotation.generate_textae_html(textae_annotation.annotation)
+
+    render plain: textae_html, status: :ok
+  rescue ActiveRecord::RecordNotFound => e
+    render json: { error: e.message }, status: :not_found
   end
 
   private
@@ -34,5 +42,9 @@ class TextaeController < ApplicationController
     elsif request.content_type == 'application/json'
       body
     end
+  end
+
+  def render_standard_error(e)
+    render json: { error: e.message }, status: :internal_server_error
   end
 end
