@@ -191,7 +191,10 @@ RECAPTCHA_SECRET_KEY=[Generated secret key]
 Sending a POST request to /textae with an annotation in the body returns a URL that generates HTML with the annotation opened in TextAE.     
 Specify JSON or SimpleInlineTextAnnotationFormat annotation to the body.
 
-#### JSON example
+#### Request Examples
+Please specify the content-type according to the body.
+
+##### JSON
 ```
 curl --globoff -X POST https://pubannotation.org/textae \
   -H "Content-Type: application/json" \
@@ -204,7 +207,7 @@ curl --globoff -X POST https://pubannotation.org/textae \
 ```
 
 
-#### SimpleInlineTextAnnotationFormat example
+##### SimpleInlineTextAnnotationFormat
 ```
 curl -X POST https://pubannotation.org/textae \
   -H "Content-Type: text/markdown" \
@@ -214,7 +217,7 @@ curl -X POST https://pubannotation.org/textae \
 ```
 
 Notes:   
-If you want to specify BODY from a file, you need to send the data in binary format to maintain the newline code.
+If you want to specify BODY from a file, you need to send the data in binary format to keep the newlines.
 
 curl example:   
 Use `--data-binary` option instead of `-d`
