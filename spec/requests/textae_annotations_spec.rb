@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe "Textae", type: :request do
+RSpec.describe "TextaeAnnotations", type: :request do
   describe "POST /textae" do
     let(:json_annotation) do
       <<~JSON

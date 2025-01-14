@@ -1,4 +1,4 @@
-class TextaeController < ApplicationController
+class TextaeAnnotationsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: %i[create show]
 
   rescue_from StandardError, with: :render_standard_error

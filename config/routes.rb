@@ -325,6 +325,6 @@ Pubann::Application.routes.draw do
 	end
 
 	# TextAE open API
-	post '/textae' => 'textae#create'
-	get '/textae/:uuid' => 'textae#show'
+	post '/textae' => 'textae_annotations#create'
+	get '/textae/:uuid' => 'textae_annotations#show'
 end
