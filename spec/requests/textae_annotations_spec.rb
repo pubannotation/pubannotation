@@ -55,7 +55,7 @@ RSpec.describe "TextaeAnnotations", type: :request do
     end
 
     context 'when request body is empty' do
-      it 'returns 400 unsupported_media_type' do
+      it 'returns 400 bad request' do
         post "/textae", headers: { 'Content-Type' => 'application/json' }
 
         expect(response).to have_http_status(400)
