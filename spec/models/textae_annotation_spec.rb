@@ -2,10 +2,11 @@ require 'rails_helper'
 
 RSpec.describe TextaeAnnotation, type: :model do
   describe '.generate_textae_html' do
-    it 'generates textae HTML with annotation' do
+    it 'should generate textae HTML with annotation' do
       annotation = 'sample annotation'
       html = TextaeAnnotation.generate_textae_html(annotation)
 
+      expect(html).to include('<html>')
       expect(html).to include(annotation)
     end
   end

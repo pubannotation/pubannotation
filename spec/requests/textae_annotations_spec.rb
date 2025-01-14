@@ -30,7 +30,7 @@ RSpec.describe "TextaeAnnotations", type: :request do
       end
     end
 
-    context 'when requested with inline markdown' do
+    context 'when requested with inline annotation' do
       it 'should be created' do
         count = TextaeAnnotation.count
         post "/textae", params: inline_annotation, headers: { 'Content-Type' => 'text/markdown' }
