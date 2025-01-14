@@ -322,6 +322,7 @@ Pubann::Application.routes.draw do
 	# SimpleInlineTextAnnotation conversion API
 	namespace :conversions do
 		resources :inline2json, only: :create
+		resources :json2inline, only: :create
 	end
 
 	# TextAE open API
