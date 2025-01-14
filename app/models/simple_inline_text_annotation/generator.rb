@@ -4,12 +4,12 @@ class SimpleInlineTextAnnotation
 
     def initialize(source)
       @source = source.dup.freeze
-      @denotations = build_denotations(source[:denotations] || [])
-      @config = @source[:config]
+      @denotations = build_denotations(source["denotations"] || [])
+      @config = @source["config"]
     end
 
     def generate
-      text = @source[:text]
+      text = @source["text"]
       denotations = validate(@denotations)
 
       annotated_text = annotate_text(text, denotations)
@@ -21,7 +21,7 @@ class SimpleInlineTextAnnotation
     private
 
     def build_denotations(denotations)
-      denotations.map { |d| Denotation.new(d[:span][:begin], d[:span][:end], d[:obj])}
+      denotations.map { |d| Denotation.new(d["span"]["begin"], d["span"]["end"], d["obj"]) }
     end
 
     def annotate_text(text, denotations)
@@ -39,21 +39,21 @@ class SimpleInlineTextAnnotation
     end
 
     def entity_types
-      @config ? @config[:"entity types"] : nil
+      @config ? @config["entity types"] : nil
     end
 
     def get_obj(obj)
       return obj unless entity_types
 
-      entity = entity_types.find { |entity_type| entity_type[:id] == obj }
-      entity ? entity[:label] : obj
+      entity = entity_types.find { |entity_type| entity_type["id"] == obj }
+      entity ? entity["label"] : obj
     end
 
     def build_label_definitions
       return nil unless entity_types
 
       entity_types.map do |entity|
-        "[#{entity[:label]}]: #{entity[:id]}"
+        "[#{entity["label"]}]: #{entity["id"]}"
       end.join("\n")
     end
   end
