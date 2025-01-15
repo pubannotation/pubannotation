@@ -18,8 +18,6 @@ class TextaeAnnotationsController < ApplicationController
     annotation = parse(body)
     textae_annotation = TextaeAnnotation.create!(annotation: annotation)
 
-    TextaeAnnotation.older_than_one_day.destroy_all
-
     render json: {
       message: 'Request was successfully processed. To see the generated textae html, send GET request to result_url.',
       result_url: "#{Rails.application.config.host_url}/textae/#{textae_annotation.uuid}"
