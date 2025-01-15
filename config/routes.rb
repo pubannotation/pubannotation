@@ -323,4 +323,8 @@ Pubann::Application.routes.draw do
 	namespace :conversions do
 		resources :inline2json, only: :create
 	end
+
+	# TextAE open API
+	post '/textae' => 'textae_annotations#create'
+	get '/textae/:uuid' => 'textae_annotations#show'
 end
