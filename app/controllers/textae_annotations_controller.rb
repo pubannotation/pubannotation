@@ -29,10 +29,9 @@ class TextaeAnnotationsController < ApplicationController
   end
 
   def show
-    textae_annotation = TextaeAnnotation.find_by!(uuid: params[:uuid])
-    textae_html = TextaeAnnotation.generate_textae_html(textae_annotation.annotation)
+    @annotation = TextaeAnnotation.find_by!(uuid: params[:uuid]).annotation
 
-    render plain: textae_html, status: :ok
+    render :show, layout: false, status: :ok
   rescue ActiveRecord::RecordNotFound
     render plain: "ERROR: Could not find the annotation with specified ID (#{params[:uuid]})", status: :not_found
   end
