@@ -33,8 +33,8 @@ class TextaeAnnotationsController < ApplicationController
     textae_html = TextaeAnnotation.generate_textae_html(textae_annotation.annotation)
 
     render plain: textae_html, status: :ok
-  rescue ActiveRecord::RecordNotFound => e
-    render plain: "ERROR: #{e.message}", status: :not_found
+  rescue ActiveRecord::RecordNotFound
+    render plain: "ERROR: Could not find the annotation with specified ID (#{params[:uuid]})", status: :not_found
   end
 
   private
