@@ -1,8 +1,6 @@
 class TextaeAnnotationsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: %i[create show]
 
-  rescue_from StandardError, with: :render_standard_error
-
   def create
     unless ['text/markdown', 'application/json'].include?(request.content_type)
       render json: { error: 'Invalid content-type. Please set the correct content-type according to the request.' }, status: :unsupported_media_type
@@ -44,9 +42,5 @@ class TextaeAnnotationsController < ApplicationController
     when 'application/json'
       body
     end
-  end
-
-  def render_standard_error(e)
-    render json: { error: e.message }, status: :internal_server_error
   end
 end
