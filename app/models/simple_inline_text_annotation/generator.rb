@@ -11,7 +11,7 @@ class SimpleInlineTextAnnotation
     def generate
       text = @source["text"]
       raise SimpleInlineTextAnnotation::GeneratorError, 'The "text" key is missing.' if text.nil?
-      denotations = validate(@denotations)
+      denotations = validate(@denotations, text.length)
 
       annotated_text = annotate_text(text, denotations)
       label_definitions = build_label_definitions

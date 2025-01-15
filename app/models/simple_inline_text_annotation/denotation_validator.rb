@@ -1,9 +1,10 @@
 class SimpleInlineTextAnnotation
   module DenotationValidator
-    def validate(denotations)
+    def validate(denotations, text_length)
       result = remove_duplicates_from(denotations)
       result = remove_negative_positions_from(result)
       result = remove_invalid_positions_from(result)
+      result = remove_out_of_bound_positions_from(result, text_length)
       result = remove_nests_from(result)
       remove_boundary_crosses_from(result)
     end
@@ -20,6 +21,10 @@ class SimpleInlineTextAnnotation
 
     def remove_invalid_positions_from(denotations)
       denotations.reject { |denotation| denotation.position_invalid? }
+    end
+
+    def remove_out_of_bound_positions_from(denotations, text_length)
+      denotations.reject { |denotation| denotation.out_of_bounds?(text_length) }
     end
 
     def remove_nests_from(denotations)

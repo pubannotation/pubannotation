@@ -152,6 +152,20 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
       end
     end
 
+    context 'when denotation is out of bound with text length' do
+      let(:source) { {
+        "text" => "Elon Musk is a member of the PayPal Mafia.",
+        "denotations" => [
+          {"span" => {"begin" => 100, "end" => 200}, "obj" => "Person"},
+        ]
+      } }
+      let(:expected_format) { 'Elon Musk is a member of the PayPal Mafia.' }
+
+      it 'should be ignored' do
+        is_expected.to eq(expected_format)
+      end
+    end
+
     context 'when source text key is missing' do
       let(:source) { {
         "denotations" => [
