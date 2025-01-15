@@ -22,6 +22,15 @@ RSpec.describe "Json2inline", type: :request do
       end
     end
 
+    context 'when requested without text key in JSON' do
+      it 'returns 400 bad request' do
+        post "/conversions/json2inline", params: '{ "denotations": [] }',
+                                         headers: { 'Content-Type' => 'application/json' }
+
+        expect(response).to have_http_status(400)
+      end
+    end
+
     context 'when requested without content-type' do
       it 'returns 415 unsupported_media_type' do
         post "/conversions/json2inline", params: json_annotation
