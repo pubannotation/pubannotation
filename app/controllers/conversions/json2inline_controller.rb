@@ -13,6 +13,8 @@ class Conversions::Json2inlineController < ApplicationController
     render plain: result, status: :ok
   rescue JSON::ParserError => e
     render plain: "ERROR: Invalid JSON. Details: #{e.message}", status: :bad_request
+  rescue SimpleInlineTextAnnotation::GeneratorError => e
+    render plain: "ERROR: #{e.message}", status: :bad_request
   rescue => e
     render plain: "ERROR: #{e.message}", status: :internal_server_error
   end
