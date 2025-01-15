@@ -34,7 +34,7 @@ class TextaeAnnotationsController < ApplicationController
 
     render plain: textae_html, status: :ok
   rescue ActiveRecord::RecordNotFound => e
-    render json: { error: e.message }, status: :not_found
+    render plain: "ERROR: #{e.message}", status: :not_found
   end
 
   private
