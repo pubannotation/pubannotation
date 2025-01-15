@@ -1,7 +1,7 @@
 class TextaeAnnotation < ApplicationRecord
   before_create :clean_old_annotations
 
-  scope :older_than_one_day, -> { where("created_at < ?", 1.day.ago) }
+  scope :old, -> { where("created_at < ?", 1.day.ago) }
 
   def self.generate_textae_html(annotation)
     html = <<~HTML
@@ -30,6 +30,6 @@ class TextaeAnnotation < ApplicationRecord
   private
 
   def clean_old_annotations
-    TextaeAnnotation.older_than_one_day.destroy_all
+    TextaeAnnotation.old.destroy_all
   end
 end
