@@ -151,5 +151,17 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
         is_expected.to eq(expected_format)
       end
     end
+
+    context 'when source text key is missing' do
+      let(:source) { {
+        "denotations" => [
+          {"span" => {"begin" => 4, "end" => 0}, "obj" => "Person"},
+        ]
+      } }
+
+      it 'raises GeneratorError' do
+        expect { subject }.to raise_error(SimpleInlineTextAnnotation::GeneratorError, 'The "text" key is missing.')
+      end
+    end
   end
 end

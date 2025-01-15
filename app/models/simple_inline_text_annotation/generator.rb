@@ -10,6 +10,7 @@ class SimpleInlineTextAnnotation
 
     def generate
       text = @source["text"]
+      raise SimpleInlineTextAnnotation::GeneratorError, 'The "text" key is missing.' if text.nil?
       denotations = validate(@denotations)
 
       annotated_text = annotate_text(text, denotations)
