@@ -19,29 +19,6 @@ class TextaeAnnotation < ApplicationRecord
         <div class="textae-editor" mode="edit">
           #{annotation}
         </div>
-        <script>
-        // Run scripts before start the textae.
-        !function(){
-          var userAgent = window.navigator.userAgent.toLowerCase()
-          var isIE = (userAgent.indexOf('msie') >= 0 || userAgent.indexOf('trident') >= 0)
-          if (isIE) alert('Microsoft IE is not supported. Please use a HTML5-conformant browser, e.g., FireFox, Chrome, or Safari.')
-
-          if (location.search) {
-            const queries = location.search.substring(1).split('&')
-            const editors = Array.from(document.querySelectorAll('.textae-editor'))
-
-            editors.forEach(function (editor) {
-              queries.forEach(function (query) {
-                var name = query.split('=')[0]
-                editor.setAttribute(name, query.split('=')[1] ? decodeURIComponent(query.split('=')[1]) : name)
-              })
-            })
-          }
-        }()
-
-        // Run scripts after start the textae.
-        window.addEventListener('load', () => document.querySelector('.textae-editor').focus())
-        </script>
       </body>
 
       </html>
