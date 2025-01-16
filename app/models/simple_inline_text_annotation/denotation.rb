@@ -28,6 +28,10 @@ class SimpleInlineTextAnnotation
       @begin_pos > @end_pos
     end
 
+    def out_of_bounds?(text_length)
+      @begin_pos >= text_length || @end_pos > text_length
+    end
+
     def boundary_crossing?(other)
       starts_inside_other = @begin_pos > other.begin_pos && @begin_pos < other.end_pos
       ends_inside_other = @end_pos > other.begin_pos && @end_pos < other.end_pos
