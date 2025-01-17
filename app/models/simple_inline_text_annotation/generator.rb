@@ -40,20 +40,20 @@ class SimpleInlineTextAnnotation
     end
 
     def labeled_entity_types
-      return [] if @config.nil? || @config["entity types"].nil?
+      return nil unless @config
 
-      @config["entity types"].select { |entity_type| entity_type.key?("label") }
+      @config["entity types"]&.select { |entity_type| entity_type.key?("label") }
     end
 
     def get_obj(obj)
-      return obj if labeled_entity_types.empty?
+      return obj unless labeled_entity_types
 
       entity = labeled_entity_types.find { |entity_type| entity_type["id"] == obj }
       entity ? entity["label"] : obj
     end
 
     def build_label_definitions
-      return nil if labeled_entity_types.empty?
+      return nil if labeled_entity_types.blank?
 
       labeled_entity_types.map do |entity|
         "[#{entity["label"]}]: #{entity["id"]}"
