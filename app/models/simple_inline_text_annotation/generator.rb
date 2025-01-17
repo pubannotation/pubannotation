@@ -40,7 +40,7 @@ class SimpleInlineTextAnnotation
     end
 
     def labeled_entity_types
-      return [] unless @config
+      return [] if @config.nil? || @config["entity types"].nil?
 
       @config["entity types"].select { |entity_type| entity_type.key?("label") }
     end
