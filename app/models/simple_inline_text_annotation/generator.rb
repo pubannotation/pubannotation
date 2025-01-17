@@ -15,6 +15,7 @@ class SimpleInlineTextAnnotation
 
       annotated_text = annotate_text(text, denotations)
       label_definitions = build_label_definitions
+
       [annotated_text, label_definitions].compact.join("\n\n")
     end
 
