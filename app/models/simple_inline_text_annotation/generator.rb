@@ -15,7 +15,6 @@ class SimpleInlineTextAnnotation
 
       annotated_text = annotate_text(text, denotations)
       label_definitions = build_label_definitions
-
       [annotated_text, label_definitions].compact.join("\n\n")
     end
 
@@ -39,21 +38,23 @@ class SimpleInlineTextAnnotation
       text
     end
 
-    def entity_types
-      @config ? @config["entity types"] : nil
+    def labeled_entity_types
+      return [] unless @config
+
+      @config["entity types"].select { |entity_type| entity_type.key?("label") }
     end
 
     def get_obj(obj)
-      return obj unless entity_types
+      return obj if labeled_entity_types.empty?
 
-      entity = entity_types.find { |entity_type| entity_type["id"] == obj }
+      entity = labeled_entity_types.find { |entity_type| entity_type["id"] == obj }
       entity ? entity["label"] : obj
     end
 
     def build_label_definitions
-      return nil unless entity_types
+      return nil if labeled_entity_types.empty?
 
-      entity_types.map do |entity|
+      labeled_entity_types.map do |entity|
         "[#{entity["label"]}]: #{entity["id"]}"
       end.join("\n")
     end
