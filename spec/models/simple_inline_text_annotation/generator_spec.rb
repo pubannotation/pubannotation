@@ -47,6 +47,26 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
       end
     end
 
+    context 'when entity type has present but label is missing' do
+      let(:source) { {
+        "text" => "Elon Musk is a member of the PayPal Mafia.",
+        "denotations" => [
+          {"span" => {"begin" => 0, "end" => 9}, "obj" => "Person"}
+        ],
+        "config" => {
+          "entity types" => [
+            {"id" => "Person"}
+          ]
+        }
+      }}
+
+      let(:expected_format) { '[Elon Musk][Person] is a member of the PayPal Mafia.' }
+
+      it 'should create only annotation structure' do
+        is_expected.to eq(expected_format)
+      end
+    end
+
     context 'when source has same span denotations' do
       let(:source) { {
         "text" => "Elon Musk is a member of the PayPal Mafia.",
