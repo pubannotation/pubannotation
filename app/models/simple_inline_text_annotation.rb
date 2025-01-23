@@ -4,11 +4,11 @@ class SimpleInlineTextAnnotation
   # Match example:
   #  - [Label]: URL
   #  - [Label]: URL "text"
-  ENTITY_TYPE_PATTERN = /^\[([^\]]+)\]:\s+(\S+)(?:\s+(?:"[^"]*"|'[^']*'))?\s*$/
+  ENTITY_TYPE_PATTERN = /^\s*\[([^\]]+)\]:\s+(\S+)(?:\s+(?:"[^"]*"|'[^']*'))?\s*$/
 
   # ENTITY_TYPE_BLOCK_PATTERN matches a block of the entity type definitions.
   # Requires a blank line above the block definition.
-  ENTITY_TYPE_BLOCK_PATTERN = /(?:\A|\n{2,})((?:#{ENTITY_TYPE_PATTERN}*(?:\n|$))+)/
+  ENTITY_TYPE_BLOCK_PATTERN = /(?:\A|\n\s*\n)((?:#{ENTITY_TYPE_PATTERN}(?:\n|$))+)/
 
   # ESCAPE_PATTERN matches a backslash (\) preceding two consecutive pairs of square brackets.
   # Example: \[This is a part of][original text]
