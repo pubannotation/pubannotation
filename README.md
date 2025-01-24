@@ -10,7 +10,7 @@ Requirement
 -----------
 
 Please use it with
-* ruby version 3.3.6,
+* ruby version 3.4.1,
 * Postgresql 9.0 or above,
 * ElasticSearch 5 or above, and
 * [redis](https://redis.io/)
