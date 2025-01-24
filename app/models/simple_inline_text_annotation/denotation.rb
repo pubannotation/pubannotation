@@ -20,6 +20,10 @@ class SimpleInlineTextAnnotation
       other.begin_pos <= @begin_pos && @end_pos <= other.end_pos
     end
 
+    def position_not_integer?
+      !(@begin_pos.is_a?(Integer) && @end_pos.is_a?(Integer))
+    end
+
     def position_negative?
       @begin_pos < 0 || @end_pos < 0
     end
