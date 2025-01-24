@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
-ruby '3.3.6'
+ruby '3.4.1'
 
 gem 'rails', '~> 8.0.0'
 gem 'rake'
@@ -35,6 +35,7 @@ gem 'facebox-rails', github: 'KishiKyousuke/facebox-rails'
 gem 'color-generator'
 gem 'rest-client', github: 'jaredbeck/rest-client', branch: 'patch-1'
 
+gem 'csv'
 gem 'htmlentities'
 gem 'libxml-ruby'
 gem 'wikipedia-client'
