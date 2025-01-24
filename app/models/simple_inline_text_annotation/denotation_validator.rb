@@ -17,7 +17,7 @@ class SimpleInlineTextAnnotation
     end
 
     def remove_non_integer_positions_from(denotations)
-      denotations.select { |denotation| denotation.position_integer? }
+      denotations.reject { |denotation| denotation.position_not_integer? }
     end
 
     def remove_negative_positions_from(denotations)
