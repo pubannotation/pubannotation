@@ -67,6 +67,22 @@ RSpec.describe SimpleInlineTextAnnotation::Generator, type: :model do
       end
     end
 
+    context 'when span value is not integer' do
+      let(:source) { {
+        "text" => "Elon Musk is a member of the PayPal Mafia.",
+        "denotations" => [
+          {"span" => {"begin" => 0.1, "end" => 9.6}, "obj" => "Person"},
+          {"span" => {"begin" => "0", "end" => "9"}, "obj" => "Organization"}
+        ]
+      }}
+
+      let(:expected_format) { 'Elon Musk is a member of the PayPal Mafia.' }
+
+      it 'should not parse as annotation' do
+        is_expected.to eq(expected_format)
+      end
+    end
+
     context 'when source has same span denotations' do
       let(:source) { {
         "text" => "Elon Musk is a member of the PayPal Mafia.",

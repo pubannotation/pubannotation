@@ -2,6 +2,7 @@ class SimpleInlineTextAnnotation
   module DenotationValidator
     def validate(denotations, text_length)
       result = remove_duplicates_from(denotations)
+      result = remove_non_integer_positions_from(result)
       result = remove_negative_positions_from(result)
       result = remove_invalid_positions_from(result)
       result = remove_out_of_bound_positions_from(result, text_length)
@@ -13,6 +14,10 @@ class SimpleInlineTextAnnotation
 
     def remove_duplicates_from(denotations)
       denotations.uniq { |denotation| denotation.span }
+    end
+
+    def remove_non_integer_positions_from(denotations)
+      denotations.select { |denotation| denotation.position_integer? }
     end
 
     def remove_negative_positions_from(denotations)
