@@ -318,4 +318,14 @@ Pubann::Application.routes.draw do
 		resource :update_paragraph_references_job, only: [:show, :create, :destroy]
 		resource :update_sentence_references_job, only: [:show, :create, :destroy]
 	end
+
+	# SimpleInlineTextAnnotation conversion API
+	namespace :conversions do
+		resources :inline2json, only: :create
+		resources :json2inline, only: :create
+	end
+
+	# TextAE open API
+	post '/textae' => 'textae_annotations#create'
+	get '/textae/:uuid' => 'textae_annotations#show'
 end
