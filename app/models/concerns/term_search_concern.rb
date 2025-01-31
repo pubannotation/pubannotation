@@ -11,6 +11,8 @@ module TermSearchConcern
       if predicates.nil? || predicates&.include?('denotes')
         with_denotations = search_in_denotations(terms, user, project_names)
                              .select(:doc_id, 'docs.sourcedb', :'docs.sourceid')
+                             .group(:doc_id, 'docs.sourcedb', :'docs.sourceid')
+                             .having('COUNT(DISTINCT denotations.obj) = ?', terms.size)
 
         with_attributes.union(with_denotations)
       else
@@ -25,6 +27,8 @@ module TermSearchConcern
       if predicates&.include?('denotes')
         with_denotations = search_in_denotations(terms, user, project_names)
                              .select(:doc_id, :begin, :end, 'docs.sourcedb', :'docs.sourceid')
+                             .group(:doc_id, :begin, :end, 'docs.sourcedb', :'docs.sourceid')
+                             .having('COUNT(DISTINCT denotations.obj) = ?', terms.size)
 
         with_attributes.union(with_denotations)
       else
