@@ -32,27 +32,18 @@ $ redis-server /usr/local/etc/redis.conf
 ```
 
 
-Installation
-------------
+## For development
+### Setup and Start
 
 1. git clone https://github.com/pubannotation/pubannotation.git
 2. cd pubannotation
-3. bundle install
+3. bin/setup
 
-Setup
------
-1. Edit config/database.yml as you like
-2. RAILE_ENV=production rake db:create
-3. RAILE_ENV=production rake db:migration
-4. RAILE_ENV=production rake assets:precompile
-
-## Start
-
-`foreman start`
-
-or
-
-`bundle exec foreman start`
+### Test
+This project uses RSpec for testing. To run the tests, execute:
+```
+bundle exec rspec
+```
 
 ### Start sidekiq worker only
 
@@ -65,13 +56,6 @@ $ bundle exec sidekiq -C config/sidekiq.yml
 
 # Start by specifying a queue
 $ bundle exec sidekiq -C config/sidekiq.yml -q general
-```
-
-Test
------
-This project uses RSpec for testing. To run the tests, execute:
-```
-bundle exec rspec
 ```
 
 Deploy
