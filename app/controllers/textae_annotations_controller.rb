@@ -2,7 +2,7 @@ class TextaeAnnotationsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: %i[create show]
 
   def create
-    unless ['text/markdown', 'application/json'].include?(request.content_type)
+    unless ['text/plain', 'application/json'].include?(request.content_type)
       render json: { error: 'Invalid content-type. Please set the correct content-type according to the request.' }, status: :unsupported_media_type
       return
     end
@@ -36,7 +36,7 @@ class TextaeAnnotationsController < ApplicationController
 
   def parse(body)
     case request.content_type
-    when 'text/markdown'
+    when 'text/plain'
       annotation = SimpleInlineTextAnnotation.parse(body)
       JSON.pretty_generate(annotation)
     when 'application/json'

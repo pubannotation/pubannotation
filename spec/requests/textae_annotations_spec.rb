@@ -33,13 +33,13 @@ RSpec.describe "TextaeAnnotations", type: :request do
     context 'when requested with inline annotation' do
       it 'should be created' do
         count = TextaeAnnotation.count
-        post "/textae", params: inline_annotation, headers: { 'Content-Type' => 'text/markdown' }
+        post "/textae", params: inline_annotation, headers: { 'Content-Type' => 'text/plain' }
 
         expect(TextaeAnnotation.count).to eq(count + 1)
       end
 
       it 'should be saved as JSON' do
-        post "/textae", params: inline_annotation, headers: { 'Content-Type' => 'text/markdown' }
+        post "/textae", params: inline_annotation, headers: { 'Content-Type' => 'text/plain' }
         created_annotation = TextaeAnnotation.last.annotation
 
         expect { JSON.parse(created_annotation) }.not_to raise_error
