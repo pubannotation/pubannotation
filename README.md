@@ -194,7 +194,7 @@ curl --globoff -X POST https://pubannotation.org/textae \
 ##### SimpleInlineTextAnnotationFormat
 ```
 curl -X POST https://pubannotation.org/textae \
-  -H "Content-Type: text/markdown" \
+  -H "Content-Type: text/plain" \
   -d "[Elon Musk][Person] is a member of the PayPal Mafia.
 
       [Person]: https://example.com/Person"
@@ -207,6 +207,6 @@ curl example:
 Use `--data-binary` option instead of `-d`
 ```
 curl -X POST http://pubannotation.org/textae \
-  -H "Content-Type: text/markdown" \
-  --data-binary @sample.md
+  -H "Content-Type: text/plain" \
+  --data-binary @sample.txt
 ```
