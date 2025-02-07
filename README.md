@@ -184,8 +184,8 @@ curl --globoff -X POST https://pubannotation.org/textae \
   -H "Content-Type: application/json" \
   -d '{
          "text": "Elon Musk is a member of the PayPal Mafia.",
-         "denotation":[
-           {"span":{"begin": 0, "end": 8}, "obj":"Person"},
+         "denotations":[
+           {"span":{"begin": 0, "end": 9}, "obj":"Person"}
          ]
        }'
 ```
