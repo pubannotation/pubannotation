@@ -1,6 +1,6 @@
-PREFIX tao:<http://pubannotation.org/ontology/tao.owl#>
-PREFIX prj:<http://pubannotation.org/projects/>
-PREFIX ge:<http://bionlp.dbcls.jp/ontology/ge.owl#>
+PREFIX tao:<https://pubannotation.org/ontology/tao.owl#>
+PREFIX prj:<https://pubannotation.org/projects/>
+PREFIX ge:<https://bionlp.dbcls.jp/ontology/ge.owl#>
 PREFIX uniprot:<http://www.uniprot.org/uniprot/>
 
 SELECT distinct ?s1 ?s2

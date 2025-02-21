@@ -82,8 +82,8 @@
 					</ul>
 				</p>
 				<h2>Examples</h2>
-				<p>http://example.org/annotation?text=_text_</p>
-				<p>http://example.org/annotation?pmid=_sourceid_&format=json</p>
+				<p>https://example.org/annotation?text=_text_</p>
+				<p>https://example.org/annotation?pmid=_sourceid_&format=json</p>
 			</div>
 		</td>
 
@@ -116,28 +116,28 @@
 						<dt>_text_</dt>
 						<dd>the text of a document (plain text)</dd>
 						<dt>_doc_</dt>
-						<dd>a document (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+						<dd>a document (a <a href="https://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
 						<dt>_docs_</dt>
-						<dd>An array of documents (<a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
+						<dd>An array of documents (<a href="https://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
 						<dt>_annotation_</dt>
-						<dd>A document with annotation (a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
+						<dd>A document with annotation (a <a href="https://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object)</dd>
 						<dt>_annotations_</dt>
-						<dd>An array of documents with annotation (<a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
+						<dd>An array of documents with annotation (<a href="https://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> objects)</dd>
 					</dl>
 				</p>
 				<h2>Note</h2>
 				<ul>
-					<li>For a request from PubAnnotation, an annotator is expected to respond with a result of annotation which is in <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> format.</li>
-					<li>When a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object is sent to an annotator as an input, the annotator is expected to preserve, in its output, the content of the JSON object, except for adding the annotation results or changing pre-annotation to something else. For example, PubAnnotation will include the attributes, <i>sourcedb</i> and <i>sourceid</i>, in each document, when it sends documents to an annotator. PubAnnotation will then expect the results of annotation to preserve the attributes. PubAnnotation needs them to figure out which annotation to go to which document.</li> 
+					<li>For a request from PubAnnotation, an annotator is expected to respond with a result of annotation which is in <a href="https://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> format.</li>
+					<li>When a <a href="https://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object is sent to an annotator as an input, the annotator is expected to preserve, in its output, the content of the JSON object, except for adding the annotation results or changing pre-annotation to something else. For example, PubAnnotation will include the attributes, <i>sourcedb</i> and <i>sourceid</i>, in each document, when it sends documents to an annotator. PubAnnotation will then expect the results of annotation to preserve the attributes. PubAnnotation needs them to figure out which annotation to go to which document.</li>
 				</ul>
 				<h2>Examples</h2>
 					<dl>
 						<dt>_body_ = _text_</dt>
 						<dd>The text of a document (in plain text) will be passed as the body of a request. Note that this setting cannot be used for a asynchronous request.</dd>
 						<dt>_body_ = _doc_</dt>
-						<dd>A document (in a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. It is the default setting.</dd>
+						<dd>A document (in a <a href="https://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. It is the default setting.</dd>
 						<dt>_body_ = _annotation_</dt>
-						<dd>A document together with annotation to it (in a <a href="http://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. The annotation may be used as a pre-annotation.</dd>
+						<dd>A document together with annotation to it (in a <a href="https://www.pubannotation.org/docs/annotation-format/">PubAnnotation JSON</a> object) will be passed as the body of a request. The annotation may be used as a pre-annotation.</dd>
 					</dl>
 			</div>
 		</td>
@@ -150,7 +150,7 @@
 			<a href="#help-async_protocol" rel="facebox"><i class="help-link fa fa-question-circle" aria-hidden="true"></i></a>
 			<div id="help-async_protocol" class="help">
 				<h1>Is Async Protocol</h1>
-				<p>Check it if this annotator uses the <a href="http://www.pubannotation.org/docs/annotation-server-api/">asynchronous protocol</a>.</p>
+				<p>Check it if this annotator uses the <a href="https://www.pubannotation.org/docs/annotation-server-api/">asynchronous protocol</a>.</p>
 			</div>
 		</td>
 	</tr>

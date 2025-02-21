@@ -15,7 +15,7 @@
 		<section>
 			<h2>
 				<%= t('views.docs.clean_annotations') %>
-				<%= link_to(content_tag(:i, '', class: "fa fa-question-circle", "aria-hidden" => "true"), 'http://www.pubannotation.org/docs/clean-annotation/', title: "Help") %>
+				<%= link_to(content_tag(:i, '', class: "fa fa-question-circle", "aria-hidden" => "true"), 'https://www.pubannotation.org/docs/clean-annotation/', title: "Help") %>
 			</h2>
 
 			<%= link_to('Analyse', analyse_project_annotations_path(@project.name), method: :post, title: "Analyse the annotations", class: :button) %>

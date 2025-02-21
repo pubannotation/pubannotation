@@ -87,11 +87,11 @@
 				</div>
 
 				<% unless @result.nil? || @result.empty? %>
-					<h2>Result in <%= link_to 'TextAE', 'http://textae.pubannotation.org' %></h2>
+					<h2>Result in <%= link_to 'TextAE', 'https://textae.pubannotation.org' %></h2>
 					<%= render :partial => 'shared/textae_css_js'-%>
 					<div class="textae-editor"><%= @result.to_json %></div>
 
-					<h2>Result in <%= link_to 'JSON', 'http://www.pubannotation.org/docs/annotation-format/' %></h2>
+					<h2>Result in <%= link_to 'JSON', 'https://www.pubannotation.org/docs/annotation-format/' %></h2>
 					<pre style="white-space:pre-wrap; border:1px solid black"><%= JSON.pretty_generate @result %></pre>
 				<% end %>
 			<% end %>
