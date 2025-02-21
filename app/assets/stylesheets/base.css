@@ -300,6 +300,13 @@ li {
 		margin-top:5px;
 }
 
+span.filetype {
+	border: 1px solid #eee;
+	border-radius: 4px;
+	padding: 0 4px;
+	background-color: #eee;
+}
+
 .button {
 		-moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
 		-webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
