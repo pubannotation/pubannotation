@@ -788,6 +788,8 @@ class Project < ActiveRecord::Base
 
   def get_textae_config
     textae_config.present? ? make_request(:get, textae_config) : {}
+  rescue => e
+    raise "TextAE configuration unavailable!"
   end
 
   def user_presence
