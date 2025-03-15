@@ -33,4 +33,14 @@ module EvaluationsHelper
 			title: "Sort by #{sort_key}. Frequent ones come first."
 		)
 	end
+
+	def simple_paginate
+		current_page = params[:page].nil? ? 1 : params[:page].to_i
+		nav = ''
+		nav += link_to(content_tag(:i, '', class: "fa fa-angle-double-left", "aria-hidden" => "true"), params.permit(:controller, :action, :element, :type, :sort_key, :sort_direction).except(:page), title: "First", class: 'page') if current_page > 2
+		nav += link_to(content_tag(:i, '', class: "fa fa-angle-left", "aria-hidden" => "true"), params.permit(:controller, :action, :element, :type, :sort_key, :sort_direction).merge(page: current_page - 1), title: "Previous", class: 'page') if current_page > 1
+		nav += content_tag(:span, "Page #{current_page}", class: 'page')
+		nav += link_to(content_tag(:i, '', class: "fa fa-angle-right", "aria-hidden" => "true"), params.permit(:controller, :action, :element, :type, :sort_key, :sort_direction).merge(page: current_page + 1), title: "Next", class: 'page') unless params[:last_page]
+		content_tag(:nav, nav.html_safe, class: 'pagination')
+	end
 end

@@ -1,0 +1,25 @@
+<% example = pair[:study] || pair[:reference] %>
+<% doc = Doc.find_by(sourcedb:pair[:sourcedb], sourceid:pair[:sourceid]) %>
+
+<table style="border-style:none; width:100%">
+	<tr>
+		<td>
+			<div class="textae-editor oneline" control="hidden" style="width:100%">
+				<%= doc.hannotations(@sproject, example[:span], 10).to_json %>
+			</div>
+		</td>
+		<td>
+			<%= link_to '>>', span_show_project_sourcedb_sourceid_docs_path(@sproject.name, pair[:sourcedb], pair[:sourceid], example[:span][:begin], example[:span][:end]), title: "See in the study project: #{@sproject.name}" -%>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="textae-editor oneline" control="hidden" style="width:100%">
+				<%= doc.hannotations(@rproject, example[:span], 10).to_json %>
+			</div>
+		</td>
+		<td>
+			<%= link_to '>>', span_show_project_sourcedb_sourceid_docs_path(@rproject.name, pair[:sourcedb], pair[:sourceid], example[:span][:begin], example[:span][:end]), title: "See in the reference project: #{@rproject.name}" -%>
+		</td>
+	</tr>
+</table>

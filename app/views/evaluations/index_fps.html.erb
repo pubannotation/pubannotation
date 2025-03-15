@@ -1,3 +1,5 @@
+<%= render :partial => 'shared/textae_css_js'-%>
+
 <section>
 	<h1>
 		False positives
@@ -5,17 +7,22 @@
 		<%= "'#{@element}'-type" unless @element.nil? %>
 		<%= @type %>s
 		)
+		<span class='tab-bar'>
+			<%= link_to 'TSV', params.permit(:controller, :action, :type, :element).merge(format: :tsv), :class => 'tab' -%>
+		</span>
 	</h1>
 
-	<% if @fps.empty? %>
-		<p>none</p>
+	<% if @fps_count == 0 %>
+		<p>None</p>
 	<% else %>
+		<% if @fps.empty? %>
+			<p>No more</p>
+		<% else %>
 		<table>
 			<tr>
-				<td style="border-style:none; text-align:left"><%= number_with_delimiter(@fps.length, delimiter: ',') %></td>
+				<td style="border-style:none; text-align:left">Total: <%= number_with_delimiter(@fps_count, delimiter: ',') %></td>
 				<td colspan="3" style="border-style:none"></td>
 				<td style="border-style:none; text-align:right">
-					<%= link_to 'TSV', params.permit(:controller, :action, :type, :element).merge(format: :tsv), :class => 'tab' -%>
 				</td>
 			</tr>
 			<tr>
@@ -35,12 +42,12 @@
 					<td style="text-align:center"><%= fp[:study][:text] %></td>
 					<td style="text-align:center"><%= fp[:study][:obj] %></td>
 					<td>
-						<%=
-							link_to('Show', doc_sourcedb_sourceid_span_annotations_list_view_path(sourcedb, sourceid, fp[:study][:span][:begin], fp[:study][:span][:end], {projects:"#{@sproject.name},#{@rproject.name}", full:true, context_size:10}), :class => 'button', title: 'Show the annotations in TextAE')
-						%>
+						<%= render partial: 'annotations/compare_view', locals: {pair: fp} -%>
 					</td>
 				</tr>
 			<% end %>
 		</table>
+		<% end %>
+		<%= simple_paginate -%>
 	<% end %>
 </section>

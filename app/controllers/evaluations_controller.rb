@@ -1,5 +1,5 @@
 class EvaluationsController < ApplicationController
-	before_action :authenticate_user!, except: [:index, :show, :result, :index_falses, :falses]
+	before_action :authenticate_user!, except: [:index, :show, :result, :index_falses, :falses, :index_tps, :index_fps, :index_fns]
 	before_action :set_evaluation, only: [:edit, :update, :destroy]
 
 	respond_to :html
@@ -143,9 +143,13 @@ class EvaluationsController < ApplicationController
 		@element = nil if @element && @element == 'All'
 		@sort_key = params[:sort_key]&.to_sym
 
+		page = params[:page]&.to_i || 1
+		per  = params[:per]&.to_i  || 10
+
 		respond_to do |format|
 			format.html {
-				@tps = evaluation.true_positives(@type, @element, @sort_key)
+				@tps_count = evaluation.true_positives(@type, @element).count
+				@tps = evaluation.true_positives(@type, @element, @sort_key, page, per)
 				@sproject = evaluation.study_project
 				@rproject = evaluation.reference_project
 			}
@@ -163,9 +167,13 @@ class EvaluationsController < ApplicationController
 		@element = nil if @element && @element == 'All'
 		@sort_key = params[:sort_key]&.to_sym
 
+		page = params[:page]&.to_i || 1
+		per  = params[:per]&.to_i  || 10
+
 		respond_to do |format|
 			format.html {
-				@fps = evaluation.false_positives(@type, @element, @sort_key)
+				@fps_count = evaluation.false_positives(@type, @element).count
+				@fps = evaluation.false_positives(@type, @element, @sort_key, page, per)
 				@sproject = evaluation.study_project
 				@rproject = evaluation.reference_project
 			}
@@ -183,9 +191,13 @@ class EvaluationsController < ApplicationController
 		@element = nil if @element && @element == 'All'
 		@sort_key = params[:sort_key]&.to_sym
 
+		page = params[:page]&.to_i || 1
+		per  = params[:per]&.to_i  || 10
+
 		respond_to do |format|
 			format.html {
-				@fns = evaluation.false_negatives(@type, @element, @sort_key)
+				@fns_count = evaluation.false_negatives(@type, @element).count
+				@fns = evaluation.false_negatives(@type, @element, @sort_key, page, per)
 				@sproject = evaluation.study_project
 				@rproject = evaluation.reference_project
 			}

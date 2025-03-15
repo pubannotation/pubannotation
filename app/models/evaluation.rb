@@ -64,7 +64,7 @@ class Evaluation < ActiveRecord::Base
 		@hresult ||= JSON.parse result, :symbolize_names => true
 	end
 
-	def true_positives(type = nil, element = nil, sort_key = nil)
+	def true_positives(type = nil, element = nil, sort_key = nil, page = nil, per = nil)
 		tps = hresult[:true_positives] || []
 		tps = tps.select{|c| c[:type] == type} unless type.nil?
 		element_key = type == :relation ? :pred : :obj
@@ -100,10 +100,16 @@ class Evaluation < ActiveRecord::Base
 				end
 			end
 		end
-		tps
+
+		if page && per
+			offset = (page - 1) * per
+			tps.slice(offset, per)
+		else
+			tps
+		end
 	end
 
-	def false_positives(type = nil, element = nil, sort_key = nil)
+	def false_positives(type = nil, element = nil, sort_key = nil, page = nil, per = nil)
 		fps = hresult[:false_positives] || []
 		fps = fps.select{|c| c[:type] == type} unless type.nil?
 		element_key = type == :relation ? :pred : :obj
@@ -139,10 +145,16 @@ class Evaluation < ActiveRecord::Base
 				end
 			end
 		end
-		fps
+
+		if page && per
+			offset = (page - 1) * per
+			fps.slice(offset, per)
+		else
+			fps
+		end
 	end
 
-	def false_negatives(type = nil, element = nil, sort_key = nil)
+	def false_negatives(type = nil, element = nil, sort_key = nil, page = nil, per = nil)
 		fns = hresult[:false_negatives] || []
 		fns = fns.select{|c| c[:type] == type} unless type.nil?
 		element_key = type == :relation ? :pred : :obj
@@ -178,7 +190,13 @@ class Evaluation < ActiveRecord::Base
 				end
 			end
 		end
-		fns
+
+		if page && per
+			offset = (page - 1) * per
+			fns.slice(offset, per)
+		else
+			fns
+		end
 	end
 
 	def true_positives_csv(type = nil, element = nil, sort_key = nil)
