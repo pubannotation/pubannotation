@@ -52,6 +52,7 @@ gem 'elasticsearch-rails', '~> 7.2'
 gem 'faraday'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.12'
+gem 'simple_inline_text_annotation', github: 'Tamada-Arino/simple-inline-text-annotation'
 
 # Use to clear page or fragment caches in app/controllers/doc_sweeper.rb
 gem 'rails-observers'
