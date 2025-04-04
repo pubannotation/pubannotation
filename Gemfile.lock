@@ -7,6 +7,12 @@ GIT
       thor (>= 0.14)
 
 GIT
+  remote: https://github.com/Tamada-Arino/simple-inline-text-annotation.git
+  revision: 4211fb0836afe67d3df0b7f5bcef873f4cca21b7
+  specs:
+    simple_inline_text_annotation (0.1.0)
+
+GIT
   remote: https://github.com/brianhempel/active_record_union.git
   revision: 8ebe558709aabe039abd24e3e7dd4d4354a6de88
   specs:
@@ -474,6 +480,7 @@ DEPENDENCIES
   ruby-dictionary
   rubyzip
   sidekiq
+  simple_inline_text_annotation!
   sprockets-rails
   stackprof
   stardog-rb!
