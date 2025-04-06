@@ -9,6 +9,6 @@ module Pubann
     Labels = ['p']
   end
   module Sentence
-    Obj = ['sentence']
+    Obj = ['Sentence']
   end
 end
