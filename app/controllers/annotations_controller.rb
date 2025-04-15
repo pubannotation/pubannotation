@@ -437,6 +437,7 @@ class AnnotationsController < ApplicationController
 				format.json {render json: {message: notice, task_location: project_job_url(project.name, task.id, format: :json)}, status: :ok}
 			end
 		rescue => e
+			raise if Rails.env.development?
 			respond_to do |format|
 				format.html {redirect_back fallback_location: root_path, notice: e.message}
 				format.json {render json: {message: e.message}, status: :unprocessable_entity}
