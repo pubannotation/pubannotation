@@ -99,7 +99,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		ids_list.each do |ids|
 			num_added, num_sequenced, messages = project.add_docs(ids)
 			messages.each do |message|
-				@job&.add_message(message.class == Hash ? message : { body: message[0..250] })
+				@job&.add_message(message.class == Hash ? message : { body: message })
 			end
 		end
 	end
@@ -107,7 +107,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	def count_lines(filepath)
 		line_count = 0
 		File.open(filepath, "r") do |file|
-		file.each_line { line_count += 1 }
+			file.each_line { line_count += 1 }
 		end
 		line_count
 	end

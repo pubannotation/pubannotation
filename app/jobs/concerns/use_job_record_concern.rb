@@ -16,7 +16,7 @@ module UseJobRecordConcern
 
     @pool.kill if @pool.present?
 
-    body = exception.message[0..250]
+    body = exception.message
 
     if Rails.env.development? && !exception.is_a?(Exceptions::JobSuspendError)
       body << "\n#{exception.backtrace_locations ? exception.backtrace_locations[0..2] : 'no backtrace;'}"
@@ -59,7 +59,7 @@ module UseJobRecordConcern
   end
 
   def suspended?
-    Job.find(@job.id)&.suspended? if @job
+    @job ? @job.suspended? : false
   end
 
   def prepare_progress_record(scheduled_num)
