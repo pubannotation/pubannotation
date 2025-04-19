@@ -414,7 +414,7 @@ class AnnotationsController < ApplicationController
 			ext = '.tgz' if ext == '.gz' && filename.end_with?('.tar.gz')
 			raise ArgumentError, "Unknown file type: '#{ext}'." unless ['.tgz', '.json', '.jsonl'].include?(ext)
 
-			raise "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
+			raise Exceptions::TooManyBackgroundJobsError, "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless project.jobs.count < 10
 
 			options = {mode: params[:mode].present? ? params[:mode] : 'replace'}
 			options[:duplicate_texts] = true if params[:duplicate_texts] == "1"
@@ -437,6 +437,7 @@ class AnnotationsController < ApplicationController
 				format.json {render json: {message: notice, task_location: project_job_url(project.name, task.id, format: :json)}, status: :ok}
 			end
 		rescue => e
+			raise if Rails.env.development? && !e.is_a?(Exceptions::TooManyBackgroundJobsError)
 			respond_to do |format|
 				format.html {redirect_back fallback_location: root_path, notice: e.message}
 				format.json {render json: {message: e.message}, status: :unprocessable_entity}
