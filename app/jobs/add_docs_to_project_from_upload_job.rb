@@ -27,17 +27,17 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
       check_suspend_flag
     end
 
-    add_docs(project, sourcedb, ids)
+    add_docs(project, sourcedb, ids) unless ids.empty?
 
-    if @total_num_sequenced > 0
-      Project.docs_stat_increment!(sourcedb, @total_num_sequenced)
-      Project.docs_count_increment!(@total_num_sequenced)
-    end
+    # if @total_num_sequenced > 0
+    #   Project.docs_stat_increment!(sourcedb, @total_num_sequenced)
+    #   Project.docs_count_increment!(@total_num_sequenced)
+    # end
 
-    if @total_num_added > 0
-      project.docs_stat_increment!(sourcedb, @total_num_added)
-      project.increment!(:docs_count, @total_num_added)
-    end
+    # if @total_num_added > 0
+    #   project.docs_stat_increment!(sourcedb, @total_num_added)
+    #   project.increment!(:docs_count, @total_num_added)
+    # end
 
     File.unlink(filepath)
   ensure
