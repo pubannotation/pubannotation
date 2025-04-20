@@ -17,12 +17,12 @@ class Job < ActiveRecord::Base
   end
 
   def add_message(message)
-    if message[:sourceid].length > 250
+    if message[:sourceid].present? && message[:sourceid].length > 250
       sourceids = message[:sourceid].split(", ")
       message[:sourceid] = sourceids[0, 3].to_s + " and other #{sourceids.length - 3} ids"
     end
 
-    if message[:body].length > 250
+    if message[:sourceid].present? && message[:body].length > 250
       body = message[:body][0..235] + " ... (truncated)"
       message[:body] = body
     end
