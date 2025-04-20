@@ -836,6 +836,8 @@ class Project < ActiveRecord::Base
       relations_num: relations_num,
       annotations_count: denotations_num + blocks_num + relations_num
     )
+
+    docs_stat_update
   end
 
 
