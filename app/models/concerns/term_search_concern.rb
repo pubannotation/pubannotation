@@ -25,6 +25,8 @@ module TermSearchConcern
     scope :with_terms_with_begin_end, lambda { |terms, user, predicates, project_names|
       with_attributes = search_in_attributes(terms, user, predicates, project_names)
                           .select(:doc_id, :begin, :end, 'docs.sourcedb', :'docs.sourceid')
+                          .group(:doc_id, :begin, :end, 'docs.sourcedb', :'docs.sourceid')
+                          .having('COUNT(DISTINCT attrivutes.obj) = ?', terms.size)
 
       if predicates&.include?('denotes')
         with_denotations = search_in_denotations(terms, user, project_names)
