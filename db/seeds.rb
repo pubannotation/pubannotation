@@ -33,9 +33,9 @@ doc = Doc.create! sourcedb: 'PMC',
                   sourceid: 'PMC0000001',
                   body: <<~BODY
                         I am happy to join with you today in what will go down in history as the greatest demonstration for freedom in the history of our nation.
-                        
+
                         Five score years ago, a great American, in whose symbolic shadow we stand today, signed the Emancipation Proclamation. This momentous decree came as a great beacon light of hope to millions of Negro slaves who had been seared in the flames of withering injustice. It came as a joyous daybreak to end the long night of their captivity.
-                        
+
                         But one hundred years later, the Negro still is not free. One hundred years later, the life of the Negro is still sadly crippled by the manacles of segregation and the chains of discrimination. One hundred years later, the Negro lives on a lonely island of poverty in the midst of a vast ocean of material prosperity. One hundred years later, the Negro is still languished in the corners of American society and finds himself an exile in his own land. And so we've come here today to dramatize a shameful condition.
                         BODY
 project = doc.projects.create! name: 'Dream',
@@ -57,14 +57,14 @@ Attrivute.create! doc: doc, project: project, hid: 'A3', subj: t7, pred: 'role',
 doc.divisions.create! begin: 0, end: 137, label: 'p'
 doc.divisions.create! begin: 139, end: 473, label: 'p'
 doc.divisions.create! begin: 475, end: 990, label: 'p'
-doc.blocks.create! project: project, hid: 'B1', begin: 0, end: 137, obj: 'sentence'
-doc.blocks.create! project: project, hid: 'B2', begin: 139, end: 257, obj: 'sentence'
-doc.blocks.create! project: project, hid: 'B3', begin: 258, end: 304, obj: 'sentence'
-doc.blocks.create! project: project, hid: 'B4', begin: 305, end: 473, obj: 'sentence'
-doc.blocks.create! project: project, hid: 'B5', begin: 475, end: 522, obj: 'sentence'
-doc.blocks.create! project: project, hid: 'B6', begin: 523, end: 658, obj: 'sentence'
-doc.blocks.create! project: project, hid: 'B7', begin: 659, end: 792, obj: 'sentence'
-doc.blocks.create! project: project, hid: 'B8', begin: 793, end: 990, obj: 'sentence'
+doc.blocks.create! project: project, hid: 'B1', begin: 0, end: 137, obj: 'Sentence'
+doc.blocks.create! project: project, hid: 'B2', begin: 139, end: 257, obj: 'Sentence'
+doc.blocks.create! project: project, hid: 'B3', begin: 258, end: 304, obj: 'Sentence'
+doc.blocks.create! project: project, hid: 'B4', begin: 305, end: 473, obj: 'Sentence'
+doc.blocks.create! project: project, hid: 'B5', begin: 475, end: 522, obj: 'Sentence'
+doc.blocks.create! project: project, hid: 'B6', begin: 523, end: 658, obj: 'Sentence'
+doc.blocks.create! project: project, hid: 'B7', begin: 659, end: 792, obj: 'Sentence'
+doc.blocks.create! project: project, hid: 'B8', begin: 793, end: 990, obj: 'Sentence'
 
 Editor.create! user: User.first,
                is_public: true,
