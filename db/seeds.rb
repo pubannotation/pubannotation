@@ -29,6 +29,11 @@ Sequencer.create! name: 'PMC',
                   parameters: { 'sourceid' => '_sourceid_' },
                   user: User.first
 
+Sequencer.create! name: 'PubMed',
+                  url: 'https://pubmed-sequencer.pubannotation.org/?sourcedb=PubMed',
+                  parameters: { 'sourceid' => '_sourceid_' },
+                  user: User.first
+
 doc = Doc.create! sourcedb: 'PMC',
                   sourceid: 'PMC0000001',
                   body: <<~BODY
