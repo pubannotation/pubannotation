@@ -29,6 +29,11 @@ Sequencer.create! name: 'PMC',
                   parameters: { 'sourceid' => '_sourceid_' },
                   user: User.first
 
+Sequencer.create! name: 'PubMed',
+                  url: 'https://pubmed-sequencer.pubannotation.org/?sourcedb=PubMed',
+                  parameters: { 'sourceid' => '_sourceid_' },
+                  user: User.first
+
 doc = Doc.create! sourcedb: 'PMC',
                   sourceid: 'PMC0000001',
                   body: <<~BODY
@@ -90,3 +95,24 @@ We have shown that synthetic multivalent sialyl Lewis x glycans inhibit strongly
 BODY
 
 doc2.projects << Project.first
+
+pubmed_doc = Doc.create! sourcedb: 'PubMed',
+            sourceid: '35745860',
+            body: <<~BODY
+                  CYP2C19 rs4986893 (c.636G > A) is a loss-of-function mutation with predicted higher substrate concentrations as well.
+                  Although we had only one patient in our population heterozygous for this variant, we considered it in the final model.
+                  The resulting Ctrough-increasing effect was in agreement with the expectation.
+                  Omitting this polymorphism had no major impact on the final model.
+
+                  CYP2C19 rs12248560 g.-806C > T is associated with accelerated metabolism, which we could not confirm in any of our tested models, including the final model.
+                  Espinoza et al. came to a contrary conclusion in a study with immunocompromised children.
+                  In their study, the averaged Ctrough was lower in carriers than non-carriers.
+                  However, as the authors discussed themselves, they did not exclude potential carriers of reduced-function CYP2C19 polymorphisms from the control group for the comparison, leaving the question unanswered whether the difference was due to the rs12248560 genotype or due to other polymorphisms in the control group (in addition).
+
+                  Whether the rs12248560 mutation in the promotor region results in increased CYP2C19 expression in children as observed in adults remains to be shown.
+                  Our data from 9 heterozygous carriers (compared to 14 non-carriers) would not suggest that.
+                  BODY
+
+pubmed_project = pubmed_doc.projects.create! name: 'PubMed_Project',
+                                             user: User.first,
+                                             accessibility: 1
