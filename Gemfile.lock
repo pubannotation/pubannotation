@@ -226,7 +226,7 @@ GEM
       kaminari-core (= 1.2.2)
     kaminari-core (1.2.2)
     kgio (2.11.4)
-    libxml-ruby (5.0.3)
+    libxml-ruby (5.0.4)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
