@@ -414,7 +414,7 @@ GEM
       raindrops (~> 0.7)
     uri (1.0.3)
     useragent (0.16.11)
-    version_gem (1.1.6)
+    version_gem (1.1.8)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.1)
