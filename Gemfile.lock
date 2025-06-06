@@ -485,7 +485,7 @@ DEPENDENCIES
   stardog-rb!
   tao_rdfizer (~> 0.12)
   terser
-  text_alignment (= 0.12.8)
+  text_alignment (~> 0.12.8)
   unicorn
   web-console
   wice_grid!
