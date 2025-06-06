@@ -24,7 +24,7 @@ group :development do
   gem "stackprof"
 end
 
-gem 'text_alignment', '0.12.3'
+gem 'text_alignment', '~> 0.12.8'
 gem 'pubannotation_evaluator', '~> 3.0.0'
 gem 'wice_grid', github: 'yush-nh/wice_grid'
 gem 'font-awesome-rails'
@@ -52,7 +52,7 @@ gem 'elasticsearch-rails', '~> 7.2'
 gem 'faraday'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.12'
-gem 'simple_inline_text_annotation', '~> 1.1'
+gem 'simple_inline_text_annotation', '~> 1.1.1'
 
 # Use to clear page or fragment caches in app/controllers/doc_sweeper.rb
 gem 'rails-observers'
