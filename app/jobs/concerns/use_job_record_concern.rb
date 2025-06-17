@@ -18,7 +18,7 @@ module UseJobRecordConcern
 
     body = "class: #{exception.class.name}, message: #{exception.message}"
     if Rails.env.development? && !exception.is_a?(Exceptions::JobSuspendError)
-      body << ", backtrace: #{exception.backtrace_locations ? exception.backtrace_locations[0..2] : 'no backtrace'}"
+      body << ", backtrace: #{exception.backtrace ? exception.backtrace[0..2] : 'no backtrace'}"
     end
 
     @job.add_message sourcedb: '*',
