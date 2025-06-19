@@ -13,7 +13,7 @@ module TextAlign
           annotations_for_doc.annotations.filter do |annotation|
             warning = inspect_annotation annotation
             if warning
-              warnings.concat [warning]
+              warnings << warning
               false
             else
               true

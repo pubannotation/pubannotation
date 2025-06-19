@@ -6,6 +6,10 @@ class StoreAnnotationsCollectionWarnings
     @warnings = []
   end
 
+  def << (warning)
+    @warnings << warning
+  end
+
   def concat(warnings)
     @warnings.concat(warnings)
   end
