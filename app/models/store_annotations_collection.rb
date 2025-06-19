@@ -35,12 +35,11 @@ class StoreAnnotationsCollection
 
   def initialize_aligner
     # To find the doc for each annotation object
-    result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? @project.id : nil)
+    result = TextAlign::AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? @project.id : nil)
     annotations_for_doc_collection = result.annotations_for_doc_collection
     @warnings.concat result.warnings
     @warnings.concat [{ body: "Uploading for #{result.num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
 
     TextAlign::AlignTextInRactor.new(annotations_for_doc_collection, @options)
   end
-
 end
