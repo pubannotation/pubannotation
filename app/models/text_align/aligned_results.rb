@@ -9,17 +9,16 @@ module TextAlign
 
     def get_valid_annotations(warnings)
       @annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
-        valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
+        valid_annotations + annotations_for_doc.annotations.filter do |annotation|
           inspect_annotations warnings,
-                              annotation,
-                              index
+                              annotation
         end
       end
     end
 
     private
 
-    def inspect_annotations(messages, annotation, index)
+    def inspect_annotations(messages, annotation)
       denotations = annotation[:denotations] || []
       blocks = annotation[:blocks] || []
       relations = annotation[:relations] || []
