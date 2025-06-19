@@ -47,7 +47,7 @@ class AlignTextInRactor
       end
     end
 
-    Result.new @annotations_for_doc_collection, warnings
+    TextAlign::AlignedResults.new @annotations_for_doc_collection, warnings
   end
 
   private
