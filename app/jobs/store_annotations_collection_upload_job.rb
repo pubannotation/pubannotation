@@ -92,7 +92,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 	def execute_batch(project, options, batch_item)
 		store_docs(project, batch_item.source_ids_list)
-		StoreAnnotationsCollection.new(project, batch_item.annotation_transaction, options, @job).call
+		StoreAnnotationsCollection::Main.new(project, batch_item.annotation_transaction, options, @job).call
 	end
 
 	def store_docs(project, ids_list)

@@ -7,7 +7,7 @@ RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
 
   let(:invoke_service) do
     travel_to current do
-      InstantiateAndSaveAnnotationsCollection.call project, annotations_collection
+      StoreAnnotationsCollection::InstantiateAndSaveAnnotationsCollection.call project, annotations_collection
     end
     project.reload
   end
