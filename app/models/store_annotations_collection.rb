@@ -20,7 +20,8 @@ class StoreAnnotationsCollection
         @project.pretreatment_according_to(@options, annotations_for_doc)
       end
 
-      valid_annotations = result.get_valid_annotations(@warnings)
+      warning_messages, valid_annotations = result.valid_annotations
+      @warnings.concat warning_messages
       InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
 
       @warnings.finalize

@@ -9,12 +9,15 @@ module TextAlign
       @warnings = warnings
     end
 
-    def get_valid_annotations(warnings)
-      @annotations_for_doc_collection.reduce([]) do |results, annotations_for_doc|
+    def valid_annotations
+      warnings = []
+      results = @annotations_for_doc_collection.reduce([]) do |results, annotations_for_doc|
         warnings_messages, valid_annotations = annotations_for_doc.valid_annotations
         warnings.concat(warnings_messages)
         results.concat valid_annotations
       end
+
+      [warnings, results]
     end
   end
 end
