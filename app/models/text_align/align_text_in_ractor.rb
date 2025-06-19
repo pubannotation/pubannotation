@@ -2,8 +2,6 @@
 
 module TextAlign
   class AlignTextInRactor
-    Result = Data.define(:annotations_for_doc_collection, :warnings)
-
     def initialize(annotations_for_doc_collection, options)
       @annotations_for_doc_collection = annotations_for_doc_collection
       @options = options
