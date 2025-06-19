@@ -20,6 +20,27 @@ class AnnotationsForDocument
                  having_denotations_or_blocks
   end
 
+  def get_valid_annotations(warnings)
+    annotations.reduce([]) do |valid_annotations, annotation|
+      dangling_references = TextAlign::DanglingReferenceFinder.call(
+        annotation[:denotations] || [],
+        annotation[:blocks] || [],
+        annotation[:relations] || [],
+        annotation[:attributes] || []
+      )
+      if dangling_references.present?
+        warnings << {
+          sourcedb: annotation[:sourcedb],
+          sourceid: annotation[:sourceid],
+          body: "After alignment, #{dangling_references.length} dangling references were found: #{dangling_references.join ', '}."
+        }
+        valid_annotations
+      else
+        valid_annotations << annotation
+      end
+    end
+  end
+
   Result = Data.define(:annotations_for_doc_collection, :warnings, :num_skipped)
   Source = Data.define(:db, :id)
 
