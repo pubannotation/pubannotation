@@ -9,16 +9,23 @@ module TextAlign
 
     def get_valid_annotations(warnings)
       @annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
-        valid_annotations + annotations_for_doc.annotations.filter do |annotation|
-          inspect_annotations warnings,
-                              annotation
-        end
+        valid_annotations.concat(
+          annotations_for_doc.annotations.filter do |annotation|
+            warning = inspect_annotation annotation
+            if warning
+              warnings.concat [warning]
+              false
+            else
+              true
+            end
+          end
+        )
       end
     end
 
     private
 
-    def inspect_annotations(messages, annotation)
+    def inspect_annotation(annotation)
       denotations = annotation[:denotations] || []
       blocks = annotation[:blocks] || []
       relations = annotation[:relations] || []
@@ -47,14 +54,11 @@ module TextAlign
                             end
 
       if dangling_references.present?
-        messages.concat [{
-                           sourcedb: sourcedb,
-                           sourceid: sourceid,
-                           body: "After alignment, #{dangling_references.length} dangling references were found: #{dangling_references.join ", "}."
-                         }]
-        false
-      else
-        true
+        {
+         sourcedb: sourcedb,
+         sourceid: sourceid,
+         body: "After alignment, #{dangling_references.length} dangling references were found: #{dangling_references.join ", "}."
+       }
       end
     end
   end
