@@ -18,7 +18,7 @@ module StoreAnnotationsCollection
 
       Thread.new do
         result.annotations_for_doc_collection.each do |annotations_for_doc|
-          @project.pretreatment_according_to(@options, annotations_for_doc)
+          pretreatment_according_to(@options, @project, annotations_for_doc)
         end
 
         warning_messages, valid_annotations = result.valid_annotations
@@ -43,6 +43,21 @@ module StoreAnnotationsCollection
       @warnings.concat [{ body: "Uploading for #{result.num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
 
       TextAlign::AlignTextInRactor.new(annotations_for_doc_collection, @options)
+    end
+
+    def pretreatment_according_to(options, project, annotations_for_doc)
+      if options[:mode] == 'replace'
+        project.delete_doc_annotations(annotations_for_doc.doc)
+      else
+        case options[:mode]
+        when 'add'
+          annotations_for_doc.annotations.each { |a| project.reid_annotations!(a, annotations_for_doc.doc) }
+        when 'merge'
+          annotations_for_doc.annotations.each { |a| project.reid_annotations!(a, annotations_for_doc.doc) }
+          base_annotations = annotations_for_doc.doc.hannotations(project, nil, nil)
+          annotations_for_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
+        end
+      end
     end
   end
 end

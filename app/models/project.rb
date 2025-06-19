@@ -856,21 +856,6 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def pretreatment_according_to(options, annotations_with_doc)
-    if options[:mode] == 'replace'
-      delete_doc_annotations(annotations_with_doc.doc)
-    else
-      case options[:mode]
-      when 'add'
-        annotations_with_doc.annotations.each { |a| reid_annotations!(a, annotations_with_doc.doc) }
-      when 'merge'
-        annotations_with_doc.annotations.each { |a| reid_annotations!(a, annotations_with_doc.doc) }
-        base_annotations = annotations_with_doc.doc.hannotations(self, nil, nil)
-        annotations_with_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
-      end
-    end
-  end
-
   def import_annotations_from_another_project_skip(source_project_id)
     flag_duplicate_docs_without_annotations(source_project_id)
     cnt_add_d, cnt_add_b, cnt_add_r, cnt_add_a = import_annotations_for_flagged_docs(source_project_id)
