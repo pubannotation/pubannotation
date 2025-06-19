@@ -16,7 +16,11 @@ class StoreAnnotationsCollection
     @warnings.concat result.warnings
 
     Thread.new do
-      valid_annotations = result.get_valid_annotations(@project, @options, @warnings)
+      result.annotations_for_doc_collection.each do |annotations_for_doc|
+        @project.pretreatment_according_to(@options, annotations_for_doc)
+      end
+
+      valid_annotations = result.get_valid_annotations(@warnings)
       InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
 
       @warnings.finalize

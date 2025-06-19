@@ -7,11 +7,7 @@ module TextAlign
       @warnings = warnings
     end
 
-    def get_valid_annotations(project, options, warnings)
-      @annotations_for_doc_collection.each do |annotations_for_doc|
-        project.pretreatment_according_to(options, annotations_for_doc)
-      end
-
+    def get_valid_annotations(warnings)
       @annotations_for_doc_collection.reduce([]) do |valid_annotations, annotations_for_doc|
         valid_annotations + annotations_for_doc.annotations.filter.with_index do |annotation, index|
           inspect_annotations warnings,
