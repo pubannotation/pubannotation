@@ -47,7 +47,7 @@ class StoreAnnotationsCollection
     @warnings.concat result.warnings
     @warnings.concat [{ body: "Uploading for #{result.num_skipped} documents were skipped due to existing annotations." }] if result.num_skipped > 0
 
-    AlignTextInRactor.new(annotations_for_doc_collection, @options)
+    TextAlign::AlignTextInRactor.new(annotations_for_doc_collection, @options)
   end
 
   def inspect_annotations(messages, annotation, index)
