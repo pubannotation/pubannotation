@@ -13,7 +13,7 @@ module StoreAnnotationsCollection
     end
 
     def call
-      result = aligner.call
+      result = initialize_aligner.call
       @warnings.concat result.warnings
 
       Thread.new do
@@ -33,10 +33,6 @@ module StoreAnnotationsCollection
     end
 
     private
-
-    def aligner
-      @aligner ||= initialize_aligner
-    end
 
     def initialize_aligner
       # To find the doc for each annotation object
