@@ -2,6 +2,8 @@
 
 module TextAlign
   class AlignTextInRactor
+    SendMessage = Data.define(:options, :aligners, :index_on_input)
+
     def initialize(annotations_for_doc_collection, options)
       @annotations_for_doc_collection = annotations_for_doc_collection
       @options = options
@@ -11,7 +13,7 @@ module TextAlign
       warnings = []
 
       @annotations_for_doc_collection.each_with_index do |input_chunk, index|
-        pipe.send send_message_for(index, input_chunk)
+        pipe.send SendMessage.new(@options, input_chunk.aligners, index)
       end.each do
         _ractor, result = Ractor.select(*workers)
 
@@ -51,15 +53,7 @@ module TextAlign
 
     private
 
-    SendMessage = Data.define(:options, :aligners, :index_on_input)
     Aligned = Data.define(:aligned_annotations, :index_on_input)
-
-    def send_message_for(index, input_chunk)
-      m = SendMessage.new @options,
-                          input_chunk.aligners,
-                          index
-      Ractor.make_shareable(m)
-    end
 
     def pipe
       @pipe ||= Ractor.new do
@@ -74,7 +68,7 @@ module TextAlign
         Ractor.new pipe do |pipe|
           while sent = pipe.take
             alignedAnnotations = sent.aligners.align_all sent.options
-            Ractor.yield(Ractor.make_shareable(Aligned.new(alignedAnnotations, sent.index_on_input)))
+            Ractor.yield Aligned.new(alignedAnnotations, sent.index_on_input)
           end
         end
       end
