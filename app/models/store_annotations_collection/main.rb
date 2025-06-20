@@ -21,7 +21,13 @@ module StoreAnnotationsCollection
       @warnings.concat result.warnings
 
       # Use threads to start processing the next batch during asynchronous processing.
-      Thread.new { save(result) }
+      Thread.new do
+        # We are creating our own threads that Rails do not manage.
+        # Explicitly releases the connection to the DB.
+        ActiveRecord::Base.connection_pool.with_connection do
+          save(result)
+        end
+      end
     end
 
     private
