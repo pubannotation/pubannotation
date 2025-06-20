@@ -25,26 +25,26 @@ module StoreAnnotationsCollection
         # We are creating our own threads that Rails do not manage.
         # Explicitly releases the connection to the DB.
         ActiveRecord::Base.connection_pool.with_connection do
-          save(result)
+          @warnings.concat save(result, @options, @project)
+          @warnings.finalize
         end
       end
     end
 
     private
 
-    def save(result)
+    def save(result, options, project)
       result.annotations_for_doc_collection.each do |annotations_for_doc|
-        pretreatment_according_to @options,
-                                  @project,
+        pretreatment_according_to options,
+                                  project,
                                   annotations_for_doc.doc,
                                   annotations_for_doc.annotations
       end
 
       warning_messages, valid_annotations = result.valid_annotations
-      @warnings.concat warning_messages
-      InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
+      InstantiateAndSaveAnnotationsCollection.call(project, valid_annotations) if valid_annotations.present?
 
-      @warnings.finalize
+      warning_messages
     end
 
     def pretreatment_according_to(options, project, document, annotations)
