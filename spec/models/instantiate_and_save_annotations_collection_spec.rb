@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe InstantiateAndSaveAnnotationsCollection, type: :model do
+RSpec.describe StoreAnnotationsCollection::InstantiateAndSaveAnnotationsCollection, type: :model do
   let(:project_doc) { create(:project_doc) }
   let(:project) { project_doc.project }
   let(:doc) { project_doc.doc }
