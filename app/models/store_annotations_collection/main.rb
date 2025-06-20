@@ -20,23 +20,26 @@ module StoreAnnotationsCollection
       result = aligner.call
       @warnings.concat result.warnings
 
-      Thread.new do
-        result.annotations_for_doc_collection.each do |annotations_for_doc|
-          pretreatment_according_to @options,
-                                    @project,
-                                    annotations_for_doc.doc,
-                                    annotations_for_doc.annotations
-        end
-
-        warning_messages, valid_annotations = result.valid_annotations
-        @warnings.concat warning_messages
-        InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
-
-        @warnings.finalize
-      end
+      # Use threads to start processing the next batch during asynchronous processing.
+      Thread.new { save(result) }
     end
 
     private
+
+    def save(result)
+      result.annotations_for_doc_collection.each do |annotations_for_doc|
+        pretreatment_according_to @options,
+                                  @project,
+                                  annotations_for_doc.doc,
+                                  annotations_for_doc.annotations
+      end
+
+      warning_messages, valid_annotations = result.valid_annotations
+      @warnings.concat warning_messages
+      InstantiateAndSaveAnnotationsCollection.call(@project, valid_annotations) if valid_annotations.present?
+
+      @warnings.finalize
+    end
 
     def pretreatment_according_to(options, project, document, annotations)
       if options[:mode] == 'replace'
