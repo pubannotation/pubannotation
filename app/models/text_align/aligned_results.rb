@@ -11,10 +11,9 @@ module TextAlign
 
     def save(options, project)
       @annotations_for_doc_collection.each do |annotations_for_doc|
-        pretreatment_according_to options,
-                                  project,
-                                  annotations_for_doc.doc,
-                                  annotations_for_doc.annotations
+        project.pretreatment_according_to options,
+                                          annotations_for_doc.doc,
+                                          annotations_for_doc.annotations
       end
 
       warning_messages, valid_annotations = self.valid_annotations
@@ -25,20 +24,6 @@ module TextAlign
 
     private
 
-    def pretreatment_according_to(options, project, document, annotations)
-      if options[:mode] == 'replace'
-        project.delete_doc_annotations document
-      else
-        case options[:mode]
-        when 'add'
-          annotations.each { |a| project.reid_annotations!(a, document) }
-        when 'merge'
-          annotations.each { |a| project.reid_annotations!(a, document) }
-          base_annotations = document.hannotations(project, nil, nil)
-          annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
-        end
-      end
-    end
 
     def valid_annotations
       warnings = []

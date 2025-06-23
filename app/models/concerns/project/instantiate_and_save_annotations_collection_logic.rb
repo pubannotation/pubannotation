@@ -3,6 +3,21 @@
 module Project::InstantiateAndSaveAnnotationsCollectionLogic
   extend ActiveSupport::Concern
 
+  def pretreatment_according_to(options, document, annotations)
+    if options[:mode] == 'replace'
+      self.delete_doc_annotations document
+    else
+      case options[:mode]
+      when 'add'
+        annotations.each { |a| self.reid_annotations!(a, document) }
+      when 'merge'
+        annotations.each { |a| self.reid_annotations!(a, document) }
+        base_annotations = document.hannotations(self, nil, nil)
+        annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
+      end
+    end
+  end
+
   def instantiate_and_save_annotations_collection(annotations_collection)
     ActiveRecord::Base.transaction do
       record_docid(annotations_collection)
