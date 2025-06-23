@@ -18,7 +18,7 @@ module TextAlign
       end
 
       warning_messages, valid_annotations = self.valid_annotations
-      StoreAnnotationsCollection::InstantiateAndSaveAnnotationsCollection.call(project, valid_annotations) if valid_annotations.present?
+      InstantiateAndSaveAnnotationsCollection.call(project, valid_annotations) if valid_annotations.present?
 
       warning_messages
     end

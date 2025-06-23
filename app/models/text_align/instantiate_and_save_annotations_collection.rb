@@ -1,4 +1,4 @@
-module StoreAnnotationsCollection
+module TextAlign
   class InstantiateAndSaveAnnotationsCollection
     class << self
       def call(project, annotations_collection)
