@@ -1,4 +1,6 @@
 class Project < ActiveRecord::Base
+  include Project::InstantiateAndSaveAnnotationsCollectionLogic
+
   DOWNLOADS_PATH = "/downloads/"
   MAX_NUM_STUDY_DOCS = 1000
 
