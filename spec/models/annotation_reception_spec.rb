@@ -31,7 +31,19 @@ RSpec.describe AnnotationReception, type: :model do
     end
 
     it 'processes annotations and finishes the job' do
+      # Before: check that denotations in the project are empty
+      expect(project.denotations.count).to eq(0)
+
+      # Before: check that attributes have already been created
+      expect(project.attributes.count).to eq(33)
+
       annotation_reception.process_annotation!(annotations_collection)
+
+      # After: check that denotations in the project are not empty
+      expect(project.denotations.count).to eq(2)
+
+      # After: check that the number of attributes has not increased
+      expect(project.attributes.count).to eq(33)
     end
 
     it 'raises error for invalid annotation' do
