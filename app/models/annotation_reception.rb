@@ -30,7 +30,9 @@ class AnnotationReception < ApplicationRecord
           job.add_message(m)
         end
       else
-        StoreAnnotationsCollection::Main.new(project, [annotations], symbolized_options, job).call.join
+        result = StoreAnnotationsCollection::Main.new(project, [annotations], symbolized_options, job).call
+        messages = result.save(symbolized_options, project)
+        messages.each { job.add_message it }
       end
     end
 

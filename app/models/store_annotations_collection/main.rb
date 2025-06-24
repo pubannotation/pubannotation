@@ -19,16 +19,9 @@ module StoreAnnotationsCollection
 
       result = aligner.call
       @warnings.concat result.warnings
+      @warnings.finalize
 
-      # Use threads to start processing the next batch during asynchronous processing.
-      Thread.new do
-        # We are creating our own threads that Rails do not manage.
-        # Explicitly releases the connection to the DB.
-        ActiveRecord::Base.connection_pool.with_connection do
-          @warnings.concat result.save(@options, @project)
-          @warnings.finalize
-        end
-      end
+      result
     end
   end
 end
