@@ -46,7 +46,14 @@ private
         span: hdoc[:span]
       }
     end
-    annotation_reception = AnnotationReception.create!(annotator_id: annotator.id, project_id: project.id, job_id: @job.id, options:, hdoc_metadata:)
+    annotation_reception = AnnotationReception.create!(
+      annotator_id: annotator.id,
+      project_id: project.id,
+      job_id: @job.id,
+      options:,
+      hdoc_metadata:
+    )
+
     method, url, params, payload = annotator.prepare_request(hdocs)
 
     payload, payload_type =
