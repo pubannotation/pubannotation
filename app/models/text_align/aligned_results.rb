@@ -9,7 +9,7 @@ module TextAlign
       @warnings = warnings
     end
 
-    def save(options, project)
+    def save(project, options)
       @annotations_for_doc_collection.each do |annotations_for_doc|
         project.pretreatment_according_to options,
                                           annotations_for_doc.doc,

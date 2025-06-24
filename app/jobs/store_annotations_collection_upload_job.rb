@@ -103,7 +103,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			# We are creating our own threads that Rails do not manage.
 			# Explicitly releases the connection to the DB.
 			ActiveRecord::Base.connection_pool.with_connection do
-				messages = result.save(options, project)
+				messages = result.save(project, options)
 				messages.each { @job.add_message it }
 			end
 		end

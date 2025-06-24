@@ -31,7 +31,7 @@ class AnnotationReception < ApplicationRecord
         end
       else
         result = StoreAnnotationsCollection::Main.new(project, [annotations], symbolized_options, job).call
-        messages = result.save(symbolized_options, project)
+        messages = result.save(project, symbolized_options)
         messages.each { job.add_message it }
       end
     end
