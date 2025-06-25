@@ -447,10 +447,18 @@ class Project < ActiveRecord::Base
   end
 
   private def tie_documents(sourcedb, source_ids)
-    Doc.where(sourcedb: sourcedb, sourceid: source_ids)
-       .where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
-       .each { |doc| doc.projects << self }
-       .length
+    docs_to_add = Doc.where(sourcedb: sourcedb, sourceid: source_ids)
+                    .where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
+
+    docs_to_add.each do |doc|
+      begin
+        doc.projects << self
+      rescue ActiveRecord::RecordNotUnique => e
+        Rails.logger.error e.message
+      end
+    end
+
+    docs_to_add.length
   end
 
   # returns the doc added to the project
