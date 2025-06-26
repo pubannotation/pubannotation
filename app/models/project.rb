@@ -459,6 +459,12 @@ class Project < ActiveRecord::Base
       }
     end
 
+    # The use of insert_all is not primarily intended to improve performance.
+    # It is intended to avoid violating the unique constraint (combination of project_id and doc_id) of the ProjectDoc table
+    # when updating simultaneously from multiple threads.
+    # Adding associations with doc.projects << self could result in duplicate associations being inserted at the same time.
+    # Using the unique_by option to the insert_all method allows bulk insertion while avoiding uniqueness constraint violations.
+    # This allows associations to be safely added even if they are running concurrently in different threads.
     result = ProjectDoc.insert_all(
       records,
       unique_by: %i[project_id doc_id]
