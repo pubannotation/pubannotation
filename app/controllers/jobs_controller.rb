@@ -7,6 +7,7 @@ class JobsController < ApplicationController
 	# GET /jobs.json
 	def index
 		@jobs = @organization&.jobs.order(:created_at)
+		update_dead_jobs_status
 
 		respond_to do |format|
 			format.html { redirect_to organization_path if @jobs.nil? || @jobs.empty? }
@@ -130,4 +131,14 @@ class JobsController < ApplicationController
 		end
 	end
 
+	def update_dead_jobs_status
+		running_jobs = @jobs.running.where("begun_at <= ?", 30.seconds.ago)
+
+		return if running_jobs.size == 0
+		return if Sidekiq::Workers.new.size > 0
+
+		running_jobs.each do |job|
+			job.finish!
+		end
+	end
 end
