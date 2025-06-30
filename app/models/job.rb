@@ -113,6 +113,11 @@ class Job < ActiveRecord::Base
 
     return if running_jobs.empty? || Sidekiq::ProcessSet.new.size.positive?
 
-    running_jobs.each(&:finish!)
+    running_jobs.each do |job|
+      job.add_message sourcedb: '*',
+                      sourceid: '*',
+                      body: "The job was terminated because Sidekiq was stopped."
+      job.finish!
+    end
   end
 end
