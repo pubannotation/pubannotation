@@ -134,11 +134,8 @@ class JobsController < ApplicationController
 	def update_dead_jobs_status
 		running_jobs = @jobs.running.where("begun_at <= ?", 30.seconds.ago)
 
-		return if running_jobs.size == 0
-		return if Sidekiq::Workers.new.size > 0
+		return if running_jobs.empty? || Sidekiq::Workers.new.size.positive?
 
-		running_jobs.each do |job|
-			job.finish!
-		end
+		running_jobs.each(&:finish!)
 	end
 end
