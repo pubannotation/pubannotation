@@ -107,4 +107,12 @@ class Job < ActiveRecord::Base
       begun_at + (Time.now - begun_at) * num_items / num_dones
     end
   end
+
+  def self.update_dead_jobs_status(jobs)
+    running_jobs = jobs.running
+
+    return if running_jobs.empty? || Sidekiq::ProcessSet.new.size.positive?
+
+    running_jobs.each(&:finish!)
+  end
 end

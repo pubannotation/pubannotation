@@ -7,7 +7,7 @@ class JobsController < ApplicationController
 	# GET /jobs.json
 	def index
 		@jobs = @organization&.jobs.order(:created_at)
-		update_dead_jobs_status
+		Job.update_dead_jobs_status(@jobs)
 
 		respond_to do |format|
 			format.html { redirect_to organization_path if @jobs.nil? || @jobs.empty? }
@@ -129,13 +129,5 @@ class JobsController < ApplicationController
 		elsif params.has_key? :collection_id
 			collection_jobs_path(params[:collection_id])
 		end
-	end
-
-	def update_dead_jobs_status
-		running_jobs = @jobs.running
-
-		return if running_jobs.empty? || Sidekiq::ProcessSet.new.size.positive?
-
-		running_jobs.each(&:finish!)
 	end
 end
