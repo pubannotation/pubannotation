@@ -117,8 +117,8 @@ class Job < ActiveRecord::Base
 
     running.each do
       it.add_message sourcedb: '*',
-                      sourceid: '*',
-                      body: "The job was terminated because Sidekiq was stopped."
+                     sourceid: '*',
+                     body: "The job was terminated because Sidekiq was stopped."
       it.finish!
     end
   end
