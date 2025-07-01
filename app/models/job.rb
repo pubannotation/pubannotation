@@ -107,4 +107,19 @@ class Job < ActiveRecord::Base
       begun_at + (Time.now - begun_at) * num_items / num_dones
     end
   end
+
+  # This method is designed to handle the situation where Sidekiq processes are stopped
+  # while jobs are still marked as "running" in the Jobs table.
+  # When Sidekiq is not running, this method forcibly terminates jobs that are still in progress
+  # to ensure the Jobs table reflects the correct state of the system.
+  def self.reap_zombies
+    return if Sidekiq::ProcessSet.new.size.positive?
+
+    running.each do
+      it.add_message sourcedb: '*',
+                     sourceid: '*',
+                     body: "The job was terminated because Sidekiq was stopped."
+      it.finish!
+    end
+  end
 end

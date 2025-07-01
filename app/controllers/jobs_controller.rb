@@ -7,6 +7,7 @@ class JobsController < ApplicationController
 	# GET /jobs.json
 	def index
 		@jobs = @organization&.jobs.order(:created_at)
+		Job.reap_zombies
 
 		respond_to do |format|
 			format.html { redirect_to organization_path if @jobs.nil? || @jobs.empty? }
@@ -129,5 +130,4 @@ class JobsController < ApplicationController
 			collection_jobs_path(params[:collection_id])
 		end
 	end
-
 end
