@@ -112,7 +112,7 @@ class Job < ActiveRecord::Base
   # while jobs are still marked as "running" in the Jobs table.
   # When Sidekiq is not running, this method forcibly terminates jobs that are still in progress
   # to ensure the Jobs table reflects the correct state of the system.
-  def self.update_dead_jobs_status
+  def self.reap_zombies
     return if Sidekiq::ProcessSet.new.size.positive?
 
     running.each do
