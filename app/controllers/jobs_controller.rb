@@ -6,8 +6,8 @@ class JobsController < ApplicationController
 	# GET /jobs
 	# GET /jobs.json
 	def index
-		@jobs = @organization&.jobs.order(:created_at)
 		Job.reap_zombies
+		@jobs = @organization&.jobs.order(:created_at)
 
 		respond_to do |format|
 			format.html { redirect_to organization_path if @jobs.nil? || @jobs.empty? }
