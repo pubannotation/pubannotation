@@ -7,7 +7,7 @@ class JobsController < ApplicationController
 	# GET /jobs.json
 	def index
 		@jobs = @organization&.jobs.order(:created_at)
-		Job.update_dead_jobs_status(@jobs)
+		Job.update_dead_jobs_status
 
 		respond_to do |format|
 			format.html { redirect_to organization_path if @jobs.nil? || @jobs.empty? }

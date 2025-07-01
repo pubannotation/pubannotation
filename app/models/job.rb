@@ -108,16 +108,18 @@ class Job < ActiveRecord::Base
     end
   end
 
-  def self.update_dead_jobs_status(jobs)
-    running_jobs = jobs.running
+  # This method is designed to handle the situation where Sidekiq processes are stopped
+  # while jobs are still marked as "running" in the Jobs table.
+  # When Sidekiq is not running, this method forcibly terminates jobs that are still in progress
+  # to ensure the Jobs table reflects the correct state of the system.
+  def self.update_dead_jobs_status
+    return if Sidekiq::ProcessSet.new.size.positive?
 
-    return if running_jobs.empty? || Sidekiq::ProcessSet.new.size.positive?
-
-    running_jobs.each do |job|
-      job.add_message sourcedb: '*',
+    running.each do
+      it.add_message sourcedb: '*',
                       sourceid: '*',
                       body: "The job was terminated because Sidekiq was stopped."
-      job.finish!
+      it.finish!
     end
   end
 end
