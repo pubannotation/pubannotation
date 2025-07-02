@@ -402,7 +402,7 @@ GEM
     string-similarity (2.1.0)
     stringio (3.1.7)
     tao_rdfizer (0.12)
-    terser (1.2.5)
+    terser (1.2.6)
       execjs (>= 0.3.0, < 3)
     text_alignment (0.12.8)
       ruby-dictionary (~> 1.1, >= 1.1.1)
