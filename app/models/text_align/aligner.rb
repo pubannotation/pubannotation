@@ -9,15 +9,15 @@ module TextAlign
       @project = project
       @annotations_collection = annotations_collection
       @options = options
-      @warnings = StoreAnnotationsCollectionWarnings.new(job)
+      @warnings = Warnings.new(job)
     end
 
     def call
-      result = AnnotationsForDocument.find_doc_for(annotations_collection, options[:mode] == 'skip' ? project.id : nil)
+      result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? project.id : nil)
       @warnings.concat result.warnings
       @warnings << { body: "Uploading for #{result.num_skipped} documents were skipped due to existing annotations." } if result.num_skipped > 0
 
-      aligner = TextAlign::AlignTextInRactor.new.new(result.annotations_for_doc_collection, @options)
+      aligner = TextAlign::AlignTextInRactor.new(result.annotations_for_doc_collection, @options)
       result2 = aligner.call
       @warnings.concat result2.warnings
       @warnings.finalize
