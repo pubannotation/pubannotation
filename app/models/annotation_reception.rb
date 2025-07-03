@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# Acceptance window for Annotator-created annotations
 class AnnotationReception < ApplicationRecord
   belongs_to :annotator
   belongs_to :project
@@ -18,6 +21,8 @@ class AnnotationReception < ApplicationRecord
       hdoc_info = hdoc_metadata[i]
       symbolized_options = options.deep_symbolize_keys.merge(span: hdoc_info[:span])
 
+      # When requesting annotation for a text that exceeds the Annotator's limit, split the request into sections.
+      # At that time, the range requested by dividing the text is stored as a span parameter in hdoc_metadata.
       if symbolized_options[:span].present?
         messages = project.save_annotations!(annotations, Doc.find(hdoc_info[:docid]), symbolized_options)
         messages.each do |m|
@@ -25,7 +30,9 @@ class AnnotationReception < ApplicationRecord
           job.add_message(m)
         end
       else
-        StoreAnnotationsCollection.new(project, [annotations], symbolized_options, job).call.join
+        result = TextAlign::Aligner.new(project, [annotations], symbolized_options, job).call
+        messages = result.save(project, symbolized_options)
+        messages.each { job.add_message it }
       end
     end
 

@@ -6,6 +6,7 @@ class JobsController < ApplicationController
 	# GET /jobs
 	# GET /jobs.json
 	def index
+		Job.reap_zombies
 		@jobs = @organization&.jobs.order(:created_at)
 
 		respond_to do |format|
@@ -129,5 +130,4 @@ class JobsController < ApplicationController
 			collection_jobs_path(params[:collection_id])
 		end
 	end
-
 end

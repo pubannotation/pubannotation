@@ -1,4 +1,6 @@
 class Project < ActiveRecord::Base
+  include Project::InstantiateAndSaveAnnotationsCollectionLogic
+
   DOWNLOADS_PATH = "/downloads/"
   MAX_NUM_STUDY_DOCS = 1000
 
@@ -445,10 +447,30 @@ class Project < ActiveRecord::Base
   end
 
   private def tie_documents(sourcedb, source_ids)
-    Doc.where(sourcedb: sourcedb, sourceid: source_ids)
-       .where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
-       .each { |doc| doc.projects << self }
-       .length
+    docs = Doc.where(sourcedb: sourcedb, sourceid: source_ids)
+              .where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
+
+    return 0 if docs.empty?
+
+    records = docs.map do |doc|
+      {
+        project_id: self.id,
+        doc_id: doc.id
+      }
+    end
+
+    # The use of insert_all is not primarily intended to improve performance.
+    # It is intended to avoid violating the unique constraint (combination of project_id and doc_id) of the ProjectDoc table
+    # when updating simultaneously from multiple threads.
+    # Adding associations with doc.projects << self could result in duplicate associations being inserted at the same time.
+    # Using the unique_by option to the insert_all method allows bulk insertion while avoiding uniqueness constraint violations.
+    # This allows associations to be safely added even if they are running concurrently in different threads.
+    result = ProjectDoc.insert_all(
+      records,
+      unique_by: %i[project_id doc_id]
+    )
+
+    result.count
   end
 
   # returns the doc added to the project
@@ -842,21 +864,6 @@ class Project < ActiveRecord::Base
 
 
   def pretreatment_annotations!(annotations, options)
-    if options[:mode] == 'replace'
-      delete_doc_annotations(annotations_with_doc.doc)
-    else
-      case options[:mode]
-      when 'add'
-        annotations_with_doc.annotations.each { |a| reid_annotations!(a, annotations_with_doc.doc) }
-      when 'merge'
-        annotations_with_doc.annotations.each { |a| reid_annotations!(a, annotations_with_doc.doc) }
-        base_annotations = annotations_with_doc.doc.hannotations(self, nil, nil)
-        annotations_with_doc.annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
-      end
-    end
-  end
-
-  def pretreatment_according_to(options, annotations_with_doc)
     if options[:mode] == 'replace'
       delete_doc_annotations(annotations_with_doc.doc)
     else

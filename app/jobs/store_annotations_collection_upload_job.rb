@@ -92,7 +92,21 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 	def execute_batch(project, options, batch_item)
 		store_docs(project, batch_item.source_ids_list)
-		StoreAnnotationsCollection.new(project, batch_item.annotation_transaction, options, @job).call
+		result = TextAlign::Aligner.new(
+			project,
+			batch_item.annotation_transaction,
+			options,
+			@job
+		).call
+
+		Thread.new do
+			# We are creating our own threads that Rails do not manage.
+			# Explicitly releases the connection to the DB.
+			ActiveRecord::Base.connection_pool.with_connection do
+				messages = result.save(project, options)
+				messages.each { @job.add_message it }
+			end
+		end
 	end
 
 	def store_docs(project, ids_list)
