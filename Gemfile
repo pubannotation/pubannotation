@@ -21,7 +21,10 @@ group :development do
   gem 'dotenv-rails'
   gem 'web-console'
   gem 'debug'
-  gem "stackprof"
+  gem 'rack-mini-profiler', '~> 3.0'
+  gem 'memory_profiler'     # for memory profiling
+  gem 'flamegraph'          # for flamegraph profiling
+  gem 'stackprof'           # for flamegraph support
 end
 
 gem 'text_alignment', '~> 0.12.8'
