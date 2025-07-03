@@ -34,9 +34,9 @@ GIT
 
 GIT
   remote: https://github.com/jquery-ui-rails/jquery-ui-rails.git
-  revision: c7460b447589eb04aa948ecaf0d1245c88f6ff45
+  revision: 7ca2fdba43405c6f593be52a792fac3ea9d24d4b
   specs:
-    jquery-ui-rails (7.0.0)
+    jquery-ui-rails (8.0.0)
       railties (>= 3.2.16)
 
 GIT
