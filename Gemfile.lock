@@ -303,8 +303,9 @@ GEM
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.1.16)
-    rack-cors (2.0.2)
-      rack (>= 2.0.0)
+    rack-cors (3.0.0)
+      logger
+      rack (>= 3.0.14)
     rack-mini-profiler (3.3.1)
       rack (>= 1.2.0)
     rack-protection (4.1.1)
@@ -353,7 +354,7 @@ GEM
       zeitwerk (~> 2.6)
     raindrops (0.20.1)
     rake (13.3.0)
-    rdoc (6.14.1)
+    rdoc (6.14.2)
       erb
       psych (>= 4.0.0)
     recaptcha (5.19.0)
