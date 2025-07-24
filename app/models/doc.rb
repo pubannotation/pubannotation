@@ -263,6 +263,7 @@ class Doc < ActiveRecord::Base
 		begin
 			sequencer = Sequencer.find(sourcedb)
 		rescue ActiveRecord::ActiveRecordError => e
+			raise ArgumentError, "User documents cannot be automatically obtained. Please upload them yourself." if sourcedb.include?('@')
 			raise ArgumentError, "Could not find the sequencer for the sourcedb: [#{sourcedb}]"
 		end
 

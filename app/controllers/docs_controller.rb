@@ -301,7 +301,7 @@ class DocsController < ApplicationController
 				notice = "The task, '#{active_job.job_name}', is created."
 			end
 		rescue => e
-			notice = e.message
+			notice = "Upload failure: " + e.message
 		end
 
 		respond_to do |format|
