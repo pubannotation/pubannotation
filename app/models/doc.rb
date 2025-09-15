@@ -165,7 +165,7 @@ class Doc < ActiveRecord::Base
 								 else
 									 default_sort_order_for project
 								 end
-		sort_order = [sort_order, 'random()'].join(', ') if is_randomize
+		sort_order = [sort_order, Arel.sql('random()')] if is_randomize
 
 		docs.order(sort_order).simple_paginate(page, per)
 	end
