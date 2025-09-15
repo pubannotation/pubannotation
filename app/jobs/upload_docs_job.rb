@@ -17,6 +17,7 @@ class UploadDocsJob < ApplicationJob
 
 		username = project.user
 		mode = options[:mode].to_sym
+		num_dones = 0
 		num_updated_or_skipped = 0
 
 		Dir.glob(File.join(dirpath, '**', all_applicable_files)) do |filepath|
@@ -55,11 +56,12 @@ class UploadDocsJob < ApplicationJob
 						doc = Doc.store_hdoc!(hdoc)
 						project.add_doc!(doc)
 					end
+					num_dones += 1
 				rescue => e
 					raise e if @job.nil?
 					@job.add_message body: "[#{fpath}] #{e.message}"
 				ensure
-					@job&.update_attribute(:num_dones, i + 1)
+					@job&.update_attribute(:num_dones, num_dones)
 					check_suspend_flag
 				end
 			end
