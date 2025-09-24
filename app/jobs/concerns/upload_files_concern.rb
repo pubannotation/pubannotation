@@ -18,6 +18,6 @@ module UploadFilesConcern
 
   def remove_upload_files(filepath, dirpath)
     FileUtils.rm_rf(dirpath) unless dirpath.nil?
-    File.unlink(filepath)
+    FileUtils.rm_rf(filepath) unless filepath.nil?
   end
 end
