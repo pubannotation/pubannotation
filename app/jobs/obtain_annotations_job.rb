@@ -4,9 +4,9 @@ class ObtainAnnotationsJob < ApplicationJob
 	include UseJobRecordConcern
 	queue_as :low_priority
 
-	THREAD_POOL_SIZE = 5
+	THREAD_POOL_SIZE = 3
 	PROGRESS_UPDATE_INTERVAL = THREAD_POOL_SIZE * 2
-	BATCH_SIZE = 1000
+	BATCH_SIZE = 100
 
 	def perform(project, filepath, annotator_name, options)
 		@project = project
@@ -15,8 +15,11 @@ class ObtainAnnotationsJob < ApplicationJob
 		@pool = Concurrent::FixedThreadPool.new(THREAD_POOL_SIZE)
 		@count_completed = Concurrent::AtomicFixnum.new(0) # Thread-safe counter for completed tasks
 		@count_failure   = Concurrent::AtomicFixnum.new(0) # Thread-safe counter for failures
+		@stop_checker = Concurrent::AtomicBoolean.new(false) # Flag to stop background checker
 
-		count = %x{wc -l #{filepath}}.split.first.to_i
+		checker_thread = start_suspension_checker
+
+		count = File.foreach(filepath).count
 		ActiveRecord::Base.connection_pool.with_connection do
 			prepare_progress_record(count)
 			@annotator = Annotator.find_by_name(annotator_name)
@@ -41,6 +44,9 @@ class ObtainAnnotationsJob < ApplicationJob
 
 		@pool.shutdown
 		@pool.wait_for_termination
+
+		stop_suspension_checker(checker_thread)
+
 		ActiveRecord::Base.connection_pool.with_connection do
 			@job&.update_attribute(:num_dones, @count_completed.value)
 		end
@@ -92,6 +98,9 @@ private
 			else
 				puts "Error processing batch: #{e.message}"
 			end
+		ensure
+			# Log batch completion for debugging if needed
+			# Actual cleanup happens during pool shutdown
 		end
 	end
 
@@ -107,5 +116,35 @@ private
 
 	def resource_name
 		self.arguments[2]
+	end
+
+	def start_suspension_checker
+		Thread.new do
+			while !@stop_checker.true?
+				begin
+					ActiveRecord::Base.connection_pool.with_connection do
+						if @job&.reload&.suspended?
+							@pool.kill # Immediately kill pool to stop all queued work
+							@job&.add_message(body: "Job suspended")
+							break # Exit checker loop since job is suspended
+						end
+					end
+				rescue => e
+					# Ignore errors in background checker to avoid disrupting main job
+				end
+				sleep(2) # Check every 2 seconds
+			end
+		end
+	end
+
+	def stop_suspension_checker(checker_thread)
+		# Stop background checker AFTER all threads are done
+		@stop_checker.make_true
+		checker_thread.join(5) # Wait up to 5 seconds for checker to stop
+
+		# Ensure we don't access @job after checker thread might still be using it
+		if checker_thread.alive?
+			checker_thread.kill # Force kill if it didn't stop gracefully
+		end
 	end
 end
