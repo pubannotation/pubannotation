@@ -108,9 +108,11 @@ private
 		# project_doc includes doc, thus connection is not necessary to access the doc.
 		annotations = @annotator.obtain_annotations_for_a_doc(project_doc.doc.hdoc)
 
-		ActiveRecord::Base.connection_pool.with_connection do
-			messages = project_doc.save_annotations(annotations, @options)
-			messages.each {|message| @job&.add_message message}
+		messages = project_doc.save_annotations(annotations, @options)
+		unless messages.empty?
+			ActiveRecord::Base.connection_pool.with_connection do
+				messages.each {|message| @job&.add_message message}
+			end
 		end
 	end
 
