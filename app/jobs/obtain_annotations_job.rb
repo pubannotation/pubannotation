@@ -2,6 +2,7 @@ require 'concurrent-ruby'
 
 class ObtainAnnotationsJob < ApplicationJob
 	include UseJobRecordConcern
+	include SuspensionCheckConcern
 	queue_as :low_priority
 
 	THREAD_POOL_SIZE = 3
@@ -15,9 +16,8 @@ class ObtainAnnotationsJob < ApplicationJob
 		@pool = Concurrent::FixedThreadPool.new(THREAD_POOL_SIZE)
 		@count_completed = Concurrent::AtomicFixnum.new(0) # Thread-safe counter for completed tasks
 		@count_failure   = Concurrent::AtomicFixnum.new(0) # Thread-safe counter for failures
-		@stop_checker = Concurrent::AtomicBoolean.new(false) # Flag to stop background checker
 
-		checker_thread = start_suspension_checker
+		checker_thread = start_suspension_monitoring(@pool, @job)
 
 		count = File.foreach(filepath).count
 		ActiveRecord::Base.connection_pool.with_connection do
@@ -45,7 +45,7 @@ class ObtainAnnotationsJob < ApplicationJob
 		@pool.shutdown
 		@pool.wait_for_termination
 
-		stop_suspension_checker(checker_thread)
+		stop_suspension_monitoring(checker_thread)
 
 		ActiveRecord::Base.connection_pool.with_connection do
 			@job&.update_attribute(:num_dones, @count_completed.value)
@@ -120,33 +120,4 @@ private
 		self.arguments[2]
 	end
 
-	def start_suspension_checker
-		Thread.new do
-			while !@stop_checker.true?
-				begin
-					ActiveRecord::Base.connection_pool.with_connection do
-						if @job&.reload&.suspended?
-							@pool.kill # Immediately kill pool to stop all queued work
-							@job&.add_message(body: "Job suspended")
-							break # Exit checker loop since job is suspended
-						end
-					end
-				rescue => e
-					# Ignore errors in background checker to avoid disrupting main job
-				end
-				sleep(2) # Check every 2 seconds
-			end
-		end
-	end
-
-	def stop_suspension_checker(checker_thread)
-		# Stop background checker AFTER all threads are done
-		@stop_checker.make_true
-		checker_thread.join(5) # Wait up to 5 seconds for checker to stop
-
-		# Ensure we don't access @job after checker thread might still be using it
-		if checker_thread.alive?
-			checker_thread.kill # Force kill if it didn't stop gracefully
-		end
-	end
 end
