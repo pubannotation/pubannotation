@@ -23,7 +23,13 @@
 		<% if @message.sourcedb && @message.sourceid && @project %>
 			<section>
 				<h2>Document</h2>
-				<%= link_to("#{@message.sourcedb}:#{@message.sourceid}", show_project_sourcedb_sourceid_docs_path(@project.name, @message.sourcedb, @message.sourceid)) %>
+				<%=
+					if @message.sourceid.include?(' ')
+						@message.sourceid
+					else
+						link_to("#{@message.sourcedb}:#{@message.sourceid}", show_project_sourcedb_sourceid_docs_path(@project.name, @message.sourcedb, @message.sourceid))
+					end
+				%>
 			</section>
 		<% end %>
 

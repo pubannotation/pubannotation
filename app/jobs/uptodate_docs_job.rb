@@ -19,9 +19,9 @@ class UptodateDocsJob < ApplicationJob
 			sourceids = project.docs.where(sourcedb:sourcedb).pluck(:sourceid).uniq
 
 			sourceids.each_slice(batch_num).each do |sids|
-				r = Doc.sequence_docs(sourcedb, sids)
-				unless r[:messages].empty?
-					r[:messages].each do |m|
+				docs, messages = Doc.sequence_docs(sourcedb, sids)
+				unless messages.empty?
+					messages.each do |m|
 						message = if m.class == String
 							{body: m[0 ... 200]}
 						elsif m.class == Hash
@@ -35,7 +35,7 @@ class UptodateDocsJob < ApplicationJob
 						@job.add_message message
 					end
 				end
-				hdocs_sequenced = r[:docs]
+				hdocs_sequenced = docs
 				hdocs_sequenced.each do |hdoc|
 					doc = Doc.where(sourcedb:sourcedb, sourceid:hdoc[:sourceid]).first
 					Doc.uptodate(doc, hdoc)

@@ -46,7 +46,7 @@ module TextAlign
       [warning_messages, results]
     end
 
-    Result = Data.define(:annotations_for_doc_collection, :warnings, :num_skipped)
+    Result = Data.define(:annotations_for_doc_collection, :num_skipped, :num_missing)
     Source = Data.define(:db, :id)
 
     def self.find_doc_for(annotations_collection, project_id_for_skip)
@@ -59,8 +59,13 @@ module TextAlign
         end
       }
 
+      annotations_for_doc_collection = []
+      num_skipped = 0
+      docids_missing = []
+      num_missing = 0
+
       # Find the document for the annotations.
-      annotations_collection.inject(Result.new([], [], 0)) do |result, annotations|
+      annotations_collection.each do |annotations|
         source = Source.new(annotations.first[:sourcedb], annotations.first[:sourceid])
         doc = Doc.where(sourcedb: source.db, sourceid: source.id).sole
         annotations_for_doc = AnnotationsForDocument.new(annotations, doc)
@@ -68,22 +73,21 @@ module TextAlign
         if project_id_for_skip
           # skip option
           if ProjectDoc.where(project_id: project_id_for_skip, doc_id: annotations_for_doc.doc.id).pluck(:denotations_num).first == 0
-            result.annotations_for_doc_collection << AnnotationsForDocument.new(annotations, doc)
+            annotations_for_doc_collection << AnnotationsForDocument.new(annotations, doc)
           else
-            result.num_skipped += 1
+            num_skipped += 1
           end
         else
-          result.annotations_for_doc_collection << annotations_for_doc
+          annotations_for_doc_collection << annotations_for_doc
         end
 
-        result
       rescue ActiveRecord::RecordNotFound
-        result.warnings << { sourcedb: source.db, sourceid: source.id, body: 'Document does not exist.' }
-        result
+        docids_missing << source.id
       rescue ActiveRecord::SoleRecordExceeded
-        result.warnings << { sourcedb: source.db, sourceid: source.id, body: 'Multiple entries of the document.' }
-        result
+        raise ActiveRecord::SoleRecordExceeded, "Multiple entries of the same document: #{source.db}:#{source.id}."
       end
+
+      [annotations_for_doc_collection, num_skipped, docids_missing.uniq]
     end
   end
 end

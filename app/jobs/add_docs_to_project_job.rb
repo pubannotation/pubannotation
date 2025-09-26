@@ -19,9 +19,9 @@ class AddDocsToProjectJob < ApplicationJob
                                               project.add_docs(DocumentSourceIds.new(sourcedb, ids))
                                             rescue => e
                                                 @job&.add_message sourcedb: sourcedb,
-                                                                 sourceid: "#{ids.first} - #{ids.last}",
+                                                                 sourceid: ids,
                                                                  body: e.message
-                                                [0, 0, 0, []]
+                                                [0, 0, []]
                                             end
 
       @total_num_added += num_added
@@ -29,7 +29,7 @@ class AddDocsToProjectJob < ApplicationJob
       @total_num_existed += num_existed
 
       messages.each do |message|
-        @job&.add_message(message.class == Hash ? message : { body: message })
+        @job&.add_message(message)
       end
 
       i += docspecs.length

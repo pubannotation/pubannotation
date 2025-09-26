@@ -267,15 +267,16 @@ class Doc < ActiveRecord::Base
 			raise ArgumentError, "Could not find the sequencer for the sourcedb: [#{sourcedb}]"
 		end
 
-		result = sequencer.get_docs(sourceids)
+		docs, messages = sequencer.get_docs(sourceids)
 
-		invalid_docs = result[:docs].select{|doc| !Doc.hdoc_valid?(doc)}
+		invalid_docs = docs.select{|doc| !Doc.hdoc_valid?(doc)}
 		invalid_docs.each do |doc|
-			result[:messages] << {sourcedb:sourcedb, sourceid:doc[:sourceid], body:"Invalid document entry."}
+			messages << {sourcedb:sourcedb, sourceid:[doc[:sourceid]], body:"Invalid document entry."}
 		end
 
-		result[:docs] = result[:docs] - invalid_docs
-		result
+		docs -= invalid_docs
+
+		[docs, messages]
 	end
 
 	def store_divisions(hdivisions)
@@ -349,22 +350,22 @@ class Doc < ActiveRecord::Base
 			doc = store_hdoc!(hdoc)
 			docs_saved << doc
 		rescue => e
-			messages << {sourcedb:hdoc[:sourcedb], sourceid:hdoc[:sourceid], body:e.message}
+			messages << {sourcedb:hdoc[:sourcedb], sourceid:[hdoc[:sourceid]], body:e.message}
 		end
 
 		[docs_saved, messages]
 	end
 
 	def self.sequence_and_store_doc!(sourcedb, sourceid)
-		result = sequence_docs(sourcedb, [sourceid])
-		raise result[:messages].join("\n") unless result[:docs].present?
-		doc = store_hdoc!(result[:docs].first)
+		docs, messages = sequence_docs(sourcedb, [sourceid])
+		raise messages.first[:body] unless docs.present?
+		doc = store_hdoc!(docs.first)
 	end
 
 	def self.sequence_and_store_docs(sourcedb, sourceids)
-		result = sequence_docs(sourcedb, sourceids)
-		docs_saved, messages = store_hdocs(result[:docs])
-		[docs_saved, result[:messages] + messages]
+		docs, messages = sequence_docs(sourcedb, sourceids)
+		docs_saved, messages2 = store_hdocs(docs)
+		[docs_saved, messages + messages2]
 	end
 
 	def revise(new_hdoc)
@@ -406,9 +407,11 @@ class Doc < ActiveRecord::Base
 		sourceid = doc.sourceid
 
 		new_hdoc ||= begin
-			r = self.sequence_docs(sourcedb, [sourceid])
-			raise "Could not sequence the document: #{sourcedb}:#{sourceid}" unless r[:docs].length == 1
-			r[:docs].first
+			docs, messages = self.sequence_docs(sourcedb, [sourceid])
+			message1 = "Could not sequence the document, #{sourcedb}:#{sourceid}"
+			message1 += ": #{messages.first[:body]}" unless messages.empty?
+			raise message1 unless docs.length == 1
+			docs.first
 		end
 
 		ActiveRecord::Base.transaction do

@@ -13,11 +13,11 @@ module TextAlign
     end
 
     def call
-      result = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? project.id : nil)
-      @warnings.concat result.warnings
-      @warnings << { body: "Uploading for #{result.num_skipped} documents were skipped due to existing annotations." } if result.num_skipped > 0
+      annotations_for_doc_collection, num_skipped, docids_missing = AnnotationsForDocument.find_doc_for(@annotations_collection, @options[:mode] == 'skip' ? project.id : nil)
+      @warnings << { body: "Uploading for #{num_skipped} documents were skipped due to existing annotations." } if num_skipped > 0
+      @warnings << { sourceid: docids_missing, body: "Could not find the document(s)" } unless docids_missing.empty?
 
-      aligner = TextAlign::AlignTextInRactor.new(result.annotations_for_doc_collection, @options)
+      aligner = TextAlign::AlignTextInRactor.new(annotations_for_doc_collection, @options)
       result2 = aligner.call
       @warnings.concat result2.warnings
       @warnings.finalize

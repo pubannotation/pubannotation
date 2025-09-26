@@ -32,35 +32,56 @@ class Sequencer < ActiveRecord::Base
 		Sequencer.where(name: sequencer_name).exists?
 	end
 
-	def get_doc(sourceid)
-		response = RestClient::Request.execute(method: :get, url: url, headers:{content_type: :json, accept: :json}, verify_ssl: false)
+	def get_docs(sourceids)
+		docs = []
+		messages = []
 
-		result = begin
-			JSON.parse response, :symbolize_names => true
-		rescue => e
-			raise RuntimeError, "Received a non-JSON object: [#{response}]"
+		sourceids.each_slice(MAX_NUM_ID) do |ids|
+			_docs, _messages = _get_docs(ids)
+			docs += _docs
+			messages += _messages
 		end
-		result
+
+		groups = messages.group_by { |message| message[:body] }
+		messages = groups.map do |body, _messages|
+			ids = _messages.flat_map { |message| message[:sourceid] }
+			{sourcedb: name, sourceid: ids, body: body}
+		end
+
+		[docs, messages]
 	end
 
-	def get_docs(sourceids)
-		ids_groups = sourceids.each_slice(MAX_NUM_ID).to_a
+	def _get_docs(ids)
+		docs = []
+		messages = []
 
-		ids_groups.inject({docs:[], messages:[]}) do |result, ids|
-			begin
-				response = RestClient::Request.execute(method: :post, url: url, payload: ids.to_json, headers:{content_type: :json, accept: :json}, verify_ssl: false)
-				begin
-					r = JSON.parse response, :symbolize_names => true
-					result[:docs] += r[:docs]
-					result[:messages] += r[:messages] if r[:messages]
-				rescue => e
-					result[:messages] << {sourcedb: name, sourceid: ids.join(', '), body: "Error during JSON parsing: #{e.message}"}
-				end
-			rescue => e
-				result[:messages] << {sourcedb: name, sourceid: ids.join(', '), body: "Error during communication with the server: #{e.message}"}
-			end
-			result
+		sleep(0.1)
+		response = RestClient::Request.execute(method: :post, url: url, payload: ids.to_json, headers:{content_type: :json, accept: :json}, verify_ssl: false)
+
+		r = JSON.parse response, :symbolize_names => true
+		docs = r[:docs]
+		# messages = r[:messages] if r[:messages]
+		[docs, []]
+	rescue JSON::ParserError => e
+		messages << {sourcedb: name, sourceid: ids, body: "JSON parsing error: #{e.message}"}
+		[[], messages]
+	rescue RestClient::Exception => e
+		if ids.length > 1
+			mid_index = (ids.length / 2)
+			half_l = ids[0 ... mid_index]
+			half_r = ids[mid_index .. -1]
+
+			l_docs, l_messages = _get_docs(half_l)
+			r_docs, r_messages = _get_docs(half_r)
+
+			[l_docs + r_docs, l_messages + r_messages]
+		else
+			messages << {sourcedb: name, sourceid: ids, body: "Gateway error: #{e.message}"}
+			[[], messages]
 		end
+	rescue => e
+		messages << {sourcedb: name, sourceid: ids, body: "Unexpected error: #{e.message}"}
+		[[], messages]
 	end
 
 	def changeable?(current_user)

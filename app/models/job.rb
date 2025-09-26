@@ -17,17 +17,19 @@ class Job < ActiveRecord::Base
   end
 
   def add_message(message)
-    if message[:sourceid].present? && message[:sourceid].length > 250
-      sourceids = message[:sourceid].split(", ")
-      message[:sourceid] = sourceids[0, 3].to_s + " and other #{sourceids.length - 3} ids"
+    sourceids_str = if message[:sourceid].present? && message[:sourceid].length > 10
+      sourceids = message[:sourceid]
+      sourceids[0, 3].to_s + " and other #{sourceids.length - 3} ids"
+    else
+      message[:sourceid].to_s
     end
 
-    if message[:sourceid].present? && message[:body].length > 250
-      body = message[:body][0..235] + " ... (truncated)"
+    if message[:sourceid].present? && message[:body].length > 500
+      body = message[:body][0..500] + " ... (truncated)"
       message[:body] = body
     end
 
-    messages << Message.create(message)
+    messages << Message.create(sourcedb: message[:sourcedb], sourceid: sourceids_str, body: message[:body])
   end
 
   def waiting?

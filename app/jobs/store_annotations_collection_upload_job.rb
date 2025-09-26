@@ -113,7 +113,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		ids_list.each do |ids|
 			num_added, num_sequenced, messages = project.add_docs(ids)
 			messages.each do |message|
-				@job&.add_message(message.class == Hash ? message : { body: message })
+				@job&.add_message(message)
 			end
 		end
 	end
