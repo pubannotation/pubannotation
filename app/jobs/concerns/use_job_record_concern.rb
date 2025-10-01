@@ -53,12 +53,22 @@ module UseJobRecordConcern
 
   def check_suspend_flag
     if suspended?
-      raise Exceptions::JobSuspendError, "Job suspended."
+      job_name = respond_to?(:job_name) ? job_name : self.class.name
+      raise Exceptions::JobSuspendError, "#{job_name} suspended by user request - processing can be resumed later."
     end
   end
 
   def suspended?
-    @job ? @job.suspended? : false
+    return false unless @job
+    suspend_file = Rails.root.join('tmp', "suspend_job_#{@job.id}")
+    File.exist?(suspend_file)
+  end
+
+  def suspend_job!
+    return unless @job
+    suspend_file = Rails.root.join('tmp', "suspend_job_#{@job.id}")
+    FileUtils.touch(suspend_file)
+    Rails.logger.info "[#{self.class.name}] Created suspension file: #{suspend_file}"
   end
 
   def prepare_progress_record(scheduled_num)

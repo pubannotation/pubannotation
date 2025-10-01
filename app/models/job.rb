@@ -53,7 +53,9 @@ class Job < ActiveRecord::Base
   end
 
   def suspended?
-    running? && suspend_flag == true
+    return false unless running?
+    suspend_file = Rails.root.join('tmp', "suspend_job_#{id}")
+    File.exist?(suspend_file)
   end
 
   def state
@@ -92,7 +94,9 @@ class Job < ActiveRecord::Base
 
   def stop_if_running
     if running?
-      update(suspend_flag: true)
+      suspend_file = Rails.root.join('tmp', "suspend_job_#{id}")
+      FileUtils.touch(suspend_file)
+      Rails.logger.info "[Job##{id}] Created suspension file: #{suspend_file}"
     end
   end
 
