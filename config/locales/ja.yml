@@ -430,7 +430,6 @@ ja:
       document_content: ドキュメントのコンテンツ
       projects_that_annotates_this: "<span class='meta'>このドキュメントにアノテーションを付ける</span>プロジェクト"
       obtain_annotations: アノテーションの取得
-      obtain_annotations_with_callback: コールバックによるアノテーションの取得
       import_annotations: アノテーションのインポート
       clean_annotations: アノテーションの掃除
       transform_annotations: アノテーションの変換
