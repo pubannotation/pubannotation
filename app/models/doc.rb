@@ -870,19 +870,26 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def self.update_numbers
-		# the number of projects of each doc
-		ActiveRecord::Base.connection.update <<~SQL.squish
-			UPDATE docs
-			SET	projects_num=(SELECT count(*) FROM project_docs WHERE project_docs.doc_id=docs.id)
-		SQL
+	def self.update_numbers(project = nil)
+		if project
+			doc_ids = project.docs.pluck(:id)
+			return if doc_ids.empty?
+			doc_ids_str = doc_ids.join(',')
+			docs_where_clause = "WHERE docs.id IN (#{doc_ids_str})"
+			project_docs_where_clause = "WHERE project_docs.project_id=#{project.id}"
+		else
+			docs_where_clause = ""
+			project_docs_where_clause = ""
+		end
 
-		# the number of annotations of each doc
+		# the number of projects and annotations of each doc
 		ActiveRecord::Base.connection.update <<~SQL.squish
 			UPDATE docs
-			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=docs.id),
+			SET	projects_num=(SELECT count(*) FROM project_docs WHERE project_docs.doc_id=docs.id),
+				denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=docs.id),
 				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=docs.id),
 				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=docs.id)
+			#{docs_where_clause}
 		SQL
 
 		# the number of annotations of each doc in each project
@@ -891,6 +898,7 @@ class Doc < ActiveRecord::Base
 			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=project_docs.doc_id AND denotations.project_id=project_docs.project_id),
 				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=project_docs.doc_id AND blocks.project_id=project_docs.project_id),
 				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=project_docs.doc_id AND relations.project_id=project_docs.project_id)
+			#{project_docs_where_clause}
 		SQL
 	end
 

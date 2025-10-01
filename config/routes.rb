@@ -190,6 +190,7 @@ Pubann::Application.routes.draw do
 				post 'add_from_upload' => 'docs#add_from_upload'
 				post 'import' => 'docs#import'
 				get 'open' => 'docs#open'
+				get 'update_numbers' => 'docs#update_numbers_for_project'
 				scope 'sourcedb', :as => 'sourcedb' do
 					# list sourcedb
 					get '/' => 'docs#sourcedb_index'

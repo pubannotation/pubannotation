@@ -563,6 +563,19 @@ class DocsController < ApplicationController
 		redirect_to home_path
 	end
 
+	def update_numbers_for_project
+		project = Project.editable(current_user).find_by_name(params[:project_id])
+		raise RuntimeError, "The project does not exist, or you are not authorized to make a change to the project." unless project.present?
+
+		active_job = UpdateNumbersForProjectDocsJob.perform_later(project)
+
+		result = {message: "The task, '#{active_job.job_name}', created."}
+		redirect_to project_path(project.name)
+	rescue => e
+		flash[:notice] = e.message
+		redirect_to home_path
+	end
+
 	# def autocomplete_sourcedb
 	#   render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
 	# end
