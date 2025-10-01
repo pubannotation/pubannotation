@@ -73,4 +73,8 @@ module UseJobRecordConcern
     @job&.update_attribute(:num_items, scheduled_num)
     @job&.update_attribute(:num_dones, 0)
   end
+
+  def increment_progress(count = 1)
+    @job&.increment!(:num_dones, count)
+  end
 end
