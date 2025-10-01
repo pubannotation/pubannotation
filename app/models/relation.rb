@@ -19,6 +19,7 @@ class Relation < ActiveRecord::Base
 	after_update :update_project_updated_at
 
 	def increment_numbers
+		return if Thread.current[:skip_annotation_callbacks]
 		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
 		pd.increment!(:relations_num) if pd
 		self.doc.increment!(:relations_num)
@@ -33,6 +34,7 @@ class Relation < ActiveRecord::Base
 	end
 
 	def update_project_updated_at
+		return if Thread.current[:skip_annotation_callbacks]
 		self.project.update_updated_at
 	end
 

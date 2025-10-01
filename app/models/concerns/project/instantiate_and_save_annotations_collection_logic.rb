@@ -4,8 +4,20 @@ module Project::InstantiateAndSaveAnnotationsCollectionLogic
   extend ActiveSupport::Concern
 
   def pretreatment_according_to(options, document, annotations)
+    batch_processing = options[:batch_processing]
+    Rails.logger.info "[#{self.class.name}] pretreatment_according_to: mode=#{options[:mode]}, batch_processing=#{batch_processing}, doc_id=#{document.id}"
+
     if options[:mode] == 'replace'
-      self.delete_doc_annotations document
+      # Defer delete operations during batch processing - handled in parent job for replace mode
+      if batch_processing
+        # Store the fact that this document needs replacement for parent job cleanup
+        Thread.current[:docs_needing_replacement] ||= Set.new
+        Thread.current[:docs_needing_replacement] << document.id
+        Rails.logger.info "[#{self.class.name}] Deferring replacement for doc #{document.id} - will be handled in parent job"
+      else
+        Rails.logger.info "[#{self.class.name}] Performing immediate replacement for doc #{document.id}"
+        self.delete_doc_annotations_optimized document
+      end
     else
       case options[:mode]
       when 'add'
@@ -19,6 +31,9 @@ module Project::InstantiateAndSaveAnnotationsCollectionLogic
   end
 
   def instantiate_and_save_annotations_collection(annotations_collection)
+    # Use thread-local variable to disable callbacks during batch processing
+    Thread.current[:skip_annotation_callbacks] = true
+
     ActiveRecord::Base.transaction do
       record_docid(annotations_collection)
 
@@ -30,28 +45,80 @@ module Project::InstantiateAndSaveAnnotationsCollectionLogic
 
       doc_ids = Set.new annotations_collection.map { _1[:docid] }
 
-      if doc_ids.present?
-        project_docs = self.project_docs.where(doc_id: doc_ids)
+      # Defer project_doc and doc updates to reduce lock contention - will be recalculated in parent job
+      # if doc_ids.present?
+      #   project_docs = self.project_docs.where(doc_id: doc_ids)
+      #
+      #   doc_ids.each do |did|
+      #     d_num = d_stat[did] || 0
+      #     b_num = b_stat[did] || 0
+      #     r_num = r_stat[did] || 0
+      #
+      #     project_doc = project_docs.find { _1.doc_id == did }
+      #     update_project_doc(project_doc, d_num, b_num, r_num)
+      #   end
+      # end
 
-        doc_ids.each do |did|
-          d_num = d_stat[did] || 0
-          b_num = b_stat[did] || 0
-          r_num = r_stat[did] || 0
+      # Defer project updates to reduce lock contention - will be updated in parent job
+      # update_project(self, d_stat_all, b_stat_all, r_stat_all)
+    end
 
-          project_doc = project_docs.find { _1.doc_id == did }
-          update_project_doc(project_doc, d_num, b_num, r_num)
-        end
-      end
+  ensure
+    # Clear the thread-local variable to re-enable callbacks
+    Thread.current[:skip_annotation_callbacks] = nil
+  end
 
-      update_project(self, d_stat_all, b_stat_all, r_stat_all)
+  def delete_doc_annotations_optimized(doc)
+    # Skip delete operations during batch processing - will be handled in parent job
+    if Thread.current[:skip_annotation_callbacks]
+      Rails.logger.info "[#{self.class.name}] Skipping delete_doc_annotations for doc #{doc.id} during batch processing"
+      return
+    end
+
+    # Use a single transaction with all deletes to reduce lock time
+    ActiveRecord::Base.transaction do
+      # Use delete_all instead of connection.update for better ActiveRecord optimization
+      Denotation.where(project_id: self.id, doc_id: doc.id).delete_all
+      Block.where(project_id: self.id, doc_id: doc.id).delete_all
+      Relation.where(project_id: self.id, doc_id: doc.id).delete_all
+      Attrivute.where(project_id: self.id, doc_id: doc.id).delete_all
+
+      # Defer count updates - will be recalculated in parent job
+      # No individual count updates to avoid lock contention
     end
   end
 
   private
 
   def record_docid(annotations_collection)
+    # Use cached doc IDs if available (from ProcessAnnotationsBatchJob)
+    if Thread.current[:doc_id_cache]
+      annotations_collection.each do |ann|
+        doc_key = "#{ann[:sourcedb]}:#{ann[:sourceid]}"
+        ann[:docid] = Thread.current[:doc_id_cache][doc_key]
+      end
+      return
+    end
+
+    # Fallback to batch lookup for better performance
+    doc_specs = annotations_collection.map { |ann| [ann[:sourcedb], ann[:sourceid]] }.uniq
+
+    # Build hash from batch query
+    docs_hash = {}
+    doc_specs.each_slice(50) do |batch_specs|
+      # Use safe parameter binding
+      conditions = batch_specs.map { "(sourcedb = ? AND sourceid = ?)" }.join(' OR ')
+      params = batch_specs.flatten
+
+      Doc.where(conditions, *params)
+         .pluck(:sourcedb, :sourceid, :id)
+         .each { |sourcedb, sourceid, id| docs_hash["#{sourcedb}:#{sourceid}"] = id }
+    end
+
+    # Map doc IDs back to annotations
     annotations_collection.each do |ann|
-      ann[:docid] = Doc.where(sourcedb: ann[:sourcedb], sourceid: ann[:sourceid]).pluck(:id).first
+      doc_key = "#{ann[:sourcedb]}:#{ann[:sourceid]}"
+      ann[:docid] = docs_hash[doc_key]
     end
   end
 

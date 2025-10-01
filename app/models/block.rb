@@ -25,6 +25,7 @@ class Block < ActiveRecord::Base
 
 	# after save
 	def update_project_updated_at
+		return if Thread.current[:skip_annotation_callbacks]
 		self.project.update_updated_at
 	end
 
@@ -37,6 +38,7 @@ class Block < ActiveRecord::Base
 	end
 
 	def increment_numbers
+		return if Thread.current[:skip_annotation_callbacks]
 		pd = ProjectDoc.find_by_project_id_and_doc_id(self.project.id, self.doc.id)
 		pd.increment!(:blocks_num) if pd
 		self.doc.increment!(:blocks_num)

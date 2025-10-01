@@ -423,7 +423,7 @@ class Project < ActiveRecord::Base
 
   def add_docs(index)
     # Import documents that are not in the DB.
-    docs_sequenced, messages = sequence index.db, index.ids
+    docs_sequenced, sourceids_sequence_failed, messages = sequence index.db, index.ids
 
     # Tie the documents to the project.
     num_docs_added = tie_documents index.db, index.ids
@@ -431,24 +431,61 @@ class Project < ActiveRecord::Base
     increment!(:docs_count, num_docs_added)
     docs_stat_increment!(index.db, num_docs_added)
 
-    [num_docs_added, docs_sequenced, messages]
+    [num_docs_added, docs_sequenced.length, messages]
   end
 
-  private def sequence(sourcedb, source_ids)
-    source_ids_existing_in_db = Doc.where(sourcedb: sourcedb, sourceid: source_ids).pluck(:sourceid)
-    ids_to_sequence = source_ids - source_ids_existing_in_db
+  def add_docs_from_array(doc_specs)
+    # Process array format: [{sourcedb: "...", sourceid: "..."}, ...]
+    # Group by sourcedb
+    doc_specs_grouped_by_sourcedbs = doc_specs.group_by { |doc_spec| doc_spec[:sourcedb] }
 
-    if ids_to_sequence.present?
-      docs_sequenced, messages = Doc.sequence_and_store_docs(sourcedb, ids_to_sequence)
-      [docs_sequenced.length, messages]
+    total_added = 0
+    total_sequenced = 0
+    doc_specs_failed = []
+    all_messages = []
+
+    doc_specs_grouped_by_sourcedbs.each do |sourcedb, doc_specs|
+      sourceids = doc_specs.map { |doc_spec| doc_spec[:sourceid] }
+
+      # Import documents that are not in the DB.
+      docs_sequenced, sourceids_sequence_failed, messages = sequence sourcedb, sourceids
+
+      # Tie the documents to the project.
+      num_docs_added = tie_documents sourcedb, sourceids
+
+      increment!(:docs_count, num_docs_added)
+      docs_stat_increment!(sourcedb, num_docs_added)
+
+      total_added += num_docs_added
+      total_sequenced += docs_sequenced.length
+      doc_specs_failed.concat(sourceids_sequence_failed.map{|sourceid| {sourcedb:sourcedb, sourceid:sourceid}})
+      all_messages.concat(messages)
+    end
+
+    [total_added, total_sequenced, doc_specs_failed, all_messages]
+  end
+
+  private def sequence(sourcedb, sourceids)
+    sourceids_existing_in_db = Doc.where(sourcedb: sourcedb, sourceid: sourceids).pluck(:sourceid)
+    sourceids_to_sequence = sourceids - sourceids_existing_in_db
+
+    if sourceids_to_sequence.present?
+      docs_sequenced, messages = Doc.sequence_and_store_docs(sourcedb, sourceids_to_sequence)
+      sourceids_sequenced = docs_sequenced.map{|doc| doc.sourceid}
+      sourceids_sequence_failed = sourceids_to_sequence - sourceids_sequenced
+
+      [docs_sequenced, sourceids_sequence_failed, messages]
     else
-      [0, []]
+      [[], [], []]
     end
   end
 
   private def tie_documents(sourcedb, source_ids)
-    docs = Doc.where(sourcedb: sourcedb, sourceid: source_ids)
-              .where.not(sourceid: self.docs.where(sourcedb: sourcedb).select(:sourceid))
+    # Use LEFT JOIN instead of NOT IN subquery for better performance
+    # Find docs that are NOT already associated with this project
+    docs = Doc.joins("LEFT JOIN project_docs ON docs.id = project_docs.doc_id AND project_docs.project_id = #{self.id}")
+              .where(sourcedb: sourcedb, sourceid: source_ids)
+              .where('project_docs.doc_id IS NULL')
 
     return 0 if docs.empty?
 
@@ -1092,10 +1129,12 @@ class Project < ActiveRecord::Base
         if d_num > 0 || b_num > 0
           ActiveRecord::Base.connection.update("update project_docs set denotations_num = 0, blocks_num = 0, relations_num = 0, annotations_updated_at = CURRENT_TIMESTAMP where project_id=#{id} and doc_id=#{doc.id}")
           ActiveRecord::Base.connection.update("update docs set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{doc.id}")
-          ActiveRecord::Base.connection.update("update projects set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{id}")
+          # Defer project updates to reduce lock contention - will be updated in parent job
+          # ActiveRecord::Base.connection.update("update projects set denotations_num = denotations_num - #{d_num}, blocks_num = blocks_num - #{b_num}, relations_num = relations_num - #{r_num} where id=#{id}")
 
-          update_annotations_updated_at
-          update_updated_at
+          # Defer timestamp updates to reduce lock contention - will be updated in parent job
+          # update_annotations_updated_at
+          # update_updated_at
         end
       end
     end

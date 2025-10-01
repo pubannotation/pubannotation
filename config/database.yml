@@ -5,7 +5,7 @@ defaults: &defaults
 development:
   <<: *defaults
   database: pubannotation
-  pool: 5
+  pool: 25
 
 test:
   <<: *defaults
@@ -14,4 +14,4 @@ test:
 production:
   <<: *defaults
   database: pubannotation
-  pool: 5
+  pool: 25

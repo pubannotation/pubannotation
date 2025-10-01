@@ -220,6 +220,10 @@ class Doc < ActiveRecord::Base
 		self.reload
 	end
 
+	def spec
+		{sourcedb:sourcedb, sourceid:sourceid}
+	end
+
 	def descriptor
 		"#{sourcedb}:#{sourceid}"
 	end
@@ -323,7 +327,8 @@ class Doc < ActiveRecord::Base
 		hdoc[:text] = hdoc[:body] if !hdoc[:text] && hdoc[:body]
 
 		doc = nil
-		ActiveRecord::Base.transaction do
+		# Use shorter transaction to reduce lock contention
+		ActiveRecord::Base.transaction(isolation: :read_committed) do
 			doc = Doc.create!(
 				{
 					body: hdoc[:text],
@@ -336,10 +341,24 @@ class Doc < ActiveRecord::Base
 			doc.store_typesettings(hdoc[:typesettings]) if hdoc.has_key? :typesettings
 		end
 
-		Project.docs_stat_increment!(doc.sourcedb)
-		Project.docs_count_increment!
+		# Defer project doc stats updates to reduce lock contention during batch processing
+		# Project.docs_stat_increment!(doc.sourcedb)
+		# Project.docs_count_increment!
 
 		doc
+	end
+
+	def self.store_hdoc(hdoc)
+		begin
+			store_hdoc!(hdoc)
+		rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
+			if e.message.include?("already been taken") || e.message.include?("duplicate") || e.message.include?("unique")
+				# Document was created by another job (race condition) - find and return it
+				Doc.find_by(sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid])
+			else
+				raise e
+			end
+		end
 	end
 
 	def self.store_hdocs(hdocs)
@@ -347,8 +366,8 @@ class Doc < ActiveRecord::Base
 		messages = []
 
 		hdocs.each do |hdoc|
-			doc = store_hdoc!(hdoc)
-			docs_saved << doc
+			doc = store_hdoc(hdoc)
+			docs_saved << doc if doc  # Only add if doc was created/found
 		rescue => e
 			messages << {sourcedb:hdoc[:sourcedb], sourceid:[hdoc[:sourceid]], body:e.message}
 		end

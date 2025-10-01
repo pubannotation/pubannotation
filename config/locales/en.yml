@@ -446,7 +446,6 @@ en:
       annotation_within_spans: "Annotations <span class='meta'> made</span><span class='meta'> within the span, <span class='pname'>%{spans}</span></span>"
       projects_that_annotates_this: "Projects <span class='meta'>that have annotated to this document</span>"
       obtain_annotations: Obtain Annotations
-      obtain_annotations_with_callback: Obtain Annotations with Callback
       import_annotations: Import Annotations
       clean_annotations: Clean Annotations
       transform_annotations: Transform Annotations

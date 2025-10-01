@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_26_014130) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_27_201927) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -124,6 +124,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_26_014130) do
     t.datetime "updated_at", null: false
     t.boolean "is_block", default: false
     t.index ["doc_id"], name: "index_denotations_on_doc_id"
+    t.index ["project_id", "doc_id"], name: "index_denotations_on_project_id_and_doc_id"
     t.index ["project_id"], name: "index_denotations_on_project_id"
   end
 
