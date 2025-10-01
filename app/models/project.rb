@@ -452,10 +452,11 @@ class Project < ActiveRecord::Base
 
     return 0 if docs.empty?
 
-    records = docs.map do |doc|
+    doc_ids = docs.pluck(:id)
+    records = doc_ids.map do |doc_id|
       {
         project_id: self.id,
-        doc_id: doc.id
+        doc_id: doc_id
       }
     end
 
@@ -469,6 +470,14 @@ class Project < ActiveRecord::Base
       records,
       unique_by: %i[project_id doc_id]
     )
+
+    # insert_all bypasses ActiveRecord callbacks, so manually increment projects_num counter
+    # This mimics the after_add callback: increment_docs_projects_counter
+    if result.count > 0
+      ActiveRecord::Base.connection.update(
+        "UPDATE docs SET projects_num = projects_num + 1 WHERE id IN (#{doc_ids.join(',')})"
+      )
+    end
 
     result.count
   end
