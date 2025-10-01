@@ -1,7 +1,33 @@
-:concurrency: 2
-:max_retries: 0
-:queues:
-  - general
-  - low_priority
-  - update_paragraph_references
-  - update_sentence_references
+development:
+  :concurrency: 8
+  :max_retries: 0
+  :queues:
+    - general
+    - low_priority
+    - update_paragraph_references
+    - update_sentence_references
+  :redis:
+    url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/0") %>
+    namespace: pubannotation_dev
+
+production:
+  :concurrency: 12
+  :max_retries: 3
+  :queues:
+    - general
+    - low_priority
+    - update_paragraph_references
+    - update_sentence_references
+  :redis:
+    url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/0") %>
+    namespace: pubannotation
+
+test:
+  :concurrency: 2
+  :max_retries: 0
+  :queues:
+    - general
+    - low_priority
+  :redis:
+    url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/15") %>
+    namespace: pubannotation_test
