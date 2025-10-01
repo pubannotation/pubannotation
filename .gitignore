@@ -45,3 +45,7 @@ public/downloads/*
 !/config/certs/.keep
 
 node_modules/
+
+# Ignore local development/deployment helper scripts
+*.sh
+script/elasticsearch-*
