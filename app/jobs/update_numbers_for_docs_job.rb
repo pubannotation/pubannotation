@@ -1,4 +1,6 @@
 class UpdateNumbersForDocsJob < ApplicationJob
+	include UseJobRecordConcern
+
 	queue_as :low_priority
 
 	def perform(admin_project)
