@@ -59,9 +59,7 @@ module UseJobRecordConcern
   end
 
   def suspended?
-    return false unless @job
-    suspend_file = Rails.root.join('tmp', "suspend_job_#{@job.id}")
-    File.exist?(suspend_file)
+    @job&.suspended?
   end
 
   def suspend_job!

@@ -5,16 +5,18 @@ module SuspensionCheckConcern
 
   def start_suspension_monitoring(pool, job)
     @suspension_stop_flag = Concurrent::AtomicBoolean.new(false)
-    
+
     Thread.new do
       while !@suspension_stop_flag.true?
         begin
-          ActiveRecord::Base.connection_pool.with_connection do
-            if job&.reload&.suspended?
-              pool.kill # Immediately kill pool to stop all queued work
+          # File check doesn't need DB connection
+          if job&.suspended?
+            pool.kill # Immediately kill pool to stop all queued work
+            # Only acquire DB connection for adding message
+            ActiveRecord::Base.connection_pool.with_connection do
               job&.add_message(body: "Job suspended")
-              break # Exit checker loop since job is suspended
             end
+            break # Exit checker loop since job is suspended
           end
         rescue => e
           # Ignore errors in background checker to avoid disrupting main job
