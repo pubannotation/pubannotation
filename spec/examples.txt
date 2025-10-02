@@ -1,0 +1,4 @@
+example_id                       | status | run_time        |
+-------------------------------- | ------ | --------------- |
+./spec/models/doc_spec.rb[1:1:1] | passed | 0.06332 seconds |
+./spec/models/doc_spec.rb[1:2:1] | passed | 0.13951 seconds |

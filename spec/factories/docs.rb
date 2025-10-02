@@ -1,23 +1,13 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :doc do
-    sourcedb { "PubMed" }
-    sequence(:sourceid) { |n| "PMD#{n.to_s.rjust(7, '0')}" }
-    body { "This is a test.\nTests are implemented.\nImplementation is difficult." }
+    sequence(:sourcedb) { |n| "TestDB#{n}" }
+    sequence(:sourceid) { |n| "doc_#{n}" }
+    body { "This is a test document body." }
 
-    trait :with_annotation do
-      after(:create) do |doc, _|
-        FactoryBotHelpers.create_annotations_for_doc(doc, accessibility: 1)
-      end
-    end
-
-    trait :with_private_annotation do
-      after(:create) do |doc, _|
-        FactoryBotHelpers.create_annotations_for_doc(doc, accessibility: 0)
-
-        # Create an accessible project without annotations
-        project2 = create(:project, accessibility: 1)
-        doc.project_docs.create(project: project2)
-      end
+    trait :with_long_body do
+      body { "This is a much longer test document body. " * 100 }
     end
   end
 end

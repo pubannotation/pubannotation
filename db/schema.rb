@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_27_201927) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_02_024636) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,6 +89,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_27_201927) do
     t.integer "project_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["project_id"], name: "index_blocks_on_project_id"
   end
 
   create_table "collection_projects", id: :serial, force: :cascade do |t|
