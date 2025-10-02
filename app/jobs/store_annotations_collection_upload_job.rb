@@ -255,31 +255,83 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 				updated_at: Time.current
 			)
 
-			# Update project_doc counts for all docs in this project
-			@project.project_docs.find_each do |project_doc|
-				doc_denotations = @project.denotations.where(doc_id: project_doc.doc_id).count
-				doc_blocks = @project.blocks.where(doc_id: project_doc.doc_id).count
-				doc_relations = @project.relations.where(doc_id: project_doc.doc_id).count
-
-				project_doc.update!(
-					denotations_num: doc_denotations,
-					blocks_num: doc_blocks,
-					relations_num: doc_relations
-				)
-
-				# Update the actual doc counts too
-				project_doc.doc.update!(
-					denotations_num: project_doc.doc.denotations.count,
-					blocks_num: project_doc.doc.blocks.count,
-					relations_num: project_doc.doc.relations.count,
-					projects_num: project_doc.doc.projects.count
-				)
-			end
+			# Update project_doc counts for all docs in this project using bulk operations
+			update_project_doc_counts_bulk
+			update_doc_counts_bulk
 
 			Rails.logger.info "[#{self.class.name}] Project stats updated: #{denotations_count} denotations, #{blocks_count} blocks, #{relations_count} relations"
 		rescue => e
 			Rails.logger.error "[#{self.class.name}] Failed to update project stats: #{e.message}"
 			# Don't re-raise - we want the job to complete even if stats update fails
+		end
+	end
+
+	def update_project_doc_counts_bulk
+		Rails.logger.info "[#{self.class.name}] Bulk updating project_doc counts..."
+
+		# Get counts grouped by doc_id in single queries
+		denotations_by_doc = @project.denotations.group(:doc_id).count
+		blocks_by_doc = @project.blocks.group(:doc_id).count
+		relations_by_doc = @project.relations.group(:doc_id).count
+
+		# Bulk update using SQL CASE statements
+		doc_ids = @project.project_docs.pluck(:doc_id)
+
+		if doc_ids.any?
+			sql = <<~SQL.squish
+				UPDATE project_docs
+				SET
+					denotations_num = CASE doc_id
+						#{doc_ids.map { |id| "WHEN #{id} THEN #{denotations_by_doc[id] || 0}" }.join(' ')}
+					END,
+					blocks_num = CASE doc_id
+						#{doc_ids.map { |id| "WHEN #{id} THEN #{blocks_by_doc[id] || 0}" }.join(' ')}
+					END,
+					relations_num = CASE doc_id
+						#{doc_ids.map { |id| "WHEN #{id} THEN #{relations_by_doc[id] || 0}" }.join(' ')}
+					END
+				WHERE project_id = #{@project.id}
+			SQL
+
+			ActiveRecord::Base.connection.execute(sql)
+			Rails.logger.info "[#{self.class.name}] Updated #{doc_ids.size} project_doc records"
+		end
+	end
+
+	def update_doc_counts_bulk
+		Rails.logger.info "[#{self.class.name}] Bulk updating doc counts..."
+
+		# Get all unique doc_ids for this project
+		doc_ids = @project.project_docs.pluck(:doc_id).uniq
+
+		if doc_ids.any?
+			# Get counts grouped by doc_id across ALL projects (not just this one)
+			denotations_by_doc = Denotation.where(doc_id: doc_ids).group(:doc_id).count
+			blocks_by_doc = Block.where(doc_id: doc_ids).group(:doc_id).count
+			relations_by_doc = Relation.where(doc_id: doc_ids).group(:doc_id).count
+			projects_by_doc = ProjectDoc.where(doc_id: doc_ids).group(:doc_id).count
+
+			# Bulk update using SQL CASE statements
+			sql = <<~SQL.squish
+				UPDATE docs
+				SET
+					denotations_num = CASE id
+						#{doc_ids.map { |id| "WHEN #{id} THEN #{denotations_by_doc[id] || 0}" }.join(' ')}
+					END,
+					blocks_num = CASE id
+						#{doc_ids.map { |id| "WHEN #{id} THEN #{blocks_by_doc[id] || 0}" }.join(' ')}
+					END,
+					relations_num = CASE id
+						#{doc_ids.map { |id| "WHEN #{id} THEN #{relations_by_doc[id] || 0}" }.join(' ')}
+					END,
+					projects_num = CASE id
+						#{doc_ids.map { |id| "WHEN #{id} THEN #{projects_by_doc[id] || 0}" }.join(' ')}
+					END
+				WHERE id IN (#{doc_ids.join(',')})
+			SQL
+
+			ActiveRecord::Base.connection.execute(sql)
+			Rails.logger.info "[#{self.class.name}] Updated #{doc_ids.size} doc records"
 		end
 	end
 
