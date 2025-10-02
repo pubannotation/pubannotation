@@ -893,15 +893,23 @@ class Doc < ActiveRecord::Base
 		if project
 			doc_ids = project.docs.pluck(:id)
 			return if doc_ids.empty?
-			doc_ids_str = doc_ids.join(',')
-			docs_where_clause = "AND docs.id IN (#{doc_ids_str})"
-			project_docs_where_clause = "AND project_docs.project_id=#{project.id}"
-		else
-			docs_where_clause = ""
-			project_docs_where_clause = ""
-		end
 
-		# the number of projects and annotations of each doc
+			# Use shared methods for bulk updates
+			bulk_update_docs_counts(doc_ids: doc_ids)
+			ProjectDoc.bulk_update_counts(project_id: project.id)
+		else
+			# Update all docs and project_docs
+			bulk_update_docs_counts
+			ProjectDoc.bulk_update_counts
+		end
+	end
+
+	# Shared method to bulk update annotation counts for docs table
+	# @param doc_ids [Array<Integer>, nil] Optional array of doc IDs to update. If nil, updates all docs.
+	def self.bulk_update_docs_counts(doc_ids: nil)
+		# Build WHERE clause - use AND since we always have a base WHERE condition
+		docs_where_clause = doc_ids.present? ? "AND docs.id IN (#{doc_ids.join(',')})" : ""
+
 		ActiveRecord::Base.connection.update <<~SQL.squish
 			UPDATE docs
 			SET
@@ -916,22 +924,6 @@ class Doc < ActiveRecord::Base
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id) b ON doc_list.id = b.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations GROUP BY doc_id) r ON doc_list.id = r.doc_id
 			WHERE docs.id = doc_list.id #{docs_where_clause}
-		SQL
-
-		# the number of annotations of each doc in each project
-		ActiveRecord::Base.connection.update <<~SQL.squish
-			UPDATE project_docs
-			SET
-				denotations_num = COALESCE(d.cnt, 0),
-				blocks_num = COALESCE(b.cnt, 0),
-				relations_num = COALESCE(r.cnt, 0)
-			FROM
-				project_docs pd_list
-				LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id, project_id) d ON pd_list.doc_id = d.doc_id AND pd_list.project_id = d.project_id
-				LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id, project_id) b ON pd_list.doc_id = b.doc_id AND pd_list.project_id = b.project_id
-				LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM relations GROUP BY doc_id, project_id) r ON pd_list.doc_id = r.doc_id AND pd_list.project_id = r.project_id
-			WHERE project_docs.doc_id = pd_list.doc_id AND project_docs.project_id = pd_list.project_id
-			#{project_docs_where_clause}
 		SQL
 	end
 

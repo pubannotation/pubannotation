@@ -268,47 +268,14 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 	def update_project_doc_counts_bulk
 		Rails.logger.info "[#{self.class.name}] Bulk updating project_doc counts..."
-
-		# Use GROUP BY + JOIN approach for efficient bulk update
-		sql = <<~SQL.squish
-			UPDATE project_docs
-			SET
-				denotations_num = COALESCE(d.cnt, 0),
-				blocks_num = COALESCE(b.cnt, 0),
-				relations_num = COALESCE(r.cnt, 0)
-			FROM
-				project_docs pd_list
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations WHERE project_id = #{@project.id} GROUP BY doc_id) d ON pd_list.doc_id = d.doc_id
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks WHERE project_id = #{@project.id} GROUP BY doc_id) b ON pd_list.doc_id = b.doc_id
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations WHERE project_id = #{@project.id} GROUP BY doc_id) r ON pd_list.doc_id = r.doc_id
-			WHERE project_docs.doc_id = pd_list.doc_id AND project_docs.project_id = pd_list.project_id AND project_docs.project_id = #{@project.id}
-		SQL
-
-		result = ActiveRecord::Base.connection.execute(sql)
+		ProjectDoc.bulk_update_counts(project_id: @project.id)
 		Rails.logger.info "[#{self.class.name}] Updated project_doc records for project #{@project.id}"
 	end
 
 	def update_doc_counts_bulk
 		Rails.logger.info "[#{self.class.name}] Bulk updating doc counts..."
-
-		# Use GROUP BY + JOIN approach for efficient bulk update
-		sql = <<~SQL.squish
-			UPDATE docs
-			SET
-				denotations_num = COALESCE(d.cnt, 0),
-				blocks_num = COALESCE(b.cnt, 0),
-				relations_num = COALESCE(r.cnt, 0),
-				projects_num = COALESCE(p.cnt, 0)
-			FROM
-				(SELECT DISTINCT doc_id FROM project_docs WHERE project_id = #{@project.id}) pd
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id) d ON pd.doc_id = d.doc_id
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id) b ON pd.doc_id = b.doc_id
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations GROUP BY doc_id) r ON pd.doc_id = r.doc_id
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM project_docs GROUP BY doc_id) p ON pd.doc_id = p.doc_id
-			WHERE docs.id = pd.doc_id
-		SQL
-
-		result = ActiveRecord::Base.connection.execute(sql)
+		doc_ids = @project.project_docs.pluck(:doc_id).uniq
+		Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
 		Rails.logger.info "[#{self.class.name}] Updated doc records for project #{@project.id}"
 	end
 

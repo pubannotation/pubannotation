@@ -1055,34 +1055,12 @@ class Project < ActiveRecord::Base
   end
 
   private def update_numbers_for_flagged_docs(count_diff_denotations, count_diff_blocks, count_diff_relations, count_diff_attrivutes)
-    ActiveRecord::Base.connection.update <<~SQL.squish
-      UPDATE project_docs
-      SET
-        denotations_num = COALESCE(d.cnt, 0),
-        blocks_num = COALESCE(b.cnt, 0),
-        relations_num = COALESCE(r.cnt, 0),
-        annotations_updated_at = CURRENT_TIMESTAMP
-      FROM
-        project_docs pd_list
-        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id, project_id) d ON pd_list.doc_id = d.doc_id AND pd_list.project_id = d.project_id
-        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id, project_id) b ON pd_list.doc_id = b.doc_id AND pd_list.project_id = b.project_id
-        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM relations GROUP BY doc_id, project_id) r ON pd_list.doc_id = r.doc_id AND pd_list.project_id = r.project_id
-      WHERE project_docs.doc_id = pd_list.doc_id AND project_docs.project_id = pd_list.project_id AND project_docs.flag = true
-    SQL
+    # Update project_docs for flagged docs using shared method
+    ProjectDoc.bulk_update_counts(flagged_only: true, update_timestamp: true)
 
-    ActiveRecord::Base.connection.update <<~SQL.squish
-      UPDATE docs
-      SET
-        denotations_num = COALESCE(d.cnt, 0),
-        blocks_num = COALESCE(b.cnt, 0),
-        relations_num = COALESCE(r.cnt, 0)
-      FROM
-        (SELECT doc_id FROM project_docs WHERE flag = true) pd
-        LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id) d ON pd.doc_id = d.doc_id
-        LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id) b ON pd.doc_id = b.doc_id
-        LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations GROUP BY doc_id) r ON pd.doc_id = r.doc_id
-      WHERE docs.id = pd.doc_id
-    SQL
+    # Update docs for flagged docs using shared method
+    doc_ids = ProjectDoc.where(flag: true).pluck(:doc_id).uniq
+    Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
 
     ActiveRecord::Base.connection.update <<~SQL.squish
       UPDATE projects
@@ -1174,20 +1152,9 @@ class Project < ActiveRecord::Base
           WHERE project_id=#{id}
         SQL
 
-        # update annotation counts for each doc
-        ActiveRecord::Base.connection.update <<~SQL.squish
-          UPDATE docs
-          SET
-            denotations_num = COALESCE(d.cnt, 0),
-            blocks_num = COALESCE(b.cnt, 0),
-            relations_num = COALESCE(r.cnt, 0)
-          FROM
-            (SELECT doc_id FROM project_docs WHERE project_id = #{id}) pd
-            LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id) d ON pd.doc_id = d.doc_id
-            LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id) b ON pd.doc_id = b.doc_id
-            LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations GROUP BY doc_id) r ON pd.doc_id = r.doc_id
-          WHERE docs.id = pd.doc_id
-        SQL
+        # update annotation counts for each doc using shared method
+        doc_ids = project_docs.pluck(:doc_id)
+        Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
 
         update_annotations_updated_at
         update_updated_at
