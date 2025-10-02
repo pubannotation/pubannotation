@@ -1055,11 +1055,11 @@ class Project < ActiveRecord::Base
   end
 
   private def update_numbers_for_flagged_docs(count_diff_denotations, count_diff_blocks, count_diff_relations, count_diff_attrivutes)
-    # Update project_docs for flagged docs using shared method
-    ProjectDoc.bulk_update_counts(flagged_only: true, update_timestamp: true)
+    # Update project_docs for flagged docs using shared method (only for THIS project)
+    ProjectDoc.bulk_update_counts(project_id: id, flagged_only: true, update_timestamp: true)
 
-    # Update docs for flagged docs using shared method
-    doc_ids = ProjectDoc.where(flag: true).pluck(:doc_id).uniq
+    # Update docs for flagged docs using shared method (only for THIS project's flagged docs)
+    doc_ids = ProjectDoc.where(project_id: id, flag: true).pluck(:doc_id).uniq
     Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
 
     ActiveRecord::Base.connection.update <<~SQL.squish

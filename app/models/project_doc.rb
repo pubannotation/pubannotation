@@ -179,17 +179,23 @@ class ProjectDoc < ActiveRecord::Base
   # @param flagged_only [Boolean] If true, only update records where flag=true
   # @param update_timestamp [Boolean] If true, update annotations_updated_at timestamp
   def self.bulk_update_counts(project_id: nil, doc_ids: nil, flagged_only: false, update_timestamp: false)
-    # Build WHERE clause components
-    where_conditions = []
-    where_conditions << "project_docs.project_id = #{project_id}" if project_id.present?
-    where_conditions << "project_docs.doc_id IN (#{doc_ids.join(',')})" if doc_ids.present?
-    where_conditions << "project_docs.flag = true" if flagged_only
+    # Build WHERE clause components for pd_list subquery filtering
+    pd_list_where_conditions = []
+    pd_list_where_conditions << "project_docs.project_id = #{project_id}" if project_id.present?
+    pd_list_where_conditions << "project_docs.doc_id IN (#{doc_ids.join(',')})" if doc_ids.present?
+    pd_list_where_conditions << "project_docs.flag = true" if flagged_only
 
-    # Combine conditions - use AND to append to the base WHERE condition
-    project_docs_where_clause = where_conditions.any? ? "AND #{where_conditions.join(' AND ')}" : ""
+    # Combine conditions for pd_list subquery
+    pd_list_where_clause = pd_list_where_conditions.any? ? "WHERE #{pd_list_where_conditions.join(' AND ')}" : ""
 
     # Add timestamp update if requested
     timestamp_update = update_timestamp ? ", annotations_updated_at = CURRENT_TIMESTAMP" : ""
+
+    # Build outer WHERE clause - must also include same filters to ensure consistency
+    outer_where_conditions = ["project_docs.doc_id = pd_list.doc_id", "project_docs.project_id = pd_list.project_id"]
+    outer_where_conditions << "project_docs.project_id = #{project_id}" if project_id.present?
+    outer_where_conditions << "project_docs.doc_id IN (#{doc_ids.join(',')})" if doc_ids.present?
+    outer_where_conditions << "project_docs.flag = true" if flagged_only
 
     ActiveRecord::Base.connection.update <<~SQL.squish
       UPDATE project_docs
@@ -199,12 +205,11 @@ class ProjectDoc < ActiveRecord::Base
         relations_num = COALESCE(r.cnt, 0)
         #{timestamp_update}
       FROM
-        project_docs pd_list
+        (SELECT * FROM project_docs #{pd_list_where_clause}) pd_list
         LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id, project_id) d ON pd_list.doc_id = d.doc_id AND pd_list.project_id = d.project_id
         LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id, project_id) b ON pd_list.doc_id = b.doc_id AND pd_list.project_id = b.project_id
         LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM relations GROUP BY doc_id, project_id) r ON pd_list.doc_id = r.doc_id AND pd_list.project_id = r.project_id
-      WHERE project_docs.doc_id = pd_list.doc_id AND project_docs.project_id = pd_list.project_id
-      #{project_docs_where_clause}
+      WHERE #{outer_where_conditions.join(' AND ')}
     SQL
   end
 
