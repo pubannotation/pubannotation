@@ -3,6 +3,7 @@
 FactoryBot.define do
   factory :project do
     sequence(:name) { |n| "test_project_#{n}" }
+    association :user
     accessibility { 1 } # Public
 
     trait :private do
