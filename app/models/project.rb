@@ -1058,20 +1058,30 @@ class Project < ActiveRecord::Base
     ActiveRecord::Base.connection.update <<~SQL.squish
       UPDATE project_docs
       SET
-        denotations_num = (SELECT count(*) FROM denotations WHERE denotations.doc_id = project_docs.doc_id AND denotations.project_id = project_docs.project_id),
-        blocks_num = (SELECT count(*) FROM blocks WHERE blocks.doc_id = project_docs.doc_id AND blocks.project_id = project_docs.project_id),
-        relations_num = (SELECT count(*) FROM relations WHERE relations.doc_id = project_docs.doc_id AND relations.project_id = project_docs.project_id),
+        denotations_num = COALESCE(d.cnt, 0),
+        blocks_num = COALESCE(b.cnt, 0),
+        relations_num = COALESCE(r.cnt, 0),
         annotations_updated_at = CURRENT_TIMESTAMP
-      WHERE flag = true
+      FROM
+        project_docs pd_list
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id, project_id) d ON pd_list.doc_id = d.doc_id AND pd_list.project_id = d.project_id
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id, project_id) b ON pd_list.doc_id = b.doc_id AND pd_list.project_id = b.project_id
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM relations GROUP BY doc_id, project_id) r ON pd_list.doc_id = r.doc_id AND pd_list.project_id = r.project_id
+      WHERE project_docs.doc_id = pd_list.doc_id AND project_docs.project_id = pd_list.project_id AND project_docs.flag = true
     SQL
 
     ActiveRecord::Base.connection.update <<~SQL.squish
       UPDATE docs
       SET
-        denotations_num = (SELECT count(*) FROM denotations WHERE denotations.doc_id = docs.id),
-        blocks_num = (SELECT count(*) FROM blocks WHERE blocks.doc_id = docs.id),
-        relations_num = (SELECT count(*) FROM relations WHERE relations.doc_id = docs.id)
-      WHERE id IN (SELECT doc_id FROM project_docs WHERE project_docs.flag = true)
+        denotations_num = COALESCE(d.cnt, 0),
+        blocks_num = COALESCE(b.cnt, 0),
+        relations_num = COALESCE(r.cnt, 0)
+      FROM
+        (SELECT doc_id FROM project_docs WHERE flag = true) pd
+        LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id) d ON pd.doc_id = d.doc_id
+        LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id) b ON pd.doc_id = b.doc_id
+        LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations GROUP BY doc_id) r ON pd.doc_id = r.doc_id
+      WHERE docs.id = pd.doc_id
     SQL
 
     ActiveRecord::Base.connection.update <<~SQL.squish
@@ -1168,10 +1178,15 @@ class Project < ActiveRecord::Base
         ActiveRecord::Base.connection.update <<~SQL.squish
           UPDATE docs
           SET
-            denotations_num = (SELECT count(*) FROM denotations WHERE doc_id = docs.id),
-            blocks_num =  (SELECT count(*) FROM blocks WHERE doc_id = docs.id),
-            relations_num =  (SELECT count(*) FROM relations WHERE doc_id = docs.id)
-          WHERE id IN (SELECT doc_id FROM project_docs WHERE project_id=#{id})
+            denotations_num = COALESCE(d.cnt, 0),
+            blocks_num = COALESCE(b.cnt, 0),
+            relations_num = COALESCE(r.cnt, 0)
+          FROM
+            (SELECT doc_id FROM project_docs WHERE project_id = #{id}) pd
+            LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id) d ON pd.doc_id = d.doc_id
+            LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id) b ON pd.doc_id = b.doc_id
+            LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations GROUP BY doc_id) r ON pd.doc_id = r.doc_id
+          WHERE docs.id = pd.doc_id
         SQL
 
         update_annotations_updated_at

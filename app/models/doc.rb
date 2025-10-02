@@ -894,8 +894,8 @@ class Doc < ActiveRecord::Base
 			doc_ids = project.docs.pluck(:id)
 			return if doc_ids.empty?
 			doc_ids_str = doc_ids.join(',')
-			docs_where_clause = "WHERE docs.id IN (#{doc_ids_str})"
-			project_docs_where_clause = "WHERE project_docs.project_id=#{project.id}"
+			docs_where_clause = "AND docs.id IN (#{doc_ids_str})"
+			project_docs_where_clause = "AND project_docs.project_id=#{project.id}"
 		else
 			docs_where_clause = ""
 			project_docs_where_clause = ""
@@ -904,19 +904,33 @@ class Doc < ActiveRecord::Base
 		# the number of projects and annotations of each doc
 		ActiveRecord::Base.connection.update <<~SQL.squish
 			UPDATE docs
-			SET	projects_num=(SELECT count(*) FROM project_docs WHERE project_docs.doc_id=docs.id),
-				denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=docs.id),
-				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=docs.id),
-				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=docs.id)
-			#{docs_where_clause}
+			SET
+				projects_num = COALESCE(p.cnt, 0),
+				denotations_num = COALESCE(d.cnt, 0),
+				blocks_num = COALESCE(b.cnt, 0),
+				relations_num = COALESCE(r.cnt, 0)
+			FROM
+				docs doc_list
+				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM project_docs GROUP BY doc_id) p ON doc_list.id = p.doc_id
+				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id) d ON doc_list.id = d.doc_id
+				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id) b ON doc_list.id = b.doc_id
+				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations GROUP BY doc_id) r ON doc_list.id = r.doc_id
+			WHERE docs.id = doc_list.id #{docs_where_clause}
 		SQL
 
 		# the number of annotations of each doc in each project
 		ActiveRecord::Base.connection.update <<~SQL.squish
 			UPDATE project_docs
-			SET denotations_num=(SELECT count(*) FROM denotations WHERE denotations.doc_id=project_docs.doc_id AND denotations.project_id=project_docs.project_id),
-				blocks_num=(SELECT count(*) FROM blocks WHERE blocks.doc_id=project_docs.doc_id AND blocks.project_id=project_docs.project_id),
-				relations_num=(SELECT count(*) FROM relations WHERE relations.doc_id=project_docs.doc_id AND relations.project_id=project_docs.project_id)
+			SET
+				denotations_num = COALESCE(d.cnt, 0),
+				blocks_num = COALESCE(b.cnt, 0),
+				relations_num = COALESCE(r.cnt, 0)
+			FROM
+				project_docs pd_list
+				LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id, project_id) d ON pd_list.doc_id = d.doc_id AND pd_list.project_id = d.project_id
+				LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id, project_id) b ON pd_list.doc_id = b.doc_id AND pd_list.project_id = b.project_id
+				LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM relations GROUP BY doc_id, project_id) r ON pd_list.doc_id = r.doc_id AND pd_list.project_id = r.project_id
+			WHERE project_docs.doc_id = pd_list.doc_id AND project_docs.project_id = pd_list.project_id
 			#{project_docs_where_clause}
 		SQL
 	end
