@@ -5,9 +5,14 @@ require 'ostruct'
 class ProcessAnnotationsBatchJob < ApplicationJob
   queue_as :general  # Different queue to avoid competing with parent job
 
-  def perform(project, annotation_transaction, options, parent_job_id)
+  def perform(project, annotation_transaction, options, parent_job_id, tracking_id)
     start_time = Time.current
     @parent_job_id = parent_job_id
+    @tracking_id = tracking_id
+
+    # Load tracking record and mark as running
+    @tracking = BatchJobTracking.find(@tracking_id)
+    @tracking.mark_running!
 
     # Set thread-local variable to enable batch processing optimizations
     Thread.current[:skip_annotation_callbacks] = true
@@ -48,7 +53,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     end
 
     num_failed_annotations = transaction_size_remaining - valid_annotations.size
-    increment_parent_progress(num_failed_annotations) if num_failed_annotations > 0
+    # Note: No need to increment parent progress - parent tracks via tracking table
     transaction_size_remaining = valid_annotations.size
 
     if valid_annotations.any?
@@ -59,7 +64,6 @@ class ProcessAnnotationsBatchJob < ApplicationJob
 
       # Keep simple message handling to avoid serialization
       alignment_messages.each { |message| parent_job.add_message(message) }
-      increment_parent_progress(transaction_size_remaining)
     end
 
     # Report any docs that need replacement cleanup to parent job
@@ -76,25 +80,38 @@ class ProcessAnnotationsBatchJob < ApplicationJob
 
     Rails.logger.info "[#{self.class.name}] Total job time: #{Time.current - start_time}s (#{annotation_transaction.size} annotations)"
 
+    # Mark tracking as completed
+    @tracking.mark_completed!
+
   rescue Exceptions::JobSuspendError => e
     Rails.logger.info "[#{self.class.name}] Child job suspended gracefully"
-    # Don't log as error - suspension is expected behavior
-    # Still increment progress to maintain parent job tracking
-    increment_parent_progress(transaction_size_remaining)
+    # Mark as failed with suspension message
+    @tracking&.update!(
+      status: 'failed',
+      error_message: 'Job suspended by user request',
+      completed_at: Time.current
+    )
     raise e  # Re-raise to maintain suspension behavior
   rescue => e
+    Rails.logger.error "[#{self.class.name}] Batch processing error: #{e.class} - #{e.message}"
+
     message  = "Batch processing error: #{e.class} - #{e.message}"
-    message += ": #{e.backtrace}" if e.backtrace
+    message += "\n#{e.backtrace&.first(10)&.join("\n")}" if e.backtrace
 
     parent_job.add_message(
       sourcedb: '*',
       sourceid: ['batch_error'],
       body: message
     )
-    increment_parent_progress(transaction_size_remaining)
+
+    # Mark tracking as failed
+    @tracking&.mark_failed!(e)
+
+    raise  # Re-raise to allow Sidekiq to handle retry logic
   ensure
     # Clear thread-local variable
     Thread.current[:skip_annotation_callbacks] = nil
+    Thread.current[:docs_needing_replacement] = nil
   end
 
   def job_name
@@ -206,10 +223,6 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     end
 
     doc_specs_missing
-  end
-
-  def increment_parent_progress(batch_size)
-    parent_job.increment!(:num_dones, batch_size)
   end
 
   def batch_add_messages(messages)
