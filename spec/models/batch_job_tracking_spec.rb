@@ -13,12 +13,24 @@ RSpec.describe BatchJobTracking, type: :model do
   end
 
   describe 'associations' do
-    it { should belong_to(:parent_job).class_name('Job') }
+    it 'belongs to parent_job' do
+      expect(tracking.parent_job).to eq(parent_job)
+    end
   end
 
   describe 'validations' do
-    it { should validate_inclusion_of(:status).in_array(BatchJobTracking::STATUSES) }
-    it { should validate_presence_of(:parent_job_id) }
+    it 'validates status is in STATUSES list' do
+      valid_tracking = build(:batch_job_tracking, parent_job: parent_job, status: 'completed')
+      expect(valid_tracking).to be_valid
+
+      invalid_tracking = build(:batch_job_tracking, parent_job: parent_job, status: 'invalid_status')
+      expect(invalid_tracking).not_to be_valid
+    end
+
+    it 'validates presence of parent_job_id' do
+      tracking = build(:batch_job_tracking, parent_job_id: nil)
+      expect(tracking).not_to be_valid
+    end
 
     it 'validates item_count is greater than 0' do
       tracking = build(:batch_job_tracking, item_count: 0)

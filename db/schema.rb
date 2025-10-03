@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_02_024636) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_03_130937) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_024636) do
     t.index ["obj"], name: "index_attrivutes_on_obj"
     t.index ["project_id"], name: "index_attrivutes_on_project_id"
     t.index ["subj_id"], name: "index_attrivutes_on_subj_id"
+  end
+
+  create_table "batch_job_trackings", force: :cascade do |t|
+    t.bigint "parent_job_id", null: false
+    t.string "child_job_id"
+    t.string "status", default: "pending", null: false
+    t.json "doc_identifiers", default: [], null: false
+    t.integer "item_count", default: 0, null: false
+    t.text "error_message"
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["child_job_id"], name: "index_batch_tracking_on_child_job"
+    t.index ["created_at"], name: "index_batch_tracking_on_created_at"
+    t.index ["parent_job_id", "status"], name: "index_batch_tracking_on_parent_and_status"
+    t.index ["parent_job_id"], name: "index_batch_tracking_on_parent_job"
   end
 
   create_table "blocks", force: :cascade do |t|
@@ -446,6 +463,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_024636) do
   add_foreign_key "annotation_receptions", "jobs"
   add_foreign_key "annotation_receptions", "projects"
   add_foreign_key "attrivutes", "docs"
+  add_foreign_key "batch_job_trackings", "jobs", column: "parent_job_id", on_delete: :cascade
   add_foreign_key "paragraph_attrivutes", "attrivutes"
   add_foreign_key "paragraph_attrivutes", "divisions"
   add_foreign_key "paragraph_denotations", "denotations"
