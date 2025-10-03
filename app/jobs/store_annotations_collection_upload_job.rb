@@ -28,7 +28,11 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		# Wait for all batch jobs to complete (parent now monitors children)
 		wait_for_batch_jobs_completion
 	rescue Exceptions::JobSuspendError => e
-		Rails.logger.warn "[#{self.class.name}] Job suspended - updating project stats to reflect partial progress"
+		Rails.logger.warn "[#{self.class.name}] Job suspended - updating progress counter and project stats"
+
+		# Update progress counter to show how far we got
+		update_progress_from_tracking
+
 		# Update project stats to match current database state, even though job is incomplete
 		update_final_project_stats
 		raise e  # Re-raise to maintain suspension behavior
