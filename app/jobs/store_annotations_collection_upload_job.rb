@@ -187,8 +187,23 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 		def wait_for_queue_space
 			while general_queue_size >= StoreAnnotationsCollectionUploadJob::MAX_CONCURRENT_JOBS
+				# Update progress while waiting for queue space
+				update_progress_from_tracking
+
 				Rails.logger.info "[#{self.class.name}] Waiting for queue space (#{general_queue_size} jobs queued)..."
 				sleep(0.2) # Reduced sleep time for faster job dispatching
+			end
+		end
+
+		def update_progress_from_tracking
+			return unless @job_id
+
+			stats = BatchJobTracking.stats_for_parent(@job_id)
+			completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
+			total_items = stats.values.sum
+
+			if total_items > 0
+				Job.find(@job_id).update!(num_dones: completed_items, num_items: total_items)
 			end
 		end
 
