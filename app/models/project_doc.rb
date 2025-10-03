@@ -179,6 +179,26 @@ class ProjectDoc < ActiveRecord::Base
   # @param flagged_only [Boolean] If true, only update records where flag=true
   # @param update_timestamp [Boolean] If true, update annotations_updated_at timestamp
   def self.bulk_update_counts(project_id: nil, doc_ids: nil, flagged_only: false, update_timestamp: false)
+    return if doc_ids&.empty?
+
+    # For large doc_ids arrays, use batching or temp table strategy
+    if doc_ids.present? && doc_ids.size >= 5000
+      if doc_ids.size < 100000
+        # Medium batch - process in chunks
+        doc_ids.each_slice(5000) do |batch|
+          bulk_update_counts_impl(project_id: project_id, doc_ids: batch, flagged_only: flagged_only, update_timestamp: update_timestamp)
+        end
+      else
+        # Large batch - use temp table
+        bulk_update_counts_with_temp_table(project_id: project_id, doc_ids: doc_ids, flagged_only: flagged_only, update_timestamp: update_timestamp)
+      end
+    else
+      # Small batch or no doc_ids filter - use direct approach
+      bulk_update_counts_impl(project_id: project_id, doc_ids: doc_ids, flagged_only: flagged_only, update_timestamp: update_timestamp)
+    end
+  end
+
+  private_class_method def self.bulk_update_counts_impl(project_id: nil, doc_ids: nil, flagged_only: false, update_timestamp: false)
     # Build WHERE clause components for pd_list subquery filtering
     pd_list_where_conditions = []
     pd_list_where_conditions << "project_docs.project_id = #{project_id}" if project_id.present?
@@ -187,6 +207,21 @@ class ProjectDoc < ActiveRecord::Base
 
     # Combine conditions for pd_list subquery
     pd_list_where_clause = pd_list_where_conditions.any? ? "WHERE #{pd_list_where_conditions.join(' AND ')}" : ""
+
+    # Build WHERE clause for aggregation subqueries to avoid full table scans
+    agg_where_conditions = []
+    agg_where_conditions << "project_id = #{project_id}" if project_id.present?
+    agg_where_conditions << "doc_id IN (#{doc_ids.join(',')})" if doc_ids.present?
+
+    # For flagged_only, we need to check against project_docs table
+    if flagged_only
+      flagged_filter = "EXISTS (SELECT 1 FROM project_docs pd_flag WHERE pd_flag.doc_id = doc_id AND pd_flag.project_id = project_id AND pd_flag.flag = true"
+      flagged_filter += " AND pd_flag.project_id = #{project_id}" if project_id.present?
+      flagged_filter += ")"
+      agg_where_conditions << flagged_filter
+    end
+
+    agg_where_clause = agg_where_conditions.any? ? "WHERE #{agg_where_conditions.join(' AND ')}" : ""
 
     # Add timestamp update if requested
     timestamp_update = update_timestamp ? ", annotations_updated_at = CURRENT_TIMESTAMP" : ""
@@ -206,11 +241,68 @@ class ProjectDoc < ActiveRecord::Base
         #{timestamp_update}
       FROM
         (SELECT * FROM project_docs #{pd_list_where_clause}) pd_list
-        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id, project_id) d ON pd_list.doc_id = d.doc_id AND pd_list.project_id = d.project_id
-        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id, project_id) b ON pd_list.doc_id = b.doc_id AND pd_list.project_id = b.project_id
-        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM relations GROUP BY doc_id, project_id) r ON pd_list.doc_id = r.doc_id AND pd_list.project_id = r.project_id
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM denotations #{agg_where_clause} GROUP BY doc_id, project_id) d ON pd_list.doc_id = d.doc_id AND pd_list.project_id = d.project_id
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM blocks #{agg_where_clause} GROUP BY doc_id, project_id) b ON pd_list.doc_id = b.doc_id AND pd_list.project_id = b.project_id
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM relations #{agg_where_clause} GROUP BY doc_id, project_id) r ON pd_list.doc_id = r.doc_id AND pd_list.project_id = r.project_id
       WHERE #{outer_where_conditions.join(' AND ')}
     SQL
+  end
+
+  private_class_method def self.bulk_update_counts_with_temp_table(project_id: nil, doc_ids: nil, flagged_only: false, update_timestamp: false)
+    conn = ActiveRecord::Base.connection
+
+    conn.execute("CREATE TEMP TABLE IF NOT EXISTS temp_project_doc_ids (doc_id INTEGER) ON COMMIT DROP")
+
+    # Insert doc_ids in batches
+    doc_ids.each_slice(10000) do |batch|
+      values = batch.map { |id| "(#{id})" }.join(',')
+      conn.execute("INSERT INTO temp_project_doc_ids (doc_id) VALUES #{values}")
+    end
+
+    # Build WHERE conditions using temp table
+    pd_list_where_conditions = []
+    pd_list_where_conditions << "project_docs.project_id = #{project_id}" if project_id.present?
+    pd_list_where_conditions << "project_docs.doc_id IN (SELECT doc_id FROM temp_project_doc_ids)"
+    pd_list_where_conditions << "project_docs.flag = true" if flagged_only
+    pd_list_where_clause = "WHERE #{pd_list_where_conditions.join(' AND ')}"
+
+    # Build aggregation WHERE clause using temp table
+    agg_where_conditions = []
+    agg_where_conditions << "project_id = #{project_id}" if project_id.present?
+    agg_where_conditions << "doc_id IN (SELECT doc_id FROM temp_project_doc_ids)"
+
+    if flagged_only
+      flagged_filter = "EXISTS (SELECT 1 FROM project_docs pd_flag WHERE pd_flag.doc_id = doc_id AND pd_flag.project_id = project_id AND pd_flag.flag = true"
+      flagged_filter += " AND pd_flag.project_id = #{project_id}" if project_id.present?
+      flagged_filter += ")"
+      agg_where_conditions << flagged_filter
+    end
+
+    agg_where_clause = "WHERE #{agg_where_conditions.join(' AND ')}"
+
+    timestamp_update = update_timestamp ? ", annotations_updated_at = CURRENT_TIMESTAMP" : ""
+
+    outer_where_conditions = ["project_docs.doc_id = pd_list.doc_id", "project_docs.project_id = pd_list.project_id"]
+    outer_where_conditions << "project_docs.project_id = #{project_id}" if project_id.present?
+    outer_where_conditions << "project_docs.doc_id IN (SELECT doc_id FROM temp_project_doc_ids)"
+    outer_where_conditions << "project_docs.flag = true" if flagged_only
+
+    conn.update <<~SQL.squish
+      UPDATE project_docs
+      SET
+        denotations_num = COALESCE(d.cnt, 0),
+        blocks_num = COALESCE(b.cnt, 0),
+        relations_num = COALESCE(r.cnt, 0)
+        #{timestamp_update}
+      FROM
+        (SELECT * FROM project_docs #{pd_list_where_clause}) pd_list
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM denotations #{agg_where_clause} GROUP BY doc_id, project_id) d ON pd_list.doc_id = d.doc_id AND pd_list.project_id = d.project_id
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM blocks #{agg_where_clause} GROUP BY doc_id, project_id) b ON pd_list.doc_id = b.doc_id AND pd_list.project_id = b.project_id
+        LEFT JOIN (SELECT doc_id, project_id, COUNT(*) as cnt FROM relations #{agg_where_clause} GROUP BY doc_id, project_id) r ON pd_list.doc_id = r.doc_id AND pd_list.project_id = r.project_id
+      WHERE #{outer_where_conditions.join(' AND ')}
+    SQL
+
+    # Temp table is automatically dropped on commit
   end
 
 private
