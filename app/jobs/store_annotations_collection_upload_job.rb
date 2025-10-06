@@ -169,6 +169,19 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		def flush_batch
 			return unless @annotation_transaction.any?
 
+			# If no parent job (immediate execution), process directly without batch tracking
+			if @job_id.nil?
+				ProcessAnnotationsBatchJob.perform_now(
+					@project,
+					@annotation_transaction,
+					@options,
+					nil,  # No parent job
+					nil   # No tracking
+				)
+				reset_batch
+				return
+			end
+
 			# Throttle job creation - wait if queue is full
 			wait_for_queue_space
 
@@ -297,6 +310,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	end
 
 	def wait_for_batch_jobs_completion
+		# If no parent job (immediate execution), batches were processed synchronously - nothing to wait for
+		return unless @job
+
 		Rails.logger.info "[#{self.class.name}] Waiting for batch jobs to complete..."
 
 		last_stats_update = Time.current
