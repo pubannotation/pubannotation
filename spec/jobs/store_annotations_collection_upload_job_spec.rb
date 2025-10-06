@@ -23,8 +23,8 @@ RSpec.describe StoreAnnotationsCollectionUploadJob, type: :job do
       create_list(:block, 2, project: project, doc: doc2)
     end
 
-    it 'update_project_doc_counts_bulk updates all project_docs for the project' do
-      job_instance.send(:update_project_doc_counts_bulk)
+    it 'project.update_annotation_stats_from_database updates project_docs for the project' do
+      project.update_annotation_stats_from_database
 
       project_doc1.reload
       expect(project_doc1.denotations_num).to eq(5)
@@ -35,8 +35,8 @@ RSpec.describe StoreAnnotationsCollectionUploadJob, type: :job do
       expect(project_doc2.blocks_num).to eq(2)
     end
 
-    it 'update_doc_counts_bulk updates all docs for the project' do
-      job_instance.send(:update_doc_counts_bulk)
+    it 'project.update_annotation_stats_from_database updates docs for the project' do
+      project.update_annotation_stats_from_database
 
       doc1.reload
       expect(doc1.denotations_num).to eq(5)
@@ -48,9 +48,6 @@ RSpec.describe StoreAnnotationsCollectionUploadJob, type: :job do
     end
 
     it 'update_final_project_stats updates project counters from database' do
-      # Mock process_deferred_replacements to skip that part
-      allow(job_instance).to receive(:process_deferred_replacements)
-
       job_instance.send(:update_final_project_stats)
 
       project.reload
@@ -60,8 +57,6 @@ RSpec.describe StoreAnnotationsCollectionUploadJob, type: :job do
     end
 
     it 'update_final_project_stats updates all three tables' do
-      allow(job_instance).to receive(:process_deferred_replacements)
-
       job_instance.send(:update_final_project_stats)
 
       # Verify project
@@ -89,8 +84,6 @@ RSpec.describe StoreAnnotationsCollectionUploadJob, type: :job do
     end
 
     it 'maintains cross-table consistency after update' do
-      allow(job_instance).to receive(:process_deferred_replacements)
-
       job_instance.send(:update_final_project_stats)
 
       # Verify consistency: doc count = sum of its project_docs
@@ -110,8 +103,6 @@ RSpec.describe StoreAnnotationsCollectionUploadJob, type: :job do
     end
 
     it 'updates counters correctly when annotations are added incrementally' do
-      allow(job_instance).to receive(:process_deferred_replacements)
-
       # Initial update
       job_instance.send(:update_final_project_stats)
 
@@ -136,7 +127,6 @@ RSpec.describe StoreAnnotationsCollectionUploadJob, type: :job do
 
       empty_job = described_class.new
       empty_job.instance_variable_set(:@project, empty_project)
-      allow(empty_job).to receive(:process_deferred_replacements)
 
       expect {
         empty_job.send(:update_final_project_stats)
@@ -156,7 +146,6 @@ RSpec.describe StoreAnnotationsCollectionUploadJob, type: :job do
 
       job_instance = described_class.new
       job_instance.instance_variable_set(:@project, project)
-      allow(job_instance).to receive(:process_deferred_replacements)
 
       job_instance.send(:update_final_project_stats)
 

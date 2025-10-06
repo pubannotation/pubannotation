@@ -48,6 +48,13 @@ GIT
       kaminari
       rails (>= 7.0)
 
+PATH
+  remote: /home/jdkim/dev/text_alignment
+  specs:
+    text_alignment (0.12.11)
+      ruby-dictionary (~> 1.1, >= 1.1.1)
+      string-similarity (~> 2.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -409,9 +416,6 @@ GEM
     tao_rdfizer (0.12)
     terser (1.2.6)
       execjs (>= 0.3.0, < 3)
-    text_alignment (0.12.10)
-      ruby-dictionary (~> 1.1, >= 1.1.1)
-      string-similarity (~> 2.1)
     thor (1.4.0)
     timeout (0.4.3)
     tzinfo (2.0.6)
@@ -493,7 +497,7 @@ DEPENDENCIES
   stardog-rb!
   tao_rdfizer (~> 0.12)
   terser
-  text_alignment (~> 0.12.10)
+  text_alignment!
   unicorn
   web-console
   wice_grid!

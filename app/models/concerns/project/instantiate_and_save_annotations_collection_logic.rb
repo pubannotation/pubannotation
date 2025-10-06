@@ -4,20 +4,12 @@ module Project::InstantiateAndSaveAnnotationsCollectionLogic
   extend ActiveSupport::Concern
 
   def pretreatment_according_to(options, document, annotations)
-    batch_processing = options[:batch_processing]
-    Rails.logger.info "[#{self.class.name}] pretreatment_according_to: mode=#{options[:mode]}, batch_processing=#{batch_processing}, doc_id=#{document.id}"
+    Rails.logger.info "[#{self.class.name}] pretreatment_according_to: mode=#{options[:mode]}, doc_id=#{document.id}"
 
     if options[:mode] == 'replace'
-      # Defer delete operations during batch processing - handled in parent job for replace mode
-      if batch_processing
-        # Store the fact that this document needs replacement for parent job cleanup
-        Thread.current[:docs_needing_replacement] ||= Set.new
-        Thread.current[:docs_needing_replacement] << document.id
-        Rails.logger.info "[#{self.class.name}] Deferring replacement for doc #{document.id} - will be handled in parent job"
-      else
-        Rails.logger.info "[#{self.class.name}] Performing immediate replacement for doc #{document.id}"
-        self.delete_doc_annotations_optimized document
-      end
+      # Delete existing annotations immediately (fast with composite indexes)
+      Rails.logger.info "[#{self.class.name}] Performing replacement for doc #{document.id}"
+      self.delete_doc_annotations_optimized document
     else
       case options[:mode]
       when 'add'
@@ -69,15 +61,9 @@ module Project::InstantiateAndSaveAnnotationsCollectionLogic
   end
 
   def delete_doc_annotations_optimized(doc)
-    # Skip delete operations during batch processing - will be handled in parent job
-    if Thread.current[:skip_annotation_callbacks]
-      Rails.logger.info "[#{self.class.name}] Skipping delete_doc_annotations for doc #{doc.id} during batch processing"
-      return
-    end
-
     # Use a single transaction with all deletes to reduce lock time
+    # Fast with composite indexes on (project_id, doc_id)
     ActiveRecord::Base.transaction do
-      # Use delete_all instead of connection.update for better ActiveRecord optimization
       Denotation.where(project_id: self.id, doc_id: doc.id).delete_all
       Block.where(project_id: self.id, doc_id: doc.id).delete_all
       Relation.where(project_id: self.id, doc_id: doc.id).delete_all

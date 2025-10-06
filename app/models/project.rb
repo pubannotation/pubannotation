@@ -434,7 +434,7 @@ class Project < ActiveRecord::Base
     [num_docs_added, docs_sequenced.length, messages]
   end
 
-  def add_docs_from_array(doc_specs)
+  def add_docs_from_array(doc_specs, batch_processing: false)
     # Process array format: [{sourcedb: "...", sourceid: "..."}, ...]
     # Group by sourcedb
     doc_specs_grouped_by_sourcedbs = doc_specs.group_by { |doc_spec| doc_spec[:sourcedb] }
@@ -453,7 +453,10 @@ class Project < ActiveRecord::Base
       # Tie the documents to the project.
       num_docs_added = tie_documents sourcedb, sourceids
 
-      increment!(:docs_count, num_docs_added)
+      # Skip project-level counter update during batch processing to avoid lock contention
+      unless batch_processing
+        increment!(:docs_count, num_docs_added)
+      end
       docs_stat_increment!(sourcedb, num_docs_added)
 
       total_added += num_docs_added
@@ -747,6 +750,7 @@ class Project < ActiveRecord::Base
     unless existing_ids.empty?
       id_change = {}
       if annotations.has_key?(:denotations)
+        Denotation.new_id_init
         annotations[:denotations].each do |a|
           id = a[:id]
           id = Denotation.new_id while existing_ids.include?(id)
@@ -759,6 +763,7 @@ class Project < ActiveRecord::Base
       end
 
       if annotations.has_key?(:blocks)
+        Block.new_id_init
         annotations[:blocks].each do |a|
           id = a[:id]
           id = Block.new_id while existing_ids.include?(id)
@@ -771,6 +776,7 @@ class Project < ActiveRecord::Base
       end
 
       if annotations.has_key?(:relations)
+        Relation.new_id_init
         annotations[:relations].each do |a|
           id = a[:id]
           id = Relation.new_id while existing_ids.include?(id)
@@ -892,22 +898,71 @@ class Project < ActiveRecord::Base
   end
 
   def clean
-    denotations_num = denotations.count
-    blocks_num = blocks.count
-    relations_num = relations.count
+    # Update all annotation stats (including project_doc and doc counts)
+    update_annotation_stats_from_database
 
+    # Additionally update docs_count and annotations_count
     docs_count = docs.count
+    annotations_count = denotations_num + blocks_num + relations_num
     update(
       docs_count: docs_count,
-      denotations_num: denotations_num,
-      blocks_num: blocks_num,
-      relations_num: relations_num,
-      annotations_count: denotations_num + blocks_num + relations_num
+      annotations_count: annotations_count
     )
 
     docs_stat_update
   end
 
+  def update_annotation_stats_from_database
+    # Calculate actual counts from database
+    denotations_count = denotations.count
+    blocks_count = blocks.count
+    relations_count = relations.count
+    docs_count_value = docs.count
+    annotations_count_value = denotations_count + blocks_count + relations_count
+
+    # Update project-level counts and timestamps
+    update!(
+      denotations_num: denotations_count,
+      blocks_num: blocks_count,
+      relations_num: relations_count,
+      docs_count: docs_count_value,
+      annotations_count: annotations_count_value,
+      annotations_updated_at: Time.current,
+      updated_at: Time.current
+    )
+
+    # Update project_doc and doc counts
+    ProjectDoc.bulk_update_counts(project_id: id)
+    doc_ids = project_docs.pluck(:doc_id).uniq
+    Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
+  end
+
+  def increment_annotation_counters(doc, denotations_delta:, blocks_delta:, relations_delta:, batch_processing: false)
+    # Atomically update counters at all three levels (project, project_doc, doc)
+    # During batch processing, skip project-level updates to avoid lock contention
+
+    ActiveRecord::Base.transaction do
+      # Update project-level counters (skip during batch processing to avoid contention)
+      unless batch_processing
+        increment!(:denotations_num, denotations_delta) if denotations_delta != 0
+        increment!(:blocks_num, blocks_delta) if blocks_delta != 0
+        increment!(:relations_num, relations_delta) if relations_delta != 0
+      end
+
+      # Update project_doc-level counters
+      project_doc = project_docs.find_by(doc_id: doc.id)
+      if project_doc
+        project_doc.increment!(:denotations_num, denotations_delta) if denotations_delta != 0
+        project_doc.increment!(:blocks_num, blocks_delta) if blocks_delta != 0
+        project_doc.increment!(:relations_num, relations_delta) if relations_delta != 0
+      end
+
+      # Update doc-level counters
+      doc.increment!(:denotations_num, denotations_delta) if denotations_delta != 0
+      doc.increment!(:blocks_num, blocks_delta) if blocks_delta != 0
+      doc.increment!(:relations_num, relations_delta) if relations_delta != 0
+    end
+  end
 
   def pretreatment_annotations!(annotations, options)
     if options[:mode] == 'replace'

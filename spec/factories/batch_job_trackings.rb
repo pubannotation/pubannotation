@@ -9,6 +9,7 @@ FactoryBot.define do
       ]
     end
     item_count { rand(1..100) }
+    annotation_objects_count { item_count }  # For tests, assume 1 object = 1 item
     error_message { nil }
     started_at { nil }
     completed_at { nil }

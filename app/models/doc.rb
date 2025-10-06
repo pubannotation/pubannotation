@@ -928,16 +928,15 @@ class Doc < ActiveRecord::Base
 
 	private_class_method def self.bulk_update_all_docs_counts
 		# Update all docs without filtering - used when doc_ids is nil
+		# Note: projects_num is maintained incrementally and not updated here
 		ActiveRecord::Base.connection.update <<~SQL.squish
 			UPDATE docs
 			SET
-				projects_num = COALESCE(p.cnt, 0),
 				denotations_num = COALESCE(d.cnt, 0),
 				blocks_num = COALESCE(b.cnt, 0),
 				relations_num = COALESCE(r.cnt, 0)
 			FROM
 				docs doc_list
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM project_docs GROUP BY doc_id) p ON doc_list.id = p.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations GROUP BY doc_id) d ON doc_list.id = d.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks GROUP BY doc_id) b ON doc_list.id = b.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations GROUP BY doc_id) r ON doc_list.id = r.doc_id
@@ -948,18 +947,17 @@ class Doc < ActiveRecord::Base
 	private_class_method def self.bulk_update_with_in_clause(doc_ids)
 		# Update specific docs - filter subqueries for performance
 		# This avoids full table scans by restricting subqueries to only relevant doc_ids
+		# Note: projects_num is maintained incrementally and not updated here
 		doc_ids_str = doc_ids.join(',')
 
 		ActiveRecord::Base.connection.update <<~SQL.squish
 			UPDATE docs
 			SET
-				projects_num = COALESCE(p.cnt, 0),
 				denotations_num = COALESCE(d.cnt, 0),
 				blocks_num = COALESCE(b.cnt, 0),
 				relations_num = COALESCE(r.cnt, 0)
 			FROM
 				docs doc_list
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM project_docs WHERE doc_id IN (#{doc_ids_str}) GROUP BY doc_id) p ON doc_list.id = p.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations WHERE doc_id IN (#{doc_ids_str}) GROUP BY doc_id) d ON doc_list.id = d.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks WHERE doc_id IN (#{doc_ids_str}) GROUP BY doc_id) b ON doc_list.id = b.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations WHERE doc_id IN (#{doc_ids_str}) GROUP BY doc_id) r ON doc_list.id = r.doc_id
@@ -981,16 +979,15 @@ class Doc < ActiveRecord::Base
 		end
 
 		# Perform the update using the temp table
+		# Note: projects_num is maintained incrementally and not updated here
 		conn.update <<~SQL.squish
 			UPDATE docs
 			SET
-				projects_num = COALESCE(p.cnt, 0),
 				denotations_num = COALESCE(d.cnt, 0),
 				blocks_num = COALESCE(b.cnt, 0),
 				relations_num = COALESCE(r.cnt, 0)
 			FROM
 				temp_doc_ids_for_count_update target
-				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM project_docs WHERE doc_id IN (SELECT doc_id FROM temp_doc_ids_for_count_update) GROUP BY doc_id) p ON target.doc_id = p.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM denotations WHERE doc_id IN (SELECT doc_id FROM temp_doc_ids_for_count_update) GROUP BY doc_id) d ON target.doc_id = d.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM blocks WHERE doc_id IN (SELECT doc_id FROM temp_doc_ids_for_count_update) GROUP BY doc_id) b ON target.doc_id = b.doc_id
 				LEFT JOIN (SELECT doc_id, COUNT(*) as cnt FROM relations WHERE doc_id IN (SELECT doc_id FROM temp_doc_ids_for_count_update) GROUP BY doc_id) r ON target.doc_id = r.doc_id

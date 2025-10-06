@@ -11,7 +11,20 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     @tracking_id = tracking_id
 
     # Load tracking record and mark as running
-    @tracking = BatchJobTracking.find(@tracking_id)
+    # If record doesn't exist, parent job already finished and cleaned up - exit gracefully
+    @tracking = BatchJobTracking.find_by(id: @tracking_id)
+
+    if @tracking.nil?
+      Rails.logger.warn "[#{self.class.name}] Tracking record #{@tracking_id} not found - parent job already finished. Exiting."
+      return
+    end
+
+    # If tracking was already marked as failed/crashed (stale pending detection), don't process
+    if @tracking.status != 'pending'
+      Rails.logger.warn "[#{self.class.name}] Tracking record #{@tracking_id} already in status '#{@tracking.status}' - skipping execution."
+      return
+    end
+
     @tracking.mark_running!
 
     # Set thread-local variable to enable batch processing optimizations
@@ -66,18 +79,6 @@ class ProcessAnnotationsBatchJob < ApplicationJob
       alignment_messages.each { |message| parent_job.add_message(message) }
     end
 
-    # Report any docs that need replacement cleanup to parent job
-    if Thread.current[:docs_needing_replacement]&.any?
-      docs_needing_replacement = Thread.current[:docs_needing_replacement].to_a
-      Rails.logger.info "[#{self.class.name}] Reporting #{docs_needing_replacement.size} docs needing replacement cleanup to parent job"
-
-      parent_job.add_message(
-        sourcedb: '*',
-        sourceid: ['replacement_cleanup'],
-        body: "DOCS_NEEDING_REPLACEMENT:#{docs_needing_replacement.join(',')}"
-      )
-    end
-
     Rails.logger.info "[#{self.class.name}] Total job time: #{Time.current - start_time}s (#{annotation_transaction.size} annotations)"
 
     # Mark tracking as completed
@@ -111,7 +112,6 @@ class ProcessAnnotationsBatchJob < ApplicationJob
   ensure
     # Clear thread-local variable
     Thread.current[:skip_annotation_callbacks] = nil
-    Thread.current[:docs_needing_replacement] = nil
   end
 
   def job_name
@@ -177,6 +177,17 @@ class ProcessAnnotationsBatchJob < ApplicationJob
         end
       end
 
+      # Count old annotations before deletion (for replace mode counter updates)
+      old_counts = if options[:mode] == 'replace'
+        {
+          denotations: project.denotations.where(doc_id: doc.id).count,
+          blocks: project.blocks.where(doc_id: doc.id).count,
+          relations: project.relations.where(doc_id: doc.id).count
+        }
+      else
+        { denotations: 0, blocks: 0, relations: 0 }
+      end
+
       # Apply project pretreatment and save annotations (with batch processing flag)
       batch_options = options.merge(batch_processing: true)
       project.pretreatment_according_to(batch_options, doc, doc_annotations)
@@ -204,6 +215,26 @@ class ProcessAnnotationsBatchJob < ApplicationJob
       # Save valid annotations
       project.instantiate_and_save_annotations_collection(valid_doc_annotations) if valid_doc_annotations.present?
 
+      # Count new annotations and update counters incrementally
+      new_counts = {
+        denotations: valid_doc_annotations.sum { |ann| (ann[:denotations] || []).size },
+        blocks: valid_doc_annotations.sum { |ann| (ann[:blocks] || []).size },
+        relations: valid_doc_annotations.sum { |ann| (ann[:relations] || []).size }
+      }
+
+      # Calculate deltas and update counters
+      denotations_delta = new_counts[:denotations] - old_counts[:denotations]
+      blocks_delta = new_counts[:blocks] - old_counts[:blocks]
+      relations_delta = new_counts[:relations] - old_counts[:relations]
+
+      project.increment_annotation_counters(
+        doc,
+        denotations_delta: denotations_delta,
+        blocks_delta: blocks_delta,
+        relations_delta: relations_delta,
+        batch_processing: true
+      )
+
       Rails.logger.info "[#{self.class.name}] Document #{doc_id} processing took #{Time.current - doc_start}s (#{doc_annotations.size} annotations)"
     end
 
@@ -213,7 +244,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
   def store_docs(project, doc_specs)
     # doc_specs is already unique
     begin
-      num_added, num_sequenced, doc_specs_missing, messages = project.add_docs_from_array(doc_specs)
+      num_added, num_sequenced, doc_specs_missing, messages = project.add_docs_from_array(doc_specs, batch_processing: true)
     # rescue => e
     #   raise e
     end

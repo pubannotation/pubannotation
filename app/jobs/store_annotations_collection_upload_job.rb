@@ -5,7 +5,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	queue_as :low_priority
 
 	MAX_BATCH_SIZE = 500
-	MAX_CONCURRENT_JOBS = 20  # Match realistic Sidekiq worker availability
+	MAX_QUEUE_SIZE = 100  # Maximum jobs allowed in Sidekiq queue before throttling
 	CRASH_DETECTION_TIMEOUT = 10.minutes
 
 	def perform(project, filepath, options)
@@ -45,6 +45,18 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	end
 
 	private
+
+	def update_progress_from_tracking
+		return unless @job
+
+		stats = BatchJobTracking.uncached do
+			BatchJobTracking.stats_for_parent(@job.id)
+		end
+		completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
+
+		# Only update num_dones, not num_items (which was set at the start)
+		@job.update!(num_dones: completed_items) if completed_items > 0
+	end
 
 	def process_files(dirpath, pattern)
 		files_found = Dir.glob(File.join(dirpath, '**', pattern))
@@ -117,31 +129,52 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			@job_id = job_id
 			@annotation_transaction = []
 			@current_batch_size = 0
+			@last_doc_identifier = nil  # Track last document to detect consecutive duplicates
 		end
 
 		def add_to_batch(annotation)
+			# Check for consecutive duplicate documents in replace mode
+			current_doc_identifier = "#{annotation[:sourcedb]}:#{annotation[:sourceid]}"
+			if @options[:mode] == 'replace' && @last_doc_identifier == current_doc_identifier
+				# Add user-friendly message
+				Job.find(@job_id).add_message(
+					sourcedb: annotation[:sourcedb],
+					sourceid: annotation[:sourceid],
+					body: "This document appears multiple times in your upload file. " \
+					      "In replace mode, each document should appear only once. " \
+					      "Please use 'add' mode instead, or remove duplicate documents from your file."
+				)
+				# Terminate the job
+				raise ArgumentError, "Duplicate document detected in replace mode: #{current_doc_identifier}"
+			end
+
+			# Flush batch if we've exceeded threshold AND this is a new document
+			# This ensures all annotations for the same document go to the same batch
+			if @current_batch_size >= StoreAnnotationsCollectionUploadJob::MAX_BATCH_SIZE &&
+			   current_doc_identifier != @last_doc_identifier
+				flush_batch
+			end
+
 			# Add to current batch
 			@annotation_transaction << annotation
 			@current_batch_size += count_annotations(annotation)
-
-			if @current_batch_size >= StoreAnnotationsCollectionUploadJob::MAX_BATCH_SIZE
-				flush_batch
-			end
+			@last_doc_identifier = current_doc_identifier
 		end
 
 		def flush_batch
 			return unless @annotation_transaction.any?
 
+			# Throttle job creation - wait if queue is full
+			wait_for_queue_space
+
 			# Create tracking record FIRST (before enqueuing job)
 			tracking = BatchJobTracking.create!(
 				parent_job_id: @job_id,
 				doc_identifiers: extract_doc_identifiers(@annotation_transaction),
-				item_count: @current_batch_size,
+				annotation_objects_count: @annotation_transaction.size,  # For progress tracking
+				item_count: @current_batch_size,  # Total annotation items
 				status: 'pending'
 			)
-
-			# Throttle job creation - wait if too many jobs queued
-			wait_for_queue_space
 
 			begin
 				# Enqueue child job with tracking ID
@@ -157,7 +190,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 				tracking.update!(child_job_id: child_job.job_id)
 
 				Rails.logger.info "[#{self.class.name}] Enqueued batch (tracking_id: #{tracking.id}, " \
-				                  "child_job_id: #{child_job.job_id}, items: #{@current_batch_size})"
+				                  "child_job_id: #{child_job.job_id}, annotations: #{@annotation_transaction.size})"
 			rescue => e
 				# If enqueue fails, mark tracking as failed immediately
 				tracking.mark_failed!(e)
@@ -171,10 +204,13 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		private
 
 		def count_annotations(annotation)
-			# Count actual denotations and blocks from the parsed annotation
+			# Count all annotation items (denotations, blocks, relations, attributes)
+			# This is used for memory estimation
 			denotation_count = annotation[:denotations]&.size || 0
 			blocks_count = annotation[:blocks]&.size || 0
-			total_count = denotation_count + blocks_count
+			relations_count = annotation[:relations]&.size || 0
+			attributes_count = annotation[:attributes]&.size || 0
+			total_count = denotation_count + blocks_count + relations_count + attributes_count
 
 			# Return at least 1 to avoid zero-size batches
 			[total_count, 1].max
@@ -190,29 +226,38 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		end
 
 		def wait_for_queue_space
-			while general_queue_size >= StoreAnnotationsCollectionUploadJob::MAX_CONCURRENT_JOBS
-				# Update progress while waiting for queue space
-				update_progress_from_tracking
+			loop do
+				# Check Sidekiq queue size directly
+				queue = Sidekiq::Queue.new('general')
+				current_queue_size = queue.size
 
-				Rails.logger.info "[#{self.class.name}] Waiting for queue space (#{general_queue_size} jobs queued)..."
-				sleep(0.2) # Reduced sleep time for faster job dispatching
+				# If queue is full, wait for workers to process jobs
+				if current_queue_size >= StoreAnnotationsCollectionUploadJob::MAX_QUEUE_SIZE
+					# Update progress while waiting
+					update_progress_from_tracking
+
+					Rails.logger.info "[#{self.class.name}] Waiting for queue space " \
+					                  "(queue size: #{current_queue_size}, " \
+					                  "max: #{StoreAnnotationsCollectionUploadJob::MAX_QUEUE_SIZE})..."
+					sleep(0.5)
+					next
+				end
+
+				# Queue has space
+				break
 			end
 		end
 
 		def update_progress_from_tracking
 			return unless @job_id
 
-			stats = BatchJobTracking.stats_for_parent(@job_id)
-			completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
-			total_items = stats.values.sum
-
-			if total_items > 0
-				Job.find(@job_id).update!(num_dones: completed_items, num_items: total_items)
+			stats = BatchJobTracking.uncached do
+				BatchJobTracking.stats_for_parent(@job_id)
 			end
-		end
+			completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
 
-		def general_queue_size
-			Sidekiq::Queue.new('general').size
+			# Only update num_dones, not num_items (which was set at the start)
+			Job.find(@job_id).update!(num_dones: completed_items) if completed_items > 0
 		end
 
 		def reset_batch
@@ -231,14 +276,18 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			@job&.reload
 
 			# Get aggregated stats from tracking table (single efficient query)
-			stats = BatchJobTracking.stats_for_parent(@job.id)
+			# Force fresh query - bypass ActiveRecord query cache to see updates from child jobs
+			stats = BatchJobTracking.uncached do
+				BatchJobTracking.stats_for_parent(@job.id)
+			end
 
 			# Calculate progress
 			completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
 			total_items = stats.values.sum
 
-			# Update progress counter (parent controls it now, not children)
-			@job.update!(num_dones: completed_items, num_items: total_items) if total_items > 0
+			# Update progress count AND touch updated_at as heartbeat
+			# (num_items was already set correctly at the start)
+			@job.update!(num_dones: completed_items, updated_at: Time.current) if completed_items > 0
 
 			# Detect crashed jobs every 2 minutes
 			if Time.current - last_crash_check > 120
@@ -262,13 +311,15 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			                  "completed: #{stats['completed'] || 0}, failed: #{stats['failed'] || 0}, " \
 			                  "crashed: #{stats['crashed'] || 0})"
 
-			# Handle failures
-			if (stats['failed'] || 0) > 0 || (stats['crashed'] || 0) > 0
-				log_failed_batches
-			end
-
 			sleep(0.5) # Check every 0.5 seconds for faster responsiveness
 		end
+
+		# Do final progress update before cleanup (in case any jobs were marked crashed/failed after loop)
+		stats = BatchJobTracking.uncached do
+			BatchJobTracking.stats_for_parent(@job.id)
+		end
+		final_completed = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
+		@job.update!(num_dones: final_completed) if final_completed > 0
 
 		# Update project counts after all batches complete
 		update_final_project_stats
@@ -278,15 +329,15 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	end
 
 	def detect_and_mark_crashed_jobs
-		crashed_count = BatchJobTracking
+		# Detect jobs that started running but stopped updating (crashed workers)
+		crashed_running = BatchJobTracking
 			.for_parent(@job.id)
 			.possibly_crashed(CRASH_DETECTION_TIMEOUT)
 			.count
 
-		if crashed_count > 0
-			Rails.logger.warn "[#{self.class.name}] Detected #{crashed_count} potentially crashed jobs"
+		if crashed_running > 0
+			Rails.logger.warn "[#{self.class.name}] Detected #{crashed_running} crashed running jobs"
 
-			# Mark them as crashed
 			BatchJobTracking
 				.for_parent(@job.id)
 				.possibly_crashed(CRASH_DETECTION_TIMEOUT)
@@ -295,21 +346,28 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 					log_crashed_batch(tracking)
 				end
 		end
-	end
 
-	def log_failed_batches
-		# Log details about failed/crashed batches (but not too many to avoid spam)
-		BatchJobTracking
+		# Detect jobs stuck in pending that never started (lost child jobs)
+		stale_pending = BatchJobTracking
 			.for_parent(@job.id)
-			.where(status: %w[failed crashed])
-			.limit(10)
-			.each do |tracking|
-				@job&.add_message(
-					sourcedb: 'batch_error',
-					sourceid: "tracking_#{tracking.id}",
-					body: "#{tracking.status.upcase}: #{tracking.doc_summary} - #{tracking.error_message}"
-				)
-			end
+			.stale_pending(5.minutes)
+			.count
+
+		if stale_pending > 0
+			Rails.logger.warn "[#{self.class.name}] Detected #{stale_pending} stale pending jobs (child jobs never started)"
+
+			BatchJobTracking
+				.for_parent(@job.id)
+				.stale_pending(5.minutes)
+				.find_each do |tracking|
+					tracking.update!(
+						status: 'failed',
+						error_message: 'Child job never started - likely lost by Sidekiq or worker crashed before execution',
+						completed_at: Time.current
+					)
+					log_stale_pending_batch(tracking)
+				end
+		end
 	end
 
 	def log_crashed_batch(tracking)
@@ -321,8 +379,19 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		)
 	end
 
+	def log_stale_pending_batch(tracking)
+		@job&.add_message(
+			sourcedb: 'batch_stale',
+			sourceid: "tracking_#{tracking.id}",
+			body: "STALE PENDING: Batch with #{tracking.item_count} items (#{tracking.doc_summary}) " \
+			      "never started execution - child job was lost or never picked up by Sidekiq"
+		)
+	end
+
 	def log_completion_summary
-		stats = BatchJobTracking.stats_for_parent(@job.id)
+		stats = BatchJobTracking.uncached do
+			BatchJobTracking.stats_for_parent(@job.id)
+		end
 
 		Rails.logger.info "[#{self.class.name}] Batch processing completed: " \
 		                  "completed: #{stats['completed'] || 0}, " \
@@ -381,81 +450,13 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	def update_final_project_stats
 		Rails.logger.info "[#{self.class.name}] Updating final project statistics..."
 
-		# Process any deferred replacement operations first
-		process_deferred_replacements
-
 		begin
-			# Calculate actual counts from database to ensure accuracy
-			denotations_count = @project.denotations.count
-			blocks_count = @project.blocks.count
-			relations_count = @project.relations.count
-
-			# Update project with final counts and timestamps using a single atomic operation
-			@project.update!(
-				denotations_num: denotations_count,
-				blocks_num: blocks_count,
-				relations_num: relations_count,
-				annotations_updated_at: Time.current,
-				updated_at: Time.current
-			)
-
-			# Update project_doc counts for all docs in this project using bulk operations
-			update_project_doc_counts_bulk
-			update_doc_counts_bulk
-
-			Rails.logger.info "[#{self.class.name}] Project stats updated: #{denotations_count} denotations, #{blocks_count} blocks, #{relations_count} relations"
+			@project.update_annotation_stats_from_database
+			Rails.logger.info "[#{self.class.name}] Project stats updated: #{@project.denotations_num} denotations, #{@project.blocks_num} blocks, #{@project.relations_num} relations"
 		rescue => e
 			Rails.logger.error "[#{self.class.name}] Failed to update project stats: #{e.message}"
 			# Don't re-raise - we want the job to complete even if stats update fails
 		end
 	end
 
-	def update_project_doc_counts_bulk
-		Rails.logger.info "[#{self.class.name}] Bulk updating project_doc counts..."
-		ProjectDoc.bulk_update_counts(project_id: @project.id)
-		Rails.logger.info "[#{self.class.name}] Updated project_doc records for project #{@project.id}"
-	end
-
-	def update_doc_counts_bulk
-		Rails.logger.info "[#{self.class.name}] Bulk updating doc counts..."
-		doc_ids = @project.project_docs.pluck(:doc_id).uniq
-		Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
-		Rails.logger.info "[#{self.class.name}] Updated doc records for project #{@project.id}"
-	end
-
-	def process_deferred_replacements
-		# Collect all docs needing replacement from job messages
-		replacement_docs = Set.new
-
-		@job&.messages&.each do |message|
-			if message.sourceid.include?('replacement_cleanup') && message.body.start_with?('DOCS_NEEDING_REPLACEMENT:')
-				doc_ids_str = message.body.sub('DOCS_NEEDING_REPLACEMENT:', '')
-				doc_ids = doc_ids_str.split(',').map(&:to_i)
-				replacement_docs.merge(doc_ids)
-			end
-		end
-
-		return unless replacement_docs.any?
-
-		Rails.logger.info "[#{self.class.name}] Processing deferred replacement cleanup for #{replacement_docs.size} documents..."
-
-		# Perform batch cleanup operations for all docs needing replacement
-		# Use smaller transactions to reduce lock time
-		replacement_docs.each_slice(10) do |doc_batch|
-			ActiveRecord::Base.transaction do
-				Rails.logger.info "[#{self.class.name}] Cleaning up batch of #{doc_batch.size} documents for replacement mode"
-
-				# Delete all existing annotations for these docs in batch
-				Denotation.where(project_id: @project.id, doc_id: doc_batch).delete_all
-				Block.where(project_id: @project.id, doc_id: doc_batch).delete_all
-				Relation.where(project_id: @project.id, doc_id: doc_batch).delete_all
-				Attrivute.where(project_id: @project.id, doc_id: doc_batch).delete_all
-			end
-
-			# Very small delay to prevent overwhelming the database
-			sleep(0.01) if replacement_docs.size > 100
-		end
-
-		Rails.logger.info "[#{self.class.name}] Completed deferred replacement cleanup for #{replacement_docs.size} documents"
-	end
 end

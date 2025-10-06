@@ -93,6 +93,7 @@ class ProjectDoc < ActiveRecord::Base
     unless existing_ids.empty?
       id_change = {}
       if annotations.has_key?(:denotations)
+        Denotation.new_id_init
         annotations[:denotations].each do |a|
           id = a[:id]
           id = Denotation.new_id while existing_ids.include?(id)

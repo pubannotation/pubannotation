@@ -126,4 +126,62 @@ class Job < ActiveRecord::Base
       it.finish!
     end
   end
+
+  # Detect and clean up crashed parent jobs (jobs that stopped updating but are still marked as running)
+  # This handles cases where the Sidekiq worker crashes (OOM, segfault, SIGKILL, etc)
+  def self.detect_and_cleanup_crashed_jobs(timeout = 15.minutes)
+    # Find jobs that are marked as running but haven't updated in a long time
+    stale_jobs = running.where('updated_at < ?', timeout.ago)
+
+    # Load the jobs into memory so the count doesn't change after we update them
+    stale_jobs_array = stale_jobs.to_a
+
+    stale_jobs_array.each do |job|
+      Rails.logger.warn "[Job##{job.id}] Detected crashed parent job (no updates for #{timeout.inspect})"
+
+      # Mark any orphaned child job tracking records as crashed/failed
+      orphaned_running = BatchJobTracking.where(parent_job_id: job.id, status: 'running')
+      orphaned_pending = BatchJobTracking.where(parent_job_id: job.id, status: 'pending')
+
+      # Count before updating (update_all changes the records, so .count after would return 0)
+      orphaned_running_count = orphaned_running.count
+      orphaned_pending_count = orphaned_pending.count
+
+      orphaned_running.update_all(
+        status: 'crashed',
+        error_message: 'Parent job crashed or was killed (worker died)',
+        completed_at: Time.current
+      )
+
+      orphaned_pending.update_all(
+        status: 'failed',
+        error_message: 'Parent job crashed before this batch could execute',
+        completed_at: Time.current
+      )
+
+      # Update final progress from tracking table
+      stats = BatchJobTracking.uncached do
+        BatchJobTracking.stats_for_parent(job.id)
+      end
+      completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
+
+      # Add termination message
+      job.add_message(
+        sourcedb: '*',
+        sourceid: 'system',
+        body: "Job was terminated unexpectedly (parent job crashed or worker was killed). " \
+              "#{orphaned_running_count} batches marked as crashed, #{orphaned_pending_count} batches marked as failed."
+      )
+
+      # Update progress and mark as finished
+      job.update!(
+        num_dones: completed_items,
+        ended_at: job.updated_at # Use last update time as crash time
+      )
+
+      Rails.logger.info "[Job##{job.id}] Cleaned up crashed job: #{completed_items}/#{job.num_items} completed"
+    end
+
+    stale_jobs_array.count
+  end
 end

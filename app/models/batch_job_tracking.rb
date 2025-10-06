@@ -23,14 +23,21 @@ class BatchJobTracking < ApplicationRecord
       .where('updated_at < ?', timeout.ago)
   }
 
+  # Jobs stuck in pending status that never started (child job lost/never executed)
+  scope :stale_pending, ->(timeout = 5.minutes) {
+    where(status: 'pending')
+      .where('created_at < ?', timeout.ago)
+  }
+
   # Jobs created before a certain time (for cleanup)
   scope :older_than, ->(time) { where('created_at < ?', time) }
 
   # Get aggregated stats for a parent job
   def self.stats_for_parent(parent_job_id)
+    # Return hash with status => annotation_objects_count (for progress tracking)
     for_parent(parent_job_id)
       .group(:status)
-      .pluck(Arel.sql('status, SUM(item_count)::integer'))
+      .pluck(Arel.sql('status, SUM(annotation_objects_count)::integer'))
       .to_h
   end
 

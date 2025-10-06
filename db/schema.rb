@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_03_130937) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_04_192541) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_130937) do
     t.bigint "doc_id"
     t.index ["doc_id"], name: "index_attrivutes_on_doc_id"
     t.index ["obj"], name: "index_attrivutes_on_obj"
+    t.index ["project_id", "doc_id"], name: "index_attrivutes_on_project_id_and_doc_id"
     t.index ["project_id"], name: "index_attrivutes_on_project_id"
     t.index ["subj_id"], name: "index_attrivutes_on_subj_id"
   end
@@ -91,6 +92,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_130937) do
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "annotation_objects_count"
+    t.bigint "memory_estimation"
     t.index ["child_job_id"], name: "index_batch_tracking_on_child_job"
     t.index ["created_at"], name: "index_batch_tracking_on_created_at"
     t.index ["parent_job_id", "status"], name: "index_batch_tracking_on_parent_and_status"
@@ -106,6 +109,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_130937) do
     t.integer "project_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["doc_id"], name: "index_blocks_on_doc_id"
+    t.index ["project_id", "doc_id"], name: "index_blocks_on_project_id_and_doc_id"
     t.index ["project_id"], name: "index_blocks_on_project_id"
   end
 
@@ -380,6 +385,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_130937) do
     t.bigint "doc_id"
     t.index ["doc_id"], name: "index_relations_on_doc_id"
     t.index ["obj_id"], name: "index_relations_on_obj_id"
+    t.index ["project_id", "doc_id"], name: "index_relations_on_project_id_and_doc_id"
     t.index ["project_id"], name: "index_relations_on_project_id"
     t.index ["subj_id"], name: "index_relations_on_subj_id"
   end

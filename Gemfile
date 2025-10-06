@@ -27,7 +27,7 @@ group :development do
   gem 'stackprof'           # for flamegraph support
 end
 
-gem 'text_alignment', '~> 0.12.10'
+gem 'text_alignment', path: '/home/jdkim/dev/text_alignment'
 gem 'pubannotation_evaluator', '~> 3.0.0'
 gem 'wice_grid', github: 'yush-nh/wice_grid'
 gem 'font-awesome-rails'

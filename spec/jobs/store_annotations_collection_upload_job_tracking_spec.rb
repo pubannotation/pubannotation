@@ -204,6 +204,109 @@ RSpec.describe 'Batch Job Tracking Integration', type: :job do
       expect(tracking.status).to eq('pending')
       expect(tracking.doc_identifiers).to include({ 'sourcedb' => 'PMC', 'sourceid' => '123' })
     end
+
+    describe 'consecutive duplicate detection' do
+      let(:project) { create(:project) }
+      let(:annotation1) do
+        {
+          sourcedb: 'PMC',
+          sourceid: '123',
+          text: 'Test',
+          denotations: [{ span: { begin: 0, end: 4 }, obj: 'Test' }]
+        }
+      end
+
+      let(:annotation2) do
+        {
+          sourcedb: 'PMC',
+          sourceid: '456',
+          text: 'Another',
+          denotations: [{ span: { begin: 0, end: 7 }, obj: 'Test' }]
+        }
+      end
+
+      it 'raises error when consecutive duplicate documents in replace mode' do
+        batch_state = StoreAnnotationsCollectionUploadJob::BatchState.new(
+          project,
+          { mode: 'replace' },
+          parent_job.id
+        )
+
+        # Add first annotation
+        batch_state.add_to_batch(annotation1)
+
+        # Try to add duplicate (same sourcedb:sourceid)
+        expect {
+          batch_state.add_to_batch(annotation1.dup)
+        }.to raise_error(ArgumentError)
+
+        # Verify message was added with proper fields
+        parent_job.reload
+        message = parent_job.messages.last
+        expect(message.sourcedb).to eq('PMC')
+        expect(message.sourceid).to eq('123')
+        expect(message.body).to include('document appears multiple times')
+        expect(message.body).to include("use 'add' mode")
+        expect(message.body).not_to include('ArgumentError')
+      end
+
+      it 'allows consecutive duplicate documents in add mode' do
+        batch_state = StoreAnnotationsCollectionUploadJob::BatchState.new(
+          project,
+          { mode: 'add' },
+          parent_job.id
+        )
+
+        # Add first annotation
+        batch_state.add_to_batch(annotation1)
+
+        # Add duplicate - should not raise error in add mode
+        expect {
+          batch_state.add_to_batch(annotation1.dup)
+        }.not_to raise_error
+      end
+
+      it 'allows same document when not consecutive' do
+        batch_state = StoreAnnotationsCollectionUploadJob::BatchState.new(
+          project,
+          { mode: 'replace' },
+          parent_job.id
+        )
+
+        # Add first annotation
+        batch_state.add_to_batch(annotation1)
+
+        # Add different document
+        batch_state.add_to_batch(annotation2)
+
+        # Add first document again - should not raise error since not consecutive
+        expect {
+          batch_state.add_to_batch(annotation1.dup)
+        }.not_to raise_error
+      end
+
+      it 'message is user-friendly without technical details' do
+        batch_state = StoreAnnotationsCollectionUploadJob::BatchState.new(
+          project,
+          { mode: 'replace' },
+          parent_job.id
+        )
+
+        batch_state.add_to_batch(annotation1)
+
+        expect {
+          batch_state.add_to_batch(annotation1.dup)
+        }.to raise_error(ArgumentError)
+
+        # Verify message is user-friendly
+        parent_job.reload
+        message = parent_job.messages.last
+        expect(message.body).not_to include('ArgumentError')
+        expect(message.body).not_to include('backtrace')
+        expect(message.body).not_to include('PMC:123')  # Should be in fields, not body
+        expect(message.body).to match(/use 'add' mode/i)
+      end
+    end
   end
 
   describe 'error message formatting' do
@@ -221,6 +324,110 @@ RSpec.describe 'Batch Job Tracking Integration', type: :job do
       expect(tracking.error_message).to include('ArgumentError')
       expect(tracking.error_message).to include('Invalid argument provided')
       expect(tracking.error_message).to include('/path/to/file.rb:123')
+    end
+  end
+
+  describe 'progress counter updates' do
+    describe 'during queue throttling' do
+      it 'updates num_dones but preserves num_items' do
+        parent_job = create(:job, num_items: 100, num_dones: 0)
+        project = create(:project)
+        options = {}
+        batch_state = StoreAnnotationsCollectionUploadJob::BatchState.new(project, options, parent_job.id)
+
+        # Create some completed tracking records
+        create(:batch_job_tracking, :completed, parent_job: parent_job, annotation_objects_count: 30)
+        create(:batch_job_tracking, :completed, parent_job: parent_job, annotation_objects_count: 20)
+
+        # Stub Sidekiq queue to be full initially
+        full_queue = double('Queue', size: 150)  # Over MAX_QUEUE_SIZE (100)
+        empty_queue = double('Queue', size: 10)  # Under MAX_QUEUE_SIZE
+
+        allow(Sidekiq::Queue).to receive(:new).with('general').and_return(full_queue, full_queue, empty_queue)
+
+        # Stub job enqueue
+        allow(ProcessAnnotationsBatchJob).to receive(:perform_later).and_return(
+          double(job_id: 'test_job_id')
+        )
+
+        # Add and flush a batch in a thread to avoid blocking
+        thread = Thread.new do
+          batch_state.add_to_batch({
+            sourcedb: 'PMC',
+            sourceid: '123',
+            text: 'Test',
+            denotations: [{ span: { begin: 0, end: 4 }, obj: 'Test' }]
+          })
+          batch_state.flush_batch
+        end
+
+        # Wait a bit for throttling to trigger
+        sleep(0.6)
+
+        # Verify progress was updated during throttling wait
+        parent_job.reload
+        expect(parent_job.num_dones).to eq(50)  # 30 + 20 from completed tracking
+
+        # Wait for thread to complete
+        thread.join
+
+        # Verify num_items stayed the same
+        parent_job.reload
+        expect(parent_job.num_items).to eq(100)  # Should NOT change
+      end
+    end
+
+    describe 'on job suspension' do
+      it 'updates progress and project stats before re-raising error' do
+        # Create a simple JSONL file with multiple lines to trigger multiple check_suspend_flag calls
+        jsonl_content = (1..10).map do |i|
+          { sourcedb: 'PMC', sourceid: "#{i}", text: 'Test', denotations: [{ span: { begin: 0, end: 4 }, obj: 'Test' }] }.to_json
+        end.join("\n")
+
+        temp_file = Tempfile.new(['test', '.jsonl'])
+        temp_file.write(jsonl_content)
+        temp_file.rewind
+
+        # Capture the job instance so we can get its job record
+        job_instance = nil
+        allow(StoreAnnotationsCollectionUploadJob).to receive(:new).and_wrap_original do |original, *args|
+          job_instance = original.call(*args)
+          job_instance
+        end
+
+        # Mock the suspend check to raise error on first call
+        allow_any_instance_of(StoreAnnotationsCollectionUploadJob).to receive(:check_suspend_flag) do
+          # Create some completed tracking records before suspension
+          parent_job = Job.find_by(active_job_id: job_instance.job_id)
+          create(:batch_job_tracking, :completed, parent_job: parent_job, item_count: 40) if parent_job
+          raise Exceptions::JobSuspendError, 'Job suspended by user'
+        end
+
+        # Stub child job processing to avoid sequencer issues
+        allow(ProcessAnnotationsBatchJob).to receive(:perform_later).and_return(
+          double(job_id: 'test_job_id')
+        )
+
+        # Run the job (JobSuspendError will be caught and handled internally)
+        perform_enqueued_jobs do
+          StoreAnnotationsCollectionUploadJob.perform_later(project, temp_file.path, options)
+        end
+
+        # Get the job record that was created
+        parent_job = Job.find_by(active_job_id: job_instance.job_id)
+
+        # Verify the job has a suspension message
+        expect(parent_job.messages.map(&:body)).to include(
+          a_string_matching(/JobSuspendError/)
+        )
+
+        # Verify num_dones was updated but num_items stayed the same
+        expect(parent_job.num_dones).to eq(40)  # Updated from tracking
+        expect(parent_job.num_items).to eq(10)  # Should stay at the initial value (10 lines in jsonl)
+
+        temp_file.close
+        temp_file.unlink
+      end
     end
   end
 end
