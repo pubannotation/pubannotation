@@ -11,6 +11,7 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 	def perform(project, filepath, options)
 		@project = project
 		@options = options
+		@invalid_items_count = 0  # Track invalid items that failed validation
 		dirpath = prepare_upload_files(filepath)
 
 		all_json_files  = "*.json"
@@ -54,8 +55,11 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		end
 		completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
 
+		# Add invalid items that failed validation
+		completed_with_invalid = completed_items + (@invalid_items_count || 0)
+
 		# Only update num_dones, not num_items (which was set at the start)
-		@job.update!(num_dones: completed_items) if completed_items > 0
+		@job.update!(num_dones: completed_with_invalid) if completed_with_invalid > 0
 	end
 
 	def process_files(dirpath, pattern)
@@ -118,7 +122,8 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		else
 			# Even invalid annotations count toward progress
 			# (they won't be reprocessed, so we need to count them)
-			# Note: We don't increment here - parent tracks via tracking table
+			# Invalid items don't go to batches, so track separately
+			@invalid_items_count += 1
 		end
 	end
 
@@ -226,6 +231,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 		end
 
 		def wait_for_queue_space
+			max_wait_iterations = 150  # 5 minutes max (150 * 2s)
+			iterations = 0
+
 			loop do
 				# Check Sidekiq queue size directly
 				queue = Sidekiq::Queue.new('general')
@@ -233,11 +241,23 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 				# If queue is full, wait for workers to process jobs
 				if current_queue_size >= StoreAnnotationsCollectionUploadJob::MAX_QUEUE_SIZE
+					iterations += 1
+
+					# Prevent infinite loop - abort if queue stays full too long
+					if iterations >= max_wait_iterations
+						error_msg = "Sidekiq queue has been full for #{max_wait_iterations * 2} seconds " \
+						            "(#{max_wait_iterations} iterations). Aborting to prevent system overload. " \
+						            "Current queue size: #{current_queue_size}"
+						Rails.logger.error "[#{self.class.name}] #{error_msg}"
+						raise error_msg
+					end
+
 					# Update progress while waiting
 					update_progress_from_tracking
 
 					Rails.logger.info "[#{self.class.name}] Waiting for queue space " \
-					                  "(queue size: #{current_queue_size}, " \
+					                  "(iteration #{iterations}/#{max_wait_iterations}, " \
+					                  "queue size: #{current_queue_size}, " \
 					                  "max: #{StoreAnnotationsCollectionUploadJob::MAX_QUEUE_SIZE})..."
 					sleep(0.5)
 					next
@@ -256,8 +276,18 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			end
 			completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
 
+			# Skip update if value hasn't changed (reduces lock contention)
+			return if @last_progress_update == completed_items
+			@last_progress_update = completed_items
+
+			# Use direct SQL UPDATE to avoid SELECT+UPDATE roundtrip and reduce lock time
 			# Only update num_dones, not num_items (which was set at the start)
-			Job.find(@job_id).update!(num_dones: completed_items) if completed_items > 0
+			if completed_items > 0
+				Job.where(id: @job_id).update_all(
+					num_dones: completed_items,
+					updated_at: Time.current
+				)
+			end
 		end
 
 		def reset_batch
@@ -271,9 +301,20 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 		last_stats_update = Time.current
 		last_crash_check = Time.current
+		start_time = Time.current
+		max_wait_time = 2.hours  # Absolute maximum wait time
 
 		loop do
 			@job&.reload
+
+			# Prevent infinite loop - abort if waiting too long
+			elapsed_time = Time.current - start_time
+			if elapsed_time > max_wait_time
+				error_msg = "Batch jobs have not completed after #{max_wait_time.inspect}. " \
+				            "Aborting to prevent infinite wait."
+				Rails.logger.error "[#{self.class.name}] #{error_msg}"
+				raise error_msg
+			end
 
 			# Get aggregated stats from tracking table (single efficient query)
 			# Force fresh query - bypass ActiveRecord query cache to see updates from child jobs
@@ -285,9 +326,18 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			completed_items = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
 			total_items = stats.values.sum
 
-			# Update progress count AND touch updated_at as heartbeat
+			# Add invalid items that failed validation (they don't go to batches)
+			completed_with_invalid = completed_items + @invalid_items_count
+
+			# Update progress count AND touch updated_at as heartbeat (reduces lock contention with direct SQL)
 			# (num_items was already set correctly at the start)
-			@job.update!(num_dones: completed_items, updated_at: Time.current) if completed_items > 0
+			if completed_with_invalid > 0
+				Job.where(id: @job.id).update_all(
+					num_dones: completed_with_invalid,
+					updated_at: Time.current
+				)
+				@job.reload  # Reload to get updated values for next iteration
+			end
 
 			# Detect crashed jobs every 2 minutes
 			if Time.current - last_crash_check > 120
@@ -302,16 +352,16 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 				last_stats_update = Time.current
 			end
 
-			# Check completion
+			# Check completion (total from batches + invalid items)
 			break if completed_items >= total_items && total_items > 0
 
-			# Log progress
-			Rails.logger.info "[#{self.class.name}] Progress: #{completed_items}/#{total_items} items " \
+			# Log progress (include invalid items in count)
+			Rails.logger.info "[#{self.class.name}] Progress: #{completed_with_invalid}/#{total_items + @invalid_items_count} items " \
 			                  "(pending: #{stats['pending'] || 0}, running: #{stats['running'] || 0}, " \
 			                  "completed: #{stats['completed'] || 0}, failed: #{stats['failed'] || 0}, " \
-			                  "crashed: #{stats['crashed'] || 0})"
+			                  "crashed: #{stats['crashed'] || 0}, invalid: #{@invalid_items_count})"
 
-			sleep(0.5) # Check every 0.5 seconds for faster responsiveness
+			sleep(2) # Check every 2 seconds to reduce system load
 		end
 
 		# Do final progress update before cleanup (in case any jobs were marked crashed/failed after loop)
@@ -319,7 +369,12 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			BatchJobTracking.stats_for_parent(@job.id)
 		end
 		final_completed = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
-		@job.update!(num_dones: final_completed) if final_completed > 0
+		# Add invalid items to final count
+		final_with_invalid = final_completed + @invalid_items_count
+		if final_with_invalid > 0
+			Job.where(id: @job.id).update_all(num_dones: final_with_invalid, updated_at: Time.current)
+			@job.reload
+		end
 
 		# Update project counts after all batches complete
 		update_final_project_stats

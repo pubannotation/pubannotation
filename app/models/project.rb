@@ -937,33 +937,6 @@ class Project < ActiveRecord::Base
     Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
   end
 
-  def increment_annotation_counters(doc, denotations_delta:, blocks_delta:, relations_delta:, batch_processing: false)
-    # Atomically update counters at all three levels (project, project_doc, doc)
-    # During batch processing, skip project-level updates to avoid lock contention
-
-    ActiveRecord::Base.transaction do
-      # Update project-level counters (skip during batch processing to avoid contention)
-      unless batch_processing
-        increment!(:denotations_num, denotations_delta) if denotations_delta != 0
-        increment!(:blocks_num, blocks_delta) if blocks_delta != 0
-        increment!(:relations_num, relations_delta) if relations_delta != 0
-      end
-
-      # Update project_doc-level counters
-      project_doc = project_docs.find_by(doc_id: doc.id)
-      if project_doc
-        project_doc.increment!(:denotations_num, denotations_delta) if denotations_delta != 0
-        project_doc.increment!(:blocks_num, blocks_delta) if blocks_delta != 0
-        project_doc.increment!(:relations_num, relations_delta) if relations_delta != 0
-      end
-
-      # Update doc-level counters
-      doc.increment!(:denotations_num, denotations_delta) if denotations_delta != 0
-      doc.increment!(:blocks_num, blocks_delta) if blocks_delta != 0
-      doc.increment!(:relations_num, relations_delta) if relations_delta != 0
-    end
-  end
-
   def pretreatment_annotations!(annotations, options)
     if options[:mode] == 'replace'
       delete_doc_annotations(annotations_with_doc.doc)

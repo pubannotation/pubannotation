@@ -430,4 +430,74 @@ RSpec.describe 'Batch Job Tracking Integration', type: :job do
       end
     end
   end
+
+  describe 'invalid items counting' do
+    it 'counts invalid items in num_dones to match num_items' do
+      # Create a JSONL file with valid and invalid items
+      jsonl_content = [
+        { sourcedb: 'PMC', sourceid: '1', text: 'Test 1', denotations: [{ id: 'T1', span: { begin: 0, end: 4 }, obj: 'Test' }] }.to_json,
+        { sourcedb: 'PMC', sourceid: '2', text: 'Test 2', denotations: [{ id: 'T2', span: { begin: 0, end: 4 }, obj: 'Test' }], attributes: [{ id: 'A1', subj: 'T999', pred: 'test', obj: 'invalid' }] }.to_json, # Invalid: references non-existent T999
+        { sourcedb: 'PMC', sourceid: '3', text: 'Test 3', denotations: [{ id: 'T3', span: { begin: 0, end: 4 }, obj: 'Test' }] }.to_json
+      ].join("\n")
+
+      temp_file = Tempfile.new(['test', '.jsonl'])
+      temp_file.write(jsonl_content)
+      temp_file.rewind
+
+      # Capture job instance to access @job
+      job_instance = nil
+      allow(StoreAnnotationsCollectionUploadJob).to receive(:new).and_wrap_original do |original, *args|
+        job_instance = original.call(*args)
+        job_instance
+      end
+
+      # Stub project methods to avoid external API calls
+      allow_any_instance_of(Project).to receive(:add_docs_from_array).and_return([[], []])
+      allow_any_instance_of(Project).to receive(:update_annotation_stats_from_database)
+
+      # Capture tracking records and mark them completed, then update job
+      allow(BatchJobTracking).to receive(:create!).and_wrap_original do |original, attrs|
+        tracking = original.call(attrs)
+        # Immediately mark as completed and update parent job's num_dones
+        tracking.update!(status: 'completed', completed_at: Time.current)
+
+        # Update parent job's num_dones based on completed tracking records
+        if tracking.parent_job_id
+          stats = BatchJobTracking.stats_for_parent(tracking.parent_job_id)
+          completed = (stats['completed'] || 0) + (stats['failed'] || 0) + (stats['crashed'] || 0)
+          Job.where(id: tracking.parent_job_id).update_all(num_dones: completed, updated_at: Time.current)
+        end
+
+        tracking
+      end
+
+      # Stub child job processing
+      allow(ProcessAnnotationsBatchJob).to receive(:perform_later).and_return(
+        double(job_id: 'test_job_id')
+      )
+
+      # Run the job
+      perform_enqueued_jobs do
+        StoreAnnotationsCollectionUploadJob.perform_later(project, temp_file.path, options)
+      end
+
+      # Get the created job
+      parent_job = Job.find_by(active_job_id: job_instance.job_id)
+
+      # Verify:
+      # - num_items = 3 (all lines counted)
+      # - num_dones = 3 (2 valid items processed via tracking + 1 invalid item counted via @invalid_items_count)
+      expect(parent_job.num_items).to eq(3)
+      expect(parent_job.num_dones).to eq(3)
+
+      # Verify the invalid item has an error message
+      error_messages = parent_job.messages.where(sourcedb: '*')
+      expect(error_messages.count).to eq(1)
+      expect(error_messages.first.body).to include('JSON validation error')
+      expect(error_messages.first.body).to include('must reference to a denotation')
+
+      temp_file.close
+      temp_file.unlink
+    end
+  end
 end

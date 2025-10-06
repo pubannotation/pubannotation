@@ -72,11 +72,46 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     if valid_annotations.any?
       # CPU: Text alignment processing (only for valid annotations)
       align_start = Time.current
-      alignment_messages = process_text_alignment(project, valid_annotations, options)
+      alignment_messages, doc_deltas = process_text_alignment(project, valid_annotations, options)
       Rails.logger.info "[#{self.class.name}] process_text_alignment took #{Time.current - align_start}s for #{valid_annotations.size} annotations"
 
       # Keep simple message handling to avoid serialization
       alignment_messages.each { |message| parent_job.add_message(message) }
+
+      # Bulk update counters for all documents processed in this batch
+      # Strategy: Incremental updates for docs and project_docs, bulk update for project at end
+      if doc_deltas.any?
+        counter_start = Time.current
+
+        # Extract new_counts for project_docs (only cares about new annotations)
+        project_docs_deltas = doc_deltas.transform_values { |v| v[:new_counts] }
+
+        # Calculate net deltas for docs (new - old, for cross-project aggregates)
+        docs_net_deltas = doc_deltas.transform_values do |v|
+          {
+            denotations: v[:new_counts][:denotations] - v[:old_counts][:denotations],
+            blocks: v[:new_counts][:blocks] - v[:old_counts][:blocks],
+            relations: v[:new_counts][:relations] - v[:old_counts][:relations]
+          }
+        end
+
+        ActiveRecord::Base.transaction do
+          # Update project_docs (per-project counts) - use new_counts
+          ProjectDoc.bulk_increment_counts_for_batch(
+            project_id: project.id,
+            doc_deltas: project_docs_deltas,
+            mode: options[:mode]
+          )
+
+          # Update docs (cross-project aggregates) - use net deltas
+          Doc.bulk_increment_counts_for_batch(doc_deltas: docs_net_deltas)
+
+          # Skip project-level counters here - will be updated from database at end
+          # in StoreAnnotationsCollectionUploadJob#update_final_project_stats
+        end
+
+        Rails.logger.info "[#{self.class.name}] bulk_increment_counters took #{Time.current - counter_start}s for #{doc_deltas.size} docs"
+      end
     end
 
     Rails.logger.info "[#{self.class.name}] Total job time: #{Time.current - start_time}s (#{annotation_transaction.size} annotations)"
@@ -122,6 +157,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
 
   def process_text_alignment(project, annotations, options)
     warnings = []
+    doc_deltas = {}  # Collect annotation deltas per document for bulk counter update
 
     # Group annotations by document
     annotations_by_doc = annotations.group_by { |ann| "#{ann[:sourcedb]}:#{ann[:sourceid]}" }
@@ -177,7 +213,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
         end
       end
 
-      # Count old annotations before deletion (for replace mode counter updates)
+      # For replace mode, capture old counts before deletion (needed for docs table net delta)
       old_counts = if options[:mode] == 'replace'
         {
           denotations: project.denotations.where(doc_id: doc.id).count,
@@ -213,32 +249,29 @@ class ProcessAnnotationsBatchJob < ApplicationJob
       end
 
       # Save valid annotations
-      project.instantiate_and_save_annotations_collection(valid_doc_annotations) if valid_doc_annotations.present?
+      if valid_doc_annotations.present?
+        project.instantiate_and_save_annotations_collection(valid_doc_annotations)
 
-      # Count new annotations and update counters incrementally
-      new_counts = {
-        denotations: valid_doc_annotations.sum { |ann| (ann[:denotations] || []).size },
-        blocks: valid_doc_annotations.sum { |ann| (ann[:blocks] || []).size },
-        relations: valid_doc_annotations.sum { |ann| (ann[:relations] || []).size }
-      }
+        # Collect deltas for bulk counter update
+        # For docs table (cross-project): need net delta (new - old)
+        # For project_docs table (per-project): old counts don't matter (deleted first in replace mode)
+        new_counts = {
+          denotations: valid_doc_annotations.sum { |ann| (ann[:denotations] || []).size },
+          blocks: valid_doc_annotations.sum { |ann| (ann[:blocks] || []).size },
+          relations: valid_doc_annotations.sum { |ann| (ann[:relations] || []).size }
+        }
 
-      # Calculate deltas and update counters
-      denotations_delta = new_counts[:denotations] - old_counts[:denotations]
-      blocks_delta = new_counts[:blocks] - old_counts[:blocks]
-      relations_delta = new_counts[:relations] - old_counts[:relations]
-
-      project.increment_annotation_counters(
-        doc,
-        denotations_delta: denotations_delta,
-        blocks_delta: blocks_delta,
-        relations_delta: relations_delta,
-        batch_processing: true
-      )
+        doc_deltas[doc.id] = {
+          new_counts: new_counts,
+          old_counts: old_counts
+        }
+      end
 
       Rails.logger.info "[#{self.class.name}] Document #{doc_id} processing took #{Time.current - doc_start}s (#{doc_annotations.size} annotations)"
     end
 
-    warnings
+    # Return both warnings and doc_deltas for caller to process
+    [warnings, doc_deltas]
   end
 
   def store_docs(project, doc_specs)

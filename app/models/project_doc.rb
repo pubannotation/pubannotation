@@ -306,6 +306,57 @@ class ProjectDoc < ActiveRecord::Base
     # Temp table is automatically dropped on commit
   end
 
+  def self.bulk_increment_counts_for_batch(project_id:, doc_deltas:, mode:)
+    # Bulk update project_docs counters for a batch of documents
+    # doc_deltas = { doc_id => {denotations: X, blocks: Y, relations: Z}, ... }
+    #
+    # Semantics:
+    # - 'replace' mode: SET to delta values (old annotations were deleted)
+    # - 'add' mode: INCREMENT by delta values
+    #
+    # Uses VALUES with JOIN approach for efficiency with large batches (up to 500 docs)
+    # Avoids 1500 WHEN clauses (3 columns × 500 docs) with CASE approach
+
+    return if doc_deltas.empty?
+
+    # Build VALUES list for CTE: (doc_id, denotations_value, blocks_value, relations_value)
+    values_list = doc_deltas.map { |doc_id, deltas|
+      "(#{doc_id}, #{deltas[:denotations]}, #{deltas[:blocks]}, #{deltas[:relations]})"
+    }.join(", ")
+
+    if mode == 'replace'
+      # Replace mode: SET to values from updates table
+      ActiveRecord::Base.connection.execute(<<~SQL.squish)
+        WITH updates(doc_id, denotations_value, blocks_value, relations_value) AS (
+          VALUES #{values_list}
+        )
+        UPDATE project_docs
+        SET
+          denotations_num = updates.denotations_value,
+          blocks_num = updates.blocks_value,
+          relations_num = updates.relations_value
+        FROM updates
+        WHERE project_docs.project_id = #{project_id}
+          AND project_docs.doc_id = updates.doc_id
+      SQL
+    else
+      # Add mode: INCREMENT by values from updates table
+      ActiveRecord::Base.connection.execute(<<~SQL.squish)
+        WITH updates(doc_id, denotations_delta, blocks_delta, relations_delta) AS (
+          VALUES #{values_list}
+        )
+        UPDATE project_docs
+        SET
+          denotations_num = COALESCE(project_docs.denotations_num, 0) + updates.denotations_delta,
+          blocks_num = COALESCE(project_docs.blocks_num, 0) + updates.blocks_delta,
+          relations_num = COALESCE(project_docs.relations_num, 0) + updates.relations_delta
+        FROM updates
+        WHERE project_docs.project_id = #{project_id}
+          AND project_docs.doc_id = updates.doc_id
+      SQL
+    end
+  end
+
 private
 
   def denotations_about(span, terms, predicates)
