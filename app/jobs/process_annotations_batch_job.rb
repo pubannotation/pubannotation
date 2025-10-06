@@ -10,22 +10,27 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     @parent_job_id = parent_job_id
     @tracking_id = tracking_id
 
-    # Load tracking record and mark as running
-    # If record doesn't exist, parent job already finished and cleaned up - exit gracefully
-    @tracking = BatchJobTracking.find_by(id: @tracking_id)
+    # Load tracking record and mark as running (only if tracking is enabled)
+    if @tracking_id.present?
+      @tracking = BatchJobTracking.find_by(id: @tracking_id)
 
-    if @tracking.nil?
-      Rails.logger.warn "[#{self.class.name}] Tracking record #{@tracking_id} not found - parent job already finished. Exiting."
-      return
+      if @tracking.nil?
+        Rails.logger.warn "[#{self.class.name}] Tracking record #{@tracking_id} not found - parent job already finished. Exiting."
+        return
+      end
+
+      # If tracking was already marked as failed/crashed (stale pending detection), don't process
+      if @tracking.status != 'pending'
+        Rails.logger.warn "[#{self.class.name}] Tracking record #{@tracking_id} already in status '#{@tracking.status}' - skipping execution."
+        return
+      end
+
+      @tracking.mark_running!
+    else
+      # No tracking (immediate execution)
+      @tracking = nil
+      Rails.logger.info "[#{self.class.name}] Running without tracking (immediate execution)"
     end
-
-    # If tracking was already marked as failed/crashed (stale pending detection), don't process
-    if @tracking.status != 'pending'
-      Rails.logger.warn "[#{self.class.name}] Tracking record #{@tracking_id} already in status '#{@tracking.status}' - skipping execution."
-      return
-    end
-
-    @tracking.mark_running!
 
     # Set thread-local variable to enable batch processing optimizations
     Thread.current[:skip_annotation_callbacks] = true
@@ -52,7 +57,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     # report the missing docs
     doc_specs_missing.group_by {|doc_spec| doc_spec[:sourcedb]}.each do |sourcedb, doc_specs|
       sourceids = doc_specs.map { |doc_spec| doc_spec[:sourceid] }
-      parent_job.add_message(
+      parent_job&.add_message(
         sourcedb: sourcedb,
         sourceid: sourceids,
         body: "Could not get the document from #{sourcedb}"
@@ -76,7 +81,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
       Rails.logger.info "[#{self.class.name}] process_text_alignment took #{Time.current - align_start}s for #{valid_annotations.size} annotations"
 
       # Keep simple message handling to avoid serialization
-      alignment_messages.each { |message| parent_job.add_message(message) }
+      alignment_messages.each { |message| parent_job&.add_message(message) }
 
       # Bulk update counters for all documents processed in this batch
       # Strategy: Incremental updates for docs and project_docs, bulk update for project at end
@@ -116,8 +121,8 @@ class ProcessAnnotationsBatchJob < ApplicationJob
 
     Rails.logger.info "[#{self.class.name}] Total job time: #{Time.current - start_time}s (#{annotation_transaction.size} annotations)"
 
-    # Mark tracking as completed
-    @tracking.mark_completed!
+    # Mark tracking as completed (if tracking is enabled)
+    @tracking&.mark_completed!
 
   rescue Exceptions::JobSuspendError => e
     Rails.logger.info "[#{self.class.name}] Child job suspended gracefully"
@@ -134,7 +139,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     message  = "Batch processing error: #{e.class} - #{e.message}"
     message += "\n#{e.backtrace&.first(10)&.join("\n")}" if e.backtrace
 
-    parent_job.add_message(
+    parent_job&.add_message(
       sourcedb: '*',
       sourceid: ['batch_error'],
       body: message
@@ -283,7 +288,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     end
 
     messages.each do |message|
-      parent_job.add_message(message)
+      parent_job&.add_message(message)
     end
 
     doc_specs_missing
@@ -294,7 +299,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
 
     # Add messages in batches to reduce database round trips
     messages.each_slice(10) do |message_batch|
-      message_batch.each { |message| parent_job.add_message(message) }
+      message_batch.each { |message| parent_job&.add_message(message) }
     end
   end
 
@@ -319,10 +324,13 @@ class ProcessAnnotationsBatchJob < ApplicationJob
   end
 
   def parent_job
+    return nil unless @parent_job_id.present?
     @parent_job ||= Job.find(@parent_job_id)
   end
 
   def check_suspend_flag
+    return unless @parent_job_id.present?  # Skip suspension check for immediate execution
+
     suspend_file = Rails.root.join('tmp', "suspend_job_#{@parent_job_id}")
     if File.exist?(suspend_file)
       Rails.logger.info "[#{self.class.name}] Job suspended via file: #{suspend_file}"
