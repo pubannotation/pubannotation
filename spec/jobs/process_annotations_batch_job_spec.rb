@@ -284,4 +284,48 @@ RSpec.describe ProcessAnnotationsBatchJob, type: :job do
       end
     end
   end
+
+  describe 'immediate execution without tracking' do
+    let(:options) { { mode: 'add' } }
+    let(:annotation_transaction) do
+      [
+        {
+          sourcedb: 'PMC',
+          sourceid: '999999',  # Unique ID to avoid conflicts
+          text: 'Sample text for immediate execution.',
+          denotations: [
+            { id: 'T1', span: { begin: 0, end: 6 }, obj: 'Protein' },
+            { id: 'T2', span: { begin: 7, end: 11 }, obj: 'Gene' }
+          ],
+          relations: []
+        }
+      ]
+    end
+
+    before do
+      # Create doc and project_doc
+      create(:doc, sourcedb: 'PMC', sourceid: '999999', body: 'Sample text for immediate execution.')
+      create(:project_doc, project: project, doc: Doc.find_by(sourcedb: 'PMC', sourceid: '999999'))
+    end
+
+    it 'processes annotations without parent job or tracking' do
+      initial_denotation_count = Denotation.where(project: project).count
+
+      # Call perform_now with nil parent_job_id and tracking_id (simulates immediate execution)
+      ProcessAnnotationsBatchJob.perform_now(
+        project,
+        annotation_transaction,
+        options,
+        nil,  # No parent job
+        nil   # No tracking
+      )
+
+      # Annotations should be created
+      expect(Denotation.where(project: project).count).to eq(initial_denotation_count + 2)
+
+      # Verify counters were updated
+      project_doc = ProjectDoc.find_by(project: project, doc: Doc.find_by(sourcedb: 'PMC', sourceid: '999999'))
+      expect(project_doc.denotations_num).to eq(2)
+    end
+  end
 end
