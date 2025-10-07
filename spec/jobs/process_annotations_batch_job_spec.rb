@@ -323,9 +323,12 @@ RSpec.describe ProcessAnnotationsBatchJob, type: :job do
       # Annotations should be created
       expect(Denotation.where(project: project).count).to eq(initial_denotation_count + 2)
 
-      # Verify counters were updated
+      # Verify project_doc counters were updated
       project_doc = ProjectDoc.find_by(project: project, doc: Doc.find_by(sourcedb: 'PMC', sourceid: '999999'))
       expect(project_doc.denotations_num).to eq(2)
+
+      # Note: Project-level counters are updated by StoreAnnotationsCollectionUploadJob.update_final_project_stats
+      # This batch job only updates docs and project_docs counters incrementally
     end
   end
 end

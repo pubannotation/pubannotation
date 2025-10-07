@@ -28,6 +28,9 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 
 		# Wait for all batch jobs to complete (parent now monitors children)
 		wait_for_batch_jobs_completion
+
+		# Update project-level counters from database (for both immediate and async execution)
+		update_final_project_stats
 	rescue Exceptions::JobSuspendError => e
 		Rails.logger.warn "[#{self.class.name}] Job suspended - updating progress counter and project stats"
 
@@ -391,9 +394,6 @@ class StoreAnnotationsCollectionUploadJob < ApplicationJob
 			Job.where(id: @job.id).update_all(num_dones: final_with_invalid, updated_at: Time.current)
 			@job.reload
 		end
-
-		# Update project counts after all batches complete
-		update_final_project_stats
 
 		# Log summary
 		log_completion_summary
