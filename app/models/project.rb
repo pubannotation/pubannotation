@@ -423,7 +423,7 @@ class Project < ActiveRecord::Base
 
   def add_docs(index)
     # Import documents that are not in the DB.
-    docs_sequenced, sourceids_sequence_failed, messages = sequence index.db, index.ids
+    docs_sequenced, sourceids_sequence_failed, sourceids_personalized, messages = sequence index.db, index.ids
 
     # Tie the documents to the project.
     num_docs_added = tie_documents index.db, index.ids
@@ -443,12 +443,13 @@ class Project < ActiveRecord::Base
     total_sequenced = 0
     doc_specs_failed = []
     all_messages = []
+    doc_specs_personalized = {}  # Map of sourcedb => [sourceids that are personalized]
 
     doc_specs_grouped_by_sourcedbs.each do |sourcedb, doc_specs|
       sourceids = doc_specs.map { |doc_spec| doc_spec[:sourceid] }
 
       # Import documents that are not in the DB.
-      docs_sequenced, sourceids_sequence_failed, messages = sequence sourcedb, sourceids
+      docs_sequenced, sourceids_sequence_failed, sourceids_existing_personalized, messages = sequence sourcedb, sourceids
 
       # Tie the documents to the project.
       num_docs_added = tie_documents sourcedb, sourceids
@@ -463,31 +464,50 @@ class Project < ActiveRecord::Base
       total_sequenced += docs_sequenced.length
       doc_specs_failed.concat(sourceids_sequence_failed.map{|sourceid| {sourcedb:sourcedb, sourceid:sourceid}})
       all_messages.concat(messages)
+
+      # Collect personalized sourceids (convert to Set for O(1) lookup)
+      if sourceids_existing_personalized.present?
+        doc_specs_personalized[sourcedb] = sourceids_existing_personalized.to_set
+      end
     end
 
-    [total_added, total_sequenced, doc_specs_failed, all_messages]
+    [total_added, total_sequenced, doc_specs_failed, all_messages, doc_specs_personalized]
   end
 
   private def sequence(sourcedb, sourceids)
-    sourceids_existing_in_db = Doc.where(sourcedb: sourcedb, sourceid: sourceids).pluck(:sourceid)
-    sourceids_to_sequence = sourceids - sourceids_existing_in_db
+    # First check for documents with exact sourcedb
+    sourceids_existing_exact = Doc.where(sourcedb: sourcedb, sourceid: sourceids).pluck(:sourceid)
+    sourceids_not_found_exact = sourceids - sourceids_existing_exact
+
+    # For documents not found with exact sourcedb, check if personalized versions exist
+    sourceids_existing_personalized = []
+    if sourceids_not_found_exact.present?
+      personalized_sourcedb = Doc.personalize_sourcedb(sourcedb, user.username)
+      sourceids_existing_personalized = Doc.where(sourcedb: personalized_sourcedb, sourceid: sourceids_not_found_exact).pluck(:sourceid)
+    end
+
+    # Only sequence documents that don't exist in either form
+    sourceids_to_sequence = sourceids_not_found_exact - sourceids_existing_personalized
 
     if sourceids_to_sequence.present?
       docs_sequenced, messages = Doc.sequence_and_store_docs(sourcedb, sourceids_to_sequence)
       sourceids_sequenced = docs_sequenced.map{|doc| doc.sourceid}
       sourceids_sequence_failed = sourceids_to_sequence - sourceids_sequenced
 
-      [docs_sequenced, sourceids_sequence_failed, messages]
+      [docs_sequenced, sourceids_sequence_failed, sourceids_existing_personalized, messages]
     else
-      [[], [], []]
+      [[], [], sourceids_existing_personalized, []]
     end
   end
 
   private def tie_documents(sourcedb, source_ids)
     # Use LEFT JOIN instead of NOT IN subquery for better performance
     # Find docs that are NOT already associated with this project
+    # Check both exact sourcedb and personalized sourcedb
+    personalized_sourcedb = Doc.personalize_sourcedb(sourcedb, user.username)
+
     docs = Doc.joins("LEFT JOIN project_docs ON docs.id = project_docs.doc_id AND project_docs.project_id = #{self.id}")
-              .where(sourcedb: sourcedb, sourceid: source_ids)
+              .where("(sourcedb = ? OR sourcedb = ?) AND sourceid IN (?)", sourcedb, personalized_sourcedb, source_ids)
               .where('project_docs.doc_id IS NULL')
 
     return 0 if docs.empty?

@@ -821,6 +821,13 @@ class Doc < ActiveRecord::Base
 		current_user.present? && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
 	end
 
+	# Returns the personalized sourcedb for a given sourcedb and username
+	# Example: personalize_sourcedb("PMC", "alice") => "PMC@alice"
+	def self.personalize_sourcedb(sourcedb, username)
+		return nil unless sourcedb.present? && username.present?
+		"#{sourcedb}#{UserSourcedbSeparator}#{username}"
+	end
+
 	def created_by?(current_user)
 		sourcedb.include?(':') && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
 	end

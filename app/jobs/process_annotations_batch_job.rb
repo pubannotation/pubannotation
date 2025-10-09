@@ -50,8 +50,27 @@ class ProcessAnnotationsBatchJob < ApplicationJob
 
     # I/O, network-bound
     store_start = Time.current
-    doc_specs_missing = store_docs(project, doc_specs)
+    doc_specs_missing, doc_specs_personalized = store_docs(project, doc_specs)
     Rails.logger.info "[#{self.class.name}] store_docs took #{Time.current - store_start}s for #{doc_specs.size} docs"
+
+    # Normalize annotation sourcedbs to match actual documents (personalized or not)
+    # Use the personalized mapping from store_docs to avoid redundant lookups
+    if doc_specs_personalized.present?
+      # Cache personalized sourcedb strings to avoid repeated string concatenation
+      personalized_sourcedb_cache = {}
+
+      annotation_transaction.each do |annotation|
+        sourcedb = annotation[:sourcedb]
+        sourceid = annotation[:sourceid]
+
+        # If this sourcedb+sourceid pair has a personalized version, update it
+        # Note: doc_specs_personalized values are Sets for O(1) lookup
+        if doc_specs_personalized[sourcedb]&.include?(sourceid)
+          personalized_sourcedb_cache[sourcedb] ||= Doc.personalize_sourcedb(sourcedb, project.user.username)
+          annotation[:sourcedb] = personalized_sourcedb_cache[sourcedb] if personalized_sourcedb_cache[sourcedb]
+        end
+      end
+    end
 
     # CPU-bound
     # report the missing docs
@@ -282,7 +301,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
   def store_docs(project, doc_specs)
     # doc_specs is already unique
     begin
-      num_added, num_sequenced, doc_specs_missing, messages = project.add_docs_from_array(doc_specs, batch_processing: true)
+      num_added, num_sequenced, doc_specs_missing, messages, doc_specs_personalized = project.add_docs_from_array(doc_specs, batch_processing: true)
     # rescue => e
     #   raise e
     end
@@ -291,7 +310,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
       parent_job&.add_message(message)
     end
 
-    doc_specs_missing
+    [doc_specs_missing, doc_specs_personalized]
   end
 
   def batch_add_messages(messages)
