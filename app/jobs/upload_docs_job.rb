@@ -59,7 +59,7 @@ class UploadDocsJob < ApplicationJob
 					num_dones += 1
 				rescue => e
 					raise e if @job.nil?
-					@job.add_message body: "[#{fpath}] #{e.message}"
+					@job.add_message body: "[#{filepath}] #{e.message}"
 				ensure
 					@job&.update_attribute(:num_dones, num_dones)
 					check_suspend_flag
