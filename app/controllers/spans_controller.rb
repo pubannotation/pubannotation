@@ -115,7 +115,7 @@ class SpansController < ApplicationController
     respond_to do |format|
       format.any do
         render plain: url,
-               status: :created,
+               status: :ok,
                location: url
       end
     end

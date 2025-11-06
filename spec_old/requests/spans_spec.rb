@@ -140,9 +140,9 @@ RSpec.describe "Spans", type: :request do
     context 'when text is found in document' do
       let(:doc) { create(:doc, body: "This is a test document. It contains sample text for testing alignment.") }
 
-      it "returns 201 response" do
+      it "returns 200 response" do
         post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'sample text' }
-        expect(response).to have_http_status(201)
+        expect(response).to have_http_status(200)
       end
 
       it "returns URL with correct span positions" do
@@ -163,14 +163,14 @@ RSpec.describe "Spans", type: :request do
       it "finds text at the beginning of document" do
         post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'This is a test' }
 
-        expect(response).to have_http_status(201)
+        expect(response).to have_http_status(200)
         expect(response.body).to include('/spans/0-14')
       end
 
       it "finds text at the end of document" do
         post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'testing alignment.' }
 
-        expect(response).to have_http_status(201)
+        expect(response).to have_http_status(200)
         expect(response.body).to include('/spans/53-71')
       end
 
@@ -178,7 +178,7 @@ RSpec.describe "Spans", type: :request do
         # TextAlignment should handle minor whitespace differences
         post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'sample  text' }
 
-        expect(response).to have_http_status(201)
+        expect(response).to have_http_status(200)
         expect(response.body).to match(%r{/spans/\d+-\d+})
       end
     end
@@ -205,7 +205,7 @@ RSpec.describe "Spans", type: :request do
       it "finds exact match correctly" do
         post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'brown fox' }
 
-        expect(response).to have_http_status(201)
+        expect(response).to have_http_status(200)
         expect(response.body).to include('/spans/10-19')
       end
     end
@@ -216,7 +216,7 @@ RSpec.describe "Spans", type: :request do
       it "strips whitespace and finds text" do
         post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: '  with content  ' }
 
-        expect(response).to have_http_status(201)
+        expect(response).to have_http_status(200)
         expect(response.body).to match(%r{/spans/\d+-\d+})
       end
     end
