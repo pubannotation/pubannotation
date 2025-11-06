@@ -74,17 +74,33 @@ class SpansController < ApplicationController
   end
 
   def get_url
-    doc = Doc.find_by sourcedb:params[:sourcedb], sourceid:params[:sourceid] \
-            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
-
+    # Validate parameters first before fetching document
     raise ArgumentError, "The 'text' parameter is missing." unless params[:text].present?
     raise ArgumentError, "The value of the 'text' parameter is not a string." unless params[:text].class == String
 
     text = params[:text].strip
+
+    # Find or fetch the document
+    doc = Doc.find_by sourcedb:params[:sourcedb], sourceid:params[:sourceid] \
+            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
+
+    # Use TextAlignment to find the text in the document
+    aligner = TextAlignment::TextAlignment.new(doc.body)
+    result = aligner.align(text)
+
+    raise ArgumentError, "Text alignment failed." unless result && result[:blocks]
+
+    # Find the first block that successfully aligned (not :empty)
+    # The block contains the source (input text) and target (document) positions
+    aligned_block = result[:blocks].find { |block| block[:alignment] != :empty && block[:target] }
+
+    raise ArgumentError, "Text could not be found in the document." unless aligned_block
+
     span = {
-      begin: 0,
-      end: text.length
+      begin: aligned_block[:target][:begin],
+      end: aligned_block[:target][:end]
     }
+
     annotations = {
       text: text,
       sourcedb: params[:sourcedb],
@@ -94,7 +110,7 @@ class SpansController < ApplicationController
           obj:'span'
       }]
     }
-    url = "#{home_url}/docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}/spans/#{span[:begin]}-#{span[:end]}"
+    url = "#{home_url}docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}/spans/#{span[:begin]}-#{span[:end]}"
 
     respond_to do |format|
       format.any do
