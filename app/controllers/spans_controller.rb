@@ -101,7 +101,12 @@ class SpansController < ApplicationController
       end: aligned_block[:target][:end]
     }
 
-    url = "#{home_url}docs/sourcedb/#{params[:sourcedb]}/sourceid/#{params[:sourceid]}/spans/#{span[:begin]}-#{span[:end]}"
+    # Generate URL based on whether this is a project-specific request
+    if params[:project_id].present?
+      url = "#{home_url}projects/#{params[:project_id]}/docs/sourcedb/#{params[:sourcedb]}/sourceid/#{params[:sourceid]}/spans/#{span[:begin]}-#{span[:end]}"
+    else
+      url = "#{home_url}docs/sourcedb/#{params[:sourcedb]}/sourceid/#{params[:sourceid]}/spans/#{span[:begin]}-#{span[:end]}"
+    end
 
     respond_to do |format|
       format.json do
@@ -114,7 +119,7 @@ class SpansController < ApplicationController
     end
   rescue => e
     respond_to do |format|
-      format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+      format.json {render json: {notice:e.message}, status: :unprocessable_content}
     end
   end
 

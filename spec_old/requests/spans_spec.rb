@@ -227,4 +227,62 @@ RSpec.describe "Spans", type: :request do
       end
     end
   end
+
+  describe "POST /projects/:project_id/docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/find_location" do
+    let(:project) { create(:project, accessibility: 1) }
+
+    context 'when text is found in document' do
+      let(:doc) { create(:doc, body: "This is a test document. It contains sample text for testing alignment.") }
+      let!(:project_doc) { create(:project_doc, project: project, doc: doc) }
+
+      it "returns 200 response" do
+        post "/projects/#{project.name}/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'sample text' }
+        expect(response).to have_http_status(200)
+      end
+
+      it "returns JSON with span and project-specific URL" do
+        post "/projects/#{project.name}/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'sample text' }
+
+        json_response = JSON.parse(response.body)
+        expect(json_response['span']['begin']).to eq(37)
+        expect(json_response['span']['end']).to eq(48)
+        expect(json_response['url']).to eq("http://www.example.com/projects/#{project.name}/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/37-48")
+      end
+
+      it "finds text at the beginning of document" do
+        post "/projects/#{project.name}/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'This is a test' }
+
+        expect(response).to have_http_status(200)
+        json_response = JSON.parse(response.body)
+        expect(json_response['span']['begin']).to eq(0)
+        expect(json_response['span']['end']).to eq(14)
+        expect(json_response['url']).to include("/projects/#{project.name}/")
+      end
+    end
+
+    context 'when text cannot be found in document' do
+      let(:doc) { create(:doc, body: "This is a test document.") }
+      let!(:project_doc) { create(:project_doc, project: project, doc: doc) }
+
+      it "returns 422 response" do
+        post "/projects/#{project.name}/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'nonexistent text' }
+
+        expect(response).to have_http_status(422)
+        json_response = JSON.parse(response.body)
+        expect(json_response['notice']).to include("Text could not be found in the document")
+      end
+    end
+
+    context 'when text parameter is missing' do
+      let(:doc) { create(:doc) }
+      let!(:project_doc) { create(:project_doc, project: project, doc: doc) }
+
+      it "returns 422 response with error message" do
+        post "/projects/#{project.name}/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json"
+        expect(response).to have_http_status(422)
+        json_response = JSON.parse(response.body)
+        expect(json_response['notice']).to include("The 'text' parameter is missing")
+      end
+    end
+  end
 end
