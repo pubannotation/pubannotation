@@ -115,14 +115,14 @@ RSpec.describe "Spans", type: :request do
     end
   end
 
-  describe "POST /docs/sourcedb/:sourcedb/sourceid/:sourceid/spans" do
+  describe "POST /docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/find_location" do
     context 'when document is not found and cannot be fetched' do
       before do
         allow(Doc).to receive(:sequence_and_store_doc!).and_raise(StandardError, "Document not found")
       end
 
       it "returns 422 response" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: 'PMC', sourceid: '999999'), params: { text: 'some text' }
+        post "/docs/sourcedb/PMC/sourceid/999999/spans/find_location.json", params: { text: 'some text' }
         expect(response).to have_http_status(422)
       end
     end
@@ -131,9 +131,10 @@ RSpec.describe "Spans", type: :request do
       let(:doc) { create(:doc) }
 
       it "returns 422 response with error message" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid)
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json"
         expect(response).to have_http_status(422)
-        expect(response.body).to include("The 'text' parameter is missing")
+        json_response = JSON.parse(response.body)
+        expect(json_response['notice']).to include("The 'text' parameter is missing")
       end
     end
 
@@ -141,45 +142,45 @@ RSpec.describe "Spans", type: :request do
       let(:doc) { create(:doc, body: "This is a test document. It contains sample text for testing alignment.") }
 
       it "returns 200 response" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'sample text' }
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'sample text' }
         expect(response).to have_http_status(200)
       end
 
-      it "returns URL with correct span positions" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'sample text' }
+      it "returns JSON with span and URL" do
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'sample text' }
 
-        # The text "sample text" should be found at position 37-48 in the document
-        expected_url = "http://www.example.com/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/37-48"
-        expect(response.body).to eq(expected_url)
-      end
-
-      it "sets Location header to the URL" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'sample text' }
-
-        expected_url = "http://www.example.com/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/37-48"
-        expect(response.headers['Location']).to eq(expected_url)
+        json_response = JSON.parse(response.body)
+        expect(json_response['span']['begin']).to eq(37)
+        expect(json_response['span']['end']).to eq(48)
+        expect(json_response['url']).to eq("http://www.example.com/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/37-48")
       end
 
       it "finds text at the beginning of document" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'This is a test' }
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'This is a test' }
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include('/spans/0-14')
+        json_response = JSON.parse(response.body)
+        expect(json_response['span']['begin']).to eq(0)
+        expect(json_response['span']['end']).to eq(14)
       end
 
       it "finds text at the end of document" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'testing alignment.' }
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'testing alignment.' }
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include('/spans/53-71')
+        json_response = JSON.parse(response.body)
+        expect(json_response['span']['begin']).to eq(53)
+        expect(json_response['span']['end']).to eq(71)
       end
 
       it "handles text with whitespace variations" do
-        # TextAlignment should handle minor whitespace differences
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'sample  text' }
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'sample  text' }
 
         expect(response).to have_http_status(200)
-        expect(response.body).to match(%r{/spans/\d+-\d+})
+        json_response = JSON.parse(response.body)
+        expect(json_response['span']).to have_key('begin')
+        expect(json_response['span']).to have_key('end')
+        expect(json_response['url']).to match(%r{/spans/\d+-\d+})
       end
     end
 
@@ -187,15 +188,16 @@ RSpec.describe "Spans", type: :request do
       let(:doc) { create(:doc, body: "This is a test document.") }
 
       it "returns 422 response" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'nonexistent text that is not in the document' }
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'nonexistent text that is not in the document' }
 
         expect(response).to have_http_status(422)
       end
 
       it "returns error message" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'nonexistent text' }
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'nonexistent text' }
 
-        expect(response.body).to include("Text could not be found in the document")
+        json_response = JSON.parse(response.body)
+        expect(json_response['notice']).to include("Text could not be found in the document")
       end
     end
 
@@ -203,10 +205,12 @@ RSpec.describe "Spans", type: :request do
       let(:doc) { create(:doc, body: "The quick brown fox jumps over the lazy dog.") }
 
       it "finds exact match correctly" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: 'brown fox' }
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: 'brown fox' }
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include('/spans/10-19')
+        json_response = JSON.parse(response.body)
+        expect(json_response['span']['begin']).to eq(10)
+        expect(json_response['span']['end']).to eq(19)
       end
     end
 
@@ -214,10 +218,12 @@ RSpec.describe "Spans", type: :request do
       let(:doc) { create(:doc, body: "Test document with content.") }
 
       it "strips whitespace and finds text" do
-        post doc_sourcedb_sourceid_spans_path(sourcedb: doc.sourcedb, sourceid: doc.sourceid), params: { text: '  with content  ' }
+        post "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/find_location.json", params: { text: '  with content  ' }
 
         expect(response).to have_http_status(200)
-        expect(response.body).to match(%r{/spans/\d+-\d+})
+        json_response = JSON.parse(response.body)
+        expect(json_response['span']).to have_key('begin')
+        expect(json_response['span']).to have_key('end')
       end
     end
   end

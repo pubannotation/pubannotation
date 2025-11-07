@@ -109,7 +109,7 @@ Pubann::Application.routes.draw do
 						get 'uptodate' => 'docs#uptodate'
 						delete '/' => 'docs#delete', :as=>'delete'
 						get 'spans' => 'spans#doc_spans_index'
-						post 'spans' => 'spans#get_url'
+						post 'spans/find_location' => 'spans#find_location'
 						get 'spans/:begin-:end' => 'docs#show', :as => 'span_show'
 						get 'spans/:begin-:end/annotations' => 'annotations#doc_annotations_index'
 						get 'spans/:begin-:end/annotations/merge_view' => 'annotations#doc_annotations_merge_view', :as => 'span_annotations_merge_view'

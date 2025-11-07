@@ -73,7 +73,7 @@ class SpansController < ApplicationController
     flash[:notice] = "#{t('controllers.shared.sql.invalid')} #{error}"
   end
 
-  def get_url
+  def find_location
     # Validate parameters first before fetching document
     raise ArgumentError, "The 'text' parameter is missing." unless params[:text].present?
     raise ArgumentError, "The value of the 'text' parameter is not a string." unless params[:text].class == String
@@ -101,27 +101,19 @@ class SpansController < ApplicationController
       end: aligned_block[:target][:end]
     }
 
-    annotations = {
-      text: text,
-      sourcedb: params[:sourcedb],
-      sourceid: params[:sourceid],
-      denotations:[{
-          span:,
-          obj:'span'
-      }]
-    }
-    url = "#{home_url}docs/sourcedb/#{annotations[:sourcedb]}/sourceid/#{annotations[:sourceid]}/spans/#{span[:begin]}-#{span[:end]}"
+    url = "#{home_url}docs/sourcedb/#{params[:sourcedb]}/sourceid/#{params[:sourceid]}/spans/#{span[:begin]}-#{span[:end]}"
 
     respond_to do |format|
-      format.any do
-        render plain: url,
-               status: :ok,
-               location: url
+      format.json do
+        render json: {
+          span: span,
+          url: url
+        },
+        status: :ok
       end
     end
   rescue => e
     respond_to do |format|
-      format.html {render plain: e.message, status: :unprocessable_entity}
       format.json {render json: {notice:e.message}, status: :unprocessable_entity}
     end
   end
