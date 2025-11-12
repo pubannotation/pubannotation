@@ -382,7 +382,7 @@ class AnnotationsController < ApplicationController
 
 			# ObtainAnnotationsJob.perform_now(project, docids_filepath, annotator.name, options)
 			# ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator.name, options.merge(debug: true))
-			ObtainAnnotationsJob.perform_later(project, docids_filepath, annotator.name, options)
+			ObtainAnnotationsSeqJob.perform_later(project, docids_filepath, annotator.name, options)
 
 			project.update({annotator_id:annotator.id})
 
