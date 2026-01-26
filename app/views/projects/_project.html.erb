@@ -9,7 +9,7 @@
 	<td class="show-when-wide" title="<%= project.description -%>"><%= project.description %></td>
 	<td style="text-align:right"><%= number_with_delimiter(annotations_count_helper(project, @doc, @span), :delimiter => ',') %></td>
 	<td style="text-align:center"><%= project.author %></td>
-	<td style="text-align:center"><%= maintainer_link(project) %></td>
+	<td style="text-align:center"><%= user_link(project.user, project.anonymize == true) %></td>
 	<td style="text-align:center"><%= project.updated_at.strftime('%Y-%m-%d') -%></td>
 	<td style="text-align:center"><%= project.status_text -%></td>
 </tr>

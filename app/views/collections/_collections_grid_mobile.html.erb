@@ -10,7 +10,7 @@
 		end
 
 		g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |collection|
-			[collection_maintainer_link(collection), {title: collection.user.username, style: 'text-align:center'}]
+			[user_link(collection.user), {title: user_name(collection.user), style: 'text-align:center'}]
 		end
 
 		g.column name: 'Updated_at', attribute: 'updated_at', class: 'column-project-updated' do |collection|

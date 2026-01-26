@@ -36,7 +36,7 @@
 	<table class="vertical">
 		<tr>
 			<th><%= t('activerecord.attributes.project.maintainer') %></th>
-			<td><%= collection_maintainer_link(@collection) %></td>
+			<td><%= user_link(@collection.user) %></td>
 		</tr>
 	</table>
 </fieldset>
@@ -74,7 +74,7 @@
 		# end
 
 		g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |project|
-			[maintainer_link(project), {title: project.user.username, style: 'text-align:center'}]
+			[user_link(project.user, project.anonymize == true), {title: user_name(project.user, project.anonymize == true), style: 'text-align:center'}]
 		end
 
 		g.column name: 'Updated_at', attribute: 'annotations_updated_at', class: 'column-project-updated' do |project|

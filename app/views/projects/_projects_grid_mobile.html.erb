@@ -10,7 +10,6 @@
 		end
 
 		g.column name: '# Ann.', attribute: 'denotations_num', filter: false, class: 'column-project-number' do |project|
-			# [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:7em; text-align:right'}]
 			[number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'text-align:right'}]
 		end
 
@@ -19,7 +18,7 @@
 		end
 
 		g.column name: 'Maintainer', attribute: 'username', assoc: :user, class: 'column-project-user' do |project|
-			[maintainer_link(project), {title: project.user.username, style: 'text-align:center'}]
+			[user_link(project.user, project.anonymize == true), {title: user_name(project.user, project.anonymize == true), style: 'text-align:center'}]
 		end
 
 		g.column name: 'Updated_at', attribute: 'updated_at', class: 'column-project-updated' do |project|

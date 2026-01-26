@@ -50,18 +50,6 @@ module ProjectsHelper
 		html.html_safe
 	end
 
-	def maintainer_link(project)
-		if project.anonymize == true
-			if current_user.present? && (current_user.root? || current_user == project.user)
-				link_to (project.user.username + ' ' + content_tag(:i, '', class: "fa fa-user-secret", "aria-hidden" => "true", title: "anonymized")).html_safe, show_user_path(project.user.username), style: 'display:block'
-			else
-				'<i class="fa fa-user-secret" aria-hidden="true" title="anonymized"></i>'.html_safe
-			end
-		else
-			link_to project.user.username, show_user_path(project.user.username), style: 'display:block'
-		end
-	end
-
 	def home_button
 		# link_to t('activerecord.attributes.project.reference'), @project.reference, :class => 'home_button' if @project.reference.present?
 		link_to image_tag('home-24.png', alt: 'Home', title: 'Home', class: 'home_button'), @project.reference, :class => 'home_button' if @project.reference.present?

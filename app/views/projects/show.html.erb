@@ -45,7 +45,7 @@
 	</tr>
 	<tr>
 		<th><%= t('activerecord.attributes.project.maintainer') %></th>
-		<td><%= maintainer_link(@project) %></td>
+		<td><%= user_link(@project.user, @project.anonymize == true) %></td>
 	</tr>
 	<% if @project.author.present? %>
 		<tr>

@@ -11,14 +11,6 @@ module CollectionsHelper
 		end
 	end
 
-	def collection_maintainer_link(collection)
-		if collection.user.present?
-			link_to collection.user.username, show_user_path(collection.user.username)
-		else
-			'Unknown'
-		end
-	end
-
 	def collection_home_button
 		link_to image_tag('home-24.png', alt: 'Home', title: 'Home', class: 'home_button'), @collection.reference, :class => 'home_button' if @collection.reference.present?
 	end
