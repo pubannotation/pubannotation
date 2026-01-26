@@ -12,7 +12,11 @@ module CollectionsHelper
 	end
 
 	def collection_maintainer_link(collection)
-		link_to collection.user.username, show_user_path(collection.user.username)
+		if collection.user.present?
+			link_to collection.user.username, show_user_path(collection.user.username)
+		else
+			'Unknown'
+		end
 	end
 
 	def collection_home_button
