@@ -10,7 +10,15 @@
 		end
 	-%>
 
-	<%= "(#{ selector_project.get_denotations_count(@doc, @span) })" -%>
+	<%=
+		# Use preloaded counts when available (span view) to avoid N+1 queries
+		count = if @denotation_counts_by_project.present?
+			@denotation_counts_by_project[selector_project.id] || 0
+		else
+			selector_project.get_denotations_count(@doc, @span)
+		end
+	-%>
+	<%= "(#{count})" -%>
 
 	<%= content_tag :span, 
 		id: "project-selector-#{selector_project.name}", 

@@ -131,6 +131,14 @@ class DocsController < ApplicationController
 		if @span
 			valid_projects = @doc.get_projects(@span)
 			@projects = @projects & valid_projects
+
+			# Batch load denotation counts for all projects to avoid N+1 queries
+			all_project_ids = (@projects + (@selected_projects || [])).map(&:id)
+			@denotation_counts_by_project = Denotation
+				.where(doc_id: @doc.id, project_id: all_project_ids)
+				.where('"begin" >= ? AND "end" <= ?', @span[:begin], @span[:end])
+				.group(:project_id)
+				.count
 		end
 
 		respond_to do |format|
