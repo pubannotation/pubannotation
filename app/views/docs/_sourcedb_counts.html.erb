@@ -18,7 +18,6 @@
 			<td style="width:7em;text-align: right"><%= link_to number_to_human(docs_counts[sourcedb], units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), index_path, style: "display:block" %></td>
 			<!-- <td style="width:5em;text-align: right"><%= number_to_human(docs_count, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}) %></td> -->
 			<td style="text-align: right">
-<!--
 				<%= form_tag(index_path, method: 'get', style:"display:inline-block") do -%>
 					<%= hidden_field_tag :sourcedb, sourcedb %>
 					<%= text_field_tag :keywords, nil,
@@ -29,7 +28,6 @@
 						required: true -%>
 					<button type="submit" class="short_button" title="Search"><i class='fa fa-search' aria-hidden='true'></i></button>
 				<% end %>
- -->
 				<%= form_tag(open_path, method: 'get')  do -%>
 					<%= hidden_field_tag :sourcedb, sourcedb %>
 					<%= text_field_tag :sourceid, nil,

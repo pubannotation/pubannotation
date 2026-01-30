@@ -12,6 +12,25 @@
 	<td style="text-align:center"><%= link_to(source_doc.sourcedb, doc_href, class: :row_link) -%></td>
 	<td style="text-align:center"><%= link_to(source_doc.sourceid, doc_href, class: :row_link) -%></td>
 	<td class="snippet show-when-wide"><%= link_to(doc_snippet(source_doc).html_safe, doc_href, class: "row_link") -%></td>
+	<% if @search_results.present? %>
+		<%
+			search_result = @search_results.results[source_doc_counter]
+			if search_result&.hybrid?
+				bm25 = search_result.bm25_score ? sprintf("%.1f", search_result.bm25_score) : "-"
+				knn = search_result.knn_score ? sprintf("%.2f", search_result.knn_score) : "-"
+				rrf = sprintf("%.3f", search_result.rrf_score)
+				bm25_rank = search_result.bm25_rank || "-"
+				knn_rank = search_result.knn_rank || "-"
+		%>
+		<td class="search-score bm25" title="BM25 rank: #<%= bm25_rank %>"><%= bm25 %></td>
+		<td class="search-score knn" title="kNN rank: #<%= knn_rank %>"><%= knn %></td>
+		<td class="search-score rrf"><%= rrf %></td>
+		<% else %>
+		<td class="search-score bm25"><%= search_result ? sprintf("%.1f", search_result.score) : "-" %></td>
+		<td class="search-score knn">-</td>
+		<td class="search-score rrf">-</td>
+		<% end %>
+	<% end %>
 	<td style="text-align:right"><%= link_to(number_to_human_size(source_doc.body.length), doc_href, class: :row_link) %></td>
 	<td class="show-when-wide" style="text-align:center"><%= link_to(doc_updated_at.to_date, doc_href, class: :row_link, title: "This document was last updated_at #{source_doc.updated_at.to_date}.") %></td>
 	<td class="table_cell_col_sep"></td>

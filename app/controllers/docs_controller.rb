@@ -28,17 +28,20 @@ class DocsController < ApplicationController
 
 		# If a keyword parameter is specified, Elasticsearch is used to search the full text of the Doc.
 		# The results will also include a text string highlighting the matches in the full-text search.
+		# Semantic (hybrid) search is the default; use params[:semantic]=false to disable
 		use_elasticsearch = params[:keywords].present?
+		use_semantic = params[:semantic] == 'true'  # Opt-in for performance
 
 		if use_elasticsearch
-			search_results = Doc.search_by_elasticsearch params[:keywords].strip.downcase,
+			@search_results = Doc.search_by_elasticsearch params[:keywords].strip.downcase,
 																									 @project,
 																									 @sourcedb,
 																									 page,
-																									 per
+																									 per,
+																									 semantic: use_semantic
 
-			@search_count = search_results.results.total
-			@docs = search_results.records
+			@search_count = @search_results.total
+			@docs = @search_results.records
 		else
 			@docs = Doc.search_by_active_record page, per, @project, @sourcedb,
 																					params[:sort_key], params[:sort_direction], params[:randomize]
@@ -47,13 +50,13 @@ class DocsController < ApplicationController
 		respond_to do |format|
 			format.html do
 				if use_elasticsearch
-					@docs = @docs.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i).first }
+					@docs = @docs.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(@search_results, i).first }
 				end
 			end
 			format.json do
 				docs = if use_elasticsearch
 								 @docs.map(&:to_list_hash)
-											.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i) }
+											.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(@search_results, i) }
 							 else
 								 @docs.map(&:to_list_hash)
 							 end
@@ -63,7 +66,7 @@ class DocsController < ApplicationController
 			format.tsv do
 				docs = if use_elasticsearch
 								 @docs.map(&:to_list_hash)
-											.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(search_results, i).first }
+											.map.with_index { |doc, i| set_highlight_text doc, get_highlight_texts_from(@search_results, i).first }
 							 else
 								 @docs.map(&:to_list_hash)
 							 end
@@ -82,7 +85,62 @@ class DocsController < ApplicationController
 		end
 	end
 
- 
+	# GET /docs/search.json
+	# Search API for documents
+	#
+	# Parameters:
+	#   query (required)    - search query string
+	#   sourcedb (optional) - filter by sourcedb (e.g., PubMed, PMC)
+	#   method (optional)   - search method: bm25, knn, or rrf (default: rrf)
+	#   per (optional)      - number of results (default: 10, max: 100)
+	#
+	# Returns JSON array of {sourcedb, sourceid, snippet}
+	def search_api
+		query = params[:query]
+		return render json: { error: 'query parameter is required' }, status: :bad_request if query.blank?
+
+		sourcedb = params[:sourcedb]
+		method = params[:method] || 'rrf'
+		per = [(params[:per] || 10).to_i, 100].min  # Cap at 100
+		per = [per, 1].max  # Minimum 1
+
+		unless %w[bm25 knn rrf].include?(method)
+			return render json: { error: "Invalid method '#{method}'. Must be bm25, knn, or rrf" }, status: :bad_request
+		end
+
+		query_normalized = query.strip.downcase
+
+		results = case method
+		when 'bm25'
+			Doc.search_by_elasticsearch(query_normalized, nil, sourcedb, 1, per, semantic: false)
+		when 'knn'
+			Doc.knn_search(query_normalized, sourcedb: sourcedb, page: 1, per: per)
+		when 'rrf'
+			Doc.hybrid_search(query_normalized, sourcedb: sourcedb, page: 1, per: per)
+		end
+
+		output = results.results.map do |r|
+			doc = Doc.find_by(id: r.id)
+			next unless doc
+
+			snippet = if r.highlight.body.present?
+				r.highlight.body.first
+			else
+				doc.body.to_s[0..200]
+			end
+
+			{
+				sourcedb: doc.sourcedb,
+				sourceid: doc.sourceid,
+				snippet: snippet
+			}
+		end.compact
+
+		render json: output
+	rescue => e
+		render json: { error: e.message }, status: :internal_server_error
+	end
+
 	def sourcedb_index
 		begin
 			if params[:project_id].present?
@@ -594,6 +652,9 @@ class DocsController < ApplicationController
 	end
 
 	def set_highlight_text(doc, highlight_text)
+		# Only set highlight text if it exists (kNN-only results have no highlights)
+		return doc if highlight_text.blank?
+
 		if doc.is_a? Hash
 			doc[:text] = highlight_text
 		else

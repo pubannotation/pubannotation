@@ -95,12 +95,14 @@ module DocsHelper
 
 	def doc_snippet(doc)
 		snippet = doc.body
+		return '' if snippet.nil?
+
 		em_open_pos = snippet.index('<em>')
 		if em_open_pos
 			em_close_pos = snippet.rindex('</em>')
 			m = em_open_pos + (em_close_pos - em_open_pos) / 2
-			b = m - 40
-			e = m + 60
+			b = m - 20
+			e = m + 55
 			if b < 0
 				e -= b
 				b = 0
@@ -108,7 +110,27 @@ module DocsHelper
 			if e > snippet.length
 				e = snippet.length
 			end
-			snippet[b...e]
+
+			result = snippet[b...e]
+
+			# Ensure we don't start in the middle of an HTML tag
+			if b > 0 && result =~ /^[^<]*>/
+				# We're starting inside a tag, find the end of it
+				tag_end = result.index('>')
+				result = result[(tag_end + 1)..-1] if tag_end
+			end
+
+			# Ensure we don't end in the middle of an HTML tag
+			if e < snippet.length && result =~ /<[^>]*$/
+				# We're ending inside a tag, remove the partial tag
+				tag_start = result.rindex('<')
+				result = result[0...tag_start] if tag_start
+			end
+
+			# Clean up any orphaned closing tags at the start
+			result = result.sub(/^[^<]*<\/em>/, '') if result =~ /^[^<]*<\/em>/
+
+			result
 		else
 			snippet[0 ... 100]
 		end

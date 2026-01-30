@@ -537,6 +537,10 @@ class Project < ActiveRecord::Base
       ActiveRecord::Base.connection.update(
         "UPDATE docs SET projects_num = projects_num + 1 WHERE id IN (#{doc_ids.join(',')})"
       )
+
+      # Queue ES project membership updates for bulk-added docs
+      # This replaces the individual after_add callbacks that insert_all bypasses
+      Elasticsearch::IndexQueue.add_project_memberships(doc_ids: doc_ids, project_id: id)
     end
 
     result.count
@@ -616,15 +620,26 @@ class Project < ActiveRecord::Base
 
   def update_es_index
     ActiveRecord::Base.transaction do
-      Doc.where("sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0").each do |d|
-        d.__elasticsearch__.delete_document
-        d.delete
-      end
-      # connection.exec_query("DELETE FROM docs WHERE (sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0)")
+      # Delete orphan user documents and queue ES deletion
+      orphan_docs = Doc.where("sourcedb LIKE '%#{Doc::UserSourcedbSeparator}#{user.username}' AND projects_num = 0")
+      orphan_doc_ids = orphan_docs.pluck(:id)
 
-      Doc.__elasticsearch__.import query: -> { where(flag: true) }
+      # Queue ES deletions for orphan docs
+      orphan_doc_ids.each { |doc_id| Elasticsearch::IndexQueue.delete_doc(doc_id) }
+
+      # Delete the orphan docs from PostgreSQL
+      orphan_docs.delete_all
+
+      # Queue ES indexing for flagged docs (those that need reindexing)
+      flagged_doc_ids = Doc.where(flag: true).pluck(:id)
+      Elasticsearch::IndexQueue.index_docs(flagged_doc_ids) if flagged_doc_ids.any?
+
+      # Clear the flag
       ActiveRecord::Base.connection.exec_query('UPDATE docs SET flag = false WHERE flag = true')
     end
+
+    # Trigger async processing of the queue
+    Elasticsearch::IndexQueue.schedule_processing
   end
 
   def instantiate_hdenotations(hdenotations, docid)
@@ -1122,6 +1137,8 @@ class Project < ActiveRecord::Base
 
   def import_docs_from_another_project(source_project_id)
     count = 0
+    doc_ids_added = []
+
     ActiveRecord::Base.transaction do
       count = ActiveRecord::Base.connection.update <<~SQL.squish
             INSERT INTO project_docs (project_id, doc_id, flag)
@@ -1131,6 +1148,9 @@ class Project < ActiveRecord::Base
             ON CONFLICT
             DO NOTHING
       SQL
+
+      # Get the doc_ids that were added (flagged docs)
+      doc_ids_added = ProjectDoc.where(project_id: id, flag: true).pluck(:doc_id)
 
       ActiveRecord::Base.connection.update <<~SQL.squish
         UPDATE docs
@@ -1145,6 +1165,11 @@ class Project < ActiveRecord::Base
       SQL
 
       docs_stat_update
+    end
+
+    # Queue ES project membership updates for imported docs (outside transaction for performance)
+    if doc_ids_added.any?
+      Elasticsearch::IndexQueue.add_project_memberships(doc_ids: doc_ids_added, project_id: id)
     end
 
     count

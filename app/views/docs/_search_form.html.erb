@@ -1,11 +1,28 @@
 <% path ||= request.path %>
+<% use_semantic = params[:semantic] == 'true' %>
 <span class='search-bar'>
 <%= form_tag(path, method: 'get') do -%>
 	<%= text_field_tag :keywords, params[:keywords],
 		style: "width:7em",
-		# placeholder: t('views.shared.keywords'),
 		minlength: 2,
 		required: true -%>
 	<button type="submit" class="short_button" title="Search"><i class='fa fa-search' aria-hidden='true'></i></button>
+	<label class="semantic-toggle" title="Semantic search uses AI embeddings to find conceptually similar documents, not just keyword matches">
+		<%= check_box_tag :semantic, 'true', use_semantic %>
+		<i class="fa fa-cube" aria-hidden="true"></i>
+	</label>
+	<%= hidden_field_tag :semantic, 'false', id: 'semantic_fallback', disabled: use_semantic %>
 <% end %>
 </span>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	var checkbox = document.querySelector('input[name="semantic"][type="checkbox"]');
+	var fallback = document.getElementById('semantic_fallback');
+	if (checkbox && fallback) {
+		checkbox.addEventListener('change', function() {
+			fallback.disabled = this.checked;
+		});
+	}
+});
+</script>

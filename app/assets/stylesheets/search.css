@@ -1,6 +1,56 @@
  /* Place all the styles related to the search controller here. */
  /* They will automatically be included in application.css. */
 
+/* Semantic search toggle */
+.semantic-toggle {
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+	user-select: none;
+	margin-left: 0.3em;
+	color: #555;
+}
+
+.semantic-toggle input[type="checkbox"] {
+	margin: 0 0.25em 0 0;
+	cursor: pointer;
+}
+
+.semantic-toggle:hover {
+	color: #15a;
+}
+
+.semantic-toggle span {
+	font-size: 0.85em;
+}
+
+/* Search scores display */
+col.docs_col_score {
+	width: 35px;
+}
+
+td.search-score {
+	text-align: right;
+	font-size: 0.85em;
+	font-family: monospace;
+	padding: 2px 4px;
+}
+
+td.search-score.bm25 {
+	background-color: #e3f2fd;
+	color: #1565c0;
+}
+
+td.search-score.knn {
+	background-color: #f3e5f5;
+	color: #7b1fa2;
+}
+
+td.search-score.rrf {
+	background-color: #e8f5e9;
+	color: #2e7d32;
+}
+
 div.CodeMirror {
 	border:1px solid #bbbbbb;
 }

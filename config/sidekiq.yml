@@ -3,6 +3,7 @@ development:
   :max_retries: 0
   :queues:
     - general
+    - elasticsearch
     - low_priority
     - update_paragraph_references
     - update_sentence_references
@@ -15,6 +16,7 @@ production:
   :max_retries: 3
   :queues:
     - general
+    - elasticsearch
     - low_priority
     - update_paragraph_references
     - update_sentence_references
@@ -27,6 +29,7 @@ test:
   :max_retries: 0
   :queues:
     - general
+    - elasticsearch
     - low_priority
   :redis:
     url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/15") %>

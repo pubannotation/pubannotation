@@ -50,8 +50,9 @@ gem "omniauth-rails_csrf_protection"
 gem 'omniauth-google-oauth2'
 gem 'rubyzip'
 gem 'zip-zip'
-gem 'elasticsearch-model', '~> 7.2'
-gem 'elasticsearch-rails', '~> 7.2'
+# Elasticsearch 8.x - direct client without elasticsearch-model/rails
+gem 'elasticsearch', '~> 8.12'
+gem 'httpx', '~> 1.2'  # HTTP client for embedding service
 gem 'faraday'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.12'

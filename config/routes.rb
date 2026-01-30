@@ -85,6 +85,8 @@ Pubann::Application.routes.draw do
 			get 'sourcedb' => 'docs#sourcedb_index'
 			get 'store_span_rdf' => 'docs#store_span_rdf'
 			get 'update_numbers' => 'docs#update_numbers'
+			# search API
+			get 'search' => 'docs#search_api'
 
 			get :autocomplete_doc_sourcedb
 		end

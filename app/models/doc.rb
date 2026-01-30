@@ -1,79 +1,48 @@
 class Doc < ActiveRecord::Base
-	include Elasticsearch::Model
-	include Elasticsearch::Model::Callbacks
+	include ElasticsearchIndexable
 	include TermSearchConcern
 	include PaginateConcern
 
-	settings index: {
-		analysis: {
-			analyzer: {
-				standard_normalization: {
-					tokenizer: :standard,
-					filter: [:lowercase, :stop, :asciifolding, :snowball]
-				}
-			}
-		}
-	} do
-		mappings do
-			indexes :sourcedb, type: :keyword
-			indexes :sourceid, type: :keyword
-			indexes :body,     type: :text,  analyzer: :standard_normalization, index_options: :offsets
-
-			# indexes :docs_projects, type: 'nested' do
-			indexes :docs_projects do
-				indexes :doc_id
-				indexes :project_id
-			end
-
-			indexes :projects do
-				indexes :id, type: :integer
-			end
-		end
-	end
-
 	SOURCEDBS = ['PubMed', 'PMC', 'GrayAnatomy']
 
-	def self.search_by_elasticsearch(keywords, project, sourcedb, page, per)
-		attributes = {
-			body: keywords,
-			project_id: project&.id,
-			sourcedb:,
-			page:,
-			per:
-		}
+	# Search documents using Elasticsearch 8.x
+	# This method signature is kept for backward compatibility with existing code
+	#
+	# @param keywords [String] Search query
+	# @param project [Project, nil] Filter by project
+	# @param sourcedb [String, nil] Filter by sourcedb
+	# @param page [Integer] Page number (1-based)
+	# @param per [Integer] Results per page
+	# @param semantic [Boolean] Use hybrid semantic search
+	# @return [SearchResults] Wrapped search results
+	def self.search_by_elasticsearch(keywords, project, sourcedb, page, per, semantic: false)
+		return SearchResults.new({ 'hits' => { 'hits' => [], 'total' => 0 } }, self, page: page, per: per) if keywords.blank?
 
-		filter_condition = []
-		filter_condition << {term: {'projects.id' => attributes[:project_id]}} if attributes[:project_id].present?
-		filter_condition << {term: {'sourcedb' => attributes[:sourcedb]}} if attributes[:sourcedb].present?
-		filter_condition << {term: {'sourceid' => attributes[:sourceid]}} if attributes[:sourceid].present?
+		if semantic
+			hybrid_search(keywords, project: project, sourcedb: sourcedb, page: page, per: per)
+		else
+			query = build_search_query(keywords, project, sourcedb)
 
-		filter_phrase = {
-			bool: {
-				must: filter_condition
-			}
-		}
-
-		docs = search(
-			query: {
-				bool: {
-					must: {
-						match: {
-							body: {
-								query: attributes[:body]
-							}
+			response = ELASTICSEARCH_CLIENT.search(
+				index: ELASTICSEARCH_INDEX_ALIAS,
+				body: {
+					query: query,
+					highlight: {
+						fields: {
+							body: {}
 						}
 					},
-					filter: filter_phrase
+					from: (page - 1) * per,
+					size: per
 				}
-			},
-			highlight: {
-				fields: {
-					body: {}
-				}
-			}
-		).page(attributes[:page]).per(attributes[:per])
+			)
 
-		return docs
+			SearchResults.new(response, self, page: page, per: per)
+		end
+	rescue => e
+		Rails.logger.error "[ES Search] Error: #{e.message}"
+		# Return empty results on ES errors to avoid breaking the UI
+		SearchResults.new({ 'hits' => { 'hits' => [], 'total' => 0 } }, self, page: page, per: per)
 	end
 
 	UserSourcedbSeparator = '@'
@@ -97,8 +66,8 @@ class Doc < ActiveRecord::Base
 
 	has_many :project_docs, dependent: :destroy
 	has_many :projects, through: :project_docs,
-		:after_add => [:increment_docs_projects_counter, :update_es_doc],
-		:after_remove => [:decrement_docs_projects_counter, :update_es_doc]
+		:after_add => [:increment_docs_projects_counter, :queue_es_project_add],
+		:after_remove => [:decrement_docs_projects_counter, :queue_es_project_remove]
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -207,8 +176,18 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
+	# Queue ES project membership operations (called by association callbacks)
+	def queue_es_project_add(project)
+		Elasticsearch::IndexQueue.add_project_membership(doc_id: id, project_id: project.id)
+	end
+
+	def queue_es_project_remove(project)
+		Elasticsearch::IndexQueue.remove_project_membership(doc_id: id, project_id: project.id)
+	end
+
+	# Legacy method for compatibility - now delegates to queue
 	def update_es_doc(project)
-		self.__elasticsearch__.index_document
+		queue_es_project_add(project)
 	end
 
 	def increment_docs_projects_counter(project)

@@ -27,6 +27,11 @@
 	<col class="docs_col_sourcedb">
 	<col class="docs_col_sourceid">
 	<col class="docs_col_text show-when-wide">
+	<% if @search_results.present? %>
+		<col class="docs_col_score">
+		<col class="docs_col_score">
+		<col class="docs_col_score">
+	<% end %>
 	<col class="docs_col_length">
 	<col class="table_col_date show-when-wide">
 	<col class="table_cell_col_sep">
@@ -53,6 +58,9 @@
 	<th class="show-when-wide">
 		<%= t('activerecord.attributes.doc.body') %>
 	</th>
+	<% if @search_results.present? %>
+		<th colspan="3"><span title="Search scores: B=BM25 (keyword match), K=kNN (semantic similarity), R=RRF (combined)">Scores (B, K, R)</span></th>
+	<% end %>
 	<th>
 		<%= t('views.shared.length') %>
 	</th>
