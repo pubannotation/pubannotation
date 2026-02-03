@@ -50,7 +50,7 @@ Request:
 - Content-Type header: Must be text/plain (required)
 - Body: The inline annotated text (plain text in the request body)
  - Format: [text][label] inline annotation syntax
- - Example: [Elon Musk][Person] is a member of the PayPal Mafia.
+ - Example: [Elon Musk][Person] is a member of the [PayPal Mafia][Organization].
  - Max size: 10 MB
 
 Response:
