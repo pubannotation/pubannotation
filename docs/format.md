@@ -2,7 +2,7 @@
 layout: docs
 title: Annotation format
 prev_section: create-annotation
-next_section: import-annotation
+next_section: simple-inline-annotation-format
 permalink: /docs/annotation-format/
 ---
 

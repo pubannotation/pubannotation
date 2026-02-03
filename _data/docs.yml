@@ -10,6 +10,7 @@
   - add-annotation
   - create-annotation
   - annotation-format
+  - simple-inline-annotation-format
   - import-annotation
   - obtain-annotation
   - annotation-server-api

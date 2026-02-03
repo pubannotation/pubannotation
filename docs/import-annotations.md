@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Importing annotations
-prev_section: annotation-format
+prev_section: simple-inline-annotation-format
 next_section: obtain-annotation
 permalink: /docs/import-annotation/
 ---
