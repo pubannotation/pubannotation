@@ -88,7 +88,7 @@ Example usage:
 {% highlight bash %}
 curl -X POST https://pubannotation.org/conversions/json2inline \
   -H "Content-Type: application/json" \
-  -d '{"text":"Elon Musk is a member of the PayPal Mafia.","denotations":[{"span":{"begin":0,"end":9},"obj":"Person"}]}'
+  -d '{"text":"Elon Musk is a member of the PayPal Mafia.","denotations":[{"span":{"begin":0,"end":9},"obj":"Person"},{"span":{"begin":29,"end":41},"obj":"Organization"}]}'
 {% endhighlight %}
 
 Error codes:
