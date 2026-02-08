@@ -110,7 +110,7 @@
 <fieldset class="pane annotations">
 	<legend>
 		Annotations
-		<span class='info'>(<%= number_with_delimiter(annotations_count_helper(@project, @doc, @span), :delimiter => ',') %>)</span>
+		<span class='info'>(<%= annotations_count_detailed_helper(@project, @doc) %>)</span>
 	</legend>
 
 	<table class="vertical">
