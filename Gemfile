@@ -55,7 +55,7 @@ gem 'elasticsearch', '~> 8.12'
 gem 'httpx', '~> 1.2'  # HTTP client for embedding service
 gem 'faraday'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
-gem 'tao_rdfizer', '~> 0.12'
+gem 'tao_rdfizer', '~> 0.12.1'
 gem 'simple_inline_text_annotation', '~> 1.1.1'
 
 # Use to clear page or fragment caches in app/controllers/doc_sweeper.rb
