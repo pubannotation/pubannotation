@@ -41,8 +41,8 @@ class ProjectDoc < ActiveRecord::Base
   def save_annotations(annotations, options = nil)
     options ||= {}
 
-    return ['Upload is skipped due to existing annotations'] if options[:mode] == :skip && (denotations_num > 0 || blocks_num > 0)
-    return ['The text in the annotations is no identical to the original document'] unless annotations[:text] == doc.body
+    return [{sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: 'Upload is skipped due to existing annotations'}] if options[:mode] == :skip && (denotations_num > 0 || blocks_num > 0)
+    return [{sourcedb: doc.sourcedb, sourceid: doc.sourceid, body: 'The text in the annotations is not identical to the original document'}] unless annotations[:text] == doc.body
 
     case options[:mode]
     when :replace
