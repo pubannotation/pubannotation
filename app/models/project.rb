@@ -288,49 +288,58 @@ class Project < ActiveRecord::Base
 
     ## begin to produce annotations_trig
     File.open(loc + '/' + annotations_rdf_filename, "w") do |f|
-      _doc_ids.each_with_index do |doc_id, i|
-        doc = Doc.find(doc_id)
+      first_hannotations = nil
 
-        if i == 0
-          hannotations = doc.hannotations(self, nil, nil)
+      _doc_ids.each_slice(100).with_index do |batch_ids, batch_idx|
+        docs_by_id = Doc.where(id: batch_ids).index_by(&:id)
 
-          # prefixes
-          preamble = rdfizer_annos.rdfize([hannotations], { only_prefixes: true })
-          preamble += "@prefix pubann: <https://pubannotation.org/ontology/pubannotation.owl#> .\n"
-          preamble += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
-          preamble += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
-          preamble += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
-          preamble += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
-          preamble += "\n" unless preamble.empty?
+        batch_ids.each_with_index do |doc_id, j|
+          i = batch_idx * 100 + j
+          doc = docs_by_id[doc_id]
+          next unless doc
 
-          # project meta-data
-          preamble += <<~HEREDOC
-            <#{graph_uri_project}> rdf:type pubann:Project ;
-            	rdf:type oa:Annotation ;
-            	oa:has_body <#{graph_uri_project}> ;
-            	oa:has_target <#{graph_uri_project_docs}> ;
-            	prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
+          if i == 0
+            first_hannotations = doc.hannotations(self, nil, nil)
 
-            GRAPH <#{graph_uri_project}>
-            {
-          HEREDOC
+            # prefixes
+            preamble = rdfizer_annos.rdfize([first_hannotations], { only_prefixes: true })
+            preamble += "@prefix pubann: <https://pubannotation.org/ontology/pubannotation.owl#> .\n"
+            preamble += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
+            preamble += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
+            preamble += "@prefix prj: <#{Rails.application.routes.url_helpers.home_url}projects/> .\n"
+            preamble += "@prefix #{name.downcase}: <#{graph_uri_project}/> .\n"
+            preamble += "\n" unless preamble.empty?
 
-          f.write(preamble)
-        end
+            # project meta-data
+            preamble += <<~HEREDOC
+              <#{graph_uri_project}> rdf:type pubann:Project ;
+              	rdf:type oa:Annotation ;
+              	oa:has_body <#{graph_uri_project}> ;
+              	oa:has_target <#{graph_uri_project_docs}> ;
+              	prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
 
-        if doc.denotations.where("denotations.project_id" => self.id).exists? ||
-           doc.blocks.where("blocks.project_id" => self.id).exists?
-          hannotations = doc.hannotations(self, nil, nil)
-          annos_ttl = rdfizer_annos.rdfize([hannotations], { with_prefixes: false })
-          f.write("\t" + annos_ttl.gsub(/\n/, "\n\t").rstrip + "\n")
-        end
-        yield(i, doc, nil) if block_given?
-      rescue => e
-        message = "failure during rdfization: #{e.message}"
-        if block_given?
-          yield(i, doc, message) if block_given?
-        else
-          raise e
+              GRAPH <#{graph_uri_project}>
+              {
+            HEREDOC
+
+            f.write(preamble)
+          end
+
+          if doc.denotations.where("denotations.project_id" => self.id).exists? ||
+             doc.blocks.where("blocks.project_id" => self.id).exists?
+            hannotations = first_hannotations || doc.hannotations(self, nil, nil)
+            first_hannotations = nil
+            annos_ttl = rdfizer_annos.rdfize([hannotations], { with_prefixes: false })
+            f.write("\t" + annos_ttl.gsub(/\n/, "\n\t").rstrip + "\n")
+          end
+          yield(i, doc, nil) if block_given?
+        rescue => e
+          message = "failure during rdfization: #{e.message}"
+          if block_given?
+            yield(i, doc, message) if block_given?
+          else
+            raise e
+          end
         end
       end
       f.write("}")
@@ -345,7 +354,8 @@ class Project < ActiveRecord::Base
     rdfizer_spans = TAO::RDFizer.new(:spans)
 
     File.open(loc + spans_rdf_filename, "w") do |f|
-      docs.each_with_index do |doc, i|
+      i = 0
+      docs.find_each do |doc|
         graph_uri_doc = doc.graph_uri
         graph_uri_doc_spans = doc.graph_uri + '/spans'
 
@@ -374,6 +384,7 @@ class Project < ActiveRecord::Base
         HEREDOC
         f.write(doc_spans_trig)
         yield(i, doc, nil) if block_given?
+        i += 1
       rescue => e
         message = "failure during rdfization: #{e.message}"
         if block_given?
@@ -381,6 +392,7 @@ class Project < ActiveRecord::Base
         else
           raise e
         end
+        i += 1
       end
     end
   end
