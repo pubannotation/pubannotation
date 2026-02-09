@@ -173,6 +173,38 @@ RSpec.describe AddDocsToProjectJob, type: :job do
       end
     end
 
+    context 'elasticsearch index queue' do
+      it 'schedules processing after docs are added' do
+        docspecs = [{ sourcedb: 'PMC', sourceid: '111' }]
+
+        allow(project).to receive(:add_docs).and_return([1, 0, []])
+
+        expect(Elasticsearch::IndexQueue).to receive(:schedule_processing).once
+
+        AddDocsToProjectJob.perform_now(project, docspecs)
+      end
+
+      it 'does not schedule processing when no docs were added' do
+        docspecs = [{ sourcedb: 'PMC', sourceid: '111' }]
+
+        allow(project).to receive(:add_docs).and_return([0, 0, []])
+
+        expect(Elasticsearch::IndexQueue).not_to receive(:schedule_processing)
+
+        AddDocsToProjectJob.perform_now(project, docspecs)
+      end
+
+      it 'does not schedule processing when all sourcedbs failed' do
+        docspecs = [{ sourcedb: 'PMC', sourceid: '111' }]
+
+        allow(project).to receive(:add_docs).and_raise('API error')
+
+        expect(Elasticsearch::IndexQueue).not_to receive(:schedule_processing)
+
+        AddDocsToProjectJob.perform_now(project, docspecs)
+      end
+    end
+
     context 'ensure block' do
       it 'reports existed docs count when some docs already existed' do
         job_record = setup_job_record(project)

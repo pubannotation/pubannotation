@@ -42,6 +42,8 @@ class AddDocsToProjectJob < ApplicationJob
       check_suspend_flag
     end
 
+    Elasticsearch::IndexQueue.schedule_processing if @total_num_added > 0
+
   ensure
     if @total_num_existed > 0
       @job&.add_message body: "#{@total_num_existed} doc(s) existed. #{@total_num_added} doc(s) added."
