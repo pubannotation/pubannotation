@@ -203,6 +203,63 @@ RSpec.describe AddDocsToProjectJob, type: :job do
 
         AddDocsToProjectJob.perform_now(project, docspecs)
       end
+
+      it 'schedules processing even when job is suspended after adding docs' do
+        job_record = setup_job_record(project)
+
+        docspecs = [
+          { sourcedb: 'PMC', sourceid: '111' },
+          { sourcedb: 'PubMed', sourceid: '222' }
+        ]
+
+        # First sourcedb succeeds, then job is suspended
+        allow(project).to receive(:add_docs) do |index|
+          if index.db == 'PMC'
+            [1, 0, []]
+          else
+            [1, 0, []]
+          end
+        end
+
+        # Suspend after first iteration
+        call_count = 0
+        allow_any_instance_of(AddDocsToProjectJob).to receive(:check_suspend_flag) do
+          call_count += 1
+          raise Exceptions::JobSuspendError if call_count == 1
+        end
+
+        expect(Elasticsearch::IndexQueue).to receive(:schedule_processing).once
+
+        # UseJobRecordConcern's rescue_from handles JobSuspendError
+        allow(job_record).to receive(:add_message)
+        allow(job_record).to receive(:finish!)
+
+        AddDocsToProjectJob.perform_now(project, docspecs)
+      end
+
+      it 'schedules processing when an unexpected error occurs after adding some docs' do
+        job_record = setup_job_record(project)
+
+        docspecs = [
+          { sourcedb: 'PMC', sourceid: '111' },
+          { sourcedb: 'PubMed', sourceid: '222' }
+        ]
+
+        call_count = 0
+        allow(project).to receive(:add_docs) do |index|
+          call_count += 1
+          # First sourcedb succeeds, second raises an unhandled error
+          raise 'unexpected crash' if call_count == 2
+          [1, 0, []]
+        end
+
+        expect(Elasticsearch::IndexQueue).to receive(:schedule_processing).once
+
+        allow(job_record).to receive(:add_message)
+        allow(job_record).to receive(:finish!)
+
+        AddDocsToProjectJob.perform_now(project, docspecs)
+      end
     end
 
     context 'ensure block' do

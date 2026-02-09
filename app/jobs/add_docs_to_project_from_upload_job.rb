@@ -41,9 +41,10 @@ class AddDocsToProjectFromUploadJob < ApplicationJob
 
     File.unlink(filepath)
   ensure
+    Elasticsearch::IndexQueue.schedule_processing if @total_num_added.to_i > 0
     messages  = []
-    messages << "#{@total_num_existed} doc(s) existed." if @total_num_existed > 0
-    messages << "#{@total_num_added} doc(s) sequenced." if @total_num_sequenced > 0
+    messages << "#{@total_num_existed} doc(s) existed." if @total_num_existed.to_i > 0
+    messages << "#{@total_num_added} doc(s) sequenced." if @total_num_sequenced.to_i > 0
     messages << "#{@total_num_added} doc(s) added."
     @job&.add_message body: messages.join(' ')
   end

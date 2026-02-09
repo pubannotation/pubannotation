@@ -19,6 +19,7 @@ class UploadDocsJob < ApplicationJob
 		mode = options[:mode].to_sym
 		num_dones = 0
 		num_updated_or_skipped = 0
+		@added_doc_ids = []
 
 		Dir.glob(File.join(dirpath, '**', all_applicable_files)) do |filepath|
 			# Check if it's a file and not a directory (glob should return only files, but just to be safe)
@@ -51,10 +52,14 @@ class UploadDocsJob < ApplicationJob
 							raise RuntimeError, error_messages.join("\n") if error_messages.present?
 						end
 						num_updated_or_skipped += 1
-						project.has_doc?(same_doc) || project.add_doc!(same_doc)
+						unless project.has_doc?(same_doc)
+							project.add_doc!(same_doc)
+							@added_doc_ids << same_doc.id
+						end
 					else
 						doc = Doc.store_hdoc!(hdoc)
 						project.add_doc!(doc)
+						@added_doc_ids << doc.id
 					end
 					num_dones += 1
 				rescue => e
@@ -69,6 +74,10 @@ class UploadDocsJob < ApplicationJob
 
 		@job&.add_message body: "#{num_updated_or_skipped} docs were #{mode == :update ? 'updated' : 'skipped'}." if num_updated_or_skipped > 0
 	ensure
+		if @added_doc_ids.present?
+			Elasticsearch::IndexQueue.add_project_memberships(doc_ids: @added_doc_ids, project_id: project.id)
+			Elasticsearch::IndexQueue.schedule_processing
+		end
 		remove_upload_files(filepath, dirpath)
 	end
 

@@ -54,7 +54,7 @@
 	</td>
 	<% if @project %>
 		<%
-			annotations_updated_at = ProjectDoc.where(doc_id:source_doc.id, project_id:@project.id).first.annotations_updated_at
+			annotations_updated_at = ProjectDoc.where(doc_id:source_doc.id, project_id:@project.id).first&.annotations_updated_at
 		%>
 		<% if annotations_updated_at.nil? %>
 			<td style="text-align:center; background-color: #fee">
