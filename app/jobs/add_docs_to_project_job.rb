@@ -28,6 +28,11 @@ class AddDocsToProjectJob < ApplicationJob
       @total_num_sequenced += num_sequenced
       @total_num_existed += num_existed
 
+      if num_sequenced > 0
+        Project.docs_stat_increment!(sourcedb, num_sequenced)
+        Project.docs_count_increment!(num_sequenced)
+      end
+
       messages.each do |message|
         @job&.add_message(message)
       end
@@ -35,17 +40,6 @@ class AddDocsToProjectJob < ApplicationJob
       i += docspecs.length
       @job&.update_attribute(:num_dones, i)
       check_suspend_flag
-    end
-
-    if @total_num_sequenced > 0
-      Project.docs_stat_increment!(sourcedb, @total_num_sequenced)
-      Project.docs_count_increment!(@total_num_sequenced)
-    end
-
-    sourcedbs = docspecs_group_by_sourcedb.keys
-    unless sourcedbs.empty?
-      project.increment!(:docs_count, @total_num_added)
-      sourcedbs.uniq.each {|sourcedb| project.docs_stat_increment!(sourcedb, @total_num_added)}
     end
 
   ensure
