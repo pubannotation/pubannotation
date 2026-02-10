@@ -10,6 +10,8 @@ class ImportDocsJob < ApplicationJob
 
 		@job&.add_message body: "#{count} doc(s) were imported."
 		@job&.update_attribute(:num_dones, 1)
+	ensure
+		Elasticsearch::IndexQueue.schedule_processing
 	end
 
 	def job_name
