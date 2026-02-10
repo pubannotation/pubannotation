@@ -193,7 +193,7 @@ class Evaluation < ActiveRecord::Base
 
 		if page && per
 			offset = (page - 1) * per
-			fns.slice(offset, per)
+			fns.slice(offset, per) || []
 		else
 			fns
 		end
