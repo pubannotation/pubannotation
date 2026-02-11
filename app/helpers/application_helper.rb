@@ -94,4 +94,15 @@ module ApplicationHelper
 		end
 		str
 	end
+
+	def simple_paginate
+		current_page = params[:page].nil? ? 1 : params[:page].to_i
+		nav = ''
+		qp = request.query_parameters
+		nav += link_to(content_tag(:i, '', class: "fa fa-angle-double-left", "aria-hidden" => "true"), "#{request.path}?#{qp.except('page').to_query}", title: "First", class: 'page') if current_page > 2
+		nav += link_to(content_tag(:i, '', class: "fa fa-angle-left", "aria-hidden" => "true"), "#{request.path}?#{qp.merge('page' => current_page - 1).to_query}", title: "Previous", class: 'page') if current_page > 1
+		nav += content_tag(:span, "Page #{current_page}", class: 'page')
+		nav += link_to(content_tag(:i, '', class: "fa fa-angle-right", "aria-hidden" => "true"), "#{request.path}?#{qp.merge('page' => current_page + 1).to_query}", title: "Next", class: 'page') unless params[:last_page]
+		content_tag(:nav, nav.html_safe, class: 'pagination')
+	end
 end
