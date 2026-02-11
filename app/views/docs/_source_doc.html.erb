@@ -14,7 +14,7 @@
 	<td class="snippet show-when-wide"><%= link_to(doc_snippet(source_doc).html_safe, doc_href, class: "row_link") -%></td>
 	<% if @search_results.present? %>
 		<%
-			search_result = @search_results.results[source_doc_counter]
+			search_result = @results_by_doc_id[source_doc.id]
 			if search_result&.hybrid?
 				bm25 = search_result.bm25_score ? sprintf("%.1f", search_result.bm25_score) : "-"
 				knn = search_result.knn_score ? sprintf("%.2f", search_result.knn_score) : "-"

@@ -94,29 +94,48 @@ module DocsHelper
 	end
 
 	def doc_snippet(doc)
-		snippet = doc.body
-		return '' if snippet.nil?
+		body = doc.body
+		return '' if body.nil?
 
-		em_open_pos = snippet.index('<em>')
-		if em_open_pos
-			# Start ~30 chars before the first highlight to provide context.
-			# CSS text-overflow: ellipsis handles right-side truncation in the table.
-			b = [em_open_pos - 30, 0].max
+		keywords = @search_keywords
+		if keywords.present?
+			terms = keywords.split(/\s+/).reject { |t| t.blank? || t.length < 2 }
 
-			# Adjust to a word boundary
-			if b > 0
-				space_pos = snippet.rindex(' ', b + 10)
-				b = space_pos + 1 if space_pos && space_pos >= [b - 10, 0].max
+			# Find the earliest matching term position in the body
+			match_pos = nil
+			terms.each do |term|
+				pos = body.downcase.index(term.downcase)
+				if pos && (match_pos.nil? || pos < match_pos)
+					match_pos = pos
+				end
 			end
 
-			result = snippet[b..]
+			if match_pos
+				# Start ~20 chars before the match so the keyword appears
+				# near the left edge of the visible area (CSS text-overflow
+				# truncates from the right).
+				b = [match_pos - 20, 0].max
 
-			# Add ellipsis prefix to indicate truncated start
-			result = "...#{result}" if b > 0
+				# Adjust to a word boundary
+				if b > 0
+					space_pos = body.rindex(' ', b + 10)
+					b = space_pos + 1 if space_pos && space_pos >= [b - 10, 0].max
+				end
 
-			result
+				result = body[b, 500]
+
+				# Wrap matching terms in <em> for bold display
+				terms.each do |term|
+					result = result.gsub(/(#{Regexp.escape(term)})/i, '<em>\1</em>')
+				end
+
+				result = "...#{result}" if b > 0
+				result
+			else
+				body[0, 200]
+			end
 		else
-			snippet[0 ... 100]
+			body[0, 200]
 		end
 	end
 
