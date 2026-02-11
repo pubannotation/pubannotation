@@ -99,36 +99,20 @@ module DocsHelper
 
 		em_open_pos = snippet.index('<em>')
 		if em_open_pos
-			em_close_pos = snippet.rindex('</em>')
-			m = em_open_pos + (em_close_pos - em_open_pos) / 2
-			b = m - 20
-			e = m + 55
-			if b < 0
-				e -= b
-				b = 0
-			end
-			if e > snippet.length
-				e = snippet.length
+			# Start ~30 chars before the first highlight to provide context.
+			# CSS text-overflow: ellipsis handles right-side truncation in the table.
+			b = [em_open_pos - 30, 0].max
+
+			# Adjust to a word boundary
+			if b > 0
+				space_pos = snippet.rindex(' ', b + 10)
+				b = space_pos + 1 if space_pos && space_pos >= [b - 10, 0].max
 			end
 
-			result = snippet[b...e]
+			result = snippet[b..]
 
-			# Ensure we don't start in the middle of an HTML tag
-			if b > 0 && result =~ /^[^<]*>/
-				# We're starting inside a tag, find the end of it
-				tag_end = result.index('>')
-				result = result[(tag_end + 1)..-1] if tag_end
-			end
-
-			# Ensure we don't end in the middle of an HTML tag
-			if e < snippet.length && result =~ /<[^>]*$/
-				# We're ending inside a tag, remove the partial tag
-				tag_start = result.rindex('<')
-				result = result[0...tag_start] if tag_start
-			end
-
-			# Clean up any orphaned closing tags at the start
-			result = result.sub(/^[^<]*<\/em>/, '') if result =~ /^[^<]*<\/em>/
+			# Add ellipsis prefix to indicate truncated start
+			result = "...#{result}" if b > 0
 
 			result
 		else
@@ -136,13 +120,4 @@ module DocsHelper
 		end
 	end
 
-	def simple_paginate
-		current_page = params[:page].nil? ? 1 : params[:page].to_i
-		nav = ''
-		nav += link_to(content_tag(:i, '', class: "fa fa-angle-double-left", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb, :sort_key, :sort_direction).except(:page), title: "First", class: 'page') if current_page > 2
-		nav += link_to(content_tag(:i, '', class: "fa fa-angle-left", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb, :sort_key, :sort_direction).merge(page: current_page - 1), title: "Previous", class: 'page') if current_page > 1
-		nav += content_tag(:span, "Page #{current_page}", class: 'page')
-		nav += link_to(content_tag(:i, '', class: "fa fa-angle-right", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb, :sort_key, :sort_direction).merge(page: current_page + 1), title: "Next", class: 'page') unless params[:last_page]
-		content_tag(:nav, nav.html_safe, class: 'pagination')
-	end
 end
