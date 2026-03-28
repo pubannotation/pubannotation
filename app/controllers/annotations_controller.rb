@@ -425,8 +425,15 @@ class AnnotationsController < ApplicationController
 			FileUtils.mv file.path, filepath
 
 			if (ext == '.json' || ext == '.jsonl') && file.size < 20.kilobytes
+				Thread.current[:upload_warnings] = nil
 				StoreAnnotationsCollectionUploadJob.perform_now(project, filepath, options)
-				notice = "Annotations are successfully uploaded."
+				warnings = Thread.current[:upload_warnings]
+				Thread.current[:upload_warnings] = nil
+				if warnings.present?
+					notice = "Annotations uploaded with warnings: " + warnings.map { |w| w[:body] }.join("; ")
+				else
+					notice = "Annotations are successfully uploaded."
+				end
 			else
 				active_job = StoreAnnotationsCollectionUploadJob.perform_later(project, filepath, options)
 				notice = "The task, '#{active_job.job_name}', is created."

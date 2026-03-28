@@ -76,11 +76,12 @@ class ProcessAnnotationsBatchJob < ApplicationJob
     # report the missing docs
     doc_specs_missing.group_by {|doc_spec| doc_spec[:sourcedb]}.each do |sourcedb, doc_specs|
       sourceids = doc_specs.map { |doc_spec| doc_spec[:sourceid] }
-      parent_job&.add_message(
-        sourcedb: sourcedb,
-        sourceid: sourceids,
-        body: "Could not get the document from #{sourcedb}"
-      )
+      message = { sourcedb: sourcedb, sourceid: sourceids, body: "Could not get the document from #{sourcedb}" }
+      if parent_job
+        parent_job.add_message(message)
+      else
+        (Thread.current[:upload_warnings] ||= []) << message
+      end
     end
 
     doc_descriptors_missing = doc_specs_missing.map {|doc_spec| "#{doc_spec[:sourcedb]}:#{doc_spec[:sourceid]}"}.to_set
@@ -100,7 +101,14 @@ class ProcessAnnotationsBatchJob < ApplicationJob
       Rails.logger.info "[#{self.class.name}] process_text_alignment took #{Time.current - align_start}s for #{valid_annotations.size} annotations"
 
       # Keep simple message handling to avoid serialization
-      alignment_messages.each { |message| parent_job&.add_message(message) }
+      alignment_messages.each do |message|
+        if parent_job
+          parent_job.add_message(message)
+        else
+          # No parent job (immediate execution) - collect warnings in thread-local
+          (Thread.current[:upload_warnings] ||= []) << message
+        end
+      end
 
       # Bulk update counters for all documents processed in this batch
       # Strategy: Incremental updates for docs and project_docs, bulk update for project at end
