@@ -598,7 +598,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def get_relations_count(project_id = nil, span = nil)
-		if project_id.nil?
+		if project_id.nil? && span.nil?
 			relations_num
 		elsif span.nil?
 			ActiveRecord::Base.connection.select_value <<~SQL.squish
@@ -608,12 +608,13 @@ class Doc < ActiveRecord::Base
 				AND doc_id=#{id}
 			SQL
 		else
-			relations
+			scope = relations
 				.joins("INNER JOIN denotations AS subj_d ON subj_d.id = relations.subj_id AND relations.subj_type = 'Denotation'")
 				.joins("INNER JOIN denotations AS obj_d  ON obj_d.id  = relations.obj_id  AND relations.obj_type  = 'Denotation'")
 				.where('subj_d.begin >= :b AND subj_d."end" <= :e', b: span[:begin], e: span[:end])
 				.where('obj_d.begin  >= :b AND obj_d."end"  <= :e', b: span[:begin], e: span[:end])
-				.count
+			scope = scope.where(project_id: project_id) if project_id
+			scope.count
 		end
 	end
 

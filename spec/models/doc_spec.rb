@@ -271,6 +271,30 @@ RSpec.describe Doc, type: :model do
       expect(doc.get_relations_count(project.id, begin: 0, end: 50)).to eq(1)
     end
 
+    context 'when the doc is shared by multiple projects' do
+      let(:other_project) { create(:project) }
+      let!(:other_project_doc) { create(:project_doc, project: other_project, doc: doc) }
+      let!(:other_d_0_5)   { create(:denotation, project: other_project, doc: doc, hid: 'T1', begin: 0,  end: 5) }
+      let!(:other_d_10_20) { create(:denotation, project: other_project, doc: doc, hid: 'T2', begin: 10, end: 20) }
+      let!(:other_r_inside) {
+        create(:relation, project: other_project, doc: doc, hid: 'R1',
+               subj_type: 'Denotation', subj_id: other_d_0_5.id,
+               obj_type: 'Denotation', obj_id: other_d_10_20.id)
+      }
+
+      it 'scopes the count to the given project' do
+        # Only r_inside belongs to `project` in [0,50].
+        expect(doc.get_relations_count(project.id, begin: 0, end: 50)).to eq(1)
+        # Only other_r_inside belongs to `other_project` in [0,50].
+        expect(doc.get_relations_count(other_project.id, begin: 0, end: 50)).to eq(1)
+      end
+
+      it 'counts across all projects when project_id is nil' do
+        # Both projects contribute one in-span relation each.
+        expect(doc.get_relations_count(nil, begin: 0, end: 50)).to eq(2)
+      end
+    end
+
     it 'runs as a single SQL query (no N+1)' do
       queries = []
       subscriber = ActiveSupport::Notifications.subscribe('sql.active_record') do |*, payload|
