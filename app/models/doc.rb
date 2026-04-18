@@ -608,8 +608,12 @@ class Doc < ActiveRecord::Base
 				AND doc_id=#{id}
 			SQL
 		else
-			# slow. should not be used for sort by this count
-			relations.count{|r| r.in_span?(span)}
+			relations
+				.joins("INNER JOIN denotations AS subj_d ON subj_d.id = relations.subj_id AND relations.subj_type = 'Denotation'")
+				.joins("INNER JOIN denotations AS obj_d  ON obj_d.id  = relations.obj_id  AND relations.obj_type  = 'Denotation'")
+				.where('subj_d.begin >= :b AND subj_d."end" <= :e', b: span[:begin], e: span[:end])
+				.where('obj_d.begin  >= :b AND obj_d."end"  <= :e', b: span[:begin], e: span[:end])
+				.count
 		end
 	end
 
