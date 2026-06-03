@@ -8,5 +8,9 @@ FactoryBot.define do
     denotations_num { 0 }
     blocks_num { 0 }
     relations_num { 0 }
+
+    after(:create) do |project_doc|
+      Doc.increment_counter(:projects_num, project_doc.doc_id)
+    end
   end
 end
