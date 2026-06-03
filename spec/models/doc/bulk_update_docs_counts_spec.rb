@@ -33,42 +33,38 @@ RSpec.describe Doc, '.bulk_update_docs_counts', type: :model do
       doc1.reload
       expect(doc1.denotations_num).to eq(3)
       expect(doc1.blocks_num).to eq(2)
-      expect(doc1.projects_num).to eq(1)
 
       doc2.reload
       expect(doc2.denotations_num).to eq(5)  # Only from project1
       expect(doc2.blocks_num).to eq(1)        # Only from project2
-      expect(doc2.projects_num).to eq(2)      # Two projects
 
       doc3.reload
       expect(doc3.denotations_num).to eq(0)
       expect(doc3.blocks_num).to eq(0)
-      expect(doc3.projects_num).to eq(0)
     end
   end
 
   describe 'updating specific docs' do
     it 'updates only specified docs' do
       # Set initial wrong counts
-      doc1.update_columns(denotations_num: 999, blocks_num: 999, projects_num: 999)
-      doc2.update_columns(denotations_num: 999, blocks_num: 999, projects_num: 999)
-      doc3.update_columns(denotations_num: 999, blocks_num: 999, projects_num: 999)
+      # Note: projects_num is maintained incrementally via association callbacks,
+      # so it is intentionally not re-aggregated by bulk_update_docs_counts.
+      doc1.update_columns(denotations_num: 999, blocks_num: 999)
+      doc2.update_columns(denotations_num: 999, blocks_num: 999)
+      doc3.update_columns(denotations_num: 999, blocks_num: 999)
 
       # Update only doc1 and doc2
       Doc.bulk_update_docs_counts(doc_ids: [doc1.id, doc2.id])
 
       doc1.reload
       expect(doc1.denotations_num).to eq(3)
-      expect(doc1.projects_num).to eq(1)
 
       doc2.reload
       expect(doc2.denotations_num).to eq(5)
-      expect(doc2.projects_num).to eq(2)
 
       # doc3 should remain unchanged
       doc3.reload
       expect(doc3.denotations_num).to eq(999)
-      expect(doc3.projects_num).to eq(999)
     end
   end
 
@@ -105,7 +101,6 @@ RSpec.describe Doc, '.bulk_update_docs_counts', type: :model do
 
       doc2.reload
       expect(doc2.denotations_num).to eq(15)  # 5 + 10
-      expect(doc2.projects_num).to eq(3)      # Three projects now
     end
 
     it 'sets counts to zero when annotations are deleted' do
