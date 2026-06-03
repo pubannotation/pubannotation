@@ -127,8 +127,8 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
       uri (>= 0.13.1)
-    addressable (2.8.7)
-      public_suffix (>= 2.0.2, < 7.0)
+    addressable (2.9.0)
+      public_suffix (>= 2.0.2, < 8.0)
     base64 (0.3.0)
     bcrypt (3.1.20)
     benchmark (0.4.1)
@@ -297,7 +297,7 @@ GEM
       date
       stringio
     pubannotation_evaluator (3.0.1)
-    public_suffix (6.0.2)
+    public_suffix (7.0.5)
     puma (6.6.0)
       nio4r (~> 2.0)
     racc (1.8.1)
