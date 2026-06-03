@@ -140,6 +140,23 @@ module ElasticsearchTestHelper
 end
 
 RSpec.configure do |config|
+  # Stub IndexQueue for all non-elasticsearch tests to avoid Redis connection errors.
+  # ElasticsearchIndexable registers after_commit callbacks that push to Redis;
+  # non-ES tests don't need real indexing and Redis is not guaranteed to be running.
+  config.before(:each) do |example|
+    unless example.metadata[:elasticsearch]
+      allow(Elasticsearch::IndexQueue).to receive(:index_doc)
+      allow(Elasticsearch::IndexQueue).to receive(:delete_doc)
+      allow(Elasticsearch::IndexQueue).to receive(:update_embedding)
+      allow(Elasticsearch::IndexQueue).to receive(:index_docs)
+      allow(Elasticsearch::IndexQueue).to receive(:add_project_membership)
+      allow(Elasticsearch::IndexQueue).to receive(:remove_project_membership)
+      allow(Elasticsearch::IndexQueue).to receive(:add_project_memberships)
+      allow(Elasticsearch::IndexQueue).to receive(:remove_project_memberships)
+      allow(Elasticsearch::IndexQueue).to receive(:schedule_processing)
+    end
+  end
+
   config.before(:suite) do
     if ElasticsearchTestHelper.elasticsearch_available?
       ElasticsearchTestHelper.setup_test_index

@@ -5,7 +5,8 @@ require 'rails_helper'
 RSpec.describe 'DocsController#show with span - N+1 query prevention', type: :request do
   # Stub Elasticsearch to avoid connection errors
   before do
-    allow_any_instance_of(Doc).to receive(:__elasticsearch__).and_return(double(index_document: true, delete_document: true))
+    allow(Elasticsearch::IndexQueue).to receive(:index_doc)
+    allow(Elasticsearch::IndexQueue).to receive(:delete_doc)
   end
 
   let(:user) { create(:user) }
@@ -80,7 +81,8 @@ end
 # Separate test for the batch loading query itself at model level
 RSpec.describe 'Denotation batch counting for span', type: :model do
   before do
-    allow_any_instance_of(Doc).to receive(:__elasticsearch__).and_return(double(index_document: true, delete_document: true))
+    allow(Elasticsearch::IndexQueue).to receive(:index_doc)
+    allow(Elasticsearch::IndexQueue).to receive(:delete_doc)
   end
 
   let(:user) { create(:user) }

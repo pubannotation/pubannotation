@@ -37,6 +37,13 @@ RSpec.configure do |config|
   # Include ActiveSupport time helpers (travel_to, freeze_time, etc.)
   config.include ActiveSupport::Testing::TimeHelpers
 
+  # Stub Sidekiq::Queue#size to avoid Redis connection errors in tests.
+  # StoreAnnotationsCollectionUploadJob#wait_for_queue_space checks the queue size
+  # before enqueuing child jobs. Without Redis, this raises CannotConnectError.
+  config.before(:each) do
+    allow_any_instance_of(Sidekiq::Queue).to receive(:size).and_return(0)
+  end
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = []
 
