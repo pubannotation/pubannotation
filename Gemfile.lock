@@ -142,7 +142,7 @@ GEM
     connection_pool (2.5.3)
     crass (1.0.6)
     csv (3.3.5)
-    date (3.4.1)
+    date (3.5.1)
     debug (1.11.0)
       irb (~> 1.10)
       reline (>= 0.3.8)
@@ -249,7 +249,7 @@ GEM
       bigdecimal (~> 3.1)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-imap (0.5.9)
+    net-imap (0.5.14)
       date
       net-protocol
     net-pop (0.1.2)
@@ -412,7 +412,7 @@ GEM
       ruby-dictionary (~> 1.1, >= 1.1.1)
       string-similarity (~> 2.1)
     thor (1.4.0)
-    timeout (0.4.3)
+    timeout (0.6.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicorn (6.1.0)
