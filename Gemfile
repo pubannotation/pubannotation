@@ -63,6 +63,7 @@ gem 'rails-observers'
 gem 'diff-lcs'
 gem 'activejob-cancel'
 gem 'sidekiq'
+gem 'connection_pool', '< 3.0'
 
 gem "foreman"
 
