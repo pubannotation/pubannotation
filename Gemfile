@@ -56,14 +56,13 @@ gem 'httpx', '~> 1.2'  # HTTP client for embedding service
 gem 'faraday'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.12.1'
-gem 'simple_inline_text_annotation', '~> 1.1.1'
+gem 'simple_inline_text_annotation'
 
 # Use to clear page or fragment caches in app/controllers/doc_sweeper.rb
 gem 'rails-observers'
 gem 'diff-lcs'
 gem 'activejob-cancel'
 gem 'sidekiq'
-gem 'connection_pool', '< 3.0'
 
 gem "foreman"
 
