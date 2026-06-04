@@ -21,7 +21,7 @@ group :development do
   gem 'dotenv-rails'
   gem 'web-console'
   gem 'debug'
-  gem 'rack-mini-profiler', '~> 3.0'
+  gem 'rack-mini-profiler', '~> 4.0'
   gem 'memory_profiler'     # for memory profiling
   gem 'flamegraph'          # for flamegraph profiling
   gem 'stackprof'           # for flamegraph support
@@ -63,6 +63,7 @@ gem 'rails-observers'
 gem 'diff-lcs'
 gem 'activejob-cancel'
 gem 'sidekiq'
+gem 'connection_pool', '< 3.0'
 
 gem "foreman"
 
