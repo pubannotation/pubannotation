@@ -10,9 +10,9 @@ Requirement
 -----------
 
 Please use it with
-* ruby version 3.4.1,
-* Postgresql 9.0 or above,
-* ElasticSearch 5 or above, and
+* ruby version 3.4.5,
+* PostgreSQL 9.0 or above,
+* Elasticsearch 8.x,
 * [redis](https://redis.io/)
 
 If your system does not already have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.
@@ -39,6 +39,18 @@ $ redis-server /usr/local/etc/redis.conf
 2. cd pubannotation
 3. bin/setup
 
+`bin/setup` installs dependencies, prepares the database, clears logs and temporary files, and starts the development processes through `bin/dev`.
+
+If you only want to set up the application without starting the server, run:
+```
+bin/setup --skip-server
+```
+
+To start the development processes later, run:
+```
+bin/dev
+```
+
 ### Test
 This project uses RSpec for testing. To run the tests, execute:
 ```
@@ -61,9 +73,21 @@ $ bundle exec sidekiq -C config/sidekiq.yml -q general
 Deploy
 -----
 
-rails s -e production
+Start the Rails application and Sidekiq worker with the environment variables required for production.
 
-(You will encounter an error message with an instruction to set a secret key for devise. Please follow the instruction.)
+Required production environment variables include:
+
+```
+DEVISE_SECRET_KEY=[Generated Devise secret key]
+GOOGLE_CLIENT_ID=[Generated Google OAuth client id]
+GOOGLE_CLIENT_SECRET=[Generated Google OAuth client secret]
+RECAPTCHA_SITE_KEY=[Generated reCAPTCHA site key]
+RECAPTCHA_SECRET_KEY=[Generated reCAPTCHA secret key]
+REDIS_URL=redis://localhost:6379/0
+ELASTICSEARCH_URL=http://localhost:9200
+```
+
+`ELASTICSEARCH_API_KEY` can also be set when the Elasticsearch cluster requires API key authentication.
 
 License
 -------
@@ -74,7 +98,7 @@ The PubAnnotation repository (http://pubannotation.org) is freely available to a
 
 ### Google authentication procedure
 
-Execute the following ur in the browser and log in with the pubannotation specific user account.
+Open the following URL in the browser and log in with the PubAnnotation-specific Google account.
 ```
 https://console.developers.google.com/
 ```
@@ -85,10 +109,7 @@ Example:
 pubannotation
 ```
 
-Click link(Enable APIs and services) to activate the API library:
-```
-Gmail API
-```
+Configure the OAuth consent screen and create an OAuth Client ID for Google sign-in.
 
 OAuth consent screen.
 
@@ -119,7 +140,7 @@ xxxxxxxxx9xxxx9xx9x9xx99
 
 Add an approved redirect URI.
 ```
-[Same URL as environment variable(pubannotation)]/users/auth/google_oauth2/callback
+[Application base URL]/users/auth/google_oauth2/callback
 ```
 
 ### Create .env file.
@@ -129,8 +150,8 @@ cp .env.example .env
 
 ### .env file settings.
 ```
-CLIENT_ID=[Generated client id]
-CLIENT_SECRET=[Generated client secret]
+GOOGLE_CLIENT_ID=[Generated client id]
+GOOGLE_CLIENT_SECRET=[Generated client secret]
 ```
 
 ### ReCAPTCHA settings procedure
