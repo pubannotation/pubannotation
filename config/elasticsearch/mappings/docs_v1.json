@@ -3,6 +3,7 @@
     "number_of_shards": 3,
     "number_of_replicas": 1,
     "refresh_interval": "1s",
+    "index.mapping.exclude_source_vectors": false,
     "analysis": {
       "analyzer": {
         "standard_normalization": {
