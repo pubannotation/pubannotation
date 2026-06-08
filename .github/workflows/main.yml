@@ -22,6 +22,16 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       # https://github.com/elastic/elastic-github-actions/tree/master/elasticsearch
       - name: Configure sysctl limits
@@ -34,7 +44,8 @@ jobs:
       - name: Runs Elasticsearch
         uses: elastic/elastic-github-actions/elasticsearch@master
         with:
-          stack-version: 7.6.0
+          stack-version: 9.4.1
+          security-enabled: false
 
       - uses: actions/checkout@v4
 

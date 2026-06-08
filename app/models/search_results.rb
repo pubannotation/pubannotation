@@ -169,7 +169,7 @@ class SearchResults
     end
 
     def id
-      hit['_id']
+      hit['_id'].to_i
     end
 
     def score
