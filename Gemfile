@@ -1,9 +1,10 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
-ruby '3.4.5'
+ruby '4.0.5'
 
 gem 'rails', '~> 8.1.0'
 gem 'rake'
+gem 'ostruct'
 gem 'activerecord-import'
 
 gem 'puma'
