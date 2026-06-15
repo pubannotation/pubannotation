@@ -69,6 +69,8 @@ class Doc < ActiveRecord::Base
 		:after_add => [:increment_docs_projects_counter, :queue_es_project_add],
 		:after_remove => [:decrement_docs_projects_counter, :queue_es_project_remove]
 
+	validate :media_must_exist, if: -> { media_sourcedb.present? && media_sourceid.present? }
+
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
 	validates :sourceid, presence: true
@@ -1066,6 +1068,11 @@ class Doc < ActiveRecord::Base
 
 	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
+	def media
+		return nil unless media_sourcedb.present? && media_sourceid.present?
+		Medium.find_by(sourcedb: media_sourcedb, sourceid: media_sourceid)
+	end
+
 	private
 
 	# default sort order
@@ -1124,5 +1131,11 @@ class Doc < ActiveRecord::Base
 		asciitext.gsub!('==amp==', '&')
 
 		asciitext
+	end
+
+	def media_must_exist
+		unless Medium.exists?(sourcedb: media_sourcedb, sourceid: media_sourceid)
+			errors.add(:base, 'Specified media does not exist')
+		end
 	end
 end
