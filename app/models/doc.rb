@@ -70,6 +70,7 @@ class Doc < ActiveRecord::Base
 		:after_remove => [:decrement_docs_projects_counter, :queue_es_project_remove]
 
 	validate :media_must_exist, if: -> { media_sourcedb.present? && media_sourceid.present? }
+	validate :media_reference_immutable, on: :update
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -1136,6 +1137,12 @@ class Doc < ActiveRecord::Base
 	def media_must_exist
 		unless Medium.exists?(sourcedb: media_sourcedb, sourceid: media_sourceid)
 			errors.add(:base, 'Specified media does not exist')
+		end
+	end
+
+	def media_reference_immutable
+		if will_save_change_to_media_sourcedb? || will_save_change_to_media_sourceid?
+			errors.add(:base, 'Media reference cannot be changed after creation')
 		end
 	end
 end
