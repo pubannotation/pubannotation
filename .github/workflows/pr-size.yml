@@ -1,0 +1,57 @@
+name: pr-size
+
+on:
+  pull_request_target:
+
+jobs:
+  labeler:
+    permissions:
+      pull-requests: write
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Label PR size
+        uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: size/xs
+          xs_max_size: "30"
+
+          s_label: size/s
+          s_max_size: "100"
+
+          m_label: size/m
+          m_max_size: "200"
+
+          l_label: size/l
+          l_max_size: "400"
+
+          xl_label: size/xl
+          fail_if_xl: "true"
+          message_if_xl: >
+            This PR is too large for review.
+            Split by purpose, not by file type.
+            Recommended split order:
+            1. schema/interface/setup
+            2. implementation
+            3. integration
+            4. tests
+            Keep behavior changes and refactors in separate PRs.
+
+          files_to_ignore: |
+            **/pnpm-lock.yaml
+            **/Gemfile.lock
+            .github/workflows/*.lock.yml
+            **/coverage/**
+            **/.next/**
+            **/dist/**
+            **/build/**
+            **/tmp/**
+            **/log/**
+            **/public/assets/**
+            **/node_modules/**
+            **/*.snap
+
+          ignore_line_deletions: "true"
