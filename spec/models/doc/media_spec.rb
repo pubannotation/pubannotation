@@ -32,5 +32,21 @@ RSpec.describe Doc, type: :model do
       expect(doc).not_to be_valid
       expect(doc.errors[:base]).to include('Specified media does not exist')
     end
+
+    it 'cannot change media_sourcedb after creation' do
+      medium = create(:medium)
+      doc = create(:doc, media_sourcedb: medium.sourcedb, media_sourceid: medium.sourceid)
+      doc.media_sourcedb = 'OtherDB'
+      expect(doc).not_to be_valid
+      expect(doc.errors[:base]).to include('Media reference cannot be changed after creation')
+    end
+
+    it 'cannot change media_sourceid after creation' do
+      medium = create(:medium)
+      doc = create(:doc, media_sourcedb: medium.sourcedb, media_sourceid: medium.sourceid)
+      doc.media_sourceid = 'other-id'
+      expect(doc).not_to be_valid
+      expect(doc.errors[:base]).to include('Media reference cannot be changed after creation')
+    end
   end
 end
