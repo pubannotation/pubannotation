@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_15_045416) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_15_055138) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -275,6 +275,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_045416) do
     t.boolean "suspend_flag", default: false
     t.datetime "updated_at", null: false
     t.index ["organization_id"], name: "index_jobs_on_organization_id"
+  end
+
+  create_table "media", force: :cascade do |t|
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.integer "media_type"
+    t.string "sourcedb"
+    t.string "sourceid"
+    t.datetime "updated_at", null: false
+    t.index ["sourcedb", "sourceid"], name: "index_media_on_sourcedb_and_sourceid", unique: true
   end
 
   create_table "messages", force: :cascade do |t|
