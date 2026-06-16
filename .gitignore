@@ -50,3 +50,6 @@ node_modules/
 *.sh
 script/elasticsearch-*
 spec/examples.txt
+/storage/*
+!/storage/.keep
+/tmp/storage/
