@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_15_070604) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_16_015514) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -196,8 +196,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_070604) do
     t.datetime "created_at", null: false
     t.integer "denotations_num", default: 0
     t.boolean "flag", default: false, null: false
-    t.string "media_sourcedb"
-    t.string "media_sourceid"
+    t.bigint "medium_id"
     t.integer "modifications_num", default: 0
     t.integer "projects_num", default: 0
     t.integer "relations_num", default: 0
@@ -208,7 +207,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_070604) do
     t.string "sourceid"
     t.datetime "updated_at", null: false
     t.index ["denotations_num"], name: "index_docs_on_denotations_num"
-    t.index ["media_sourcedb", "media_sourceid"], name: "index_docs_on_media_sourcedb_and_media_sourceid"
+    t.index ["medium_id"], name: "index_docs_on_medium_id"
     t.index ["projects_num"], name: "index_docs_on_projects_num"
     t.index ["serial"], name: "index_docs_on_serial"
     t.index ["sourcedb", "sourceid"], name: "index_docs_on_sourcedb_and_sourceid", unique: true
@@ -514,6 +513,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_070604) do
   add_foreign_key "annotation_receptions", "projects"
   add_foreign_key "attrivutes", "docs"
   add_foreign_key "batch_job_trackings", "jobs", column: "parent_job_id", on_delete: :cascade
+  add_foreign_key "docs", "media"
   add_foreign_key "paragraph_attrivutes", "attrivutes"
   add_foreign_key "paragraph_attrivutes", "divisions"
   add_foreign_key "paragraph_denotations", "denotations"
