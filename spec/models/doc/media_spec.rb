@@ -3,46 +3,62 @@
 require 'rails_helper'
 
 RSpec.describe Doc, type: :model do
-  describe 'medium association' do
-    let(:medium) { create(:medium, sourcedb: 'MediaDB', sourceid: 'img-001') }
+  let(:doc) { create(:doc, medium: medium) }
 
-    it 'returns the associated Medium via belongs_to' do
-      doc = create(:doc, media_sourcedb: medium.sourcedb, media_sourceid: medium.sourceid)
-      expect(doc.medium).to eq(medium)
+  describe 'medium association' do
+    context 'with medium' do
+      let(:medium) { create(:medium) }
+
+      it 'returns the associated Medium via belongs_to' do
+        expect(doc.medium).to eq(medium)
+      end
     end
 
-    it 'medium is nil when media_sourcedb/media_sourceid are not set' do
-      doc = create(:doc)
-      expect(doc.medium).to be_nil
+    context 'without medium' do
+      let(:medium) { nil }
+
+      it 'medium is nil' do
+        expect(doc.medium).to be_nil
+      end
     end
   end
 
   describe 'media resolution' do
-    it 'is valid when media is not specified' do
-      expect(build(:doc)).to be_valid
+    context 'without medium' do
+      let(:medium) { nil }
+
+      it 'is valid' do
+        expect(doc).to be_valid
+      end
     end
 
-    it 'resolves medium_id from media_sourcedb/media_sourceid before save' do
-      medium = create(:medium)
-      doc = create(:doc, media_sourcedb: medium.sourcedb, media_sourceid: medium.sourceid)
-      expect(doc.medium_id).to eq(medium.id)
-    end
+    context 'when specifying medium by sourcedb/sourceid' do
+      let(:medium) { nil }
 
-    it 'is invalid when the specified media does not exist' do
-      doc = build(:doc, media_sourcedb: 'NonExistDB', media_sourceid: 'no-such-id')
-      expect(doc).not_to be_valid
-      expect(doc.errors[:base]).to include('Specified media does not exist')
+      it 'resolves medium_id from media_sourcedb/media_sourceid before save' do
+        resolved = create(:medium)
+        doc = create(:doc, media_sourcedb: resolved.sourcedb, media_sourceid: resolved.sourceid)
+        expect(doc.medium_id).to eq(resolved.id)
+      end
+
+      it 'is invalid when the specified media does not exist' do
+        doc = build(:doc, media_sourcedb: 'NonExistDB', media_sourceid: 'no-such-id')
+        expect(doc).not_to be_valid
+        expect(doc.errors[:base]).to include('Specified media does not exist')
+      end
     end
   end
 
   describe 'medium_id immutability' do
-    it 'cannot change medium after creation' do
-      medium1 = create(:medium, sourcedb: 'DB1', sourceid: 'id1')
-      medium2 = create(:medium, sourcedb: 'DB2', sourceid: 'id2')
-      doc = create(:doc, media_sourcedb: medium1.sourcedb, media_sourceid: medium1.sourceid)
-      doc.medium = medium2
-      expect(doc).not_to be_valid
-      expect(doc.errors[:base]).to include('Media reference cannot be changed after creation')
+    context 'with medium' do
+      let(:medium) { create(:medium, sourcedb: 'DB1', sourceid: 'id1') }
+
+      it 'cannot change medium after creation' do
+        other_medium = create(:medium, sourcedb: 'DB2', sourceid: 'id2')
+        doc.medium = other_medium
+        expect(doc).not_to be_valid
+        expect(doc.errors[:base]).to include('Media reference cannot be changed after creation')
+      end
     end
   end
 end
