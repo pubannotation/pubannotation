@@ -48,7 +48,7 @@ class Doc < ActiveRecord::Base
 	UserSourcedbSeparator = '@'
 	# before_validation :attach_sourcedb_suffix
 
-	attr_accessor :username, :original_body, :text_aligner, :media_sourcedb, :media_sourceid
+	attr_accessor :username, :original_body, :text_aligner
 
 	has_many :divisions, dependent: :destroy
 	# Paragraph is a kind of division which has label 'p'.
@@ -70,7 +70,6 @@ class Doc < ActiveRecord::Base
 		:after_remove => [:decrement_docs_projects_counter, :queue_es_project_remove]
 	belongs_to :medium, optional: true
 
-	before_validation :resolve_medium_from_source
 	validate :media_reference_immutable, on: :update
 
 	validates :body,     presence: true
@@ -1128,21 +1127,6 @@ class Doc < ActiveRecord::Base
 		asciitext.gsub!('==amp==', '&')
 
 		asciitext
-	end
-
-	def resolve_medium_from_source
-		return unless media_sourcedb.present? && media_sourceid.present?
-		return if medium_id.present?
-
-		resolved = Medium.find_by(sourcedb: media_sourcedb, sourceid: media_sourceid)
-		if resolved
-			self.medium = resolved
-			self.media_sourcedb = nil
-			self.media_sourceid = nil
-		else
-			errors.add(:base, 'Specified media does not exist')
-			throw :abort
-		end
 	end
 
 	def media_reference_immutable

@@ -23,32 +23,6 @@ RSpec.describe Doc, type: :model do
     end
   end
 
-  describe 'media resolution' do
-    context 'without medium' do
-      let(:medium) { nil }
-
-      it 'is valid' do
-        expect(doc).to be_valid
-      end
-    end
-
-    context 'when specifying medium by sourcedb/sourceid' do
-      let(:medium) { nil }
-
-      it 'resolves medium_id from media_sourcedb/media_sourceid before save' do
-        resolved = create(:medium)
-        doc = create(:doc, media_sourcedb: resolved.sourcedb, media_sourceid: resolved.sourceid)
-        expect(doc.medium_id).to eq(resolved.id)
-      end
-
-      it 'is invalid when the specified media does not exist' do
-        doc = build(:doc, media_sourcedb: 'NonExistDB', media_sourceid: 'no-such-id')
-        expect(doc).not_to be_valid
-        expect(doc.errors[:base]).to include('Specified media does not exist')
-      end
-    end
-  end
-
   describe 'medium_id immutability' do
     context 'with medium' do
       let(:medium) { create(:medium, sourcedb: 'DB1', sourceid: 'id1') }
