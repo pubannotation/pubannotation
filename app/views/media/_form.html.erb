@@ -1,0 +1,29 @@
+<%= form_with model: @medium, url: media_path, multipart: true do |f| %>
+	<% if @medium.errors.any? %>
+		<ul>
+			<% @medium.errors.full_messages.each do |message| %>
+				<li><%= message %></li>
+			<% end %>
+		</ul>
+	<% end %>
+
+	<table>
+		<tr>
+			<th><%= f.label :sourcedb, 'Source DB' %></th>
+			<td><%= f.select :sourcedb, options_for_select(Sequencer.list(current_user)) %></td>
+		</tr>
+		<tr>
+			<th><%= f.label :sourceid, 'Source ID' %></th>
+			<td><%= f.text_field :sourceid %></td>
+		</tr>
+		<%= f.hidden_field :media_type, value: :image %>
+		<tr>
+			<th><%= f.label :file, 'File' %></th>
+			<td><%= f.file_field :file, accept: 'image/*' %></td>
+		</tr>
+		<tr>
+			<th></th>
+			<td><%= f.submit 'Upload' %></td>
+		</tr>
+	</table>
+<% end %>
