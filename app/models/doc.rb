@@ -70,8 +70,6 @@ class Doc < ActiveRecord::Base
 		:after_remove => [:decrement_docs_projects_counter, :queue_es_project_remove]
 	belongs_to :medium, optional: true
 
-	after_create :capture_original_medium_id
-	after_find :capture_original_medium_id
 	before_validation :resolve_medium_from_source
 	validate :media_reference_immutable, on: :update
 
@@ -1134,6 +1132,7 @@ class Doc < ActiveRecord::Base
 
 	def resolve_medium_from_source
 		return unless media_sourcedb.present? && media_sourceid.present?
+		return if medium_id.present?
 
 		resolved = Medium.find_by(sourcedb: media_sourcedb, sourceid: media_sourceid)
 		if resolved
@@ -1146,15 +1145,8 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def capture_original_medium_id
-		return unless persisted? && has_attribute?(:medium_id)
-		@original_medium_id = medium_id
-	end
-
 	def media_reference_immutable
-		return if @original_medium_id.nil?
-		if medium_id != @original_medium_id
-			errors.add(:base, 'Media reference cannot be changed after creation')
-		end
+		return unless medium_id_changed? && medium_id_was.present?
+		errors.add(:base, 'Media reference cannot be changed after creation')
 	end
 end
