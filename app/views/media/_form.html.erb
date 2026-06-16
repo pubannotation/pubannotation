@@ -10,7 +10,7 @@
 	<table>
 		<tr>
 			<th><%= f.label :sourcedb, 'Source DB' %></th>
-			<td><%= f.select :sourcedb, options_for_select(Sequencer.list(current_user)) %></td>
+			<td><%= f.text_field :sourcedb %></td>
 		</tr>
 		<tr>
 			<th><%= f.label :sourceid, 'Source ID' %></th>
