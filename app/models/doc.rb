@@ -48,7 +48,7 @@ class Doc < ActiveRecord::Base
 	UserSourcedbSeparator = '@'
 	# before_validation :attach_sourcedb_suffix
 
-	attr_accessor :username, :original_body, :text_aligner
+	attr_accessor :username, :original_body, :text_aligner, :media_sourcedb, :media_sourceid
 
 	has_many :divisions, dependent: :destroy
 	# Paragraph is a kind of division which has label 'p'.
@@ -68,8 +68,11 @@ class Doc < ActiveRecord::Base
 	has_many :projects, through: :project_docs,
 		:after_add => [:increment_docs_projects_counter, :queue_es_project_add],
 		:after_remove => [:decrement_docs_projects_counter, :queue_es_project_remove]
+	belongs_to :medium, optional: true
 
-	validate :media_must_exist, if: -> { media_sourcedb.present? && media_sourceid.present? }
+	after_create :capture_original_medium_id
+	after_find :capture_original_medium_id
+	before_validation :resolve_medium_from_source
 	validate :media_reference_immutable, on: :update
 
 	validates :body,     presence: true
@@ -1069,11 +1072,6 @@ class Doc < ActiveRecord::Base
 
 	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
-	def media
-		return nil unless media_sourcedb.present? && media_sourceid.present?
-		Medium.find_by(sourcedb: media_sourcedb, sourceid: media_sourceid)
-	end
-
 	private
 
 	# default sort order
@@ -1134,14 +1132,28 @@ class Doc < ActiveRecord::Base
 		asciitext
 	end
 
-	def media_must_exist
-		unless Medium.exists?(sourcedb: media_sourcedb, sourceid: media_sourceid)
+	def resolve_medium_from_source
+		return unless media_sourcedb.present? && media_sourceid.present?
+
+		resolved = Medium.find_by(sourcedb: media_sourcedb, sourceid: media_sourceid)
+		if resolved
+			self.medium = resolved
+			self.media_sourcedb = nil
+			self.media_sourceid = nil
+		else
 			errors.add(:base, 'Specified media does not exist')
+			throw :abort
 		end
 	end
 
+	def capture_original_medium_id
+		return unless persisted? && has_attribute?(:medium_id)
+		@original_medium_id = medium_id
+	end
+
 	def media_reference_immutable
-		if will_save_change_to_media_sourcedb? || will_save_change_to_media_sourceid?
+		return if @original_medium_id.nil?
+		if medium_id != @original_medium_id
 			errors.add(:base, 'Media reference cannot be changed after creation')
 		end
 	end
