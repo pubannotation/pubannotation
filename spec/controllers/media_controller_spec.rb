@@ -13,6 +13,44 @@ RSpec.describe 'MediaController', type: :request do
     )
   end
 
+  describe 'GET /media' do
+    let!(:medium) { create(:medium) }
+
+    context 'when logged in' do
+      it 'renders the index' do
+        sign_in user
+        get media_path
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context 'when not logged in' do
+      it 'redirects to login' do
+        get media_path
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
+
+  describe 'GET /media/:id' do
+    let(:medium) { create(:medium) }
+
+    context 'when logged in' do
+      it 'renders the show page' do
+        sign_in user
+        get medium_path(medium)
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context 'when not logged in' do
+      it 'redirects to login' do
+        get medium_path(medium)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
+
   describe 'GET /media/new' do
     context 'when logged in' do
       before { sign_in user }
