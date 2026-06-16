@@ -1,5 +1,13 @@
 class MediaController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_medium, only: [:show]
+
+  def index
+    @media_grid = initialize_grid(Medium, order: 'media.created_at', order_direction: 'desc')
+  end
+
+  def show
+  end
 
   def new
     @medium = Medium.new
@@ -17,6 +25,10 @@ class MediaController < ApplicationController
   end
 
   private
+
+  def set_medium
+    @medium = Medium.find(params[:id])
+  end
 
   def medium_params
     params.expect(medium: [:sourcedb, :sourceid, :media_type, :file])

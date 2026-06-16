@@ -7,7 +7,7 @@ Pubann::Application.routes.draw do
     end
   end
 
-	resources :media, only: [:new, :create]
+	resources :media, only: [:index, :new, :create, :show]
 
 	resources :evaluators
 	resources :evaluations do

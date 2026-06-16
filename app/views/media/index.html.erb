@@ -1,0 +1,31 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> Media
+<% end -%>
+
+<section>
+<h1>
+	Media
+	<%= button :create, new_medium_path, 'Upload Media' %>
+</h1>
+
+<%= grid(@media_grid) do |g|
+
+	g.column name: 'Source DB', attribute: 'sourcedb' do |medium|
+		medium.sourcedb
+	end
+
+	g.column name: 'Source ID', attribute: 'sourceid' do |medium|
+		[link_to(medium.sourceid, medium_path(medium), style: 'display:block'), {title: medium.sourceid}]
+	end
+
+	g.column name: 'Type', attribute: 'media_type', filter: false do |medium|
+		[medium.media_type, {style: 'text-align:center'}]
+	end
+
+	g.column name: 'Uploaded At', attribute: 'created_at', filter: false do |medium|
+		[medium.created_at.strftime('%Y-%m-%d'), {style: 'text-align:center'}]
+	end
+
+end -%>
+</section>
