@@ -68,6 +68,9 @@ class Doc < ActiveRecord::Base
 	has_many :projects, through: :project_docs,
 		:after_add => [:increment_docs_projects_counter, :queue_es_project_add],
 		:after_remove => [:decrement_docs_projects_counter, :queue_es_project_remove]
+	belongs_to :medium, optional: true
+
+	validate :media_reference_immutable, on: :update
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -1124,5 +1127,11 @@ class Doc < ActiveRecord::Base
 		asciitext.gsub!('==amp==', '&')
 
 		asciitext
+	end
+
+	def media_reference_immutable
+		if medium_id_changed?
+			errors.add(:base, 'Media reference cannot be changed after creation')
+		end
 	end
 end
