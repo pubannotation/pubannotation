@@ -1130,7 +1130,8 @@ class Doc < ActiveRecord::Base
 	end
 
 	def media_reference_immutable
-		return unless medium_id_changed? && medium_id_was.present?
-		errors.add(:base, 'Media reference cannot be changed after creation')
+		if medium_id_changed?
+			errors.add(:base, 'Media reference cannot be changed after creation')
+		end
 	end
 end
