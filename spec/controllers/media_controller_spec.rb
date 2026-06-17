@@ -108,4 +108,41 @@ RSpec.describe 'MediaController', type: :request do
       end
     end
   end
+
+  describe 'DELETE /media/:id' do
+    let(:medium) { create(:medium, user: user) }
+
+    context 'when logged in as the creator' do
+      before { sign_in user }
+
+      it 'deletes the medium' do
+        medium
+        expect {
+          delete medium_path(medium)
+        }.to change(Medium, :count).by(-1)
+        expect(response).to redirect_to(media_path)
+      end
+    end
+
+    context 'when logged in as a different user' do
+      let(:other_user) { create(:user).tap { |u| u.confirm } }
+      let!(:existing_medium) { medium }
+
+      before { sign_in other_user }
+
+      it 'does not delete the medium and redirects' do
+        expect {
+          delete medium_path(existing_medium)
+        }.not_to change(Medium, :count)
+        expect(response).to redirect_to(medium_path(existing_medium))
+      end
+    end
+
+    context 'when not logged in' do
+      it 'redirects to login' do
+        delete medium_path(medium)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
 end
