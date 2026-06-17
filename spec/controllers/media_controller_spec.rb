@@ -15,8 +15,9 @@ RSpec.describe 'MediaController', type: :request do
 
   describe 'GET /media/new' do
     context 'when logged in' do
+      before { sign_in user }
+
       it 'renders the upload form' do
-        sign_in user
         get new_medium_path
         expect(response).to have_http_status(:ok)
       end
