@@ -19,6 +19,6 @@ class MediaController < ApplicationController
   private
 
   def medium_params
-    params.require(:medium).permit(:sourcedb, :sourceid, :media_type, :file)
+    params.expect(medium: [:sourcedb, :sourceid, :media_type, :file])
   end
 end
