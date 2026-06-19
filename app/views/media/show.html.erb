@@ -1,0 +1,38 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to 'Media', media_path %>
+	> <%= @medium.sourceid %>
+<% end -%>
+
+<section>
+	<h2><%= @medium.sourcedb %>:<%= @medium.sourceid %></h2>
+
+	<% if @medium.file.attached? %>
+		<% if @medium.image? %>
+			<%= image_tag url_for(@medium.file), style: 'max-width: 100%' %>
+		<% end %>
+	<% end %>
+
+	<table>
+		<tr>
+			<th>Source DB</th>
+			<td><%= @medium.sourcedb %></td>
+		</tr>
+		<tr>
+			<th>Source ID</th>
+			<td><%= @medium.sourceid %></td>
+		</tr>
+		<tr>
+			<th>Media Type</th>
+			<td><%= @medium.media_type %></td>
+		</tr>
+		<tr>
+			<th>Content Type</th>
+			<td><%= @medium.content_type %></td>
+		</tr>
+		<tr>
+			<th>Uploaded At</th>
+			<td><%= @medium.created_at.strftime('%Y-%m-%d %H:%M') %></td>
+		</tr>
+	</table>
+</section>
