@@ -10,6 +10,7 @@ Pubann::Application.routes.draw do
 	resources :media, only: [:index, :new, :create] do
 		collection do
 			get 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#show', as: :show
+			delete 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#destroy', as: :destroy
 		end
 	end
 

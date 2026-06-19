@@ -46,4 +46,12 @@ RSpec.describe Medium, type: :model do
       expect(Medium.new).to respond_to(:file)
     end
   end
+
+  describe 'dependent destroy' do
+    it 'destroys associated docs when medium is deleted' do
+      medium = create(:medium)
+      create(:doc, medium: medium)
+      expect { medium.destroy }.to change(Doc, :count).by(-1)
+    end
+  end
 end

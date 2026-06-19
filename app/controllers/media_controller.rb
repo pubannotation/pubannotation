@@ -1,6 +1,9 @@
 class MediaController < ApplicationController
+  include MediumHelper
+
   before_action :authenticate_user!
-  before_action :set_medium, only: [:show]
+  before_action :set_medium, only: [:show, :destroy]
+  before_action :authorize_destroy!, only: [:destroy]
 
   def index
     @media_grid = initialize_grid(Medium, order: 'media.created_at', order_direction: 'desc')
@@ -15,6 +18,7 @@ class MediaController < ApplicationController
 
   def create
     @medium = Medium.new(medium_params)
+    @medium.user = current_user
     @medium.content_type = params[:medium][:file]&.content_type
 
     if @medium.save
@@ -24,10 +28,21 @@ class MediaController < ApplicationController
     end
   end
 
+  def destroy
+    @medium.destroy
+    redirect_to media_path, notice: 'Media was successfully deleted.'
+  end
+
   private
 
   def set_medium
     @medium = Medium.find_by!(sourcedb: params[:sourcedb], sourceid: params[:sourceid])
+  end
+
+  def authorize_destroy!
+    unless current_user_owns_medium?(@medium)
+      redirect_to show_media_path(sourcedb: @medium.sourcedb, sourceid: @medium.sourceid), alert: 'You are not authorized to delete this media.'
+    end
   end
 
   def medium_params

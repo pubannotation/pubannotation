@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_16_015514) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_17_015809) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -286,7 +286,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_16_015514) do
     t.string "sourcedb"
     t.string "sourceid"
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
     t.index ["sourcedb", "sourceid"], name: "index_media_on_sourcedb_and_sourceid", unique: true
+    t.index ["user_id"], name: "index_media_on_user_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -514,6 +516,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_16_015514) do
   add_foreign_key "attrivutes", "docs"
   add_foreign_key "batch_job_trackings", "jobs", column: "parent_job_id", on_delete: :cascade
   add_foreign_key "docs", "media"
+  add_foreign_key "media", "users"
   add_foreign_key "paragraph_attrivutes", "attrivutes"
   add_foreign_key "paragraph_attrivutes", "divisions"
   add_foreign_key "paragraph_denotations", "denotations"

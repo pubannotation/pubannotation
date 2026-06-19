@@ -6,5 +6,6 @@ FactoryBot.define do
     sequence(:sourceid) { |n| "media_#{n}" }
     media_type { :image }
     content_type { 'image/jpeg' }
+    association :user
   end
 end

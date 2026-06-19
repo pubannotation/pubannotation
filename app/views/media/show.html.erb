@@ -35,4 +35,8 @@
 			<td><%= @medium.created_at.strftime('%Y-%m-%d %H:%M') %></td>
 		</tr>
 	</table>
+
+	<% if current_user_owns_medium?(@medium) %>
+		<%= button_to 'Delete', destroy_media_path(sourcedb: @medium.sourcedb, sourceid: @medium.sourceid), method: :delete, data: { confirm: 'Are you sure?' } %>
+	<% end %>
 </section>
