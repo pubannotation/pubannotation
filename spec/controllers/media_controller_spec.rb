@@ -32,20 +32,20 @@ RSpec.describe 'MediaController', type: :request do
     end
   end
 
-  describe 'GET /media/:id' do
+  describe 'GET /media/sourcedbs/:sourcedb/sourceids/:sourceid' do
     let(:medium) { create(:medium) }
 
     context 'when logged in' do
       it 'renders the show page' do
         sign_in user
-        get medium_path(medium)
+        get show_media_path(sourcedb: medium.sourcedb, sourceid: medium.sourceid)
         expect(response).to have_http_status(:ok)
       end
     end
 
     context 'when not logged in' do
       it 'redirects to login' do
-        get medium_path(medium)
+        get show_media_path(sourcedb: medium.sourcedb, sourceid: medium.sourceid)
         expect(response).to redirect_to(new_user_session_path)
       end
     end
