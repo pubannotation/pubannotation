@@ -188,6 +188,7 @@ class DocsController < ApplicationController
 		end
 
 		@doc.set_ascii_body if params[:encoding] == 'ascii'
+		@medium = @doc.medium
 
 		get_docs_projects
 		if @span
@@ -234,6 +235,7 @@ class DocsController < ApplicationController
 			end
 
 			@doc.set_ascii_body if (params[:encoding] == 'ascii')
+			@medium = @doc.medium
 
 			respond_to do |format|
 				format.html
@@ -300,6 +302,8 @@ class DocsController < ApplicationController
 			else
 				text = if params[:text]
 					params[:text]
+				elsif params[:body]
+					params[:body]
 				elsif request.content_type =~ /text/
 					request.body.read
 				end
@@ -316,6 +320,12 @@ class DocsController < ApplicationController
 				_doc[:divisions] = params[:divisions] if params[:divisions].present?
 				_doc[:typesettings] = params[:typesettings] if params[:typesettings].present?
 				_doc
+			end
+
+			if params[:media].present?
+				medium = Medium.find_by(sourcedb: params[:media][:sourcedb], sourceid: params[:media][:sourceid])
+				raise ArgumentError, "Specified media does not exist." unless medium
+				hdoc[:medium_id] = medium.id
 			end
 
 			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)
