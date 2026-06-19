@@ -1,0 +1,10 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to 'Media', media_path -%>
+	> new
+<% end -%>
+
+<section>
+	<h2>Upload Media</h2>
+	<%= render 'form' %>
+</section>

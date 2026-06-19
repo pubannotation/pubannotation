@@ -7,6 +7,8 @@ Pubann::Application.routes.draw do
     end
   end
 
+	resources :media, only: [:new, :create]
+
 	resources :evaluators
 	resources :evaluations do
 		post 'generate' => 'evaluations#generate'
