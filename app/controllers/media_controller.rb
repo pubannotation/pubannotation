@@ -1,4 +1,6 @@
 class MediaController < ApplicationController
+  include MediumHelper
+
   before_action :authenticate_user!
   before_action :set_medium, only: [:show, :destroy]
   before_action :authorize_destroy!, only: [:destroy]
@@ -38,7 +40,7 @@ class MediaController < ApplicationController
   end
 
   def authorize_destroy!
-    unless @medium.user == current_user
+    unless current_user_owns_medium?(@medium)
       redirect_to show_media_path(sourcedb: @medium.sourcedb, sourceid: @medium.sourceid), alert: 'You are not authorized to delete this media.'
     end
   end
