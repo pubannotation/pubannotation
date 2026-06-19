@@ -27,7 +27,7 @@ class MediaController < ApplicationController
   private
 
   def set_medium
-    @medium = Medium.find(params[:id])
+    @medium = Medium.find_by!(sourcedb: params[:sourcedb], sourceid: params[:sourceid])
   end
 
   def medium_params

@@ -7,7 +7,11 @@ Pubann::Application.routes.draw do
     end
   end
 
-	resources :media, only: [:index, :new, :create, :show]
+	resources :media, only: [:index, :new, :create] do
+		collection do
+			get 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#show', as: :show
+		end
+	end
 
 	resources :evaluators
 	resources :evaluations do
