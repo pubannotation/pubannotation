@@ -16,7 +16,7 @@
 	end
 
 	g.column name: 'Source ID', attribute: 'sourceid' do |medium|
-		[link_to(medium.sourceid, medium_path(medium), style: 'display:block'), {title: medium.sourceid}]
+		[link_to(medium.sourceid, show_media_path(sourcedb: medium.sourcedb, sourceid: medium.sourceid), style: 'display:block'), {title: medium.sourceid}]
 	end
 
 	g.column name: 'Type', attribute: 'media_type', filter: false do |medium|
