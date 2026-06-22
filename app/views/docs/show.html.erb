@@ -225,6 +225,14 @@
 	<%= render :partial => 'docs/content'-%>
 	<%= render :partial => 'docs/divisions'-%>
 
+	<% if @medium.present? %>
+		<section>
+			<h2>Media</h2>
+			<%= image_tag url_for(@medium.file), style: 'max-width: 100%' %>
+			<p><%= link_to "#{@medium.sourcedb}:#{@medium.sourceid}", show_media_path(sourcedb: @medium.sourcedb, sourceid: @medium.sourceid) %></p>
+		</section>
+	<% end %>
+
 	<section>
 		<h2 class="capitalize">
 			<%= t('activerecord.models.project').pluralize -%>

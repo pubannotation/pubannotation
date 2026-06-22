@@ -316,7 +316,8 @@ class Doc < ActiveRecord::Base
 					body: hdoc[:text],
 					sourcedb: hdoc[:sourcedb],
 					sourceid: hdoc[:sourceid],
-					source: hdoc[:source_url]
+					source: hdoc[:source_url],
+					medium_id: hdoc[:medium_id]
 				}
 			)
 			doc.store_divisions(hdoc[:divisions]) if hdoc.has_key? :divisions
