@@ -63,12 +63,11 @@ class MediumBulkUploadService
       user: @user
     )
 
-    Tempfile.create([basename, ext]) do |tmp|
-      tmp.binmode
-      tmp.write(entry.get_input_stream.read)
-      tmp.flush
-      medium.file.attach(io: File.open(tmp.path), filename: filename, content_type: content_type)
-    end
+    medium.file.attach(
+      io: StringIO.new(entry.get_input_stream.read),
+      filename: filename,
+      content_type: content_type
+    )
 
     if medium.save
       @successes << filename
