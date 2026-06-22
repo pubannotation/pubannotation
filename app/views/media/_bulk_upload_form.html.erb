@@ -1,0 +1,12 @@
+<%= form_tag bulk_upload_media_path, multipart: true do %>
+	<table>
+		<tr>
+			<th><label>ZIP file</label></th>
+			<td><%= file_field_tag :zip_file, accept: '.zip' %></td>
+		</tr>
+		<tr>
+			<th></th>
+			<td><%= submit_tag 'Upload ZIP' %></td>
+		</tr>
+	</table>
+<% end %>

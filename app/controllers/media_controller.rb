@@ -28,6 +28,22 @@ class MediaController < ApplicationController
     end
   end
 
+  def bulk_upload
+    zip_file = params[:zip_file]
+    unless zip_file.present?
+      redirect_to new_medium_path, alert: 'Please select a ZIP file.' and return
+    end
+
+    service = MediumBulkUploadService.new(zip_file, current_user)
+    service.call
+
+    notice = "#{service.successes.size} file(s) uploaded successfully."
+    notice += " #{service.errors.size} file(s) failed: #{service.errors.join(' / ')}" if service.errors.any?
+    redirect_to media_path, notice: notice
+  rescue ArgumentError => e
+    redirect_to new_medium_path, alert: e.message
+  end
+
   def destroy
     @medium.destroy
     redirect_to media_path, notice: 'Media was successfully deleted.'
