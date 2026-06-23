@@ -12,6 +12,10 @@ Pubann::Application.routes.draw do
 			get 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#show', as: :show
 			delete 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#destroy', as: :destroy
 			post 'bulk_upload', to: 'media#bulk_upload'
+			get 'jobs', to: 'media#jobs', as: :jobs
+			get 'jobs/latest_jobs_table', to: 'media#latest_jobs_table'
+			get 'jobs/:id', to: 'jobs#show', as: :job
+			delete 'jobs/:id', to: 'jobs#destroy', as: :job_destroy
 		end
 	end
 	delete 'media/jobs', to: 'media#clear_finished_jobs', as: :media_clear_finished_jobs
