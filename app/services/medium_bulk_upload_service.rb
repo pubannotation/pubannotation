@@ -26,6 +26,12 @@ class MediumBulkUploadService
     raise ArgumentError, "Invalid ZIP file: #{e.message}"
   end
 
+  def result_message
+    message = "#{successes.size} file(s) uploaded successfully."
+    message += " #{errors.size} file(s) failed: #{errors.join(' / ')}" if errors.any?
+    message
+  end
+
   private
 
   def process_entry(entry)

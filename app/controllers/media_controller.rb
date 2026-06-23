@@ -29,7 +29,7 @@ class MediaController < ApplicationController
   end
 
   def bulk_upload
-    zip_file = params[:zip_file]
+    zip_file = bulk_upload_params
     unless zip_file.present?
       redirect_to new_medium_path, alert: 'Please select a ZIP file.' and return
     end
@@ -37,9 +37,7 @@ class MediaController < ApplicationController
     service = MediumBulkUploadService.new(zip_file, current_user)
     service.call
 
-    notice = "#{service.successes.size} file(s) uploaded successfully."
-    notice += " #{service.errors.size} file(s) failed: #{service.errors.join(' / ')}" if service.errors.any?
-    redirect_to media_path, notice: notice
+    redirect_to media_path, notice: service.result_message
   rescue ArgumentError => e
     redirect_to new_medium_path, alert: e.message
   end
@@ -50,6 +48,10 @@ class MediaController < ApplicationController
   end
 
   private
+
+  def bulk_upload_params
+    params.expect(:zip_file)
+  end
 
   def set_medium
     @medium = Medium.find_by!(sourcedb: params[:sourcedb], sourceid: params[:sourceid])
