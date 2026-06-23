@@ -63,24 +63,21 @@ class MediumBulkUploadService
       user: @user
     )
 
-    tmp = Tempfile.new(["media-upload-", ext])
-    input = entry.get_input_stream
-    begin
-      IO.copy_stream(input, tmp)
-      tmp.flush
-      tmp.rewind
-      medium.file.attach(io: tmp, filename: filename, content_type: content_type)
-    ensure
-      input.close
+    Tempfile.create(["media-upload-", ext]) do |tmp|
+      input = entry.get_input_stream
+      begin
+        IO.copy_stream(input, tmp)
+        tmp.flush
+        tmp.rewind
+        medium.file.attach(io: tmp, filename: filename, content_type: content_type)
+        if medium.save
+          @successes << filename
+        else
+          @errors << "#{filename}: #{medium.errors.full_messages.join(', ')}"
+        end
+      ensure
+        input.close
+      end
     end
-
-    if medium.save
-      @successes << filename
-    else
-      @errors << "#{filename}: #{medium.errors.full_messages.join(', ')}"
-    end
-  ensure
-    tmp&.close
-    tmp&.unlink
   end
 end
