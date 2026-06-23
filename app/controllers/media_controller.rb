@@ -28,15 +28,23 @@ class MediaController < ApplicationController
     end
   end
 
+  def jobs
+    @jobs = current_user.jobs.order(created_at: :desc)
+  end
+
+  def latest_jobs_table
+    @jobs = current_user.jobs.order(created_at: :desc)
+    render partial: 'jobs_table'
+  end
+
   def bulk_upload
     zip_file = bulk_upload_params
 
-    service = MediumBulkUploadService.new(zip_file, current_user)
-    service.call
+    zip_path = File.join('tmp', "media-bulk-upload-#{current_user.id}-#{Time.now.to_i}.zip")
+    FileUtils.mv(zip_file.path, zip_path)
 
-    redirect_to media_path, notice: service.result_message
-  rescue ArgumentError => e
-    redirect_to new_medium_path, alert: e.message
+    MediaBulkUploadJob.perform_later(current_user, zip_path)
+    redirect_to jobs_media_path, notice: 'Bulk upload job has been queued.'
   end
 
   def destroy
