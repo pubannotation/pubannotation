@@ -5,7 +5,7 @@
 			link_to('> ' + t('activerecord.models.project').pluralize, projects_path) + ' ' +
 			link_to('> ' + @organization.name, project_path(@organization.name)) + ' ' +
 			link_to('jobs', project_jobs_path(@organization.name))
-		elsif params.has_key? :user_id
+		elsif request.path.start_with?('/media/')
 			link_to('> Media', media_path) + ' ' +
 			link_to('jobs', jobs_media_path)
 		else
@@ -22,8 +22,8 @@
 		if params.has_key? :project_id
 			@project = @organization
 			render :partial => 'projects/titlebar'
-		elsif params.has_key? :user_id
-			# no titlebar for user jobs
+		elsif request.path.start_with?('/media/')
+			# no titlebar for media jobs
 		else
 			@collection = @organization
 			render :partial => 'collections/titlebar'
@@ -34,11 +34,11 @@
 		<h1>
 		Job #<%= @job.id %>: <%= @job.name %>
 		<%=
-			if !@job.running? && user_signed_in?
+			unless @job.running?
 				organization_job_path = if params.has_key? :project_id
 					project_job_path(@organization.name, @job)
-				elsif params.has_key? :user_id
-					user_job_path(current_user.username, @job)
+				elsif request.path.start_with?('/media/')
+					job_destroy_media_path(@job)
 				else
 					collection_job_path(@organization.name, @job)
 				end
