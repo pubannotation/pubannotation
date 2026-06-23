@@ -13,6 +13,7 @@ class User < ActiveRecord::Base
 	attr_accessor :login
 
 	has_many :projects, :dependent => :destroy
+	has_many :jobs, as: :organization, dependent: :destroy
 	has_many :associate_maintainers, :dependent => :destroy
 	has_many :associate_maintaiain_projects, :through => :associate_maintainers, :source => :project, :class_name => 'Project'
 	has_one :access_token, dependent: :destroy
