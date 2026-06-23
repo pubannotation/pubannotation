@@ -50,7 +50,7 @@ class MediaController < ApplicationController
   private
 
   def bulk_upload_params
-    params.expect(:zip_file)
+    params.permit(:zip_file)[:zip_file]
   end
 
   def set_medium
