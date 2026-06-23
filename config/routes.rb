@@ -14,6 +14,7 @@ Pubann::Application.routes.draw do
 			post 'bulk_upload', to: 'media#bulk_upload'
 		end
 	end
+	delete 'media/jobs', to: 'media#clear_finished_jobs', as: :media_clear_finished_jobs
 
 	resources :evaluators
 	resources :evaluations do
