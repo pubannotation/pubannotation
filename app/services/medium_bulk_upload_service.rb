@@ -24,10 +24,12 @@ class MediumBulkUploadService
     raise ArgumentError, "Invalid ZIP file: #{e.message}"
   end
 
-  def result_message
-    message = "#{@successes.size} file(s) uploaded successfully."
-    message += " #{@errors.size} file(s) failed: #{@errors.join(' / ')}" if @errors.any?
-    message
+  def success_count
+    @successes.size
+  end
+
+  def error_messages
+    @errors
   end
 
   private

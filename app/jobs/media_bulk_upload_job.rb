@@ -8,13 +8,11 @@ class MediaBulkUploadJob < ApplicationJob
     service = MediumBulkUploadService.new(zip_file, user)
     service.call
 
-    prepare_progress_record(service.successes.size + service.errors.size)
+    prepare_progress_record(service.success_count + service.error_messages.size)
 
-    service.successes.each do |filename|
-      increment_progress
-    end
+    service.success_count.times { increment_progress }
 
-    service.errors.each do |error|
+    service.error_messages.each do |error|
       @job&.add_message(sourcedb: '*', sourceid: '*', body: error)
       increment_progress
     end
