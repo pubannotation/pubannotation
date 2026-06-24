@@ -28,15 +28,6 @@ class MediaController < ApplicationController
     end
   end
 
-  def jobs
-    @jobs = current_user.jobs.order(created_at: :desc)
-  end
-
-  def latest_jobs_table
-    @jobs = current_user.jobs.order(created_at: :desc)
-    render partial: 'jobs_table'
-  end
-
   def bulk_upload
     zip_file = bulk_upload_params
 
