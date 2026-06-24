@@ -1,6 +1,4 @@
 class MediaBulkUploadJob < ApplicationJob
-  include UseJobRecordConcern
-
   queue_as :general
 
   def perform(user, zip_path)
@@ -9,9 +7,5 @@ class MediaBulkUploadJob < ApplicationJob
     service.call
   ensure
     FileUtils.rm_f(zip_path)
-  end
-
-  def job_name
-    'Media Bulk Upload'
   end
 end
