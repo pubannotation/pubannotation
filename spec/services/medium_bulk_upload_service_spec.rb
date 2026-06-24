@@ -34,11 +34,11 @@ RSpec.describe MediumBulkUploadService do
         expect(medium).to be_present
       end
 
-      it 'reports success' do
+      it 'reports success in result_message' do
         service = described_class.new(zip_file, user)
         service.call
-        expect(service.successes).to include('PMC-12345.png')
-        expect(service.errors).to be_empty
+        expect(service.result_message).to include('1 file(s) uploaded successfully')
+        expect(service.result_message).not_to include('failed')
       end
     end
 
@@ -55,27 +55,27 @@ RSpec.describe MediumBulkUploadService do
         service = described_class.new(zip_file, user)
         service.call
         expect(Medium.count).to eq(1)
-        expect(service.successes).to eq(['PMC-12345.png'])
+        expect(service.result_message).to include('1 file(s) uploaded successfully')
       end
     end
 
     context 'with a file without extension' do
       let(:zip_file) { build_zip({ 'PMC-12345' => '' }) }
 
-      it 'reports an error' do
+      it 'reports an error in result_message' do
         service = described_class.new(zip_file, user)
         service.call
-        expect(service.errors.first).to include('no extension')
+        expect(service.result_message).to include('no extension')
       end
     end
 
     context 'with an unsupported extension' do
       let(:zip_file) { build_zip({ 'PMC-12345.txt' => '' }) }
 
-      it 'reports an error' do
+      it 'reports an error in result_message' do
         service = described_class.new(zip_file, user)
         service.call
-        expect(service.errors.first).to include('unsupported extension')
+        expect(service.result_message).to include('unsupported extension')
       end
     end
 
@@ -84,21 +84,21 @@ RSpec.describe MediumBulkUploadService do
         zip_file = build_zip({ 'my file-001.png' => png_data })
         service = described_class.new(zip_file, user)
         service.call
-        expect(service.errors.first).to include('sourcedb-sourceid')
+        expect(service.result_message).to include('sourcedb-sourceid')
       end
 
       it 'reports error for filename with multiple hyphens' do
         zip_file = build_zip({ 'PMC-sub-12345.png' => png_data })
         service = described_class.new(zip_file, user)
         service.call
-        expect(service.errors.first).to include('sourcedb-sourceid')
+        expect(service.result_message).to include('sourcedb-sourceid')
       end
 
       it 'reports error for filename without hyphen' do
         zip_file = build_zip({ 'PMC12345.png' => png_data })
         service = described_class.new(zip_file, user)
         service.call
-        expect(service.errors.first).to include('sourcedb-sourceid')
+        expect(service.result_message).to include('sourcedb-sourceid')
       end
     end
 
