@@ -5,6 +5,16 @@
 <% end -%>
 
 <section>
-	<h2>Upload Media</h2>
+	<h2>Upload a single media file</h2>
 	<%= render 'form' %>
+</section>
+
+<section>
+	<h2>Bulk upload via ZIP</h2>
+	<ul>
+		<li>Upload a ZIP file containing multiple media files.</li>
+		<li>Each filename must be in the form <i>sourcedb-sourceid.ext</i> (e.g. PMC-12345.jpg).</li>
+		<li>Files without an extension will be skipped.</li>
+	</ul>
+	<%= render 'bulk_upload_form' %>
 </section>

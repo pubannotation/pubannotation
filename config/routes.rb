@@ -11,6 +11,7 @@ Pubann::Application.routes.draw do
 		collection do
 			get 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#show', as: :show
 			delete 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#destroy', as: :destroy
+			post 'bulk_upload', to: 'media#bulk_upload'
 		end
 	end
 

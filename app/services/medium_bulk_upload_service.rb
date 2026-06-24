@@ -1,0 +1,113 @@
+class MediumBulkUploadService
+  EXTENSION_TO_MEDIA_TYPE = {
+    '.jpg' => [:image, 'image/jpeg'],
+    '.jpeg' => [:image, 'image/jpeg'],
+    '.png' => [:image, 'image/png'],
+    '.gif' => [:image, 'image/gif'],
+    '.webp' => [:image, 'image/webp']
+  }.freeze
+
+  def initialize(zip_file, user)
+    @zip_file = zip_file
+    @user = user
+    @successes = []
+    @errors = []
+  end
+
+  def call
+    Zip::File.open(@zip_file.path) do |zip|
+      zip.each do |entry|
+        process_entry(entry)
+      end
+    end
+  rescue Zip::Error => e
+    raise ArgumentError, "Invalid ZIP file: #{e.message}"
+  end
+
+  def result_message
+    message = "#{@successes.size} file(s) uploaded successfully."
+    message += " #{@errors.size} file(s) failed: #{@errors.join(' / ')}" if @errors.any?
+    message
+  end
+
+  private
+
+  def skippable_entry?(entry)
+    filename = File.basename(entry.name)
+
+    entry.directory? ||
+      filename.start_with?('.') ||
+      entry.name.start_with?('__MACOSX/')
+  end
+
+  def validate_entry(entry)
+    filename = File.basename(entry.name)
+    ext = File.extname(filename).downcase
+
+    unless ext.present?
+      @errors << "#{filename}: no extension, skipped."
+      return
+    end
+
+    unless EXTENSION_TO_MEDIA_TYPE.key?(ext)
+      @errors << "#{filename}: unsupported extension '#{ext}', skipped."
+      return
+    end
+
+    basename = File.basename(filename, ext)
+
+    unless basename.match?(/\A[^\s-]+-[^\s-]+\z/)
+      @errors << "#{filename}: filename must be in 'sourcedb-sourceid#{ext}' format (one hyphen, no spaces), skipped."
+      return
+    end
+
+    sourcedb, sourceid = basename.split('-', 2)
+    media_type, content_type = EXTENSION_TO_MEDIA_TYPE[ext]
+
+    {
+      filename:,
+      ext:,
+      sourcedb:,
+      sourceid:,
+      media_type:,
+      content_type:
+    }
+  end
+
+  def process_entry(entry)
+    return if skippable_entry?(entry)
+
+    attributes = validate_entry(entry)
+    return unless attributes
+
+    Tempfile.create(["media-upload-", attributes[:ext]]) do |tmp|
+      input = entry.get_input_stream
+      begin
+        IO.copy_stream(input, tmp)
+        tmp.flush
+        tmp.rewind
+
+        medium = Medium.create_with_file(
+          {
+            sourcedb: attributes[:sourcedb],
+            sourceid: attributes[:sourceid],
+            media_type: attributes[:media_type],
+            content_type: attributes[:content_type],
+            user: @user
+          },
+          io: tmp,
+          filename: attributes[:filename],
+          content_type: attributes[:content_type]
+        )
+
+        if medium.persisted?
+          @successes << attributes[:filename]
+        else
+          @errors << "#{attributes[:filename]}: #{medium.errors.full_messages.join(', ')}"
+        end
+      ensure
+        input.close
+      end
+    end
+  end
+end

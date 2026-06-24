@@ -28,12 +28,27 @@ class MediaController < ApplicationController
     end
   end
 
+  def bulk_upload
+    zip_file = bulk_upload_params
+
+    service = MediumBulkUploadService.new(zip_file, current_user)
+    service.call
+
+    redirect_to media_path, notice: service.result_message
+  rescue ArgumentError => e
+    redirect_to new_medium_path, alert: e.message
+  end
+
   def destroy
     @medium.destroy
     redirect_to media_path, notice: 'Media was successfully deleted.'
   end
 
   private
+
+  def bulk_upload_params
+    params.expect(:zip_file)
+  end
 
   def set_medium
     @medium = Medium.find_by!(sourcedb: params[:sourcedb], sourceid: params[:sourceid])
