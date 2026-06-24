@@ -10,4 +10,11 @@ class Medium < ApplicationRecord
   validates :sourceid, presence: true, uniqueness: { scope: :sourcedb }
   validates :media_type, presence: true
   validates :content_type, presence: true
+
+  def self.create_with_file(attributes, io:, filename:, content_type:)
+    medium = new(attributes)
+    medium.file.attach(io: io, filename: filename, content_type: content_type)
+    medium.save
+    medium
+  end
 end

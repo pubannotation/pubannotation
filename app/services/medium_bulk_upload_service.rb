@@ -7,8 +7,6 @@ class MediumBulkUploadService
     '.webp' => [:image, 'image/webp']
   }.freeze
 
-  attr_reader :successes, :errors
-
   def initialize(zip_file, user)
     @zip_file = zip_file
     @user = user
@@ -27,19 +25,23 @@ class MediumBulkUploadService
   end
 
   def result_message
-    message = "#{successes.size} file(s) uploaded successfully."
-    message += " #{errors.size} file(s) failed: #{errors.join(' / ')}" if errors.any?
+    message = "#{@successes.size} file(s) uploaded successfully."
+    message += " #{@errors.size} file(s) failed: #{@errors.join(' / ')}" if @errors.any?
     message
   end
 
   private
 
-  def process_entry(entry)
-    return if entry.directory?
-
+  def skippable_entry?(entry)
     filename = File.basename(entry.name)
-    return if filename.start_with?('.') || entry.name.start_with?('__MACOSX/')
 
+    entry.directory? ||
+      filename.start_with?('.') ||
+      entry.name.start_with?('__MACOSX/')
+  end
+
+  def validate_entry(entry)
+    filename = File.basename(entry.name)
     ext = File.extname(filename).downcase
 
     unless ext.present?
@@ -53,6 +55,7 @@ class MediumBulkUploadService
     end
 
     basename = File.basename(filename, ext)
+
     unless basename.match?(/\A[^\s-]+-[^\s-]+\z/)
       @errors << "#{filename}: filename must be in 'sourcedb-sourceid#{ext}' format (one hyphen, no spaces), skipped."
       return
@@ -61,25 +64,46 @@ class MediumBulkUploadService
     sourcedb, sourceid = basename.split('-', 2)
     media_type, content_type = EXTENSION_TO_MEDIA_TYPE[ext]
 
-    medium = Medium.new(
-      sourcedb: sourcedb,
-      sourceid: sourceid,
-      media_type: media_type,
-      content_type: content_type,
-      user: @user
-    )
+    {
+      filename:,
+      ext:,
+      sourcedb:,
+      sourceid:,
+      media_type:,
+      content_type:
+    }
+  end
 
-    Tempfile.create(["media-upload-", ext]) do |tmp|
+  def process_entry(entry)
+    return if skippable_entry?(entry)
+
+    attributes = validate_entry(entry)
+    return unless attributes
+
+    Tempfile.create(["media-upload-", attributes[:ext]]) do |tmp|
       input = entry.get_input_stream
       begin
         IO.copy_stream(input, tmp)
         tmp.flush
         tmp.rewind
-        medium.file.attach(io: tmp, filename: filename, content_type: content_type)
-        if medium.save
-          @successes << filename
+
+        medium = Medium.create_with_file(
+          {
+            sourcedb: attributes[:sourcedb],
+            sourceid: attributes[:sourceid],
+            media_type: attributes[:media_type],
+            content_type: attributes[:content_type],
+            user: @user
+          },
+          io: tmp,
+          filename: attributes[:filename],
+          content_type: attributes[:content_type]
+        )
+
+        if medium.persisted?
+          @successes << attributes[:filename]
         else
-          @errors << "#{filename}: #{medium.errors.full_messages.join(', ')}"
+          @errors << "#{attributes[:filename]}: #{medium.errors.full_messages.join(', ')}"
         end
       ensure
         input.close
