@@ -12,8 +12,6 @@ Pubann::Application.routes.draw do
 			get 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#show', as: :show
 			delete 'sourcedbs/:sourcedb/sourceids/:sourceid', to: 'media#destroy', as: :destroy
 			post 'bulk_upload', to: 'media#bulk_upload'
-			get 'jobs', to: 'media#jobs', as: :jobs
-			get 'jobs/latest_jobs_table', to: 'media#latest_jobs_table'
 		end
 	end
 
@@ -84,7 +82,6 @@ Pubann::Application.routes.draw do
 
 	resources :users, only: [:index] do
 		get :autocomplete_username, :on => :collection
-		resources :jobs, only: [:show, :destroy], controller: 'jobs'
 	end
 
 	get '/users/:name' => 'users#show', :as => 'show_user'
