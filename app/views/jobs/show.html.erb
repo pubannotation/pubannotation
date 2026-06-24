@@ -7,7 +7,7 @@
 			link_to('jobs', project_jobs_path(@organization.name))
 		elsif request.path.start_with?('/media/')
 			link_to('> Media', media_path) + ' ' +
-			link_to('jobs', jobs_media_path)
+			link_to('> jobs', jobs_media_path)
 		else
 			link_to('> ' + t('activerecord.models.collection').pluralize, collections_path) + ' ' +
 			link_to('> ' + @organization.name, collection_path(@organization.name)) + ' ' +
