@@ -40,11 +40,16 @@ class MediaController < ApplicationController
   def bulk_upload
     zip_file = bulk_upload_params
 
-    zip_path = File.join('tmp', "media-bulk-upload-#{current_user.id}-#{Time.now.to_i}.zip")
-    FileUtils.mv(zip_file.path, zip_path)
+    if current_user.jobs.count < 10
+      zip_path = File.join('tmp', "media-bulk-upload-#{current_user.id}-#{Time.now.to_i}.zip")
+      FileUtils.mv(zip_file.path, zip_path)
+      MediaBulkUploadJob.perform_later(current_user, zip_path)
+      notice = 'Bulk upload job has been queued.'
+    else
+      notice = 'Up to 10 jobs can be registered. Please clear your jobs page.'
+    end
 
-    MediaBulkUploadJob.perform_later(current_user, zip_path)
-    redirect_to jobs_media_path, notice: 'Bulk upload job has been queued.'
+    redirect_to new_medium_path, notice: notice
   end
 
   def destroy
