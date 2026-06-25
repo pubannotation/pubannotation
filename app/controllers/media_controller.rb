@@ -29,10 +29,7 @@ class MediaController < ApplicationController
   end
 
   def bulk_upload
-    zip_file = bulk_upload_params
-    zip_path = File.join('tmp', "media-bulk-upload-#{current_user.id}-#{Time.now.to_i}.zip")
-    FileUtils.mv(zip_file.path, zip_path)
-    MediaBulkUploadJob.perform_later(current_user, zip_path)
+    MediaBulkUploadJob.enqueue(current_user, bulk_upload_params)
     redirect_to new_medium_path, notice: 'Bulk upload job has been queued.'
   end
 
