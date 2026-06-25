@@ -29,14 +29,8 @@ class MediaController < ApplicationController
   end
 
   def bulk_upload
-    zip_file = bulk_upload_params
-
-    service = MediumBulkUploadService.new(zip_file, current_user)
-    service.call
-
-    redirect_to media_path, notice: service.result_message
-  rescue ArgumentError => e
-    redirect_to new_medium_path, alert: e.message
+    MediaBulkUploadJob.enqueue(current_user, bulk_upload_params)
+    redirect_to new_medium_path, notice: 'Bulk upload job has been queued.'
   end
 
   def destroy

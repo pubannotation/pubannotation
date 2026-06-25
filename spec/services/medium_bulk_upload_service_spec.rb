@@ -24,21 +24,14 @@ RSpec.describe MediumBulkUploadService do
 
       it 'creates a Medium' do
         expect {
-          described_class.new(zip_file, user).call
+          described_class.new(zip_file.path, user).call
         }.to change(Medium, :count).by(1)
       end
 
       it 'sets sourcedb and sourceid correctly' do
-        described_class.new(zip_file, user).call
+        described_class.new(zip_file.path, user).call
         medium = Medium.find_by(sourcedb: 'PMC', sourceid: '12345')
         expect(medium).to be_present
-      end
-
-      it 'reports success in result_message' do
-        service = described_class.new(zip_file, user)
-        service.call
-        expect(service.result_message).to include('1 file(s) uploaded successfully')
-        expect(service.result_message).not_to include('failed')
       end
     end
 
@@ -51,54 +44,52 @@ RSpec.describe MediumBulkUploadService do
         })
       end
 
-      it 'skips .DS_Store and __MACOSX files' do
-        service = described_class.new(zip_file, user)
-        service.call
+      it 'skips .DS_Store and __MACOSX files and creates only valid media' do
+        described_class.new(zip_file.path, user).call
         expect(Medium.count).to eq(1)
-        expect(service.result_message).to include('1 file(s) uploaded successfully')
       end
     end
 
     context 'with a file without extension' do
       let(:zip_file) { build_zip({ 'PMC-12345' => '' }) }
 
-      it 'reports an error in result_message' do
-        service = described_class.new(zip_file, user)
-        service.call
-        expect(service.result_message).to include('no extension')
+      it 'does not create a Medium' do
+        expect {
+          described_class.new(zip_file.path, user).call
+        }.not_to change(Medium, :count)
       end
     end
 
     context 'with an unsupported extension' do
       let(:zip_file) { build_zip({ 'PMC-12345.txt' => '' }) }
 
-      it 'reports an error in result_message' do
-        service = described_class.new(zip_file, user)
-        service.call
-        expect(service.result_message).to include('unsupported extension')
+      it 'does not create a Medium' do
+        expect {
+          described_class.new(zip_file.path, user).call
+        }.not_to change(Medium, :count)
       end
     end
 
     context 'with invalid filename format' do
-      it 'reports error for filename with spaces' do
+      it 'does not create a Medium for filename with spaces' do
         zip_file = build_zip({ 'my file-001.png' => png_data })
-        service = described_class.new(zip_file, user)
-        service.call
-        expect(service.result_message).to include('sourcedb-sourceid')
+        expect {
+          described_class.new(zip_file.path, user).call
+        }.not_to change(Medium, :count)
       end
 
-      it 'reports error for filename with multiple hyphens' do
+      it 'does not create a Medium for filename with multiple hyphens' do
         zip_file = build_zip({ 'PMC-sub-12345.png' => png_data })
-        service = described_class.new(zip_file, user)
-        service.call
-        expect(service.result_message).to include('sourcedb-sourceid')
+        expect {
+          described_class.new(zip_file.path, user).call
+        }.not_to change(Medium, :count)
       end
 
-      it 'reports error for filename without hyphen' do
+      it 'does not create a Medium for filename without hyphen' do
         zip_file = build_zip({ 'PMC12345.png' => png_data })
-        service = described_class.new(zip_file, user)
-        service.call
-        expect(service.result_message).to include('sourcedb-sourceid')
+        expect {
+          described_class.new(zip_file.path, user).call
+        }.not_to change(Medium, :count)
       end
     end
 
@@ -112,7 +103,7 @@ RSpec.describe MediumBulkUploadService do
 
       it 'raises ArgumentError' do
         expect {
-          described_class.new(zip_file, user).call
+          described_class.new(zip_file.path, user).call
         }.to raise_error(ArgumentError, /Invalid ZIP file/)
       end
     end

@@ -7,27 +7,21 @@ class MediumBulkUploadService
     '.webp' => [:image, 'image/webp']
   }.freeze
 
-  def initialize(zip_file, user)
-    @zip_file = zip_file
+  def initialize(zip_path, user)
+    @zip_path = zip_path
     @user = user
     @successes = []
     @errors = []
   end
 
   def call
-    Zip::File.open(@zip_file.path) do |zip|
+    Zip::File.open(@zip_path) do |zip|
       zip.each do |entry|
         process_entry(entry)
       end
     end
   rescue Zip::Error => e
     raise ArgumentError, "Invalid ZIP file: #{e.message}"
-  end
-
-  def result_message
-    message = "#{@successes.size} file(s) uploaded successfully."
-    message += " #{@errors.size} file(s) failed: #{@errors.join(' / ')}" if @errors.any?
-    message
   end
 
   private

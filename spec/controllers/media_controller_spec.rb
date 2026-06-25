@@ -145,4 +145,31 @@ RSpec.describe 'MediaController', type: :request do
       end
     end
   end
+
+  describe 'POST /media/bulk_upload' do
+    let(:zip_file) do
+      Rack::Test::UploadedFile.new(
+        Rails.root.join('spec', 'fixtures', 'files', 'test_image.png'),
+        'application/zip'
+      )
+    end
+
+    context 'when logged in' do
+      before { sign_in user }
+
+      it 'enqueues a job and redirects to new medium page' do
+        expect {
+          post bulk_upload_media_path, params: { zip_file: zip_file }
+        }.to have_enqueued_job(MediaBulkUploadJob)
+        expect(response).to redirect_to(new_medium_path)
+      end
+    end
+
+    context 'when not logged in' do
+      it 'redirects to login' do
+        post bulk_upload_media_path, params: { zip_file: zip_file }
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
 end
