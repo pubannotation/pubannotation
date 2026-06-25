@@ -7,15 +7,15 @@ class MediumBulkUploadService
     '.webp' => [:image, 'image/webp']
   }.freeze
 
-  def initialize(zip_file, user)
-    @zip_file = zip_file
+  def initialize(zip_path, user)
+    @zip_path = zip_path
     @user = user
     @successes = []
     @errors = []
   end
 
   def call
-    Zip::File.open(@zip_file.path) do |zip|
+    Zip::File.open(@zip_path) do |zip|
       zip.each do |entry|
         process_entry(entry)
       end

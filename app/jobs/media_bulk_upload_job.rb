@@ -10,9 +10,7 @@ class MediaBulkUploadJob < ApplicationJob
   end
 
   def perform(user, zip_path)
-    zip_file = OpenStruct.new(path: zip_path)
-    service = MediumBulkUploadService.new(zip_file, user)
-    service.call
+    MediumBulkUploadService.new(zip_path, user).call
   ensure
     FileUtils.rm_f(zip_path)
   end
