@@ -24,14 +24,6 @@ class MediumBulkUploadService
     raise ArgumentError, "Invalid ZIP file: #{e.message}"
   end
 
-  def success_count
-    @successes.size
-  end
-
-  def error_messages
-    @errors
-  end
-
   private
 
   def skippable_entry?(entry)
