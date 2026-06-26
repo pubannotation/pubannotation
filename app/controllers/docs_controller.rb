@@ -302,8 +302,6 @@ class DocsController < ApplicationController
 			else
 				text = if params[:text]
 					params[:text]
-				elsif params[:body]
-					params[:body]
 				elsif request.content_type =~ /text/
 					request.body.read
 				end
@@ -409,8 +407,9 @@ class DocsController < ApplicationController
 		@doc = Doc.find_by(id: params[:id])
 
 		params = doc_params
-		params[:body].gsub!(/\r\n/, "\n")
-		is_success = @doc.update(params)
+		text = params.delete(:text) || params.delete(:body)
+		text&.gsub!(/\r\n/, "\n")
+		is_success = @doc.update(params.merge(body: text))
 
 		respond_to do |format|
 			if is_success
@@ -675,7 +674,7 @@ class DocsController < ApplicationController
 	end
 
 	def doc_params
-		params.require(:doc).permit(:body, :source, :sourcedb, :sourceid, :username)
+		params.require(:doc).permit(:text, :body, :source, :sourcedb, :sourceid, :username)
 	end
 
 	def get_project2 (project_name)
