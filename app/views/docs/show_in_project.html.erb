@@ -8,7 +8,7 @@
 		<%= render :partial => 'docs/content'-%>
 		<%= render :partial => 'docs/divisions'-%>
 
-		<% if @medium.present? %>
+		<% if @medium.present? && media_accessible? %>
 			<section>
 				<h2>Media</h2>
 				<%= image_tag url_for(@medium.file), style: 'max-width: 100%' %>
