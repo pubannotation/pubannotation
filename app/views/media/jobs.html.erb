@@ -1,0 +1,15 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to 'Media', media_path -%>
+	> Jobs
+<% end -%>
+
+<section>
+	<h2>Media Jobs</h2>
+
+	<%= link_to 'Clear finished jobs', media_clear_finished_jobs_path, method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
+
+	<div class="jobs-table-wrapper">
+		<%= render partial: 'jobs_table' %>
+	</div>
+</section>

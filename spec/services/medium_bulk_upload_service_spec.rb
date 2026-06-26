@@ -33,6 +33,13 @@ RSpec.describe MediumBulkUploadService do
         medium = Medium.find_by(sourcedb: 'PMC', sourceid: '12345')
         expect(medium).to be_present
       end
+
+      it 'reports success' do
+        service = described_class.new(zip_file.path, user)
+        service.call
+        expect(service.success_count).to eq(1)
+        expect(service.error_messages).to be_empty
+      end
     end
 
     context 'with macOS metadata files' do
@@ -44,52 +51,55 @@ RSpec.describe MediumBulkUploadService do
         })
       end
 
-      it 'skips .DS_Store and __MACOSX files and creates only valid media' do
-        described_class.new(zip_file.path, user).call
+      it 'skips .DS_Store and __MACOSX files' do
+        service = described_class.new(zip_file.path, user)
+        service.call
         expect(Medium.count).to eq(1)
+        expect(service.success_count).to eq(1)
+        expect(service.error_messages).to be_empty
       end
     end
 
     context 'with a file without extension' do
       let(:zip_file) { build_zip({ 'PMC-12345' => '' }) }
 
-      it 'does not create a Medium' do
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+      it 'reports an error' do
+        service = described_class.new(zip_file.path, user)
+        service.call
+        expect(service.error_messages.first).to include('no extension')
       end
     end
 
     context 'with an unsupported extension' do
       let(:zip_file) { build_zip({ 'PMC-12345.txt' => '' }) }
 
-      it 'does not create a Medium' do
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+      it 'reports an error' do
+        service = described_class.new(zip_file.path, user)
+        service.call
+        expect(service.error_messages.first).to include('unsupported extension')
       end
     end
 
     context 'with invalid filename format' do
-      it 'does not create a Medium for filename with spaces' do
+      it 'reports error for filename with spaces' do
         zip_file = build_zip({ 'my file-001.png' => png_data })
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+        service = described_class.new(zip_file.path, user)
+        service.call
+        expect(service.error_messages.first).to include('sourcedb-sourceid')
       end
 
-      it 'does not create a Medium for filename with multiple hyphens' do
+      it 'reports error for filename with multiple hyphens' do
         zip_file = build_zip({ 'PMC-sub-12345.png' => png_data })
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+        service = described_class.new(zip_file.path, user)
+        service.call
+        expect(service.error_messages.first).to include('sourcedb-sourceid')
       end
 
-      it 'does not create a Medium for filename without hyphen' do
+      it 'reports error for filename without hyphen' do
         zip_file = build_zip({ 'PMC12345.png' => png_data })
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+        service = described_class.new(zip_file.path, user)
+        service.call
+        expect(service.error_messages.first).to include('sourcedb-sourceid')
       end
     end
 
