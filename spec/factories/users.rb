@@ -5,5 +5,6 @@ FactoryBot.define do
     sequence(:username) { |n| "testuser#{n}" }
     sequence(:email) { |n| "testuser#{n}@example.com" }
     password { "password" }
+    can_use_media { true }
   end
 end
