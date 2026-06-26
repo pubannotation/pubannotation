@@ -67,6 +67,10 @@ class JobsController < ApplicationController
 		respond_to do |format|
 			format.html { redirect_to organization_jobs_path }
 		end
+	rescue => e
+		respond_to do |format|
+			format.html { redirect_to organization_jobs_path || root_path, notice: e.message }
+		end
 	end
 
 	def clear_finished_jobs
