@@ -1,5 +1,5 @@
 class ImageCaptionService
-  OLLAMA_HOST = ENV.fetch('OLLAMA_HOST', 'http://localhost:11434')
+  OLLAMA_HOST = ENV.fetch('OLLAMA_HOST', 'localhost')
   OLLAMA_MODEL = ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
   PROMPT = 'Describe the content of this image concisely.'
 
@@ -9,8 +9,8 @@ class ImageCaptionService
 
   def call
     llm = LLM.ollama(key: nil, host: OLLAMA_HOST)
-    agent = LLM::Agent.new(llm, model: OLLAMA_MODEL)
-    response = agent.ask(PROMPT, with: @image_path)
+    ctx = LLM::Context.new(llm, model: OLLAMA_MODEL)
+    response = ctx.talk([PROMPT, ctx.local_file(@image_path)])
     response.content
   end
 end
