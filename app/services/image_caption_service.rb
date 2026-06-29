@@ -1,6 +1,6 @@
 class ImageCaptionService
-  OLLAMA_HOST = ENV.fetch('OLLAMA_HOST', 'localhost')
-  OLLAMA_MODEL = ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
+  OLLAMA_HOST = ENV['OLLAMA_HOST']
+  OLLAMA_MODEL = ENV['OLLAMA_CAPTION_MODEL'] || 'moondream'
   PROMPT = 'Describe the content of this image concisely.'
 
   def initialize(image_path)
