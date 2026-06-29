@@ -10,7 +10,10 @@ class ImageCaptionService
     model = ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
     image_data = Base64.strict_encode64(File.binread(@image_path))
     uri      = URI("http://#{host}:11434/api/chat")
-    messages = [{role: 'user', content: PROMPT, images: [image_data]}]
+    messages = [
+      {role: 'user', content: PROMPT},
+      {role: 'user', content: '', images: [image_data]}
+    ]
     body     = {model: model, messages: messages}.to_json
 
     caption = +''
