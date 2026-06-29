@@ -4,7 +4,7 @@
 	<table style="width:610px">
 		<tr>
 			<th style="width:5em">Text</th>
-			<td><%= f.text_area :body, size:"60x10" %></td>
+			<td><%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %></td>
 		</tr>
 		<tr>
 			<th>Meta-data</th>

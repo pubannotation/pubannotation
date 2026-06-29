@@ -30,7 +30,7 @@ RSpec.describe 'POST /docs.json', type: :request do
     {
       project_id: project.name,
       doc: {
-        body: 'doctor findings',
+        text: 'doctor findings',
         sourcedb: 'Example',
         sourceid: '001'
       },
