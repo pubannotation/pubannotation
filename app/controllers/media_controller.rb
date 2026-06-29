@@ -46,7 +46,7 @@ class MediaController < ApplicationController
   end
 
   def authorize_media_access!
-    unless media_accessible?
+    unless current_user&.can_access_media?
       render_status_error(:forbidden)
     end
   end
