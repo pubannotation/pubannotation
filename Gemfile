@@ -4,7 +4,6 @@ ruby '4.0.5'
 
 gem 'rails', '~> 8.1.0'
 gem 'rake'
-gem 'llm.rb'
 gem 'ostruct'
 gem 'activerecord-import'
 

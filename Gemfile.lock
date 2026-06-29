@@ -233,7 +233,6 @@ GEM
     kaminari-core (1.2.2)
     kgio (2.11.4)
     libxml-ruby (6.0.0)
-    llm.rb (11.3.1)
     logger (1.7.0)
     loofah (2.25.1)
       crass (~> 1.0.2)
@@ -485,7 +484,6 @@ DEPENDENCIES
   jquery-ui-rails!
   kaminari
   libxml-ruby
-  llm.rb
   memory_profiler
   omniauth-google-oauth2
   omniauth-rails_csrf_protection
