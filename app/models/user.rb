@@ -52,6 +52,10 @@ class User < ActiveRecord::Base
 		root
 	end
 
+	def can_access_media?
+		root? || can_use_media?
+	end
+
 	def manager?
 		manager
 	end

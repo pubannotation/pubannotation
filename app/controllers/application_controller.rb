@@ -7,12 +7,7 @@ class ApplicationController < ActionController::Base
 		user_signed_in? && current_user.root?
 	end
 
-	def media_accessible?
-		user_signed_in? && (current_user.root? || current_user.can_use_media?)
-	end
-
 	helper_method :root_user?
-	helper_method :media_accessible?
 
 	protected
 
