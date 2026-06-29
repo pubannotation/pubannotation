@@ -674,7 +674,7 @@ class DocsController < ApplicationController
 	end
 
 	def doc_params
-		params.require(:doc).permit(:text, :body, :source, :sourcedb, :sourceid, :username)
+		params.expect(doc: [:text, :source, :sourcedb, :sourceid, :username])
 	end
 
 	def get_project2 (project_name)
