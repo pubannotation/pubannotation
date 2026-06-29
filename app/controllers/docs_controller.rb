@@ -157,7 +157,7 @@ class DocsController < ApplicationController
 				format.html {redirect_back fallback_location: root_path, flash: { notice: e.message }}
 			end
 		end
-	end 
+	end
 
 	def show
 		if params[:id].present?
@@ -276,7 +276,7 @@ class DocsController < ApplicationController
 	# GET /docs/new.json
 	def new
 		@doc = Doc.new
-		begin 
+		begin
 			@project = get_project2(params[:project_id])
 		rescue => e
 			notice = e.message
@@ -324,6 +324,13 @@ class DocsController < ApplicationController
 				medium = Medium.find_by(sourcedb: params[:media][:sourcedb], sourceid: params[:media][:sourceid])
 				raise ArgumentError, "Specified media does not exist." unless medium
 				hdoc[:medium_id] = medium.id
+
+				if params[:generate_text_from_media] == '1'
+					medium.file.open do |f|
+						caption = ImageCaptionService.new(f.path).call
+						hdoc = hdoc.to_h.except('text').merge(body: caption)
+					end
+				end
 			end
 
 			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)

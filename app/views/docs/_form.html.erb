@@ -4,7 +4,14 @@
 	<table style="width:610px">
 		<tr>
 			<th style="width:5em">Text</th>
-			<td><%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %></td>
+			<td>
+			<%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %>
+			<% if @doc.new_record? && current_user&.can_access_media? %>
+				<br>
+				<%= check_box_tag 'generate_text_from_media', '1', false %>
+				<label for="generate_text_from_media">Generate text from media using LLM (overwrites text above)</label>
+			<% end %>
+		</td>
 		</tr>
 		<tr>
 			<th>Meta-data</th>
