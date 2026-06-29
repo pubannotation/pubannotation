@@ -1,6 +1,4 @@
 class ImageCaptionService
-  OLLAMA_HOST = ENV['OLLAMA_HOST']
-  OLLAMA_MODEL = ENV['OLLAMA_CAPTION_MODEL'] || 'moondream'
   PROMPT = 'Describe the content of this image concisely.'
 
   def initialize(image_path)
@@ -8,9 +6,26 @@ class ImageCaptionService
   end
 
   def call
-    llm = LLM.ollama(key: nil, host: OLLAMA_HOST)
-    ctx = LLM::Context.new(llm, model: OLLAMA_MODEL)
-    response = ctx.talk([PROMPT, ctx.local_file(@image_path)])
-    response.content
+    host  = ENV.fetch('OLLAMA_HOST', 'localhost')
+    model = ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
+    image_data = Base64.strict_encode64(File.binread(@image_path))
+    uri      = URI("http://#{host}:11434/api/chat")
+    messages = [{role: 'user', content: PROMPT, images: [image_data]}]
+    body     = {model: model, messages: messages}.to_json
+
+    caption = +''
+    Net::HTTP.start(uri.host, uri.port) do |http|
+      req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+      req.body = body
+      http.request(req) do |res|
+        res.read_body do |chunk|
+          chunk.each_line do |line|
+            data = JSON.parse(line) rescue next
+            caption << data.dig('message', 'content').to_s
+          end
+        end
+      end
+    end
+    caption.strip
   end
 end

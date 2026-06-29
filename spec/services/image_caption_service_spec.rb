@@ -6,15 +6,22 @@ RSpec.describe ImageCaptionService do
   let(:image_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_image.png').to_s }
 
   describe '#call' do
+    let(:mock_http)     { instance_double(Net::HTTP) }
+    let(:mock_request)  { instance_double(Net::HTTP::Post) }
+    let(:mock_response) { instance_double(Net::HTTPResponse) }
+
+    before do
+      allow(Net::HTTP).to receive(:start).and_yield(mock_http)
+      allow(Net::HTTP::Post).to receive(:new).and_return(mock_request)
+      allow(mock_request).to receive(:body=)
+    end
+
     context 'when Ollama returns a caption' do
       before do
-        mock_response = double('response', content: 'A chest X-ray image.')
-        mock_file = double('file')
-        mock_ctx = double('ctx')
-        allow(mock_ctx).to receive(:local_file).with(image_path).and_return(mock_file)
-        allow(mock_ctx).to receive(:talk).and_return(mock_response)
-        allow(LLM::Context).to receive(:new).and_return(mock_ctx)
-        allow(LLM).to receive(:ollama).and_return(double('llm', default_model: nil))
+        chunk = [{message: {content: 'A chest '}, done: false},
+                 {message: {content: 'X-ray image.'}, done: true}].map(&:to_json).join("\n")
+        allow(mock_http).to receive(:request).with(mock_request).and_yield(mock_response)
+        allow(mock_response).to receive(:read_body).and_yield(chunk)
       end
 
       it 'returns the generated caption' do
@@ -25,7 +32,7 @@ RSpec.describe ImageCaptionService do
 
     context 'when Ollama is not available' do
       before do
-        allow(LLM).to receive(:ollama).and_raise(StandardError, 'Connection refused')
+        allow(mock_http).to receive(:request).and_raise(StandardError, 'Connection refused')
       end
 
       it 'raises an error' do
