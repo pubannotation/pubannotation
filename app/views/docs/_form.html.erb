@@ -26,7 +26,7 @@
 				</table>
 			</td>
 		</tr>
-	<% if @doc.new_record? %>
+	<% if @doc.new_record? && current_user&.can_access_media? %>
 	<tr>
 		<th>Media</th>
 		<td>
