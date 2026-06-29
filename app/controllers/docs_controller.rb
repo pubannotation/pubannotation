@@ -6,8 +6,8 @@ class DocsController < ApplicationController
 
 	protect_from_forgery :except => [:create]
 	before_action :authenticate_user!, :only => [:new, :create, :create_from_upload, :edit, :update, :destroy, :project_delete_doc, :uptodate]
-	before_action :http_basic_authenticate, :only => :create, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
-	skip_before_action :authenticate_user!, :verify_authenticity_token, :if => Proc.new{|c| c.request.format == 'application/jsonrequest'}
+	before_action :http_basic_authenticate, :only => :create, :if => :json_request?
+	skip_before_action :authenticate_user!, :verify_authenticity_token, :if => :json_request?
 
 	autocomplete :doc, :sourcedb
 
@@ -659,6 +659,10 @@ class DocsController < ApplicationController
 	#   render :json => Doc.where(['LOWER(sourcedb) like ?', "%#{params[:term].downcase}%"]).collect{|doc| doc.sourcedb}.uniq
 	# end
 	private
+
+	def json_request?
+		request.media_type == 'application/json'
+	end
 
 	def set_highlight_text(doc, highlight_text)
 		# Only set highlight text if it exists (kNN-only results have no highlights)
