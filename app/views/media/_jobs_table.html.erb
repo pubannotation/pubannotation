@@ -1,0 +1,35 @@
+<table class="jobs-table" data-is-reload-necessary="<%= current_user.jobs.unfinished.any? %>">
+	<tr>
+		<th>#</th>
+		<th>Job type</th>
+		<th>Created at</th>
+		<th>State</th>
+		<th>Progress</th>
+		<th>#Messages</th>
+	</tr>
+
+	<% @jobs.each_with_index do |job, i| %>
+		<tr
+			<%=
+				if job.running?
+					'style=background-color:#ffcccc'
+				elsif job.finished?
+					'style=color:#888888'
+				end
+			%>
+		>
+			<td><%= i + 1 %></td>
+			<td><%= job.name %></td>
+			<td><%= job.created_at %></td>
+			<td><%= job.state %></td>
+			<td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
+			<td style="text-align:right"><%= job.messages.count %></td>
+			<td>
+				<%= link_to 'Show', job_media_path(job), class: :button %>
+				<% unless job.running? %>
+					<%= link_to 'Remove', job_destroy_media_path(job), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
+				<% end %>
+			</td>
+		</tr>
+	<% end %>
+</table>
