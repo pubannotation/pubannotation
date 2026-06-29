@@ -26,6 +26,24 @@
 				</table>
 			</td>
 		</tr>
+	<% if @doc.new_record? %>
+	<tr>
+		<th>Media</th>
+		<td>
+			Leave it blank if not associated with a media.
+			<table>
+				<tr>
+					<th>Media Source DB</th>
+					<td><%= text_field_tag 'media[sourcedb]' %></td>
+				</tr>
+				<tr>
+					<th>Media Source Id</th>
+					<td><%= text_field_tag 'media[sourceid]' %></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<% end %>
 	</table>
 
 	<%= f.hidden_field :username, value: current_user.username -%>
