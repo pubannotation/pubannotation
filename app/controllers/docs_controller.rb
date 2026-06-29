@@ -407,7 +407,7 @@ class DocsController < ApplicationController
 		@doc = Doc.find_by(id: params[:id])
 
 		params = doc_params
-		text = params.delete(:text) || params.delete(:body)
+		text = params.delete(:text)
 		text&.gsub!(/\r\n/, "\n")
 		is_success = @doc.update(params.merge(body: text))
 
