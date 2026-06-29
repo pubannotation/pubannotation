@@ -9,10 +9,12 @@ RSpec.describe ImageCaptionService do
     context 'when Ollama returns a caption' do
       before do
         mock_response = double('response', content: 'A chest X-ray image.')
-        mock_agent = double('agent')
-        allow(mock_agent).to receive(:ask).with(ImageCaptionService::PROMPT, with: image_path).and_return(mock_response)
-        allow(LLM::Agent).to receive(:new).and_return(mock_agent)
-        allow(LLM).to receive(:ollama).and_return(double('llm'))
+        mock_file = double('file')
+        mock_ctx = double('ctx')
+        allow(mock_ctx).to receive(:local_file).with(image_path).and_return(mock_file)
+        allow(mock_ctx).to receive(:talk).and_return(mock_response)
+        allow(LLM::Context).to receive(:new).and_return(mock_ctx)
+        allow(LLM).to receive(:ollama).and_return(double('llm', default_model: nil))
       end
 
       it 'returns the generated caption' do
