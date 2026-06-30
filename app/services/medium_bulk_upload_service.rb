@@ -6,6 +6,14 @@ class MediumBulkUploadService
     @errors = []
   end
 
+  def success_count
+    @successes.size
+  end
+
+  def error_messages
+    @errors
+  end
+
   def call
     Zip::File.open(@zip_path) do |zip|
       zip.each do |entry|
