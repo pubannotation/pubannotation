@@ -350,6 +350,8 @@ ja:
       create_downloadable: アノテーションtgzファイルの作成
       create_tgz_delay: アノテーションtgzファイルの作成を受け付けました。数分後に再度このページにアクセスして下さい。
     docs:
+      text_generation_pending: "（テキスト生成中...）"
+      text_generation_started: "ドキュメントを作成しました。タスク「%{job_name}」でメディアからテキストを生成しています。"
       index:
         too_many: 件数が多すぎます
       create_project_docs:

@@ -369,6 +369,8 @@ en:
       create_rdf: Create annotations RDF file.
       create_rdf_delay: RDF will be created after a few minutes and then please come back to this page.
     docs:
+      text_generation_pending: "(Text generation in progress...)"
+      text_generation_started: "Doc created. The task, '%{job_name}', is generating text from the media."
       index:
         too_many: too many
       create_project_docs:

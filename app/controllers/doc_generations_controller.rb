@@ -12,16 +12,20 @@ class DocGenerationsController < ApplicationController
     medium = Medium.find_by(media_params)
     raise ArgumentError, "Specified media does not exist." unless medium
 
-    @doc = DocGenerationFromMedia.new(
+    attributes = doc_attributes
+    DocGenerationFromMedia.new(
       project: @project,
       medium: medium,
       user: current_user,
-      attributes: doc_attributes
-    ).call
+      attributes: attributes
+    ).validate_medium!
+
+    active_job = GenerateDocTextFromMediaJob.perform_later(@project, medium, current_user, attributes)
+    notice = t('controllers.docs.text_generation_started', job_name: active_job.job_name)
 
     respond_to do |format|
-      format.html { redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid), notice: t('controllers.shared.successfully_created', model: t('activerecord.models.doc')) }
-      format.json { render json: @doc.to_hash, status: :created, location: @doc }
+      format.html { redirect_to project_docs_path(@project.name), notice: notice }
+      format.json { render json: { message: notice, job_name: active_job.job_name }, status: :accepted }
     end
   rescue ArgumentError => e
     render_error(message: e.message, status: :unprocessable_entity)

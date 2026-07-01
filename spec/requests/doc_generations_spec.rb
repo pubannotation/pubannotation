@@ -4,6 +4,7 @@ require 'rails_helper'
 
 RSpec.describe 'DocGenerationsController', type: :request do
   include Devise::Test::IntegrationHelpers
+  include ActiveJob::TestHelper
 
   let(:user) { create(:user).tap { |u| u.confirm } }
   let(:project) { create(:project, user: user) }
@@ -66,13 +67,23 @@ RSpec.describe 'DocGenerationsController', type: :request do
     context 'when logged in' do
       before { sign_in user }
 
-      it 'uses the generated caption as the body and links the medium' do
+      it 'enqueues a job to generate the doc instead of creating it synchronously' do
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+        }.to have_enqueued_job(GenerateDocTextFromMediaJob).and change(Doc, :count).by(0)
+
+        expect(response).to redirect_to(project_docs_path(project.name))
+      end
+
+      it 'creates a doc with the generated caption when the job runs' do
         allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
 
-        post project_doc_generations_path(project.name),
-             params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+        perform_enqueued_jobs do
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+        end
 
-        expect(response).to redirect_to(show_project_sourcedb_sourceid_docs_path(project.name, "Example@#{user.username}", '001'))
         doc = Doc.last
         expect(doc.body).to eq('A generated caption.')
         expect(doc.sourcedb).to eq("Example@#{user.username}")

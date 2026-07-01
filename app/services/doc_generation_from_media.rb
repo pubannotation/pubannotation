@@ -29,8 +29,6 @@ class DocGenerationFromMedia
     doc
   end
 
-  private
-
   def validate_medium!
     raise ArgumentError, "Text generation is supported only for image media." unless @medium.image?
     raise ArgumentError, "Specified media has no attached file." unless @medium.file.attached?
