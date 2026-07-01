@@ -18,6 +18,22 @@ RSpec.describe MediumBulkUploadService do
     end
   end
 
+  def collect_results(service)
+    [].tap { |results| service.call { |r| results << r } }
+  end
+
+  describe '#total_count' do
+    it 'returns the number of non-skippable entries' do
+      zip_file = build_zip({
+        'PMC-12345.png' => png_data,
+        'PMC-67890.png' => png_data,
+        '.DS_Store' => '',
+        '__MACOSX/._PMC-12345.png' => ''
+      })
+      expect(described_class.new(zip_file.path, user).total_count).to eq(2)
+    end
+  end
+
   describe '#call' do
     context 'with valid image files' do
       let(:zip_file) { build_zip({ 'PMC-12345.png' => png_data }) }
@@ -33,6 +49,12 @@ RSpec.describe MediumBulkUploadService do
         medium = Medium.find_by(sourcedb: 'PMC', sourceid: '12345')
         expect(medium).to be_present
       end
+
+      it 'yields a success result' do
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.count { |r| r.status == :success }).to eq(1)
+        expect(results.none? { |r| r.status == :error }).to be true
+      end
     end
 
     context 'with macOS metadata files' do
@@ -44,52 +66,54 @@ RSpec.describe MediumBulkUploadService do
         })
       end
 
-      it 'skips .DS_Store and __MACOSX files and creates only valid media' do
-        described_class.new(zip_file.path, user).call
+      it 'skips .DS_Store and __MACOSX files' do
+        results = collect_results(described_class.new(zip_file.path, user))
         expect(Medium.count).to eq(1)
+        expect(results.count { |r| r.status == :success }).to eq(1)
+        expect(results.none? { |r| r.status == :error }).to be true
       end
     end
 
     context 'with a file without extension' do
       let(:zip_file) { build_zip({ 'PMC-12345' => '' }) }
 
-      it 'does not create a Medium' do
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+      it 'yields an error result' do
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('no extension')
       end
     end
 
     context 'with an unsupported extension' do
       let(:zip_file) { build_zip({ 'PMC-12345.txt' => '' }) }
 
-      it 'does not create a Medium' do
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+      it 'yields an error result' do
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('unsupported extension')
       end
     end
 
     context 'with invalid filename format' do
-      it 'does not create a Medium for filename with spaces' do
+      it 'yields an error for filename with spaces' do
         zip_file = build_zip({ 'my file-001.png' => png_data })
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('sourcedb-sourceid')
       end
 
-      it 'does not create a Medium for filename with multiple hyphens' do
+      it 'yields an error for filename with multiple hyphens' do
         zip_file = build_zip({ 'PMC-sub-12345.png' => png_data })
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('sourcedb-sourceid')
       end
 
-      it 'does not create a Medium for filename without hyphen' do
+      it 'yields an error for filename without hyphen' do
         zip_file = build_zip({ 'PMC12345.png' => png_data })
-        expect {
-          described_class.new(zip_file.path, user).call
-        }.not_to change(Medium, :count)
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('sourcedb-sourceid')
       end
     end
 

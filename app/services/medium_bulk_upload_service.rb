@@ -7,17 +7,27 @@ class MediumBulkUploadService
     '.webp' => [:image, 'image/webp']
   }.freeze
 
+  Result = Data.define(:filename, :status, :message)
+
   def initialize(zip_path, user)
     @zip_path = zip_path
     @user = user
-    @successes = []
-    @errors = []
+  end
+
+  def total_count
+    @total_count ||= Zip::File.open(@zip_path) do |zip|
+      zip.count { |entry| !skippable_entry?(entry) }
+    end
+  rescue Zip::Error => e
+    raise ArgumentError, "Invalid ZIP file: #{e.message}"
   end
 
   def call
     Zip::File.open(@zip_path) do |zip|
       zip.each do |entry|
-        process_entry(entry)
+        next if skippable_entry?(entry)
+        result = process_entry(entry)
+        yield result if block_given?
       end
     end
   rescue Zip::Error => e
@@ -25,6 +35,14 @@ class MediumBulkUploadService
   end
 
   private
+
+  def success_result(filename)
+    Result.new(filename:, status: :success, message: nil)
+  end
+
+  def error_result(filename, message)
+    Result.new(filename:, status: :error, message:)
+  end
 
   def skippable_entry?(entry)
     filename = File.basename(entry.name)
@@ -38,41 +56,23 @@ class MediumBulkUploadService
     filename = File.basename(entry.name)
     ext = File.extname(filename).downcase
 
-    unless ext.present?
-      @errors << "#{filename}: no extension, skipped."
-      return
-    end
-
-    unless EXTENSION_TO_MEDIA_TYPE.key?(ext)
-      @errors << "#{filename}: unsupported extension '#{ext}', skipped."
-      return
-    end
+    raise "#{filename}: no extension, skipped." unless ext.present?
+    raise "#{filename}: unsupported extension '#{ext}', skipped." unless EXTENSION_TO_MEDIA_TYPE.key?(ext)
 
     basename = File.basename(filename, ext)
-
     unless basename.match?(/\A[^\s-]+-[^\s-]+\z/)
-      @errors << "#{filename}: filename must be in 'sourcedb-sourceid#{ext}' format (one hyphen, no spaces), skipped."
-      return
+      raise "#{filename}: filename must be in 'sourcedb-sourceid#{ext}' format (one hyphen, no spaces), skipped."
     end
 
     sourcedb, sourceid = basename.split('-', 2)
     media_type, content_type = EXTENSION_TO_MEDIA_TYPE[ext]
 
-    {
-      filename:,
-      ext:,
-      sourcedb:,
-      sourceid:,
-      media_type:,
-      content_type:
-    }
+    { filename:, ext:, sourcedb:, sourceid:, media_type:, content_type: }
   end
 
   def process_entry(entry)
-    return if skippable_entry?(entry)
-
+    filename = File.basename(entry.name)
     attributes = validate_entry(entry)
-    return unless attributes
 
     Tempfile.create(["media-upload-", attributes[:ext]]) do |tmp|
       input = entry.get_input_stream
@@ -95,13 +95,15 @@ class MediumBulkUploadService
         )
 
         if medium.persisted?
-          @successes << attributes[:filename]
+          success_result(attributes[:filename])
         else
-          @errors << "#{attributes[:filename]}: #{medium.errors.full_messages.join(', ')}"
+          error_result(attributes[:filename], medium.errors.full_messages.join(', '))
         end
       ensure
         input.close
       end
     end
+  rescue => e
+    error_result(filename, e.message)
   end
 end

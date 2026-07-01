@@ -1,4 +1,6 @@
 class MediaBulkUploadJob < ApplicationJob
+  include UseJobRecordConcern
+
   queue_as :general
 
   def self.enqueue(user, uploaded_file)
@@ -10,8 +12,24 @@ class MediaBulkUploadJob < ApplicationJob
   end
 
   def perform(user, zip_path)
-    MediumBulkUploadService.new(zip_path, user).call
+    service = MediumBulkUploadService.new(zip_path, user)
+
+    prepare_progress_record(service.total_count)
+
+    service.call do |result|
+      if result.status == :error
+        @job&.add_message(sourcedb: '*', sourceid: '*', body: result.message)
+      end
+
+      increment_progress
+      check_suspend_flag
+
+    end
   ensure
     FileUtils.rm_f(zip_path)
+  end
+
+  def job_name
+    'Media Bulk Upload'
   end
 end
