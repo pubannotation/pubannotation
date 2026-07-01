@@ -13,13 +13,17 @@ class MediaBulkUploadJob < ApplicationJob
 
   def perform(user, zip_path)
     service = MediumBulkUploadService.new(zip_path, user)
-    service.call
 
-    prepare_progress_record(service.success_count + service.error_messages.size)
-    service.success_count.times { increment_progress }
-    service.error_messages.each do |error|
-      @job&.add_message(sourcedb: '*', sourceid: '*', body: error)
+    prepare_progress_record(service.total_count)
+
+    service.call do |result|
+      if result.status == :error
+        @job&.add_message(sourcedb: '*', sourceid: '*', body: result.message)
+      end
+
       increment_progress
+      check_suspend_flag
+
     end
   ensure
     FileUtils.rm_f(zip_path)
