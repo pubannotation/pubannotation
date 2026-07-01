@@ -18,6 +18,22 @@ RSpec.describe MediumBulkUploadService do
     end
   end
 
+  def collect_results(service)
+    [].tap { |results| service.call { |r| results << r } }
+  end
+
+  describe '#total_count' do
+    it 'returns the number of non-skippable entries' do
+      zip_file = build_zip({
+        'PMC-12345.png' => png_data,
+        'PMC-67890.png' => png_data,
+        '.DS_Store' => '',
+        '__MACOSX/._PMC-12345.png' => ''
+      })
+      expect(described_class.new(zip_file.path, user).total_count).to eq(2)
+    end
+  end
+
   describe '#call' do
     context 'with valid image files' do
       let(:zip_file) { build_zip({ 'PMC-12345.png' => png_data }) }
@@ -34,11 +50,10 @@ RSpec.describe MediumBulkUploadService do
         expect(medium).to be_present
       end
 
-      it 'reports success' do
-        service = described_class.new(zip_file.path, user)
-        service.call
-        expect(service.success_count).to eq(1)
-        expect(service.error_messages).to be_empty
+      it 'yields a success result' do
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.count { |r| r.status == :success }).to eq(1)
+        expect(results.none? { |r| r.status == :error }).to be true
       end
     end
 
@@ -52,54 +67,53 @@ RSpec.describe MediumBulkUploadService do
       end
 
       it 'skips .DS_Store and __MACOSX files' do
-        service = described_class.new(zip_file.path, user)
-        service.call
+        results = collect_results(described_class.new(zip_file.path, user))
         expect(Medium.count).to eq(1)
-        expect(service.success_count).to eq(1)
-        expect(service.error_messages).to be_empty
+        expect(results.count { |r| r.status == :success }).to eq(1)
+        expect(results.none? { |r| r.status == :error }).to be true
       end
     end
 
     context 'with a file without extension' do
       let(:zip_file) { build_zip({ 'PMC-12345' => '' }) }
 
-      it 'reports an error' do
-        service = described_class.new(zip_file.path, user)
-        service.call
-        expect(service.error_messages.first).to include('no extension')
+      it 'yields an error result' do
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('no extension')
       end
     end
 
     context 'with an unsupported extension' do
       let(:zip_file) { build_zip({ 'PMC-12345.txt' => '' }) }
 
-      it 'reports an error' do
-        service = described_class.new(zip_file.path, user)
-        service.call
-        expect(service.error_messages.first).to include('unsupported extension')
+      it 'yields an error result' do
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('unsupported extension')
       end
     end
 
     context 'with invalid filename format' do
-      it 'reports error for filename with spaces' do
+      it 'yields an error for filename with spaces' do
         zip_file = build_zip({ 'my file-001.png' => png_data })
-        service = described_class.new(zip_file.path, user)
-        service.call
-        expect(service.error_messages.first).to include('sourcedb-sourceid')
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('sourcedb-sourceid')
       end
 
-      it 'reports error for filename with multiple hyphens' do
+      it 'yields an error for filename with multiple hyphens' do
         zip_file = build_zip({ 'PMC-sub-12345.png' => png_data })
-        service = described_class.new(zip_file.path, user)
-        service.call
-        expect(service.error_messages.first).to include('sourcedb-sourceid')
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('sourcedb-sourceid')
       end
 
-      it 'reports error for filename without hyphen' do
+      it 'yields an error for filename without hyphen' do
         zip_file = build_zip({ 'PMC12345.png' => png_data })
-        service = described_class.new(zip_file.path, user)
-        service.call
-        expect(service.error_messages.first).to include('sourcedb-sourceid')
+        results = collect_results(described_class.new(zip_file.path, user))
+        expect(results.first.status).to eq(:error)
+        expect(results.first.message).to include('sourcedb-sourceid')
       end
     end
 
