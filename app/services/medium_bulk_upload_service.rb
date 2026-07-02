@@ -58,46 +58,28 @@ class MediumBulkUploadService
     sourcedb, sourceid = basename.split('-', 2)
     media_type, content_type = EXTENSION_TO_MEDIA_TYPE[ext]
 
-    {
-      filename:,
-      ext:,
-      sourcedb:,
-      sourceid:,
-      media_type:,
-      content_type:
-    }
+    MediumUploadEntry.new(filename:, ext:, sourcedb:, sourceid:, media_type:, content_type:)
   end
 
   def process_entry(entry)
     return if skippable_entry?(entry)
 
-    attributes = validate_entry(entry)
-    return unless attributes
+    upload_entry = validate_entry(entry)
+    return unless upload_entry
 
-    Tempfile.create(["media-upload-", attributes[:ext]]) do |tmp|
+    Tempfile.create(["media-upload-", upload_entry.ext]) do |tmp|
       input = entry.get_input_stream
       begin
         IO.copy_stream(input, tmp)
         tmp.flush
         tmp.rewind
 
-        medium = Medium.create_with_file(
-          {
-            sourcedb: attributes[:sourcedb],
-            sourceid: attributes[:sourceid],
-            media_type: attributes[:media_type],
-            content_type: attributes[:content_type],
-            user: @user
-          },
-          io: tmp,
-          filename: attributes[:filename],
-          content_type: attributes[:content_type]
-        )
+        medium = Medium.create_with_file(upload_entry, user: @user, io: tmp)
 
         if medium.persisted?
-          @successes << attributes[:filename]
+          @successes << upload_entry.filename
         else
-          @errors << "#{attributes[:filename]}: #{medium.errors.full_messages.join(', ')}"
+          @errors << "#{upload_entry.filename}: #{medium.errors.full_messages.join(', ')}"
         end
       ensure
         input.close
