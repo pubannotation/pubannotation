@@ -11,9 +11,9 @@ class Medium < ApplicationRecord
   validates :media_type, presence: true
   validates :content_type, presence: true
 
-  def self.create_with_file(attributes, io:, filename:, content_type:)
-    medium = new(attributes)
-    medium.file.attach(io: io, filename: filename, content_type: content_type)
+  def self.create_with_file(upload_entry, user:, io:)
+    medium = new(upload_entry.medium_attributes(user:))
+    medium.file.attach(io:, filename: upload_entry.filename, content_type: upload_entry.content_type)
     medium.save
     medium
   end
