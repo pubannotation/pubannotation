@@ -1,4 +1,6 @@
 class MediumUploadEntry
+  class ValidationError < StandardError; end
+
   attr_reader :filename, :ext, :sourcedb, :sourceid, :media_type, :content_type
 
   def initialize(filename:, ext:, sourcedb:, sourceid:, media_type:, content_type:)

@@ -93,6 +93,18 @@ RSpec.describe MediumBulkUploadService do
       end
     end
 
+    context 'when an unexpected error occurs while creating a Medium' do
+      let(:zip_file) { build_zip({ 'PMC-12345.png' => png_data }) }
+
+      it 'propagates the error instead of treating it as a validation failure' do
+        allow_any_instance_of(MediumUploadEntry).to receive(:create_medium).and_raise(RuntimeError, 'unexpected bug')
+
+        expect {
+          described_class.new(zip_file.path, user).call
+        }.to raise_error(RuntimeError, 'unexpected bug')
+      end
+    end
+
     context 'with an invalid ZIP file' do
       let(:zip_file) do
         Tempfile.new(['bad', '.zip']).tap do |f|

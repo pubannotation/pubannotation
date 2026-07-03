@@ -38,21 +38,15 @@ class MediumBulkUploadService
     filename = File.basename(entry.name)
     ext = File.extname(filename).downcase
 
-    unless ext.present?
-      @errors << "#{filename}: no extension, skipped."
-      return
-    end
-
+    raise MediumUploadEntry::ValidationError, "#{filename}: no extension, skipped." unless ext.present?
     unless EXTENSION_TO_MEDIA_TYPE.key?(ext)
-      @errors << "#{filename}: unsupported extension '#{ext}', skipped."
-      return
+      raise MediumUploadEntry::ValidationError, "#{filename}: unsupported extension '#{ext}', skipped."
     end
 
     basename = File.basename(filename, ext)
 
     unless basename.match?(/\A[^\s-]+-[^\s-]+\z/)
-      @errors << "#{filename}: filename must be in 'sourcedb-sourceid#{ext}' format (one hyphen, no spaces), skipped."
-      return
+      raise MediumUploadEntry::ValidationError, "#{filename}: filename must be in 'sourcedb-sourceid#{ext}' format (one hyphen, no spaces), skipped."
     end
 
     sourcedb, sourceid = basename.split('-', 2)
@@ -65,7 +59,6 @@ class MediumBulkUploadService
     return if skippable_entry?(entry)
 
     upload_entry = validate_entry(entry)
-    return unless upload_entry
 
     Tempfile.create(["media-upload-", upload_entry.ext]) do |tmp|
       input = entry.get_input_stream
@@ -85,5 +78,7 @@ class MediumBulkUploadService
         input.close
       end
     end
+  rescue MediumUploadEntry::ValidationError => e
+    @errors << e.message
   end
 end
