@@ -74,7 +74,7 @@ class MediumBulkUploadService
         tmp.flush
         tmp.rewind
 
-        medium = Medium.create_with_file(upload_entry, user: @user, io: tmp)
+        medium = upload_entry.create_medium(user: @user, io: tmp)
 
         if medium.persisted?
           @successes << upload_entry.filename

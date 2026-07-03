@@ -10,7 +10,10 @@ class MediumUploadEntry
     @content_type = content_type
   end
 
-  def medium_attributes(user:)
-    { sourcedb:, sourceid:, media_type:, content_type:, user: }
+  def create_medium(user:, io:)
+    medium = Medium.new(sourcedb:, sourceid:, media_type:, content_type:, user:)
+    medium.file.attach(io:, filename:, content_type:)
+    medium.save
+    medium
   end
 end
