@@ -19,9 +19,11 @@ class MediaController < ApplicationController
   end
 
   def create
+    content_type = params[:medium][:file]&.content_type
     @medium = Medium.new(medium_params)
     @medium.user = current_user
-    @medium.content_type = params[:medium][:file]&.content_type
+    @medium.content_type = content_type
+    @medium.media_type = media_type_from_content_type(content_type)
 
     if @medium.save
       redirect_to new_medium_path, notice: 'Media was successfully uploaded.'
@@ -68,6 +70,10 @@ class MediaController < ApplicationController
   end
 
   def medium_params
-    params.expect(medium: [:sourcedb, :sourceid, :media_type, :file])
+    params.expect(medium: [:sourcedb, :sourceid, :file])
+  end
+
+  def media_type_from_content_type(content_type)
+    content_type.to_s.split('/').first
   end
 end
