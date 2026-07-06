@@ -18,7 +18,7 @@
 		</tr>
 		<tr>
 			<th><%= f.label :file, 'File' %></th>
-			<td><%= f.file_field :file, accept: 'image/*,video/*,audio/*', required: true %></td>
+			<td><%= f.file_field :file, accept: Medium::ALLOWED_CONTENT_TYPES.join(','), required: true %></td>
 		</tr>
 		<tr>
 			<th></th>

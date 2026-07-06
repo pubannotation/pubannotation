@@ -24,6 +24,12 @@ RSpec.describe 'MediaController', type: :request do
       'audio/mpeg'
     )
   end
+  let(:quicktime_file) do
+    Rack::Test::UploadedFile.new(
+      Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4'),
+      'video/quicktime'
+    )
+  end
 
   describe 'GET /media' do
     let!(:medium) { create(:medium) }
@@ -132,6 +138,19 @@ RSpec.describe 'MediaController', type: :request do
             sourceid: 'img-001'
           }
         }
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it 'rejects a video/quicktime file that browsers cannot play inline' do
+        expect {
+          post media_path, params: {
+            medium: {
+              sourcedb: 'TestDB',
+              sourceid: 'mov-001',
+              file: quicktime_file
+            }
+          }
+        }.not_to change(Medium, :count)
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end

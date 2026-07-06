@@ -33,6 +33,16 @@ RSpec.describe Medium, type: :model do
     it 'requires content_type' do
       expect(build(:medium, content_type: nil)).not_to be_valid
     end
+
+    it 'accepts a browser-playable video content_type' do
+      expect(build(:medium, media_type: :video, content_type: 'video/mp4')).to be_valid
+    end
+
+    it 'rejects a content_type browsers cannot play inline, such as video/quicktime' do
+      medium = build(:medium, media_type: :video, content_type: 'video/quicktime')
+      expect(medium).not_to be_valid
+      expect(medium.errors[:content_type]).to be_present
+    end
   end
 
   describe 'enums' do
