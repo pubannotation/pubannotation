@@ -7,11 +7,7 @@
 <section>
 	<h2><%= @medium.sourcedb %>:<%= @medium.sourceid %></h2>
 
-	<% if @medium.file.attached? %>
-		<% if @medium.image? %>
-			<%= image_tag url_for(@medium.file), style: 'max-width: 100%' %>
-		<% end %>
-	<% end %>
+	<%= medium_tag(@medium, style: 'max-width: 100%') %>
 
 	<table>
 		<tr>
