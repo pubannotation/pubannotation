@@ -11,7 +11,7 @@
 		<% if @medium.present? && current_user&.can_access_media? %>
 			<section>
 				<h2>Media</h2>
-				<%= medium_tag(@medium, style: 'max-width: 100%') %>
+				<%= medium_tag(@medium) %>
 				<p><%= link_to "#{@medium.sourcedb}:#{@medium.sourceid}", show_media_path(sourcedb: @medium.sourcedb, sourceid: @medium.sourceid) %></p>
 			</section>
 		<% end %>
