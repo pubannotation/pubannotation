@@ -25,9 +25,9 @@
 			<td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
 			<td style="text-align:right"><%= job.messages.count %></td>
 			<td>
-				<%= link_to 'Show', job_media_path(job), class: :button %>
+				<%= link_to 'Show', media_job_path(job), class: :button %>
 				<% unless job.running? %>
-					<%= link_to 'Remove', job_destroy_media_path(job), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
+					<%= link_to 'Remove', media_job_path(job), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
 				<% end %>
 			</td>
 		</tr>

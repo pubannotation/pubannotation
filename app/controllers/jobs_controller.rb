@@ -67,10 +67,6 @@ class JobsController < ApplicationController
 		respond_to do |format|
 			format.html { redirect_to organization_jobs_path }
 		end
-	rescue => e
-		respond_to do |format|
-			format.html { redirect_to organization_jobs_path || root_path, notice: e.message }
-		end
 	end
 
 	def clear_finished_jobs
@@ -104,8 +100,6 @@ class JobsController < ApplicationController
 			Project.accessible(current_user).find_by_name(params[:project_id])
 		elsif params.has_key? :collection_id
 			Collection.accessible(current_user).find_by_name(params[:collection_id])
-		elsif params[:controller] == 'jobs' && request.path.start_with?('/media/')
-			current_user
 		else
 			nil
 		end
@@ -116,8 +110,6 @@ class JobsController < ApplicationController
 			Project.editable(current_user).find_by_name(params[:project_id])
 		elsif params.has_key? :collection_id
 			Collection.editable(current_user).find_by_name(params[:collection_id])
-		elsif params[:controller] == 'jobs' && request.path.start_with?('/media/')
-			current_user
 		else
 			nil
 		end
@@ -136,8 +128,6 @@ class JobsController < ApplicationController
 			project_jobs_path(params[:project_id])
 		elsif params.has_key? :collection_id
 			collection_jobs_path(params[:collection_id])
-		elsif request.path.start_with?('/media/')
-			jobs_media_path
 		end
 	end
 end

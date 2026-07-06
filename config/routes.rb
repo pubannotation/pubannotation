@@ -14,11 +14,12 @@ Pubann::Application.routes.draw do
 			post 'bulk_upload', to: 'media#bulk_upload'
 			get 'jobs', to: 'media#jobs', as: :jobs
 			get 'jobs/latest_jobs_table', to: 'media#latest_jobs_table'
-			get 'jobs/:id', to: 'jobs#show', as: :job
-			delete 'jobs/:id', to: 'jobs#destroy', as: :job_destroy
 		end
 	end
 	delete 'media/jobs', to: 'media#clear_finished_jobs', as: :media_clear_finished_jobs
+	namespace :media do
+		resources :jobs, only: [:show, :destroy]
+	end
 
 	resources :evaluators
 	resources :evaluations do
