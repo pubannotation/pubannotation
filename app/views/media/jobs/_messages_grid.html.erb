@@ -1,12 +1,6 @@
 <% if @job.messages.present? %>
 	<section>
-		<h2>
-			Problem report
-			<span class='tab-bar'>
-				<%= link_to_unless_current 'JSON', params.permit(:controller, :action).merge(controller: :messages, action: :index, format: :json), :class => 'tab' -%>
-				<%= link_to_unless_current 'TSV', params.permit(:controller, :action).merge(controller: :messages, action: :index, format: :tsv), :class => 'tab' -%>
-			</span>
-		</h2>
+		<h2>Problem report</h2>
 
 		<%=
 			grid(@messages_grid) do |g|
@@ -16,7 +10,7 @@
 				end
 
 				g.column name: 'sourceid', attribute: 'sourceid' do |message|
-					[(message.sourcedb && message.sourceid && @project) ? link_to(message.sourceid, show_project_sourcedb_sourceid_docs_path(@project.name, message.sourcedb, message.sourceid), style:'display:block') : message.sourceid, {style: 'width:7em; text-align:center'}]
+					[(message.sourcedb && message.sourceid) ? link_to(message.sourceid, show_media_path(sourcedb: message.sourcedb, sourceid: message.sourceid), style:'display:block') : message.sourceid, {style: 'width:7em; text-align:center'}]
 				end
 
 				g.column name: 'divid', attribute: 'divid' do |message|
