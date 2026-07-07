@@ -53,6 +53,18 @@ RSpec.describe 'Media::JobsController', type: :request do
         expect(response).to redirect_to(new_user_session_path)
       end
     end
+
+    context 'when logged in as a user who cannot access media' do
+      let(:restricted_user) { create(:user, can_use_media: false).tap { |u| u.confirm } }
+      let!(:job) { create(:job, organization: restricted_user) }
+
+      before { sign_in restricted_user }
+
+      it 'returns forbidden' do
+        get media_job_path(job)
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe 'DELETE /media/jobs/:id' do
@@ -101,6 +113,18 @@ RSpec.describe 'Media::JobsController', type: :request do
       it 'redirects to login' do
         delete media_job_path(job)
         expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context 'when logged in as a user who cannot access media' do
+      let(:restricted_user) { create(:user, can_use_media: false).tap { |u| u.confirm } }
+      let!(:job) { create(:job, :completed, organization: restricted_user) }
+
+      before { sign_in restricted_user }
+
+      it 'returns forbidden' do
+        delete media_job_path(job)
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end
