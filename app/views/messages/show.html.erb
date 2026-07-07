@@ -5,8 +5,6 @@
 		if @organization.class == Project
 			@project = @organization
 			render :partial => 'projects/titlebar'
-		elsif @organization.class == User
-			# no titlebar for user jobs
 		else
 			@collection = @organization
 			render :partial => 'collections/titlebar'

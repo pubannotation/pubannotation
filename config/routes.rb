@@ -18,7 +18,9 @@ Pubann::Application.routes.draw do
 	end
 	delete 'media/jobs', to: 'media#clear_finished_jobs', as: :media_clear_finished_jobs
 	namespace :media do
-		resources :jobs, only: [:show, :destroy]
+		resources :jobs, only: [:show, :destroy] do
+			resources :messages, only: [:show]
+		end
 	end
 
 	resources :evaluators
