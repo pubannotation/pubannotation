@@ -16,6 +16,9 @@ Pubann::Application.routes.draw do
 			get 'jobs/latest_jobs_table', to: 'media#latest_jobs_table'
 		end
 	end
+	namespace :media do
+		resources :jobs, only: [:show]
+	end
 
 	resources :evaluators
 	resources :evaluations do
