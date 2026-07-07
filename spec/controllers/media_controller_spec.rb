@@ -157,11 +157,27 @@ RSpec.describe 'MediaController', type: :request do
     context 'when logged in' do
       before { sign_in user }
 
-      it 'enqueues a job and redirects to new medium page' do
-        expect {
-          post bulk_upload_media_path, params: { zip_file: zip_file }
-        }.to have_enqueued_job(MediaBulkUploadJob)
-        expect(response).to redirect_to(new_medium_path)
+      context 'when job count is under 10' do
+        it 'enqueues a job and redirects to new medium page' do
+          expect {
+            post bulk_upload_media_path, params: { zip_file: zip_file }
+          }.to have_enqueued_job(MediaBulkUploadJob)
+          expect(response).to redirect_to(new_medium_path)
+        end
+      end
+
+      context 'when job count is 10 or more' do
+        before do
+          10.times { create(:job, organization: user) }
+        end
+
+        it 'does not enqueue a job and redirects to new medium page with alert' do
+          expect {
+            post bulk_upload_media_path, params: { zip_file: zip_file }
+          }.not_to have_enqueued_job(MediaBulkUploadJob)
+          expect(response).to redirect_to(new_medium_path)
+          expect(flash[:notice]).to include('Up to 10 jobs')
+        end
       end
     end
 

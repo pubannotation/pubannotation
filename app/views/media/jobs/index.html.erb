@@ -7,6 +7,8 @@
 <section>
 	<h2>Media Jobs</h2>
 
+	<%= link_to 'Clear finished jobs', media_clear_finished_jobs_path, method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
+
 	<div class="jobs-table-wrapper">
 		<%= render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary } %>
 	</div>

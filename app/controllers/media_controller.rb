@@ -29,9 +29,20 @@ class MediaController < ApplicationController
     end
   end
 
+  def clear_finished_jobs
+    Job.batch_destroy_finished(current_user)
+    redirect_to media_jobs_path, notice: 'Finished jobs cleared.'
+  end
+
   def bulk_upload
-    MediaBulkUploadJob.enqueue(current_user, bulk_upload_params)
-    redirect_to new_medium_path, notice: 'Bulk upload job has been queued.'
+    if current_user.jobs.count < 10
+      MediaBulkUploadJob.enqueue(current_user, bulk_upload_params)
+      notice = 'Bulk upload job has been queued.'
+    else
+      notice = 'Up to 10 jobs can be registered. Please clear your jobs page.'
+    end
+
+    redirect_to new_medium_path, notice: notice
   end
 
   def destroy
