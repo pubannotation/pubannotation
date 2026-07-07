@@ -9,6 +9,11 @@
 	<section>
 		<h1>
 		Job #<%= @job.id %>: <%= @job.name %>
+		<%=
+			unless @job.running?
+				link_to 'Remove', media_job_path(@job), method: :delete, data: { confirm: 'Are you sure?' }, :class => :button
+			end
+		%>
 		</h1>
 
 		<p id="notice"><%= notice %></p>

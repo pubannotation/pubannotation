@@ -27,6 +27,9 @@
 			<td style="text-align:right"><%= message_counts[job.id] || 0 %></td>
 			<td>
 				<%= link_to 'Show', media_job_path(job), class: :button %>
+				<% unless job.running? %>
+					<%= link_to 'Remove', media_job_path(job), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
+				<% end %>
 			</td>
 		</tr>
 	<% end %>

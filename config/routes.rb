@@ -15,7 +15,7 @@ Pubann::Application.routes.draw do
 		end
 	end
 	namespace :media do
-		resources :jobs, only: [:index, :show] do
+		resources :jobs, only: [:index, :show, :destroy] do
 			collection do
 				get 'latest_jobs_table'
 			end

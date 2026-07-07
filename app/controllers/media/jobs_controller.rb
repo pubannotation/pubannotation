@@ -1,7 +1,7 @@
 class Media::JobsController < ApplicationController
   before_action :authenticate_user!
   before_action :authorize_media_access!
-  before_action :set_job, only: [:show]
+  before_action :set_job, only: [:show, :destroy]
 
   rescue_from ActiveRecord::RecordNotFound do
     redirect_to media_jobs_path, notice: 'Could not find the job.'
@@ -22,6 +22,11 @@ class Media::JobsController < ApplicationController
   def latest_jobs_table
     load_jobs
     render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary }
+  end
+
+  def destroy
+    @job.destroy_unless_running
+    redirect_to media_jobs_path
   end
 
   private
