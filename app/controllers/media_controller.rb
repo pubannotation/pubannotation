@@ -31,11 +31,13 @@ class MediaController < ApplicationController
 
   def jobs
     @jobs = current_user.jobs.order(created_at: :desc)
+    @job_message_counts = message_counts_for(@jobs)
   end
 
   def latest_jobs_table
     @jobs = current_user.jobs.order(created_at: :desc)
-    render partial: 'jobs_table'
+    @job_message_counts = message_counts_for(@jobs)
+    render partial: 'jobs_table', locals: { message_counts: @job_message_counts }
   end
 
   def bulk_upload
@@ -58,6 +60,10 @@ class MediaController < ApplicationController
     unless current_user&.can_access_media?
       render_status_error(:forbidden)
     end
+  end
+
+  def message_counts_for(jobs)
+    Message.where(job_id: jobs.select(:id)).group(:job_id).count
   end
 
   def set_medium

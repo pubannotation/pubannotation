@@ -8,6 +8,6 @@
 	<h2>Media Jobs</h2>
 
 	<div class="jobs-table-wrapper">
-		<%= render partial: 'jobs_table' %>
+		<%= render partial: 'jobs_table', locals: { message_counts: @job_message_counts } %>
 	</div>
 </section>

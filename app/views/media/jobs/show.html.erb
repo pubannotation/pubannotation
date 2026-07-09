@@ -32,21 +32,15 @@
 
 			<tr>
 				<th>Elapsed</th>
-				<td><%= time_duration(@job.ended_at - @job.begun_at) %></td>
+				<td><%= time_duration(@job.elapsed_time) %></td>
 			</tr>
 
-			<tr>
-				<%
-					duration = @job.ended_at - @job.begun_at
-					pace = if @job.num_dones && @job.num_dones > 0 && duration > 0
-					 @job.num_dones / duration
-					else
-						0
-					end
-				%>
-				<th>Pace</th>
-				<td><%= pace.round(3) %> docs/second</td>
-			</tr>
+			<% if @job.pace.present? %>
+				<tr>
+					<th>Pace</th>
+					<td><%= @job.pace.round(3) %> docs/second</td>
+				</tr>
+			<% end %>
 		<% else %>
 			<tr>
 				<th>Now</th>
@@ -54,26 +48,26 @@
 			</tr>
 
 			<% if @job.begun_at.present? %>
-				<% duration = Time.now.utc - @job.begun_at %>
 				<tr>
 					<th>Elapsed</th>
-					<td><%= time_duration(duration) %></td>
+					<td><%= time_duration(@job.elapsed_time) %></td>
 				</tr>
 				<tr>
 					<th>Progress</th>
 					<td><%= @job.num_dones %> / <%= @job.num_items %></td>
 				</tr>
 
-				<% if @job.num_dones > 0 %>
-					<% pace = @job.num_dones / duration %>
+				<% if @job.pace.present? %>
 					<tr>
 						<th>Pace</th>
-						<td><%= pace.round(3) %> docs/second</td>
+						<td><%= @job.pace.round(3) %> docs/second</td>
 					</tr>
-					<tr>
-						<th>will further take</th>
-						<td><%= time_duration((@job.num_items - @job.num_dones) / pace) %> (estimation)</td>
-					</tr>
+					<% if @job.estimated_remaining_time.present? %>
+						<tr>
+							<th>will further take</th>
+							<td><%= time_duration(@job.estimated_remaining_time) %> (estimation)</td>
+						</tr>
+					<% end %>
 				<% end %>
 			<% end %>
 		<% end %>
