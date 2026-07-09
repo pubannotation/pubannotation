@@ -37,7 +37,7 @@ class MediaController < ApplicationController
   def latest_jobs_table
     @jobs = current_user.jobs.order(created_at: :desc)
     @job_message_counts = message_counts_for(@jobs)
-    render partial: 'jobs_table', locals: { message_counts: @job_message_counts }
+    render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts }
   end
 
   def bulk_upload
