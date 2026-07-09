@@ -35,7 +35,7 @@
 			%>
 		</h1>
 		<div class="jobs-table-wrapper">
-			<%= render :partial => "jobs/jobs_table", :locals => { jobs: @jobs, organization: @organization } %>
+			<%= render :partial => "jobs/jobs_table", :locals => { jobs: @jobs, organization: @organization, message_counts: @job_message_counts } %>
 		</div>
 	</section>
 </section>

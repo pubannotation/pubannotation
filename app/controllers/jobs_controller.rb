@@ -8,6 +8,7 @@ class JobsController < ApplicationController
 	def index
 		Job.reap_zombies
 		@jobs = @organization&.jobs.order(:created_at)
+		@job_message_counts = message_counts_for(@jobs) if @jobs.present?
 
 		respond_to do |format|
 			format.html { redirect_to organization_path if @jobs.nil? || @jobs.empty? }
@@ -80,7 +81,8 @@ class JobsController < ApplicationController
 
 	def latest_jobs_table
 		@jobs = @organization.jobs.order(:created_at)
-		render :partial => "jobs/jobs_table", locals: {jobs: @jobs }
+		@job_message_counts = message_counts_for(@jobs)
+		render :partial => "jobs/jobs_table", locals: { jobs: @jobs, message_counts: @job_message_counts }
 	end
 
 	def latest_gear_icon
@@ -94,6 +96,10 @@ class JobsController < ApplicationController
 	end
 
 	private
+
+	def message_counts_for(jobs)
+		Message.where(job_id: jobs.select(:id)).group(:job_id).count
+	end
 
 	def set_organization
 		@organization = if params.has_key? :project_id
