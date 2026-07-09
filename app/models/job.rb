@@ -104,6 +104,28 @@ class Job < ActiveRecord::Base
     self.delete
   end
 
+  def elapsed_time(now = Time.current)
+    return nil unless begun_at
+
+    (ended_at || now) - begun_at
+  end
+
+  def pace(now = Time.current)
+    elapsed = elapsed_time(now)
+    return nil unless num_dones.to_i.positive?
+    return nil unless elapsed.to_f.positive?
+
+    num_dones / elapsed
+  end
+
+  def estimated_remaining_time(now = Time.current)
+    current_pace = pace(now)
+    return nil unless current_pace
+    return nil unless num_items && num_dones
+
+    (num_items - num_dones) / current_pace
+  end
+
   def will_finish_at
     if begun_at.nil? || num_dones.nil? || num_dones == 0
       nil
