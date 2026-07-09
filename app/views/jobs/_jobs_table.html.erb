@@ -23,7 +23,7 @@
 			<td><%= job.created_at %></td>
 			<td><%= job.state %></td>
 			<td style="text-align:center"><%= job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}" %></td>
-			<td style="text-align:right"><%= job.messages.count %></td>
+			<td style="text-align:right"><%= message_counts[job.id] || 0 %></td>
 			<td>
 				<%
 					organization_job_path =
