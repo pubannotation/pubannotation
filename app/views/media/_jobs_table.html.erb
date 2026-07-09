@@ -8,7 +8,7 @@
 		<th>#Messages</th>
 	</tr>
 
-	<% @jobs.each_with_index do |job, i| %>
+	<% jobs.each_with_index do |job, i| %>
 		<tr
 			<%=
 				if job.running?
