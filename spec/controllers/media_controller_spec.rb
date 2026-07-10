@@ -38,6 +38,17 @@ RSpec.describe 'MediaController', type: :request do
         expect(response).to redirect_to(new_user_session_path)
       end
     end
+
+    context 'when logged in as a user who cannot access media' do
+      let(:restricted_user) { create(:user, can_use_media: false).tap { |u| u.confirm } }
+
+      before { sign_in restricted_user }
+
+      it 'returns forbidden' do
+        get jobs_media_path
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe 'GET /media/jobs/latest_jobs_table' do
@@ -54,6 +65,17 @@ RSpec.describe 'MediaController', type: :request do
       it 'redirects to login' do
         get jobs_latest_jobs_table_media_path
         expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context 'when logged in as a user who cannot access media' do
+      let(:restricted_user) { create(:user, can_use_media: false).tap { |u| u.confirm } }
+
+      before { sign_in restricted_user }
+
+      it 'returns forbidden' do
+        get jobs_latest_jobs_table_media_path
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end
