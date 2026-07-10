@@ -29,19 +29,6 @@ class MediaController < ApplicationController
     end
   end
 
-  def jobs
-    @jobs = current_user.jobs.order(created_at: :desc)
-    @job_message_counts = message_counts_for(@jobs)
-    @reload_necessary = @jobs.any?(&:unfinished?)
-  end
-
-  def latest_jobs_table
-    @jobs = current_user.jobs.order(created_at: :desc)
-    @job_message_counts = message_counts_for(@jobs)
-    @reload_necessary = @jobs.any?(&:unfinished?)
-    render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary }
-  end
-
   def bulk_upload
     MediaBulkUploadJob.enqueue(current_user, bulk_upload_params)
     redirect_to new_medium_path, notice: 'Bulk upload job has been queued.'
@@ -62,10 +49,6 @@ class MediaController < ApplicationController
     unless current_user&.can_access_media?
       render_status_error(:forbidden)
     end
-  end
-
-  def message_counts_for(jobs)
-    Message.where(job_id: jobs.select(:id)).group(:job_id).count
   end
 
   def set_medium
