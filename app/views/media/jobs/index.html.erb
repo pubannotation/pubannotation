@@ -1,0 +1,13 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to 'Media', media_path -%>
+	> Jobs
+<% end -%>
+
+<section>
+	<h2>Media Jobs</h2>
+
+	<div class="jobs-table-wrapper">
+		<%= render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts } %>
+	</div>
+</section>
