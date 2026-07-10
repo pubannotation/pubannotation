@@ -8,22 +8,24 @@ class Media::JobsController < ApplicationController
   end
 
   def index
-    @jobs = current_user.jobs.order(created_at: :desc)
-    @job_message_counts = message_counts_for(@jobs)
-    @reload_necessary = @jobs.any?(&:unfinished?)
+    load_jobs
   end
 
   def show
   end
 
   def latest_jobs_table
-    @jobs = current_user.jobs.order(created_at: :desc)
-    @job_message_counts = message_counts_for(@jobs)
-    @reload_necessary = @jobs.any?(&:unfinished?)
+    load_jobs
     render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary }
   end
 
   private
+
+  def load_jobs
+    @jobs = current_user.jobs.order(created_at: :desc)
+    @job_message_counts = message_counts_for(@jobs)
+    @reload_necessary = @jobs.any?(&:unfinished?)
+  end
 
   def set_job
     @job = current_user.jobs.find(params[:id])
