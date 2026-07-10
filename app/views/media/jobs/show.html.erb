@@ -44,7 +44,7 @@
 		<% else %>
 			<tr>
 				<th>Now</th>
-				<td><%= Time.now.utc %></td>
+				<td><%= Time.current %></td>
 			</tr>
 
 			<% if @job.begun_at.present? %>
