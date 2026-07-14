@@ -14,6 +14,13 @@ Pubann::Application.routes.draw do
 			post 'bulk_upload', to: 'media#bulk_upload'
 		end
 	end
+	namespace :media do
+		resources :jobs, only: [:index, :show] do
+			collection do
+				get 'latest_jobs_table'
+			end
+		end
+	end
 
 	resources :evaluators
 	resources :evaluations do

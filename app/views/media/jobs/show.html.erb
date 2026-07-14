@@ -1,0 +1,76 @@
+<% content_for :path do %>
+	> <%= link_to t('views.paths.home'), home_path %>
+	<%= link_to '> Media', media_path %>
+	<%= link_to '> jobs', media_jobs_path %>
+	> <%= @job.id %>
+<% end %>
+
+<section>
+	<section>
+		<h1>
+		Job #<%= @job.id %>: <%= @job.name %>
+		</h1>
+
+		<p id="notice"><%= notice %></p>
+
+		<table>
+		<tr>
+			<th>Created at</th>
+			<td><%= @job.created_at %></td>
+		</tr>
+
+		<tr>
+			<th>Begun at</th>
+			<td><%= @job.begun_at %></td>
+		</tr>
+
+		<% if @job.ended_at.present? %>
+			<tr>
+				<th>Ended at</th>
+				<td><%= @job.ended_at %></td>
+			</tr>
+
+			<tr>
+				<th>Elapsed</th>
+				<td><%= time_duration(@job.elapsed_time) %></td>
+			</tr>
+
+			<% if @job.pace.present? %>
+				<tr>
+					<th>Pace</th>
+					<td><%= @job.pace.round(3) %> docs/second</td>
+				</tr>
+			<% end %>
+		<% else %>
+			<tr>
+				<th>Now</th>
+				<td><%= Time.current %></td>
+			</tr>
+
+			<% if @job.begun_at.present? %>
+				<tr>
+					<th>Elapsed</th>
+					<td><%= time_duration(@job.elapsed_time) %></td>
+				</tr>
+				<tr>
+					<th>Progress</th>
+					<td><%= @job.num_dones %> / <%= @job.num_items %></td>
+				</tr>
+
+				<% if @job.pace.present? %>
+					<tr>
+						<th>Pace</th>
+						<td><%= @job.pace.round(3) %> docs/second</td>
+					</tr>
+					<% if @job.estimated_remaining_time.present? %>
+						<tr>
+							<th>will further take</th>
+							<td><%= time_duration(@job.estimated_remaining_time) %> (estimation)</td>
+						</tr>
+					<% end %>
+				<% end %>
+			<% end %>
+		<% end %>
+		</table>
+	</section>
+</section>
