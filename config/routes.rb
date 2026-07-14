@@ -19,6 +19,7 @@ Pubann::Application.routes.draw do
 			collection do
 				get 'latest_jobs_table'
 			end
+			resources :messages, only: [:show]
 		end
 	end
 

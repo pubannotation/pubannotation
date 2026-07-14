@@ -1,0 +1,16 @@
+<section>
+	<h1>Message</h1>
+	<%= @message.body %>
+
+	<section>
+		<h2>Job</h2>
+		<%= @job.name %>
+	</section>
+
+	<% if @message.sourcedb && @message.sourceid %>
+		<section>
+			<h2>Document</h2>
+			<%= link_to "#{@message.sourcedb}:#{@message.sourceid}", show_media_path(sourcedb: @message.sourcedb, sourceid: @message.sourceid) %>
+		</section>
+	<% end %>
+</section>
