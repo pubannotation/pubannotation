@@ -1,4 +1,6 @@
 class Media::JobsController < ApplicationController
+  include MediaAccessAuthorizationConcern
+
   before_action :authenticate_user!
   before_action :authorize_media_access!
   before_action :set_job, only: [:show]
@@ -34,12 +36,6 @@ class Media::JobsController < ApplicationController
 
   def set_job
     @job = current_user.jobs.find(params[:id])
-  end
-
-  def authorize_media_access!
-    unless current_user&.can_access_media?
-      render_status_error(:forbidden)
-    end
   end
 
   def message_counts_for(jobs)
