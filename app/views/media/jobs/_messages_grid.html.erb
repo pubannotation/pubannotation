@@ -1,0 +1,33 @@
+<% if @job.messages.present? %>
+	<section>
+		<h2>Problem report</h2>
+
+		<%=
+			grid(@messages_grid) do |g|
+
+				g.column name: 'sourcedb', attribute: 'sourcedb' do |message|
+					[message.sourcedb, {style: 'width:7em; text-align:center'}]
+				end
+
+				g.column name: 'sourceid', attribute: 'sourceid' do |message|
+					[(message.sourcedb && message.sourceid) ? link_to(message.sourceid, show_media_path(sourcedb: message.sourcedb, sourceid: message.sourceid), style:'display:block') : message.sourceid, {style: 'width:7em; text-align:center'}]
+				end
+
+				g.column name: 'divid', attribute: 'divid' do |message|
+					[message.divid, {style: 'width:3em; text-align:right'}]
+				end
+
+				g.column name: 'message', attribute: 'body' do |message|
+					[link_to(message.body, media_job_message_path(@job, message)), {title: message.body, style: 'width:20em; max-width: 20em; white-space:initial; overflow:hidden; text-overflow:ellipsis'}]
+				end
+
+				g.column name: 'reported at', attribute: 'updated_at' do |message|
+					[message.updated_at, {style: 'width:14em; text-align:center'}]
+				end
+
+			end
+		-%>
+
+	</section>
+
+<% end %>

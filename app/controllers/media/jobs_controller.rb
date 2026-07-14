@@ -12,6 +12,11 @@ class Media::JobsController < ApplicationController
   end
 
   def show
+    @messages_grid = initialize_grid(@job.messages,
+      order: :created_at,
+      order_direction: :desc,
+      per_page: 10
+    )
   end
 
   def latest_jobs_table

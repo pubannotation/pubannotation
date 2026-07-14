@@ -93,6 +93,15 @@ RSpec.describe 'Media::JobsController', type: :request do
 
         expect(response).to have_http_status(:ok)
       end
+
+      it 'shows a link to each message' do
+        job.add_message(sourcedb: 'PMC', sourceid: '1', body: 'something went wrong')
+        message = job.messages.last
+
+        get media_job_path(job)
+
+        expect(response.body).to include(media_job_message_path(job, message))
+      end
     end
 
     context "when logged in as a different user" do
