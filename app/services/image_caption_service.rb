@@ -10,6 +10,9 @@ class ImageCaptionService
     model = ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
     image_data = Base64.strict_encode64(File.binread(@image_path))
     uri      = URI("http://#{host}:11434/api/chat")
+    # Single-message format (content+images together) makes moondream return
+    # a single unrelated word (e.g. "urn") instead of a caption — confirmed
+    # by manual testing. Splitting into two messages avoids that.
     messages = [
       {role: 'user', content: PROMPT},
       {role: 'user', content: '', images: [image_data]}
