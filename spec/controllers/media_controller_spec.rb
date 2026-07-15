@@ -171,7 +171,7 @@ RSpec.describe 'MediaController', type: :request do
           10.times { create(:job, organization: user) }
         end
 
-        it 'does not enqueue a job and redirects to new medium page with alert' do
+        it 'does not enqueue a job and redirects to new medium page with notice' do
           expect {
             post bulk_upload_media_path, params: { zip_file: zip_file }
           }.not_to have_enqueued_job(MediaBulkUploadJob)
