@@ -1,5 +1,6 @@
 class MediaController < ApplicationController
   include MediumHelper
+  include MediaAccessAuthorizationConcern
 
   before_action :authenticate_user!
   before_action :authorize_media_access!
@@ -43,12 +44,6 @@ class MediaController < ApplicationController
 
   def bulk_upload_params
     params.expect(:zip_file)
-  end
-
-  def authorize_media_access!
-    unless current_user&.can_access_media?
-      render_status_error(:forbidden)
-    end
   end
 
   def set_medium
