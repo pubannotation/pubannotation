@@ -14,8 +14,9 @@ Pubann::Application.routes.draw do
 			post 'bulk_upload', to: 'media#bulk_upload'
 		end
 	end
+	delete 'media/jobs', to: 'media#clear_finished_jobs', as: :media_clear_finished_jobs
 	namespace :media do
-		resources :jobs, only: [:index, :show] do
+		resources :jobs, only: [:index, :show, :destroy] do
 			collection do
 				get 'latest_jobs_table'
 			end

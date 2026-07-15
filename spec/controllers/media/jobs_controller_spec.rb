@@ -142,4 +142,66 @@ RSpec.describe 'Media::JobsController', type: :request do
       end
     end
   end
+
+  describe 'DELETE /media/jobs/:id' do
+    context 'when the job is not running' do
+      let!(:job) { create(:job, :completed, organization: user) }
+
+      before { sign_in user }
+
+      it 'destroys the job and redirects to the media jobs page' do
+        expect {
+          delete media_job_path(job)
+        }.to change(Job, :count).by(-1)
+        expect(response).to redirect_to(media_jobs_path)
+      end
+    end
+
+    context 'when the job is running' do
+      let!(:job) { create(:job, organization: user) }
+
+      before { sign_in user }
+
+      it 'does not destroy the job' do
+        expect {
+          delete media_job_path(job)
+        }.not_to change(Job, :count)
+        expect(response).to redirect_to(media_jobs_path)
+      end
+    end
+
+    context "when logged in as a different user" do
+      let!(:job) { create(:job, :completed, organization: user) }
+
+      before { sign_in other_user }
+
+      it 'does not destroy the job' do
+        expect {
+          delete media_job_path(job)
+        }.not_to change(Job, :count)
+        expect(response).to redirect_to(media_jobs_path)
+      end
+    end
+
+    context 'when not logged in' do
+      let!(:job) { create(:job, :completed, organization: user) }
+
+      it 'redirects to login' do
+        delete media_job_path(job)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context 'when logged in as a user who cannot access media' do
+      let(:restricted_user) { create(:user, can_use_media: false).tap { |u| u.confirm } }
+      let!(:job) { create(:job, :completed, organization: restricted_user) }
+
+      before { sign_in restricted_user }
+
+      it 'returns forbidden' do
+        delete media_job_path(job)
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
 end

@@ -9,6 +9,9 @@
 	<section>
 		<h1>
 		Job #<%= @job.id %>: <%= @job.name %>
+		<% unless @job.running? %>
+			<%= link_to 'Remove', media_job_path(@job), method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
+		<% end %>
 		</h1>
 
 		<p id="notice"><%= notice %></p>

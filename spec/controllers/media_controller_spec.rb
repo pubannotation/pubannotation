@@ -157,11 +157,27 @@ RSpec.describe 'MediaController', type: :request do
     context 'when logged in' do
       before { sign_in user }
 
-      it 'enqueues a job and redirects to new medium page' do
-        expect {
-          post bulk_upload_media_path, params: { zip_file: zip_file }
-        }.to have_enqueued_job(MediaBulkUploadJob)
-        expect(response).to redirect_to(new_medium_path)
+      context 'when job count is under 10' do
+        it 'enqueues a job and redirects to new medium page' do
+          expect {
+            post bulk_upload_media_path, params: { zip_file: zip_file }
+          }.to have_enqueued_job(MediaBulkUploadJob)
+          expect(response).to redirect_to(new_medium_path)
+        end
+      end
+
+      context 'when job count is 10 or more' do
+        before do
+          10.times { create(:job, organization: user) }
+        end
+
+        it 'does not enqueue a job and redirects to new medium page with notice' do
+          expect {
+            post bulk_upload_media_path, params: { zip_file: zip_file }
+          }.not_to have_enqueued_job(MediaBulkUploadJob)
+          expect(response).to redirect_to(new_medium_path)
+          expect(flash[:notice]).to include('Up to 10 jobs')
+        end
       end
     end
 
@@ -169,6 +185,44 @@ RSpec.describe 'MediaController', type: :request do
       it 'redirects to login' do
         post bulk_upload_media_path, params: { zip_file: zip_file }
         expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
+
+  describe 'DELETE /media/jobs' do
+    context 'when logged in' do
+      before { sign_in user }
+
+      it 'destroys finished jobs but keeps unfinished ones' do
+        finished_job = create(:job, :completed, organization: user)
+        unfinished_job = create(:job, organization: user)
+
+        expect {
+          delete media_clear_finished_jobs_path
+        }.to change(Job, :count).by(-1)
+
+        expect(Job.exists?(finished_job.id)).to be false
+        expect(Job.exists?(unfinished_job.id)).to be true
+        expect(response).to redirect_to(media_jobs_path)
+        expect(flash[:notice]).to eq('Finished jobs cleared.')
+      end
+    end
+
+    context 'when not logged in' do
+      it 'redirects to login' do
+        delete media_clear_finished_jobs_path
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context 'when logged in as a user who cannot access media' do
+      let(:restricted_user) { create(:user, can_use_media: false).tap { |u| u.confirm } }
+
+      before { sign_in restricted_user }
+
+      it 'returns forbidden' do
+        delete media_clear_finished_jobs_path
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end
