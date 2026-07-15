@@ -17,18 +17,34 @@ class ImageCaptionService
       {role: 'user', content: PROMPT},
       {role: 'user', content: '', images: [image_data]}
     ]
-    body     = {model: model, messages: messages}.to_json
+    # Explicit because the response-parsing below assumes newline-delimited
+    # JSON chunks (Ollama's streaming format), not a single JSON object.
+    body     = {model: model, messages: messages, stream: true}.to_json
 
     caption = +''
     Net::HTTP.start(uri.host, uri.port) do |http|
       req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
       req.body = body
       http.request(req) do |res|
+        status = res.code.to_i
+        raise "Ollama request failed (status #{status})" unless status.between?(200, 299)
+
+        buffer = +''
         res.read_body do |chunk|
-          chunk.each_line do |line|
-            data = JSON.parse(line) rescue next
+          buffer << chunk
+          while (newline_index = buffer.index("\n"))
+            line = buffer.slice!(0..newline_index).strip
+            next if line.empty?
+
+            data = JSON.parse(line)
             caption << data.dig('message', 'content').to_s
           end
+        end
+
+        line = buffer.strip
+        unless line.empty?
+          data = JSON.parse(line)
+          caption << data.dig('message', 'content').to_s
         end
       end
     end
