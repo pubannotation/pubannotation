@@ -188,4 +188,42 @@ RSpec.describe 'MediaController', type: :request do
       end
     end
   end
+
+  describe 'DELETE /media/jobs' do
+    context 'when logged in' do
+      before { sign_in user }
+
+      it 'destroys finished jobs but keeps unfinished ones' do
+        finished_job = create(:job, :completed, organization: user)
+        unfinished_job = create(:job, organization: user)
+
+        expect {
+          delete media_clear_finished_jobs_path
+        }.to change(Job, :count).by(-1)
+
+        expect(Job.exists?(finished_job.id)).to be false
+        expect(Job.exists?(unfinished_job.id)).to be true
+        expect(response).to redirect_to(media_jobs_path)
+        expect(flash[:notice]).to eq('Finished jobs cleared.')
+      end
+    end
+
+    context 'when not logged in' do
+      it 'redirects to login' do
+        delete media_clear_finished_jobs_path
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context 'when logged in as a user who cannot access media' do
+      let(:restricted_user) { create(:user, can_use_media: false).tap { |u| u.confirm } }
+
+      before { sign_in restricted_user }
+
+      it 'returns forbidden' do
+        delete media_clear_finished_jobs_path
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
 end
