@@ -321,6 +321,8 @@ class DocsController < ApplicationController
 			end
 
 			if params[:media].present? && (params[:media][:sourcedb].present? || params[:media][:sourceid].present?)
+				raise ArgumentError, "You are not authorized to link media to this document." unless current_user&.can_access_media?
+
 				medium = Medium.find_by(sourcedb: params[:media][:sourcedb], sourceid: params[:media][:sourceid])
 				raise ArgumentError, "Specified media does not exist." unless medium
 				hdoc[:medium_id] = medium.id
