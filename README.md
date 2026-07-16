@@ -14,6 +14,24 @@ Please use it with
 * PostgreSQL 9.0 or above,
 * Elasticsearch 8.x,
 * [redis](https://redis.io/)
+* [Ollama](https://ollama.com/) (for media caption generation)
+
+### Ollama setup (for media caption generation)
+
+Install Ollama:
+```
+$ brew install ollama
+```
+
+Start Ollama:
+```
+$ ollama serve
+```
+
+Pull the moondream model:
+```
+$ ollama pull moondream
+```
 
 If your system does not already have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.
 
