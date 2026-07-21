@@ -1,5 +1,8 @@
 class Docs::FromMediaController < ApplicationController
+  include MediaAccessAuthorizationConcern
+
   before_action :authenticate_user!
+  before_action :authorize_media_access!
 
   def new
     @project = Project.editable(current_user).find_by_name(params[:project_id])
@@ -11,8 +14,6 @@ class Docs::FromMediaController < ApplicationController
   def create
     @project = Project.editable(current_user).find_by_name(params[:project_id])
     raise ArgumentError, "The project does not exist, or you are not authorized to make a change to the project." unless @project.present?
-
-    raise ArgumentError, "You are not authorized to generate text from media." unless current_user&.can_access_media?
 
     raise ArgumentError, "Please specify a media to generate text from." unless params[:media].present? && (params[:media][:sourcedb].present? || params[:media][:sourceid].present?)
 

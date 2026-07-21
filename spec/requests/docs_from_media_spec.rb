@@ -39,6 +39,18 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
         expect(response).to redirect_to(new_user_session_path)
       end
     end
+
+    context 'when logged in as a user who cannot access media' do
+      let(:restricted_user) { create(:user, can_use_media: false).tap { |u| u.confirm } }
+      let(:restricted_project) { create(:project, user: restricted_user) }
+
+      before { sign_in restricted_user }
+
+      it 'returns forbidden' do
+        get new_from_media_project_docs_path(restricted_project.name)
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe 'POST /projects/:project_id/docs/from_media' do
@@ -110,13 +122,13 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
 
       before { sign_in restricted_user }
 
-      it 'returns an error' do
+      it 'returns forbidden' do
         expect {
           post from_media_project_docs_path(restricted_project.name),
                params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_from_media_project_docs_path(restricted_project.name))
+        expect(response).to have_http_status(:forbidden)
       end
     end
 
