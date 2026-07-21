@@ -79,6 +79,24 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
         expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
       end
 
+      it 'returns an error when only the media sourcedb is specified' do
+        expect {
+          post from_media_project_docs_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: '' } }
+        }.not_to change(Doc, :count)
+
+        expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
+      end
+
+      it 'returns an error when only the media sourceid is specified' do
+        expect {
+          post from_media_project_docs_path(project.name),
+               params: { media: { sourcedb: '', sourceid: image_medium.sourceid } }
+        }.not_to change(Doc, :count)
+
+        expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
+      end
+
       it 'returns an error when the specified medium does not exist' do
         expect {
           post from_media_project_docs_path(project.name),

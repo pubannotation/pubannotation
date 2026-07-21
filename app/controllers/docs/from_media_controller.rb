@@ -15,9 +15,7 @@ class Docs::FromMediaController < ApplicationController
     @project = Project.editable(current_user).find_by_name(params[:project_id])
     raise ArgumentError, "The project does not exist, or you are not authorized to make a change to the project." unless @project.present?
 
-    raise ArgumentError, "Please specify a media to generate text from." unless params[:media].present? && (params[:media][:sourcedb].present? || params[:media][:sourceid].present?)
-
-    medium = Medium.find_by(sourcedb: params[:media][:sourcedb], sourceid: params[:media][:sourceid])
+    medium = Medium.find_by(sourcedb: params.dig(:media, :sourcedb), sourceid: params.dig(:media, :sourceid))
     raise ArgumentError, "Specified media does not exist." unless medium
     raise ArgumentError, "Text generation is supported only for image media." unless medium.image?
     raise ArgumentError, "Specified media has no attached file." unless medium.file.attached?
