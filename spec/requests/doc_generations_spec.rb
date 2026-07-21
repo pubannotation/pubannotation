@@ -51,6 +51,15 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to have_http_status(:forbidden)
       end
     end
+
+    context 'when the project does not exist' do
+      before { sign_in user }
+
+      it 'redirects to home' do
+        get new_project_doc_generation_path('nonexistent-project')
+        expect(response).to redirect_to(home_path)
+      end
+    end
   end
 
   describe 'POST /projects/:project_id/doc_generations' do
@@ -155,6 +164,23 @@ RSpec.describe 'DocGenerationsController', type: :request do
         post project_doc_generations_path(project.name),
              params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
         expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context 'when the project does not exist' do
+      before { sign_in user }
+
+      it 'redirects to home for HTML requests' do
+        post project_doc_generations_path('nonexistent-project'),
+             params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
+        expect(response).to redirect_to(home_path)
+      end
+
+      it 'returns an error for JSON requests' do
+        post project_doc_generations_path('nonexistent-project', format: :json),
+             params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
+
+        expect(response).to have_http_status(:unprocessable_entity)
       end
     end
   end

@@ -3,18 +3,12 @@ class DocGenerationsController < ApplicationController
 
   before_action :authenticate_user!
   before_action :authorize_media_access!
+  before_action :set_editable_project
 
   def new
-    @project = Project.editable(current_user).find_by_name(params[:project_id])
-    raise ArgumentError, "The project does not exist, or you are not authorized to make a change to the project." unless @project.present?
-  rescue => e
-    redirect_to home_path, notice: e.message
   end
 
   def create
-    @project = Project.editable(current_user).find_by_name(params[:project_id])
-    raise ArgumentError, "The project does not exist, or you are not authorized to make a change to the project." unless @project.present?
-
     medium = Medium.find_by(sourcedb: params.dig(:media, :sourcedb), sourceid: params.dig(:media, :sourceid))
     raise ArgumentError, "Specified media does not exist." unless medium
     raise ArgumentError, "Text generation is supported only for image media." unless medium.image?
@@ -41,8 +35,21 @@ class DocGenerationsController < ApplicationController
     end
   rescue => e
     respond_to do |format|
-      format.html { redirect_to (@project.present? ? new_project_doc_generation_path(@project.name) : home_path), notice: e.message }
+      format.html { redirect_to new_project_doc_generation_path(@project.name), notice: e.message }
       format.json { render json: { message: e.message }, status: :unprocessable_entity }
+    end
+  end
+
+  private
+
+  def set_editable_project
+    @project = Project.editable(current_user).find_by_name(params[:project_id])
+    return if @project.present?
+
+    message = "The project does not exist, or you are not authorized to make a change to the project."
+    respond_to do |format|
+      format.html { redirect_to home_path, notice: message }
+      format.json { render json: { message: message }, status: :unprocessable_entity }
     end
   end
 end
