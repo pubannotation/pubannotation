@@ -326,17 +326,6 @@ class DocsController < ApplicationController
 				medium = Medium.find_by(sourcedb: params[:media][:sourcedb], sourceid: params[:media][:sourceid])
 				raise ArgumentError, "Specified media does not exist." unless medium
 				hdoc[:medium_id] = medium.id
-
-				if params[:generate_text_from_media] == '1'
-					raise ArgumentError, "Text generation is supported only for image media." unless medium.image?
-					raise ArgumentError, "Specified media has no attached file." unless medium.file.attached?
-
-					medium.file.open do |f|
-						caption = ImageCaptionService.new(f.path).call
-						hdoc[:body] = caption
-						hdoc.delete(:text)
-					end
-				end
 			end
 
 			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)

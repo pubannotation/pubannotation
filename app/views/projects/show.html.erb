@@ -95,6 +95,12 @@
 				<th><%= t('views.shared.create') %></th>
 				<td><%= link_to t('views.docs.create_doc'), new_project_doc_path(@project.name), class: 'button long_button' -%></td>
 			</tr>
+			<% if current_user&.can_access_media? %>
+				<tr>
+					<th></th>
+					<td><%= link_to t('views.docs.create_doc_from_media'), new_from_media_project_docs_path(@project.name), class: 'button long_button' -%></td>
+				</tr>
+			<% end %>
 			<tr>
 				<th><%= t('views.shared.upload') %></th>
 				<td><%= link_to t('views.docs.upload_docs'), upload_docs_project_path(@project.name), class: 'button long_button' -%></td>

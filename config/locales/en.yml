@@ -463,6 +463,7 @@ en:
       add_docs: Add documents
       import_docs: Import documents
       create_doc: Create a new document
+      create_doc_from_media: Generate a new document from media
       upload_docs: Upload documents
       rdfize_annotations: RDFize annotations
       rdfize_spans: RDFize spans

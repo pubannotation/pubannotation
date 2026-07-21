@@ -444,6 +444,7 @@ ja:
       add_docs: ドキュメント追加
       import_docs: ドキュメントインポート
       create_doc: ドキュメント新規作成
+      create_doc_from_media: メディアからドキュメントを生成
       upload_docs: ドキュメントアップロード
       create_a_new_document: ドキュメント生成
       rdfize_annotations: アノテーションのRDF化
