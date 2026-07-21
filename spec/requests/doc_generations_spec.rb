@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Docs::FromMediaController', type: :request do
+RSpec.describe 'DocGenerationsController', type: :request do
   include Devise::Test::IntegrationHelpers
 
   let(:user) { create(:user).tap { |u| u.confirm } }
@@ -23,19 +23,19 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
     allow(Elasticsearch::IndexQueue).to receive(:update_embedding)
   end
 
-  describe 'GET /projects/:project_id/docs/new_from_media' do
+  describe 'GET /projects/:project_id/doc_generations/new' do
     context 'when logged in' do
       before { sign_in user }
 
       it 'renders the form' do
-        get new_from_media_project_docs_path(project.name)
+        get new_project_doc_generation_path(project.name)
         expect(response).to have_http_status(:ok)
       end
     end
 
     context 'when not logged in' do
       it 'redirects to login' do
-        get new_from_media_project_docs_path(project.name)
+        get new_project_doc_generation_path(project.name)
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -47,20 +47,20 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
       before { sign_in restricted_user }
 
       it 'returns forbidden' do
-        get new_from_media_project_docs_path(restricted_project.name)
+        get new_project_doc_generation_path(restricted_project.name)
         expect(response).to have_http_status(:forbidden)
       end
     end
   end
 
-  describe 'POST /projects/:project_id/docs/from_media' do
+  describe 'POST /projects/:project_id/doc_generations' do
     context 'when logged in' do
       before { sign_in user }
 
       it 'uses the generated caption as the body and links the medium' do
         allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
 
-        post from_media_project_docs_path(project.name),
+        post project_doc_generations_path(project.name),
              params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
 
         expect(response).to redirect_to(show_project_sourcedb_sourceid_docs_path(project.name, "Example@#{user.username}", '001'))
@@ -73,37 +73,37 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
 
       it 'returns an error when no media is specified' do
         expect {
-          post from_media_project_docs_path(project.name), params: {}
+          post project_doc_generations_path(project.name), params: {}
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
       it 'returns an error when only the media sourcedb is specified' do
         expect {
-          post from_media_project_docs_path(project.name),
+          post project_doc_generations_path(project.name),
                params: { media: { sourcedb: image_medium.sourcedb, sourceid: '' } }
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
       it 'returns an error when only the media sourceid is specified' do
         expect {
-          post from_media_project_docs_path(project.name),
+          post project_doc_generations_path(project.name),
                params: { media: { sourcedb: '', sourceid: image_medium.sourceid } }
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
       it 'returns an error when the specified medium does not exist' do
         expect {
-          post from_media_project_docs_path(project.name),
+          post project_doc_generations_path(project.name),
                params: { media: { sourcedb: 'NonExistentDB', sourceid: 'nonexistent-001' } }
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
       it 'returns an error when the medium is not an image' do
@@ -115,22 +115,22 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
         )
 
         expect {
-          post from_media_project_docs_path(project.name),
+          post project_doc_generations_path(project.name),
                params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid } }
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
       it 'returns an error when the medium has no attached file' do
         medium_without_file = create(:medium)
 
         expect {
-          post from_media_project_docs_path(project.name),
+          post project_doc_generations_path(project.name),
                params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid } }
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_from_media_project_docs_path(project.name))
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
     end
 
@@ -142,7 +142,7 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
 
       it 'returns forbidden' do
         expect {
-          post from_media_project_docs_path(restricted_project.name),
+          post project_doc_generations_path(restricted_project.name),
                params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
         }.not_to change(Doc, :count)
 
@@ -152,7 +152,7 @@ RSpec.describe 'Docs::FromMediaController', type: :request do
 
     context 'when not logged in' do
       it 'redirects to login' do
-        post from_media_project_docs_path(project.name),
+        post project_doc_generations_path(project.name),
              params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
         expect(response).to redirect_to(new_user_session_path)
       end

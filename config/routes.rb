@@ -201,6 +201,8 @@ Pubann::Application.routes.draw do
 
 		resources :evaluations
 
+		resources :doc_generations, only: [:new, :create]
+
 		resources :docs do
 			collection do
 				get 'index' => 'docs#index'
@@ -209,8 +211,6 @@ Pubann::Application.routes.draw do
 				post 'import' => 'docs#import'
 				get 'open' => 'docs#open'
 				get 'update_numbers' => 'docs#update_numbers_for_project'
-				get 'new_from_media' => 'docs/from_media#new'
-				post 'from_media' => 'docs/from_media#create'
 				scope 'sourcedb', :as => 'sourcedb' do
 					# list sourcedb
 					get '/' => 'docs#sourcedb_index'

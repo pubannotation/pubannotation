@@ -98,7 +98,7 @@
 			<% if current_user&.can_access_media? %>
 				<tr>
 					<th></th>
-					<td><%= link_to t('views.docs.create_doc_from_media'), new_from_media_project_docs_path(@project.name), class: 'button long_button' -%></td>
+					<td><%= link_to t('views.docs.create_doc_from_media'), new_project_doc_generation_path(@project.name), class: 'button long_button' -%></td>
 				</tr>
 			<% end %>
 			<tr>

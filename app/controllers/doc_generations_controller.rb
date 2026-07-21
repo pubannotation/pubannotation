@@ -1,4 +1,4 @@
-class Docs::FromMediaController < ApplicationController
+class DocGenerationsController < ApplicationController
   include MediaAccessAuthorizationConcern
 
   before_action :authenticate_user!
@@ -41,7 +41,7 @@ class Docs::FromMediaController < ApplicationController
     end
   rescue => e
     respond_to do |format|
-      format.html { redirect_to (@project.present? ? new_from_media_project_docs_path(@project.name) : home_path), notice: e.message }
+      format.html { redirect_to (@project.present? ? new_project_doc_generation_path(@project.name) : home_path), notice: e.message }
       format.json { render json: { message: e.message }, status: :unprocessable_entity }
     end
   end
