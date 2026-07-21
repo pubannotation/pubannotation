@@ -5,6 +5,8 @@ require 'rails_helper'
 RSpec.describe MediumBulkUploadService do
   let(:user) { create(:user).tap { |u| u.confirm } }
   let(:png_data) { File.binread(Rails.root.join('spec', 'fixtures', 'files', 'test_image.png')) }
+  let(:mp4_data) { File.binread(Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4')) }
+  let(:mp3_data) { File.binread(Rails.root.join('spec', 'fixtures', 'files', 'test_audio.mp3')) }
 
   def build_zip(entries)
     Tempfile.new(['test', '.zip']).tap do |zip_file|
@@ -54,6 +56,27 @@ RSpec.describe MediumBulkUploadService do
         results = collect_results(described_class.new(zip_file.path, user))
         expect(results.count { |r| r.status == :success }).to eq(1)
         expect(results.none? { |r| r.status == :error }).to be true
+      end
+    end
+
+    context 'with valid video and audio files' do
+      let(:zip_file) do
+        build_zip({
+          'PMC-11111.mp4' => mp4_data,
+          'PMC-22222.mp3' => mp3_data
+        })
+      end
+
+      it 'creates media with the correct media_type and content_type' do
+        expect {
+          described_class.new(zip_file.path, user).call
+        }.to change(Medium, :count).by(2)
+
+        video = Medium.find_by(sourcedb: 'PMC', sourceid: '11111')
+        expect(video).to have_attributes(media_type: 'video', content_type: 'video/mp4')
+
+        audio = Medium.find_by(sourcedb: 'PMC', sourceid: '22222')
+        expect(audio).to have_attributes(media_type: 'audio', content_type: 'audio/mpeg')
       end
     end
 

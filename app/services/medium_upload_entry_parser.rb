@@ -4,7 +4,12 @@ class MediumUploadEntryParser
     '.jpeg' => [:image, 'image/jpeg'],
     '.png' => [:image, 'image/png'],
     '.gif' => [:image, 'image/gif'],
-    '.webp' => [:image, 'image/webp']
+    '.webp' => [:image, 'image/webp'],
+    '.mp4' => [:video, 'video/mp4'],
+    '.webm' => [:video, 'video/webm'],
+    '.mp3' => [:audio, 'audio/mpeg'],
+    '.wav' => [:audio, 'audio/wav'],
+    '.ogg' => [:audio, 'audio/ogg']
   }.freeze
 
   def self.call(entry)
