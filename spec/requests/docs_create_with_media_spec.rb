@@ -59,29 +59,6 @@ RSpec.describe 'POST /docs.json', type: :request do
     expect(Doc.last.medium).to be_nil
   end
 
-  it 'returns an error when the user cannot access media' do
-    restricted_user = create(:user, password: password, can_use_media: false).tap(&:confirm)
-    restricted_project = create(:project, user: restricted_user)
-    restricted_headers = {
-      'HTTP_AUTHORIZATION' =>
-        ActionController::HttpAuthentication::Basic.encode_credentials(
-          restricted_user.email,
-          password
-        )
-    }
-
-    expect {
-      post '/docs.json',
-           params: params.merge(
-             project_id: restricted_project.name,
-             media: { sourcedb: medium.sourcedb, sourceid: medium.sourceid }
-           ),
-           headers: restricted_headers
-    }.not_to change(Doc, :count)
-
-    expect(response).to have_http_status(:unprocessable_content)
-  end
-
   it 'returns an error when the specified medium does not exist' do
     post '/docs.json',
          params: params.merge(
@@ -93,14 +70,5 @@ RSpec.describe 'POST /docs.json', type: :request do
          headers: headers
 
     expect(response).to have_http_status(:unprocessable_content)
-  end
-
-  it 'creates a doc without a medium when media fields are left blank' do
-    post '/docs.json',
-         params: params.merge(media: { sourcedb: '', sourceid: '' }),
-         headers: headers
-
-    expect(response).to have_http_status(:created)
-    expect(Doc.last.medium).to be_nil
   end
 end

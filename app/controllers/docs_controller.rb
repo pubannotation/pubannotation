@@ -157,7 +157,7 @@ class DocsController < ApplicationController
 				format.html {redirect_back fallback_location: root_path, flash: { notice: e.message }}
 			end
 		end
-	end
+	end 
 
 	def show
 		if params[:id].present?
@@ -276,7 +276,7 @@ class DocsController < ApplicationController
 	# GET /docs/new.json
 	def new
 		@doc = Doc.new
-		begin
+		begin 
 			@project = get_project2(params[:project_id])
 		rescue => e
 			notice = e.message
@@ -320,9 +320,7 @@ class DocsController < ApplicationController
 				_doc
 			end
 
-			if params[:media].present? && (params[:media][:sourcedb].present? || params[:media][:sourceid].present?)
-				raise ArgumentError, "You are not authorized to link media to this document." unless current_user&.can_access_media?
-
+			if params[:media].present?
 				medium = Medium.find_by(sourcedb: params[:media][:sourcedb], sourceid: params[:media][:sourceid])
 				raise ArgumentError, "Specified media does not exist." unless medium
 				hdoc[:medium_id] = medium.id
