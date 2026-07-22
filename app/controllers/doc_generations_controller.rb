@@ -3,7 +3,7 @@ class DocGenerationsController < ApplicationController
 
   before_action :authenticate_user!
   before_action :authorize_media_access!
-  before_action :set_editable_project
+  before_action :ensure_editable_project!
 
   def new
   end
@@ -40,11 +40,16 @@ class DocGenerationsController < ApplicationController
     params.permit(:source, :sourcedb, :sourceid).to_h.symbolize_keys
   end
 
-  def set_editable_project
-    @project = Project.editable(current_user).find_by_name(params[:project_id])
-    return if @project.present?
+  def ensure_editable_project!
+    @project = Project.editable(current_user).find_by(name: params.expect(:project_id))
+    return if @project
 
+    render_project_not_found
+  end
+
+  def render_project_not_found
     message = "The project does not exist, or you are not authorized to make a change to the project."
+
     respond_to do |format|
       format.html { redirect_to home_path, notice: message }
       format.json { render json: { message: message }, status: :not_found }
