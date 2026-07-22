@@ -23,7 +23,7 @@ class DocGenerationsController < ApplicationController
       format.html { redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, @doc.sourcedb, @doc.sourceid), notice: t('controllers.shared.successfully_created', model: t('activerecord.models.doc')) }
       format.json { render json: @doc.to_hash, status: :created, location: @doc }
     end
-  rescue => e
+  rescue ArgumentError => e
     respond_to do |format|
       format.html { redirect_to new_project_doc_generation_path(@project.name), notice: e.message }
       format.json { render json: { message: e.message }, status: :unprocessable_entity }
