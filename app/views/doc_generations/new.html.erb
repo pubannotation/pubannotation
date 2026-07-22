@@ -1,0 +1,58 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+	> <%= link_to @project.name, project_path(@project.name) -%>
+	> <%= link_to "docs", project_docs_path(@project.name) %>
+	> new from media
+<% end -%>
+
+<section>
+	<%= render partial: 'projects/titlebar' -%>
+
+	<section>
+		<h2>Generate a new document from media</h2>
+
+		<%= form_tag project_doc_generations_path(@project.name) do %>
+			<table style="width:610px">
+				<tr>
+					<th>Media</th>
+					<td>
+						<table>
+							<tr>
+								<th>Media Source DB</th>
+								<td><%= text_field_tag 'media[sourcedb]', nil, required: true %></td>
+							</tr>
+							<tr>
+								<th>Media Source Id</th>
+								<td><%= text_field_tag 'media[sourceid]', nil, required: true %></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<th>Meta-data</th>
+					<td>
+						<table>
+							<tr>
+								<th>Source URL</th>
+								<td><%= text_field_tag :source %></td>
+							</tr>
+							<tr>
+								<th>Source DB</th>
+								<td><%= text_field_tag :sourcedb %></td>
+							</tr>
+							<tr>
+								<th>Source Id</th>
+								<td><%= text_field_tag :sourceid %></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+
+			<div class="actions">
+				<%= submit_tag 'Generate & Create' %>
+			</div>
+		<% end %>
+	</section>
+</section>
