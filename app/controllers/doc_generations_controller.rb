@@ -9,14 +9,14 @@ class DocGenerationsController < ApplicationController
   end
 
   def create
-    medium = Medium.find_by(sourcedb: params.dig(:media, :sourcedb), sourceid: params.dig(:media, :sourceid))
+    medium = Medium.find_by(media_params)
     raise ArgumentError, "Specified media does not exist." unless medium
 
     @doc = DocGenerationFromMedia.new(
       project: @project,
       medium: medium,
       user: current_user,
-      attributes: { source: params[:source], sourcedb: params[:sourcedb], sourceid: params[:sourceid] }
+      attributes: doc_attributes
     ).call
 
     respond_to do |format|
@@ -31,6 +31,14 @@ class DocGenerationsController < ApplicationController
   end
 
   private
+
+  def media_params
+    params.expect(media: [:sourcedb, :sourceid]).to_h.symbolize_keys
+  end
+
+  def doc_attributes
+    params.permit(:source, :sourcedb, :sourceid).to_h.symbolize_keys
+  end
 
   def set_editable_project
     @project = Project.editable(current_user).find_by_name(params[:project_id])
