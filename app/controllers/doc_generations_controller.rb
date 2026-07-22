@@ -24,10 +24,7 @@ class DocGenerationsController < ApplicationController
       format.json { render json: @doc.to_hash, status: :created, location: @doc }
     end
   rescue ArgumentError => e
-    respond_to do |format|
-      format.html { redirect_to new_project_doc_generation_path(@project.name), notice: e.message }
-      format.json { render json: { message: e.message }, status: :unprocessable_entity }
-    end
+    render_error(message: e.message, status: :unprocessable_entity)
   end
 
   private
@@ -48,11 +45,17 @@ class DocGenerationsController < ApplicationController
   end
 
   def render_project_not_found
-    message = "The project does not exist, or you are not authorized to make a change to the project."
+    render_error(
+      message: "The project does not exist, or you are not authorized to make a change to the project.",
+      status: :not_found,
+      redirect_path: home_path
+    )
+  end
 
+  def render_error(message:, status:, redirect_path: new_project_doc_generation_path(@project.name))
     respond_to do |format|
-      format.html { redirect_to home_path, notice: message }
-      format.json { render json: { message: message }, status: :not_found }
+      format.html { redirect_to redirect_path, notice: message }
+      format.json { render json: { message: message }, status: status }
     end
   end
 end
