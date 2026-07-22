@@ -47,7 +47,7 @@ class DocGenerationsController < ApplicationController
     message = "The project does not exist, or you are not authorized to make a change to the project."
     respond_to do |format|
       format.html { redirect_to home_path, notice: message }
-      format.json { render json: { message: message }, status: :unprocessable_entity }
+      format.json { render json: { message: message }, status: :not_found }
     end
   end
 end
