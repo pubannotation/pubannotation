@@ -85,7 +85,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
           post project_doc_generations_path(project.name), params: {}
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+        expect(response).to have_http_status(:bad_request)
       end
 
       it 'returns an error when only the media sourcedb is specified' do
@@ -175,7 +175,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
         post project_doc_generations_path('nonexistent-project', format: :json),
              params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:not_found)
       end
     end
   end
