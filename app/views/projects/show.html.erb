@@ -92,9 +92,14 @@
 				<td style="text-align:right"><%= render partial: 'import_docs_form' -%></td>
 			</tr>
 			<tr>
-				<th><%= t('views.shared.create') %></th>
+				<%= tag.th t('views.shared.create'), rowspan: (current_user&.can_access_media? ? 2 : nil) %>
 				<td><%= link_to t('views.docs.create_doc'), new_project_doc_path(@project.name), class: 'button long_button' -%></td>
 			</tr>
+			<% if current_user&.can_access_media? %>
+				<tr>
+					<td><%= link_to t('views.docs.create_doc_from_media'), new_project_doc_generation_path(@project.name), class: 'button long_button' -%></td>
+				</tr>
+			<% end %>
 			<tr>
 				<th><%= t('views.shared.upload') %></th>
 				<td><%= link_to t('views.docs.upload_docs'), upload_docs_project_path(@project.name), class: 'button long_button' -%></td>
