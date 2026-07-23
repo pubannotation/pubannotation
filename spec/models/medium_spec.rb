@@ -46,6 +46,13 @@ RSpec.describe Medium, type: :model do
       expect(medium.media_type).to eq('video')
     end
 
+    it 'does not raise and stays invalid when content_type has no matching media_type' do
+      medium = build(:medium, media_type: nil, content_type: 'application/pdf')
+      expect { medium.valid? }.not_to raise_error
+      expect(medium).not_to be_valid
+      expect(medium.media_type).to be_nil
+    end
+
     it 'accepts a browser-playable video content_type' do
       expect(build(:medium, media_type: :video, content_type: 'video/mp4')).to be_valid
     end

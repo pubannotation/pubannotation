@@ -24,6 +24,9 @@ class Medium < ApplicationRecord
   private
 
   def set_media_type_from_content_type
-    self.media_type = content_type.split('/').first if media_type.blank? && content_type.present?
+    return unless media_type.blank? && content_type.present?
+
+    derived_media_type = content_type.split('/').first
+    self.media_type = derived_media_type if self.class.media_types.key?(derived_media_type)
   end
 end
