@@ -4,6 +4,7 @@ require 'rails_helper'
 
 RSpec.describe 'DocGenerationsController', type: :request do
   include Devise::Test::IntegrationHelpers
+  include ActiveJob::TestHelper
 
   let(:user) { create(:user).tap { |u| u.confirm } }
   let(:project) { create(:project, user: user) }
@@ -66,13 +67,35 @@ RSpec.describe 'DocGenerationsController', type: :request do
     context 'when logged in' do
       before { sign_in user }
 
-      it 'uses the generated caption as the body and links the medium' do
-        allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
+      it 'enqueues a job to generate the doc instead of creating it synchronously' do
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+        }.to have_enqueued_job(DocGenerationFromMediaJob).and change(Doc, :count).by(0)
 
-        post project_doc_generations_path(project.name),
+        expect(response).to redirect_to(project_docs_path(project.name))
+      end
+
+      it 'returns the job location for JSON requests' do
+        post project_doc_generations_path(project.name, format: :json),
              params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
 
-        expect(response).to redirect_to(show_project_sourcedb_sourceid_docs_path(project.name, "Example@#{user.username}", '001'))
+        expect(response).to have_http_status(:accepted)
+
+        job = project.jobs.last
+        json = response.parsed_body
+        expect(json['job_name']).to eq(job.name)
+        expect(json['task_location']).to eq(project_job_url(project.name, job.id, format: :json))
+      end
+
+      it 'creates a doc with the generated caption when the job runs' do
+        allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
+
+        perform_enqueued_jobs do
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+        end
+
         doc = Doc.last
         expect(doc.body).to eq('A generated caption.')
         expect(doc.sourcedb).to eq("Example@#{user.username}")
@@ -115,24 +138,41 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
-      it 'returns an error when the medium is not an image' do
+      it 'records an error on the job when the medium is not an image' do
         video_medium = create(:medium, media_type: :video, content_type: 'video/mp4')
 
         expect {
-          post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid } }
+          perform_enqueued_jobs do
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid } }
+          end
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+        expect(response).to redirect_to(project_docs_path(project.name))
+        expect(project.jobs.last.messages.last.body).to match(/image media/)
       end
 
-      it 'returns an error when the medium has no attached file' do
+      it 'records an error on the job when the medium has no attached file' do
         medium_without_file = create(:medium)
 
         expect {
-          post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid } }
+          perform_enqueued_jobs do
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid } }
+          end
         }.not_to change(Doc, :count)
+
+        expect(response).to redirect_to(project_docs_path(project.name))
+        expect(project.jobs.last.messages.last.body).to match(/no attached file/)
+      end
+
+      it 'returns an error when the project already has 10 jobs' do
+        create_list(:job, 10, organization: project)
+
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
+        }.not_to have_enqueued_job(DocGenerationFromMediaJob)
 
         expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
