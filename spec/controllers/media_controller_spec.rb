@@ -12,6 +12,24 @@ RSpec.describe 'MediaController', type: :request do
       'image/png'
     )
   end
+  let(:video_file) do
+    Rack::Test::UploadedFile.new(
+      Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4'),
+      'video/mp4'
+    )
+  end
+  let(:audio_file) do
+    Rack::Test::UploadedFile.new(
+      Rails.root.join('spec', 'fixtures', 'files', 'test_audio.mp3'),
+      'audio/mpeg'
+    )
+  end
+  let(:quicktime_file) do
+    Rack::Test::UploadedFile.new(
+      Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4'),
+      'video/quicktime'
+    )
+  end
 
   describe 'GET /media' do
     let!(:medium) { create(:medium) }
@@ -73,28 +91,66 @@ RSpec.describe 'MediaController', type: :request do
     context 'when logged in' do
       before { sign_in user }
 
-      it 'creates a medium with valid params' do
+      it 'creates a medium with valid params and derives media_type from the file' do
         expect {
           post media_path, params: {
             medium: {
               sourcedb: 'TestDB',
               sourceid: 'img-001',
-              media_type: 'image',
               file: image_file
             }
           }
         }.to change(Medium, :count).by(1)
+        expect(Medium.last.media_type).to eq('image')
         expect(response).to redirect_to(new_medium_path)
+      end
+
+      it 'creates a medium with a video file' do
+        expect {
+          post media_path, params: {
+            medium: {
+              sourcedb: 'TestDB',
+              sourceid: 'video-001',
+              file: video_file
+            }
+          }
+        }.to change(Medium, :count).by(1)
+        expect(Medium.last.media_type).to eq('video')
+      end
+
+      it 'creates a medium with an audio file' do
+        expect {
+          post media_path, params: {
+            medium: {
+              sourcedb: 'TestDB',
+              sourceid: 'audio-001',
+              file: audio_file
+            }
+          }
+        }.to change(Medium, :count).by(1)
+        expect(Medium.last.media_type).to eq('audio')
       end
 
       it 'renders new with invalid params' do
         post media_path, params: {
           medium: {
             sourcedb: '',
-            sourceid: 'img-001',
-            media_type: 'image'
+            sourceid: 'img-001'
           }
         }
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it 'rejects a video/quicktime file that browsers cannot play inline' do
+        expect {
+          post media_path, params: {
+            medium: {
+              sourcedb: 'TestDB',
+              sourceid: 'mov-001',
+              file: quicktime_file
+            }
+          }
+        }.not_to change(Medium, :count)
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
@@ -102,7 +158,7 @@ RSpec.describe 'MediaController', type: :request do
     context 'when not logged in' do
       it 'redirects to login' do
         post media_path, params: {
-          medium: { sourcedb: 'TestDB', sourceid: 'img-001', media_type: 'image' }
+          medium: { sourcedb: 'TestDB', sourceid: 'img-001' }
         }
         expect(response).to redirect_to(new_user_session_path)
       end

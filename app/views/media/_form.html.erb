@@ -16,10 +16,9 @@
 			<th><%= f.label :sourceid, 'Source ID' %></th>
 			<td><%= f.text_field :sourceid, required: true %></td>
 		</tr>
-		<%= f.hidden_field :media_type, value: :image %>
 		<tr>
 			<th><%= f.label :file, 'File' %></th>
-			<td><%= f.file_field :file, accept: 'image/*', required: true %></td>
+			<td><%= f.file_field :file, accept: Medium::ALLOWED_CONTENT_TYPES.join(','), required: true %></td>
 		</tr>
 		<tr>
 			<th></th>

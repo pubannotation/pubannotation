@@ -68,6 +68,6 @@ class MediaController < ApplicationController
   end
 
   def medium_params
-    params.expect(medium: [:sourcedb, :sourceid, :media_type, :file])
+    params.expect(medium: [:sourcedb, :sourceid, :file])
   end
 end

@@ -6,8 +6,27 @@ class Medium < ApplicationRecord
 
   enum :media_type, { image: 0, video: 1, audio: 2 }
 
+  # Browsers only play these natively in an HTML5 <video>/<audio> tag;
+  # e.g. video/quicktime (.mov) is rejected because Chrome/Firefox can't play it inline.
+  ALLOWED_CONTENT_TYPES = %w[
+    image/png image/jpeg image/gif image/webp
+    video/mp4 video/webm
+    audio/mpeg audio/wav audio/ogg
+  ].freeze
+
+  before_validation :set_media_type_from_content_type
+
   validates :sourcedb, presence: true
   validates :sourceid, presence: true, uniqueness: { scope: :sourcedb }
   validates :media_type, presence: true
-  validates :content_type, presence: true
+  validates :content_type, presence: true, inclusion: { in: ALLOWED_CONTENT_TYPES }
+
+  private
+
+  def set_media_type_from_content_type
+    return unless media_type.blank? && content_type.present?
+
+    derived_media_type = content_type.split('/').first
+    self.media_type = derived_media_type if self.class.media_types.key?(derived_media_type)
+  end
 end
