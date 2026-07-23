@@ -26,12 +26,24 @@ RSpec.describe Medium, type: :model do
       expect(build(:medium, sourcedb: 'DB2', sourceid: 'id1')).to be_valid
     end
 
-    it 'requires media_type' do
-      expect(build(:medium, media_type: nil)).not_to be_valid
+    it 'requires media_type when it cannot be derived from content_type' do
+      expect(build(:medium, media_type: nil, content_type: nil)).not_to be_valid
     end
 
     it 'requires content_type' do
       expect(build(:medium, content_type: nil)).not_to be_valid
+    end
+
+    it 'derives media_type from content_type when media_type is not set' do
+      medium = build(:medium, media_type: nil, content_type: 'video/mp4')
+      expect(medium).to be_valid
+      expect(medium.media_type).to eq('video')
+    end
+
+    it 'does not override an explicitly set media_type' do
+      medium = build(:medium, media_type: :video, content_type: 'image/png')
+      medium.valid?
+      expect(medium.media_type).to eq('video')
     end
 
     it 'accepts a browser-playable video content_type' do

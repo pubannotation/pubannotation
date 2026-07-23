@@ -14,8 +14,16 @@ class Medium < ApplicationRecord
     audio/mpeg audio/wav audio/ogg
   ].freeze
 
+  before_validation :set_media_type_from_content_type
+
   validates :sourcedb, presence: true
   validates :sourceid, presence: true, uniqueness: { scope: :sourcedb }
   validates :media_type, presence: true
   validates :content_type, presence: true, inclusion: { in: ALLOWED_CONTENT_TYPES }
+
+  private
+
+  def set_media_type_from_content_type
+    self.media_type = content_type.split('/').first if media_type.blank? && content_type.present?
+  end
 end
