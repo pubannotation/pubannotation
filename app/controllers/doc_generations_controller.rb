@@ -12,13 +12,6 @@ class DocGenerationsController < ApplicationController
     medium = Medium.find_by(media_params)
     raise ArgumentError, "Specified media does not exist." unless medium
 
-    DocGenerationFromMedia.new(
-      project: @project,
-      medium: medium,
-      user: current_user,
-      attributes: doc_attributes
-    ).validate_medium!
-
     active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, doc_attributes)
     notice = t('controllers.docs.text_generation_started', job_name: active_job.job_name)
 

@@ -126,26 +126,32 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
-      it 'returns an error when the medium is not an image' do
+      it 'records an error on the job when the medium is not an image' do
         video_medium = create(:medium, media_type: :video, content_type: 'video/mp4')
 
         expect {
-          post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid } }
+          perform_enqueued_jobs do
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid } }
+          end
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+        expect(response).to redirect_to(project_docs_path(project.name))
+        expect(project.jobs.last.messages.last.body).to match(/image media/)
       end
 
-      it 'returns an error when the medium has no attached file' do
+      it 'records an error on the job when the medium has no attached file' do
         medium_without_file = create(:medium)
 
         expect {
-          post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid } }
+          perform_enqueued_jobs do
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid } }
+          end
         }.not_to change(Doc, :count)
 
-        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+        expect(response).to redirect_to(project_docs_path(project.name))
+        expect(project.jobs.last.messages.last.body).to match(/no attached file/)
       end
     end
 
