@@ -1,4 +1,4 @@
-class GenerateDocTextFromMediaJob < ApplicationJob
+class DocGenerationFromMediaJob < ApplicationJob
   include UseJobRecordConcern
 
   queue_as :general

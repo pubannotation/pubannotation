@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe GenerateDocTextFromMediaJob, type: :job do
+RSpec.describe DocGenerationFromMediaJob, type: :job do
   let(:user) { create(:user) }
   let(:project) { create(:project, user: user) }
   let(:medium) { create(:medium, user: user) }
@@ -16,7 +16,7 @@ RSpec.describe GenerateDocTextFromMediaJob, type: :job do
     end
 
     it 'delegates to DocGenerationFromMedia with the given project, medium, user and attributes' do
-      GenerateDocTextFromMediaJob.perform_now(project, medium, user, attributes)
+      DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
 
       expect(DocGenerationFromMedia).to have_received(:new).with(
         project: project,
@@ -30,7 +30,7 @@ RSpec.describe GenerateDocTextFromMediaJob, type: :job do
 
   describe '#job_name' do
     it 'returns the correct name' do
-      expect(GenerateDocTextFromMediaJob.new.job_name).to eq('Generate doc text from media')
+      expect(DocGenerationFromMediaJob.new.job_name).to eq('Generate doc text from media')
     end
   end
 end

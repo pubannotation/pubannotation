@@ -71,7 +71,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect {
           post project_doc_generations_path(project.name),
                params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
-        }.to have_enqueued_job(GenerateDocTextFromMediaJob).and change(Doc, :count).by(0)
+        }.to have_enqueued_job(DocGenerationFromMediaJob).and change(Doc, :count).by(0)
 
         expect(response).to redirect_to(project_docs_path(project.name))
       end
