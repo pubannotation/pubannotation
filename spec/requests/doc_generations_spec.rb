@@ -153,6 +153,17 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to redirect_to(project_docs_path(project.name))
         expect(project.jobs.last.messages.last.body).to match(/no attached file/)
       end
+
+      it 'returns an error when the project already has 10 jobs' do
+        create_list(:job, 10, organization: project)
+
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
+        }.not_to have_enqueued_job(DocGenerationFromMediaJob)
+
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+      end
     end
 
     context 'when logged in as a user who cannot access media' do
