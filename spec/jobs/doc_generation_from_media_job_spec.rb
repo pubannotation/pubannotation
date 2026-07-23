@@ -18,12 +18,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
     it 'delegates to DocGenerationFromMedia with the given project, medium, user and attributes' do
       DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
 
-      expect(DocGenerationFromMedia).to have_received(:new).with(
-        project: project,
-        medium: medium,
-        user: user,
-        attributes: attributes
-      )
+      expect(DocGenerationFromMedia).to have_received(:new).with(project:, medium:, user:, attributes:)
       expect(generation).to have_received(:call)
     end
   end

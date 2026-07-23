@@ -4,7 +4,7 @@ class DocGenerationFromMediaJob < ApplicationJob
   queue_as :general
 
   def perform(project, medium, user, attributes)
-    DocGenerationFromMedia.new(project: project, medium: medium, user: user, attributes: attributes).call
+    DocGenerationFromMedia.new(project:, medium:, user:, attributes:).call
   end
 
   def job_name
