@@ -14,11 +14,12 @@ class DocGenerationsController < ApplicationController
     raise Exceptions::TooManyBackgroundJobsError, "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless @project.jobs.count < 10
 
     active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, doc_attributes)
+    job = Job.find_by(active_job_id: active_job.job_id)
     notice = t('controllers.docs.text_generation_started', job_name: active_job.job_name)
 
     respond_to do |format|
       format.html { redirect_to project_docs_path(@project.name), notice: notice }
-      format.json { render json: { message: notice, job_name: active_job.job_name }, status: :accepted }
+      format.json { render json: { message: notice, job_name: active_job.job_name, task_location: project_job_url(@project.name, job.id, format: :json) }, status: :accepted }
     end
   rescue ArgumentError, Exceptions::TooManyBackgroundJobsError => e
     render_error(message: e.message, status: :unprocessable_entity)

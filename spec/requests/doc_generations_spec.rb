@@ -76,6 +76,18 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to redirect_to(project_docs_path(project.name))
       end
 
+      it 'returns the job location for JSON requests' do
+        post project_doc_generations_path(project.name, format: :json),
+             params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+
+        expect(response).to have_http_status(:accepted)
+
+        job = project.jobs.last
+        json = response.parsed_body
+        expect(json['job_name']).to eq(job.name)
+        expect(json['task_location']).to eq(project_job_url(project.name, job.id, format: :json))
+      end
+
       it 'creates a doc with the generated caption when the job runs' do
         allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
 
