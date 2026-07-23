@@ -7,12 +7,10 @@ RSpec.describe MediumHelper, type: :helper do
     let(:user) { create(:user) }
 
     def attach_file(medium, filename, content_type)
-      medium.file.attach(
-        io: File.open(Rails.root.join('spec', 'fixtures', 'files', filename)),
-        filename:,
-        content_type:
-      )
-      medium.save!
+      File.open(Rails.root.join('spec', 'fixtures', 'files', filename), 'rb') do |file|
+        medium.file.attach(io: file, filename:, content_type:)
+        medium.save!
+      end
       medium
     end
 
