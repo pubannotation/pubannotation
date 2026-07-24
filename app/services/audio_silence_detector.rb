@@ -6,7 +6,8 @@ class AudioSilenceDetector
   end
 
   def silent?
-    _stdout, stderr, _status = Open3.capture3('ffmpeg', '-i', @audio_path, '-af', 'volumedetect', '-f', 'null', '-')
+    _stdout, stderr, status = Open3.capture3('ffmpeg', '-i', @audio_path, '-af', 'volumedetect', '-f', 'null', '-')
+    return false unless status.success?
 
     match = stderr.match(/max_volume:\s*(-?\d+(?:\.\d+)?)\s*dB/)
     return false unless match
