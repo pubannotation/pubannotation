@@ -31,6 +31,32 @@ RSpec.describe MediumUploadEntryParser do
       end
     end
 
+    context 'with a video filename' do
+      it 'returns a MediumUploadEntry with video attributes' do
+        entry = build_zip_entry('PMC-12345.mp4')
+
+        upload_entry = described_class.call(entry)
+
+        expect(upload_entry).to have_attributes(
+          media_type: :video,
+          content_type: 'video/mp4'
+        )
+      end
+    end
+
+    context 'with an audio filename' do
+      it 'returns a MediumUploadEntry with audio attributes' do
+        entry = build_zip_entry('PMC-12345.mp3')
+
+        upload_entry = described_class.call(entry)
+
+        expect(upload_entry).to have_attributes(
+          media_type: :audio,
+          content_type: 'audio/mpeg'
+        )
+      end
+    end
+
     context 'without an extension' do
       it 'raises a ValidationError' do
         entry = build_zip_entry('PMC-12345')
