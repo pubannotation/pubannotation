@@ -15,6 +15,7 @@ Please use it with
 * Elasticsearch 8.x,
 * [redis](https://redis.io/)
 * [Ollama](https://ollama.com/) (for media caption generation)
+* [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (for audio transcription)
 
 ### Ollama setup (for media caption generation)
 
@@ -31,6 +32,24 @@ $ ollama serve
 Pull the moondream model:
 ```
 $ ollama pull moondream
+```
+
+### whisper.cpp setup (for audio transcription)
+
+Install whisper.cpp:
+```
+$ brew install whisper-cpp
+```
+
+Download a model (e.g. base.en; the Homebrew formula does not bundle a download script, so fetch the `.bin` file directly):
+```
+$ mkdir -p ~/models
+$ curl -L -o ~/models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin
+```
+
+Note: the Homebrew build has no `whisper-server` binary, so transcription runs via `whisper-cli` directly instead of an HTTP server:
+```
+$ whisper-cli -m ~/models/ggml-base.en.bin -f path/to/audio.wav
 ```
 
 If your system does not already have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.
