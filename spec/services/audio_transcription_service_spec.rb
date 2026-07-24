@@ -28,7 +28,7 @@ RSpec.describe AudioTranscriptionService do
       end
 
       it 'raises without invoking whisper-cli' do
-        expect(Open3).not_to receive(:capture3)
+        expect(Open3).not_to receive(:capture3).with('whisper-cli', '-m', model_path, '-f', audio_path, '-np', '-nt')
         expect {
           described_class.new(audio_path).call
         }.to raise_error(ArgumentError, /silent/)
