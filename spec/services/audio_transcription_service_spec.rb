@@ -6,12 +6,15 @@ RSpec.describe AudioTranscriptionService do
   let(:audio_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_audio.mp3').to_s }
   let(:model_path) { '/path/to/ggml-base.en.bin' }
 
-  before do
+  around do |example|
+    original_model_path = ENV['WHISPER_MODEL_PATH']
+    original_cli_path = ENV['WHISPER_CLI_PATH']
     ENV['WHISPER_MODEL_PATH'] = model_path
-  end
-
-  after do
-    ENV.delete('WHISPER_MODEL_PATH')
+    ENV.delete('WHISPER_CLI_PATH')
+    example.run
+  ensure
+    ENV['WHISPER_MODEL_PATH'] = original_model_path
+    ENV['WHISPER_CLI_PATH'] = original_cli_path
   end
 
   describe '#call' do
@@ -36,10 +39,6 @@ RSpec.describe AudioTranscriptionService do
         allow(Open3).to receive(:capture3)
           .with('/opt/homebrew/bin/whisper-cli', '-m', model_path, '-f', audio_path, '-np', '-nt')
           .and_return(['transcript', '', success_status])
-      end
-
-      after do
-        ENV.delete('WHISPER_CLI_PATH')
       end
 
       it 'invokes the configured binary' do
