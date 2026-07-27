@@ -138,7 +138,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
-      it 'records an error on the job when the medium is not an image' do
+      it 'records an error on the job when the medium is neither image nor audio' do
         video_medium = create(:medium, media_type: :video, content_type: 'video/mp4')
 
         expect {
@@ -149,7 +149,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
         }.not_to change(Doc, :count)
 
         expect(response).to redirect_to(project_docs_path(project.name))
-        expect(project.jobs.last.messages.last.body).to match(/image media/)
+        expect(project.jobs.last.messages.last.body).to match(/image or audio media/)
       end
 
       it 'records an error on the job when the medium has no attached file' do
