@@ -34,13 +34,16 @@ class DocGenerationFromMedia
   def generate_text(file_path)
     if @medium.image?
       ImageCaptionService.new(file_path).call
-    else
+    elsif @medium.audio?
       AudioTranscriptionService.new(file_path).call
+    else
+      VideoAudioExtractionService.new(file_path).call do |audio_path|
+        AudioTranscriptionService.new(audio_path).call
+      end
     end
   end
 
   def validate_medium!
-    raise ArgumentError, "Text generation is supported only for image or audio media." unless @medium.image? || @medium.audio?
     raise ArgumentError, "Specified media has no attached file." unless @medium.file.attached?
   end
 end

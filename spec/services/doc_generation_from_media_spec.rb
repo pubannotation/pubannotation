@@ -23,6 +23,15 @@ RSpec.describe DocGenerationFromMedia do
     )
     medium
   end
+  let(:video_medium) do
+    medium = create(:medium, media_type: :video, content_type: 'video/mp4')
+    medium.file.attach(
+      io: File.open(Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4')),
+      filename: 'test_video.mp4',
+      content_type: 'video/mp4'
+    )
+    medium
+  end
 
   describe '#call' do
     context 'with a valid image medium' do
@@ -69,18 +78,31 @@ RSpec.describe DocGenerationFromMedia do
       end
     end
 
-    context 'when the medium is neither image nor audio' do
-      let(:video_medium) { create(:medium, media_type: :video, content_type: 'video/mp4') }
+    context 'with a valid video medium' do
+      before do
+        allow(VideoAudioExtractionService).to receive(:new).and_return(
+          instance_double(VideoAudioExtractionService).tap do |extractor|
+            allow(extractor).to receive(:call).and_yield('/tmp/extracted_audio.wav')
+          end
+        )
+        allow(AudioTranscriptionService).to receive(:new).and_return(instance_double(AudioTranscriptionService, call: 'A generated transcript.'))
+      end
 
-      it 'raises without creating a doc' do
-        expect {
-          described_class.new(
-            project: project,
-            medium: video_medium,
-            user: user,
-            attributes: { source: nil, sourcedb: nil, sourceid: nil }
-          ).call
-        }.to raise_error(ArgumentError, /image or audio media/).and change(Doc, :count).by(0)
+      it 'creates a doc with the transcript generated from the extracted audio' do
+        doc = described_class.new(
+          project: project,
+          medium: video_medium,
+          user: user,
+          attributes: { source: nil, sourcedb: 'Example', sourceid: '003' }
+        ).call
+
+        expect(AudioTranscriptionService).to have_received(:new).with('/tmp/extracted_audio.wav')
+        expect(doc).to be_persisted
+        expect(doc.body).to eq('A generated transcript.')
+        expect(doc.sourcedb).to eq("Example@#{user.username}")
+        expect(doc.sourceid).to eq('003')
+        expect(doc.medium).to eq(video_medium)
+        expect(project.docs).to include(doc)
       end
     end
 

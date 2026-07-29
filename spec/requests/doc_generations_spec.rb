@@ -138,18 +138,31 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
-      it 'records an error on the job when the medium is neither image nor audio' do
+      it 'creates a doc with the transcript generated from a video medium when the job runs' do
         video_medium = create(:medium, media_type: :video, content_type: 'video/mp4')
+        video_medium.file.attach(
+          io: File.open(Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4')),
+          filename: 'test_video.mp4',
+          content_type: 'video/mp4'
+        )
 
-        expect {
-          perform_enqueued_jobs do
-            post project_doc_generations_path(project.name),
-                 params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid } }
+        allow(VideoAudioExtractionService).to receive(:new).and_return(
+          instance_double(VideoAudioExtractionService).tap do |extractor|
+            allow(extractor).to receive(:call).and_yield('/tmp/extracted_audio.wav')
           end
-        }.not_to change(Doc, :count)
+        )
+        allow(AudioTranscriptionService).to receive(:new).and_return(instance_double(AudioTranscriptionService, call: 'A generated transcript.'))
 
-        expect(response).to redirect_to(project_docs_path(project.name))
-        expect(project.jobs.last.messages.last.body).to match(/image or audio media/)
+        perform_enqueued_jobs do
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid }, sourcedb: 'Example', sourceid: '004' }
+        end
+
+        doc = Doc.last
+        expect(doc.body).to eq('A generated transcript.')
+        expect(doc.sourcedb).to eq("Example@#{user.username}")
+        expect(doc.sourceid).to eq('004')
+        expect(doc.medium).to eq(video_medium)
       end
 
       it 'records an error on the job when the medium has no attached file' do
