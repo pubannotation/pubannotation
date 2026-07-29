@@ -16,7 +16,7 @@ Please use it with
 * [redis](https://redis.io/)
 * [Ollama](https://ollama.com/) (for media caption generation)
 * [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (for audio transcription)
-* [ffmpeg](https://ffmpeg.org/) (for detecting silent audio before transcription)
+* [ffmpeg](https://ffmpeg.org/) (for detecting silent audio and extracting audio from video before transcription)
 
 ### Ollama setup (for media caption generation)
 
@@ -53,7 +53,7 @@ Note: the Homebrew build has no `whisper-server` binary, so transcription runs v
 $ whisper-cli -m ~/models/ggml-base.en.bin -f path/to/audio.wav
 ```
 
-### ffmpeg setup (for detecting silent audio before transcription)
+### ffmpeg setup (for detecting silent audio and extracting audio from video before transcription)
 
 Install ffmpeg:
 ```
