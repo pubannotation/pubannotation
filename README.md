@@ -16,6 +16,7 @@ Please use it with
 * [redis](https://redis.io/)
 * [Ollama](https://ollama.com/) (for media caption generation)
 * [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (for audio transcription)
+* [ffmpeg](https://ffmpeg.org/) (for detecting silent audio before transcription)
 
 ### Ollama setup (for media caption generation)
 
@@ -50,6 +51,13 @@ $ curl -L -o ~/models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.
 Note: the Homebrew build has no `whisper-server` binary, so transcription runs via `whisper-cli` directly instead of an HTTP server:
 ```
 $ whisper-cli -m ~/models/ggml-base.en.bin -f path/to/audio.wav
+```
+
+### ffmpeg setup (for detecting silent audio before transcription)
+
+Install ffmpeg:
+```
+$ brew install ffmpeg
 ```
 
 If your system does not already have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.

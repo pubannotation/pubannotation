@@ -4,6 +4,8 @@ class AudioTranscriptionService
   end
 
   def call
+    raise ArgumentError, "Audio file appears to be silent." if AudioSilenceDetector.new(@audio_path).silent?
+
     cli_path   = ENV.fetch('WHISPER_CLI_PATH', 'whisper-cli')
     model_path = File.expand_path(ENV.fetch('WHISPER_MODEL_PATH'))
 
