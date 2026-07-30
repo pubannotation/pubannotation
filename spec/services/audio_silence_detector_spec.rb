@@ -7,9 +7,10 @@ RSpec.describe AudioSilenceDetector do
 
   describe '#silent?' do
     def stub_ffmpeg_stderr(stderr, success: true)
+      status = instance_double(Process::Status, success?: success, exitstatus: success ? 0 : 1)
       allow(Open3).to receive(:capture3)
         .with('ffmpeg', '-i', audio_path, '-af', 'volumedetect', '-f', 'null', '-')
-        .and_return(['', stderr, instance_double(Process::Status, success?: success)])
+        .and_return(['', stderr, status])
     end
 
     it 'returns true when max_volume is below the threshold' do
@@ -22,14 +23,20 @@ RSpec.describe AudioSilenceDetector do
       expect(described_class.new(audio_path).silent?).to be false
     end
 
-    it 'returns false when max_volume cannot be parsed from ffmpeg output' do
+    it 'raises DetectionError when max_volume cannot be parsed from ffmpeg output' do
       stub_ffmpeg_stderr('some unrelated ffmpeg error output')
-      expect(described_class.new(audio_path).silent?).to be false
+
+      expect {
+        described_class.new(audio_path).silent?
+      }.to raise_error(AudioSilenceDetector::DetectionError, /Could not determine max_volume/)
     end
 
-    it 'returns false when ffmpeg fails, even if stderr contains a volume-like reading' do
+    it 'raises DetectionError when ffmpeg fails, even if stderr contains a volume-like reading' do
       stub_ffmpeg_stderr('[Parsed_volumedetect_0] max_volume: -91.0 dB', success: false)
-      expect(described_class.new(audio_path).silent?).to be false
+
+      expect {
+        described_class.new(audio_path).silent?
+      }.to raise_error(AudioSilenceDetector::DetectionError, /Failed to analyze audio with ffmpeg/)
     end
   end
 end
