@@ -17,7 +17,7 @@ class DocGenerationFromMedia
       {
         **@attributes,
         username: @user.username,
-        body: body,
+        body:,
         medium_id: @medium.id
       },
       @user,
