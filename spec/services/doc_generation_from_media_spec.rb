@@ -106,6 +106,22 @@ RSpec.describe DocGenerationFromMedia do
       end
     end
 
+    context 'when the medium has an unsupported media type' do
+      it 'raises without creating a doc' do
+        medium = image_medium
+        allow(medium).to receive_messages(image?: false, audio?: false, video?: false, media_type: nil)
+
+        expect {
+          described_class.new(
+            project: project,
+            medium: medium,
+            user: user,
+            attributes: { source: nil, sourcedb: nil, sourceid: nil }
+          ).call
+        }.to raise_error(ArgumentError, /Unsupported media type/).and change(Doc, :count).by(0)
+      end
+    end
+
     context 'when the medium has no attached file' do
       let(:medium_without_file) { create(:medium) }
 

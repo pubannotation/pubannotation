@@ -36,10 +36,12 @@ class DocGenerationFromMedia
       ImageCaptionService.new(file_path).call
     elsif @medium.audio?
       AudioTranscriptionService.new(file_path).call
-    else
+    elsif @medium.video?
       VideoAudioExtractionService.new(file_path).call do |audio_path|
         AudioTranscriptionService.new(audio_path).call
       end
+    else
+      raise ArgumentError, "Unsupported media type: #{@medium.media_type.inspect}"
     end
   end
 
