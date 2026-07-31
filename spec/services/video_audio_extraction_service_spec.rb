@@ -6,6 +6,15 @@ RSpec.describe VideoAudioExtractionService do
   let(:video_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4').to_s }
 
   describe '#call' do
+    context 'when no block is given' do
+      it 'raises ArgumentError without invoking ffmpeg' do
+        expect(Open3).not_to receive(:capture3)
+        expect {
+          described_class.new(video_path).call
+        }.to raise_error(ArgumentError, /requires a block/)
+      end
+    end
+
     context 'when ffmpeg succeeds' do
       before do
         success_status = instance_double(Process::Status, success?: true)
