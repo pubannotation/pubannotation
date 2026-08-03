@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_26_010154) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_03_025230) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -291,6 +291,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_26_010154) do
     t.index ["user_id"], name: "index_media_on_user_id"
   end
 
+  create_table "media_transcripts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "doc_id", null: false
+    t.bigint "medium_id", null: false
+    t.json "segments", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.index ["doc_id"], name: "index_media_transcripts_on_doc_id", unique: true
+    t.index ["medium_id"], name: "index_media_transcripts_on_medium_id"
+  end
+
   create_table "messages", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -518,6 +528,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_26_010154) do
   add_foreign_key "batch_job_trackings", "jobs", column: "parent_job_id", on_delete: :cascade
   add_foreign_key "docs", "media"
   add_foreign_key "media", "users"
+  add_foreign_key "media_transcripts", "docs"
+  add_foreign_key "media_transcripts", "media"
   add_foreign_key "paragraph_attrivutes", "attrivutes"
   add_foreign_key "paragraph_attrivutes", "divisions"
   add_foreign_key "paragraph_denotations", "denotations"
