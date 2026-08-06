@@ -80,15 +80,10 @@ RSpec.describe DocGenerationFromMedia do
 
     context 'with a valid video medium' do
       before do
-        allow(VideoAudioExtractionService).to receive(:new).and_return(
-          instance_double(VideoAudioExtractionService).tap do |extractor|
-            allow(extractor).to receive(:call).and_yield('/tmp/extracted_audio.wav')
-          end
-        )
-        allow(AudioTranscriptionService).to receive(:new).and_return(instance_double(AudioTranscriptionService, call: 'A generated transcript.'))
+        allow(VideoTranscriptionService).to receive(:new).and_return(instance_double(VideoTranscriptionService, call: 'A generated transcript.'))
       end
 
-      it 'creates a doc with the transcript generated from the extracted audio' do
+      it 'creates a doc with the transcript generated from the video' do
         doc = described_class.new(
           project: project,
           medium: video_medium,
@@ -96,7 +91,6 @@ RSpec.describe DocGenerationFromMedia do
           attributes: { source: nil, sourcedb: 'Example', sourceid: '003' }
         ).call
 
-        expect(AudioTranscriptionService).to have_received(:new).with('/tmp/extracted_audio.wav')
         expect(doc).to be_persisted
         expect(doc.body).to eq('A generated transcript.')
         expect(doc.sourcedb).to eq("Example@#{user.username}")

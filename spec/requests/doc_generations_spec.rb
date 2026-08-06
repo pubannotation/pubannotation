@@ -146,12 +146,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
           content_type: 'video/mp4'
         )
 
-        allow(VideoAudioExtractionService).to receive(:new).and_return(
-          instance_double(VideoAudioExtractionService).tap do |extractor|
-            allow(extractor).to receive(:call).and_yield('/tmp/extracted_audio.wav')
-          end
-        )
-        allow(AudioTranscriptionService).to receive(:new).and_return(instance_double(AudioTranscriptionService, call: 'A generated transcript.'))
+        allow(VideoTranscriptionService).to receive(:new).and_return(instance_double(VideoTranscriptionService, call: 'A generated transcript.'))
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),
