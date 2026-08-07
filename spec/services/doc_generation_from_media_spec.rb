@@ -23,6 +23,15 @@ RSpec.describe DocGenerationFromMedia do
     )
     medium
   end
+  let(:video_medium) do
+    medium = create(:medium, media_type: :video, content_type: 'video/mp4')
+    medium.file.attach(
+      io: File.open(Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4')),
+      filename: 'test_video.mp4',
+      content_type: 'video/mp4'
+    )
+    medium
+  end
 
   describe '#call' do
     context 'with a valid image medium' do
@@ -69,18 +78,41 @@ RSpec.describe DocGenerationFromMedia do
       end
     end
 
-    context 'when the medium is neither image nor audio' do
-      let(:video_medium) { create(:medium, media_type: :video, content_type: 'video/mp4') }
+    context 'with a valid video medium' do
+      before do
+        allow(VideoTranscriptionService).to receive(:new).and_return(instance_double(VideoTranscriptionService, call: 'A generated transcript.'))
+      end
 
+      it 'creates a doc with the transcript generated from the video' do
+        doc = described_class.new(
+          project: project,
+          medium: video_medium,
+          user: user,
+          attributes: { source: nil, sourcedb: 'Example', sourceid: '003' }
+        ).call
+
+        expect(doc).to be_persisted
+        expect(doc.body).to eq('A generated transcript.')
+        expect(doc.sourcedb).to eq("Example@#{user.username}")
+        expect(doc.sourceid).to eq('003')
+        expect(doc.medium).to eq(video_medium)
+        expect(project.docs).to include(doc)
+      end
+    end
+
+    context 'when the medium has an unsupported media type' do
       it 'raises without creating a doc' do
+        medium = image_medium
+        allow(medium).to receive_messages(image?: false, audio?: false, video?: false, media_type: nil)
+
         expect {
           described_class.new(
             project: project,
-            medium: video_medium,
+            medium: medium,
             user: user,
             attributes: { source: nil, sourcedb: nil, sourceid: nil }
           ).call
-        }.to raise_error(ArgumentError, /image or audio media/).and change(Doc, :count).by(0)
+        }.to raise_error(ArgumentError, /Unsupported media type/).and change(Doc, :count).by(0)
       end
     end
 
