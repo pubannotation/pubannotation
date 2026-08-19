@@ -22,11 +22,17 @@ RSpec.describe MediaTranscript, type: :model do
 
       expect(build(:media_transcript, doc: doc)).not_to be_valid
     end
+
+    it 'rejects a medium whose media_type is image' do
+      medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
+
+      expect(build(:media_transcript, medium: medium)).not_to be_valid
+    end
   end
 
   describe 'associations' do
     it 'belongs to a medium' do
-      medium = create(:medium)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       media_transcript = create(:media_transcript, medium: medium)
 
       expect(media_transcript.medium).to eq(medium)
@@ -51,7 +57,7 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'is destroyed when its medium is destroyed' do
-      medium = create(:medium)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       media_transcript = create(:media_transcript, medium: medium)
 
       medium.destroy
@@ -68,7 +74,7 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'defaults to an empty array' do
-      medium = create(:medium)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       doc = create(:doc)
 
       media_transcript = MediaTranscript.new(medium: medium, doc: doc)

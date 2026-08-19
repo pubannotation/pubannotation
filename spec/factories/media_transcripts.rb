@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :media_transcript do
-    association :medium
+    association :medium, media_type: :audio, content_type: 'audio/mpeg'
     association :doc
     segments do
       [
