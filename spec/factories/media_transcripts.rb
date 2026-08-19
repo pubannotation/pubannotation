@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :media_transcript do
     association :medium, media_type: :audio, content_type: 'audio/mpeg'
-    association :doc
+    doc { association(:doc, medium: medium) }
     segments do
       [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },

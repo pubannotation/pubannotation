@@ -17,16 +17,32 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'requires doc_id to be unique' do
-      doc = create(:doc)
-      create(:media_transcript, doc: doc)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc, medium: medium)
+      create(:media_transcript, medium: medium, doc: doc)
 
-      expect(build(:media_transcript, doc: doc)).not_to be_valid
+      expect(build(:media_transcript, medium: medium, doc: doc)).not_to be_valid
     end
 
     it 'rejects a medium whose media_type is image' do
       medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
 
       expect(build(:media_transcript, medium: medium)).not_to be_valid
+    end
+
+    it 'rejects a doc whose medium differs from the transcript medium' do
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      other_medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc, medium: other_medium)
+
+      expect(build(:media_transcript, medium: medium, doc: doc)).not_to be_valid
+    end
+
+    it 'rejects a doc with no medium reference' do
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc)
+
+      expect(build(:media_transcript, medium: medium, doc: doc)).not_to be_valid
     end
   end
 
@@ -39,8 +55,9 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'belongs to a doc' do
-      doc = create(:doc)
-      media_transcript = create(:media_transcript, doc: doc)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc, medium: medium)
+      media_transcript = create(:media_transcript, medium: medium, doc: doc)
 
       expect(media_transcript.doc).to eq(doc)
     end
@@ -48,8 +65,9 @@ RSpec.describe MediaTranscript, type: :model do
 
   describe 'dependent destroy' do
     it 'is destroyed when its doc is destroyed' do
-      doc = create(:doc)
-      media_transcript = create(:media_transcript, doc: doc)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc, medium: medium)
+      media_transcript = create(:media_transcript, medium: medium, doc: doc)
 
       doc.destroy
 
@@ -75,7 +93,7 @@ RSpec.describe MediaTranscript, type: :model do
 
     it 'defaults to an empty array' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      doc = create(:doc)
+      doc = create(:doc, medium: medium)
 
       media_transcript = MediaTranscript.new(medium: medium, doc: doc)
 
