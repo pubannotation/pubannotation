@@ -1,20 +1,19 @@
 class MediaTranscript < ApplicationRecord
-  belongs_to :medium
   belongs_to :doc
 
+  delegate :medium, to: :doc, allow_nil: true
+
   validates :doc_id, uniqueness: true
+  validate :doc_has_medium
   validate :medium_not_image
-  validate :medium_matches_doc_medium
 
   private
 
-  def medium_not_image
-    errors.add(:medium, 'must not be an image') if medium&.image?
+  def doc_has_medium
+    errors.add(:doc, 'must have an associated medium') if doc && medium.nil?
   end
 
-  def medium_matches_doc_medium
-    return unless medium && doc
-
-    errors.add(:doc, 'must reference the same medium as this transcript') if doc.medium_id != medium_id
+  def medium_not_image
+    errors.add(:medium, 'must not be an image') if medium&.image?
   end
 end

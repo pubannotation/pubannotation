@@ -8,10 +8,6 @@ RSpec.describe MediaTranscript, type: :model do
       expect(build(:media_transcript)).to be_valid
     end
 
-    it 'requires a medium' do
-      expect(build(:media_transcript, medium: nil)).not_to be_valid
-    end
-
     it 'requires a doc' do
       expect(build(:media_transcript, doc: nil)).not_to be_valid
     end
@@ -19,37 +15,30 @@ RSpec.describe MediaTranscript, type: :model do
     it 'requires doc_id to be unique' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       doc = create(:doc, medium: medium)
-      create(:media_transcript, medium: medium, doc: doc)
+      create(:media_transcript, doc: doc)
 
-      expect(build(:media_transcript, medium: medium, doc: doc)).not_to be_valid
+      expect(build(:media_transcript, doc: doc)).not_to be_valid
     end
 
-    it 'rejects a medium whose media_type is image' do
+    it 'rejects a doc whose medium is an image' do
       medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
+      doc = create(:doc, medium: medium)
 
-      expect(build(:media_transcript, medium: medium)).not_to be_valid
-    end
-
-    it 'rejects a doc whose medium differs from the transcript medium' do
-      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      other_medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      doc = create(:doc, medium: other_medium)
-
-      expect(build(:media_transcript, medium: medium, doc: doc)).not_to be_valid
+      expect(build(:media_transcript, doc: doc)).not_to be_valid
     end
 
     it 'rejects a doc with no medium reference' do
-      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       doc = create(:doc)
 
-      expect(build(:media_transcript, medium: medium, doc: doc)).not_to be_valid
+      expect(build(:media_transcript, doc: doc)).not_to be_valid
     end
   end
 
   describe 'associations' do
-    it 'belongs to a medium' do
+    it 'derives its medium from the doc' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      media_transcript = create(:media_transcript, medium: medium)
+      doc = create(:doc, medium: medium)
+      media_transcript = create(:media_transcript, doc: doc)
 
       expect(media_transcript.medium).to eq(medium)
     end
@@ -57,7 +46,7 @@ RSpec.describe MediaTranscript, type: :model do
     it 'belongs to a doc' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       doc = create(:doc, medium: medium)
-      media_transcript = create(:media_transcript, medium: medium, doc: doc)
+      media_transcript = create(:media_transcript, doc: doc)
 
       expect(media_transcript.doc).to eq(doc)
     end
@@ -67,7 +56,7 @@ RSpec.describe MediaTranscript, type: :model do
     it 'is destroyed when its doc is destroyed' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       doc = create(:doc, medium: medium)
-      media_transcript = create(:media_transcript, medium: medium, doc: doc)
+      media_transcript = create(:media_transcript, doc: doc)
 
       doc.destroy
 
@@ -76,7 +65,8 @@ RSpec.describe MediaTranscript, type: :model do
 
     it 'is destroyed when its medium is destroyed' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      media_transcript = create(:media_transcript, medium: medium)
+      doc = create(:doc, medium: medium)
+      media_transcript = create(:media_transcript, doc: doc)
 
       medium.destroy
 
@@ -95,7 +85,7 @@ RSpec.describe MediaTranscript, type: :model do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       doc = create(:doc, medium: medium)
 
-      media_transcript = MediaTranscript.new(medium: medium, doc: doc)
+      media_transcript = MediaTranscript.new(doc: doc)
 
       expect(media_transcript.segments).to eq([])
     end

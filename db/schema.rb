@@ -294,11 +294,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_025230) do
   create_table "media_transcripts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "doc_id", null: false
-    t.bigint "medium_id", null: false
     t.json "segments", default: [], null: false
     t.datetime "updated_at", null: false
     t.index ["doc_id"], name: "index_media_transcripts_on_doc_id", unique: true
-    t.index ["medium_id"], name: "index_media_transcripts_on_medium_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -529,7 +527,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_025230) do
   add_foreign_key "docs", "media"
   add_foreign_key "media", "users"
   add_foreign_key "media_transcripts", "docs", on_delete: :cascade
-  add_foreign_key "media_transcripts", "media", on_delete: :cascade
   add_foreign_key "paragraph_attrivutes", "attrivutes"
   add_foreign_key "paragraph_attrivutes", "divisions"
   add_foreign_key "paragraph_denotations", "denotations"
