@@ -114,6 +114,18 @@ RSpec.describe MediaTranscript, type: :model do
       expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => -1, 'end_ms' => 100 }])).not_to be_valid
     end
 
+    it 'rejects a segment whose start_ms is not an integer' do
+      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => '0', 'end_ms' => 100 }])).not_to be_valid
+    end
+
+    it 'rejects a segment whose end_ms is not an integer' do
+      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100.0 }])).not_to be_valid
+    end
+
+    it 'rejects a segment that is not a hash' do
+      expect(build(:media_transcript, segments: ['not a hash'])).not_to be_valid
+    end
+
     it 'rejects a segment whose end_ms is before its start_ms' do
       expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 100, 'end_ms' => 0 }])).not_to be_valid
     end
