@@ -69,6 +69,7 @@ class Doc < ActiveRecord::Base
 		:after_add => [:increment_docs_projects_counter, :queue_es_project_add],
 		:after_remove => [:decrement_docs_projects_counter, :queue_es_project_remove]
 	belongs_to :medium, optional: true
+	has_one :media_transcript, dependent: :destroy
 
 	validate :media_reference_immutable, on: :update
 
