@@ -89,5 +89,42 @@ RSpec.describe MediaTranscript, type: :model do
 
       expect(media_transcript.segments).to eq([])
     end
+
+    it 'is valid with an empty array' do
+      expect(build(:media_transcript, segments: [])).to be_valid
+    end
+
+    it 'is valid when a segment has equal start_ms and end_ms' do
+      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 100, 'end_ms' => 100 }])).to be_valid
+    end
+
+    it 'rejects segments that are not an array' do
+      expect(build(:media_transcript, segments: { 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 })).not_to be_valid
+    end
+
+    it 'rejects a segment missing required keys' do
+      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 0 }])).not_to be_valid
+    end
+
+    it 'rejects a segment whose text is not a string' do
+      expect(build(:media_transcript, segments: [{ 'text' => nil, 'start_ms' => 0, 'end_ms' => 100 }])).not_to be_valid
+    end
+
+    it 'rejects a segment with a negative start_ms' do
+      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => -1, 'end_ms' => 100 }])).not_to be_valid
+    end
+
+    it 'rejects a segment whose end_ms is before its start_ms' do
+      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 100, 'end_ms' => 0 }])).not_to be_valid
+    end
+
+    it 'rejects segments that are out of chronological order' do
+      segments = [
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 },
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 }
+      ]
+
+      expect(build(:media_transcript, segments: segments)).not_to be_valid
+    end
   end
 end
