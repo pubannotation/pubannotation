@@ -7,9 +7,10 @@ class MediaTranscript < ApplicationRecord
   #   'text'     - String, the transcribed text for the segment (may be blank).
   #   'start_ms' - Integer >= 0, offset in milliseconds from the start of the media.
   #   'end_ms'   - Integer >= 0, offset in milliseconds from the start of the media (>= start_ms).
-  # The interval is [start_ms, end_ms) (start inclusive, end exclusive), so consecutive segments
-  # are expected to touch (one segment's end_ms equals the next one's start_ms) rather than
-  # overlap. Segments are ordered chronologically: start_ms is non-decreasing across the array.
+  # The interval is [start_ms, end_ms) (start inclusive, end exclusive). Segments are ordered
+  # chronologically and must not overlap: each segment's start_ms must be >= the previous
+  # segment's end_ms. Gaps are allowed (e.g. silence between segments), so consecutive segments
+  # are not required to touch exactly.
   # An empty array means no speech was detected in the media.
   validates :doc_id, uniqueness: true
   validate :doc_has_medium
@@ -29,7 +30,7 @@ class MediaTranscript < ApplicationRecord
   def segments_are_valid
     return errors.add(:segments, 'must be an array') unless segments.is_a?(Array)
 
-    previous_start_ms = nil
+    previous_end_ms = nil
 
     segments.each_with_index do |segment, index|
       unless valid_segment?(segment)
@@ -38,10 +39,10 @@ class MediaTranscript < ApplicationRecord
         next
       end
 
-      errors.add(:segments, "at index #{index} is out of order: start_ms must be non-decreasing") if
-        previous_start_ms && segment['start_ms'] < previous_start_ms
+      errors.add(:segments, "at index #{index} overlaps the previous segment: start_ms must be >= the previous end_ms") if
+        previous_end_ms && segment['start_ms'] < previous_end_ms
 
-      previous_start_ms = segment['start_ms']
+      previous_end_ms = segment['end_ms']
     end
   end
 

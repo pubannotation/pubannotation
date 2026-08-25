@@ -138,5 +138,23 @@ RSpec.describe MediaTranscript, type: :model do
 
       expect(build(:media_transcript, segments: segments)).not_to be_valid
     end
+
+    it 'rejects overlapping segments' do
+      segments = [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 100, 'end_ms' => 400 }
+      ]
+
+      expect(build(:media_transcript, segments: segments)).not_to be_valid
+    end
+
+    it 'allows a gap between segments' do
+      segments = [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 800 }
+      ]
+
+      expect(build(:media_transcript, segments: segments)).to be_valid
+    end
   end
 end
