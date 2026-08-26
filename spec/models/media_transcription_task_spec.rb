@@ -27,6 +27,24 @@ RSpec.describe MediaTranscriptionTask, type: :model do
     it 'rejects a nil status' do
       expect(build(:media_transcription_task, status: nil)).not_to be_valid
     end
+
+    it 'rejects a medium whose media_type is image' do
+      medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
+
+      expect(build(:media_transcription_task, medium: medium)).not_to be_valid
+    end
+
+    it 'accepts an audio medium' do
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+
+      expect(build(:media_transcription_task, medium: medium)).to be_valid
+    end
+
+    it 'accepts a video medium' do
+      medium = create(:medium, media_type: :video, content_type: 'video/mp4')
+
+      expect(build(:media_transcription_task, medium: medium)).to be_valid
+    end
   end
 
   describe 'associations' do

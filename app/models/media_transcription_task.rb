@@ -24,6 +24,7 @@ class MediaTranscriptionTask < ApplicationRecord
   belongs_to :job, optional: true
 
   validates :status, presence: true
+  validate :medium_must_be_audio_or_video
 
   enum :status, {
     pending: 'pending',
@@ -32,4 +33,12 @@ class MediaTranscriptionTask < ApplicationRecord
     no_speech: 'no_speech',
     failed: 'failed'
   }
+
+  private
+
+  def medium_must_be_audio_or_video
+    return unless medium
+
+    errors.add(:medium, 'must be audio or video') unless medium.audio? || medium.video?
+  end
 end
