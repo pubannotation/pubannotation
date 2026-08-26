@@ -4,10 +4,26 @@ class DocGenerationFromMediaJob < ApplicationJob
   queue_as :general
 
   def perform(project, medium, user, attributes)
-    DocGenerationFromMedia.new(project:, medium:, user:, attributes:).call
+    service = DocGenerationFromMedia.new(project:, medium:, user:, attributes:)
+    task = MediaTranscriptionTask.create!(medium:, job: @job) if transcribable?(medium)
+
+    task&.processing!
+    body = service.generate_transcript
+    task&.succeeded!
+
+    service.save_doc(body)
+  rescue StandardError
+    task.failed! if task && !task.succeeded?
+    raise
   end
 
   def job_name
     'Generate doc text from media'
+  end
+
+  private
+
+  def transcribable?(medium)
+    medium.audio? || medium.video?
   end
 end
