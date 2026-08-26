@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_03_025230) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_084502) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -291,6 +291,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_025230) do
     t.index ["user_id"], name: "index_media_on_user_id"
   end
 
+  create_table "media_transcription_tasks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "job_id"
+    t.bigint "medium_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_id"], name: "index_media_transcription_tasks_on_job_id"
+    t.index ["medium_id"], name: "index_media_transcription_tasks_on_medium_id"
+  end
+
   create_table "media_transcripts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "doc_id", null: false
@@ -526,6 +536,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_025230) do
   add_foreign_key "batch_job_trackings", "jobs", column: "parent_job_id", on_delete: :cascade
   add_foreign_key "docs", "media"
   add_foreign_key "media", "users"
+  add_foreign_key "media_transcription_tasks", "jobs", on_delete: :cascade
+  add_foreign_key "media_transcription_tasks", "media", on_delete: :cascade
   add_foreign_key "media_transcripts", "docs", on_delete: :cascade
   add_foreign_key "paragraph_attrivutes", "attrivutes"
   add_foreign_key "paragraph_attrivutes", "divisions"
