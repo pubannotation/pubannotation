@@ -2,6 +2,8 @@ class MediaTranscriptionTask < ApplicationRecord
   belongs_to :medium
   belongs_to :job, optional: true
 
+  validates :status, presence: true
+
   enum :status, {
     pending: 'pending',
     processing: 'processing',

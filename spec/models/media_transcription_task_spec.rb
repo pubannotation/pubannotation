@@ -23,6 +23,10 @@ RSpec.describe MediaTranscriptionTask, type: :model do
     it 'rejects a status outside the defined enum' do
       expect { build(:media_transcription_task, status: 'bogus') }.to raise_error(ArgumentError)
     end
+
+    it 'rejects a nil status' do
+      expect(build(:media_transcription_task, status: nil)).not_to be_valid
+    end
   end
 
   describe 'associations' do
