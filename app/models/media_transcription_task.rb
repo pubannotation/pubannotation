@@ -34,6 +34,19 @@ class MediaTranscriptionTask < ApplicationRecord
     failed: 'failed'
   }
 
+  # Wraps a transcription attempt, transitioning through processing -> succeeded/failed and
+  # re-raising any error from the block after recording it, so the caller doesn't need to
+  # manage the task's status itself. Mirrors `transaction do ... end`.
+  def process
+    processing!
+    result = yield
+    succeeded!
+    result
+  rescue StandardError
+    failed! unless succeeded?
+    raise
+  end
+
   private
 
   def medium_must_be_audio_or_video

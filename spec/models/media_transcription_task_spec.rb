@@ -70,6 +70,40 @@ RSpec.describe MediaTranscriptionTask, type: :model do
     end
   end
 
+  describe '#process' do
+    it 'transitions to processing then succeeded, and returns the block value' do
+      task = create(:media_transcription_task)
+
+      result = task.process { 'transcribed text' }
+
+      expect(result).to eq('transcribed text')
+      expect(task).to be_succeeded
+    end
+
+    it 'transitions to failed and re-raises when the block raises' do
+      task = create(:media_transcription_task)
+
+      expect {
+        task.process { raise StandardError, 'boom' }
+      }.to raise_error(StandardError, 'boom')
+
+      expect(task).to be_failed
+    end
+
+    it 'does not overwrite an already-succeeded status if failed! itself raises' do
+      task = create(:media_transcription_task)
+
+      expect {
+        task.process do
+          task.update!(status: 'succeeded')
+          raise StandardError, 'boom after succeeding'
+        end
+      }.to raise_error(StandardError, 'boom after succeeding')
+
+      expect(task.reload).to be_succeeded
+    end
+  end
+
   describe 'status' do
     %w[pending processing succeeded no_speech failed].each do |status|
       it "supports the #{status} status" do
