@@ -39,6 +39,6 @@ class MediaTranscriptionTask < ApplicationRecord
   def medium_must_be_audio_or_video
     return unless medium
 
-    errors.add(:medium, 'must be audio or video') unless medium.audio? || medium.video?
+    errors.add(:medium, 'must be audio or video') unless medium.transcribable?
   end
 end
