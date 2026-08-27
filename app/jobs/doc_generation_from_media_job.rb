@@ -5,9 +5,13 @@ class DocGenerationFromMediaJob < ApplicationJob
 
   def perform(project, medium, user, attributes)
     service = DocGenerationFromMedia.new(project:, medium:, user:, attributes:)
-    task = MediaTranscriptionTask.create!(medium:, job: @job) if medium.transcribable?
 
-    body = medium.transcribable? ? task.process { service.generate_transcript } : service.generate_transcript
+    body = if medium.transcribable?
+      MediaTranscriptionTask.create!(medium:, job: @job).process { service.generate_transcript }
+    else
+      service.generate_transcript
+    end
+
     service.save_doc(body)
   end
 
