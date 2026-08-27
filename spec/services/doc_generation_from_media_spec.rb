@@ -33,19 +33,20 @@ RSpec.describe DocGenerationFromMedia do
     medium
   end
 
-  describe '#call' do
+  describe 'generating a doc from media' do
     context 'with a valid image medium' do
       before do
         allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
       end
 
       it 'creates a doc with the generated caption, linked to the medium and the project' do
-        doc = described_class.new(
+        service = described_class.new(
           project: project,
           medium: image_medium,
           user: user,
           attributes: { source: nil, sourcedb: 'Example', sourceid: '001' }
-        ).call
+        )
+        doc = service.save_doc(service.generate_transcript)
 
         expect(doc).to be_persisted
         expect(doc.body).to eq('A generated caption.')
@@ -62,12 +63,13 @@ RSpec.describe DocGenerationFromMedia do
       end
 
       it 'creates a doc with the generated transcript, linked to the medium and the project' do
-        doc = described_class.new(
+        service = described_class.new(
           project: project,
           medium: audio_medium,
           user: user,
           attributes: { source: nil, sourcedb: 'Example', sourceid: '002' }
-        ).call
+        )
+        doc = service.save_doc(service.generate_transcript)
 
         expect(doc).to be_persisted
         expect(doc.body).to eq('A generated transcript.')
@@ -84,12 +86,13 @@ RSpec.describe DocGenerationFromMedia do
       end
 
       it 'creates a doc with the transcript generated from the video' do
-        doc = described_class.new(
+        service = described_class.new(
           project: project,
           medium: video_medium,
           user: user,
           attributes: { source: nil, sourcedb: 'Example', sourceid: '003' }
-        ).call
+        )
+        doc = service.save_doc(service.generate_transcript)
 
         expect(doc).to be_persisted
         expect(doc.body).to eq('A generated transcript.')
@@ -111,7 +114,7 @@ RSpec.describe DocGenerationFromMedia do
             medium: medium,
             user: user,
             attributes: { source: nil, sourcedb: nil, sourceid: nil }
-          ).call
+          ).generate_transcript
         }.to raise_error(ArgumentError, /Unsupported media type/).and change(Doc, :count).by(0)
       end
     end
@@ -126,7 +129,7 @@ RSpec.describe DocGenerationFromMedia do
             medium: medium_without_file,
             user: user,
             attributes: { source: nil, sourcedb: nil, sourceid: nil }
-          ).call
+          ).generate_transcript
         }.to raise_error(ArgumentError, /no attached file/).and change(Doc, :count).by(0)
       end
     end

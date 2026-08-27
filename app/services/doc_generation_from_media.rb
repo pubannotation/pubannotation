@@ -6,13 +6,15 @@ class DocGenerationFromMedia
     @attributes = attributes
   end
 
-  def call
+  def generate_transcript
     validate_medium!
 
-    body = @medium.file.open do |file|
+    @medium.file.open do |file|
       generate_text(file.path)
     end
+  end
 
+  def save_doc(body)
     hdoc = Doc.hdoc_normalize!(
       {
         **@attributes,
