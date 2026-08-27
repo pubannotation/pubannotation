@@ -34,16 +34,21 @@ class MediaTranscriptionTask < ApplicationRecord
     failed: 'failed'
   }
 
-  # Wraps a transcription attempt, transitioning through processing -> succeeded/failed and
-  # re-raising any error from the block after recording it, so the caller doesn't need to
-  # manage the task's status itself. Mirrors `transaction do ... end`.
+  # Wraps a transcription attempt, transitioning through processing -> succeeded/no_speech/failed
+  # and re-raising any error from the block after recording it, so the caller doesn't need to
+  # manage the task's status itself. Mirrors `transaction do ... end`. The block is expected to
+  # return a [body, segments] tuple, as DocGenerationFromMedia#generate_transcript does. segments
+  # is nil for media types that don't produce it (e.g. an image caption) — those always succeed.
+  # An empty array means the medium does produce segments (audio/video) but none were detected,
+  # which is classified as no_speech.
   def process
     processing!
-    result = yield
-    succeeded!
-    result
+    body, segments = yield
+    no_speech_detected = segments.is_a?(Array) && segments.empty?
+    no_speech_detected ? no_speech! : succeeded!
+    [body, segments]
   rescue StandardError
-    failed! unless succeeded?
+    failed! unless succeeded? || no_speech?
     raise
   end
 end

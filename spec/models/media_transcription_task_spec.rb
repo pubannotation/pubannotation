@@ -80,12 +80,31 @@ RSpec.describe MediaTranscriptionTask, type: :model do
   end
 
   describe '#process' do
-    it 'transitions to processing then succeeded, and returns the block value' do
+    it 'transitions to processing then succeeded when segments are present, and returns the block value' do
+      task = create(:media_transcription_task)
+      segments = [{ 'text' => 'hi', 'start_ms' => 0, 'end_ms' => 100 }]
+
+      result = task.process { ['transcribed text', segments] }
+
+      expect(result).to eq(['transcribed text', segments])
+      expect(task).to be_succeeded
+    end
+
+    it 'transitions to no_speech when the returned segments are an empty array' do
       task = create(:media_transcription_task)
 
-      result = task.process { 'transcribed text' }
+      result = task.process { ['', []] }
 
-      expect(result).to eq('transcribed text')
+      expect(result).to eq(['', []])
+      expect(task).to be_no_speech
+    end
+
+    it 'transitions to succeeded when segments are nil (e.g. an image caption)' do
+      task = create(:media_transcription_task)
+
+      result = task.process { ['a caption', nil] }
+
+      expect(result).to eq(['a caption', nil])
       expect(task).to be_succeeded
     end
 
@@ -110,6 +129,19 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       }.to raise_error(StandardError, 'boom after succeeding')
 
       expect(task.reload).to be_succeeded
+    end
+
+    it 'does not overwrite an already-no_speech status if failed! itself raises' do
+      task = create(:media_transcription_task)
+
+      expect {
+        task.process do
+          task.update!(status: 'no_speech')
+          raise StandardError, 'boom after no_speech'
+        end
+      }.to raise_error(StandardError, 'boom after no_speech')
+
+      expect(task.reload).to be_no_speech
     end
   end
 

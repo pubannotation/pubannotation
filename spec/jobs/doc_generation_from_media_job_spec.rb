@@ -81,6 +81,18 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
           expect(task).to be_succeeded
         end
       end
+
+      context 'when no segments are returned' do
+        let(:generation) { instance_double(DocGenerationFromMedia, generate_transcript: ['', []], save_doc: nil) }
+
+        it 'marks the task no_speech and does not save a doc' do
+          DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+
+          task = MediaTranscriptionTask.find_by(medium: medium)
+          expect(task).to be_no_speech
+          expect(generation).not_to have_received(:save_doc)
+        end
+      end
     end
 
     context 'with a video medium' do
