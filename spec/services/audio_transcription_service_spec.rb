@@ -5,6 +5,9 @@ require 'rails_helper'
 RSpec.describe AudioTranscriptionService do
   let(:audio_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_audio.mp3').to_s }
   let(:model_path) { '/path/to/ggml-base.en.bin' }
+  let(:ffprobe_args) do
+    ['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', audio_path]
+  end
 
   around do |example|
     original_model_path = ENV['WHISPER_MODEL_PATH']
@@ -15,6 +18,11 @@ RSpec.describe AudioTranscriptionService do
   ensure
     ENV['WHISPER_MODEL_PATH'] = original_model_path
     ENV['WHISPER_CLI_PATH'] = original_cli_path
+  end
+
+  def stub_ffprobe(duration_seconds)
+    success_status = instance_double(Process::Status, success?: true)
+    allow(Open3).to receive(:capture3).with(*ffprobe_args).and_return(["#{duration_seconds}\n", '', success_status])
   end
 
   describe '#call' do
@@ -28,7 +36,7 @@ RSpec.describe AudioTranscriptionService do
       end
 
       it 'raises without invoking whisper-cli' do
-        expect(Open3).not_to receive(:capture3).with('whisper-cli', '-m', model_path, '-f', audio_path, '-np', '-nt')
+        expect(Open3).not_to receive(:capture3).with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
         expect {
           described_class.new(audio_path).call
         }.to raise_error(ArgumentError, /silent/)
@@ -38,14 +46,61 @@ RSpec.describe AudioTranscriptionService do
     context 'when whisper-cli succeeds' do
       before do
         success_status = instance_double(Process::Status, success?: true)
+        stdout = <<~TEXT
+          [00:00:00.000 --> 00:00:03.500]   Ask not what your country
+          [00:00:03.500 --> 00:00:06.000]   can do for you.
+        TEXT
         allow(Open3).to receive(:capture3)
-          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np', '-nt')
-          .and_return([" Ask not what your country can do for you.\n", '', success_status])
+          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
+          .and_return([stdout, '', success_status])
+        stub_ffprobe(6.0)
       end
 
-      it 'returns the transcribed text' do
+      it 'returns the transcribed text with timed segments' do
         result = described_class.new(audio_path).call
-        expect(result).to eq('Ask not what your country can do for you.')
+
+        expect(result[:text]).to eq('Ask not what your country can do for you.')
+        expect(result[:segments]).to eq(
+          [
+            { 'text' => 'Ask not what your country', 'start_ms' => 0, 'end_ms' => 3500 },
+            { 'text' => 'can do for you.', 'start_ms' => 3500, 'end_ms' => 6000 }
+          ]
+        )
+      end
+    end
+
+    context 'when a segment offset overruns the audio duration' do
+      before do
+        success_status = instance_double(Process::Status, success?: true)
+        stdout = "[00:00:00.000 --> 00:00:30.000]   Hello world.\n"
+        allow(Open3).to receive(:capture3)
+          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
+          .and_return([stdout, '', success_status])
+        stub_ffprobe(4.98)
+      end
+
+      it 'clamps start_ms and end_ms to the probed audio duration' do
+        result = described_class.new(audio_path).call
+
+        expect(result[:segments]).to eq([{ 'text' => 'Hello world.', 'start_ms' => 0, 'end_ms' => 4980 }])
+      end
+    end
+
+    context 'when ffprobe fails to determine the duration' do
+      before do
+        success_status = instance_double(Process::Status, success?: true)
+        stdout = "[00:00:00.000 --> 00:00:30.000]   Hello world.\n"
+        allow(Open3).to receive(:capture3)
+          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
+          .and_return([stdout, '', success_status])
+        failure_status = instance_double(Process::Status, success?: false)
+        allow(Open3).to receive(:capture3).with(*ffprobe_args).and_return(['', 'error', failure_status])
+      end
+
+      it 'leaves the raw offsets unclamped' do
+        result = described_class.new(audio_path).call
+
+        expect(result[:segments]).to eq([{ 'text' => 'Hello world.', 'start_ms' => 0, 'end_ms' => 30_000 }])
       end
     end
 
@@ -53,14 +108,16 @@ RSpec.describe AudioTranscriptionService do
       before do
         ENV['WHISPER_CLI_PATH'] = '/opt/homebrew/bin/whisper-cli'
         success_status = instance_double(Process::Status, success?: true)
+        stdout = "[00:00:00.000 --> 00:00:01.000]   transcript\n"
         allow(Open3).to receive(:capture3)
-          .with('/opt/homebrew/bin/whisper-cli', '-m', model_path, '-f', audio_path, '-np', '-nt')
-          .and_return(['transcript', '', success_status])
+          .with('/opt/homebrew/bin/whisper-cli', '-m', model_path, '-f', audio_path, '-np')
+          .and_return([stdout, '', success_status])
+        stub_ffprobe(1.0)
       end
 
       it 'invokes the configured binary' do
         result = described_class.new(audio_path).call
-        expect(result).to eq('transcript')
+        expect(result[:text]).to eq('transcript')
       end
     end
 
@@ -68,7 +125,7 @@ RSpec.describe AudioTranscriptionService do
       before do
         failure_status = instance_double(Process::Status, success?: false, exitstatus: 2)
         allow(Open3).to receive(:capture3)
-          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np', '-nt')
+          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
           .and_return(['', "error: input file not found '#{audio_path}'", failure_status])
       end
 
