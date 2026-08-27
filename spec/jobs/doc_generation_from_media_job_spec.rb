@@ -6,23 +6,24 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
   let(:user) { create(:user) }
   let(:project) { create(:project, user: user) }
   let(:attributes) { { sourcedb: 'Example', sourceid: '001' } }
+  let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000 }] }
+  let(:generation) { instance_double(DocGenerationFromMedia, generate_transcript: ['A generated transcript.', segments], save_doc: nil) }
 
   describe '#perform' do
-    let(:generation) { instance_double(DocGenerationFromMedia, generate_transcript: 'A generated transcript.', save_doc: nil) }
-
     before do
       allow(DocGenerationFromMedia).to receive(:new).and_return(generation)
     end
 
     context 'with an image medium' do
       let(:medium) { create(:medium, user: user, media_type: :image, content_type: 'image/png') }
+      let(:generation) { instance_double(DocGenerationFromMedia, generate_transcript: ['A generated caption.', nil], save_doc: nil) }
 
       it 'delegates to DocGenerationFromMedia with the given project, medium, user and attributes' do
         DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
 
         expect(DocGenerationFromMedia).to have_received(:new).with(project:, medium:, user:, attributes:)
         expect(generation).to have_received(:generate_transcript)
-        expect(generation).to have_received(:save_doc).with('A generated transcript.')
+        expect(generation).to have_received(:save_doc).with('A generated caption.', nil)
       end
 
       it 'creates a MediaTranscriptionTask and marks it succeeded' do
@@ -43,6 +44,12 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         task = MediaTranscriptionTask.find_by(medium: medium)
         expect(task).to be_present
         expect(task).to be_succeeded
+      end
+
+      it 'saves the doc with the transcript and segments' do
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+
+        expect(generation).to have_received(:save_doc).with('A generated transcript.', segments)
       end
 
       context 'when generating the transcript fails' do

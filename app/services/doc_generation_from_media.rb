@@ -14,7 +14,7 @@ class DocGenerationFromMedia
     end
   end
 
-  def save_doc(body)
+  def save_doc(body, segments = nil)
     hdoc = Doc.hdoc_normalize!(
       {
         **@attributes,
@@ -28,6 +28,7 @@ class DocGenerationFromMedia
 
     doc = Doc.store_hdoc!(hdoc)
     @project.add_doc!(doc)
+    MediaTranscript.create!(doc:, segments:) if segments
     doc
   end
 
@@ -35,11 +36,13 @@ class DocGenerationFromMedia
 
   def generate_text(file_path)
     if @medium.image?
-      ImageCaptionService.new(file_path).call
+      [ImageCaptionService.new(file_path).call, nil]
     elsif @medium.audio?
-      AudioTranscriptionService.new(file_path).call
+      result = AudioTranscriptionService.new(file_path).call
+      [result[:text], result[:segments]]
     elsif @medium.video?
-      VideoTranscriptionService.new(file_path).call
+      result = VideoTranscriptionService.new(file_path).call
+      [result[:text], result[:segments]]
     else
       raise ArgumentError, "Unsupported media type: #{@medium.media_type.inspect}"
     end

@@ -39,14 +39,14 @@ RSpec.describe DocGenerationFromMedia do
         allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
       end
 
-      it 'creates a doc with the generated caption, linked to the medium and the project' do
+      it 'creates a doc with the generated caption, linked to the medium and the project, and no transcript' do
         service = described_class.new(
           project: project,
           medium: image_medium,
           user: user,
           attributes: { source: nil, sourcedb: 'Example', sourceid: '001' }
         )
-        doc = service.save_doc(service.generate_transcript)
+        doc = service.save_doc(*service.generate_transcript)
 
         expect(doc).to be_persisted
         expect(doc.body).to eq('A generated caption.')
@@ -54,12 +54,17 @@ RSpec.describe DocGenerationFromMedia do
         expect(doc.sourceid).to eq('001')
         expect(doc.medium).to eq(image_medium)
         expect(project.docs).to include(doc)
+        expect(doc.media_transcript).to be_nil
       end
     end
 
     context 'with a valid audio medium' do
+      let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
+
       before do
-        allow(AudioTranscriptionService).to receive(:new).and_return(instance_double(AudioTranscriptionService, call: 'A generated transcript.'))
+        allow(AudioTranscriptionService).to receive(:new).and_return(
+          instance_double(AudioTranscriptionService, call: { text: 'A generated transcript.', segments: segments })
+        )
       end
 
       it 'creates a doc with the generated transcript, linked to the medium and the project' do
@@ -69,7 +74,7 @@ RSpec.describe DocGenerationFromMedia do
           user: user,
           attributes: { source: nil, sourcedb: 'Example', sourceid: '002' }
         )
-        doc = service.save_doc(service.generate_transcript)
+        doc = service.save_doc(*service.generate_transcript)
 
         expect(doc).to be_persisted
         expect(doc.body).to eq('A generated transcript.')
@@ -78,11 +83,29 @@ RSpec.describe DocGenerationFromMedia do
         expect(doc.medium).to eq(audio_medium)
         expect(project.docs).to include(doc)
       end
+
+      it 'creates a MediaTranscript with the returned segments' do
+        service = described_class.new(
+          project: project,
+          medium: audio_medium,
+          user: user,
+          attributes: { source: nil, sourcedb: 'Example', sourceid: '002' }
+        )
+        doc = service.save_doc(*service.generate_transcript)
+
+        expect(doc.media_transcript).to be_present
+        expect(doc.media_transcript.medium).to eq(audio_medium)
+        expect(doc.media_transcript.segments).to eq(segments)
+      end
     end
 
     context 'with a valid video medium' do
+      let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
+
       before do
-        allow(VideoTranscriptionService).to receive(:new).and_return(instance_double(VideoTranscriptionService, call: 'A generated transcript.'))
+        allow(VideoTranscriptionService).to receive(:new).and_return(
+          instance_double(VideoTranscriptionService, call: { text: 'A generated transcript.', segments: segments })
+        )
       end
 
       it 'creates a doc with the transcript generated from the video' do
@@ -92,7 +115,7 @@ RSpec.describe DocGenerationFromMedia do
           user: user,
           attributes: { source: nil, sourcedb: 'Example', sourceid: '003' }
         )
-        doc = service.save_doc(service.generate_transcript)
+        doc = service.save_doc(*service.generate_transcript)
 
         expect(doc).to be_persisted
         expect(doc.body).to eq('A generated transcript.')
@@ -100,6 +123,20 @@ RSpec.describe DocGenerationFromMedia do
         expect(doc.sourceid).to eq('003')
         expect(doc.medium).to eq(video_medium)
         expect(project.docs).to include(doc)
+      end
+
+      it 'creates a MediaTranscript with the returned segments' do
+        service = described_class.new(
+          project: project,
+          medium: video_medium,
+          user: user,
+          attributes: { source: nil, sourcedb: 'Example', sourceid: '003' }
+        )
+        doc = service.save_doc(*service.generate_transcript)
+
+        expect(doc.media_transcript).to be_present
+        expect(doc.media_transcript.medium).to eq(video_medium)
+        expect(doc.media_transcript.segments).to eq(segments)
       end
     end
 
