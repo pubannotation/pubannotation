@@ -48,8 +48,13 @@ class AudioTranscriptionService
   end
 
   # Whisper pads the last segment of a chunk out to its 30s processing window rather than
-  # the audio's actual end, so offsets are clamped against ffprobe's duration. A failed probe
-  # just skips clamping instead of failing the whole transcription.
+  # the audio's actual end, so offsets are clamped against ffprobe's duration. A failed probe,
+  # or one that can't determine the duration (ffprobe exits successfully but prints "N/A" for
+  # some formats), just skips clamping instead of failing the whole transcription. `Float()` is
+  # used instead of `String#to_f` because `to_f` silently accepts garbage like "N/A" or "5abc"
+  # as 0.0/5.0 instead of raising, and 0 is truthy in Ruby so a lenient parse wouldn't even be
+  # caught by a nil check; `finite?` additionally guards against "Infinity"/"NaN", which parse
+  # fine but would otherwise raise FloatDomainError when rounded.
   def audio_duration_ms
     stdout, _stderr, status = Open3.capture3(
       'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
@@ -57,6 +62,11 @@ class AudioTranscriptionService
     )
     return nil unless status.success?
 
-    (stdout.strip.to_f * 1000).round
+    duration_seconds = Float(stdout.strip)
+    return nil unless duration_seconds.finite? && duration_seconds.positive?
+
+    (duration_seconds * 1000).round
+  rescue ArgumentError, TypeError
+    nil
   end
 end

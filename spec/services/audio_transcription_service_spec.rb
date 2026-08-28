@@ -104,6 +104,57 @@ RSpec.describe AudioTranscriptionService do
       end
     end
 
+    context 'when ffprobe succeeds but reports the duration as N/A' do
+      before do
+        success_status = instance_double(Process::Status, success?: true)
+        stdout = "[00:00:00.000 --> 00:00:30.000]   Hello world.\n"
+        allow(Open3).to receive(:capture3)
+          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
+          .and_return([stdout, '', success_status])
+        allow(Open3).to receive(:capture3).with(*ffprobe_args).and_return(["N/A\n", '', success_status])
+      end
+
+      it 'leaves the raw offsets unclamped instead of collapsing them to 0' do
+        result = described_class.new(audio_path).call
+
+        expect(result[:segments]).to eq([{ 'text' => 'Hello world.', 'start_ms' => 0, 'end_ms' => 30_000 }])
+      end
+    end
+
+    context 'when ffprobe succeeds but reports a non-numeric duration' do
+      before do
+        success_status = instance_double(Process::Status, success?: true)
+        stdout = "[00:00:00.000 --> 00:00:30.000]   Hello world.\n"
+        allow(Open3).to receive(:capture3)
+          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
+          .and_return([stdout, '', success_status])
+        allow(Open3).to receive(:capture3).with(*ffprobe_args).and_return(["5abc\n", '', success_status])
+      end
+
+      it 'leaves the raw offsets unclamped instead of misreading a partial number' do
+        result = described_class.new(audio_path).call
+
+        expect(result[:segments]).to eq([{ 'text' => 'Hello world.', 'start_ms' => 0, 'end_ms' => 30_000 }])
+      end
+    end
+
+    context 'when ffprobe succeeds but reports the duration as Infinity' do
+      before do
+        success_status = instance_double(Process::Status, success?: true)
+        stdout = "[00:00:00.000 --> 00:00:30.000]   Hello world.\n"
+        allow(Open3).to receive(:capture3)
+          .with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
+          .and_return([stdout, '', success_status])
+        allow(Open3).to receive(:capture3).with(*ffprobe_args).and_return(["Infinity\n", '', success_status])
+      end
+
+      it 'leaves the raw offsets unclamped instead of raising' do
+        result = described_class.new(audio_path).call
+
+        expect(result[:segments]).to eq([{ 'text' => 'Hello world.', 'start_ms' => 0, 'end_ms' => 30_000 }])
+      end
+    end
+
     context 'when WHISPER_CLI_PATH overrides the default binary' do
       before do
         ENV['WHISPER_CLI_PATH'] = '/opt/homebrew/bin/whisper-cli'
