@@ -1,10 +1,10 @@
-# Tracks a single attempt to generate a Doc from one Medium (image caption, audio/video
-# transcription). `status` is the machine-readable outcome of that attempt
-# (pending/processing/succeeded/no_speech/failed), independent of whether the attempt produced
-# a persisted Doc/MediaTranscript. This is what lets "not yet processed" and "processing
-# failed" be told apart, since neither one leaves any other record behind. A Medium may have
-# more than one task over time (e.g. a retry after a failure); there is no uniqueness
-# constraint on medium_id.
+# Tracks a single attempt to generate the text (image caption, or audio/video transcript) for
+# one Medium. It does not itself create or persist a Doc — DocGenerationFromMediaJob builds
+# the Doc separately, from the text this attempt produces, so `status` reflects only whether
+# generating that text succeeded, independent of whether a Doc/MediaTranscript ended up
+# persisted. This is what lets "not yet processed" and "processing failed" be told apart,
+# since neither one leaves any other record behind. A Medium may have more than one task over
+# time (e.g. a retry after a failure); there is no uniqueness constraint on medium_id.
 #
 # This is a dedicated resource rather than an extension of Job because Job is a generic,
 # cross-media background-job tracker: it belongs to an organization/Project (not a Medium),
