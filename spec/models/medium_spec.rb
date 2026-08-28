@@ -70,20 +70,6 @@ RSpec.describe Medium, type: :model do
     end
   end
 
-  describe '#transcribable?' do
-    it 'is true for audio' do
-      expect(build(:medium, media_type: :audio, content_type: 'audio/mpeg')).to be_transcribable
-    end
-
-    it 'is true for video' do
-      expect(build(:medium, media_type: :video, content_type: 'video/mp4')).to be_transcribable
-    end
-
-    it 'is false for image' do
-      expect(build(:medium, media_type: :image, content_type: 'image/png')).not_to be_transcribable
-    end
-  end
-
   describe 'ActiveStorage' do
     it 'has one attached file' do
       expect(Medium.new).to respond_to(:file)

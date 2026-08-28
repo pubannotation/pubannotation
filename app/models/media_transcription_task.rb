@@ -1,5 +1,5 @@
-# Tracks a single attempt to transcribe one Medium (audio/video only; images are captioned,
-# not transcribed, and have no task). `status` is the machine-readable outcome of that attempt
+# Tracks a single attempt to generate a Doc from one Medium (image caption, audio/video
+# transcription). `status` is the machine-readable outcome of that attempt
 # (pending/processing/succeeded/no_speech/failed), independent of whether the attempt produced
 # a persisted Doc/MediaTranscript. This is what lets "not yet processed" and "processing
 # failed" be told apart, since neither one leaves any other record behind. A Medium may have
@@ -24,7 +24,6 @@ class MediaTranscriptionTask < ApplicationRecord
   belongs_to :job, optional: true
 
   validates :status, presence: true
-  validate :medium_must_be_audio_or_video
 
   enum :status, {
     pending: 'pending',
@@ -45,13 +44,5 @@ class MediaTranscriptionTask < ApplicationRecord
   rescue StandardError
     failed! unless succeeded?
     raise
-  end
-
-  private
-
-  def medium_must_be_audio_or_video
-    return unless medium
-
-    errors.add(:medium, 'must be audio or video') unless medium.transcribable?
   end
 end

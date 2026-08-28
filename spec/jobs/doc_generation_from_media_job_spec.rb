@@ -25,10 +25,12 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         expect(generation).to have_received(:save_doc).with('A generated transcript.')
       end
 
-      it 'does not create a MediaTranscriptionTask' do
-        expect {
-          DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
-        }.not_to change(MediaTranscriptionTask, :count)
+      it 'creates a MediaTranscriptionTask and marks it succeeded' do
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+
+        task = MediaTranscriptionTask.find_by(medium: medium)
+        expect(task).to be_present
+        expect(task).to be_succeeded
       end
     end
 

@@ -28,10 +28,10 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       expect(build(:media_transcription_task, status: nil)).not_to be_valid
     end
 
-    it 'rejects a medium whose media_type is image' do
+    it 'accepts an image medium' do
       medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
 
-      expect(build(:media_transcription_task, medium: medium)).not_to be_valid
+      expect(build(:media_transcription_task, medium: medium)).to be_valid
     end
 
     it 'accepts an audio medium' do
