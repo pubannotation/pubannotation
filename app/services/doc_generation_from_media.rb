@@ -28,7 +28,7 @@ class DocGenerationFromMedia
 
     doc = Doc.store_hdoc!(hdoc)
     @project.add_doc!(doc)
-    MediaTranscript.create!(doc:, segments:) if segments
+    MediaTranscript.create!(doc:, segments:) if segments.present?
     doc
   end
 

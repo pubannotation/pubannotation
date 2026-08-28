@@ -140,6 +140,21 @@ RSpec.describe DocGenerationFromMedia do
       end
     end
 
+    context 'when save_doc is called directly with an empty segments array' do
+      it 'does not create a MediaTranscript' do
+        service = described_class.new(
+          project: project,
+          medium: audio_medium,
+          user: user,
+          attributes: { source: nil, sourcedb: 'Example', sourceid: '005' }
+        )
+        doc = service.save_doc('some transcribed text', [])
+
+        expect(doc).to be_persisted
+        expect(doc.media_transcript).to be_nil
+      end
+    end
+
     context 'when the medium has an unsupported media type' do
       it 'raises without creating a doc' do
         medium = image_medium
