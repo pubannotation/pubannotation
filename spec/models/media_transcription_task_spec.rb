@@ -118,7 +118,7 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       expect(task).to be_failed
     end
 
-    it 'does not overwrite an already-succeeded status if failed! itself raises' do
+    it 'does not overwrite an already-succeeded status when the block raises after setting succeeded' do
       task = create(:media_transcription_task)
 
       expect {
@@ -131,7 +131,7 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       expect(task.reload).to be_succeeded
     end
 
-    it 'does not overwrite an already-no_speech status if failed! itself raises' do
+    it 'does not overwrite an already-no_speech status when the block raises after setting no_speech' do
       task = create(:media_transcription_task)
 
       expect {
