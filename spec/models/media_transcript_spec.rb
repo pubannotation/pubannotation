@@ -93,6 +93,62 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#speech_segments and #speech?' do
+    it 'includes all segments and is speech when every segment is spoken text' do
+      media_transcript = build(:media_transcript, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+      ])
+
+      expect(media_transcript.speech_segments).to eq(media_transcript.segments)
+      expect(media_transcript).to be_speech
+    end
+
+    it 'excludes non-speech segments and is not speech when none remain' do
+      media_transcript = build(:media_transcript, segments: [
+        { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 }
+      ])
+
+      expect(media_transcript.speech_segments).to eq([])
+      expect(media_transcript).not_to be_speech
+    end
+
+    it 'is speech when at least one segment is spoken text alongside non-speech segments' do
+      media_transcript = build(:media_transcript, segments: [
+        { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
+        { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
+      ])
+
+      expect(media_transcript.speech_segments).to eq([
+        { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
+      ])
+      expect(media_transcript).to be_speech
+    end
+
+    it 'is not speech for an empty segments array' do
+      media_transcript = build(:media_transcript, segments: [])
+
+      expect(media_transcript).not_to be_speech
+    end
+  end
+
+  describe '#body' do
+    it 'joins the text of only the speech segments' do
+      media_transcript = build(:media_transcript, segments: [
+        { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
+        { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
+      ])
+
+      expect(media_transcript.body).to eq('Welcome to the conference.')
+    end
+
+    it 'is blank when there are no speech segments' do
+      media_transcript = build(:media_transcript, segments: [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 100 }])
+
+      expect(media_transcript.body).to eq('')
+    end
+  end
+
   describe 'segments' do
     it 'stores an array of timed text segments' do
       media_transcript = create(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 }])
