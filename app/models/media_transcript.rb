@@ -1,27 +1,51 @@
 class MediaTranscript < ApplicationRecord
-  belongs_to :doc
-
-  delegate :medium, to: :doc, allow_nil: true
+  # `medium` is stored directly (not delegated through doc/media_transcription_task) because
+  # both of those associations are deliberately severable without destroying this record — a
+  # Doc never exists at all for a no-speech result, and a MediaTranscriptionTask can be cleaned
+  # up independently (see the has_one :media_transcript, dependent: :nullify on each). medium_id
+  # is the one link this record can't survive losing, so it's the only one that cascades.
+  belongs_to :medium
+  belongs_to :media_transcription_task, optional: true
+  belongs_to :doc, optional: true
 
   # `segments` is an array of timed transcript segments. Each element is a hash with string keys:
-  #   'text'     - String, the transcribed text for the segment (may be blank).
+  #   'text'     - String, the transcribed text for the segment (may be blank, or a non-speech
+  #                label such as "(music)" — see NonSpeechTextMatcher).
   #   'start_ms' - Integer >= 0, offset in milliseconds from the start of the media.
   #   'end_ms'   - Integer >= 0, offset in milliseconds from the start of the media (>= start_ms).
   # The interval is [start_ms, end_ms) (start inclusive, end exclusive). Segments are ordered
   # chronologically and must not overlap: each segment's start_ms must be >= the previous
   # segment's end_ms. Gaps are allowed (e.g. silence between segments), so consecutive segments
   # are not required to touch exactly.
-  # An empty array means no speech was detected in the media.
-  validates :doc_id, uniqueness: true
-  validate :doc_has_medium
+  # An empty array, or an array containing only non-speech segments, means no speech was
+  # detected in the media — see #speech?.
+  validates :media_transcription_task_id, uniqueness: true, allow_nil: true
+  validates :doc_id, uniqueness: true, allow_nil: true
   validate :medium_not_image
   validate :segments_are_valid
 
-  private
+  # The subset of `segments` that are actual speech, excluding Whisper's non-speech labels
+  # (e.g. "(music)", "(applause)"). Non-speech segments are kept in `segments` rather than
+  # discarded, since the raw transcript may still be useful, but they don't count toward
+  # whether the medium contains speech or what the generated Doc's body should be.
+  # Guards against segments not matching the documented shape (e.g. nil, or a malformed
+  # element) rather than raising, since this can be called before validation runs.
+  def speech_segments
+    return [] unless segments.is_a?(Array)
 
-  def doc_has_medium
-    errors.add(:doc, 'must have an associated medium') if doc && medium.nil?
+    segments.select { |segment| valid_segment?(segment) }
+            .reject { |segment| NonSpeechTextMatcher.match?(segment['text']) }
   end
+
+  def speech?
+    speech_segments.any?
+  end
+
+  def body
+    speech_segments.pluck('text').join(' ')
+  end
+
+  private
 
   def medium_not_image
     errors.add(:medium, 'must not be an image') if medium&.image?
