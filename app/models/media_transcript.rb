@@ -20,6 +20,7 @@ class MediaTranscript < ApplicationRecord
   # An empty array, or an array containing only non-speech segments, means no speech was
   # detected in the media — see #speech?.
   validates :media_transcription_task_id, uniqueness: true, allow_nil: true
+  validates :doc_id, uniqueness: true, allow_nil: true
   validate :medium_not_image
   validate :segments_are_valid
 

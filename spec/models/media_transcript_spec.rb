@@ -34,6 +34,20 @@ RSpec.describe MediaTranscript, type: :model do
       expect(build(:media_transcript, medium: medium, media_transcription_task: nil)).to be_valid
     end
 
+    it 'requires doc_id to be unique when present' do
+      doc = create(:doc)
+      create(:media_transcript, doc: doc, media_transcription_task: nil)
+
+      expect(build(:media_transcript, doc: doc, media_transcription_task: nil)).not_to be_valid
+    end
+
+    it 'allows multiple records with no doc' do
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      create(:media_transcript, medium: medium, doc: nil, media_transcription_task: nil)
+
+      expect(build(:media_transcript, medium: medium, doc: nil, media_transcription_task: nil)).to be_valid
+    end
+
     it 'rejects a medium whose media_type is image' do
       medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
 
