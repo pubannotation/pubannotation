@@ -13,7 +13,7 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'does not require a media_transcription_task' do
-      expect(build(:media_transcript, media_transcription_task: nil)).to be_valid
+      expect(build(:media_transcript)).to be_valid
     end
 
     it 'does not require a doc' do
@@ -29,36 +29,36 @@ RSpec.describe MediaTranscript, type: :model do
 
     it 'allows multiple records with no media_transcription_task' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      create(:media_transcript, medium: medium, media_transcription_task: nil)
+      create(:media_transcript, medium: medium)
 
-      expect(build(:media_transcript, medium: medium, media_transcription_task: nil)).to be_valid
+      expect(build(:media_transcript, medium: medium)).to be_valid
     end
 
     it 'requires doc_id to be unique when present' do
       doc = create(:doc)
-      create(:media_transcript, doc: doc, media_transcription_task: nil)
+      create(:media_transcript, doc: doc)
 
-      expect(build(:media_transcript, doc: doc, media_transcription_task: nil)).not_to be_valid
+      expect(build(:media_transcript, doc: doc)).not_to be_valid
     end
 
     it 'allows multiple records with no doc' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      create(:media_transcript, medium: medium, doc: nil, media_transcription_task: nil)
+      create(:media_transcript, medium: medium, doc: nil)
 
-      expect(build(:media_transcript, medium: medium, doc: nil, media_transcription_task: nil)).to be_valid
+      expect(build(:media_transcript, medium: medium, doc: nil)).to be_valid
     end
 
     it 'rejects a medium whose media_type is image' do
       medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
 
-      expect(build(:media_transcript, medium: medium, media_transcription_task: nil)).not_to be_valid
+      expect(build(:media_transcript, medium: medium)).not_to be_valid
     end
   end
 
   describe 'associations' do
     it 'belongs to a medium' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      media_transcript = create(:media_transcript, medium: medium, media_transcription_task: nil)
+      media_transcript = create(:media_transcript, medium: medium)
 
       expect(media_transcript.medium).to eq(medium)
     end
@@ -81,7 +81,7 @@ RSpec.describe MediaTranscript, type: :model do
   describe 'dependent behavior' do
     it 'is destroyed when its medium is destroyed' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      media_transcript = create(:media_transcript, medium: medium, media_transcription_task: nil)
+      media_transcript = create(:media_transcript, medium: medium)
 
       medium.destroy
 
