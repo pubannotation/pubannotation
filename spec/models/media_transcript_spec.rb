@@ -144,6 +144,30 @@ RSpec.describe MediaTranscript, type: :model do
 
       expect(media_transcript).not_to be_speech
     end
+
+    it 'does not raise and returns no speech segments when segments is nil' do
+      media_transcript = build(:media_transcript, segments: nil)
+
+      expect(media_transcript.speech_segments).to eq([])
+      expect(media_transcript).not_to be_speech
+    end
+
+    it 'does not raise and returns no speech segments when segments is not an array' do
+      media_transcript = build(:media_transcript, segments: { 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 })
+
+      expect(media_transcript.speech_segments).to eq([])
+      expect(media_transcript).not_to be_speech
+    end
+
+    it 'ignores malformed elements within segments instead of raising' do
+      media_transcript = build(:media_transcript, segments: [
+        'not a hash',
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 }
+      ])
+
+      expect(media_transcript.speech_segments).to eq([{ 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 }])
+      expect(media_transcript).to be_speech
+    end
   end
 
   describe '#body' do
@@ -158,6 +182,12 @@ RSpec.describe MediaTranscript, type: :model do
 
     it 'is blank when there are no speech segments' do
       media_transcript = build(:media_transcript, segments: [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 100 }])
+
+      expect(media_transcript.body).to eq('')
+    end
+
+    it 'does not raise and is blank when segments is nil' do
+      media_transcript = build(:media_transcript, segments: nil)
 
       expect(media_transcript.body).to eq('')
     end
