@@ -82,5 +82,11 @@ RSpec.describe Medium, type: :model do
       create(:doc, medium: medium)
       expect { medium.destroy }.to change(Doc, :count).by(-1)
     end
+
+    it 'destroys associated media_transcription_tasks when medium is deleted' do
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      create(:media_transcription_task, medium: medium)
+      expect { medium.destroy }.to change(MediaTranscriptionTask, :count).by(-1)
+    end
   end
 end

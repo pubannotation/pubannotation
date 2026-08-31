@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_084502) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_075541) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -303,10 +303,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_084502) do
 
   create_table "media_transcripts", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "doc_id", null: false
+    t.bigint "doc_id"
+    t.bigint "media_transcription_task_id"
+    t.bigint "medium_id", null: false
     t.json "segments", default: [], null: false
     t.datetime "updated_at", null: false
     t.index ["doc_id"], name: "index_media_transcripts_on_doc_id", unique: true
+    t.index ["media_transcription_task_id"], name: "index_media_transcripts_on_media_transcription_task_id", unique: true
+    t.index ["medium_id"], name: "index_media_transcripts_on_medium_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -538,7 +542,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_084502) do
   add_foreign_key "media", "users"
   add_foreign_key "media_transcription_tasks", "jobs", on_delete: :cascade
   add_foreign_key "media_transcription_tasks", "media", on_delete: :cascade
-  add_foreign_key "media_transcripts", "docs", on_delete: :cascade
+  add_foreign_key "media_transcripts", "docs", on_delete: :nullify
+  add_foreign_key "media_transcripts", "media", on_delete: :cascade
+  add_foreign_key "media_transcripts", "media_transcription_tasks", on_delete: :nullify
   add_foreign_key "paragraph_attrivutes", "attrivutes"
   add_foreign_key "paragraph_attrivutes", "divisions"
   add_foreign_key "paragraph_denotations", "denotations"

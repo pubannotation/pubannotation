@@ -1,7 +1,12 @@
 class MediaTranscript < ApplicationRecord
-  belongs_to :doc
-
-  delegate :medium, to: :doc, allow_nil: true
+  # `medium` is stored directly (not delegated through doc/media_transcription_task) because
+  # both of those associations are deliberately severable without destroying this record — a
+  # Doc never exists at all for a no-speech result, and a MediaTranscriptionTask can be cleaned
+  # up independently (see the has_one :media_transcript, dependent: :nullify on each). medium_id
+  # is the one link this record can't survive losing, so it's the only one that cascades.
+  belongs_to :medium
+  belongs_to :media_transcription_task, optional: true
+  belongs_to :doc, optional: true
 
   # `segments` is an array of timed transcript segments. Each element is a hash with string keys:
   #   'text'     - String, the transcribed text for the segment (may be blank).
@@ -12,16 +17,11 @@ class MediaTranscript < ApplicationRecord
   # segment's end_ms. Gaps are allowed (e.g. silence between segments), so consecutive segments
   # are not required to touch exactly.
   # An empty array means no speech was detected in the media.
-  validates :doc_id, uniqueness: true
-  validate :doc_has_medium
+  validates :media_transcription_task_id, uniqueness: true, allow_nil: true
   validate :medium_not_image
   validate :segments_are_valid
 
   private
-
-  def doc_has_medium
-    errors.add(:doc, 'must have an associated medium') if doc && medium.nil?
-  end
 
   def medium_not_image
     errors.add(:medium, 'must not be an image') if medium&.image?

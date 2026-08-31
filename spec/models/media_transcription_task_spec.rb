@@ -68,6 +68,15 @@ RSpec.describe MediaTranscriptionTask, type: :model do
 
       expect(build(:media_transcription_task, medium: medium)).to be_valid
     end
+
+    it 'does not destroy its media_transcript when destroyed, but nullifies the reference' do
+      task = create(:media_transcription_task)
+      media_transcript = create(:media_transcript, media_transcription_task: task, medium: task.medium)
+
+      task.destroy
+
+      expect(media_transcript.reload.media_transcription_task_id).to be_nil
+    end
   end
 
   describe '#process' do

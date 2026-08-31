@@ -22,6 +22,7 @@
 class MediaTranscriptionTask < ApplicationRecord
   belongs_to :medium
   belongs_to :job, optional: true
+  has_one :media_transcript, dependent: :nullify
 
   validates :status, presence: true
 

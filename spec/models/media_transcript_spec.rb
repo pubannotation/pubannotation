@@ -8,69 +8,88 @@ RSpec.describe MediaTranscript, type: :model do
       expect(build(:media_transcript)).to be_valid
     end
 
-    it 'requires a doc' do
-      expect(build(:media_transcript, doc: nil)).not_to be_valid
+    it 'requires a medium' do
+      expect(build(:media_transcript, medium: nil)).not_to be_valid
     end
 
-    it 'requires doc_id to be unique' do
+    it 'does not require a media_transcription_task' do
+      expect(build(:media_transcript, media_transcription_task: nil)).to be_valid
+    end
+
+    it 'does not require a doc' do
+      expect(build(:media_transcript, doc: nil)).to be_valid
+    end
+
+    it 'requires media_transcription_task_id to be unique when present' do
+      task = create(:media_transcription_task)
+      create(:media_transcript, media_transcription_task: task, medium: task.medium)
+
+      expect(build(:media_transcript, media_transcription_task: task, medium: task.medium)).not_to be_valid
+    end
+
+    it 'allows multiple records with no media_transcription_task' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      doc = create(:doc, medium: medium)
-      create(:media_transcript, doc: doc)
+      create(:media_transcript, medium: medium, media_transcription_task: nil)
 
-      expect(build(:media_transcript, doc: doc)).not_to be_valid
+      expect(build(:media_transcript, medium: medium, media_transcription_task: nil)).to be_valid
     end
 
-    it 'rejects a doc whose medium is an image' do
+    it 'rejects a medium whose media_type is image' do
       medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
-      doc = create(:doc, medium: medium)
 
-      expect(build(:media_transcript, doc: doc)).not_to be_valid
-    end
-
-    it 'rejects a doc with no medium reference' do
-      doc = create(:doc)
-
-      expect(build(:media_transcript, doc: doc)).not_to be_valid
+      expect(build(:media_transcript, medium: medium, media_transcription_task: nil)).not_to be_valid
     end
   end
 
   describe 'associations' do
-    it 'derives its medium from the doc' do
+    it 'belongs to a medium' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      doc = create(:doc, medium: medium)
-      media_transcript = create(:media_transcript, doc: doc)
+      media_transcript = create(:media_transcript, medium: medium, media_transcription_task: nil)
 
       expect(media_transcript.medium).to eq(medium)
     end
 
-    it 'belongs to a doc' do
-      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      doc = create(:doc, medium: medium)
+    it 'optionally belongs to a media_transcription_task' do
+      task = create(:media_transcription_task)
+      media_transcript = create(:media_transcript, media_transcription_task: task, medium: task.medium)
+
+      expect(media_transcript.media_transcription_task).to eq(task)
+    end
+
+    it 'optionally belongs to a doc' do
+      doc = create(:doc)
       media_transcript = create(:media_transcript, doc: doc)
 
       expect(media_transcript.doc).to eq(doc)
     end
   end
 
-  describe 'dependent destroy' do
-    it 'is destroyed when its doc is destroyed' do
-      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      doc = create(:doc, medium: medium)
-      media_transcript = create(:media_transcript, doc: doc)
-
-      doc.destroy
-
-      expect(MediaTranscript.exists?(media_transcript.id)).to be false
-    end
-
+  describe 'dependent behavior' do
     it 'is destroyed when its medium is destroyed' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      doc = create(:doc, medium: medium)
-      media_transcript = create(:media_transcript, doc: doc)
+      media_transcript = create(:media_transcript, medium: medium, media_transcription_task: nil)
 
       medium.destroy
 
       expect(MediaTranscript.exists?(media_transcript.id)).to be false
+    end
+
+    it 'is not destroyed when its media_transcription_task is destroyed, but the reference is nullified' do
+      task = create(:media_transcription_task)
+      media_transcript = create(:media_transcript, media_transcription_task: task, medium: task.medium)
+
+      task.destroy
+
+      expect(media_transcript.reload.media_transcription_task_id).to be_nil
+    end
+
+    it 'is not destroyed when its doc is destroyed, but the reference is nullified' do
+      doc = create(:doc)
+      media_transcript = create(:media_transcript, doc: doc)
+
+      doc.destroy
+
+      expect(media_transcript.reload.doc_id).to be_nil
     end
   end
 
@@ -83,9 +102,8 @@ RSpec.describe MediaTranscript, type: :model do
 
     it 'defaults to an empty array' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-      doc = create(:doc, medium: medium)
 
-      media_transcript = MediaTranscript.new(doc: doc)
+      media_transcript = MediaTranscript.new(medium: medium)
 
       expect(media_transcript.segments).to eq([])
     end
