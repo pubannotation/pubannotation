@@ -35,11 +35,12 @@ RSpec.describe AudioTranscriptionService do
         allow(AudioSilenceDetector).to receive(:new).with(audio_path).and_return(instance_double(AudioSilenceDetector, silent?: true))
       end
 
-      it 'raises without invoking whisper-cli' do
+      it 'returns an empty transcript without invoking whisper-cli' do
         expect(Open3).not_to receive(:capture3).with('whisper-cli', '-m', model_path, '-f', audio_path, '-np')
-        expect {
-          described_class.new(audio_path).call
-        }.to raise_error(ArgumentError, /silent/)
+
+        result = described_class.new(audio_path).call
+
+        expect(result).to eq({ text: '', segments: [] })
       end
     end
 

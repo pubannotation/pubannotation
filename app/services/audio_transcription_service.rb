@@ -7,8 +7,11 @@ class AudioTranscriptionService
     @audio_path = audio_path
   end
 
+  # Silence is a normal (no-speech) outcome, not a failure, so it's reported as an empty
+  # transcript rather than raised — that lets the caller's usual segments-based no_speech
+  # classification handle it instead of misclassifying it as a processing failure.
   def call
-    raise ArgumentError, "Audio file appears to be silent." if AudioSilenceDetector.new(@audio_path).silent?
+    return { text: '', segments: [] } if AudioSilenceDetector.new(@audio_path).silent?
 
     cli_path   = ENV.fetch('WHISPER_CLI_PATH', 'whisper-cli')
     model_path = File.expand_path(ENV.fetch('WHISPER_MODEL_PATH'))
