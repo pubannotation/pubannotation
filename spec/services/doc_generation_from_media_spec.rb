@@ -92,6 +92,28 @@ RSpec.describe DocGenerationFromMedia do
       end
     end
 
+    context 'when the transcript mixes speech and non-speech segments' do
+      let(:segments) do
+        [
+          { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 },
+          { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
+        ]
+      end
+
+      it 'builds the doc body from speech segments only, while keeping all segments on the MediaTranscript' do
+        service = described_class.new(
+          project: project,
+          medium: audio_medium,
+          user: user,
+          attributes: { source: nil, sourcedb: 'Example', sourceid: '006' }
+        )
+        doc = service.save_doc('(music) Welcome to the conference.', segments)
+
+        expect(doc.body).to eq('Welcome to the conference.')
+        expect(doc.media_transcript.segments).to eq(segments)
+      end
+    end
+
     context 'with a valid video medium' do
       let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
       let(:service) do
@@ -138,6 +160,27 @@ RSpec.describe DocGenerationFromMedia do
 
         expect(doc).to be_persisted
         expect(doc.media_transcript).to be_nil
+      end
+    end
+
+    context 'when save_transcript is called for a no_speech result' do
+      it 'creates a MediaTranscript with the given segments and no doc' do
+        segments = [{ 'text' => '(applause)', 'start_ms' => 0, 'end_ms' => 2000 }]
+        service = described_class.new(
+          project: project,
+          medium: audio_medium,
+          user: user,
+          attributes: { source: nil, sourcedb: 'Example', sourceid: '007' }
+        )
+
+        expect {
+          service.save_transcript(segments)
+        }.to change(MediaTranscript, :count).by(1).and change(Doc, :count).by(0)
+
+        media_transcript = MediaTranscript.last
+        expect(media_transcript.medium).to eq(audio_medium)
+        expect(media_transcript.segments).to eq(segments)
+        expect(media_transcript.doc).to be_nil
       end
     end
 

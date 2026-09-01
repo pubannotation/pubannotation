@@ -85,13 +85,31 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       end
 
       context 'when no segments are returned' do
-        let(:generation) { instance_double(DocGenerationFromMedia, generate_transcript: ['', []], save_doc: nil) }
+        let(:generation) { instance_double(DocGenerationFromMedia, generate_transcript: ['', []], save_doc: nil, save_transcript: nil) }
 
-        it 'marks the task no_speech and does not save a doc' do
+        it 'marks the task no_speech, saves the transcript, and does not save a doc' do
           DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
 
           task = MediaTranscriptionTask.find_by(medium: medium)
           expect(task).to be_no_speech
+          expect(generation).to have_received(:save_transcript).with([], media_transcription_task: task)
+          expect(generation).not_to have_received(:save_doc)
+        end
+      end
+
+      context 'when only non-speech segments are returned' do
+        let(:non_speech_segments) { [{ 'text' => '(applause)', 'start_ms' => 0, 'end_ms' => 2000 }] }
+        let(:generation) do
+          instance_double(DocGenerationFromMedia, generate_transcript: ['(applause)', non_speech_segments], save_doc: nil,
+                                                    save_transcript: nil)
+        end
+
+        it 'marks the task no_speech, saves the transcript, and does not save a doc' do
+          DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+
+          task = MediaTranscriptionTask.find_by(medium: medium)
+          expect(task).to be_no_speech
+          expect(generation).to have_received(:save_transcript).with(non_speech_segments, media_transcription_task: task)
           expect(generation).not_to have_received(:save_doc)
         end
       end

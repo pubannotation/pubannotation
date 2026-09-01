@@ -14,12 +14,17 @@ class DocGenerationFromMedia
     end
   end
 
+  # segments is nil for media types that don't produce it (e.g. an image caption), in which case
+  # `body` is used as-is. Otherwise the Doc's body is built only from the speech segments, so
+  # non-speech labels Whisper may emit (e.g. "(music)") don't leak into the generated text.
   def save_doc(body, segments = nil, media_transcription_task: nil)
+    doc_body = segments.present? ? MediaTranscript.new(segments: segments).body : body
+
     hdoc = Doc.hdoc_normalize!(
       {
         **@attributes,
         username: @user.username,
-        body:,
+        body: doc_body,
         medium_id: @medium.id
       },
       @user,
@@ -30,6 +35,12 @@ class DocGenerationFromMedia
     @project.add_doc!(doc)
     MediaTranscript.create!(doc:, segments:, medium: @medium, media_transcription_task:) if segments.present?
     doc
+  end
+
+  # For a no_speech result: keeps the segments Whisper produced (e.g. non-speech labels, or none
+  # at all) without creating a Doc, since there's no speech worth turning into one.
+  def save_transcript(segments, media_transcription_task: nil)
+    MediaTranscript.create!(segments:, medium: @medium, media_transcription_task:)
   end
 
   private
