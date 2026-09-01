@@ -99,6 +99,29 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       expect(task).to be_no_speech
     end
 
+    it 'transitions to no_speech when the returned segments contain only non-speech labels' do
+      task = create(:media_transcription_task)
+      segments = [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 }]
+
+      result = task.process { ['(music)', segments] }
+
+      expect(result).to eq(['(music)', segments])
+      expect(task).to be_no_speech
+    end
+
+    it 'transitions to succeeded when segments mix speech and non-speech labels' do
+      task = create(:media_transcription_task)
+      segments = [
+        { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 },
+        { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
+      ]
+
+      result = task.process { ['(music) Welcome to the conference.', segments] }
+
+      expect(result).to eq(['(music) Welcome to the conference.', segments])
+      expect(task).to be_succeeded
+    end
+
     it 'transitions to succeeded when segments are nil (e.g. an image caption)' do
       task = create(:media_transcription_task)
 

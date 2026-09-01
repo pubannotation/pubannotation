@@ -39,12 +39,14 @@ class MediaTranscriptionTask < ApplicationRecord
   # manage the task's status itself. Mirrors `transaction do ... end`. The block is expected to
   # return a [body, segments] tuple, as DocGenerationFromMedia#generate_transcript does. segments
   # is nil for media types that don't produce it (e.g. an image caption) — those always succeed.
-  # An empty array means the medium does produce segments (audio/video) but none were detected,
-  # which is classified as no_speech.
+  # An array (empty, or containing only non-speech labels such as "(music)") means the medium
+  # does produce segments (audio/video) but no speech was detected in them, which is classified
+  # as no_speech. Delegates to MediaTranscript#speech? for that check rather than just looking at
+  # emptiness, since Whisper emits segments for non-speech audio events too.
   def process
     processing!
     body, segments = yield
-    no_speech_detected = segments.is_a?(Array) && segments.empty?
+    no_speech_detected = segments.is_a?(Array) && !MediaTranscript.new(segments: segments).speech?
     no_speech_detected ? no_speech! : succeeded!
     [body, segments]
   rescue StandardError
