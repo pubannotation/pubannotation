@@ -14,7 +14,7 @@ class DocGenerationFromMedia
     end
   end
 
-  def save_doc(body, segments = nil)
+  def save_doc(body, segments = nil, media_transcription_task: nil)
     hdoc = Doc.hdoc_normalize!(
       {
         **@attributes,
@@ -28,7 +28,7 @@ class DocGenerationFromMedia
 
     doc = Doc.store_hdoc!(hdoc)
     @project.add_doc!(doc)
-    MediaTranscript.create!(doc:, segments:) if segments.present?
+    MediaTranscript.create!(doc:, segments:, medium: @medium, media_transcription_task:) if segments.present?
     doc
   end
 

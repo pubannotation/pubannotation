@@ -21,9 +21,10 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       it 'delegates to DocGenerationFromMedia with the given project, medium, user and attributes' do
         DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
 
+        task = MediaTranscriptionTask.find_by(medium: medium)
         expect(DocGenerationFromMedia).to have_received(:new).with(project:, medium:, user:, attributes:)
         expect(generation).to have_received(:generate_transcript)
-        expect(generation).to have_received(:save_doc).with('A generated caption.', nil)
+        expect(generation).to have_received(:save_doc).with('A generated caption.', nil, media_transcription_task: task)
       end
 
       it 'creates a MediaTranscriptionTask and marks it succeeded' do
@@ -49,7 +50,8 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       it 'saves the doc with the transcript and segments' do
         DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
 
-        expect(generation).to have_received(:save_doc).with('A generated transcript.', segments)
+        task = MediaTranscriptionTask.find_by(medium: medium)
+        expect(generation).to have_received(:save_doc).with('A generated transcript.', segments, media_transcription_task: task)
       end
 
       context 'when generating the transcript fails' do

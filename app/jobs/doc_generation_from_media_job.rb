@@ -9,7 +9,7 @@ class DocGenerationFromMediaJob < ApplicationJob
     body, segments = task.process { service.generate_transcript }
     return if task.no_speech?
 
-    service.save_doc(body, segments)
+    service.save_doc(body, segments, media_transcription_task: task)
   end
 
   def job_name
