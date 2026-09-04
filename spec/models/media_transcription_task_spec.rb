@@ -68,15 +68,66 @@ RSpec.describe MediaTranscriptionTask, type: :model do
 
       expect(build(:media_transcription_task, medium: medium)).to be_valid
     end
+
+    it 'does not destroy its media_transcript when destroyed, but nullifies the reference' do
+      task = create(:media_transcription_task)
+      media_transcript = create(:media_transcript, media_transcription_task: task, medium: task.medium)
+
+      task.destroy
+
+      expect(media_transcript.reload.media_transcription_task_id).to be_nil
+    end
   end
 
   describe '#process' do
-    it 'transitions to processing then succeeded, and returns the block value' do
+    it 'transitions to processing then succeeded when segments are present, and returns the block value' do
+      task = create(:media_transcription_task)
+      segments = [{ 'text' => 'hi', 'start_ms' => 0, 'end_ms' => 100 }]
+
+      result = task.process { ['transcribed text', segments] }
+
+      expect(result).to eq(['transcribed text', segments])
+      expect(task).to be_succeeded
+    end
+
+    it 'transitions to no_speech when the returned segments are an empty array' do
       task = create(:media_transcription_task)
 
-      result = task.process { 'transcribed text' }
+      result = task.process { ['', []] }
 
-      expect(result).to eq('transcribed text')
+      expect(result).to eq(['', []])
+      expect(task).to be_no_speech
+    end
+
+    it 'transitions to no_speech when the returned segments contain only non-speech labels' do
+      task = create(:media_transcription_task)
+      segments = [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 }]
+
+      result = task.process { ['(music)', segments] }
+
+      expect(result).to eq(['(music)', segments])
+      expect(task).to be_no_speech
+    end
+
+    it 'transitions to succeeded when segments mix speech and non-speech labels' do
+      task = create(:media_transcription_task)
+      segments = [
+        { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 },
+        { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
+      ]
+
+      result = task.process { ['(music) Welcome to the conference.', segments] }
+
+      expect(result).to eq(['(music) Welcome to the conference.', segments])
+      expect(task).to be_succeeded
+    end
+
+    it 'transitions to succeeded when segments are nil (e.g. an image caption)' do
+      task = create(:media_transcription_task)
+
+      result = task.process { ['a caption', nil] }
+
+      expect(result).to eq(['a caption', nil])
       expect(task).to be_succeeded
     end
 
@@ -90,7 +141,7 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       expect(task).to be_failed
     end
 
-    it 'does not overwrite an already-succeeded status if failed! itself raises' do
+    it 'does not overwrite an already-succeeded status when the block raises after setting succeeded' do
       task = create(:media_transcription_task)
 
       expect {
@@ -101,6 +152,19 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       }.to raise_error(StandardError, 'boom after succeeding')
 
       expect(task.reload).to be_succeeded
+    end
+
+    it 'does not overwrite an already-no_speech status when the block raises after setting no_speech' do
+      task = create(:media_transcription_task)
+
+      expect {
+        task.process do
+          task.update!(status: 'no_speech')
+          raise StandardError, 'boom after no_speech'
+        end
+      }.to raise_error(StandardError, 'boom after no_speech')
+
+      expect(task.reload).to be_no_speech
     end
   end
 

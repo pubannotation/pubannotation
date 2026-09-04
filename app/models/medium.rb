@@ -3,6 +3,7 @@ class Medium < ApplicationRecord
 
   belongs_to :user
   has_many :docs, dependent: :destroy
+  has_many :media_transcription_tasks, dependent: :destroy
 
   enum :media_type, { image: 0, video: 1, audio: 2 }
 

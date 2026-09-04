@@ -146,7 +146,12 @@ RSpec.describe 'DocGenerationsController', type: :request do
           content_type: 'video/mp4'
         )
 
-        allow(VideoTranscriptionService).to receive(:new).and_return(instance_double(VideoTranscriptionService, call: 'A generated transcript.'))
+        allow(VideoTranscriptionService).to receive(:new).and_return(
+          instance_double(VideoTranscriptionService, call: {
+            text: 'A generated transcript.',
+            segments: [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000 }]
+          })
+        )
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),
