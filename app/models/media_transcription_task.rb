@@ -35,15 +35,18 @@ class MediaTranscriptionTask < ApplicationRecord
 
   # Wraps a transcription attempt, transitioning through processing -> succeeded/failed and
   # re-raising any error from the block after recording it, so the caller doesn't need to
-  # manage the task's status itself. Mirrors `transaction do ... end`. Whether the returned
-  # MediaTranscript actually has any content (e.g. no speech detected, or a blank image
-  # caption) is not this task's concern — that's for the caller to decide, since it's a
-  # property of the transcript, not of whether generating it succeeded.
+  # manage the task's status itself. Mirrors `transaction do ... end`. The block is expected
+  # to return a MediaTranscript, which is linked to this task as part of the same attempt —
+  # a failure to link it is treated the same as a failure to generate it. Whether the
+  # transcript actually has any content (e.g. no speech detected, or a blank image caption)
+  # is not this task's concern — that's for the caller to decide, since it's a property of
+  # the transcript, not of whether generating it succeeded.
   def process
     processing!
-    result = yield
+    media_transcript = yield
+    media_transcript.update!(media_transcription_task: self)
     succeeded!
-    result
+    media_transcript
   rescue StandardError
     failed! unless succeeded?
     raise
