@@ -1,18 +1,22 @@
 class ImageCaptionService
   PROMPT = 'Describe the content of this image concisely.'
 
+  # The model actually in use, once resolved by #initialize. Exposed so callers can record
+  # which model produced a caption, without duplicating the fallback logic themselves.
+  attr_reader :resolved_model
+
   def self.available_models
     ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS', 'moondream').split(',')
   end
 
   def initialize(image_path, model: nil)
     @image_path = image_path
-    @model = model
+    @resolved_model = model.presence || ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
   end
 
   def call
     host  = ENV.fetch('OLLAMA_HOST', 'localhost')
-    model = @model.presence || ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
+    model = @resolved_model
     image_data = Base64.strict_encode64(File.binread(@image_path))
     uri      = URI("http://#{host}:11434/api/chat")
     # Single-message format (content+images together) makes moondream return
