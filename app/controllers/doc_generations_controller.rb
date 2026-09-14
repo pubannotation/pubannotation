@@ -6,7 +6,7 @@ class DocGenerationsController < ApplicationController
   before_action :ensure_editable_project!
 
   def new
-    @available_caption_models = available_caption_models
+    @available_caption_models = ImageCaptionService.available_models
   end
 
   def create
@@ -41,11 +41,7 @@ class DocGenerationsController < ApplicationController
   # model name from the request.
   def caption_model
     model = params[:caption_model].presence
-    model if model && available_caption_models.include?(model)
-  end
-
-  def available_caption_models
-    ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS', 'moondream').split(',')
+    model if model && ImageCaptionService.available_models.include?(model)
   end
 
   def ensure_editable_project!

@@ -1,6 +1,10 @@
 class ImageCaptionService
   PROMPT = 'Describe the content of this image concisely.'
 
+  def self.available_models
+    ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS', 'moondream').split(',')
+  end
+
   def initialize(image_path, model: nil)
     @image_path = image_path
     @model = model
