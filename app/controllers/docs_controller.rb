@@ -320,7 +320,7 @@ class DocsController < ApplicationController
 				_doc
 			end
 
-			if params[:media].present?
+			if params[:media]&.dig(:sourcedb).present? || params[:media]&.dig(:sourceid).present?
 				medium = Medium.find_by(sourcedb: params[:media][:sourcedb], sourceid: params[:media][:sourceid])
 				raise ArgumentError, "Specified media does not exist." unless medium
 				hdoc[:medium_id] = medium.id
