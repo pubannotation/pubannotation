@@ -12,22 +12,21 @@ class MediaDocCreationService
       user.root?
     )
 
-    doc = Doc.store_hdoc!(hdoc)
-
-    begin
-      # Wrapped together so a failure here doesn't leave a doc visible in the project without its transcript linked.
-      ActiveRecord::Base.transaction do
-        media_transcript.update!(doc:)
-        project.add_doc!(doc)
-      end
-    rescue StandardError
-      # doc survives the rollback above (Doc.store_hdoc! already committed it separately), so
-      # it's destroyed explicitly to keep a retry from colliding with its sourcedb/sourceid.
-      # Reloaded first: the rolled-back media_transcript.update! left doc's in-memory
-      # media_transcript association stale, which would otherwise cascade-destroy that
-      # transcript via Doc's dependent: :destroy.
-      doc.reload.destroy!
-      raise
+    # Doc.create! directly, rather than Doc.store_hdoc!, since store_hdoc! opens its own
+    # isolation: :read_committed transaction — which raises if opened while already inside the
+    # transaction below. hdoc never has :divisions/:typesettings here (hdoc_normalize! doesn't
+    # add them), so store_hdoc!'s handling of those is not needed either.
+    doc = nil
+    ActiveRecord::Base.transaction do
+      doc = Doc.create!(
+        body: hdoc[:body],
+        sourcedb: hdoc[:sourcedb],
+        sourceid: hdoc[:sourceid],
+        source: hdoc[:source_url],
+        medium_id: hdoc[:medium_id]
+      )
+      media_transcript.update!(doc:)
+      project.add_doc!(doc)
     end
 
     doc

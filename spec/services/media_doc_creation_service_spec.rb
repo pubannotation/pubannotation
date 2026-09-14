@@ -31,7 +31,7 @@ RSpec.describe MediaDocCreationService do
     end
 
     context 'when linking the transcript to the doc fails' do
-      it 'raises and destroys the orphaned doc so a retry can recreate it' do
+      it 'raises and rolls back the doc creation, leaving no orphaned doc behind' do
         allow(media_transcript).to receive(:update!).and_raise(StandardError, 'update blew up')
 
         expect {
@@ -43,7 +43,7 @@ RSpec.describe MediaDocCreationService do
     end
 
     context 'when adding the doc to the project fails' do
-      it 'raises and destroys the orphaned doc so a retry can recreate it' do
+      it 'raises and rolls back the doc creation and transcript link' do
         allow(project).to receive(:add_doc!).and_raise(StandardError, 'add_doc! blew up')
 
         expect {
