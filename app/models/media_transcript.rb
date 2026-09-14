@@ -33,11 +33,6 @@ class MediaTranscript < ApplicationRecord
             .reject { |segment| NonSpeechTextMatcher.match?(segment['text']) }
   end
 
-  # Checks `text`, not `segments`, so this also works for images, which never have segments.
-  def speech?
-    text.present?
-  end
-
   def speech_text
     speech_segments.pluck('text').join(' ')
   end

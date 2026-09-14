@@ -179,32 +179,6 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
-  describe '#speech?' do
-    it 'is speech when text is present' do
-      media_transcript = build(:media_transcript, text: 'Welcome to the conference.')
-
-      expect(media_transcript).to be_speech
-    end
-
-    it 'is not speech when text is blank' do
-      media_transcript = build(:media_transcript, text: '')
-
-      expect(media_transcript).not_to be_speech
-    end
-
-    it 'is not speech when text is nil' do
-      media_transcript = build(:media_transcript, text: nil)
-
-      expect(media_transcript).not_to be_speech
-    end
-
-    it 'is speech for an image caption, despite having no segments' do
-      media_transcript = build(:media_transcript, text: 'A generated caption.', segments: [])
-
-      expect(media_transcript).to be_speech
-    end
-  end
-
   describe '#speech_text' do
     it 'joins the text of only the speech segments' do
       media_transcript = build(:media_transcript, segments: [
