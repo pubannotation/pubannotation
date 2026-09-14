@@ -13,7 +13,9 @@ class MediaTranscript < ApplicationRecord
   # `text` is the plain-text body for this transcript (e.g. an image caption, or the
   # already-resolved speech transcript for audio/video), used as the generated Doc's body.
   # It's nullable rather than required: which media types populate it, and how, is up to the
-  # caller that creates this record, not a universal invariant this model enforces.
+  # caller that creates this record, not a universal invariant this model enforces. For a new
+  # record built with `segments` but no explicit `text` (i.e. audio/video), it's derived from
+  # #speech_text automatically — see the after_initialize callback below.
   #
   # `segments` is an array of timed transcript segments. Each element is a hash with string keys:
   #   'text'     - String, the transcribed text for the segment (may be blank, or a non-speech
@@ -32,12 +34,20 @@ class MediaTranscript < ApplicationRecord
   validate :doc_has_matching_medium
   validate :segments_are_valid
 
+  # Derives `text` from the segments given to a new record, unless the caller already set one
+  # explicitly (e.g. an image's caption). Only applies to new records, not ones loaded from the
+  # database, so it never overwrites a persisted text with a freshly-recomputed one.
+  after_initialize do
+    self.text ||= speech_text if new_record? && segments.present?
+  end
+
   # The subset of `segments` that are actual speech, excluding Whisper's non-speech labels
   # (e.g. "(music)", "(applause)"). Non-speech segments are kept in `segments` rather than
   # discarded, since the raw transcript may still be useful, but they don't count toward
   # whether the medium contains speech or what the generated Doc's body should be. Assumes
-  # segments is already an Array, as segments_are_valid requires — not meant to be called on
-  # an instance that hasn't been validated (e.g. persisted, or built via create!) yet.
+  # segments is already an Array; malformed elements are tolerated (filtered out) rather than
+  # raising, since this is also called from the after_initialize callback above, before
+  # segments_are_valid has had a chance to run.
   def speech_segments
     segments.select { |segment| valid_segment?(segment) }
             .reject { |segment| NonSpeechTextMatcher.match?(segment['text']) }
