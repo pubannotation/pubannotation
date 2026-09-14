@@ -35,6 +35,11 @@ Pull the moondream model:
 $ ollama pull moondream
 ```
 
+For medical images, pull a medically-tuned model instead and set `OLLAMA_CAPTION_MODEL` accordingly:
+```
+$ ollama pull medgemma:4b
+```
+
 ### whisper.cpp setup (for audio transcription)
 
 Install whisper.cpp:
