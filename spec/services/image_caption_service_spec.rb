@@ -5,6 +5,26 @@ require 'rails_helper'
 RSpec.describe ImageCaptionService do
   let(:image_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_image.png').to_s }
 
+  describe '.available_models' do
+    it 'splits OLLAMA_AVAILABLE_CAPTION_MODELS on commas' do
+      original = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
+      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = 'moondream,medgemma:4b'
+
+      expect(described_class.available_models).to eq(['moondream', 'medgemma:4b'])
+    ensure
+      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original
+    end
+
+    it 'defaults to moondream when unset' do
+      original = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
+      ENV.delete('OLLAMA_AVAILABLE_CAPTION_MODELS')
+
+      expect(described_class.available_models).to eq(['moondream'])
+    ensure
+      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original
+    end
+  end
+
   describe '#call' do
     let(:mock_http)     { instance_double(Net::HTTP) }
     let(:mock_request)  { instance_double(Net::HTTP::Post) }
