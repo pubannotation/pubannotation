@@ -6,6 +6,7 @@ class DocGenerationsController < ApplicationController
   before_action :ensure_editable_project!
 
   def new
+    @available_caption_models = available_caption_models
   end
 
   def create
@@ -13,7 +14,7 @@ class DocGenerationsController < ApplicationController
     raise ArgumentError, "Specified media does not exist." unless medium
     raise Exceptions::TooManyBackgroundJobsError, "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless @project.jobs.count < 10
 
-    active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, doc_attributes)
+    active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, doc_attributes, caption_model)
     job = Job.find_by(active_job_id: active_job.job_id)
     notice = t('controllers.docs.text_generation_started', job_name: active_job.job_name)
 
@@ -33,6 +34,18 @@ class DocGenerationsController < ApplicationController
 
   def doc_attributes
     params.permit(:source, :sourcedb, :sourceid).to_h.symbolize_keys
+  end
+
+  # Only used if the specified medium turns out to be an image; ignored otherwise (audio/video
+  # always use Whisper). Restricted to a fixed, configured list rather than accepting any Ollama
+  # model name from the request.
+  def caption_model
+    model = params[:caption_model].presence
+    model if model && available_caption_models.include?(model)
+  end
+
+  def available_caption_models
+    ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS', 'moondream').split(',')
   end
 
   def ensure_editable_project!
