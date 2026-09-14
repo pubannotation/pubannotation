@@ -29,6 +29,12 @@ RSpec.describe ImageCaptionService do
         result = described_class.new(image_path).call
         expect(result).to eq('A chest X-ray image.')
       end
+
+      it 'uses the given model instead of OLLAMA_CAPTION_MODEL when one is passed' do
+        described_class.new(image_path, model: 'medgemma:4b').call
+
+        expect(mock_request).to have_received(:body=).with(a_string_including('"model":"medgemma:4b"'))
+      end
     end
 
     context 'when a JSON line is split across read_body chunks' do

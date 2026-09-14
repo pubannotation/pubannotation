@@ -1,6 +1,7 @@
 class MediaTextGenerationService
-  def initialize(medium)
+  def initialize(medium, caption_model: nil)
     @medium = medium
+    @caption_model = caption_model
   end
 
   def call
@@ -15,7 +16,7 @@ class MediaTextGenerationService
 
   def generate_text(file_path)
     if @medium.image?
-      ImageCaptionService.new(file_path).call
+      ImageCaptionService.new(file_path, model: @caption_model).call
     elsif @medium.audio?
       segments_to_text(AudioTranscriptionService.new(file_path).call)
     elsif @medium.video?

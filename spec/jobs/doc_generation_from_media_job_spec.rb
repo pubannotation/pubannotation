@@ -22,7 +22,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       it 'delegates text generation to MediaTextGenerationService and doc creation to MediaDocCreationService' do
         DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
 
-        expect(MediaTextGenerationService).to have_received(:new).with(medium)
+        expect(MediaTextGenerationService).to have_received(:new).with(medium, caption_model: nil)
         expect(text_generation).to have_received(:call)
         expect(MediaDocCreationService).to have_received(:new).with(project:, medium:, user:, attributes:)
         expect(doc_creation).to have_received(:save_doc).with('A generated transcript.')
@@ -34,6 +34,12 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         task = MediaTranscriptionTask.find_by(medium: medium)
         expect(task).to be_present
         expect(task).to be_succeeded
+      end
+
+      it 'passes a given caption_model through to MediaTextGenerationService' do
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'medgemma:4b')
+
+        expect(MediaTextGenerationService).to have_received(:new).with(medium, caption_model: 'medgemma:4b')
       end
     end
 
