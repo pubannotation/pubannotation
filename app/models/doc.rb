@@ -317,7 +317,7 @@ class Doc < ActiveRecord::Base
 					body: hdoc[:text],
 					sourcedb: hdoc[:sourcedb],
 					sourceid: hdoc[:sourceid],
-					source: hdoc[:source_url],
+					source: hdoc[:source],
 					medium_id: hdoc[:medium_id]
 				}
 			)

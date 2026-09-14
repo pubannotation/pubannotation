@@ -20,6 +20,14 @@ RSpec.describe Doc, type: :model do
     end
   end
 
+  describe '.store_hdoc!' do
+    it 'persists the given source' do
+      doc = Doc.store_hdoc!(sourcedb: 'Example', sourceid: '001', body: 'some text', source: 'https://example.com/original')
+
+      expect(doc.source).to eq('https://example.com/original')
+    end
+  end
+
   describe '.bulk_increment_counts_for_batch' do
     let!(:doc1) { create(:doc, sourcedb: 'PMC', sourceid: '123', denotations_num: 100, blocks_num: 50, relations_num: 25) }
     let!(:doc2) { create(:doc, sourcedb: 'PMC', sourceid: '456', denotations_num: 200, blocks_num: 80, relations_num: 40) }
