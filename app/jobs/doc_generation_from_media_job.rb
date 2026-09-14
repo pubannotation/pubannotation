@@ -9,9 +9,9 @@ class DocGenerationFromMediaJob < ApplicationJob
     media_transcript = task.process { MediaTextGenerationService.new(medium).call }
     media_transcript.update!(media_transcription_task: task)
 
-    return unless media_transcript.speech?
-
-    MediaDocCreationService.call(project, medium, user, attributes, media_transcript)
+    if media_transcript.speech?
+      MediaDocCreationService.call(project, medium, user, attributes, media_transcript)
+    end
   end
 
   def job_name
