@@ -42,6 +42,12 @@ RSpec.describe MediaTextGenerationService do
 
         expect(result).to eq('A generated caption.')
       end
+
+      it 'passes a given caption_model through to ImageCaptionService' do
+        described_class.new(image_medium, caption_model: 'medgemma:4b').call
+
+        expect(ImageCaptionService).to have_received(:new).with(anything, model: 'medgemma:4b')
+      end
     end
 
     context 'with a valid audio medium' do
