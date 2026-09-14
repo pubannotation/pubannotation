@@ -111,12 +111,12 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       context 'when the generated transcript has no speech' do
         let(:generated_media_transcript) { MediaTranscript.new(medium:, text: '', segments: []) }
 
-        it 'marks the task no_speech, persists the transcript, but does not create a doc' do
+        it 'marks the task succeeded, persists the transcript, but does not create a doc' do
           DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
 
           task = MediaTranscriptionTask.find_by(medium: medium)
           media_transcript = MediaTranscript.find_by(medium: medium)
-          expect(task).to be_no_speech
+          expect(task).to be_succeeded
           expect(media_transcript).to be_present
           expect(MediaDocCreationService).not_to have_received(:call)
         end

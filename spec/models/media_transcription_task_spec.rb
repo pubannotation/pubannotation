@@ -80,7 +80,7 @@ RSpec.describe MediaTranscriptionTask, type: :model do
   end
 
   describe '#process' do
-    it 'transitions to processing then succeeded when the transcript has text, and returns it' do
+    it 'transitions to processing then succeeded, and returns the block value' do
       task = create(:media_transcription_task)
       media_transcript = build(:media_transcript, text: 'transcribed text')
 
@@ -90,19 +90,9 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       expect(task).to be_succeeded
     end
 
-    it 'transitions to no_speech when the transcript has blank text' do
+    it 'transitions to succeeded even when the returned transcript has blank text' do
       task = create(:media_transcription_task)
       media_transcript = build(:media_transcript, text: nil, segments: [])
-
-      result = task.process { media_transcript }
-
-      expect(result).to eq(media_transcript)
-      expect(task).to be_no_speech
-    end
-
-    it 'transitions to succeeded when the transcript has text despite having no segments (e.g. an image caption)' do
-      task = create(:media_transcription_task)
-      media_transcript = build(:media_transcript, text: 'a caption', segments: [])
 
       result = task.process { media_transcript }
 
@@ -132,23 +122,10 @@ RSpec.describe MediaTranscriptionTask, type: :model do
 
       expect(task.reload).to be_succeeded
     end
-
-    it 'does not overwrite an already-no_speech status when the block raises after setting no_speech' do
-      task = create(:media_transcription_task)
-
-      expect {
-        task.process do
-          task.update!(status: 'no_speech')
-          raise StandardError, 'boom after no_speech'
-        end
-      }.to raise_error(StandardError, 'boom after no_speech')
-
-      expect(task.reload).to be_no_speech
-    end
   end
 
   describe 'status' do
-    %w[pending processing succeeded no_speech failed].each do |status|
+    %w[pending processing succeeded failed].each do |status|
       it "supports the #{status} status" do
         media_transcription_task = build(:media_transcription_task, status: status)
 
