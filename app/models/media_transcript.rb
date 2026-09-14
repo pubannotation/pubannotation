@@ -26,7 +26,7 @@ class MediaTranscript < ApplicationRecord
   # are not required to touch exactly. Media types that don't produce segments (e.g. images)
   # simply leave this at its default empty array.
   # An empty array, or an array containing only non-speech segments, means no speech was
-  # detected in the media — see #speech?.
+  # detected in the media (`text` ends up blank in that case too — see #speech?).
   validates :media_transcription_task_id, uniqueness: true, allow_nil: true
   validates :doc_id, uniqueness: true, allow_nil: true
   validate :doc_has_matching_medium
@@ -43,8 +43,12 @@ class MediaTranscript < ApplicationRecord
             .reject { |segment| NonSpeechTextMatcher.match?(segment['text']) }
   end
 
+  # Whether this transcript has any real content to show, for either media type: a non-blank
+  # caption for an image, or actual speech (as opposed to silence, or only non-speech labels
+  # like "(music)") for audio/video. Checking `text` rather than `segments` directly is what
+  # lets this apply to images too, which never have segments to check in the first place.
   def speech?
-    speech_segments.any?
+    text.present?
   end
 
   def speech_text

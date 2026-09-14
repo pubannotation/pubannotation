@@ -132,27 +132,25 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
-  describe '#speech_segments and #speech?' do
-    it 'includes all segments and is speech when every segment is spoken text' do
+  describe '#speech_segments' do
+    it 'includes all segments when every segment is spoken text' do
       media_transcript = build(:media_transcript, segments: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
         { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
       ])
 
       expect(media_transcript.speech_segments).to eq(media_transcript.segments)
-      expect(media_transcript).to be_speech
     end
 
-    it 'excludes non-speech segments and is not speech when none remain' do
+    it 'excludes non-speech segments' do
       media_transcript = build(:media_transcript, segments: [
         { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 }
       ])
 
       expect(media_transcript.speech_segments).to eq([])
-      expect(media_transcript).not_to be_speech
     end
 
-    it 'is speech when at least one segment is spoken text alongside non-speech segments' do
+    it 'keeps only the spoken segments alongside non-speech segments' do
       media_transcript = build(:media_transcript, segments: [
         { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
         { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
@@ -161,13 +159,6 @@ RSpec.describe MediaTranscript, type: :model do
       expect(media_transcript.speech_segments).to eq([
         { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
       ])
-      expect(media_transcript).to be_speech
-    end
-
-    it 'is not speech for an empty segments array' do
-      media_transcript = build(:media_transcript, segments: [])
-
-      expect(media_transcript).not_to be_speech
     end
 
     it 'ignores malformed elements within segments instead of raising' do
@@ -177,16 +168,40 @@ RSpec.describe MediaTranscript, type: :model do
       ])
 
       expect(media_transcript.speech_segments).to eq([{ 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 }])
-      expect(media_transcript).to be_speech
     end
 
-    it 'excludes segments with blank text and is not speech when none remain' do
+    it 'excludes segments with blank text' do
       media_transcript = build(:media_transcript, segments: [
         { 'text' => '', 'start_ms' => 0, 'end_ms' => 300 }
       ])
 
       expect(media_transcript.speech_segments).to eq([])
+    end
+  end
+
+  describe '#speech?' do
+    it 'is speech when text is present' do
+      media_transcript = build(:media_transcript, text: 'Welcome to the conference.')
+
+      expect(media_transcript).to be_speech
+    end
+
+    it 'is not speech when text is blank' do
+      media_transcript = build(:media_transcript, text: '')
+
       expect(media_transcript).not_to be_speech
+    end
+
+    it 'is not speech when text is nil' do
+      media_transcript = build(:media_transcript, text: nil)
+
+      expect(media_transcript).not_to be_speech
+    end
+
+    it 'is speech for an image caption, despite having no segments' do
+      media_transcript = build(:media_transcript, text: 'A generated caption.', segments: [])
+
+      expect(media_transcript).to be_speech
     end
   end
 
