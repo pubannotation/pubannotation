@@ -25,6 +25,21 @@ RSpec.describe ImageCaptionService do
     end
   end
 
+  describe '#resolved_model' do
+    it 'returns the given model' do
+      expect(described_class.new(image_path, model: 'medgemma:4b').resolved_model).to eq('medgemma:4b')
+    end
+
+    it 'falls back to OLLAMA_CAPTION_MODEL when no model is given' do
+      original = ENV['OLLAMA_CAPTION_MODEL']
+      ENV['OLLAMA_CAPTION_MODEL'] = 'moondream'
+
+      expect(described_class.new(image_path).resolved_model).to eq('moondream')
+    ensure
+      ENV['OLLAMA_CAPTION_MODEL'] = original
+    end
+  end
+
   describe '#call' do
     let(:mock_http)     { instance_double(Net::HTTP) }
     let(:mock_request)  { instance_double(Net::HTTP::Post) }
