@@ -24,6 +24,12 @@ RSpec.describe MediaDocCreationService do
       expect(project.docs).to include(doc)
     end
 
+    it 'persists the given source' do
+      doc = described_class.call(project, medium, user, attributes.merge(source: 'https://example.com/original'), media_transcript)
+
+      expect(doc.source).to eq('https://example.com/original')
+    end
+
     it 'links the media_transcript to the created doc' do
       doc = described_class.call(project, medium, user, attributes, media_transcript)
 
