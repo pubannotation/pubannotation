@@ -82,10 +82,42 @@ RSpec.describe MediaTranscriptionTask, type: :model do
   describe '#process' do
     it 'transitions to processing then succeeded, and returns the block value' do
       task = create(:media_transcription_task)
+      media_transcript = build(:media_transcript, text: 'transcribed text')
 
-      result = task.process { 'transcribed text' }
+      result = task.process { media_transcript }
 
-      expect(result).to eq('transcribed text')
+      expect(result).to eq(media_transcript)
+      expect(task).to be_succeeded
+    end
+
+    it 'links the returned media_transcript to this task' do
+      task = create(:media_transcription_task)
+      media_transcript = build(:media_transcript, medium: task.medium, text: 'transcribed text')
+
+      task.process { media_transcript }
+
+      expect(media_transcript.reload.media_transcription_task).to eq(task)
+    end
+
+    it 'transitions to failed and re-raises when linking the media_transcript fails' do
+      task = create(:media_transcription_task)
+      media_transcript = build(:media_transcript, text: 'transcribed text')
+      allow(media_transcript).to receive(:update!).and_raise(StandardError, 'link blew up')
+
+      expect {
+        task.process { media_transcript }
+      }.to raise_error(StandardError, 'link blew up')
+
+      expect(task).to be_failed
+    end
+
+    it 'transitions to succeeded even when the returned transcript has blank text' do
+      task = create(:media_transcription_task)
+      media_transcript = build(:media_transcript, text: nil, segments: [])
+
+      result = task.process { media_transcript }
+
+      expect(result).to eq(media_transcript)
       expect(task).to be_succeeded
     end
 
@@ -99,7 +131,7 @@ RSpec.describe MediaTranscriptionTask, type: :model do
       expect(task).to be_failed
     end
 
-    it 'does not overwrite an already-succeeded status if failed! itself raises' do
+    it 'does not overwrite an already-succeeded status when the block raises after setting succeeded' do
       task = create(:media_transcription_task)
 
       expect {
@@ -114,7 +146,7 @@ RSpec.describe MediaTranscriptionTask, type: :model do
   end
 
   describe 'status' do
-    %w[pending processing succeeded no_speech failed].each do |status|
+    %w[pending processing succeeded failed].each do |status|
       it "supports the #{status} status" do
         media_transcription_task = build(:media_transcription_task, status: status)
 

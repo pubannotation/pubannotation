@@ -33,8 +33,9 @@ class AudioTranscriptionService
   # the audio's actual end, so offsets are clamped against ffprobe's duration. `Float()` is
   # used instead of `String#to_f` because `to_f` silently accepts garbage like "N/A" or
   # "5abc" as 0.0/5.0 instead of raising, and 0 is truthy in Ruby so a lenient parse wouldn't
-  # even be caught by a nil check; `finite?` additionally guards against "Infinity"/"NaN",
-  # which parse fine but would otherwise raise FloatDomainError when rounded.
+  # even be caught by a nil check; `finite?` additionally guards against a numeric string large
+  # enough to overflow to Infinity when parsed (e.g. "1e400"), which would otherwise raise
+  # FloatDomainError when rounded.
   def audio_duration_ms
     stdout, stderr, status = Open3.capture3(
       'ffprobe', '-v', 'error', '-show_entries', 'format=duration',

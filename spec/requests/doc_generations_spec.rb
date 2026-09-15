@@ -101,6 +101,8 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(doc.sourcedb).to eq("Example@#{user.username}")
         expect(doc.sourceid).to eq('001')
         expect(doc.medium).to eq(image_medium)
+        expect(doc.media_transcript).to be_present
+        expect(doc.media_transcript.text).to eq('A generated caption.')
       end
 
       it 'returns an error when no media is specified' do

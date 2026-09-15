@@ -11,7 +11,8 @@ class NonSpeechTextMatcher
     'music', 'upbeat music', 'suspenseful music', 'dramatic music',
     'applause', 'audience applauding', 'clapping',
     'laughter', 'laughing',
-    'silence', 'background noise', 'noise', 'static'
+    'silence', 'background noise', 'noise', 'static',
+    'beep'
   ].freeze
 
   BRACKETED_PATTERN = /\A[\(\[](.+)[\)\]]\z/

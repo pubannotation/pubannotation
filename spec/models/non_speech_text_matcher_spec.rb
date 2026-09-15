@@ -12,6 +12,10 @@ RSpec.describe NonSpeechTextMatcher do
       expect(described_class.match?('[applause]')).to be true
     end
 
+    it 'matches "(beep)"' do
+      expect(described_class.match?('(beep)')).to be true
+    end
+
     it 'matches case-insensitively' do
       expect(described_class.match?('(Applause)')).to be true
     end
