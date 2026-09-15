@@ -49,6 +49,10 @@ RSpec.describe MediaTextGenerationService do
 
     context 'with a valid audio medium' do
       let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
+      let(:segments_with_offsets) do
+        [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200,
+           'char_begin' => 0, 'char_end' => 23 }]
+      end
 
       before do
         allow(AudioTranscriptionService).to receive(:new).and_return(
@@ -62,7 +66,7 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(audio_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segments).to eq(segments)
+        expect(media_transcript.segments).to eq(segments_with_offsets)
       end
 
       context 'when segments mix speech and non-speech labels' do
@@ -72,18 +76,29 @@ RSpec.describe MediaTextGenerationService do
             { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
           ]
         end
+        let(:segments_with_offsets) do
+          [
+            { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000, 'char_begin' => nil, 'char_end' => nil },
+            { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000,
+              'char_begin' => 0, 'char_end' => 26 }
+          ]
+        end
 
         it 'sets text from speech segments only, while keeping all segments' do
           media_transcript = described_class.new(audio_medium).call
 
           expect(media_transcript.text).to eq('Welcome to the conference.')
-          expect(media_transcript.segments).to eq(segments)
+          expect(media_transcript.segments).to eq(segments_with_offsets)
         end
       end
     end
 
     context 'with a valid video medium' do
       let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
+      let(:segments_with_offsets) do
+        [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200,
+           'char_begin' => 0, 'char_end' => 23 }]
+      end
 
       before do
         allow(VideoTranscriptionService).to receive(:new).and_return(
@@ -97,7 +112,7 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(video_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segments).to eq(segments)
+        expect(media_transcript.segments).to eq(segments_with_offsets)
       end
     end
 
