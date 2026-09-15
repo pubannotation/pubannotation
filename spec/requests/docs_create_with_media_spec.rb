@@ -59,6 +59,15 @@ RSpec.describe 'POST /docs.json', type: :request do
     expect(Doc.last.medium).to be_nil
   end
 
+  it 'creates a doc without a medium when media is present but left blank (as the form always submits it)' do
+    post '/docs.json',
+         params: params.merge(media: { sourcedb: '', sourceid: '' }),
+         headers: headers
+
+    expect(response).to have_http_status(:created)
+    expect(Doc.last.medium).to be_nil
+  end
+
   it 'returns an error when the specified medium does not exist' do
     post '/docs.json',
          params: params.merge(
