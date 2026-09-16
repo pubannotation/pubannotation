@@ -15,10 +15,10 @@
 # polymorphic subject (subject_type/subject_id), spreading transcription-specific concerns
 # into every other kind of Job.
 #
-# It is kept separate from MediaTranscript because that model represents the successful
-# *output* of a transcription (the segments) and should only exist when there is real content
-# to show. MediaTranscriptionTask represents the *attempt* itself, including states (pending,
-# processing, failed) where no output exists at all.
+# It is kept separate from MediaTranscript because that model represents a transcription
+# attempt that actually ran to completion — even a blank/no-speech one — while
+# MediaTranscriptionTask represents the attempt itself, including states (pending, processing,
+# failed) where generation didn't complete at all and no MediaTranscript exists yet.
 class MediaTranscriptionTask < ApplicationRecord
   belongs_to :medium
   belongs_to :job, optional: true
@@ -30,18 +30,23 @@ class MediaTranscriptionTask < ApplicationRecord
     pending: 'pending',
     processing: 'processing',
     succeeded: 'succeeded',
-    no_speech: 'no_speech',
     failed: 'failed'
   }
 
   # Wraps a transcription attempt, transitioning through processing -> succeeded/failed and
   # re-raising any error from the block after recording it, so the caller doesn't need to
-  # manage the task's status itself. Mirrors `transaction do ... end`.
+  # manage the task's status itself. Mirrors `transaction do ... end`. The block is expected
+  # to return a MediaTranscript, which is linked to this task as part of the same attempt —
+  # a failure to link it is treated the same as a failure to generate it. Whether the
+  # transcript actually has any content (e.g. no speech detected, or a blank image caption)
+  # is not this task's concern — that's for the caller to decide, since it's a property of
+  # the transcript, not of whether generating it succeeded.
   def process
     processing!
-    result = yield
+    media_transcript = yield
+    media_transcript.update!(media_transcription_task: self)
     succeeded!
-    result
+    media_transcript
   rescue StandardError
     failed! unless succeeded?
     raise

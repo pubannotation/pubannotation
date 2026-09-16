@@ -3,31 +3,29 @@ class MediaTextGenerationService
     @medium = medium
   end
 
+  # Returns an unsaved MediaTranscript. Its text is the caption as-is for an image, or the
+  # speech-only text (excluding Whisper's non-speech labels) for audio/video.
   def call
     validate_medium!
 
     @medium.file.open do |file|
-      generate_text(file.path)
+      build_media_transcript(file.path)
     end
   end
 
   private
 
-  def generate_text(file_path)
-    if @medium.image?
-      ImageCaptionService.new(file_path).call
-    elsif @medium.audio?
-      segments_to_text(AudioTranscriptionService.new(file_path).call)
-    elsif @medium.video?
-      segments_to_text(VideoTranscriptionService.new(file_path).call)
+  def build_media_transcript(file_path)
+    case @medium.media_type
+    when 'image'
+      MediaTranscript.new(medium: @medium, text: ImageCaptionService.new(file_path).call)
+    when 'audio'
+      MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call)
+    when 'video'
+      MediaTranscript.new(medium: @medium, segments: VideoTranscriptionService.new(file_path).call)
     else
       raise ArgumentError, "Unsupported media type: #{@medium.media_type.inspect}"
     end
-  end
-
-  # Temporary: will be replaced once MediaTranscript builds this from segments itself.
-  def segments_to_text(segments)
-    segments.map { |segment| segment['text'] }.join(' ')
   end
 
   def validate_medium!
