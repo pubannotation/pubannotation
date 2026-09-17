@@ -8,7 +8,8 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
   let(:attributes) { { sourcedb: 'Example', sourceid: '001' } }
   let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000 }] }
   let(:segments_with_offsets) do
-    [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000, 'char_begin' => 0, 'char_end' => 23 }]
+    [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000,
+       'span' => { 'begin' => 0, 'end' => 23 } }]
   end
   let(:generated_media_transcript) { MediaTranscript.new(medium:, text: 'A generated transcript.', segments:) }
   let(:text_generation) { instance_double(MediaTextGenerationService, call: generated_media_transcript) }

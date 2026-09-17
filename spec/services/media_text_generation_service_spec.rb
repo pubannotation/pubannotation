@@ -51,7 +51,7 @@ RSpec.describe MediaTextGenerationService do
       let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
       let(:segments_with_offsets) do
         [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200,
-           'char_begin' => 0, 'char_end' => 23 }]
+           'span' => { 'begin' => 0, 'end' => 23 } }]
       end
 
       before do
@@ -78,9 +78,9 @@ RSpec.describe MediaTextGenerationService do
         end
         let(:segments_with_offsets) do
           [
-            { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000, 'char_begin' => nil, 'char_end' => nil },
+            { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000, 'span' => nil },
             { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000,
-              'char_begin' => 0, 'char_end' => 26 }
+              'span' => { 'begin' => 0, 'end' => 26 } }
           ]
         end
 
@@ -97,7 +97,7 @@ RSpec.describe MediaTextGenerationService do
       let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
       let(:segments_with_offsets) do
         [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200,
-           'char_begin' => 0, 'char_end' => 23 }]
+           'span' => { 'begin' => 0, 'end' => 23 } }]
       end
 
       before do
