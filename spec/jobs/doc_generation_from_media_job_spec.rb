@@ -11,7 +11,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
     [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000,
        'span' => { 'begin' => 0, 'end' => 23 } }]
   end
-  let(:generated_media_transcript) { MediaTranscript.new(medium:, text: 'A generated transcript.', segments:) }
+  let(:generated_media_transcript) { MediaTranscript.new(medium:, segments:) }
   let(:text_generation) { instance_double(MediaTextGenerationService, call: generated_media_transcript) }
 
   describe '#perform' do

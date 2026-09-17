@@ -15,17 +15,18 @@ class MediaTranscript < ApplicationRecord
   validate :doc_has_matching_medium
   validate :segments_are_valid
 
-  # Derives `text` from segments for a new record, unless already set explicitly (e.g. an
-  # image's caption), and rewrites `segments` in place with each one's span into that `text`.
-  # Skipped for records loaded from the database. Requires `segments` to be passed to .new(...)
-  # itself, not assigned afterward (e.g. record.segments = [...]), since this runs once, right
-  # after construction — MediaTextGenerationService does this correctly, but FactoryBot does
-  # not, so specs relying on this must build with MediaTranscript.new directly rather than the
-  # :media_transcript factory.
+  # Derives `text` from segments for a new record and rewrites `segments` in place with each
+  # one's span into that `text`. Skipped entirely if `text` is already set explicitly (e.g. an
+  # image's caption), since a caller-supplied `text` isn't guaranteed to match what the segments
+  # would derive, which would leave spans pointing at the wrong text. Also skipped for records
+  # loaded from the database. Requires `segments` to be passed to .new(...) itself, not assigned
+  # afterward (e.g. record.segments = [...]), since this runs once, right after construction —
+  # MediaTextGenerationService does this correctly, but FactoryBot does not, so specs relying on
+  # this must build with MediaTranscript.new directly rather than the :media_transcript factory.
   after_initialize do
-    if new_record? && segments.present?
+    if new_record? && segments.present? && text.nil?
       self.segments = segments_with_spans
-      self.text ||= speech_text
+      self.text = speech_text
     end
   end
 
