@@ -7,7 +7,11 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
   let(:project) { create(:project, user: user) }
   let(:attributes) { { sourcedb: 'Example', sourceid: '001' } }
   let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000 }] }
-  let(:generated_media_transcript) { MediaTranscript.new(medium:, text: 'A generated transcript.', segments:) }
+  let(:segments_with_offsets) do
+    [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000,
+       'span' => { 'begin' => 0, 'end' => 23 } }]
+  end
+  let(:generated_media_transcript) { MediaTranscript.new(medium:, segments:) }
   let(:text_generation) { instance_double(MediaTextGenerationService, call: generated_media_transcript) }
 
   describe '#perform' do
@@ -66,7 +70,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         task = MediaTranscriptionTask.find_by(medium: medium)
         media_transcript = MediaTranscript.find_by(medium: medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segments).to eq(segments)
+        expect(media_transcript.segments).to eq(segments_with_offsets)
         expect(media_transcript.media_transcription_task).to eq(task)
       end
 
