@@ -19,7 +19,9 @@ class MediaTextGenerationService
   def build_media_transcript(file_path)
     case @medium.media_type
     when 'image'
-      MediaTranscript.new(medium: @medium, text: ImageCaptionService.new(file_path, model: @caption_model).call)
+      image_caption_service = ImageCaptionService.new(file_path, model: @caption_model)
+      MediaTranscript.new(medium: @medium, text: image_caption_service.call,
+                          generation_model: image_caption_service.resolved_model)
     when 'audio'
       MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call)
     when 'video'

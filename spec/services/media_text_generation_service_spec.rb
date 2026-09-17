@@ -34,7 +34,9 @@ RSpec.describe MediaTextGenerationService do
   describe '#call' do
     context 'with a valid image medium' do
       before do
-        allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
+        allow(ImageCaptionService).to receive(:new).and_return(
+          instance_double(ImageCaptionService, call: 'A generated caption.', resolved_model: 'moondream')
+        )
       end
 
       it 'returns an unsaved MediaTranscript with the caption as its text and no segments' do
@@ -50,6 +52,12 @@ RSpec.describe MediaTextGenerationService do
         described_class.new(image_medium, caption_model: 'medgemma:4b').call
 
         expect(ImageCaptionService).to have_received(:new).with(anything, model: 'medgemma:4b')
+      end
+
+      it "sets generation_model from ImageCaptionService's resolved_model" do
+        media_transcript = described_class.new(image_medium).call
+
+        expect(media_transcript.generation_model).to eq('moondream')
       end
     end
 
@@ -69,6 +77,7 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript.medium).to eq(audio_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
         expect(media_transcript.segments).to eq(segments)
+        expect(media_transcript.generation_model).to be_nil
       end
 
       context 'when segments mix speech and non-speech labels' do

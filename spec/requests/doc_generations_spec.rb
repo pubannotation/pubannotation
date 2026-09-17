@@ -89,7 +89,9 @@ RSpec.describe 'DocGenerationsController', type: :request do
       end
 
       it 'creates a doc with the generated caption when the job runs' do
-        allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
+        allow(ImageCaptionService).to receive(:new).and_return(
+          instance_double(ImageCaptionService, call: 'A generated caption.', resolved_model: 'moondream')
+        )
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),
