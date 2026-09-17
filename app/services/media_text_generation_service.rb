@@ -1,6 +1,7 @@
 class MediaTextGenerationService
-  def initialize(medium)
+  def initialize(medium, caption_model: nil)
     @medium = medium
+    @caption_model = caption_model
   end
 
   # Returns an unsaved MediaTranscript. Its text is the caption as-is for an image, or the
@@ -18,7 +19,7 @@ class MediaTextGenerationService
   def build_media_transcript(file_path)
     case @medium.media_type
     when 'image'
-      MediaTranscript.new(medium: @medium, text: ImageCaptionService.new(file_path).call)
+      MediaTranscript.new(medium: @medium, text: ImageCaptionService.new(file_path, model: @caption_model).call)
     when 'audio'
       MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call)
     when 'video'

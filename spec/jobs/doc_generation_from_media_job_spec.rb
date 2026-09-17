@@ -36,7 +36,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
 
         task = MediaTranscriptionTask.find_by(medium: medium)
         media_transcript = MediaTranscript.find_by(medium: medium)
-        expect(MediaTextGenerationService).to have_received(:new).with(medium)
+        expect(MediaTextGenerationService).to have_received(:new).with(medium, caption_model: nil)
         expect(MediaDocCreationService).to have_received(:call).with(project, medium, user, attributes, media_transcript)
       end
 
@@ -46,6 +46,12 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         task = MediaTranscriptionTask.find_by(medium: medium)
         expect(task).to be_present
         expect(task).to be_succeeded
+      end
+
+      it 'passes a given caption_model through to MediaTextGenerationService' do
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'medgemma:4b')
+
+        expect(MediaTextGenerationService).to have_received(:new).with(medium, caption_model: 'medgemma:4b')
       end
     end
 
