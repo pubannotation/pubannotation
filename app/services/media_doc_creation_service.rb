@@ -38,11 +38,8 @@ class MediaDocCreationService
     doc
   end
 
-  # One Denotation per speech segment, spanning the same range within doc.body that
-  # MediaTranscript#speech_text joined it from (a single space between consecutive speech
-  # segments, regardless of non-speech segments between them) — recomputed here rather than
-  # read off `segments` since MediaTranscript doesn't store per-segment offsets yet. Always
-  # empty for image transcripts, since those never have segments.
+  # One Denotation per speech segment, spanning its MediaTranscript#speech_segment_spans offset
+  # into doc.body. Always empty for image transcripts, since those never have segments.
   #
   # Inserted via insert_all (one INSERT for all of them) rather than Denotation.create! in a
   # loop, since looping would also re-run Denotation's after_create counter-increment callbacks
@@ -50,18 +47,13 @@ class MediaDocCreationService
   # incrementing denotations_num on the ProjectDoc/Doc/Project by the segment count, and touching
   # the project's updated_at — is replicated once below instead.
   def self.create_segment_denotations!(project, doc, media_transcript)
-    speech_segments = media_transcript.speech_segments
-    return if speech_segments.empty?
+    spans = media_transcript.speech_segment_spans
+    return if spans.empty?
 
     Denotation.new_id_init
-    char_position = 0
 
-    records = speech_segments.map do |segment|
-      char_begin = char_position
-      char_end = char_begin + segment['text'].length
-      char_position = char_end + 1
-
-      { hid: Denotation.new_id, begin: char_begin, end: char_end, obj: DENOTATION_OBJ,
+    records = spans.map do |span|
+      { hid: Denotation.new_id, begin: span['begin'], end: span['end'], obj: DENOTATION_OBJ,
         project_id: project.id, doc_id: doc.id }
     end
 
