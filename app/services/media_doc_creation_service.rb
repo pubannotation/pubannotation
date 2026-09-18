@@ -38,23 +38,16 @@ class MediaDocCreationService
     doc
   end
 
-  # One Denotation per speech segment, spanning its MediaTranscript#speech_segment_spans offset
-  # into doc.body. Always empty for image transcripts, since those never have segments.
-  #
-  # Inserted via insert_all (one INSERT for all of them) rather than Denotation.create! in a
-  # loop, since looping would also re-run Denotation's after_create counter-increment callbacks
-  # once per segment. insert_all bypasses those callbacks entirely, so their aggregate effect —
-  # incrementing denotations_num on the ProjectDoc/Doc/Project by the segment count, and touching
-  # the project's updated_at — is replicated once below instead.
+  # insert_all (not Denotation.create! in a loop) so it's one INSERT, but that skips
+  # after_create's counter callbacks — replicated manually below instead. hids are numbered
+  # locally rather than via Denotation.new_id, which uses process-shared state.
   def self.create_segment_denotations!(project, doc, media_transcript)
     spans = media_transcript.speech_segment_spans
     return if spans.empty?
 
-    Denotation.new_id_init
-
-    records = spans.map do |span|
-      { hid: Denotation.new_id, begin: span['begin'], end: span['end'], obj: DENOTATION_OBJ,
-        project_id: project.id, doc_id: doc.id }
+    records = spans.map.with_index(1) do |span, index|
+      { hid: "#{Denotation::HID_PREFIX}#{index}", begin: span['begin'], end: span['end'],
+        obj: DENOTATION_OBJ, project_id: project.id, doc_id: doc.id }
     end
 
     Denotation.insert_all(records, record_timestamps: true)
