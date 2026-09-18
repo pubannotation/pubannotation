@@ -60,5 +60,53 @@ RSpec.describe MediaDocCreationService do
         expect(media_transcript.reload.doc).to be_nil
       end
     end
+
+    context 'with a transcript containing speech segments' do
+      let(:media_transcript) do
+        MediaTranscript.new(medium: medium, segments: [
+          { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+          { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+        ])
+      end
+
+      it 'creates one Denotation per speech segment, spanning its offset into the doc body' do
+        doc = described_class.call(project, medium, user, attributes, media_transcript)
+
+        expect(doc.body).to eq('Hello world')
+        denotations = Denotation.where(doc: doc).order(:begin)
+        expect(denotations.map { |d| [d.hid, d.begin, d.end, d.obj] }).to eq([
+          ['T1', 0, 5, 'AudioSegment'],
+          ['T2', 6, 11, 'AudioSegment']
+        ])
+      end
+
+      context 'when segments mix speech and non-speech labels' do
+        let(:media_transcript) do
+          MediaTranscript.new(medium: medium, segments: [
+            { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 },
+            { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000 }
+          ])
+        end
+
+        it 'creates a Denotation for the speech segment only' do
+          doc = described_class.call(project, medium, user, attributes, media_transcript)
+
+          expect(doc.body).to eq('Welcome.')
+          expect(Denotation.where(doc: doc).count).to eq(1)
+          expect(Denotation.find_by(doc: doc).attributes).to include('begin' => 0, 'end' => 8, 'obj' => 'AudioSegment')
+        end
+      end
+    end
+
+    context 'with a transcript that has no segments (e.g. an image caption)' do
+      let(:medium) { create(:medium, media_type: :image, content_type: 'image/png') }
+      let(:media_transcript) { MediaTranscript.new(medium: medium, text: 'A generated caption.') }
+
+      it 'creates no Denotations' do
+        doc = described_class.call(project, medium, user, attributes, media_transcript)
+
+        expect(Denotation.where(doc: doc)).to be_empty
+      end
+    end
   end
 end

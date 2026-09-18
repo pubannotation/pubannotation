@@ -1,4 +1,9 @@
 class MediaDocCreationService
+  # Marks a Denotation as corresponding to a spoken segment of the media, rather than a real
+  # semantic annotation. Its span is what selects it for playback-position highlighting; obj is
+  # otherwise unused (TextAE's selectDenotation/focusDenotation work independently of obj).
+  DENOTATION_OBJ = 'AudioSegment'.freeze
+
   # media_transcript is expected to already be persisted (with doc: nil) by the caller.
   def self.call(project, medium, user, attributes, media_transcript)
     hdoc = Doc.hdoc_normalize!(
@@ -27,8 +32,31 @@ class MediaDocCreationService
       )
       media_transcript.update!(doc:)
       project.add_doc!(doc)
+      create_segment_denotations!(project, doc, media_transcript)
     end
 
     doc
   end
+
+  # One Denotation per speech segment, spanning the same range within doc.body that
+  # MediaTranscript#speech_text joined it from (a single space between consecutive speech
+  # segments, regardless of non-speech segments between them) — recomputed here rather than
+  # read off `segments` since MediaTranscript doesn't store per-segment offsets yet. Always
+  # empty for image transcripts, since those never have segments.
+  def self.create_segment_denotations!(project, doc, media_transcript)
+    speech_segments = media_transcript.speech_segments
+    return if speech_segments.empty?
+
+    Denotation.new_id_init
+    char_position = 0
+
+    speech_segments.each do |segment|
+      char_begin = char_position
+      char_end = char_begin + segment['text'].length
+      char_position = char_end + 1
+
+      Denotation.create!(hid: Denotation.new_id, begin: char_begin, end: char_end, obj: DENOTATION_OBJ, project:, doc:)
+    end
+  end
+  private_class_method :create_segment_denotations!
 end
