@@ -517,8 +517,42 @@ class Doc < ActiveRecord::Base
 		prev_text = self.body[0...begin_pos]
 		focus_text = self.body[begin_pos...end_pos]
 		next_text = self.body[end_pos..self.body.length]
-		"<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"   
+		"<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"
 	end
+
+	# The AudioSegment Denotations MediaDocCreationService created for this doc (in the same order
+	# as media_transcript.speech_segments, since that's what they were created from), paired with
+	# their corresponding segment's start_ms/end_ms — empty if this doc has no media_transcript.
+	def speech_segment_spans
+		return [] unless media_transcript.present?
+
+		segment_denotations = denotations.where(obj: MediaDocCreationService::DENOTATION_OBJ).order(:begin)
+
+		segment_denotations.zip(media_transcript.speech_segments).map do |denotation, segment|
+			{ 'begin' => denotation.begin, 'end' => denotation.end,
+			  'start_ms' => segment['start_ms'], 'end_ms' => segment['end_ms'] }
+		end
+	end
+
+	# `body`, with each of `spans` (each a {'begin', 'end', 'start_ms', 'end_ms'} hash) wrapped in
+	# a <span> carrying its playback time range, for JS to highlight as media plays.
+	def body_with_speech_segments(spans)
+		return body if spans.blank?
+
+		cursor = 0
+		wrapped = spans.map do |span|
+			text_before = CGI.escapeHTML(body[cursor...span['begin']])
+			cursor = span['end']
+			text_before + speech_segment_span_tag(span)
+		end.join
+		wrapped + CGI.escapeHTML(body[cursor..])
+	end
+
+	def speech_segment_span_tag(span)
+		text = CGI.escapeHTML(body[span['begin']...span['end']])
+		%(<span class="speech-segment" data-start-ms="#{span['start_ms']}" data-end-ms="#{span['end_ms']}">#{text}</span>)
+	end
+	private :speech_segment_span_tag
 
 	def get_project_count(span = nil)
 		return self.projects.count if span.nil?

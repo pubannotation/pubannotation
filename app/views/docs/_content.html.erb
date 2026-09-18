@@ -3,6 +3,8 @@
 	<td class="text">
 		<% if @span %>
 			<div id="body" class="with_hilight"><%= @doc.highlight_span(@span).html_safe %></div>
+		<% elsif @speech_segment_spans.present? %>
+			<div id="body"><%= @doc.body_with_speech_segments(@speech_segment_spans).html_safe %></div>
 		<% else %>
 			<div id="body"><%= @doc.body %></div>
 		<% end %>
@@ -17,6 +19,37 @@
 
 <script>
 	$('#body').linkToSelectedSpan('#linkSpace');
+
+	<% if @speech_segment_spans.present? %>
+		// Highlight whichever speech segment is playing right now.
+		$(document).ready(function() {
+			var mediaPlayer = document.getElementById('media-player');
+			var speechSegments = document.querySelectorAll('#body .speech-segment');
+			if (!mediaPlayer || speechSegments.length === 0) return;
+
+			var currentlyPlaying = null;
+
+			mediaPlayer.addEventListener('timeupdate', function() {
+				var currentMs = mediaPlayer.currentTime * 1000;
+				var active = null;
+
+				for (var i = 0; i < speechSegments.length; i++) {
+					var segment = speechSegments[i];
+					if (currentMs >= Number(segment.dataset.startMs) && currentMs < Number(segment.dataset.endMs)) {
+						active = segment;
+						break;
+					}
+				}
+
+				if (active !== currentlyPlaying) {
+					if (currentlyPlaying) currentlyPlaying.classList.remove('now-playing');
+					if (active) active.classList.add('now-playing');
+					currentlyPlaying = active;
+				}
+			});
+		});
+	<% end %>
+
 	<% if @span %>
 		// Scroll to and focus on the highlighted span
 		$(document).ready(function() {

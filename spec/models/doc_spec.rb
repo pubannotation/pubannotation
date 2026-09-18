@@ -317,4 +317,35 @@ RSpec.describe Doc, type: :model do
       expect(queries.first).to match(/JOIN.*denotations/i)
     end
   end
+
+  describe '#body_with_speech_segments' do
+    it "wraps each span's range in a <span> carrying its start_ms/end_ms" do
+      doc = build(:doc, body: 'Hello world')
+      spans = [
+        { 'begin' => 0, 'end' => 5, 'start_ms' => 0, 'end_ms' => 300 },
+        { 'begin' => 6, 'end' => 11, 'start_ms' => 300, 'end_ms' => 600 }
+      ]
+
+      expect(doc.body_with_speech_segments(spans)).to eq(
+        '<span class="speech-segment" data-start-ms="0" data-end-ms="300">Hello</span> ' \
+        '<span class="speech-segment" data-start-ms="300" data-end-ms="600">world</span>'
+      )
+    end
+
+    it 'HTML-escapes text outside and inside the wrapped spans' do
+      doc = build(:doc, body: '<b>Hi</b> & bye')
+      spans = [{ 'begin' => 3, 'end' => 5, 'start_ms' => 0, 'end_ms' => 300 }]
+
+      expect(doc.body_with_speech_segments(spans)).to eq(
+        '&lt;b&gt;<span class="speech-segment" data-start-ms="0" data-end-ms="300">Hi</span>&lt;/b&gt; &amp; bye'
+      )
+    end
+
+    it 'returns the plain body when there are no spans' do
+      doc = build(:doc, body: 'Hello world')
+
+      expect(doc.body_with_speech_segments([])).to eq('Hello world')
+      expect(doc.body_with_speech_segments(nil)).to eq('Hello world')
+    end
+  end
 end
