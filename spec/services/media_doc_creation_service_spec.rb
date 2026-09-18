@@ -80,6 +80,35 @@ RSpec.describe MediaDocCreationService do
         ])
       end
 
+      it 'increments denotations_num on the project_doc, doc, and project by the segment count once' do
+        doc = described_class.call(project, medium, user, attributes, media_transcript)
+        project_doc = ProjectDoc.find_by(project:, doc:)
+
+        expect(project_doc.denotations_num).to eq(2)
+        expect(doc.reload.denotations_num).to eq(2)
+        expect(project.reload.denotations_num).to eq(2)
+      end
+
+      it 'touches the project\'s updated_at' do
+        project.update_column(:updated_at, 1.year.ago)
+
+        expect { described_class.call(project, medium, user, attributes, media_transcript) }
+          .to(change { project.reload.updated_at })
+      end
+
+      it 'issues a single INSERT for all the segment denotations' do
+        insert_queries = []
+        callback = lambda do |*, payload|
+          insert_queries << payload[:sql] if payload[:sql]&.match?(/\AINSERT INTO "denotations"/)
+        end
+
+        ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+          described_class.call(project, medium, user, attributes, media_transcript)
+        end
+
+        expect(insert_queries.size).to eq(1)
+      end
+
       context 'when segments mix speech and non-speech labels' do
         let(:media_transcript) do
           MediaTranscript.new(medium: medium, segments: [

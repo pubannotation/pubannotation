@@ -43,6 +43,12 @@ class MediaDocCreationService
   # segments, regardless of non-speech segments between them) — recomputed here rather than
   # read off `segments` since MediaTranscript doesn't store per-segment offsets yet. Always
   # empty for image transcripts, since those never have segments.
+  #
+  # Inserted via insert_all (one INSERT for all of them) rather than Denotation.create! in a
+  # loop, since looping would also re-run Denotation's after_create counter-increment callbacks
+  # once per segment. insert_all bypasses those callbacks entirely, so their aggregate effect —
+  # incrementing denotations_num on the ProjectDoc/Doc/Project by the segment count, and touching
+  # the project's updated_at — is replicated once below instead.
   def self.create_segment_denotations!(project, doc, media_transcript)
     speech_segments = media_transcript.speech_segments
     return if speech_segments.empty?
@@ -50,13 +56,21 @@ class MediaDocCreationService
     Denotation.new_id_init
     char_position = 0
 
-    speech_segments.each do |segment|
+    records = speech_segments.map do |segment|
       char_begin = char_position
       char_end = char_begin + segment['text'].length
       char_position = char_end + 1
 
-      Denotation.create!(hid: Denotation.new_id, begin: char_begin, end: char_end, obj: DENOTATION_OBJ, project:, doc:)
+      { hid: Denotation.new_id, begin: char_begin, end: char_end, obj: DENOTATION_OBJ,
+        project_id: project.id, doc_id: doc.id }
     end
+
+    Denotation.insert_all(records, record_timestamps: true)
+
+    ProjectDoc.find_by(project_id: project.id, doc_id: doc.id)&.increment!(:denotations_num, records.size)
+    doc.increment!(:denotations_num, records.size)
+    project.increment!(:denotations_num, records.size)
+    project.update_updated_at
   end
   private_class_method :create_segment_denotations!
 end
